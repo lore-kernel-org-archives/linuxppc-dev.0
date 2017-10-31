@@ -1,29 +1,24 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRKsH5qTWzDr4B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 05:40:02 +1100 (AEDT)
-Date: Tue, 31 Oct 2017 19:39:59 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-Message-ID: <20171031183959.GA4313@lst.de>
-References: <1508217523-18885-1-git-send-email-kamalesh@linux.vnet.ibm.com>
- <20171031141959.7pqnlncg2236yqqg@naverao1-tp.localdomain>
- <20171031153004.GA31864@lst.de>
- <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRKtP17j7zDr61
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 05:41:00 +1100 (AEDT)
+Message-ID: <1509475255.10233.140.camel@linux.intel.com>
+Subject: Re: [PATCH v1] powerpc/pci: convert to use for_each_pci_bridge()
+ helper
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: bjorn@helgaas.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 31 Oct 2017 20:40:55 +0200
+In-Reply-To: <CABhMZUV0me+PG8daQ8iOzcSEJBQMD4=JGbMp7sVm_5CujwZ4eQ@mail.gmail.com>
+References: <20171013165250.25370-1-andriy.shevchenko@linux.intel.com>
+ <1509462750.10233.134.camel@linux.intel.com>
+ <CABhMZUV0me+PG8daQ8iOzcSEJBQMD4=JGbMp7sVm_5CujwZ4eQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,20 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 31, 2017 at 09:53:16PM +0530, Naveen N . Rao wrote:
-> On 2017/10/31 03:30PM, Torsten Duwe wrote:
+On Tue, 2017-10-31 at 13:33 -0500, Bjorn Helgaas wrote:
+> On Tue, Oct 31, 2017 at 10:12 AM, Andy Shevchenko
+> <andriy.shevchenko@linux.intel.com> wrote:
+> > On Fri, 2017-10-13 at 19:52 +0300, Andy Shevchenko wrote:
+> > > ...which makes code slightly cleaner.
 > > 
-> > Maybe I failed to express my views properly; I find the whole approach
-[...]
-> > NAK'd-by: Torsten Duwe <duwe@suse.de>
+> > +Cc: Bjorn
+> > 
+> > Perhaps it makes sense to pass this through PCI if no one objects?
 > 
-> Hmm... that wasn't evident at all given Balbir's reponse to your 
-> previous concerns and your lack of response for the same:
-> https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg125350.html
+> Fine with me, but I only apply things that appear on the
+> linux-pci@vger.kernel.org mailing list.
 
-To me it was obvious that the root cause was kpatch's current inability to
-deal with ppc calling conventions when copying binary functions. Hence my
-hint at the discussion about a possible source-level solution that would
-work nicely for all architectures.
+I want to wait for powerpc maintainers to Ack and then I'll resend.
 
-	Torsten
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
