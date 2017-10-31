@@ -1,24 +1,24 @@
 Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRDpf08CRzDr6s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 01:52:25 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRDq02b54zDr4V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 01:52:43 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- v9VEdR9m050549
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 10:52:24 -0400
+ v9VEeq4J128913
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 10:52:42 -0400
 Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dxrv8j9x0-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dxrxf9r96-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 10:52:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 10:52:41 -0400
 Received: from localhost
  by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Tue, 31 Oct 2017 08:52:22 -0600
-Subject: Re: [PATCH v4 1/3] powerpc/kernel: Separate SR-IOV Calls
+ Tue, 31 Oct 2017 08:52:40 -0600
+Subject: Re: [PATCH v4 2/3] pseries: Add PSeries SR-IOV Machine dependent calls
 To: helgaas@kernel.org, bhelgaas@google.com, benh@kernel.crashing.org,
  paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -27,13 +27,13 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  saeedm@mellanox.com, "Juan J . Alvarez" <jjalvare@us.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
 References: <20171031144724.27808-1-bryantly@linux.vnet.ibm.com>
- <20171031144724.27808-2-bryantly@linux.vnet.ibm.com>
+ <20171031144724.27808-3-bryantly@linux.vnet.ibm.com>
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Tue, 31 Oct 2017 09:52:18 -0500
+Date: Tue, 31 Oct 2017 09:52:36 -0500
 MIME-Version: 1.0
-In-Reply-To: <20171031144724.27808-2-bryantly@linux.vnet.ibm.com>
+In-Reply-To: <20171031144724.27808-3-bryantly@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <6d3eb7e9-858e-9b04-3506-b58c979f44a6@linux.vnet.ibm.com>
+Message-Id: <b8d76f23-1db7-13b9-29fd-4f5b13cf078a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,176 +47,34 @@ Add linuxppc-dev@lists.ozlabs.org
 
 On 10/31/17 9:47 AM, Bryant G. Ly wrote:
 
-> SR-IOV can now be enabled in PowerNV platforms and Pseries
-> platforms. Therefore, the appropriate calls were moved to
-> machine dependent code instead of definition at compile time.
+> Add calls for PSeries platform to configure/deconfigure
+> SR-IOV.
 >
 > Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 > Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
 > ---
->  arch/powerpc/include/asm/machdep.h           |  7 ++++++
->  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
->  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
->  arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
->  arch/powerpc/kernel/pci_dn.c                 |  6 -----
->  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
->  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
->  7 files changed, 54 insertions(+), 29 deletions(-)
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 +++++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/pci.c         | 29 ++++++++++++++++++++++++----
+>  2 files changed, 49 insertions(+), 4 deletions(-)
 >
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index 73b92017b6d7..20f68d36af8c 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -172,11 +172,18 @@ struct machdep_calls {
->  	/* Called after scan and before resource survey */
->  	void (*pcibios_fixup_phb)(struct pci_controller *hose);
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index 6b812ad990e4..2295f117e2d3 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -55,6 +55,27 @@ static int ibm_get_config_addr_info;
+>  static int ibm_get_config_addr_info2;
+>  static int ibm_configure_pe;
 >
-> +	/* Called after device has been added to bus and
-> +	 * before sysfs has been created
-> +	 */
-> +	void (*pcibios_bus_add_device)(struct pci_dev *pdev);
-> +
->  	resource_size_t (*pcibios_default_alignment)(void);
->
->  #ifdef CONFIG_PCI_IOV
->  	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
->  	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int resno);
-> +	int (*pcibios_sriov_enable)(struct pci_dev *pdev, u16 num_vfs);
-> +	int (*pcibios_sriov_disable)(struct pci_dev *pdev);
->  #endif /* CONFIG_PCI_IOV */
->
->  	/* Called to shutdown machine specific hardware not already controlled
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 0b8aa1fe2d5f..323628ca4d6d 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -203,10 +203,9 @@ struct pci_dn {
->  	struct eeh_dev *edev;		/* eeh device */
->  #endif
->  #define IODA_INVALID_PE		0xFFFFFFFF
-> -#ifdef CONFIG_PPC_POWERNV
->  	unsigned int pe_number;
-> -	int     vf_index;		/* VF index in the PF */
->  #ifdef CONFIG_PCI_IOV
-> +	int     vf_index;		/* VF index in the PF */
->  	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->  	u16     num_vfs;		/* number of VFs enabled*/
->  	unsigned int *pe_num_map;	/* PE# for the first VF PE or array */
-> @@ -215,7 +214,6 @@ struct pci_dn {
->  	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->  #endif /* CONFIG_PCI_IOV */
->  	int	mps;			/* Maximum Payload Size */
-> -#endif
->  	struct list_head child_list;
->  	struct list_head list;
->  };
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 8b840191df59..f2d1b369974d 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -440,7 +440,7 @@ static void *eeh_add_virt_device(void *data, void *userdata)
->  			return NULL;
->  	}
->
-> -#ifdef CONFIG_PPC_POWERNV
-> +#ifdef CONFIG_PCI_IOV
->  	pci_iov_add_virtfn(edev->physfn, pdn->vf_index, 0);
->  #endif
->  	return NULL;
-> @@ -496,7 +496,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
->  		(*removed)++;
->
->  	if (edev->physfn) {
-> -#ifdef CONFIG_PPC_POWERNV
-> +#ifdef CONFIG_PCI_IOV
->  		struct pci_dn *pdn = eeh_dev_to_pdn(edev);
->
->  		pci_iov_remove_virtfn(edev->physfn, pdn->vf_index, 0);
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 02831a396419..d45b956d2e3a 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -249,8 +249,31 @@ resource_size_t pcibios_iov_resource_alignment(struct pci_dev *pdev, int resno)
->
->  	return pci_iov_resource_size(pdev, resno);
->  }
-> +
-> +int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> +{
-> +	if (ppc_md.pcibios_sriov_enable)
-> +		return ppc_md.pcibios_sriov_enable(pdev, num_vfs);
-> +
-> +	return 0;
-> +}
-> +
-> +int pcibios_sriov_disable(struct pci_dev *pdev)
-> +{
-> +	if (ppc_md.pcibios_sriov_disable)
-> +		return ppc_md.pcibios_sriov_disable(pdev);
-> +
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_PCI_IOV */
->
-> +void pcibios_bus_add_device(struct pci_dev *pdev)
-> +{
-> +	if (ppc_md.pcibios_bus_add_device)
-> +		ppc_md.pcibios_bus_add_device(pdev);
-> +}
-> +
->  static resource_size_t pcibios_io_size(const struct pci_controller *hose)
->  {
->  #ifdef CONFIG_PPC64
-> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-> index 0e395afbf0f4..ab147a1909c8 100644
-> --- a/arch/powerpc/kernel/pci_dn.c
-> +++ b/arch/powerpc/kernel/pci_dn.c
-> @@ -156,10 +156,8 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
->  	pdn->parent = parent;
->  	pdn->busno = busno;
->  	pdn->devfn = devfn;
-> -#ifdef CONFIG_PPC_POWERNV
->  	pdn->vf_index = vf_index;
->  	pdn->pe_number = IODA_INVALID_PE;
-> -#endif
->  	INIT_LIST_HEAD(&pdn->child_list);
->  	INIT_LIST_HEAD(&pdn->list);
->  	list_add_tail(&pdn->list, &parent->child_list);
-> @@ -226,9 +224,7 @@ void remove_dev_pci_data(struct pci_dev *pdev)
->  	 */
->  	if (pdev->is_virtfn) {
->  		pdn = pci_get_pdn(pdev);
-> -#ifdef CONFIG_PPC_POWERNV
->  		pdn->pe_number = IODA_INVALID_PE;
-> -#endif
->  		return;
->  	}
->
-> @@ -294,9 +290,7 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
->  		return NULL;
->  	dn->data = pdn;
->  	pdn->phb = hose;
-> -#ifdef CONFIG_PPC_POWERNV
->  	pdn->pe_number = IODA_INVALID_PE;
-> -#endif
->  	regs = of_get_property(dn, "reg", NULL);
->  	if (regs) {
->  		u32 addr = of_read_number(regs, 1);
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 8864065eba22..9de55bcf484a 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -44,6 +44,22 @@
->  static bool pnv_eeh_nb_init = false;
->  static int eeh_event_irq = -EINVAL;
->
-> +void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
+> +void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
 > +{
 > +	struct pci_dn *pdn = pci_get_pdn(pdev);
 > +
 > +	if (!pdev->is_virtfn)
 > +		return;
+> +
+> +	pdn->device_id  =  pdev->device;
+> +	pdn->vendor_id  =  pdev->vendor;
+> +	pdn->class_code =  pdev->class;
 > +
 > +	/*
 > +	 * The following operations will fail if VF's sysfs files
@@ -225,70 +83,84 @@ On 10/31/17 9:47 AM, Bryant G. Ly wrote:
 > +	eeh_add_device_early(pdn);
 > +	eeh_add_device_late(pdev);
 > +	eeh_sysfs_add_device(pdev);
+> +
 > +}
 > +
->  static int pnv_eeh_init(void)
->  {
->  	struct pci_controller *hose;
-> @@ -87,6 +103,7 @@ static int pnv_eeh_init(void)
+>  /*
+>   * Buffer for reporting slot-error-detail rtas calls. Its here
+>   * in BSS, and not dynamically alloced, so that it ends up in
+> @@ -120,6 +141,9 @@ static int pseries_eeh_init(void)
+>  	/* Set EEH probe mode */
+>  	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+>
+> +	/* Set EEH machine dependent code */
+> +	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
+> +
+>  	return 0;
+>  }
+>
+> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+> index 09eba5a9929a..14a90cf471cc 100644
+> --- a/arch/powerpc/platforms/pseries/pci.c
+> +++ b/arch/powerpc/platforms/pseries/pci.c
+> @@ -3,17 +3,17 @@
+>   * Copyright (C) 2003 Anton Blanchard <anton@au.ibm.com>, IBM
+>   *
+>   * pSeries specific routines for PCI.
+> - * 
+> + *
+>   * This program is free software; you can redistribute it and/or modify
+>   * it under the terms of the GNU General Public License as published by
+>   * the Free Software Foundation; either version 2 of the License, or
+>   * (at your option) any later version.
+> - *    
+> + *
+>   * This program is distributed in the hope that it will be useful,
+>   * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>   * GNU General Public License for more details.
+> - * 
+> + *
+>   * You should have received a copy of the GNU General Public License
+>   * along with this program; if not, write to the Free Software
+>   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+> @@ -54,10 +54,26 @@ void pcibios_name_device(struct pci_dev *dev)
+>  			}
+>  		}
 >  	}
->
->  	eeh_set_pe_aux_size(max_diag_size);
-> +	ppc_md.pcibios_bus_add_device = pnv_pcibios_bus_add_device;
->
->  	return 0;
->  }
-> @@ -1747,22 +1764,6 @@ static struct eeh_ops pnv_eeh_ops = {
->  	.restore_config		= pnv_eeh_restore_config
->  };
->
-> -void pcibios_bus_add_device(struct pci_dev *pdev)
-> -{
-> -	struct pci_dn *pdn = pci_get_pdn(pdev);
-> -
-> -	if (!pdev->is_virtfn)
-> -		return;
-> -
-> -	/*
-> -	 * The following operations will fail if VF's sysfs files
-> -	 * aren't created or its resources aren't finalized.
-> -	 */
-> -	eeh_add_device_early(pdn);
-> -	eeh_add_device_late(pdev);
-> -	eeh_sysfs_add_device(pdev);
-> -}
-> -
->  #ifdef CONFIG_PCI_IOV
->  static void pnv_pci_fixup_vf_mps(struct pci_dev *pdev)
->  {
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 57f9e55f4352..f7fed25e06ba 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1674,7 +1674,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->  	return ret;
->  }
->
-> -int pcibios_sriov_disable(struct pci_dev *pdev)
-> +int pnv_pcibios_sriov_disable(struct pci_dev *pdev)
->  {
->  	pnv_pci_sriov_disable(pdev);
->
-> @@ -1683,7 +1683,7 @@ int pcibios_sriov_disable(struct pci_dev *pdev)
->  	return 0;
->  }
->
-> -int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> +int pnv_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->  {
->  	/* Allocate PCI data */
->  	add_dev_pci_data(pdev);
-> @@ -4002,6 +4002,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->  #ifdef CONFIG_PCI_IOV
->  	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov_resources;
->  	ppc_md.pcibios_iov_resource_alignment = pnv_pci_iov_resource_alignment;
-> +	ppc_md.pcibios_sriov_enable = pnv_pcibios_sriov_enable;
-> +	ppc_md.pcibios_sriov_disable = pnv_pcibios_sriov_disable;
+> -}   
+> +}
+>  DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
 >  #endif
 >
->  	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+> +#ifdef CONFIG_PCI_IOV
+> +int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+> +{
+> +	/* Allocate PCI data */
+> +	add_dev_pci_data(pdev);
+> +	return 0;
+> +}
+> +
+> +int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
+> +{
+> +	/* Release PCI data */
+> +	remove_dev_pci_data(pdev);
+> +	return 0;
+> +}
+> +#endif
+> +
+>  static void __init pSeries_request_regions(void)
+>  {
+>  	if (!isa_io_base)
+> @@ -76,6 +92,11 @@ void __init pSeries_final_fixup(void)
+>  	pSeries_request_regions();
+>
+>  	eeh_addr_cache_build();
+> +
+> +#ifdef CONFIG_PCI_IOV
+> +	ppc_md.pcibios_sriov_enable = pseries_pcibios_sriov_enable;
+> +	ppc_md.pcibios_sriov_disable = pseries_pcibios_sriov_disable;
+> +#endif
+>  }
+>
+>  /*
