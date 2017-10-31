@@ -1,22 +1,27 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRFM80MdmzDr1w
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 02:17:06 +1100 (AEDT)
-Message-ID: <1509462750.10233.134.camel@linux.intel.com>
-Subject: Re: [PATCH v1] powerpc/pci: convert to use for_each_pci_bridge()
- helper
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Bjorn Helgaas <helgaas@kernel.org>
-Date: Tue, 31 Oct 2017 17:12:30 +0200
-In-Reply-To: <20171013165250.25370-1-andriy.shevchenko@linux.intel.com>
-References: <20171013165250.25370-1-andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRFf91lzDzDr25
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 02:30:07 +1100 (AEDT)
+Date: Tue, 31 Oct 2017 16:30:05 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
+ livepatch symbols
+Message-ID: <20171031153004.GA31864@lst.de>
+References: <1508217523-18885-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <20171031141959.7pqnlncg2236yqqg@naverao1-tp.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171031141959.7pqnlncg2236yqqg@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-10-13 at 19:52 +0300, Andy Shevchenko wrote:
-> ...which makes code slightly cleaner.
+On Tue, Oct 31, 2017 at 07:49:59PM +0530, Naveen N . Rao wrote:
+> Hi Kamalesh,
+> Sorry for the late review. Overall, the patch looks good to me.
 
-+Cc: Bjorn
+If you're good with a hammer...
 
-Perhaps it makes sense to pass this through PCI if no one objects?
+Maybe I failed to express my views properly; I find the whole approach
+mislead in the first place. I had asked questions previously because it
+would have never come to my mind that someone would deliberately, without
+a compelling reason, creates broken live patch modules and then tries
+to fix them up with some ugly band-aid in the kernel. So for the record:
 
-> 
-> Requires: d43f59ce6c50 ("PCI: Add for_each_pci_bridge() helper")
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  arch/powerpc/kernel/pci-hotplug.c | 7 ++-----
->  arch/powerpc/kernel/pci_of_scan.c | 7 ++-----
->  2 files changed, 4 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci-hotplug.c
-> b/arch/powerpc/kernel/pci-hotplug.c
-> index 2d71269e7dc1..741f47295188 100644
-> --- a/arch/powerpc/kernel/pci-hotplug.c
-> +++ b/arch/powerpc/kernel/pci-hotplug.c
-> @@ -134,11 +134,8 @@ void pci_hp_add_devices(struct pci_bus *bus)
->  		pcibios_setup_bus_devices(bus);
->  		max = bus->busn_res.start;
->  		for (pass = 0; pass < 2; pass++) {
-> -			list_for_each_entry(dev, &bus->devices,
-> bus_list) {
-> -				if (pci_is_bridge(dev))
-> -					max = pci_scan_bridge(bus,
-> dev,
-> -							      max,
-> pass);
-> -			}
-> +			for_each_pci_bridge(dev, bus)
-> +				max = pci_scan_bridge(bus, dev, max,
-> pass);
->  		}
->  	}
->  	pcibios_finish_adding_to_bus(bus);
-> diff --git a/arch/powerpc/kernel/pci_of_scan.c
-> b/arch/powerpc/kernel/pci_of_scan.c
-> index 0d790f8432d2..8bdaa2a6fa62 100644
-> --- a/arch/powerpc/kernel/pci_of_scan.c
-> +++ b/arch/powerpc/kernel/pci_of_scan.c
-> @@ -369,11 +369,8 @@ static void __of_scan_bus(struct device_node
-> *node, struct pci_bus *bus,
->  	pcibios_setup_bus_devices(bus);
->  
->  	/* Now scan child busses */
-> -	list_for_each_entry(dev, &bus->devices, bus_list) {
-> -		if (pci_is_bridge(dev)) {
-> -			of_scan_pci_bridge(dev);
-> -		}
-> -	}
-> +	for_each_pci_bridge(dev, bus)
-> +		of_scan_pci_bridge(dev);
->  }
->  
->  /**
+NAK'd-by: Torsten Duwe <duwe@suse.de>
 
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+	Torsten
