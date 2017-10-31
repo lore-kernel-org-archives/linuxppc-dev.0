@@ -1,26 +1,24 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
- [IPv6:2607:f8b0:400c:c08::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50078.outbound.protection.outlook.com [40.107.5.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yQrJJ32TszDqwS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 10:28:15 +1100 (AEDT)
-Received: by mail-ua0-x242.google.com with SMTP id f46so10792616uae.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Oct 2017 16:28:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yQx7x2zvvzDqwZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 14:06:19 +1100 (AEDT)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: "tglx@linutronix.de" <tglx@linutronix.de>, Jason Cooper
+ <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>
+CC: "oss@buserror.net" <oss@buserror.net>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
+Date: Tue, 31 Oct 2017 03:06:12 +0000
+Message-ID: <AM3PR04MB11852211CAFA9741B260D4A3915E0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
+ <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
+In-Reply-To: <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <d145cb52-5321-49fa-e33a-16a40bb00640@gmail.com>
-References: <20171030123820.29392-1-bsingharora@gmail.com>
- <d145cb52-5321-49fa-e33a-16a40bb00640@gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 31 Oct 2017 10:28:12 +1100
-Message-ID: <CAKTCnzniKEDx27rp16ZApnK0PXK+47HBBBQcyeHrZu2zw86etA@mail.gmail.com>
-Subject: Re: [rfc] powerpc/npu: Cleanup MMIO ATSD flushing
-To: "Aneesh Kumar K.V" <aneeshkumar.opensource@gmail.com>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Reza Arbab <arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 31, 2017 at 3:03 AM, Aneesh Kumar K.V
-<aneeshkumar.opensource@gmail.com> wrote:
->
->
-> On 10/30/2017 06:08 PM, Balbir Singh wrote:
->>
->> +
->> +static void pnv_npu2_invalidate_helper(struct npu_context *npu_context,
->> +               struct mm_struct *mm, unsigned long start,
->> +               unsigned long end, bool flush)
->> +{
->> +       unsigned long address;
->> +       bool is_thp;
->> +       unsigned int hshift, shift;
->> +
->> +       address = start;
->> +       do {
->> +               local_irq_disable();
->> +               find_linux_pte(mm->pgd, address, &is_thp, &hshift);
->> +               if (!is_thp)
->> +                       shift = PAGE_SHIFT;
->> +               else
->> +                       shift = hshift;
->
->
-> Is that correct? if is_thp is 0 can we derive shift from hshift? IIUC we set
-> hshift only
-> if it is a hugepage.
+Hi all,
 
-OK.. I assumed that it'll be set. So I've got to check for
+Could anybody review this patchset and take action on them? Thank you!
 
+Best Regards
+Qiang Zhao
 
-if (is_thp)
-      shift = mmu_psize_defs[MMU_PAGE_2M].shift
-else if (hshift)
-    shift = hshift
-else
-    shift = PAGE_SHIFT
-
->
->
->> +               mmio_invalidate(npu_context, address > 0, address, flush,
->> +                               shift);
->> +               local_irq_enable();
->> +               address += (1ull << shift);
->> +       } while (address < end);
->>   }
->>
-
-Thanks for the review!
-
-Balbir Singh.
+> > -----Original Message-----
+> > From: Zhao Qiang [mailto:qiang.zhao@nxp.com]
+> > Sent: Monday, August 07, 2017 11:07 AM
+> > To: tglx@linutronix.de
+> > Cc: oss@buserror.net; Xiaobo Xie <xiaobo.xie@nxp.com>; linux-
+> > kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Qiang Zhao
+> > <qiang.zhao@nxp.com>
+> > Subject: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
+> >
+> > QEIC is supported more than just powerpc boards, so remove PPCisms.
+> >
+> > changelog:
+> > 	Changes for v8:
+> > 	- use IRQCHIP_DECLARE() instead of subsys_initcall in qeic driver
+> > 	- remove include/soc/fsl/qe/qe_ic.h
+> > 	Changes for v9:
+> > 	- rebase
+> > 	- fix the compile issue when apply the second patch, in fact, there
+> > was no compile issue
+> > 	  when apply all the patches of this patchset
+> > 	Changes for v10:
+> > 	- simplify codes, remove duplicated codes
+> >
+> > Zhao Qiang (4):
+> >   irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+> > 	Changes for v2:
+> > 		- modify the subject and commit msg
+> > 	Changes for v3:
+> > 		- merge .h file to .c, rename it with irq-qeic.c
+> > 	Changes for v4:
+> > 		- modify comments
+> > 	Changes for v5:
+> > 		- disable rename detection
+> > 	Changes for v6:
+> > 		- rebase
+> > 	Changes for v7:
+> > 		- na
+> >
+> >   irqchip/qeic: merge qeic init code from platforms to a common functio=
+n
+> > 	Changes for v2:
+> > 		- modify subject and commit msg
+> > 		- add check for qeic by type
+> > 	Changes for v3:
+> > 		- na
+> > 	Changes for v4:
+> > 		- na
+> > 	Changes for v5:
+> > 		- na
+> > 	Changes for v6:
+> > 		- rebase
+> > 	Changes for v7:
+> > 		- na
+> > 	Changes for v8:
+> > 		- use IRQCHIP_DECLARE() instead of subsys_initcall
+> >
+> >   irqchip/qeic: merge qeic_of_init into qe_ic_init
+> > 	Changes for v2:
+> > 		- modify subject and commit msg
+> > 		- return 0 and add put node when return in qe_ic_init
+> > 	Changes for v3:
+> > 		- na
+> > 	Changes for v4:
+> > 		- na
+> > 	Changes for v5:
+> > 		- na
+> > 	Changes for v6:
+> > 		- rebase
+> > 	Changes for v7:
+> > 		- na
+> >
+> >   irqchip/qeic: remove PPCisms for QEIC
+> > 	Changes for v6:
+> > 		- new added
+> > 	Changes for v7:
+> > 		- fix warning
+> > 	Changes for v8:
+> > 		- remove include/soc/fsl/qe/qe_ic.h
+> >
+> > Zhao Qiang (4):
+> >   irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+> >   irqchip/qeic: merge qeic init code from platforms to a common functio=
+n
+> >   irqchip/qeic: merge qeic_of_init into qe_ic_init
+> >   irqchip/qeic: remove PPCisms for QEIC
+> >
+> >  MAINTAINERS                                        |   6 +
+> >  arch/powerpc/platforms/83xx/km83xx.c               |   1 -
+> >  arch/powerpc/platforms/83xx/misc.c                 |  16 -
+> >  arch/powerpc/platforms/83xx/mpc832x_mds.c          |   1 -
+> >  arch/powerpc/platforms/83xx/mpc832x_rdb.c          |   1 -
+> >  arch/powerpc/platforms/83xx/mpc836x_mds.c          |   1 -
+> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c          |   1 -
+> >  arch/powerpc/platforms/85xx/corenet_generic.c      |  10 -
+> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  15 -
+> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  17 -
+> >  arch/powerpc/platforms/85xx/twr_p102x.c            |  15 -
+> >  drivers/irqchip/Makefile                           |   1 +
+> >  drivers/{soc/fsl/qe/qe_ic.c =3D> irqchip/irq-qeic.c} | 358 +++++++++++=
++---------
+> >  drivers/soc/fsl/qe/Makefile                        |   2 +-
+> >  drivers/soc/fsl/qe/qe_ic.h                         | 103 ------
+> >  include/soc/fsl/qe/qe_ic.h                         | 139 --------
+> >  16 files changed, 218 insertions(+), 469 deletions(-)  rename
+> > drivers/{soc/fsl/qe/qe_ic.c =3D> irqchip/irq-qeic.c} (58%)  delete mode
+> > 100644 drivers/soc/fsl/qe/qe_ic.h  delete mode 100644
+> > include/soc/fsl/qe/qe_ic.h
+> >
+> > --
+> > 2.1.0.27.g96db324
