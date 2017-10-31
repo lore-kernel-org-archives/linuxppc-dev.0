@@ -1,24 +1,15 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR03-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr50078.outbound.protection.outlook.com [40.107.5.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yQx7x2zvvzDqwZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 14:06:19 +1100 (AEDT)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: "tglx@linutronix.de" <tglx@linutronix.de>, Jason Cooper
- <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>
-CC: "oss@buserror.net" <oss@buserror.net>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
-Date: Tue, 31 Oct 2017 03:06:12 +0000
-Message-ID: <AM3PR04MB11852211CAFA9741B260D4A3915E0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
- <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
-In-Reply-To: <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yQyR61ldgzDqwZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 15:04:33 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Russell Currey <ruscur@russell.cc>
+Subject: [PATCH kernel] powerpc/powernv/ioda: Relax max DMA window size check
+Date: Tue, 31 Oct 2017 15:04:27 +1100
+Message-Id: <20171031040427.10909-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,120 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+DMA windows can only have a size of power of two on IODA2 hardware and
+using memory_hotplug_max() to determine the upper limit won't work
+correcly if it returns not power of two value.
 
-Could anybody review this patchset and take action on them? Thank you!
+This relaxes the check by rounding up the value returned by
+memory_hotplug_max().
 
-Best Regards
-Qiang Zhao
+It is expected to impact DPDK on machines with non-power-of-two RAM size,
+mostly. KVM guests are less likely to be affected as usually guests get
+less than half of hosts RAM.
 
-> > -----Original Message-----
-> > From: Zhao Qiang [mailto:qiang.zhao@nxp.com]
-> > Sent: Monday, August 07, 2017 11:07 AM
-> > To: tglx@linutronix.de
-> > Cc: oss@buserror.net; Xiaobo Xie <xiaobo.xie@nxp.com>; linux-
-> > kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Qiang Zhao
-> > <qiang.zhao@nxp.com>
-> > Subject: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
-> >
-> > QEIC is supported more than just powerpc boards, so remove PPCisms.
-> >
-> > changelog:
-> > 	Changes for v8:
-> > 	- use IRQCHIP_DECLARE() instead of subsys_initcall in qeic driver
-> > 	- remove include/soc/fsl/qe/qe_ic.h
-> > 	Changes for v9:
-> > 	- rebase
-> > 	- fix the compile issue when apply the second patch, in fact, there
-> > was no compile issue
-> > 	  when apply all the patches of this patchset
-> > 	Changes for v10:
-> > 	- simplify codes, remove duplicated codes
-> >
-> > Zhao Qiang (4):
-> >   irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-> > 	Changes for v2:
-> > 		- modify the subject and commit msg
-> > 	Changes for v3:
-> > 		- merge .h file to .c, rename it with irq-qeic.c
-> > 	Changes for v4:
-> > 		- modify comments
-> > 	Changes for v5:
-> > 		- disable rename detection
-> > 	Changes for v6:
-> > 		- rebase
-> > 	Changes for v7:
-> > 		- na
-> >
-> >   irqchip/qeic: merge qeic init code from platforms to a common functio=
-n
-> > 	Changes for v2:
-> > 		- modify subject and commit msg
-> > 		- add check for qeic by type
-> > 	Changes for v3:
-> > 		- na
-> > 	Changes for v4:
-> > 		- na
-> > 	Changes for v5:
-> > 		- na
-> > 	Changes for v6:
-> > 		- rebase
-> > 	Changes for v7:
-> > 		- na
-> > 	Changes for v8:
-> > 		- use IRQCHIP_DECLARE() instead of subsys_initcall
-> >
-> >   irqchip/qeic: merge qeic_of_init into qe_ic_init
-> > 	Changes for v2:
-> > 		- modify subject and commit msg
-> > 		- return 0 and add put node when return in qe_ic_init
-> > 	Changes for v3:
-> > 		- na
-> > 	Changes for v4:
-> > 		- na
-> > 	Changes for v5:
-> > 		- na
-> > 	Changes for v6:
-> > 		- rebase
-> > 	Changes for v7:
-> > 		- na
-> >
-> >   irqchip/qeic: remove PPCisms for QEIC
-> > 	Changes for v6:
-> > 		- new added
-> > 	Changes for v7:
-> > 		- fix warning
-> > 	Changes for v8:
-> > 		- remove include/soc/fsl/qe/qe_ic.h
-> >
-> > Zhao Qiang (4):
-> >   irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-> >   irqchip/qeic: merge qeic init code from platforms to a common functio=
-n
-> >   irqchip/qeic: merge qeic_of_init into qe_ic_init
-> >   irqchip/qeic: remove PPCisms for QEIC
-> >
-> >  MAINTAINERS                                        |   6 +
-> >  arch/powerpc/platforms/83xx/km83xx.c               |   1 -
-> >  arch/powerpc/platforms/83xx/misc.c                 |  16 -
-> >  arch/powerpc/platforms/83xx/mpc832x_mds.c          |   1 -
-> >  arch/powerpc/platforms/83xx/mpc832x_rdb.c          |   1 -
-> >  arch/powerpc/platforms/83xx/mpc836x_mds.c          |   1 -
-> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c          |   1 -
-> >  arch/powerpc/platforms/85xx/corenet_generic.c      |  10 -
-> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  15 -
-> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  17 -
-> >  arch/powerpc/platforms/85xx/twr_p102x.c            |  15 -
-> >  drivers/irqchip/Makefile                           |   1 +
-> >  drivers/{soc/fsl/qe/qe_ic.c =3D> irqchip/irq-qeic.c} | 358 +++++++++++=
-+---------
-> >  drivers/soc/fsl/qe/Makefile                        |   2 +-
-> >  drivers/soc/fsl/qe/qe_ic.h                         | 103 ------
-> >  include/soc/fsl/qe/qe_ic.h                         | 139 --------
-> >  16 files changed, 218 insertions(+), 469 deletions(-)  rename
-> > drivers/{soc/fsl/qe/qe_ic.c =3D> irqchip/irq-qeic.c} (58%)  delete mode
-> > 100644 drivers/soc/fsl/qe/qe_ic.h  delete mode 100644
-> > include/soc/fsl/qe/qe_ic.h
-> >
-> > --
-> > 2.1.0.27.g96db324
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 269f119e4b3c..4c62162da181 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2769,7 +2769,8 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+ 		return -EINVAL;
+ 
+-	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
++	if ((window_size > roundup_pow_of_two(memory_hotplug_max())) ||
++			!is_power_of_2(window_size))
+ 		return -EINVAL;
+ 
+ 	/* Adjust direct table size from window_size and levels */
+-- 
+2.11.0
