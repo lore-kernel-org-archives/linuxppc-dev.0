@@ -1,23 +1,31 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yR3Hk0RqlzDqwZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 18:43:29 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id b192so13955147pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 00:43:29 -0700 (PDT)
-Date: Tue, 31 Oct 2017 18:43:07 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/3] powerpc: use NMI IPI for smp_send_stop
-Message-ID: <20171031184307.2e0317c4@roar.ozlabs.ibm.com>
-In-Reply-To: <201710240753.BWnpBvpH%fengguang.wu@intel.com>
-References: <20171023080507.21974-3-npiggin@gmail.com>
- <201710240753.BWnpBvpH%fengguang.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yR65v4Tr5zDqwZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 20:50:10 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ v9V9l6ur045114
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 05:50:05 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dxj13r8ff-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 05:50:05 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Tue, 31 Oct 2017 09:50:03 -0000
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/perf: Fix core-imc hotplug callback failure during
+ imc initialization
+Date: Tue, 31 Oct 2017 15:19:58 +0530
+Message-Id: <1509443398-26539-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +35,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 Oct 2017 07:15:30 +0800
-kbuild test robot <lkp@intel.com> wrote:
+Call trace observed during boot:
 
-> Hi Nicholas,
-> 
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.14-rc6 next-20171018]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/avoid-secondary-hold-spinloop-when-possible/20171023-173012
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-iss476-smp_defconfig (attached as .config)
-> compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=powerpc 
-> 
-> All errors (new ones prefixed by >>):
-> 
->    arch/powerpc/kernel/smp.o: In function `smp_send_stop':
-> >> arch/powerpc/kernel/smp.c:563: undefined reference to `smp_send_nmi_ipi'  
-> 
-> vim +563 arch/powerpc/kernel/smp.c
-> 
->    560	
->    561	void smp_send_stop(void)
->    562	{
->  > 563		smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, stop_this_cpu, 1000000);  
->    564	}
->    565	
+[c000000ff38ffb80] c0000000002ddfac perf_pmu_migrate_context+0xac/0x470
+[c000000ff38ffc40] c00000000011385c ppc_core_imc_cpu_offline+0x1ac/0x1e0
+[c000000ff38ffc90] c000000000125758 cpuhp_invoke_callback+0x198/0x5d0
+[c000000ff38ffd00] c00000000012782c cpuhp_thread_fun+0x8c/0x3d0
+[c000000ff38ffd60] c0000000001678d0 smpboot_thread_fn+0x290/0x2a0
+[c000000ff38ffdc0] c00000000015ee78 kthread+0x168/0x1b0
+[c000000ff38ffe30] c00000000000b368 ret_from_kernel_thread+0x5c/0x74
 
-Good catch, 0day. Thanks.
+While registering the cpuhoplug callbacks for core-imc, if we fails
+in the cpuhotplug online path for any random core (either because opal call to
+initialize the core-imc counters fails or because memory allocation fails for
+that core), ppc_core_imc_cpu_offline() will get invoked for other cpus who
+successfully returned from cpuhotplug online path. 
 
-Rather than have all architectures select NMI_IPI just for this, I
-think I'll make it depend on whether NMI_IPI was selected at all.
-Otherwise just keep using the normal smp_call_function().
+But in the ppc_core_imc_cpu_offline() path we are trying to migrate the event
+context, when core-imc counters are not even initialized. Thus creating the
+above stack dump.
 
-Thanks,
-Nick
+Add a check to see if core-imc counters are enabled or not in the cpuhotplug
+offline path before migrating the context to handle this failing scenario.
+
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/imc-pmu.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index 8812624..08139f9 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -30,6 +30,7 @@ static struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
+ static cpumask_t nest_imc_cpumask;
+ struct imc_pmu_ref *nest_imc_refc;
+ static int nest_pmus;
++static bool core_imc_enabled;
+ 
+ /* Core IMC data structures and variables */
+ 
+@@ -607,6 +608,19 @@ static int ppc_core_imc_cpu_offline(unsigned int cpu)
+ 	if (!cpumask_test_and_clear_cpu(cpu, &core_imc_cpumask))
+ 		return 0;
+ 
++	/*
++	 * See if core imc counters are enabled or not.
++	 *
++	 * Suppose we reach here from core_imc_cpumask_init(),
++	 * since we failed at the cpuhotplug online path for any random
++	 * core (either because opal call to initialize the core-imc counters
++	 * failed  or because memory allocation failed).
++	 * We need to check whether core imc counters are enabled or not before
++	 * migrating the event context from cpus in the other cores.
++	 */
++	if (!core_imc_enabled)
++		return 0;
++
+ 	/* Find any online cpu in that core except the current "cpu" */
+ 	ncpu = cpumask_any_but(cpu_sibling_mask(cpu), cpu);
+ 
+@@ -1299,6 +1313,7 @@ int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_id
+ 			return ret;
+ 		}
+ 
++		core_imc_enabled = true;
+ 		break;
+ 	case IMC_DOMAIN_THREAD:
+ 		ret = thread_imc_cpu_init();
+-- 
+2.7.4
