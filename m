@@ -1,25 +1,34 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRlg74sR7zDr4H
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 22:02:43 +1100 (AEDT)
-Date: Wed, 1 Nov 2017 22:02:41 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/16] Remove hash page table slot tracking from linux PTE
-Message-ID: <20171101110241.GA17203@fergus.ozlabs.ibm.com>
-References: <20171027040833.3644-1-aneesh.kumar@linux.vnet.ibm.com>
- <20171027043430.GA27483@fergus.ozlabs.ibm.com>
- <adf2d270-29df-701f-206e-0d8a35084e47@linux.vnet.ibm.com>
- <20171028223532.GA5587@ram.oc3035372033.ibm.com>
- <20171029220417.GA3317@fergus.ozlabs.ibm.com>
- <20171030005106.GD5587@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRn4V3YDGzDr4H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 23:06:17 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA1C5Mtl019827
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 08:06:14 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dyaq8k257-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 08:06:06 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 1 Nov 2017 12:05:57 -0000
+Subject: Re: [RFC PATCH 0/7] powerpc/64s/radix TLB flush performance
+ improvements
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20171031064504.25245-1-npiggin@gmail.com>
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 1 Nov 2017 17:35:51 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171030005106.GD5587@ram.oc3035372033.ibm.com>
+In-Reply-To: <20171031064504.25245-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <c9c80f5a-9a53-1b7b-99c8-b40049355722@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +38,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 29, 2017 at 05:51:06PM -0700, Ram Pai wrote:
-> On Mon, Oct 30, 2017 at 09:04:17AM +1100, Paul Mackerras wrote:
-> > On Sat, Oct 28, 2017 at 03:35:32PM -0700, Ram Pai wrote:
-> > > 
-> > > I like the idea of not tracking the slots at all. It is something the
-> > > guest should not be knowing or tracking.
-> > 
-> > Why do you say that?
+On 10/31/2017 12:14 PM, Nicholas Piggin wrote:
+> Here's a random mix of performance improvements for radix TLB flushing
+> code. The main aims are to reduce the amount of translation that gets
+> invalidated, and to reduce global flushes where we can do local.
 > 
-> 'slot' is a internal mechanism used by the hash table to accelerate
-> mapping an address to a hash-page.  If the hash-table implementation
-> choose to use a different mechanism to accelerate the mapping, it can't
-> because that mechanism is baked into the logic of all the consumers.
+> To that end, a parallel kernel compile benchmark using powerpc:tlbie
+> tracepoint shows a reduction in tlbie instructions from about 290,000
+> to 80,000, and a reduction in tlbiel instructions from 49,500,000 to
+> 15,000,000. Looks great, but unfortunately does not translate to a
+> statistically significant performance improvement! The needle on TLB
+> misses does not move much, I suspect because a lot of the flushing is
+> done a startup and shutdown, and because a significant cost of TLB
+> flushing itself is in the barriers.
 
-Not all operating systems use the HPT as a cache of translations that
-are also stored somewhere, as Linux does.  Those OSes are perfectly
-entitled to control the slot allocation for their own purposes in
-whatever way they want.  So having the interface use the slot number
-is fine; just as having alternative interfaces that don't need to
-specify the slot number for the kind of usage that Linux does is also
-fine.
-
-Paul.
+Does memory barrier initiate a single global invalidation with tlbie ?
