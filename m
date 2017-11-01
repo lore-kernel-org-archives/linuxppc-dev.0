@@ -3,29 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRrXy3VG3zDr4H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 01:42:41 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yS16m32PKzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 08:09:03 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA1EfaE9116658
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 10:42:38 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dyd95atd1-1
+ vA1L4fvu141228
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 17:09:01 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dyh8mxhra-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 10:42:37 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 17:09:01 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
- Wed, 1 Nov 2017 08:42:36 -0600
+ Wed, 1 Nov 2017 15:08:59 -0600
 From: Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>
 To: netdev@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, tlfalcon@linux.vnet.ibm.com,
  nfont@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com
-Subject: [PATCH FEAT] ibmvnic: Feature implementation of Vital Product Data
- (VPD) for the ibmvnic driver
-Date: Wed,  1 Nov 2017 12:39:59 -0200
-Message-Id: <20171101143959.14992-1-desnesn@linux.vnet.ibm.com>
+Subject: [PATCH] [net-next,
+ v2] ibmvnic: Feature implementation of Vital Product Data (VPD) for
+ the ibmvnic driver
+Date: Wed,  1 Nov 2017 19:03:32 -0200
+Message-Id: <20171101210332.7278-1-desnesn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,35 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements and enables VDP support for the ibmvnic driver. Moreover, it includes the implementation of suitable structs, signal transmission/handling and fuctions which allows the retrival of firmware information from the ibmvnic card.
+This patch implements and enables VDP support for the ibmvnic driver.
+Moreover, it includes the implementation of suitable structs, signal
+ transmission/handling and functions which allows the retrival of firmware
+ information from the ibmvnic card.
 
-Co-Authored-By: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 140 ++++++++++++++++++++++++++++++++++++-
- drivers/net/ethernet/ibm/ibmvnic.h |  27 ++++++-
- 2 files changed, 164 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 135 ++++++++++++++++++++++++++++++++++++-
+ drivers/net/ethernet/ibm/ibmvnic.h |  27 +++++++-
+ 2 files changed, 159 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index d0cff28..120f3c0 100644
+index d0cff28..ee7a27b 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -107,6 +107,9 @@ static union sub_crq *ibmvnic_next_scrq(struct ibmvnic_adapter *,
- 					struct ibmvnic_sub_crq_queue *);
- static int ibmvnic_poll(struct napi_struct *napi, int data);
- static void send_map_query(struct ibmvnic_adapter *adapter);
-+static int ibmvnic_get_vpd(struct ibmvnic_adapter *);
-+static void handle_vpd_size_rsp(union ibmvnic_crq *, struct ibmvnic_adapter *);
-+static void handle_vpd_rsp(union ibmvnic_crq *,struct ibmvnic_adapter *);
- static void send_request_map(struct ibmvnic_adapter *, dma_addr_t, __be32, u8);
- static void send_request_unmap(struct ibmvnic_adapter *, u8);
- static void send_login(struct ibmvnic_adapter *adapter);
-@@ -573,6 +576,15 @@ static int reset_tx_pools(struct ibmvnic_adapter *adapter)
+@@ -573,6 +573,15 @@ static int reset_tx_pools(struct ibmvnic_adapter *adapter)
  	return 0;
  }
  
 +static void release_vpd_data(struct ibmvnic_adapter *adapter)
 +{
-+	if(!adapter->vpd)
++	if (!adapter->vpd)
 +		return;
 +
 +	kfree(adapter->vpd->buff);
@@ -73,7 +68,7 @@ index d0cff28..120f3c0 100644
  static void release_tx_pools(struct ibmvnic_adapter *adapter)
  {
  	struct ibmvnic_tx_pool *tx_pool;
-@@ -753,6 +765,8 @@ static void release_resources(struct ibmvnic_adapter *adapter)
+@@ -753,6 +762,8 @@ static void release_resources(struct ibmvnic_adapter *adapter)
  {
  	int i;
  
@@ -82,47 +77,8 @@ index d0cff28..120f3c0 100644
  	release_tx_pools(adapter);
  	release_rx_pools(adapter);
  
-@@ -850,6 +864,10 @@ static int init_resources(struct ibmvnic_adapter *adapter)
- 	if (rc)
- 		return rc;
- 
-+	adapter->vpd = kzalloc(sizeof(struct ibmvnic_vpd), GFP_KERNEL);
-+	if (!adapter->vpd)
-+		return -ENOMEM;
-+
- 	adapter->map_id = 1;
- 	adapter->napi = kcalloc(adapter->req_rx_queues,
- 				sizeof(struct napi_struct), GFP_KERNEL);
-@@ -950,6 +968,10 @@ static int ibmvnic_open(struct net_device *netdev)
- 
- 	rc = __ibmvnic_open(netdev);
- 	netif_carrier_on(netdev);
-+
-+	/* Vital Product Data (VPD) */
-+	ibmvnic_get_vpd(adapter);
-+
- 	mutex_unlock(&adapter->reset_lock);
- 
+@@ -833,6 +844,53 @@ static int set_real_num_queues(struct net_device *netdev)
  	return rc;
-@@ -1878,11 +1900,15 @@ static int ibmvnic_get_link_ksettings(struct net_device *netdev,
- 	return 0;
- }
- 
--static void ibmvnic_get_drvinfo(struct net_device *dev,
-+static void ibmvnic_get_drvinfo(struct net_device *netdev,
- 				struct ethtool_drvinfo *info)
- {
-+	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
-+
- 	strlcpy(info->driver, ibmvnic_driver_name, sizeof(info->driver));
- 	strlcpy(info->version, IBMVNIC_DRIVER_VERSION, sizeof(info->version));
-+	strlcpy(info->fw_version, adapter->fw_version,
-+		sizeof(info->fw_version));
- }
- 
- static u32 ibmvnic_get_msglevel(struct net_device *netdev)
-@@ -2923,6 +2947,110 @@ static void send_login(struct ibmvnic_adapter *adapter)
- 	return;
  }
  
 +static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
@@ -172,8 +128,54 @@ index d0cff28..120f3c0 100644
 +	return 0;
 +}
 +
+ static int init_resources(struct ibmvnic_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+@@ -850,6 +908,10 @@ static int init_resources(struct ibmvnic_adapter *adapter)
+ 	if (rc)
+ 		return rc;
+ 
++	adapter->vpd = kzalloc(sizeof(*adapter->vpd), GFP_KERNEL);
++	if (!adapter->vpd)
++		return -ENOMEM;
++
+ 	adapter->map_id = 1;
+ 	adapter->napi = kcalloc(adapter->req_rx_queues,
+ 				sizeof(struct napi_struct), GFP_KERNEL);
+@@ -950,6 +1012,10 @@ static int ibmvnic_open(struct net_device *netdev)
+ 
+ 	rc = __ibmvnic_open(netdev);
+ 	netif_carrier_on(netdev);
++
++	/* Vital Product Data (VPD) */
++	ibmvnic_get_vpd(adapter);
++
+ 	mutex_unlock(&adapter->reset_lock);
+ 
+ 	return rc;
+@@ -1878,11 +1944,15 @@ static int ibmvnic_get_link_ksettings(struct net_device *netdev,
+ 	return 0;
+ }
+ 
+-static void ibmvnic_get_drvinfo(struct net_device *dev,
++static void ibmvnic_get_drvinfo(struct net_device *netdev,
+ 				struct ethtool_drvinfo *info)
+ {
++	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
++
+ 	strlcpy(info->driver, ibmvnic_driver_name, sizeof(info->driver));
+ 	strlcpy(info->version, IBMVNIC_DRIVER_VERSION, sizeof(info->version));
++	strlcpy(info->fw_version, adapter->fw_version,
++		sizeof(info->fw_version));
+ }
+ 
+ static u32 ibmvnic_get_msglevel(struct net_device *netdev)
+@@ -3076,6 +3146,63 @@ static void send_cap_queries(struct ibmvnic_adapter *adapter)
+ 	ibmvnic_send_crq(adapter, &crq);
+ }
+ 
 +static void handle_vpd_size_rsp(union ibmvnic_crq *crq,
-+				   struct ibmvnic_adapter *adapter)
++				struct ibmvnic_adapter *adapter)
 +{
 +	struct device *dev = &adapter->vdev->dev;
 +
@@ -189,7 +191,7 @@ index d0cff28..120f3c0 100644
 +}
 +
 +static void handle_vpd_rsp(union ibmvnic_crq *crq,
-+			      struct ibmvnic_adapter *adapter)
++			   struct ibmvnic_adapter *adapter)
 +{
 +	struct device *dev = &adapter->vdev->dev;
 +	char *substr = NULL, *ptr = NULL;
@@ -209,7 +211,7 @@ index d0cff28..120f3c0 100644
 +	 * located after the ASCII 'RM' substring in the buffer
 +	 */
 +	substr = strnstr(adapter->vpd->buff, "RM", adapter->vpd->len);
-+	if (substr == NULL) {
++	if (!substr) {
 +		dev_info(dev, "No FW level provided by VPD\n");
 +		complete(&adapter->fw_done);
 +		return;
@@ -220,7 +222,7 @@ index d0cff28..120f3c0 100644
 +
 +	/* copy firmware version string from vpd into adapter */
 +	ptr = strncpy((char *)adapter->fw_version,
-+			  substr + 3, fw_level_len);
++		      substr + 3, fw_level_len);
 +	if (!ptr) {
 +		dev_err(dev, "Failed to isolate FW level string\n");
 +		memset(adapter->fw_version, 0, 32);
@@ -229,10 +231,10 @@ index d0cff28..120f3c0 100644
 +	complete(&adapter->fw_done);
 +}
 +
- static void send_request_map(struct ibmvnic_adapter *adapter, dma_addr_t addr,
- 			     u32 len, u8 map_id)
+ static void handle_query_ip_offload_rsp(struct ibmvnic_adapter *adapter)
  {
-@@ -3807,6 +3939,12 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
+ 	struct device *dev = &adapter->vdev->dev;
+@@ -3807,6 +3934,12 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
  		netdev_dbg(netdev, "Got Collect firmware trace Response\n");
  		complete(&adapter->fw_done);
  		break;
