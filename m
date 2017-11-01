@@ -1,30 +1,35 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x22e.google.com (mail-io0-x22e.google.com
- [IPv6:2607:f8b0:4001:c06::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRxCb0q4NzDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 05:12:58 +1100 (AEDT)
-Received: by mail-io0-x22e.google.com with SMTP id i38so8024031iod.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 11:12:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRyCc3hsTzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 05:58:04 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA1Iusj2046266
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 14:58:01 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dyg4un0h1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 14:58:01 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 1 Nov 2017 14:58:00 -0400
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, John Allen
+ <jallen@linux.vnet.ibm.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Subject: [PATCH V6 0/2] pseries/nodes: Fix issues with memoryless nodes
+Date: Wed, 1 Nov 2017 13:57:57 -0500
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20171101165309.515688bc@canb.auug.org.au>
-References: <20171101165309.515688bc@canb.auug.org.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 1 Nov 2017 11:12:55 -0700
-Message-ID: <CAGXu5jKOOTsg4mAXRR3hHoeJ-RgvUhid9MQy=H0NL_KruHDbUg@mail.gmail.com>
-Subject: Re: linux-next: manual merge of the tip tree with the powerpc tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Peter Zijlstra <peterz@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Message-Id: <b7c79722-f4fb-05f5-74b9-98030fa31f38@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,73 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 31, 2017 at 10:53 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi all,
->
-> Today's linux-next merge of the tip tree got a conflict in:
->
->   arch/powerpc/mm/numa.c
->
-> between commit:
->
->   cee5405da402 ("powerpc/hotplug: Improve responsiveness of hotplug change")
->
-> from the powerpc tree and commit:
->
->   df7e828c1b69 ("timer: Remove init_timer_deferrable() in favor of timer_setup()")
->
-> from the tip tree.
->
-> I fixed it up (see below) and can carry the fix as necessary. This
-> is now fixed as far as linux-next is concerned, but any non trivial
-> conflicts should be mentioned to your upstream maintainer when your tree
-> is submitted for merging.  You may also want to consider cooperating
-> with the maintainer of the conflicting tree to minimise any particularly
-> complex conflicts.
->
-> --
-> Cheers,
-> Stephen Rothwell
->
-> diff --cc arch/powerpc/mm/numa.c
-> index eb604b3574fa,73016451f330..000000000000
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@@ -1506,9 -1466,7 +1505,7 @@@ static struct timer_list topology_timer
->
->   static void reset_topology_timer(void)
->   {
-> -       topology_timer.data = 0;
-> -       topology_timer.expires = jiffies + topology_timer_secs * HZ;
-> -       mod_timer(&topology_timer, topology_timer.expires);
->  -      mod_timer(&topology_timer, jiffies + 60 * HZ);
-> ++      mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
->   }
->
->   #ifdef CONFIG_SMP
-> @@@ -1561,13 -1520,14 +1558,14 @@@ int start_topology_update(void
->                         rc = of_reconfig_notifier_register(&dt_update_nb);
->   #endif
->                 }
->  -      } else if (firmware_has_feature(FW_FEATURE_VPHN) &&
->  +      }
->  +      if (firmware_has_feature(FW_FEATURE_VPHN) &&
->                    lppaca_shared_proc(get_lppaca())) {
->                 if (!vphn_enabled) {
->  -                      prrn_enabled = 0;
->                         vphn_enabled = 1;
->                         setup_cpu_associativity_change_counters();
-> -                       init_timer_deferrable(&topology_timer);
-> +                       timer_setup(&topology_timer, topology_timer_fn,
-> +                                   TIMER_DEFERRABLE);
->                         reset_topology_timer();
->                 }
->         }
+pseries/nodes: Ensure enough nodes avail for operations
 
-Thanks, this looks correct to me!
+pseries/initnodes: Ensure nodes initialized for hotplug
 
--Kees
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
--- 
-Kees Cook
-Pixel Security
+Michael Bringmann (2):
+  pseries/nodes: Ensure enough nodes avail for operations
+  pseries/initnodes: Ensure nodes initialized for hotplug
+---
+Changes in V6:
+  -- Remove some node initialization/allocation from boot setup
+  -- Add some needed node initialization to runtime code that maps
+     CPUs based on VPHN associativity
+  -- Add error checks and alternate recovery for compile flag
+     CONFIG_MEMORY_HOTPLUG
+  -- Add alternate node selection recovery for !CONFIG_MEMORY_HOTPLUG
