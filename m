@@ -1,19 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRdLy4Nt7zDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 17:18:17 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id vA16I6co003575
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 01:18:08 -0500
-Message-ID: <1509517085.2780.11.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc/xive: Remove incorrect debug code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 01 Nov 2017 17:18:05 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRdpG38PpzDqvq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 17:38:29 +1100 (AEDT)
+Received: by mail-io0-x243.google.com with SMTP id m81so3929939ioi.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 23:38:29 -0700 (PDT)
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda: Relax max DMA window size
+ check
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>,
+ Nicholas Piggin <npiggin@gmail.com>, Jonas Pfefferle1 <JPF@zurich.ibm.com>
+References: <20171031040427.10909-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <fd1a289f-6698-0b84-eab8-d4c67290bea8@ozlabs.ru>
+Date: Wed, 1 Nov 2017 17:38:20 +1100
+MIME-Version: 1.0
+In-Reply-To: <20171031040427.10909-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-WORD2 if the TIMA isn't byte accessible and isn't that useful to
-know about, take out the pr_devel statement.
+On 31/10/17 15:04, Alexey Kardashevskiy wrote:
+> DMA windows can only have a size of power of two on IODA2 hardware and
+> using memory_hotplug_max() to determine the upper limit won't work
+> correcly if it returns not power of two value.
+> 
+> This relaxes the check by rounding up the value returned by
+> memory_hotplug_max().
+> 
+> It is expected to impact DPDK on machines with non-power-of-two RAM size,
+> mostly. KVM guests are less likely to be affected as usually guests get
+> less than half of hosts RAM.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/sysdev/xive/common.c | 5 -----
- 1 file changed, 5 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index a3b8d7d1316e..838ebdbfe4c5 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1269,11 +1269,6 @@ static void xive_setup_cpu(void)
- {
- 	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
- 
--	/* Debug: Dump the TM state */
--	pr_devel("CPU %d [HW 0x%02x] VT=%02x\n",
--	    smp_processor_id(), hard_smp_processor_id(),
--	    in_8(xive_tima + xive_tima_offset + TM_WORD2));
--
- 	/* The backend might have additional things to do */
- 	if (xive_ops->setup_cpu)
- 		xive_ops->setup_cpu(smp_processor_id(), xc);
+It was pointed out that this check is quite useless anyway as the vm_locked
+memory limit should hit first, and if that is not set or the user got the
+root privilege level, then there are easier ways to crash the host so I am
+thinking of:
+
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 269f119e4b3c..a47e4cf343b2 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2769,7 +2769,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid,
+__u64 bus_offset,
+        if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+                return -EINVAL;
+
+-       if ((window_size > memory_hotplug_max()) ||
+!is_power_of_2(window_size))
++       if (!is_power_of_2(window_size))
+                return -EINVAL;
+
+
+
+Makes sense?
+
+
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 269f119e4b3c..4c62162da181 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2769,7 +2769,8 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+>  	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+>  		return -EINVAL;
+>  
+> -	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
+> +	if ((window_size > roundup_pow_of_two(memory_hotplug_max())) ||
+> +			!is_power_of_2(window_size))
+>  		return -EINVAL;
+>  
+>  	/* Adjust direct table size from window_size and levels */
+> 
+
+
 -- 
-2.13.6
+Alexey
