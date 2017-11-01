@@ -1,22 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRcnx68QzzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 16:53:09 +1100 (AEDT)
-Date: Wed, 1 Nov 2017 16:53:09 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H.
- Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, Michael Bringmann
- <mwb@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>
-Subject: linux-next: manual merge of the tip tree with the powerpc tree
-Message-ID: <20171101165309.515688bc@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRdLy4Nt7zDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 17:18:17 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id vA16I6co003575
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 01:18:08 -0500
+Message-ID: <1509517085.2780.11.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/xive: Remove incorrect debug code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 01 Nov 2017 17:18:05 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+WORD2 if the TIMA isn't byte accessible and isn't that useful to
+know about, take out the pr_devel statement.
 
-Today's linux-next merge of the tip tree got a conflict in:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/xive/common.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-  arch/powerpc/mm/numa.c
-
-between commit:
-
-  cee5405da402 ("powerpc/hotplug: Improve responsiveness of hotplug change")
-
-from the powerpc tree and commit:
-
-  df7e828c1b69 ("timer: Remove init_timer_deferrable() in favor of timer_setup()")
-
-from the tip tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index a3b8d7d1316e..838ebdbfe4c5 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1269,11 +1269,6 @@ static void xive_setup_cpu(void)
+ {
+ 	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+ 
+-	/* Debug: Dump the TM state */
+-	pr_devel("CPU %d [HW 0x%02x] VT=%02x\n",
+-	    smp_processor_id(), hard_smp_processor_id(),
+-	    in_8(xive_tima + xive_tima_offset + TM_WORD2));
+-
+ 	/* The backend might have additional things to do */
+ 	if (xive_ops->setup_cpu)
+ 		xive_ops->setup_cpu(smp_processor_id(), xc);
 -- 
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/mm/numa.c
-index eb604b3574fa,73016451f330..000000000000
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@@ -1506,9 -1466,7 +1505,7 @@@ static struct timer_list topology_timer
-  
-  static void reset_topology_timer(void)
-  {
-- 	topology_timer.data = 0;
-- 	topology_timer.expires = jiffies + topology_timer_secs * HZ;
-- 	mod_timer(&topology_timer, topology_timer.expires);
- -	mod_timer(&topology_timer, jiffies + 60 * HZ);
-++	mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
-  }
-  
-  #ifdef CONFIG_SMP
-@@@ -1561,13 -1520,14 +1558,14 @@@ int start_topology_update(void
-  			rc = of_reconfig_notifier_register(&dt_update_nb);
-  #endif
-  		}
- -	} else if (firmware_has_feature(FW_FEATURE_VPHN) &&
- +	}
- +	if (firmware_has_feature(FW_FEATURE_VPHN) &&
-  		   lppaca_shared_proc(get_lppaca())) {
-  		if (!vphn_enabled) {
- -			prrn_enabled = 0;
-  			vphn_enabled = 1;
-  			setup_cpu_associativity_change_counters();
-- 			init_timer_deferrable(&topology_timer);
-+ 			timer_setup(&topology_timer, topology_timer_fn,
-+ 				    TIMER_DEFERRABLE);
-  			reset_topology_timer();
-  		}
-  	}
+2.13.6
