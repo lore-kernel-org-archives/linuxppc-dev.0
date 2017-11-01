@@ -1,25 +1,27 @@
-Return-Path: <mbenes@suse.cz>
+Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRs4M0WtLzDr4H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 02:06:25 +1100 (AEDT)
-Date: Wed, 1 Nov 2017 16:06:19 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: jpoimboe@redhat.com, jeyu@kernel.org, jikos@kernel.org
-cc: pmladek@suse.com, lpechacek@suse.cz, pavel@ucw.cz,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- Oleg Nesterov <oleg@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRsF35zX9zDr4H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 02:13:59 +1100 (AEDT)
+Date: Wed, 1 Nov 2017 16:13:55 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: jpoimboe@redhat.com, jeyu@kernel.org, jikos@kernel.org,
+ lpechacek@suse.cz, pavel@ucw.cz, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
 Subject: Re: [PATCH v3 1/2] livepatch: send a fake signal to all blocking tasks
-In-Reply-To: <20171031114853.841-2-mbenes@suse.cz>
-Message-ID: <alpine.LSU.2.21.1711011602370.7846@san.suse.cz>
+Message-ID: <20171101151355.GG20040@pathway.suse.cz>
 References: <20171031114853.841-1-mbenes@suse.cz>
  <20171031114853.841-2-mbenes@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171031114853.841-2-mbenes@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,7 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
+On Tue 2017-10-31 12:48:52, Miroslav Benes wrote:
+> Live patching consistency model is of LEAVE_PATCHED_SET and
+> SWITCH_THREAD. This means that all tasks in the system have to be marked
+> one by one as safe to call a new patched function. Safe means when a
+> task is not (sleeping) in a set of patched functions. That is, no
+> patched function is on the task's stack. Another clearly safe place is
+> the boundary between kernel and userspace. The patching waits for all
+> tasks to get outside of the patched set or to cross the boundary. The
+> transition is completed afterwards.
+> 
+> The problem is that a task can block the transition for quite a long
+> time, if not forever. It could sleep in a set of patched functions, for
+> example.  Luckily we can force the task to leave the set by sending it a
+> fake signal, that is a signal with no data in signal pending structures
+> (no handler, no sign of proper signal delivered). Suspend/freezer use
+> this to freeze the tasks as well. The task gets TIF_SIGPENDING set and
+> is woken up (if it has been sleeping in the kernel before) or kicked by
+> rescheduling IPI (if it was running on other CPU). This causes the task
+> to go to kernel/userspace boundary where the signal would be handled and
+> the task would be marked as safe in terms of live patching.
+> 
+> diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
+> index b004a1fb6032..6700d3b22615 100644
+> --- a/kernel/livepatch/transition.c
+> +++ b/kernel/livepatch/transition.c
+> @@ -577,3 +577,43 @@ void klp_copy_process(struct task_struct *child)
+>  
+>  	/* TIF_PATCH_PENDING gets copied in setup_thread_stack() */
+>  }
+> +
 > +/*
 > + * Sends a fake signal to all non-kthread tasks with TIF_PATCH_PENDING set.
 > + * Kthreads with TIF_PATCH_PENDING set are woken up. Only admin can request this
@@ -58,26 +89,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > +			 */
 > +			wake_up_process(task);
 
-So this is not as safe as one would hope. It tries to wake all TASK_NORMAL 
-tasks, which could cause headaches. Let's make it
+I have just noticed that freezer used wake_up_state(p, TASK_INTERRUPTIBLE);
+IMHO, we should do so as well.
 
-			wake_up_state(task, TASK_INTERRUPTIBLE);
+wake_up_process() wakes also tasks in TASK_UNINTERRUPTIBLE state.
+These might not be ready for an unexpected wakeup. For example,
+see concat_dev_erase() in drivers/mtd/mtdcontact.c.
 
-to wake only kthreads sleeping interruptedly.
+With this change, feel free to use
 
-Thanks Petr for spotting this (offline).
+Reviewed-by: Petr Mladek <pmladek@suse.com>
 
-Miroslav
-
-> +		} else {
-> +			/*
-> +			 * Send fake signal to all non-kthread tasks which are
-> +			 * still not migrated.
-> +			 */
-> +			spin_lock_irq(&task->sighand->siglock);
-> +			signal_wake_up(task, 0);
-> +			spin_unlock_irq(&task->sighand->siglock);
-> +		}
-> +	}
-> +	read_unlock(&tasklist_lock);
-> +}
+Best Regards,
+Petr
