@@ -1,23 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRq8w0pWrzDr4H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 00:40:15 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id g6so2146588pgn.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 06:40:15 -0700 (PDT)
-Date: Thu, 2 Nov 2017 00:39:56 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/7] powerpc/64s/radix TLB flush performance
- improvements
-Message-ID: <20171102003956.6cbeded3@roar.ozlabs.ibm.com>
-In-Reply-To: <c9c80f5a-9a53-1b7b-99c8-b40049355722@linux.vnet.ibm.com>
-References: <20171031064504.25245-1-npiggin@gmail.com>
- <c9c80f5a-9a53-1b7b-99c8-b40049355722@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRs4M0WtLzDr4H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 02:06:25 +1100 (AEDT)
+Date: Wed, 1 Nov 2017 16:06:19 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: jpoimboe@redhat.com, jeyu@kernel.org, jikos@kernel.org
+cc: pmladek@suse.com, lpechacek@suse.cz, pavel@ucw.cz,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v3 1/2] livepatch: send a fake signal to all blocking tasks
+In-Reply-To: <20171031114853.841-2-mbenes@suse.cz>
+Message-ID: <alpine.LSU.2.21.1711011602370.7846@san.suse.cz>
+References: <20171031114853.841-1-mbenes@suse.cz>
+ <20171031114853.841-2-mbenes@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,30 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Nov 2017 17:35:51 +0530
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-> On 10/31/2017 12:14 PM, Nicholas Piggin wrote:
-> > Here's a random mix of performance improvements for radix TLB flushing
-> > code. The main aims are to reduce the amount of translation that gets
-> > invalidated, and to reduce global flushes where we can do local.
-> > 
-> > To that end, a parallel kernel compile benchmark using powerpc:tlbie
-> > tracepoint shows a reduction in tlbie instructions from about 290,000
-> > to 80,000, and a reduction in tlbiel instructions from 49,500,000 to
-> > 15,000,000. Looks great, but unfortunately does not translate to a
-> > statistically significant performance improvement! The needle on TLB
-> > misses does not move much, I suspect because a lot of the flushing is
-> > done a startup and shutdown, and because a significant cost of TLB
-> > flushing itself is in the barriers.  
-> 
-> Does memory barrier initiate a single global invalidation with tlbie ?
-> 
+> +/*
+> + * Sends a fake signal to all non-kthread tasks with TIF_PATCH_PENDING set.
+> + * Kthreads with TIF_PATCH_PENDING set are woken up. Only admin can request this
+> + * action currently.
+> + */
+> +void klp_force_signals(void)
+> +{
+> +	struct task_struct *g, *task;
+> +
+> +	pr_notice("signaling remaining tasks\n");
+> +
+> +	read_lock(&tasklist_lock);
+> +	for_each_process_thread(g, task) {
+> +		if (!klp_patch_pending(task))
+> +			continue;
+> +
+> +		/*
+> +		 * There is a small race here. We could see TIF_PATCH_PENDING
+> +		 * set and decide to wake up a kthread or send a fake signal.
+> +		 * Meanwhile the task could migrate itself and the action
+> +		 * would be meaningless. It is not serious though.
+> +		 */
+> +		if (task->flags & PF_KTHREAD) {
+> +			/*
+> +			 * Wake up a kthread which still has not been migrated.
+> +			 */
+> +			wake_up_process(task);
 
-I'm not quite sure what you're asking, and I don't know the details
-of how the hardware handles it, but from the measurements in patch
-1 of the series we can see there is a benefit for both tlbie and
-tlbiel of batching them up between barriers.
+So this is not as safe as one would hope. It tries to wake all TASK_NORMAL 
+tasks, which could cause headaches. Let's make it
 
-Thanks,
-Nick
+			wake_up_state(task, TASK_INTERRUPTIBLE);
+
+to wake only kthreads sleeping interruptedly.
+
+Thanks Petr for spotting this (offline).
+
+Miroslav
+
+> +		} else {
+> +			/*
+> +			 * Send fake signal to all non-kthread tasks which are
+> +			 * still not migrated.
+> +			 */
+> +			spin_lock_irq(&task->sighand->siglock);
+> +			signal_wake_up(task, 0);
+> +			spin_unlock_irq(&task->sighand->siglock);
+> +		}
+> +	}
+> +	read_unlock(&tasklist_lock);
+> +}
