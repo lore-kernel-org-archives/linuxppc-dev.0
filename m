@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRkgL5KWCzDr5Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 21:17:50 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRkgN5VwLzDr4S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 21:17:52 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA1AFYcA128029
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 06:17:48 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dyaq8cwkg-1
+ vA1AHk3a123881
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 06:17:50 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dycb287be-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 06:17:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 06:17:50 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 1 Nov 2017 10:17:45 -0000
+ Wed, 1 Nov 2017 10:17:48 -0000
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
-Subject: [RFC 1/2] mm/tlbbatch: Introduce arch_tlbbatch_should_defer()
-Date: Wed,  1 Nov 2017 15:47:34 +0530
+Subject: [RFC 2/2] powerpc/mm: Enable deferred flushing of TLB during reclaim
+Date: Wed,  1 Nov 2017 15:47:35 +0530
 In-Reply-To: <20171101101735.2318-1-khandual@linux.vnet.ibm.com>
 References: <20171101101735.2318-1-khandual@linux.vnet.ibm.com>
-Message-Id: <20171101101735.2318-2-khandual@linux.vnet.ibm.com>
+Message-Id: <20171101101735.2318-3-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,64 +35,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The entire scheme of deferred TLB flush in reclaim path rests on the
-fact that the cost to refill TLB entries is less than flushing out
-individual entries by sending IPI to remote CPUs. But architecture
-can have different ways to evaluate that. Hence apart from checking
-TTU_BATCH_FLUSH in the TTU flags, rest of the decision should be
-architecture specific.
+Deferred flushing can only be enabled on POWER9 DD2.0 processor onwards.
+Because prior versions of POWER9 and previous hash table based POWER
+processors will do TLB flushing in pte_get_and_clear() function itself
+which then prevents batching and eventual flush completion later on.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/x86/include/asm/tlbflush.h | 12 ++++++++++++
- mm/rmap.c                       |  9 +--------
- 2 files changed, 13 insertions(+), 8 deletions(-)
+ arch/powerpc/Kconfig                |  1 +
+ arch/powerpc/include/asm/tlbbatch.h | 30 +++++++++++++++++++++++
+ arch/powerpc/include/asm/tlbflush.h |  3 +++
+ arch/powerpc/mm/tlb-radix.c         | 49 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 83 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/tlbbatch.h
 
-diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-index c4aed0d..5875f2c 100644
---- a/arch/x86/include/asm/tlbflush.h
-+++ b/arch/x86/include/asm/tlbflush.h
-@@ -366,6 +366,18 @@ static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
- void native_flush_tlb_others(const struct cpumask *cpumask,
- 			     const struct flush_tlb_info *info);
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 809c468..f06b565 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -230,6 +230,7 @@ config PPC
+ 	select SPARSE_IRQ
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select VIRT_TO_BUS			if !PPC64
++	select ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH if (PPC64 && PPC_BOOK3S)
+ 	#
+ 	# Please keep this list sorted alphabetically.
+ 	#
+diff --git a/arch/powerpc/include/asm/tlbbatch.h b/arch/powerpc/include/asm/tlbbatch.h
+new file mode 100644
+index 0000000..fc762ef
+--- /dev/null
++++ b/arch/powerpc/include/asm/tlbbatch.h
+@@ -0,0 +1,30 @@
++#ifndef _ARCH_POWERPC_TLBBATCH_H
++#define _ARCH_POWERPC_TLBBATCH_H
++
++#include <linux/spinlock.h>
++
++#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
++
++#define MAX_BATCHED_MM 1024
++
++struct arch_tlbflush_unmap_batch {
++	/*
++	 * Each bit set is a CPU that potentially has a
++	 * TLB entry for one of the PFN being flushed.
++	 * This represents whether all deferred struct
++	 * mm will be flushed for any given CPU.
++	 */
++	struct cpumask cpumask;
++
++	/* All the deferred struct mm */
++	struct mm_struct *mm[MAX_BATCHED_MM];
++	unsigned long int nr_mm;
++	
++};
++
++extern bool arch_tlbbatch_should_defer(struct mm_struct *mm);
++extern void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch);
++extern void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
++					struct mm_struct *mm);
++#endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
++#endif /* _ARCH_POWERPC_TLBBATCH_H */
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 13dbcd4..2041923 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -20,6 +20,9 @@
+  */
+ #ifdef __KERNEL__
  
-+static inline void arch_tlbbatch_should_defer(struct mm_struct *mm)
++#include <linux/sched.h>
++#include <linux/mm_types.h>
++
+ #ifdef CONFIG_PPC_MMU_NOHASH
+ /*
+  * TLB flushing for software loaded TLB chips
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index b3e849c..506e7ed 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -12,6 +12,8 @@
+ #include <linux/mm.h>
+ #include <linux/hugetlb.h>
+ #include <linux/memblock.h>
++#include <linux/mutex.h>
++#include <linux/smp.h>
+ 
+ #include <asm/ppc-opcode.h>
+ #include <asm/tlb.h>
+@@ -519,3 +521,50 @@ extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
+ }
+ EXPORT_SYMBOL_GPL(radix_kvm_prefetch_workaround);
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
++
++#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
++static void clear_tlb(void *data)
 +{
-+	bool should_defer = false;
++	struct arch_tlbflush_unmap_batch *batch = data;
++	int i;
 +
-+	/* If remote CPUs need to be flushed then defer batch the flush */
-+	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
-+		should_defer = true;
-+	put_cpu();
++	WARN_ON(!radix_enabled() || cpu_has_feature(CPU_FTR_POWER9_DD1));
 +
-+	return should_defer;
++	for (i = 0; i < batch->nr_mm; i++) {
++		if (batch->mm[i])
++			radix__local_flush_tlb_mm(batch->mm[i]);
++	}
 +}
 +
- static inline void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
- 					struct mm_struct *mm)
- {
-diff --git a/mm/rmap.c b/mm/rmap.c
-index b874c47..bfbfe92 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -627,17 +627,10 @@ static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-  */
- static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
- {
--	bool should_defer = false;
--
- 	if (!(flags & TTU_BATCH_FLUSH))
- 		return false;
- 
--	/* If remote CPUs need to be flushed then defer batch the flush */
--	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
--		should_defer = true;
--	put_cpu();
--
--	return should_defer;
-+	return arch_tlbbatch_should_defer(mm);
- }
- 
- /*
++void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch)
++{
++	WARN_ON(!radix_enabled() || cpu_has_feature(CPU_FTR_POWER9_DD1));
++
++	smp_call_function_many(&batch->cpumask, (void *)clear_tlb, batch, 1);
++	batch->nr_mm = 0;
++	cpumask_clear(&batch->cpumask);
++}
++
++void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch, struct mm_struct *mm)
++{
++	WARN_ON(!radix_enabled() || cpu_has_feature(CPU_FTR_POWER9_DD1));
++
++	++batch->nr_mm;
++	if (batch->nr_mm != MAX_BATCHED_MM)
++		batch->mm[batch->nr_mm] = mm;
++	else
++		pr_err("Deferred TLB flush: missed a struct mm\n");
++	cpumask_or(&batch->cpumask, &batch->cpumask, mm_cpumask(mm));
++}
++
++bool arch_tlbbatch_should_defer(struct mm_struct *mm)
++{
++	if (!radix_enabled() || cpu_has_feature(CPU_FTR_POWER9_DD1))
++		return false;
++
++	if (!mm_is_thread_local(mm))
++		return true;
++
++	return false;
++}
++#endif
 -- 
 1.8.3.1
