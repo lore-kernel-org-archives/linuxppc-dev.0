@@ -1,24 +1,17 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRdpG38PpzDqvq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 17:38:29 +1100 (AEDT)
-Received: by mail-io0-x243.google.com with SMTP id m81so3929939ioi.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Oct 2017 23:38:29 -0700 (PDT)
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda: Relax max DMA window size
- check
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>,
- Nicholas Piggin <npiggin@gmail.com>, Jonas Pfefferle1 <JPF@zurich.ibm.com>
-References: <20171031040427.10909-1-aik@ozlabs.ru>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <fd1a289f-6698-0b84-eab8-d4c67290bea8@ozlabs.ru>
-Date: Wed, 1 Nov 2017 17:38:20 +1100
+Return-Path: <julien.thierry@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yRjMR06PjzDr4H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 20:18:56 +1100 (AEDT)
+Subject: Re: [Patch v10] QE: remove PPCisms for QE
+To: Zhao Qiang <qiang.zhao@nxp.com>, oss@buserror.net
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+References: <20171101020133.27966-1-qiang.zhao@nxp.com>
+From: Julien Thierry <julien.thierry@arm.com>
+Message-ID: <b9a491c9-c7f9-3062-8c85-468c1a94ba0d@arm.com>
+Date: Wed, 1 Nov 2017 09:18:49 +0000
 MIME-Version: 1.0
-In-Reply-To: <20171031040427.10909-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20171101020133.27966-1-qiang.zhao@nxp.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31/10/17 15:04, Alexey Kardashevskiy wrote:
-> DMA windows can only have a size of power of two on IODA2 hardware and
-> using memory_hotplug_max() to determine the upper limit won't work
-> correcly if it returns not power of two value.
+Hi Zhao,
+
+I just noticed a small nit.
+
+On 01/11/17 02:01, Zhao Qiang wrote:
+> QE was supported on PowerPC, and dependent on PPC,
+> Now it is supported on other platforms. so remove PPCisms.
 > 
-> This relaxes the check by rounding up the value returned by
-> memory_hotplug_max().
-> 
-> It is expected to impact DPDK on machines with non-power-of-two RAM size,
-> mostly. KVM guests are less likely to be affected as usually guests get
-> less than half of hosts RAM.
-
-
-It was pointed out that this check is quite useless anyway as the vm_locked
-memory limit should hit first, and if that is not set or the user got the
-root privilege level, then there are easier ways to crash the host so I am
-thinking of:
-
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 269f119e4b3c..a47e4cf343b2 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2769,7 +2769,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid,
-__u64 bus_offset,
-        if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
-                return -EINVAL;
-
--       if ((window_size > memory_hotplug_max()) ||
-!is_power_of_2(window_size))
-+       if (!is_power_of_2(window_size))
-                return -EINVAL;
-
-
-
-Makes sense?
-
-
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 > ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> Changes for v2:
+> 	- na
+> Changes for v3:
+> 	- add NO_IRQ
+> Changes for v4:
+> 	- modify spin_event_timeout to opencoded timeout loop
+> 	- remove NO_IRQ
+> 	- modify virq_to_hw to opencoed code
+> Changes for v5:
+> 	- modify commit msg
+> 	- modify depends of QUICC_ENGINE
+> 	- add kerneldoc header for qe_issue_cmd
+> Changes for v6:
+> 	- add dependency on FSL_SOC and PPC32 for drivers
+> 	  depending on QUICC_ENGING but not available on ARM
+> Changes for v7:
+> 	- split qeic part to another patch
+> 	- rebase
+> Changes for v8:
+> 	- include <asm/cpm.h> in ucc_uart
+> Changes for v9:
+> 	- fix cast warning
+> Changes for v10:
+> 	- rebase
 > 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 269f119e4b3c..4c62162da181 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2769,7 +2769,8 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
->  	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
->  		return -EINVAL;
->  
-> -	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
-> +	if ((window_size > roundup_pow_of_two(memory_hotplug_max())) ||
-> +			!is_power_of_2(window_size))
->  		return -EINVAL;
->  
->  	/* Adjust direct table size from window_size and levels */
+>   drivers/net/ethernet/freescale/Kconfig | 11 ++---
+>   drivers/soc/fsl/qe/Kconfig             |  2 +-
+>   drivers/soc/fsl/qe/qe.c                | 82 +++++++++++++++++++++-------------
+>   drivers/soc/fsl/qe/qe_io.c             | 42 ++++++++---------
+>   drivers/soc/fsl/qe/qe_tdm.c            |  8 ++--
+>   drivers/soc/fsl/qe/ucc.c               | 10 ++---
+>   drivers/soc/fsl/qe/ucc_fast.c          | 74 +++++++++++++++---------------
+>   drivers/tty/serial/Kconfig             |  2 +-
+>   drivers/tty/serial/ucc_uart.c          |  1 +
+>   drivers/usb/gadget/udc/Kconfig         |  2 +-
+>   drivers/usb/host/Kconfig               |  2 +-
+>   include/soc/fsl/qe/qe.h                |  1 -
+>   12 files changed, 126 insertions(+), 111 deletions(-)
 > 
 
+[...]
+
+> diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+> index 2ef6fc6487c1..1d695870ea9e 100644
+> --- a/drivers/soc/fsl/qe/qe.c
+> +++ b/drivers/soc/fsl/qe/qe.c
+
+[...]
+
+> @@ -132,20 +142,26 @@ int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input)
+>   				mcn_shift = QE_CR_MCN_NORMAL_SHIFT;
+>   		}
+>   
+> -		out_be32(&qe_immr->cp.cecdr, cmd_input);
+> -		out_be32(&qe_immr->cp.cecr,
+> -			 (cmd | QE_CR_FLG | ((u32) device << dev_shift) | (u32)
+> -			  mcn_protocol << mcn_shift));
+> +		iowrite32be(cmd_input, &qe_immr->cp.cecdr);
+> +		iowrite32be((cmd | QE_CR_FLG | ((u32)device << dev_shift) |
+> +			    (u32)mcn_protocol << mcn_shift), &qe_immr->cp.cecr);
+>   	}
+>   
+>   	/* wait for the QE_CR_FLG to clear */
+> -	ret = spin_event_timeout((in_be32(&qe_immr->cp.cecr) & QE_CR_FLG) == 0,
+> -			   100, 0);
+> +	ret = -EIO;
+> +	for (i = 0; i < 100; i++) {
+> +		if ((ioread32be(&qe_immr->cp.cecr) & QE_CR_FLG) == 0) {
+> +			ret = 0;
+> +			break;
+> +		}
+> +		udelay(1);
+> +	}
+> +
+>   	/* On timeout (e.g. failure), the expression will be false (ret == 0),
+>   	   otherwise it will be true (ret == 1). */
+
+nit:
+The comment here is no longer valid, on timeout ret == -EIO and on 
+success 0. It should probably be removed to avoid confusion.
+
+Cheers,
 
 -- 
-Alexey
+Julien Thierry
