@@ -1,18 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRc144HKHzDr4P
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 16:17:44 +1100 (AEDT)
-In-Reply-To: <20171025071653.GB25140@fergus.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nick Piggin <npiggin@au1.ibm.com>,
- Markus Trippelsdorf <markus@trippelsdorf.de>
-Subject: Re: powerpc: Fix check for copy/paste instructions in alignment
- handler
-Message-Id: <3yRc1333nsz9t3C@ozlabs.org>
-Date: Wed,  1 Nov 2017 16:17:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRcnx68QzzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 16:53:09 +1100 (AEDT)
+Date: Wed, 1 Nov 2017 16:53:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H.
+ Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Michael Bringmann
+ <mwb@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>
+Subject: linux-next: manual merge of the tip tree with the powerpc tree
+Message-ID: <20171101165309.515688bc@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-10-25 at 07:16:53 UTC, Paul Mackerras wrote:
-> Commit 07d2a628bc00 ("powerpc/64s: Avoid cpabort in context switch
-> when possible", 2017-06-09) changed the definition of PPC_INST_COPY
-> and in so doing inadvertently broke the check for copy/paste
-> instructions in the alignment fault handler.  The check currently
-> matches no instructions.
-> 
-> This fixes it by ANDing both sides of the comparison with the mask.
-> 
-> Fixes: 07d2a628bc00 ("powerpc/64s: Avoid cpabort in context switch
-> when possible")
-> Reported-by: Markus Trippelsdorf <markus@trippelsdorf.de>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Hi all,
 
-Applied to powerpc fixes, thanks.
+Today's linux-next merge of the tip tree got a conflict in:
 
-https://git.kernel.org/powerpc/c/158f19698b594eb8a1bdf7d7937617
+  arch/powerpc/mm/numa.c
 
-cheers
+between commit:
+
+  cee5405da402 ("powerpc/hotplug: Improve responsiveness of hotplug change")
+
+from the powerpc tree and commit:
+
+  df7e828c1b69 ("timer: Remove init_timer_deferrable() in favor of timer_setup()")
+
+from the tip tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+-- 
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/mm/numa.c
+index eb604b3574fa,73016451f330..000000000000
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@@ -1506,9 -1466,7 +1505,7 @@@ static struct timer_list topology_timer
+  
+  static void reset_topology_timer(void)
+  {
+- 	topology_timer.data = 0;
+- 	topology_timer.expires = jiffies + topology_timer_secs * HZ;
+- 	mod_timer(&topology_timer, topology_timer.expires);
+ -	mod_timer(&topology_timer, jiffies + 60 * HZ);
+++	mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
+  }
+  
+  #ifdef CONFIG_SMP
+@@@ -1561,13 -1520,14 +1558,14 @@@ int start_topology_update(void
+  			rc = of_reconfig_notifier_register(&dt_update_nb);
+  #endif
+  		}
+ -	} else if (firmware_has_feature(FW_FEATURE_VPHN) &&
+ +	}
+ +	if (firmware_has_feature(FW_FEATURE_VPHN) &&
+  		   lppaca_shared_proc(get_lppaca())) {
+  		if (!vphn_enabled) {
+ -			prrn_enabled = 0;
+  			vphn_enabled = 1;
+  			setup_cpu_associativity_change_counters();
+- 			init_timer_deferrable(&topology_timer);
++ 			timer_setup(&topology_timer, topology_timer_fn,
++ 				    TIMER_DEFERRABLE);
+  			reset_topology_timer();
+  		}
+  	}
