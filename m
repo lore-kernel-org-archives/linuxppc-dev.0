@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yRc13149nzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 16:17:43 +1100 (AEDT)
-In-Reply-To: <20171024130654.1223-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yRc144HKHzDr4P
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Nov 2017 16:17:44 +1100 (AEDT)
+In-Reply-To: <20171025071653.GB25140@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v2,1/3] powerpc/64s/radix: fix preempt imbalance in TLB flush
-Message-Id: <3yRc125yzlz9t3r@ozlabs.org>
-Date: Wed,  1 Nov 2017 16:17:42 +1100 (AEDT)
+Cc: Nick Piggin <npiggin@au1.ibm.com>,
+ Markus Trippelsdorf <markus@trippelsdorf.de>
+Subject: Re: powerpc: Fix check for copy/paste instructions in alignment
+ handler
+Message-Id: <3yRc1333nsz9t3C@ozlabs.org>
+Date: Wed,  1 Nov 2017 16:17:43 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,12 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-24 at 13:06:52 UTC, Nicholas Piggin wrote:
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Wed, 2017-10-25 at 07:16:53 UTC, Paul Mackerras wrote:
+> Commit 07d2a628bc00 ("powerpc/64s: Avoid cpabort in context switch
+> when possible", 2017-06-09) changed the definition of PPC_INST_COPY
+> and in so doing inadvertently broke the check for copy/paste
+> instructions in the alignment fault handler.  The check currently
+> matches no instructions.
+> 
+> This fixes it by ANDing both sides of the comparison with the mask.
+> 
+> Fixes: 07d2a628bc00 ("powerpc/64s: Avoid cpabort in context switch
+> when possible")
+> Reported-by: Markus Trippelsdorf <markus@trippelsdorf.de>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/26e53d5ebe2e2a5ff7343e820f0ffd
+https://git.kernel.org/powerpc/c/158f19698b594eb8a1bdf7d7937617
 
 cheers
