@@ -1,50 +1,37 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aarcange@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySX6H6FWvzDr6D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 04:25:27 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA2HP1pV020526
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 13:25:24 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e074uj6tn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 13:25:23 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 2 Nov 2017 17:25:21 -0000
-Subject: Re: [PATCH v5 07/22] mm: Protect VMA modifications using VMA sequence
- count
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySbkj35fvzDr8Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 07:08:45 +1100 (AEDT)
+Date: Thu, 2 Nov 2017 21:08:40 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
  mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
  Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Alexei Starovoitov <alexei.starovoitov@gmail.com>,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
  npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v5 07/22] mm: Protect VMA modifications using VMA
+ sequence count
+Message-ID: <20171102200840.GC22686@redhat.com>
 References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
  <1507729966-10660-8-git-send-email-ldufour@linux.vnet.ibm.com>
  <20171026101833.GF563@redhat.com>
  <2cbea37c-c2a7-bfd4-4528-fd273b210e29@linux.vnet.ibm.com>
-Date: Thu, 2 Nov 2017 18:25:11 +0100
+ <ae35f020-3898-3f86-6d22-53b399d591be@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <2cbea37c-c2a7-bfd4-4528-fd273b210e29@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <ae35f020-3898-3f86-6d22-53b399d591be@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ae35f020-3898-3f86-6d22-53b399d591be@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,129 +41,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Nov 02, 2017 at 06:25:11PM +0100, Laurent Dufour wrote:
+> I think there is some memory barrier missing when the VMA is modified so
+> currently the modifications done in the VMA structure may not be written
+> down at the time the pte is locked. So doing that change will also requires
+> to call smp_wmb() before locking the page tables. In the current patch this
+> is ensured by the call to write_seqcount_end().
+> Doing so will still require to have a memory barrier when touching the VMA.
+> Not sure we get far better performance compared to the sequence count
+> change. But I'll give it a try anyway ;)
 
+Luckily smp_wmb is a noop on x86. I would suggest to ignore the above
+issue completely if you give it a try, and then if this performs, we
+can just embed a smp_wmb() before spin_lock() somewhere in
+pte_offset_map_lock/pte_lockptr/spin_lock_nested for those archs whose
+spin_lock isn't a smp_wmb() equivalent. I would focus at flushing
+writes before every pagetable spin_lock for non-x86 archs, rather than
+after all vma modifications. That should be easier to keep under
+control and it's going to be more efficient too as if something there
+are fewer spin locks than vma modifications.
 
-On 02/11/2017 16:16, Laurent Dufour wrote:
-> Hi Andrea,
-> 
-> Thanks for reviewing this series, and sorry for the late answer, I took few
-> days off...
-> 
-> On 26/10/2017 12:18, Andrea Arcangeli wrote:
->> Hello Laurent,
->>
->> Message-ID: <7ca80231-fe02-a3a7-84bc-ce81690ea051@intel.com> shows
->> significant slowdown even for brk/malloc ops both single and
->> multi threaded.
->>
->> The single threaded case I think is the most important because it has
->> zero chance of getting back any benefit later during page faults.
->>
->> Could you check if:
->>
->> 1. it's possible change vm_write_begin to be a noop if mm->mm_count is
->>    <= 1? Hint: clone() will run single threaded so there's no way it can run
->>    in the middle of a being/end critical section (clone could set an
->>    MMF flag to possibly keep the sequence counter activated if a child
->>    thread exits and mm_count drops to 1 while the other cpu is in the
->>    middle of a critical section in the other thread).
-> 
-> This sounds to be a good idea, I'll dig on that.
-> The major risk here is to have a thread calling vm_*_begin() with
-> mm->mm_count > 1 and later calling vm_*_end() with mm->mm_count <= 1, but
-> as you mentioned we should find a way to work around this.
-> 
->>
->> 2. Same thing with RCU freeing of vmas. Wouldn't it be nicer if RCU
->>    freeing happened only once a MMF flag is set? That will at least
->>    reduce the risk of temporary memory waste until the next RCU grace
->>    period. The read of the MMF will scale fine. Of course to allow
->>    point 1 and 2 then the page fault should also take the mmap_sem
->>    until the MMF flag is set.
->>
-> 
-> I think we could also deal with the mm->mm_count value here, if there is
-> only one thread, no need to postpone the VMA's free operation. Isn't it ?
-> Also, if mm->mm_count <= 1, there is no need to try the speculative path.
-> 
->> Could you also investigate a much bigger change: I wonder if it's
->> possible to drop the sequence number entirely from the vma and stop
->> using sequence numbers entirely (which is likely the source of the
->> single threaded regression in point 1 that may explain the report in
->> the above message-id), and just call the vma rbtree lookup once again
->> and check that everything is still the same in the vma and the PT lock
->> obtained is still a match to finish the anon page fault and fill the
->> pte?
-> 
-> That's an interesting idea. The big deal here would be to detect that the
-> VMA has been touched in our back, but there are not so much VMA's fields
-> involved in the speculative path so that sounds reasonable. The other point
-> is to identify the impact of the vma rbtree lookup, it's also a known
-> order, but there is the vma_srcu's lock involved.
+For non-x86 archs we may then need a smp_wmb__before_spin_lock. That
+looks more self contained than surrounding all vma modifications and
+it's a noop on x86 anyway.
 
-I think there is some memory barrier missing when the VMA is modified so
-currently the modifications done in the VMA structure may not be written
-down at the time the pte is locked. So doing that change will also requires
-to call smp_wmb() before locking the page tables. In the current patch this
-is ensured by the call to write_seqcount_end().
-Doing so will still require to have a memory barrier when touching the VMA.
-Not sure we get far better performance compared to the sequence count
-change. But I'll give it a try anyway ;)
+I thought about the contention detection logic too yesterday: to
+detect contention we could have a mm->mmap_sem_contention_jiffies and
+if down_read_trylock_exclusive() [same as down_read_if_not_hold in
+prev mail] fails (and it'll fail if either read or write mmap_sem is
+hold, so also convering mremap/mprotect etc..) we set
+mm->mmap_sem_contention_jiffies = jiffies and then to know if you must
+not touch the mmap_sem at all, you compare jiffies against
+mmap_sem_contention_jiffies, if it's equal we go speculative. If
+that's not enough we can just keep going speculative for a few more
+jiffies with time_before(). The srcu lock is non concerning because the
+inc/dec of the fast path is in per-cpu cacheline of course, no false
+sharing possible there or it wouldn't be any better than a normal lock.
 
->>
->> Then of course we also need to add a method to the read-write
->> semaphore so it tells us if there's already one user holding the read
->> mmap_sem and we're the second one.  If we're the second one (or more
->> than second) only then we should skip taking the down_read mmap_sem.
->> Even a multithreaded app won't ever skip taking the mmap_sem until
->> there's sign of runtime contention, and it won't have to run the way
->> more expensive sequence number-less revalidation during page faults,
->> unless we get an immediate scalability payoff because we already know
->> the mmap_sem is already contended and there are multiple nested
->> threads in the page fault handler of the same mm.
-> 
-> The problem is that we may have a thread entering the page fault path,
-> seeing that the mmap_sem is free, grab it and continue processing the page
-> fault. Then another thread is entering mprotect or any other mm service
-> which grab the mmap_sem and it will be blocked until the page fault is
-> done. The idea with the speculative page fault is also to not block the
-> other thread which may need to grab the mmap_sem.
-> 
->>
->> Perhaps we'd need something more advanced than a
->> down_read_trylock_if_not_hold() (which has to guaranteed not to write
->> to any cacheline) and we'll have to count the per-thread exponential
->> backoff of mmap_sem frequency, but starting with
->> down_read_trylock_if_not_hold() would be good I think.
->>
->> This is not how the current patch works, the current patch uses a
->> sequence number because it pretends to go lockless always and in turn
->> has to slow down all vma updates fast paths or the revalidation
->> slowsdown performance for page fault too much (as it always
->> revalidates).
->>
->> I think it would be much better to go speculative only when there's
->> "detected" runtime contention on the mmap_sem with
->> down_read_trylock_if_not_hold() and that will make the revalidation
->> cost not an issue to worry about because normally we won't have to
->> revalidate the vma at all during page fault. In turn by making the
->> revalidation more expensive by starting a vma rbtree lookup from
->> scratch, we can drop the sequence number entirely and that should
->> simplify the patch tremendously because all vm_write_begin/end would
->> disappear from the patch and in turn the mmap/brk slowdown measured by
->> the message-id above, should disappear as well.
-> 
-> As I mentioned above, I'm not sure about checking the lock contention when
-> entering the page fault path, checking for the mm->mm_count or a dedicated
-> mm flags should be enough, but removing the sequence lock would be a very
-> good simplification. I'll dig further here, and come back soon.
-> 
-> Thanks a lot,
-> Laurent.
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+The vma revalidation is already done by khugepaged and mm/userfaultfd,
+both need to drop the mmap_sem and continue working on the pagetables,
+so we already know it's workable and not too slow.
+
+Summarizing.. by using a runtime contention triggered speculative
+design that goes speculative only when contention is runtime-detected
+using the above logic (or equivalent), and by having to revalidate the
+vma by hand with find_vma without knowing instantly if the vma become
+stale, we will run with a substantially slower speculative page fault
+than with your current speculative always-on design, but the slower
+speculative page fault runtime will still scale 100% in SMP so it
+should still be faster on large SMP systems. The pros is that it won't
+regress the mmap/brk vma modifications. The whole complexity of
+tracking the vma modifications should also go away and the resulting
+code should be more maintainable and less risky to break in subtle
+ways impossible to reproduce.
+
+Thanks!
+Andrea
