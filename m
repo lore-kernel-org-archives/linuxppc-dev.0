@@ -1,27 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <philip.li@intel.com>
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yS9XV4vlczDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 14:28:26 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id k7so3882029pga.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 20:28:26 -0700 (PDT)
-Date: Thu, 2 Nov 2017 14:27:59 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/7] powerpc/64s/radix TLB flush performance
- improvements
-Message-ID: <20171102142759.716f72d9@roar.ozlabs.ibm.com>
-In-Reply-To: <e8aa154c-35ef-bb47-a180-463315cfee86@linux.vnet.ibm.com>
-References: <20171031064504.25245-1-npiggin@gmail.com>
- <c9c80f5a-9a53-1b7b-99c8-b40049355722@linux.vnet.ibm.com>
- <20171102003956.6cbeded3@roar.ozlabs.ibm.com>
- <e8aa154c-35ef-bb47-a180-463315cfee86@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yS8zz3qmLzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 14:03:40 +1100 (AEDT)
+Date: Thu, 2 Nov 2017 11:06:49 +0800
+From: Philip Li <philip.li@intel.com>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, andrew@aj.id.au,
+ gromero@linux.vnet.ibm.com, jk@ozlabs.org, leitao@debian.org,
+ sam@mendozajonas.com
+Subject: Re: [PATCH 1/2] powerpc: Don't enable FP/Altivec if not checkpointed
+Message-ID: <20171102030649.GA7418@intel.com>
+References: <20171030053913.20455-1-cyrilbur@gmail.com>
+ <201711021042.1na3YaBu%fengguang.wu@intel.com>
+ <1509590647.13316.2.camel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1509590647.13316.2.camel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2 Nov 2017 08:49:49 +0530
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-
-> On 11/01/2017 07:09 PM, Nicholas Piggin wrote:
-> > On Wed, 1 Nov 2017 17:35:51 +0530
-> > Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-> >   
-> >> On 10/31/2017 12:14 PM, Nicholas Piggin wrote:  
-> >>> Here's a random mix of performance improvements for radix TLB flushing
-> >>> code. The main aims are to reduce the amount of translation that gets
-> >>> invalidated, and to reduce global flushes where we can do local.
-> >>>
-> >>> To that end, a parallel kernel compile benchmark using powerpc:tlbie
-> >>> tracepoint shows a reduction in tlbie instructions from about 290,000
-> >>> to 80,000, and a reduction in tlbiel instructions from 49,500,000 to
-> >>> 15,000,000. Looks great, but unfortunately does not translate to a
-> >>> statistically significant performance improvement! The needle on TLB
-> >>> misses does not move much, I suspect because a lot of the flushing is
-> >>> done a startup and shutdown, and because a significant cost of TLB
-> >>> flushing itself is in the barriers.    
-> >>
-> >> Does memory barrier initiate a single global invalidation with tlbie ?
-> >>  
+On Thu, Nov 02, 2017 at 01:44:07PM +1100, Cyril Bur wrote:
+> On Thu, 2017-11-02 at 10:19 +0800, kbuild test robot wrote:
+> > Hi Cyril,
 > > 
-> > I'm not quite sure what you're asking, and I don't know the details
-> > of how the hardware handles it, but from the measurements in patch
-> > 1 of the series we can see there is a benefit for both tlbie and
-> > tlbiel of batching them up between barriers.  
+> > Thank you for the patch! Yet something to improve:
+> > 
 > 
-> Ahh, I might have got the statement "a significant cost of TLB flushing
-> itself is in the barriers" wrong. I guess you were mentioning about the
-> total cost of multiple TLB flushes with memory barriers in between each
-> of them which is causing the high execution cost. This got reduced by
-> packing multiple tlbie(l) instruction between a single memory barrier.
+> Once again robot, you have done brilliantly! You're 100% correct and
+> the last thing I want to do is break the build with
+> CONFIG_PPC_TRANSACTIONAL_MEM turned off.
 > 
+> Life saver,
+> Thanks so much kbuild.
+Thanks Cyril, we are glad to do some help.
 
-Yes that did get reduced for the va range flush in my patches. However
-the big reduction in the number of tlbiel calls came from more use of
-range flushes and fewer use of PID flushes. But the PID flushes already
-have such optimization. Therefore despite tlbiel being reduced, the
-number of barriers probably has not gone down a great deal on this
-workload, which may explain why performance numbers are basically in
-the noise.
-
-Thanks,
-Nick
+> 
+> Cyril
+> 
+> > [auto build test ERROR on powerpc/next]
+> > [also build test ERROR on v4.14-rc7 next-20171018]
+> > [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> > 
+> > url:    https://github.com/0day-ci/linux/commits/Cyril-Bur/powerpc-Don-t-enable-FP-Altivec-if-not-checkpointed/20171102-073816
+> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> > config: powerpc-asp8347_defconfig (attached as .config)
+> > compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> > reproduce:
+> >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+> >         chmod +x ~/bin/make.cross
+> >         # save the attached .config to linux build tree
+> >         make.cross ARCH=powerpc 
+> > 
+> > All errors (new ones prefixed by >>):
+> > 
+> >    arch/powerpc/kernel/process.c: In function 'is_transactionally_fp':
+> > > > arch/powerpc/kernel/process.c:243:15: error: 'struct thread_struct' has no member named 'ckpt_regs'
+> > 
+> >       (tsk->thread.ckpt_regs.msr & MSR_FP);
+> >                   ^
+> >    arch/powerpc/kernel/process.c:244:1: error: control reaches end of non-void function [-Werror=return-type]
+> >     }
+> >     ^
+> >    cc1: all warnings being treated as errors
+> > 
+> > vim +243 arch/powerpc/kernel/process.c
+> > 
+> >    239	
+> >    240	static int is_transactionally_fp(struct task_struct *tsk)
+> >    241	{
+> >    242		return msr_tm_active(tsk->thread.regs->msr) &&
+> >  > 243			(tsk->thread.ckpt_regs.msr & MSR_FP);
+> >    244	}
+> >    245	
+> > 
+> > ---
+> > 0-DAY kernel test infrastructure                Open Source Technology Center
+> > https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> 
