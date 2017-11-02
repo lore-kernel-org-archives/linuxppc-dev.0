@@ -1,37 +1,36 @@
-Return-Path: <aarcange@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySbkj35fvzDr8Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 07:08:45 +1100 (AEDT)
-Date: Thu, 2 Nov 2017 21:08:40 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v5 07/22] mm: Protect VMA modifications using VMA
- sequence count
-Message-ID: <20171102200840.GC22686@redhat.com>
-References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1507729966-10660-8-git-send-email-ldufour@linux.vnet.ibm.com>
- <20171026101833.GF563@redhat.com>
- <2cbea37c-c2a7-bfd4-4528-fd273b210e29@linux.vnet.ibm.com>
- <ae35f020-3898-3f86-6d22-53b399d591be@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yScjc2ssjzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 07:52:52 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA2KqLhQ046425
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 16:52:50 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e08vudha6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 16:52:49 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 2 Nov 2017 16:52:48 -0400
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] powerpc/hotplug: Fix affinity assoc for LPAR migration
+Date: Thu, 2 Nov 2017 15:52:45 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ae35f020-3898-3f86-6d22-53b399d591be@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <eef99211-b3a2-41cc-f4a1-8a88878c9e12@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,59 +40,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 02, 2017 at 06:25:11PM +0100, Laurent Dufour wrote:
-> I think there is some memory barrier missing when the VMA is modified so
-> currently the modifications done in the VMA structure may not be written
-> down at the time the pte is locked. So doing that change will also requires
-> to call smp_wmb() before locking the page tables. In the current patch this
-> is ensured by the call to write_seqcount_end().
-> Doing so will still require to have a memory barrier when touching the VMA.
-> Not sure we get far better performance compared to the sequence count
-> change. But I'll give it a try anyway ;)
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of memory blocks and CPUs.  The
+patches in this set are intended to recognize changes to that associativity
+as represented by various device-tree properties, and generate calls
+to other code layers to reset the associativity of the blocks and any
+other related data structures.
 
-Luckily smp_wmb is a noop on x86. I would suggest to ignore the above
-issue completely if you give it a try, and then if this performs, we
-can just embed a smp_wmb() before spin_lock() somewhere in
-pte_offset_map_lock/pte_lockptr/spin_lock_nested for those archs whose
-spin_lock isn't a smp_wmb() equivalent. I would focus at flushing
-writes before every pagetable spin_lock for non-x86 archs, rather than
-after all vma modifications. That should be easier to keep under
-control and it's going to be more efficient too as if something there
-are fewer spin locks than vma modifications.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-For non-x86 archs we may then need a smp_wmb__before_spin_lock. That
-looks more self contained than surrounding all vma modifications and
-it's a noop on x86 anyway.
-
-I thought about the contention detection logic too yesterday: to
-detect contention we could have a mm->mmap_sem_contention_jiffies and
-if down_read_trylock_exclusive() [same as down_read_if_not_hold in
-prev mail] fails (and it'll fail if either read or write mmap_sem is
-hold, so also convering mremap/mprotect etc..) we set
-mm->mmap_sem_contention_jiffies = jiffies and then to know if you must
-not touch the mmap_sem at all, you compare jiffies against
-mmap_sem_contention_jiffies, if it's equal we go speculative. If
-that's not enough we can just keep going speculative for a few more
-jiffies with time_before(). The srcu lock is non concerning because the
-inc/dec of the fast path is in per-cpu cacheline of course, no false
-sharing possible there or it wouldn't be any better than a normal lock.
-
-The vma revalidation is already done by khugepaged and mm/userfaultfd,
-both need to drop the mmap_sem and continue working on the pagetables,
-so we already know it's workable and not too slow.
-
-Summarizing.. by using a runtime contention triggered speculative
-design that goes speculative only when contention is runtime-detected
-using the above logic (or equivalent), and by having to revalidate the
-vma by hand with find_vma without knowing instantly if the vma become
-stale, we will run with a substantially slower speculative page fault
-than with your current speculative always-on design, but the slower
-speculative page fault runtime will still scale 100% in SMP so it
-should still be faster on large SMP systems. The pros is that it won't
-regress the mmap/brk vma modifications. The whole complexity of
-tracking the vma modifications should also go away and the resulting
-code should be more maintainable and less risky to break in subtle
-ways impossible to reproduce.
-
-Thanks!
-Andrea
+Michael Bringmann (3):
+  powerpc/hotplug/memory: Apply assoc mem updates from 'ibm,dynamic-memory' Post LPAR Migration
+  powerpc/hotplug/memory: Apply assoc lookup array updates Post Migration Topo
+  powerpc/hotplug/memory: Apply assoc mem updates from 'ibm,dynamic-memory-v2' Post LPAR Migration
