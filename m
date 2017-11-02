@@ -1,23 +1,23 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySck44cmFzDrJn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 07:53:16 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySckD51nKzDrD1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 07:53:24 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA2KiFHc044449
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 16:53:13 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e0a1w262f-1
+ vA2Kqp3o086339
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 16:53:22 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e08mk6bqm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 16:53:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 16:53:22 -0400
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 2 Nov 2017 16:53:12 -0400
+ Thu, 2 Nov 2017 16:53:21 -0400
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>,
@@ -26,13 +26,12 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH 1/3] hotplug/memory: Apply assoc mem updates Post Migration
- Topo
+Subject: [PATCH 2/3] postmigration/memory: Review assoc lookup array changes
 In-Reply-To: <eef99211-b3a2-41cc-f4a1-8a88878c9e12@linux.vnet.ibm.com>
-Date: Thu, 2 Nov 2017 15:53:10 -0500
+Date: Thu, 2 Nov 2017 15:53:16 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <d31bc9fe-8e47-4fe3-915c-a12910000143@linux.vnet.ibm.com>
+Message-Id: <c49d363e-73f7-07f2-67b4-06e2ea160db9@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,229 +41,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hotplug/memory: Recognize more changes to the associativity of memory
-blocks described by the 'ibm,dynamic-memory' property regarding the
-topology of LPARS in Post Migration events.  Previous efforts only
-recognized whether a block's assignment had changed in the property.
-Topology migration requires us to compare the aa_index values of the
-old/new properties and 'readd' any block for which the setting has
-changed.
+powerpc/hotplug/memory: In an LPAR migration scenario, the property
+"ibm,associativity-lookup-arrays" may change.  In the event that a
+row of the array differs, locate all assigned memory blocks with that
+'aa_index' and 're-add' them to the system memory block data structures.
+In the process of the 're-add', the appropriate entry of the property
+'ibm,dynamic-memory' would be updated as well as any other applicable
+system data structures.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |   64 +++++++++++++++++++++++
- arch/powerpc/platforms/pseries/hotplug-memory.c |    6 ++
- arch/powerpc/platforms/pseries/mobility.c       |   47 +++++++++++++----
- arch/powerpc/platforms/pseries/pseries.h        |    2 +
- 4 files changed, 109 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  123 +++++++++++++++++++++++
+ 1 file changed, 121 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index fadb95e..d127c3a 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -634,6 +634,27 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index c61cfc6..7aba515 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -1150,14 +1150,14 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+ 		    (!(be32_to_cpu(new_drmem[i].flags) & DRCONF_MEM_ASSIGNED))) {
+ 			rc = pseries_remove_memblock(
+ 				be64_to_cpu(old_drmem[i].base_addr),
+-						     memblock_size);
++					memblock_size);
+ 			break;
+ 		} else if ((!(be32_to_cpu(old_drmem[i].flags) &
+ 			    DRCONF_MEM_ASSIGNED)) &&
+ 			    (be32_to_cpu(new_drmem[i].flags) &
+ 			    DRCONF_MEM_ASSIGNED)) {
+ 			rc = memblock_add(be64_to_cpu(old_drmem[i].base_addr),
+-					  memblock_size);
++					memblock_size);
+ 			rc = (rc < 0) ? -EINVAL : 0;
+ 			break;
+ 		} else if ((be32_to_cpu(old_drmem[i].aa_index) !=
+@@ -1171,6 +1171,122 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
  	return rc;
  }
  
-+static int dlpar_cpu_readd_by_index(u32 drc_index)
++struct assoc_arrays {
++	u32 n_arrays;
++	u32 array_sz;
++	const __be32 *arrays;
++};
++
++static int pseries_update_ala_memory_aai(int aa_index,
++					struct property *dmprop)
 +{
-+	int rc = 0;
++	struct of_drconf_cell *drmem;
++	u32 entries;
++	__be32 *p;
++	int i;
 +
-+	pr_info("Attempting to update CPU, drc index %x\n", drc_index);
++	p = (__be32 *) dmprop->value;
++	if (!p)
++		return -EINVAL;
 +
-+	if (dlpar_cpu_remove_by_index(drc_index))
-+		rc = -EINVAL;
-+	else if (dlpar_cpu_add(drc_index))
-+		rc = -EINVAL;
-+
-+	if (rc)
-+		pr_info("Failed to update cpu at drc_index %lx\n",
-+				(unsigned long int)drc_index);
-+	else
-+		pr_info("CPU at drc_index %lx was updated\n",
-+				(unsigned long int)drc_index);
-+
-+	return rc;
-+}
-+
- static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
- {
- 	struct device_node *dn;
-@@ -824,6 +845,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
- 		else
- 			rc = -EINVAL;
- 		break;
-+	case PSERIES_HP_ELOG_ACTION_READD:
-+		rc = dlpar_cpu_readd_by_index(drc_index);
-+		break;
- 	default:
- 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
- 		rc = -EINVAL;
-@@ -874,6 +898,42 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
- 
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
- 
-+static int pseries_update_drconf_cpu(struct of_reconfig_data *pr)
-+{
-+	u32 old_entries, new_entries;
-+	__be32 *p, *old_assoc, *new_assoc;
-+
-+	if (strcmp(pr->dn->type, "cpu"))
-+		return 0;
-+
-+	/* The first int of the property is the number of domains's
-+	 * described.  This is followed by an array of level values.
++	/* The first int of the property is the number of lmb's
++	 * described by the property. This is followed by an array
++	 * of of_drconf_cell entries. Get the number of entries
++	 * and skip to the array of of_drconf_cell's.
 +	 */
-+	p = (__be32 *) pr->old_prop->value;
-+	if (!p)
-+		return -EINVAL;
-+	old_entries = be32_to_cpu(*p++);
-+	old_assoc = p;
++	entries = be32_to_cpu(*p++);
++	drmem = (struct of_drconf_cell *)p;
 +
-+	p = (__be32 *)pr->prop->value;
-+	if (!p)
-+		return -EINVAL;
-+	new_entries = be32_to_cpu(*p++);
-+	new_assoc = p;
-+
-+	if (old_entries == new_entries) {
-+		int sz = old_entries * sizeof(int);
-+
-+		if (!memcmp(old_assoc, new_assoc, sz))
-+			pseries_cpu_readd_by_index(pr->dn->phandle);
-+
-+	} else {
-+		pseries_cpu_readd_by_index(pr->dn->phandle);
++	for (i = 0; i < entries; i++) {
++		if ((be32_to_cpu(drmem[i].aa_index) != aa_index) &&
++			(be32_to_cpu(drmem[i].flags) & DRCONF_MEM_ASSIGNED)) {
++			pseries_memory_readd_by_index(
++				be32_to_cpu(drmem[i].drc_index));
++		}
 +	}
 +
 +	return 0;
 +}
 +
- static int pseries_smp_notifier(struct notifier_block *nb,
- 				unsigned long action, void *data)
++static int pseries_update_ala_memory(struct of_reconfig_data *pr)
++{
++	struct assoc_arrays new_ala, old_ala;
++	struct device_node *dn;
++	struct property *dmprop;
++	__be32 *p;
++	int i, lim;
++
++	if (rtas_hp_event)
++		return 0;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -ENODEV;
++
++	dmprop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	if (!dmprop) {
++		of_node_put(dn);
++		return -ENODEV;
++	}
++
++	/*
++	 * The layout of the ibm,associativity-lookup-arrays
++	 * property is a number N indicating the number of
++	 * associativity arrays, followed by a number M
++	 * indicating the size of each associativity array,
++	 * followed by a list of N associativity arrays.
++	 */
++
++	p = (__be32 *) pr->old_prop->value;
++	if (!p) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++	old_ala.n_arrays = of_read_number(p++, 1);
++	old_ala.array_sz = of_read_number(p++, 1);
++	old_ala.arrays = p;
++
++	p = (__be32 *) pr->prop->value;
++	if (!p) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++	new_ala.n_arrays = of_read_number(p++, 1);
++	new_ala.array_sz = of_read_number(p++, 1);
++	new_ala.arrays = p;
++
++	lim = (new_ala.n_arrays > old_ala.n_arrays) ? old_ala.n_arrays :
++			new_ala.n_arrays;
++
++	if (old_ala.array_sz == new_ala.array_sz) {
++
++		for (i = 0; i < lim; i++) {
++			int index = (i * new_ala.array_sz);
++
++			if (!memcmp(&old_ala.arrays[index],
++						&new_ala.arrays[index],
++						new_ala.array_sz))
++				continue;
++
++			pseries_update_ala_memory_aai(i, dmprop);
++		}
++
++		for (i = lim; i < new_ala.n_arrays; i++)
++			pseries_update_ala_memory_aai(i, dmprop);
++
++	} else {
++		/* Update all entries representing these rows;
++		 * as all rows have different sizes, none can
++		 * have equivalent values.
++		 */
++		for (i = 0; i < lim; i++)
++			pseries_update_ala_memory_aai(i, dmprop);
++	}
++
++	of_node_put(dn);
++	return 0;
++}
++
+ static int pseries_memory_notifier(struct notifier_block *nb,
+ 				   unsigned long action, void *data)
  {
-@@ -887,6 +947,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
- 	case OF_RECONFIG_DETACH_NODE:
- 		pseries_remove_processor(rd->dn);
+@@ -1187,6 +1303,9 @@ static int pseries_memory_notifier(struct notifier_block *nb,
+ 	case OF_RECONFIG_UPDATE_PROPERTY:
+ 		if (!strcmp(rd->prop->name, "ibm,dynamic-memory"))
+ 			err = pseries_update_drconf_memory(rd);
++		if (!strcmp(rd->prop->name,
++				"ibm,associativity-lookup-arrays"))
++			err = pseries_update_ala_memory(rd);
  		break;
-+	case OF_RECONFIG_UPDATE_PROPERTY:
-+		if (!strcmp(rd->prop->name, "ibm,associativity"))
-+			err = pseries_update_drconf_cpu(rd);
-+		break;
  	}
  	return notifier_from_errno(err);
- }
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 1d48ab4..c61cfc6 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -1160,6 +1160,12 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
- 					  memblock_size);
- 			rc = (rc < 0) ? -EINVAL : 0;
- 			break;
-+		} else if ((be32_to_cpu(old_drmem[i].aa_index) !=
-+					be32_to_cpu(new_drmem[i].aa_index)) &&
-+				(be32_to_cpu(new_drmem[i].flags) &
-+					DRCONF_MEM_ASSIGNED)) {
-+			pseries_memory_readd_by_index(
-+				be32_to_cpu(new_drmem[i].drc_index));
- 		}
- 	}
- 	return rc;
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index f7042ad..7c19b23 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -239,9 +239,30 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
- 	return rc;
- }
- 
-+static void pseries_readd_by_index(int resource, __be32 phandle)
-+{
-+	struct pseries_hp_errorlog hp_elog;
-+
-+	hp_elog.resource = resource;
-+	hp_elog.action = PSERIES_HP_ELOG_ACTION_READD;
-+	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-+	hp_elog._drc_u.drc_index = phandle;
-+
-+	queue_hotplug_event(&hp_elog, NULL, NULL);
-+}
-+
-+void pseries_memory_readd_by_index(__be32 phandle)
-+{
-+	pseries_readd_by_index(PSERIES_HP_ELOG_RESOURCE_MEM, phandle);
-+}
-+
-+void pseries_cpu_readd_by_index(__be32 phandle)
-+{
-+	pseries_readd_by_index(PSERIES_HP_ELOG_RESOURCE_CPU, phandle);
-+}
-+
- static void prrn_update_node(__be32 phandle)
- {
--	struct pseries_hp_errorlog *hp_elog;
- 	struct device_node *dn;
- 
- 	/*
-@@ -254,18 +275,21 @@ static void prrn_update_node(__be32 phandle)
- 		return;
- 	}
- 
--	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
--	if(!hp_elog)
--		return;
-+	pseries_memory_readd_by_index(phandle);
-+}
- 
--	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
--	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
--	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
--	hp_elog->_drc_u.drc_index = phandle;
-+static void prrn_update_node_other(s32 scope, __be32 phandle)
-+{
-+	struct device_node *dn;
-+	__be32 drc_index = be32_to_cpu(phandle);
- 
--	queue_hotplug_event(hp_elog, NULL, NULL);
-+	dn = of_find_node_by_phandle(drc_index);
-+	if (dn) {
-+		of_node_put(dn);
- 
--	kfree(hp_elog);
-+		if (!strcmp(dn->type, "cpu"))
-+			pseries_cpu_readd_by_index(phandle);
-+	}
- }
- 
- int pseries_devicetree_update(s32 scope)
-@@ -309,6 +333,9 @@ int pseries_devicetree_update(s32 scope)
- 
- 					if (scope == PRRN_SCOPE)
- 						prrn_update_node(phandle);
-+					else
-+						prrn_update_node_other(
-+							scope, phandle);
- 
- 					break;
- 				case ADD_DT_NODE:
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 4470a31..b9a69a6 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -55,6 +55,7 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
- 			 struct completion *hotplug_done, int *rc);
- #ifdef CONFIG_MEMORY_HOTPLUG
- int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
-+extern void pseries_memory_readd_by_index(__be32 drc_index);
- #else
- static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- {
-@@ -64,6 +65,7 @@ static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- 
- #ifdef CONFIG_HOTPLUG_CPU
- int dlpar_cpu(struct pseries_hp_errorlog *hp_elog);
-+extern void pseries_cpu_readd_by_index(__be32 drc_index);
- #else
- static inline int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
- {
