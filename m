@@ -1,26 +1,27 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3ySLVp3yHkzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 21:12:31 +1100 (AEDT)
-Subject: Re: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
-To: Thomas Gleixner <tglx@linutronix.de>, Qiang Zhao <qiang.zhao@nxp.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jason Cooper
- <jason@lakedaemon.net>, "oss@buserror.net" <oss@buserror.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
- <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <AM3PR04MB11852211CAFA9741B260D4A3915E0@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <87bmkm95te.fsf@concordia.ellerman.id.au>
- <AM3PR04MB11851996C67BF447B8192821915F0@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <alpine.DEB.2.20.1711011808260.1942@nanos>
-From: Marc Zyngier <marc.zyngier@arm.com>
-Message-ID: <4939804e-a796-d1ce-39cb-9b518dca588b@arm.com>
-Date: Thu, 2 Nov 2017 10:12:22 +0000
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySM2L1lzNzDr64
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 21:36:24 +1100 (AEDT)
+Date: Thu, 2 Nov 2017 11:36:17 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Petr Mladek <pmladek@suse.com>, jpoimboe@redhat.com, jeyu@kernel.org,
+ jikos@kernel.org, lpechacek@suse.cz, pavel@ucw.cz,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v3 1/2] livepatch: send a fake signal to all blocking tasks
+In-Reply-To: <20171101164314.GA32760@redhat.com>
+Message-ID: <alpine.LSU.2.21.1711021128220.19544@san.suse.cz>
+References: <20171031114853.841-1-mbenes@suse.cz>
+ <20171031114853.841-2-mbenes@suse.cz>
+ <20171101151355.GG20040@pathway.suse.cz> <20171101164314.GA32760@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1711011808260.1942@nanos>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/11/17 17:09, Thomas Gleixner wrote:
-> On Wed, 1 Nov 2017, Qiang Zhao wrote:
->> Michael Ellerman <mpe@ellerman.id.au> wrote
->>>
->>> Qiang Zhao <qiang.zhao@nxp.com> writes:
->>>
->>>> Hi all,
->>>>
->>>> Could anybody review this patchset and take action on them? Thank you!
->>>
->>> Who maintains this? I don't actually know, it's not powerpc code, or is it?
->>
->> Yes, it's not powerpc code, it is irqchip code, maintained by Thomas, Jason and Marc according to MAINTAINERS file.
->>
->> Hi Thomas, Jason and Marc,
->>
->> Could you keep an eye on this patchset? Thank you!
+On Wed, 1 Nov 2017, Oleg Nesterov wrote:
+
+> On 11/01, Petr Mladek wrote:
+> >
+> > On Tue 2017-10-31 12:48:52, Miroslav Benes wrote:
+> > > +		if (task->flags & PF_KTHREAD) {
+> > > +			/*
+> > > +			 * Wake up a kthread which still has not been migrated.
+> > > +			 */
+> > > +			wake_up_process(task);
+> >
+> > I have just noticed that freezer used wake_up_state(p, TASK_INTERRUPTIBLE);
+> > IMHO, we should do so as well.
 > 
-> It's on my radar, but I have zero capacity at the moment. Hopefully Marc
-> can spare a few cycles.
-I'll try, but I haven't been cc-ed on that one. I'll try to dig it out.
+> I won't argue, but...
+> 
+> > wake_up_process() wakes also tasks in TASK_UNINTERRUPTIBLE state.
+> > These might not be ready for an unexpected wakeup. For example,
+> > see concat_dev_erase() in drivers/mtd/mtdcontact.c.
+> 
+> I'd say that concat_dev_erase() should be fixed, any code should be ready
+> for spurious wakeup.
 
-Thanks,
+I agree.
+ 
+> Note also that wake_up_state(TASK_INTERRUPTIBLE) won't wakeup the TASK_IDLE
+> kthreads, and most of the kthreads which use TASK_INTERRUPTIBLE should use
+> TASK_IDLE today, because in most cases TASK_INTERRUPTIBLE was used to not
+> contribute to loadavg.
 
-	M.
--- 
-Jazz is not dead. It just smells funny...
+Yes. Unfortunately, we have TASK_IDLE for more than two years now and 
+nothing much has happened yet. TASK_IDLE is still used sporadically. I'd 
+like to be on the safe side with livepatch and given that 
+TASK_INTERRUPTIBLE loops should be prepared for spurious wakeups by 
+definition, I think it is better to have wake_up_state(TASK_INTERRUPTIBLE) 
+there. At least till all "concat_dev_erase" beauties are fixed (sigh).
+
+Miroslav
