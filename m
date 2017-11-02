@@ -1,24 +1,35 @@
-Return-Path: <philip.li@intel.com>
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yS8zz3qmLzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 14:03:40 +1100 (AEDT)
-Date: Thu, 2 Nov 2017 11:06:49 +0800
-From: Philip Li <philip.li@intel.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
- linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, andrew@aj.id.au,
- gromero@linux.vnet.ibm.com, jk@ozlabs.org, leitao@debian.org,
- sam@mendozajonas.com
-Subject: Re: [PATCH 1/2] powerpc: Don't enable FP/Altivec if not checkpointed
-Message-ID: <20171102030649.GA7418@intel.com>
-References: <20171030053913.20455-1-cyrilbur@gmail.com>
- <201711021042.1na3YaBu%fengguang.wu@intel.com>
- <1509590647.13316.2.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySBHV4BLKzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 15:02:13 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA23x3cD122579
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 00:02:11 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2dynbp2j3t-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 00:02:10 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 2 Nov 2017 04:02:09 -0000
+Subject: Re: [RFC 2/2] powerpc/mm: Enable deferred flushing of TLB during
+ reclaim
+To: linuxppc-dev@lists.ozlabs.org
+References: <20171101101735.2318-1-khandual@linux.vnet.ibm.com>
+ <20171101101735.2318-3-khandual@linux.vnet.ibm.com>
+Cc: aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Thu, 2 Nov 2017 09:32:05 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1509590647.13316.2.camel@gmail.com>
+In-Reply-To: <20171101101735.2318-3-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <db008f61-6a6d-f0d7-702e-10e57d4642fc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,61 +39,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 02, 2017 at 01:44:07PM +1100, Cyril Bur wrote:
-> On Thu, 2017-11-02 at 10:19 +0800, kbuild test robot wrote:
-> > Hi Cyril,
-> > 
-> > Thank you for the patch! Yet something to improve:
-> > 
+On 11/01/2017 03:47 PM, Anshuman Khandual wrote:
+> Deferred flushing can only be enabled on POWER9 DD2.0 processor onwards.
+> Because prior versions of POWER9 and previous hash table based POWER
+> processors will do TLB flushing in pte_get_and_clear() function itself
+> which then prevents batching and eventual flush completion later on.
 > 
-> Once again robot, you have done brilliantly! You're 100% correct and
-> the last thing I want to do is break the build with
-> CONFIG_PPC_TRANSACTIONAL_MEM turned off.
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/Kconfig                |  1 +
+>  arch/powerpc/include/asm/tlbbatch.h | 30 +++++++++++++++++++++++
+>  arch/powerpc/include/asm/tlbflush.h |  3 +++
+>  arch/powerpc/mm/tlb-radix.c         | 49 +++++++++++++++++++++++++++++++++++++
+>  4 files changed, 83 insertions(+)
+>  create mode 100644 arch/powerpc/include/asm/tlbbatch.h
 > 
-> Life saver,
-> Thanks so much kbuild.
-Thanks Cyril, we are glad to do some help.
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 809c468..f06b565 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -230,6 +230,7 @@ config PPC
+>  	select SPARSE_IRQ
+>  	select SYSCTL_EXCEPTION_TRACE
+>  	select VIRT_TO_BUS			if !PPC64
+> +	select ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH if (PPC64 && PPC_BOOK3S)
+>  	#
+>  	# Please keep this list sorted alphabetically.
+>  	#
+> diff --git a/arch/powerpc/include/asm/tlbbatch.h b/arch/powerpc/include/asm/tlbbatch.h
+> new file mode 100644
+> index 0000000..fc762ef
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/tlbbatch.h
+> @@ -0,0 +1,30 @@
+> +#ifndef _ARCH_POWERPC_TLBBATCH_H
+> +#define _ARCH_POWERPC_TLBBATCH_H
+> +
+> +#include <linux/spinlock.h>
+> +
+> +#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
+> +
+> +#define MAX_BATCHED_MM 1024
+> +
+> +struct arch_tlbflush_unmap_batch {
+> +	/*
+> +	 * Each bit set is a CPU that potentially has a
+> +	 * TLB entry for one of the PFN being flushed.
+> +	 * This represents whether all deferred struct
+> +	 * mm will be flushed for any given CPU.
+> +	 */
+> +	struct cpumask cpumask;
+> +
+> +	/* All the deferred struct mm */
+> +	struct mm_struct *mm[MAX_BATCHED_MM];
+> +	unsigned long int nr_mm;
+> +	
+> +};
+> +
+> +extern bool arch_tlbbatch_should_defer(struct mm_struct *mm);
+> +extern void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch);
+> +extern void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
+> +					struct mm_struct *mm);
+> +#endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
+> +#endif /* _ARCH_POWERPC_TLBBATCH_H */
+> diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+> index 13dbcd4..2041923 100644
+> --- a/arch/powerpc/include/asm/tlbflush.h
+> +++ b/arch/powerpc/include/asm/tlbflush.h
+> @@ -20,6 +20,9 @@
+>   */
+>  #ifdef __KERNEL__
+> 
+> +#include <linux/sched.h>
+> +#include <linux/mm_types.h>
+> +
+>  #ifdef CONFIG_PPC_MMU_NOHASH
+>  /*
+>   * TLB flushing for software loaded TLB chips
+> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+> index b3e849c..506e7ed 100644
+> --- a/arch/powerpc/mm/tlb-radix.c
+> +++ b/arch/powerpc/mm/tlb-radix.c
+> @@ -12,6 +12,8 @@
+>  #include <linux/mm.h>
+>  #include <linux/hugetlb.h>
+>  #include <linux/memblock.h>
+> +#include <linux/mutex.h>
+> +#include <linux/smp.h>
+> 
+>  #include <asm/ppc-opcode.h>
+>  #include <asm/tlb.h>
+> @@ -519,3 +521,50 @@ extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
+>  }
+>  EXPORT_SYMBOL_GPL(radix_kvm_prefetch_workaround);
+>  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+> +
+> +#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
+> +static void clear_tlb(void *data)
+> +{
+> +	struct arch_tlbflush_unmap_batch *batch = data;
+> +	int i;
+> +
+> +	WARN_ON(!radix_enabled() || cpu_has_feature(CPU_FTR_POWER9_DD1));
+> +
+> +	for (i = 0; i < batch->nr_mm; i++) {
+> +		if (batch->mm[i])
+> +			radix__local_flush_tlb_mm(batch->mm[i]);
+> +	}
+> +}
 
-> 
-> Cyril
-> 
-> > [auto build test ERROR on powerpc/next]
-> > [also build test ERROR on v4.14-rc7 next-20171018]
-> > [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> > 
-> > url:    https://github.com/0day-ci/linux/commits/Cyril-Bur/powerpc-Don-t-enable-FP-Altivec-if-not-checkpointed/20171102-073816
-> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> > config: powerpc-asp8347_defconfig (attached as .config)
-> > compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> > reproduce:
-> >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-> >         chmod +x ~/bin/make.cross
-> >         # save the attached .config to linux build tree
-> >         make.cross ARCH=powerpc 
-> > 
-> > All errors (new ones prefixed by >>):
-> > 
-> >    arch/powerpc/kernel/process.c: In function 'is_transactionally_fp':
-> > > > arch/powerpc/kernel/process.c:243:15: error: 'struct thread_struct' has no member named 'ckpt_regs'
-> > 
-> >       (tsk->thread.ckpt_regs.msr & MSR_FP);
-> >                   ^
-> >    arch/powerpc/kernel/process.c:244:1: error: control reaches end of non-void function [-Werror=return-type]
-> >     }
-> >     ^
-> >    cc1: all warnings being treated as errors
-> > 
-> > vim +243 arch/powerpc/kernel/process.c
-> > 
-> >    239	
-> >    240	static int is_transactionally_fp(struct task_struct *tsk)
-> >    241	{
-> >    242		return msr_tm_active(tsk->thread.regs->msr) &&
-> >  > 243			(tsk->thread.ckpt_regs.msr & MSR_FP);
-> >    244	}
-> >    245	
-> > 
-> > ---
-> > 0-DAY kernel test infrastructure                Open Source Technology Center
-> > https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> 
+Instead of clearing each affected 'struct mm' on the CPU, we can
+just TLB flush the entire CPU for the given partition. But its
+not really giving any improvement from the flushing mechanism
+described above.
+
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 506e7ed..b0eb218 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -525,15 +525,8 @@ extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
+ #ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
+ static void clear_tlb(void *data)
+ {
+-       struct arch_tlbflush_unmap_batch *batch = data;
+-       int i;
+-
+        WARN_ON(!radix_enabled() || cpu_has_feature(CPU_FTR_POWER9_DD1));
+-
+-       for (i = 0; i < batch->nr_mm; i++) {
+-               if (batch->mm[i])
+-                       radix__local_flush_tlb_mm(batch->mm[i]);
+-       }
++       cur_cpu_spec->flush_tlb(TLB_INVAL_SCOPE_LPID);
+ }
+
+$time ./run case-lru-file-mmap-read
+
+real    4m15.766s
+user    108m6.967s
+sys     393m15.152s
