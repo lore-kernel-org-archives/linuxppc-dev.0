@@ -1,38 +1,26 @@
-Return-Path: <minghuan.lian@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0073.outbound.protection.outlook.com [104.47.2.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySKbb5NM5zDr6l
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 20:31:39 +1100 (AEDT)
-From: "M.h. Lian" <minghuan.lian@nxp.com>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>, "robh+dt@kernel.org"
- <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "bhelgaas@google.com" <bhelgaas@google.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>, Madalin-cristian Bucur
- <madalin.bucur@nxp.com>, Sumit Garg <sumit.garg@nxp.com>, "Y.b. Lu"
- <yangbo.lu@nxp.com>, "hongtao.jia@nxp.com" <hongtao.jia@nxp.com>, Andy Tang
- <andy.tang@nxp.com>, Leo Li <leoyang.li@nxp.com>, "kishon@ti.com"
- <kishon@ti.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
- "pbrobinson@gmail.com" <pbrobinson@gmail.com>, "songxiaowei@hisilicon.com"
- <songxiaowei@hisilicon.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "Z.q. Hou" <zhiqiang.hou@nxp.com>, "Mingkai
- Hu" <mingkai.hu@nxp.com>
-CC: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: RE: [PATCH 3/3] ARMv8: pcie: make the DWC EP driver support for
- layerscape
-Date: Thu, 2 Nov 2017 09:31:33 +0000
-Message-ID: <VI1PR04MB1615DB65A3A9E50B4B31476CE85C0@VI1PR04MB1615.eurprd04.prod.outlook.com>
-References: <20171024083045.31135-1-xiaowei.bao@nxp.com>
- <20171024083045.31135-4-xiaowei.bao@nxp.com>
-In-Reply-To: <20171024083045.31135-4-xiaowei.bao@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3ySLVp3yHkzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 21:12:31 +1100 (AEDT)
+Subject: Re: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
+To: Thomas Gleixner <tglx@linutronix.de>, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jason Cooper
+ <jason@lakedaemon.net>, "oss@buserror.net" <oss@buserror.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
+ <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <AM3PR04MB11852211CAFA9741B260D4A3915E0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <87bmkm95te.fsf@concordia.ellerman.id.au>
+ <AM3PR04MB11851996C67BF447B8192821915F0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <alpine.DEB.2.20.1711011808260.1942@nanos>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Message-ID: <4939804e-a796-d1ce-39cb-9b518dca588b@arm.com>
+Date: Thu, 2 Nov 2017 10:12:22 +0000
 MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.20.1711011808260.1942@nanos>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,48 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Minghuan Lian <minghuan.Lian@nxp.com>
+On 01/11/17 17:09, Thomas Gleixner wrote:
+> On Wed, 1 Nov 2017, Qiang Zhao wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> wrote
+>>>
+>>> Qiang Zhao <qiang.zhao@nxp.com> writes:
+>>>
+>>>> Hi all,
+>>>>
+>>>> Could anybody review this patchset and take action on them? Thank you!
+>>>
+>>> Who maintains this? I don't actually know, it's not powerpc code, or is it?
+>>
+>> Yes, it's not powerpc code, it is irqchip code, maintained by Thomas, Jason and Marc according to MAINTAINERS file.
+>>
+>> Hi Thomas, Jason and Marc,
+>>
+>> Could you keep an eye on this patchset? Thank you!
+> 
+> It's on my radar, but I have zero capacity at the moment. Hopefully Marc
+> can spare a few cycles.
+I'll try, but I haven't been cc-ed on that one. I'll try to dig it out.
 
-> -----Original Message-----
-> From: Bao Xiaowei [mailto:xiaowei.bao@nxp.com]
-> Sent: Tuesday, October 24, 2017 4:31 PM
-> To: robh+dt@kernel.org; mark.rutland@arm.com; catalin.marinas@arm.com;
-> will.deacon@arm.com; bhelgaas@google.com; shawnguo@kernel.org;
-> Madalin-cristian Bucur <madalin.bucur@nxp.com>; Sumit Garg
-> <sumit.garg@nxp.com>; Y.b. Lu <yangbo.lu@nxp.com>; hongtao.jia@nxp.com;
-> Andy Tang <andy.tang@nxp.com>; Leo Li <leoyang.li@nxp.com>;
-> kishon@ti.com; jingoohan1@gmail.com; pbrobinson@gmail.com;
-> songxiaowei@hisilicon.com; devicetree@vger.kernel.org; linux-arm-
-> kernel@lists.infradead.org; linux-kernel@vger.kernel.org; linux-
-> pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Z.q. Hou
-> <zhiqiang.hou@nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; M.h. Lian
-> <minghuan.lian@nxp.com>
-> Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
-> Subject: [PATCH 3/3] ARMv8: pcie: make the DWC EP driver support for
-> layerscape
->=20
-> Layerscape pcie controllers support RC or EP mode, Add the EP mode suppor=
-t in
-> Kconfig, the driver will support both RC and EP mode, and the driver is a=
-ble to
-> judge the pcie controllers work on RC or EP mode.
->=20
-> Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
-> ---
->  drivers/pci/dwc/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/pci/dwc/Kconfig b/drivers/pci/dwc/Kconfig index
-> 22ec82fcdea2..b5f507795779 100644
-> --- a/drivers/pci/dwc/Kconfig
-> +++ b/drivers/pci/dwc/Kconfig
-> @@ -108,6 +108,7 @@ config PCI_LAYERSCAPE
->  	depends on PCI_MSI_IRQ_DOMAIN
->  	select MFD_SYSCON
->  	select PCIE_DW_HOST
-> +	select PCIE_DW_EP
->  	help
->  	  Say Y here if you want PCIe controller support on Layerscape SoCs.
->=20
-> --
-> 2.14.1
+Thanks,
+
+	M.
+-- 
+Jazz is not dead. It just smells funny...
