@@ -1,30 +1,33 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yS96c5xRRzDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 14:09:28 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yS96d458TzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 14:09:29 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA239I72071385
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 23:09:25 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2dysq3chy9-1
+ vA2399Gk010916
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Nov 2017 23:09:27 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2dyqquaf99-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 23:09:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 23:09:27 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Thu, 2 Nov 2017 03:09:23 -0000
+ Thu, 2 Nov 2017 03:09:24 -0000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org, leitao@debian.org, gromero@linux.vnet.ibm.com,
  andrew@aj.id.au, jk@ozlabs.org, sam@mendozajonas.com
-Subject: [PATCH v3 1/4] powerpc: Don't enable FP/Altivec if not checkpointed
-Date: Thu,  2 Nov 2017 14:09:03 +1100
-Message-Id: <20171102030906.3061-1-cyrilbur@gmail.com>
+Subject: [PATCH v3 2/4] powerpc: Force reload for recheckpoint during tm {fp,
+ vec, vsx} unavailable exception
+Date: Thu,  2 Nov 2017 14:09:04 +1100
+In-Reply-To: <20171102030906.3061-1-cyrilbur@gmail.com>
+References: <20171102030906.3061-1-cyrilbur@gmail.com>
+Message-Id: <20171102030906.3061-2-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,150 +47,124 @@ exceptions while a thread is transactional requires a reclaim and
 recheckpoint to ensure the CPU has correct state for both sets of
 registers.
 
-Lazy save and restore of FP/Altivec cannot be done if a process is
-transactional. If a facility was enabled it must remain enabled whenever
-a thread is transactional.
+tm_reclaim() has optimisations to not always save the FP/Altivec
+registers to the checkpointed save area. This was originally done
+because the caller might have information that the checkpointed
+registers aren't valid due to lazy save and restore. We've also been a
+little vague as to how tm_reclaim() leaves the FP/Altivec state since it
+doesn't necessarily always save it to the thread struct. This has lead
+to an (incorrect) assumption that it leaves the checkpointed state on
+the CPU.
 
-Commit dc16b553c949 ("powerpc: Always restore FPU/VEC/VSX if hardware
-transactional memory in use") ensures that the facilities are always
-enabled if a thread is transactional. A bug in the introduced code may
-cause it to inadvertently enable a facility that was (and should remain)
-disabled. The problem with this extraneous enablement is that the
-registers for the erroneously enabled facility have not been correctly
-recheckpointed - the recheckpointing code assumed the facility would
-remain disabled.
+tm_recheckpoint() has similar optimisations in reverse. It may not
+always reload the checkpointed FP/Altivec registers from the thread
+struct before the trecheckpoint. It is therefore quite unclear where it
+expects to get the state from. This didn't help with the assumption
+made about tm_reclaim().
 
-Further compounding the issue, the transactional {fp,altivec,vsx}
-unavailable code has been incorrectly using the MSR to enable
-facilities. The presence of the {FP,VEC,VSX} bit in the regs->msr simply
-means if the registers are live on the CPU, not if the kernel should
-load them before returning to userspace. This has worked due to the bug
-mentioned above.
+This patch is a minimal fix for ease of backporting. A more correct fix
+which removes the msr parameter to tm_reclaim() and tm_recheckpoint()
+altogether has been upstreamed to apply on top of this patch.
 
-This causes transactional threads which return to their failure handler
-to observe incorrect checkpointed registers. Perhaps an example will
-help illustrate the problem:
-
-A userspace process is running and uses both FP and Altivec registers.
-This process then continues to run for some time without touching
-either sets of registers. The kernel subsequently disables the
-facilities as part of lazy save and restore. The userspace process then
-performs a tbegin and the CPU checkpoints 'junk' FP and Altivec
-registers. The process then performs a floating point instruction
-triggering a fp unavailable exception in the kernel.
-
-The kernel then loads the FP registers - and only the FP registers.
-Since the thread is transactional it must perform a reclaim and
-recheckpoint to ensure both the checkpointed registers and the
-transactional registers are correct. It then (correctly) enables
-MSR[FP] for the process. Later (on exception exist) the kernel also
-(inadvertently) enables MSR[VEC]. The process is then returned to
-userspace.
-
-Since the act of loading the FP registers doomed the transaction we know
-CPU will fail the transaction, restore its checkpointed registers, and
-return the process to its failure handler. The problem is that we're
-now running with Altivec enabled and the 'junk' checkpointed registers
-are restored. The kernel had only recheckpointed FP.
-
-This patch solves this by only activating FP/Altivec if userspace was
-using them when it entered the kernel and not simply if the process is
-transactional.
-
-Fixes: dc16b553c949 ("powerpc: Always restore FPU/VEC/VSX if hardware
-transactional memory in use")
+Fixes: dc3106690b20 ("powerpc: tm: Always use fp_state and vr_state to
+store live registers")
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
-V2: Rather than incorrectly using the MSR to enable {FP,VEC,VSX} use
-the load_fp and load_vec booleans to help restore_math() make the
-correct decision
-V3: Put tm_active_with_{fp,altivec}() inside a #ifdef
-CONFIG_PPC_TRANSACTIONAL_MEM 
+V2: Add this patch for ease of backporting the same fix as the next
+patch.
+V3: No change
 
-
- arch/powerpc/kernel/process.c | 18 ++++++++++++++++--
- arch/powerpc/kernel/traps.c   |  8 ++++----
- 2 files changed, 20 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/process.c |  4 ++--
+ arch/powerpc/kernel/traps.c   | 22 +++++++++++++++++-----
+ 2 files changed, 19 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a0c74bbf3454..cff887e67eb9 100644
+index cff887e67eb9..bf651f2fd3bd 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -97,9 +97,23 @@ static inline bool msr_tm_active(unsigned long msr)
- {
- 	return MSR_TM_ACTIVE(msr);
+@@ -867,6 +867,8 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 	if (!MSR_TM_SUSPENDED(mfmsr()))
+ 		return;
+ 
++	giveup_all(container_of(thr, struct task_struct, thread));
++
+ 	/*
+ 	 * If we are in a transaction and FP is off then we can't have
+ 	 * used FP inside that transaction. Hence the checkpointed
+@@ -886,8 +888,6 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 		memcpy(&thr->ckvr_state, &thr->vr_state,
+ 		       sizeof(struct thread_vr_state));
+ 
+-	giveup_all(container_of(thr, struct task_struct, thread));
+-
+ 	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
  }
-+
-+static bool tm_active_with_fp(struct task_struct *tsk)
-+{
-+	return msr_tm_active(tsk->thread.regs->msr) &&
-+		(tsk->thread.ckpt_regs.msr & MSR_FP);
-+}
-+
-+static bool tm_active_with_altivec(struct task_struct *tsk)
-+{
-+	return msr_tm_active(tsk->thread.regs->msr) &&
-+		(tsk->thread.ckpt_regs.msr & MSR_VEC);
-+}
- #else
- static inline bool msr_tm_active(unsigned long msr) { return false; }
- static inline void check_if_tm_restore_required(struct task_struct *tsk) { }
-+static inline bool tm_active_with_fp(struct task_struct *tsk) { return false; }
-+static inline bool tm_active_with_altivec(struct task_struct *tsk) { return false; }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
  
- bool strict_msr_control;
-@@ -232,7 +246,7 @@ EXPORT_SYMBOL(enable_kernel_fp);
- 
- static int restore_fp(struct task_struct *tsk)
- {
--	if (tsk->thread.load_fp || msr_tm_active(tsk->thread.regs->msr)) {
-+	if (tsk->thread.load_fp || tm_active_with_fp(tsk)) {
- 		load_fp_state(&current->thread.fp_state);
- 		current->thread.load_fp++;
- 		return 1;
-@@ -314,7 +328,7 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
- static int restore_altivec(struct task_struct *tsk)
- {
- 	if (cpu_has_feature(CPU_FTR_ALTIVEC) &&
--		(tsk->thread.load_vec || msr_tm_active(tsk->thread.regs->msr))) {
-+		(tsk->thread.load_vec || tm_active_with_altivec(tsk))) {
- 		load_vr_state(&tsk->thread.vr_state);
- 		tsk->thread.used_vr = 1;
- 		tsk->thread.load_vec++;
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 13c9dcdcba69..ef6a45969812 100644
+index ef6a45969812..a7d42c89a257 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -1487,7 +1487,7 @@ void fp_unavailable_tm(struct pt_regs *regs)
- 	/* Reclaim didn't save out any FPRs to transact_fprs. */
+@@ -1471,6 +1471,12 @@ void facility_unavailable_exception(struct pt_regs *regs)
  
- 	/* Enable FP for the task: */
--	regs->msr |= (MSR_FP | current->thread.fpexc_mode);
-+	current->thread.load_fp = 1;
+ void fp_unavailable_tm(struct pt_regs *regs)
+ {
++	/*
++	 * Save the MSR now because tm_reclaim_current() is likely to
++	 * change it
++	 */
++	unsigned long orig_msr = regs->msr;
++
+ 	/* Note:  This does not handle any kind of FP laziness. */
  
- 	/* This loads and recheckpoints the FP registers from
- 	 * thread.fpr[].  They will remain in registers after the
-@@ -1516,7 +1516,7 @@ void altivec_unavailable_tm(struct pt_regs *regs)
- 		 "MSR=%lx\n",
+ 	TM_DEBUG("FP Unavailable trap whilst transactional at 0x%lx, MSR=%lx\n",
+@@ -1495,10 +1501,10 @@ void fp_unavailable_tm(struct pt_regs *regs)
+ 	 * If VMX is in use, the VRs now hold checkpointed values,
+ 	 * so we don't want to load the VRs from the thread_struct.
+ 	 */
+-	tm_recheckpoint(&current->thread, MSR_FP);
++	tm_recheckpoint(&current->thread, orig_msr | MSR_FP);
+ 
+ 	/* If VMX is in use, get the transactional values back */
+-	if (regs->msr & MSR_VEC) {
++	if (orig_msr & MSR_VEC) {
+ 		msr_check_and_set(MSR_VEC);
+ 		load_vr_state(&current->thread.vr_state);
+ 		/* At this point all the VSX state is loaded, so enable it */
+@@ -1508,6 +1514,12 @@ void fp_unavailable_tm(struct pt_regs *regs)
+ 
+ void altivec_unavailable_tm(struct pt_regs *regs)
+ {
++	/*
++	 * Save the MSR now because tm_reclaim_current() is likely to
++	 * change it
++	 */
++	unsigned long orig_msr = regs->msr;
++
+ 	/* See the comments in fp_unavailable_tm().  This function operates
+ 	 * the same way.
+ 	 */
+@@ -1517,10 +1529,10 @@ void altivec_unavailable_tm(struct pt_regs *regs)
  		 regs->nip, regs->msr);
  	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
--	regs->msr |= MSR_VEC;
-+	current->thread.load_vec = 1;
- 	tm_recheckpoint(&current->thread, MSR_VEC);
+ 	current->thread.load_vec = 1;
+-	tm_recheckpoint(&current->thread, MSR_VEC);
++	tm_recheckpoint(&current->thread, orig_msr | MSR_VEC);
  	current->thread.used_vr = 1;
  
-@@ -1553,8 +1553,8 @@ void vsx_unavailable_tm(struct pt_regs *regs)
- 	/* This reclaims FP and/or VR regs if they're already enabled */
- 	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
- 
--	regs->msr |= MSR_VEC | MSR_FP | current->thread.fpexc_mode |
--		MSR_VSX;
-+	current->thread.load_vec = 1;
-+	current->thread.load_fp = 1;
- 
+-	if (regs->msr & MSR_FP) {
++	if (orig_msr & MSR_FP) {
+ 		msr_check_and_set(MSR_FP);
+ 		load_fp_state(&current->thread.fp_state);
+ 		regs->msr |= MSR_VSX;
+@@ -1559,7 +1571,7 @@ void vsx_unavailable_tm(struct pt_regs *regs)
  	/* This loads & recheckpoints FP and VRs; but we have
  	 * to be sure not to overwrite previously-valid state.
+ 	 */
+-	tm_recheckpoint(&current->thread, regs->msr & ~orig_msr);
++	tm_recheckpoint(&current->thread, orig_msr | MSR_FP | MSR_VEC);
+ 
+ 	msr_check_and_set(orig_msr & (MSR_FP | MSR_VEC));
+ 
 -- 
 2.15.0
