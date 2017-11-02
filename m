@@ -1,29 +1,19 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0063.outbound.protection.outlook.com [104.47.2.63])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yS79n015vzDr6m
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 12:42:04 +1100 (AEDT)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Michael Ellerman <mpe@ellerman.id.au>, Jason Cooper
- <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>,
- "oss@buserror.net" <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
-Date: Thu, 2 Nov 2017 01:41:58 +0000
-Message-ID: <AM3PR04MB1185C2803B8DC99F6AE57580915C0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1502075236-24078-1-git-send-email-qiang.zhao@nxp.com>
- <AM3PR04MB1185BD257F6BDE880B2C92B391470@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <AM3PR04MB11852211CAFA9741B260D4A3915E0@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <87bmkm95te.fsf@concordia.ellerman.id.au>
- <AM3PR04MB11851996C67BF447B8192821915F0@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <alpine.DEB.2.20.1711011808260.1942@nanos>
-In-Reply-To: <alpine.DEB.2.20.1711011808260.1942@nanos>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yS7Tb3M98zDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 12:55:46 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id x7so3389392pfa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Nov 2017 18:55:46 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH v2 0/2] Add POWER9 DD2.0 feature,
+ remove idle workarounds in DD2.1
+Date: Thu,  2 Nov 2017 12:55:33 +1100
+Message-Id: <20171102015535.30843-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Nov 2017, Thomas Gleixner <tglx@linutronix.de> wrote:
+Chnages since v1:
+- Change unnecessarily 'inverted else' conditions for the DD2.0
+  feature workarounds, noted by mpe.
+- One of the cases was incorrect, removing the code in for DD2.0 and
+  leaving it in for 2.1. Performance is further slightly improved with
+  this case fixed.
+  
 
+Nicholas Piggin (2):
+  powerpc: add POWER9_DD20 feature
+  powerpc/64s: idle skip POWER9 DD1 and DD2.0 specific workarounds on
+    DD2.1
 
-> -----Original Message-----
-> From: Thomas Gleixner [mailto:tglx@linutronix.de]
-> Sent: Thursday, November 02, 2017 1:10 AM
-> To: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>; Jason Cooper
-> <jason@lakedaemon.net>; Marc Zyngier <marc.zyngier@arm.com>;
-> oss@buserror.net; linuxppc-dev@lists.ozlabs.org; Xiaobo Xie
-> <xiaobo.xie@nxp.com>; linux-kernel@vger.kernel.org
-> Subject: RE: [PATCH v10 0/4] this patchset is to remove PPCisms for QEIC
->=20
-> On Wed, 1 Nov 2017, Qiang Zhao wrote:
-> > Michael Ellerman <mpe@ellerman.id.au> wrote
-> > >
-> > > Qiang Zhao <qiang.zhao@nxp.com> writes:
-> > >
-> > > > Hi all,
-> > > >
-> > > > Could anybody review this patchset and take action on them? Thank y=
-ou!
-> > >
-> > > Who maintains this? I don't actually know, it's not powerpc code, or =
-is it?
-> >
-> > Yes, it's not powerpc code, it is irqchip code, maintained by Thomas, J=
-ason and
-> Marc according to MAINTAINERS file.
-> >
-> > Hi Thomas, Jason and Marc,
-> >
-> > Could you keep an eye on this patchset? Thank you!
->=20
-> It's on my radar, but I have zero capacity at the moment. Hopefully Marc =
-can
-> spare a few cycles.
->=20
-> Thanks,
->=20
-> 	tglx
+ arch/powerpc/include/asm/cputable.h |  5 ++++-
+ arch/powerpc/kernel/cputable.c      | 20 ++++++++++++++++++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c   |  2 ++
+ arch/powerpc/kernel/idle_book3s.S   | 31 ++++++++++++++++++++-----------
+ 4 files changed, 46 insertions(+), 12 deletions(-)
 
-Thank you!
-
-Best Regards
-Qiang Zhao
+-- 
+2.15.0
