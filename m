@@ -1,18 +1,31 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySP9F6CqpzDr6D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 23:12:33 +1100 (AEDT)
-In-Reply-To: <6935a132af2cbfe21de0976ad29601b4dd54a4a6.1509374094.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [2/2] powerpc/kprobes: Dereference function pointers only if the
- address does not belong to kernel text
-Message-Id: <3ySP9F58rdz9t34@ozlabs.org>
-Date: Thu,  2 Nov 2017 23:12:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySP9M5XhRzDr9Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Nov 2017 23:12:38 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA2C9GDU020884
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 08:12:36 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e01bbxsjq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 08:12:35 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Thu, 2 Nov 2017 12:12:33 -0000
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
+Subject: [PATCH v2] powerpc/perf: Fix core-imc hotplug callback failure during
+ imc initialization
+Date: Thu,  2 Nov 2017 17:42:26 +0530
+Message-Id: <1509624746-5632-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +35,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-30 at 15:12:09 UTC, "Naveen N. Rao" wrote:
-> This makes the changes introduced in commit 83e840c770f2c5
-> ("powerpc64/elfv1: Only dereference function descriptor for non-text
-> symbols") to be specific to the kprobe subsystem.
-> 
-> We previously changed ppc_function_entry() to always check the provided
-> address to confirm if it needed to be dereferenced. This is actually
-> only an issue for kprobe blacklisted asm labels (through use of
-> _ASM_NOKPROBE_SYMBOL) and can cause other issues with ftrace. Also, the
-> additional checks are not really necessary for our other uses.
-> 
-> As such, move this check to the kprobes subsystem.
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Applied to powerpc fixes, thanks.
+Call trace observed during boot:
 
-https://git.kernel.org/powerpc/c/e6c4dcb308160115287afd87afb63b
+[    0.750749] PCI: CLS 0 bytes, default 128
+[    0.750855] Unpacking initramfs...
+[    1.570445] Freeing initrd memory: 23168K
+[    1.571090] rtas_flash: no firmware flash support
+[    1.573873] nest_capp0_imc performance monitor hardware support registered
+[    1.574006] nest_capp1_imc performance monitor hardware support registered
+[    1.579616] core_imc memory allocation for cpu 56 failed
+[    1.579730] Unable to handle kernel paging request for data at address 0xffa400010
+[    1.579797] Faulting instruction address: 0xc000000000bf3294
+0:mon> e
+cpu 0x0: Vector: 300 (Data Access) at [c000000ff38ff8d0]
+    pc: c000000000bf3294: mutex_lock+0x34/0x90
+    lr: c000000000bf3288: mutex_lock+0x28/0x90
+    sp: c000000ff38ffb50
+   msr: 9000000002009033
+   dar: ffa400010
+ dsisr: 80000
+  current = 0xc000000ff383de00
+  paca    = 0xc000000007ae0000	 softe: 0	 irq_happened: 0x01
+    pid   = 13, comm = cpuhp/0
+Linux version 4.11.0-39.el7a.ppc64le (mockbuild@ppc-058.build.eng.bos.redhat.com) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-16) (GCC) ) #1 SMP Tue Oct 3 07:42:44 EDT 2017
+0:mon> t
+[c000000ff38ffb80] c0000000002ddfac perf_pmu_migrate_context+0xac/0x470
+[c000000ff38ffc40] c00000000011385c ppc_core_imc_cpu_offline+0x1ac/0x1e0
+[c000000ff38ffc90] c000000000125758 cpuhp_invoke_callback+0x198/0x5d0
+[c000000ff38ffd00] c00000000012782c cpuhp_thread_fun+0x8c/0x3d0
+[c000000ff38ffd60] c0000000001678d0 smpboot_thread_fn+0x290/0x2a0
+[c000000ff38ffdc0] c00000000015ee78 kthread+0x168/0x1b0
+[c000000ff38ffe30] c00000000000b368 ret_from_kernel_thread+0x5c/0x74
 
-cheers
+
+While registering the cpuhoplug callbacks for core-imc, if we fails
+in the cpuhotplug online path for any random core (either because opal call to
+initialize the core-imc counters fails or because memory allocation fails for
+that core), ppc_core_imc_cpu_offline() will get invoked for other cpus who
+successfully returned from cpuhotplug online path. 
+
+But in the ppc_core_imc_cpu_offline() path we are trying to migrate the event
+context, when core-imc counters are not even initialized. Thus creating the
+above stack dump.
+
+Add a check to see if core-imc counters are enabled or not in the cpuhotplug
+offline path before migrating the context to handle this failing scenario.
+
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>   
+---
+ arch/powerpc/perf/imc-pmu.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index 8812624..a7a1db4 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -607,6 +607,20 @@ static int ppc_core_imc_cpu_offline(unsigned int cpu)
+ 	if (!cpumask_test_and_clear_cpu(cpu, &core_imc_cpumask))
+ 		return 0;
+ 
++	/*
++	 * Check whether core_imc is registered. We could end up here
++	 * if the cpuhotplug callback registration fails. i.e, callback
++	 * invokes the offline path for all sucessfully registered cpus.
++	 * At this stage, core_imc pmu will not be registered and we
++	 * should return here.
++	 *
++	 * We return with a zero since this is not an offline failure.
++	 * And cpuhp_setup_state() returns the actual failure reason
++	 * to the caller, which inturn will call the cleanup routine.
++	 */
++	if (!core_imc_pmu->pmu.event_init)
++		return 0;
++
+ 	/* Find any online cpu in that core except the current "cpu" */
+ 	ncpu = cpumask_any_but(cpu_sibling_mask(cpu), cpu);
+ 
+-- 
+2.7.4
