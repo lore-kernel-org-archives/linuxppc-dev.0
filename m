@@ -1,34 +1,29 @@
-Return-Path: <gromero@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yT1T61j1JzDrD1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 23:28:25 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA3CLUoK089649
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Nov 2017 08:28:23 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e0r831776-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Nov 2017 08:28:23 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Fri, 3 Nov 2017 08:28:22 -0400
-Subject: Re: [PATCH] selftests/powerpc: Check FP/VEC on exception in TM
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <1509564221-7049-1-git-send-email-gromero@linux.vnet.ibm.com>
- <1509574233.1667.4.camel@gmail.com>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Cc: leitao@debian.org
-Date: Fri, 3 Nov 2017 10:28:10 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yT26S0d1MzDrD1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 23:57:19 +1100 (AEDT)
+Date: Fri, 3 Nov 2017 07:57:08 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: jeyu@kernel.org, jikos@kernel.org, pmladek@suse.com, lpechacek@suse.cz,
+ pavel@ucw.cz, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v3 1/2] livepatch: send a fake signal to all blocking tasks
+Message-ID: <20171103125708.tzgn45iabb5sl36i@treble>
+References: <20171031114853.841-1-mbenes@suse.cz>
+ <20171031114853.841-2-mbenes@suse.cz>
+ <20171102130916.y4jl5a2tuhkivpcr@treble>
+ <alpine.LSU.2.21.1711030902250.31648@pobox.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1509574233.1667.4.camel@gmail.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <59FC60DA.6060100@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LSU.2.21.1711030902250.31648@pobox.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,42 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Cyril!
-
-On 01-11-2017 20:10, Cyril Bur wrote:
-> Thanks Gustavo,
+On Fri, Nov 03, 2017 at 09:02:50AM +0100, Miroslav Benes wrote:
+> On Thu, 2 Nov 2017, Josh Poimboeuf wrote:
 > 
-> I do have one more thought on an improvement for this test which is
-> that:
-> +	/* Counter for busy wait *
-> +	uint64_t counter = 0x1ff000000;
-> is a bit fragile, what we should do is have the test work out long it
-> should spin until it reliably gets a TM_CAUSE_FAC_UNAV failure and then
-> use that for these tests.
+> > On Tue, Oct 31, 2017 at 12:48:52PM +0100, Miroslav Benes wrote:
+> > > +
+> > > +/*
+> > > + * Sends a fake signal to all non-kthread tasks with TIF_PATCH_PENDING set.
+> > > + * Kthreads with TIF_PATCH_PENDING set are woken up. Only admin can request this
+> > > + * action currently.
+> > > + */
+> > > +void klp_force_signals(void)
+> > 
+> > Since "force" now has a separate meaning, it's a little confusing to
+> > have it in the name of this function.  How about klp_send_signals() or
+> > klp_signal()?
 > 
-> This will only become a problem if we were to change kernel heuristics
-> which is fine for now. I'll try to get that added soon but for now this
-> test has proven too useful to delay adding as is.
+> or klp_send_signal()?
 
-I see. Yup, 'counter' value was indeed determined experimentally under many
-different scenarios (VM and BM, different CPU loads, etc). At least if the
-heuristics changes hurting the test it will catch that pointing out that
-the expected failure did not happen, like:
+It can send more than one signal, so I'd prefer the plural form:
+klp_send_signals().
 
-Checking if FP/VEC registers are sane after a FP unavailable exception...
-If MSR.FP=0 MSR.VEC=0:
-    Expecting the transaction to fail, but it didn't
-    FP ok VEC ok
-...
-
-So it won't let the hurting change pass fine silently :-)
-
-
->> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
->> Signed-off-by: Breno Leitao <leitao@debian.org>
->> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-
-Thanks a lot for reviewing it.
-
-Cheers,
-Gustavo
+-- 
+Josh
