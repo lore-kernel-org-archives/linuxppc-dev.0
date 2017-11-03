@@ -1,18 +1,20 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySjNl6Cz8zDr8Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 11:23:35 +1100 (AEDT)
-In-Reply-To: <1509624746-5632-1-git-send-email-anju@linux.vnet.ibm.com>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, anju@linux.vnet.ibm.com
-Subject: Re: [v2] powerpc/perf: Fix core-imc hotplug callback failure during
- imc initialization
-Message-Id: <3ySjNl4zyhz9t16@ozlabs.org>
-Date: Fri,  3 Nov 2017 11:23:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySkV74vx5zDr1w
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 12:13:19 +1100 (AEDT)
+Message-ID: <1509671599.16627.53.camel@neuling.org>
+Subject: Re: [PATCH v2 2/2] powerpc/64s: idle skip POWER9 DD1 and DD2.0
+ specific workarounds on DD2.1
+From: Michael Neuling <mikey@neuling.org>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 03 Nov 2017 12:13:19 +1100
+In-Reply-To: <20171102015535.30843-3-npiggin@gmail.com>
+References: <20171102015535.30843-1-npiggin@gmail.com>
+ <20171102015535.30843-3-npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,60 +24,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-11-02 at 12:12:26 UTC, Anju T Sudhakar wrote:
-> From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> 
-> Call trace observed during boot:
-> 
-> [    0.750749] PCI: CLS 0 bytes, default 128
-> [    0.750855] Unpacking initramfs...
-> [    1.570445] Freeing initrd memory: 23168K
-> [    1.571090] rtas_flash: no firmware flash support
-> [    1.573873] nest_capp0_imc performance monitor hardware support registered
-> [    1.574006] nest_capp1_imc performance monitor hardware support registered
-> [    1.579616] core_imc memory allocation for cpu 56 failed
-> [    1.579730] Unable to handle kernel paging request for data at address 0xffa400010
-> [    1.579797] Faulting instruction address: 0xc000000000bf3294
-> 0:mon> e
-> cpu 0x0: Vector: 300 (Data Access) at [c000000ff38ff8d0]
->     pc: c000000000bf3294: mutex_lock+0x34/0x90
->     lr: c000000000bf3288: mutex_lock+0x28/0x90
->     sp: c000000ff38ffb50
->    msr: 9000000002009033
->    dar: ffa400010
->  dsisr: 80000
->   current = 0xc000000ff383de00
->   paca    = 0xc000000007ae0000	 softe: 0	 irq_happened: 0x01
->     pid   = 13, comm = cpuhp/0
-> Linux version 4.11.0-39.el7a.ppc64le (mockbuild@ppc-058.build.eng.bos.redhat.com) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-16) (GCC) ) #1 SMP Tue Oct 3 07:42:44 EDT 2017
-> 0:mon> t
-> [c000000ff38ffb80] c0000000002ddfac perf_pmu_migrate_context+0xac/0x470
-> [c000000ff38ffc40] c00000000011385c ppc_core_imc_cpu_offline+0x1ac/0x1e0
-> [c000000ff38ffc90] c000000000125758 cpuhp_invoke_callback+0x198/0x5d0
-> [c000000ff38ffd00] c00000000012782c cpuhp_thread_fun+0x8c/0x3d0
-> [c000000ff38ffd60] c0000000001678d0 smpboot_thread_fn+0x290/0x2a0
-> [c000000ff38ffdc0] c00000000015ee78 kthread+0x168/0x1b0
-> [c000000ff38ffe30] c00000000000b368 ret_from_kernel_thread+0x5c/0x74
-> 
-> 
-> While registering the cpuhoplug callbacks for core-imc, if we fails
-> in the cpuhotplug online path for any random core (either because opal call to
-> initialize the core-imc counters fails or because memory allocation fails for
-> that core), ppc_core_imc_cpu_offline() will get invoked for other cpus who
-> successfully returned from cpuhotplug online path. 
-> 
-> But in the ppc_core_imc_cpu_offline() path we are trying to migrate the event
-> context, when core-imc counters are not even initialized. Thus creating the
-> above stack dump.
-> 
-> Add a check to see if core-imc counters are enabled or not in the cpuhotplug
-> offline path before migrating the context to handle this failing scenario.
-> 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+On Thu, 2017-11-02 at 12:55 +1100, Nicholas Piggin wrote:
+> DD2.1 does not have to flush the ERAT after a state-loss idle. It also
+> does not have to save and restore MMCR0 (although it does have to save
+> restore in deep idle states, like other PMU registers).
 
-Applied to powerpc fixes, thanks.
+Minor nit, can we do this as two separate commits in case we discover one i=
+s
+broken.
 
-https://git.kernel.org/powerpc/c/7ecb37f62fe58e3e4d9b03443b92d2
+> Performance testing was done on a DD2.1 using only the stop0 idle state
+> (the shallowest state which supports state loss), using context_switch
+> selftest configured to ping-poing between two threads on the same core
+> and two different cores.
+>=20
+> Performance improvement for same core is 7.0%, different cores is 14.8%.
 
-cheers
+Noice!
+
+> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kernel/idle_book3s.S | 31 ++++++++++++++++++++-----------
+>  1 file changed, 20 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/idle_book3s.S
+> b/arch/powerpc/kernel/idle_book3s.S
+> index 175d49f468af..59657783d1d5 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -112,12 +112,14 @@ power9_save_additional_sprs:
+>  	std	r4, STOP_HFSCR(r13)
+> =20
+>  	mfspr	r3, SPRN_MMCRA
+> -	mfspr	r4, SPRN_MMCR1
+> +	mfspr	r4, SPRN_MMCR0
+>  	std	r3, STOP_MMCRA(r13)
+> -	std	r4, STOP_MMCR1(r13)
+> +	std	r4, _MMCR0(r1)
+> =20
+> -	mfspr	r3, SPRN_MMCR2
+> -	std	r3, STOP_MMCR2(r13)
+> +	mfspr	r3, SPRN_MMCR1
+> +	mfspr	r4, SPRN_MMCR2
+> +	std	r3, STOP_MMCR1(r13)
+> +	std	r4, STOP_MMCR2(r13)
+>  	blr
+> =20
+>  power9_restore_additional_sprs:
+> @@ -135,11 +137,14 @@ power9_restore_additional_sprs:
+>  	ld	r4, STOP_MMCRA(r13)
+>  	mtspr	SPRN_HFSCR, r3
+>  	mtspr	SPRN_MMCRA, r4
+> -	/* We have already restored PACA_MMCR0 */
+> -	ld	r3, STOP_MMCR1(r13)
+> -	ld	r4, STOP_MMCR2(r13)
+> -	mtspr	SPRN_MMCR1, r3
+> -	mtspr	SPRN_MMCR2, r4
+> +
+> +	ld	r3, _MMCR0(r1)
+> +	ld	r4, STOP_MMCR1(r13)
+> +	mtspr	SPRN_MMCR0, r3
+> +	mtspr	SPRN_MMCR1, r4
+> +
+> +	ld	r3, STOP_MMCR2(r13)
+> +	mtspr	SPRN_MMCR2, r3
+>  	blr
+> =20
+>  /*
+> @@ -350,6 +355,7 @@ power_enter_stop:
+>  	b 	pnv_wakeup_noloss
+> =20
+>  .Lhandle_esl_ec_set:
+> +BEGIN_FTR_SECTION
+>  	/*
+>  	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
+>  	 * state-loss idle. Saving and restoring MMCR0 over idle is a
+> @@ -357,6 +363,7 @@ power_enter_stop:
+>  	 */
+>  	mfspr	r4,SPRN_MMCR0
+>  	std	r4,_MMCR0(r1)
+> +END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
+> =20
+>  /*
+>   * Check if the requested state is a deep idle state.
+> @@ -542,15 +549,17 @@ pnv_restore_hyp_resource_arch300:
+>  	 * then clear bit 60 in MMCRA to ensure the PMU starts running.
+>  	 */
+>  	blt	cr3,1f
+> +BEGIN_FTR_SECTION
+>  	PPC_INVALIDATE_ERAT
+>  	ld	r1,PACAR1(r13)
+> +	ld	r4,_MMCR0(r1)
+> +	mtspr	SPRN_MMCR0,r4
+> +END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
+>  	mfspr	r4,SPRN_MMCRA
+>  	ori	r4,r4,(1 << (63-60))
+>  	mtspr	SPRN_MMCRA,r4
+>  	xori	r4,r4,(1 << (63-60))
+>  	mtspr	SPRN_MMCRA,r4
+> -	ld	r4,_MMCR0(r1)
+> -	mtspr	SPRN_MMCR0,r4
+>  1:
+>  	/*
+>  	 * POWER ISA 3. Use PSSCR to determine if we
