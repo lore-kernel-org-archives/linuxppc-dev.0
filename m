@@ -1,25 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x230.google.com (mail-pg0-x230.google.com
- [IPv6:2607:f8b0:400e:c05::230])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySphD0t7dzDqwS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 15:22:19 +1100 (AEDT)
-Received: by mail-pg0-x230.google.com with SMTP id j3so1487072pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 21:22:19 -0700 (PDT)
-Date: Fri, 3 Nov 2017 15:22:08 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySq3P06d3zDr1w
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 15:38:56 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id v78so1506273pgb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 21:38:56 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/2] powerpc/64s: idle skip POWER9 DD1 and DD2.0
- specific workarounds on DD2.1
-Message-ID: <20171103152208.75b4113b@roar.ozlabs.ibm.com>
-In-Reply-To: <1509671599.16627.53.camel@neuling.org>
-References: <20171102015535.30843-1-npiggin@gmail.com>
- <20171102015535.30843-3-npiggin@gmail.com>
- <1509671599.16627.53.camel@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH] KVM: PPC: Book3S HV: Handle host system reset in guest
+ mode
+Date: Fri,  3 Nov 2017 15:38:03 +1100
+Message-Id: <20171103043803.6126-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +24,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 03 Nov 2017 12:13:19 +1100
-Michael Neuling <mikey@neuling.org> wrote:
+If the host takes a system reset interrupt while a guest is running,
+the CPU must exit the guest before processing the host exception
+handler.
 
-> On Thu, 2017-11-02 at 12:55 +1100, Nicholas Piggin wrote:
-> > DD2.1 does not have to flush the ERAT after a state-loss idle. It also
-> > does not have to save and restore MMCR0 (although it does have to save
-> > restore in deep idle states, like other PMU registers).  
-> 
-> Minor nit, can we do this as two separate commits in case we discover one is
-> broken.
+After this patch, taking a sysrq+x with a CPU running in a guest
+gives a trace like this:
 
-Good idea, resent.
+   cpu 0x27: Vector: 100 (System Reset) at [c000000fdf5776f0]
+       pc: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
+       lr: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
+       sp: c000000fdf577850
+      msr: 9000000002803033
+     current = 0xc000000fdf4b1e00
+     paca    = 0xc00000000fd4d680	 softe: 3	 irq_happened: 0x01
+       pid   = 6608, comm = qemu-system-ppc
+   Linux version 4.14.0-rc7-01489-g47e1893a404a-dirty #26 SMP
+   [c000000fdf577a00] c008000010159dd4 kvmppc_vcpu_run_hv+0x3dc/0x12d0 [kvm_hv]
+   [c000000fdf577b30] c0080000100a537c kvmppc_vcpu_run+0x44/0x60 [kvm]
+   [c000000fdf577b60] c0080000100a1ae0 kvm_arch_vcpu_ioctl_run+0x118/0x310 [kvm]
+   [c000000fdf577c00] c008000010093e98 kvm_vcpu_ioctl+0x530/0x7c0 [kvm]
+   [c000000fdf577d50] c000000000357bf8 do_vfs_ioctl+0xd8/0x8c0
+   [c000000fdf577df0] c000000000358448 SyS_ioctl+0x68/0x100
+   [c000000fdf577e30] c00000000000b220 system_call+0x58/0x6c
+   --- Exception: c01 (System Call) at 00007fff76868df0
+   SP (7fff7069baf0) is in userspace
+
+Fixes: e36d0a2ed5 ("powerpc/powernv: Implement NMI IPI with OPAL_SIGNAL_SYSTEM_RESET")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+--
+
+It has always been possible to sreset the host with direct scom
+access, but the patch e36d0a2ed5 has significantly expanded this
+functionality so in practice this is a required as a fix for it.
+
+For 4.14 I think we will either need to fix this, or disable
+e36d0a2ed5, otherwise the host could be exposed to the guest MMU
+(at least with hash).
 
 Thanks,
 Nick
+---
+ arch/powerpc/include/asm/hw_irq.h       | 1 +
+ arch/powerpc/kernel/exceptions-64s.S    | 2 ++
+ arch/powerpc/kernel/irq.c               | 3 ++-
+ arch/powerpc/kvm/book3s_hv.c            | 7 ++++++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 4 ++++
+ 5 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 92a3e9a79cb4..a8bbac425ae6 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -40,6 +40,7 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++extern void replay_system_reset(void);
+ extern void __replay_interrupt(unsigned int vector);
+ 
+ extern void timer_interrupt(struct pt_regs *);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 651e1a0114ed..bff2ed6e3c3c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -113,6 +113,7 @@ EXC_VIRT_NONE(0x4000, 0x100)
+ 	cmpwi	cr3,r10,2 ;						\
+ 	BRANCH_TO_C000(r10, system_reset_idle_common) ;			\
+ 1:									\
++	KVMTEST_PR(n) ;							\
+ 	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #else
+ #define IDLETEST NOTEST
+@@ -129,6 +130,7 @@ EXC_REAL_BEGIN(system_reset, 0x100, 0x100)
+ 
+ EXC_REAL_END(system_reset, 0x100, 0x100)
+ EXC_VIRT_NONE(0x4100, 0x100)
++TRAMP_KVM(PACA_EXNMI, 0x100)
+ 
+ #ifdef CONFIG_PPC_P7_NAP
+ EXC_COMMON_BEGIN(system_reset_idle_common)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index efbadcbbf694..7e8259106944 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -437,7 +437,7 @@ static const u8 srr1_to_lazyirq[0x10] = {
+ 	PACA_IRQ_HMI,
+ 	0, 0, 0, 0, 0 };
+ 
+-static noinline void replay_system_reset(void)
++void replay_system_reset(void)
+ {
+ 	struct pt_regs regs;
+ 
+@@ -447,6 +447,7 @@ static noinline void replay_system_reset(void)
+ 	system_reset_exception(&regs);
+ 	get_paca()->in_nmi = 0;
+ }
++EXPORT_SYMBOL_GPL(replay_system_reset);
+ 
+ void irq_set_pending_from_srr1(unsigned long srr1)
+ {
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 8f34715cfbff..31a362669fea 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -47,6 +47,7 @@
+ 
+ #include <asm/reg.h>
+ #include <asm/ppc-opcode.h>
++#include <asm/asm-prototypes.h>
+ #include <asm/disassemble.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+@@ -1089,9 +1090,10 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		vcpu->stat.ext_intr_exits++;
+ 		r = RESUME_GUEST;
+ 		break;
+-	/* HMI is hypervisor interrupt and host has handled it. Resume guest.*/
++	/* SR/HMI/PMI are HV interrupts that host has handled. Resume guest.*/
+ 	case BOOK3S_INTERRUPT_HMI:
+ 	case BOOK3S_INTERRUPT_PERFMON:
++	case BOOK3S_INTERRUPT_SYSTEM_RESET:
+ 		r = RESUME_GUEST;
+ 		break;
+ 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+@@ -2604,6 +2606,9 @@ static void set_irq_happened(int trap)
+ 	case BOOK3S_INTERRUPT_HMI:
+ 		local_paca->irq_happened |= PACA_IRQ_HMI;
+ 		break;
++	case BOOK3S_INTERRUPT_SYSTEM_RESET:
++		replay_system_reset();
++		break;
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 68bf0f14a962..74958ad5efb9 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1427,6 +1427,10 @@ guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
+ 	/* don't overwrite fault_dar/fault_dsisr if HDSI */
+ 	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
+ 	beq	mc_cont
++
++	cmpwi	r12, BOOK3S_INTERRUPT_SYSTEM_RESET
++	beq	mc_cont
++
+ 	std	r6, VCPU_FAULT_DAR(r9)
+ 	stw	r7, VCPU_FAULT_DSISR(r9)
+ 
+-- 
+2.15.0
