@@ -1,35 +1,15 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yT60Z6cjnzDrD1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2017 02:52:30 +1100 (AEDT)
-Subject: Re: [PATCH v12 08/11] arm64/kasan: add and use kasan_map_populate()
-To: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Cc: Will Deacon <will.deacon@arm.com>, mhocko@kernel.org,
- akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org,
- kasan-dev@googlegroups.com, borntraeger@de.ibm.com,
- heiko.carstens@de.ibm.com, davem@davemloft.net, willy@infradead.org,
- ard.biesheuvel@linaro.org, mark.rutland@arm.com,
- catalin.marinas@arm.com, sam@ravnborg.org, mgorman@techsingularity.net,
- steven.sistare@oracle.com, daniel.m.jordan@oracle.com, bob.picco@oracle.com
-References: <20171013173214.27300-1-pasha.tatashin@oracle.com>
- <20171013173214.27300-9-pasha.tatashin@oracle.com>
- <0ae84532-8dcb-10aa-9d69-79d7025b089e@virtuozzo.com>
- <ad8c5715-dc4f-1fa7-c25b-e08df68643d0@oracle.com>
- <20171018170651.GG21820@arm.com>
- <e32c677e-62ac-8977-2f9d-7fe7bda4b547@oracle.com>
- <f1cb8d18-4d0f-1f88-c3c5-0add8c6c077a@virtuozzo.com>
- <a587687a-5d90-c03d-f3d2-1ea9cab1b0c4@oracle.com>
- <07ab0b77-0e2a-97b5-73ff-a6598bcb94cd@virtuozzo.com>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Message-ID: <7f4e35ba-2448-16ba-63e1-229eb30b068b@oracle.com>
-Date: Fri, 3 Nov 2017 11:50:53 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yT7cl10KxzDrD1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2017 04:05:25 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>
+From: Florian Weimer <fweimer@redhat.com>
+Subject: POWER: Unexpected fault when writing to brk-allocated memory
+Message-ID: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
+Date: Fri, 3 Nov 2017 18:05:20 +0100
 MIME-Version: 1.0
-In-Reply-To: <07ab0b77-0e2a-97b5-73ff-a6598bcb94cd@virtuozzo.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,30 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> 1. Replace these two patches:
->>
->> arm64/kasan: add and use kasan_map_populate()
->> x86/kasan: add and use kasan_map_populate()
->>
->> With:
->>
->> x86/mm/kasan: don't use vmemmap_populate() to initialize
->>   shadow
->> arm64/mm/kasan: don't use vmemmap_populate() to initialize
->>   shadow
->>
-> 
-> Pavel, could you please send the patches? These patches doesn't interfere with rest of the series,
-> so I think it should be enough to send just two patches to replace the old ones.
-> 
+We are seeing an issue on ppc64le and ppc64 (and perhaps on some arm 
+variant, but I have not seen it on our own builders) where running 
+localedef as part of the glibc build crashes with a segmentation fault.
 
-Hi Andrey,
+Kernel version is 4.13.9 (Fedora 26 variant).
 
-I asked Michal and Andrew how to proceed but never received a reply from 
-them. The patches independent from the deferred page init series as long 
-as they come before the series.
+I have only seen this with an explicit loader invocation, like this:
 
-Anyway, I will post these two patches to the mailing list soon. But, not 
-really sure if they will be taken into mm-tree.
+while I18NPATH=. /lib64/ld64.so.1 /usr/bin/localedef 
+--alias-file=../intl/locale.alias --no-archive -i locales/nl_AW -c -f 
+charmaps/UTF-8 
+--prefix=/builddir/build/BUILDROOT/glibc-2.26-16.fc27.ppc64 nl_AW ; do : 
+; done
 
-Pavel
+To be run in the localedata subdirectory of a glibc *source* tree, after 
+a build.  You may have to create the 
+/builddir/build/BUILDROOT/glibc-2.26-16.fc27.ppc64/usr/lib/locale 
+directory.  I have only reproduced this inside a Fedora 27 chroot on a 
+Fedora 26 host, but there it does not matter if you run the old (chroot) 
+or newly built binary.
+
+I filed this as a glibc bug for tracking:
+
+   https://sourceware.org/bugzilla/show_bug.cgi?id=22390
+
+There's an strace log and a coredump from the crash.
+
+I think the data shows that the address in question should be writable.
+
+The crossed 0x0000800000000000 binary is very suggestive.  I think that 
+based on the operation of glibc's malloc, this write would be the first 
+time this happens during the lifetime of the process.
+
+Does that ring any bells?  Is there anything I can do to provide more 
+data?  The host is an LPAR with a stock Fedora 26 kernel, so I can use 
+any diagnostics tool which is provided by Fedora.
+
+I can try to come up with a better reproducer, but that appears to be 
+difficult.
+
+Thanks,
+Florian
