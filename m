@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySmSW25ggzDr9L
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 13:42:01 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySmSW22y4zDr8c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 13:42:02 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA32crjH079831
+ vA32crdQ146237
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Nov 2017 22:41:59 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e0akgnrwm-1
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e0cdf9151-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Nov 2017 22:41:59 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 3 Nov 2017 02:41:58 -0000
+ Fri, 3 Nov 2017 02:41:57 -0000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  stewart@linux.vnet.ibm.com
 Cc: dwmw2@infradead.org, computersforpeace@gmail.com,
  boris.brezillon@free-electrons.com, sjitindarsingh@gmail.com
-Subject: [PATCH v5 02/10] mtd: powernv_flash: Don't treat OPAL_SUCCESS as an
- error
-Date: Fri,  3 Nov 2017 13:41:38 +1100
+Subject: [PATCH v5 08/10] powerpc/opal: Add
+ opal_async_wait_response_interruptible() to opal-async
+Date: Fri,  3 Nov 2017 13:41:44 +1100
 In-Reply-To: <20171103024146.17086-1-cyrilbur@gmail.com>
 References: <20171103024146.17086-1-cyrilbur@gmail.com>
-Message-Id: <20171103024146.17086-3-cyrilbur@gmail.com>
+Message-Id: <20171103024146.17086-9-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,71 +38,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While this driver expects to interact asynchronously, OPAL is well
-within its rights to return OPAL_SUCCESS to indicate that the operation
-completed without the need for a callback. We shouldn't treat
-OPAL_SUCCESS as an error rather we should wrap up and return promptly to
-the caller.
+This patch adds an _interruptible version of opal_async_wait_response().
+This is useful when a long running OPAL call is performed on behalf of a
+userspace thread, for example, the opal_flash_{read,write,erase}
+functions performed by the powernv-flash MTD driver.
+
+It is foreseeable that these functions would take upwards of two minutes
+causing the wait_event() to block long enough to cause hung task
+warnings. Furthermore, wait_event_interruptible() is preferable as
+otherwise there is no way for signals to stop the process which is going
+to be confusing in userspace.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
-I'll note here that currently no OPAL exists that will return
-OPAL_SUCCESS so there isn't the possibility of a bug today.
----
- drivers/mtd/devices/powernv_flash.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/opal.h             |  2 +
+ arch/powerpc/platforms/powernv/opal-async.c | 87 +++++++++++++++++++++++++++--
+ 2 files changed, 85 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-index f9ec38281ff2..ca3ca6adf71e 100644
---- a/drivers/mtd/devices/powernv_flash.c
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -63,7 +63,6 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 	if (token < 0) {
- 		if (token != -ERESTARTSYS)
- 			dev_err(dev, "Failed to get an async token\n");
--
- 		return token;
- 	}
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0078eb5acf98..f95ca4560bfa 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -307,6 +307,8 @@ extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
+ extern int opal_async_get_token_interruptible(void);
+ extern int opal_async_release_token(int token);
+ extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
++extern int opal_async_wait_response_interruptible(uint64_t token,
++		struct opal_msg *msg);
+ extern int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data);
  
-@@ -83,21 +82,25 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 		return -EIO;
- 	}
+ struct rtc_time;
+diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
+index fbae8a37ce2c..e2004606b75b 100644
+--- a/arch/powerpc/platforms/powernv/opal-async.c
++++ b/arch/powerpc/platforms/powernv/opal-async.c
+@@ -26,6 +26,8 @@
+ enum opal_async_token_state {
+ 	ASYNC_TOKEN_UNALLOCATED = 0,
+ 	ASYNC_TOKEN_ALLOCATED,
++	ASYNC_TOKEN_DISPATCHED,
++	ASYNC_TOKEN_ABANDONED,
+ 	ASYNC_TOKEN_COMPLETED
+ };
  
-+	if (rc == OPAL_SUCCESS)
-+		goto out_success;
-+
- 	if (rc != OPAL_ASYNC_COMPLETION) {
- 		dev_err(dev, "opal_flash_async_op(op=%d) failed (rc %d)\n",
- 				op, rc);
--		opal_async_release_token(token);
--		return -EIO;
-+		rc = -EIO;
-+		goto out;
- 	}
- 
- 	rc = opal_async_wait_response(token, &msg);
--	opal_async_release_token(token);
- 	if (rc) {
- 		dev_err(dev, "opal async wait failed (rc %d)\n", rc);
--		return -EIO;
-+		rc = -EIO;
-+		goto out;
- 	}
- 
- 	rc = opal_get_async_rc(msg);
-+out_success:
- 	if (rc == OPAL_SUCCESS) {
- 		rc = 0;
- 		if (retlen)
-@@ -106,6 +109,8 @@ static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
- 		rc = -EIO;
- 	}
- 
-+out:
-+	opal_async_release_token(token);
- 	return rc;
+@@ -58,8 +60,10 @@ static int __opal_async_get_token(void)
  }
  
+ /*
+- * Note: If the returned token is used in an opal call and opal returns
+- * OPAL_ASYNC_COMPLETION you MUST opal_async_wait_response() before
++ * Note: If the returned token is used in an opal call and opal
++ * returns OPAL_ASYNC_COMPLETION you MUST one of
++ * opal_async_wait_response() or
++ * opal_async_wait_response_interruptible() at least once before
+  * calling another other opal_async_* function
+  */
+ int opal_async_get_token_interruptible(void)
+@@ -96,6 +100,16 @@ static int __opal_async_release_token(int token)
+ 		opal_async_tokens[token].state = ASYNC_TOKEN_UNALLOCATED;
+ 		rc = 0;
+ 		break;
++	/*
++	 * DISPATCHED and ABANDONED tokens must wait for OPAL to
++	 * respond.
++	 * Mark a DISPATCHED token as ABANDONED so that the response
++	 * response handling code knows no one cares and that it can
++	 * free it then.
++	 */
++	case ASYNC_TOKEN_DISPATCHED:
++		opal_async_tokens[token].state = ASYNC_TOKEN_ABANDONED;
++		/* Fall through */
+ 	default:
+ 		rc = 1;
+ 	}
+@@ -128,7 +142,11 @@ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Wakeup the poller before we wait for events to speed things
++	/*
++	 * There is no need to mark the token as dispatched, wait_event()
++	 * will block until the token completes.
++	 *
++	 * Wakeup the poller before we wait for events to speed things
+ 	 * up on platforms or simulators where the interrupts aren't
+ 	 * functional.
+ 	 */
+@@ -141,11 +159,66 @@ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
+ }
+ EXPORT_SYMBOL_GPL(opal_async_wait_response);
+ 
++int opal_async_wait_response_interruptible(uint64_t token, struct opal_msg *msg)
++{
++	unsigned long flags;
++	int ret;
++
++	if (token >= opal_max_async_tokens) {
++		pr_err("%s: Invalid token passed\n", __func__);
++		return -EINVAL;
++	}
++
++	if (!msg) {
++		pr_err("%s: Invalid message pointer passed\n", __func__);
++		return -EINVAL;
++	}
++
++	/*
++	 * The first time this gets called we mark the token as DISPATCHED
++	 * so that if wait_event_interruptible() returns not zero and the
++	 * caller frees the token, we know not to actually free the token
++	 * until the response comes.
++	 *
++	 * Only change if the token is ALLOCATED - it may have been
++	 * completed even before the caller gets around to calling this
++	 * the first time.
++	 *
++	 * There is also a dirty great comment at the token allocation
++	 * function that if the opal call returns OPAL_ASYNC_COMPLETION to
++	 * the caller then the caller *must* call this or the not
++	 * interruptible version before doing anything else with the
++	 * token.
++	 */
++	if (opal_async_tokens[token].state == ASYNC_TOKEN_ALLOCATED) {
++		spin_lock_irqsave(&opal_async_comp_lock, flags);
++		if (opal_async_tokens[token].state == ASYNC_TOKEN_ALLOCATED)
++			opal_async_tokens[token].state = ASYNC_TOKEN_DISPATCHED;
++		spin_unlock_irqrestore(&opal_async_comp_lock, flags);
++	}
++
++	/*
++	 * Wakeup the poller before we wait for events to speed things
++	 * up on platforms or simulators where the interrupts aren't
++	 * functional.
++	 */
++	opal_wake_poller();
++	ret = wait_event_interruptible(opal_async_wait,
++			opal_async_tokens[token].state ==
++			ASYNC_TOKEN_COMPLETED);
++	if (!ret)
++		memcpy(msg, &opal_async_tokens[token].response, sizeof(*msg));
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(opal_async_wait_response_interruptible);
++
+ /* Called from interrupt context */
+ static int opal_async_comp_event(struct notifier_block *nb,
+ 		unsigned long msg_type, void *msg)
+ {
+ 	struct opal_msg *comp_msg = msg;
++	enum opal_async_token_state state;
+ 	unsigned long flags;
+ 	uint64_t token;
+ 
+@@ -153,11 +226,17 @@ static int opal_async_comp_event(struct notifier_block *nb,
+ 		return 0;
+ 
+ 	token = be64_to_cpu(comp_msg->params[0]);
+-	memcpy(&opal_async_tokens[token].response, comp_msg, sizeof(*comp_msg));
+ 	spin_lock_irqsave(&opal_async_comp_lock, flags);
++	state = opal_async_tokens[token].state;
+ 	opal_async_tokens[token].state = ASYNC_TOKEN_COMPLETED;
+ 	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
+ 
++	if (state == ASYNC_TOKEN_ABANDONED) {
++		/* Free the token, no one else will */
++		opal_async_release_token(token);
++		return 0;
++	}
++	memcpy(&opal_async_tokens[token].response, comp_msg, sizeof(*comp_msg));
+ 	wake_up(&opal_async_wait);
+ 
+ 	return 0;
 -- 
 2.15.0
