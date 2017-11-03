@@ -1,21 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ySy8c4GnWzDqvT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 20:58:56 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: anju@linux.vnet.ibm.com, gpiccoli@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- maddy@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com, npiggin@gmail.com,
- paulus@ozlabs.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.14-6 tag
-Date: Fri, 03 Nov 2017 20:58:46 +1100
-Message-ID: <87375v7kfd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yT1T61j1JzDrD1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 23:28:25 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA3CLUoK089649
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Nov 2017 08:28:23 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e0r831776-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Nov 2017 08:28:23 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Fri, 3 Nov 2017 08:28:22 -0400
+Subject: Re: [PATCH] selftests/powerpc: Check FP/VEC on exception in TM
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1509564221-7049-1-git-send-email-gromero@linux.vnet.ibm.com>
+ <1509574233.1667.4.camel@gmail.com>
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Cc: leitao@debian.org
+Date: Fri, 3 Nov 2017 10:28:10 -0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+In-Reply-To: <1509574233.1667.4.camel@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <59FC60DA.6060100@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,95 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+Hi Cyril!
 
-Hi Linus,
+On 01-11-2017 20:10, Cyril Bur wrote:
+> Thanks Gustavo,
+> 
+> I do have one more thought on an improvement for this test which is
+> that:
+> +	/* Counter for busy wait *
+> +	uint64_t counter = 0x1ff000000;
+> is a bit fragile, what we should do is have the test work out long it
+> should spin until it reliably gets a TM_CAUSE_FAC_UNAV failure and then
+> use that for these tests.
+> 
+> This will only become a problem if we were to change kernel heuristics
+> which is fine for now. I'll try to get that added soon but for now this
+> test has proven too useful to delay adding as is.
 
-Please pull some more powerpc fixes for 4.14.
+I see. Yup, 'counter' value was indeed determined experimentally under many
+different scenarios (VM and BM, different CPU loads, etc). At least if the
+heuristics changes hurting the test it will catch that pointing out that
+the expected failure did not happen, like:
 
-This is bigger than I like to send at rc7, but that's at least partly
-because I didn't send any fixes last week. If it wasn't for the IMC
-driver, which is new and getting heavy testing, the diffstat would look
-a bit better. I've also added ftrace on big endian to my test suite, so
-we shouldn't break that again in future.
+Checking if FP/VEC registers are sane after a FP unavailable exception...
+If MSR.FP=0 MSR.VEC=0:
+    Expecting the transaction to fail, but it didn't
+    FP ok VEC ok
+...
 
-cheers
+So it won't let the hurting change pass fine silently :-)
 
 
-The following changes since commit 0d8ba16278ec30a262d931875018abee332f926f:
+>> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+>> Signed-off-by: Breno Leitao <leitao@debian.org>
+>> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 
-  powerpc/perf: Fix IMC initialization crash (2017-10-13 20:08:40 +1100)
+Thanks a lot for reviewing it.
 
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.14-6
-
-for you to fetch changes up to 7ecb37f62fe58e3e4d9b03443b92d213b2c108ce:
-
-  powerpc/perf: Fix core-imc hotplug callback failure during imc initialization (2017-11-03 09:38:05 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.14 #6
-
-A fix to the handling of misaligned paste instructions (P9 only), where a change
-to a #define has caused the check for the instruction to always fail.
-
-The preempt handling was unbalanced in the radix THP flush (P9 only). Though we
-don't generally use preempt we want to keep it working as much as possible.
-
-Two fixes for IMC (P9 only), one when booting with restricted number of CPUs and
-one in the error handling when initialisation fails due to firmware etc.
-
-A revert to fix function_graph on big endian machines, and then a rework of the
-reverted patch to fix kprobes blacklist handling on big endian machines.
-
-Thanks to:
-  Anju T Sudhakar, Guilherme G. Piccoli, Madhavan Srinivasan, Naveen N. Rao,
-  Nicholas Piggin, Paul Mackerras.
-
-----------------------------------------------------------------
-Guilherme G. Piccoli (1):
-      powerpc/perf: Fix IMC allocation routine
-
-Madhavan Srinivasan (1):
-      powerpc/perf: Fix core-imc hotplug callback failure during imc initialization
-
-Naveen N. Rao (2):
-      Revert "powerpc64/elfv1: Only dereference function descriptor for non-text symbols"
-      powerpc/kprobes: Dereference function pointers only if the address does not belong to kernel text
-
-Nicholas Piggin (1):
-      powerpc/64s/radix: Fix preempt imbalance in TLB flush
-
-Paul Mackerras (1):
-      powerpc: Fix check for copy/paste instructions in alignment handler
-
- arch/powerpc/include/asm/code-patching.h | 10 +---------
- arch/powerpc/kernel/align.c              |  2 +-
- arch/powerpc/kernel/kprobes.c            |  7 ++++++-
- arch/powerpc/mm/tlb-radix.c              |  2 ++
- arch/powerpc/perf/imc-pmu.c              | 18 ++++++++++++++++--
- 5 files changed, 26 insertions(+), 13 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZ/D3XAAoJEFHr6jzI4aWAcKgP/0TdSPM55D0NTfh5nrXo+AuA
-5m7iE3gr2QGkodrVwjSzm1W3V6pOMHRZjjm9W7V7PkYdxoqgZSnUif/NSZyrSKWl
-oAgD1SFSgNi9Eqa2P/vCbIPmZ7JFLuWwa93EskfK4dtg4NAEVzS1VkQKO74+W5mg
-JMZrmIZVHJfeVYLhhU/R/oHZVVKRPdVG4joI6yV0Cs/DhkL/lcwH+4P2q3GkzcIf
-/NDvwGBM9WPqVscHK2sUjYOAoI0+Mm7zzNWmdqxntm+I6vMrh7ysKtXKG/VTtMRO
-12FbmpEJTogT35zL186vLRsjvxTwtxJV/JzQZPxUm1KtZuBe6+VUcYYUWlTlfvj4
-gqACP13aSpDQZ1gVQVcS9mVrHGwIMLiM07Sj2+nJu+8LggWogqqWT34P4NR1o/8b
-b24Hnyd1/KdiCrXdBekDLZAwKt1oeqnHT6vJaRfHSav033mIBApmqhdj/7n/Soh2
-CN0rbnseVlb2tlwyooYwsackv0piK06UQKX8JI4372mBFP2RU7JUaspP6QSq9zpt
-4VMa/vIMk2xyXDkhlgB0rwDqR+ZiV9nCapMEs+MOzUwrdyzfxSxkqB/BTlqahuqF
-kPVrXPFbXalGPPCfWAu0EQzoNh7/qr1nI4DiuOQKF6DhF04rmNSOX5OZBMmUc4Hg
-NzN5lh/KcY/lf4pAd63j
-=+MKP
------END PGP SIGNATURE-----
---=-=-=--
+Cheers,
+Gustavo
