@@ -1,14 +1,23 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yShp50qPlzDr8Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 10:57:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ySjJf1QD4zDr8Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Nov 2017 11:20:02 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/cell: Remove axonram driver
-Date: Fri,  3 Nov 2017 10:56:32 +1100
-Message-Id: <1509666992-4649-1-git-send-email-mpe@ellerman.id.au>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/perf: Fix core-imc hotplug callback failure
+ during imc initialization
+In-Reply-To: <b0a3f5ac-0805-4fad-a81c-aa23890ce6df@linux.vnet.ibm.com>
+References: <1509443398-26539-1-git-send-email-anju@linux.vnet.ibm.com>
+ <87efpi95wb.fsf@concordia.ellerman.id.au>
+ <b0a3f5ac-0805-4fad-a81c-aa23890ce6df@linux.vnet.ibm.com>
+Date: Fri, 03 Nov 2017 11:19:58 +1100
+Message-ID: <87lgjo6wnl.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,470 +27,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The QS21/22 IBM Cell blades had a southbridge chip called Axon. This
-could have DDR DIMMs attached to it, though they were not directly
-usable as RAM, instead they could be used as some sort of buffer, if
-applications were written specifically to use the block device
-provided by the driver.
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
 
-Although the driver supposedly had direct access support, it was
-apparently never tested (see commit 91117a20245b ("axonram: Fix bug in
-direct_access")).
+> On Wednesday 01 November 2017 06:22 AM, Michael Ellerman wrote:
+>> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
+>>
+>>> Call trace observed during boot:
+>> What's the actual oops?
+>
+> I could recreate this in mambo with CPUS=3D2 and THREAD=3D2
 
-These machines have not been available for over 5 years, and were
-never widely in use. It seems highly unlikely anyone is using this
-driver.
+That boots fine for me.
 
-In general we're happy to leave old drivers in the tree, but because
-DAX is involved this driver is caught up in the ongoing work in that
-area, but none of the DAX folks are able to test it.
+Presumably you've also done something to cause the CPU online to fail
+and trigger the bug.
 
-So remove the driver, if any one *is* using it, we'll be happy to put
-it back.
+> Here is the complete stack trace.
+>
+> [=C2=A0=C2=A0=C2=A0 0.045367] core_imc memory allocation for cpu 2 failed
+> [=C2=A0=C2=A0=C2=A0 0.045408] Unable to handle kernel paging request for =
+data at=20
+> address 0x7d20e2a6f92d03b8
+> [=C2=A0=C2=A0=C2=A0 0.045443] Faulting instruction address: 0xc0000000000=
+dde18
+> cpu 0x0: Vector: 380 (Data Access Out of Range) at [c0000000fd1cb890]
+>  =C2=A0=C2=A0=C2=A0 pc: c0000000000dde18: event_function_call+0x28/0x14c
+>  =C2=A0=C2=A0=C2=A0 lr: c0000000000dde00: event_function_call+0x10/0x14c
+>  =C2=A0=C2=A0=C2=A0 sp: c0000000fd1cbb10
+>  =C2=A0=C2=A0 msr: 9000000000009033
+>  =C2=A0=C2=A0 dar: 7d20e2a6f92d03b8
+>  =C2=A0 current =3D 0xc0000000fd15da00
+>  =C2=A0 paca=C2=A0=C2=A0=C2=A0 =3D 0xc00000000fff0000=C2=A0=C2=A0 softe: =
+0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 irq_happened: 0x01
+>  =C2=A0=C2=A0=C2=A0 pid=C2=A0=C2=A0 =3D 11, comm =3D cpuhp/0
+> Linux version 4.14.0-rc7-00014-g0a08377b127b (maddy@SrihariSrinidhi)=20
+> (gcc version 5.4.0 20160609 (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.1)) #5 SMP=20
+> Wed Nov 1 14:12:27 IST 2017
+> enter ? for help
+> [c0000000fd1cbb10] 0000000000000000 (unreliable)
+> [c0000000fd1cbba0] c0000000000de180 perf_remove_from_context+0x30/0x9c
+> [c0000000fd1cbbe0] c0000000000e9108 perf_pmu_migrate_context+0x9c/0x224
+> [c0000000fd1cbc60] c0000000000682e0 ppc_core_imc_cpu_offline+0xdc/0x144
+> [c0000000fd1cbcb0] c000000000070568 cpuhp_invoke_callback+0xe4/0x244
+> [c0000000fd1cbd10] c000000000070824 cpuhp_thread_fun+0x15c/0x1b0
+> [c0000000fd1cbd60] c00000000008e8cc smpboot_thread_fn+0x1e0/0x200
+> [c0000000fd1cbdc0] c00000000008ae58 kthread+0x150/0x158
+> [c0000000fd1cbe30] c00000000000b464 ret_from_kernel_thread+0x5c/0x78
+>
+>
+>>
+>>> [c000000ff38ffb80] c0000000002ddfac perf_pmu_migrate_context+0xac/0x470
+>>> [c000000ff38ffc40] c00000000011385c ppc_core_imc_cpu_offline+0x1ac/0x1e0
+>>> [c000000ff38ffc90] c000000000125758 cpuhp_invoke_callback+0x198/0x5d0
+>>> [c000000ff38ffd00] c00000000012782c cpuhp_thread_fun+0x8c/0x3d0
+>>> [c000000ff38ffd60] c0000000001678d0 smpboot_thread_fn+0x290/0x2a0
+>>> [c000000ff38ffdc0] c00000000015ee78 kthread+0x168/0x1b0
+>>> [c000000ff38ffe30] c00000000000b368 ret_from_kernel_thread+0x5c/0x74
+>>>
+>>> While registering the cpuhoplug callbacks for core-imc, if we fails
+>>> in the cpuhotplug online path for any random core (either because opal =
+call to
+>>> initialize the core-imc counters fails or because memory allocation fai=
+ls for
+>>> that core), ppc_core_imc_cpu_offline() will get invoked for other cpus =
+who
+>>> successfully returned from cpuhotplug online path.
+>>>
+>>> But in the ppc_core_imc_cpu_offline() path we are trying to migrate the=
+ event
+>>> context, when core-imc counters are not even initialized. Thus creating=
+ the
+>>> above stack dump.
+>>>
+>>> Add a check to see if core-imc counters are enabled or not in the cpuho=
+tplug
+>>> offline path before migrating the context to handle this failing scenar=
+io.
+>> Why do we need a bool to track this? Can't we just check the data
+>> structure we're deinitialising has been initialised?
+>
+> My bad. yes we could do that. Something like this will work?
+>
+> @@ -606,6 +608,20 @@ static int ppc_core_imc_cpu_offline(unsigned int cpu)
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (!cpumask_test_and_clear_c=
+pu(cpu, &core_imc_cpumask))
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0 return 0;
+>
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /*
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * Check whether core_imc is r=
+egistered. We could end up here
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * if the cpuhotplug callback =
+registration fails. i.e, callback
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * invokes the offline path fo=
+r all sucessfully registered cpus.
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * At this stage, core_imc pmu=
+ will not be registered and we
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * should return here.
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 *
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * We return with a zero since=
+ this is not a offline failure.
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * And cpuhp_setup_state() ret=
+urns the actual failure reason
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * to the caller, which inturn=
+ will call the cleanup routine.
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 */
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (!core_imc_pmu->pmu.event_init)
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0 return 0;
+> +
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* Find any online cpu in tha=
+t core except the current "cpu" */
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ncpu =3D cpumask_any_but(cpu_=
+sibling_mask(cpu), cpu);
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- Documentation/filesystems/dax.txt |   1 -
- arch/powerpc/platforms/Kconfig    |  11 --
- arch/powerpc/sysdev/Makefile      |   1 -
- arch/powerpc/sysdev/axonram.c     | 383 --------------------------------------
- 4 files changed, 396 deletions(-)
- delete mode 100644 arch/powerpc/sysdev/axonram.c
 
-diff --git a/Documentation/filesystems/dax.txt b/Documentation/filesystems/dax.txt
-index 3be3b266be41..70cb68bed2e8 100644
---- a/Documentation/filesystems/dax.txt
-+++ b/Documentation/filesystems/dax.txt
-@@ -46,7 +46,6 @@ stall the CPU for an extended period, you should also not attempt to
- implement direct_access.
- 
- These block devices may be used for inspiration:
--- axonram: Axon DDR2 device driver
- - brd: RAM backed block device driver
- - dcssblk: s390 dcss block device driver
- - pmem: NVDIMM persistent memory driver
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 4fd64d3f5c44..7a05658f7637 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -292,17 +292,6 @@ config CPM2
- 	  you wish to build a kernel for a machine with a CPM2 coprocessor
- 	  on it (826x, 827x, 8560).
- 
--config AXON_RAM
--	tristate "Axon DDR2 memory device driver"
--	depends on PPC_IBM_CELL_BLADE && BLOCK
--	select DAX
--	default m
--	help
--	  It registers one block device per Axon's DDR2 memory bank found
--	  on a system. Block devices are called axonram?, their major and
--	  minor numbers are available in /proc/devices, /proc/partitions or
--	  in /sys/block/axonram?/dev.
--
- config FSL_ULI1575
- 	bool
- 	default n
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 79416fa2e3ba..3d6d4f8b30c2 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -31,7 +31,6 @@ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
- obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o \
- 				   mv64x60_udbg.o
- obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
--obj-$(CONFIG_AXON_RAM)		+= axonram.o
- 
- obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-deleted file mode 100644
-index 1b307c80b401..000000000000
---- a/arch/powerpc/sysdev/axonram.c
-+++ /dev/null
-@@ -1,383 +0,0 @@
--/*
-- * (C) Copyright IBM Deutschland Entwicklung GmbH 2006
-- *
-- * Author: Maxim Shchetynin <maxim@de.ibm.com>
-- *
-- * Axon DDR2 device driver.
-- * It registers one block device per Axon's DDR2 memory bank found on a system.
-- * Block devices are called axonram?, their major and minor numbers are
-- * available in /proc/devices, /proc/partitions or in /sys/block/axonram?/dev.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2, or (at your option)
-- * any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-- */
--
--#include <linux/bio.h>
--#include <linux/blkdev.h>
--#include <linux/dax.h>
--#include <linux/device.h>
--#include <linux/errno.h>
--#include <linux/fs.h>
--#include <linux/genhd.h>
--#include <linux/interrupt.h>
--#include <linux/io.h>
--#include <linux/ioport.h>
--#include <linux/irq.h>
--#include <linux/irqreturn.h>
--#include <linux/kernel.h>
--#include <linux/mm.h>
--#include <linux/mod_devicetable.h>
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/string.h>
--#include <linux/types.h>
--#include <linux/of_device.h>
--#include <linux/of_platform.h>
--#include <linux/pfn_t.h>
--#include <linux/uio.h>
--
--#include <asm/page.h>
--#include <asm/prom.h>
--
--#define AXON_RAM_MODULE_NAME		"axonram"
--#define AXON_RAM_DEVICE_NAME		"axonram"
--#define AXON_RAM_MINORS_PER_DISK	16
--#define AXON_RAM_BLOCK_SHIFT		PAGE_SHIFT
--#define AXON_RAM_BLOCK_SIZE		1 << AXON_RAM_BLOCK_SHIFT
--#define AXON_RAM_SECTOR_SHIFT		9
--#define AXON_RAM_SECTOR_SIZE		1 << AXON_RAM_SECTOR_SHIFT
--#define AXON_RAM_IRQ_FLAGS		IRQF_SHARED | IRQF_TRIGGER_RISING
--
--static int azfs_major, azfs_minor;
--
--struct axon_ram_bank {
--	struct platform_device	*device;
--	struct gendisk		*disk;
--	struct dax_device	*dax_dev;
--	unsigned int		irq_id;
--	unsigned long		ph_addr;
--	unsigned long		io_addr;
--	unsigned long		size;
--	unsigned long		ecc_counter;
--};
--
--static ssize_t
--axon_ram_sysfs_ecc(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	struct platform_device *device = to_platform_device(dev);
--	struct axon_ram_bank *bank = device->dev.platform_data;
--
--	BUG_ON(!bank);
--
--	return sprintf(buf, "%ld\n", bank->ecc_counter);
--}
--
--static DEVICE_ATTR(ecc, S_IRUGO, axon_ram_sysfs_ecc, NULL);
--
--/**
-- * axon_ram_irq_handler - interrupt handler for Axon RAM ECC
-- * @irq: interrupt ID
-- * @dev: pointer to of_device
-- */
--static irqreturn_t
--axon_ram_irq_handler(int irq, void *dev)
--{
--	struct platform_device *device = dev;
--	struct axon_ram_bank *bank = device->dev.platform_data;
--
--	BUG_ON(!bank);
--
--	dev_err(&device->dev, "Correctable memory error occurred\n");
--	bank->ecc_counter++;
--	return IRQ_HANDLED;
--}
--
--/**
-- * axon_ram_make_request - make_request() method for block device
-- * @queue, @bio: see blk_queue_make_request()
-- */
--static blk_qc_t
--axon_ram_make_request(struct request_queue *queue, struct bio *bio)
--{
--	struct axon_ram_bank *bank = bio->bi_disk->private_data;
--	unsigned long phys_mem, phys_end;
--	void *user_mem;
--	struct bio_vec vec;
--	unsigned int transfered;
--	struct bvec_iter iter;
--
--	phys_mem = bank->io_addr + (bio->bi_iter.bi_sector <<
--				    AXON_RAM_SECTOR_SHIFT);
--	phys_end = bank->io_addr + bank->size;
--	transfered = 0;
--	bio_for_each_segment(vec, bio, iter) {
--		if (unlikely(phys_mem + vec.bv_len > phys_end)) {
--			bio_io_error(bio);
--			return BLK_QC_T_NONE;
--		}
--
--		user_mem = page_address(vec.bv_page) + vec.bv_offset;
--		if (bio_data_dir(bio) == READ)
--			memcpy(user_mem, (void *) phys_mem, vec.bv_len);
--		else
--			memcpy((void *) phys_mem, user_mem, vec.bv_len);
--
--		phys_mem += vec.bv_len;
--		transfered += vec.bv_len;
--	}
--	bio_endio(bio);
--	return BLK_QC_T_NONE;
--}
--
--static const struct block_device_operations axon_ram_devops = {
--	.owner		= THIS_MODULE,
--};
--
--static long
--__axon_ram_direct_access(struct axon_ram_bank *bank, pgoff_t pgoff, long nr_pages,
--		       void **kaddr, pfn_t *pfn)
--{
--	resource_size_t offset = pgoff * PAGE_SIZE;
--
--	*kaddr = (void *) bank->io_addr + offset;
--	*pfn = phys_to_pfn_t(bank->ph_addr + offset, PFN_DEV);
--	return (bank->size - offset) / PAGE_SIZE;
--}
--
--static long
--axon_ram_dax_direct_access(struct dax_device *dax_dev, pgoff_t pgoff, long nr_pages,
--		       void **kaddr, pfn_t *pfn)
--{
--	struct axon_ram_bank *bank = dax_get_private(dax_dev);
--
--	return __axon_ram_direct_access(bank, pgoff, nr_pages, kaddr, pfn);
--}
--
--static size_t axon_ram_copy_from_iter(struct dax_device *dax_dev, pgoff_t pgoff,
--		void *addr, size_t bytes, struct iov_iter *i)
--{
--	return copy_from_iter(addr, bytes, i);
--}
--
--static const struct dax_operations axon_ram_dax_ops = {
--	.direct_access = axon_ram_dax_direct_access,
--	.copy_from_iter = axon_ram_copy_from_iter,
--};
--
--/**
-- * axon_ram_probe - probe() method for platform driver
-- * @device: see platform_driver method
-- */
--static int axon_ram_probe(struct platform_device *device)
--{
--	static int axon_ram_bank_id = -1;
--	struct axon_ram_bank *bank;
--	struct resource resource;
--	int rc;
--
--	axon_ram_bank_id++;
--
--	dev_info(&device->dev, "Found memory controller on %pOF\n",
--			device->dev.of_node);
--
--	bank = kzalloc(sizeof(*bank), GFP_KERNEL);
--	if (!bank)
--		return -ENOMEM;
--
--	device->dev.platform_data = bank;
--
--	bank->device = device;
--
--	if (of_address_to_resource(device->dev.of_node, 0, &resource) != 0) {
--		dev_err(&device->dev, "Cannot access device tree\n");
--		rc = -EFAULT;
--		goto failed;
--	}
--
--	bank->size = resource_size(&resource);
--
--	if (bank->size == 0) {
--		dev_err(&device->dev, "No DDR2 memory found for %s%d\n",
--				AXON_RAM_DEVICE_NAME, axon_ram_bank_id);
--		rc = -ENODEV;
--		goto failed;
--	}
--
--	dev_info(&device->dev, "Register DDR2 memory device %s%d with %luMB\n",
--			AXON_RAM_DEVICE_NAME, axon_ram_bank_id, bank->size >> 20);
--
--	bank->ph_addr = resource.start;
--	bank->io_addr = (unsigned long) ioremap_prot(
--			bank->ph_addr, bank->size, _PAGE_NO_CACHE);
--	if (bank->io_addr == 0) {
--		dev_err(&device->dev, "ioremap() failed\n");
--		rc = -EFAULT;
--		goto failed;
--	}
--
--	bank->disk = alloc_disk(AXON_RAM_MINORS_PER_DISK);
--	if (bank->disk == NULL) {
--		dev_err(&device->dev, "Cannot register disk\n");
--		rc = -EFAULT;
--		goto failed;
--	}
--
--
--	bank->disk->major = azfs_major;
--	bank->disk->first_minor = azfs_minor;
--	bank->disk->fops = &axon_ram_devops;
--	bank->disk->private_data = bank;
--
--	sprintf(bank->disk->disk_name, "%s%d",
--			AXON_RAM_DEVICE_NAME, axon_ram_bank_id);
--
--	bank->dax_dev = alloc_dax(bank, bank->disk->disk_name,
--			&axon_ram_dax_ops);
--	if (!bank->dax_dev) {
--		rc = -ENOMEM;
--		goto failed;
--	}
--
--	bank->disk->queue = blk_alloc_queue(GFP_KERNEL);
--	if (bank->disk->queue == NULL) {
--		dev_err(&device->dev, "Cannot register disk queue\n");
--		rc = -EFAULT;
--		goto failed;
--	}
--
--	set_capacity(bank->disk, bank->size >> AXON_RAM_SECTOR_SHIFT);
--	blk_queue_make_request(bank->disk->queue, axon_ram_make_request);
--	blk_queue_logical_block_size(bank->disk->queue, AXON_RAM_SECTOR_SIZE);
--	device_add_disk(&device->dev, bank->disk);
--
--	bank->irq_id = irq_of_parse_and_map(device->dev.of_node, 0);
--	if (!bank->irq_id) {
--		dev_err(&device->dev, "Cannot access ECC interrupt ID\n");
--		rc = -EFAULT;
--		goto failed;
--	}
--
--	rc = request_irq(bank->irq_id, axon_ram_irq_handler,
--			AXON_RAM_IRQ_FLAGS, bank->disk->disk_name, device);
--	if (rc != 0) {
--		dev_err(&device->dev, "Cannot register ECC interrupt handler\n");
--		bank->irq_id = 0;
--		rc = -EFAULT;
--		goto failed;
--	}
--
--	rc = device_create_file(&device->dev, &dev_attr_ecc);
--	if (rc != 0) {
--		dev_err(&device->dev, "Cannot create sysfs file\n");
--		rc = -EFAULT;
--		goto failed;
--	}
--
--	azfs_minor += bank->disk->minors;
--
--	return 0;
--
--failed:
--	if (bank->irq_id)
--		free_irq(bank->irq_id, device);
--	if (bank->disk != NULL) {
--		if (bank->disk->major > 0)
--			unregister_blkdev(bank->disk->major,
--					bank->disk->disk_name);
--		if (bank->disk->flags & GENHD_FL_UP)
--			del_gendisk(bank->disk);
--		put_disk(bank->disk);
--	}
--	kill_dax(bank->dax_dev);
--	put_dax(bank->dax_dev);
--	device->dev.platform_data = NULL;
--	if (bank->io_addr != 0)
--		iounmap((void __iomem *) bank->io_addr);
--	kfree(bank);
--	return rc;
--}
--
--/**
-- * axon_ram_remove - remove() method for platform driver
-- * @device: see of_platform_driver method
-- */
--static int
--axon_ram_remove(struct platform_device *device)
--{
--	struct axon_ram_bank *bank = device->dev.platform_data;
--
--	BUG_ON(!bank || !bank->disk);
--
--	device_remove_file(&device->dev, &dev_attr_ecc);
--	free_irq(bank->irq_id, device);
--	kill_dax(bank->dax_dev);
--	put_dax(bank->dax_dev);
--	del_gendisk(bank->disk);
--	put_disk(bank->disk);
--	iounmap((void __iomem *) bank->io_addr);
--	kfree(bank);
--
--	return 0;
--}
--
--static const struct of_device_id axon_ram_device_id[] = {
--	{
--		.type	= "dma-memory"
--	},
--	{}
--};
--MODULE_DEVICE_TABLE(of, axon_ram_device_id);
--
--static struct platform_driver axon_ram_driver = {
--	.probe		= axon_ram_probe,
--	.remove		= axon_ram_remove,
--	.driver = {
--		.name = AXON_RAM_MODULE_NAME,
--		.of_match_table = axon_ram_device_id,
--	},
--};
--
--/**
-- * axon_ram_init
-- */
--static int __init
--axon_ram_init(void)
--{
--	azfs_major = register_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
--	if (azfs_major < 0) {
--		printk(KERN_ERR "%s cannot become block device major number\n",
--				AXON_RAM_MODULE_NAME);
--		return -EFAULT;
--	}
--	azfs_minor = 0;
--
--	return platform_driver_register(&axon_ram_driver);
--}
--
--/**
-- * axon_ram_exit
-- */
--static void __exit
--axon_ram_exit(void)
--{
--	platform_driver_unregister(&axon_ram_driver);
--	unregister_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
--}
--
--module_init(axon_ram_init);
--module_exit(axon_ram_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Maxim Shchetynin <maxim@de.ibm.com>");
--MODULE_DESCRIPTION("Axon DDR2 RAM device driver for IBM Cell BE");
--- 
-2.7.4
+That's not ideal, because you're grovelling into the details of the pmu
+struct. But I guess it's OK for now.
+
+cheers
