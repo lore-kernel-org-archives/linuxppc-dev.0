@@ -1,36 +1,21 @@
-Return-Path: <leoyang.li@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0067.outbound.protection.outlook.com [104.47.0.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yT7fh4P1CzDrD1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2017 04:07:07 +1100 (AEDT)
-From: Leo Li <leoyang.li@nxp.com>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>, "robh+dt@kernel.org"
- <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "bhelgaas@google.com" <bhelgaas@google.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>, Madalin-cristian Bucur
- <madalin.bucur@nxp.com>, Sumit Garg <sumit.garg@nxp.com>, "Y.b. Lu"
- <yangbo.lu@nxp.com>, "hongtao.jia@nxp.com" <hongtao.jia@nxp.com>, Andy Tang
- <andy.tang@nxp.com>, "kishon@ti.com" <kishon@ti.com>, "jingoohan1@gmail.com"
- <jingoohan1@gmail.com>, "pbrobinson@gmail.com" <pbrobinson@gmail.com>,
- "songxiaowei@hisilicon.com" <songxiaowei@hisilicon.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "Z.q. Hou" <zhiqiang.hou@nxp.com>, "Mingkai
- Hu" <mingkai.hu@nxp.com>, "M.h. Lian" <minghuan.lian@nxp.com>
-CC: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: RE: [PATCH 0/3] dts: Add the property of IB and OB
-Date: Fri, 3 Nov 2017 17:06:58 +0000
-Message-ID: <AM4PR0401MB1699C33E678BB7DD027307568F5D0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-References: <20171103093115.14915-1-xiaowei.bao@nxp.com>
-In-Reply-To: <20171103093115.14915-1-xiaowei.bao@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yTWHn1xkXzDrCZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2017 18:52:04 +1100 (AEDT)
+Date: Sat, 4 Nov 2017 10:51:36 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
+Subject: powerpc/perf: Fix a sizeof() typo so we allocate less memory
+Message-ID: <20171104075136.nujqcprikcevsfwv@mwanda>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,53 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We're allocating the size of the struct which is 32 bytes when we should
+be allocating sizeof(void *) which is 4 or 8 bytes depending on the
+architecture.
 
+Fixes: 885dcd709ba9 ("powerpc/perf: Add nest IMC PMU support")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-> -----Original Message-----
-> From: Bao Xiaowei [mailto:xiaowei.bao@nxp.com]
-> Sent: Friday, November 03, 2017 4:31 AM
-> To: robh+dt@kernel.org; mark.rutland@arm.com; catalin.marinas@arm.com;
-> will.deacon@arm.com; bhelgaas@google.com; shawnguo@kernel.org;
-> Madalin-cristian Bucur <madalin.bucur@nxp.com>; Sumit Garg
-> <sumit.garg@nxp.com>; Y.b. Lu <yangbo.lu@nxp.com>; hongtao.jia@nxp.com;
-> Andy Tang <andy.tang@nxp.com>; Leo Li <leoyang.li@nxp.com>;
-> kishon@ti.com; jingoohan1@gmail.com; pbrobinson@gmail.com;
-> songxiaowei@hisilicon.com; devicetree@vger.kernel.org; linux-arm-
-> kernel@lists.infradead.org; linux-kernel@vger.kernel.org; linux-
-> pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Z.q. Hou
-> <zhiqiang.hou@nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; M.h. Lian
-> <minghuan.lian@nxp.com>
-> Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
-> Subject: [PATCH 0/3] dts: Add the property of IB and OB
-
-When you send a v2 series, please include v2 in the title of all patches li=
-ke "[PATCH v2 0/3]"...
-
-Also the title of this summary email should really be the summary of all 3 =
-patches like "Adding PCIe EP support to ls1046a".
-
--Leo
-
-
->=20
-> Depend on
-> https://emea01.safelinks.protection.outlook.com/?url=3Dhttp%3A%2F%2Fpatch=
-w
-> ork.ozlabs.org%2Fpatch%2F815382%2F&data=3D02%7C01%7Cleoyang.li%40nxp.c
-> om%7C7db015020c8a414f57e708d522a03165%7C686ea1d3bc2b4c6fa92cd99c
-> 5c301635%7C0%7C0%7C636452993777387982&sdata=3D19Fmzg%2FOJGl%2Bgizv
-> xfY1yELlFgWKRuZ%2FVNbx49yz2Wk%3D&reserved=3D0
->=20
-> Bao Xiaowei (3):
->   ARMv8: dts: ls1046a: add the property of IB and OB
->   ARMv8: layerscape: add the pcie ep function support
->   ARMv8: pcie: make the DWC EP driver support for layerscape
->=20
->  arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi |   6 ++
->  drivers/pci/dwc/Kconfig                        |   1 +
->  drivers/pci/dwc/pci-layerscape.c               | 122 +++++++++++++++++++=
-++++--
->  3 files changed, 123 insertions(+), 6 deletions(-)
->=20
-> --
-> 2.14.1
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index 88126245881b..91c90ddab807 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -210,7 +210,7 @@ static int update_events_in_group(struct device_node *node, struct imc_pmu *pmu)
+ 	of_property_read_u32(node, "reg", &base_reg);
+ 
+ 	/* Allocate memory for the events */
+-	pmu->events = kcalloc(ct, sizeof(struct imc_events), GFP_KERNEL);
++	pmu->events = kcalloc(ct, sizeof(*pmu->events), GFP_KERNEL);
+ 	if (!pmu->events)
+ 		return -ENOMEM;
+ 
