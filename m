@@ -1,21 +1,19 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yTWHn1xkXzDrCZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2017 18:52:04 +1100 (AEDT)
-Date: Sat, 4 Nov 2017 10:51:36 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Subject: powerpc/perf: Fix a sizeof() typo so we allocate less memory
-Message-ID: <20171104075136.nujqcprikcevsfwv@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yTY771y96zDrF3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Nov 2017 20:14:43 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "William A. Kennington III" <wak@google.com>, linuxppc-dev@ozlabs.org
+Cc: rlippert@google.com, wak@google.com
+Subject: Re: [PATCH] powerpc/opal: Fix EBUSY bug in acquiring tokens
+In-Reply-To: <20170922235800.19348-1-wak@google.com>
+References: <20170922235800.19348-1-wak@google.com>
+Date: Sat, 04 Nov 2017 20:14:41 +1100
+Message-ID: <87zi825rsu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We're allocating the size of the struct which is 32 bytes when we should
-be allocating sizeof(void *) which is 4 or 8 bytes depending on the
-architecture.
+"William A. Kennington III" <wak@google.com> writes:
 
-Fixes: 885dcd709ba9 ("powerpc/perf: Add nest IMC PMU support")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> The current code checks the completion map to look for the first token
+> that is complete. In some cases, a completion can come in but the token
+> can still be on lease to the caller processing the completion. If this
+> completed but unreleased token is the first token found in the bitmap by
+> another tasks trying to acquire a token, then the __test_and_set_bit
+> call will fail since the token will still be on lease. The acquisition
+> will then fail with an EBUSY.
+>
+> This patch reorganizes the acquisition code to look at the
+> opal_async_token_map for an unleased token. If the token has no lease it
+> must have no outstanding completions so we should never see an EBUSY,
+> unless we have leased out too many tokens. Since
+> opal_async_get_token_inrerruptible is protected by a semaphore, we will
+> practically never see EBUSY anymore.
+>
+> Signed-off-by: William A. Kennington III <wak@google.com>
+> ---
+>  arch/powerpc/platforms/powernv/opal-async.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 88126245881b..91c90ddab807 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -210,7 +210,7 @@ static int update_events_in_group(struct device_node *node, struct imc_pmu *pmu)
- 	of_property_read_u32(node, "reg", &base_reg);
- 
- 	/* Allocate memory for the events */
--	pmu->events = kcalloc(ct, sizeof(struct imc_events), GFP_KERNEL);
-+	pmu->events = kcalloc(ct, sizeof(*pmu->events), GFP_KERNEL);
- 	if (!pmu->events)
- 		return -ENOMEM;
- 
+I think this is superseeded by Cyrils rework (which he's finally
+posted):
+
+  http://patchwork.ozlabs.org/patch/833630/
+
+
+If not please let us know.
+
+cheers
