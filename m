@@ -1,23 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVF9Y1FdGzDrCY
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Nov 2017 23:19:11 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id j3so6112310pga.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Nov 2017 04:19:11 -0800 (PST)
-Date: Sun, 5 Nov 2017 23:18:50 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVFVl6cHYzDqwS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Nov 2017 23:34:07 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id n14so5677032pfh.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Nov 2017 04:34:07 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Florian Weimer <fweimer@redhat.com>, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>
-Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
-Message-ID: <20171105231850.5e313e46@roar.ozlabs.ibm.com>
-In-Reply-To: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
-References: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@ozlabs.org>,
+ kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Handle host system reset in guest mode
+Date: Sun,  5 Nov 2017 23:33:55 +1100
+Message-Id: <20171105123355.3014-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,253 +23,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 3 Nov 2017 18:05:20 +0100
-Florian Weimer <fweimer@redhat.com> wrote:
+If the host takes a system reset interrupt while a guest is running,
+the CPU must exit the guest before processing the host exception
+handler.
 
-> We are seeing an issue on ppc64le and ppc64 (and perhaps on some arm 
-> variant, but I have not seen it on our own builders) where running 
-> localedef as part of the glibc build crashes with a segmentation fault.
-> 
-> Kernel version is 4.13.9 (Fedora 26 variant).
-> 
-> I have only seen this with an explicit loader invocation, like this:
-> 
-> while I18NPATH=. /lib64/ld64.so.1 /usr/bin/localedef 
-> --alias-file=../intl/locale.alias --no-archive -i locales/nl_AW -c -f 
-> charmaps/UTF-8 
-> --prefix=/builddir/build/BUILDROOT/glibc-2.26-16.fc27.ppc64 nl_AW ; do : 
-> ; done
-> 
-> To be run in the localedata subdirectory of a glibc *source* tree, after 
-> a build.  You may have to create the 
-> /builddir/build/BUILDROOT/glibc-2.26-16.fc27.ppc64/usr/lib/locale 
-> directory.  I have only reproduced this inside a Fedora 27 chroot on a 
-> Fedora 26 host, but there it does not matter if you run the old (chroot) 
-> or newly built binary.
-> 
-> I filed this as a glibc bug for tracking:
-> 
->    https://sourceware.org/bugzilla/show_bug.cgi?id=22390
-> 
-> There's an strace log and a coredump from the crash.
-> 
-> I think the data shows that the address in question should be writable.
-> 
-> The crossed 0x0000800000000000 binary is very suggestive.  I think that 
-> based on the operation of glibc's malloc, this write would be the first 
-> time this happens during the lifetime of the process.
-> 
-> Does that ring any bells?  Is there anything I can do to provide more 
-> data?  The host is an LPAR with a stock Fedora 26 kernel, so I can use 
-> any diagnostics tool which is provided by Fedora.
+After this patch, taking a sysrq+x with a CPU running in a guest
+gives a trace like this:
 
-There was a recent change to move to 128TB address space by default,
-and option for 512TB addresses if explicitly requested.
+   cpu 0x27: Vector: 100 (System Reset) at [c000000fdf5776f0]
+       pc: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
+       lr: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
+       sp: c000000fdf577850
+      msr: 9000000002803033
+     current = 0xc000000fdf4b1e00
+     paca    = 0xc00000000fd4d680	 softe: 3	 irq_happened: 0x01
+       pid   = 6608, comm = qemu-system-ppc
+   Linux version 4.14.0-rc7-01489-g47e1893a404a-dirty #26 SMP
+   [c000000fdf577a00] c008000010159dd4 kvmppc_vcpu_run_hv+0x3dc/0x12d0 [kvm_hv]
+   [c000000fdf577b30] c0080000100a537c kvmppc_vcpu_run+0x44/0x60 [kvm]
+   [c000000fdf577b60] c0080000100a1ae0 kvm_arch_vcpu_ioctl_run+0x118/0x310 [kvm]
+   [c000000fdf577c00] c008000010093e98 kvm_vcpu_ioctl+0x530/0x7c0 [kvm]
+   [c000000fdf577d50] c000000000357bf8 do_vfs_ioctl+0xd8/0x8c0
+   [c000000fdf577df0] c000000000358448 SyS_ioctl+0x68/0x100
+   [c000000fdf577e30] c00000000000b220 system_call+0x58/0x6c
+   --- Exception: c01 (System Call) at 00007fff76868df0
+   SP (7fff7069baf0) is in userspace
 
-Your brk request asked for > 128TB which the kernel gave it, but the
-address limit in the paca that the SLB miss tests against was not
-updated to reflect the switch to 512TB address space.
+Fixes: e36d0a2ed5 ("powerpc/powernv: Implement NMI IPI with OPAL_SIGNAL_SYSTEM_RESET")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+--
 
-Why is your brk starting so high? Are you trying to test the > 128TB
-case, or maybe something is confused by the 64->128TB change? What's
-the strace look like if you run on a distro or <= 4.10 kernel?
+It has always been possible to sreset the host with direct scom
+access, but the patch e36d0a2ed5 has significantly expanded this
+functionality so in practice this is a required as a fix for it.
 
-Something like the following patch may help if you could test.
+Since RFC:
+- Removed the last hunk as sugggested by Paul.
+- Re-tested.
 
 Thanks,
 Nick
-
 ---
- arch/powerpc/mm/hugetlbpage-radix.c    | 18 ++++++++++++++----
- arch/powerpc/mm/mmap.c                 | 34 +++++++++++++++++++++++++---------
- arch/powerpc/mm/mmu_context_book3s64.c | 14 +++++++-------
- arch/powerpc/mm/slice.c                | 28 +++++++++++++++++++---------
- 4 files changed, 65 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h    | 1 +
+ arch/powerpc/kernel/exceptions-64s.S | 2 ++
+ arch/powerpc/kernel/irq.c            | 3 ++-
+ arch/powerpc/kvm/book3s_hv.c         | 7 ++++++-
+ 4 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
-index a12e86395025..44e1109765b5 100644
---- a/arch/powerpc/mm/hugetlbpage-radix.c
-+++ b/arch/powerpc/mm/hugetlbpage-radix.c
-@@ -50,8 +50,16 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	struct hstate *h = hstate_file(file);
- 	struct vm_unmapped_area_info info;
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 92a3e9a79cb4..a8bbac425ae6 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -40,6 +40,7 @@
  
--	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE))
--		mm->context.addr_limit = TASK_SIZE;
-+	/*
-+	 * If address is specified explicitly and crosses addr_limit, or if
-+	 * address is unspecified but len is greater than addr_limit, then
-+	 * expand out to TASK_SIZE.
-+	 */
-+	if (unlikely(addr + len >= mm->context.addr_limit)) {
-+		if ((!addr || addr + len > mm->context.addr_limit) &&
-+				mm->context.addr_limit != TASK_SIZE)
-+			mm->context.addr_limit = TASK_SIZE;
-+	}
+ #ifndef __ASSEMBLY__
  
- 	if (len & ~huge_page_mask(h))
- 		return -EINVAL;
-@@ -82,8 +90,10 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
++extern void replay_system_reset(void);
+ extern void __replay_interrupt(unsigned int vector);
  
--	if (addr > DEFAULT_MAP_WINDOW)
--		info.high_limit += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
-+	if (addr + len >= DEFAULT_MAP_WINDOW) {
-+		if (!addr || addr + len > DEFAULT_MAP_WINDOW)
-+			info.high_limit += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
-+	}
+ extern void timer_interrupt(struct pt_regs *);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 651e1a0114ed..bff2ed6e3c3c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -113,6 +113,7 @@ EXC_VIRT_NONE(0x4000, 0x100)
+ 	cmpwi	cr3,r10,2 ;						\
+ 	BRANCH_TO_C000(r10, system_reset_idle_common) ;			\
+ 1:									\
++	KVMTEST_PR(n) ;							\
+ 	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #else
+ #define IDLETEST NOTEST
+@@ -129,6 +130,7 @@ EXC_REAL_BEGIN(system_reset, 0x100, 0x100)
  
- 	return vm_unmapped_area(&info);
+ EXC_REAL_END(system_reset, 0x100, 0x100)
+ EXC_VIRT_NONE(0x4100, 0x100)
++TRAMP_KVM(PACA_EXNMI, 0x100)
+ 
+ #ifdef CONFIG_PPC_P7_NAP
+ EXC_COMMON_BEGIN(system_reset_idle_common)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index efbadcbbf694..7e8259106944 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -437,7 +437,7 @@ static const u8 srr1_to_lazyirq[0x10] = {
+ 	PACA_IRQ_HMI,
+ 	0, 0, 0, 0, 0 };
+ 
+-static noinline void replay_system_reset(void)
++void replay_system_reset(void)
+ {
+ 	struct pt_regs regs;
+ 
+@@ -447,6 +447,7 @@ static noinline void replay_system_reset(void)
+ 	system_reset_exception(&regs);
+ 	get_paca()->in_nmi = 0;
  }
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-index 5d78b193fec4..a8fe1eaf1d96 100644
---- a/arch/powerpc/mm/mmap.c
-+++ b/arch/powerpc/mm/mmap.c
-@@ -108,9 +108,16 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	struct vm_area_struct *vma;
- 	struct vm_unmapped_area_info info;
++EXPORT_SYMBOL_GPL(replay_system_reset);
  
--	if (unlikely(addr > mm->context.addr_limit &&
--		     mm->context.addr_limit != TASK_SIZE))
--		mm->context.addr_limit = TASK_SIZE;
-+	/*
-+	 * If address is specified explicitly and crosses addr_limit, or if
-+	 * address is unspecified but len is greater than addr_limit, then
-+	 * expand out to TASK_SIZE.
-+	 */
-+	if (unlikely(addr + len >= mm->context.addr_limit)) {
-+		if ((!addr || addr + len > mm->context.addr_limit) &&
-+				mm->context.addr_limit != TASK_SIZE)
-+			mm->context.addr_limit = TASK_SIZE;
-+	}
+ void irq_set_pending_from_srr1(unsigned long srr1)
+ {
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 8f34715cfbff..31a362669fea 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -47,6 +47,7 @@
  
- 	if (len > mm->task_size - mmap_min_addr)
- 		return -ENOMEM;
-@@ -131,7 +138,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.low_limit = mm->mmap_base;
- 	info.align_mask = 0;
- 
--	if (unlikely(addr > DEFAULT_MAP_WINDOW))
-+	if (unlikely(addr + len > DEFAULT_MAP_WINDOW))
- 		info.high_limit = mm->context.addr_limit;
- 	else
- 		info.high_limit = DEFAULT_MAP_WINDOW;
-@@ -151,9 +158,16 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
- 	unsigned long addr = addr0;
- 	struct vm_unmapped_area_info info;
- 
--	if (unlikely(addr > mm->context.addr_limit &&
--		     mm->context.addr_limit != TASK_SIZE))
--		mm->context.addr_limit = TASK_SIZE;
-+	/*
-+	 * If address is specified explicitly and crosses addr_limit, or if
-+	 * address is unspecified but len is greater than addr_limit, then
-+	 * expand out to TASK_SIZE.
-+	 */
-+	if (unlikely(addr + len >= mm->context.addr_limit)) {
-+		if ((!addr || addr + len > mm->context.addr_limit) &&
-+				mm->context.addr_limit != TASK_SIZE)
-+			mm->context.addr_limit = TASK_SIZE;
-+	}
- 
- 	/* requested length too big for entire address space */
- 	if (len > mm->task_size - mmap_min_addr)
-@@ -177,8 +191,10 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
- 	info.high_limit = mm->mmap_base;
- 	info.align_mask = 0;
- 
--	if (addr > DEFAULT_MAP_WINDOW)
--		info.high_limit += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
-+	if (addr + len >= DEFAULT_MAP_WINDOW) {
-+		if (!addr || addr + len > DEFAULT_MAP_WINDOW)
-+			info.high_limit += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
-+	}
- 
- 	addr = vm_unmapped_area(&info);
- 	if (!(addr & ~PAGE_MASK))
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 05e15386d4cb..1116ea0ddb2e 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -92,13 +92,6 @@ static int hash__init_new_context(struct mm_struct *mm)
- 	if (index < 0)
- 		return index;
- 
--	/*
--	 * We do switch_slb() early in fork, even before we setup the
--	 * mm->context.addr_limit. Default to max task size so that we copy the
--	 * default values to paca which will help us to handle slb miss early.
--	 */
--	mm->context.addr_limit = DEFAULT_MAP_WINDOW_USER64;
--
- 	/*
- 	 * The old code would re-promote on fork, we don't do that when using
- 	 * slices as it could cause problem promoting slices that have been
-@@ -162,6 +155,13 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 	if (index < 0)
- 		return index;
- 
-+	/*
-+	 * In the case of exec, use the default limit,
-+	 * otherwise inherit it from the mm we are duplicating.
-+	 */
-+	if (!mm->context.addr_limit)
-+		mm->context.addr_limit = DEFAULT_MAP_WINDOW_USER64;
-+
- 	mm->context.id = index;
- 
- #ifdef CONFIG_PPC_64K_PAGES
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 45f6740dd407..aa55523b6759 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -329,7 +329,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
- 	 * Only for that request for which high_limit is above
- 	 * DEFAULT_MAP_WINDOW we should apply this.
- 	 */
--	if (high_limit  > DEFAULT_MAP_WINDOW)
-+	if (high_limit > DEFAULT_MAP_WINDOW)
- 		addr += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
- 
- 	while (addr > PAGE_SIZE) {
-@@ -418,19 +418,29 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 
- 	/*
- 	 * Check if we need to expland slice area.
-+	 *
-+	 * If address is specified explicitly and crosses addr_limit, or if
-+	 * address is unspecified but len is greater than addr_limit, then
-+	 * expand out to TASK_SIZE.
- 	 */
--	if (unlikely(addr > mm->context.addr_limit &&
--		     mm->context.addr_limit != TASK_SIZE)) {
--		mm->context.addr_limit = TASK_SIZE;
--		on_each_cpu(slice_flush_segments, mm, 1);
-+	if (unlikely(addr + len >= mm->context.addr_limit)) {
-+		if ((!addr || addr + len > mm->context.addr_limit) &&
-+				mm->context.addr_limit != TASK_SIZE) {
-+			mm->context.addr_limit = TASK_SIZE;
-+			on_each_cpu(slice_flush_segments, mm, 1);
-+		}
+ #include <asm/reg.h>
+ #include <asm/ppc-opcode.h>
++#include <asm/asm-prototypes.h>
+ #include <asm/disassemble.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+@@ -1089,9 +1090,10 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		vcpu->stat.ext_intr_exits++;
+ 		r = RESUME_GUEST;
+ 		break;
+-	/* HMI is hypervisor interrupt and host has handled it. Resume guest.*/
++	/* SR/HMI/PMI are HV interrupts that host has handled. Resume guest.*/
+ 	case BOOK3S_INTERRUPT_HMI:
+ 	case BOOK3S_INTERRUPT_PERFMON:
++	case BOOK3S_INTERRUPT_SYSTEM_RESET:
+ 		r = RESUME_GUEST;
+ 		break;
+ 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+@@ -2604,6 +2606,9 @@ static void set_irq_happened(int trap)
+ 	case BOOK3S_INTERRUPT_HMI:
+ 		local_paca->irq_happened |= PACA_IRQ_HMI;
+ 		break;
++	case BOOK3S_INTERRUPT_SYSTEM_RESET:
++		replay_system_reset();
++		break;
  	}
-+
- 	/*
- 	 * This mmap request can allocate upt to 512TB
- 	 */
--	if (addr > DEFAULT_MAP_WINDOW)
--		high_limit = mm->context.addr_limit;
--	else
--		high_limit = DEFAULT_MAP_WINDOW;
-+	high_limit = DEFAULT_MAP_WINDOW;
-+	if (addr + len >= DEFAULT_MAP_WINDOW) {
-+		if (!addr || addr + len > DEFAULT_MAP_WINDOW)
-+			high_limit = mm->context.addr_limit;
-+	}
-+
-+
- 	/*
- 	 * init different masks
- 	 */
+ }
+ 
 -- 
 2.15.0
