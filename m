@@ -1,19 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVFVl6cHYzDqwS
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Nov 2017 23:34:07 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id n14so5677032pfh.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Nov 2017 04:34:07 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@ozlabs.org>,
- kvm-ppc@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Book3S HV: Handle host system reset in guest mode
-Date: Sun,  5 Nov 2017 23:33:55 +1100
-Message-Id: <20171105123355.3014-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVFXd57WDzDrJW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Nov 2017 23:35:45 +1100 (AEDT)
+Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
+To: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>
+References: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
+ <20171105231850.5e313e46@roar.ozlabs.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <919a1cb5-c3b5-ddee-d6a6-0994c282ae84@redhat.com>
+Date: Sun, 5 Nov 2017 13:35:40 +0100
+MIME-Version: 1.0
+In-Reply-To: <20171105231850.5e313e46@roar.ozlabs.ibm.com>
+Content-Type: multipart/mixed; boundary="------------B8C2898AF8C15A8B4627E032"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,139 +25,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the host takes a system reset interrupt while a guest is running,
-the CPU must exit the guest before processing the host exception
-handler.
+This is a multi-part message in MIME format.
+--------------B8C2898AF8C15A8B4627E032
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-After this patch, taking a sysrq+x with a CPU running in a guest
-gives a trace like this:
+On 11/05/2017 01:18 PM, Nicholas Piggin wrote:
 
-   cpu 0x27: Vector: 100 (System Reset) at [c000000fdf5776f0]
-       pc: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
-       lr: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
-       sp: c000000fdf577850
-      msr: 9000000002803033
-     current = 0xc000000fdf4b1e00
-     paca    = 0xc00000000fd4d680	 softe: 3	 irq_happened: 0x01
-       pid   = 6608, comm = qemu-system-ppc
-   Linux version 4.14.0-rc7-01489-g47e1893a404a-dirty #26 SMP
-   [c000000fdf577a00] c008000010159dd4 kvmppc_vcpu_run_hv+0x3dc/0x12d0 [kvm_hv]
-   [c000000fdf577b30] c0080000100a537c kvmppc_vcpu_run+0x44/0x60 [kvm]
-   [c000000fdf577b60] c0080000100a1ae0 kvm_arch_vcpu_ioctl_run+0x118/0x310 [kvm]
-   [c000000fdf577c00] c008000010093e98 kvm_vcpu_ioctl+0x530/0x7c0 [kvm]
-   [c000000fdf577d50] c000000000357bf8 do_vfs_ioctl+0xd8/0x8c0
-   [c000000fdf577df0] c000000000358448 SyS_ioctl+0x68/0x100
-   [c000000fdf577e30] c00000000000b220 system_call+0x58/0x6c
-   --- Exception: c01 (System Call) at 00007fff76868df0
-   SP (7fff7069baf0) is in userspace
+> There was a recent change to move to 128TB address space by default,
+> and option for 512TB addresses if explicitly requested.
 
-Fixes: e36d0a2ed5 ("powerpc/powernv: Implement NMI IPI with OPAL_SIGNAL_SYSTEM_RESET")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
---
+Do you have a commit hash for the introduction of 128TB by default?  Thanks.
 
-It has always been possible to sreset the host with direct scom
-access, but the patch e36d0a2ed5 has significantly expanded this
-functionality so in practice this is a required as a fix for it.
+> Your brk request asked for > 128TB which the kernel gave it, but the
+> address limit in the paca that the SLB miss tests against was not
+> updated to reflect the switch to 512TB address space.
+> 
+> Why is your brk starting so high? Are you trying to test the > 128TB
+> case, or maybe something is confused by the 64->128TB change? What's
+> the strace look like if you run on a distro or <= 4.10 kernel?
 
-Since RFC:
-- Removed the last hunk as sugggested by Paul.
-- Re-tested.
+I think it is a consequence of running with an explicit loader 
+invocation.  With that, the heap is placed above ld.so, which can be 
+quite high in the address space.
+
+I'm attaching two runs of cat, one executing directly as /bin/cat, and 
+one with /lib64/ld64.so.1 /bin/cat.
+
+Fortunately, this does *not* apply to PIE binaries (also attached). 
+However, explicit loader invocations are sometimes used in test suites 
+(not just for glibc), and these sporadic test failures are quite annoying.
+
+Do you still need the strace log?  And if yes, of what exactly?
+
+> Something like the following patch may help if you could test.
+
+Okay, this will take some time.
 
 Thanks,
-Nick
----
- arch/powerpc/include/asm/hw_irq.h    | 1 +
- arch/powerpc/kernel/exceptions-64s.S | 2 ++
- arch/powerpc/kernel/irq.c            | 3 ++-
- arch/powerpc/kvm/book3s_hv.c         | 7 ++++++-
- 4 files changed, 11 insertions(+), 2 deletions(-)
+Florian
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 92a3e9a79cb4..a8bbac425ae6 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -40,6 +40,7 @@
- 
- #ifndef __ASSEMBLY__
- 
-+extern void replay_system_reset(void);
- extern void __replay_interrupt(unsigned int vector);
- 
- extern void timer_interrupt(struct pt_regs *);
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 651e1a0114ed..bff2ed6e3c3c 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -113,6 +113,7 @@ EXC_VIRT_NONE(0x4000, 0x100)
- 	cmpwi	cr3,r10,2 ;						\
- 	BRANCH_TO_C000(r10, system_reset_idle_common) ;			\
- 1:									\
-+	KVMTEST_PR(n) ;							\
- 	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
- #else
- #define IDLETEST NOTEST
-@@ -129,6 +130,7 @@ EXC_REAL_BEGIN(system_reset, 0x100, 0x100)
- 
- EXC_REAL_END(system_reset, 0x100, 0x100)
- EXC_VIRT_NONE(0x4100, 0x100)
-+TRAMP_KVM(PACA_EXNMI, 0x100)
- 
- #ifdef CONFIG_PPC_P7_NAP
- EXC_COMMON_BEGIN(system_reset_idle_common)
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index efbadcbbf694..7e8259106944 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -437,7 +437,7 @@ static const u8 srr1_to_lazyirq[0x10] = {
- 	PACA_IRQ_HMI,
- 	0, 0, 0, 0, 0 };
- 
--static noinline void replay_system_reset(void)
-+void replay_system_reset(void)
- {
- 	struct pt_regs regs;
- 
-@@ -447,6 +447,7 @@ static noinline void replay_system_reset(void)
- 	system_reset_exception(&regs);
- 	get_paca()->in_nmi = 0;
- }
-+EXPORT_SYMBOL_GPL(replay_system_reset);
- 
- void irq_set_pending_from_srr1(unsigned long srr1)
- {
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8f34715cfbff..31a362669fea 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -47,6 +47,7 @@
- 
- #include <asm/reg.h>
- #include <asm/ppc-opcode.h>
-+#include <asm/asm-prototypes.h>
- #include <asm/disassemble.h>
- #include <asm/cputable.h>
- #include <asm/cacheflush.h>
-@@ -1089,9 +1090,10 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		vcpu->stat.ext_intr_exits++;
- 		r = RESUME_GUEST;
- 		break;
--	/* HMI is hypervisor interrupt and host has handled it. Resume guest.*/
-+	/* SR/HMI/PMI are HV interrupts that host has handled. Resume guest.*/
- 	case BOOK3S_INTERRUPT_HMI:
- 	case BOOK3S_INTERRUPT_PERFMON:
-+	case BOOK3S_INTERRUPT_SYSTEM_RESET:
- 		r = RESUME_GUEST;
- 		break;
- 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
-@@ -2604,6 +2606,9 @@ static void set_irq_happened(int trap)
- 	case BOOK3S_INTERRUPT_HMI:
- 		local_paca->irq_happened |= PACA_IRQ_HMI;
- 		break;
-+	case BOOK3S_INTERRUPT_SYSTEM_RESET:
-+		replay_system_reset();
-+		break;
- 	}
- }
- 
--- 
-2.15.0
+--------------B8C2898AF8C15A8B4627E032
+Content-Type: text/plain; charset=UTF-8;
+ name="pie.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="pie.txt"
+
+MTIzMWQwMDAwLTEyMzFlMDAwMCByLXhwIDAwMDAwMDAwIGZkOjAwIDE3ODUyNDI1ICAgICAg
+ICAgICAgICAgICAgICAgICAgIC9yb290L2Eub3V0CjEyMzFlMDAwMC0xMjMxZjAwMDAgci0t
+cCAwMDAwMDAwMCBmZDowMCAxNzg1MjQyNSAgICAgICAgICAgICAgICAgICAgICAgICAvcm9v
+dC9hLm91dAoxMjMxZjAwMDAtMTIzMjAwMDAwIHJ3LXAgMDAwMTAwMDAgZmQ6MDAgMTc4NTI0
+MjUgICAgICAgICAgICAgICAgICAgICAgICAgL3Jvb3QvYS5vdXQKMTAwMGRiYzAwMDAtMTAw
+MGRiZjAwMDAgcnctcCAwMDAwMDAwMCAwMDowMCAwICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIFtoZWFwXQo3ZmZmYTMxZDAwMDAtN2ZmZmEzNDAwMDAwIHIteHAgMDAwMDAwMDAgZmQ6
+MDAgMjUxNjc5MzYgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9wb3dlcjgvbGliYy0y
+LjI1LnNvCjdmZmZhMzQwMDAwMC03ZmZmYTM0MTAwMDAgLS0tcCAwMDIzMDAwMCBmZDowMCAy
+NTE2NzkzNiAgICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L3Bvd2VyOC9saWJjLTIuMjUu
+c28KN2ZmZmEzNDEwMDAwLTdmZmZhMzQyMDAwMCByLS1wIDAwMjMwMDAwIGZkOjAwIDI1MTY3
+OTM2ICAgICAgICAgICAgICAgICAgIC91c3IvbGliNjQvcG93ZXI4L2xpYmMtMi4yNS5zbwo3
+ZmZmYTM0MjAwMDAtN2ZmZmEzNDMwMDAwIHJ3LXAgMDAyNDAwMDAgZmQ6MDAgMjUxNjc5MzYg
+ICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9wb3dlcjgvbGliYy0yLjI1LnNvCjdmZmZh
+MzQ0MDAwMC03ZmZmYTM0NjAwMDAgci14cCAwMDAwMDAwMCAwMDowMCAwICAgICAgICAgICAg
+ICAgICAgICAgICAgICBbdmRzb10KN2ZmZmEzNDYwMDAwLTdmZmZhMzRhMDAwMCByLXhwIDAw
+MDAwMDAwIGZkOjAwIDgzOTAzMjkgICAgICAgICAgICAgICAgICAgIC91c3IvbGliNjQvbGQt
+Mi4yNS5zbwo3ZmZmYTM0YTAwMDAtN2ZmZmEzNGIwMDAwIHItLXAgMDAwMzAwMDAgZmQ6MDAg
+ODM5MDMyOSAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9sZC0yLjI1LnNvCjdmZmZh
+MzRiMDAwMC03ZmZmYTM0YzAwMDAgcnctcCAwMDA0MDAwMCBmZDowMCA4MzkwMzI5ICAgICAg
+ICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xkLTIuMjUuc28KN2ZmZmU5NDUwMDAwLTdmZmZl
+OTQ4MDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgICAgICAgICAgICAgICAgICAgICAgICAg
+IFtzdGFja10K
+--------------B8C2898AF8C15A8B4627E032
+Content-Type: text/plain; charset=UTF-8;
+ name="explicit-ldso.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="explicit-ldso.txt"
+
+N2ZmZjdlNzkwMDAwLTdmZmY3ZTdkMDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgCjdmZmY3
+ZTdkMDAwMC03ZmZmN2U4MzAwMDAgci0tcCAwMDAwMDAwMCBmZDowMCAyNTE2NzkyNSAgICAg
+ICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMudXRmOC9MQ19DVFlQRQo3ZmZm
+N2U4MzAwMDAtN2ZmZjdlODQwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjggICAg
+ICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTlVNRVJJQwo3
+ZmZmN2U4NDAwMDAtN2ZmZjdlODUwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5Mjkg
+ICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfVElNRQo3
+ZmZmN2U4NTAwMDAtN2ZmZjdlOTgwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjQg
+ICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfQ09MTEFU
+RQo3ZmZmN2U5ODAwMDAtN2ZmZjdlOTkwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5
+MjcgICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTU9O
+RVRBUlkKN2ZmZjdlOTkwMDAwLTdmZmY3ZTlhMDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDI1
+MTEgICAgICAgICAgICAgICAgICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4L0xD
+X01FU1NBR0VTL1NZU19MQ19NRVNTQUdFUwo3ZmZmN2U5YTAwMDAtN2ZmZjdlOWIwMDAwIHIt
+LXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5NDIgICAgICAgICAgICAgICAgICAgL3Vzci9saWIv
+bG9jYWxlL2VuX1VTLnV0ZjgvTENfUEFQRVIKN2ZmZjdlOWIwMDAwLTdmZmY3ZTljMDAwMCBy
+LS1wIDAwMDAwMDAwIGZkOjAwIDI1MTY3OTI3ICAgICAgICAgICAgICAgICAgIC91c3IvbGli
+L2xvY2FsZS9lbl9VUy51dGY4L0xDX05BTUUKN2ZmZjdlOWMwMDAwLTdmZmY3ZTlkMDAwMCBy
+LS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI0ICAgICAgICAgICAgICAgICAgIC91c3IvbGli
+L2xvY2FsZS9lbl9VUy51dGY4L0xDX0FERFJFU1MKN2ZmZjdlOWQwMDAwLTdmZmY3ZTllMDAw
+MCByLS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI4ICAgICAgICAgICAgICAgICAgIC91c3Iv
+bGliL2xvY2FsZS9lbl9VUy51dGY4L0xDX1RFTEVQSE9ORQo3ZmZmN2U5ZTAwMDAtN2ZmZjdl
+OWYwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5MjYgICAgICAgICAgICAgICAgICAg
+L3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTUVBU1VSRU1FTlQKN2ZmZjdlOWYwMDAw
+LTdmZmY3ZWEwMDAwMCByLS1zIDAwMDAwMDAwIGZkOjAwIDgzOTA2NjkgICAgICAgICAgICAg
+ICAgICAgIC91c3IvbGliNjQvZ2NvbnYvZ2NvbnYtbW9kdWxlcy5jYWNoZQo3ZmZmN2VhMDAw
+MDAtN2ZmZjdlYzMwMDAwIHIteHAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MzYgICAgICAgICAg
+ICAgICAgICAgL3Vzci9saWI2NC9wb3dlcjgvbGliYy0yLjI1LnNvCjdmZmY3ZWMzMDAwMC03
+ZmZmN2VjNDAwMDAgLS0tcCAwMDIzMDAwMCBmZDowMCAyNTE2NzkzNiAgICAgICAgICAgICAg
+ICAgICAvdXNyL2xpYjY0L3Bvd2VyOC9saWJjLTIuMjUuc28KN2ZmZjdlYzQwMDAwLTdmZmY3
+ZWM1MDAwMCByLS1wIDAwMjMwMDAwIGZkOjAwIDI1MTY3OTM2ICAgICAgICAgICAgICAgICAg
+IC91c3IvbGliNjQvcG93ZXI4L2xpYmMtMi4yNS5zbwo3ZmZmN2VjNTAwMDAtN2ZmZjdlYzYw
+MDAwIHJ3LXAgMDAyNDAwMDAgZmQ6MDAgMjUxNjc5MzYgICAgICAgICAgICAgICAgICAgL3Vz
+ci9saWI2NC9wb3dlcjgvbGliYy0yLjI1LnNvCjdmZmY3ZWM2MDAwMC03ZmZmN2VjNzAwMDAg
+ci0tcCAwMDAwMDAwMCBmZDowMCAxNjc5ODkyNSAgICAgICAgICAgICAgICAgICAvdXNyL2xp
+Yi9sb2NhbGUvZW5fVVMudXRmOC9MQ19JREVOVElGSUNBVElPTgo3ZmZmN2VjNzAwMDAtN2Zm
+ZjdlYzgwMDAwIHIteHAgMDAwMDAwMDAgZmQ6MDAgMjAyMjkzICAgICAgICAgICAgICAgICAg
+ICAgL3Vzci9iaW4vY2F0CjdmZmY3ZWM4MDAwMC03ZmZmN2VjOTAwMDAgci0tcCAwMDAwMDAw
+MCBmZDowMCAyMDIyOTMgICAgICAgICAgICAgICAgICAgICAvdXNyL2Jpbi9jYXQKN2ZmZjdl
+YzkwMDAwLTdmZmY3ZWNhMDAwMCBydy1wIDAwMDEwMDAwIGZkOjAwIDIwMjI5MyAgICAgICAg
+ICAgICAgICAgICAgIC91c3IvYmluL2NhdAo3ZmZmN2VjYTAwMDAtN2ZmZjdlY2MwMDAwIHIt
+eHAgMDAwMDAwMDAgMDA6MDAgMCAgICAgICAgICAgICAgICAgICAgICAgICAgW3Zkc29dCjdm
+ZmY3ZWNjMDAwMC03ZmZmN2VkMDAwMDAgci14cCAwMDAwMDAwMCBmZDowMCA4MzkwMzI5ICAg
+ICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xkLTIuMjUuc28KN2ZmZjdlZDAwMDAwLTdm
+ZmY3ZWQxMDAwMCByLS1wIDAwMDMwMDAwIGZkOjAwIDgzOTAzMjkgICAgICAgICAgICAgICAg
+ICAgIC91c3IvbGliNjQvbGQtMi4yNS5zbwo3ZmZmN2VkMTAwMDAtN2ZmZjdlZDIwMDAwIHJ3
+LXAgMDAwNDAwMDAgZmQ6MDAgODM5MDMyOSAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2
+NC9sZC0yLjI1LnNvCjdmZmY5YmUyMDAwMC03ZmZmOWJlNTAwMDAgcnctcCAwMDAwMDAwMCAw
+MDowMCAwICAgICAgICAgICAgICAgICAgICAgICAgICBbaGVhcF0KN2ZmZmZkNDcwMDAwLTdm
+ZmZmZDRhMDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIFtzdGFja10K
+--------------B8C2898AF8C15A8B4627E032
+Content-Type: text/plain; charset=UTF-8;
+ name="direct.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="direct.txt"
+
+MTNlZWEwMDAwLTEzZWViMDAwMCByLXhwIDAwMDAwMDAwIGZkOjAwIDIwMjI5MyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIC91c3IvYmluL2NhdAoxM2VlYjAwMDAtMTNlZWMwMDAwIHIt
+LXAgMDAwMDAwMDAgZmQ6MDAgMjAyMjkzICAgICAgICAgICAgICAgICAgICAgICAgICAgL3Vz
+ci9iaW4vY2F0CjEzZWVjMDAwMC0xM2VlZDAwMDAgcnctcCAwMDAxMDAwMCBmZDowMCAyMDIy
+OTMgICAgICAgICAgICAgICAgICAgICAgICAgICAvdXNyL2Jpbi9jYXQKMTAwM2ViZTAwMDAt
+MTAwM2VjMTAwMDAgcnctcCAwMDAwMDAwMCAwMDowMCAwICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIFtoZWFwXQo3ZmZmOTc0OTAwMDAtN2ZmZjk3NGQwMDAwIHJ3LXAgMDAwMDAwMDAg
+MDA6MDAgMCAKN2ZmZjk3NGQwMDAwLTdmZmY5NzUzMDAwMCByLS1wIDAwMDAwMDAwIGZkOjAw
+IDI1MTY3OTI1ICAgICAgICAgICAgICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4
+L0xDX0NUWVBFCjdmZmY5NzUzMDAwMC03ZmZmOTc1NDAwMDAgci0tcCAwMDAwMDAwMCBmZDow
+MCAyNTE2NzkyOCAgICAgICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMudXRm
+OC9MQ19OVU1FUklDCjdmZmY5NzU0MDAwMC03ZmZmOTc1NTAwMDAgci0tcCAwMDAwMDAwMCBm
+ZDowMCAxNjc5ODkyOSAgICAgICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMu
+dXRmOC9MQ19USU1FCjdmZmY5NzU1MDAwMC03ZmZmOTc2ODAwMDAgci0tcCAwMDAwMDAwMCBm
+ZDowMCAyNTE2NzkyNCAgICAgICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMu
+dXRmOC9MQ19DT0xMQVRFCjdmZmY5NzY4MDAwMC03ZmZmOTc2OTAwMDAgci0tcCAwMDAwMDAw
+MCBmZDowMCAxNjc5ODkyNyAgICAgICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5f
+VVMudXRmOC9MQ19NT05FVEFSWQo3ZmZmOTc2OTAwMDAtN2ZmZjk3NmEwMDAwIHItLXAgMDAw
+MDAwMDAgZmQ6MDAgMjUxMSAgICAgICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxl
+L2VuX1VTLnV0ZjgvTENfTUVTU0FHRVMvU1lTX0xDX01FU1NBR0VTCjdmZmY5NzZhMDAwMC03
+ZmZmOTc2YjAwMDAgci0tcCAwMDAwMDAwMCBmZDowMCAxNjc5ODk0MiAgICAgICAgICAgICAg
+ICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMudXRmOC9MQ19QQVBFUgo3ZmZmOTc2YjAwMDAt
+N2ZmZjk3NmMwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjcgICAgICAgICAgICAg
+ICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTkFNRQo3ZmZmOTc2YzAwMDAt
+N2ZmZjk3NmQwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5MjQgICAgICAgICAgICAg
+ICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfQUREUkVTUwo3ZmZmOTc2ZDAw
+MDAtN2ZmZjk3NmUwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5MjggICAgICAgICAg
+ICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfVEVMRVBIT05FCjdmZmY5
+NzZlMDAwMC03ZmZmOTc2ZjAwMDAgci0tcCAwMDAwMDAwMCBmZDowMCAxNjc5ODkyNiAgICAg
+ICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMudXRmOC9MQ19NRUFTVVJFTUVO
+VAo3ZmZmOTc2ZjAwMDAtN2ZmZjk3NzAwMDAwIHItLXMgMDAwMDAwMDAgZmQ6MDAgODM5MDY2
+OSAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9nY29udi9nY29udi1tb2R1bGVzLmNh
+Y2hlCjdmZmY5NzcwMDAwMC03ZmZmOTc5MzAwMDAgci14cCAwMDAwMDAwMCBmZDowMCAyNTE2
+NzkzNiAgICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L3Bvd2VyOC9saWJjLTIuMjUuc28K
+N2ZmZjk3OTMwMDAwLTdmZmY5Nzk0MDAwMCAtLS1wIDAwMjMwMDAwIGZkOjAwIDI1MTY3OTM2
+ICAgICAgICAgICAgICAgICAgIC91c3IvbGliNjQvcG93ZXI4L2xpYmMtMi4yNS5zbwo3ZmZm
+OTc5NDAwMDAtN2ZmZjk3OTUwMDAwIHItLXAgMDAyMzAwMDAgZmQ6MDAgMjUxNjc5MzYgICAg
+ICAgICAgICAgICAgICAgL3Vzci9saWI2NC9wb3dlcjgvbGliYy0yLjI1LnNvCjdmZmY5Nzk1
+MDAwMC03ZmZmOTc5NjAwMDAgcnctcCAwMDI0MDAwMCBmZDowMCAyNTE2NzkzNiAgICAgICAg
+ICAgICAgICAgICAvdXNyL2xpYjY0L3Bvd2VyOC9saWJjLTIuMjUuc28KN2ZmZjk3OTYwMDAw
+LTdmZmY5Nzk3MDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI1ICAgICAgICAgICAg
+ICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4L0xDX0lERU5USUZJQ0FUSU9OCjdm
+ZmY5Nzk3MDAwMC03ZmZmOTc5OTAwMDAgci14cCAwMDAwMDAwMCAwMDowMCAwICAgICAgICAg
+ICAgICAgICAgICAgICAgICBbdmRzb10KN2ZmZjk3OTkwMDAwLTdmZmY5NzlkMDAwMCByLXhw
+IDAwMDAwMDAwIGZkOjAwIDgzOTAzMjkgICAgICAgICAgICAgICAgICAgIC91c3IvbGliNjQv
+bGQtMi4yNS5zbwo3ZmZmOTc5ZDAwMDAtN2ZmZjk3OWUwMDAwIHItLXAgMDAwMzAwMDAgZmQ6
+MDAgODM5MDMyOSAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9sZC0yLjI1LnNvCjdm
+ZmY5NzllMDAwMC03ZmZmOTc5ZjAwMDAgcnctcCAwMDA0MDAwMCBmZDowMCA4MzkwMzI5ICAg
+ICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xkLTIuMjUuc28KN2ZmZmRkMTEwMDAwLTdm
+ZmZkZDE0MDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIFtzdGFja10K
+--------------B8C2898AF8C15A8B4627E032--
