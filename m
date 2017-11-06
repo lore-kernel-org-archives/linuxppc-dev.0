@@ -1,35 +1,29 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVqj31PShzDrLR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 22:15:02 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA6BEe4h128582
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Nov 2017 06:14:55 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e2pcss18j-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 06:14:55 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 6 Nov 2017 11:14:53 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Florian Weimer <fweimer@redhat.com>
-Subject: Re: [PATCH 4/5] powerpc/64s/radix: Fix 128TB-512TB virtual address
- boundary case allocation
-In-Reply-To: <20171106100315.29720-5-npiggin@gmail.com>
-References: <20171106100315.29720-1-npiggin@gmail.com>
- <20171106100315.29720-5-npiggin@gmail.com>
-Date: Mon, 06 Nov 2017 16:44:48 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVqk20jGpzDrLd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 22:15:54 +1100 (AEDT)
+Date: Mon, 6 Nov 2017 12:08:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: jpoimboe@redhat.com, jeyu@kernel.org, jikos@kernel.org,
+ pmladek@suse.com, lpechacek@suse.cz, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v3 1/2] livepatch: send a fake signal to all blocking tasks
+Message-ID: <20171106110833.GB24863@amd>
+References: <20171031114853.841-1-mbenes@suse.cz>
+ <20171031114853.841-2-mbenes@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87po8vslp3.fsf@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="xXmbgvnjoT4axfJE"
+In-Reply-To: <20171031114853.841-2-mbenes@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,168 +33,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
 
-> Radix VA space allocations test addresses against mm->task_size which is
-> 512TB, even in cases where the intention is to limit allocation to below
-> 128TB.
->
-> This results in mmap with a hint address below 128TB but address + length
-> above 128TB succeeding when it should fail (as hash does after the
-> previous patch).
->
-> Set the high address limit to be considered up front, and base subsequent
-> allocation checks on that consistently.
+--xXmbgvnjoT4axfJE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Doesn't setting info.high_limit take care of that ? I would expect
-vm_unmapped_area to fail based on info.high_limit. Is this with MAP_FIXED?
+Hi!
 
+> --- a/Documentation/ABI/testing/sysfs-kernel-livepatch
+> +++ b/Documentation/ABI/testing/sysfs-kernel-livepatch
+> @@ -33,6 +33,15 @@ Contact:	live-patching@vger.kernel.org
+>  		An attribute which indicates whether the patch is currently in
+>  		transition.
+> =20
+> +What:		/sys/kernel/livepatch/<patch>/signal
+> +Date:		Oct 2017
+> +KernelVersion:	4.15.0
+> +Contact:	live-patching@vger.kernel.org
+> +Description:
+> +		A writable attribute that allows administrator to affect the
+> +		course of an existing transition. Writing 1 sends a signal to
+> +		all remaining blocking tasks.
 
->
-> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> Fixes: f4ea6dcb08 ("powerpc/mm: Enable mappings above 128TB")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/mm/hugetlbpage-radix.c | 13 +++++++------
->  arch/powerpc/mm/mmap.c              | 27 ++++++++++++++-------------
->  2 files changed, 21 insertions(+), 19 deletions(-)
->
-> diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
-> index a12e86395025..9c6a411e9c85 100644
-> --- a/arch/powerpc/mm/hugetlbpage-radix.c
-> +++ b/arch/powerpc/mm/hugetlbpage-radix.c
-> @@ -48,14 +48,18 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
->  	struct mm_struct *mm = current->mm;
->  	struct vm_area_struct *vma;
->  	struct hstate *h = hstate_file(file);
-> +	unsigned long high_limit = DEFAULT_MAP_WINDOW;
->  	struct vm_unmapped_area_info info;
->
->  	if (unlikely(addr > mm->context.addr_limit && addr < TASK_SIZE))
->  		mm->context.addr_limit = TASK_SIZE;
->
-> +	if (addr > high_limit)
-> +		high_limit = TASK_SIZE;
-> +
->  	if (len & ~huge_page_mask(h))
->  		return -EINVAL;
-> -	if (len > mm->task_size)
-> +	if (len > high_limit)
->  		return -ENOMEM;
->
->  	if (flags & MAP_FIXED) {
-> @@ -67,7 +71,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
->  	if (addr) {
->  		addr = ALIGN(addr, huge_page_size(h));
->  		vma = find_vma(mm, addr);
-> -		if (mm->task_size - len >= addr &&
-> +		if (high_limit - len >= addr &&
->  		    (!vma || addr + len <= vm_start_gap(vma)))
->  			return addr;
->  	}
-> @@ -78,12 +82,9 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
->  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
->  	info.length = len;
->  	info.low_limit = PAGE_SIZE;
-> -	info.high_limit = current->mm->mmap_base;
-> +	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
->  	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
->  	info.align_offset = 0;
->
-> -	if (addr > DEFAULT_MAP_WINDOW)
-> -		info.high_limit += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
-> -
->  	return vm_unmapped_area(&info);
->  }
-> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-> index 5d78b193fec4..e6cb3b3f7e93 100644
-> --- a/arch/powerpc/mm/mmap.c
-> +++ b/arch/powerpc/mm/mmap.c
-> @@ -106,13 +106,17 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
->  {
->  	struct mm_struct *mm = current->mm;
->  	struct vm_area_struct *vma;
-> +	unsigned long high_limit = DEFAULT_MAP_WINDOW;
->  	struct vm_unmapped_area_info info;
->
->  	if (unlikely(addr > mm->context.addr_limit &&
->  		     mm->context.addr_limit != TASK_SIZE))
->  		mm->context.addr_limit = TASK_SIZE;
->
-> -	if (len > mm->task_size - mmap_min_addr)
-> +	if (addr > high_limit)
-> +		high_limit = TASK_SIZE;
-> +
-> +	if (len > high_limit - mmap_min_addr)
->  		return -ENOMEM;
->
->  	if (flags & MAP_FIXED)
-> @@ -121,7 +125,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
->  	if (addr) {
->  		addr = PAGE_ALIGN(addr);
->  		vma = find_vma(mm, addr);
-> -		if (mm->task_size - len >= addr && addr >= mmap_min_addr &&
-> +		if (high_limit - len >= addr && addr >= mmap_min_addr &&
->  		    (!vma || addr + len <= vm_start_gap(vma)))
->  			return addr;
->  	}
-> @@ -129,13 +133,9 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
->  	info.flags = 0;
->  	info.length = len;
->  	info.low_limit = mm->mmap_base;
-> +	info.high_limit = high_limit;
->  	info.align_mask = 0;
->
-> -	if (unlikely(addr > DEFAULT_MAP_WINDOW))
-> -		info.high_limit = mm->context.addr_limit;
-> -	else
-> -		info.high_limit = DEFAULT_MAP_WINDOW;
-> -
->  	return vm_unmapped_area(&info);
->  }
->
-> @@ -149,14 +149,18 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
->  	struct vm_area_struct *vma;
->  	struct mm_struct *mm = current->mm;
->  	unsigned long addr = addr0;
-> +	unsigned long high_limit = DEFAULT_MAP_WINDOW;
->  	struct vm_unmapped_area_info info;
->
->  	if (unlikely(addr > mm->context.addr_limit &&
->  		     mm->context.addr_limit != TASK_SIZE))
->  		mm->context.addr_limit = TASK_SIZE;
->
-> +	if (addr > high_limit)
-> +		high_limit = TASK_SIZE;
-> +
->  	/* requested length too big for entire address space */
-> -	if (len > mm->task_size - mmap_min_addr)
-> +	if (len > high_limit - mmap_min_addr)
->  		return -ENOMEM;
->
->  	if (flags & MAP_FIXED)
-> @@ -166,7 +170,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
->  	if (addr) {
->  		addr = PAGE_ALIGN(addr);
->  		vma = find_vma(mm, addr);
-> -		if (mm->task_size - len >= addr && addr >= mmap_min_addr &&
-> +		if (high_limit - len >= addr && addr >= mmap_min_addr &&
->  				(!vma || addr + len <= vm_start_gap(vma)))
->  			return addr;
->  	}
-> @@ -174,12 +178,9 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
->  	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
->  	info.length = len;
->  	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
-> -	info.high_limit = mm->mmap_base;
-> +	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
->  	info.align_mask = 0;
->
-> -	if (addr > DEFAULT_MAP_WINDOW)
-> -		info.high_limit += mm->context.addr_limit - DEFAULT_MAP_WINDOW;
-> -
->  	addr = vm_unmapped_area(&info);
->  	if (!(addr & ~PAGE_MASK))
->  		return addr;
-> -- 
-> 2.15.0
+What kind of signal?
+
+>  What:		/sys/kernel/livepatch/<patch>/<object>
+>  Date:		Nov 2014
+>  KernelVersion:	3.19.0
+> diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepa=
+tch/livepatch.txt
+> index ecdb18104ab0..6694530d0894 100644
+> --- a/Documentation/livepatch/livepatch.txt
+> +++ b/Documentation/livepatch/livepatch.txt
+> @@ -178,6 +178,12 @@ transition, it shows -1.  Any tasks which are blocki=
+ng the transition
+>  can be signaled with SIGSTOP and SIGCONT to force them to change their
+>  patched state.
+> =20
+> +Administrator can also affect a transition through
+> +/sys/kernel/livepatch/<patch>/signal attribute. Writing 1 to the attribu=
+te sends
+> +a signal to all remaining blocking tasks. This is an alternative for
+> +SIGSTOP/SIGCONT approach mentioned in the previous paragraph. It should =
+also be
+> +less harmful to the system.
+
+Well... If SIGSTOP / SIGCONT is considered harmful (it probably is),
+it should be mentioned above, and not in note here...
+									Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--xXmbgvnjoT4axfJE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAloAQrAACgkQMOfwapXb+vK1YQCfZTYld5Xapwyx+UHxqVu7BTsn
+AicAoKk+hmbgt/wGPwEq8YgqlJcxAP5p
+=Jg0X
+-----END PGP SIGNATURE-----
+
+--xXmbgvnjoT4axfJE--
