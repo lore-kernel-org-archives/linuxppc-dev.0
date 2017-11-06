@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmc72R2VzDr5T
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 19:55:35 +1100 (AEDT)
-Received: by mail-qt0-x243.google.com with SMTP id k31so9990327qta.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 00:55:35 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmcB0K44zDrJn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 19:55:38 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id n61so9975886qte.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 00:55:37 -0800 (PST)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
@@ -14,10 +14,9 @@ Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com
-Subject: [PATCH v9 6/8] powerpc: Swizzle around 4K PTE bits to free up bit 5
- and bit 6
-Date: Mon,  6 Nov 2017 00:50:50 -0800
-Message-Id: <1509958252-18302-7-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v9 7/8] powerpc: use helper functions to get and set hash slots
+Date: Mon,  6 Nov 2017 00:50:51 -0800
+Message-Id: <1509958252-18302-8-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1509958252-18302-1-git-send-email-linuxram@us.ibm.com>
 References: <1509958252-18302-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,94 +28,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need PTE bits 3 ,4, 5, 6 and 57 to support protection-keys,
-because these are the bits we want to consolidate on across all
-configuration to support protection keys.
+replace redundant code in __hash_page_4K() and flush_hash_page()
+with helper functions pte_get_hash_gslot() and pte_set_hidx()
 
-Bit 3,4,5 and 6 are currently used on 4K-pte kernels. But bit 9
-and 10 are available. Hence we use the two available bits and
-free up bit 5 and 6. We will still not be able to free up bit 3
-and 4. In the absence of any other free bits, we will have to
-stay satisfied with what we have :-(. This means we will not
-be able to support 32 protection keys, but only 8. The bit
-numbers are big-endian as defined in the ISA3.0
-
-This patch does the following change to 4K PTE.
-
-H_PAGE_F_SECOND (S) which occupied bit 4 moves to bit 7.
-H_PAGE_F_GIX (G,I,X) which occupied bit 5, 6 and 7 also moves
-to bit 8,9, 10 respectively.
-H_PAGE_HASHPTE (H) which occupied bit 8 moves to bit 4.
-
-Before the patch, the 4k PTE format was as follows
-
- 0 1 2 3 4  5  6  7  8 9 10....................57.....63
- : : : : :  :  :  :  : : :                      :     :
- v v v v v  v  v  v  v v v                      v     v
-,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
-|x|x|x|B|S |G |I |X |H| | |x|x|................| |x|x|x|
-'_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
-
-After the patch, the 4k PTE format is as follows
-
- 0 1 2 3 4  5  6  7  8 9 10....................57.....63
- : : : : :  :  :  :  : : :                      :     :
- v v v v v  v  v  v  v v v                      v     v
-,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
-|x|x|x|B|H |  |  |S |G|I|X|x|x|................| |.|.|.|
-'_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
-
-The patch has no code changes; just swizzles around bits.
-
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |    7 ++++---
- arch/powerpc/include/asm/book3s/64/hash-64k.h |    1 +
- arch/powerpc/include/asm/book3s/64/hash.h     |    1 -
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ arch/powerpc/mm/hash64_4k.c     |   14 ++++++--------
+ arch/powerpc/mm/hash_utils_64.c |   13 ++++---------
+ 2 files changed, 10 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index ed0d1cd..8a91f24 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -17,10 +17,11 @@
- #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
- #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+index 6fa450c..5a69b51 100644
+--- a/arch/powerpc/mm/hash64_4k.c
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -20,6 +20,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		   pte_t *ptep, unsigned long trap, unsigned long flags,
+ 		   int ssize, int subpg_prot)
+ {
++	real_pte_t rpte;
+ 	unsigned long hpte_group;
+ 	unsigned long rflags, pa;
+ 	unsigned long old_pte, new_pte;
+@@ -54,6 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 	 * need to add in 0x1 if it's a read-only user page
+ 	 */
+ 	rflags = htab_convert_pte_flags(new_pte);
++	rpte = __real_pte(__pte(old_pte), ptep);
  
--#define H_PAGE_F_GIX_SHIFT	56
--#define H_PAGE_F_SECOND	_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
--#define H_PAGE_F_GIX	(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
-+#define H_PAGE_F_GIX_SHIFT	53
-+#define H_PAGE_F_SECOND	_RPAGE_RPN44	/* HPTE is in 2ndary HPTEG */
-+#define H_PAGE_F_GIX	(_RPAGE_RPN43 | _RPAGE_RPN42 | _RPAGE_RPN41)
- #define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
-+#define H_PAGE_HASHPTE	_RPAGE_RSV2     /* software: PTE & hash are busy */
+ 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
+ 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+@@ -64,13 +66,10 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		/*
+ 		 * There MIGHT be an HPTE for this pte
+ 		 */
+-		hash = hpt_hash(vpn, shift, ssize);
+-		if (old_pte & H_PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & H_PAGE_F_GIX) >> H_PAGE_F_GIX_SHIFT;
++		unsigned long gslot = pte_get_hash_gslot(vpn, shift, ssize,
++							 rpte, 0);
  
- /* PTE flags to conserve for HPTE identification */
- #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index b78d94e..62e101b 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -14,6 +14,7 @@
- #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
- #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
- #define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
-+#define H_PAGE_HASHPTE	_RPAGE_RPN43	/* PTE has associated HPTE */
+-		if (mmu_hash_ops.hpte_updatepp(slot, rflags, vpn, MMU_PAGE_4K,
++		if (mmu_hash_ops.hpte_updatepp(gslot, rflags, vpn, MMU_PAGE_4K,
+ 					       MMU_PAGE_4K, ssize, flags) == -1)
+ 			old_pte &= ~_PAGE_HPTEFLAGS;
+ 	}
+@@ -118,8 +117,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 			return -1;
+ 		}
+ 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
+-		new_pte |= (slot << H_PAGE_F_GIX_SHIFT) &
+-			(H_PAGE_F_SECOND | H_PAGE_F_GIX);
++		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
+ 	}
+ 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
+ 	return 0;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 4bf6ea7..578d5a3 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1617,23 +1617,18 @@ unsigned long pte_get_hash_gslot(unsigned long vpn, unsigned long shift,
+ void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
+ 		     unsigned long flags)
+ {
+-	unsigned long hash, index, shift, hidx, slot;
++	unsigned long index, shift, gslot;
+ 	int local = flags & HPTE_LOCAL_UPDATE;
  
- /*
-  * We need to differentiate between explicit huge page and THP huge
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index e72474f..0920eff 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -9,7 +9,6 @@
-  *
-  */
- #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
--#define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
+ 	DBG_LOW("flush_hash_page(vpn=%016lx)\n", vpn);
+ 	pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
+-		hash = hpt_hash(vpn, shift, ssize);
+-		hidx = __rpte_to_hidx(pte, index);
+-		if (hidx & _PTEIDX_SECONDARY)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += hidx & _PTEIDX_GROUP_IX;
+-		DBG_LOW(" sub %ld: hash=%lx, hidx=%lx\n", index, slot, hidx);
++		gslot = pte_get_hash_gslot(vpn, shift, ssize, pte, index);
++		DBG_LOW(" sub %ld: gslot=%lx\n", index, gslot);
+ 		/*
+ 		 * We use same base page size and actual psize, because we don't
+ 		 * use these functions for hugepage
+ 		 */
+-		mmu_hash_ops.hpte_invalidate(slot, vpn, psize, psize,
++		mmu_hash_ops.hpte_invalidate(gslot, vpn, psize, psize,
+ 					     ssize, local);
+ 	} pte_iterate_hashed_end();
  
- #ifdef CONFIG_PPC_64K_PAGES
- #include <asm/book3s/64/hash-64k.h>
 -- 
 1.7.1
