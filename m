@@ -1,19 +1,17 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cascardo@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVx3J1JcfzDr6m
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 02:16:12 +1100 (AEDT)
-Subject: Re: [PATCH 0/5] VA allocator fixes
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <20171106100315.29720-1-npiggin@gmail.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <cc66ea81-fd9a-0bd5-8a8c-5abdc604200b@redhat.com>
-Date: Mon, 6 Nov 2017 16:16:07 +0100
-MIME-Version: 1.0
-In-Reply-To: <20171106100315.29720-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yW07d5GQvzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 04:35:09 +1100 (AEDT)
+From: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mahesh@linux.vnet.ibm.com, cascardo@canonical.com, mpe@ellerman.id.au,
+ npiggin@gmail.com
+Subject: [PATCH v3] ppc64 boot: Wait for boot cpu to show up if nr_cpus limit
+ is about to hit.
+Date: Mon,  6 Nov 2017 15:34:26 -0200
+Message-Id: <20171106173426.8902-1-cascardo@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +21,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/06/2017 11:03 AM, Nicholas Piggin wrote:
-> Florian found a nasty corner case with the VA allocation logic
-> for crossing from 128TB to 512TB limit on hash, and made a
-> really superb report of the problem -- traces, reproducer recipes,
-> analysis, etc. which already mostly solved it.
-> 
-> The first patch in the series should solve Florian's particular
-> case, the next 3 are other issues with addr_limit. The last
-> patch is technically a cleanup but I think it's fairly important
-> in terms of understanding the code and also enabling some BUG
-> checks (when addr_limit == 0).
-> 
-> I have not tested these exactly on Florian's test case, but
-> some tests of my own behave better afterwards. Hopefully he has
-> time to re-test. Some careful review would be welcome too.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-I think I have applied the five patches you posted, but I still get a 
-brk value above 128 TiB:
+The kernel boot parameter 'nr_cpus=' allows one to specify number of
+possible cpus in the system. In the normal scenario the first cpu (cpu0)
+that shows up is the boot cpu and hence it gets covered under nr_cpus
+limit.
 
-# /lib64/ld64.so.1 ./a.out
-initial brk value: 0x7fffde960000
-probing at 0x80000001fffc
+But this assumption will be broken in kdump scenario where kdump kenrel
+after a crash can boot up on an non-zero boot cpu. The paca structure
+allocation depends on value of nr_cpus and is indexed using logical cpu
+ids. This definetly will be an issue if boot cpu id > nr_cpus
 
-I assumed you wanted to reject those?
+This patch modifies allocate_pacas() and smp_setup_cpu_maps() to
+accommodate boot cpu for the case where boot_cpuid > nr_cpu_ids.
 
-In either case, I recommend to tweak the VM layout, so that ld.so does 
-not land closely to to the 128 TiB limit, so that the brk failure or 
-returning of 48-bit addresses is avoided.
+This change would help to reduce the memory reservation requirement for
+kdump on ppc64.
 
-Thanks,
-Florian
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
+---
+
+v3: fixup signedness or nr_cpus to match nr_cpu_ids
+     and fix conflict due to change from %d to %u
+
+Resending this as it was not applied, and I can reproduce the issue with
+v4.14-rc8 when booting a kdump kernel after a crash that has been given
+nr_cpus=1 as a parameter. With this patch, I can't reproduce it anymore.
+
+---
+ arch/powerpc/include/asm/paca.h    |  3 +++
+ arch/powerpc/include/asm/smp.h     |  1 +
+ arch/powerpc/kernel/paca.c         | 23 +++++++++++++++++-----
+ arch/powerpc/kernel/prom.c         | 39 +++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/setup-common.c | 25 ++++++++++++++++++++++++
+ 5 files changed, 85 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 04b60af027ae..ea0dbf2bbeef 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -49,6 +49,9 @@ extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
+ #define get_lppaca()	(get_paca()->lppaca_ptr)
+ #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
+ 
++/* Maximum number of threads per core. */
++#define	MAX_SMT		8
++
+ struct task_struct;
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index fac963e10d39..553cd22b2ccc 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -30,6 +30,7 @@
+ #include <asm/percpu.h>
+ 
+ extern int boot_cpuid;
++extern int boot_hw_cpuid;
+ extern int spinning_secondaries;
+ 
+ extern void cpu_die(void);
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 2ff2b8a19f71..9c689ee4b6a3 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -207,6 +207,7 @@ void __init allocate_pacas(void)
+ {
+ 	u64 limit;
+ 	int cpu;
++	unsigned int nr_cpus;
+ 
+ 	limit = ppc64_rma_size;
+ 
+@@ -219,20 +220,32 @@ void __init allocate_pacas(void)
+ 	limit = min(0x10000000ULL, limit);
+ #endif
+ 
+-	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
++	/*
++	 * Always align up the nr_cpu_ids to SMT threads and allocate
++	 * the paca. This will help us to prepare for a situation where
++	 * boot cpu id > nr_cpus_id. We will use the last nthreads
++	 * slots (nthreads == threads per core) to accommodate a core
++	 * that contains boot cpu thread.
++	 *
++	 * Do not change nr_cpu_ids value here. Let us do that in
++	 * early_init_dt_scan_cpus() where we know exact value
++	 * of threads per core.
++	 */
++	nr_cpus = _ALIGN_UP(nr_cpu_ids, MAX_SMT);
++	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpus);
+ 
+ 	paca = __va(memblock_alloc_base(paca_size, PAGE_SIZE, limit));
+ 	memset(paca, 0, paca_size);
+ 
+ 	printk(KERN_DEBUG "Allocated %u bytes for %u pacas at %p\n",
+-		paca_size, nr_cpu_ids, paca);
++		paca_size, nr_cpus, paca);
+ 
+-	allocate_lppacas(nr_cpu_ids, limit);
++	allocate_lppacas(nr_cpus, limit);
+ 
+-	allocate_slb_shadows(nr_cpu_ids, limit);
++	allocate_slb_shadows(nr_cpus, limit);
+ 
+ 	/* Can't use for_each_*_cpu, as they aren't functional yet */
+-	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
++	for (cpu = 0; cpu < nr_cpus; cpu++)
+ 		initialise_paca(&paca[cpu], cpu);
+ }
+ 
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index f83056297441..93837093c5cb 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -302,6 +302,29 @@ static void __init check_cpu_feature_properties(unsigned long node)
+ 	}
+ }
+ 
++/*
++ * Adjust the logical id of a boot cpu to fall under nr_cpu_ids. Map it to
++ * last core slot in the allocated paca array.
++ *
++ * e.g. on SMT=8 system, kernel booted with nr_cpus=1 and boot cpu = 33,
++ * align nr_cpu_ids to MAX_SMT value 8. Allocate paca array to hold up-to
++ * MAX_SMT=8 cpus. Since boot cpu 33 is greater than nr_cpus (8), adjust
++ * its logical id so that new id becomes less than nr_cpu_ids. Make sure
++ * that boot cpu's new logical id is aligned to its thread id and falls
++ * under last nthreads slots available in paca array. In this case the
++ * boot cpu 33 is adjusted to new boot cpu id 1.
++ *
++ */
++static inline void adjust_boot_cpuid(int nthreads, int phys_id)
++{
++	boot_hw_cpuid = phys_id;
++	if (boot_cpuid >= nr_cpu_ids) {
++		boot_cpuid = (boot_cpuid % nthreads) + (nr_cpu_ids - nthreads);
++		pr_info("Adjusted logical boot cpu id: logical %d physical %d\n",
++			boot_cpuid, phys_id);
++	}
++}
++
+ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 					  const char *uname, int depth,
+ 					  void *data)
+@@ -325,6 +348,18 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 
+ 	nthreads = len / sizeof(int);
+ 
++#ifdef CONFIG_SMP
++	/*
++	 * Now that we know threads per core lets align nr_cpu_ids to
++	 * correct SMT value.
++	 */
++	if (nr_cpu_ids % nthreads) {
++		nr_cpu_ids = _ALIGN_UP(nr_cpu_ids, nthreads);
++		pr_info("Aligned nr_cpus to SMT=%d, nr_cpu_ids = %d\n",
++				 nthreads, nr_cpu_ids);
++	}
++#endif
++
+ 	/*
+ 	 * Now see if any of these threads match our boot cpu.
+ 	 * NOTE: This must match the parsing done in smp_setup_cpu_maps.
+@@ -363,7 +398,9 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	DBG("boot cpu: logical %d physical %d\n", found,
+ 	    be32_to_cpu(intserv[found_thread]));
+ 	boot_cpuid = found;
+-	set_hard_smp_processor_id(found, be32_to_cpu(intserv[found_thread]));
++	adjust_boot_cpuid(nthreads, be32_to_cpu(intserv[found_thread]));
++	set_hard_smp_processor_id(boot_cpuid,
++					be32_to_cpu(intserv[found_thread]));
+ 
+ 	/*
+ 	 * PAPR defines "logical" PVR values for cpus that
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 2e3bc16d02b2..46b1e0972a20 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -85,6 +85,7 @@ struct machdep_calls *machine_id;
+ EXPORT_SYMBOL(machine_id);
+ 
+ int boot_cpuid = -1;
++int boot_hw_cpuid = -1;
+ EXPORT_SYMBOL_GPL(boot_cpuid);
+ 
+ /*
+@@ -473,6 +474,7 @@ void __init smp_setup_cpu_maps(void)
+ 	struct device_node *dn = NULL;
+ 	int cpu = 0;
+ 	int nthreads = 1;
++	bool boot_cpu_added = false;
+ 
+ 	DBG("smp_setup_cpu_maps()\n");
+ 
+@@ -499,6 +501,24 @@ void __init smp_setup_cpu_maps(void)
+ 		}
+ 
+ 		nthreads = len / sizeof(int);
++		/*
++		 * If boot cpu hasn't been added to paca and there are only
++		 * last nthreads slots available in paca array then wait
++		 * for boot cpu to show up.
++		 */
++		if (!boot_cpu_added && (cpu + nthreads) >= nr_cpu_ids) {
++			int found = 0;
++
++			DBG("Holding last nthreads paca slots for boot cpu\n");
++			for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
++				if (boot_hw_cpuid == be32_to_cpu(intserv[j])) {
++					found = 1;
++					break;
++				}
++			}
++			if (!found)
++				continue;
++		}
+ 
+ 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+ 			bool avail;
+@@ -514,6 +534,11 @@ void __init smp_setup_cpu_maps(void)
+ 			set_cpu_present(cpu, avail);
+ 			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
+ 			set_cpu_possible(cpu, true);
++			if (boot_hw_cpuid == be32_to_cpu(intserv[j])) {
++				DBG("Boot cpu %d (hard id %d) added to paca\n",
++				    cpu, be32_to_cpu(intserv[j]));
++				boot_cpu_added = true;
++			}
+ 			cpu++;
+ 		}
+ 	}
+-- 
+2.15.0.rc2
