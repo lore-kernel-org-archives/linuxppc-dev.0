@@ -1,22 +1,52 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVncw3nq2zDrKv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 20:41:20 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cyril Bur <cyrilbur@gmail.com>, linux-mtd@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com
-Cc: boris.brezillon@free-electrons.com, computersforpeace@gmail.com,
- dwmw2@infradead.org, sjitindarsingh@gmail.com
-Subject: Re: [PATCH v5 06/10] powerpc/opal: Rework the opal-async interface
-In-Reply-To: <20171103024146.17086-7-cyrilbur@gmail.com>
-References: <20171103024146.17086-1-cyrilbur@gmail.com>
- <20171103024146.17086-7-cyrilbur@gmail.com>
-Date: Mon, 06 Nov 2017 20:41:18 +1100
-Message-ID: <87h8u7bv7l.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVnll1S6TzDr4J
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 20:47:14 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA69jfZk087755
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Nov 2017 04:47:12 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e2k2k6jed-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 04:47:11 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 6 Nov 2017 09:47:09 -0000
+Subject: Re: [PATCH v5 07/22] mm: Protect VMA modifications using VMA sequence
+ count
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1507729966-10660-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1507729966-10660-8-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20171026101833.GF563@redhat.com>
+ <2cbea37c-c2a7-bfd4-4528-fd273b210e29@linux.vnet.ibm.com>
+ <ae35f020-3898-3f86-6d22-53b399d591be@linux.vnet.ibm.com>
+ <20171102200840.GC22686@redhat.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 6 Nov 2017 10:47:00 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20171102200840.GC22686@redhat.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c774dc09-dc3d-b721-8339-081e7584b709@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,116 +56,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cyril Bur <cyrilbur@gmail.com> writes:
+Hi Andrea,
 
-> diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
-> index c43421ab2d2f..fbae8a37ce2c 100644
-> --- a/arch/powerpc/platforms/powernv/opal-async.c
-> +++ b/arch/powerpc/platforms/powernv/opal-async.c
-> @@ -23,40 +23,45 @@
->  #include <asm/machdep.h>
->  #include <asm/opal.h>
->  
-> -#define N_ASYNC_COMPLETIONS	64
-> +enum opal_async_token_state {
-> +	ASYNC_TOKEN_UNALLOCATED = 0,
-> +	ASYNC_TOKEN_ALLOCATED,
-> +	ASYNC_TOKEN_COMPLETED
-> +};
-> +
-> +struct opal_async_token {
-> +	enum opal_async_token_state state;
-> +	struct opal_msg response;
-> +};
->  
-> -static DECLARE_BITMAP(opal_async_complete_map, N_ASYNC_COMPLETIONS) = {~0UL};
-> -static DECLARE_BITMAP(opal_async_token_map, N_ASYNC_COMPLETIONS);
->  static DECLARE_WAIT_QUEUE_HEAD(opal_async_wait);
->  static DEFINE_SPINLOCK(opal_async_comp_lock);
->  static struct semaphore opal_async_sem;
-> -static struct opal_msg *opal_async_responses;
->  static unsigned int opal_max_async_tokens;
-> +static struct opal_async_token *opal_async_tokens;
->  
->  static int __opal_async_get_token(void)
->  {
->  	unsigned long flags;
-> -	int token;
-> +	int token = -EBUSY;
->  
->  	spin_lock_irqsave(&opal_async_comp_lock, flags);
-> -	token = find_first_bit(opal_async_complete_map, opal_max_async_tokens);
-> -	if (token >= opal_max_async_tokens) {
-> -		token = -EBUSY;
-> -		goto out;
-> +	for (token = 0; token < opal_max_async_tokens; token++) {
-> +		if (opal_async_tokens[token].state == ASYNC_TOKEN_UNALLOCATED) {
-> +			opal_async_tokens[token].state = ASYNC_TOKEN_ALLOCATED;
-> +			goto out;
-> +		}
->  	}
-> -
-> -	if (__test_and_set_bit(token, opal_async_token_map)) {
-> -		token = -EBUSY;
-> -		goto out;
-> -	}
-> -
-> -	__clear_bit(token, opal_async_complete_map);
-> -
->  out:
->  	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
->  	return token;
->  }
+On 02/11/2017 21:08, Andrea Arcangeli wrote:
+> On Thu, Nov 02, 2017 at 06:25:11PM +0100, Laurent Dufour wrote:
+>> I think there is some memory barrier missing when the VMA is modified so
+>> currently the modifications done in the VMA structure may not be written
+>> down at the time the pte is locked. So doing that change will also requires
+>> to call smp_wmb() before locking the page tables. In the current patch this
+>> is ensured by the call to write_seqcount_end().
+>> Doing so will still require to have a memory barrier when touching the VMA.
+>> Not sure we get far better performance compared to the sequence count
+>> change. But I'll give it a try anyway ;)
+> 
+> Luckily smp_wmb is a noop on x86. I would suggest to ignore the above
+> issue completely if you give it a try, and then if this performs, we
+> can just embed a smp_wmb() before spin_lock() somewhere in
+> pte_offset_map_lock/pte_lockptr/spin_lock_nested for those archs whose
+> spin_lock isn't a smp_wmb() equivalent. I would focus at flushing
+> writes before every pagetable spin_lock for non-x86 archs, rather than
+> after all vma modifications. That should be easier to keep under
+> control and it's going to be more efficient too as if something there
+> are fewer spin locks than vma modifications.
 
-Resulting in:
+I do agree that would simplify the patch series a lot.
+I'll double check that pte lock is not done in a loop other wise having
+smp_wmb() there will be bad.
 
- static int __opal_async_get_token(void)
- {
- 	unsigned long flags;
-+	int token = -EBUSY;
- 
- 	spin_lock_irqsave(&opal_async_comp_lock, flags);
-+	for (token = 0; token < opal_max_async_tokens; token++) {
-+		if (opal_async_tokens[token].state == ASYNC_TOKEN_UNALLOCATED) {
-+			opal_async_tokens[token].state = ASYNC_TOKEN_ALLOCATED;
-+			goto out;
-+		}
- 	}
- out:
- 	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
- 	return token;
- }
+Another point I'm trying to double check is that we may have inconsistency
+while reading the vma's flags in the page fault path until the memory
+barrier got it in the VMA's changing path. Especially we may have vm_flags
+and vm_page_prot not matching at all, which couldn't happen when checking
+for the vm_sequence count.
 
-So when no unallocated token is found we return opal_max_async_tokens :(
+> 
+> For non-x86 archs we may then need a smp_wmb__before_spin_lock. That
+> looks more self contained than surrounding all vma modifications and
+> it's a noop on x86 anyway.
+> 
+> I thought about the contention detection logic too yesterday: to
+> detect contention we could have a mm->mmap_sem_contention_jiffies and
+> if down_read_trylock_exclusive() [same as down_read_if_not_hold in
+> prev mail] fails (and it'll fail if either read or write mmap_sem is
+> hold, so also convering mremap/mprotect etc..) we set
+> mm->mmap_sem_contention_jiffies = jiffies and then to know if you must
+> not touch the mmap_sem at all, you compare jiffies against
+> mmap_sem_contention_jiffies, if it's equal we go speculative. If
+> that's not enough we can just keep going speculative for a few more
+> jiffies with time_before(). The srcu lock is non concerning because the
+> inc/dec of the fast path is in per-cpu cacheline of course, no false
+> sharing possible there or it wouldn't be any better than a normal lock.
 
-I changed it to:
+I'm sorry, I should have missed something here. I can't see how this would
+help fixing the case where a thread is entering the page fault handler
+seeing that no one else has the mmap_sem and then grab it. While it is
+processing the page fault another thread is entering mprotect for instance
+and thus will wait for the mmap_sem to be released by the thread processing
+the page fault.
 
-static int __opal_async_get_token(void)
-{
-	unsigned long flags;
-	int i, token = -EBUSY;
+Cheers,
+Laurent.
 
-	spin_lock_irqsave(&opal_async_comp_lock, flags);
-
-	for (i = 0; i < opal_max_async_tokens; i++) {
-		if (opal_async_tokens[i].state == ASYNC_TOKEN_UNALLOCATED) {
-			opal_async_tokens[i].state = ASYNC_TOKEN_ALLOCATED;
-			token = i;
-			break;
-		}
-	}
-
-	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
-	return token;
-}
-
-
->  
-> +/*
-> + * Note: If the returned token is used in an opal call and opal returns
-> + * OPAL_ASYNC_COMPLETION you MUST opal_async_wait_response() before
-                                     ^
-                                     call
-
-
-cheers
+> The vma revalidation is already done by khugepaged and mm/userfaultfd,
+> both need to drop the mmap_sem and continue working on the pagetables,
+> so we already know it's workable and not too slow.
+> 
+> Summarizing.. by using a runtime contention triggered speculative
+> design that goes speculative only when contention is runtime-detected
+> using the above logic (or equivalent), and by having to revalidate the
+> vma by hand with find_vma without knowing instantly if the vma become
+> stale, we will run with a substantially slower speculative page fault
+> than with your current speculative always-on design, but the slower
+> speculative page fault runtime will still scale 100% in SMP so it
+> should still be faster on large SMP systems. The pros is that it won't
+> regress the mmap/brk vma modifications. The whole complexity of
+> tracking the vma modifications should also go away and the resulting
+> code should be more maintainable and less risky to break in subtle
+> ways impossible to reproduce.
+> 
+> Thanks!
+> Andrea
+> 
