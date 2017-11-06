@@ -1,23 +1,19 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pg0-x22e.google.com (mail-pg0-x22e.google.com
- [IPv6:2607:f8b0:400e:c05::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVX7H4GwQzDrCy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 10:33:15 +1100 (AEDT)
-Received: by mail-pg0-x22e.google.com with SMTP id s2so6792655pge.10
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Nov 2017 15:33:14 -0800 (PST)
-Message-ID: <1509924786.1579.2.camel@gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: Check FP/VEC on exception in TM
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: leitao@debian.org
-Date: Mon, 06 Nov 2017 10:33:06 +1100
-In-Reply-To: <59FC60DA.6060100@linux.vnet.ibm.com>
-References: <1509564221-7049-1-git-send-email-gromero@linux.vnet.ibm.com>
- <1509574233.1667.4.camel@gmail.com> <59FC60DA.6060100@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yVdH24cz1zDr8P
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 14:25:18 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Michael Neuling <mikey@neuling.org>
+Subject: [RFC PATCH kernel] powerpc/pci: Get rid of unused @parent pointer in
+ pci_controller
+Date: Mon,  6 Nov 2017 14:24:41 +1100
+Message-Id: <20171106032441.10031-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-11-03 at 10:28 -0200, Gustavo Romero wrote:
-> Hi Cyril!
-> 
-> On 01-11-2017 20:10, Cyril Bur wrote:
-> > Thanks Gustavo,
-> > 
-> > I do have one more thought on an improvement for this test which is
-> > that:
-> > +	/* Counter for busy wait *
-> > +	uint64_t counter = 0x1ff000000;
-> > is a bit fragile, what we should do is have the test work out long it
-> > should spin until it reliably gets a TM_CAUSE_FAC_UNAV failure and then
-> > use that for these tests.
-> > 
-> > This will only become a problem if we were to change kernel heuristics
-> > which is fine for now. I'll try to get that added soon but for now this
-> > test has proven too useful to delay adding as is.
-> 
-> I see. Yup, 'counter' value was indeed determined experimentally under many
-> different scenarios (VM and BM, different CPU loads, etc). At least if the
-> heuristics changes hurting the test it will catch that pointing out that
-> the expected failure did not happen, like:
-> 
-> Checking if FP/VEC registers are sane after a FP unavailable exception...
-> If MSR.FP=0 MSR.VEC=0:
->     Expecting the transaction to fail, but it didn't
->     FP ok VEC ok
-> ...
-> 
-> So it won't let the hurting change pass fine silently :-)
-> 
+The @parent pointer is supposed to point to a device which represents
+a PCI controller, however it is never set to anything and remains NULL;
+it is also quite common to pass NULL to pci_create_root_bus().
 
-Yeah, all for merging as is.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-It would be nice so that when someone does  make a heuristic change
-they don't also have to go fix tests - there is nothing more annoying
-than a fragile test suite.
+This @parent is NULL for every PHB in garrison machines, for example.
+Where would this pointer be really used?
 
-> 
-> > > Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
-> > > Signed-off-by: Breno Leitao <leitao@debian.org>
-> > > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> 
-> Thanks a lot for reviewing it.
-> 
-> Cheers,
-> Gustavo
-> 
+I wonder how does setting it make any difference in sysfs for CXL vphb?
+
+In general, I'd think that @parent makes sense and every PHB
+has a parent device struct like any other device and the platform
+code binds a correct device driver to a PHB and we can avoid
+having PNV_PHB_IODA2&co switches but for some reason PHBs are
+hardcoded in the platform code.
+
+---
+ arch/powerpc/include/asm/pci-bridge.h | 1 -
+ arch/powerpc/kernel/pci-common.c      | 2 +-
+ drivers/misc/cxl/vphb.c               | 3 ---
+ 3 files changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 752718a2949d..ad88ddeaa6b7 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -60,7 +60,6 @@ struct pci_controller {
+ #endif
+ 	struct device_node *dn;
+ 	struct list_head list_node;
+-	struct device *parent;
+ 
+ 	int first_busno;
+ 	int last_busno;
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 02831a396419..597576777c34 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1681,7 +1681,7 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 	pci_add_resource(&resources, &hose->busn);
+ 
+ 	/* Create an empty bus for the toplevel */
+-	bus = pci_create_root_bus(hose->parent, hose->first_busno,
++	bus = pci_create_root_bus(NULL, hose->first_busno,
+ 				  hose->ops, hose, &resources);
+ 	if (bus == NULL) {
+ 		pr_err("Failed to create bus for PCI domain %04x\n",
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index 512a4897dbf6..ae3fe1563812 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -232,9 +232,6 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
+ 	if (!phb)
+ 		return -ENODEV;
+ 
+-	/* Setup parent in sysfs */
+-	phb->parent = parent;
+-
+ 	/* Setup the PHB using arch provided callback */
+ 	phb->ops = &cxl_pcie_pci_ops;
+ 	phb->cfg_addr = NULL;
+-- 
+2.11.0
