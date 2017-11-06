@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmjL5YW2zDq78
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 20:00:06 +1100 (AEDT)
-Received: by mail-qk0-x244.google.com with SMTP id x195so4397271qkb.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 01:00:06 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmjP24B6zDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 20:00:09 +1100 (AEDT)
+Received: by mail-qk0-x243.google.com with SMTP id n5so9991896qke.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 01:00:09 -0800 (PST)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
@@ -18,9 +18,10 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com
-Subject: [PATCH v9 38/51] selftest/vm: fixed bugs in pkey_disable_clear()
-Date: Mon,  6 Nov 2017 00:57:30 -0800
-Message-Id: <1509958663-18737-39-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v9 39/51] selftest/vm: clear the bits in shadow reg when a
+ pkey is freed.
+Date: Mon,  6 Nov 2017 00:57:31 -0800
+Message-Id: <1509958663-18737-40-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
 References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,38 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-instead of clearing the bits, pkey_disable_clear() was setting
-the bits. Fixed it.
-
-Also fixed a wrong assertion in that function. When bits are
-cleared, the resulting bit value will be less than the original.
+When a key is freed, the  key  is  no  more  effective.
+Clear the bits corresponding to the pkey in the shadow
+register. Otherwise  it  will carry some spurious bits
+which can trigger false-positive asserts.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- tools/testing/selftests/vm/protection_keys.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ tools/testing/selftests/vm/protection_keys.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index 5aba137..384cc9a 100644
+index 384cc9a..2823d4d 100644
 --- a/tools/testing/selftests/vm/protection_keys.c
 +++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -461,7 +461,7 @@ void pkey_disable_clear(int pkey, int flags)
- 			pkey, pkey, pkey_rights);
- 	pkey_assert(pkey_rights >= 0);
- 
--	pkey_rights |= flags;
-+	pkey_rights &= ~flags;
- 
- 	ret = pkey_set(pkey, pkey_rights, 0);
- 	/* pkey_reg and flags have the same format */
-@@ -475,7 +475,7 @@ void pkey_disable_clear(int pkey, int flags)
- 	dprintf1("%s(%d) pkey_reg: 0x%016lx\n", __func__,
- 			pkey, rdpkey_reg());
- 	if (flags)
--		assert(rdpkey_reg() > orig_pkey_reg);
-+		assert(rdpkey_reg() < orig_pkey_reg);
+@@ -582,6 +582,9 @@ int alloc_pkey(void)
+ int sys_pkey_free(unsigned long pkey)
+ {
+ 	int ret = syscall(SYS_pkey_free, pkey);
++
++	if (!ret)
++		shadow_pkey_reg &= reset_bits(pkey, PKEY_DISABLE_ACCESS);
+ 	dprintf1("%s(pkey=%ld) syscall ret: %d\n", __func__, pkey, ret);
+ 	return ret;
  }
- 
- void pkey_write_allow(int pkey)
 -- 
 1.7.1
