@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmc55DLXzDr8P
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 19:55:33 +1100 (AEDT)
-Received: by mail-qt0-x241.google.com with SMTP id 1so10013924qtn.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 00:55:33 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmc72R2VzDr5T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 19:55:35 +1100 (AEDT)
+Received: by mail-qt0-x243.google.com with SMTP id k31so9990327qta.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 00:55:35 -0800 (PST)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
@@ -14,9 +14,10 @@ Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com
-Subject: [PATCH v9 5/8] powerpc: shifted-by-one hidx value
-Date: Mon,  6 Nov 2017 00:50:49 -0800
-Message-Id: <1509958252-18302-6-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v9 6/8] powerpc: Swizzle around 4K PTE bits to free up bit 5
+ and bit 6
+Date: Mon,  6 Nov 2017 00:50:50 -0800
+Message-Id: <1509958252-18302-7-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1509958252-18302-1-git-send-email-linuxram@us.ibm.com>
 References: <1509958252-18302-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,59 +29,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-0xf is considered invalid hidx value. It indicates absence of a backing
-HPTE. A PTE is initialized to 0xf either
-a) when it is new it is newly allocated to hold 4k-backing-HPTE
-	or
-b) Any time it gets demoted to a 4k-backing-HPTE
+We need PTE bits 3 ,4, 5, 6 and 57 to support protection-keys,
+because these are the bits we want to consolidate on across all
+configuration to support protection keys.
 
-This patch shifts the representation by one-modulo-0xf; i.e hidx 0 is
-represented as 1, 1 as 2,... , and 0xf as 0. This convention lets us
-initialize the secondary-part of the PTE to all zeroes. PTEs are anyway
-zero'd when allocated. We do not have to zero them again; thus saving on
-the initialization.
+Bit 3,4,5 and 6 are currently used on 4K-pte kernels. But bit 9
+and 10 are available. Hence we use the two available bits and
+free up bit 5 and 6. We will still not be able to free up bit 3
+and 4. In the absence of any other free bits, we will have to
+stay satisfied with what we have :-(. This means we will not
+be able to support 32 protection keys, but only 8. The bit
+numbers are big-endian as defined in the ISA3.0
+
+This patch does the following change to 4K PTE.
+
+H_PAGE_F_SECOND (S) which occupied bit 4 moves to bit 7.
+H_PAGE_F_GIX (G,I,X) which occupied bit 5, 6 and 7 also moves
+to bit 8,9, 10 respectively.
+H_PAGE_HASHPTE (H) which occupied bit 8 moves to bit 4.
+
+Before the patch, the 4k PTE format was as follows
+
+ 0 1 2 3 4  5  6  7  8 9 10....................57.....63
+ : : : : :  :  :  :  : : :                      :     :
+ v v v v v  v  v  v  v v v                      v     v
+,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
+|x|x|x|B|S |G |I |X |H| | |x|x|................| |x|x|x|
+'_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
+
+After the patch, the 4k PTE format is as follows
+
+ 0 1 2 3 4  5  6  7  8 9 10....................57.....63
+ : : : : :  :  :  :  : : :                      :     :
+ v v v v v  v  v  v  v v v                      v     v
+,-,-,-,-,--,--,--,--,-,-,-,-,-,------------------,-,-,-,
+|x|x|x|B|H |  |  |S |G|I|X|x|x|................| |.|.|.|
+'_'_'_'_'__'__'__'__'_'_'_'_'_'________________'_'_'_'_'
+
+The patch has no code changes; just swizzles around bits.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |    7 ++++---
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |    1 +
+ arch/powerpc/include/asm/book3s/64/hash.h     |    1 -
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index ed0d1cd..8a91f24 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -17,10 +17,11 @@
+ #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
+ #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
+ 
+-#define H_PAGE_F_GIX_SHIFT	56
+-#define H_PAGE_F_SECOND	_RPAGE_RSV2	/* HPTE is in 2ndary HPTEG */
+-#define H_PAGE_F_GIX	(_RPAGE_RSV3 | _RPAGE_RSV4 | _RPAGE_RPN44)
++#define H_PAGE_F_GIX_SHIFT	53
++#define H_PAGE_F_SECOND	_RPAGE_RPN44	/* HPTE is in 2ndary HPTEG */
++#define H_PAGE_F_GIX	(_RPAGE_RPN43 | _RPAGE_RPN42 | _RPAGE_RPN41)
+ #define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
++#define H_PAGE_HASHPTE	_RPAGE_RSV2     /* software: PTE & hash are busy */
+ 
+ /* PTE flags to conserve for HPTE identification */
+ #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
 diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 73ed988..b78d94e 100644
+index b78d94e..62e101b 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -63,13 +63,21 @@ static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
- 	return rpte;
- }
- 
-+/*
-+ * shift the hidx representation by one-modulo-0xf; i.e hidx 0 is respresented
-+ * as 1, 1 as 2,... , and 0xf as 0.  This convention lets us represent a
-+ * invalid hidx 0xf with a 0x0 bit value. PTEs are anyway zero'd when
-+ * allocated. We dont have to zero them gain; thus save on the initialization.
-+ */
-+#define HIDX_UNSHIFT_BY_ONE(x) ((x + 0xfUL) & 0xfUL) /* shift backward by one */
-+#define HIDX_SHIFT_BY_ONE(x) ((x + 0x1UL) & 0xfUL)   /* shift forward by one */
- #define HIDX_BITS(x, index)  (x << (index << 2))
- #define BITS_TO_HIDX(x, index)  ((x >> (index << 2)) & 0xfUL)
--#define INVALID_RPTE_HIDX  ~(0x0UL)
-+#define INVALID_RPTE_HIDX  0x0UL
- 
- static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
- {
--	return BITS_TO_HIDX(rpte.hidx, index);
-+	return HIDX_UNSHIFT_BY_ONE(BITS_TO_HIDX(rpte.hidx, index));
- }
+@@ -14,6 +14,7 @@
+ #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+ #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+ #define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
++#define H_PAGE_HASHPTE	_RPAGE_RPN43	/* PTE has associated HPTE */
  
  /*
-@@ -82,7 +90,7 @@ static inline unsigned long pte_set_hidx(pte_t *ptep, real_pte_t rpte,
- 	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
+  * We need to differentiate between explicit huge page and THP huge
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index e72474f..0920eff 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -9,7 +9,6 @@
+  *
+  */
+ #define H_PTE_NONE_MASK		_PAGE_HPTEFLAGS
+-#define H_PAGE_HASHPTE		_RPAGE_RPN43	/* PTE has associated HPTE */
  
- 	rpte.hidx &= ~HIDX_BITS(0xfUL, subpg_index);
--	*hidxp = rpte.hidx  | HIDX_BITS(hidx, subpg_index);
-+	*hidxp = rpte.hidx  | HIDX_BITS(HIDX_SHIFT_BY_ONE(hidx), subpg_index);
- 
- 	/*
- 	 * Anyone reading PTE must ensure hidx bits are read after reading the
+ #ifdef CONFIG_PPC_64K_PAGES
+ #include <asm/book3s/64/hash-64k.h>
 -- 
 1.7.1
