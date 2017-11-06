@@ -1,23 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVq341SWDzDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 21:45:36 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonas Pfefferle1 <JPF@zurich.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda: Relax max DMA window size
- check
-In-Reply-To: <fd1a289f-6698-0b84-eab8-d4c67290bea8@ozlabs.ru>
-References: <20171031040427.10909-1-aik@ozlabs.ru>
- <fd1a289f-6698-0b84-eab8-d4c67290bea8@ozlabs.ru>
-Date: Mon, 06 Nov 2017 21:45:34 +1100
-Message-ID: <877ev3bs8h.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVq3b6bCszDrJr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 21:46:03 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA6AjqUY116048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Nov 2017 05:46:01 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e2kv7fc2v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 05:45:54 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 6 Nov 2017 10:44:55 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Florian Weimer <fweimer@redhat.com>
+Subject: Re: [PATCH 3/5] powerpc/64s/hash: Fix fork() with 512TB process
+ address space
+In-Reply-To: <20171106100315.29720-4-npiggin@gmail.com>
+References: <20171106100315.29720-1-npiggin@gmail.com>
+ <20171106100315.29720-4-npiggin@gmail.com>
+Date: Mon, 06 Nov 2017 16:14:51 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87shdrsn30.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On 31/10/17 15:04, Alexey Kardashevskiy wrote:
->> DMA windows can only have a size of power of two on IODA2 hardware and
->> using memory_hotplug_max() to determine the upper limit won't work
->> correcly if it returns not power of two value.
->> 
->> This relaxes the check by rounding up the value returned by
->> memory_hotplug_max().
->> 
->> It is expected to impact DPDK on machines with non-power-of-two RAM size,
->> mostly. KVM guests are less likely to be affected as usually guests get
->> less than half of hosts RAM.
+> Hash unconditionally resets the addr_limit to default (128TB) when
+> the mm context is initialised. If a process has > 128TB mappings when
+> it forks, the child will not get the 512TB addr_limit, so accesses to
+> valid > 128TB mappings will fail in the child.
 >
+> Fix this by only resetting the addr_limit to default if it was 0. Non
+> zero indicates it was duplicated from the parent (0 means exec()).
 >
-> It was pointed out that this check is quite useless anyway as the vm_locked
-> memory limit should hit first, and if that is not set or the user got the
-> root privilege level, then there are easier ways to crash the host so I am
-> thinking of:
->
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-> b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 269f119e4b3c..a47e4cf343b2 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2769,7 +2769,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid,
-> __u64 bus_offset,
->         if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
->                 return -EINVAL;
->
-> -       if ((window_size > memory_hotplug_max()) ||
-> !is_power_of_2(window_size))
-> +       if (!is_power_of_2(window_size))
->                 return -EINVAL;
->
->
->
-> Makes sense?
 
-Sounds reasonable.
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Execpt where is the vm_locked check? I think it's in the VFIO driver? If
-so I guess the only concern is that this code might be called via some
-other path that doesn't do that check.
-
-cheers
+> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> Fixes: f4ea6dcb08 ("powerpc/mm: Enable mappings above 128TB")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/mm/mmu_context_book3s64.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+> index 05e15386d4cb..b94fb62e60fd 100644
+> --- a/arch/powerpc/mm/mmu_context_book3s64.c
+> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
+> @@ -93,11 +93,11 @@ static int hash__init_new_context(struct mm_struct *mm)
+>  		return index;
+>
+>  	/*
+> -	 * We do switch_slb() early in fork, even before we setup the
+> -	 * mm->context.addr_limit. Default to max task size so that we copy the
+> -	 * default values to paca which will help us to handle slb miss early.
+> +	 * In the case of exec, use the default limit,
+> +	 * otherwise inherit it from the mm we are duplicating.
+>  	 */
+> -	mm->context.addr_limit = DEFAULT_MAP_WINDOW_USER64;
+> +	if (!mm->context.addr_limit)
+> +		mm->context.addr_limit = DEFAULT_MAP_WINDOW_USER64;
+>
+>  	/*
+>  	 * The old code would re-promote on fork, we don't do that when using
+> -- 
+> 2.15.0
