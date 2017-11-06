@@ -1,26 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVrcT5MlDzDrJs
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 22:56:09 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id b192so8026301pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 03:56:09 -0800 (PST)
-Date: Mon, 6 Nov 2017 22:55:56 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Kirill A. Shutemov"
- <kirill.shutemov@linux.intel.com>, Florian Weimer <fweimer@redhat.com>
-Subject: Re: [PATCH 2/5] powerpc/64s/hash: Allow MAP_FIXED allocations to
- cross 128TB boundary
-Message-ID: <20171106225556.79aea9c8@roar.ozlabs.ibm.com>
-In-Reply-To: <87vainsn45.fsf@linux.vnet.ibm.com>
-References: <20171106100315.29720-1-npiggin@gmail.com>
- <20171106100315.29720-3-npiggin@gmail.com>
- <87vainsn45.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVsK86J5XzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 23:27:56 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA6CPsLk084374
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Nov 2017 07:27:54 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e2qjsrku3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 07:27:54 -0500
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 6 Nov 2017 07:27:53 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm: Remove unused flag arg in global_invalidates
+Date: Mon,  6 Nov 2017 17:57:44 +0530
+Message-Id: <20171106122744.4321-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 06 Nov 2017 16:14:10 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > While mapping hints with a length that cross 128TB are disallowed,
-> > MAP_FIXED allocations that cross 128TB are allowed. These are failing
-> > on hash (on radix they succeed). Add an additional case for fixed
-> > mappings to expand the addr_limit when crossing 128TB.  
-> 
-> Shouldn't that be fixed in radix. But i see x86 also doing this?
-> 
-> 
-> 	if (flags & MAP_FIXED)
-> 		return addr;
-> 
-> Kiril,
-> 
-> Is that expected?
-
-I should actually reply to this one because the other did not
-have Kirill on cc.
-
-Generic mapping code appears it will always succeed when given an
-explicit hint request, even if the address is below the boundary
-and address + length is above it. Even when !MAP_FIXED. This is the
-sane behaviour AFAIKS. So we should switch powerpc to match,
-shouldn't we?
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 4efe364f1188..d80240ba6de4 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -42,7 +42,7 @@ static void *real_vmalloc_addr(void *x)
+ }
+ 
+ /* Return 1 if we need to do a global tlbie, 0 if we can use tlbiel */
+-static int global_invalidates(struct kvm *kvm, unsigned long flags)
++static int global_invalidates(struct kvm *kvm)
+ {
+ 	int global;
+ 	int cpu;
+@@ -499,7 +499,7 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
+ 	if (v & HPTE_V_VALID) {
+ 		hpte[0] &= ~cpu_to_be64(HPTE_V_VALID);
+ 		rb = compute_tlbie_rb(v, pte_r, pte_index);
+-		do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags), true);
++		do_tlbies(kvm, &rb, 1, global_invalidates(kvm), true);
+ 		/*
+ 		 * The reference (R) and change (C) bits in a HPT
+ 		 * entry can be set by hardware at any time up until
+@@ -549,7 +549,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+ 
+ 	if (kvm_is_radix(kvm))
+ 		return H_FUNCTION;
+-	global = global_invalidates(kvm, 0);
++	global = global_invalidates(kvm);
+ 	for (i = 0; i < 4 && ret == H_SUCCESS; ) {
+ 		n = 0;
+ 		for (; i < 4; ++i) {
+@@ -709,8 +709,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 			rb = compute_tlbie_rb(v, r, pte_index);
+ 			hpte[0] = cpu_to_be64((pte_v & ~HPTE_V_VALID) |
+ 					      HPTE_V_ABSENT);
+-			do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags),
+-				  true);
++			do_tlbies(kvm, &rb, 1, global_invalidates(kvm), true);
+ 			/* Don't lose R/C bit updates done by hardware */
+ 			r |= be64_to_cpu(hpte[1]) & (HPTE_R_R | HPTE_R_C);
+ 			hpte[1] = cpu_to_be64(r);
+-- 
+2.13.6
