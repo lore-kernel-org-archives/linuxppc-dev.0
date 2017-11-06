@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmhH0GShzDr5S
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 19:59:11 +1100 (AEDT)
-Received: by mail-qk0-x242.google.com with SMTP id n5so9989623qke.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 00:59:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yVmhK5GzWzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Nov 2017 19:59:13 +1100 (AEDT)
+Received: by mail-qt0-x243.google.com with SMTP id j58so10029230qtj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 00:59:13 -0800 (PST)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
@@ -18,10 +18,9 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
  khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
  bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com
-Subject: [PATCH v9 18/51] powerpc: implementation for
- arch_vma_access_permitted()
-Date: Mon,  6 Nov 2017 00:57:10 -0800
-Message-Id: <1509958663-18737-19-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v9 19/51] powerpc: Handle exceptions caused by pkey violation
+Date: Mon,  6 Nov 2017 00:57:11 -0800
+Message-Id: <1509958663-18737-20-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
 References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,81 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch provides the implementation for
-arch_vma_access_permitted(). Returns true if the
-requested access is allowed by pkey associated with the
-vma.
+Handle Data and  Instruction exceptions caused by memory
+protection-key.
+
+The CPU will detect the key fault if the HPTE is already
+programmed with the key.
+
+However if the HPTE is not  hashed, a key fault will not
+be detected by the hardware. The software will detect
+pkey violation in such a case.
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/mmu_context.h |    5 +++-
- arch/powerpc/mm/pkeys.c                |   34 ++++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+), 1 deletions(-)
+ arch/powerpc/mm/fault.c |   32 +++++++++++++++++++++++++++-----
+ 1 files changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index a557735..95a3288 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -136,6 +136,10 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
- {
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 4797d08..dfcd0e4 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -145,6 +145,24 @@ static noinline int bad_area(struct pt_regs *regs, unsigned long address)
+ 	return __bad_area(regs, address, SEGV_MAPERR);
  }
  
++static int bad_page_fault_exception(struct pt_regs *regs, unsigned long address,
++				    int si_code)
++{
++	int sig = SIGBUS;
++	int code = BUS_OBJERR;
++
 +#ifdef CONFIG_PPC_MEM_KEYS
-+bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
-+			       bool execute, bool foreign);
-+#else /* CONFIG_PPC_MEM_KEYS */
- static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 		bool write, bool execute, bool foreign)
++	if (si_code & DSISR_KEYFAULT) {
++		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
++		sig = SIGSEGV;
++		code = SEGV_PKUERR;
++	}
++#endif /* CONFIG_PPC_MEM_KEYS */
++
++	_exception(sig, regs, code, address);
++	return 0;
++}
++
+ static int do_sigbus(struct pt_regs *regs, unsigned long address,
+ 		     unsigned int fault)
  {
-@@ -143,7 +147,6 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 	return true;
- }
+@@ -391,11 +409,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		return 0;
  
--#ifndef CONFIG_PPC_MEM_KEYS
- #define pkey_initialize()
- #define pkey_mm_init(mm)
- #define thread_pkey_regs_save(thread)
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 13902be..3b221bd 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -375,3 +375,37 @@ bool arch_pte_access_permitted(u64 pte, bool write, bool execute)
+ 	if (unlikely(page_fault_is_bad(error_code))) {
+-		if (is_user) {
+-			_exception(SIGBUS, regs, BUS_OBJERR, address);
+-			return 0;
+-		}
+-		return SIGBUS;
++		if (!is_user)
++			return SIGBUS;
++		return bad_page_fault_exception(regs, address, error_code);
+ 	}
  
- 	return pkey_access_permitted(pte_to_pkey_bits(pte), write, execute);
- }
+ 	/* Additional sanity check(s) */
+@@ -498,6 +514,12 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	 * the fault.
+ 	 */
+ 	fault = handle_mm_fault(vma, address, flags);
 +
-+/*
-+ * We only want to enforce protection keys on the current thread because we
-+ * effectively have no access to AMR/IAMR for other threads or any way to tell
-+ * which AMR/IAMR in a threaded process we could use.
-+ *
-+ * So do not enforce things if the VMA is not from the current mm, or if we are
-+ * in a kernel thread.
-+ */
-+static inline bool vma_is_foreign(struct vm_area_struct *vma)
-+{
-+	if (!current->mm)
-+		return true;
++#ifdef CONFIG_PPC_MEM_KEYS
++	if (unlikely(fault & VM_FAULT_SIGSEGV))
++		return __bad_area(regs, address, SEGV_PKUERR);
++#endif /* CONFIG_PPC_MEM_KEYS */
 +
-+	/* if it is not our ->mm, it has to be foreign */
-+	if (current->mm != vma->vm_mm)
-+		return true;
-+
-+	return false;
-+}
-+
-+bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
-+			       bool execute, bool foreign)
-+{
-+	if (static_branch_likely(&pkey_disabled))
-+		return true;
-+	/*
-+	 * Do not enforce our key-permissions on a foreign vma.
-+	 */
-+	if (foreign || vma_is_foreign(vma))
-+		return true;
-+
-+	return pkey_access_permitted(vma_pkey(vma), write, execute);
-+}
+ 	major |= fault & VM_FAULT_MAJOR;
+ 
+ 	/*
 -- 
 1.7.1
