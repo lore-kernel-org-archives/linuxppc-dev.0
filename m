@@ -1,36 +1,26 @@
-Return-Path: <mathieu.desnoyers@efficios.com>
-Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fw@deneb.enyo.de>
+Received: from albireo.enyo.de (albireo.enyo.de [5.158.152.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yW4dF6Vv8zDrK2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 07:57:37 +1100 (AEDT)
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Peter Zijlstra <peterz@infradead.org>,
- "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
- Boqun Feng <boqun.feng@gmail.com>, Andy Lutomirski <luto@amacapital.net>,
- Dave Watson <davejwatson@fb.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
- Paul Turner <pjt@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@arm.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, Andrew Hunter <ahh@google.com>,
- Andi Kleen <andi@firstfloor.org>, Chris Lameter <cl@linux.com>,
- Ben Maurer <bmaurer@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
- Josh Triplett <josh@joshtriplett.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH for 4.15 07/14] Restartable sequences: Wire up powerpc
- system call
-Date: Mon,  6 Nov 2017 15:56:37 -0500
-Message-Id: <20171106205644.29386-8-mathieu.desnoyers@efficios.com>
-In-Reply-To: <20171106205644.29386-1-mathieu.desnoyers@efficios.com>
-References: <20171106205644.29386-1-mathieu.desnoyers@efficios.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yW5Sz75hJzDr4J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 08:35:31 +1100 (AEDT)
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ corbet@lwn.net, arnd@arndb.de, linux-arch@vger.kernel.org,
+ ebiederm@xmission.com, linux-doc@vger.kernel.org, x86@kernel.org,
+ dave.hansen@intel.com, linux-kernel@vger.kernel.org, mhocko@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
+ linux-kselftest@vger.kernel.org, bauerman@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 00/51] powerpc, mm: Memory Protection Keys
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+Date: Mon, 06 Nov 2017 22:28:41 +0100
+In-Reply-To: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com> (Ram
+ Pai's message of "Mon, 6 Nov 2017 00:56:52 -0800")
+Message-ID: <87efpbm706.fsf@mid.deneb.enyo.de>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Boqun Feng <boqun.feng@gmail.com>
+* Ram Pai:
 
-Wire up the rseq system call on powerpc.
+> Testing:
+> -------
+> This patch series has passed all the protection key
+> tests available in the selftest directory.The
+> tests are updated to work on both x86 and powerpc.
+> The selftests have passed on x86 and powerpc hardware.
 
-This provides an ABI improving the speed of a user-space getcpu
-operation on powerpc by skipping the getcpu system call on the fast
-path, as well as improving the speed of user-space operations on per-cpu
-data compared to using load-reservation/store-conditional atomics.
+How do you deal with the key reuse problem?  Is it the same as x86-64,
+where it's quite easy to accidentally grant existing threads access to
+a just-allocated key, either due to key reuse or a changed init_pkru
+parameter?
 
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Peter Zijlstra <peterz@infradead.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+What about siglongjmp from a signal handler?
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 449912f057f6..964321a5799c 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -389,3 +389,4 @@ COMPAT_SYS_SPU(preadv2)
- COMPAT_SYS_SPU(pwritev2)
- SYSCALL(kexec_file_load)
- SYSCALL(statx)
-+SYSCALL(rseq)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 9ba11dbcaca9..e76bd5601ea4 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define NR_syscalls		384
-+#define NR_syscalls		385
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index df8684f31919..b1980fcd56d5 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -395,5 +395,6 @@
- #define __NR_pwritev2		381
- #define __NR_kexec_file_load	382
- #define __NR_statx		383
-+#define __NR_rseq		384
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.11.0
+  <https://sourceware.org/bugzilla/show_bug.cgi?id=22396>
+
+I wonder if it's possible to fix some of these things before the exact
+semantics of these interfaces are set in stone.
