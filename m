@@ -1,35 +1,22 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWSnh63F6zDqlM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 23:06:16 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA7C4g4A073355
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Nov 2017 07:06:13 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e3a7j0676-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2017 07:06:12 -0500
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 7 Nov 2017 07:06:11 -0500
-Subject: Re: [PATCH v2] powerpc/kernel/sysfs: Export ldbar spr to sysfs
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com
-References: <1509466547-761-1-git-send-email-anju@linux.vnet.ibm.com>
- <87h8ue960z.fsf@concordia.ellerman.id.au>
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Tue, 7 Nov 2017 17:36:08 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWT5N5bT1zDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 23:19:52 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 11/18] powerpc/vas: Export HVWC to debugfs
+In-Reply-To: <1507343298-27496-12-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1507343298-27496-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1507343298-27496-12-git-send-email-sukadev@linux.vnet.ibm.com>
+Date: Tue, 07 Nov 2017 23:19:48 +1100
+Message-ID: <871sla46xn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87h8ue960z.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <48d62ebb-73b9-86c6-b1f2-39ee1d3ae846@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,77 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi mpe,
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+
+> diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+> index 23c13a7..088ce56 100644
+> --- a/arch/powerpc/platforms/powernv/vas-window.c
+> +++ b/arch/powerpc/platforms/powernv/vas-window.c
+> @@ -145,24 +145,42 @@ static void unmap_paste_region(struct vas_window *window)
+>  }
+>  
+>  /*
+> - * Unmap the MMIO regions for a window.
+> + * Unmap the MMIO regions for a window. Hold the vas_mutex so we don't
+> + * unmap when the window's debugfs dir is in use. This serializes close
+> + * of a window even on another VAS instance but since its not a critical
+> + * path, just minimize the time we hold the mutex for now. We can add
+> + * a per-instance mutex later if necessary.
+>   */
+>  static void unmap_winctx_mmio_bars(struct vas_window *window)
+>  {
+>  	int len;
+> +	void *uwc_map;
+> +	void *hvwc_map;
+>  	u64 busaddr_start;
+>  
+> +	mutex_lock(&vas_mutex);
+> +
+>  	if (window->hvwc_map) {
+> -		get_hvwc_mmio_bar(window, &busaddr_start, &len);
+> -		unmap_region(window->hvwc_map, busaddr_start, len);
+> +		hvwc_map = window->hvwc_map;
+>  		window->hvwc_map = NULL;
+>  	}
+>  
+>  	if (window->uwc_map) {
+> -		get_uwc_mmio_bar(window, &busaddr_start, &len);
+> -		unmap_region(window->uwc_map, busaddr_start, len);
+> +		uwc_map = window->uwc_map;
+>  		window->uwc_map = NULL;
+>  	}
+> +
+> +	mutex_unlock(&vas_mutex);
+> +
+> +	if (hvwc_map) {
+> +		get_hvwc_mmio_bar(window, &busaddr_start, &len);
+> +		unmap_region(hvwc_map, busaddr_start, len);
+> +	}
+> +
+> +	if (uwc_map) {
+> +		get_uwc_mmio_bar(window, &busaddr_start, &len);
+> +		unmap_region(uwc_map, busaddr_start, len);
+> +	}
+
+arch/powerpc/platforms/powernv/vas-window.c: In function 'unmap_winctx_mmio_bars':
+arch/powerpc/platforms/powernv/vas-window.c:137:2: error: 'uwc_map' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  iounmap(addr);
+  ^
+arch/powerpc/platforms/powernv/vas-window.c:168:8: note: 'uwc_map' was declared here
+  void *uwc_map;
+        ^
+arch/powerpc/platforms/powernv/vas-window.c:137:2: error: 'hvwc_map' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  iounmap(addr);
+  ^
+arch/powerpc/platforms/powernv/vas-window.c:169:8: note: 'hvwc_map' was declared here
+  void *hvwc_map;
+        ^
+cc1: all warnings being treated as errors
 
 
-On Wednesday 01 November 2017 06:20 AM, Michael Ellerman wrote:
-> Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
->
->> Add ldbar spr to sysfs. The spr will hold thread level In-Memory Collection (IMC)
->> counter configuration data.
-> This is missing any justification for why we would want to expose this,
-> and in particular why we would make it *writable*.
->
-> cheers
-
-
-Thank you for reviewing the patch.
-
-LDBAR, holds the thread-level counter configuration. Exposing this will help
-us to understand  the current status of thread-level counters in the system.
-Primarily, Bit 0 of ldbar tells whether the counters are enabled or not.
-And bit 1  tells the mode (if 0-Accumulation Mode/if 1-Trace Mode).
-
-But regarding the permission, you are right. On a reassessment I think 
-that the permission
-should be read only, because it is possible that we may write an 
-incorrect value to the ldbar, that is wrong.
-So I will change the permission here.
-
-
-
-Thanks,
-Anju
->
->> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
->> index 4437c70..f8caee0 100644
->> --- a/arch/powerpc/kernel/sysfs.c
->> +++ b/arch/powerpc/kernel/sysfs.c
->> @@ -485,6 +485,7 @@ SYSFS_PMCSETUP(mmcra, SPRN_MMCRA);
->>   SYSFS_SPRSETUP(purr, SPRN_PURR);
->>   SYSFS_SPRSETUP(spurr, SPRN_SPURR);
->>   SYSFS_SPRSETUP(pir, SPRN_PIR);
->> +SYSFS_SPRSETUP(ldbar, SPRN_LDBAR);
->>   
->>   /*
->>     Lets only enable read for phyp resources and
->> @@ -492,6 +493,7 @@ SYSFS_SPRSETUP(pir, SPRN_PIR);
->>     Lets be conservative and default to pseries.
->>   */
->>   static DEVICE_ATTR(mmcra, 0600, show_mmcra, store_mmcra);
->> +static DEVICE_ATTR(ldbar, 0600, show_ldbar, store_ldbar);
->>   static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
->>   static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
->>   static DEVICE_ATTR(pir, 0400, show_pir, NULL);
->> @@ -757,6 +759,9 @@ static int register_cpu_online(unsigned int cpu)
->>   			device_create_file(s, &pmc_attrs[i]);
->>   
->>   #ifdef CONFIG_PPC64
->> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
->> +		device_create_file(s, &dev_attr_ldbar);
->> +
->>   	if (cpu_has_feature(CPU_FTR_MMCRA))
->>   		device_create_file(s, &dev_attr_mmcra);
->>   
->> @@ -842,6 +847,9 @@ static int unregister_cpu_online(unsigned int cpu)
->>   			device_remove_file(s, &pmc_attrs[i]);
->>   
->>   #ifdef CONFIG_PPC64
->> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
->> +		device_remove_file(s, &dev_attr_ldbar);
->> +
->>   	if (cpu_has_feature(CPU_FTR_MMCRA))
->>   		device_remove_file(s, &dev_attr_mmcra);
->>   
->> -- 
->> 2.7.4
+cheers
