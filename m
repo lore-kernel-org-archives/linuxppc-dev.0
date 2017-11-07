@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWlyz3TNyzDr6s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWlyz3pW9zDrCX
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 10:30:19 +1100 (AEDT)
-In-Reply-To: <20171021075606.26814-1-npiggin@gmail.com>
+In-Reply-To: <20171024130654.1223-3-npiggin@gmail.com>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64: Fix latency tracing for lazy irq replay
-Message-Id: <3yWlyy3VChz9sPk@ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v2,2/3] powerpc/64s/radix: tlbie improve preempt handling
+Message-Id: <3yWlyz1CNnz9t2V@ozlabs.org>
 Date: Wed,  8 Nov 2017 10:30:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,19 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-10-21 at 07:56:06 UTC, Nicholas Piggin wrote:
-> When returning from an exception to a soft-enabled context, pending
-> IRQs are replayed but IRQ tracing is not reset, so a number of them
-> can get chained together into the same IRQ-disabled trace.
+On Tue, 2017-10-24 at 13:06:53 UTC, Nicholas Piggin wrote:
+> Preempt should be consistently disabled for mm_is_thread_local tests,
+> so bring the rest of these under preempt_disable().
 > 
-> Fix this by having __check_irq_replay re-set IRQ trace. This is
-> conceptually where we respond to the next interrupt, so it fits the
-> semantics of the IRQ tracer.
+> Preempt does not need to be disabled for the mm->context.id tests,
+> which allows simplification and removal of gotos.
 > 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ff967900c9d4740f6337c6456f1111
+https://git.kernel.org/powerpc/c/dffe8449c5dd63ff18b47709de7555
 
 cheers
