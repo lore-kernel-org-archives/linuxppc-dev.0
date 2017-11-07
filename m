@@ -1,23 +1,40 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
+ [IPv6:2a00:1450:400c:c09::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWQdV2cmDzDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 21:29:00 +1100 (AEDT)
-Date: Tue, 7 Nov 2017 11:28:54 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-next <linux-next@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- sachinp <sachinp@linux.vnet.ibm.com>
-Subject: Re: [linux-next][0692229e] next-20171106 fails to boot on Power 7
-Message-ID: <20171107102854.vylrtaodla63kc57@dhcp22.suse.cz>
-References: <1510048229.12079.7.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWRgV6YRtzDqlM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 22:15:49 +1100 (AEDT)
+Received: by mail-wm0-x235.google.com with SMTP id s66so2866638wmf.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2017 03:15:49 -0800 (PST)
+Date: Tue, 7 Nov 2017 14:15:43 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Florian Weimer <fweimer@redhat.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Hansen <dave.hansen@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
+Message-ID: <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
+References: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
+ <20171105231850.5e313e46@roar.ozlabs.ibm.com>
+ <871slcszfl.fsf@linux.vnet.ibm.com>
+ <20171106174707.19f6c495@roar.ozlabs.ibm.com>
+ <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
+ <20171106192524.12ea3187@roar.ozlabs.ibm.com>
+ <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
+ <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
+ <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1510048229.12079.7.camel@abdul.in.ibm.com>
+In-Reply-To: <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +44,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 07-11-17 15:20:29, Abdul Haleem wrote:
-> Hi,
+On Tue, Nov 07, 2017 at 04:07:05PM +1100, Nicholas Piggin wrote:
+> C'ing everyone who was on the x86 56-bit user virtual address patch.
 > 
-> Today's next kernel fails to boot on Power 7 Machine with below errors
-> in boot log messages.
+> I think we need more time to discuss this behaviour, in light of the
+> regression Florian uncovered. I would propose we turn off the 56-bit
+> user virtual address support for x86 for 4.14, and powerpc would
+> follow and turn off its 512T support until we can get a better handle
+> on the problems. (Actually Florian initially hit a couple of bugs in
+> powerpc implementation, but pulling that string uncovers a whole lot
+> of difficulties.)
 > 
-> 'Uhuuh, elf segement at 0000000010040000 requested but the memory is
-> mapped already'
+> The bi-modal behavior switched based on a combination of mmap address
+> hint and MAP_FIXED just sucks. It's segregating our VA space with
+> some non-standard heuristics, and it doesn't seem to work very well.
 > 
-> It was introduced with commit:
+> What are we trying to do? Allow SAP HANA etc use huge address spaces
+> by coding to these specific mmap heuristics we're going to add,
+> rather than solving it properly in a way that requires adding a new
+> syscall or personality or prctl or sysctl. Okay, but the cost is that
+> despite best efforts, it still changes ABI behaviour for existing
+> applications and these heuristics will become baked into the ABI that
+> we will have to support. Not a good tradeoff IMO.
 > 
-> 0692229e : fs/binfmt_elf.c: drop MAP_FIXED usage from elf_map
+> First of all, using addr and MAP_FIXED to develop our heuristic can
+> never really give unchanged ABI. It's an in-band signal. brk() is a
+> good example that steadily keeps incrementing address, so depending
+> on malloc usage and address space randomization, you will get a brk()
+> that ends exactly at 128T, then the next one will be >
+> DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
 
-Weird. Clashes shouldn't really happen. Maybe power is doing something
-different from other platforms. Could you apply the following debugging
-patch to see what is going on there?
----
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 0abc30d681ae..f098aaf60039 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -361,8 +361,28 @@ static unsigned long elf_vm_mmap(struct file *filep, unsigned long addr,
- 		return map_addr;
- 
- 	if ((type & MAP_FIXED) && map_addr != addr) {
--		pr_info("Uhuuh, elf segement at %p requested but the memory is mapped already\n",
--				(void*)addr);
-+		struct mm_struct *mm = current->mm;
-+		struct vm_area_struct *vma;
-+		pr_info("Uhuuh, elf segement at %p requested but the memory is mapped already, got %p\n",
-+				(void*)addr, (void*)map_addr);
-+		down_read(&mm->mmap_sem);
-+		vma = find_vma(mm, addr);
-+		if (vma) {
-+			const char *name;
-+			pr_info("Clashing vma [%lx, %lx] flags:%lx", vma->vm_start, vma->vm_end, vma->vm_flags);
-+			name = arch_vma_name(vma);
-+			if (!name) {
-+				if (vma->vm_start <= mm->brk &&
-+				    vma->vm_end >= mm->start_brk)
-+					name = "[heap]";
-+				else if (vma->vm_start <= vma->vm_mm->start_stack &&
-+						vma->vm_end >= vma->vm_mm->start_stack)
-+					name = "[stack]";
-+			}
-+			pr_cont(" name:%s\n", name);
-+		} else
-+			pr_info("Uhm, no clashing VMA\n");
-+		up_read(&mm->mmap_sem);
- 		return -EAGAIN;
- 	}
- 
+No, it won't. You will hit stack first.
+
+> Second, the kernel can never completely solve the problem this way.
+> How do we know a malloc library will not ask for > 128TB addresses
+> and pass them to an unknowing application?
+
+The idea is that an application can provide hint (mallopt() ?) to malloc
+implementation that it's ready to full address space. In this case, malloc
+can use mmap((void *) -1,...) for its allocations and get full address
+space this way.
+
+> And lastly, there are a fair few bugs and places where description
+> in changelogs and mailing lists does not match code. You don't want
+> to know the mess in powerpc, but even x86 has two I can see:
+> MAP_FIXED succeeds even when crossing 128TB addresses (where changelog
+> indicated it should not),
+
+Hm. I don't see where the changelog indicated that MAP_FIXED across 128TB
+shouldn't work. My intention was that it should, although I haven't stated
+it in the changelog.
+
+The idea was we shouldn't allow to slip above 47-bits by accidentally.
+
+Correctly functioning program would never request addr+len above 47-bit
+with MAP_FIXED, unless it's ready to handle such addresses. Otherwise the
+request would simply fail on machine that doesn't support large VA.
+
+In contrast, addr+len above 47-bit without MAP_FIXED will not fail on
+machine that doesn't support large VA, kernel will find another place
+under 47-bit. And I can imagine a reasonable application that does
+something like this.
+
+So we cannot rely that application is ready to handle large
+addresses if we see addr+len without MAP_FIXED.
+
+> arch_get_unmapped_area_topdown() with an address hint is checking
+> against TASK_SIZE rather than the limited 128TB address, so it looks
+> like it won't follow the heuristics.
+
+You are right. This is broken. If user would request mapping above vdso,
+but below DEFAULT_MAP_WINDOW it will succeed.
+
+I'll send patch to fix this. But it doesn't look as a show-stopper to me.
+
+Re-checking things for this reply I found actual bug, see:
+
+http://lkml.kernel.org/r/20171107103804.47341-1-kirill.shutemov@linux.intel.com
+
+> So unless everyone else thinks I'm crazy and disagrees, I'd ask for
+> a bit more time to make sure we get this interface right. I would
+> hope for something like prctl PR_SET_MM which can be used to set
+> our user virtual address bits on a fine grained basis. Maybe a
+> sysctl, maybe a personality. Something out-of-band. I don't wan to
+> get too far into that discussion yet. First we need to agree whether
+> or not the code in the tree today is a problem.
+
+Well, we've discussed before all options you are proposing.
+Linus wanted a minimalistic interface, so we took this path for now.
+We can always add more ways to get access to full address space later.
 
 -- 
-Michal Hocko
-SUSE Labs
+ Kirill A. Shutemov
