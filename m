@@ -2,18 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWlz40rfLzDrCb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWlz40rdVzDrCX
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 10:30:24 +1100 (AEDT)
-In-Reply-To: <20171103024146.17086-2-cyrilbur@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>, linux-mtd@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com
+In-Reply-To: <1508860129-28365-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: boris.brezillon@free-electrons.com, computersforpeace@gmail.com,
- dwmw2@infradead.org, sjitindarsingh@gmail.com
-Subject: Re: [v5,
- 01/10] mtd: powernv_flash: Use WARN_ON_ONCE() rather than BUG_ON()
-Message-Id: <3yWlz118m4z9s7C@ozlabs.org>
-Date: Wed,  8 Nov 2017 10:30:20 +1100 (AEDT)
+Cc: anton@samba.org
+Subject: Re: powerpc/mm: Add a CONFIG option to choose if radix is used by
+ default
+Message-Id: <3yWlyz5hzyz9sPt@ozlabs.org>
+Date: Wed,  8 Nov 2017 10:30:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-11-03 at 02:41:37 UTC, Cyril Bur wrote:
-> BUG_ON() should be reserved in situations where we can not longer
-> guarantee the integrity of the system. In the case where
-> powernv_flash_async_op() receives an impossible op, we can still
-> guarantee the integrity of the system.
+On Tue, 2017-10-24 at 15:48:49 UTC, Michael Ellerman wrote:
+> Currently if the hardware supports the radix MMU we will use
+> it, *unless* "disable_radix" is passed on the kernel command line.
 > 
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> However some users would like the reverse semantics. ie. The kernel
+> uses the hash MMU by default, unless radix is explicitly requested on
+> the command line.
+> 
+> So add a CONFIG option to choose whether we use radix by default or
+> not, and expand the disable_radix command line option to allow
+> "disable_radix=no" which *enables* radix.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/44e2aa2b16a872fa8aa4901b379313
+https://git.kernel.org/powerpc/c/1fd6c02207107c8892219dacef01de
 
 cheers
