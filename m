@@ -1,25 +1,38 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWTs01xrFzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 23:54:11 +1100 (AEDT)
-Message-ID: <1510059242.25007.81.camel@linux.intel.com>
-Subject: Re: [PATCH v1] powerpc/pci: convert to use for_each_pci_bridge()
- helper
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: bjorn@helgaas.com
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <helgaas@kernel.org>
-Date: Tue, 07 Nov 2017 14:54:02 +0200
-In-Reply-To: <1509475255.10233.140.camel@linux.intel.com>
-References: <20171013165250.25370-1-andriy.shevchenko@linux.intel.com>
- <1509462750.10233.134.camel@linux.intel.com>
- <CABhMZUV0me+PG8daQ8iOzcSEJBQMD4=JGbMp7sVm_5CujwZ4eQ@mail.gmail.com>
- <1509475255.10233.140.camel@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWV6N5R46zDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 00:05:48 +1100 (AEDT)
+Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Hansen <dave.hansen@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arch@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20171105231850.5e313e46@roar.ozlabs.ibm.com>
+ <871slcszfl.fsf@linux.vnet.ibm.com>
+ <20171106174707.19f6c495@roar.ozlabs.ibm.com>
+ <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
+ <20171106192524.12ea3187@roar.ozlabs.ibm.com>
+ <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
+ <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
+ <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
+ <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
+ <c5586546-1e7e-0f0f-a8b3-680fadb38dcf@redhat.com>
+ <20171107114422.bgnm5k6w2zqjoazc@node.shutemov.name>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <7fc1641b-361c-2ee2-c510-f7c64d173bf8@redhat.com>
+Date: Tue, 7 Nov 2017 14:05:42 +0100
+MIME-Version: 1.0
+In-Reply-To: <20171107114422.bgnm5k6w2zqjoazc@node.shutemov.name>
+Content-Type: multipart/mixed; boundary="------------381B9005558AE185EB668BF2"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +42,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-10-31 at 20:40 +0200, Andy Shevchenko wrote:
-> On Tue, 2017-10-31 at 13:33 -0500, Bjorn Helgaas wrote:
-> > On Tue, Oct 31, 2017 at 10:12 AM, Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> wrote:
-> > > On Fri, 2017-10-13 at 19:52 +0300, Andy Shevchenko wrote:
-> > > > ...which makes code slightly cleaner.
-> > > 
-> > > +Cc: Bjorn
-> > > 
-> > > Perhaps it makes sense to pass this through PCI if no one objects?
-> > 
-> > Fine with me, but I only apply things that appear on the
-> > linux-pci@vger.kernel.org mailing list.
+This is a multi-part message in MIME format.
+--------------381B9005558AE185EB668BF2
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 11/07/2017 12:44 PM, Kirill A. Shutemov wrote:
+> On Tue, Nov 07, 2017 at 12:26:12PM +0100, Florian Weimer wrote:
+>> On 11/07/2017 12:15 PM, Kirill A. Shutemov wrote:
+>>
+>>>> First of all, using addr and MAP_FIXED to develop our heuristic can
+>>>> never really give unchanged ABI. It's an in-band signal. brk() is a
+>>>> good example that steadily keeps incrementing address, so depending
+>>>> on malloc usage and address space randomization, you will get a brk()
+>>>> that ends exactly at 128T, then the next one will be >
+>>>> DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
+>>>
+>>> No, it won't. You will hit stack first.
+>>
+>> That's not actually true on POWER in some cases.  See the process maps I
+>> posted here:
+>>
+>>    <https://marc.info/?l=linuxppc-embedded&m=150988538106263&w=2>
 > 
-> I want to wait for powerpc maintainers to Ack and then I'll resend.
+> Hm? I see that in all three cases the [stack] is the last mapping.
+> Do I miss something?
 
-Michael, Paul, Benjamin, do you have any concerns on this patch?
+Hah, I had not noticed.  Occasionally, the order of heap and stack is 
+reversed.  This happens in approximately 15% of the runs.
 
+See the attached example.
 
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Thanks,
+Florian
+
+--------------381B9005558AE185EB668BF2
+Content-Type: text/plain; charset=UTF-8;
+ name="maps.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="maps.txt"
+
+N2ZmZmFjYzUwMDAwLTdmZmZhY2M5MDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgCjdmZmZh
+Y2M5MDAwMC03ZmZmYWNjZjAwMDAgci0tcCAwMDAwMDAwMCBmZDowMCAyNTE2NzkyNSAgICAg
+ICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMudXRmOC9MQ19DVFlQRQo3ZmZm
+YWNjZjAwMDAtN2ZmZmFjZDAwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjggICAg
+ICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTlVNRVJJQwo3
+ZmZmYWNkMDAwMDAtN2ZmZmFjZDEwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5Mjkg
+ICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfVElNRQo3
+ZmZmYWNkMTAwMDAtN2ZmZmFjZTQwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjQg
+ICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfQ09MTEFU
+RQo3ZmZmYWNlNDAwMDAtN2ZmZmFjZTUwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5
+MjcgICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTU9O
+RVRBUlkKN2ZmZmFjZTUwMDAwLTdmZmZhY2U2MDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDI1
+MTEgICAgICAgICAgICAgICAgICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4L0xD
+X01FU1NBR0VTL1NZU19MQ19NRVNTQUdFUwo3ZmZmYWNlNjAwMDAtN2ZmZmFjZTcwMDAwIHIt
+LXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5NDIgICAgICAgICAgICAgICAgICAgL3Vzci9saWIv
+bG9jYWxlL2VuX1VTLnV0ZjgvTENfUEFQRVIKN2ZmZmFjZTcwMDAwLTdmZmZhY2U4MDAwMCBy
+LS1wIDAwMDAwMDAwIGZkOjAwIDI1MTY3OTI3ICAgICAgICAgICAgICAgICAgIC91c3IvbGli
+L2xvY2FsZS9lbl9VUy51dGY4L0xDX05BTUUKN2ZmZmFjZTgwMDAwLTdmZmZhY2U5MDAwMCBy
+LS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI0ICAgICAgICAgICAgICAgICAgIC91c3IvbGli
+L2xvY2FsZS9lbl9VUy51dGY4L0xDX0FERFJFU1MKN2ZmZmFjZTkwMDAwLTdmZmZhY2VhMDAw
+MCByLS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI4ICAgICAgICAgICAgICAgICAgIC91c3Iv
+bGliL2xvY2FsZS9lbl9VUy51dGY4L0xDX1RFTEVQSE9ORQo3ZmZmYWNlYTAwMDAtN2ZmZmFj
+ZWIwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5MjYgICAgICAgICAgICAgICAgICAg
+L3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTUVBU1VSRU1FTlQKN2ZmZmFjZWIwMDAw
+LTdmZmZhY2VjMDAwMCByLS1zIDAwMDAwMDAwIGZkOjAwIDgzOTA2NTcgICAgICAgICAgICAg
+ICAgICAgIC91c3IvbGliNjQvZ2NvbnYvZ2NvbnYtbW9kdWxlcy5jYWNoZQo3ZmZmYWNlYzAw
+MDAtN2ZmZmFkMGQwMDAwIHIteHAgMDAwMDAwMDAgZmQ6MDAgODM5MDMzNSAgICAgICAgICAg
+ICAgICAgICAgL3Vzci9saWI2NC9saWJjLTIuMjUuc28KN2ZmZmFkMGQwMDAwLTdmZmZhZDBl
+MDAwMCAtLS1wIDAwMjEwMDAwIGZkOjAwIDgzOTAzMzUgICAgICAgICAgICAgICAgICAgIC91
+c3IvbGliNjQvbGliYy0yLjI1LnNvCjdmZmZhZDBlMDAwMC03ZmZmYWQwZjAwMDAgci0tcCAw
+MDIxMDAwMCBmZDowMCA4MzkwMzM1ICAgICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xp
+YmMtMi4yNS5zbwo3ZmZmYWQwZjAwMDAtN2ZmZmFkMTAwMDAwIHJ3LXAgMDAyMjAwMDAgZmQ6
+MDAgODM5MDMzNSAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9saWJjLTIuMjUuc28K
+N2ZmZmFkMTAwMDAwLTdmZmZhZDExMDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI1
+ICAgICAgICAgICAgICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4L0xDX0lERU5U
+SUZJQ0FUSU9OCjdmZmZhZDExMDAwMC03ZmZmYWQxMjAwMDAgci14cCAwMDAwMDAwMCBmZDow
+MCA2MzU0MyAgICAgICAgICAgICAgICAgICAgICAvdXNyL2Jpbi9jYXQKN2ZmZmFkMTIwMDAw
+LTdmZmZhZDEzMDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDYzNTQzICAgICAgICAgICAgICAg
+ICAgICAgIC91c3IvYmluL2NhdAo3ZmZmYWQxMzAwMDAtN2ZmZmFkMTQwMDAwIHJ3LXAgMDAw
+MTAwMDAgZmQ6MDAgNjM1NDMgICAgICAgICAgICAgICAgICAgICAgL3Vzci9iaW4vY2F0Cjdm
+ZmZhZDE0MDAwMC03ZmZmYWQxNjAwMDAgci14cCAwMDAwMDAwMCAwMDowMCAwICAgICAgICAg
+ICAgICAgICAgICAgICAgICBbdmRzb10KN2ZmZmFkMTYwMDAwLTdmZmZhZDFhMDAwMCByLXhw
+IDAwMDAwMDAwIGZkOjAwIDgzOTAzMjggICAgICAgICAgICAgICAgICAgIC91c3IvbGliNjQv
+bGQtMi4yNS5zbwo3ZmZmYWQxYTAwMDAtN2ZmZmFkMWIwMDAwIHItLXAgMDAwMzAwMDAgZmQ6
+MDAgODM5MDMyOCAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9sZC0yLjI1LnNvCjdm
+ZmZhZDFiMDAwMC03ZmZmYWQxYzAwMDAgcnctcCAwMDA0MDAwMCBmZDowMCA4MzkwMzI4ICAg
+ICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xkLTIuMjUuc28KN2ZmZmMyY2YwMDAwLTdm
+ZmZjMmQyMDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIFtzdGFja10KN2ZmZmM4YzEwMDAwLTdmZmZjOGM0MDAwMCBydy1wIDAwMDAwMDAwIDAw
+OjAwIDAgICAgICAgICAgICAgICAgICAgICAgICAgIFtoZWFwXQo=
+--------------381B9005558AE185EB668BF2--
