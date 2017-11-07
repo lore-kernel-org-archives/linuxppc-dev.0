@@ -1,11 +1,15 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
+ [IPv6:2a00:1450:400c:c09::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWV6N5R46zDq78
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 00:05:48 +1100 (AEDT)
-Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWVLZ5lqbzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 00:16:21 +1100 (AEDT)
+Received: by mail-wm0-x22b.google.com with SMTP id s66so3609286wmf.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2017 05:16:21 -0800 (PST)
+Date: Tue, 7 Nov 2017 16:16:16 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Florian Weimer <fweimer@redhat.com>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
@@ -13,12 +17,13 @@ Cc: Nicholas Piggin <npiggin@gmail.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Andy Lutomirski <luto@amacapital.net>, Dave Hansen <dave.hansen@intel.com>,
  Linus Torvalds <torvalds@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arch@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20171105231850.5e313e46@roar.ozlabs.ibm.com>
- <871slcszfl.fsf@linux.vnet.ibm.com>
- <20171106174707.19f6c495@roar.ozlabs.ibm.com>
+Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
+Message-ID: <20171107131616.342goolaujjsnjge@node.shutemov.name>
+References: <20171106174707.19f6c495@roar.ozlabs.ibm.com>
  <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
  <20171106192524.12ea3187@roar.ozlabs.ibm.com>
  <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
@@ -27,12 +32,10 @@ References: <20171105231850.5e313e46@roar.ozlabs.ibm.com>
  <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
  <c5586546-1e7e-0f0f-a8b3-680fadb38dcf@redhat.com>
  <20171107114422.bgnm5k6w2zqjoazc@node.shutemov.name>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <7fc1641b-361c-2ee2-c510-f7c64d173bf8@redhat.com>
-Date: Tue, 7 Nov 2017 14:05:42 +0100
+ <7fc1641b-361c-2ee2-c510-f7c64d173bf8@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20171107114422.bgnm5k6w2zqjoazc@node.shutemov.name>
-Content-Type: multipart/mixed; boundary="------------381B9005558AE185EB668BF2"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7fc1641b-361c-2ee2-c510-f7c64d173bf8@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,95 +45,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------381B9005558AE185EB668BF2
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On 11/07/2017 12:44 PM, Kirill A. Shutemov wrote:
-> On Tue, Nov 07, 2017 at 12:26:12PM +0100, Florian Weimer wrote:
->> On 11/07/2017 12:15 PM, Kirill A. Shutemov wrote:
->>
->>>> First of all, using addr and MAP_FIXED to develop our heuristic can
->>>> never really give unchanged ABI. It's an in-band signal. brk() is a
->>>> good example that steadily keeps incrementing address, so depending
->>>> on malloc usage and address space randomization, you will get a brk()
->>>> that ends exactly at 128T, then the next one will be >
->>>> DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
->>>
->>> No, it won't. You will hit stack first.
->>
->> That's not actually true on POWER in some cases.  See the process maps I
->> posted here:
->>
->>    <https://marc.info/?l=linuxppc-embedded&m=150988538106263&w=2>
+On Tue, Nov 07, 2017 at 02:05:42PM +0100, Florian Weimer wrote:
+> On 11/07/2017 12:44 PM, Kirill A. Shutemov wrote:
+> > On Tue, Nov 07, 2017 at 12:26:12PM +0100, Florian Weimer wrote:
+> > > On 11/07/2017 12:15 PM, Kirill A. Shutemov wrote:
+> > > 
+> > > > > First of all, using addr and MAP_FIXED to develop our heuristic can
+> > > > > never really give unchanged ABI. It's an in-band signal. brk() is a
+> > > > > good example that steadily keeps incrementing address, so depending
+> > > > > on malloc usage and address space randomization, you will get a brk()
+> > > > > that ends exactly at 128T, then the next one will be >
+> > > > > DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
+> > > > 
+> > > > No, it won't. You will hit stack first.
+> > > 
+> > > That's not actually true on POWER in some cases.  See the process maps I
+> > > posted here:
+> > > 
+> > >    <https://marc.info/?l=linuxppc-embedded&m=150988538106263&w=2>
+> > 
+> > Hm? I see that in all three cases the [stack] is the last mapping.
+> > Do I miss something?
 > 
-> Hm? I see that in all three cases the [stack] is the last mapping.
-> Do I miss something?
+> Hah, I had not noticed.  Occasionally, the order of heap and stack is
+> reversed.  This happens in approximately 15% of the runs.
 
-Hah, I had not noticed.  Occasionally, the order of heap and stack is 
-reversed.  This happens in approximately 15% of the runs.
+Heh. I guess ASLR on Power is too fancy :)
 
-See the attached example.
+That's strange layout. It doesn't give that much (relatively speaking)
+virtual address space for both stack and heap to grow.
 
-Thanks,
-Florian
-
---------------381B9005558AE185EB668BF2
-Content-Type: text/plain; charset=UTF-8;
- name="maps.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="maps.txt"
-
-N2ZmZmFjYzUwMDAwLTdmZmZhY2M5MDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgCjdmZmZh
-Y2M5MDAwMC03ZmZmYWNjZjAwMDAgci0tcCAwMDAwMDAwMCBmZDowMCAyNTE2NzkyNSAgICAg
-ICAgICAgICAgICAgICAvdXNyL2xpYi9sb2NhbGUvZW5fVVMudXRmOC9MQ19DVFlQRQo3ZmZm
-YWNjZjAwMDAtN2ZmZmFjZDAwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjggICAg
-ICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTlVNRVJJQwo3
-ZmZmYWNkMDAwMDAtN2ZmZmFjZDEwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5Mjkg
-ICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfVElNRQo3
-ZmZmYWNkMTAwMDAtN2ZmZmFjZTQwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMjUxNjc5MjQg
-ICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfQ09MTEFU
-RQo3ZmZmYWNlNDAwMDAtN2ZmZmFjZTUwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5
-MjcgICAgICAgICAgICAgICAgICAgL3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTU9O
-RVRBUlkKN2ZmZmFjZTUwMDAwLTdmZmZhY2U2MDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDI1
-MTEgICAgICAgICAgICAgICAgICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4L0xD
-X01FU1NBR0VTL1NZU19MQ19NRVNTQUdFUwo3ZmZmYWNlNjAwMDAtN2ZmZmFjZTcwMDAwIHIt
-LXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5NDIgICAgICAgICAgICAgICAgICAgL3Vzci9saWIv
-bG9jYWxlL2VuX1VTLnV0ZjgvTENfUEFQRVIKN2ZmZmFjZTcwMDAwLTdmZmZhY2U4MDAwMCBy
-LS1wIDAwMDAwMDAwIGZkOjAwIDI1MTY3OTI3ICAgICAgICAgICAgICAgICAgIC91c3IvbGli
-L2xvY2FsZS9lbl9VUy51dGY4L0xDX05BTUUKN2ZmZmFjZTgwMDAwLTdmZmZhY2U5MDAwMCBy
-LS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI0ICAgICAgICAgICAgICAgICAgIC91c3IvbGli
-L2xvY2FsZS9lbl9VUy51dGY4L0xDX0FERFJFU1MKN2ZmZmFjZTkwMDAwLTdmZmZhY2VhMDAw
-MCByLS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI4ICAgICAgICAgICAgICAgICAgIC91c3Iv
-bGliL2xvY2FsZS9lbl9VUy51dGY4L0xDX1RFTEVQSE9ORQo3ZmZmYWNlYTAwMDAtN2ZmZmFj
-ZWIwMDAwIHItLXAgMDAwMDAwMDAgZmQ6MDAgMTY3OTg5MjYgICAgICAgICAgICAgICAgICAg
-L3Vzci9saWIvbG9jYWxlL2VuX1VTLnV0ZjgvTENfTUVBU1VSRU1FTlQKN2ZmZmFjZWIwMDAw
-LTdmZmZhY2VjMDAwMCByLS1zIDAwMDAwMDAwIGZkOjAwIDgzOTA2NTcgICAgICAgICAgICAg
-ICAgICAgIC91c3IvbGliNjQvZ2NvbnYvZ2NvbnYtbW9kdWxlcy5jYWNoZQo3ZmZmYWNlYzAw
-MDAtN2ZmZmFkMGQwMDAwIHIteHAgMDAwMDAwMDAgZmQ6MDAgODM5MDMzNSAgICAgICAgICAg
-ICAgICAgICAgL3Vzci9saWI2NC9saWJjLTIuMjUuc28KN2ZmZmFkMGQwMDAwLTdmZmZhZDBl
-MDAwMCAtLS1wIDAwMjEwMDAwIGZkOjAwIDgzOTAzMzUgICAgICAgICAgICAgICAgICAgIC91
-c3IvbGliNjQvbGliYy0yLjI1LnNvCjdmZmZhZDBlMDAwMC03ZmZmYWQwZjAwMDAgci0tcCAw
-MDIxMDAwMCBmZDowMCA4MzkwMzM1ICAgICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xp
-YmMtMi4yNS5zbwo3ZmZmYWQwZjAwMDAtN2ZmZmFkMTAwMDAwIHJ3LXAgMDAyMjAwMDAgZmQ6
-MDAgODM5MDMzNSAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9saWJjLTIuMjUuc28K
-N2ZmZmFkMTAwMDAwLTdmZmZhZDExMDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDE2Nzk4OTI1
-ICAgICAgICAgICAgICAgICAgIC91c3IvbGliL2xvY2FsZS9lbl9VUy51dGY4L0xDX0lERU5U
-SUZJQ0FUSU9OCjdmZmZhZDExMDAwMC03ZmZmYWQxMjAwMDAgci14cCAwMDAwMDAwMCBmZDow
-MCA2MzU0MyAgICAgICAgICAgICAgICAgICAgICAvdXNyL2Jpbi9jYXQKN2ZmZmFkMTIwMDAw
-LTdmZmZhZDEzMDAwMCByLS1wIDAwMDAwMDAwIGZkOjAwIDYzNTQzICAgICAgICAgICAgICAg
-ICAgICAgIC91c3IvYmluL2NhdAo3ZmZmYWQxMzAwMDAtN2ZmZmFkMTQwMDAwIHJ3LXAgMDAw
-MTAwMDAgZmQ6MDAgNjM1NDMgICAgICAgICAgICAgICAgICAgICAgL3Vzci9iaW4vY2F0Cjdm
-ZmZhZDE0MDAwMC03ZmZmYWQxNjAwMDAgci14cCAwMDAwMDAwMCAwMDowMCAwICAgICAgICAg
-ICAgICAgICAgICAgICAgICBbdmRzb10KN2ZmZmFkMTYwMDAwLTdmZmZhZDFhMDAwMCByLXhw
-IDAwMDAwMDAwIGZkOjAwIDgzOTAzMjggICAgICAgICAgICAgICAgICAgIC91c3IvbGliNjQv
-bGQtMi4yNS5zbwo3ZmZmYWQxYTAwMDAtN2ZmZmFkMWIwMDAwIHItLXAgMDAwMzAwMDAgZmQ6
-MDAgODM5MDMyOCAgICAgICAgICAgICAgICAgICAgL3Vzci9saWI2NC9sZC0yLjI1LnNvCjdm
-ZmZhZDFiMDAwMC03ZmZmYWQxYzAwMDAgcnctcCAwMDA0MDAwMCBmZDowMCA4MzkwMzI4ICAg
-ICAgICAgICAgICAgICAgICAvdXNyL2xpYjY0L2xkLTIuMjUuc28KN2ZmZmMyY2YwMDAwLTdm
-ZmZjMmQyMDAwMCBydy1wIDAwMDAwMDAwIDAwOjAwIDAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIFtzdGFja10KN2ZmZmM4YzEwMDAwLTdmZmZjOGM0MDAwMCBydy1wIDAwMDAwMDAwIDAw
-OjAwIDAgICAgICAgICAgICAgICAgICAgICAgICAgIFtoZWFwXQo=
---------------381B9005558AE185EB668BF2--
+-- 
+ Kirill A. Shutemov
