@@ -1,27 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x233.google.com (mail-pg0-x233.google.com
- [IPv6:2607:f8b0:400e:c05::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWCmZ4FQwzDrK6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 13:19:24 +1100 (AEDT)
-Received: by mail-pg0-x233.google.com with SMTP id o7so971831pgc.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 18:19:24 -0800 (PST)
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda: Relax max DMA window size
- check
-To: Michael Ellerman <mpe@ellerman.id.au>,
- David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonas Pfefferle1 <JPF@zurich.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-References: <20171031040427.10909-1-aik@ozlabs.ru>
- <fd1a289f-6698-0b84-eab8-d4c67290bea8@ozlabs.ru>
- <877ev3bs8h.fsf@concordia.ellerman.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <263a316f-117b-c926-5980-c0f926c76533@ozlabs.ru>
-Date: Tue, 7 Nov 2017 13:19:16 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWCyg2X7hzDrK6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 13:28:11 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH 2/5] powerpc/64s/hash: Allow MAP_FIXED allocations to
+ cross 128TB boundary
+In-Reply-To: <20171106225556.79aea9c8@roar.ozlabs.ibm.com>
+References: <20171106100315.29720-1-npiggin@gmail.com>
+ <20171106100315.29720-3-npiggin@gmail.com>
+ <87vainsn45.fsf@linux.vnet.ibm.com>
+ <20171106225556.79aea9c8@roar.ozlabs.ibm.com>
+Date: Tue, 07 Nov 2017 13:28:08 +1100
+Message-ID: <878tfi4ybr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <877ev3bs8h.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,61 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/17 21:45, Michael Ellerman wrote:
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> 
->> On 31/10/17 15:04, Alexey Kardashevskiy wrote:
->>> DMA windows can only have a size of power of two on IODA2 hardware and
->>> using memory_hotplug_max() to determine the upper limit won't work
->>> correcly if it returns not power of two value.
->>>
->>> This relaxes the check by rounding up the value returned by
->>> memory_hotplug_max().
->>>
->>> It is expected to impact DPDK on machines with non-power-of-two RAM size,
->>> mostly. KVM guests are less likely to be affected as usually guests get
->>> less than half of hosts RAM.
->>
->>
->> It was pointed out that this check is quite useless anyway as the vm_locked
->> memory limit should hit first, and if that is not set or the user got the
->> root privilege level, then there are easier ways to crash the host so I am
->> thinking of:
->>
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
->> b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 269f119e4b3c..a47e4cf343b2 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -2769,7 +2769,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid,
->> __u64 bus_offset,
->>         if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
->>                 return -EINVAL;
->>
->> -       if ((window_size > memory_hotplug_max()) ||
->> !is_power_of_2(window_size))
->> +       if (!is_power_of_2(window_size))
->>                 return -EINVAL;
->>
->>
->>
->> Makes sense?
-> 
-> Sounds reasonable.
-> 
-> Execpt where is the vm_locked check? I think it's in the VFIO driver?
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Yes, as Jonas already said.
+> On Mon, 06 Nov 2017 16:14:10 +0530
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> 
+>> > While mapping hints with a length that cross 128TB are disallowed,
+>> > MAP_FIXED allocations that cross 128TB are allowed. These are failing
+>> > on hash (on radix they succeed). Add an additional case for fixed
+>> > mappings to expand the addr_limit when crossing 128TB.  
+>> 
+>> Shouldn't that be fixed in radix. But i see x86 also doing this?
+>> 
+>> 
+>> 	if (flags & MAP_FIXED)
+>> 		return addr;
+>> 
+>> Kiril,
+>> 
+>> Is that expected?
+>
+> I should actually reply to this one because the other did not
+> have Kirill on cc.
+>
+> Generic mapping code appears it will always succeed when given an
+> explicit hint request, even if the address is below the boundary
+> and address + length is above it. Even when !MAP_FIXED. This is the
+> sane behaviour AFAIKS.
 
-> If
-> so I guess the only concern is that this code might be called via some
-> other path that doesn't do that check.
+It's "sane" if you want the 128T boundary to be invisible.
 
-It is also called from pnv_pci_ioda2_setup_default_config() to create a
-32bit DMA window which is limited by
-__rounddown_pow_of_two(memory_hotplug_max()). I'll repost. Thanks.
+But the whole goddamn point was that we wanted apps to have to opt-in to
+using > 128T, and having brk accidentally go over the 128T boundary does
+not count as opting in.
 
+So it's a mess as usual.
 
--- 
-Alexey
+> So we should switch powerpc to match, shouldn't we?
+
+Yes we should do whatever the other arches do. 
+
+Actually we should do what the man page describes .. except it doesn't.
+
+cheers
