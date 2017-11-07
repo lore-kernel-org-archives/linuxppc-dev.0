@@ -1,29 +1,16 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWDW33x22zDrK6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 13:52:47 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id p9so9850667pgc.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 18:52:47 -0800 (PST)
-Date: Tue, 7 Nov 2017 13:52:35 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Florian Weimer
- <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org, "Kirill A. Shutemov"
- <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH 2/5] powerpc/64s/hash: Allow MAP_FIXED allocations to
- cross 128TB boundary
-Message-ID: <20171107135235.38042223@roar.ozlabs.ibm.com>
-In-Reply-To: <878tfi4ybr.fsf@concordia.ellerman.id.au>
-References: <20171106100315.29720-1-npiggin@gmail.com>
- <20171106100315.29720-3-npiggin@gmail.com>
- <87vainsn45.fsf@linux.vnet.ibm.com>
- <20171106225556.79aea9c8@roar.ozlabs.ibm.com>
- <878tfi4ybr.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yWFdl36WBzDrK8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 14:43:39 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Russell Currey <ruscur@russell.cc>, Jonas Pfefferle1 <JPF@zurich.ibm.com>
+Subject: [PATCH kernel v2] powerpc/powernv/ioda: Remove explicit max window
+ size check
+Date: Tue,  7 Nov 2017 14:43:01 +1100
+Message-Id: <20171107034301.35120-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,65 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 07 Nov 2017 13:28:08 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+DMA windows can only have a size of power of two on IODA2 hardware and
+using memory_hotplug_max() to determine the upper limit won't work
+correcly if it returns not power of two value.
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > On Mon, 06 Nov 2017 16:14:10 +0530
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >  
-> >> Nicholas Piggin <npiggin@gmail.com> writes:
-> >>   
-> >> > While mapping hints with a length that cross 128TB are disallowed,
-> >> > MAP_FIXED allocations that cross 128TB are allowed. These are failing
-> >> > on hash (on radix they succeed). Add an additional case for fixed
-> >> > mappings to expand the addr_limit when crossing 128TB.    
-> >> 
-> >> Shouldn't that be fixed in radix. But i see x86 also doing this?
-> >> 
-> >> 
-> >> 	if (flags & MAP_FIXED)
-> >> 		return addr;
-> >> 
-> >> Kiril,
-> >> 
-> >> Is that expected?  
-> >
-> > I should actually reply to this one because the other did not
-> > have Kirill on cc.
-> >
-> > Generic mapping code appears it will always succeed when given an
-> > explicit hint request, even if the address is below the boundary
-> > and address + length is above it. Even when !MAP_FIXED. This is the
-> > sane behaviour AFAIKS.  
-> 
-> It's "sane" if you want the 128T boundary to be invisible.
+This removes the check as the platform code does this check in
+pnv_pci_ioda2_setup_default_config() anyway; the other client is VFIO
+and that thing checks against locked_vm limit which prevents the userspace
+from locking too much memory.
 
-Not invisible: mmap(NULL, length, ...) + length < 128TB
+It is expected to impact DPDK on machines with non-power-of-two RAM size,
+mostly. KVM guests are less likely to be affected as usually guests get
+less than half of hosts RAM.
 
-> But the whole goddamn point was that we wanted apps to have to opt-in to
-> using > 128T, and having brk accidentally go over the 128T boundary does
-> not count as opting in.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+Changes:
+v2:
+* instead of relaxing the check, this simply removes it
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If brk() is given an explicit address > 128TB, then that's opting
-in, right?
-
-If malloc is doing some allocation scheme which "opts in", such as
-using explicit brk or mmap, then there is no way for the kernel to
-solve that. Making increasingly convoluted policy to try to allow
-the good and reject the bad is not right IMO.
-
-> So it's a mess as usual.
-
-If we wanted to make this ABI-identical with existing systems, then
-it can't work without out-of-band opt-in. Why wasn't a personality
-+ sysctl used for this, as we apparently have for a previous address
-space layout change?
-
-> 
-> > So we should switch powerpc to match, shouldn't we?  
-> 
-> Yes we should do whatever the other arches do. 
-> 
-> Actually we should do what the man page describes .. except it doesn't.
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 1de94fb..433cf84 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2776,7 +2776,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+ 		return -EINVAL;
+ 
+-	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
++	if (!is_power_of_2(window_size))
+ 		return -EINVAL;
+ 
+ 	/* Adjust direct table size from window_size and levels */
+-- 
+2.11.0
