@@ -1,16 +1,46 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWlz74QctzDrCZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 10:30:27 +1100 (AEDT)
-In-Reply-To: <20171105123355.3014-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: KVM: PPC: Book3S HV: Handle host system reset in guest mode
-Message-Id: <3yWlz51TSQz9ryT@ozlabs.org>
-Date: Wed,  8 Nov 2017 10:30:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWmHc24xPzDscJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 10:44:43 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA7Ni1tf046572
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Nov 2017 18:44:40 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e3n53c7s8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2017 18:44:40 -0500
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 7 Nov 2017 16:44:39 -0700
+Date: Tue, 7 Nov 2017 15:44:27 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: Florian Weimer <fw@deneb.enyo.de>, linux-arch@vger.kernel.org,
+ x86@kernel.org, arnd@arndb.de, corbet@lwn.net,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ mhocko@kernel.org, linux-mm@kvack.org, mingo@redhat.com,
+ paulus@samba.org, ebiederm@xmission.com,
+ linux-kselftest@vger.kernel.org, bauerman@linux.vnet.ibm.com,
+ akpm@linux-foundation.org, khandual@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 00/51] powerpc, mm: Memory Protection Keys
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <87efpbm706.fsf@mid.deneb.enyo.de>
+ <20171107012218.GA5546@ram.oc3035372033.ibm.com>
+ <87h8u6lf27.fsf@mid.deneb.enyo.de>
+ <20171107223953.GB5546@ram.oc3035372033.ibm.com>
+ <8b970e5b-50e6-bcc1-e8d3-6e3aa8523f55@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8b970e5b-50e6-bcc1-e8d3-6e3aa8523f55@intel.com>
+Message-Id: <20171107234427.GA5659@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +50,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-11-05 at 12:33:55 UTC, Nicholas Piggin wrote:
-> If the host takes a system reset interrupt while a guest is running,
-> the CPU must exit the guest before processing the host exception
-> handler.
+On Tue, Nov 07, 2017 at 02:47:10PM -0800, Dave Hansen wrote:
+> On 11/07/2017 02:39 PM, Ram Pai wrote:
+> > 
+> > As per the current semantics of sys_pkey_free(); the way I understand it,
+> > the calling thread is saying disassociate me from this key.
 > 
-> After this patch, taking a sysrq+x with a CPU running in a guest
-> gives a trace like this:
-> 
->    cpu 0x27: Vector: 100 (System Reset) at [c000000fdf5776f0]
->        pc: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
->        lr: c008000010158b80: kvmppc_run_core+0x16b8/0x1ad0 [kvm_hv]
->        sp: c000000fdf577850
->       msr: 9000000002803033
->      current = 0xc000000fdf4b1e00
->      paca    = 0xc00000000fd4d680	 softe: 3	 irq_happened: 0x01
->        pid   = 6608, comm = qemu-system-ppc
->    Linux version 4.14.0-rc7-01489-g47e1893a404a-dirty #26 SMP
->    [c000000fdf577a00] c008000010159dd4 kvmppc_vcpu_run_hv+0x3dc/0x12d0 [kvm_hv]
->    [c000000fdf577b30] c0080000100a537c kvmppc_vcpu_run+0x44/0x60 [kvm]
->    [c000000fdf577b60] c0080000100a1ae0 kvm_arch_vcpu_ioctl_run+0x118/0x310 [kvm]
->    [c000000fdf577c00] c008000010093e98 kvm_vcpu_ioctl+0x530/0x7c0 [kvm]
->    [c000000fdf577d50] c000000000357bf8 do_vfs_ioctl+0xd8/0x8c0
->    [c000000fdf577df0] c000000000358448 SyS_ioctl+0x68/0x100
->    [c000000fdf577e30] c00000000000b220 system_call+0x58/0x6c
->    --- Exception: c01 (System Call) at 00007fff76868df0
->    SP (7fff7069baf0) is in userspace
-> 
-> Fixes: e36d0a2ed5 ("powerpc/powernv: Implement NMI IPI with OPAL_SIGNAL_SYSTEM_RESET")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> No.  It is saying: "this *process* no longer has any uses of this key,
+> it can be reused".
 
-Applied to powerpc next, thanks.
+ok, in light of the corrected semantics, I see no bug in the implimentation.
 
-https://git.kernel.org/powerpc/c/6de6638b35daa0dfb7daefd78d5501
+> On Mon, Nov 06, 2017 at 10:28:41PM +0100, Florian Weimer wrote:
+...
+> The problem is a pkey_alloc/pthread_create/pkey_free/pkey_alloc
+> sequence.  The pthread_create call makes the new thread inherit the
+> access rights of the current thread, but then the key is deallocated.
+> Reallocation of the same key will have that thread retain its access
+> rights, which is IMHO not correct.
 
-cheers
+Again.. in light of the corrected semantics --
+ the child thread or any thread should not free
+a key without cleaning up. 
+(a) disassociate the key from its address space
+(b) reset the permission on the key across all the threads of the
+process.
+
+Because any such uncleaned bits can cause unexpected behavior if the 
+same key gets reallocated on sys_pkey_alloc().
+
+
+-- 
+Ram Pai
