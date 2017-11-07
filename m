@@ -1,35 +1,29 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWMgN6H8lzDrK8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 19:15:28 +1100 (AEDT)
-Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@amacapital.net>, Dave Hansen <dave.hansen@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arch@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
- <20171105231850.5e313e46@roar.ozlabs.ibm.com>
- <871slcszfl.fsf@linux.vnet.ibm.com>
- <20171106174707.19f6c495@roar.ozlabs.ibm.com>
- <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
- <20171106192524.12ea3187@roar.ozlabs.ibm.com>
- <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
- <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
- <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <b7348864-533a-ef40-e66f-b14d0f422c04@redhat.com>
-Date: Tue, 7 Nov 2017 09:15:21 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWN5M3flYzDrK8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 19:34:31 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Torsten Duwe <duwe@lst.de>
+Cc: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, Jessica Yu <jeyu@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Aravinda Prasad <aravinda@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
+ livepatch symbols
+In-Reply-To: <20171107045419.aozlfdo7tpnubz72@treble>
+References: <1508217523-18885-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <20171031141959.7pqnlncg2236yqqg@naverao1-tp.localdomain>
+ <20171031153004.GA31864@lst.de>
+ <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
+ <20171031183959.GA4313@lst.de> <20171107045419.aozlfdo7tpnubz72@treble>
+Date: Tue, 07 Nov 2017 19:34:29 +1100
+Message-ID: <8760am4hd6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,45 +33,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/07/2017 06:07 AM, Nicholas Piggin wrote:
+Josh Poimboeuf <jpoimboe@redhat.com> writes:
 
-> First of all, using addr and MAP_FIXED to develop our heuristic can
-> never really give unchanged ABI. It's an in-band signal. brk() is a
-> good example that steadily keeps incrementing address, so depending
-> on malloc usage and address space randomization, you will get a brk()
-> that ends exactly at 128T, then the next one will be >
-> DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
+> On Tue, Oct 31, 2017 at 07:39:59PM +0100, Torsten Duwe wrote:
+>> On Tue, Oct 31, 2017 at 09:53:16PM +0530, Naveen N . Rao wrote:
+>> > On 2017/10/31 03:30PM, Torsten Duwe wrote:
+>> > > 
+>> > > Maybe I failed to express my views properly; I find the whole approach
+>> [...]
+>> > > NAK'd-by: Torsten Duwe <duwe@suse.de>
+>> > 
+>> > Hmm... that wasn't evident at all given Balbir's reponse to your 
+>> > previous concerns and your lack of response for the same:
+>> > https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg125350.html
+>> 
+>> To me it was obvious that the root cause was kpatch's current inability to
+>> deal with ppc calling conventions when copying binary functions. Hence my
+>> hint at the discussion about a possible source-level solution that would
+>> work nicely for all architectures.
+>
+> That other discussion isn't relevant.  Even if we do eventually decide
+> to go with a source-based approach, that's still a long ways off.
 
-Note that this brk phenomenon is only a concern for some currently 
-obscure process memory layouts where the heap ends up at the top of the 
-address space.  Usually, there is something above it which eliminates 
-the possibility that it can cross into the 128 TiB wilderness.  So the 
-brk problem only happens on some architectures (e.g., not x86-64), and 
-only with strange ways of running programs (explicitly ld.so invocation 
-and likely static PIE, too).
+OK, that was my thinking, but good to have it confirmed.
 
-> So unless everyone else thinks I'm crazy and disagrees, I'd ask for
-> a bit more time to make sure we get this interface right. I would
-> hope for something like prctl PR_SET_MM which can be used to set
-> our user virtual address bits on a fine grained basis. Maybe a
-> sysctl, maybe a personality. Something out-of-band. I don't wan to
-> get too far into that discussion yet. First we need to agree whether
-> or not the code in the tree today is a problem.
+> For the foreseeable future, kpatch-build is the only available safe way
+> to create live patches.  We need to figure out a way to make it work,
+> one way or another.
+>
+> If I understand correctly, the main problem here is that a call to a
+> previously-local-but-now-global function is missing a needed nop
+> instruction after the call, which is needed for restoring r2 (the TOC
+> pointer).
 
-There is certainly more demand for similar functionality, like creating 
-mappings below 2 GB/4 GB/32 GB, and probably other bit patterns. 
-Hotspot would use this to place the heap with compressed oops, instead 
-of manually hunting for a suitable place for the mapping.  (Essentially, 
-32-bit pointers on 64-bit architectures for sufficiently small heap 
-sizes.)  It would perhaps be possible to use the hints address as a 
-source of the bit count, for full flexibility.  And the mapping should 
-be placed into the upper half of the selected window if possible.
+Yes, that's the root of the problem.
 
-MAP_FIXED is near-impossible to use correctly.  I hope you don't expect 
-applications to do that.  If you want address-based opt in, it should 
-work without MAP_FIXED.  Sure, in obscure cases, applications might 
-still see out-of-range addresses, but I expected a full opt-out based on 
-RLIMIT_AS would be sufficient for them.
+> So, just brainstorming a bit, here are the possible solutions I can
+> think of:
+>
+> a) Create a special klp stub for such calls (as in Kamalesh's patch)
+>
+> b) Have kpatch-build rewrite the function to insert nops after calls to
+>    previously-local functions.  This would also involve adjusting the
+>    offsets of intra-function branches and relocations which come
+>    afterwards in the same section.  And also patching up the DWARF
+>    debuginfo, if we care about that (I think we do).  And also patching
+>    up the jump tables which GCC sometimes creates for switch statements.
+>    Yuck.  I'm pretty sure this is a horrible idea.
 
-Thanks,
-Florian
+It's fairly horrible. It might be *less* horrible if you generated an
+assembly listing using the compiler, modified that, and then fed that
+through the assembler and linker.
+
+> c) Create a new GCC flag which treats all calls as global, which can be
+>    used by kpatch-build to generate the right code (assuming this flag
+>    doesn't already exist).  This would be a good option, I think.
+
+That's not impossible, but I doubt it will be all that popular with the
+toolchain folks who'd have to implement it :)  It will also take a long
+time to percolate out to users.
+
+> d) Have kpatch-build do some other kind of transformation?  For example,
+>    maybe it could generate klp stubs which the callee calls into.  Each
+>    klp stub could then do a proper global call to the SHN_LIVEPATCH
+>    symbol.
+
+That could work.
+
+> Do I understand the problem correctly?  Do the potential solutions make
+> sense?  Any other possible solutions I missed?
+
+Possibly, I'm not really across how kpatch works in detail and what the
+constraints are.
+
+One option would be to detect any local calls made by the patched
+function and pull those in as well - ie. make them part of the patch.
+The pathological case could obviously end up pulling in every function
+in the kernel, but in practice that's probably unlikely. It already
+happens to some extent anyway via inlining.
+
+If modifying the source is an option, a sneaky solution is to mark the
+local functions as weak, which means the compiler/linker has to assume
+they could become global calls.
+
+cheers
