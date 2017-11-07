@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWMB41qYPzDrL3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 18:53:32 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id o7so1560925pgc.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 23:53:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWMB83w4jzDrL6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 18:53:36 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id p9so10377528pgc.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 23:53:36 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/7] powerpc/64s/radix: Fix process table entry cache
- invalidation
-Date: Tue,  7 Nov 2017 18:53:04 +1100
-Message-Id: <20171107075309.20500-3-npiggin@gmail.com>
+Subject: [PATCH v2 3/7] powerpc/64s/radix: optimize TLB range flush barriers
+Date: Tue,  7 Nov 2017 18:53:05 +1100
+Message-Id: <20171107075309.20500-4-npiggin@gmail.com>
 In-Reply-To: <20171107075309.20500-1-npiggin@gmail.com>
 References: <20171107075309.20500-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,109 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to the architecture, the process table entry cache must be
-flushed with tlbie RIC=2.
+Short range flushes issue a sequences of tlbie(l) instructions for
+individual effective addresses. These do not all require individual
+barrier sequences, only one covering all tlbie(l) instructions.
 
-Currently the process table entry is set to invalid right before the
-PID is returned to the allocator, with no invalidation. This works on
-existing implementations that are known to not cache the process table
-entry for any except the current PIDR.
+Commit f7327e0ba3 ("powerpc/mm/radix: Remove unnecessary ptesync")
+made a similar optimization for tlbiel for PID flushing.
 
-It is architecturally correct and cleaner to invalidate with RIC=2
-after clearing the process table entry and before the PID is returned
-to the allocator. This can be done in arch_exit_mmap that runs before
-the final flush, and to ensure the final flush (fullmm) is always a
-RIC=2 variant.
+For tlbie, the ISA says:
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+    The tlbsync instruction provides an ordering function for the
+    effects of all tlbie instructions executed by the thread executing
+    the tlbsync instruction, with respect to the memory barrier
+    created by a subsequent ptesync instruction executed by the same
+    thread.
+
+Time to munmap 30 pages of memory (after mmap, touch):
+         local   global
+vanilla  10.9us  22.3us
+patched   3.4us  14.4us
+
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/mmu_context.h |  4 ++++
- arch/powerpc/mm/mmu_context_book3s64.c | 25 ++++++++++++++++++++-----
- arch/powerpc/mm/tlb-radix.c            |  6 +++++-
- 3 files changed, 29 insertions(+), 6 deletions(-)
+ arch/powerpc/mm/tlb-radix.c | 41 ++++++++++++++++++++++++++++++++---------
+ 1 file changed, 32 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b4cdf574cf61..6177d43f0ce8 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -165,9 +165,13 @@ static inline void arch_dup_mmap(struct mm_struct *oldmm,
- {
- }
- 
-+#ifndef CONFIG_PPC_BOOK3S_64
- static inline void arch_exit_mmap(struct mm_struct *mm)
- {
- }
-+#else
-+extern void arch_exit_mmap(struct mm_struct *mm);
-+#endif
- 
- static inline void arch_unmap(struct mm_struct *mm,
- 			      struct vm_area_struct *vma,
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 05e15386d4cb..6d724dab27c2 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -216,19 +216,34 @@ void destroy_context(struct mm_struct *mm)
- #ifdef CONFIG_SPAPR_TCE_IOMMU
- 	WARN_ON_ONCE(!list_empty(&mm->context.iommu_group_mem_list));
- #endif
-+	if (radix_enabled())
-+		WARN_ON(process_tb[mm->context.id].prtb0 != 0);
-+	else
-+		subpage_prot_free(mm);
-+	destroy_pagetable_page(mm);
-+	__destroy_context(mm->context.id);
-+	mm->context.id = MMU_NO_CONTEXT;
-+}
-+
-+void arch_exit_mmap(struct mm_struct *mm)
-+{
- 	if (radix_enabled()) {
- 		/*
- 		 * Radix doesn't have a valid bit in the process table
- 		 * entries. However we know that at least P9 implementation
- 		 * will avoid caching an entry with an invalid RTS field,
- 		 * and 0 is invalid. So this will do.
-+		 *
-+		 * This runs before the "fullmm" tlb flush in exit_mmap,
-+		 * which does a RIC=2 tlbie to clear the process table
-+		 * entry. See the "fullmm" comments in tlb-radix.c.
-+		 *
-+		 * No barrier required here after the store because
-+		 * this process will do the invalidate, which starts with
-+		 * ptesync.
- 		 */
- 		process_tb[mm->context.id].prtb0 = 0;
--	} else
--		subpage_prot_free(mm);
--	destroy_pagetable_page(mm);
--	__destroy_context(mm->context.id);
--	mm->context.id = MMU_NO_CONTEXT;
-+	}
- }
- 
- #ifdef CONFIG_PPC_RADIX_MMU
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index feeb96693aeb..6e77ed2d7c6c 100644
+index 6e77ed2d7c6c..49e71c68f5b1 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -297,10 +297,14 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	psize = radix_get_mmu_psize(page_size);
- 	/*
- 	 * if page size is not something we understand, do a full mm flush
-+	 *
-+	 * A "fullmm" flush must always do a flush_all_mm (RIC=2) flush
-+	 * that flushes the process table entry cache upon process teardown.
-+	 * See the comment for radix in arch_exit_mmap().
- 	 */
- 	if (psize != -1 && !tlb->fullmm && !tlb->need_flush_all)
- 		radix__flush_tlb_range_psize(mm, tlb->start, tlb->end, psize);
--	else if (tlb->need_flush_all) {
-+	else if (tlb->fullmm || tlb->need_flush_all) {
- 		tlb->need_flush_all = 0;
- 		radix__flush_all_mm(mm);
- 	} else
+@@ -84,7 +84,7 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
+ 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ }
+ 
+-static inline void _tlbiel_va(unsigned long va, unsigned long pid,
++static inline void __tlbiel_va(unsigned long va, unsigned long pid,
+ 			      unsigned long ap, unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+@@ -95,14 +95,20 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
+ 
+-	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+-	asm volatile("ptesync": : :"memory");
+ 	trace_tlbie(0, 1, rb, rs, ric, prs, r);
+ }
+ 
+-static inline void _tlbie_va(unsigned long va, unsigned long pid,
++static inline void _tlbiel_va(unsigned long va, unsigned long pid,
++			      unsigned long ap, unsigned long ric)
++{
++	asm volatile("ptesync": : :"memory");
++	__tlbiel_va(va, pid, ap, ric);
++	asm volatile("ptesync": : :"memory");
++}
++
++static inline void __tlbie_va(unsigned long va, unsigned long pid,
+ 			     unsigned long ap, unsigned long ric)
+ {
+ 	unsigned long rb,rs,prs,r;
+@@ -113,13 +119,20 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
+ 
+-	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+-	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ }
+ 
++static inline void _tlbie_va(unsigned long va, unsigned long pid,
++			     unsigned long ap, unsigned long ric)
++{
++	asm volatile("ptesync": : :"memory");
++	__tlbie_va(va, pid, ap, ric);
++	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++}
++
++
+ /*
+  * Base TLB flushing operations:
+  *
+@@ -341,13 +354,19 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ 			_tlbiel_pid(pid, RIC_FLUSH_TLB);
+ 		else
+ 			_tlbie_pid(pid, RIC_FLUSH_TLB);
++
+ 	} else {
++		asm volatile("ptesync": : :"memory");
+ 		for (addr = start; addr < end; addr += page_size) {
+ 			if (local)
+-				_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
++				__tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
+ 			else
+-				_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
++				__tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
+ 		}
++		if (local)
++			asm volatile("ptesync": : :"memory");
++		else
++			asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ 	}
+ 
+ 	preempt_enable();
+@@ -380,6 +399,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 		_tlbie_pid(pid, RIC_FLUSH_PWC);
+ 
+ 	/* Then iterate the pages */
++	asm volatile("ptesync": : :"memory");
+ 	end = addr + HPAGE_PMD_SIZE;
+ 	for (; addr < end; addr += PAGE_SIZE) {
+ 		if (local)
+@@ -387,7 +407,10 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 		else
+ 			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
+ 	}
+-
++	if (local)
++		asm volatile("ptesync": : :"memory");
++	else
++		asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ 	preempt_enable();
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 -- 
 2.15.0
