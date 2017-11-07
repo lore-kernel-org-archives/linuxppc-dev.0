@@ -1,40 +1,23 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <geert@linux-m68k.org>
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWWMK0rs4zDq78
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 01:02:04 +1100 (AEDT)
-Received: by mail-wm0-x231.google.com with SMTP id p75so3959484wmg.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Nov 2017 06:02:04 -0800 (PST)
-Date: Tue, 7 Nov 2017 17:01:58 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Florian Weimer <fweimer@redhat.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@amacapital.net>, Dave Hansen <dave.hansen@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
-Message-ID: <20171107140158.iz4b2lchhrt6eobe@node.shutemov.name>
-References: <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
- <20171106192524.12ea3187@roar.ozlabs.ibm.com>
- <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
- <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
- <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
- <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
- <20171107222228.0c8a50ff@roar.ozlabs.ibm.com>
- <20171107122825.posamr2dmzlzvs2p@node.shutemov.name>
- <20171108002448.6799462e@roar.ozlabs.ibm.com>
- <2ce0a91c-985c-aad8-abfa-e91bc088bb3e@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2ce0a91c-985c-aad8-abfa-e91bc088bb3e@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWWdH0Y2hzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 01:14:10 +1100 (AEDT)
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:13])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 3yWWQs5mxYzMqcwy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 15:05:09 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] fbdev: controlfb: Add missing modes to fix out of bounds
+ access
+Date: Tue,  7 Nov 2017 15:05:05 +0100
+Message-Id: <1510063505-2063-1-git-send-email-geert@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,36 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 07, 2017 at 07:15:58PM +0530, Aneesh Kumar K.V wrote:
-> 
-> > 
-> > If it is decided to keep these kind of heuristics, can we get just a
-> > small but reasonably precise description of each change to the
-> > interface and ways for using the new functionality, such that would be
-> > suitable for the man page? I couldn't fix powerpc because nothing
-> > matches and even Aneesh and you differ on some details (MAP_FIXED
-> > behaviour).
-> 
-> 
-> I would consider MAP_FIXED as my mistake. We never discussed this explicitly
-> and I kind of assumed it to behave the same way. ie, we search in lower
-> address space (128TB) if the hint addr is below 128TB.
-> 
-> IIUC we agree on the below.
-> 
-> 1) MAP_FIXED allow the addr to be used, even if hint addr is below 128TB but
-> hint_addr + len is > 128TB.
-> 
-> 2) For everything else we search in < 128TB space if hint addr is below
-> 128TB
-> 
-> 3) We don't switch to large address space if hint_addr + len > 128TB. The
-> decision to switch to large address space is primarily based on hint addr
-> 
-> Is there any other rule we need to outline? Or is any of the above not
-> correct?
+Dan's static analysis says:
 
-That's correct.
+    drivers/video/fbdev/controlfb.c:560 control_setup()
+    error: buffer overflow 'control_mac_modes' 20 <= 21
 
+Indeed, control_mac_modes[] has only 20 elements, while VMODE_MAX is 22,
+which may lead to an out of bounds read when parsing vmode commandline
+options.
+
+The bug was introduced in v2.4.5.6, when 2 new modes were added to
+macmodes.h, but control_mac_modes[] wasn't updated:
+
+https://kernel.opensuse.org/cgit/kernel/diff/include/video/macmodes.h?h=v2.5.2&id=29f279c764808560eaceb88fef36cbc35c529aad
+
+Augment control_mac_modes[] with the two new video modes to fix this.
+
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Compile-tested only.
+
+The 1152x768 mode should be OK.
+Given the 1600x1024 mode has a lower dotclock (112 MHz) than the
+supported 1280x960 mode, it's probably OK, too.
+---
+ drivers/video/fbdev/controlfb.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/fbdev/controlfb.h b/drivers/video/fbdev/controlfb.h
+index 6026c60fc1007e00..261522fabdac89ae 100644
+--- a/drivers/video/fbdev/controlfb.h
++++ b/drivers/video/fbdev/controlfb.h
+@@ -141,5 +141,7 @@ static struct max_cmodes control_mac_modes[] = {
+ 	{{ 1, 2}},	/* 1152x870, 75Hz */
+ 	{{ 0, 1}},	/* 1280x960, 75Hz */
+ 	{{ 0, 1}},	/* 1280x1024, 75Hz */
++	{{ 1, 2}},	/* 1152x768, 60Hz */
++	{{ 0, 1}},	/* 1600x1024, 60Hz */
+ };
+ 
 -- 
- Kirill A. Shutemov
+2.7.4
