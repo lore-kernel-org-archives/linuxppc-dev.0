@@ -1,22 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWMBS6psZzDrLC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 18:53:52 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id b79so9737025pfk.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 23:53:52 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v2 7/7] powerpc/64s/radix: Improve TLB flushing for page table
- freeing
-Date: Tue,  7 Nov 2017 18:53:09 +1100
-Message-Id: <20171107075309.20500-8-npiggin@gmail.com>
-In-Reply-To: <20171107075309.20500-1-npiggin@gmail.com>
-References: <20171107075309.20500-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWMgN6H8lzDrK8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 19:15:28 +1100 (AEDT)
+Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Hansen <dave.hansen@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arch@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <f251fc3e-c657-ebe8-acc8-f55ab4caa667@redhat.com>
+ <20171105231850.5e313e46@roar.ozlabs.ibm.com>
+ <871slcszfl.fsf@linux.vnet.ibm.com>
+ <20171106174707.19f6c495@roar.ozlabs.ibm.com>
+ <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
+ <20171106192524.12ea3187@roar.ozlabs.ibm.com>
+ <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
+ <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
+ <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <b7348864-533a-ef40-e66f-b14d0f422c04@redhat.com>
+Date: Tue, 7 Nov 2017 09:15:21 +0100
+MIME-Version: 1.0
+In-Reply-To: <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,208 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unmaps that free page tables always flush the entire PID, which is
-sub-optimal. Provide TLB range flushing with an additional PWC flush
-that can be use for va range invalidations with PWC flush.
+On 11/07/2017 06:07 AM, Nicholas Piggin wrote:
 
-     Time to munmap N pages of memory including last level page table
-     teardown (after mmap, touch), local invalidate:
-     N           1       2      4      8     16     32     64
-     vanilla  3.2us  3.3us  3.4us  3.6us  4.1us  5.2us  7.2us
-     patched  1.4us  1.5us  1.7us  1.9us  2.6us  3.7us  6.2us
+> First of all, using addr and MAP_FIXED to develop our heuristic can
+> never really give unchanged ABI. It's an in-band signal. brk() is a
+> good example that steadily keeps incrementing address, so depending
+> on malloc usage and address space randomization, you will get a brk()
+> that ends exactly at 128T, then the next one will be >
+> DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
 
-     Global invalidate:
-     N           1       2      4      8     16      32     64
-     vanilla  2.2us  2.3us  2.4us  2.6us  3.2us   4.1us  6.2us
-     patched  2.1us  2.5us  3.4us  5.2us  8.7us  15.7us  6.2us
+Note that this brk phenomenon is only a concern for some currently 
+obscure process memory layouts where the heap ends up at the top of the 
+address space.  Usually, there is something above it which eliminates 
+the possibility that it can cross into the 128 TiB wilderness.  So the 
+brk problem only happens on some architectures (e.g., not x86-64), and 
+only with strange ways of running programs (explicitly ld.so invocation 
+and likely static PIE, too).
 
-Local invalidates get much better across the board. Global ones have
-the same issue where multiple tlbies for va flush do get slower than
-the single tlbie to invalidate the PID. None of this test captures
-the TLB benefits of avoiding killing everything.
+> So unless everyone else thinks I'm crazy and disagrees, I'd ask for
+> a bit more time to make sure we get this interface right. I would
+> hope for something like prctl PR_SET_MM which can be used to set
+> our user virtual address bits on a fine grained basis. Maybe a
+> sysctl, maybe a personality. Something out-of-band. I don't wan to
+> get too far into that discussion yet. First we need to agree whether
+> or not the code in the tree today is a problem.
 
-Global gets worse, but it is brought in to line with global invalidate
-for munmap()s that do not free page tables.
+There is certainly more demand for similar functionality, like creating 
+mappings below 2 GB/4 GB/32 GB, and probably other bit patterns. 
+Hotspot would use this to place the heap with compressed oops, instead 
+of manually hunting for a suitable place for the mapping.  (Essentially, 
+32-bit pointers on 64-bit architectures for sufficiently small heap 
+sizes.)  It would perhaps be possible to use the hints address as a 
+source of the bit count, for full flexibility.  And the mapping should 
+be placed into the upper half of the selected window if possible.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/mm/tlb-radix.c | 90 ++++++++++++++++++++++++++++++---------------
- 1 file changed, 61 insertions(+), 29 deletions(-)
+MAP_FIXED is near-impossible to use correctly.  I hope you don't expect 
+applications to do that.  If you want address-based opt in, it should 
+work without MAP_FIXED.  Sure, in obscure cases, applications might 
+still see out-of-range addresses, but I expected a full opt-out based on 
+RLIMIT_AS would be sufficient for them.
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 5842c98fbe48..078f7da11ce1 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -39,6 +39,20 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
- 	trace_tlbie(0, 1, rb, rs, ric, prs, r);
- }
- 
-+static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(53); /* IS = 1 */
-+	rs = pid << PPC_BITLSHIFT(31);
-+	prs = 1; /* process scoped */
-+	r = 1;   /* raidx format */
-+
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(0, 0, rb, rs, ric, prs, r);
-+}
-+
- /*
-  * We use 128 set in radix mode and 256 set in hpt mode.
-  */
-@@ -70,18 +84,9 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- 
- static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- {
--	unsigned long rb,rs,prs,r;
--
--	rb = PPC_BIT(53); /* IS = 1 */
--	rs = pid << PPC_BITLSHIFT(31);
--	prs = 1; /* process scoped */
--	r = 1;   /* raidx format */
--
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
--		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	__tlbie_pid(pid, ric);
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
--	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
- 
- static inline void __tlbiel_va(unsigned long va, unsigned long pid,
-@@ -123,9 +128,11 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- 
- static inline void _tlbiel_va_range(unsigned long start, unsigned long end,
- 				    unsigned long pid, unsigned long page_size,
--				    unsigned long psize)
-+				    unsigned long psize, bool also_pwc)
- {
- 	asm volatile("ptesync": : :"memory");
-+	if (also_pwc)
-+		__tlbiel_pid(pid, 0, RIC_FLUSH_PWC);
- 	__tlbiel_va_range(start, end, pid, page_size, psize);
- 	asm volatile("ptesync": : :"memory");
- }
-@@ -169,9 +176,11 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 
- static inline void _tlbie_va_range(unsigned long start, unsigned long end,
- 				    unsigned long pid, unsigned long page_size,
--				    unsigned long psize)
-+				    unsigned long psize, bool also_pwc)
- {
- 	asm volatile("ptesync": : :"memory");
-+	if (also_pwc)
-+		__tlbie_pid(pid, RIC_FLUSH_PWC);
- 	__tlbie_va_range(start, end, pid, page_size, psize);
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
-@@ -411,13 +420,15 @@ static int radix_get_mmu_psize(int page_size)
- 	return psize;
- }
- 
-+static void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
-+				  unsigned long end, int psize);
-+
- void radix__tlb_flush(struct mmu_gather *tlb)
- {
- 	int psize = 0;
- 	struct mm_struct *mm = tlb->mm;
- 	int page_size = tlb->page_size;
- 
--	psize = radix_get_mmu_psize(page_size);
- 	/*
- 	 * if page size is not something we understand, do a full mm flush
- 	 *
-@@ -425,17 +436,28 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	 * that flushes the process table entry cache upon process teardown.
- 	 * See the comment for radix in arch_exit_mmap().
- 	 */
--	if (psize != -1 && !tlb->fullmm && !tlb->need_flush_all)
--		radix__flush_tlb_range_psize(mm, tlb->start, tlb->end, psize);
--	else if (tlb->fullmm || tlb->need_flush_all) {
--		tlb->need_flush_all = 0;
-+	if (tlb->fullmm) {
- 		radix__flush_all_mm(mm);
--	} else
--		radix__flush_tlb_mm(mm);
-+	} else if ( (psize = radix_get_mmu_psize(page_size)) == -1) {
-+		if (!tlb->need_flush_all)
-+			radix__flush_tlb_mm(mm);
-+		else
-+			radix__flush_all_mm(mm);
-+	} else {
-+		unsigned long start = tlb->start;
-+		unsigned long end = tlb->end;
-+
-+		if (!tlb->need_flush_all)
-+			radix__flush_tlb_range_psize(mm, start, end, psize);
-+		else
-+			radix__flush_tlb_pwc_range_psize(mm, start, end, psize);
-+	}
-+	tlb->need_flush_all = 0;
- }
- 
--void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
--				  unsigned long end, int psize)
-+static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
-+				unsigned long start, unsigned long end,
-+				int psize, bool also_pwc)
- {
- 	unsigned long pid;
- 	unsigned int page_shift = mmu_psize_defs[psize].shift;
-@@ -461,19 +483,31 @@ void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
- 
- 	if (full) {
- 		if (local)
--			_tlbiel_pid(pid, RIC_FLUSH_TLB);
-+			_tlbiel_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
- 		else
--			_tlbie_pid(pid, RIC_FLUSH_TLB);
-+			_tlbie_pid(pid, also_pwc ? RIC_FLUSH_ALL: RIC_FLUSH_TLB);
- 	} else {
- 		if (local)
--			_tlbiel_va_range(start, end, pid, page_size, psize);
-+			_tlbiel_va_range(start, end, pid, page_size, psize, also_pwc);
- 		else
--			_tlbie_va_range(start, end, pid, page_size, psize);
-+			_tlbie_va_range(start, end, pid, page_size, psize, also_pwc);
- 	}
- 
- 	preempt_enable();
- }
- 
-+void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
-+				  unsigned long end, int psize)
-+{
-+	return __radix__flush_tlb_range_psize(mm, start, end, psize, false);
-+}
-+
-+static void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
-+				  unsigned long end, int psize)
-+{
-+	__radix__flush_tlb_range_psize(mm, start, end, psize, true);
-+}
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- {
-@@ -494,11 +528,9 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 	/* Otherwise first do the PWC, then iterate the pages. */
- 	preempt_disable();
- 	if (mm_is_thread_local(mm)) {
--		_tlbiel_pid(pid, RIC_FLUSH_PWC);
--		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize);
-+		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
- 	} else {
--		_tlbie_pid(pid, RIC_FLUSH_PWC);
--		_tlbie_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize);
-+		_tlbie_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
- 	}
- 	preempt_enable();
- }
--- 
-2.15.0
+Thanks,
+Florian
