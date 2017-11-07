@@ -3,34 +3,36 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWCKD3mstzDrK6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 12:59:12 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWCML0wL7zDrKD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Nov 2017 13:01:01 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA71t1iD056708
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Nov 2017 20:59:09 -0500
+ vA71nQlk001408
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Nov 2017 21:00:59 -0500
 Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e31k7navu-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e32ffb0g4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 20:59:09 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Nov 2017 21:00:58 -0500
 Received: from localhost
  by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 6 Nov 2017 18:59:08 -0700
-Subject: Re: [PATCH 0/5] VA allocator fixes
-To: Nicholas Piggin <npiggin@gmail.com>, Florian Weimer <fweimer@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
-References: <20171106100315.29720-1-npiggin@gmail.com>
- <cc66ea81-fd9a-0bd5-8a8c-5abdc604200b@redhat.com>
- <20171107110611.30cfede4@roar.ozlabs.ibm.com>
+ Mon, 6 Nov 2017 19:00:57 -0700
+Subject: Re: [PATCH 1/5] powerpc/64s/hash: Fix 128TB-512TB virtual address
+ boundary case allocation
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 7 Nov 2017 07:29:01 +0530
+To: Florian Weimer <fweimer@redhat.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20171106100315.29720-1-npiggin@gmail.com>
+ <20171106100315.29720-2-npiggin@gmail.com>
+ <87y3njsne9.fsf@linux.vnet.ibm.com>
+ <20171106215447.787e58fd@roar.ozlabs.ibm.com>
+ <13f9578b-f907-1809-9aaa-cbb87c419bc6@linux.vnet.ibm.com>
+Date: Tue, 7 Nov 2017 07:30:51 +0530
 MIME-Version: 1.0
-In-Reply-To: <20171107110611.30cfede4@roar.ozlabs.ibm.com>
+In-Reply-To: <13f9578b-f907-1809-9aaa-cbb87c419bc6@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <f2535e23-4a06-ba61-86fd-3558ddad2e15@linux.vnet.ibm.com>
+Message-Id: <d7815f37-cd13-4506-3e6b-cc2aa1cc0787@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,50 +44,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 11/07/2017 05:36 AM, Nicholas Piggin wrote:
-> On Mon, 6 Nov 2017 16:16:07 +0100
-> Florian Weimer <fweimer@redhat.com> wrote:
+On 11/06/2017 04:35 PM, Aneesh Kumar K.V wrote:
 > 
->> On 11/06/2017 11:03 AM, Nicholas Piggin wrote:
->>> Florian found a nasty corner case with the VA allocation logic
->>> for crossing from 128TB to 512TB limit on hash, and made a
->>> really superb report of the problem -- traces, reproducer recipes,
->>> analysis, etc. which already mostly solved it.
+> 
+> On 11/06/2017 04:24 PM, Nicholas Piggin wrote:
+>> On Mon, 06 Nov 2017 16:08:06 +0530
+>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>
+>>> Nicholas Piggin <npiggin@gmail.com> writes:
 >>>
->>> The first patch in the series should solve Florian's particular
->>> case, the next 3 are other issues with addr_limit. The last
->>> patch is technically a cleanup but I think it's fairly important
->>> in terms of understanding the code and also enabling some BUG
->>> checks (when addr_limit == 0).
+>>>> When allocating VA space with a hint that crosses 128TB, the SLB 
+>>>> addr_limit
+>>>> variable is not expanded if addr is not > 128TB, but the slice 
+>>>> allocation
+>>>> looks at task_size, which is 512TB. This results in slice_check_fit()
+>>>> incorrectly succeeding because the slice_count truncates off bit 128 
+>>>> of the
+>>>> requested mask, so the comparison to the available mask succeeds.
 >>>
->>> I have not tested these exactly on Florian's test case, but
->>> some tests of my own behave better afterwards. Hopefully he has
->>> time to re-test. Some careful review would be welcome too.
+>>>
+>>> But then the mask passed to slice_check_fit() is generated using
+>>> context.addr_limit as max value. So how did that return succcess? ie,
+>>> we get the request mask via
+>>>
+>>> slice_range_to_mask(addr, len, &mask);
+>>>
+>>> And the potential/possible mask using
+>>>
+>>> slice_mask_for_size(mm, psize, &good_mask);
+>>>
+>>> So how did slice_check_fit() return sucess with
+>>>
+>>> slice_check_fit(mm, mask, good_mask);
 >>
->> I think I have applied the five patches you posted, but I still get a
->> brk value above 128 TiB:
+>> Because the addr_limit check is used to *limit* the comparison.
 >>
->> # /lib64/ld64.so.1 ./a.out
->> initial brk value: 0x7fffde960000
->> probing at 0x80000001fffc
+>> The available mask had bit up to 127 set, and the mask had 127 and
+>> 128 set. However the 128T addr_limit causes only bits 0-127 to be
+>> compared.
 >>
->> I assumed you wanted to reject those?
 > 
-> It was difficult to understand what the intended semantics are, but I
-> think brk should succeed (it is implemented with MAP_FIXED). Of course
-> it should not succeed then segfault when you try to access it.
+> Should we fix it then via ? I haven't tested this yet. Also this result 
+> in us comparing more bits?
 > 
->>
->> In either case, I recommend to tweak the VM layout, so that ld.so does
->> not land closely to to the 128 TiB limit, so that the brk failure or
->> returning of 48-bit addresses is avoided.
+> modified   arch/powerpc/mm/slice.c
+> @@ -169,13 +169,12 @@ static int slice_check_fit(struct mm_struct *mm,
+>                  struct slice_mask mask, struct slice_mask available)
+>   {
+>       DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+> -    unsigned long slice_count = 
+> GET_HIGH_SLICE_INDEX(mm->context.addr_limit);
 > 
-> Yeah well that's yet another issue. I was not really involved with the
-> address space extension work. Anees, Kirill, was the intention for the
-> 128T->512T extension logic to be a no-op for all address space allocaiton
-> except those with explicit addresses?
+>       bitmap_and(result, mask.high_slices,
+> -           available.high_slices, slice_count);
+> +           available.high_slices, SLICE_NUM_HIGH);
+> 
+>       return (mask.low_slices & available.low_slices) == mask.low_slices &&
+> -        bitmap_equal(result, mask.high_slices, slice_count);
+> +        bitmap_equal(result, mask.high_slices, SLICE_NUM_HIGH)
+> 
 > 
 
-yes.
+Florian, will you be able to test this patch ? We may not really want to 
+push this. But it will confirm that we end up getting >128TB address 
+because of this.
 
 -aneesh
