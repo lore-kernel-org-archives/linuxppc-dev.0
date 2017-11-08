@@ -1,24 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yX6Zg1Zx6zDqnt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2017 00:28:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yX6lH0jSRzDrCZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2017 00:36:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, bjorn@helgaas.com
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v1] powerpc/pci: convert to use for_each_pci_bridge()
- helper
-In-Reply-To: <1510059242.25007.81.camel@linux.intel.com>
-References: <20171013165250.25370-1-andriy.shevchenko@linux.intel.com>
- <1509462750.10233.134.camel@linux.intel.com>
- <CABhMZUV0me+PG8daQ8iOzcSEJBQMD4=JGbMp7sVm_5CujwZ4eQ@mail.gmail.com>
- <1509475255.10233.140.camel@linux.intel.com>
- <1510059242.25007.81.camel@linux.intel.com>
-Date: Thu, 09 Nov 2017 00:28:53 +1100
-Message-ID: <87a7zw3nmy.fsf@concordia.ellerman.id.au>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-next <linux-next@vger.kernel.org>, Michal Hocko <mhocko@suse.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-next][0692229e] next-20171106 fails to boot on Power 7
+In-Reply-To: <1510048229.12079.7.camel@abdul.in.ibm.com>
+References: <1510048229.12079.7.camel@abdul.in.ibm.com>
+Date: Thu, 09 Nov 2017 00:36:26 +1100
+Message-ID: <877ev03nad.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,28 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+Abdul Haleem <abdhalee@linux.vnet.ibm.com> writes:
 
-> On Tue, 2017-10-31 at 20:40 +0200, Andy Shevchenko wrote:
->> On Tue, 2017-10-31 at 13:33 -0500, Bjorn Helgaas wrote:
->> > On Tue, Oct 31, 2017 at 10:12 AM, Andy Shevchenko
->> > <andriy.shevchenko@linux.intel.com> wrote:
->> > > On Fri, 2017-10-13 at 19:52 +0300, Andy Shevchenko wrote:
->> > > > ...which makes code slightly cleaner.
->> > > 
->> > > +Cc: Bjorn
->> > > 
->> > > Perhaps it makes sense to pass this through PCI if no one objects?
->> > 
->> > Fine with me, but I only apply things that appear on the
->> > linux-pci@vger.kernel.org mailing list.
->> 
->> I want to wait for powerpc maintainers to Ack and then I'll resend.
+> Hi,
 >
-> Michael, Paul, Benjamin, do you have any concerns on this patch?
+> Today's next kernel fails to boot on Power 7 Machine with below errors
+> in boot log messages.
 
-No, assuming it does what it says :)
+I am *not* seeing this on my Power7 machine (or any machine).
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+So this might be distro/toolchain specific?
 
 cheers
