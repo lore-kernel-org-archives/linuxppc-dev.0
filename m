@@ -2,38 +2,40 @@ Return-Path: <srs0=buqp=cg=linux.vnet.ibm.com=sukadev@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWqqV6vsGzDr62
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 13:24:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWqqX4mMSzDr62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 13:24:08 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yWqqV2Wj3z8t9V
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 13:24:06 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yWqqX3C91z8v79
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 13:24:08 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yWqqT4g55z9s4s
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2017 13:24:05 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA82NtcZ133598
- for <linuxppc-dev@ozlabs.org>; Tue, 7 Nov 2017 21:24:03 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e3p8gf6p9-1
+ by ozlabs.org (Postfix) with ESMTPS id 3yWqqW6B4Cz9s5L
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Nov 2017 13:24:07 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vA82NswW067123
+ for <linuxppc-dev@ozlabs.org>; Tue, 7 Nov 2017 21:24:05 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e3j93239p-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 07 Nov 2017 21:24:03 -0500
+ for <linuxppc-dev@ozlabs.org>; Tue, 07 Nov 2017 21:24:05 -0500
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 7 Nov 2017 19:24:02 -0700
+ Tue, 7 Nov 2017 19:24:04 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 00/18] powerpc/vas: Add support for FTW 
-Date: Tue,  7 Nov 2017 18:23:40 -0800
-Message-Id: <1510107838-15181-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v3 01/18] powerpc/vas: init missing fields from [rt]xattr
+Date: Tue,  7 Nov 2017 18:23:41 -0800
+In-Reply-To: <1510107838-15181-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1510107838-15181-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1510107838-15181-2-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,64 +45,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first 10 patches in this set sanitize cpu/chip id to VAS id mapping,
-improve vas_win_close() performance, add a check for return of credits
-and cleans up some code.
+Initialize a few missing window context fields from the window attributes
+specified by the caller. These fields are currently set to their default
+values by the caller (NX-842), but would be good to apply them anyway.
 
-Patch 11 adds debugfs support for the VAS window contexts.
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/vas-window.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Patches 12-18 add support for user space aka Fast thread-wakeup windows
-in VAS. These include a patch from Michael Neuling to support emulating
-the paste instruction.
-
-Changelog[v3]:
-	- [Michael Ellerman] We don't need to disable/enable pagefaults
-	  when emulating paste;
-	- [Michael Ellerman, Aneesh Kumar] Fix retval from emulate_paste()
-	  and paste().
-	- [Nick Piggin] Drop CP_ABORT since set_thread_uses_vas() does
-	  that now (in earlier patch) and add a check for return value.
-	- [Michael Ellerman] Fix couple of unininitialized variables
-	- Minor tweak to a debug message
-
-Michael Neuling (1):
-  powerpc: Emulate paste instruction
-
-Sukadev Bhattiprolu (17):
-  powerpc/vas: init missing fields from [rt]xattr
-  powerpc/vas: Validate window credits
-  powerpc/vas: Cleanup some debug code
-  powerpc/vas: Drop poll_window_cast_out().
-  powerpc/vas: Use helper to unpin/close window
-  powerpc/vas: Reduce polling interval for busy state
-  powerpc/vas: Save configured window credits
-  powerpc/vas: poll for return of window credits
-  powerpc/vas: Create cpu to vas id mapping
-  powerpc/vas, nx-842: Define and use chip_to_vas_id()
-  powerpc/vas: Export HVWC to debugfs
-  powerpc: have copy depend on CONFIG_BOOK3S_64
-  powerpc: Add support for setting SPRN_TIDR
-  powerpc: Define set_thread_uses_vas()
-  powerpc/vas: Define vas_win_paste_addr()
-  powerpc/vas: Define vas_win_id()
-  powerpc/vas: Add support for user receive window
-
- arch/powerpc/include/asm/emulated_ops.h     |   1 +
- arch/powerpc/include/asm/ppc-opcode.h       |   1 +
- arch/powerpc/include/asm/processor.h        |   3 +
- arch/powerpc/include/asm/reg.h              |   2 +
- arch/powerpc/include/asm/switch_to.h        |   5 +
- arch/powerpc/include/asm/vas.h              |  21 +++
- arch/powerpc/kernel/process.c               | 169 +++++++++++++++++--
- arch/powerpc/kernel/traps.c                 |  67 ++++++++
- arch/powerpc/platforms/powernv/Makefile     |   3 +-
- arch/powerpc/platforms/powernv/vas-debug.c  | 209 ++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/vas-window.c | 242 +++++++++++++++++++++++-----
- arch/powerpc/platforms/powernv/vas.c        |  31 +++-
- arch/powerpc/platforms/powernv/vas.h        |  93 ++++++-----
- drivers/crypto/nx/nx-842-powernv.c          |  18 +--
- 14 files changed, 751 insertions(+), 114 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/vas-debug.c
-
+diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+index 5aae845..cec7ab7 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
++++ b/arch/powerpc/platforms/powernv/vas-window.c
+@@ -679,10 +679,13 @@ static void init_winctx_for_rxwin(struct vas_window *rxwin,
+ 
+ 	winctx->nx_win = rxattr->nx_win;
+ 	winctx->fault_win = rxattr->fault_win;
++	winctx->user_win = rxattr->user_win;
++	winctx->rej_no_credit = rxattr->rej_no_credit;
+ 	winctx->rx_word_mode = rxattr->rx_win_ord_mode;
+ 	winctx->tx_word_mode = rxattr->tx_win_ord_mode;
+ 	winctx->rx_wcred_mode = rxattr->rx_wcred_mode;
+ 	winctx->tx_wcred_mode = rxattr->tx_wcred_mode;
++	winctx->notify_early = rxattr->notify_early;
+ 
+ 	if (winctx->nx_win) {
+ 		winctx->data_stamp = true;
+@@ -889,11 +892,14 @@ static void init_winctx_for_txwin(struct vas_window *txwin,
+ 	winctx->user_win = txattr->user_win;
+ 	winctx->nx_win = txwin->rxwin->nx_win;
+ 	winctx->pin_win = txattr->pin_win;
++	winctx->rej_no_credit = txattr->rej_no_credit;
++	winctx->rsvd_txbuf_enable = txattr->rsvd_txbuf_enable;
+ 
+ 	winctx->rx_wcred_mode = txattr->rx_wcred_mode;
+ 	winctx->tx_wcred_mode = txattr->tx_wcred_mode;
+ 	winctx->rx_word_mode = txattr->rx_win_ord_mode;
+ 	winctx->tx_word_mode = txattr->tx_win_ord_mode;
++	winctx->rsvd_txbuf_count = txattr->rsvd_txbuf_count;
+ 
+ 	if (winctx->nx_win) {
+ 		winctx->data_stamp = true;
 -- 
 2.7.4
