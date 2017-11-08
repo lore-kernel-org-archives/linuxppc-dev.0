@@ -1,41 +1,20 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yWx1t2vMVzDr62
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 17:18:24 +1100 (AEDT)
-Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- Kees Cook <keescook@chromium.org>
-Cc: linux-arch@vger.kernel.org, Dave Hansen <dave.hansen@intel.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Ingo Molnar <mingo@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@amacapital.net>,
- linux-mm <linux-mm@kvack.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-References: <20171106174707.19f6c495@roar.ozlabs.ibm.com>
- <24b93038-76f7-33df-d02e-facb0ce61cd2@redhat.com>
- <20171106192524.12ea3187@roar.ozlabs.ibm.com>
- <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
- <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
- <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
- <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
- <c5586546-1e7e-0f0f-a8b3-680fadb38dcf@redhat.com>
- <20171107114422.bgnm5k6w2zqjoazc@node.shutemov.name>
- <7fc1641b-361c-2ee2-c510-f7c64d173bf8@redhat.com>
- <20171107131616.342goolaujjsnjge@node.shutemov.name>
- <87vail2tgr.fsf@concordia.ellerman.id.au>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <9d5c86e9-d011-76b4-6357-b6009a201cdb@redhat.com>
-Date: Wed, 8 Nov 2017 07:18:17 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yWyD61dYjzDr62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Nov 2017 18:12:20 +1100 (AEDT)
+Subject: Re: [PATCH] watchdog: mpc8xxx: use the core worker function
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org
+References: <20171107162356.55E106C399@po15668-vm-win7.idsi0.si.c-s.fr>
+ <20171107225604.GA26913@roeck-us.net>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7cb271d2-1617-b18c-adc7-466c60f7ad70@c-s.fr>
+Date: Wed, 8 Nov 2017 08:11:45 +0100
 MIME-Version: 1.0
-In-Reply-To: <87vail2tgr.fsf@concordia.ellerman.id.au>
+In-Reply-To: <20171107225604.GA26913@roeck-us.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,62 +25,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/08/2017 07:08 AM, Michael Ellerman wrote:
-> "Kirill A. Shutemov" <kirill@shutemov.name> writes:
-> 
->> On Tue, Nov 07, 2017 at 02:05:42PM +0100, Florian Weimer wrote:
->>> On 11/07/2017 12:44 PM, Kirill A. Shutemov wrote:
->>>> On Tue, Nov 07, 2017 at 12:26:12PM +0100, Florian Weimer wrote:
->>>>> On 11/07/2017 12:15 PM, Kirill A. Shutemov wrote:
->>>>>
->>>>>>> First of all, using addr and MAP_FIXED to develop our heuristic can
->>>>>>> never really give unchanged ABI. It's an in-band signal. brk() is a
->>>>>>> good example that steadily keeps incrementing address, so depending
->>>>>>> on malloc usage and address space randomization, you will get a brk()
->>>>>>> that ends exactly at 128T, then the next one will be >
->>>>>>> DEFAULT_MAP_WINDOW, and it will switch you to 56 bit address space.
->>>>>>
->>>>>> No, it won't. You will hit stack first.
->>>>>
->>>>> That's not actually true on POWER in some cases.  See the process maps I
->>>>> posted here:
->>>>>
->>>>>     <https://marc.info/?l=linuxppc-embedded&m=150988538106263&w=2>
->>>>
->>>> Hm? I see that in all three cases the [stack] is the last mapping.
->>>> Do I miss something?
->>>
->>> Hah, I had not noticed.  Occasionally, the order of heap and stack is
->>> reversed.  This happens in approximately 15% of the runs.
+
+Le 07/11/2017 à 23:56, Guenter Roeck a écrit :
+> On Tue, Nov 07, 2017 at 05:23:56PM +0100, Christophe Leroy wrote:
+>> The watchdog core includes a worker function which pings the
+>> watchdog until user app starts pinging it and which also
+>> pings it if the HW require more frequent pings.
+>> Use that function instead of the dedicated timer.
+>> In the mean time, we can allow the user to change the timeout.
 >>
->> Heh. I guess ASLR on Power is too fancy :)
+>> Then change the timeout module parameter to use seconds and
+>> use the watchdog_init_timeout() core function.
+>>
+>> On some HW (eg: the 8xx), SWCRR contains bits unrelated to the
+>> watchdog which have to be preserved upon write.
+>>
+>> This driver has nothing preventing the use of the magic close, so
+>> enable it.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   drivers/watchdog/mpc8xxx_wdt.c | 86 ++++++++++++++++++++----------------------
+>>   1 file changed, 40 insertions(+), 46 deletions(-)
+>>
+>> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+>> index 366e5c7e650b..c2ac4b6b1253 100644
+>> --- a/drivers/watchdog/mpc8xxx_wdt.c
+>> +++ b/drivers/watchdog/mpc8xxx_wdt.c
+>> @@ -22,7 +22,6 @@
+>>   #include <linux/fs.h>
+>>   #include <linux/init.h>
+>>   #include <linux/kernel.h>
+>> -#include <linux/timer.h>
+>>   #include <linux/of_address.h>
+>>   #include <linux/of_platform.h>
+>>   #include <linux/module.h>
+>> @@ -31,10 +30,13 @@
+>>   #include <linux/uaccess.h>
+>>   #include <sysdev/fsl_soc.h>
+>>   
+>> +#define WATCHDOG_TIMEOUT 10
+>> +
+>>   struct mpc8xxx_wdt {
+>>   	__be32 res0;
+>>   	__be32 swcrr; /* System watchdog control register */
+>>   #define SWCRR_SWTC 0xFFFF0000 /* Software Watchdog Time Count. */
+>> +#define SWCRR_SWF  0x00000008 /* Software Watchdog Freeze (mpc8xx). */
+>>   #define SWCRR_SWEN 0x00000004 /* Watchdog Enable bit. */
+>>   #define SWCRR_SWRI 0x00000002 /* Software Watchdog Reset/Interrupt Select bit.*/
+>>   #define SWCRR_SWPR 0x00000001 /* Software Watchdog Counter Prescale bit. */
+>> @@ -52,14 +54,15 @@ struct mpc8xxx_wdt_type {
+>>   struct mpc8xxx_wdt_ddata {
+>>   	struct mpc8xxx_wdt __iomem *base;
+>>   	struct watchdog_device wdd;
+>> -	struct timer_list timer;
+>>   	spinlock_t lock;
+>> +	int prescaler;
+>>   };
+>>   
+>> -static u16 timeout = 0xffff;
+>> +static u16 timeout;
+>>   module_param(timeout, ushort, 0);
+>>   MODULE_PARM_DESC(timeout,
+>> -	"Watchdog timeout in ticks. (0<timeout<65536, default=65535)");
+>> +	"Watchdog timeout in seconds. (1<timeout<65535, default="
+>> +	__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
+>>   
+>>   static bool reset = 1;
+>>   module_param(reset, bool, 0);
+>> @@ -80,31 +83,35 @@ static void mpc8xxx_wdt_keepalive(struct mpc8xxx_wdt_ddata *ddata)
+>>   	spin_unlock(&ddata->lock);
+>>   }
+>>   
+>> -static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+>> -{
+>> -	struct mpc8xxx_wdt_ddata *ddata = (void *)arg;
+>> -
+>> -	mpc8xxx_wdt_keepalive(ddata);
+>> -	/* We're pinging it twice faster than needed, just to be sure. */
+>> -	mod_timer(&ddata->timer, jiffies + HZ * ddata->wdd.timeout / 2);
+>> -}
+>> -
+>>   static int mpc8xxx_wdt_start(struct watchdog_device *w)
+>>   {
+>>   	struct mpc8xxx_wdt_ddata *ddata =
+>>   		container_of(w, struct mpc8xxx_wdt_ddata, wdd);
+>> -
+>> -	u32 tmp = SWCRR_SWEN | SWCRR_SWPR;
+>> +	u32 tmp;
+>> +	u32 timeout;
+>>   
+>>   	/* Good, fire up the show */
+>> +	tmp = in_be32(&ddata->base->swcrr);
+>> +	tmp &= ~(SWCRR_SWTC | SWCRR_SWF | SWCRR_SWEN | SWCRR_SWRI | SWCRR_SWPR);
+>> +	tmp |= SWCRR_SWEN | SWCRR_SWPR;
+>> +
+>>   	if (reset)
+>>   		tmp |= SWCRR_SWRI;
+>>   
+>> -	tmp |= timeout << 16;
+>> +	timeout = ddata->wdd.timeout * fsl_get_sys_freq() / ddata->prescaler;
+>> +	tmp |= min(timeout, 0xffffU) << 16;
+>>   
+>>   	out_be32(&ddata->base->swcrr, tmp);
+>>   
+>> -	del_timer_sync(&ddata->timer);
+>> +	tmp = in_be32(&ddata->base->swcrr);
+>> +	if (!(tmp & SWCRR_SWEN))
+>> +		return -EOPNOTSUPP;
+>> +
+>> +	ddata->wdd.max_hw_heartbeat_ms = ((tmp >> 16) * ddata->prescaler) /
+>> +					 (fsl_get_sys_freq() / 1000);
+>> +	ddata->wdd.min_timeout = ddata->wdd.max_hw_heartbeat_ms / 1000;
 > 
-> Fancy implies we're doing it on purpose :P
+> That is odd. Why set the minimum timeout period to the maximum hardware
+> timeout, rounded down to a full second ?
+
+Once the HW watchdog timer has been configured with a given timeout 
+value, it cannot be changed anymore. This means that any higher timeout 
+can be managed via the watchdog core worker function, but no timeout 
+below the one configured in HW can be used.
+
 > 
->> That's strange layout. It doesn't give that much (relatively speaking)
->> virtual address space for both stack and heap to grow.
+> Note that it is wrong to set the values for min_timeout and
+> max_hw_heartbeat_ms in the _start function; they should be set
+> in the probe function. The start function should also not update
+> ddata->wdd.timeout; that should happen in set_timeout if supported,
+> or in probe.
+
+The mpc8xxx HW watchdog can be (re)configured only once after startup, 
+after that it cannot be changed anymore. Therefore we have the following 
+cases to handle:
+1/ The HW watchdog is started at reset and not (re)configured yet.
+2/ The HW watchdog is no started at reset and not configured yet.
+3/ The HW watchdog is configured by the boot loader.
+
+Case 1/ The kernel has to poll it from the begining in accordance with 
+the default reset timeout. It can however reconfigure it once.
+Case 2/ The kernel has nothing to do until a user app want to start it.
+Case 3/ The kernel has to poll it from the begining iaw the configured 
+timeout. It cannot reconfigure it anymore.
+
+The only way for the kernel to know if we are in case 1/ or case 3/ is 
+to try and configure the HW watchdog: if the new configuration is taken 
+into account, it means we are in case 1/, otherwise it is case 3/
+
+The idea behind doing the configuration in the start function was:
+a/ to not start the watchdog before an app decide to do so in the case 
+where the HW watchdog is not already started.
+b/ to let the HW watchdog run with the reset timeout (which is usually 
+the max possible timeout) then provide an opportunity to get it reduced 
+to a lower value once the system is up and running.
+
+But it is probably also OK to just take into account the given timeout 
+in the probe, the core watchdog work function will do its job anyway. I 
+will rework it in that way.
+
+
 > 
-> I'm pretty sure it only happens when you're running an ELF interpreter
-> directly, because of Kees patch which changed the logic to load ELF
-> interpreters in the mmap region, vs PIE binaries which go to
-> ELF_ET_DYN_BASE. (eab09532d400 ("binfmt_elf: use ELF_ET_DYN_BASE only
-> for PIE"))
+>> +	if (ddata->wdd.timeout < ddata->wdd.min_timeout)
+>> +		ddata->wdd.timeout = ddata->wdd.min_timeout;
+>>   
+>>   	return 0;
+>>   }
+>> @@ -118,17 +125,8 @@ static int mpc8xxx_wdt_ping(struct watchdog_device *w)
+>>   	return 0;
+>>   }
+>>   
+>> -static int mpc8xxx_wdt_stop(struct watchdog_device *w)
+>> -{
+>> -	struct mpc8xxx_wdt_ddata *ddata =
+>> -		container_of(w, struct mpc8xxx_wdt_ddata, wdd);
+>> -
+>> -	mod_timer(&ddata->timer, jiffies);
+>> -	return 0;
+>> -}
+>> -
+>>   static struct watchdog_info mpc8xxx_wdt_info = {
+>> -	.options = WDIOF_KEEPALIVEPING,
+>> +	.options = WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE | WDIOF_SETTIMEOUT,
+>>   	.firmware_version = 1,
+>>   	.identity = "MPC8xxx",
+>>   };
+>> @@ -137,7 +135,6 @@ static struct watchdog_ops mpc8xxx_wdt_ops = {
+>>   	.owner = THIS_MODULE,
+>>   	.start = mpc8xxx_wdt_start,
+>>   	.ping = mpc8xxx_wdt_ping,
+>> -	.stop = mpc8xxx_wdt_stop,
+> 
+> That means the watchdog can not be stopped ?
 
- From that commit:
+That's correct, as you can see the stop function was previously just 
+(re)starting the polling timer. Now it is handled by the core watchdog work.
 
-+                   * There are effectively two types of ET_DYN
-+                   * binaries: programs (i.e. PIE: ET_DYN with INTERP)
-+                   * and loaders (ET_DYN without INTERP, since they
-+                   * _are_ the ELF interpreter). The loaders must
-
-Note that the comment is a bit misleading: statically linked PIE 
-binaries are ET_DYN without INTERP, too.
-
-So any oddity which is observable today with an explicitly ld.so 
-invocation only will gain more relevance once we get static PIE support 
-in user space because it will then affect regular applications, too. 
-(Well, statically linked ones.)  In this sense, process layouts which 
-cause premature brk failure or insufficient stack allocations are real bugs.
-
-Thanks,
-Florian
+> 
+>>   };
+>>   
+>>   static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>> @@ -148,7 +145,6 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>>   	struct mpc8xxx_wdt_ddata *ddata;
+>>   	u32 freq = fsl_get_sys_freq();
+>>   	bool enabled;
+>> -	unsigned int timeout_sec;
+>>   
+>>   	wdt_type = of_device_get_match_data(&ofdev->dev);
+>>   	if (!wdt_type)
+>> @@ -173,35 +169,34 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>>   	}
+>>   
+>>   	spin_lock_init(&ddata->lock);
+>> -	setup_timer(&ddata->timer, mpc8xxx_wdt_timer_ping,
+>> -		    (unsigned long)ddata);
+>>   
+>>   	ddata->wdd.info = &mpc8xxx_wdt_info,
+>>   	ddata->wdd.ops = &mpc8xxx_wdt_ops,
+>>   
+>> -	/* Calculate the timeout in seconds */
+>> -	timeout_sec = (timeout * wdt_type->prescaler) / freq;
+>> -
+>> -	ddata->wdd.timeout = timeout_sec;
+>> +	ddata->wdd.timeout = WATCHDOG_TIMEOUT;
+>> +	watchdog_init_timeout(&ddata->wdd, timeout, &ofdev->dev);
+>> +	ddata->prescaler = wdt_type->prescaler;
+>>   
+>>   	watchdog_set_nowayout(&ddata->wdd, nowayout);
+>>   
+>> +	/*
+>> +	 * If the watchdog was previously enabled or we're running on
+>> +	 * MPC8xxx, we should ping the wdt from the kernel until the
+>> +	 * userspace handles it.
+>> +	 */
+>> +	if (enabled) {
+>> +		mpc8xxx_wdt_start(&ddata->wdd);
+>> +		set_bit(WDOG_HW_RUNNING, &ddata->wdd.status);
+>> +	}
+>> +
+>>   	ret = watchdog_register_device(&ddata->wdd);
+>>   	if (ret) {
+>>   		pr_err("cannot register watchdog device (err=%d)\n", ret);
+>>   		return ret;
+>>   	}
+>>   
+>> -	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d (%d seconds)\n",
+>> -		reset ? "reset" : "interrupt", timeout, timeout_sec);
+>> -
+>> -	/*
+>> -	 * If the watchdog was previously enabled or we're running on
+>> -	 * MPC8xxx, we should ping the wdt from the kernel until the
+>> -	 * userspace handles it.
+>> -	 */
+>> -	if (enabled)
+>> -		mod_timer(&ddata->timer, jiffies);
+>> +	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
+>> +		reset ? "reset" : "interrupt", ddata->wdd.timeout);
+>>   
+>>   	platform_set_drvdata(ofdev, ddata);
+>>   	return 0;
+>> @@ -213,7 +208,6 @@ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
+>>   
+>>   	pr_crit("Watchdog removed, expect the %s soon!\n",
+>>   		reset ? "reset" : "machine check exception");
+>> -	del_timer_sync(&ddata->timer);
+>>   	watchdog_unregister_device(&ddata->wdd);
+>>   
+>>   	return 0;
+>> -- 
+>> 2.13.3
+>>
