@@ -1,33 +1,51 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <anthony.yznaga@oracle.com>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yXHhg4TRhzDrCr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2017 07:19:46 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vA8KIkpK118885
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Nov 2017 15:19:44 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e48ts03md-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Nov 2017 15:19:43 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 8 Nov 2017 13:19:43 -0700
-Date: Wed, 8 Nov 2017 12:19:38 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Jiri Olsa <jolsa@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] Please pull JSON files for POWR9 PMU events
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yXJJl5nlxzDrCr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Nov 2017 07:47:35 +1100 (AEDT)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ vA8KlXTL010295
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Nov 2017 20:47:33 GMT
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20171108201938.GA10985@us.ibm.com>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Subject: Re: [PATCH v9 00/10] Application Data Integrity feature introduced by
+ SPARC M7
+From: Anthony Yznaga <anthony.yznaga@oracle.com>
+In-Reply-To: <cover.1508364660.git.khalid.aziz@oracle.com>
+Date: Wed, 8 Nov 2017 12:44:45 -0800
+Cc: David Miller <davem@davemloft.net>, dave.hansen@linux.intel.com,
+ akpm@linux-foundation.org, 0x7f454c46@gmail.com, aarcange@redhat.com,
+ ak@linux.intel.com, Allen Pais <allen.pais@oracle.com>,
+ aneesh.kumar@linux.vnet.ibm.com, arnd@arndb.de,
+ Atish Patra <atish.patra@oracle.com>, benh@kernel.crashing.org,
+ Bob Picco <bob.picco@oracle.com>, bsingharora@gmail.com,
+ chris.hyser@oracle.com, cmetcalf@mellanox.com, corbet@lwn.net,
+ dan.carpenter@oracle.com, dave.jiang@intel.com, dja@axtens.net,
+ Eric Saint Etienne <eric.saint.etienne@oracle.com>,
+ geert@linux-m68k.org, hannes@cmpxchg.org, heiko.carstens@de.ibm.com,
+ hpa@zytor.com, hughd@google.com, imbrenda@linux.vnet.ibm.com,
+ jack@suse.cz, jmarchan@redhat.com, jroedel@suse.de,
+ Khalid Aziz <khalid@gonehiking.org>, kirill.shutemov@linux.intel.com,
+ Liam.Howlett@oracle.com, lstoakes@gmail.com, mgorman@suse.de,
+ mhocko@suse.com, mike.kravetz@oracle.com, minchan@kernel.org,
+ mingo@redhat.com, mpe@ellerman.id.au, nitin.m.gupta@oracle.com,
+ pasha.tatashin@oracle.com, paul.gortmaker@windriver.com,
+ paulus@samba.org, peterz@infradead.org, rientjes@google.com,
+ ross.zwisler@linux.intel.com, shli@fb.com, steven.sistare@oracle.com,
+ tglx@linutronix.de, thomas.tai@oracle.com, tklauser@distanz.ch,
+ tom.hromatka@oracle.com, vegard.nossum@oracle.com,
+ vijay.ac.kumar@oracle.com, viro@zeniv.linux.org.uk,
+ willy@infradead.org, x86@kernel.org, ying.huang@intel.com,
+ zhongjiang@huawei.com, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
+Message-Id: <CF004B9F-A3B6-4A44-AD9E-EC01D6B740BB@oracle.com>
+References: <cover.1508364660.git.khalid.aziz@oracle.com>
+To: Khalid Aziz <khalid.aziz@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +55,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnaldo,
 
-Please pull an update to the JSON files for POWER9 PMU events.
+> On Oct 20, 2017, at 9:57 AM, Khalid Aziz <khalid.aziz@oracle.com> wrote:
+> 
+> Patch 9/10
+>  When a processor supports additional metadata on memory pages, that
+>  additional metadata needs to be copied to new memory pages when those
+>  pages are moved. This patch allows architecture specific code to
+>  replace the default copy_highpage() routine with arch specific
+>  version that copies the metadata as well besides the data on the page.
+> 
+> Patch 10/10
+>  This patch adds support for a user space task to enable ADI and enable
+>  tag checking for subsets of its address space. As part of enabling
+>  this feature, this patch adds to support manipulation of precise
+>  exception for memory corruption detection, adds code to save and
+>  restore tags on page swap and migration, and adds code to handle ADI
+>  tagged addresses for DMA.
+> 
+> Changelog v9:
+> 
+> 	- Patch 1/10: No changes
+> 	- Patch 2/10: No changes
+> 	- Patch 3/10: No changes
+> 	- Patch 4/10: No changes
+> 	- Patch 5/10: No changes
+> 	- Patch 6/10: No changes
+> 	- Patch 7/10: No changes
+> 	- Patch 8/10: No changes
+> 	- Patch 9/10: New patch
+> 	- Patch 10/10: Patch 9 from v8. Added code to copy ADI tags when
+> 	  pages are migrated. Updated code to detect overflow and underflow
+> 	  of addresses when allocating tag storage.
 
-The following changes since commit 148b43a3540bf25875bb5ab695a446950dc8d559:
+Patch 09/10 wasn't delivered to me, but I reviewed the copy on lkml.org.
 
-  tools headers: Synchronize kernel ABI headers wrt SPDX tags (2017-11-07 13:41:35 -0300)
+The changes looks good, but there is one remaining functional issue
+which I've pointed out twice now in previous comments that still has not
+been addressed:
 
-are available in the git repository at:
+The code paths through rtrap that overwrite PSTATE need to also set
+PSTATE.mcde=1 since additional kernel work done after PSTATE is
+overwritten could access ADI-enabled user memory and depend on version
+checking being enabled.  For example, rtrap may call SCHEDULE_USER and
+resume execution in another thread.  Without a fix, the resumed thread
+will run with PSTATE.mcde=0 until it completes a return to user mode or
+is rescheduled on a CPU where PSTATE.mcde is set.  If the thread
+accesses ADI-enabled user memory with a versioned address (e.g. to
+complete some I/O) in that timeframe then the access will fail.
 
-  https://github.com/sukadev/linux p9-json-v4
+Here is what you need to fix it:
 
-for you to fetch changes up to 4afb062d7d306bf56dbae9b5291e3515ccfede4c:
-
-  perf vendor events powerpc: Update POWER9 events (2017-11-08 18:42:03 -0500)
-
-----------------------------------------------------------------
-Sukadev Bhattiprolu (1):
-      perf vendor events powerpc: Update POWER9 events
-
- .../perf/pmu-events/arch/powerpc/power9/cache.json |   5 -
- .../pmu-events/arch/powerpc/power9/frontend.json   |   7 +-
- .../pmu-events/arch/powerpc/power9/marked.json     |  27 +-
- .../perf/pmu-events/arch/powerpc/power9/other.json | 276 ++++++---------------
- .../pmu-events/arch/powerpc/power9/pipeline.json   |  14 +-
- tools/perf/pmu-events/arch/powerpc/power9/pmc.json |   2 +-
- .../arch/powerpc/power9/translation.json           |   5 -
- 7 files changed, 88 insertions(+), 248 deletions(-)
+diff --git a/arch/sparc/kernel/rtrap_64.S b/arch/sparc/kernel/rtrap_64.S
+index dff86fa..07c82a7 100644
+--- a/arch/sparc/kernel/rtrap_64.S
++++ b/arch/sparc/kernel/rtrap_64.S
+@@ -24,13 +24,21 @@
+ 		.align			32
+ __handle_preemption:
+ 		call			SCHEDULE_USER
+-		 wrpr			%g0, RTRAP_PSTATE, %pstate
++661:		 wrpr			%g0, RTRAP_PSTATE, %pstate
++		.section		.sun_m7_1insn_patch, "ax"
++		.word			661b
++		wrpr			%g0, RTRAP_PSTATE | PSTATE_MCDE, %pstate
++		.previous
+ 		ba,pt			%xcc, __handle_preemption_continue
+ 		 wrpr			%g0, RTRAP_PSTATE_IRQOFF, %pstate
+ 
+ __handle_user_windows:
+ 		call			fault_in_user_windows
+-		 wrpr			%g0, RTRAP_PSTATE, %pstate
++661:		 wrpr			%g0, RTRAP_PSTATE, %pstate
++		.section		.sun_m7_1insn_patch, "ax"
++		.word			661b
++		wrpr			%g0, RTRAP_PSTATE | PSTATE_MCDE, %pstate
++		.previous
+ 		ba,pt			%xcc, __handle_preemption_continue
+ 		 wrpr			%g0, RTRAP_PSTATE_IRQOFF, %pstate
+ 
+@@ -47,7 +55,11 @@ __handle_signal:
+ 		add			%sp, PTREGS_OFF, %o0
+ 		mov			%l0, %o2
+ 		call			do_notify_resume
+-		 wrpr			%g0, RTRAP_PSTATE, %pstate
++661:		 wrpr			%g0, RTRAP_PSTATE, %pstate
++		.section		.sun_m7_1insn_patch, "ax"
++		.word			661b
++		wrpr			%g0, RTRAP_PSTATE | PSTATE_MCDE, %pstate
++		.previous
+ 		wrpr			%g0, RTRAP_PSTATE_IRQOFF, %pstate
+ 
+ 		/* Signal delivery can modify pt_regs tstate, so we must
+diff --git a/arch/sparc/kernel/urtt_fill.S b/arch/sparc/kernel/urtt_fill.S
+index 364af32..3a7f2d8 100644
+--- a/arch/sparc/kernel/urtt_fill.S
++++ b/arch/sparc/kernel/urtt_fill.S
+@@ -49,7 +49,11 @@ user_rtt_fill_fixup_common:
+ 		SET_GL(0)
+ 		.previous
+ 
+-		wrpr	%g0, RTRAP_PSTATE, %pstate
++661:		wrpr	%g0, RTRAP_PSTATE, %pstate
++		.section		.sun_m7_1insn_patch, "ax"
++		.word			661b
++		wrpr	%g0, RTRAP_PSTATE | PSTATE_MCDE, %pstate
++		.previous
+ 
+ 		mov	%l1, %g6
+ 		ldx	[%g6 + TI_TASK], %g4
