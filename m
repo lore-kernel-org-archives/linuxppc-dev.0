@@ -1,36 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga07.intel.com (unknown [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYRr32KGSzDrKG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 04:30:09 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAAHTcTN012290
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 12:30:07 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e5dqy95uh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 12:30:07 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 10 Nov 2017 17:30:04 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s/slice: Use addr limit when computing slice
- mask
-In-Reply-To: <87zi7uo4c9.fsf@concordia.ellerman.id.au>
-References: <20171110045507.30147-1-aneesh.kumar@linux.vnet.ibm.com>
- <87zi7uo4c9.fsf@concordia.ellerman.id.au>
-Date: Fri, 10 Nov 2017 22:59:57 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87mv3urqi2.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYSLj0QRNzDrKr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 04:53:16 +1100 (AEDT)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-pci@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 1/2] powerpc/pci: convert to use for_each_pci_bridge()
+ helper
+Date: Fri, 10 Nov 2017 19:52:29 +0200
+Message-Id: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,146 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+...which makes code slightly cleaner.
 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->
->> While computing slice mask for the free area we need make sure we only search
->> in the addr limit applicable for this mmap. We update the slb_addr_limit
->> after we request for a mmap above 128TB. But the following mmap request
->> with hint addr below 128TB should still limit its search to below 128TB. ie.
->> we should not use slb_addr_limit to compute slice mask in this case. Instead,
->> we should derive high addr limit based on the mmap hint addr value.
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/slice.c | 34 ++++++++++++++++++++++------------
->>  1 file changed, 22 insertions(+), 12 deletions(-)
->
-> How does this relate to the fixes Nick has sent?
+Requires: d43f59ce6c50 ("PCI: Add for_each_pci_bridge() helper")
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ arch/powerpc/kernel/pci-hotplug.c | 7 ++-----
+ arch/powerpc/kernel/pci_of_scan.c | 7 ++-----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
-This patch is on top of the patch series sent by Nick. Without this
-patch we will allocate memory across the 128TB range if hint_addr <
-128TB but hint_addr + len is more. Inorder to recreate this issue we
-will have to map stack below. Hence one won't hit the error in general
-case.
-
-
-
->
-> cheers
->
->> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
->> index 564fff06f5c1..23ec2c5e3b78 100644
->> --- a/arch/powerpc/mm/slice.c
->> +++ b/arch/powerpc/mm/slice.c
->> @@ -122,7 +122,8 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
->>  	return !slice_area_is_free(mm, start, end - start);
->>  }
->>  
->> -static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret)
->> +static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
->> +				unsigned long high_limit)
->>  {
->>  	unsigned long i;
->>  
->> @@ -133,15 +134,16 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret)
->>  		if (!slice_low_has_vma(mm, i))
->>  			ret->low_slices |= 1u << i;
->>  
->> -	if (mm->context.slb_addr_limit <= SLICE_LOW_TOP)
->> +	if (high_limit <= SLICE_LOW_TOP)
->>  		return;
->>  
->> -	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++)
->> +	for (i = 0; i < GET_HIGH_SLICE_INDEX(high_limit); i++)
->>  		if (!slice_high_has_vma(mm, i))
->>  			__set_bit(i, ret->high_slices);
->>  }
->>  
->> -static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret)
->> +static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret,
->> +				unsigned long high_limit)
->>  {
->>  	unsigned char *hpsizes;
->>  	int index, mask_index;
->> @@ -156,8 +158,11 @@ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_ma
->>  		if (((lpsizes >> (i * 4)) & 0xf) == psize)
->>  			ret->low_slices |= 1u << i;
->>  
->> +	if (high_limit <= SLICE_LOW_TOP)
->> +		return;
->> +
->>  	hpsizes = mm->context.high_slices_psize;
->> -	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++) {
->> +	for (i = 0; i < GET_HIGH_SLICE_INDEX(high_limit); i++) {
->>  		mask_index = i & 0x1;
->>  		index = i >> 1;
->>  		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
->> @@ -169,6 +174,10 @@ static int slice_check_fit(struct mm_struct *mm,
->>  			   struct slice_mask mask, struct slice_mask available)
->>  {
->>  	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
->> +	/*
->> +	 * Make sure we just do bit compare only to the max
->> +	 * addr limit and not the full bit map size.
->> +	 */
->>  	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
->>  
->>  	bitmap_and(result, mask.high_slices,
->> @@ -472,7 +481,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->>  	/* First make up a "good" mask of slices that have the right size
->>  	 * already
->>  	 */
->> -	slice_mask_for_size(mm, psize, &good_mask);
->> +	slice_mask_for_size(mm, psize, &good_mask, high_limit);
->>  	slice_print_mask(" good_mask", good_mask);
->>  
->>  	/*
->> @@ -497,7 +506,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->>  #ifdef CONFIG_PPC_64K_PAGES
->>  	/* If we support combo pages, we can allow 64k pages in 4k slices */
->>  	if (psize == MMU_PAGE_64K) {
->> -		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
->> +		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask, high_limit);
->>  		if (fixed)
->>  			slice_or_mask(&good_mask, &compat_mask);
->>  	}
->> @@ -530,11 +539,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->>  			return newaddr;
->>  		}
->>  	}
->> -
->> -	/* We don't fit in the good mask, check what other slices are
->> +	/*
->> +	 * We don't fit in the good mask, check what other slices are
->>  	 * empty and thus can be converted
->>  	 */
->> -	slice_mask_for_free(mm, &potential_mask);
->> +	slice_mask_for_free(mm, &potential_mask, high_limit);
->>  	slice_or_mask(&potential_mask, &good_mask);
->>  	slice_print_mask(" potential", potential_mask);
->>  
->> @@ -744,17 +753,18 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
->>  {
->>  	struct slice_mask mask, available;
->>  	unsigned int psize = mm->context.user_psize;
->> +	unsigned long high_limit = mm->context.slb_addr_limit;
->>  
->>  	if (radix_enabled())
->>  		return 0;
->>  
->>  	slice_range_to_mask(addr, len, &mask);
->> -	slice_mask_for_size(mm, psize, &available);
->> +	slice_mask_for_size(mm, psize, &available, high_limit);
->>  #ifdef CONFIG_PPC_64K_PAGES
->>  	/* We need to account for 4k slices too */
->>  	if (psize == MMU_PAGE_64K) {
->>  		struct slice_mask compat_mask;
->> -		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
->> +		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask, high_limit);
->>  		slice_or_mask(&available, &compat_mask);
->>  	}
->>  #endif
->> -- 
->> 2.13.6
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index 2d71269e7dc1..741f47295188 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -134,11 +134,8 @@ void pci_hp_add_devices(struct pci_bus *bus)
+ 		pcibios_setup_bus_devices(bus);
+ 		max = bus->busn_res.start;
+ 		for (pass = 0; pass < 2; pass++) {
+-			list_for_each_entry(dev, &bus->devices, bus_list) {
+-				if (pci_is_bridge(dev))
+-					max = pci_scan_bridge(bus, dev,
+-							      max, pass);
+-			}
++			for_each_pci_bridge(dev, bus)
++				max = pci_scan_bridge(bus, dev, max, pass);
+ 		}
+ 	}
+ 	pcibios_finish_adding_to_bus(bus);
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 0d790f8432d2..8bdaa2a6fa62 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -369,11 +369,8 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
+ 	pcibios_setup_bus_devices(bus);
+ 
+ 	/* Now scan child busses */
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		if (pci_is_bridge(dev)) {
+-			of_scan_pci_bridge(dev);
+-		}
+-	}
++	for_each_pci_bridge(dev, bus)
++		of_scan_pci_bridge(dev);
+ }
+ 
+ /**
+-- 
+2.14.2
