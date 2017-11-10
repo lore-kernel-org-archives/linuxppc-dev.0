@@ -1,22 +1,36 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <leoyang.li@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0072.outbound.protection.outlook.com [104.47.1.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYXS56QZyzDrKt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 07:58:13 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 207so5450425pgc.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 12:58:13 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Fri, 10 Nov 2017 12:58:07 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org
-Subject: Re: [PATCH v2] watchdog: mpc8xxx: use the core worker function
-Message-ID: <20171110205807.GA4348@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYXy148bBzDrKr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 08:20:39 +1100 (AEDT)
+From: Leo Li <leoyang.li@nxp.com>
+To: Kishon Vijay Abraham I <kishon@ti.com>, Xiaowei Bao <xiaowei.bao@nxp.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "will.deacon@arm.com" <will.deacon@arm.com>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ Madalin-cristian Bucur <madalin.bucur@nxp.com>, Sumit Garg
+ <sumit.garg@nxp.com>, "Y.b. Lu" <yangbo.lu@nxp.com>, Andy Tang
+ <andy.tang@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
+ "pbrobinson@gmail.com" <pbrobinson@gmail.com>, "songxiaowei@hisilicon.com"
+ <songxiaowei@hisilicon.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "Z.q. Hou" <zhiqiang.hou@nxp.com>, "Mingkai
+ Hu" <mingkai.hu@nxp.com>, "M.h. Lian" <minghuan.lian@nxp.com>
+Subject: RE: [PATCHv4 1/3] ARMv8: dts: ls1046a: add the property of IB and OB
+Date: Fri, 10 Nov 2017 21:20:31 +0000
+Message-ID: <AM4PR0401MB16999BD34AFBB1362BD32EBD8F540@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+References: <20171110034847.17891-1-xiaowei.bao@nxp.com>
+ <20171110034847.17891-2-xiaowei.bao@nxp.com>
+ <20b8f1d2-f817-469f-afbf-66f25d6f8c46@ti.com>
+In-Reply-To: <20b8f1d2-f817-469f-afbf-66f25d6f8c46@ti.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,227 +40,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 08, 2017 at 03:39:44PM +0100, Christophe Leroy wrote:
-> The watchdog core includes a worker function which pings the
-> watchdog until user app starts pinging it and which also
-> pings it if the HW require more frequent pings.
-> Use that function instead of the dedicated timer.
-> In the mean time, we can allow the user to change the timeout.
-> 
-> Then change the timeout module parameter to use seconds and
-> use the watchdog_init_timeout() core function.
-> 
-> On some HW (eg: the 8xx), SWCRR contains bits unrelated to the
-> watchdog which have to be preserved upon write.
-> 
-> This driver has nothing preventing the use of the magic close, so
-> enable it.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Couple of comments, but unrelated to this patch.
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> -----Original Message-----
+> From: Kishon Vijay Abraham I [mailto:kishon@ti.com]
+> Sent: Friday, November 10, 2017 12:22 AM
+> To: Xiaowei Bao <xiaowei.bao@nxp.com>; robh+dt@kernel.org;
+> mark.rutland@arm.com; catalin.marinas@arm.com; will.deacon@arm.com;
+> bhelgaas@google.com; shawnguo@kernel.org; Madalin-cristian Bucur
+> <madalin.bucur@nxp.com>; Sumit Garg <sumit.garg@nxp.com>; Y.b. Lu
+> <yangbo.lu@nxp.com>; hongtao.jia@nxp.com; Andy Tang
+> <andy.tang@nxp.com>; Leo Li <leoyang.li@nxp.com>; jingoohan1@gmail.com;
+> pbrobinson@gmail.com; songxiaowei@hisilicon.com;
+> devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
+> kernel@vger.kernel.org; linux-pci@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Z.q. Hou <zhiqiang.hou@nxp.com>; Mingkai Hu
+> <mingkai.hu@nxp.com>; M.h. Lian <minghuan.lian@nxp.com>
+> Subject: Re: [PATCHv4 1/3] ARMv8: dts: ls1046a: add the property of IB an=
+d OB
+>=20
+> Hi Bao,
+>=20
+> On Friday 10 November 2017 09:18 AM, Bao Xiaowei wrote:
+> > Add the property of inbound and outbound windows number for ep driver.
+> >
+> > Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
+> > Acked-by: Minghuan Lian <minghuan.Lian@nxp.com>
+> > ---
+> >  v2:
+> >  - no change
+> >  v3:
+> >  - modify the commit message
+> >  v4:
+> >  - no change
+> >
+> >  arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+>=20
+> $subject should start with something like
+> arm64: dts: ls1046a: **
+> >
+> > diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > index 06b5e12d04d8..f8332669663c 100644
+> > --- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > +++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > @@ -674,6 +674,8 @@
+> >  			device_type =3D "pci";
+> >  			dma-coherent;
+> >  			num-lanes =3D <4>;
+> > +			num-ib-windows =3D <6>;
+> > +			num-ob-windows =3D <6>;
+>=20
+> EP specific properties shouldn't be added in RC dt node. Ideally you shou=
+ld have
+> a separate dt node for RC and EP.
 
-> ---
->  v2: set ddata->wdd.max_hw_heartbeat_ms and ddata->wdd.min_timeout
->      in probe instead of start
-> 
->  drivers/watchdog/mpc8xxx_wdt.c | 84 +++++++++++++++++++-----------------------
->  1 file changed, 38 insertions(+), 46 deletions(-)
-> 
-> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-> index 366e5c7e650b..aca2d6323f8a 100644
-> --- a/drivers/watchdog/mpc8xxx_wdt.c
-> +++ b/drivers/watchdog/mpc8xxx_wdt.c
-> @@ -22,7 +22,6 @@
->  #include <linux/fs.h>
->  #include <linux/init.h>
->  #include <linux/kernel.h>
-> -#include <linux/timer.h>
->  #include <linux/of_address.h>
->  #include <linux/of_platform.h>
->  #include <linux/module.h>
-> @@ -31,10 +30,13 @@
->  #include <linux/uaccess.h>
+It is a single PCIe controller which can be configured to either RC mode or=
+ EP mode.  Wouldn't it conflict with the device tree principles to have two=
+ device tree nodes for the same PCIe controller?  And obviously the two mod=
+es cannot be used at the same time so we cannot have two drivers both probe=
+ on the same hardware.
 
-Not needed.
-
->  #include <sysdev/fsl_soc.h>
->  
-> +#define WATCHDOG_TIMEOUT 10
-> +
->  struct mpc8xxx_wdt {
->  	__be32 res0;
->  	__be32 swcrr; /* System watchdog control register */
->  #define SWCRR_SWTC 0xFFFF0000 /* Software Watchdog Time Count. */
-> +#define SWCRR_SWF  0x00000008 /* Software Watchdog Freeze (mpc8xx). */
->  #define SWCRR_SWEN 0x00000004 /* Watchdog Enable bit. */
->  #define SWCRR_SWRI 0x00000002 /* Software Watchdog Reset/Interrupt Select bit.*/
->  #define SWCRR_SWPR 0x00000001 /* Software Watchdog Counter Prescale bit. */
-> @@ -52,14 +54,15 @@ struct mpc8xxx_wdt_type {
->  struct mpc8xxx_wdt_ddata {
->  	struct mpc8xxx_wdt __iomem *base;
->  	struct watchdog_device wdd;
-> -	struct timer_list timer;
->  	spinlock_t lock;
-
-Not needed (the watchdog core handles locking).
-
-> +	u16 swtc;
->  };
->  
-> -static u16 timeout = 0xffff;
-> +static u16 timeout;
->  module_param(timeout, ushort, 0);
->  MODULE_PARM_DESC(timeout,
-> -	"Watchdog timeout in ticks. (0<timeout<65536, default=65535)");
-> +	"Watchdog timeout in seconds. (1<timeout<65535, default="
-> +	__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
->  
->  static bool reset = 1;
->  module_param(reset, bool, 0);
-> @@ -80,31 +83,27 @@ static void mpc8xxx_wdt_keepalive(struct mpc8xxx_wdt_ddata *ddata)
->  	spin_unlock(&ddata->lock);
->  }
->  
-> -static void mpc8xxx_wdt_timer_ping(unsigned long arg)
-> -{
-> -	struct mpc8xxx_wdt_ddata *ddata = (void *)arg;
-> -
-> -	mpc8xxx_wdt_keepalive(ddata);
-> -	/* We're pinging it twice faster than needed, just to be sure. */
-> -	mod_timer(&ddata->timer, jiffies + HZ * ddata->wdd.timeout / 2);
-> -}
-> -
->  static int mpc8xxx_wdt_start(struct watchdog_device *w)
->  {
->  	struct mpc8xxx_wdt_ddata *ddata =
->  		container_of(w, struct mpc8xxx_wdt_ddata, wdd);
-> -
-> -	u32 tmp = SWCRR_SWEN | SWCRR_SWPR;
-> +	u32 tmp = in_be32(&ddata->base->swcrr);
->  
->  	/* Good, fire up the show */
-> +	tmp &= ~(SWCRR_SWTC | SWCRR_SWF | SWCRR_SWEN | SWCRR_SWRI | SWCRR_SWPR);
-> +	tmp |= SWCRR_SWEN | SWCRR_SWPR | (ddata->swtc << 16);
-> +
->  	if (reset)
->  		tmp |= SWCRR_SWRI;
->  
-> -	tmp |= timeout << 16;
-> -
->  	out_be32(&ddata->base->swcrr, tmp);
->  
-> -	del_timer_sync(&ddata->timer);
-> +	tmp = in_be32(&ddata->base->swcrr);
-> +	if (!(tmp & SWCRR_SWEN))
-> +		return -EOPNOTSUPP;
-> +
-> +	ddata->swtc = tmp >> 16;
-> +	set_bit(WDOG_HW_RUNNING, &ddata->wdd.status);
->  
->  	return 0;
->  }
-> @@ -118,17 +117,8 @@ static int mpc8xxx_wdt_ping(struct watchdog_device *w)
->  	return 0;
->  }
->  
-> -static int mpc8xxx_wdt_stop(struct watchdog_device *w)
-> -{
-> -	struct mpc8xxx_wdt_ddata *ddata =
-> -		container_of(w, struct mpc8xxx_wdt_ddata, wdd);
-> -
-> -	mod_timer(&ddata->timer, jiffies);
-> -	return 0;
-> -}
-> -
->  static struct watchdog_info mpc8xxx_wdt_info = {
-> -	.options = WDIOF_KEEPALIVEPING,
-> +	.options = WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE | WDIOF_SETTIMEOUT,
->  	.firmware_version = 1,
->  	.identity = "MPC8xxx",
->  };
-> @@ -137,7 +127,6 @@ static struct watchdog_ops mpc8xxx_wdt_ops = {
->  	.owner = THIS_MODULE,
->  	.start = mpc8xxx_wdt_start,
->  	.ping = mpc8xxx_wdt_ping,
-> -	.stop = mpc8xxx_wdt_stop,
->  };
->  
->  static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
-> @@ -148,7 +137,6 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
->  	struct mpc8xxx_wdt_ddata *ddata;
->  	u32 freq = fsl_get_sys_freq();
->  	bool enabled;
-> -	unsigned int timeout_sec;
->  
->  	wdt_type = of_device_get_match_data(&ofdev->dev);
->  	if (!wdt_type)
-> @@ -173,27 +161,17 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
->  	}
->  
->  	spin_lock_init(&ddata->lock);
-> -	setup_timer(&ddata->timer, mpc8xxx_wdt_timer_ping,
-> -		    (unsigned long)ddata);
->  
->  	ddata->wdd.info = &mpc8xxx_wdt_info,
->  	ddata->wdd.ops = &mpc8xxx_wdt_ops,
->  
-> -	/* Calculate the timeout in seconds */
-> -	timeout_sec = (timeout * wdt_type->prescaler) / freq;
-> -
-> -	ddata->wdd.timeout = timeout_sec;
-> +	ddata->wdd.timeout = WATCHDOG_TIMEOUT;
-> +	watchdog_init_timeout(&ddata->wdd, timeout, &ofdev->dev);
->  
->  	watchdog_set_nowayout(&ddata->wdd, nowayout);
->  
-> -	ret = watchdog_register_device(&ddata->wdd);
-> -	if (ret) {
-> -		pr_err("cannot register watchdog device (err=%d)\n", ret);
-> -		return ret;
-> -	}
-> -
-> -	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d (%d seconds)\n",
-> -		reset ? "reset" : "interrupt", timeout, timeout_sec);
-> +	ddata->swtc = min(ddata->wdd.timeout * freq / wdt_type->prescaler,
-> +			  0xffffU);
->  
->  	/*
->  	 * If the watchdog was previously enabled or we're running on
-> @@ -201,7 +179,22 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
->  	 * userspace handles it.
->  	 */
->  	if (enabled)
-> -		mod_timer(&ddata->timer, jiffies);
-> +		mpc8xxx_wdt_start(&ddata->wdd);
-> +
-> +	ddata->wdd.max_hw_heartbeat_ms = (ddata->swtc * wdt_type->prescaler) /
-> +					 (freq / 1000);
-> +	ddata->wdd.min_timeout = ddata->wdd.max_hw_heartbeat_ms / 1000;
-> +	if (ddata->wdd.timeout < ddata->wdd.min_timeout)
-> +		ddata->wdd.timeout = ddata->wdd.min_timeout;
-> +
-> +	ret = watchdog_register_device(&ddata->wdd);
-> +	if (ret) {
-> +		pr_err("cannot register watchdog device (err=%d)\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
-> +		reset ? "reset" : "interrupt", ddata->wdd.timeout);
->  
->  	platform_set_drvdata(ofdev, ddata);
->  	return 0;
-> @@ -213,7 +206,6 @@ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
->  
->  	pr_crit("Watchdog removed, expect the %s soon!\n",
->  		reset ? "reset" : "machine check exception");
-> -	del_timer_sync(&ddata->timer);
->  	watchdog_unregister_device(&ddata->wdd);
->  
->  	return 0;
-> -- 
-> 2.13.3
-> 
+Regards,
+Leo
