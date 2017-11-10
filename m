@@ -2,30 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYFZ06YhFzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 20:47:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYHMl6jR6zDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 22:08:35 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Balbir Singh <bsingharora@gmail.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- live-patching@vger.kernel.org, Torsten Duwe <duwe@lst.de>,
- Jessica Yu <jeyu@kernel.org>, Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-In-Reply-To: <20171110032823.nnpqsrrfwr6ye4uc@treble>
-References: <20171031153004.GA31864@lst.de>
- <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
- <20171031183959.GA4313@lst.de> <20171107045419.aozlfdo7tpnubz72@treble>
- <8760am4hd6.fsf@concordia.ellerman.id.au> <20171107113105.GA19204@lst.de>
- <20171107145233.lmlg5lkfcczkxj4d__32032.512050546$1510066460$gmane$org@treble>
- <1510225685.pzdd3dgj9m.naveen@linux.ibm.com>
- <20171109151955.gl3z3l2ary4ayj7b@treble>
- <CAKTCnznuZFHgVjjnx+gBAk3RSenxS=PJLFBsxOq4Zzw=ru=HMg@mail.gmail.com>
- <20171110032823.nnpqsrrfwr6ye4uc@treble>
-Date: Fri, 10 Nov 2017 20:47:19 +1100
-Message-ID: <87wp2yo47s.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 1/3] powerpc/powernv: Always stop secondaries before
+ reboot/shutdown
+In-Reply-To: <20171023080507.21974-2-npiggin@gmail.com>
+References: <20171023080507.21974-1-npiggin@gmail.com>
+ <20171023080507.21974-2-npiggin@gmail.com>
+Date: Fri, 10 Nov 2017 22:08:32 +1100
+Message-ID: <87tvy2o0gf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,28 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh Poimboeuf <jpoimboe@redhat.com> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Fri, Nov 10, 2017 at 01:06:25PM +1100, Balbir Singh wrote:
->> On Fri, Nov 10, 2017 at 2:19 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> > FWIW, I think it won't matter anyway.  I'm currently pursuing the option
->> > of inserting nops after local calls, because it has less runtime
->> > complexity than using a stub.
->> >
->> > I think I've figured out a way to do it with a GCC plugin, but if that
->> > doesn't work I'll try the asm listing sed approach suggested by Michael.
->> >
->> 
->> A plugin that runs for the new kernel with the patch? Just for
->> specific files involved in the patch?
+> Currently powernv reboot and shutdown requests just leave secondaries
+> to do their own things. This is undesirable because they can trigger
+> any number of watchdogs while waiting for reboot, but also we don't
+> know what else they might be doing, or they might be stuck somewhere
+> causing trouble.
 >
-> The plugin will affect the code generation of all functions in the patch
-> module.  So all calls in all replacement functions will have the nops.
+> The opal scheduled flash update code already ran into watchdog problems
+> due to flashing taking a long time, but it's possible for regular
+> reboots to trigger problems too (this is with watchdog_thresh set to 1,
+> but I have seen it with watchdog_thresh at the default value once too):
 >
-> Here's a prototype (not yet fully tested):
+>   reboot: Restarting system
+>   [  360.038896709,5] OPAL: Reboot request...
+>   Watchdog CPU:0 Hard LOCKUP
+>   Watchdog CPU:44 detected Hard LOCKUP other CPUS:16
+>   Watchdog CPU:16 Hard LOCKUP
+>   watchdog: BUG: soft lockup - CPU#16 stuck for 3s! [swapper/16:0]
 >
->   https://github.com/jpoimboe/kpatch/blob/TODO-ppc-fix/kpatch-build/gcc-plugins/ppc64le-plugin.c
+> So remove the special case for flash update, and unconditionally do
+> smp_send_stop before rebooting.
+>
+> Return the CPUs to Linux stop loops rather than OPAL. The reason for
+> this is that the path to firmware is longer, and the CPUs may have
+> been interrupted from firmware, which may cause problems to re-enter
+> it. It's better to put them into a simple spin loop to maximize the
+> chance of a successful reboot.
 
-Nice.
+I always assumed we had to send the CPUs back to OPAL for the flashing
+procedure. Is it OK to leave them in Linux?
 
 cheers
