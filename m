@@ -1,32 +1,22 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYX3J1hbczDrLQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 07:40:11 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAAKe8fZ003904
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 15:40:09 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e5dhj9ty1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 15:40:09 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 10 Nov 2017 20:40:07 -0000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/perf: Fix IMC_MAX_PMU macro
-Date: Sat, 11 Nov 2017 02:09:49 +0530
-In-Reply-To: <1510346389-16505-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1510346389-16505-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1510346389-16505-2-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYXS56QZyzDrKt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 07:58:13 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id 207so5450425pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 12:58:13 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Fri, 10 Nov 2017 12:58:07 -0800
+From: Guenter Roeck <linux@roeck-us.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH v2] watchdog: mpc8xxx: use the core worker function
+Message-ID: <20171110205807.GA4348@roeck-us.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,121 +26,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IMC_MAX_PMU is used for static storage (per_nest_pmu_arr) which holds
-nest pmu information. Current value for the macro is 32 based on
-the initial number of nest pmu units supported by the nest microcode.
-But going forward, microcode could support more nest units. Instead
-of static storage, patch to fix the code to dynamically allocate an
-array based on the number of nest imc units found in the device tree.
+On Wed, Nov 08, 2017 at 03:39:44PM +0100, Christophe Leroy wrote:
+> The watchdog core includes a worker function which pings the
+> watchdog until user app starts pinging it and which also
+> pings it if the HW require more frequent pings.
+> Use that function instead of the dedicated timer.
+> In the mean time, we can allow the user to change the timeout.
+> 
+> Then change the timeout module parameter to use seconds and
+> use the watchdog_init_timeout() core function.
+> 
+> On some HW (eg: the 8xx), SWCRR contains bits unrelated to the
+> watchdog which have to be preserved upon write.
+> 
+> This driver has nothing preventing the use of the magic close, so
+> enable it.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Fixes:8f95faaac56c1 ('powerpc/powernv: Detect and create IMC device')
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/imc-pmu.h        |  6 +-----
- arch/powerpc/perf/imc-pmu.c               | 15 ++++++++++++---
- arch/powerpc/platforms/powernv/opal-imc.c | 16 ++++++++++++++++
- 3 files changed, 29 insertions(+), 8 deletions(-)
+Couple of comments, but unrelated to this patch.
 
-diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-index 7f74c282710f..fad0e6ff460f 100644
---- a/arch/powerpc/include/asm/imc-pmu.h
-+++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -21,11 +21,6 @@
- #include <asm/opal.h>
- 
- /*
-- * For static allocation of some of the structures.
-- */
--#define IMC_MAX_PMUS			32
--
--/*
-  * Compatibility macros for IMC devices
-  */
- #define IMC_DTB_COMPAT			"ibm,opal-in-memory-counters"
-@@ -125,4 +120,5 @@ enum {
- extern int init_imc_pmu(struct device_node *parent,
- 				struct imc_pmu *pmu_ptr, int pmu_id);
- extern void thread_imc_disable(void);
-+extern int get_max_nest_dev(void);
- #endif /* __ASM_POWERPC_IMC_PMU_H */
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 74db696ef365..c40cb5f7ceaf 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -26,7 +26,7 @@
-  */
- static DEFINE_MUTEX(nest_init_lock);
- static DEFINE_PER_CPU(struct imc_pmu_ref *, local_nest_imc_refc);
--static struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
-+static struct imc_pmu **per_nest_pmu_arr;
- static cpumask_t nest_imc_cpumask;
- struct imc_pmu_ref *nest_imc_refc;
- static int nest_pmus;
-@@ -286,13 +286,14 @@ static struct imc_pmu_ref *get_nest_pmu_ref(int cpu)
- static void nest_change_cpu_context(int old_cpu, int new_cpu)
- {
- 	struct imc_pmu **pn = per_nest_pmu_arr;
--	int i;
- 
- 	if (old_cpu < 0 || new_cpu < 0)
- 		return;
- 
--	for (i = 0; *pn && i < IMC_MAX_PMUS; i++, pn++)
-+	while (*pn) {
- 		perf_pmu_migrate_context(&(*pn)->pmu, old_cpu, new_cpu);
-+		pn++;
-+	}
- }
- 
- static int ppc_nest_imc_cpu_offline(unsigned int cpu)
-@@ -1192,6 +1193,7 @@ static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
- 		kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
- 	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
- 	kfree(pmu_ptr);
-+	kfree(per_nest_pmu_arr);
- 	return;
- }
- 
-@@ -1216,6 +1218,13 @@ static int imc_mem_init(struct imc_pmu *pmu_ptr, struct device_node *parent,
- 			return -ENOMEM;
- 
- 		/* Needed for hotplug/migration */
-+		if (!per_nest_pmu_arr) {
-+			per_nest_pmu_arr = kcalloc(get_max_nest_dev() + 1,
-+						sizeof(struct imc_pmu *),
-+						GFP_KERNEL);
-+			if (!per_nest_pmu_arr)
-+				return -ENOMEM;
-+		}
- 		per_nest_pmu_arr[pmu_index] = pmu_ptr;
- 		break;
- 	case IMC_DOMAIN_CORE:
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index b150f4deaccf..4764e6932cb7 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -153,6 +153,22 @@ static void disable_core_pmu_counters(void)
- 	put_online_cpus();
- }
- 
-+int get_max_nest_dev(void)
-+{
-+	struct device_node *node;
-+	u32 pmu_units, type;
-+
-+	for_each_compatible_node(node, NULL, IMC_DTB_UNIT_COMPAT) {
-+		if (of_property_read_u32(node, "type", &type))
-+			continue;
-+
-+		if (type == IMC_TYPE_CHIP)
-+			pmu_units++;
-+	}
-+
-+	return pmu_units;
-+}
-+
- static int opal_imc_counters_probe(struct platform_device *pdev)
- {
- 	struct device_node *imc_dev = pdev->dev.of_node;
--- 
-2.7.4
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
+> ---
+>  v2: set ddata->wdd.max_hw_heartbeat_ms and ddata->wdd.min_timeout
+>      in probe instead of start
+> 
+>  drivers/watchdog/mpc8xxx_wdt.c | 84 +++++++++++++++++++-----------------------
+>  1 file changed, 38 insertions(+), 46 deletions(-)
+> 
+> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> index 366e5c7e650b..aca2d6323f8a 100644
+> --- a/drivers/watchdog/mpc8xxx_wdt.c
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c
+> @@ -22,7 +22,6 @@
+>  #include <linux/fs.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+> -#include <linux/timer.h>
+>  #include <linux/of_address.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/module.h>
+> @@ -31,10 +30,13 @@
+>  #include <linux/uaccess.h>
+
+Not needed.
+
+>  #include <sysdev/fsl_soc.h>
+>  
+> +#define WATCHDOG_TIMEOUT 10
+> +
+>  struct mpc8xxx_wdt {
+>  	__be32 res0;
+>  	__be32 swcrr; /* System watchdog control register */
+>  #define SWCRR_SWTC 0xFFFF0000 /* Software Watchdog Time Count. */
+> +#define SWCRR_SWF  0x00000008 /* Software Watchdog Freeze (mpc8xx). */
+>  #define SWCRR_SWEN 0x00000004 /* Watchdog Enable bit. */
+>  #define SWCRR_SWRI 0x00000002 /* Software Watchdog Reset/Interrupt Select bit.*/
+>  #define SWCRR_SWPR 0x00000001 /* Software Watchdog Counter Prescale bit. */
+> @@ -52,14 +54,15 @@ struct mpc8xxx_wdt_type {
+>  struct mpc8xxx_wdt_ddata {
+>  	struct mpc8xxx_wdt __iomem *base;
+>  	struct watchdog_device wdd;
+> -	struct timer_list timer;
+>  	spinlock_t lock;
+
+Not needed (the watchdog core handles locking).
+
+> +	u16 swtc;
+>  };
+>  
+> -static u16 timeout = 0xffff;
+> +static u16 timeout;
+>  module_param(timeout, ushort, 0);
+>  MODULE_PARM_DESC(timeout,
+> -	"Watchdog timeout in ticks. (0<timeout<65536, default=65535)");
+> +	"Watchdog timeout in seconds. (1<timeout<65535, default="
+> +	__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
+>  
+>  static bool reset = 1;
+>  module_param(reset, bool, 0);
+> @@ -80,31 +83,27 @@ static void mpc8xxx_wdt_keepalive(struct mpc8xxx_wdt_ddata *ddata)
+>  	spin_unlock(&ddata->lock);
+>  }
+>  
+> -static void mpc8xxx_wdt_timer_ping(unsigned long arg)
+> -{
+> -	struct mpc8xxx_wdt_ddata *ddata = (void *)arg;
+> -
+> -	mpc8xxx_wdt_keepalive(ddata);
+> -	/* We're pinging it twice faster than needed, just to be sure. */
+> -	mod_timer(&ddata->timer, jiffies + HZ * ddata->wdd.timeout / 2);
+> -}
+> -
+>  static int mpc8xxx_wdt_start(struct watchdog_device *w)
+>  {
+>  	struct mpc8xxx_wdt_ddata *ddata =
+>  		container_of(w, struct mpc8xxx_wdt_ddata, wdd);
+> -
+> -	u32 tmp = SWCRR_SWEN | SWCRR_SWPR;
+> +	u32 tmp = in_be32(&ddata->base->swcrr);
+>  
+>  	/* Good, fire up the show */
+> +	tmp &= ~(SWCRR_SWTC | SWCRR_SWF | SWCRR_SWEN | SWCRR_SWRI | SWCRR_SWPR);
+> +	tmp |= SWCRR_SWEN | SWCRR_SWPR | (ddata->swtc << 16);
+> +
+>  	if (reset)
+>  		tmp |= SWCRR_SWRI;
+>  
+> -	tmp |= timeout << 16;
+> -
+>  	out_be32(&ddata->base->swcrr, tmp);
+>  
+> -	del_timer_sync(&ddata->timer);
+> +	tmp = in_be32(&ddata->base->swcrr);
+> +	if (!(tmp & SWCRR_SWEN))
+> +		return -EOPNOTSUPP;
+> +
+> +	ddata->swtc = tmp >> 16;
+> +	set_bit(WDOG_HW_RUNNING, &ddata->wdd.status);
+>  
+>  	return 0;
+>  }
+> @@ -118,17 +117,8 @@ static int mpc8xxx_wdt_ping(struct watchdog_device *w)
+>  	return 0;
+>  }
+>  
+> -static int mpc8xxx_wdt_stop(struct watchdog_device *w)
+> -{
+> -	struct mpc8xxx_wdt_ddata *ddata =
+> -		container_of(w, struct mpc8xxx_wdt_ddata, wdd);
+> -
+> -	mod_timer(&ddata->timer, jiffies);
+> -	return 0;
+> -}
+> -
+>  static struct watchdog_info mpc8xxx_wdt_info = {
+> -	.options = WDIOF_KEEPALIVEPING,
+> +	.options = WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE | WDIOF_SETTIMEOUT,
+>  	.firmware_version = 1,
+>  	.identity = "MPC8xxx",
+>  };
+> @@ -137,7 +127,6 @@ static struct watchdog_ops mpc8xxx_wdt_ops = {
+>  	.owner = THIS_MODULE,
+>  	.start = mpc8xxx_wdt_start,
+>  	.ping = mpc8xxx_wdt_ping,
+> -	.stop = mpc8xxx_wdt_stop,
+>  };
+>  
+>  static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+> @@ -148,7 +137,6 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  	struct mpc8xxx_wdt_ddata *ddata;
+>  	u32 freq = fsl_get_sys_freq();
+>  	bool enabled;
+> -	unsigned int timeout_sec;
+>  
+>  	wdt_type = of_device_get_match_data(&ofdev->dev);
+>  	if (!wdt_type)
+> @@ -173,27 +161,17 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  	}
+>  
+>  	spin_lock_init(&ddata->lock);
+> -	setup_timer(&ddata->timer, mpc8xxx_wdt_timer_ping,
+> -		    (unsigned long)ddata);
+>  
+>  	ddata->wdd.info = &mpc8xxx_wdt_info,
+>  	ddata->wdd.ops = &mpc8xxx_wdt_ops,
+>  
+> -	/* Calculate the timeout in seconds */
+> -	timeout_sec = (timeout * wdt_type->prescaler) / freq;
+> -
+> -	ddata->wdd.timeout = timeout_sec;
+> +	ddata->wdd.timeout = WATCHDOG_TIMEOUT;
+> +	watchdog_init_timeout(&ddata->wdd, timeout, &ofdev->dev);
+>  
+>  	watchdog_set_nowayout(&ddata->wdd, nowayout);
+>  
+> -	ret = watchdog_register_device(&ddata->wdd);
+> -	if (ret) {
+> -		pr_err("cannot register watchdog device (err=%d)\n", ret);
+> -		return ret;
+> -	}
+> -
+> -	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d (%d seconds)\n",
+> -		reset ? "reset" : "interrupt", timeout, timeout_sec);
+> +	ddata->swtc = min(ddata->wdd.timeout * freq / wdt_type->prescaler,
+> +			  0xffffU);
+>  
+>  	/*
+>  	 * If the watchdog was previously enabled or we're running on
+> @@ -201,7 +179,22 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  	 * userspace handles it.
+>  	 */
+>  	if (enabled)
+> -		mod_timer(&ddata->timer, jiffies);
+> +		mpc8xxx_wdt_start(&ddata->wdd);
+> +
+> +	ddata->wdd.max_hw_heartbeat_ms = (ddata->swtc * wdt_type->prescaler) /
+> +					 (freq / 1000);
+> +	ddata->wdd.min_timeout = ddata->wdd.max_hw_heartbeat_ms / 1000;
+> +	if (ddata->wdd.timeout < ddata->wdd.min_timeout)
+> +		ddata->wdd.timeout = ddata->wdd.min_timeout;
+> +
+> +	ret = watchdog_register_device(&ddata->wdd);
+> +	if (ret) {
+> +		pr_err("cannot register watchdog device (err=%d)\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
+> +		reset ? "reset" : "interrupt", ddata->wdd.timeout);
+>  
+>  	platform_set_drvdata(ofdev, ddata);
+>  	return 0;
+> @@ -213,7 +206,6 @@ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
+>  
+>  	pr_crit("Watchdog removed, expect the %s soon!\n",
+>  		reset ? "reset" : "machine check exception");
+> -	del_timer_sync(&ddata->timer);
+>  	watchdog_unregister_device(&ddata->wdd);
+>  
+>  	return 0;
+> -- 
+> 2.13.3
+> 
