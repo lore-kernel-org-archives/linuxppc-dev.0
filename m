@@ -2,19 +2,30 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYFVv4WSqzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 20:44:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYFZ06YhFzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 20:47:20 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/64s/slice: Use addr limit when computing slice
- mask
-In-Reply-To: <20171110045507.30147-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20171110045507.30147-1-aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 10 Nov 2017 20:44:38 +1100
-Message-ID: <87zi7uo4c9.fsf@concordia.ellerman.id.au>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Balbir Singh <bsingharora@gmail.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ live-patching@vger.kernel.org, Torsten Duwe <duwe@lst.de>,
+ Jessica Yu <jeyu@kernel.org>, Aravinda Prasad <aravinda@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
+ livepatch symbols
+In-Reply-To: <20171110032823.nnpqsrrfwr6ye4uc@treble>
+References: <20171031153004.GA31864@lst.de>
+ <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
+ <20171031183959.GA4313@lst.de> <20171107045419.aozlfdo7tpnubz72@treble>
+ <8760am4hd6.fsf@concordia.ellerman.id.au> <20171107113105.GA19204@lst.de>
+ <20171107145233.lmlg5lkfcczkxj4d__32032.512050546$1510066460$gmane$org@treble>
+ <1510225685.pzdd3dgj9m.naveen@linux.ibm.com>
+ <20171109151955.gl3z3l2ary4ayj7b@treble>
+ <CAKTCnznuZFHgVjjnx+gBAk3RSenxS=PJLFBsxOq4Zzw=ru=HMg@mail.gmail.com>
+ <20171110032823.nnpqsrrfwr6ye4uc@treble>
+Date: Fri, 10 Nov 2017 20:47:19 +1100
+Message-ID: <87wp2yo47s.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,135 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Josh Poimboeuf <jpoimboe@redhat.com> writes:
 
-> While computing slice mask for the free area we need make sure we only search
-> in the addr limit applicable for this mmap. We update the slb_addr_limit
-> after we request for a mmap above 128TB. But the following mmap request
-> with hint addr below 128TB should still limit its search to below 128TB. ie.
-> we should not use slb_addr_limit to compute slice mask in this case. Instead,
-> we should derive high addr limit based on the mmap hint addr value.
+> On Fri, Nov 10, 2017 at 01:06:25PM +1100, Balbir Singh wrote:
+>> On Fri, Nov 10, 2017 at 2:19 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+>> > FWIW, I think it won't matter anyway.  I'm currently pursuing the option
+>> > of inserting nops after local calls, because it has less runtime
+>> > complexity than using a stub.
+>> >
+>> > I think I've figured out a way to do it with a GCC plugin, but if that
+>> > doesn't work I'll try the asm listing sed approach suggested by Michael.
+>> >
+>> 
+>> A plugin that runs for the new kernel with the patch? Just for
+>> specific files involved in the patch?
 >
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/slice.c | 34 ++++++++++++++++++++++------------
->  1 file changed, 22 insertions(+), 12 deletions(-)
+> The plugin will affect the code generation of all functions in the patch
+> module.  So all calls in all replacement functions will have the nops.
+>
+> Here's a prototype (not yet fully tested):
+>
+>   https://github.com/jpoimboe/kpatch/blob/TODO-ppc-fix/kpatch-build/gcc-plugins/ppc64le-plugin.c
 
-How does this relate to the fixes Nick has sent?
+Nice.
 
 cheers
-
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index 564fff06f5c1..23ec2c5e3b78 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -122,7 +122,8 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
->  	return !slice_area_is_free(mm, start, end - start);
->  }
->  
-> -static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret)
-> +static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
-> +				unsigned long high_limit)
->  {
->  	unsigned long i;
->  
-> @@ -133,15 +134,16 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret)
->  		if (!slice_low_has_vma(mm, i))
->  			ret->low_slices |= 1u << i;
->  
-> -	if (mm->context.slb_addr_limit <= SLICE_LOW_TOP)
-> +	if (high_limit <= SLICE_LOW_TOP)
->  		return;
->  
-> -	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++)
-> +	for (i = 0; i < GET_HIGH_SLICE_INDEX(high_limit); i++)
->  		if (!slice_high_has_vma(mm, i))
->  			__set_bit(i, ret->high_slices);
->  }
->  
-> -static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret)
-> +static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret,
-> +				unsigned long high_limit)
->  {
->  	unsigned char *hpsizes;
->  	int index, mask_index;
-> @@ -156,8 +158,11 @@ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_ma
->  		if (((lpsizes >> (i * 4)) & 0xf) == psize)
->  			ret->low_slices |= 1u << i;
->  
-> +	if (high_limit <= SLICE_LOW_TOP)
-> +		return;
-> +
->  	hpsizes = mm->context.high_slices_psize;
-> -	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++) {
-> +	for (i = 0; i < GET_HIGH_SLICE_INDEX(high_limit); i++) {
->  		mask_index = i & 0x1;
->  		index = i >> 1;
->  		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
-> @@ -169,6 +174,10 @@ static int slice_check_fit(struct mm_struct *mm,
->  			   struct slice_mask mask, struct slice_mask available)
->  {
->  	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
-> +	/*
-> +	 * Make sure we just do bit compare only to the max
-> +	 * addr limit and not the full bit map size.
-> +	 */
->  	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
->  
->  	bitmap_and(result, mask.high_slices,
-> @@ -472,7 +481,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->  	/* First make up a "good" mask of slices that have the right size
->  	 * already
->  	 */
-> -	slice_mask_for_size(mm, psize, &good_mask);
-> +	slice_mask_for_size(mm, psize, &good_mask, high_limit);
->  	slice_print_mask(" good_mask", good_mask);
->  
->  	/*
-> @@ -497,7 +506,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->  #ifdef CONFIG_PPC_64K_PAGES
->  	/* If we support combo pages, we can allow 64k pages in 4k slices */
->  	if (psize == MMU_PAGE_64K) {
-> -		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
-> +		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask, high_limit);
->  		if (fixed)
->  			slice_or_mask(&good_mask, &compat_mask);
->  	}
-> @@ -530,11 +539,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->  			return newaddr;
->  		}
->  	}
-> -
-> -	/* We don't fit in the good mask, check what other slices are
-> +	/*
-> +	 * We don't fit in the good mask, check what other slices are
->  	 * empty and thus can be converted
->  	 */
-> -	slice_mask_for_free(mm, &potential_mask);
-> +	slice_mask_for_free(mm, &potential_mask, high_limit);
->  	slice_or_mask(&potential_mask, &good_mask);
->  	slice_print_mask(" potential", potential_mask);
->  
-> @@ -744,17 +753,18 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
->  {
->  	struct slice_mask mask, available;
->  	unsigned int psize = mm->context.user_psize;
-> +	unsigned long high_limit = mm->context.slb_addr_limit;
->  
->  	if (radix_enabled())
->  		return 0;
->  
->  	slice_range_to_mask(addr, len, &mask);
-> -	slice_mask_for_size(mm, psize, &available);
-> +	slice_mask_for_size(mm, psize, &available, high_limit);
->  #ifdef CONFIG_PPC_64K_PAGES
->  	/* We need to account for 4k slices too */
->  	if (psize == MMU_PAGE_64K) {
->  		struct slice_mask compat_mask;
-> -		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask);
-> +		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask, high_limit);
->  		slice_or_mask(&available, &compat_mask);
->  	}
->  #endif
-> -- 
-> 2.13.6
