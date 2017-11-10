@@ -1,40 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYJj52gKXzDrKG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 23:08:39 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Matthew Wilcox' <willy@infradead.org>, Nicholas Piggin <npiggin@gmail.com>
-CC: Florian Weimer <fweimer@redhat.com>, "linux-arch@vger.kernel.org"
- <linux-arch@vger.kernel.org>, Dave Hansen <dave.hansen@intel.com>, "Peter
- Zijlstra" <peterz@infradead.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>, "Linux
- Kernel Mailing List" <linux-kernel@vger.kernel.org>, Andy Lutomirski
- <luto@amacapital.net>, linux-mm <linux-mm@kvack.org>, Aneesh Kumar K.V
- <aneesh.kumar@linux.vnet.ibm.com>, "Kirill A. Shutemov"
- <kirill@shutemov.name>, Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Thomas
- Gleixner" <tglx@linutronix.de>, "Kirill A. Shutemov"
- <kirill.shutemov@linux.intel.com>
-Subject: RE: POWER: Unexpected fault when writing to brk-allocated memory
-Date: Fri, 10 Nov 2017 12:08:35 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DD00B84EF@AcuExch.aculab.com>
-References: <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
- <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
- <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
- <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
- <20171107222228.0c8a50ff@roar.ozlabs.ibm.com>
- <20171107122825.posamr2dmzlzvs2p@node.shutemov.name>
- <20171108002448.6799462e@roar.ozlabs.ibm.com>
- <2ce0a91c-985c-aad8-abfa-e91bc088bb3e@linux.vnet.ibm.com>
- <20171107140158.iz4b2lchhrt6eobe@node.shutemov.name>
- <20171110041526.6137bc9a@roar.ozlabs.ibm.com>
- <20171109194421.GA12789@bombadil.infradead.org>
-In-Reply-To: <20171109194421.GA12789@bombadil.infradead.org>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYKBJ4SlfzDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 23:30:30 +1100 (AEDT)
+Date: Fri, 10 Nov 2017 13:30:26 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ sachinp <sachinp@linux.vnet.ibm.com>
+Subject: Re: [linux-next][0692229e] next-20171106 fails to boot on Power 7
+Message-ID: <20171110123026.c5h5ejp27tlly6l3@dhcp22.suse.cz>
+References: <1510048229.12079.7.camel@abdul.in.ibm.com>
+ <20171107102854.vylrtaodla63kc57@dhcp22.suse.cz>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171107102854.vylrtaodla63kc57@dhcp22.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,28 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Matthew Wilcox
-> Sent: 09 November 2017 19:44
->=20
-> On Fri, Nov 10, 2017 at 04:15:26AM +1100, Nicholas Piggin wrote:
-> > So these semantics are what we're going with? Anything that does mmap()=
- is
-> > guaranteed of getting a 47-bit pointer and it can use the top 17 bits f=
-or
-> > itself? Is intended to be cross-platform or just x86 and power specific=
-?
->=20
-> It is x86 and powerpc specific.  The arm64 people have apparently stumble=
-d
-> across apps that expect to be able to use bit 48 for their own purposes.
-> And their address space is 48 bit by default.  Oops.
+Hi Abdul,
 
-(Do you mean 49bit?)
+On Tue 07-11-17 11:28:54, Michal Hocko wrote:
+> On Tue 07-11-17 15:20:29, Abdul Haleem wrote:
+> > Hi,
+> > 
+> > Today's next kernel fails to boot on Power 7 Machine with below errors
+> > in boot log messages.
+> > 
+> > 'Uhuuh, elf segement at 0000000010040000 requested but the memory is
+> > mapped already'
+> > 
+> > It was introduced with commit:
+> > 
+> > 0692229e : fs/binfmt_elf.c: drop MAP_FIXED usage from elf_map
+> 
+> Weird. Clashes shouldn't really happen. Maybe power is doing something
+> different from other platforms. Could you apply the following debugging
+> patch to see what is going on there?
 
-Aren't such apps just doomed to be broken?
+Did you have chance to test with this debugging patch, please?
 
-ISTR there is something on (IIRC) sparc64 that does a 'match'
-on the high address bits to make it much harder to overrun
-one area into another.
+> ---
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index 0abc30d681ae..f098aaf60039 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -361,8 +361,28 @@ static unsigned long elf_vm_mmap(struct file *filep, unsigned long addr,
+>  		return map_addr;
+>  
+>  	if ((type & MAP_FIXED) && map_addr != addr) {
+> -		pr_info("Uhuuh, elf segement at %p requested but the memory is mapped already\n",
+> -				(void*)addr);
+> +		struct mm_struct *mm = current->mm;
+> +		struct vm_area_struct *vma;
+> +		pr_info("Uhuuh, elf segement at %p requested but the memory is mapped already, got %p\n",
+> +				(void*)addr, (void*)map_addr);
+> +		down_read(&mm->mmap_sem);
+> +		vma = find_vma(mm, addr);
+> +		if (vma) {
+> +			const char *name;
+> +			pr_info("Clashing vma [%lx, %lx] flags:%lx", vma->vm_start, vma->vm_end, vma->vm_flags);
+> +			name = arch_vma_name(vma);
+> +			if (!name) {
+> +				if (vma->vm_start <= mm->brk &&
+> +				    vma->vm_end >= mm->start_brk)
+> +					name = "[heap]";
+> +				else if (vma->vm_start <= vma->vm_mm->start_stack &&
+> +						vma->vm_end >= vma->vm_mm->start_stack)
+> +					name = "[stack]";
+> +			}
+> +			pr_cont(" name:%s\n", name);
+> +		} else
+> +			pr_info("Uhm, no clashing VMA\n");
+> +		up_read(&mm->mmap_sem);
+>  		return -EAGAIN;
+>  	}
+>  
+> 
+> -- 
+> Michal Hocko
+> SUSE Labs
 
-	David
+-- 
+Michal Hocko
+SUSE Labs
