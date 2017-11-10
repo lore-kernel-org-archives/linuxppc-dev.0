@@ -1,21 +1,33 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qt0-f193.google.com (mail-qt0-f193.google.com
+ [209.85.216.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYHMl6jR6zDrKG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 22:08:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 1/3] powerpc/powernv: Always stop secondaries before
- reboot/shutdown
-In-Reply-To: <20171023080507.21974-2-npiggin@gmail.com>
-References: <20171023080507.21974-1-npiggin@gmail.com>
- <20171023080507.21974-2-npiggin@gmail.com>
-Date: Fri, 10 Nov 2017 22:08:32 +1100
-Message-ID: <87tvy2o0gf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYJ0j6wgrzDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 22:37:09 +1100 (AEDT)
+Received: by mail-qt0-f193.google.com with SMTP id p44so950275qtj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 03:37:09 -0800 (PST)
+Date: Fri, 10 Nov 2017 09:36:56 -0200
+From: Breno Leitao <leitao@debian.org>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ corbet@lwn.net, arnd@arndb.de, linux-arch@vger.kernel.org,
+ ebiederm@xmission.com, linux-doc@vger.kernel.org, x86@kernel.org,
+ dave.hansen@intel.com, linux-kernel@vger.kernel.org,
+ mhocko@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, linux-kselftest@vger.kernel.org,
+ bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 44/51] selftest/vm: powerpc implementation for generic
+ abstraction
+Message-ID: <20171110113655.hizq4xes5oy2fzim@gmail.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <1509958663-18737-45-git-send-email-linuxram@us.ibm.com>
+ <20171109184714.xs523k4cvmqghew3@gmail.com>
+ <20171109233745.GD5546@ram.oc3035372033.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171109233745.GD5546@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi Ram,
 
-> Currently powernv reboot and shutdown requests just leave secondaries
-> to do their own things. This is undesirable because they can trigger
-> any number of watchdogs while waiting for reboot, but also we don't
-> know what else they might be doing, or they might be stuck somewhere
-> causing trouble.
->
-> The opal scheduled flash update code already ran into watchdog problems
-> due to flashing taking a long time, but it's possible for regular
-> reboots to trigger problems too (this is with watchdog_thresh set to 1,
-> but I have seen it with watchdog_thresh at the default value once too):
->
->   reboot: Restarting system
->   [  360.038896709,5] OPAL: Reboot request...
->   Watchdog CPU:0 Hard LOCKUP
->   Watchdog CPU:44 detected Hard LOCKUP other CPUS:16
->   Watchdog CPU:16 Hard LOCKUP
->   watchdog: BUG: soft lockup - CPU#16 stuck for 3s! [swapper/16:0]
->
-> So remove the special case for flash update, and unconditionally do
-> smp_send_stop before rebooting.
->
-> Return the CPUs to Linux stop loops rather than OPAL. The reason for
-> this is that the path to firmware is longer, and the CPUs may have
-> been interrupted from firmware, which may cause problems to re-enter
-> it. It's better to put them into a simple spin loop to maximize the
-> chance of a successful reboot.
+On Thu, Nov 09, 2017 at 03:37:46PM -0800, Ram Pai wrote:
+> On Thu, Nov 09, 2017 at 04:47:15PM -0200, Breno Leitao wrote:
+> > On Mon, Nov 06, 2017 at 12:57:36AM -0800, Ram Pai wrote:
+> > > @@ -206,12 +209,14 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+> > >  
+> > >  	trapno = uctxt->uc_mcontext.gregs[REG_TRAPNO];
+> > >  	ip = uctxt->uc_mcontext.gregs[REG_IP_IDX];
+> > > -	fpregset = uctxt->uc_mcontext.fpregs;
+> > > -	fpregs = (void *)fpregset;
+> > 
+> > Since you removed all references for fpregset now, you probably want to
+> > remove the declaration of the variable above.
+> 
+> fpregs is still needed.
 
-I always assumed we had to send the CPUs back to OPAL for the flashing
-procedure. Is it OK to leave them in Linux?
+Right, fpregs is still needed, but not fpregset. Every reference for this
+variable was removed with your patch.
 
-cheers
+Grepping this variable identifier on a tree with your patches, I see:
+
+ $ grep fpregset protection_keys.c 
+ fpregset_t fpregset;
