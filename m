@@ -1,27 +1,20 @@
-Return-Path: <xiaowei.bao@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0065.outbound.protection.outlook.com [104.47.37.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yY62P0TTtzDrL1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 15:07:56 +1100 (AEDT)
-From: Bao Xiaowei <xiaowei.bao@nxp.com>
-To: <robh+dt@kernel.org>, <mark.rutland@arm.com>, <catalin.marinas@arm.com>,
- <will.deacon@arm.com>, <bhelgaas@google.com>, <shawnguo@kernel.org>,
- <madalin.bucur@nxp.com>, <sumit.garg@nxp.com>, <yangbo.lu@nxp.com>,
- <hongtao.jia@nxp.com>, <Yuantian.Tang@nxp.com>, <leoyang.li@nxp.com>,
- <kishon@ti.com>, <jingoohan1@gmail.com>, <pbrobinson@gmail.com>,
- <songxiaowei@hisilicon.com>, <devicetree@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <Zhiqiang.Hou@nxp.com>, <mingkai.hu@nxp.com>, <Minghuan.Lian@nxp.com>
-CC: Bao Xiaowei <xiaowei.bao@nxp.com>
-Subject: [PATCHv4 3/3] ARMv8: pcie: make the DWC EP driver support for
- layerscape
-Date: Fri, 10 Nov 2017 11:48:47 +0800
-Message-ID: <20171110034847.17891-4-xiaowei.bao@nxp.com>
-In-Reply-To: <20171110034847.17891-1-xiaowei.bao@nxp.com>
-References: <20171110034847.17891-1-xiaowei.bao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yY6dD2KKszDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 15:34:40 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc64/exceptions: Refactor code to eliminate a few
+ memory loads
+In-Reply-To: <20170619184545.28848-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <8760fsb902.fsf@skywalker.in.ibm.com>
+ <20170619184545.28848-1-naveen.n.rao@linux.vnet.ibm.com>
+Date: Fri, 10 Nov 2017 15:34:39 +1100
+Message-ID: <874lq2px9c.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,34 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Layerscape pcie controllers support RC or EP mode, Add the EP mode
-support in Kconfig, the driver will support both RC and EP mode, and
-the driver is able to judge the pcie controllers work on RC or EP mode.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
-Acked-by: Minghuan Lian <minghuan.Lian@nxp.com>
----
- v2:
- no change
- v3:
- no change
- v4:
- no change
+> On 2017/06/19 03:21PM, Aneesh Kumar K.V wrote:
+>> > @@ -1445,8 +1446,8 @@ do_hash_page:
+>> >  handle_page_fault:
+>> >  	andis.  r0,r4,DSISR_DABRMATCH@h
+>> >  	bne-    handle_dabr_fault
+>> > -	ld	r4,_DAR(r1)
+>> > -	ld	r5,_DSISR(r1)
+>> > +	mr	r5,r4
+>> > +	mr	r4,r3
+>> >  	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> >  	bl	do_page_fault
+>> >  	cmpdi	r3,0
+>> 
+>> 
+>> Can we avoid that if we rearrange args of other functions calls, so that
+>> we can use r3 and r4 as it is ?
+>
+> Here's a version that does that. Again, boot tested with radix and 
+> disable_radix.
+>
+> Thanks,
+> Naveen
+>
+> -
+> Change data_access_common() and instruction_access_common() to load the
+> trap number in r3, DAR in r4 and DSISR in r5 (rather than in r5, r3 and
+> r4 respectively). This change allows us to eliminate a few un-necessary
+> memory loads and register move operations in handle_page_fault(),
+> handle_dabr_fault() and label '77'.
+>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/exceptions-64s.S | 38 +++++++++++++++++-------------------
+>  1 file changed, 18 insertions(+), 20 deletions(-)
 
- drivers/pci/dwc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Sorry I missed this and now it doesn't apply. Do you mind rebasing.
 
-diff --git a/drivers/pci/dwc/Kconfig b/drivers/pci/dwc/Kconfig
-index 22ec82fcdea2..b5f507795779 100644
---- a/drivers/pci/dwc/Kconfig
-+++ b/drivers/pci/dwc/Kconfig
-@@ -108,6 +108,7 @@ config PCI_LAYERSCAPE
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select MFD_SYSCON
- 	select PCIE_DW_HOST
-+	select PCIE_DW_EP
- 	help
- 	  Say Y here if you want PCIe controller support on Layerscape SoCs.
- 
--- 
-2.14.1
+cheers
