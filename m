@@ -1,38 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x234.google.com (mail-ua0-x234.google.com
- [IPv6:2607:f8b0:400c:c08::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <xiaowei.bao@nxp.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0051.outbound.protection.outlook.com [104.47.40.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yY3LG2KxmzDrKG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 13:06:29 +1100 (AEDT)
-Received: by mail-ua0-x234.google.com with SMTP id e10so3113105uah.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Nov 2017 18:06:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yY4jD56bPzDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 14:07:56 +1100 (AEDT)
+From: Bao Xiaowei <xiaowei.bao@nxp.com>
+To: <robh+dt@kernel.org>, <mark.rutland@arm.com>, <catalin.marinas@arm.com>,
+ <will.deacon@arm.com>, <bhelgaas@google.com>, <shawnguo@kernel.org>,
+ <madalin.bucur@nxp.com>, <sumit.garg@nxp.com>, <yangbo.lu@nxp.com>,
+ <hongtao.jia@nxp.com>, <Yuantian.Tang@nxp.com>, <leoyang.li@nxp.com>,
+ <kishon@ti.com>, <jingoohan1@gmail.com>, <pbrobinson@gmail.com>,
+ <songxiaowei@hisilicon.com>, <devicetree@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <Zhiqiang.Hou@nxp.com>, <mingkai.hu@nxp.com>, <Minghuan.Lian@nxp.com>
+CC: Bao Xiaowei <xiaowei.bao@nxp.com>
+Subject: [PATCHv3 0/3]  dts: Add the property of IB and OB
+Date: Fri, 10 Nov 2017 10:49:23 +0800
+Message-ID: <20171110024926.39700-1-xiaowei.bao@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20171109151955.gl3z3l2ary4ayj7b@treble>
-References: <1508217523-18885-1-git-send-email-kamalesh@linux.vnet.ibm.com>
- <20171031141959.7pqnlncg2236yqqg@naverao1-tp.localdomain>
- <20171031153004.GA31864@lst.de>
- <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
- <20171031183959.GA4313@lst.de>
- <20171107045419.aozlfdo7tpnubz72@treble>
- <8760am4hd6.fsf@concordia.ellerman.id.au>
- <20171107113105.GA19204@lst.de>
- <20171107145233.lmlg5lkfcczkxj4d__32032.512050546$1510066460$gmane$org@treble>
- <1510225685.pzdd3dgj9m.naveen@linux.ibm.com>
- <20171109151955.gl3z3l2ary4ayj7b@treble>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 10 Nov 2017 13:06:25 +1100
-Message-ID: <CAKTCnznuZFHgVjjnx+gBAk3RSenxS=PJLFBsxOq4Zzw=ru=HMg@mail.gmail.com>
-Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Torsten Duwe <duwe@lst.de>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>, Jessica Yu <jeyu@kernel.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, live-patching@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,43 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 10, 2017 at 2:19 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> On Thu, Nov 09, 2017 at 04:49:05PM +0530, Naveen N. Rao wrote:
->> > > > > d) Have kpatch-build do some other kind of transformation?  For example,
->> > > > >    maybe it could generate klp stubs which the callee calls into.  Each
->> > > > >    klp stub could then do a proper global call to the SHN_LIVEPATCH
->> > > > >    symbol.
->> > > > > That could work.
->> > > Indeed. There is no reason to load that off onto the kernel module loader.
->> >
->> > I agree that doing the same work in tooling would be better than adding
->> > complexity to the kernel.
->>
->> [In case we're considering this as an option...]
->>
->> While I agree that it's better to do this in the tool in general, for this
->> particular scenario, I think it is better to do this in the kernel.
->>
->> From what I understand, the challenge here is the need to save/restore toc,
->> *without* creating a local stack frame for the stub to use. So, we will have
->> to use the livepatch stack in one form or the other. I'm not sure if we can
->> do anything else in a klp stub.
->>
->> And, if we have to use the livepatch stack, I think it is better to let the
->> kernel control that so that kpatch doesn't need to change for any changes in
->> livepatch_handler() for instance. The current patch reuses
->> livepatch_handler() and makes its usage for kpatch quite explicit.
->
-> FWIW, I think it won't matter anyway.  I'm currently pursuing the option
-> of inserting nops after local calls, because it has less runtime
-> complexity than using a stub.
->
-> I think I've figured out a way to do it with a GCC plugin, but if that
-> doesn't work I'll try the asm listing sed approach suggested by Michael.
->
+Depend on http://patchwork.ozlabs.org/patch/815382/
 
+Bao Xiaowei (3):
+  ARMv8: dts: ls1046a: add the property of IB and OB
+  ARMv8: layerscape: add the pcie ep function support
+  ARMv8: pcie: make the DWC EP driver support for layerscape
 
-A plugin that runs for the new kernel with the patch? Just for
-specific files involved in the patch?
+ arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi |   6 ++
+ drivers/pci/dwc/Kconfig                        |   1 +
+ drivers/pci/dwc/pci-layerscape.c               | 124 +++++++++++++++++++++++--
+ 3 files changed, 125 insertions(+), 6 deletions(-)
 
-Balbir Singh.
+-- 
+2.14.1
