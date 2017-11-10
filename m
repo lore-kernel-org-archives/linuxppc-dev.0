@@ -1,21 +1,30 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga07.intel.com (unknown [134.134.136.100])
+Return-Path: <tony.luck@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYSLk14sgzDrKr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 04:53:17 +1100 (AEDT)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYSk52XkyzDrKr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 05:10:04 +1100 (AEDT)
+Date: Fri, 10 Nov 2017 10:09:32 -0800
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>,
- linux-pci@vger.kernel.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v2 2/2] powerpc/pci: Unroll two pass loop when scanning bridges
-Date: Fri, 10 Nov 2017 19:52:30 +0200
-Message-Id: <20171110175230.82522-2-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
-References: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
+ James Bottomley <jejb@parisc-linux.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Petr Mladek <pmladek@suse.com>,
+ Steven Rostedt <rostedt@goodmis.org>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: [PATCHv4 5/6] symbol lookup: introduce
+ dereference_symbol_descriptor()
+Message-ID: <20171110180931.xhhi35osclzceba2@agluck-desk>
+References: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
+ <20171109234830.5067-6-sergey.senozhatsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171109234830.5067-6-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current scanning code is really hard to understand because it calls
-the same function in a loop where pass value is changed without any
-comments explaining it:
+On Fri, Nov 10, 2017 at 08:48:29AM +0900, Sergey Senozhatsky wrote:
+> -Examples::
+> -
+> -	printk("Going to call: %pF\n", gettimeofday);
+> -	printk("Going to call: %pF\n", p->func);
+> -	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
+> -	printk("%s: called from %pS\n", __func__,
+> -				(void *)__builtin_return_address(0));
+> -	printk("Faulted at %pS\n", (void *)regs->ip);
+> -	printk(" %s%pB\n", (reliable ? "" : "? "), (void *)*stack);
 
-  for (pass = 0; pass < 2; pass++)
-    for_each_pci_bridge(dev, bus)
-      max = pci_scan_bridge(bus, dev, max, pass);
+Did you mean to delete the Examples completely?  Wouldn't it
+be better to just update (s/%pF/%pS/g)?
 
-Unfamiliar reader cannot tell easily what is the purpose of this loop
-without looking at internals of pci_scan_bridge().
-
-In order to make this bit easier to understand, open-code the loop in
-pci_scan_child_bus() and pci_hp_add_bridge() with added comments.
-
-No functional changes intended.
-
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- arch/powerpc/kernel/pci-hotplug.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 741f47295188..cf47b1aec4c2 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -104,7 +104,7 @@ EXPORT_SYMBOL_GPL(pci_hp_remove_devices);
-  */
- void pci_hp_add_devices(struct pci_bus *bus)
- {
--	int slotno, mode, pass, max;
-+	int slotno, mode, max;
- 	struct pci_dev *dev;
- 	struct pci_controller *phb;
- 	struct device_node *dn = pci_bus_to_OF_node(bus);
-@@ -133,10 +133,17 @@ void pci_hp_add_devices(struct pci_bus *bus)
- 		pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
- 		pcibios_setup_bus_devices(bus);
- 		max = bus->busn_res.start;
--		for (pass = 0; pass < 2; pass++) {
--			for_each_pci_bridge(dev, bus)
--				max = pci_scan_bridge(bus, dev, max, pass);
--		}
-+		/*
-+		 * Scan bridges that are already configured. We don't touch
-+		 * them unless they are misconfigured (which will be done in
-+		 * the second scan below).
-+		 */
-+		for_each_pci_bridge(dev, bus)
-+			max = pci_scan_bridge(bus, dev, max, 0);
-+
-+		/* Scan bridges that need to be reconfigured */
-+		for_each_pci_bridge(dev, bus)
-+			max = pci_scan_bridge(bus, dev, max, 1);
- 	}
- 	pcibios_finish_adding_to_bus(bus);
- }
--- 
-2.14.2
+-Tony
