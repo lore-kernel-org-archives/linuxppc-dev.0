@@ -1,24 +1,37 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <desnesn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYKBJ4SlfzDrKG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 23:30:30 +1100 (AEDT)
-Date: Fri, 10 Nov 2017 13:30:26 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-next <linux-next@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- sachinp <sachinp@linux.vnet.ibm.com>
-Subject: Re: [linux-next][0692229e] next-20171106 fails to boot on Power 7
-Message-ID: <20171110123026.c5h5ejp27tlly6l3@dhcp22.suse.cz>
-References: <1510048229.12079.7.camel@abdul.in.ibm.com>
- <20171107102854.vylrtaodla63kc57@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYN5W3LRdzDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 01:41:34 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAAEfBxo077060
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 09:41:32 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e5b5brwrw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 09:41:31 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
+ Fri, 10 Nov 2017 09:41:29 -0500
+Subject: Re: [PATCH] [net-next,v3] ibmvnic: Feature implementation of Vital
+ Product Data (VPD) for the ibmvnic driver
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, tlfalcon@linux.vnet.ibm.com,
+ jallen@linux.vnet.ibm.com
+References: <20171109190012.17981-1-desnesn@linux.vnet.ibm.com>
+ <a7877d35-90d5-4fa1-2e45-91c3ee239435@linux.vnet.ibm.com>
+From: =?UTF-8?Q?Desnes_Augusto_Nunes_do_Ros=c3=a1rio?=
+ <desnesn@linux.vnet.ibm.com>
+Date: Fri, 10 Nov 2017 12:41:25 -0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171107102854.vylrtaodla63kc57@dhcp22.suse.cz>
+In-Reply-To: <a7877d35-90d5-4fa1-2e45-91c3ee239435@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <f48a18a5-f87d-2344-e2a1-4ddd5f05a561@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +41,335 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Abdul,
 
-On Tue 07-11-17 11:28:54, Michal Hocko wrote:
-> On Tue 07-11-17 15:20:29, Abdul Haleem wrote:
-> > Hi,
-> > 
-> > Today's next kernel fails to boot on Power 7 Machine with below errors
-> > in boot log messages.
-> > 
-> > 'Uhuuh, elf segement at 0000000010040000 requested but the memory is
-> > mapped already'
-> > 
-> > It was introduced with commit:
-> > 
-> > 0692229e : fs/binfmt_elf.c: drop MAP_FIXED usage from elf_map
+
+On 11/09/2017 06:31 PM, Nathan Fontenot wrote:
+> On 11/09/2017 01:00 PM, Desnes Augusto Nunes do Rosario wrote:
+>> This patch implements and enables VDP support for the ibmvnic driver.
+>> Moreover, it includes the implementation of suitable structs, signal
+>>   transmission/handling and functions which allows the retrival of firmware
+>>   information from the ibmvnic card through the ethtool command.
+>>
+>> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+>> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>> ---
+>>   drivers/net/ethernet/ibm/ibmvnic.c | 149 ++++++++++++++++++++++++++++++++++++-
+>>   drivers/net/ethernet/ibm/ibmvnic.h |  27 ++++++-
+>>   2 files changed, 173 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+>> index d0cff28..693b502 100644
+>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>> @@ -573,6 +573,15 @@ static int reset_tx_pools(struct ibmvnic_adapter *adapter)
+>>   	return 0;
+>>   }
+>>
+>> +static void release_vpd_data(struct ibmvnic_adapter *adapter)
+>> +{
+>> +	if (!adapter->vpd)
+>> +		return;
+>> +
+>> +	kfree(adapter->vpd->buff);
+>> +	kfree(adapter->vpd);
+>> +}
+>> +
+>>   static void release_tx_pools(struct ibmvnic_adapter *adapter)
+>>   {
+>>   	struct ibmvnic_tx_pool *tx_pool;
+>> @@ -753,6 +762,8 @@ static void release_resources(struct ibmvnic_adapter *adapter)
+>>   {
+>>   	int i;
+>>
+>> +	release_vpd_data(adapter);
+>> +
+>>   	release_tx_pools(adapter);
+>>   	release_rx_pools(adapter);
+>>
+>> @@ -833,6 +844,53 @@ static int set_real_num_queues(struct net_device *netdev)
+>>   	return rc;
+>>   }
+>>
+>> +static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+>> +{
+>> +	struct device *dev = &adapter->vdev->dev;
+>> +	union ibmvnic_crq crq;
+>> +	dma_addr_t dma_addr;
+>> +	int len;
+>> +
+>> +	if (adapter->vpd->buff)
+>> +		len = adapter->vpd->len;
+>> +
+>> +	reinit_completion(&adapter->fw_done);
+>> +	crq.get_vpd_size.first = IBMVNIC_CRQ_CMD;
+>> +	crq.get_vpd_size.cmd = GET_VPD_SIZE;
+>> +	ibmvnic_send_crq(adapter, &crq);
+>> +	wait_for_completion(&adapter->fw_done);
+>> +
 > 
-> Weird. Clashes shouldn't really happen. Maybe power is doing something
-> different from other platforms. Could you apply the following debugging
-> patch to see what is going on there?
+> Shouldn't there be a check for the return code when getting the
+> vpd size?
 
-Did you have chance to test with this debugging patch, please?
+Hello Nathan,
 
-> ---
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index 0abc30d681ae..f098aaf60039 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -361,8 +361,28 @@ static unsigned long elf_vm_mmap(struct file *filep, unsigned long addr,
->  		return map_addr;
->  
->  	if ((type & MAP_FIXED) && map_addr != addr) {
-> -		pr_info("Uhuuh, elf segement at %p requested but the memory is mapped already\n",
-> -				(void*)addr);
-> +		struct mm_struct *mm = current->mm;
-> +		struct vm_area_struct *vma;
-> +		pr_info("Uhuuh, elf segement at %p requested but the memory is mapped already, got %p\n",
-> +				(void*)addr, (void*)map_addr);
-> +		down_read(&mm->mmap_sem);
-> +		vma = find_vma(mm, addr);
-> +		if (vma) {
-> +			const char *name;
-> +			pr_info("Clashing vma [%lx, %lx] flags:%lx", vma->vm_start, vma->vm_end, vma->vm_flags);
-> +			name = arch_vma_name(vma);
-> +			if (!name) {
-> +				if (vma->vm_start <= mm->brk &&
-> +				    vma->vm_end >= mm->start_brk)
-> +					name = "[heap]";
-> +				else if (vma->vm_start <= vma->vm_mm->start_stack &&
-> +						vma->vm_end >= vma->vm_mm->start_stack)
-> +					name = "[stack]";
-> +			}
-> +			pr_cont(" name:%s\n", name);
-> +		} else
-> +			pr_info("Uhm, no clashing VMA\n");
-> +		up_read(&mm->mmap_sem);
->  		return -EAGAIN;
->  	}
->  
+This check is already being performed on the handle_vpd_size_rsp() 
+function down below.
+
+In short, a GET_VPD_SIZE signal is sent here through a ibmvnic_crq union 
+in ibmvnic_send_crq(), whereas handle_query_ip_offload_rsp() receives 
+from the VNIC adapter a GET_VPD_SIZE_RSP containing a ibmvnic_crq union 
+with the vpd size information and the rc.code. If successful, a 
+&adapter->fw_done is sent and this part of the code continues; however 
+if not, a dev_error() is thrown. Same logic applies to GET_VPD/GET_VPD_RSP.
+
+What I am adding on the next version of the patch is a check if 
+adapter->vpd->len is different than 0 before allocating 
+adapter->vpd->buff, since that in a case of a failure, adapter->vpd->len 
+will be 0.
+
+Best Regards,
+
 > 
-> -- 
-> Michal Hocko
-> SUSE Labs
+> 
+>> +	if (!adapter->vpd->buff)
+>> +		adapter->vpd->buff = kzalloc(adapter->vpd->len, GFP_KERNEL);
+>> +	else if (adapter->vpd->len != len)
+>> +		adapter->vpd->buff =
+>> +			krealloc(adapter->vpd->buff,
+>> +				 adapter->vpd->len, GFP_KERNEL);
+>> +
+>> +	if (!adapter->vpd->buff) {
+>> +		dev_err(dev, "Could allocate VPD buffer\n");
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	adapter->vpd->dma_addr =
+>> +		dma_map_single(dev, adapter->vpd->buff, adapter->vpd->len,
+>> +			       DMA_FROM_DEVICE);
+>> +	if (dma_mapping_error(dev, dma_addr)) {
+>> +		dev_err(dev, "Could not map VPD buffer\n");
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	reinit_completion(&adapter->fw_done);
+>> +	crq.get_vpd.first = IBMVNIC_CRQ_CMD;
+>> +	crq.get_vpd.cmd = GET_VPD;
+>> +	crq.get_vpd.ioba = cpu_to_be32(adapter->vpd->dma_addr);
+>> +	crq.get_vpd.len = cpu_to_be32((u32)adapter->vpd->len);
+>> +	ibmvnic_send_crq(adapter, &crq);
+>> +	wait_for_completion(&adapter->fw_done);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>   static int init_resources(struct ibmvnic_adapter *adapter)
+>>   {
+>>   	struct net_device *netdev = adapter->netdev;
+>> @@ -850,6 +908,10 @@ static int init_resources(struct ibmvnic_adapter *adapter)
+>>   	if (rc)
+>>   		return rc;
+>>
+>> +	adapter->vpd = kzalloc(sizeof(*adapter->vpd), GFP_KERNEL);
+>> +	if (!adapter->vpd)
+>> +		return -ENOMEM;
+>> +
+>>   	adapter->map_id = 1;
+>>   	adapter->napi = kcalloc(adapter->req_rx_queues,
+>>   				sizeof(struct napi_struct), GFP_KERNEL);
+>> @@ -950,6 +1012,10 @@ static int ibmvnic_open(struct net_device *netdev)
+>>
+>>   	rc = __ibmvnic_open(netdev);
+>>   	netif_carrier_on(netdev);
+>> +
+>> +	/* Vital Product Data (VPD) */
+>> +	ibmvnic_get_vpd(adapter);
+>> +
+>>   	mutex_unlock(&adapter->reset_lock);
+>>
+>>   	return rc;
+>> @@ -1878,11 +1944,15 @@ static int ibmvnic_get_link_ksettings(struct net_device *netdev,
+>>   	return 0;
+>>   }
+>>
+>> -static void ibmvnic_get_drvinfo(struct net_device *dev,
+>> +static void ibmvnic_get_drvinfo(struct net_device *netdev,
+>>   				struct ethtool_drvinfo *info)
+>>   {
+>> +	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
+>> +
+>>   	strlcpy(info->driver, ibmvnic_driver_name, sizeof(info->driver));
+>>   	strlcpy(info->version, IBMVNIC_DRIVER_VERSION, sizeof(info->version));
+>> +	strlcpy(info->fw_version, adapter->fw_version,
+>> +		sizeof(info->fw_version));
+>>   }
+>>
+>>   static u32 ibmvnic_get_msglevel(struct net_device *netdev)
+>> @@ -3076,6 +3146,77 @@ static void send_cap_queries(struct ibmvnic_adapter *adapter)
+>>   	ibmvnic_send_crq(adapter, &crq);
+>>   }
+>>
+>> +static void handle_vpd_size_rsp(union ibmvnic_crq *crq,
+>> +				struct ibmvnic_adapter *adapter)
+>> +{
+>> +	struct device *dev = &adapter->vdev->dev;
+>> +
+>> +	if (crq->get_vpd_size_rsp.rc.code) {
+>> +		dev_err(dev, "Error retrieving VPD size, rc=%x\n",
+>> +			crq->get_vpd_size_rsp.rc.code);
+>> +		complete(&adapter->fw_done);
+>> +		return;
+>> +	}
+>> +
+>> +	adapter->vpd->len = be64_to_cpu(crq->get_vpd_size_rsp.len);
+>> +	complete(&adapter->fw_done);
+>> +}
+>> +
+>> +static void handle_vpd_rsp(union ibmvnic_crq *crq,
+>> +			   struct ibmvnic_adapter *adapter)
+>> +{
+>> +	struct device *dev = &adapter->vdev->dev;
+>> +	unsigned char *substr = NULL, *ptr = NULL;
+>> +	u8 fw_level_len = 0;
+>> +
+>> +	dma_unmap_single(dev, adapter->vpd->dma_addr, adapter->vpd->len,
+>> +			 DMA_FROM_DEVICE);
+>> +
+>> +	if (crq->get_vpd_rsp.rc.code) {
+>> +		dev_err(dev, "Error retrieving VPD from device, rc=%x\n",
+>> +			crq->get_vpd_rsp.rc.code);
+>> +		memset(adapter->fw_version, 0, 32);
+>> +		goto complete;
+>> +	}
+>> +
+>> +	/* get the position of the firmware version info
+>> +	 * located after the ASCII 'RM' substring in the buffer
+>> +	 */
+>> +	substr = strnstr(adapter->vpd->buff, "RM", adapter->vpd->len);
+>> +	if (!substr) {
+>> +		dev_info(dev, "No FW level provided by VPD\n");
+>> +		memset(adapter->fw_version, 0, 32);
+>> +		goto complete;
+>> +	}
+>> +
+>> +	/* get length of firmware level ASCII substring */
+>> +	if ((substr + 2) < (adapter->vpd->buff + adapter->vpd->len)) {
+>> +		fw_level_len = *(substr + 2);
+>> +	} else {
+>> +		dev_info(dev, "Length of FW substr extrapolated VDP buff\n");
+>> +		memset(adapter->fw_version, 0, 32);
+>> +		goto complete;
+>> +	}
+>> +
+>> +	/* copy firmware version string from vpd into adapter */
+>> +	if ((substr + 3 + fw_level_len) <
+>> +	    (adapter->vpd->buff + adapter->vpd->len)) {
+>> +		ptr = strncpy((char *)adapter->fw_version,
+>> +			      substr + 3, fw_level_len);
+>> +
+>> +		if (!ptr) {
+>> +			dev_err(dev, "Failed to isolate FW level string\n");
+>> +			memset(adapter->fw_version, 0, 32);
+>> +		}
+>> +	} else {
+>> +		dev_info(dev, "FW substr extrapolated VPD buff\n");
+>> +		memset(adapter->fw_version, 0, 32);
+>> +	}
+>> +
+>> +complete:
+>> +	complete(&adapter->fw_done);
+>> +}
+>> +
+>>   static void handle_query_ip_offload_rsp(struct ibmvnic_adapter *adapter)
+>>   {
+>>   	struct device *dev = &adapter->vdev->dev;
+>> @@ -3807,6 +3948,12 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
+>>   		netdev_dbg(netdev, "Got Collect firmware trace Response\n");
+>>   		complete(&adapter->fw_done);
+>>   		break;
+>> +	case GET_VPD_SIZE_RSP:
+>> +		handle_vpd_size_rsp(crq, adapter);
+>> +		break;
+>> +	case GET_VPD_RSP:
+>> +		handle_vpd_rsp(crq, adapter);
+>> +		break;
+>>   	default:
+>>   		netdev_err(netdev, "Got an invalid cmd type 0x%02x\n",
+>>   			   gen_crq->cmd);
+>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+>> index 4670af8..d3a6959 100644
+>> --- a/drivers/net/ethernet/ibm/ibmvnic.h
+>> +++ b/drivers/net/ethernet/ibm/ibmvnic.h
+>> @@ -558,6 +558,12 @@ struct ibmvnic_multicast_ctrl {
+>>   	struct ibmvnic_rc rc;
+>>   } __packed __aligned(8);
+>>
+>> +struct ibmvnic_get_vpd_size {
+>> +	u8 first;
+>> +	u8 cmd;
+>> +	u8 reserved[14];
+>> +} __packed __aligned(8);
+>> +
+>>   struct ibmvnic_get_vpd_size_rsp {
+>>   	u8 first;
+>>   	u8 cmd;
+>> @@ -575,6 +581,13 @@ struct ibmvnic_get_vpd {
+>>   	u8 reserved[4];
+>>   } __packed __aligned(8);
+>>
+>> +struct ibmvnic_get_vpd_rsp {
+>> +	u8 first;
+>> +	u8 cmd;
+>> +	u8 reserved[10];
+>> +	struct ibmvnic_rc rc;
+>> +} __packed __aligned(8);
+>> +
+>>   struct ibmvnic_acl_change_indication {
+>>   	u8 first;
+>>   	u8 cmd;
+>> @@ -700,10 +713,10 @@ union ibmvnic_crq {
+>>   	struct ibmvnic_change_mac_addr change_mac_addr_rsp;
+>>   	struct ibmvnic_multicast_ctrl multicast_ctrl;
+>>   	struct ibmvnic_multicast_ctrl multicast_ctrl_rsp;
+>> -	struct ibmvnic_generic_crq get_vpd_size;
+>> +	struct ibmvnic_get_vpd_size get_vpd_size;
+>>   	struct ibmvnic_get_vpd_size_rsp get_vpd_size_rsp;
+>>   	struct ibmvnic_get_vpd get_vpd;
+>> -	struct ibmvnic_generic_crq get_vpd_rsp;
+>> +	struct ibmvnic_get_vpd_rsp get_vpd_rsp;
+>>   	struct ibmvnic_acl_change_indication acl_change_indication;
+>>   	struct ibmvnic_acl_query acl_query;
+>>   	struct ibmvnic_generic_crq acl_query_rsp;
+>> @@ -937,6 +950,12 @@ struct ibmvnic_error_buff {
+>>   	__be32 error_id;
+>>   };
+>>
+>> +struct ibmvnic_vpd {
+>> +	unsigned char *buff;
+>> +	dma_addr_t dma_addr;
+>> +	u64 len;
+>> +};
+>> +
+>>   enum vnic_state {VNIC_PROBING = 1,
+>>   		 VNIC_PROBED,
+>>   		 VNIC_OPENING,
+>> @@ -978,6 +997,10 @@ struct ibmvnic_adapter {
+>>   	dma_addr_t ip_offload_ctrl_tok;
+>>   	u32 msg_enable;
+>>
+>> +	/* Vital Product Data (VPD) */
+>> +	struct ibmvnic_vpd *vpd;
+>> +	char fw_version[32];
+>> +
+>>   	/* Statistics */
+>>   	struct ibmvnic_statistics stats;
+>>   	dma_addr_t stats_token;
+>>
 
 -- 
-Michal Hocko
-SUSE Labs
+Desnes Augusto Nunes do Rosário
+------------------------------------------
+
+Linux Developer - IBM / Brazil
+M.Sc. in Electrical and Computer Engineering - UFRN
+
+desnesn@br.ibm.com
