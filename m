@@ -1,24 +1,42 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYrhZ3QxrzDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 20:10:05 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id q4so255903pfg.13
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 01:10:05 -0800 (PST)
-Date: Sat, 11 Nov 2017 20:09:51 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYtV400T9zDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 21:31:07 +1100 (AEDT)
+Received: by mail-pf0-x22e.google.com with SMTP id a84so3573494pfl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 02:31:07 -0800 (PST)
+Date: Sat, 11 Nov 2017 21:30:50 +1100
 From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s/slice: Use addr limit when computing slice
- mask
-Message-ID: <20171111200951.648f37c6@roar.ozlabs.ibm.com>
-In-Reply-To: <87mv3urqi2.fsf@linux.vnet.ibm.com>
-References: <20171110045507.30147-1-aneesh.kumar@linux.vnet.ibm.com>
- <87zi7uo4c9.fsf@concordia.ellerman.id.au>
- <87mv3urqi2.fsf@linux.vnet.ibm.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: 'Matthew Wilcox' <willy@infradead.org>, Florian Weimer
+ <fweimer@redhat.com>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, Dave Hansen <dave.hansen@intel.com>, "Peter
+ Zijlstra" <peterz@infradead.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>, "Linux
+ Kernel Mailing List" <linux-kernel@vger.kernel.org>, Andy Lutomirski
+ <luto@amacapital.net>, linux-mm <linux-mm@kvack.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, "Kirill A. Shutemov"
+ <kirill@shutemov.name>, Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Thomas
+ Gleixner" <tglx@linutronix.de>, "Kirill A. Shutemov"
+ <kirill.shutemov@linux.intel.com>
+Subject: Re: POWER: Unexpected fault when writing to brk-allocated memory
+Message-ID: <20171111213050.34a4f585@roar.ozlabs.ibm.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DD00B84EF@AcuExch.aculab.com>
+References: <d52581f4-8ca4-5421-0862-3098031e29a8@linux.vnet.ibm.com>
+ <546d4155-5b7c-6dba-b642-29c103e336bc@redhat.com>
+ <20171107160705.059e0c2b@roar.ozlabs.ibm.com>
+ <20171107111543.ep57evfxxbwwlhdh@node.shutemov.name>
+ <20171107222228.0c8a50ff@roar.ozlabs.ibm.com>
+ <20171107122825.posamr2dmzlzvs2p@node.shutemov.name>
+ <20171108002448.6799462e@roar.ozlabs.ibm.com>
+ <2ce0a91c-985c-aad8-abfa-e91bc088bb3e@linux.vnet.ibm.com>
+ <20171107140158.iz4b2lchhrt6eobe@node.shutemov.name>
+ <20171110041526.6137bc9a@roar.ozlabs.ibm.com>
+ <20171109194421.GA12789@bombadil.infradead.org>
+ <063D6719AE5E284EB5DD2968C1650D6DD00B84EF@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,41 +48,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Nov 2017 22:59:57 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Fri, 10 Nov 2017 12:08:35 +0000
+David Laight <David.Laight@ACULAB.COM> wrote:
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+> From: Matthew Wilcox
+> > Sent: 09 November 2017 19:44
+> > 
+> > On Fri, Nov 10, 2017 at 04:15:26AM +1100, Nicholas Piggin wrote:  
+> > > So these semantics are what we're going with? Anything that does mmap() is
+> > > guaranteed of getting a 47-bit pointer and it can use the top 17 bits for
+> > > itself? Is intended to be cross-platform or just x86 and power specific?  
+> > 
+> > It is x86 and powerpc specific.  The arm64 people have apparently stumbled
+> > across apps that expect to be able to use bit 48 for their own purposes.
+> > And their address space is 48 bit by default.  Oops.  
 > 
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> >  
-> >> While computing slice mask for the free area we need make sure we only search
-> >> in the addr limit applicable for this mmap. We update the slb_addr_limit
-> >> after we request for a mmap above 128TB. But the following mmap request
-> >> with hint addr below 128TB should still limit its search to below 128TB. ie.
-> >> we should not use slb_addr_limit to compute slice mask in this case. Instead,
-> >> we should derive high addr limit based on the mmap hint addr value.
-> >>
-> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/mm/slice.c | 34 ++++++++++++++++++++++------------
-> >>  1 file changed, 22 insertions(+), 12 deletions(-)  
-> >
-> > How does this relate to the fixes Nick has sent?  
+> (Do you mean 49bit?)
+
+I think he meant bit 47, which makes sense because they were probably
+ported from x86-64 with 47 bit address. That seems to be why x86-64
+5-level and powerpc decided to limit to a 47 bit address space by
+default.
+
 > 
-> This patch is on top of the patch series sent by Nick. Without this
-> patch we will allocate memory across the 128TB range if hint_addr <
-> 128TB but hint_addr + len is more. Inorder to recreate this issue we
-> will have to map stack below. Hence one won't hit the error in general
-> case.
+> Aren't such apps just doomed to be broken?
 
-I couldn't get it to trigger this case after that series -- hash
-get_unmapped_area should be excluding that case up front before
-getting into the slice allocator. Do you have an strace to reproduce
-it?
+Well they're not portable but they are not broken if virtual address
+is limited.
 
-Either way I do think it would be good to tighten up all the slice
-bitmap limits, including all the other places that hardcodes the
-max bitmap size.
+> 
+> ISTR there is something on (IIRC) sparc64 that does a 'match'
+> on the high address bits to make it much harder to overrun
+> one area into another.
+
+I'm not sure about that but I think the problem would be the app
+masking out bits from the pointer for its own use before ever
+dereferencing it.
 
 Thanks,
 Nick
