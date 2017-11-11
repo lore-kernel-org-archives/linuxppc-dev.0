@@ -1,13 +1,13 @@
 Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYkkk0xTDzDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 15:41:33 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id s11so3408425pgc.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 20:41:33 -0800 (PST)
-Date: Sat, 11 Nov 2017 13:41:28 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yYkw40SZNzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 15:49:39 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id b85so8084342pfj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Nov 2017 20:49:39 -0800 (PST)
+Date: Sat, 11 Nov 2017 13:49:32 +0900
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 To: "Luck, Tony" <tony.luck@intel.com>
 Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -21,14 +21,15 @@ Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: [PATCHv4 0/6] printk/ia64/ppc64/parisc64: let's deprecate
- %pF/%pf printk specifiers
-Message-ID: <20171111044128.GA596@tigerII.localdomain>
+Subject: Re: [PATCHv4 5/6] symbol lookup: introduce
+ dereference_symbol_descriptor()
+Message-ID: <20171111044932.GB596@tigerII.localdomain>
 References: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
- <20171110181114.x22y2zr5qdf4y5za@agluck-desk>
+ <20171109234830.5067-6-sergey.senozhatsky@gmail.com>
+ <20171110180931.xhhi35osclzceba2@agluck-desk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171110181114.x22y2zr5qdf4y5za@agluck-desk>
+In-Reply-To: <20171110180931.xhhi35osclzceba2@agluck-desk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +39,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (11/10/17 10:11), Luck, Tony wrote:
-> On Fri, Nov 10, 2017 at 08:48:24AM +0900, Sergey Senozhatsky wrote:
-> > 	All Ack-s/Tested-by-s were dropped, since the patch set has been
-> > reworked. I'm kindly asking arch-s maintainers and developers to test it
-> > once again. Sorry for any inconveniences and thanks for your help in
-> > advance.
+On (11/10/17 10:09), Luck, Tony wrote:
+> On Fri, Nov 10, 2017 at 08:48:29AM +0900, Sergey Senozhatsky wrote:
+> > -Examples::
+> > -
+> > -	printk("Going to call: %pF\n", gettimeofday);
+> > -	printk("Going to call: %pF\n", p->func);
+> > -	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
+> > -	printk("%s: called from %pS\n", __func__,
+> > -				(void *)__builtin_return_address(0));
+> > -	printk("Faulted at %pS\n", (void *)regs->ip);
+> > -	printk(" %s%pB\n", (reliable ? "" : "? "), (void *)*stack);
 > 
-> You can add back the:
-> 
-> Tested-by: Tony Luck <tony.luck@intel.com> #ia64
+> Did you mean to delete the Examples completely?  Wouldn't it
+> be better to just update (s/%pF/%pS/g)?
 
-Thanks a ton, Tony!
+good question. yes, I think I did it deliberately :) we still
+kinda have some sort of "examples", right at the beginning of
+section "Symbols/Function Pointers"
+
+
+>  Symbols/Function Pointers
+>  =========================
+>
+>  ::
+>
+>         %pS     versatile_init+0x0/0x110
+>          %ps     versatile_init
+>          %pF     versatile_init+0x0/0x110
+>          %pf     versatile_init
+>          %pSR    versatile_init+0x9/0x110
+>                 (with __builtin_extract_return_addr() translation)
+>          %pB     prev_fn_of_versatile_init+0x88/0x88
+>
+>  The ``S`` and ``s`` specifiers are used for printing a pointer in symbolic
+>  format. They result in the symbol name with (``S``) or without (``s``)
+>  offsets. If KALLSYMS are disabled then the symbol address is printed instead.
+>
+>  Note, that the ``F`` and ``f`` specifiers are identical to ``S`` (``s``)
+>  and thus deprecated. We have ``F`` and ``f`` because on ia64, ppc64 and
+>  parisc64 function pointers are indirect and, in fact, are function
+>  descriptors, which require additional dereferencing before we can lookup
+>  the symbol. As of now, ``S`` and ``s`` perform dereferencing on those
+>  platforms (when needed), so ``F`` and ``f`` exist for compatibility
+>  reasons only.
+>
+>  The ``B`` specifier results in the symbol name with offsets and should be
+>  used when printing stack backtraces. The specifier takes into
+>  consideration the effect of compiler optimisations which may occur
+>  when tail-call``s are used and marked with the noreturn GCC attribute.
+
+I can return Examples back. don't really have a strong opinion
+on this. let me know.
 
 	-ss
