@@ -1,37 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yYyqv0Z26zDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 00:46:50 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vABDiIrH097899
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 08:46:48 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e5wyeyrtu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Nov 2017 08:46:47 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 11 Nov 2017 13:46:46 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yZXMF2fMvzDsQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 22:57:29 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64s/slice: Use addr limit when computing slice
- mask
-In-Reply-To: <20171111200951.648f37c6@roar.ozlabs.ibm.com>
-References: <20171110045507.30147-1-aneesh.kumar@linux.vnet.ibm.com>
- <87zi7uo4c9.fsf@concordia.ellerman.id.au> <87mv3urqi2.fsf@linux.vnet.ibm.com>
- <20171111200951.648f37c6@roar.ozlabs.ibm.com>
-Date: Sat, 11 Nov 2017 19:16:39 +0530
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ stewart@linux.vnet.ibm.com <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/3] powerpc/powernv: Always stop secondaries before
+ reboot/shutdown
+In-Reply-To: <20171111170002.0fcbe5c7@roar.ozlabs.ibm.com>
+References: <20171023080507.21974-1-npiggin@gmail.com>
+ <20171023080507.21974-2-npiggin@gmail.com>
+ <87tvy2o0gf.fsf@concordia.ellerman.id.au>
+ <20171111170002.0fcbe5c7@roar.ozlabs.ibm.com>
+Date: Sun, 12 Nov 2017 22:57:28 +1100
+Message-ID: <87lgjbwvyv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87k1yxrkqo.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,54 +31,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Fri, 10 Nov 2017 22:59:57 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> On Fri, 10 Nov 2017 22:08:32 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
->> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
 >> 
->> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->> >  
->> >> While computing slice mask for the free area we need make sure we only search
->> >> in the addr limit applicable for this mmap. We update the slb_addr_limit
->> >> after we request for a mmap above 128TB. But the following mmap request
->> >> with hint addr below 128TB should still limit its search to below 128TB. ie.
->> >> we should not use slb_addr_limit to compute slice mask in this case. Instead,
->> >> we should derive high addr limit based on the mmap hint addr value.
->> >>
->> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> >> ---
->> >>  arch/powerpc/mm/slice.c | 34 ++++++++++++++++++++++------------
->> >>  1 file changed, 22 insertions(+), 12 deletions(-)  
+>> > Currently powernv reboot and shutdown requests just leave secondaries
+>> > to do their own things. This is undesirable because they can trigger
+>> > any number of watchdogs while waiting for reboot, but also we don't
+>> > know what else they might be doing, or they might be stuck somewhere
+>> > causing trouble.
 >> >
->> > How does this relate to the fixes Nick has sent?  
+>> > The opal scheduled flash update code already ran into watchdog problems
+>> > due to flashing taking a long time, but it's possible for regular
+>> > reboots to trigger problems too (this is with watchdog_thresh set to 1,
+>> > but I have seen it with watchdog_thresh at the default value once too):
+>> >
+>> >   reboot: Restarting system
+>> >   [  360.038896709,5] OPAL: Reboot request...
+>> >   Watchdog CPU:0 Hard LOCKUP
+>> >   Watchdog CPU:44 detected Hard LOCKUP other CPUS:16
+>> >   Watchdog CPU:16 Hard LOCKUP
+>> >   watchdog: BUG: soft lockup - CPU#16 stuck for 3s! [swapper/16:0]
+>> >
+>> > So remove the special case for flash update, and unconditionally do
+>> > smp_send_stop before rebooting.
+>> >
+>> > Return the CPUs to Linux stop loops rather than OPAL. The reason for
+>> > this is that the path to firmware is longer, and the CPUs may have
+>> > been interrupted from firmware, which may cause problems to re-enter
+>> > it. It's better to put them into a simple spin loop to maximize the
+>> > chance of a successful reboot.  
 >> 
->> This patch is on top of the patch series sent by Nick. Without this
->> patch we will allocate memory across the 128TB range if hint_addr <
->> 128TB but hint_addr + len is more. Inorder to recreate this issue we
->> will have to map stack below. Hence one won't hit the error in general
->> case.
+>> I always assumed we had to send the CPUs back to OPAL for the flashing
+>> procedure. Is it OK to leave them in Linux?
 >
-> I couldn't get it to trigger this case after that series -- hash
-> get_unmapped_area should be excluding that case up front before
-> getting into the slice allocator. Do you have an strace to reproduce
-> it?
-
-That is correct. This change in slice_get_unmapped_area prevents the
-issue I mentioned above. I did have that hunk reverted to check the error
-mask creation. 
-
--		if (addr > mm->task_size - len ||
-+		if (addr > high_limit - len ||
- 		    !slice_area_is_free(mm, addr, len))
- 			addr = 0;
- 	}
-
-
+> According to the comment and changelog
 >
-> Either way I do think it would be good to tighten up all the slice
-> bitmap limits, including all the other places that hardcodes the
-> max bitmap size.
+> 2196c6f1ed66eef23df3b478cfe71661ae83726e
 >
+> It was added just to keep secondaries from going silly. Vasant, can
+> you remember details?
 
+OK. My worry is that we've established an implicit contract with skiboot
+on how we do this, and now we're looking to change it.
 
--aneesh
+So I guess we just want to confirm that the skiboot code has not grown a
+dependency on us returning CPUs, and then we should probably document
+what the expectations are in eg. the OPAL_FLASH_UPDATE docs.
+
+cheers
