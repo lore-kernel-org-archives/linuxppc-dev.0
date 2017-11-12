@@ -2,22 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yZXMF2fMvzDsQ1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 22:57:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yZYNM5zmGzDsQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 23:43:31 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- stewart@linux.vnet.ibm.com <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/3] powerpc/powernv: Always stop secondaries before
- reboot/shutdown
-In-Reply-To: <20171111170002.0fcbe5c7@roar.ozlabs.ibm.com>
-References: <20171023080507.21974-1-npiggin@gmail.com>
- <20171023080507.21974-2-npiggin@gmail.com>
- <87tvy2o0gf.fsf@concordia.ellerman.id.au>
- <20171111170002.0fcbe5c7@roar.ozlabs.ibm.com>
-Date: Sun, 12 Nov 2017 22:57:28 +1100
-Message-ID: <87lgjbwvyv.fsf@concordia.ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 3/8] powerpc/mm: Separate ibm,
+ dynamic-memory data from DT format
+In-Reply-To: <150850572658.9118.9227271506499547385.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <150850572658.9118.9227271506499547385.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Date: Sun, 12 Nov 2017 23:43:30 +1100
+Message-ID: <87vaifwtu5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,55 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi Nathan,
 
-> On Fri, 10 Nov 2017 22:08:32 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> 
->> > Currently powernv reboot and shutdown requests just leave secondaries
->> > to do their own things. This is undesirable because they can trigger
->> > any number of watchdogs while waiting for reboot, but also we don't
->> > know what else they might be doing, or they might be stuck somewhere
->> > causing trouble.
->> >
->> > The opal scheduled flash update code already ran into watchdog problems
->> > due to flashing taking a long time, but it's possible for regular
->> > reboots to trigger problems too (this is with watchdog_thresh set to 1,
->> > but I have seen it with watchdog_thresh at the default value once too):
->> >
->> >   reboot: Restarting system
->> >   [  360.038896709,5] OPAL: Reboot request...
->> >   Watchdog CPU:0 Hard LOCKUP
->> >   Watchdog CPU:44 detected Hard LOCKUP other CPUS:16
->> >   Watchdog CPU:16 Hard LOCKUP
->> >   watchdog: BUG: soft lockup - CPU#16 stuck for 3s! [swapper/16:0]
->> >
->> > So remove the special case for flash update, and unconditionally do
->> > smp_send_stop before rebooting.
->> >
->> > Return the CPUs to Linux stop loops rather than OPAL. The reason for
->> > this is that the path to firmware is longer, and the CPUs may have
->> > been interrupted from firmware, which may cause problems to re-enter
->> > it. It's better to put them into a simple spin loop to maximize the
->> > chance of a successful reboot.  
->> 
->> I always assumed we had to send the CPUs back to OPAL for the flashing
->> procedure. Is it OK to leave them in Linux?
->
-> According to the comment and changelog
->
-> 2196c6f1ed66eef23df3b478cfe71661ae83726e
->
-> It was added just to keep secondaries from going silly. Vasant, can
-> you remember details?
+Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index f83056297441..917184c13890 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -454,92 +455,93 @@ static int __init early_init_dt_scan_chosen_ppc(unsigned long node,
+...
+>  
+>  static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+>  						const char *uname,
+>  						int depth, void *data)
+>  {
+> +	int rc;
+> +
+>  	if (depth == 1 &&
+> -	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0)
+> -		return early_init_dt_scan_drconf_memory(node);
+> +	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0) {
+> +		rc = init_drmem_lmbs(node);
+> +		if (!rc)
+> +			early_init_dt_scan_drmem_lmbs(node);
+> +
+> +		return rc;
+> +	}
+>  	
+>  	return early_init_dt_scan_memory(node, uname, depth, data);
+>  }
 
-OK. My worry is that we've established an implicit contract with skiboot
-on how we do this, and now we're looking to change it.
+There's one bug in here which is that you return rc as returned by
+init_drmem_lmbs(). Returning non-zero from these scan routines
+terminates the scan, which means if anything goes wrong in
+init_drmem_lmbs() we may not call early_init_dt_scan_memory()
+in which case we won't have any memory at all.
 
-So I guess we just want to confirm that the skiboot code has not grown a
-dependency on us returning CPUs, and then we should probably document
-what the expectations are in eg. the OPAL_FLASH_UPDATE docs.
+I say "may not" because it depends on the order of the nodes in the
+device tree whether you hit the memory nodes or the dynamic reconfig mem
+info first. And the order of the nodes in the device tree is arbitrary
+so we can't rely on that.
+
+
+> diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
+> new file mode 100644
+> index 000000000000..8ad7cf36b2c4
+> --- /dev/null
+> +++ b/arch/powerpc/mm/drmem.c
+> @@ -0,0 +1,84 @@
+...
+> +
+> +int __init init_drmem_lmbs(unsigned long node)
+> +{
+> +	struct drmem_lmb *lmb;
+> +	const __be32 *prop;
+> +	int prop_sz;
+> +	u32 len;
+> +
+> +	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
+> +	if (!prop || len < dt_root_size_cells * sizeof(__be32))
+> +		return -1;
+> +
+> +	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
+> +
+> +	prop = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &len);
+> +	if (!prop || len < dt_root_size_cells * sizeof(__be32))
+> +		return -1;
+> +
+> +	drmem_info->n_lmbs = of_read_number(prop++, 1);
+> +	prop_sz = drmem_info->n_lmbs * sizeof(struct of_drconf_cell)
+> +		  + sizeof(__be32);
+> +	if (prop_sz < len)
+> +		return -1;
+> +
+> +	drmem_info->lmbs = alloc_bootmem(drmem_info->n_lmbs * sizeof(*lmb));
+> +	if (!drmem_info->lmbs)
+> +		return -1;
+
+The bigger problem we have though is that you're trying to allocate
+memory, in order to find out what memory we have :)
+
+I suspect it works in some cases because you hit the memory@0 node first
+in the device tree, and add that memory to memblock, which means
+init_drmem_lmbs() *can* allocate memory, and everything's good.
+
+But if we hit init_drmem_lmbs() first, or there's not enough space in
+memory@0, then allocating memory in order to discover memory is not
+going to work.
+
+I'm not sure what the best solution is. One option would be to
+statically allocate some space, so that we can discover some of the LMBs
+without doing an allocation. But we wouldn't be able to guarantee that
+we had enough space i nthat static allocation, so the code would need to
+handle doing that and then potentially finding more LMBs later using a
+dynamic alloc. So that could be a bit messy.
+
+The other option would be for the early_init_dt_scan_drmem_lmbs() code
+to still work on the device tree directly, rather than using the
+drmem_info array. That would make for uglier code, but may be necessary.
 
 cheers
