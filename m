@@ -1,40 +1,41 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
+Return-Path: <linuxram@us.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yZglL6ySRzDsTK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 04:30:22 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vACHTF0b023379
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 12:30:19 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e6f1bqfec-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yZm5B3PRPzDqCp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 07:46:06 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vACKju9V116329
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 15:46:03 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e6nynybe6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 12:30:18 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 15:46:00 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Sun, 12 Nov 2017 17:30:16 -0000
-Subject: Re: [PATCH 2/2] powerpc/fadump: use kstrtoint to handle sysfs store
-To: Michal Suchanek <msuchanek@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Colin Ian King <colin.king@canonical.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20170626140601.7106-1-msuchanek@suse.de>
- <20170626140601.7106-2-msuchanek@suse.de>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Sun, 12 Nov 2017 23:00:03 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sun, 12 Nov 2017 13:45:23 -0700
+Date: Sun, 12 Nov 2017 12:45:10 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ corbet@lwn.net, arnd@arndb.de, linux-arch@vger.kernel.org,
+ ebiederm@xmission.com, linux-doc@vger.kernel.org, x86@kernel.org,
+ dave.hansen@intel.com, linux-kernel@vger.kernel.org, mhocko@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
+ linux-kselftest@vger.kernel.org, bauerman@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 00/51] powerpc, mm: Memory Protection Keys
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <45ca9196-1d7d-d530-45df-4ee41773cace@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <20170626140601.7106-2-msuchanek@suse.de>
-Content-Type: multipart/alternative;
- boundary="------------37F9105DF9F86044BD4E0FD9"
-Message-Id: <91670617-7a85-22b7-acc9-b654aba22e06@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <45ca9196-1d7d-d530-45df-4ee41773cace@c-s.fr>
+Message-Id: <20171112204510.GE5546@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,175 +45,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------37F9105DF9F86044BD4E0FD9
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Nov 10, 2017 at 07:10:31PM +0100, Christophe LEROY wrote:
+> Hi
+> 
+> Le 06/11/2017 à 09:56, Ram Pai a écrit :
+> >Memory protection keys enable applications to protect its
+> >address space from inadvertent access from or corruption
+> >by itself.
+> >
+> >These patches along with the pte-bit freeing patch series
+> >enables the protection key feature on powerpc; 4k and 64k
+> >hashpage kernels. It also changes the generic and x86
+> >code to expose memkey features through sysfs. Finally
+> >testcases and Documentation is updated.
+> >
+> >All patches can be found at --
+> >https://github.com/rampai/memorykeys.git memkey.v9
+> 
+> As far as I can see you are focussing the implementation on 64 bits
+> powerpc. This could also be implemented on 32 bits powerpc, for
+> instance the 8xx has MMU Access Protection Registers which can be
+> used to define 16 domains and could I think be used for implementing
+> protection keys.
 
-Thanks for the patch, Michal.
+I was assuming non-existence of any 32bit powerpc
+systems supporting memory keys. Sounds like it was a wrong assumption.
 
+However, I think, the framework as it stands today should work. All
+the functionality is captured in pkeys.c and pkeys.h which are generic
+ppc files.  Its just a matter of providing the 32-bit implementation
+for whichever sub-arch that support it.  Can you point me to problem
+areas? I will fix them.
 
-On Monday 26 June 2017 07:36 PM, Michal Suchanek wrote:
-> Currently sysfs store handlers in fadump use if buf[0] == 'char'.
->
-> This means input "100foo" is interpreted as '1' and "01" as '0'.
->
-> Change to kstrtoint so leading zeroes and the like is handled in
-> expected way.
->
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-
-Acked-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-
-> ---
->   arch/powerpc/kernel/fadump.c | 17 +++++++++++++----
->   1 file changed, 13 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index 5a7355381dac..241eff0b5f76 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -1161,10 +1161,15 @@ static ssize_t fadump_release_memory_store(struct kobject *kobj,
->   					struct kobj_attribute *attr,
->   					const char *buf, size_t count)
->   {
-> +	int input = -1;
-> +
->   	if (!fw_dump.dump_active)
->   		return -EPERM;
->
-> -	if (buf[0] == '1') {
-> +	if (kstrtoint(buf, 0, &input))
-> +		return -EINVAL;
-> +
-> +	if (input == 1) {
->   		/*
->   		 * Take away the '/proc/vmcore'. We are releasing the dump
->   		 * memory, hence it will not be valid anymore.
-> @@ -1198,21 +1203,25 @@ static ssize_t fadump_register_store(struct kobject *kobj,
->   					const char *buf, size_t count)
->   {
->   	int ret = 0;
-> +	int input = -1;
->
->   	if (!fw_dump.fadump_enabled || fdm_active)
->   		return -EPERM;
->
-> +	if (kstrtoint(buf, 0, &input))
-> +		return -EINVAL;
-> +
->   	mutex_lock(&fadump_mutex);
->
-> -	switch (buf[0]) {
-> -	case '0':
-> +	switch (input) {
-> +	case 0:
->   		if (fw_dump.dump_registered == 0) {
->   			goto unlock_out;
->   		}
->   		/* Un-register Firmware-assisted dump */
->   		fadump_unregister_dump(&fdm);
->   		break;
-> -	case '1':
-> +	case 1:
->   		if (fw_dump.dump_registered == 1) {
->   			goto unlock_out;
->   		}
+Thanks for you interest. Togather we should be able to make it
+happen.
 
 
+> Of course the challenge after that would be to find 4 spare PTE
+> bits, I'm sure we can find them on the 8xx, at least when using 16k
+> pages we have 2 bits already available, then by merging PAGE_SHARED
+> and PAGE_USER and by reducing PAGE_RO to only one bit we can get the
+> 4 spare bits.
 
---------------37F9105DF9F86044BD4E0FD9
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
+yes. This needs to happen parallely.
+RP
 
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    <p>Thanks for the patch, Michal.<br>
-    </p>
-    <br>
-    <div class="moz-cite-prefix">On Monday 26 June 2017 07:36 PM, Michal
-      Suchanek wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:20170626140601.7106-2-msuchanek@suse.de">
-      <pre wrap="">Currently sysfs store handlers in fadump use if buf[0] == 'char'.
-
-This means input "100foo" is interpreted as '1' and "01" as '0'.
-
-Change to kstrtoint so leading zeroes and the like is handled in
-expected way.
-
-Signed-off-by: Michal Suchanek <a class="moz-txt-link-rfc2396E" href="mailto:msuchanek@suse.de">&lt;msuchanek@suse.de&gt;</a></pre>
-    </blockquote>
-    <br>
-    Acked-by: Hari Bathini <a class="moz-txt-link-rfc2396E"
-      href="mailto:hbathini@linux.vnet.ibm.com">&lt;hbathini@linux.vnet.ibm.com&gt;</a><br>
-    <br>
-    <blockquote type="cite"
-      cite="mid:20170626140601.7106-2-msuchanek@suse.de">
-      <pre wrap="">
----
- arch/powerpc/kernel/fadump.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 5a7355381dac..241eff0b5f76 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1161,10 +1161,15 @@ static ssize_t fadump_release_memory_store(struct kobject *kobj,
- 					struct kobj_attribute *attr,
- 					const char *buf, size_t count)
- {
-+	int input = -1;
-+
- 	if (!fw_dump.dump_active)
- 		return -EPERM;
-
--	if (buf[0] == '1') {
-+	if (kstrtoint(buf, 0, &amp;input))
-+		return -EINVAL;
-+
-+	if (input == 1) {
- 		/*
- 		 * Take away the '/proc/vmcore'. We are releasing the dump
- 		 * memory, hence it will not be valid anymore.
-@@ -1198,21 +1203,25 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 					const char *buf, size_t count)
- {
- 	int ret = 0;
-+	int input = -1;
-
- 	if (!fw_dump.fadump_enabled || fdm_active)
- 		return -EPERM;
-
-+	if (kstrtoint(buf, 0, &amp;input))
-+		return -EINVAL;
-+
- 	mutex_lock(&amp;fadump_mutex);
-
--	switch (buf[0]) {
--	case '0':
-+	switch (input) {
-+	case 0:
- 		if (fw_dump.dump_registered == 0) {
- 			goto unlock_out;
- 		}
- 		/* Un-register Firmware-assisted dump */
- 		fadump_unregister_dump(&amp;fdm);
- 		break;
--	case '1':
-+	case 1:
- 		if (fw_dump.dump_registered == 1) {
- 			goto unlock_out;
- 		}
-</pre>
-    </blockquote>
-    <br>
-    <br>
-  </body>
-</html>
-
---------------37F9105DF9F86044BD4E0FD9--
+> 
+> Therefore I think it would be great if you could implement a
+> framework common to both PPC32 and PPC64.
