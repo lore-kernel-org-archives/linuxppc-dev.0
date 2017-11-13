@@ -1,32 +1,31 @@
-Return-Path: <desnesn@linux.vnet.ibm.com>
+Return-Path: <bryantly@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybJLw6PP9zDqj8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 04:59:52 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybR3d0Bb1zDqjw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 10:02:04 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vADHwaW5029597
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 12:59:50 -0500
+ vADN11XQ107134
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 18:02:02 -0500
 Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e7bue8dwa-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e7mnv05xx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 12:59:50 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 18:02:02 -0500
 Received: from localhost
  by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
- Mon, 13 Nov 2017 10:59:49 -0700
-From: Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, tlfalcon@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com
-Subject: [PATCH] [net-next,
- v4] ibmvnic: Feature implementation of Vital Product Data (VPD) for
- the ibmvnic driver
-Date: Mon, 13 Nov 2017 15:59:19 -0200
-Message-Id: <20171113175919.22541-1-desnesn@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Mon, 13 Nov 2017 16:02:01 -0700
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ tlfalcon@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, stable@vger.kernel.org
+Subject: [PATCH] ibmveth: Kernel crash LSO offload flag toggle
+Date: Mon, 13 Nov 2017 17:01:55 -0600
+Message-Id: <20171113230155.99682-1-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,309 +35,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements and enables VDP support for the ibmvnic driver.
-Moreover, it includes the implementation of suitable structs, signal
- transmission/handling and functions which allows the retrival of firmware
- information from the ibmvnic card through the ethtool command.
+The following script when run (along with some iperf traffic recreates the
+crash within 5-10 mins or so).
 
-Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
-Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+while true
+do
+	ethtool -k ibmveth0 | grep tcp-segmentation-offload
+	ethtool -K ibmveth0 tso off
+	ethtool -k ibmveth0 | grep tcp-segmentation-offload
+	ethtool -K ibmveth0 tso on
+done
+
+Note: This issue happens the very first time largsesend offload is
+turned off too (but the above script recreates the issue all the times)
+
+Stack trace output:
+ [76563.914380] NIP [c000000000063940] memcpy_power7+0x40/0x800
+[76563.914387] LR [d000000000d31788] ibmveth_start_xmit+0x1c8/0x8d0 [ibmveth]
+[76563.914392] Call Trace:
+[76563.914396] [c0000000feab3270] [c0000000feab32d0] 0xc0000000feab32d0 (unreliable)
+[76563.914407] [c0000000feab3360] [c0000000009816f4] dev_hard_start_xmit+0x304/0x530
+[76563.914415] [c0000000feab3440] [c0000000009b6564] sch_direct_xmit+0x124/0x330
+[76563.914423] [c0000000feab34e0] [c000000000981ddc] __dev_queue_xmit+0x26c/0x770
+[76563.914431] [c0000000feab3580] [c000000000a1efc0] arp_xmit+0x30/0xd0
+[76563.914438] [c0000000feab35f0] [c000000000a1f0f4] arp_send_dst.part.0+0x94/0xb0
+[76563.914445] [c0000000feab3660] [c000000000a1fcb4] arp_solicit+0x114/0x2b0
+[76563.914452] [c0000000feab3730] [c00000000098d8f4] neigh_probe+0x84/0xd0
+[76563.914460] [c0000000feab3760] [c0000000009937cc] neigh_timer_handler+0xbc/0x320
+[76563.914468] [c0000000feab37a0] [c00000000014a3fc] call_timer_fn+0x5c/0x1c0
+[76563.914474] [c0000000feab3830] [c00000000014a8bc] run_timer_softirq+0x31c/0x3f0
+[76563.914483] [c0000000feab3900] [c0000000000bec58] __do_softirq+0x188/0x3e0
+[76563.914490] [c0000000feab39f0] [c0000000000bf128] irq_exit+0xc8/0x100
+[76563.914498] [c0000000feab3a10] [c00000000001f974] timer_interrupt+0xa4/0xe0
+[76563.914505] [c0000000feab3a40] [c000000000002714] decrementer_common+0x114/0x180
+
+Oops output:
+ [76563.914173] Unable to handle kernel paging request for data at address 0x00000000
+[76563.914197] Faulting instruction address: 0xc000000000063940
+[76563.914205] Oops: Kernel access of bad area, sig: 11 [#1]
+[76563.914210] SMP NR_CPUS=2048 NUMA pSeries
+[76563.914217] Modules linked in: rpadlpar_io rpaphp dccp_diag dccp tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag nls_utf8 isofs binfmt_misc pseries_rng rtc_generic autofs4 ibmvfc scsi_transport_fc ibmvscsi ibmveth
+[76563.914251] CPU: 3 PID: 0 Comm: swapper/3 Not tainted 4.4.0-34-generic #53-Ubuntu
+[76563.914258] task: c0000000fe9efcc0 ti: c0000000feab0000 task.ti: c0000000feab0000
+[76563.914265] NIP: c000000000063940 LR: d000000000d31788 CTR: c000000000064100
+[76563.914271] REGS: c0000000feab2ff0 TRAP: 0300   Not tainted  (4.4.0-34-generic)
+[76563.914277] MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 4800284e  XER: 0000001a
+[76563.914294] CFAR: c000000000008468 DAR: 0000000000000000 DSISR: 42000000 SOFTE: 1
+GPR00: 000000000000f240 c0000000feab3270 c0000000015b5d00 0000000000000000
+GPR04: c00000000d9b0004 000000000000002a 0000000000000006 c0000000efc0ccac
+GPR08: d000000000d3dd28 0000000000000080 0000000000000000 d000000000d34758
+GPR12: c000000000064100 c00000000e7f1c80 c0000000ffdca938 0000000000000100
+GPR16: c0000000ffdca738 c0000000ffdca538 c0000000feab34a0 c0000000015f4d00
+GPR20: 0000000000000000 c0000000015f4cf0 c0000000f5945900 0000000000000000
+GPR24: 0000000000000000 0000000080000000 c0000000feab32d0 c0000000efc0ccac
+GPR28: c0000000f23ccb00 c0000000f5945000 c0000000f23ccb00 c0000000efc0cc00
+[76563.914380] NIP [c000000000063940] memcpy_power7+0x40/0x800
+[76563.914387] LR [d000000000d31788] ibmveth_start_xmit+0x1c8/0x8d0 [ibmveth]
+[76563.914392] Call Trace:
+[76563.914396] [c0000000feab3270] [c0000000feab32d0] 0xc0000000feab32d0 (unreliable)
+[76563.914407] [c0000000feab3360] [c0000000009816f4] dev_hard_start_xmit+0x304/0x530
+[76563.914415] [c0000000feab3440] [c0000000009b6564] sch_direct_xmit+0x124/0x330
+[76563.914423] [c0000000feab34e0] [c000000000981ddc] __dev_queue_xmit+0x26c/0x770
+[76563.914431] [c0000000feab3580] [c000000000a1efc0] arp_xmit+0x30/0xd0
+[76563.914438] [c0000000feab35f0] [c000000000a1f0f4] arp_send_dst.part.0+0x94/0xb0
+[76563.914445] [c0000000feab3660] [c000000000a1fcb4] arp_solicit+0x114/0x2b0
+[76563.914452] [c0000000feab3730] [c00000000098d8f4] neigh_probe+0x84/0xd0
+[76563.914460] [c0000000feab3760] [c0000000009937cc] neigh_timer_handler+0xbc/0x320
+[76563.914468] [c0000000feab37a0] [c00000000014a3fc] call_timer_fn+0x5c/0x1c0
+[76563.914474] [c0000000feab3830] [c00000000014a8bc] run_timer_softirq+0x31c/0x3f0
+[76563.914483] [c0000000feab3900] [c0000000000bec58] __do_softirq+0x188/0x3e0
+[76563.914490] [c0000000feab39f0] [c0000000000bf128] irq_exit+0xc8/0x100
+[76563.914498] [c0000000feab3a10] [c00000000001f974] timer_interrupt+0xa4/0xe0
+[76563.914505] [c0000000feab3a40] [c000000000002714] decrementer_common+0x114/0x180
+[76563.914515] --- interrupt: 901 at plpar_hcall_norets+0x1c/0x28
+[76563.914515]     LR = check_and_cede_processor+0x34/0x50
+[76563.914525] [c0000000feab3d30] [c000000000916bf0] check_and_cede_processor+0x20/0x50 (unreliable)
+[76563.914534] [c0000000feab3d90] [c000000000916e18] shared_cede_loop+0x68/0x170
+[76563.914541] [c0000000feab3dd0] [c000000000913e20] cpuidle_enter_state+0x160/0x410
+[76563.914549] [c0000000feab3e30] [c000000000119d48] call_cpuidle+0x78/0xd0
+[76563.914556] [c0000000feab3e70] [c00000000011a11c] cpu_startup_entry+0x37c/0x480
+[76563.914564] [c0000000feab3f30] [c00000000004563c] start_secondary+0x33c/0x360
+[76563.914572] [c0000000feab3f90] [c000000000008b6c] start_secondary_prolog+0x10/0x14
+[76563.914579] Instruction dump:
+[76563.914584] 4185024c 7cc400d0 7cd01120 78c60760 409f0014 88040000 38840001 98030000
+[76563.914596] 38630001 409e0014 a0040000 38840002 <b0030000> 38630002 409d0014 80040000
+[76563.914613] ---[ end trace 5382b3d78671418e ]---
+[76563.916817]
+[76565.916870] Kernel panic - not syncing: Fatal exception in interrupt
+[76565.919468] ---[ end Kernel panic - not syncing: Fatal exception in interrupt
+
+Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+Cc: <stable@vger.kernel.org> # 4.14+
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 153 ++++++++++++++++++++++++++++++++++++-
- drivers/net/ethernet/ibm/ibmvnic.h |  27 ++++++-
- 2 files changed, 176 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/ibm/ibmveth.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index b918bc2..04aaacb 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -574,6 +574,15 @@ static int reset_tx_pools(struct ibmvnic_adapter *adapter)
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index f210398200ece..971ed54332d42 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1092,8 +1092,14 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
+ 	 */
+ 	if (force_bounce || (!skb_is_nonlinear(skb) &&
+ 				(skb->len < tx_copybreak))) {
+-		skb_copy_from_linear_data(skb, adapter->bounce_buffer,
+-					  skb->len);
++		if (adapter->bounce_buffer) {
++			skb_copy_from_linear_data(skb, adapter->bounce_buffer,
++						  skb->len);
++		} else {
++			adapter->tx_send_failed++;
++			netdev->stats.tx_dropped++;
++			goto out;
++		}
  
-+static void release_vpd_data(struct ibmvnic_adapter *adapter)
-+{
-+	if (!adapter->vpd)
-+		return;
-+
-+	kfree(adapter->vpd->buff);
-+	kfree(adapter->vpd);
-+}
-+
- static void release_tx_pools(struct ibmvnic_adapter *adapter)
- {
- 	struct ibmvnic_tx_pool *tx_pool;
-@@ -754,6 +763,8 @@ static void release_resources(struct ibmvnic_adapter *adapter)
- {
- 	int i;
+ 		descs[0].fields.flags_len = desc_flags | skb->len;
+ 		descs[0].fields.address = adapter->bounce_buffer_dma;
+@@ -1691,9 +1697,6 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 		netdev->features |= NETIF_F_FRAGLIST;
+ 	}
  
-+	release_vpd_data(adapter);
-+
- 	release_tx_pools(adapter);
- 	release_rx_pools(adapter);
+-	netdev->min_mtu = IBMVETH_MIN_MTU;
+-	netdev->max_mtu = ETH_MAX_MTU;
+-
+ 	memcpy(netdev->dev_addr, mac_addr_p, ETH_ALEN);
  
-@@ -834,6 +845,57 @@ static int set_real_num_queues(struct net_device *netdev)
- 	return rc;
- }
- 
-+static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
-+{
-+	struct device *dev = &adapter->vdev->dev;
-+	union ibmvnic_crq crq;
-+	dma_addr_t dma_addr;
-+	int len = 0;
-+
-+	if (adapter->vpd->buff)
-+		len = adapter->vpd->len;
-+
-+	reinit_completion(&adapter->fw_done);
-+	crq.get_vpd_size.first = IBMVNIC_CRQ_CMD;
-+	crq.get_vpd_size.cmd = GET_VPD_SIZE;
-+	ibmvnic_send_crq(adapter, &crq);
-+	wait_for_completion(&adapter->fw_done);
-+
-+	if (!adapter->vpd->len)
-+		return -ENODATA;
-+
-+	if (!adapter->vpd->buff)
-+		adapter->vpd->buff = kzalloc(adapter->vpd->len, GFP_KERNEL);
-+	else if (adapter->vpd->len != len)
-+		adapter->vpd->buff =
-+			krealloc(adapter->vpd->buff,
-+				 adapter->vpd->len, GFP_KERNEL);
-+
-+	if (!adapter->vpd->buff) {
-+		dev_err(dev, "Could allocate VPD buffer\n");
-+		return -ENOMEM;
-+	}
-+
-+	adapter->vpd->dma_addr =
-+		dma_map_single(dev, adapter->vpd->buff, adapter->vpd->len,
-+			       DMA_FROM_DEVICE);
-+	if (dma_mapping_error(dev, dma_addr)) {
-+		dev_err(dev, "Could not map VPD buffer\n");
-+		kfree(adapter->vpd->buff);
-+		return -ENOMEM;
-+	}
-+
-+	reinit_completion(&adapter->fw_done);
-+	crq.get_vpd.first = IBMVNIC_CRQ_CMD;
-+	crq.get_vpd.cmd = GET_VPD;
-+	crq.get_vpd.ioba = cpu_to_be32(adapter->vpd->dma_addr);
-+	crq.get_vpd.len = cpu_to_be32((u32)adapter->vpd->len);
-+	ibmvnic_send_crq(adapter, &crq);
-+	wait_for_completion(&adapter->fw_done);
-+
-+	return 0;
-+}
-+
- static int init_resources(struct ibmvnic_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
-@@ -851,6 +913,10 @@ static int init_resources(struct ibmvnic_adapter *adapter)
- 	if (rc)
- 		return rc;
- 
-+	adapter->vpd = kzalloc(sizeof(*adapter->vpd), GFP_KERNEL);
-+	if (!adapter->vpd)
-+		return -ENOMEM;
-+
- 	adapter->map_id = 1;
- 	adapter->napi = kcalloc(adapter->req_rx_queues,
- 				sizeof(struct napi_struct), GFP_KERNEL);
-@@ -924,7 +990,7 @@ static int __ibmvnic_open(struct net_device *netdev)
- static int ibmvnic_open(struct net_device *netdev)
- {
- 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
--	int rc;
-+	int rc, vpd;
- 
- 	mutex_lock(&adapter->reset_lock);
- 
-@@ -951,6 +1017,12 @@ static int ibmvnic_open(struct net_device *netdev)
- 
- 	rc = __ibmvnic_open(netdev);
- 	netif_carrier_on(netdev);
-+
-+	/* Vital Product Data (VPD) */
-+	vpd = ibmvnic_get_vpd(adapter);
-+	if (vpd)
-+		netdev_err(netdev, "failed to initialize Vital Product Data (VPD)\n");
-+
- 	mutex_unlock(&adapter->reset_lock);
- 
- 	return rc;
-@@ -1879,11 +1951,15 @@ static int ibmvnic_get_link_ksettings(struct net_device *netdev,
- 	return 0;
- }
- 
--static void ibmvnic_get_drvinfo(struct net_device *dev,
-+static void ibmvnic_get_drvinfo(struct net_device *netdev,
- 				struct ethtool_drvinfo *info)
- {
-+	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
-+
- 	strlcpy(info->driver, ibmvnic_driver_name, sizeof(info->driver));
- 	strlcpy(info->version, IBMVNIC_DRIVER_VERSION, sizeof(info->version));
-+	strlcpy(info->fw_version, adapter->fw_version,
-+		sizeof(info->fw_version));
- }
- 
- static u32 ibmvnic_get_msglevel(struct net_device *netdev)
-@@ -3140,6 +3216,73 @@ static void send_cap_queries(struct ibmvnic_adapter *adapter)
- 	ibmvnic_send_crq(adapter, &crq);
- }
- 
-+static void handle_vpd_size_rsp(union ibmvnic_crq *crq,
-+				struct ibmvnic_adapter *adapter)
-+{
-+	struct device *dev = &adapter->vdev->dev;
-+
-+	if (crq->get_vpd_size_rsp.rc.code) {
-+		dev_err(dev, "Error retrieving VPD size, rc=%x\n",
-+			crq->get_vpd_size_rsp.rc.code);
-+		complete(&adapter->fw_done);
-+		return;
-+	}
-+
-+	adapter->vpd->len = be64_to_cpu(crq->get_vpd_size_rsp.len);
-+	complete(&adapter->fw_done);
-+}
-+
-+static void handle_vpd_rsp(union ibmvnic_crq *crq,
-+			   struct ibmvnic_adapter *adapter)
-+{
-+	struct device *dev = &adapter->vdev->dev;
-+	unsigned char *substr = NULL, *ptr = NULL;
-+	u8 fw_level_len = 0;
-+
-+	memset(adapter->fw_version, 0, 32);
-+
-+	dma_unmap_single(dev, adapter->vpd->dma_addr, adapter->vpd->len,
-+			 DMA_FROM_DEVICE);
-+
-+	if (crq->get_vpd_rsp.rc.code) {
-+		dev_err(dev, "Error retrieving VPD from device, rc=%x\n",
-+			crq->get_vpd_rsp.rc.code);
-+		goto complete;
-+	}
-+
-+	/* get the position of the firmware version info
-+	 * located after the ASCII 'RM' substring in the buffer
-+	 */
-+	substr = strnstr(adapter->vpd->buff, "RM", adapter->vpd->len);
-+	if (!substr) {
-+		dev_info(dev, "No FW level provided by VPD\n");
-+		goto complete;
-+	}
-+
-+	/* get length of firmware level ASCII substring */
-+	if ((substr + 2) < (adapter->vpd->buff + adapter->vpd->len)) {
-+		fw_level_len = *(substr + 2);
-+	} else {
-+		dev_info(dev, "Length of FW substr extrapolated VDP buff\n");
-+		goto complete;
-+	}
-+
-+	/* copy firmware version string from vpd into adapter */
-+	if ((substr + 3 + fw_level_len) <
-+	    (adapter->vpd->buff + adapter->vpd->len)) {
-+		ptr = strncpy((char *)adapter->fw_version,
-+			      substr + 3, fw_level_len);
-+
-+		if (!ptr)
-+			dev_err(dev, "Failed to isolate FW level string\n");
-+	} else {
-+		dev_info(dev, "FW substr extrapolated VPD buff\n");
-+	}
-+
-+complete:
-+	complete(&adapter->fw_done);
-+}
-+
- static void handle_query_ip_offload_rsp(struct ibmvnic_adapter *adapter)
- {
- 	struct device *dev = &adapter->vdev->dev;
-@@ -3871,6 +4014,12 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
- 		netdev_dbg(netdev, "Got Collect firmware trace Response\n");
- 		complete(&adapter->fw_done);
- 		break;
-+	case GET_VPD_SIZE_RSP:
-+		handle_vpd_size_rsp(crq, adapter);
-+		break;
-+	case GET_VPD_RSP:
-+		handle_vpd_rsp(crq, adapter);
-+		break;
- 	default:
- 		netdev_err(netdev, "Got an invalid cmd type 0x%02x\n",
- 			   gen_crq->cmd);
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
-index 8ed829c..4487f1e 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.h
-+++ b/drivers/net/ethernet/ibm/ibmvnic.h
-@@ -560,6 +560,12 @@ struct ibmvnic_multicast_ctrl {
- 	struct ibmvnic_rc rc;
- } __packed __aligned(8);
- 
-+struct ibmvnic_get_vpd_size {
-+	u8 first;
-+	u8 cmd;
-+	u8 reserved[14];
-+} __packed __aligned(8);
-+
- struct ibmvnic_get_vpd_size_rsp {
- 	u8 first;
- 	u8 cmd;
-@@ -577,6 +583,13 @@ struct ibmvnic_get_vpd {
- 	u8 reserved[4];
- } __packed __aligned(8);
- 
-+struct ibmvnic_get_vpd_rsp {
-+	u8 first;
-+	u8 cmd;
-+	u8 reserved[10];
-+	struct ibmvnic_rc rc;
-+} __packed __aligned(8);
-+
- struct ibmvnic_acl_change_indication {
- 	u8 first;
- 	u8 cmd;
-@@ -702,10 +715,10 @@ union ibmvnic_crq {
- 	struct ibmvnic_change_mac_addr change_mac_addr_rsp;
- 	struct ibmvnic_multicast_ctrl multicast_ctrl;
- 	struct ibmvnic_multicast_ctrl multicast_ctrl_rsp;
--	struct ibmvnic_generic_crq get_vpd_size;
-+	struct ibmvnic_get_vpd_size get_vpd_size;
- 	struct ibmvnic_get_vpd_size_rsp get_vpd_size_rsp;
- 	struct ibmvnic_get_vpd get_vpd;
--	struct ibmvnic_generic_crq get_vpd_rsp;
-+	struct ibmvnic_get_vpd_rsp get_vpd_rsp;
- 	struct ibmvnic_acl_change_indication acl_change_indication;
- 	struct ibmvnic_acl_query acl_query;
- 	struct ibmvnic_generic_crq acl_query_rsp;
-@@ -939,6 +952,12 @@ struct ibmvnic_error_buff {
- 	__be32 error_id;
- };
- 
-+struct ibmvnic_vpd {
-+	unsigned char *buff;
-+	dma_addr_t dma_addr;
-+	u64 len;
-+};
-+
- enum vnic_state {VNIC_PROBING = 1,
- 		 VNIC_PROBED,
- 		 VNIC_OPENING,
-@@ -980,6 +999,10 @@ struct ibmvnic_adapter {
- 	dma_addr_t ip_offload_ctrl_tok;
- 	u32 msg_enable;
- 
-+	/* Vital Product Data (VPD) */
-+	struct ibmvnic_vpd *vpd;
-+	char fw_version[32];
-+
- 	/* Statistics */
- 	struct ibmvnic_statistics stats;
- 	dma_addr_t stats_token;
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
 -- 
-2.9.5
+2.13.6 (Apple Git-96)
