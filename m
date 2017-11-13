@@ -1,33 +1,45 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybF424w63zDqfm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 02:31:46 +1100 (AEDT)
-Date: Mon, 13 Nov 2017 16:31:42 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Joel Stanley <joel@jms.id.au>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybFRw5sZgzDqfw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 02:49:00 +1100 (AEDT)
+Date: Mon, 13 Nov 2017 15:48:13 +0000
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Joel Stanley <joel@jms.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
  Andrew Morton <akpm@linux-foundation.org>,
  Linux-Next Mailing List <linux-next@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arm-kernel@lists.infradead.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org
 Subject: Re: linux-next: Tree for Nov 7
-Message-ID: <20171113153142.aoznpjivgjjihlef@dhcp22.suse.cz>
+Message-ID: <20171113154811.GM12318@n2100.armlinux.org.uk>
 References: <20171107162217.382cd754@canb.auug.org.au>
  <CACPK8Xfd4nqkf=Lk3n6+TNHAAi327r0dkUfGypZ3TpR0LqfS4Q@mail.gmail.com>
  <20171108142050.7w3yliulxjeco3b7@dhcp22.suse.cz>
  <20171110123054.5pnefm3mczsfv7bz@dhcp22.suse.cz>
  <CACPK8Xe5uUKEytkRiszdX511b_cYTD-z3X=ZsMcNJ-NOYnXfuQ@mail.gmail.com>
  <20171113092006.cjw2njjukt6limvb@dhcp22.suse.cz>
- <20171113141140.cns5fxt5jg4zdedb@dhcp22.suse.cz>
- <20171113150908.GL12318@n2100.armlinux.org.uk>
+ <20171113094203.aofz2e7kueitk55y@dhcp22.suse.cz>
+ <87lgjawgx1.fsf@concordia.ellerman.id.au>
+ <20171113120057.555mvrs4fjq5tyng@dhcp22.suse.cz>
+ <20171113151641.yfqrecpcxllpn5mq@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171113150908.GL12318@n2100.armlinux.org.uk>
+In-Reply-To: <20171113151641.yfqrecpcxllpn5mq@dhcp22.suse.cz>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,83 +49,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 13-11-17 15:09:09, Russell King - ARM Linux wrote:
-> On Mon, Nov 13, 2017 at 03:11:40PM +0100, Michal Hocko wrote:
-> > On Mon 13-11-17 10:20:06, Michal Hocko wrote:
-> > > [Cc arm and ppc maintainers]
-> > > 
-> > > Thanks a lot for testing!
-> > > 
-> > > On Sun 12-11-17 11:38:02, Joel Stanley wrote:
-> > > > On Fri, Nov 10, 2017 at 11:00 PM, Michal Hocko <mhocko@kernel.org> wrote:
-> > > > > Hi Joel,
-> > > > >
-> > > > > On Wed 08-11-17 15:20:50, Michal Hocko wrote:
-> > > > > [...]
-> > > > >> > There are a lot of messages on the way up that look like this:
-> > > > >> >
-> > > > >> > [    2.527460] Uhuuh, elf segement at 000d9000 requested but the
-> > > > >> > memory is mapped already
-> > > > >> > [    2.540160] Uhuuh, elf segement at 000d9000 requested but the
-> > > > >> > memory is mapped already
-> > > > >> > [    2.546153] Uhuuh, elf segement at 000d9000 requested but the
-> > > > >> > memory is mapped already
-> > > > >> >
-> > > > >> > And then trying to run userspace looks like this:
-> > > > >>
-> > > > >> Could you please run with debugging patch posted
-> > > > >> http://lkml.kernel.org/r/20171107102854.vylrtaodla63kc57@dhcp22.suse.cz
-> > > > >
-> > > > > Did you have chance to test with this debugging patch, please?
-> > > > 
-> > > > Lots of this:
-> > > > 
-> > > > [    1.177266] Uhuuh, elf segement at 000d9000 requested but the  memory is mapped already, got 000dd000
-> > > > [    1.177555] Clashing vma [dd000, de000] flags:100873 name:(null)
-> > > 
-> > > This smells like the problem I've expected that mmap with hint doesn't
-> > > respect the hint even though there is no clashing mapping. The above
-> > > basically says that we didn't map at 0xd9000 but it has placed it at
-> > > 0xdd000. The nearest (clashing) vma is at 0xdd000 so this is our new
-> > > mapping. find_vma returns the closest vma (with addr < vm_end) for the
-> > > given address 0xd9000 so this address cannot be mapped by any other vma.
-> > > 
-> > > Now that I am looking at arm's arch_get_unmapped_area it does perform
-> > > aligning for shared vmas.
-> > 
-> > Sorry for confusion here. These are not shared mappings as pointed out
-> > by Russell in a private email. I got confused by the above flags which I
-> > have misinterpreted as bit 0 set => MAP_SHARED. These are vm_flags
-> > obviously so the bit 0 is VM_READ. Sorry about the confusion. The real
-> > reason we are doing the alignment is that we do a file mapping
-> > 	/*
-> > 	 * We only need to do colour alignment if either the I or D
-> > 	 * caches alias.
-> > 	 */
-> > 	if (aliasing)
-> > 		do_align = filp || (flags & MAP_SHARED);
-> > 
-> > I am not really familiar with this architecture to understand why do we
-> > need aliasing for file mappings, though.
+On Mon, Nov 13, 2017 at 04:16:41PM +0100, Michal Hocko wrote:
+> On Mon 13-11-17 13:00:57, Michal Hocko wrote:
+> [...]
+> > Yes, I have mentioned that in the previous email but the amount of code
+> > would be even larger. Basically every arch which reimplements
+> > arch_get_unmapped_area would have to special case new MAP_FIXED flag to
+> > do vma lookup.
 > 
-> I think it's there so that flush_dcache_page() works - possibly
-> get_user_pages() being used on a private mapping of page cache pages,
-> but that's guessing.
+> It turned out that this might be much more easier than I thought after
+> all. It seems we can really handle that in the common code. This would
+> mean that we are exposing a new functionality to the userspace though.
+> Myabe this would be useful on its own though. Just a quick draft (not
+> even compile tested) whether this makes sense in general. I would be
+> worried about unexpected behavior when somebody set other bit without a
+> good reason and we might fail with ENOMEM for such a call now.
+> 
+> Elf loader would then use MAP_FIXED_SAFE rather than MAP_FIXED.
+> ---
+> diff --git a/arch/alpha/include/uapi/asm/mman.h b/arch/alpha/include/uapi/asm/mman.h
+> index 3b26cc62dadb..d021c21f9b01 100644
+> --- a/arch/alpha/include/uapi/asm/mman.h
+> +++ b/arch/alpha/include/uapi/asm/mman.h
+> @@ -31,6 +31,9 @@
+>  #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
+>  #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
+>  
+> +#define MAP_KEEP_MAPPING 0x2000000
+> +#define MAP_FIXED_SAFE	MAP_FIXED|MAP_KEEP_MAPPING /* enforce MAP_FIXED without clobbering an existing mapping */
 
-I fail to see how the mixure of MAP_FIXED and regular mapping of the
-same file work then, but as I've said I really do not understand this
-code.
+A few things...
 
-> I'm afraid I don't remember all the details, this is code from around
-> 15 years ago, and I'd be very nervous about changing it now without
-> fully understanding the issues.
+1. Does this need to be exposed to userland?
+2. Can it end up in include/uapi/asm-generic/mman*.h ?
+3. The definition of MAP_FIXED_SAFE should really have parens around it.
 
-Ohh, absolutely! I didn't dare to touch this code and that's why I took
-the easy way and simply opt-out from the harding for all those archs
-that are basically sharing this pattern. But after a closer look it
-seems that we can really introduce MAP_FIXED_SAFE that would keep the
-arch mmap code intact yet we would get the hardening for all archs.
-It would allow also allow a safer MAP_FIXED semantic for userspace.
+> @@ -1365,6 +1365,13 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
+>  	if (offset_in_page(addr))
+>  		return addr;
+>  
+> +	if ((flags & MAP_FIXED_SAFE) == MAP_FIXED_SAFE) {
+
+I'm surprised this doesn't warn - since this effectively expands to:
+
+	flags & MAP_FIXED | MAP_KEEP_MAPPING
+
+hence why MAP_FIXED_SAFE needs parens.
+
 -- 
-Michal Hocko
-SUSE Labs
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
