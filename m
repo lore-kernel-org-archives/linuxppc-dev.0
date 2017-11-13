@@ -1,27 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x235.google.com (mail-pg0-x235.google.com
- [IPv6:2607:f8b0:400e:c05::235])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yb2WV1xTmzDqYg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 18:36:20 +1100 (AEDT)
-Received: by mail-pg0-x235.google.com with SMTP id p9so12074369pgc.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 23:36:20 -0800 (PST)
-Date: Mon, 13 Nov 2017 18:36:01 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Florian Weimer <fweimer@redhat.com>, "Kirill A. Shutemov"
- <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH v2 1/5] powerpc/64s/hash: Fix 128TB-512TB virtual
- address boundary case allocation
-Message-ID: <20171113183601.18526bbc@roar.ozlabs.ibm.com>
-In-Reply-To: <87h8tysriw.fsf@linux.vnet.ibm.com>
-References: <20171109172740.19681-1-npiggin@gmail.com>
- <20171109172740.19681-2-npiggin@gmail.com>
- <87h8tysriw.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yb3Pg5bvvzDqYw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 19:16:23 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id 17so11311408pfn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:16:23 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+To: alistair@popple.id.au
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ aneesh.kumar@linux.vnet.ibm.com, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH] powerpc/npu: Cleanup MMIO ATSD flushing
+Date: Mon, 13 Nov 2017 19:16:11 +1100
+Message-Id: <20171113081611.27374-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +23,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Nov 2017 10:29:19 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+While reviewing the code I found that the flush assumes all
+pages are of mmu_linear_psize, which is not correct. The patch
+uses find_linux_pte to find the right page size and uses that
+for launching the ATSD invalidation. A new helper is added
+to abstract the invalidation from the various notifiers.
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > When allocating VA space with a hint that crosses 128TB, the SLB addr_limit
-> > variable is not expanded if addr is not > 128TB, but the slice allocation
-> > looks at task_size, which is 512TB. This results in slice_check_fit()
-> > incorrectly succeeding because the slice_count truncates off bit 128 of the
-> > requested mask, so the comparison to the available mask succeeds.
-> >
-> > Fix this by using mm->context.addr_limit instead of mm->task_size for
-> > testing allocation limits. This causes such allocations to fail.
-> >  
-> 
-> Also note that this change the rule from > 128TB to >-128TB to select
-> the larger address space. I guess that is correct because without '>=' we
-> won't be able to allocate anything starting from 128TB (except MAP_FIXED).
+The patch also cleans up a bit by removing AP size from PID
+flushes.
 
-Oh yes, thanks. That should at least be in the changelog. Probably
-split into its own patch really.
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
 
-Thanks,
-Nick
+Changelog since RFC
+ - Implement review comments from Aneesh
+
+ arch/powerpc/platforms/powernv/npu-dma.c | 66 ++++++++++++++++++++++++--------
+ 1 file changed, 49 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 2cb6cbea4b3b..bf12a023a8de 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -17,6 +17,7 @@
+ #include <linux/pci.h>
+ #include <linux/memblock.h>
+ #include <linux/iommu.h>
++#include <linux/huge_mm.h>
+ 
+ #include <asm/tlb.h>
+ #include <asm/powernv.h>
+@@ -27,6 +28,7 @@
+ #include <asm/pnv-pci.h>
+ #include <asm/msi_bitmap.h>
+ #include <asm/opal.h>
++#include <asm/pte-walk.h>
+ 
+ #include "powernv.h"
+ #include "pci.h"
+@@ -459,9 +461,6 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
+ 	/* PRS set to process-scoped */
+ 	launch |= PPC_BIT(13);
+ 
+-	/* AP */
+-	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+-
+ 	/* PID */
+ 	launch |= pid << PPC_BITLSHIFT(38);
+ 
+@@ -473,7 +472,8 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
+ }
+ 
+ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+-			unsigned long pid, bool flush)
++			unsigned long pid, bool flush,
++			unsigned int shift)
+ {
+ 	unsigned long launch;
+ 
+@@ -484,9 +484,8 @@ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+ 	launch |= PPC_BIT(13);
+ 
+ 	/* AP */
+-	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
++	launch |= (u64) mmu_get_ap(shift) << PPC_BITLSHIFT(17);
+ 
+-	/* PID */
+ 	launch |= pid << PPC_BITLSHIFT(38);
+ 
+ 	/* No flush */
+@@ -503,7 +502,8 @@ struct mmio_atsd_reg {
+ };
+ 
+ static void mmio_invalidate_wait(
+-	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
++	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush,
++	unsigned int shift)
+ {
+ 	struct npu *npu;
+ 	int i, reg;
+@@ -536,7 +536,8 @@ static void mmio_invalidate_wait(
+  * the value of va.
+  */
+ static void mmio_invalidate(struct npu_context *npu_context, int va,
+-			unsigned long address, bool flush)
++			unsigned long address, bool flush,
++			unsigned int shift)
+ {
+ 	int i, j;
+ 	struct npu *npu;
+@@ -569,7 +570,7 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+ 			if (va)
+ 				mmio_atsd_reg[i].reg =
+ 					mmio_invalidate_va(npu, address, pid,
+-							flush);
++							flush, shift);
+ 			else
+ 				mmio_atsd_reg[i].reg =
+ 					mmio_invalidate_pid(npu, pid, flush);
+@@ -582,10 +583,43 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+ 		}
+ 	}
+ 
+-	mmio_invalidate_wait(mmio_atsd_reg, flush);
++	mmio_invalidate_wait(mmio_atsd_reg, flush, shift);
+ 	if (flush)
+ 		/* Wait for the flush to complete */
+-		mmio_invalidate_wait(mmio_atsd_reg, false);
++		mmio_invalidate_wait(mmio_atsd_reg, false, shift);
++}
++
++static void pnv_npu2_invalidate_helper(struct npu_context *npu_context,
++		struct mm_struct *mm, unsigned long start,
++		unsigned long end, bool flush)
++{
++	unsigned long address;
++	bool is_thp = false;
++	unsigned int hshift = 0, shift;
++
++	address = start;
++	do {
++		local_irq_disable();
++		find_linux_pte(mm->pgd, address, &is_thp, &hshift);
++		if (!is_thp)
++			shift = PAGE_SHIFT;
++		else if (hshift && !is_thp)
++			shift = hshift;
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++		else
++			shift = HPAGE_PMD_SIZE;
++#else
++		else {
++			shift = PAGE_SHIFT;
++			pr_warn_once("unsupport page size for mm %p,addr %lx\n",
++					mm, start);
++		}
++#endif
++		mmio_invalidate(npu_context, address > 0, address, flush,
++				shift);
++		local_irq_enable();
++		address += (1ull << shift);
++	} while (address < end);
+ }
+ 
+ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+@@ -601,7 +635,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+ 	 * There should be no more translation requests for this PID, but we
+ 	 * need to ensure any entries for it are removed from the TLB.
+ 	 */
+-	mmio_invalidate(npu_context, 0, 0, true);
++	pnv_npu2_invalidate_helper(npu_context, mm, 0, PAGE_SIZE, true);
+ }
+ 
+ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+@@ -611,7 +645,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+ {
+ 	struct npu_context *npu_context = mn_to_npu_context(mn);
+ 
+-	mmio_invalidate(npu_context, 1, address, true);
++	pnv_npu2_invalidate_helper(npu_context, mm, address, address, true);
+ }
+ 
+ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+@@ -619,13 +653,11 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+ 					unsigned long start, unsigned long end)
+ {
+ 	struct npu_context *npu_context = mn_to_npu_context(mn);
+-	unsigned long address;
+ 
+-	for (address = start; address < end; address += PAGE_SIZE)
+-		mmio_invalidate(npu_context, 1, address, false);
++	pnv_npu2_invalidate_helper(npu_context, mm, start, end, false);
+ 
+ 	/* Do the flush only on the final addess == end */
+-	mmio_invalidate(npu_context, 1, address, true);
++	pnv_npu2_invalidate_helper(npu_context, mm, end, end, true);
+ }
+ 
+ static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
+-- 
+2.13.6
