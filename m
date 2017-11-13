@@ -1,30 +1,34 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <santosh@fossix.org>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yb02w2KtyzDqNh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 16:44:56 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAD5hlWO112886
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:44:54 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e6wqwgggu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:44:54 -0500
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 12 Nov 2017 22:44:53 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] selftest/mm: Add test for checking mmap across 128TB boundary
-Date: Mon, 13 Nov 2017 11:14:40 +0530
-Message-Id: <20171113054440.11279-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yb1zG73QYzDqYc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 18:11:54 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id a84so6331250pfl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 23:11:54 -0800 (PST)
+Date: Mon, 13 Nov 2017 12:41:49 +0530
+From: Santosh Sivaraj <santosh@fossix.org>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Petr Mladek <pmladek@suse.com>,
+ Steven Rostedt <rostedt@goodmis.org>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: [PATCHv4 3/6] powerpc64: Add .opd based function descriptor
+ dereference
+Message-ID: <20171113071149.crpthceuvtxtzj2s@santosiv.in.ibm.com>
+References: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
+ <20171109234830.5067-4-sergey.senozhatsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171109234830.5067-4-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,203 +38,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- tools/testing/selftests/vm/Makefile         |   1 +
- tools/testing/selftests/vm/run_vmtests      |  11 ++
- tools/testing/selftests/vm/va_128TBswitch.c | 152 ++++++++++++++++++++++++++++
- 3 files changed, 164 insertions(+)
- create mode 100644 tools/testing/selftests/vm/va_128TBswitch.c
+* Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote (on 2017-11-10 08:48:27 +0900):
 
-diff --git a/tools/testing/selftests/vm/Makefile b/tools/testing/selftests/vm/Makefile
-index cbb29e41ef2b..b1fb3cd7cf52 100644
---- a/tools/testing/selftests/vm/Makefile
-+++ b/tools/testing/selftests/vm/Makefile
-@@ -17,6 +17,7 @@ TEST_GEN_FILES += transhuge-stress
- TEST_GEN_FILES += userfaultfd
- TEST_GEN_FILES += mlock-random-test
- TEST_GEN_FILES += virtual_address_range
-+TEST_GEN_FILES += va_128TBswitch
- 
- TEST_PROGS := run_vmtests
- 
-diff --git a/tools/testing/selftests/vm/run_vmtests b/tools/testing/selftests/vm/run_vmtests
-index 07548a1fa901..b367f7801b67 100755
---- a/tools/testing/selftests/vm/run_vmtests
-+++ b/tools/testing/selftests/vm/run_vmtests
-@@ -176,4 +176,15 @@ else
- 	echo "[PASS]"
- fi
- 
-+echo "-----------------------------"
-+echo "running virtual address 128TB switch test" 
-+echo "-----------------------------"
-+./va_128TBswitch
-+if [ $? -ne 0 ]; then
-+	echo "[FAIL]"
-+	exitcode=1
-+else
-+	echo "[PASS]"
-+fi
-+
- exit $exitcode
-diff --git a/tools/testing/selftests/vm/va_128TBswitch.c b/tools/testing/selftests/vm/va_128TBswitch.c
-new file mode 100644
-index 000000000000..ee1842c342ba
---- /dev/null
-+++ b/tools/testing/selftests/vm/va_128TBswitch.c
-@@ -0,0 +1,152 @@
-+/*
-+ * Copyright IBM Corporation, 2017
-+ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2.1 of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <sys/mman.h>
-+
-+#ifdef DEBUG
-+#define pr_debug(fmt, ...)  printf(fmt, ##__VA_ARGS__)
-+#else
-+#define pr_debug(fmt, ...)
-+#endif
-+
-+#define VA_128TB (1UL << 47)
-+
-+#ifdef __powerpc64__
-+#define MAP_SIZE  64*1024
-+#else
-+#define MAP_SIZE  4*1024
-+#endif
-+
-+
-+void report_failure(long in_addr, unsigned long flags)
-+{
-+	printf("Failed to map 0x%lx with flags 0x%lx\n", in_addr, flags);
-+	exit(1);
-+}
-+
-+int *__map_addr(long in_addr, int size, unsigned long flags, int unmap)
-+{
-+	int *addr;
-+
-+	addr = (int *)mmap((void *)in_addr, size, PROT_READ | PROT_WRITE,
-+			   MAP_ANONYMOUS | MAP_PRIVATE | flags, -1, 0);
-+	if (addr == MAP_FAILED)
-+		report_failure(in_addr, flags);
-+	pr_debug("Mapped addr 0x%lx-0x%lx for request 0x%lx with flag 0x%lx\n",
-+		 (unsigned long)addr, ((unsigned long)addr + size), in_addr, flags);
-+	/*
-+	 * Try to access to catch errors in fault handling/slb miss handling
-+	 */
-+	*addr = 10;
-+	if (unmap)
-+		munmap(addr, size);
-+	return addr;
-+}
-+
-+int *map_addr(long in_addr, unsigned long flags, int unmap)
-+{
-+	return __map_addr(in_addr, MAP_SIZE, flags, unmap);
-+}
-+
-+void boundary_check(void)
-+{
-+	int *a;
-+
-+	/*
-+	 * If stack is moved, we could possibly allocate
-+	 * this at the requested address.
-+	 */
-+	a = map_addr((VA_128TB - MAP_SIZE), 0, 1);
-+	if ((unsigned long)a > VA_128TB - MAP_SIZE)
-+		report_failure(VA_128TB - MAP_SIZE, 0);
-+
-+	/*
-+	 * We should never allocate at the requested address or above it
-+	 * The len cross the 128TB boundary. Without MAP_FIXED
-+	 * we will always search in the lower address space.
-+	 */
-+	a = __map_addr((VA_128TB - MAP_SIZE), 2*MAP_SIZE, 0, 1);
-+	if ((unsigned long)a >= VA_128TB - MAP_SIZE)
-+		report_failure(VA_128TB - MAP_SIZE, 0);
-+	/*
-+	 * Exact mapping at 128TB, the area is free we should get that
-+	 * even without MAP_FIXED. Don't unmap. We check fixed in the
-+	 * same range later.
-+	 */
-+	a = map_addr(VA_128TB, 0, 0);
-+	if ((unsigned long)a != VA_128TB)
-+		report_failure(VA_128TB, 0);
-+
-+	a = map_addr(VA_128TB + MAP_SIZE, 0, 1);
-+	if ((unsigned long)a < VA_128TB)
-+		report_failure(VA_128TB, 0);
-+
-+#if 0
-+	/*
-+	 * Enable this with stack mapped MAP_SIZE below 128TB
-+	 */
-+	a = map_addr((VA_128TB - MAP_SIZE), MAP_FIXED, 1);
-+	if ((unsigned long)a != VA_128TB - MAP_SIZE)
-+		report_failure(VA_128TB - MAP_SIZE, 0);
-+	a = __map_addr((VA_128TB - MAP_SIZE), 2*MAP_SIZE, MAP_FIXED, 1);
-+	if ((unsigned long)a != VA_128TB - MAP_SIZE)
-+		report_failure(VA_128TB - MAP_SIZE, MAP_FIXED);
-+
-+#endif
-+	a = map_addr(VA_128TB, MAP_FIXED, 1);
-+	if ((unsigned long)a != VA_128TB)
-+		report_failure(VA_128TB, MAP_FIXED);
-+}
-+
-+
-+int main(int argc, char *argv[])
-+{
-+	int *a;
-+	/*
-+	 * check the 128TB boundary before we update addr_limit
-+	 */
-+	boundary_check();
-+
-+	a = map_addr(0, 0, 1);
-+	if ((unsigned long)a > VA_128TB)
-+		report_failure(0, 0);
-+
-+	a = map_addr(-1, 0, 1);
-+	if ((unsigned long)a < VA_128TB)
-+		report_failure(-1, 0);
-+
-+	/* don't unmap this one */
-+	a = map_addr((1UL << 48), 0, 0);
-+	if ((unsigned long)a != 1UL << 48)
-+		report_failure((1UL << 48), 0);
-+
-+	a = map_addr((1UL << 48), 0, 1);
-+	if ((unsigned long)a < VA_128TB)
-+		report_failure((1UL << 48), 0);
-+
-+	a = map_addr(0, 0, 1);
-+	if ((unsigned long)a > VA_128TB)
-+		report_failure(0, 0);
-+
-+	a = map_addr(-1, 0, 1);
-+	if ((unsigned long)a < VA_128TB)
-+		report_failure(-1, 0);
-+	/*
-+	 * Try boundary conditions again after we allocated something above 128TB
-+	 * and updated addr_limit.
-+	 */
-+	boundary_check();
-+}
+> We are moving towards separate kernel and module function descriptor
+> dereference callbacks. This patch enables it for powerpc64.
+> 
+> For pointers that belong to the kernel
+> -  Added __start_opd and __end_opd pointers, to track the kernel
+>    .opd section address range;
+> 
+> -  Added dereference_kernel_function_descriptor(). Now we
+>    will dereference only function pointers that are within
+>    [__start_opd, __end_opd);
+> 
+> For pointers that belong to a module
+> -  Added dereference_module_function_descriptor() to handle module
+>    function descriptor dereference. Now we will dereference only
+>    pointers that are within [module->opd.start, module->opd.end).
+> 
+> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> ---
+>  arch/powerpc/include/asm/module.h   |  3 +++
+>  arch/powerpc/include/asm/sections.h | 12 ++++++++++++
+>  arch/powerpc/kernel/module_64.c     | 14 ++++++++++++++
+>  arch/powerpc/kernel/vmlinux.lds.S   |  2 ++
+>  4 files changed, 31 insertions(+)
+>
+
+Looks good on powerpc. If you wish:
+
+Tested-by: Santosh Sivaraj <santosh@fossix.org> # for powerpc
+
+Thanks,
+Santosh
+
+> diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+> index 6c0132c7212f..7e28442827f1 100644
+> --- a/arch/powerpc/include/asm/module.h
+> +++ b/arch/powerpc/include/asm/module.h
+> @@ -45,6 +45,9 @@ struct mod_arch_specific {
+>  	unsigned long tramp;
+>  #endif
+>  
+> +	/* For module function descriptor dereference */
+> +	unsigned long start_opd;
+> +	unsigned long end_opd;
+>  #else /* powerpc64 */
+>  	/* Indices of PLT sections within module. */
+>  	unsigned int core_plt_section;
+> diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+> index 82bec63bbd4f..e335a8f846af 100644
+> --- a/arch/powerpc/include/asm/sections.h
+> +++ b/arch/powerpc/include/asm/sections.h
+> @@ -66,6 +66,9 @@ static inline int overlaps_kvm_tmp(unsigned long start, unsigned long end)
+>  }
+>  
+>  #ifdef PPC64_ELF_ABI_v1
+> +
+> +#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +
+>  #undef dereference_function_descriptor
+>  static inline void *dereference_function_descriptor(void *ptr)
+>  {
+> @@ -76,6 +79,15 @@ static inline void *dereference_function_descriptor(void *ptr)
+>  		ptr = p;
+>  	return ptr;
+>  }
+> +
+> +#undef dereference_kernel_function_descriptor
+> +static inline void *dereference_kernel_function_descriptor(void *ptr)
+> +{
+> +	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
+> +		return ptr;
+> +
+> +	return dereference_function_descriptor(ptr);
+> +}
+>  #endif /* PPC64_ELF_ABI_v1 */
+>  
+>  #endif
+> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+> index 759104b99f9f..218971ac7e04 100644
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -93,6 +93,15 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+>  {
+>  	return 0;
+>  }
+> +
+> +void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+> +{
+> +	if (ptr < (void *)mod->arch.start_opd ||
+> +			ptr >= (void *)mod->arch.end_opd)
+> +		return ptr;
+> +
+> +	return dereference_function_descriptor(ptr);
+> +}
+>  #endif
+>  
+>  #define STUB_MAGIC 0x73747562 /* stub */
+> @@ -344,6 +353,11 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+>  		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
+>  			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+>  					  sechdrs[i].sh_size);
+> +		else if (!strcmp(secstrings + sechdrs[i].sh_name, ".opd")) {
+> +			me->arch.start_opd = sechdrs[i].sh_addr;
+> +			me->arch.end_opd = sechdrs[i].sh_addr +
+> +					   sechdrs[i].sh_size;
+> +		}
+>  
+>  		/* We don't handle .init for the moment: rename to _init */
+>  		while ((p = strstr(secstrings + sechdrs[i].sh_name, ".init")))
+> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> index 0494e1566ee2..5dac5ab22fa2 100644
+> --- a/arch/powerpc/kernel/vmlinux.lds.S
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -278,7 +278,9 @@ SECTIONS
+>  	}
+>  
+>  	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+> +		__start_opd = .;
+>  		*(.opd)
+> +		__end_opd = .;
+>  	}
+>  
+>  	. = ALIGN(256);
+
 -- 
-2.13.6
