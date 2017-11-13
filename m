@@ -1,31 +1,30 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yZzzR3GBTzDqjD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 16:41:55 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yb02w2KtyzDqNh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 16:44:56 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAD5dLkk044687
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:41:52 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e71fwsp94-1
+ vAD5hlWO112886
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:44:54 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e6wqwgggu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:41:52 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:44:54 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 13 Nov 2017 05:41:51 -0000
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, anju@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/perf: Add debugfs interface for imc-mode and
- imc-command
-Date: Mon, 13 Nov 2017 11:11:45 +0530
-Message-Id: <1510551705-20702-1-git-send-email-anju@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 12 Nov 2017 22:44:53 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] selftest/mm: Add test for checking mmap across 128TB boundary
+Date: Mon, 13 Nov 2017 11:14:40 +0530
+Message-Id: <20171113054440.11279-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,180 +34,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In memory Collection (IMC) counter pmu driver controls the ucode's execution
-state. At the system boot, IMC perf driver pause the ucode. Ucode state is
-changed to "running" only when any of the nest units are monitored or profiled
-using perf tool.                                      
-                                                                                
-Nest units support only limited set of hardware counters and ucode is always
-programmed in the "production mode" ("accumulation") mode. This mode is
-configured to provide key performance metric data for most of the nest units.                                                         
-                                                                                
-But ucode also supports other modes which would be used for "debug" to drill    
-down specific nest units. That is, ucode when switched to "powerbus" debug      
-mode (for example), will dynamically reconfigure the nest counters to target    
-only "powerbus" related events in the hardware counters. This allows the IMC
-nest unit to focus on powerbus related transactions in the system in more
-detail. At this point, production mode events may or may not be counted.                                                          
-                                                                                
-IMC nest counters has both in-band (ucode access) and out of band access to it. 
-Since not all nest counter configurations are supported by ucode, out of band   
-tools are used to characterize other nest counter configurations.               
-                                                                                
-Patch provides an interface via "debugfs" to enable the switching of ucode
-modes in the system. To switch ucode mode, one has to first pause the microcode 
-(imc_cmd), and then write the target mode value to the "imc_mode" file.                                                   
-                                                                                
-Proposed Approach                                                               
-===================                                                             
-                                                                                
-In the proposed approach, the function (export_imc_mode_and_cmd) which creates   
-the debugfs interface for imc mode and command is implemented in opal-imc.c.    
-Thus we can use imc_get_mem_addr() to get the homer base address for each chip. 
-                                                                                
-The interface to expose imc mode and command is required only if we have nest
-pmu units registered. Employing the existing data structures to track whether
-we have any nest units registered will require to extend data from perf side
-to opal-imc.c. Instead an integer is introduced to hold that information by
-counting successful nest unit registration. Debugfs interface is removed
-based on the integer count.                                           
-
-Example for the interface:                                                      
-                                                                                
-root@XXXX:/sys/kernel/debug/imc# ls                                             
-imc_cmd_0  imc_cmd_8  imc_mode_0  imc_mode_8                                    
-                                                                                
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>    
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/imc-pmu.h        |  7 +++
- arch/powerpc/platforms/powernv/opal-imc.c | 74 ++++++++++++++++++++++++++++++-
- 2 files changed, 79 insertions(+), 2 deletions(-)
+ tools/testing/selftests/vm/Makefile         |   1 +
+ tools/testing/selftests/vm/run_vmtests      |  11 ++
+ tools/testing/selftests/vm/va_128TBswitch.c | 152 ++++++++++++++++++++++++++++
+ 3 files changed, 164 insertions(+)
+ create mode 100644 tools/testing/selftests/vm/va_128TBswitch.c
 
-diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-index 7f74c28..317002d 100644
---- a/arch/powerpc/include/asm/imc-pmu.h
-+++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -40,6 +40,13 @@
- #define THREAD_IMC_ENABLE               0x8000000000000000ULL
+diff --git a/tools/testing/selftests/vm/Makefile b/tools/testing/selftests/vm/Makefile
+index cbb29e41ef2b..b1fb3cd7cf52 100644
+--- a/tools/testing/selftests/vm/Makefile
++++ b/tools/testing/selftests/vm/Makefile
+@@ -17,6 +17,7 @@ TEST_GEN_FILES += transhuge-stress
+ TEST_GEN_FILES += userfaultfd
+ TEST_GEN_FILES += mlock-random-test
+ TEST_GEN_FILES += virtual_address_range
++TEST_GEN_FILES += va_128TBswitch
  
- /*
-+ * For debugfs interface for imc-mode and imc-command
-+ */
-+#define IMC_CNTL_BLK_OFFSET		0x3FC00
-+#define IMC_CNTL_BLK_CMD_OFFSET		8
-+#define IMC_CNTL_BLK_MODE_OFFSET	32
+ TEST_PROGS := run_vmtests
+ 
+diff --git a/tools/testing/selftests/vm/run_vmtests b/tools/testing/selftests/vm/run_vmtests
+index 07548a1fa901..b367f7801b67 100755
+--- a/tools/testing/selftests/vm/run_vmtests
++++ b/tools/testing/selftests/vm/run_vmtests
+@@ -176,4 +176,15 @@ else
+ 	echo "[PASS]"
+ fi
+ 
++echo "-----------------------------"
++echo "running virtual address 128TB switch test" 
++echo "-----------------------------"
++./va_128TBswitch
++if [ $? -ne 0 ]; then
++	echo "[FAIL]"
++	exitcode=1
++else
++	echo "[PASS]"
++fi
 +
+ exit $exitcode
+diff --git a/tools/testing/selftests/vm/va_128TBswitch.c b/tools/testing/selftests/vm/va_128TBswitch.c
+new file mode 100644
+index 000000000000..ee1842c342ba
+--- /dev/null
++++ b/tools/testing/selftests/vm/va_128TBswitch.c
+@@ -0,0 +1,152 @@
 +/*
-  * Structure to hold memory address information for imc units.
-  */
- struct imc_mem_info {
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 21f6531..a88ddab 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -21,6 +21,70 @@
- #include <asm/io.h>
- #include <asm/imc-pmu.h>
- #include <asm/cputhreads.h>
-+#include <linux/debugfs.h>
-+
-+static struct dentry *parent;
-+
-+/* Helpers to export imc command and status via debugfs */
-+static int debugfs_imc_mem_get(void *data, u64 *val)
-+{
-+	*val = cpu_to_be64(*(u64 *)data);
-+	return 0;
-+}
-+
-+static int debugfs_imc_mem_set(void *data, u64 val)
-+{
-+	*(u64 *)data = cpu_to_be64(val);
-+	return 0;
-+}
-+DEFINE_DEBUGFS_ATTRIBUTE(fops_imc_x64, debugfs_imc_mem_get, debugfs_imc_mem_set,
-+								"0x%016llx\n");
-+
-+static struct dentry *debugfs_create_imc_x64(const char *name, umode_t mode,
-+					    struct dentry *parent, u64  *value)
-+{
-+	return debugfs_create_file_unsafe(name, mode, parent, value, &fops_imc_x64);
-+}
-+
-+/*
-+ * export_imc_mode_and_cmd: Create a debugfs interface
-+ *                     for imc_cmd and imc_mode
-+ *                     for each node in the system.
-+ *  imc_mode and imc_cmd can be changed by echo into
-+ *  this interface.
++ * Copyright IBM Corporation, 2017
++ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of version 2.1 of the GNU Lesser General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it would be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++ *
 + */
-+static void export_imc_mode_and_cmd(struct imc_pmu *pmu_ptr)
-+{
-+	static u64 loc, *imc_mode_addr, *imc_cmd_addr;
-+	int i = 0, nid;
-+	char mode[16], cmd[16];
 +
-+	parent = debugfs_create_dir("imc", NULL);
++#include <stdio.h>
++#include <stdlib.h>
++#include <sys/mman.h>
++
++#ifdef DEBUG
++#define pr_debug(fmt, ...)  printf(fmt, ##__VA_ARGS__)
++#else
++#define pr_debug(fmt, ...)
++#endif
++
++#define VA_128TB (1UL << 47)
++
++#ifdef __powerpc64__
++#define MAP_SIZE  64*1024
++#else
++#define MAP_SIZE  4*1024
++#endif
++
++
++void report_failure(long in_addr, unsigned long flags)
++{
++	printf("Failed to map 0x%lx with flags 0x%lx\n", in_addr, flags);
++	exit(1);
++}
++
++int *__map_addr(long in_addr, int size, unsigned long flags, int unmap)
++{
++	int *addr;
++
++	addr = (int *)mmap((void *)in_addr, size, PROT_READ | PROT_WRITE,
++			   MAP_ANONYMOUS | MAP_PRIVATE | flags, -1, 0);
++	if (addr == MAP_FAILED)
++		report_failure(in_addr, flags);
++	pr_debug("Mapped addr 0x%lx-0x%lx for request 0x%lx with flag 0x%lx\n",
++		 (unsigned long)addr, ((unsigned long)addr + size), in_addr, flags);
 +	/*
-+	 * Return here, either because 'imc' directory already exists,
-+	 * Or failed to create a new one.
++	 * Try to access to catch errors in fault handling/slb miss handling
 +	 */
-+	if (!parent)
-+		return;
-+
-+	for_each_node(nid) {
-+		loc = (u64)(pmu_ptr->mem_info[i].vbase) + IMC_CNTL_BLK_OFFSET;
-+		imc_mode_addr = (u64 *)(loc + IMC_CNTL_BLK_MODE_OFFSET);
-+		sprintf(mode, "imc_mode_%d", nid);
-+		if (!debugfs_create_imc_x64(mode, 0600, parent, imc_mode_addr))
-+			goto err;
-+
-+		imc_cmd_addr = (u64 *)(loc + IMC_CNTL_BLK_CMD_OFFSET);
-+		sprintf(cmd, "imc_cmd_%d", nid);
-+		if (!debugfs_create_imc_x64(cmd, 0600, parent, imc_cmd_addr))
-+			goto err;
-+		i++;
-+	}
-+	return;
-+
-+err:
-+	debugfs_remove_recursive(parent);
++	*addr = 10;
++	if (unmap)
++		munmap(addr, size);
++	return addr;
 +}
- 
- /*
-  * imc_get_mem_addr_nest: Function to get nest counter memory region
-@@ -65,6 +129,7 @@ static int imc_get_mem_addr_nest(struct device_node *node,
- 	}
- 
- 	pmu_ptr->imc_counter_mmaped = true;
-+	export_imc_mode_and_cmd(pmu_ptr);
- 	kfree(base_addr_arr);
- 	kfree(chipid_arr);
- 	return 0;
-@@ -156,7 +221,7 @@ static void disable_core_pmu_counters(void)
- static int opal_imc_counters_probe(struct platform_device *pdev)
- {
- 	struct device_node *imc_dev = pdev->dev.of_node;
--	int pmu_count = 0, domain;
-+	int pmu_count = 0, domain, nest_pmus = 0;
- 	u32 type;
- 
- 	/*
-@@ -191,9 +256,14 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
- 			break;
- 		}
- 
--		if (!imc_pmu_create(imc_dev, pmu_count, domain))
-+		if (!imc_pmu_create(imc_dev, pmu_count, domain)) {
-+			if (domain == IMC_DOMAIN_NEST)
-+				nest_pmus++;
- 			pmu_count++;
-+		}
- 	}
-+	if (nest_pmus == 0)
-+		debugfs_remove_recursive(parent);
- 
- 	return 0;
- }
++
++int *map_addr(long in_addr, unsigned long flags, int unmap)
++{
++	return __map_addr(in_addr, MAP_SIZE, flags, unmap);
++}
++
++void boundary_check(void)
++{
++	int *a;
++
++	/*
++	 * If stack is moved, we could possibly allocate
++	 * this at the requested address.
++	 */
++	a = map_addr((VA_128TB - MAP_SIZE), 0, 1);
++	if ((unsigned long)a > VA_128TB - MAP_SIZE)
++		report_failure(VA_128TB - MAP_SIZE, 0);
++
++	/*
++	 * We should never allocate at the requested address or above it
++	 * The len cross the 128TB boundary. Without MAP_FIXED
++	 * we will always search in the lower address space.
++	 */
++	a = __map_addr((VA_128TB - MAP_SIZE), 2*MAP_SIZE, 0, 1);
++	if ((unsigned long)a >= VA_128TB - MAP_SIZE)
++		report_failure(VA_128TB - MAP_SIZE, 0);
++	/*
++	 * Exact mapping at 128TB, the area is free we should get that
++	 * even without MAP_FIXED. Don't unmap. We check fixed in the
++	 * same range later.
++	 */
++	a = map_addr(VA_128TB, 0, 0);
++	if ((unsigned long)a != VA_128TB)
++		report_failure(VA_128TB, 0);
++
++	a = map_addr(VA_128TB + MAP_SIZE, 0, 1);
++	if ((unsigned long)a < VA_128TB)
++		report_failure(VA_128TB, 0);
++
++#if 0
++	/*
++	 * Enable this with stack mapped MAP_SIZE below 128TB
++	 */
++	a = map_addr((VA_128TB - MAP_SIZE), MAP_FIXED, 1);
++	if ((unsigned long)a != VA_128TB - MAP_SIZE)
++		report_failure(VA_128TB - MAP_SIZE, 0);
++	a = __map_addr((VA_128TB - MAP_SIZE), 2*MAP_SIZE, MAP_FIXED, 1);
++	if ((unsigned long)a != VA_128TB - MAP_SIZE)
++		report_failure(VA_128TB - MAP_SIZE, MAP_FIXED);
++
++#endif
++	a = map_addr(VA_128TB, MAP_FIXED, 1);
++	if ((unsigned long)a != VA_128TB)
++		report_failure(VA_128TB, MAP_FIXED);
++}
++
++
++int main(int argc, char *argv[])
++{
++	int *a;
++	/*
++	 * check the 128TB boundary before we update addr_limit
++	 */
++	boundary_check();
++
++	a = map_addr(0, 0, 1);
++	if ((unsigned long)a > VA_128TB)
++		report_failure(0, 0);
++
++	a = map_addr(-1, 0, 1);
++	if ((unsigned long)a < VA_128TB)
++		report_failure(-1, 0);
++
++	/* don't unmap this one */
++	a = map_addr((1UL << 48), 0, 0);
++	if ((unsigned long)a != 1UL << 48)
++		report_failure((1UL << 48), 0);
++
++	a = map_addr((1UL << 48), 0, 1);
++	if ((unsigned long)a < VA_128TB)
++		report_failure((1UL << 48), 0);
++
++	a = map_addr(0, 0, 1);
++	if ((unsigned long)a > VA_128TB)
++		report_failure(0, 0);
++
++	a = map_addr(-1, 0, 1);
++	if ((unsigned long)a < VA_128TB)
++		report_failure(-1, 0);
++	/*
++	 * Try boundary conditions again after we allocated something above 128TB
++	 * and updated addr_limit.
++	 */
++	boundary_check();
++}
 -- 
-2.7.4
+2.13.6
