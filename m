@@ -1,42 +1,37 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <minghuan.lian@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30056.outbound.protection.outlook.com [40.107.3.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yZscX2kq1zDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 11:55:08 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAD0s0ag017486
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 19:55:05 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e6nyf62bc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Nov 2017 19:55:04 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sun, 12 Nov 2017 17:55:04 -0700
-Date: Sun, 12 Nov 2017 16:54:51 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
- corbet@lwn.net, arnd@arndb.de
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
- dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH v9 23/51] powerpc: Enable pkey subsystem
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
- <1509958663-18737-24-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yZvrt6LGmzDqG6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 13:35:56 +1100 (AEDT)
+From: "M.h. Lian" <minghuan.lian@nxp.com>
+To: Leo Li <leoyang.li@nxp.com>, Kishon Vijay Abraham I <kishon@ti.com>,
+ Xiaowei Bao <xiaowei.bao@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>, "shawnguo@kernel.org"
+ <shawnguo@kernel.org>, Madalin-cristian Bucur <madalin.bucur@nxp.com>, "Sumit
+ Garg" <sumit.garg@nxp.com>, "Y.b. Lu" <yangbo.lu@nxp.com>, Andy Tang
+ <andy.tang@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
+ "pbrobinson@gmail.com" <pbrobinson@gmail.com>, "songxiaowei@hisilicon.com"
+ <songxiaowei@hisilicon.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "Z.q. Hou" <zhiqiang.hou@nxp.com>, "Mingkai
+ Hu" <mingkai.hu@nxp.com>
+Subject: RE: [PATCHv4 1/3] ARMv8: dts: ls1046a: add the property of IB and OB
+Date: Mon, 13 Nov 2017 02:35:48 +0000
+Message-ID: <VI1PR04MB161516288A0FF2F507DAA9BEE82B0@VI1PR04MB1615.eurprd04.prod.outlook.com>
+References: <20171110034847.17891-1-xiaowei.bao@nxp.com>
+ <20171110034847.17891-2-xiaowei.bao@nxp.com>
+ <20b8f1d2-f817-469f-afbf-66f25d6f8c46@ti.com>
+ <AM4PR0401MB16999BD34AFBB1362BD32EBD8F540@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+In-Reply-To: <AM4PR0401MB16999BD34AFBB1362BD32EBD8F540@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1509958663-18737-24-git-send-email-linuxram@us.ibm.com>
-Message-Id: <20171113005451.GF5546@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,82 +41,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 06, 2017 at 12:57:15AM -0800, Ram Pai wrote:
-> PAPR defines 'ibm,processor-storage-keys' property. It exports two
-> values. The first value holds the number of data-access keys and the
-> second holds the number of instruction-access keys.  Due to a bug in
-> the  firmware, instruction-access  keys is  always  reported  as zero.
-> However any key can be configured to disable data-access and/or disable
-> execution-access. The inavailablity of the second value is not a
-> big handicap, though it could have been used to determine if the
-> platform supported disable-execution-access.
-> 
-> Non PAPR platforms do not define this property   in the device tree yet.
-> Here, we   hardcode   CPUs   that   support  pkey by consulting
-> PowerISA3.0
-> 
-> This patch calculates the number of keys supported by the platform.
-> Alsi it determines the platform support for read/write/execution access
-> support for pkeys.
 
-> 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
-> 
-....snip...
 
-> +static inline bool pkey_mmu_enabled(void)
-> +{
-> +	if (firmware_has_feature(FW_FEATURE_LPAR))
-> +		return pkeys_total;
-> +	else
-> +		return cpu_has_feature(CPU_FTR_PKEY);
-> +}
-> +
->  void __init pkey_initialize(void)
->  {
->  	int os_reserved, i;
-> @@ -46,14 +54,9 @@ void __init pkey_initialize(void)
->  		     __builtin_popcountl(ARCH_VM_PKEY_FLAGS >> VM_PKEY_SHIFT)
->  				!= (sizeof(u64) * BITS_PER_BYTE));
-> 
-> -	/*
-> -	 * Disable the pkey system till everything is in place. A subsequent
-> -	 * patch will enable it.
-> -	 */
-> -	static_branch_enable(&pkey_disabled);
-> -
-> -	/* Lets assume 32 keys */
-> -	pkeys_total = 32;
+> -----Original Message-----
+> From: Leo Li
+> Sent: Saturday, November 11, 2017 5:21 AM
+> To: Kishon Vijay Abraham I <kishon@ti.com>; Xiaowei Bao
+> <xiaowei.bao@nxp.com>; robh+dt@kernel.org; mark.rutland@arm.com;
+> catalin.marinas@arm.com; will.deacon@arm.com; bhelgaas@google.com;
+> shawnguo@kernel.org; Madalin-cristian Bucur <madalin.bucur@nxp.com>;
+> Sumit Garg <sumit.garg@nxp.com>; Y.b. Lu <yangbo.lu@nxp.com>; Andy Tang
+> <andy.tang@nxp.com>; jingoohan1@gmail.com; pbrobinson@gmail.com;
+> songxiaowei@hisilicon.com; devicetree@vger.kernel.org; linux-arm-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org; linux-
+> pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Z.q. Hou
+> <zhiqiang.hou@nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; M.h. Lian
+> <minghuan.lian@nxp.com>
+> Subject: RE: [PATCHv4 1/3] ARMv8: dts: ls1046a: add the property of IB an=
+d OB
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Kishon Vijay Abraham I [mailto:kishon@ti.com]
+> > Sent: Friday, November 10, 2017 12:22 AM
+> > To: Xiaowei Bao <xiaowei.bao@nxp.com>; robh+dt@kernel.org;
+> > mark.rutland@arm.com; catalin.marinas@arm.com; will.deacon@arm.com;
+> > bhelgaas@google.com; shawnguo@kernel.org; Madalin-cristian Bucur
+> > <madalin.bucur@nxp.com>; Sumit Garg <sumit.garg@nxp.com>; Y.b. Lu
+> > <yangbo.lu@nxp.com>; hongtao.jia@nxp.com; Andy Tang
+> > <andy.tang@nxp.com>; Leo Li <leoyang.li@nxp.com>;
+> > jingoohan1@gmail.com; pbrobinson@gmail.com; songxiaowei@hisilicon.com;
+> > devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
+> > linux- kernel@vger.kernel.org; linux-pci@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org; Z.q. Hou <zhiqiang.hou@nxp.com>; Mingkai Hu
+> > <mingkai.hu@nxp.com>; M.h. Lian <minghuan.lian@nxp.com>
+> > Subject: Re: [PATCHv4 1/3] ARMv8: dts: ls1046a: add the property of IB
+> > and OB
+> >
+> > Hi Bao,
+> >
+> > On Friday 10 November 2017 09:18 AM, Bao Xiaowei wrote:
+> > > Add the property of inbound and outbound windows number for ep driver=
+.
+> > >
+> > > Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
+> > > Acked-by: Minghuan Lian <minghuan.Lian@nxp.com>
+> > > ---
+> > >  v2:
+> > >  - no change
+> > >  v3:
+> > >  - modify the commit message
+> > >  v4:
+> > >  - no change
+> > >
+> > >  arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi | 6 ++++++
+> > >  1 file changed, 6 insertions(+)
+> >
+> > $subject should start with something like
+> > arm64: dts: ls1046a: **
+> > >
+> > > diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > index 06b5e12d04d8..f8332669663c 100644
+> > > --- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > +++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > @@ -674,6 +674,8 @@
+> > >  			device_type =3D "pci";
+> > >  			dma-coherent;
+> > >  			num-lanes =3D <4>;
+> > > +			num-ib-windows =3D <6>;
+> > > +			num-ob-windows =3D <6>;
+> >
+> > EP specific properties shouldn't be added in RC dt node. Ideally you
+> > should have a separate dt node for RC and EP.
+>=20
+> It is a single PCIe controller which can be configured to either RC mode =
+or EP
+> mode.  Wouldn't it conflict with the device tree principles to have two d=
+evice
+> tree nodes for the same PCIe controller?  And obviously the two modes can=
+not
+> be used at the same time so we cannot have two drivers both probe on the
+> same hardware.
+>=20
+[Minghuan Lian]  There is only one PCIe dts node in the dts file. PCIe dts =
+node describes the PCIe controller's hardware properties and does not have =
+work mode.  The new properties  "num-ib-windows " and "num-ob-windows" are =
+used to describe the inbound/outbound window number included in the PCIe ha=
+rdware. These windows are used in both RC and EP mode.  We can change work =
+mode when resetting via RCW(reset configuration word).
 
-vvvvvvvvvvvvvvvvvvvv
-> +	/* Let's assume 32 keys if we are not told the number of pkeys. */
-> +	if (!pkeys_total)
-> +		pkeys_total = 32;
-^^^^^^^^^^^^^^^^^^^^
 
-There is a small bug here. 
-
-On a KVM guest or a LPAR, if the device tree
-does not expose pkeys, the pkey-subsystem must be disabled.
-
-Unfortunately, the code above blindly sets the pkeys_total to 32.
-This confuses pkey_mmu_enabled() into returning true. Because of this
-bug the guest errorneously enables pkey-subsystem. 
-
-The fix is to delete the code marked above.
-
-> 
->  	/*
->  	 * Adjust the upper limit, based on the number of bits supported by
-> @@ -62,11 +65,19 @@ void __init pkey_initialize(void)
->  	pkeys_total = min_t(int, pkeys_total,
->  			(ARCH_VM_PKEY_FLAGS >> VM_PKEY_SHIFT));
-> 
-> +	if (!pkey_mmu_enabled() || radix_enabled() || !pkeys_total)
-> +		static_branch_enable(&pkey_disabled);
-> +	else
-> +		static_branch_disable(&pkey_disabled);
-> +
-
-RP
+> Regards,
+> Leo
