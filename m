@@ -1,19 +1,36 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
+ [IPv6:2607:f8b0:400c:c08::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yb3Pg5bvvzDqYw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 19:16:23 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id 17so11311408pfn.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:16:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yb3vQ24D1zDqYx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 19:38:41 +1100 (AEDT)
+Received: by mail-ua0-x241.google.com with SMTP id q18so9819976uaa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 00:38:41 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20171110032823.nnpqsrrfwr6ye4uc@treble>
+References: <20171031153004.GA31864@lst.de>
+ <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
+ <20171031183959.GA4313@lst.de> <20171107045419.aozlfdo7tpnubz72@treble>
+ <8760am4hd6.fsf@concordia.ellerman.id.au> <20171107113105.GA19204@lst.de>
+ <20171107145233.lmlg5lkfcczkxj4d__32032.512050546$1510066460$gmane$org@treble>
+ <1510225685.pzdd3dgj9m.naveen@linux.ibm.com>
+ <20171109151955.gl3z3l2ary4ayj7b@treble>
+ <CAKTCnznuZFHgVjjnx+gBAk3RSenxS=PJLFBsxOq4Zzw=ru=HMg@mail.gmail.com>
+ <20171110032823.nnpqsrrfwr6ye4uc@treble>
 From: Balbir Singh <bsingharora@gmail.com>
-To: alistair@popple.id.au
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- aneesh.kumar@linux.vnet.ibm.com, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH] powerpc/npu: Cleanup MMIO ATSD flushing
-Date: Mon, 13 Nov 2017 19:16:11 +1100
-Message-Id: <20171113081611.27374-1-bsingharora@gmail.com>
+Date: Mon, 13 Nov 2017 19:38:36 +1100
+Message-ID: <CAKTCnzm63vVGctVarw24v1JY2N7Kc3WdmoW88q2fniEAqXkP_w@mail.gmail.com>
+Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
+ livepatch symbols
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Torsten Duwe <duwe@lst.de>,
+ Aravinda Prasad <aravinda@linux.vnet.ibm.com>, Jessica Yu <jeyu@kernel.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, live-patching@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,183 +40,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While reviewing the code I found that the flush assumes all
-pages are of mmu_linear_psize, which is not correct. The patch
-uses find_linux_pte to find the right page size and uses that
-for launching the ATSD invalidation. A new helper is added
-to abstract the invalidation from the various notifiers.
+On Fri, Nov 10, 2017 at 2:28 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> On Fri, Nov 10, 2017 at 01:06:25PM +1100, Balbir Singh wrote:
+>> On Fri, Nov 10, 2017 at 2:19 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+>> > FWIW, I think it won't matter anyway.  I'm currently pursuing the option
+>> > of inserting nops after local calls, because it has less runtime
+>> > complexity than using a stub.
+>> >
+>> > I think I've figured out a way to do it with a GCC plugin, but if that
+>> > doesn't work I'll try the asm listing sed approach suggested by Michael.
+>> >
+>>
+>> A plugin that runs for the new kernel with the patch? Just for
+>> specific files involved in the patch?
+>
+> The plugin will affect the code generation of all functions in the patch
+> module.  So all calls in all replacement functions will have the nops.
+>
+> Here's a prototype (not yet fully tested):
+>
+>   https://github.com/jpoimboe/kpatch/blob/TODO-ppc-fix/kpatch-build/gcc-plugins/ppc64le-plugin.c
+>
 
-The patch also cleans up a bit by removing AP size from PID
-flushes.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
+Thanks! I looked at it briefly, I need to catch up with gcc plugins,
+code < 1000 was interesting.
+I guess now we don't need to pass via the new kpatch helper stub, we
+would just replace the no-ops
+and be done! I'd have to look closer, but I wonder what happens if a
+function has no global entry
+point
 
-Changelog since RFC
- - Implement review comments from Aneesh
+(See http://mpe.github.io/posts/2016/05/23/kernel-live-patching-for-ppc64le/)
+section
+Understanding the TOC & entry points and the example of int_to_scsilun()
 
- arch/powerpc/platforms/powernv/npu-dma.c | 66 ++++++++++++++++++++++++--------
- 1 file changed, 49 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 2cb6cbea4b3b..bf12a023a8de 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -17,6 +17,7 @@
- #include <linux/pci.h>
- #include <linux/memblock.h>
- #include <linux/iommu.h>
-+#include <linux/huge_mm.h>
- 
- #include <asm/tlb.h>
- #include <asm/powernv.h>
-@@ -27,6 +28,7 @@
- #include <asm/pnv-pci.h>
- #include <asm/msi_bitmap.h>
- #include <asm/opal.h>
-+#include <asm/pte-walk.h>
- 
- #include "powernv.h"
- #include "pci.h"
-@@ -459,9 +461,6 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
- 	/* PRS set to process-scoped */
- 	launch |= PPC_BIT(13);
- 
--	/* AP */
--	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
--
- 	/* PID */
- 	launch |= pid << PPC_BITLSHIFT(38);
- 
-@@ -473,7 +472,8 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
- }
- 
- static int mmio_invalidate_va(struct npu *npu, unsigned long va,
--			unsigned long pid, bool flush)
-+			unsigned long pid, bool flush,
-+			unsigned int shift)
- {
- 	unsigned long launch;
- 
-@@ -484,9 +484,8 @@ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
- 	launch |= PPC_BIT(13);
- 
- 	/* AP */
--	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
-+	launch |= (u64) mmu_get_ap(shift) << PPC_BITLSHIFT(17);
- 
--	/* PID */
- 	launch |= pid << PPC_BITLSHIFT(38);
- 
- 	/* No flush */
-@@ -503,7 +502,8 @@ struct mmio_atsd_reg {
- };
- 
- static void mmio_invalidate_wait(
--	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
-+	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush,
-+	unsigned int shift)
- {
- 	struct npu *npu;
- 	int i, reg;
-@@ -536,7 +536,8 @@ static void mmio_invalidate_wait(
-  * the value of va.
-  */
- static void mmio_invalidate(struct npu_context *npu_context, int va,
--			unsigned long address, bool flush)
-+			unsigned long address, bool flush,
-+			unsigned int shift)
- {
- 	int i, j;
- 	struct npu *npu;
-@@ -569,7 +570,7 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
- 			if (va)
- 				mmio_atsd_reg[i].reg =
- 					mmio_invalidate_va(npu, address, pid,
--							flush);
-+							flush, shift);
- 			else
- 				mmio_atsd_reg[i].reg =
- 					mmio_invalidate_pid(npu, pid, flush);
-@@ -582,10 +583,43 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
- 		}
- 	}
- 
--	mmio_invalidate_wait(mmio_atsd_reg, flush);
-+	mmio_invalidate_wait(mmio_atsd_reg, flush, shift);
- 	if (flush)
- 		/* Wait for the flush to complete */
--		mmio_invalidate_wait(mmio_atsd_reg, false);
-+		mmio_invalidate_wait(mmio_atsd_reg, false, shift);
-+}
-+
-+static void pnv_npu2_invalidate_helper(struct npu_context *npu_context,
-+		struct mm_struct *mm, unsigned long start,
-+		unsigned long end, bool flush)
-+{
-+	unsigned long address;
-+	bool is_thp = false;
-+	unsigned int hshift = 0, shift;
-+
-+	address = start;
-+	do {
-+		local_irq_disable();
-+		find_linux_pte(mm->pgd, address, &is_thp, &hshift);
-+		if (!is_thp)
-+			shift = PAGE_SHIFT;
-+		else if (hshift && !is_thp)
-+			shift = hshift;
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+		else
-+			shift = HPAGE_PMD_SIZE;
-+#else
-+		else {
-+			shift = PAGE_SHIFT;
-+			pr_warn_once("unsupport page size for mm %p,addr %lx\n",
-+					mm, start);
-+		}
-+#endif
-+		mmio_invalidate(npu_context, address > 0, address, flush,
-+				shift);
-+		local_irq_enable();
-+		address += (1ull << shift);
-+	} while (address < end);
- }
- 
- static void pnv_npu2_mn_release(struct mmu_notifier *mn,
-@@ -601,7 +635,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
- 	 * There should be no more translation requests for this PID, but we
- 	 * need to ensure any entries for it are removed from the TLB.
- 	 */
--	mmio_invalidate(npu_context, 0, 0, true);
-+	pnv_npu2_invalidate_helper(npu_context, mm, 0, PAGE_SIZE, true);
- }
- 
- static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
-@@ -611,7 +645,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
- {
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
- 
--	mmio_invalidate(npu_context, 1, address, true);
-+	pnv_npu2_invalidate_helper(npu_context, mm, address, address, true);
- }
- 
- static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
-@@ -619,13 +653,11 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
- 					unsigned long start, unsigned long end)
- {
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
--	unsigned long address;
- 
--	for (address = start; address < end; address += PAGE_SIZE)
--		mmio_invalidate(npu_context, 1, address, false);
-+	pnv_npu2_invalidate_helper(npu_context, mm, start, end, false);
- 
- 	/* Do the flush only on the final addess == end */
--	mmio_invalidate(npu_context, 1, address, true);
-+	pnv_npu2_invalidate_helper(npu_context, mm, end, end, true);
- }
- 
- static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
--- 
-2.13.6
+Balbir Singh.
