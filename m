@@ -3,33 +3,38 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybDBH2QZCzDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 01:52:07 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybDKc0jM5zDqZB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 01:58:27 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vADEpirj026030
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 09:52:05 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e7cc849pc-1
+ vADEwCeC021228
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 09:58:26 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e7a6n2xq8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 09:52:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Nov 2017 09:58:25 -0500
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 13 Nov 2017 09:52:02 -0500
-Subject: Re: [PATCH v2 3/8] powerpc/mm: Separate ibm, dynamic-memory data from
- DT format
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <150850572658.9118.9227271506499547385.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <87vaifwtu5.fsf@concordia.ellerman.id.au>
+ Mon, 13 Nov 2017 09:58:24 -0500
+Subject: Re: [PATCH] [net-next,v3] ibmvnic: Feature implementation of Vital
+ Product Data (VPD) for the ibmvnic driver
+To: =?UTF-8?Q?Desnes_Augusto_Nunes_do_Ros=c3=a1rio?=
+ <desnesn@linux.vnet.ibm.com>, netdev@vger.kernel.org
+Cc: tlfalcon@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ jallen@linux.vnet.ibm.com
+References: <20171109190012.17981-1-desnesn@linux.vnet.ibm.com>
+ <a7877d35-90d5-4fa1-2e45-91c3ee239435@linux.vnet.ibm.com>
+ <f48a18a5-f87d-2344-e2a1-4ddd5f05a561@linux.vnet.ibm.com>
+ <38a668a8-fab7-549a-d3d8-e98e5d875ca5@linux.vnet.ibm.com>
+ <19fe86d2-e73e-50d6-3888-39e568f12605@linux.vnet.ibm.com>
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Mon, 13 Nov 2017 08:51:59 -0600
+Date: Mon, 13 Nov 2017 08:58:21 -0600
 MIME-Version: 1.0
-In-Reply-To: <87vaifwtu5.fsf@concordia.ellerman.id.au>
+In-Reply-To: <19fe86d2-e73e-50d6-3888-39e568f12605@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <91f1c54a-a7cd-5ccb-a7f8-f9714d8f06fc@linux.vnet.ibm.com>
+Message-Id: <3044af67-ad7d-03a2-223a-5a6627c6a65c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,121 +44,368 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/2017 06:43 AM, Michael Ellerman wrote:
-> Hi Nathan,
+On 11/10/2017 01:13 PM, Desnes Augusto Nunes do Rosário wrote:
 > 
-> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index f83056297441..917184c13890 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -454,92 +455,93 @@ static int __init early_init_dt_scan_chosen_ppc(unsigned long node,
-> ...
->>  
->>  static int __init early_init_dt_scan_memory_ppc(unsigned long node,
->>  						const char *uname,
->>  						int depth, void *data)
->>  {
->> +	int rc;
->> +
->>  	if (depth == 1 &&
->> -	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0)
->> -		return early_init_dt_scan_drconf_memory(node);
->> +	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0) {
->> +		rc = init_drmem_lmbs(node);
->> +		if (!rc)
->> +			early_init_dt_scan_drmem_lmbs(node);
->> +
->> +		return rc;
->> +	}
->>  	
->>  	return early_init_dt_scan_memory(node, uname, depth, data);
->>  }
 > 
-> There's one bug in here which is that you return rc as returned by
-> init_drmem_lmbs(). Returning non-zero from these scan routines
-> terminates the scan, which means if anything goes wrong in
-> init_drmem_lmbs() we may not call early_init_dt_scan_memory()
-> in which case we won't have any memory at all.
+> On 11/10/2017 12:54 PM, Nathan Fontenot wrote:
+>> On 11/10/2017 08:41 AM, Desnes Augusto Nunes do Rosário wrote:
+>>>
+>>>
+>>> On 11/09/2017 06:31 PM, Nathan Fontenot wrote:
+>>>> On 11/09/2017 01:00 PM, Desnes Augusto Nunes do Rosario wrote:
+>>>>> This patch implements and enables VDP support for the ibmvnic driver.
+>>>>> Moreover, it includes the implementation of suitable structs, signal
+>>>>>    transmission/handling and functions which allows the retrival of firmware
+>>>>>    information from the ibmvnic card through the ethtool command.
+>>>>>
+>>>>> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+>>>>> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>>>>> ---
+>>>>>    drivers/net/ethernet/ibm/ibmvnic.c | 149 ++++++++++++++++++++++++++++++++++++-
+>>>>>    drivers/net/ethernet/ibm/ibmvnic.h |  27 ++++++-
+>>>>>    2 files changed, 173 insertions(+), 3 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+>>>>> index d0cff28..693b502 100644
+>>>>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>>>>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>>>>> @@ -573,6 +573,15 @@ static int reset_tx_pools(struct ibmvnic_adapter *adapter)
+>>>>>        return 0;
+>>>>>    }
+>>>>>
+>>>>> +static void release_vpd_data(struct ibmvnic_adapter *adapter)
+>>>>> +{
+>>>>> +    if (!adapter->vpd)
+>>>>> +        return;
+>>>>> +
+>>>>> +    kfree(adapter->vpd->buff);
+>>>>> +    kfree(adapter->vpd);
+>>>>> +}
+>>>>> +
+>>>>>    static void release_tx_pools(struct ibmvnic_adapter *adapter)
+>>>>>    {
+>>>>>        struct ibmvnic_tx_pool *tx_pool;
+>>>>> @@ -753,6 +762,8 @@ static void release_resources(struct ibmvnic_adapter *adapter)
+>>>>>    {
+>>>>>        int i;
+>>>>>
+>>>>> +    release_vpd_data(adapter);
+>>>>> +
+>>>>>        release_tx_pools(adapter);
+>>>>>        release_rx_pools(adapter);
+>>>>>
+>>>>> @@ -833,6 +844,53 @@ static int set_real_num_queues(struct net_device *netdev)
+>>>>>        return rc;
+>>>>>    }
+>>>>>
+>>>>> +static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+>>>>> +{
+>>>>> +    struct device *dev = &adapter->vdev->dev;
+>>>>> +    union ibmvnic_crq crq;
+>>>>> +    dma_addr_t dma_addr;
+>>>>> +    int len;
+>>>>> +
+>>>>> +    if (adapter->vpd->buff)
+>>>>> +        len = adapter->vpd->len;
+>>>>> +
+>>>>> +    reinit_completion(&adapter->fw_done);
+>>>>> +    crq.get_vpd_size.first = IBMVNIC_CRQ_CMD;
+>>>>> +    crq.get_vpd_size.cmd = GET_VPD_SIZE;
+>>>>> +    ibmvnic_send_crq(adapter, &crq);
+>>>>> +    wait_for_completion(&adapter->fw_done);
+>>>>> +
+>>>>
+>>>> Shouldn't there be a check for the return code when getting the
+>>>> vpd size?
+>>>
+>>> Hello Nathan,
+>>>
+>>> This check is already being performed on the handle_vpd_size_rsp() function down below.
+>>>
+>>> In short, a GET_VPD_SIZE signal is sent here through a ibmvnic_crq union in ibmvnic_send_crq(), whereas handle_query_ip_offload_rsp() receives from the VNIC adapter a GET_VPD_SIZE_RSP containing a ibmvnic_crq union with the vpd size information and the rc.code. If successful, a &adapter->fw_done is sent and this part of the code continues; however if not, a dev_error() is thrown. Same logic applies to GET_VPD/GET_VPD_RSP.
+>>>
+>>
+>> Yes, I did see that code. You do a complet of the completion variable for both success and failure,
+>> this then lets this routine continue irregardless of the results of the get vpd size request. The
+>> call to dev_err will print the error message but does not prevent use from bailing if the
+>> get vpd size fails. Perhaps setting vpd->len to -1 to indicate the get vpd call failed which could
+>> then be checked by the requester.
+>>
+>> -Nathan
+>>
+>>  >> What I am adding on the next version of the patch is a check if 
+> adapter->vpd->len is different than 0 before allocating adapter->vpd->buff, since that in a case of a failure, adapter->vpd->len will be 0.
 > 
+> I do concur with your observation that the break is necessary.
+> 
+> If the reception of vpd failed, adapter->vpd->len will be still zeroed out since it was created with kzalloc in init_resources().
+> 
+> Thus, do you agree if in the next version I send the following code?
 
-I didn't know this would stop scanning the device tree, thanks for letting me know.
+Yes, this would be good.
 
-> I say "may not" because it depends on the order of the nodes in the
-> device tree whether you hit the memory nodes or the dynamic reconfig mem
-> info first. And the order of the nodes in the device tree is arbitrary
-> so we can't rely on that.
-> 
-> 
->> diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
->> new file mode 100644
->> index 000000000000..8ad7cf36b2c4
->> --- /dev/null
->> +++ b/arch/powerpc/mm/drmem.c
->> @@ -0,0 +1,84 @@
-> ...
->> +
->> +int __init init_drmem_lmbs(unsigned long node)
->> +{
->> +	struct drmem_lmb *lmb;
->> +	const __be32 *prop;
->> +	int prop_sz;
->> +	u32 len;
->> +
->> +	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
->> +	if (!prop || len < dt_root_size_cells * sizeof(__be32))
->> +		return -1;
->> +
->> +	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
->> +
->> +	prop = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &len);
->> +	if (!prop || len < dt_root_size_cells * sizeof(__be32))
->> +		return -1;
->> +
->> +	drmem_info->n_lmbs = of_read_number(prop++, 1);
->> +	prop_sz = drmem_info->n_lmbs * sizeof(struct of_drconf_cell)
->> +		  + sizeof(__be32);
->> +	if (prop_sz < len)
->> +		return -1;
->> +
->> +	drmem_info->lmbs = alloc_bootmem(drmem_info->n_lmbs * sizeof(*lmb));
->> +	if (!drmem_info->lmbs)
->> +		return -1;
-> 
-> The bigger problem we have though is that you're trying to allocate
-> memory, in order to find out what memory we have :)
-> 
-> I suspect it works in some cases because you hit the memory@0 node first
-> in the device tree, and add that memory to memblock, which means
-> init_drmem_lmbs() *can* allocate memory, and everything's good.
-> 
-> But if we hit init_drmem_lmbs() first, or there's not enough space in
-> memory@0, then allocating memory in order to discover memory is not
-> going to work.
-> 
-> I'm not sure what the best solution is. One option would be to
-> statically allocate some space, so that we can discover some of the LMBs
-> without doing an allocation. But we wouldn't be able to guarantee that
-> we had enough space i nthat static allocation, so the code would need to
-> handle doing that and then potentially finding more LMBs later using a
-> dynamic alloc. So that could be a bit messy.
-> 
-> The other option would be for the early_init_dt_scan_drmem_lmbs() code
-> to still work on the device tree directly, rather than using the
-> drmem_info array. That would make for uglier code, but may be necessary.
-> 
-
-I have been thinking about my initial approach, and the more I look at it
-the more I do not like trying to do the bootmem allocation. As you mention
-there is just too much that could go wrong with that.
-
-I have started looking at a design where an interface similar to
-walk_memory_range() is used for the prom and numa code so we do not have to rely
-on making the allocation for the lmb array early in boot. The lmb array
-could then be allocated in the late_initcall in drmem.c at which point
-the general kernel allocator is available.
-
-I'm still working on getting this coded up and when send out a new patch set
-once it's ready unless anyone has objections to this approach.
+I think you should also add an explicit setting of len to 0 before the call too.
+Looking at the code before the get cpd size call, if a vpd buffer already exists
+then the len will be non-zero.
 
 -Nathan
+
+> 
+> =======
+>   +       reinit_completion(&adapter->fw_done);
+>   +       crq.get_vpd_size.first = IBMVNIC_CRQ_CMD;
+>   +       crq.get_vpd_size.cmd = GET_VPD_SIZE;
+>   +       ibmvnic_send_crq(adapter, &crq);
+>   +       wait_for_completion(&adapter->fw_done);
+>   +
+> ->+       if(!adapter->vpd->len)
+> ->+               return -ENODATA;
+>   +
+>   +       if (!adapter->vpd->buff)
+>   +               adapter->vpd->buff = kzalloc(adapter->vpd->len, GFP_KERNEL);
+>   +       else if (adapter->vpd->len != len)
+>   +               adapter->vpd->buff =
+>   +                       krealloc(adapter->vpd->buff,
+>   +                                adapter->vpd->len, GFP_KERNEL);
+> =======
+> 
+>>>
+>>> Best Regards,
+>>>
+>>>>
+>>>>
+>>>>> +    if (!adapter->vpd->buff)
+>>>>> +        adapter->vpd->buff = kzalloc(adapter->vpd->len, GFP_KERNEL);
+>>>>> +    else if (adapter->vpd->len != len)
+>>>>> +        adapter->vpd->buff =
+>>>>> +            krealloc(adapter->vpd->buff,
+>>>>> +                 adapter->vpd->len, GFP_KERNEL);
+>>>>> +
+>>>>> +    if (!adapter->vpd->buff) {
+>>>>> +        dev_err(dev, "Could allocate VPD buffer\n");
+>>>>> +        return -ENOMEM;
+>>>>> +    }
+>>>>> +
+>>>>> +    adapter->vpd->dma_addr =
+>>>>> +        dma_map_single(dev, adapter->vpd->buff, adapter->vpd->len,
+>>>>> +                   DMA_FROM_DEVICE);
+>>>>> +    if (dma_mapping_error(dev, dma_addr)) {
+>>>>> +        dev_err(dev, "Could not map VPD buffer\n");
+>>>>> +        return -ENOMEM;
+>>>>> +    }
+>>>>> +
+>>>>> +    reinit_completion(&adapter->fw_done);
+>>>>> +    crq.get_vpd.first = IBMVNIC_CRQ_CMD;
+>>>>> +    crq.get_vpd.cmd = GET_VPD;
+>>>>> +    crq.get_vpd.ioba = cpu_to_be32(adapter->vpd->dma_addr);
+>>>>> +    crq.get_vpd.len = cpu_to_be32((u32)adapter->vpd->len);
+>>>>> +    ibmvnic_send_crq(adapter, &crq);
+>>>>> +    wait_for_completion(&adapter->fw_done);
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>>    static int init_resources(struct ibmvnic_adapter *adapter)
+>>>>>    {
+>>>>>        struct net_device *netdev = adapter->netdev;
+>>>>> @@ -850,6 +908,10 @@ static int init_resources(struct ibmvnic_adapter *adapter)
+>>>>>        if (rc)
+>>>>>            return rc;
+>>>>>
+>>>>> +    adapter->vpd = kzalloc(sizeof(*adapter->vpd), GFP_KERNEL);
+>>>>> +    if (!adapter->vpd)
+>>>>> +        return -ENOMEM;
+>>>>> +
+>>>>>        adapter->map_id = 1;
+>>>>>        adapter->napi = kcalloc(adapter->req_rx_queues,
+>>>>>                    sizeof(struct napi_struct), GFP_KERNEL);
+>>>>> @@ -950,6 +1012,10 @@ static int ibmvnic_open(struct net_device *netdev)
+>>>>>
+>>>>>        rc = __ibmvnic_open(netdev);
+>>>>>        netif_carrier_on(netdev);
+>>>>> +
+>>>>> +    /* Vital Product Data (VPD) */
+>>>>> +    ibmvnic_get_vpd(adapter);
+>>>>> +
+>>>>>        mutex_unlock(&adapter->reset_lock);
+>>>>>
+>>>>>        return rc;
+>>>>> @@ -1878,11 +1944,15 @@ static int ibmvnic_get_link_ksettings(struct net_device *netdev,
+>>>>>        return 0;
+>>>>>    }
+>>>>>
+>>>>> -static void ibmvnic_get_drvinfo(struct net_device *dev,
+>>>>> +static void ibmvnic_get_drvinfo(struct net_device *netdev,
+>>>>>                    struct ethtool_drvinfo *info)
+>>>>>    {
+>>>>> +    struct ibmvnic_adapter *adapter = netdev_priv(netdev);
+>>>>> +
+>>>>>        strlcpy(info->driver, ibmvnic_driver_name, sizeof(info->driver));
+>>>>>        strlcpy(info->version, IBMVNIC_DRIVER_VERSION, sizeof(info->version));
+>>>>> +    strlcpy(info->fw_version, adapter->fw_version,
+>>>>> +        sizeof(info->fw_version));
+>>>>>    }
+>>>>>
+>>>>>    static u32 ibmvnic_get_msglevel(struct net_device *netdev)
+>>>>> @@ -3076,6 +3146,77 @@ static void send_cap_queries(struct ibmvnic_adapter *adapter)
+>>>>>        ibmvnic_send_crq(adapter, &crq);
+>>>>>    }
+>>>>>
+>>>>> +static void handle_vpd_size_rsp(union ibmvnic_crq *crq,
+>>>>> +                struct ibmvnic_adapter *adapter)
+>>>>> +{
+>>>>> +    struct device *dev = &adapter->vdev->dev;
+>>>>> +
+>>>>> +    if (crq->get_vpd_size_rsp.rc.code) {
+>>>>> +        dev_err(dev, "Error retrieving VPD size, rc=%x\n",
+>>>>> +            crq->get_vpd_size_rsp.rc.code);
+>>>>> +        complete(&adapter->fw_done);
+>>>>> +        return;
+>>>>> +    }
+>>>>> +
+>>>>> +    adapter->vpd->len = be64_to_cpu(crq->get_vpd_size_rsp.len);
+>>>>> +    complete(&adapter->fw_done);
+>>>>> +}
+>>>>> +
+>>>>> +static void handle_vpd_rsp(union ibmvnic_crq *crq,
+>>>>> +               struct ibmvnic_adapter *adapter)
+>>>>> +{
+>>>>> +    struct device *dev = &adapter->vdev->dev;
+>>>>> +    unsigned char *substr = NULL, *ptr = NULL;
+>>>>> +    u8 fw_level_len = 0;
+>>>>> +
+>>>>> +    dma_unmap_single(dev, adapter->vpd->dma_addr, adapter->vpd->len,
+>>>>> +             DMA_FROM_DEVICE);
+>>>>> +
+>>>>> +    if (crq->get_vpd_rsp.rc.code) {
+>>>>> +        dev_err(dev, "Error retrieving VPD from device, rc=%x\n",
+>>>>> +            crq->get_vpd_rsp.rc.code);
+>>>>> +        memset(adapter->fw_version, 0, 32);
+>>>>> +        goto complete;
+>>>>> +    }
+>>>>> +
+>>>>> +    /* get the position of the firmware version info
+>>>>> +     * located after the ASCII 'RM' substring in the buffer
+>>>>> +     */
+>>>>> +    substr = strnstr(adapter->vpd->buff, "RM", adapter->vpd->len);
+>>>>> +    if (!substr) {
+>>>>> +        dev_info(dev, "No FW level provided by VPD\n");
+>>>>> +        memset(adapter->fw_version, 0, 32);
+>>>>> +        goto complete;
+>>>>> +    }
+>>>>> +
+>>>>> +    /* get length of firmware level ASCII substring */
+>>>>> +    if ((substr + 2) < (adapter->vpd->buff + adapter->vpd->len)) {
+>>>>> +        fw_level_len = *(substr + 2);
+>>>>> +    } else {
+>>>>> +        dev_info(dev, "Length of FW substr extrapolated VDP buff\n");
+>>>>> +        memset(adapter->fw_version, 0, 32);
+>>>>> +        goto complete;
+>>>>> +    }
+>>>>> +
+>>>>> +    /* copy firmware version string from vpd into adapter */
+>>>>> +    if ((substr + 3 + fw_level_len) <
+>>>>> +        (adapter->vpd->buff + adapter->vpd->len)) {
+>>>>> +        ptr = strncpy((char *)adapter->fw_version,
+>>>>> +                  substr + 3, fw_level_len);
+>>>>> +
+>>>>> +        if (!ptr) {
+>>>>> +            dev_err(dev, "Failed to isolate FW level string\n");
+>>>>> +            memset(adapter->fw_version, 0, 32);
+>>>>> +        }
+>>>>> +    } else {
+>>>>> +        dev_info(dev, "FW substr extrapolated VPD buff\n");
+>>>>> +        memset(adapter->fw_version, 0, 32);
+>>>>> +    }
+>>>>> +
+>>>>> +complete:
+>>>>> +    complete(&adapter->fw_done);
+>>>>> +}
+>>>>> +
+>>>>>    static void handle_query_ip_offload_rsp(struct ibmvnic_adapter *adapter)
+>>>>>    {
+>>>>>        struct device *dev = &adapter->vdev->dev;
+>>>>> @@ -3807,6 +3948,12 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
+>>>>>            netdev_dbg(netdev, "Got Collect firmware trace Response\n");
+>>>>>            complete(&adapter->fw_done);
+>>>>>            break;
+>>>>> +    case GET_VPD_SIZE_RSP:
+>>>>> +        handle_vpd_size_rsp(crq, adapter);
+>>>>> +        break;
+>>>>> +    case GET_VPD_RSP:
+>>>>> +        handle_vpd_rsp(crq, adapter);
+>>>>> +        break;
+>>>>>        default:
+>>>>>            netdev_err(netdev, "Got an invalid cmd type 0x%02x\n",
+>>>>>                   gen_crq->cmd);
+>>>>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+>>>>> index 4670af8..d3a6959 100644
+>>>>> --- a/drivers/net/ethernet/ibm/ibmvnic.h
+>>>>> +++ b/drivers/net/ethernet/ibm/ibmvnic.h
+>>>>> @@ -558,6 +558,12 @@ struct ibmvnic_multicast_ctrl {
+>>>>>        struct ibmvnic_rc rc;
+>>>>>    } __packed __aligned(8);
+>>>>>
+>>>>> +struct ibmvnic_get_vpd_size {
+>>>>> +    u8 first;
+>>>>> +    u8 cmd;
+>>>>> +    u8 reserved[14];
+>>>>> +} __packed __aligned(8);
+>>>>> +
+>>>>>    struct ibmvnic_get_vpd_size_rsp {
+>>>>>        u8 first;
+>>>>>        u8 cmd;
+>>>>> @@ -575,6 +581,13 @@ struct ibmvnic_get_vpd {
+>>>>>        u8 reserved[4];
+>>>>>    } __packed __aligned(8);
+>>>>>
+>>>>> +struct ibmvnic_get_vpd_rsp {
+>>>>> +    u8 first;
+>>>>> +    u8 cmd;
+>>>>> +    u8 reserved[10];
+>>>>> +    struct ibmvnic_rc rc;
+>>>>> +} __packed __aligned(8);
+>>>>> +
+>>>>>    struct ibmvnic_acl_change_indication {
+>>>>>        u8 first;
+>>>>>        u8 cmd;
+>>>>> @@ -700,10 +713,10 @@ union ibmvnic_crq {
+>>>>>        struct ibmvnic_change_mac_addr change_mac_addr_rsp;
+>>>>>        struct ibmvnic_multicast_ctrl multicast_ctrl;
+>>>>>        struct ibmvnic_multicast_ctrl multicast_ctrl_rsp;
+>>>>> -    struct ibmvnic_generic_crq get_vpd_size;
+>>>>> +    struct ibmvnic_get_vpd_size get_vpd_size;
+>>>>>        struct ibmvnic_get_vpd_size_rsp get_vpd_size_rsp;
+>>>>>        struct ibmvnic_get_vpd get_vpd;
+>>>>> -    struct ibmvnic_generic_crq get_vpd_rsp;
+>>>>> +    struct ibmvnic_get_vpd_rsp get_vpd_rsp;
+>>>>>        struct ibmvnic_acl_change_indication acl_change_indication;
+>>>>>        struct ibmvnic_acl_query acl_query;
+>>>>>        struct ibmvnic_generic_crq acl_query_rsp;
+>>>>> @@ -937,6 +950,12 @@ struct ibmvnic_error_buff {
+>>>>>        __be32 error_id;
+>>>>>    };
+>>>>>
+>>>>> +struct ibmvnic_vpd {
+>>>>> +    unsigned char *buff;
+>>>>> +    dma_addr_t dma_addr;
+>>>>> +    u64 len;
+>>>>> +};
+>>>>> +
+>>>>>    enum vnic_state {VNIC_PROBING = 1,
+>>>>>             VNIC_PROBED,
+>>>>>             VNIC_OPENING,
+>>>>> @@ -978,6 +997,10 @@ struct ibmvnic_adapter {
+>>>>>        dma_addr_t ip_offload_ctrl_tok;
+>>>>>        u32 msg_enable;
+>>>>>
+>>>>> +    /* Vital Product Data (VPD) */
+>>>>> +    struct ibmvnic_vpd *vpd;
+>>>>> +    char fw_version[32];
+>>>>> +
+>>>>>        /* Statistics */
+>>>>>        struct ibmvnic_statistics stats;
+>>>>>        dma_addr_t stats_token;
+>>>>>
+>>>
+> 
