@@ -1,17 +1,21 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yblFy2HhxzDqpp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:12:06 +1100 (AEDT)
-In-Reply-To: <20171016052135.24738-1-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yblFp2G27zDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:11:58 +1100 (AEDT)
+In-Reply-To: <20170626140601.7106-2-msuchanek@suse.de>
+To: Michal Suchanek <msuchanek@suse.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Suchanek <msuchanek@suse.de>,
+ Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2] powerpc/64s: Fix crashes on Power9 DD1 with radix MMU and
- STRICT_RWX
-Message-Id: <3yblFx6tVxz9sP1@ozlabs.org>
-Date: Tue, 14 Nov 2017 22:12:05 +1100 (AEDT)
+Subject: Re: [2/2] powerpc/fadump: use kstrtoint to handle sysfs store
+Message-Id: <3yblFp1Dmrz9sPr@ozlabs.org>
+Date: Tue, 14 Nov 2017 22:11:58 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,42 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-16 at 05:21:35 UTC, Balbir Singh wrote:
-> When using the radix MMU on Power9 DD1, to work around a hardware
-> problem, radix__pte_update() is required to do a two stage update of
-> the PTE. First we write a zero value into the PTE, then we flush the
-> TLB, and then we write the new PTE value.
+On Mon, 2017-06-26 at 14:06:01 UTC, Michal Suchanek wrote:
+> Currently sysfs store handlers in fadump use if buf[0] == 'char'.
 > 
-> In the normal case that works OK, but it does not work if we're
-> updating the PTE that maps the code we're executing, because the
-> mapping is removed by the TLB flush and we can no longer execute from
-> it. Unfortunately the STRICT_RWX code needs to do exactly that.
+> This means input "100foo" is interpreted as '1' and "01" as '0'.
 > 
-> The exact symptoms when we hit this case vary, sometimes we print an
-> oops and then get stuck after that, but I've also seen a machine just
-> get stuck continually page faulting with no oops printed. The variance
-> is presumably due to the exact layout of the text and the page size
-> used for the mappings. In all cases we are unable to boot to a shell.
+> Change to kstrtoint so leading zeroes and the like is handled in
+> expected way.
 > 
-> There are possible solutions such as creating a second mapping of the
-> TLB flush code, executing from that, and then jumping back to the
-> original. However we don't want to add that level of complexity for a
-> DD1 work around.
-> 
-> So just detect that we're running on Power9 DD1 and refrain from
-> changing the permissions, effectively disabling STRICT_RWX on Power9
-> DD1.
-> 
-> Fixes: 7614ff3 ("powerpc/mm/radix: Implement STRICT_RWX/mark_rodata_ro() for Radix")
-> 
-> Cc: stable@vger.kernel.org
-> 
-> Reported-by: Andrew Jeffery <andrew@aj.id.au>
-> [Changelog as suggested by Michael Ellerman <mpe@ellerman.id.au>]
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> Acked-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Signed-off-by: Michal Suchanek <a class="moz-txt-link-rfc2396E" href="mailto:msuchanek@suse.de">&lt;msuchanek@suse.de&gt;</a></pre>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f79ad50ea3c73fb1ea5b09e95c864e
+https://git.kernel.org/powerpc/c/dcdc46794b7bb76733d9792cca2f45
 
 cheers
