@@ -1,43 +1,33 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybhzN6R3CzDqkc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 20:29:20 +1100 (AEDT)
-Date: Tue, 14 Nov 2017 10:29:16 +0100
-From: Michal Hocko <mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybhzl5PR9zDqlR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 20:29:39 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAE9TZWn118006
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 04:29:37 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e7un4xnc6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 04:29:36 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Tue, 14 Nov 2017 09:29:27 -0000
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Joel Stanley <joel@jms.id.au>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org
-Subject: Re: linux-next: Tree for Nov 7
-Message-ID: <20171114092916.ho5mvwc23xnelmod@dhcp22.suse.cz>
-References: <20171110123054.5pnefm3mczsfv7bz@dhcp22.suse.cz>
- <CACPK8Xe5uUKEytkRiszdX511b_cYTD-z3X=ZsMcNJ-NOYnXfuQ@mail.gmail.com>
- <20171113092006.cjw2njjukt6limvb@dhcp22.suse.cz>
- <20171113094203.aofz2e7kueitk55y@dhcp22.suse.cz>
- <87lgjawgx1.fsf@concordia.ellerman.id.au>
- <20171113120057.555mvrs4fjq5tyng@dhcp22.suse.cz>
- <20171113151641.yfqrecpcxllpn5mq@dhcp22.suse.cz>
- <20171113154939.6ui2fmpokpm7g4oj@dhcp22.suse.cz>
- <20171113160637.jhekbdyfpccme3be@dhcp22.suse.cz>
- <87a7zpw75f.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87a7zpw75f.fsf@concordia.ellerman.id.au>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ live-patching@vger.kernel.org, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v4 0/3] ppc64le: Add REL24 relocation support of livepatch
+ symbols
+Date: Tue, 14 Nov 2017 04:29:07 -0500
+Message-Id: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,57 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 14-11-17 20:18:04, Michael Ellerman wrote:
-> Michal Hocko <mhocko@kernel.org> writes:
-> 
-> > [Sorry for spamming, this one is the last attempt hopefully]
-> >
-> > On Mon 13-11-17 16:49:39, Michal Hocko wrote:
-> >> On Mon 13-11-17 16:16:41, Michal Hocko wrote:
-> >> > On Mon 13-11-17 13:00:57, Michal Hocko wrote:
-> >> > [...]
-> >> > > Yes, I have mentioned that in the previous email but the amount of code
-> >> > > would be even larger. Basically every arch which reimplements
-> >> > > arch_get_unmapped_area would have to special case new MAP_FIXED flag to
-> >> > > do vma lookup.
-> >> > 
-> >> > It turned out that this might be much more easier than I thought after
-> >> > all. It seems we can really handle that in the common code. This would
-> >> > mean that we are exposing a new functionality to the userspace though.
-> >> > Myabe this would be useful on its own though. Just a quick draft (not
-> >> > even compile tested) whether this makes sense in general. I would be
-> >> > worried about unexpected behavior when somebody set other bit without a
-> >> > good reason and we might fail with ENOMEM for such a call now.
-> >> 
-> >> Hmm, the bigger problem would be the backward compatibility actually. We
-> >> would get silent corruptions which is exactly what the flag is trying
-> >> fix. mmap flags handling really sucks. So I guess we would have to make
-> >> the flag internal only :/
-> >
-> > OK, so this one should take care of the backward compatibility while
-> > still not touching the arch code
-> 
-> I'm not sure I understand your worries about backward compatibility?
+This patchset drop the approach of creating new stub type for livepatch
+symbols and offloads the issue of handling local function becoming global
+to kpatch tool via gcc-plugin.
 
-Just imagine you are running an application which uses the new flag
-combination on an older kernel. You will get no warning, yet you have no
-way to check that you have actually clobbered an existing mapping
-because MAP_FIXED will be used the old way.
+In function restore_r2(), a check for sibling call is added and also
+improves the error message on unexpected op-code.
 
-> If we add a new mmap flag which is currently unused then what is the
-> problem? Are you worried about user code that accidentally passes that
-> flag already?
+v4:
+ - Drop creation of stubs for livepatch symbols and offload solution
+   to kpatch tool.
+ - Introduce check for sibling call, when restoring r2 after branch. (Josh)
+ - Improve error message in restore_r2(). (Josh)
 
-If we add a completely new flag, like in this patch, then the code using
-the flag will not clobber an existing mapping on older kernels which do
-not recognize it (we will simply fall back to the default hint based
-implementation). You might not get the mapping you asked for which sucks
-but that is not fixable AFAICS. You can at least do
+v3:
+ - Defined FUNC_DESC_OFFSET to calculate func_desc offset from
+   struct ppc64le_klp_stub_entry.
+ - Replaced BUG_ON() with WARN_ON() in klp_stub_for_addr().
+ - Major commit message re-write.
 
-	mapped_addr = mmap(addr, ... MAP_FIXED_SAFE...);
-	assert(mapped_addr == addr);
+v2:
+ - Changed klp_stub construction to re-use livepatch_handler and
+   additional patch code required for klp_stub, instead of duplicating it.
+ - Minor comments and commit body edit.
 
-So I do not think we can go with the modifier unfortunatelly.
+Josh Poimboeuf (2):
+  powerpc/modules: Don't try to restore r2 after a sibling call
+  powerpc/modules: Improve restore_r2() error message
+
+Kamalesh Babulal (1):
+  kernel/modules: Add REL24 relocation support of livepatch symbols
+
+ arch/powerpc/kernel/module_64.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
 -- 
-Michal Hocko
-SUSE Labs
+2.9.3
