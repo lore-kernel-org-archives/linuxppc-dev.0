@@ -1,34 +1,14 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybj2X2ZN1zDqlS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 20:32:04 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAE9VOR0025455
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 04:32:01 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e7wbrsruu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 04:31:30 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 14 Nov 2017 09:29:38 -0000
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- live-patching@vger.kernel.org, Josh Poimboeuf <jpoimboe@redhat.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v4 3/3] powerpc/modules: Improve restore_r2() error message
-Date: Tue, 14 Nov 2017 04:29:10 -0500
-In-Reply-To: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
-References: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
-Message-Id: <20171114092910.20399-4-kamalesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybjq43zYyzDqkv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 21:07:12 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/64s: Fix masking of SRR1 bits on instruction fault
+Date: Tue, 14 Nov 2017 21:07:07 +1100
+Message-Id: <20171114100707.7203-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,41 +18,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Josh Poimboeuf <jpoimboe@redhat.com>
+On 64-bit Book3s, when we take an instruction fault the reason for the
+fault may be reported in SRR1. For data faults the reason is reported
+in DSISR (Data Storage Instruction Status Register).
 
-Print the function address associated with the restore_r2() error to
-make it easier to debug the problem.
+The reasons reported in each do not necessarily correspond, so we mask
+the SRR1 bits before copying them to the DSISR, which is then used by
+the page fault code.
 
-Also clarify the wording a bit.
+Prior to commit b4c001dc44f0 ("powerpc/mm: Use symbolic constants for
+filtering SRR1 bits on ISIs") we used a hard-coded mask of 0x58200000,
+which corresponds to:
 
-Before:
+  DSISR_NOHPTE		0x40000000 /* no translation found */
+  DSISR_NOEXEC_OR_G	0x10000000 /* exec of no-exec or guarded */
+  DSISR_PROTFAULT	0x08000000 /* protection fault */
+  DSISR_KEYFAULT	0x00200000 /* Storage Key fault */
 
-  module_64: patch_foo: Expect noop after relocate, got 3c820000
+That commit added a #define for the mask, DSISR_SRR1_MATCH_64S, but
+incorrectly used a different similarly named DSISR_BAD_FAULT_64S.
 
-After:
+This had the effect of changing the mask to 0xa43a0000, which omits
+everything but DSISR_KEYFAULT.
 
-  module_64: patch_foo: Expected noop after call, got 7c630034 at netdev_has_upper_dev+0x54/0xb0 [patch_foo]
+Luckily this had no visible effect, because in practice we hardly use
+the DSISR bits. The lack of DSISR_NOHPTE means a TLB flush
+optimisation was missed in the native HPTE code, and DSISR_NOEXEC_OR_G
+and DSISR_PROTFAULT are both only used to trigger rare warnings.
 
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+So we got lucky, but let's fix it. The new value only has bits between
+17 and 30 set, so we can continue to use andis.
+
+Fixes: b4c001dc44f0 ("powerpc/mm: Use symbolic constants for filtering SRR1 bits on ISIs")
+Cc: stable@vger.kernel.org # v4.14+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/module_64.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 9e5391f..dad3ea5 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -494,8 +494,8 @@ static int restore_r2(u32 *instruction, struct module *me)
- 		return 1;
- 
- 	if (*instruction != PPC_INST_NOP) {
--		pr_err("%s: Expect noop after relocate, got %08x\n",
--		       me->name, *instruction);
-+		pr_err("%s: Expected noop after call, got %08x at %pS\n",
-+			me->name, *instruction, instruction);
- 		return 0;
- 	}
- 	/* ld r2,R2_STACK_OFFSET(r1) */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 445137e2d0ca..4c4d20a29726 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -543,7 +543,7 @@ EXC_COMMON_BEGIN(instruction_access_common)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	ld	r12,_MSR(r1)
+ 	ld	r3,_NIP(r1)
+-	andis.	r4,r12,DSISR_BAD_FAULT_64S@h
++	andis.	r4,r12,DSISR_SRR1_MATCH_64S@h
+ 	li	r5,0x400
+ 	std	r3,_DAR(r1)
+ 	std	r4,_DSISR(r1)
 -- 
-2.9.3
+2.14.3
