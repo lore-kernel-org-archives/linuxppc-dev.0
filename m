@@ -1,21 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yblGH0y8FzDqYg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:12:23 +1100 (AEDT)
-In-Reply-To: <20171109172740.19681-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Florian Weimer <fweimer@redhat.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v2,
- 1/5] powerpc/64s/hash: Fix 128TB-512TB virtual address boundary case
- allocation
-Message-Id: <3yblGG320nz9rxl@ozlabs.org>
-Date: Tue, 14 Nov 2017 22:12:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybnZK39NCzDqF4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 23:56:24 +1100 (AEDT)
+Date: Tue, 14 Nov 2017 21:56:16 +0900 (KST)
+Message-Id: <20171114.215616.54799441824053779.davem@davemloft.net>
+To: desnesn@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ tlfalcon@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
+ jallen@linux.vnet.ibm.com
+Subject: Re: [PATCH] [net-next,v4] ibmvnic: Feature implementation of Vital
+ Product Data (VPD) for the ibmvnic driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20171113175919.22541-1-desnesn@linux.vnet.ibm.com>
+References: <20171113175919.22541-1-desnesn@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-11-09 at 17:27:36 UTC, Nicholas Piggin wrote:
-> When allocating VA space with a hint that crosses 128TB, the SLB addr_limit
-> variable is not expanded if addr is not > 128TB, but the slice allocation
-> looks at task_size, which is 512TB. This results in slice_check_fit()
-> incorrectly succeeding because the slice_count truncates off bit 128 of the
-> requested mask, so the comparison to the available mask succeeds.
+From: Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+Date: Mon, 13 Nov 2017 15:59:19 -0200
+
+> This patch implements and enables VDP support for the ibmvnic driver.
+> Moreover, it includes the implementation of suitable structs, signal
+>  transmission/handling and functions which allows the retrival of firmware
+>  information from the ibmvnic card through the ethtool command.
 > 
-> Fix this by using mm->context.addr_limit instead of mm->task_size for
-> testing allocation limits. This causes such allocations to fail.
-> 
-> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> Fixes: f4ea6dcb08 ("powerpc/mm: Enable mappings above 128TB")
-> Reported-by: Florian Weimer <fweimer@redhat.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
-
-https://git.kernel.org/powerpc/c/6a72dc038b615229a1b285829d6c83
-
-cheers
+Applied.
