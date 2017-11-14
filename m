@@ -1,20 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yblG554fhzDqvB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:12:13 +1100 (AEDT)
-In-Reply-To: <20171102174936.7cc061cc@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yblG70KbRzDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:12:15 +1100 (AEDT)
+In-Reply-To: <20171107034301.35120-1-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: linux-next: build failure after merge of the powerpc tree
-Message-Id: <3yblG540Dpz9sRg@ozlabs.org>
-Date: Tue, 14 Nov 2017 22:12:13 +1100 (AEDT)
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Jonas Pfefferle1 <JPF@zurich.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel,
+ v2] powerpc/powernv/ioda: Remove explicit max window size check
+Message-Id: <3yblG653bTz9sPr@ozlabs.org>
+Date: Tue, 14 Nov 2017 22:12:14 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-11-02 at 06:49:36 UTC, Stephen Rothwell wrote:
-> Hi all,
+On Tue, 2017-11-07 at 03:43:01 UTC, Alexey Kardashevskiy wrote:
+> DMA windows can only have a size of power of two on IODA2 hardware and
+> using memory_hotplug_max() to determine the upper limit won't work
+> correcly if it returns not power of two value.
 > 
-> After merging the powerpc tree, today's linux-next build (powerpc64
-> allnoconfig) failed like this:
+> This removes the check as the platform code does this check in
+> pnv_pci_ioda2_setup_default_config() anyway; the other client is VFIO
+> and that thing checks against locked_vm limit which prevents the userspace
+> from locking too much memory.
 > 
-> arch/powerpc/kernel/irq.o: In function `.replay_system_reset':
-> irq.c:(.text+0x10): undefined reference to `.ppc_save_regs'
+> It is expected to impact DPDK on machines with non-power-of-two RAM size,
+> mostly. KVM guests are less likely to be affected as usually guests get
+> less than half of hosts RAM.
 > 
-> Caused by commit
-> 
->   78adf6c214f0 ("powerpc/64s: Implement system reset idle wakeup reason")
-> 
-> I have applied the following fix patch:
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 2 Nov 2017 17:45:18 +1100
-> Subject: [PATCH] powerpc/64s: ppc_save_regs is now needed for all 64s builds
-> 
-> Fixes: 78adf6c214f0 ("powerpc/64s: Implement system reset idle wakeup reason")
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/fc2a5a6161a26b386eb0936b74a852
+https://git.kernel.org/powerpc/c/9003a249815a15704f415954039d1c
 
 cheers
