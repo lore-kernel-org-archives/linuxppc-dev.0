@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yblG04JgxzDqsP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:12:08 +1100 (AEDT)
-In-Reply-To: <20171023080507.21974-4-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yblG12xgrzDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 22:12:09 +1100 (AEDT)
+In-Reply-To: <2a4b854c7fc11db576e3b7ff6dcfda94c64d2842.1508776485.git.naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v2,
- 3/3] powerpc/powernv: Avoid waiting for secondary hold spinloop with
- OPAL
-Message-Id: <3yblG02h0Vz9sRg@ozlabs.org>
-Date: Tue, 14 Nov 2017 22:12:08 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>
+Subject: Re: [1/4] powerpc/kprobes: Disable preemption before invoking probe
+ handler for optprobes
+Message-Id: <3yblG11vGfz9sPs@ozlabs.org>
+Date: Tue, 14 Nov 2017 22:12:09 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-23 at 08:05:07 UTC, Nicholas Piggin wrote:
-> OPAL boot does not insert secondaries at 0x60 to wait at the secondary
-> hold spinloop. Instead they are started later, and inserted at
-> generic_secondary_smp_init(), which is after the secondary hold
-> spinloop.
+On Mon, 2017-10-23 at 16:37:38 UTC, "Naveen N. Rao" wrote:
+> Per Documentation/kprobes.txt, probe handlers need to be invoked with
+> preemption disabled. Update optimized_callback() to do so. Also move
+> get_kprobe_ctlblk() invocation post preemption disable, since it
+> accesses pre-cpu data.
 > 
-> Avoid waiting on this spinloop when booting with OPAL firmware. This
-> wait always times out that case.
+> This was not an issue so far since optprobes wasn't selected if
+> CONFIG_PREEMPT was enabled. Commit a30b85df7d599f ("kprobes: Use
+> synchronize_rcu_tasks() for optprobe with CONFIG_PREEMPT=y") changes
+> this.
 > 
-> This saves 100ms boot time on powernv, and 10s of seconds of real time
-> when booting on the simulator in SMP.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/339a3293f4e493a6c40f71e4faab0c
+https://git.kernel.org/powerpc/c/8a2d71a3f2737e2448aa68de2b6052
 
 cheers
