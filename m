@@ -1,42 +1,36 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybrHh1swQzDqCp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 01:58:55 +1100 (AEDT)
-Message-ID: <1510671145.4344.1.camel@oracle.com>
-Subject: Re: linux-next: Tree for Nov 7
-From: Khalid Aziz <khalid.aziz@oracle.com>
-To: Michal Hocko <mhocko@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Joel Stanley <joel@jms.id.au>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Andrew Morton <akpm@linux-foundation.org>, Linux-Next Mailing List
- <linux-next@vger.kernel.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Abdul Haleem
- <abdhalee@linux.vnet.ibm.com>, Ralf Baechle <ralf@linux-mips.org>, "James
- E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org
-Date: Tue, 14 Nov 2017 07:52:25 -0700
-In-Reply-To: <20171114090444.lhrkuywuls26g6lu@dhcp22.suse.cz>
-References: <20171107162217.382cd754@canb.auug.org.au>
- <CACPK8Xfd4nqkf=Lk3n6+TNHAAi327r0dkUfGypZ3TpR0LqfS4Q@mail.gmail.com>
- <20171108142050.7w3yliulxjeco3b7@dhcp22.suse.cz>
- <20171110123054.5pnefm3mczsfv7bz@dhcp22.suse.cz>
- <CACPK8Xe5uUKEytkRiszdX511b_cYTD-z3X=ZsMcNJ-NOYnXfuQ@mail.gmail.com>
- <20171113092006.cjw2njjukt6limvb@dhcp22.suse.cz>
- <20171113094203.aofz2e7kueitk55y@dhcp22.suse.cz>
- <87lgjawgx1.fsf@concordia.ellerman.id.au>
- <20171113120057.555mvrs4fjq5tyng@dhcp22.suse.cz>
- <87h8txw87w.fsf@concordia.ellerman.id.au>
- <20171114090444.lhrkuywuls26g6lu@dhcp22.suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybrsj6ShWzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 02:24:57 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAEFOZQf095058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 10:24:55 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e82qnhebn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 10:24:54 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Tue, 14 Nov 2017 10:24:53 -0500
+Subject: Re: [PATCH] ibmveth: Kernel crash LSO offload flag toggle
+To: Daniel Axtens <dja@axtens.net>, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, tlfalcon@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
+References: <20171113230155.99682-1-bryantly@linux.vnet.ibm.com>
+ <87wp2t3byi.fsf@linkitivity.dja.id.au>
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Date: Tue, 14 Nov 2017 09:24:49 -0600
+MIME-Version: 1.0
+In-Reply-To: <87wp2t3byi.fsf@linkitivity.dja.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6b990276-6e6f-f892-72c9-b330c9a292c2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,16 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-11-14 at 10:04 +0100, Michal Hocko wrote:
-> If there is a general consensus that this is the preferred way to go,
-> I
-> will post the patch as an RFC to linux-api
-> 
-> [1] http://lkml.kernel.org/r/20171113160637.jhekbdyfpccme3be@dhcp22.s
-> use.cz
+On 11/13/17 7:07 PM, Daniel Axtens wrote:
 
-I prefer the new flag. It is cleaner and avoids unintended breakage for
-existing flag.
+> Hi Bryant,
+>
+> A few things:
+>
+> 1) The commit message could probably be trimmed, especially the stack
+> traces.
 
---
-Khalid
+Yes, I can trim it. 
+
+> 2) What exactly are you changing and why does it fix the issue? I
+> couldn't figure that out from the commit message.
+
+The bounce buffer can be null when skb_copy_from_linear_data tries to use
+it and that causes the kernel crash. Thus adding the check to see whether or
+not bounce buffer is null prior to utilizing it.
+
+>
+> 3) Does this need a Fixes: tag?
+>
+Honestly, this bug has existed for a very long time. It only became more evident when 
+commit 66aa0678efc29abd2ab02a09b23f9a8bc9f12a6c was committed. It is rare for a customer
+to his this issue since a customer only toggles LSO once and leaves it, but to re-create
+this bug one would need to write a script like the one in the commit message to toggle it
+on and off in a loop. Its ultimately a legacy bug that was uncovered more recently. 
+
+>>  	}
+>>  
+>> -	netdev->min_mtu = IBMVETH_MIN_MTU;
+>> -	netdev->max_mtu = ETH_MAX_MTU;
+>> -
+> 4) What does the above hunk do? It seems unrelated...
+>
+You are right the above is just cleanup, I should have separated the patch. 
+
+> Regards,
+> Daniel
+>
