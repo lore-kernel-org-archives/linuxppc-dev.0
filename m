@@ -1,32 +1,25 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybs4k4K9SzDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 02:34:30 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAEFQEej125443
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 10:34:27 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e82xx108t-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 10:34:27 -0500
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Tue, 14 Nov 2017 10:34:26 -0500
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- tlfalcon@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH] ibmveth: Kernel crash LSO offload flag toggle
-Date: Tue, 14 Nov 2017 09:34:20 -0600
-Message-Id: <20171114153420.3911-1-bryantly@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybsVb3y0vzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 02:53:27 +1100 (AEDT)
+Date: Tue, 14 Nov 2017 09:53:23 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH v4 2/3] powerpc/modules: Don't try to restore r2 after a
+ sibling call
+Message-ID: <20171114155323.3sjxx3eykinnl2ea@treble>
+References: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
+ <20171114092910.20399-3-kamalesh@linux.vnet.ibm.com>
+ <1510654928.8xrjtkjm8m.naveen@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1510654928.8xrjtkjm8m.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,99 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch ensures that the bounce_buffer is not null
-prior to using it within skb_copy_from_linear_data.
+On Tue, Nov 14, 2017 at 03:59:21PM +0530, Naveen N. Rao wrote:
+> Kamalesh Babulal wrote:
+> > From: Josh Poimboeuf <jpoimboe@redhat.com>
+> > 
+> > When attempting to load a livepatch module, I got the following error:
+> > 
+> >   module_64: patch_module: Expect noop after relocate, got 3c820000
+> > 
+> > The error was triggered by the following code in
+> > unregister_netdevice_queue():
+> > 
+> >   14c:   00 00 00 48     b       14c <unregister_netdevice_queue+0x14c>
+> >                          14c: R_PPC64_REL24      net_set_todo
+> >   150:   00 00 82 3c     addis   r4,r2,0
+> > 
+> > GCC didn't insert a nop after the branch to net_set_todo() because it's
+> > a sibling call, so it never returns.  The nop isn't needed after the
+> > branch in that case.
+> > 
+> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/module_64.c | 4 ++++
+> >  1 file changed, 4 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+> > index 39b01fd..9e5391f 100644
+> > --- a/arch/powerpc/kernel/module_64.c
+> > +++ b/arch/powerpc/kernel/module_64.c
+> > @@ -489,6 +489,10 @@ static int restore_r2(u32 *instruction, struct module *me)
+> >  	if (is_early_mcount_callsite(instruction - 1))
+> >  		return 1;
+> > 
+> > +	/* Sibling calls don't return, so they don't need to restore r2 */
+> > +	if (instruction[-1] == PPC_INST_BRANCH)
+> > +		return 1;
+> > +
+> 
+> This looks quite fragile, unless we know for sure that gcc will _always_
+> emit this instruction form for sibling calls with relocations.
+> 
+> As an alternative, does it make sense to do the following check instead?
+> 	if ((instr_is_branch_iform(insn) || instr_is_branch_bform(insn))
+> 		&& !(insn & 0x1))
 
-The problem can be recreated toggling on/off Large send offload.
+Yes, good point.  How about something like this?
 
-The following script when run (along with some iperf traffic recreates the
-crash within 5-10 mins or so).
+(completely untested because I don't have access to a box at the moment)
 
-while true
-do
-	ethtool -k ibmveth0 | grep tcp-segmentation-offload
-	ethtool -K ibmveth0 tso off
-	ethtool -k ibmveth0 | grep tcp-segmentation-offload
-	ethtool -K ibmveth0 tso on
-done
 
-Note: This issue happens the very first time largsesend offload is
-turned off too (but the above script recreates the issue all the times)
-
-[76563.914173] Unable to handle kernel paging request for data at address 0x00000000
-[76563.914197] Faulting instruction address: 0xc000000000063940
-[76563.914205] Oops: Kernel access of bad area, sig: 11 [#1]
-[76563.914210] SMP NR_CPUS=2048 NUMA pSeries
-[76563.914217] Modules linked in: rpadlpar_io rpaphp dccp_diag dccp tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag nls_utf8 isofs binfmt_misc pseries_rng rtc_generic autofs4 ibmvfc scsi_transport_fc ibmvscsi ibmveth
-[76563.914251] CPU: 3 PID: 0 Comm: swapper/3 Not tainted 4.4.0-34-generic #53-Ubuntu
-[76563.914258] task: c0000000fe9efcc0 ti: c0000000feab0000 task.ti: c0000000feab0000
-[76563.914265] NIP: c000000000063940 LR: d000000000d31788 CTR: c000000000064100
-[76563.914271] REGS: c0000000feab2ff0 TRAP: 0300   Not tainted  (4.4.0-34-generic)
-[76563.914277] MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 4800284e  XER: 0000001a
-[76563.914294] CFAR: c000000000008468 DAR: 0000000000000000 DSISR: 42000000 SOFTE: 1
-GPR00: 000000000000f240 c0000000feab3270 c0000000015b5d00 0000000000000000
-GPR04: c00000000d9b0004 000000000000002a 0000000000000006 c0000000efc0ccac
-GPR08: d000000000d3dd28 0000000000000080 0000000000000000 d000000000d34758
-GPR12: c000000000064100 c00000000e7f1c80 c0000000ffdca938 0000000000000100
-GPR16: c0000000ffdca738 c0000000ffdca538 c0000000feab34a0 c0000000015f4d00
-GPR20: 0000000000000000 c0000000015f4cf0 c0000000f5945900 0000000000000000
-GPR24: 0000000000000000 0000000080000000 c0000000feab32d0 c0000000efc0ccac
-GPR28: c0000000f23ccb00 c0000000f5945000 c0000000f23ccb00 c0000000efc0cc00
-[76563.914380] NIP [c000000000063940] memcpy_power7+0x40/0x800
-[76563.914387] LR [d000000000d31788] ibmveth_start_xmit+0x1c8/0x8d0 [ibmveth]
-[76563.914392] Call Trace:
-[76563.914396] [c0000000feab3270] [c0000000feab32d0] 0xc0000000feab32d0 (unreliable)
-[76563.914407] [c0000000feab3360] [c0000000009816f4] dev_hard_start_xmit+0x304/0x530
-[76563.914415] [c0000000feab3440] [c0000000009b6564] sch_direct_xmit+0x124/0x330
-[76563.914423] [c0000000feab34e0] [c000000000981ddc] __dev_queue_xmit+0x26c/0x770
-[76563.914431] [c0000000feab3580] [c000000000a1efc0] arp_xmit+0x30/0xd0
-[76563.914438] [c0000000feab35f0] [c000000000a1f0f4] arp_send_dst.part.0+0x94/0xb0
-[76563.914445] [c0000000feab3660] [c000000000a1fcb4] arp_solicit+0x114/0x2b0
-[76563.914452] [c0000000feab3730] [c00000000098d8f4] neigh_probe+0x84/0xd0
-[76563.914460] [c0000000feab3760] [c0000000009937cc] neigh_timer_handler+0xbc/0x320
-[76563.914468] [c0000000feab37a0] [c00000000014a3fc] call_timer_fn+0x5c/0x1c0
-[76563.914474] [c0000000feab3830] [c00000000014a8bc] run_timer_softirq+0x31c/0x3f0
-[76563.914483] [c0000000feab3900] [c0000000000bec58] __do_softirq+0x188/0x3e0
-[76563.914490] [c0000000feab39f0] [c0000000000bf128] irq_exit+0xc8/0x100
-[76563.914498] [c0000000feab3a10] [c00000000001f974] timer_interrupt+0xa4/0xe0
-[76563.914505] [c0000000feab3a40] [c000000000002714] decrementer_common+0x114/0x180
-[76563.914515] --- interrupt: 901 at plpar_hcall_norets+0x1c/0x28
-[76563.914515]     LR = check_and_cede_processor+0x34/0x50
-[76563.914525] [c0000000feab3d30] [c000000000916bf0] check_and_cede_processor+0x20/0x50 (unreliable)
-[76563.914534] [c0000000feab3d90] [c000000000916e18] shared_cede_loop+0x68/0x170
-[76563.914541] [c0000000feab3dd0] [c000000000913e20] cpuidle_enter_state+0x160/0x410
-[76563.914549] [c0000000feab3e30] [c000000000119d48] call_cpuidle+0x78/0xd0
-[76563.914556] [c0000000feab3e70] [c00000000011a11c] cpu_startup_entry+0x37c/0x480
-[76563.914564] [c0000000feab3f30] [c00000000004563c] start_secondary+0x33c/0x360
-[76563.914572] [c0000000feab3f90] [c000000000008b6c] start_secondary_prolog+0x10/0x14
-
-Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Signed-off-by: Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>
-Cc: <stable@vger.kernel.org> # 4.4+
----
- drivers/net/ethernet/ibm/ibmveth.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index f210398200ece..1d29b1649118d 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1092,8 +1092,14 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
- 	 */
- 	if (force_bounce || (!skb_is_nonlinear(skb) &&
- 				(skb->len < tx_copybreak))) {
--		skb_copy_from_linear_data(skb, adapter->bounce_buffer,
--					  skb->len);
-+		if (adapter->bounce_buffer) {
-+			skb_copy_from_linear_data(skb, adapter->bounce_buffer,
-+						  skb->len);
-+		} else {
-+			adapter->tx_send_failed++;
-+			netdev->stats.tx_dropped++;
-+			goto out;
-+		}
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index abef812de7f8..302e4368debc 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -33,6 +33,7 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags);
+ int patch_instruction(unsigned int *addr, unsigned int instr);
  
- 		descs[0].fields.flags_len = desc_flags | skb->len;
- 		descs[0].fields.address = adapter->bounce_buffer_dma;
--- 
-2.13.6 (Apple Git-96)
+ int instr_is_relative_branch(unsigned int instr);
++int instr_is_link_branch(unsigned int instr);
+ int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
+ unsigned long branch_target(const unsigned int *instr);
+ unsigned int translate_branch(const unsigned int *dest,
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 9cb007bc7075..b5148a206b4d 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -487,11 +487,13 @@ static bool is_early_mcount_callsite(u32 *instruction)
+    restore r2. */
+ static int restore_r2(u32 *instruction, struct module *me)
+ {
+-	if (is_early_mcount_callsite(instruction - 1))
++	u32 *prev_insn = instruction - 1;
++
++	if (is_early_mcount_callsite(prev_insn))
+ 		return 1;
+ 
+ 	/* Sibling calls don't return, so they don't need to restore r2 */
+-	if (instruction[-1] == PPC_INST_BRANCH)
++	if (!instr_is_link_branch(*prev_insn))
+ 		return 1;
+ 
+ 	if (*instruction != PPC_INST_NOP) {
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index c9de03e0c1f1..4727fafd37e4 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -304,6 +304,12 @@ int instr_is_relative_branch(unsigned int instr)
+ 	return instr_is_branch_iform(instr) || instr_is_branch_bform(instr);
+ }
+ 
++int instr_is_link_branch(unsigned int instr)
++{
++	return (instr_is_branch_iform(instr) || instr_is_branch_bform(instr)) &&
++	       (instr & BRANCH_SET_LINK);
++}
++
+ static unsigned long branch_iform_target(const unsigned int *instr)
+ {
+ 	signed long imm;
