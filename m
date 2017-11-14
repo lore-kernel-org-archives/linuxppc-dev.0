@@ -1,26 +1,42 @@
-Return-Path: <colin.king@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybqjX3xp9zDqYR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 01:32:48 +1100 (AEDT)
-Subject: Re: [PATCH] crypto/nx: fix spelling mistake: "availavle" ->
- "available"
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Haren Myneni <haren@us.ibm.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20171114133346.17697-1-colin.king@canonical.com>
- <alpine.DEB.2.20.1711141444320.2874@hadrien>
-From: Colin Ian King <colin.king@canonical.com>
-Message-ID: <73c485d9-d59d-d552-cf4c-148f88b370ae@canonical.com>
-Date: Tue, 14 Nov 2017 14:32:44 +0000
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1711141444320.2874@hadrien>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybrHh1swQzDqCp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 01:58:55 +1100 (AEDT)
+Message-ID: <1510671145.4344.1.camel@oracle.com>
+Subject: Re: linux-next: Tree for Nov 7
+From: Khalid Aziz <khalid.aziz@oracle.com>
+To: Michal Hocko <mhocko@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Joel Stanley <joel@jms.id.au>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Andrew Morton <akpm@linux-foundation.org>, Linux-Next Mailing List
+ <linux-next@vger.kernel.org>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Abdul Haleem
+ <abdhalee@linux.vnet.ibm.com>, Ralf Baechle <ralf@linux-mips.org>, "James
+ E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org
+Date: Tue, 14 Nov 2017 07:52:25 -0700
+In-Reply-To: <20171114090444.lhrkuywuls26g6lu@dhcp22.suse.cz>
+References: <20171107162217.382cd754@canb.auug.org.au>
+ <CACPK8Xfd4nqkf=Lk3n6+TNHAAi327r0dkUfGypZ3TpR0LqfS4Q@mail.gmail.com>
+ <20171108142050.7w3yliulxjeco3b7@dhcp22.suse.cz>
+ <20171110123054.5pnefm3mczsfv7bz@dhcp22.suse.cz>
+ <CACPK8Xe5uUKEytkRiszdX511b_cYTD-z3X=ZsMcNJ-NOYnXfuQ@mail.gmail.com>
+ <20171113092006.cjw2njjukt6limvb@dhcp22.suse.cz>
+ <20171113094203.aofz2e7kueitk55y@dhcp22.suse.cz>
+ <87lgjawgx1.fsf@concordia.ellerman.id.au>
+ <20171113120057.555mvrs4fjq5tyng@dhcp22.suse.cz>
+ <87h8txw87w.fsf@concordia.ellerman.id.au>
+ <20171114090444.lhrkuywuls26g6lu@dhcp22.suse.cz>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +46,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/11/17 13:45, Julia Lawall wrote:
+On Tue, 2017-11-14 at 10:04 +0100, Michal Hocko wrote:
+> If there is a general consensus that this is the preferred way to go,
+> I
+> will post the patch as an RFC to linux-api
 > 
-> 
-> On Tue, 14 Nov 2017, Colin King wrote:
-> 
->> From: Colin Ian King <colin.king@canonical.com>
->>
->> Trivial fix to spelling mistake in pr_err error message text
->>
->> Signed-off-by: Colin Ian King <colin.king@canonical.com>
->> ---
->>  drivers/crypto/nx/nx-842-powernv.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
->> index f2246a5abcf6..9c01d11f255a 100644
->> --- a/drivers/crypto/nx/nx-842-powernv.c
->> +++ b/drivers/crypto/nx/nx-842-powernv.c
->> @@ -744,7 +744,7 @@ static int nx842_open_percpu_txwins(void)
->>
->>  		if (!per_cpu(cpu_txwin, i)) {
->>  			/* shoudn't happen, Each chip will have NX engine */
-> 
-> It could be nice to fix the comment as well: shoud -> should
+> [1] http://lkml.kernel.org/r/20171113160637.jhekbdyfpccme3be@dhcp22.s
+> use.cz
 
-Good point. V2 sent.
-> 
-> julia
-> 
->> -			pr_err("NX engine is not availavle for CPU %d\n", i);
->> +			pr_err("NX engine is not available for CPU %d\n", i);
->>  			return -EINVAL;
->>  		}
->>  	}
->> --
->> 2.14.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+I prefer the new flag. It is cleaner and avoids unintended breakage for
+existing flag.
+
+--
+Khalid
