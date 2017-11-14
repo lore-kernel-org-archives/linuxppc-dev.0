@@ -1,22 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybk3Z2cGszDql4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 21:18:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ybkCt0MgKzDqlF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 21:25:14 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Cc: kbuild test robot <fengguang.wu@intel.com>, linuxppc-dev@lists.ozlabs.org,
- kbuild-all@01.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from
- `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
-In-Reply-To: <CAK7LNASo7qBCweTvm=U709DXhayQXajP+3zQ3GnhqkrBkSB8Ow@mail.gmail.com>
-References: <201711102336.rokM2O1G%fengguang.wu@intel.com>
- <20171111194540.5f96fe93@roar.ozlabs.ibm.com>
- <CAK7LNASo7qBCweTvm=U709DXhayQXajP+3zQ3GnhqkrBkSB8Ow@mail.gmail.com>
-Date: Tue, 14 Nov 2017 21:17:58 +1100
-Message-ID: <8760adw4dl.fsf@concordia.ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 3/8] powerpc/mm: Separate ibm,
+ dynamic-memory data from DT format
+In-Reply-To: <91f1c54a-a7cd-5ccb-a7f8-f9714d8f06fc@linux.vnet.ibm.com>
+References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <150850572658.9118.9227271506499547385.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <87vaifwtu5.fsf@concordia.ellerman.id.au>
+ <91f1c54a-a7cd-5ccb-a7f8-f9714d8f06fc@linux.vnet.ibm.com>
+Date: Tue, 14 Nov 2017 21:25:13 +1100
+Message-ID: <87375hw41i.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,59 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+> On 11/12/2017 06:43 AM, Michael Ellerman wrote:
+...
+>> The bigger problem we have though is that you're trying to allocate
+>> memory, in order to find out what memory we have :)
+>> 
+>> I suspect it works in some cases because you hit the memory@0 node first
+>> in the device tree, and add that memory to memblock, which means
+>> init_drmem_lmbs() *can* allocate memory, and everything's good.
+>> 
+>> But if we hit init_drmem_lmbs() first, or there's not enough space in
+>> memory@0, then allocating memory in order to discover memory is not
+>> going to work.
+>> 
+>> I'm not sure what the best solution is. One option would be to
+>> statically allocate some space, so that we can discover some of the LMBs
+>> without doing an allocation. But we wouldn't be able to guarantee that
+>> we had enough space i nthat static allocation, so the code would need to
+>> handle doing that and then potentially finding more LMBs later using a
+>> dynamic alloc. So that could be a bit messy.
+>> 
+>> The other option would be for the early_init_dt_scan_drmem_lmbs() code
+>> to still work on the device tree directly, rather than using the
+>> drmem_info array. That would make for uglier code, but may be necessary.
+>
+> I have been thinking about my initial approach, and the more I look at it
+> the more I do not like trying to do the bootmem allocation. As you mention
+> there is just too much that could go wrong with that.
+>
+> I have started looking at a design where an interface similar to
+> walk_memory_range() is used for the prom and numa code so we do not have to rely
+> on making the allocation for the lmb array early in boot. The lmb array
+> could then be allocated in the late_initcall in drmem.c at which point
+> the general kernel allocator is available.
+>
+> I'm still working on getting this coded up and when send out a new patch set
+> once it's ready unless anyone has objections to this approach.
 
-> Hi Nicholas,
->
->
-> 2017-11-11 17:45 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
->> On Fri, 10 Nov 2017 23:41:49 +0800
->> kbuild test robot <fengguang.wu@intel.com> wrote:
->>
->>> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
->>> head:   1c9dbd4615fd751e5e0b99807a3c7c8612e28e20
->>> commit: cb87481ee89dbd6609e227afbf64900fb4e5c930 kbuild: linker script do not match C names unless LD_DEAD_CODE_DATA_ELIMINATION is configured
->>> date:   3 months ago
->>> config: powerpc-fsp2_defconfig (attached as .config)
->>> compiler: powerpc-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->>> reproduce:
->>>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->>>         chmod +x ~/bin/make.cross
->>>         git checkout cb87481ee89dbd6609e227afbf64900fb4e5c930
->>>         # save the attached .config to linux build tree
->>>         make.cross ARCH=powerpc
->>>
->>> All warnings (new ones prefixed by >>):
->>>
->>> >> powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
->>> >> powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
->>> >> powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
->>
->> Okay this is not caused by the above patch, it was just hiding it.
->> This should do the trick I think:
->> --
->> powerpc/32: Add .data.rel* sections explicitly
->>
->> Match powerpc/64 and include .data.rel* input sections in the .data output
->> section explicitly.
->>
->> This should solve the warning:
->>
->> powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
->>
->> Reported-by: kbuild test robot <fengguang.wu@intel.com>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->
->
-> I think this will go to the PPC tree.
+Thanks. That sounds like it could work.
 
-Yeah I can take it.
+I definitely liked this version in that it removed a lot of code that
+was looking directly at the device tree and abstracted it to just
+operate on the LMBs.
 
-> I will not touch this patch, but
-> if necessary, please feel free to add
->
-> Reviewed-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-
-Thanks.
+If we can end up with something similar but without needing to do the
+allocation before we have memory, that'd be great.
 
 cheers
