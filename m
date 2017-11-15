@@ -1,19 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ybzYw5DdlzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 07:26:44 +1100 (AEDT)
-Date: Wed, 15 Nov 2017 07:26:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>
-Subject: linux-next: Signed-off-by missing for commit in the powerpc tree
-Message-ID: <20171115072643.0c37fcb0@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yc80z3rxgzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 13:47:14 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 207so14118413pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Nov 2017 18:47:14 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, tlfalcon@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ Sivakumar Krishnasamy <ksiva@linux.vnet.ibm.com>, stable@vger.kernel.org
+Subject: Re: [PATCH] ibmveth: Kernel crash LSO offload flag toggle
+In-Reply-To: <20171114153420.3911-1-bryantly@linux.vnet.ibm.com>
+References: <20171114153420.3911-1-bryantly@linux.vnet.ibm.com>
+Date: Wed, 15 Nov 2017 13:47:08 +1100
+Message-ID: <87inec2r83.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,14 +29,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Bryant,
 
-Commit
+This looks a bit better, but...
 
-  f23ab3efb1b3 ("powerpc: Fix DABR match on hash based systems")
+> The following patch ensures that the bounce_buffer is not null
+> prior to using it within skb_copy_from_linear_data.
 
-is missing a Signed-off-by from its committer.
+How would this occur?
 
--- 
-Cheers,
-Stephen Rothwell
+Looking at ibmveth.c, I see bounce_buffer being freed in ibmveth_close()
+and allocated in ibmveth_open() only. If allocation fails, the whole
+opening of the device fails with -ENOMEM.
+
+It seems your test case - changing TSO - causes ibmveth_set_tso() to
+cause an adaptor restart - an ibmveth_close(dev) and then an
+ibmveth_open(dev). Is this happening in parallel with an out of memory
+condition - is the memory allocation failing?
+
+Alternatively, could it be the case that you're closing the device while
+packets are in flight, and then trying to use a bounce_buffer that's
+been freed elsewhere? Do you need to decouple memory freeing from
+ibmveth_close?
+
+> The problem can be recreated toggling on/off Large send offload.
+>
+> The following script when run (along with some iperf traffic recreates the
+> crash within 5-10 mins or so).
+>
+> while true
+> do
+> 	ethtool -k ibmveth0 | grep tcp-segmentation-offload
+> 	ethtool -K ibmveth0 tso off
+> 	ethtool -k ibmveth0 | grep tcp-segmentation-offload
+> 	ethtool -K ibmveth0 tso on
+> done
+>
+> Note: This issue happens the very first time largsesend offload is
+> turned off too (but the above script recreates the issue all the times)
+>
+> [76563.914173] Unable to handle kernel paging request for data at address 0x00000000
+> [76563.914197] Faulting instruction address: 0xc000000000063940
+> [76563.914205] Oops: Kernel access of bad area, sig: 11 [#1]
+> [76563.914210] SMP NR_CPUS=2048 NUMA pSeries
+> [76563.914217] Modules linked in: rpadlpar_io rpaphp dccp_diag dccp tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag nls_utf8 isofs binfmt_misc pseries_rng rtc_generic autofs4 ibmvfc scsi_transport_fc ibmvscsi ibmveth
+> [76563.914251] CPU: 3 PID: 0 Comm: swapper/3 Not tainted 4.4.0-34-generic #53-Ubuntu
+                                                            ^--- yikes!
+
+There are relevant changes to this area since 4.4:
+2c42bf4b4317 ("ibmveth: check return of skb_linearize in ibmveth_start_xmit")
+66aa0678efc2 ("ibmveth: Support to enable LSO/CSO for Trunk VEA.")
+
+Does this crash occurs on a more recent kernel?
+
+> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+> index f210398200ece..1d29b1649118d 100644
+> --- a/drivers/net/ethernet/ibm/ibmveth.c
+> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+> @@ -1092,8 +1092,14 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
+>  	 */
+>  	if (force_bounce || (!skb_is_nonlinear(skb) &&
+>  				(skb->len < tx_copybreak))) {
+> -		skb_copy_from_linear_data(skb, adapter->bounce_buffer,
+> -					  skb->len);
+> +		if (adapter->bounce_buffer) {
+> +			skb_copy_from_linear_data(skb, adapter->bounce_buffer,
+> +						  skb->len);
+> +		} else {
+> +			adapter->tx_send_failed++;
+> +			netdev->stats.tx_dropped++;
+> +			goto out;
+Finally, as I alluded to at the top of this message, isn't the
+disappearance of the bounce-buffer a pretty serious issue? As I
+understand it, it means your data structures are now inconsistent. Do
+you need to - at the least - be more chatty here?
+
+Regards,
+Daniel
+> +		}
+>  
+>  		descs[0].fields.flags_len = desc_flags | skb->len;
+>  		descs[0].fields.address = adapter->bounce_buffer_dma;
+> -- 
+> 2.13.6 (Apple Git-96)
