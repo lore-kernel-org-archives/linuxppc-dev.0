@@ -1,35 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ycL2v5834zDql1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 21:19:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@kernel.org>, Torsten Duwe <duwe@lst.de>,
- Aravinda Prasad <aravinda@linux.vnet.ibm.com>, live-patching@vger.kernel.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3] kernel/module_64.c: Add REL24 relocation support of
- livepatch symbols
-In-Reply-To: <f5353c3d-ba9a-fa2e-17ca-3f460c3f2b61@linux.vnet.ibm.com>
-References: <20171031153004.GA31864@lst.de>
- <20171031162316.zerlu7ijb3qem33v@naverao1-tp.localdomain>
- <20171031183959.GA4313@lst.de> <20171107045419.aozlfdo7tpnubz72@treble>
- <8760am4hd6.fsf@concordia.ellerman.id.au> <20171107113105.GA19204@lst.de>
- <20171107145233.lmlg5lkfcczkxj4d__32032.512050546$1510066460$gmane$org@treble>
- <1510225685.pzdd3dgj9m.naveen@linux.ibm.com>
- <20171109151955.gl3z3l2ary4ayj7b@treble>
- <CAKTCnznuZFHgVjjnx+gBAk3RSenxS=PJLFBsxOq4Zzw=ru=HMg@mail.gmail.com>
- <20171110032823.nnpqsrrfwr6ye4uc@treble>
- <CAKTCnzm63vVGctVarw24v1JY2N7Kc3WdmoW88q2fniEAqXkP_w@mail.gmail.com>
- <f5353c3d-ba9a-fa2e-17ca-3f460c3f2b61@linux.vnet.ibm.com>
-Date: Wed, 15 Nov 2017 21:19:34 +1100
-Message-ID: <87r2szvo7d.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ycQk56HGTzDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 00:50:21 +1100 (AEDT)
+From: Miroslav Benes <mbenes@suse.cz>
+To: jpoimboe@redhat.com,
+	jeyu@kernel.org,
+	jikos@kernel.org
+Cc: pmladek@suse.com, lpechacek@suse.cz, pavel@ucw.cz,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Miroslav Benes <mbenes@suse.cz>, Oleg Nesterov <oleg@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: [PATCH v4 1/2] livepatch: send a fake signal to all blocking tasks
+Date: Wed, 15 Nov 2017 14:50:13 +0100
+Message-Id: <20171115135014.20594-2-mbenes@suse.cz>
+In-Reply-To: <20171115135014.20594-1-mbenes@suse.cz>
+References: <20171115135014.20594-1-mbenes@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,56 +29,323 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
+Live patching consistency model is of LEAVE_PATCHED_SET and
+SWITCH_THREAD. This means that all tasks in the system have to be marked
+one by one as safe to call a new patched function. Safe means when a
+task is not (sleeping) in a set of patched functions. That is, no
+patched function is on the task's stack. Another clearly safe place is
+the boundary between kernel and userspace. The patching waits for all
+tasks to get outside of the patched set or to cross the boundary. The
+transition is completed afterwards.
 
-> On Monday 13 November 2017 02:08 PM, Balbir Singh wrote:
->> On Fri, Nov 10, 2017 at 2:28 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->>> On Fri, Nov 10, 2017 at 01:06:25PM +1100, Balbir Singh wrote:
->>>> On Fri, Nov 10, 2017 at 2:19 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->>>>> FWIW, I think it won't matter anyway.  I'm currently pursuing the option
->>>>> of inserting nops after local calls, because it has less runtime
->>>>> complexity than using a stub.
->>>>>
->>>>> I think I've figured out a way to do it with a GCC plugin, but if that
->>>>> doesn't work I'll try the asm listing sed approach suggested by Michael.
->>>>>
->>>>
->>>> A plugin that runs for the new kernel with the patch? Just for
->>>> specific files involved in the patch?
->>>
->>> The plugin will affect the code generation of all functions in the patch
->>> module.  So all calls in all replacement functions will have the nops.
->>>
->>> Here's a prototype (not yet fully tested):
->>>
->>>   https://github.com/jpoimboe/kpatch/blob/TODO-ppc-fix/kpatch-build/gcc-plugins/ppc64le-plugin.c
->>>
->>
->
-> [...]
->
->> I'd have to look closer, but I wonder what happens if a
->> function has no global entry
->> point
->>
->> (See http://mpe.github.io/posts/2016/05/23/kernel-live-patching-for-ppc64le/)
->> section
->> Understanding the TOC & entry points and the example of int_to_scsilun()
->>
->
-> int_to_scsilun() is accessed via global entry point, but the TOC setup
-> part in the function prologue is skipped as the function doesn't have a
-> need to save/restore TOC. The reason begin, it doesn't calls any global
-> functions, thus the r2 register is not clobbered.
->
-> As per my understanding, the plug-in inserts a nop instruction after
-> branch to a function called via localentry a.k.a call to local
-> function. In case of int_to_scsilun(), the plug-in will not modify the
-> function in any way, as there are no local calls also made by the
-> int_to_scsilun().
+The problem is that a task can block the transition for quite a long
+time, if not forever. It could sleep in a set of patched functions, for
+example.  Luckily we can force the task to leave the set by sending it a
+fake signal, that is a signal with no data in signal pending structures
+(no handler, no sign of proper signal delivered). Suspend/freezer use
+this to freeze the tasks as well. The task gets TIF_SIGPENDING set and
+is woken up (if it has been sleeping in the kernel before) or kicked by
+rescheduling IPI (if it was running on other CPU). This causes the task
+to go to kernel/userspace boundary where the signal would be handled and
+the task would be marked as safe in terms of live patching.
 
-Yeah there should be no issue. This happens all the time, ie. the
-compiler sees it needs to make a global call, inserts the nop, but
-then it turns out the callee didn't need to use the TOC anyway.
+There are tasks which are not affected by this technique though. The
+fake signal is not sent to kthreads. They should be handled differently.
+They can be woken up so they leave the patched set and their
+TIF_PATCH_PENDING can be cleared thanks to stack checking.
 
-cheers
+For the sake of completeness, if the task is in TASK_RUNNING state but
+not currently running on some CPU it doesn't get the IPI, but it would
+eventually handle the signal anyway. Second, if the task runs in the
+kernel (in TASK_RUNNING state) it gets the IPI, but the signal is not
+handled on return from the interrupt. It would be handled on return to
+the userspace in the future when the fake signal is sent again. Stack
+checking deals with these cases in a better way.
+
+If the task was sleeping in a syscall it would be woken by our fake
+signal, it would check if TIF_SIGPENDING is set (by calling
+signal_pending() predicate) and return ERESTART* or EINTR. Syscalls with
+ERESTART* return values are restarted in case of the fake signal (see
+do_signal()). EINTR is propagated back to the userspace program. This
+could disturb the program, but...
+
+* each process dealing with signals should react accordingly to EINTR
+  return values.
+* syscalls returning EINTR happen to be quite common situation in the
+  system even if no fake signal is sent.
+* freezer sends the fake signal and does not deal with EINTR anyhow.
+  Thus EINTR values are returned when the system is resumed.
+
+The very safe marking is done in architectures' "entry" on syscall and
+interrupt/exception exit paths, and in a stack checking functions of
+livepatch.  TIF_PATCH_PENDING is cleared and the next
+recalc_sigpending() drops TIF_SIGPENDING. In connection with this, also
+call klp_update_patch_state() before do_signal(), so that
+recalc_sigpending() in dequeue_signal() can clear TIF_PATCH_PENDING
+immediately and thus prevent a double call of do_signal().
+
+Note that the fake signal is not sent to stopped/traced tasks. Such task
+prevents the patching to finish till it continues again (is not traced
+anymore).
+
+Last, sending the fake signal is not automatic. It is done only when
+admin requests it by writing 1 to signal sysfs attribute in livepatch
+sysfs directory.
+
+Signed-off-by: Miroslav Benes <mbenes@suse.cz>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org
+---
+ Documentation/ABI/testing/sysfs-kernel-livepatch | 12 +++++++
+ Documentation/livepatch/livepatch.txt            | 11 +++++--
+ arch/powerpc/kernel/signal.c                     |  6 ++--
+ arch/x86/entry/common.c                          |  6 ++--
+ kernel/livepatch/core.c                          | 30 +++++++++++++++++
+ kernel/livepatch/transition.c                    | 41 ++++++++++++++++++++++++
+ kernel/livepatch/transition.h                    |  1 +
+ kernel/signal.c                                  |  4 ++-
+ 8 files changed, 102 insertions(+), 9 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-kernel-livepatch b/Documentation/ABI/testing/sysfs-kernel-livepatch
+index d5d39748382f..3bb9d5bc1ce3 100644
+--- a/Documentation/ABI/testing/sysfs-kernel-livepatch
++++ b/Documentation/ABI/testing/sysfs-kernel-livepatch
+@@ -33,6 +33,18 @@ Contact:	live-patching@vger.kernel.org
+ 		An attribute which indicates whether the patch is currently in
+ 		transition.
+ 
++What:		/sys/kernel/livepatch/<patch>/signal
++Date:		Nov 2017
++KernelVersion:	4.15.0
++Contact:	live-patching@vger.kernel.org
++Description:
++		A writable attribute that allows administrator to affect the
++		course of an existing transition. Writing 1 sends a fake
++		signal to all remaining blocking tasks. The fake signal
++		means that no proper signal is delivered (there is no data in
++		signal pending structures). Tasks are interrupted or woken up,
++		and forced to change their patched state.
++
+ What:		/sys/kernel/livepatch/<patch>/<object>
+ Date:		Nov 2014
+ KernelVersion:	3.19.0
+diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
+index ecdb18104ab0..9bcdef277a36 100644
+--- a/Documentation/livepatch/livepatch.txt
++++ b/Documentation/livepatch/livepatch.txt
+@@ -176,8 +176,12 @@ If a patch is in transition, this file shows 0 to indicate the task is
+ unpatched and 1 to indicate it's patched.  Otherwise, if no patch is in
+ transition, it shows -1.  Any tasks which are blocking the transition
+ can be signaled with SIGSTOP and SIGCONT to force them to change their
+-patched state.
+-
++patched state. This may be harmful to the system though.
++/sys/kernel/livepatch/<patch>/signal attribute provides a better alternative.
++Writing 1 to the attribute sends a fake signal to all remaining blocking
++tasks. No proper signal is actually delivered (there is no data in signal
++pending structures). Tasks are interrupted or woken up, and forced to change
++their patched state.
+ 
+ 3.1 Adding consistency model support to new architectures
+ ---------------------------------------------------------
+@@ -435,6 +439,9 @@ Information about the registered patches can be found under
+ /sys/kernel/livepatch. The patches could be enabled and disabled
+ by writing there.
+ 
++/sys/kernel/livepatch/<patch>/signal attribute allows administrator to affect a
++patching operation.
++
+ See Documentation/ABI/testing/sysfs-kernel-livepatch for more details.
+ 
+ 
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index e9436c5e1e09..bf9c4e7792d1 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -153,6 +153,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ 	if (thread_info_flags & _TIF_UPROBE)
+ 		uprobe_notify_resume(regs);
+ 
++	if (thread_info_flags & _TIF_PATCH_PENDING)
++		klp_update_patch_state(current);
++
+ 	if (thread_info_flags & _TIF_SIGPENDING) {
+ 		BUG_ON(regs != current->thread.regs);
+ 		do_signal(current);
+@@ -163,9 +166,6 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ 		tracehook_notify_resume(regs);
+ 	}
+ 
+-	if (thread_info_flags & _TIF_PATCH_PENDING)
+-		klp_update_patch_state(current);
+-
+ 	user_enter();
+ }
+ 
+diff --git a/arch/x86/entry/common.c b/arch/x86/entry/common.c
+index 03505ffbe1b6..fb90bdb3602f 100644
+--- a/arch/x86/entry/common.c
++++ b/arch/x86/entry/common.c
+@@ -153,6 +153,9 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags)
+ 		if (cached_flags & _TIF_UPROBE)
+ 			uprobe_notify_resume(regs);
+ 
++		if (cached_flags & _TIF_PATCH_PENDING)
++			klp_update_patch_state(current);
++
+ 		/* deal with pending signal delivery */
+ 		if (cached_flags & _TIF_SIGPENDING)
+ 			do_signal(regs);
+@@ -165,9 +168,6 @@ static void exit_to_usermode_loop(struct pt_regs *regs, u32 cached_flags)
+ 		if (cached_flags & _TIF_USER_RETURN_NOTIFY)
+ 			fire_user_return_notifiers();
+ 
+-		if (cached_flags & _TIF_PATCH_PENDING)
+-			klp_update_patch_state(current);
+-
+ 		/* Disable IRQs and retry */
+ 		local_irq_disable();
+ 
+diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+index bf8c8fd72589..e772be452462 100644
+--- a/kernel/livepatch/core.c
++++ b/kernel/livepatch/core.c
+@@ -440,6 +440,7 @@ EXPORT_SYMBOL_GPL(klp_enable_patch);
+  * /sys/kernel/livepatch/<patch>
+  * /sys/kernel/livepatch/<patch>/enabled
+  * /sys/kernel/livepatch/<patch>/transition
++ * /sys/kernel/livepatch/<patch>/signal
+  * /sys/kernel/livepatch/<patch>/<object>
+  * /sys/kernel/livepatch/<patch>/<object>/<function,sympos>
+  */
+@@ -514,11 +515,40 @@ static ssize_t transition_show(struct kobject *kobj,
+ 			patch == klp_transition_patch);
+ }
+ 
++static ssize_t signal_store(struct kobject *kobj, struct kobj_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct klp_patch *patch;
++	int ret;
++	bool val;
++
++	patch = container_of(kobj, struct klp_patch, kobj);
++
++	/*
++	 * klp_mutex lock is not grabbed here intentionally. It is not really
++	 * needed. The race window is harmless and grabbing the lock would only
++	 * hold the action back.
++	 */
++	if (patch != klp_transition_patch)
++		return -EINVAL;
++
++	ret = kstrtobool(buf, &val);
++	if (ret)
++		return ret;
++
++	if (val)
++		klp_send_signals();
++
++	return count;
++}
++
+ static struct kobj_attribute enabled_kobj_attr = __ATTR_RW(enabled);
+ static struct kobj_attribute transition_kobj_attr = __ATTR_RO(transition);
++static struct kobj_attribute signal_kobj_attr = __ATTR_WO(signal);
+ static struct attribute *klp_patch_attrs[] = {
+ 	&enabled_kobj_attr.attr,
+ 	&transition_kobj_attr.attr,
++	&signal_kobj_attr.attr,
+ 	NULL
+ };
+ 
+diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
+index b004a1fb6032..095aa8d864f5 100644
+--- a/kernel/livepatch/transition.c
++++ b/kernel/livepatch/transition.c
+@@ -577,3 +577,44 @@ void klp_copy_process(struct task_struct *child)
+ 
+ 	/* TIF_PATCH_PENDING gets copied in setup_thread_stack() */
+ }
++
++/*
++ * Sends a fake signal to all non-kthread tasks with TIF_PATCH_PENDING set.
++ * Kthreads with TIF_PATCH_PENDING set are woken up. Only admin can request this
++ * action currently.
++ */
++void klp_send_signals(void)
++{
++	struct task_struct *g, *task;
++
++	pr_notice("signaling remaining tasks\n");
++
++	read_lock(&tasklist_lock);
++	for_each_process_thread(g, task) {
++		if (!klp_patch_pending(task))
++			continue;
++
++		/*
++		 * There is a small race here. We could see TIF_PATCH_PENDING
++		 * set and decide to wake up a kthread or send a fake signal.
++		 * Meanwhile the task could migrate itself and the action
++		 * would be meaningless. It is not serious though.
++		 */
++		if (task->flags & PF_KTHREAD) {
++			/*
++			 * Wake up a kthread which sleeps interruptedly and
++			 * still has not been migrated.
++			 */
++			wake_up_state(task, TASK_INTERRUPTIBLE);
++		} else {
++			/*
++			 * Send fake signal to all non-kthread tasks which are
++			 * still not migrated.
++			 */
++			spin_lock_irq(&task->sighand->siglock);
++			signal_wake_up(task, 0);
++			spin_unlock_irq(&task->sighand->siglock);
++		}
++	}
++	read_unlock(&tasklist_lock);
++}
+diff --git a/kernel/livepatch/transition.h b/kernel/livepatch/transition.h
+index ce09b326546c..47c335f7c04c 100644
+--- a/kernel/livepatch/transition.h
++++ b/kernel/livepatch/transition.h
+@@ -10,5 +10,6 @@ void klp_cancel_transition(void);
+ void klp_start_transition(void);
+ void klp_try_complete_transition(void);
+ void klp_reverse_transition(void);
++void klp_send_signals(void);
+ 
+ #endif /* _LIVEPATCH_TRANSITION_H */
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 800a18f77732..9009b8e77bc3 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -40,6 +40,7 @@
+ #include <linux/cn_proc.h>
+ #include <linux/compiler.h>
+ #include <linux/posix-timers.h>
++#include <linux/livepatch.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/signal.h>
+@@ -163,7 +164,8 @@ void recalc_sigpending_and_wake(struct task_struct *t)
+ 
+ void recalc_sigpending(void)
+ {
+-	if (!recalc_sigpending_tsk(current) && !freezing(current))
++	if (!recalc_sigpending_tsk(current) && !freezing(current) &&
++	    !klp_patch_pending(current))
+ 		clear_thread_flag(TIF_SIGPENDING);
+ 
+ }
+-- 
+2.15.0
