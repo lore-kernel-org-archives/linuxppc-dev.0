@@ -1,16 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yc9yl6PXCzDqkr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 15:15:27 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/64s: Fix Power9 DD2.0 workarounds by adding DD2.1
- feature
-Date: Wed, 15 Nov 2017 15:15:26 +1100
-Message-Id: <20171115041526.1495-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yc9yv3nWrzDql4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 15:15:35 +1100 (AEDT)
+Message-ID: <1510715692.2397.41.camel@kernel.crashing.org>
+Subject: Re: [PATCH] ibmveth: Kernel crash LSO offload flag toggle
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Axtens <dja@axtens.net>, "Bryant G. Ly"
+ <bryantly@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au, tlfalcon@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, Sivakumar
+ Krishnasamy <ksiva@linux.vnet.ibm.com>, stable@vger.kernel.org
+Date: Wed, 15 Nov 2017 14:14:52 +1100
+In-Reply-To: <87inec2r83.fsf@linkitivity.dja.id.au>
+References: <20171114153420.3911-1-bryantly@linux.vnet.ibm.com>
+ <87inec2r83.fsf@linkitivity.dja.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,150 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Recently we added a CPU feature for Power9 DD2.0, to capture the fact
-that some workarounds are required only on Power9 DD1 and DD2.0 but
-not DD2.1 or later.
+On Wed, 2017-11-15 at 13:47 +1100, Daniel Axtens wrote:
+> Hi Bryant,
+> 
+> This looks a bit better, but...
+> 
+> > The following patch ensures that the bounce_buffer is not null
+> > prior to using it within skb_copy_from_linear_data.
+> 
+> How would this occur?
+> 
+> Looking at ibmveth.c, I see bounce_buffer being freed in ibmveth_close()
+> and allocated in ibmveth_open() only. If allocation fails, the whole
+> opening of the device fails with -ENOMEM.
+> 
+> It seems your test case - changing TSO - causes ibmveth_set_tso() to
+> cause an adaptor restart - an ibmveth_close(dev) and then an
+> ibmveth_open(dev). Is this happening in parallel with an out of memory
+> condition - is the memory allocation failing?
+> 
+> Alternatively, could it be the case that you're closing the device while
+> packets are in flight, and then trying to use a bounce_buffer that's
+> been freed elsewhere? Do you need to decouple memory freeing from
+> ibmveth_close?
 
-Then in commit 9d2f510a66ec ("powerpc/64s/idle: avoid POWER9 DD1 and
-DD2.0 ERAT workaround on DD2.1") and commit e3646330cf66
-"powerpc/64s/idle: avoid POWER9 DD1 and DD2.0 PMU workaround on
-DD2.1") we changed CPU_FTR_SECTIONs to check for DD1 or DD20, eg:
+Hrm, you should at least stop the tx queue and NAPI (and synchronize)
+while doing a reset. A lot of drivers, rather than doing close/open
+(which does subtly different things) tend to instead fire a work queue
+(often called reset_task) which does the job (and uses the same lower
+level helpers as open/close to free/allocate the rings etc...).
 
-  BEGIN_FTR_SECTION
-          PPC_INVALIDATE_ERAT
-  END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
 
-Unfortunately although this reads as "if set DD1 or DD2.0", the or is
-a bitwise or and actually generates a mask of both bits. The code that
-does the feature patching then checks that the value of the CPU
-features masked with that mask are equal to the mask.
-
-So the end result is we're checking for DD1 and DD20 being set, which
-never happens. Yes the API is terrible.
-
-Removing the ERAT workaround on DD2.0 results in random SEGVs, the
-system tends to boot, but things randomly die including sometimes
-dhclient, udev etc.
-
-To fix the problem and hopefully avoid it in future, we remove the
-DD2.0 CPU feature and instead add a DD2.1 (or later) feature. This
-allows us to easily express that the workarounds are required if DD2.1
-is not set.
-
-At some point we will drop the DD1 workarounds entirely and some of
-this can be cleaned up.
-
-Fixes: 9d2f510a66ec ("powerpc/64s/idle: avoid POWER9 DD1 and DD2.0 ERAT workaround on DD2.1")
-Fixes: e3646330cf66 ("powerpc/64s/idle: avoid POWER9 DD1 and DD2.0 PMU workaround on DD2.1")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cputable.h | 7 ++++---
- arch/powerpc/kernel/cputable.c      | 6 +++---
- arch/powerpc/kernel/dt_cpu_ftrs.c   | 2 +-
- arch/powerpc/kernel/idle_book3s.S   | 8 ++++----
- 4 files changed, 12 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 1ca26ca85ec6..04c31db5e7c3 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -215,7 +215,7 @@ enum {
- #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
- #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
- #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
--#define CPU_FTR_POWER9_DD20		LONG_ASM_CONST(0x8000000000000000)
-+#define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x8000000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -478,7 +478,8 @@ enum {
- 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
- #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
- 			     (~CPU_FTR_SAO))
--#define CPU_FTRS_POWER9_DD20 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD20)
-+#define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
-+#define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -498,7 +499,7 @@ enum {
- 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
- 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
- 	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9 | \
--	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD20)
-+	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1)
- #endif
- #else
- enum {
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 171820190de7..1350f49d81a8 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -551,7 +551,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.pvr_mask		= 0xffffefff,
- 		.pvr_value		= 0x004e0200,
- 		.cpu_name		= "POWER9 (raw)",
--		.cpu_features		= CPU_FTRS_POWER9_DD20,
-+		.cpu_features		= CPU_FTRS_POWER9_DD2_0,
- 		.cpu_user_features	= COMMON_USER_POWER9,
- 		.cpu_user_features2	= COMMON_USER2_POWER9,
- 		.mmu_features		= MMU_FTRS_POWER9,
-@@ -567,11 +567,11 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check_early	= __machine_check_early_realmode_p9,
- 		.platform		= "power9",
- 	},
--	{	/* Power9 */
-+	{	/* Power9 DD 2.1 or later (see DD2.0 above) */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x004e0000,
- 		.cpu_name		= "POWER9 (raw)",
--		.cpu_features		= CPU_FTRS_POWER9,
-+		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
- 		.cpu_user_features	= COMMON_USER_POWER9,
- 		.cpu_user_features2	= COMMON_USER2_POWER9,
- 		.mmu_features		= MMU_FTRS_POWER9,
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 58e3b51de31c..602e0fde19b4 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -736,7 +736,7 @@ static __init void cpufeatures_cpu_quirks(void)
- 	if ((version & 0xffffff00) == 0x004e0100)
- 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
- 	else if ((version & 0xffffefff) == 0x004e0200)
--		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD20;
-+		cur_cpu_spec->cpu_features &= ~CPU_FTR_POWER9_DD2_1;
- }
- 
- static void __init cpufeatures_setup_finished(void)
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 59657783d1d5..01e1c1997893 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -357,13 +357,13 @@ power_enter_stop:
- .Lhandle_esl_ec_set:
- BEGIN_FTR_SECTION
- 	/*
--	 * POWER9 DD2 can incorrectly set PMAO when waking up after a
--	 * state-loss idle. Saving and restoring MMCR0 over idle is a
-+	 * POWER9 DD2.0 or earlier can incorrectly set PMAO when waking up after
-+	 * a state-loss idle. Saving and restoring MMCR0 over idle is a
- 	 * workaround.
- 	 */
- 	mfspr	r4,SPRN_MMCR0
- 	std	r4,_MMCR0(r1)
--END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
-+END_FTR_SECTION_IFCLR(CPU_FTR_POWER9_DD2_1)
- 
- /*
-  * Check if the requested state is a deep idle state.
-@@ -554,7 +554,7 @@ BEGIN_FTR_SECTION
- 	ld	r1,PACAR1(r13)
- 	ld	r4,_MMCR0(r1)
- 	mtspr	SPRN_MMCR0,r4
--END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1 | CPU_FTR_POWER9_DD20)
-+END_FTR_SECTION_IFCLR(CPU_FTR_POWER9_DD2_1)
- 	mfspr	r4,SPRN_MMCRA
- 	ori	r4,r4,(1 << (63-60))
- 	mtspr	SPRN_MMCRA,r4
--- 
-2.14.3
+> > The problem can be recreated toggling on/off Large send offload.
+> > 
+> > The following script when run (along with some iperf traffic recreates the
+> > crash within 5-10 mins or so).
+> > 
+> > while true
+> > do
+> > 	ethtool -k ibmveth0 | grep tcp-segmentation-offload
+> > 	ethtool -K ibmveth0 tso off
+> > 	ethtool -k ibmveth0 | grep tcp-segmentation-offload
+> > 	ethtool -K ibmveth0 tso on
+> > done
+> > 
+> > Note: This issue happens the very first time largsesend offload is
+> > turned off too (but the above script recreates the issue all the times)
+> > 
+> > [76563.914173] Unable to handle kernel paging request for data at address 0x00000000
+> > [76563.914197] Faulting instruction address: 0xc000000000063940
+> > [76563.914205] Oops: Kernel access of bad area, sig: 11 [#1]
+> > [76563.914210] SMP NR_CPUS=2048 NUMA pSeries
+> > [76563.914217] Modules linked in: rpadlpar_io rpaphp dccp_diag dccp tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag nls_utf8 isofs binfmt_misc pseries_rng rtc_generic autofs4 ibmvfc scsi_transport_fc ibmvscsi ibmveth
+> > [76563.914251] CPU: 3 PID: 0 Comm: swapper/3 Not tainted 4.4.0-34-generic #53-Ubuntu
+> 
+>                                                             ^--- yikes!
+> 
+> There are relevant changes to this area since 4.4:
+> 2c42bf4b4317 ("ibmveth: check return of skb_linearize in ibmveth_start_xmit")
+> 66aa0678efc2 ("ibmveth: Support to enable LSO/CSO for Trunk VEA.")
+> 
+> Does this crash occurs on a more recent kernel?
+> 
+> > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+> > index f210398200ece..1d29b1649118d 100644
+> > --- a/drivers/net/ethernet/ibm/ibmveth.c
+> > +++ b/drivers/net/ethernet/ibm/ibmveth.c
+> > @@ -1092,8 +1092,14 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
+> >  	 */
+> >  	if (force_bounce || (!skb_is_nonlinear(skb) &&
+> >  				(skb->len < tx_copybreak))) {
+> > -		skb_copy_from_linear_data(skb, adapter->bounce_buffer,
+> > -					  skb->len);
+> > +		if (adapter->bounce_buffer) {
+> > +			skb_copy_from_linear_data(skb, adapter->bounce_buffer,
+> > +						  skb->len);
+> > +		} else {
+> > +			adapter->tx_send_failed++;
+> > +			netdev->stats.tx_dropped++;
+> > +			goto out;
+> 
+> Finally, as I alluded to at the top of this message, isn't the
+> disappearance of the bounce-buffer a pretty serious issue? As I
+> understand it, it means your data structures are now inconsistent. Do
+> you need to - at the least - be more chatty here?
+> 
+> Regards,
+> Daniel
+> > +		}
+> >  
+> >  		descs[0].fields.flags_len = desc_flags | skb->len;
+> >  		descs[0].fields.address = adapter->bounce_buffer_dma;
+> > -- 
+> > 2.13.6 (Apple Git-96)
