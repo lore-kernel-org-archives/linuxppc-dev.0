@@ -1,23 +1,32 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ycXNR4kLMzDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 05:05:27 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id v21so2469006ioi.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 10:05:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ycXSW6B91zDqmx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 05:08:58 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAFI6M1D046374
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 13:08:56 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e8r1dr259-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 13:08:56 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 15 Nov 2017 11:08:55 -0700
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>, nfont@linux.vnet.ibm.com
+Subject: RESEND [PATCH V3 0/4] powerpc/devtree: Add support for 'ibm, drc-info'
+ property
+Date: Wed, 15 Nov 2017 12:08:39 -0600
 MIME-Version: 1.0
-In-Reply-To: <20171115175131.23631-1-oohall@gmail.com>
-References: <20171115175131.23631-1-oohall@gmail.com>
-From: Dan Williams <dan.j.williams@gmail.com>
-Date: Wed, 15 Nov 2017 10:05:24 -0800
-Message-ID: <CAA9_cmcn=VyR3xZWOtxpko6+AhnjC1xqrYXsyz4Z5A+i2DfSbQ@mail.gmail.com>
-Subject: Re: [PATCH 1/3] libnvdimm: Add of_node to region and bus descriptors
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Message-Id: <44e702bb-c2d3-7b69-6a27-0cd01c30b377@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 15, 2017 at 9:51 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
-> We want to be able to cross reference the region and bus devices
-> with the device tree node that they were spawned from. libNVDIMM
-> handles creating the actual devices for these internally, so we
-> need to pass in a pointer to the relevant node in the descriptor.
->
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Several properties in the DRC device tree format are replaced by
+more compact representations to allow, for example, for the encoding
+of vast amounts of memory, and or reduced duplication of information
+in related data structures.
 
-Looks ok to me,
+"ibm,drc-info": This property, when present, replaces the following
+four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains".  This property is defined for all
+dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
+are intended to provide a more compact representation, and reduce some
+search overhead.
 
-Acked-by: Dan Williams <dan.j.williams@intel.com>
+"ibm,architecture.vec": Bidirectional communication mechanism between
+the host system and the front end processor indicating what features
+the host system supports and what features the front end processor will
+actually provide.  In this case, we are indicating that the host system
+can support the new device tree structure "ibm,drc-info".
 
-...this is late if you were expecting a 4.15 merge.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+Michael Bringmann (4):
+  powerpc/firmware: Add definitions for new drc-info firmware feature.
+  pseries/drc-info: Search new DRC properties for CPU indexes
+  hotplug/drc-info: Add code to search new devtree property
+  powerpc: Enable support for new DRC devtree property
+---
+Changes in V3:
+  -- Achieved some code compression by passing data by structure
+  -- Now passing more values by structure reducing use of local
+     declarations / initialization.
+  -- Improve some code spacing for better clarity.
