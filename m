@@ -1,22 +1,39 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0245.hostedemail.com
- [216.40.44.245])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yd67F6cQ9zDqtM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:26:01 +1100 (AEDT)
-From: Joe Perches <joe@perches.com>
-To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ASoC: fsl_asrc: constify some arrays
-Date: Thu, 16 Nov 2017 08:25:47 -0800
-Message-Id: <b8a2684d6615ab36fa28f67606e5560c8097c8ef.1510849466.git.joe@perches.com>
-In-Reply-To: <cover.1510849466.git.joe@perches.com>
-References: <cover.1510849466.git.joe@perches.com>
+Return-Path: <lorenzo.pieralisi@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yd6fn6tgFzDr0n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:49:51 +1100 (AEDT)
+Date: Thu, 16 Nov 2017 16:49:39 +0000
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: "M.h. Lian" <minghuan.lian@nxp.com>, robh+dt@kernel.org
+Cc: Leo Li <leoyang.li@nxp.com>, Kishon Vijay Abraham I <kishon@ti.com>,
+ Xiaowei Bao <xiaowei.bao@nxp.com>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "will.deacon@arm.com" <will.deacon@arm.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ Sumit Garg <sumit.garg@nxp.com>, "Y.b. Lu" <yangbo.lu@nxp.com>,
+ Andy Tang <andy.tang@nxp.com>,
+ "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
+ "pbrobinson@gmail.com" <pbrobinson@gmail.com>,
+ "songxiaowei@hisilicon.com" <songxiaowei@hisilicon.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Z.q. Hou" <zhiqiang.hou@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>
+Subject: Re: [PATCHv4 1/3] ARMv8: dts: ls1046a: add the property of IB and OB
+Message-ID: <20171116164939.GA30182@e107981-ln.cambridge.arm.com>
+References: <20171110034847.17891-1-xiaowei.bao@nxp.com>
+ <20171110034847.17891-2-xiaowei.bao@nxp.com>
+ <20b8f1d2-f817-469f-afbf-66f25d6f8c46@ti.com>
+ <AM4PR0401MB16999BD34AFBB1362BD32EBD8F540@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <VI1PR04MB161516288A0FF2F507DAA9BEE82B0@VI1PR04MB1615.eurprd04.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <VI1PR04MB161516288A0FF2F507DAA9BEE82B0@VI1PR04MB1615.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +43,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using const reduces data.
+On Mon, Nov 13, 2017 at 02:35:48AM +0000, M.h. Lian wrote:
 
-$ size sound/soc/fsl/fsl_asrc.o*
-   text	   data	    bss	    dec	    hex	filename
-  21691	   5872	    192	  27755	   6c6b	sound/soc/fsl/fsl_asrc.o.new
-  21435	   6128	    192	  27755	   6c6b	sound/soc/fsl/fsl_asrc.o.old
+[...]
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- sound/soc/fsl/fsl_asrc.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+> > > On Friday 10 November 2017 09:18 AM, Bao Xiaowei wrote:
+> > > > Add the property of inbound and outbound windows number for ep driver.
+> > > >
+> > > > Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
+> > > > Acked-by: Minghuan Lian <minghuan.Lian@nxp.com>
+> > > > ---
+> > > >  v2:
+> > > >  - no change
+> > > >  v3:
+> > > >  - modify the commit message
+> > > >  v4:
+> > > >  - no change
+> > > >
+> > > >  arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi | 6 ++++++
+> > > >  1 file changed, 6 insertions(+)
+> > >
+> > > $subject should start with something like
+> > > arm64: dts: ls1046a: **
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index ed683fe8b94a..641724c9b3f8 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -49,12 +49,12 @@ static const u8 process_option[][12][2] = {
- };
- 
- /* Corresponding to process_option */
--static int supported_input_rate[] = {
-+static const int supported_input_rate[] = {
- 	5512, 8000, 11025, 16000, 22050, 32000, 44100, 48000, 64000, 88200,
- 	96000, 176400, 192000,
- };
- 
--static int supported_asrc_rate[] = {
-+static const int supported_asrc_rate[] = {
- 	8000, 11025, 16000, 22050, 32000, 44100, 48000, 64000, 88200, 96000, 176400, 192000,
- };
- 
-@@ -62,26 +62,26 @@ static int supported_asrc_rate[] = {
-  * The following tables map the relationship between asrc_inclk/asrc_outclk in
-  * fsl_asrc.h and the registers of ASRCSR
-  */
--static unsigned char input_clk_map_imx35[] = {
-+static const unsigned char input_clk_map_imx35[] = {
- 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
- };
- 
--static unsigned char output_clk_map_imx35[] = {
-+static const unsigned char output_clk_map_imx35[] = {
- 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
- };
- 
- /* i.MX53 uses the same map for input and output */
--static unsigned char input_clk_map_imx53[] = {
-+static const unsigned char input_clk_map_imx53[] = {
- /*	0x0  0x1  0x2  0x3  0x4  0x5  0x6  0x7  0x8  0x9  0xa  0xb  0xc  0xd  0xe  0xf */
- 	0x0, 0x1, 0x2, 0x7, 0x4, 0x5, 0x6, 0x3, 0x8, 0x9, 0xa, 0xb, 0xc, 0xf, 0xe, 0xd,
- };
- 
--static unsigned char output_clk_map_imx53[] = {
-+static const unsigned char output_clk_map_imx53[] = {
- /*	0x0  0x1  0x2  0x3  0x4  0x5  0x6  0x7  0x8  0x9  0xa  0xb  0xc  0xd  0xe  0xf */
- 	0x8, 0x9, 0xa, 0x7, 0xc, 0x5, 0x6, 0xb, 0x0, 0x1, 0x2, 0x3, 0x4, 0xf, 0xe, 0xd,
- };
- 
--static unsigned char *clk_map[2];
-+static const unsigned char *clk_map[2];
- 
- /**
-  * Request ASRC pair
--- 
-2.15.0
+Indeed.
+
+> > > > diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > > b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > > index 06b5e12d04d8..f8332669663c 100644
+> > > > --- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > > +++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+> > > > @@ -674,6 +674,8 @@
+> > > >  			device_type = "pci";
+> > > >  			dma-coherent;
+> > > >  			num-lanes = <4>;
+> > > > +			num-ib-windows = <6>;
+> > > > +			num-ob-windows = <6>;
+> > >
+> > > EP specific properties shouldn't be added in RC dt node. Ideally you
+> > > should have a separate dt node for RC and EP.
+> > 
+> > It is a single PCIe controller which can be configured to either RC
+> > mode or EP mode.  Wouldn't it conflict with the device tree
+> > principles to have two device tree nodes for the same PCIe
+> > controller?  And obviously the two modes cannot be used at the same
+> > time so we cannot have two drivers both probe on the same hardware.
+> > 
+> [Minghuan Lian]  There is only one PCIe dts node in the dts file. PCIe
+> dts node describes the PCIe controller's hardware properties and does
+> not have work mode.  The new properties  "num-ib-windows " and
+> "num-ob-windows" are used to describe the inbound/outbound window
+> number included in the PCIe hardware. These windows are used in both
+> RC and EP mode.  We can change work mode when resetting via RCW(reset
+> configuration word).
+
+I am not happy about this (that's what I am asking Rob to chime in
+please on DT side).
+
+1) I do not think it is allowed to have two DT nodes in a dts with same unit
+   address (ie same reg property)
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/dra7.dtsi?h=v4.14
+
+2) In the Synopsis Designware PCIe interface bindings we have some
+   properties that are for RC mode and some for EP mode but there is
+   no way from a *binding* perspective to detect in what mode the
+   controller is:
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/pci/designware-pcie.txt?h=v4.14
+
+3) You can't use properties that in the bindings above are declared EP
+   only for RC mode, we define bindings to respect their rules.
+
+4) I think that a) a compatible should be added to the designware-pcie
+   bindings to define endpoint mode and b) the same should be done for
+   the ls1046a bindings. If the RC is programmed in EP mode DT firmware
+   should be able to provide the information to an operating system, it
+   is actually a _different_ component but on this I need DT people to
+   chime in to define the best way forward.
+
+I cannot review/merge this code until the points above are clarified.
+
+Thanks,
+Lorenzo
