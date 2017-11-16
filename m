@@ -1,33 +1,38 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yd80b1GdpzDqvV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 04:50:22 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yd81C0mjWzDqwt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 04:50:54 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAGHnIiB080259
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:50:20 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e9etfj11j-1
+ vAGHnJwX074934
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:50:52 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e9e1wmwfm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:50:19 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:50:51 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 16 Nov 2017 12:50:18 -0500
-Subject: Re: RESEND [PATCH V3 3/4] hotplug/drc-info: Add code to search
- ibm,drc-info property
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <546ed8ce-b6f4-74f8-ba5b-d9bcd0798094@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Thu, 16 Nov 2017 11:50:15 -0600
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 16 Nov 2017 10:50:50 -0700
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH V2 1/3] hotplug/mobility: Apply assoc updates for Post
+ Migration Topo
+In-Reply-To: <030d7727-9b39-f9ab-53e6-6a47605ac6b3@linux.vnet.ibm.com>
+Date: Thu, 16 Nov 2017 11:50:47 -0600
 MIME-Version: 1.0
-In-Reply-To: <546ed8ce-b6f4-74f8-ba5b-d9bcd0798094@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <aa5e5ef6-3a28-0d52-93f6-48fcde133bf2@linux.vnet.ibm.com>
+Message-Id: <75fbca5e-f06a-f143-b420-8eb52859b230@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,250 +42,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+hotplug/mobility: Recognize more changes to the associativity of
+memory blocks described by the 'ibm,dynamic-memory' and 'cpu'
+properties when processing the topology of LPARS in Post Migration
+events.  Previous efforts only recognized whether a memory block's
+assignment had changed in the property.  Changes here include:
 
+* Checking the aa_index values of the old/new properties and 'readd'
+  any block for which the setting has changed.
+* Checking for changes in cpus and submitting 'readd' ops for them.
+* Creating some common support routines for the submission of memory
+  or cpu 'readd' operations.
 
-On 11/15/2017 12:09 PM, Michael Bringmann wrote:
-> rpadlpar_core.c: Provide parallel routines to search the older device-
-> tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
-> 
-> The interface to examine the DRC information is changed from a "get"
-> function that returns values for local verification elsewhere, to a
-> "check" function that validates the 'name' and/or 'type' of a device
-> node.  This update hides the format of the underlying device-tree
-> properties, and concentrates the value checks into a single function
-> without requiring the user to verify whether a search was successful.
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
-> Changes in V3:
->   -- Now passing more values by structure reducing use of local
->      declarations / initialization.
->   -- Improve some code spacing for better clarity.
-> ---
->  drivers/pci/hotplug/rpadlpar_core.c |   13 ++--
->  drivers/pci/hotplug/rpaphp.h        |    4 +
->  drivers/pci/hotplug/rpaphp_core.c   |  110 +++++++++++++++++++++++++++--------
->  3 files changed, 92 insertions(+), 35 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-> index a3449d7..fc01d7d 100644
-> --- a/drivers/pci/hotplug/rpadlpar_core.c
-> +++ b/drivers/pci/hotplug/rpadlpar_core.c
-> @@ -27,6 +27,7 @@
->  #include <linux/mutex.h>
->  #include <asm/rtas.h>
->  #include <asm/vio.h>
-> +#include <linux/firmware.h>
-> 
->  #include "../pci.h"
->  #include "rpaphp.h"
-> @@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
->  {
->  	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
->  	struct device_node *dn = NULL;
-> -	char *name;
->  	int rc;
-> 
->  	if (!parent)
->  		return NULL;
-> 
->  	while ((dn = of_get_next_child(parent, dn))) {
-> -		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
-> -		if ((rc == 0) && (!strcmp(drc_name, name)))
-> +		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
-> +		if (rc == 0)
->  			break;
->  	}
-> 
-> @@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
->  						  char *drc_type)
->  {
->  	struct device_node *np = NULL;
-> -	char *name;
-> -	char *type;
->  	int rc;
-> 
->  	while ((np = of_find_node_by_name(np, "pci"))) {
-> -		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
-> +		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
->  		if (rc == 0)
-> -			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
-> -				break;
-> +			break;
->  	}
-> 
->  	return np;
-> diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
-> index 7db024e..8db5f2e 100644
-> --- a/drivers/pci/hotplug/rpaphp.h
-> +++ b/drivers/pci/hotplug/rpaphp.h
-> @@ -91,8 +91,8 @@ struct slot {
-> 
->  /* rpaphp_core.c */
->  int rpaphp_add_slot(struct device_node *dn);
-> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
-> -		char **drc_name, char **drc_type, int *drc_power_domain);
-> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
-> +		char *drc_type);
-> 
->  /* rpaphp_slot.c */
->  void dealloc_slot_struct(struct slot *slot);
-> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-> index 1e29aba..6606175 100644
-> --- a/drivers/pci/hotplug/rpaphp_core.c
-> +++ b/drivers/pci/hotplug/rpaphp_core.c
-> @@ -30,6 +30,7 @@
->  #include <linux/smp.h>
->  #include <linux/init.h>
->  #include <linux/vmalloc.h>
-> +#include <asm/firmware.h>
->  #include <asm/eeh.h>       /* for eeh_add_device() */
->  #include <asm/rtas.h>		/* rtas_call */
->  #include <asm/pci-bridge.h>	/* for pci_controller */
-> @@ -196,25 +197,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
->  	return 0;
->  }
-> 
-> -/* To get the DRC props describing the current node, first obtain it's
-> - * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
-> - * the my-drc-index for correlation, and obtain the requested properties.
-> +
-> +/* Verify the existence of 'drc_name' and/or 'drc_type' within the
-> + * current node.  First obtain it's my-drc-index property.  Next,
-> + * obtain the DRC info from it's parent.  Use the my-drc-index for
-> + * correlation, and obtain/validate the requested properties.
->   */
-> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
-> -		char **drc_name, char **drc_type, int *drc_power_domain)
-> +
-> +static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
-> +				char *drc_type, unsigned int my_index)
->  {
-> +	char *name_tmp, *type_tmp;
->  	const int *indexes, *names;
->  	const int *types, *domains;
-> -	const unsigned int *my_index;
-> -	char *name_tmp, *type_tmp;
->  	int i, rc;
-> 
-> -	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-> -	if (!my_index) {
-> -		/* Node isn't DLPAR/hotplug capable */
-> -		return -EINVAL;
-> -	}
-> -
->  	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
->  	if (rc < 0) {
->  		return -EINVAL;
-> @@ -225,24 +222,87 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
-> 
->  	/* Iterate through parent properties, looking for my-drc-index */
->  	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
-> -		if ((unsigned int) indexes[i + 1] == *my_index) {
-> -			if (drc_name)
-> -				*drc_name = name_tmp;
-> -			if (drc_type)
-> -				*drc_type = type_tmp;
-> -			if (drc_index)
-> -				*drc_index = be32_to_cpu(*my_index);
-> -			if (drc_power_domain)
-> -				*drc_power_domain = be32_to_cpu(domains[i+1]);
-> -			return 0;
-> -		}
-> +		if ((unsigned int) indexes[i + 1] == my_index)
-> +			break;
-> +
->  		name_tmp += (strlen(name_tmp) + 1);
->  		type_tmp += (strlen(type_tmp) + 1);
->  	}
-> 
-> +	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
-> +	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
-> +		return 0;
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
-> +				char *drc_type, unsigned int my_index)
-> +{
-> +	struct property *info;
-> +	unsigned int entries;
-> +	struct of_drc_info drc;
-> +	void *value;
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+---
+Changes in V2:
+  -- Try to improve patch header documentation.
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |   64 +++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    6 ++
+ arch/powerpc/platforms/pseries/mobility.c       |   47 +++++++++++++----
+ arch/powerpc/platforms/pseries/pseries.h        |    2 +
+ 4 files changed, 109 insertions(+), 10 deletions(-)
 
-This should be __be32 *
-
-> +	int j;
-> +
-> +	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
-> +	if (info == NULL)
-> +		return -EINVAL;
-> +
-> +	value = info->value;
-> +	value = (void *)of_prop_next_u32(info, value, &entries);
-> +	if (!value)
-> +		return -EINVAL;
-> +
-> +	for (j = 0; j < entries; j++) {
-> +		of_one_drc_info(&info, &value, &drc);
-> +
-> +		/* Should now know end of current entry */
-> +
-> +		WARN_ON((my_index < drc.drc_index_start) ||
-> +			(((my_index-drc.drc_index_start)%
-> +				drc.sequential_inc) != 0));
-> +
-> +		if (my_index > drc.last_drc_index)
-> +			continue;
-> +
-> +		break;
-> +	}
-> +	/* Found it */
-> +
-> +	if (((drc_name == NULL) ||
-> +	     (drc_name && !strncmp(drc_name,
-> +				drc.drc_name_prefix,
-> +				strlen(drc.drc_name_prefix)))) &&
-
-Shouldn't we be doing a string compare on the entire name, not just the prefix?
-
-If I remember correctly the prefix is the same for every cpu.
-
--Nathan
-
-> +	    ((drc_type == NULL) ||
-> +	     (drc_type && !strncmp(drc_type,
-> +				drc.drc_type,
-> +				strlen(drc.drc_type)))))
-> +		return 0;
-> +
->  	return -EINVAL;
->  }
-> -EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
-> +
-> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
-> +			char *drc_type)
-> +{
-> +	const unsigned int *my_index;
-> +
-> +	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-> +	if (!my_index) {
-> +		/* Node isn't DLPAR/hotplug capable */
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
-> +		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
-> +						*my_index);
-> +	else
-> +		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
-> +						*my_index);
-> +}
-> +EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
-> +
-> 
->  static int is_php_type(char *drc_type)
->  {
-> 
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index fadb95e..d127c3a 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -634,6 +634,27 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+ 	return rc;
+ }
+ 
++static int dlpar_cpu_readd_by_index(u32 drc_index)
++{
++	int rc = 0;
++
++	pr_info("Attempting to update CPU, drc index %x\n", drc_index);
++
++	if (dlpar_cpu_remove_by_index(drc_index))
++		rc = -EINVAL;
++	else if (dlpar_cpu_add(drc_index))
++		rc = -EINVAL;
++
++	if (rc)
++		pr_info("Failed to update cpu at drc_index %lx\n",
++				(unsigned long int)drc_index);
++	else
++		pr_info("CPU at drc_index %lx was updated\n",
++				(unsigned long int)drc_index);
++
++	return rc;
++}
++
+ static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+ {
+ 	struct device_node *dn;
+@@ -824,6 +845,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 		else
+ 			rc = -EINVAL;
+ 		break;
++	case PSERIES_HP_ELOG_ACTION_READD:
++		rc = dlpar_cpu_readd_by_index(drc_index);
++		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+ 		rc = -EINVAL;
+@@ -874,6 +898,42 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+ 
+ #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+ 
++static int pseries_update_drconf_cpu(struct of_reconfig_data *pr)
++{
++	u32 old_entries, new_entries;
++	__be32 *p, *old_assoc, *new_assoc;
++
++	if (strcmp(pr->dn->type, "cpu"))
++		return 0;
++
++	/* The first int of the property is the number of domains's
++	 * described.  This is followed by an array of level values.
++	 */
++	p = (__be32 *) pr->old_prop->value;
++	if (!p)
++		return -EINVAL;
++	old_entries = be32_to_cpu(*p++);
++	old_assoc = p;
++
++	p = (__be32 *)pr->prop->value;
++	if (!p)
++		return -EINVAL;
++	new_entries = be32_to_cpu(*p++);
++	new_assoc = p;
++
++	if (old_entries == new_entries) {
++		int sz = old_entries * sizeof(int);
++
++		if (!memcmp(old_assoc, new_assoc, sz))
++			pseries_cpu_readd_by_index(pr->dn->phandle);
++
++	} else {
++		pseries_cpu_readd_by_index(pr->dn->phandle);
++	}
++
++	return 0;
++}
++
+ static int pseries_smp_notifier(struct notifier_block *nb,
+ 				unsigned long action, void *data)
+ {
+@@ -887,6 +947,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+ 	case OF_RECONFIG_DETACH_NODE:
+ 		pseries_remove_processor(rd->dn);
+ 		break;
++	case OF_RECONFIG_UPDATE_PROPERTY:
++		if (!strcmp(rd->prop->name, "ibm,associativity"))
++			err = pseries_update_drconf_cpu(rd);
++		break;
+ 	}
+ 	return notifier_from_errno(err);
+ }
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 1d48ab4..c61cfc6 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -1160,6 +1160,12 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+ 					  memblock_size);
+ 			rc = (rc < 0) ? -EINVAL : 0;
+ 			break;
++		} else if ((be32_to_cpu(old_drmem[i].aa_index) !=
++					be32_to_cpu(new_drmem[i].aa_index)) &&
++				(be32_to_cpu(new_drmem[i].flags) &
++					DRCONF_MEM_ASSIGNED)) {
++			pseries_memory_readd_by_index(
++				be32_to_cpu(new_drmem[i].drc_index));
+ 		}
+ 	}
+ 	return rc;
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index f7042ad..7c19b23 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -239,9 +239,30 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+ 	return rc;
+ }
+ 
++static void pseries_readd_by_index(int resource, __be32 phandle)
++{
++	struct pseries_hp_errorlog hp_elog;
++
++	hp_elog.resource = resource;
++	hp_elog.action = PSERIES_HP_ELOG_ACTION_READD;
++	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
++	hp_elog._drc_u.drc_index = phandle;
++
++	queue_hotplug_event(&hp_elog, NULL, NULL);
++}
++
++void pseries_memory_readd_by_index(__be32 phandle)
++{
++	pseries_readd_by_index(PSERIES_HP_ELOG_RESOURCE_MEM, phandle);
++}
++
++void pseries_cpu_readd_by_index(__be32 phandle)
++{
++	pseries_readd_by_index(PSERIES_HP_ELOG_RESOURCE_CPU, phandle);
++}
++
+ static void prrn_update_node(__be32 phandle)
+ {
+-	struct pseries_hp_errorlog *hp_elog;
+ 	struct device_node *dn;
+ 
+ 	/*
+@@ -254,18 +275,21 @@ static void prrn_update_node(__be32 phandle)
+ 		return;
+ 	}
+ 
+-	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+-	if(!hp_elog)
+-		return;
++	pseries_memory_readd_by_index(phandle);
++}
+ 
+-	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
+-	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
+-	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+-	hp_elog->_drc_u.drc_index = phandle;
++static void prrn_update_node_other(s32 scope, __be32 phandle)
++{
++	struct device_node *dn;
++	__be32 drc_index = be32_to_cpu(phandle);
+ 
+-	queue_hotplug_event(hp_elog, NULL, NULL);
++	dn = of_find_node_by_phandle(drc_index);
++	if (dn) {
++		of_node_put(dn);
+ 
+-	kfree(hp_elog);
++		if (!strcmp(dn->type, "cpu"))
++			pseries_cpu_readd_by_index(phandle);
++	}
+ }
+ 
+ int pseries_devicetree_update(s32 scope)
+@@ -309,6 +333,9 @@ int pseries_devicetree_update(s32 scope)
+ 
+ 					if (scope == PRRN_SCOPE)
+ 						prrn_update_node(phandle);
++					else
++						prrn_update_node_other(
++							scope, phandle);
+ 
+ 					break;
+ 				case ADD_DT_NODE:
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 4470a31..b9a69a6 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -55,6 +55,7 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+ 			 struct completion *hotplug_done, int *rc);
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
++extern void pseries_memory_readd_by_index(__be32 drc_index);
+ #else
+ static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ {
+@@ -64,6 +65,7 @@ static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog);
++extern void pseries_cpu_readd_by_index(__be32 drc_index);
+ #else
+ static inline int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ {
