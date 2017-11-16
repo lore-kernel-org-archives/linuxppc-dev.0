@@ -1,35 +1,38 @@
-Return-Path: <desnesn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydBkf180ZzDr6C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 06:53:29 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAGJpBh7032231
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 14:53:27 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e9gveh01t-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydBxq2vyTzDr8x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 07:03:11 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAGK2ssW003887
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 15:03:08 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2e9g983e31-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 14:53:27 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 15:03:08 -0500
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
- Thu, 16 Nov 2017 12:53:26 -0700
-Subject: Re: [PATCH] [net-next,v2] ibmvnic: fix dma_mapping_error call
-From: =?UTF-8?Q?Desnes_Augusto_Nunes_do_Ros=c3=a1rio?=
- <desnesn@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, tlfalcon@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com
-References: <20171116183323.21961-1-desnesn@linux.vnet.ibm.com>
-Date: Thu, 16 Nov 2017 17:53:20 -0200
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Thu, 16 Nov 2017 13:03:07 -0700
+Subject: Re: [Intel-wired-lan] [PATCH 0/7] [RESEND] [net] intel: Use smp_rmb
+ rather than read_barrier_depends
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: stable@vger.kernel.org, intel-wired-lan@lists.osuosl.org, brking@pobox.com,
+ alexander.h.duyck@intel.com, dipankar@linux.vnet.ibm.com,
+ Michael Ellerman <michaele@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
+ <20171116113358.00001d5a@intel.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 16 Nov 2017 14:03:02 -0600
 MIME-Version: 1.0
-In-Reply-To: <20171116183323.21961-1-desnesn@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <22ff4956-84b4-ed2d-8fa2-2ed3c4333796@linux.vnet.ibm.com>
+In-Reply-To: <20171116113358.00001d5a@intel.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f360a8cd-518c-1df5-5ffd-91a0e9688ce2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,52 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-First of all, I apologize for sending this patch to net-next!
+On 11/16/2017 01:33 PM, Jesse Brandeburg wrote:
+> On Thu, 16 Nov 2017 09:37:48 -0600
+> Brian King <brking@linux.vnet.ibm.com> wrote:
+> 
+>> Resending as the first attempt is not showing up in the list archive.
+>>
+>> This patch converts several network drivers to use smp_rmb
+>> rather than read_barrier_depends. The initial issue was
+>> discovered with ixgbe on a Power machine which resulted
+>> in skb list corruption due to fetching a stale skb pointer.
+>> More details can be found in the ixgbe patch description.
+> 
+> Thanks for the fix Brian, I bet it was a tough debug.
+> 
+> The only users in the entire kernel of read_barrier_depends() (not
+> smp_read_barrier_depends) are the Intel network drivers.
+> 
+> Wouldn't it be better for power to just fix read_barrier_depends to do
+> the right thing on power? The question I'm not sure of the answer to is:
+> Is it really the wrong barrier to be using or is the implementation in
+> the kernel powerpc wrong?
+> 
+> So I think the right thing might actually to be to:
+> Fix arch powerpc read_barrier_depends to not be a noop, as the
+> semantics of the read_barrier_depends seems to be sufficient to solve
+> this problem, but it seems not to work for powerpc?
 
-Since this is a fix, it should had been sent to the regular net tree, 
-which I'll do now with the proper fixes tag. My mistake!
+Jesse,
 
-Thanks for understanding and please discard this one.
+Thanks for the quick response.
 
-On 11/16/2017 04:33 PM, Desnes Augusto Nunes do Rosario wrote:
-> This patch fixes the dma_mapping_error call to use the correct dma_addr
-> which is inside the ibmvnic_vpd struct. Moreover, it fixes a uninitialized
->   warning for the local dma_addr.
-> 
-> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
-> ---
->   drivers/net/ethernet/ibm/ibmvnic.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-> index 04aaacb..1dc4aef 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -849,7 +849,6 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
->   {
->   	struct device *dev = &adapter->vdev->dev;
->   	union ibmvnic_crq crq;
-> -	dma_addr_t dma_addr;
->   	int len = 0;
-> 
->   	if (adapter->vpd->buff)
-> @@ -879,7 +878,7 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
->   	adapter->vpd->dma_addr =
->   		dma_map_single(dev, adapter->vpd->buff, adapter->vpd->len,
->   			       DMA_FROM_DEVICE);
-> -	if (dma_mapping_error(dev, dma_addr)) {
-> +	if (dma_mapping_error(dev, adapter->vpd->dma_addr)) {
->   		dev_err(dev, "Could not map VPD buffer\n");
->   		kfree(adapter->vpd->buff);
->   		return -ENOMEM;
-> 
+Cc'ing linuxppc-dev as well. 
+
+I did think about changing the powerpc definition of read_barrier_depends,
+but after reading up on that barrier, decided it was not the correct barrier
+to be used in this context. Here is some good historical background on
+read_barrier_depends that I found, along with an example.
+
+https://lwn.net/Articles/5159/
+
+Since there is no data-dependency in the code in question here, I think
+the smp_rmb is the proper barrier to use.
+
+For background, the code in question looks like this:
+
+CPU 1                                   CPU2
+============================            ============================
+1: ixgbe_xmit_frame_ring                ixgbe_clean_tx_irq
+2:  first->skb = skb                     eop_desc = tx_buffer->next_to_watch
+                                         if (!eop_desc)
+                                             break;
+3:  ixgbe_tx_map                         read_barrier_depends()
+                                         if (!(eop_desc->wb.status) ... )
+                                             break;
+4:   wmb                                 
+5:   first->next_to_watch = tx_desc      napi_consume_skb(tx_buffer->skb ..);
+6:   writel(i, tx_ring->tail);
+
+What we see on powerpc is that tx_buffer->skb on CPU2 is getting loaded
+prior to tx_buffer->next_to_watch. Changing the read_barrier_depends
+to a smp_rmb solves this and prevents us from dereferencing old pointer.
+
+-Brian
+
 
 -- 
-Desnes Augusto Nunes do Rosário
-------------------------------------------
-
-Linux Developer - IBM / Brazil
-M.Sc. in Electrical and Computer Engineering - UFRN
-
-(11) 9595-30-900
-desnesn@br.ibm.com
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
