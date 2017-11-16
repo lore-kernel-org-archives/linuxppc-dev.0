@@ -1,33 +1,28 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <alexander.h.duyck@intel.com>
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydC8400SczDrLX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 07:12:03 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAGKAb1E135627
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 15:12:01 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e9fspdjy2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 15:12:01 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 16 Nov 2017 13:12:00 -0700
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>, nfont@linux.vnet.ibm.com
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V3 4/4] powerpc: Enable support for ibm,drc-info devtree
- property
-In-Reply-To: <cf4b4744-8401-540c-db0f-4731e513fc2c@linux.vnet.ibm.com>
-Date: Thu, 16 Nov 2017 14:11:57 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydDQ84MkTzDr8l
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 08:09:17 +1100 (AEDT)
+From: "Duyck, Alexander H" <alexander.h.duyck@intel.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>
+CC: "dipankar@linux.vnet.ibm.com" <dipankar@linux.vnet.ibm.com>,
+ "michaele@au1.ibm.com" <michaele@au1.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>, "brking@pobox.com"
+ <brking@pobox.com>
+Subject: Re: [Intel-wired-lan] [PATCH 0/7] [RESEND] [net] intel: Use smp_rmb
+ rather than read_barrier_depends
+Date: Thu, 16 Nov 2017 21:09:12 +0000
+Message-ID: <1510866549.28435.26.camel@intel.com>
+References: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
+ <20171116113358.00001d5a@intel.com>
+ <f360a8cd-518c-1df5-5ffd-91a0e9688ce2@linux.vnet.ibm.com>
+In-Reply-To: <f360a8cd-518c-1df5-5ffd-91a0e9688ce2@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <c3b772dc-0bfb-d15b-1a16-7427e731230d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,24 +32,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prom_init.c: Enable support for new DRC device tree property
-"ibm,drc-info" in initial handshake between the Linux kernel and
-the front end processor.
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/prom_init.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 02190e9..f962908 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -873,6 +873,7 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
- 		.mmu = 0,
- 		.hash_ext = 0,
- 		.radix_ext = 0,
-+		.byte22 = OV5_FEAT(OV5_DRC_INFO),
- 	},
- 
- 	/* option vector 6: IBM PAPR hints */
+T24gVGh1LCAyMDE3LTExLTE2IGF0IDE0OjAzIC0wNjAwLCBCcmlhbiBLaW5nIHdyb3RlOg0KPiBP
+biAxMS8xNi8yMDE3IDAxOjMzIFBNLCBKZXNzZSBCcmFuZGVidXJnIHdyb3RlOg0KPiA+IE9uIFRo
+dSwgMTYgTm92IDIwMTcgMDk6Mzc6NDggLTA2MDANCj4gPiBCcmlhbiBLaW5nIDxicmtpbmdAbGlu
+dXgudm5ldC5pYm0uY29tPiB3cm90ZToNCj4gPiANCj4gPiA+IFJlc2VuZGluZyBhcyB0aGUgZmly
+c3QgYXR0ZW1wdCBpcyBub3Qgc2hvd2luZyB1cCBpbiB0aGUgbGlzdCBhcmNoaXZlLg0KPiA+ID4g
+DQo+ID4gPiBUaGlzIHBhdGNoIGNvbnZlcnRzIHNldmVyYWwgbmV0d29yayBkcml2ZXJzIHRvIHVz
+ZSBzbXBfcm1iDQo+ID4gPiByYXRoZXIgdGhhbiByZWFkX2JhcnJpZXJfZGVwZW5kcy4gVGhlIGlu
+aXRpYWwgaXNzdWUgd2FzDQo+ID4gPiBkaXNjb3ZlcmVkIHdpdGggaXhnYmUgb24gYSBQb3dlciBt
+YWNoaW5lIHdoaWNoIHJlc3VsdGVkDQo+ID4gPiBpbiBza2IgbGlzdCBjb3JydXB0aW9uIGR1ZSB0
+byBmZXRjaGluZyBhIHN0YWxlIHNrYiBwb2ludGVyLg0KPiA+ID4gTW9yZSBkZXRhaWxzIGNhbiBi
+ZSBmb3VuZCBpbiB0aGUgaXhnYmUgcGF0Y2ggZGVzY3JpcHRpb24uDQo+ID4gDQo+ID4gVGhhbmtz
+IGZvciB0aGUgZml4IEJyaWFuLCBJIGJldCBpdCB3YXMgYSB0b3VnaCBkZWJ1Zy4NCj4gPiANCj4g
+PiBUaGUgb25seSB1c2VycyBpbiB0aGUgZW50aXJlIGtlcm5lbCBvZiByZWFkX2JhcnJpZXJfZGVw
+ZW5kcygpIChub3QNCj4gPiBzbXBfcmVhZF9iYXJyaWVyX2RlcGVuZHMpIGFyZSB0aGUgSW50ZWwg
+bmV0d29yayBkcml2ZXJzLg0KPiA+IA0KPiA+IFdvdWxkbid0IGl0IGJlIGJldHRlciBmb3IgcG93
+ZXIgdG8ganVzdCBmaXggcmVhZF9iYXJyaWVyX2RlcGVuZHMgdG8gZG8NCj4gPiB0aGUgcmlnaHQg
+dGhpbmcgb24gcG93ZXI/IFRoZSBxdWVzdGlvbiBJJ20gbm90IHN1cmUgb2YgdGhlIGFuc3dlciB0
+byBpczoNCj4gPiBJcyBpdCByZWFsbHkgdGhlIHdyb25nIGJhcnJpZXIgdG8gYmUgdXNpbmcgb3Ig
+aXMgdGhlIGltcGxlbWVudGF0aW9uIGluDQo+ID4gdGhlIGtlcm5lbCBwb3dlcnBjIHdyb25nPw0K
+PiA+IA0KPiA+IFNvIEkgdGhpbmsgdGhlIHJpZ2h0IHRoaW5nIG1pZ2h0IGFjdHVhbGx5IHRvIGJl
+IHRvOg0KPiA+IEZpeCBhcmNoIHBvd2VycGMgcmVhZF9iYXJyaWVyX2RlcGVuZHMgdG8gbm90IGJl
+IGEgbm9vcCwgYXMgdGhlDQo+ID4gc2VtYW50aWNzIG9mIHRoZSByZWFkX2JhcnJpZXJfZGVwZW5k
+cyBzZWVtcyB0byBiZSBzdWZmaWNpZW50IHRvIHNvbHZlDQo+ID4gdGhpcyBwcm9ibGVtLCBidXQg
+aXQgc2VlbXMgbm90IHRvIHdvcmsgZm9yIHBvd2VycGM/DQo+IA0KPiBKZXNzZSwNCj4gDQo+IFRo
+YW5rcyBmb3IgdGhlIHF1aWNrIHJlc3BvbnNlLg0KPiANCj4gQ2MnaW5nIGxpbnV4cHBjLWRldiBh
+cyB3ZWxsLiANCj4gDQo+IEkgZGlkIHRoaW5rIGFib3V0IGNoYW5naW5nIHRoZSBwb3dlcnBjIGRl
+ZmluaXRpb24gb2YgcmVhZF9iYXJyaWVyX2RlcGVuZHMsDQo+IGJ1dCBhZnRlciByZWFkaW5nIHVw
+IG9uIHRoYXQgYmFycmllciwgZGVjaWRlZCBpdCB3YXMgbm90IHRoZSBjb3JyZWN0IGJhcnJpZXIN
+Cj4gdG8gYmUgdXNlZCBpbiB0aGlzIGNvbnRleHQuIEhlcmUgaXMgc29tZSBnb29kIGhpc3Rvcmlj
+YWwgYmFja2dyb3VuZCBvbg0KPiByZWFkX2JhcnJpZXJfZGVwZW5kcyB0aGF0IEkgZm91bmQsIGFs
+b25nIHdpdGggYW4gZXhhbXBsZS4NCj4gDQo+IGh0dHBzOi8vbHduLm5ldC9BcnRpY2xlcy81MTU5
+Lw0KPiANCj4gU2luY2UgdGhlcmUgaXMgbm8gZGF0YS1kZXBlbmRlbmN5IGluIHRoZSBjb2RlIGlu
+IHF1ZXN0aW9uIGhlcmUsIEkgdGhpbmsNCj4gdGhlIHNtcF9ybWIgaXMgdGhlIHByb3BlciBiYXJy
+aWVyIHRvIHVzZS4NCj4gDQo+IEZvciBiYWNrZ3JvdW5kLCB0aGUgY29kZSBpbiBxdWVzdGlvbiBs
+b29rcyBsaWtlIHRoaXM6DQo+IA0KPiBDUFUgMSAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgQ1BVMg0KPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09ICAgICAgICAgICAgPT09
+PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPiAxOiBpeGdiZV94bWl0X2ZyYW1lX3JpbmcgICAg
+ICAgICAgICAgICAgaXhnYmVfY2xlYW5fdHhfaXJxDQo+IDI6ICBmaXJzdC0+c2tiID0gc2tiICAg
+ICAgICAgICAgICAgICAgICAgZW9wX2Rlc2MgPSB0eF9idWZmZXItPm5leHRfdG9fd2F0Y2gNCj4g
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpZiAoIWVvcF9kZXNjKQ0K
+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBicmVhazsNCj4g
+MzogIGl4Z2JlX3R4X21hcCAgICAgICAgICAgICAgICAgICAgICAgICByZWFkX2JhcnJpZXJfZGVw
+ZW5kcygpDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaWYgKCEo
+ZW9wX2Rlc2MtPndiLnN0YXR1cykgLi4uICkNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgYnJlYWs7DQo+IDQ6ICAgd21iICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgDQo+IDU6ICAgZmlyc3QtPm5leHRfdG9fd2F0Y2ggPSB0eF9kZXNjICAgICAg
+bmFwaV9jb25zdW1lX3NrYih0eF9idWZmZXItPnNrYiAuLik7DQo+IDY6ICAgd3JpdGVsKGksIHR4
+X3JpbmctPnRhaWwpOw0KPiANCj4gV2hhdCB3ZSBzZWUgb24gcG93ZXJwYyBpcyB0aGF0IHR4X2J1
+ZmZlci0+c2tiIG9uIENQVTIgaXMgZ2V0dGluZyBsb2FkZWQNCj4gcHJpb3IgdG8gdHhfYnVmZmVy
+LT5uZXh0X3RvX3dhdGNoLiBDaGFuZ2luZyB0aGUgcmVhZF9iYXJyaWVyX2RlcGVuZHMNCj4gdG8g
+YSBzbXBfcm1iIHNvbHZlcyB0aGlzIGFuZCBwcmV2ZW50cyB1cyBmcm9tIGRlcmVmZXJlbmNpbmcg
+b2xkIHBvaW50ZXIuDQo+IA0KPiAtQnJpYW4NCg0KU28gdGhlIGJhcnJpZXIgcGFydCBJIGFtIG9r
+YXkgd2l0aCBmb3IgYWxsIHRoZSBkcml2ZXJzLiBJIGhhZG4ndA0KYWNjb3VudGVkIGZvciB0aGUg
+c2tiIGJlaW5nIHJlYWQgYmVmb3JlIG5leHRfdG9fd2F0Y2guIEkgd2FzIG1vcmUNCmNvbmNlcm5l
+ZCBhYm91dCB0aGUgZGVzY3JpcHRvciByaW5nIHZlcnN1cyBidWZmZXJfaW5mbyBzdHJ1Y3R1cmUg
+YXQgdGhlDQp0aW1lIEkgbWFkZSB1c2Ugb2YgdGhhdC4NCg0KVGhlIHVwZGF0ZXMgdG8gY2xlYXIg
+dHhfYnVmZmVyLT5za2IgaW4gaXhnYmUgSSBhbSBub3Qgb2theSB3aXRoLg0KQmFzaWNhbGx5IHRo
+ZSB0ZWxsLXRhbGUgc2lnbiBmb3Igc2tiIHByZXNlbnQgaXMgbmV4dF90b193YXRjaCBiZWluZw0K
+bm9uLW51bGwuIFRoZSBleHRyYSB3cml0ZXMgYWRkIG92ZXJoZWFkIGFuZCBJIHdhbnQgdG8gYXZv
+aWQgdGhhdCBhdCBhbGwNCmNvc3RzIHNpbmNlIEkgd2FudCB0byBhdm9pZCBhcyBtdWNoIGJvdW5j
+aW5nIGJldHdlZW4gdGhlIHhtaXQgcGF0aCBhbmQNCnRoZSBUeCBjbGVhbi11cCBhcyBwb3NzaWJs
+ZS4NCg0KLSBBbGV4DQoNCg==
