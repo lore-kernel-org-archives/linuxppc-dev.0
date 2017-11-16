@@ -1,18 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yd5ZW1xhCzDqyR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:01:05 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id m88so12664645pfi.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 08:01:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yd5ZX5jtNzDqyR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:01:08 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id 4so11988653pge.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 08:01:08 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 0/4] interrupt tracing fixes
-Date: Fri, 17 Nov 2017 02:00:48 +1000
-Message-Id: <20171116160052.18672-1-npiggin@gmail.com>
+Subject: [PATCH 1/4] powerpc: define __ARCH_IRQ_EXIT_IRQS_DISABLED
+Date: Fri, 17 Nov 2017 02:00:49 +1000
+Message-Id: <20171116160052.18672-2-npiggin@gmail.com>
+In-Reply-To: <20171116160052.18672-1-npiggin@gmail.com>
+References: <20171116160052.18672-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Here are a few loosely related fixes for interrupt tracing code
-and irq state handling which eliminates local_irq_enable() when
-already enabled, and local_irq_disable() when already disabled,
-and also fixes an NMI re-entrancy bug in irq tracing that has
-been crashing in the field when PMU interrupts (non-maskable) and
-irq tracing runs together it's causing things to get into "impossible"
-states.
+powerpc calls irq_exit() with local irqs disabled, therefore it
+can define __ARCH_IRQ_EXIT_IRQS_DISABLED.
 
-I have only tested 64s, and don't know if patch 1 and 2 are right
-on 64e or 32 so if anyone could take a look or test, that would
-be good.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/hardirq.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-Nick
-
-Nicholas Piggin (4):
-  powerpc: define __ARCH_IRQ_EXIT_IRQS_DISABLED
-  powerpc/64: do not trace irqs-off at interrupt return to soft-disabled
-    context
-  cpuidle/powernv: avoid double irq enable coming out of idle
-  cpuidle/powernv: avoid double irq enable coming out of idle
-
- arch/powerpc/include/asm/hardirq.h |  1 +
- arch/powerpc/kernel/entry_64.S     | 10 +++++++---
- drivers/cpuidle/cpuidle-powernv.c  |  2 ++
- drivers/cpuidle/cpuidle-pseries.c  |  6 ++++--
- 4 files changed, 14 insertions(+), 5 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
+index 456f9e7b8d83..5986d473722b 100644
+--- a/arch/powerpc/include/asm/hardirq.h
++++ b/arch/powerpc/include/asm/hardirq.h
+@@ -29,6 +29,7 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
+ #define local_softirq_pending()	__this_cpu_read(irq_stat.__softirq_pending)
+ 
+ #define __ARCH_SET_SOFTIRQ_PENDING
++#define __ARCH_IRQ_EXIT_IRQS_DISABLED
+ 
+ #define set_softirq_pending(x) __this_cpu_write(irq_stat.__softirq_pending, (x))
+ #define or_softirq_pending(x) __this_cpu_or(irq_stat.__softirq_pending, (x))
 -- 
 2.15.0
