@@ -1,25 +1,24 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yd7S70j6gzDr25
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 04:25:42 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAGHOWoK027497
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:25:24 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e9bvqbrnt-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yd7Vk53wGzDr25
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 04:27:58 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAGHQZV5047180
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:27:56 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e9de95sbj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:25:23 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:27:55 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 16 Nov 2017 10:24:55 -0700
+ Thu, 16 Nov 2017 10:27:55 -0700
 To: linuxppc-dev@lists.ozlabs.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
@@ -27,11 +26,13 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 In-Reply-To: <c88f7263-4f99-c13d-c4d2-9fa8f3d59b8f@linux.vnet.ibm.com>
-Subject: [PATCH V7 2/3] poserpc/initnodes: Ensure nodes initialized for hotplug
-Date: Thu, 16 Nov 2017 11:24:50 -0600
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: RESEND [PATCH V7 2/3] poserpc/initnodes: Ensure nodes initialized for
+ hotplug
+Date: Thu, 16 Nov 2017 11:27:52 -0600
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <074faa7d-4609-ee39-0653-3b6b70d85136@linux.vnet.ibm.com>
+Message-Id: <4ae139ec-87a1-ad1d-0b1e-eef1a0e2e365@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,15 +41,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Cc: John Allen <jallen@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Subject: [PATCH V7 2/3] poserpc/initnodes: Ensure nodes initialized for hotplug
 
 On powerpc systems which allow 'hot-add' of CPU, it may occur that
 the new resources are to be inserted into nodes that were not used
