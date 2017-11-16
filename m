@@ -1,34 +1,29 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yd7rG13lTzDr5n
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 04:43:09 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAGHg98i094330
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:43:07 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e9de96e1k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:43:06 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 16 Nov 2017 10:43:05 -0700
-Subject: Re: RESEND [PATCH V3 2/4] pseries/drc-info: Search DRC properties for
- CPU indexes
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <82807bd4-7f07-e51a-67e0-1a33def0fcdd@linux.vnet.ibm.com>
- <0c12e74e-771a-6a85-175b-15bb9476be99@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Thu, 16 Nov 2017 11:43:02 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yd7vF0GL7zDr25
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 04:45:45 +1100 (AEDT)
+Date: Thu, 16 Nov 2017 11:45:37 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v4.2] powerpc/modules: Don't try to restore r2 after a
+ sibling call
+Message-ID: <20171116174537.duz4x6vfzhp44lfh@treble>
+References: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
+ <20171114092910.20399-3-kamalesh@linux.vnet.ibm.com>
+ <1510654928.8xrjtkjm8m.naveen@linux.ibm.com>
+ <20171114155323.3sjxx3eykinnl2ea@treble>
+ <1510737417.g8rnjuztlf.naveen@linux.ibm.com>
+ <20171116012628.6ajxlychto365sf6@treble>
+ <1510837263.5d3ac8knzo.naveen@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <0c12e74e-771a-6a85-175b-15bb9476be99@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <d57df38b-7373-0ccc-a514-1b8772d6be5a@linux.vnet.ibm.com>
+In-Reply-To: <1510837263.5d3ac8knzo.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,383 +33,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
+On Thu, Nov 16, 2017 at 06:39:03PM +0530, Naveen N. Rao wrote:
+> Josh Poimboeuf wrote:
+> > On Wed, Nov 15, 2017 at 02:58:33PM +0530, Naveen N. Rao wrote:
+> > > > +int instr_is_link_branch(unsigned int instr)
+> > > > +{
+> > > > +	return (instr_is_branch_iform(instr) || instr_is_branch_bform(instr)) &&
+> > > > +	       (instr & BRANCH_SET_LINK);
+> > > > +}
+> > > > +
+> > > 
+> > > Nitpicking here, but since we're not considering the other branch forms,
+> > > perhaps this can be renamed to instr_is_link_relative_branch() (or maybe
+> > > instr_is_relative_branch_link()), just so we're clear :)
+> > 
+> > My understanding is that the absolute/relative bit isn't a "form", but
+> > rather a bit that can be set for either the b-form (conditional) or the
+> > i-form (unconditional).  And the above function isn't checking the
+> > absolute bit, so it isn't necessarily a relative branch.  Or did I miss
+> > something?
+> 
+> Ah, good point. I was coming from the fact that we are only considering the
+> i-form and b-form branches and not the lr/ctr/tar based branches, which are
+> always absolute branches, but can also set the link register.
 
-On 11/16/2017 11:34 AM, Nathan Fontenot wrote:
-> On 11/15/2017 12:09 PM, Michael Bringmann wrote:
->> pseries/drc-info: Provide parallel routines to convert between
->> drc_index and CPU numbers at runtime, using the older device-tree
->> properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
->> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->> Changes in V3:
->>   -- Some code compression and use of data structures for value passing.
->> ---
->>  arch/powerpc/include/asm/prom.h                 |   15 ++
->>  arch/powerpc/platforms/pseries/of_helpers.c     |   60 ++++++++++
->>  arch/powerpc/platforms/pseries/pseries_energy.c |  139 ++++++++++++++++++-----
->>  3 files changed, 186 insertions(+), 28 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
->> index 3243455..007430a 100644
->> --- a/arch/powerpc/include/asm/prom.h
->> +++ b/arch/powerpc/include/asm/prom.h
->> @@ -96,6 +96,21 @@ struct of_drconf_cell {
->>  #define DRCONF_MEM_AI_INVALID	0x00000040
->>  #define DRCONF_MEM_RESERVED	0x00000080
->>
->> +struct of_drc_info {
->> +	char *drc_type;
->> +	char *drc_name_prefix;
->> +	u32 drc_index_start;
->> +	u32 drc_name_suffix_start;
->> +	u32 num_sequential_elems;
->> +	u32 sequential_inc;
->> +	u32 drc_power_domain;
->> +	u32 last_drc_index;
->> +};
->> +
->> +extern int of_one_drc_info(struct property **prop, void **curval,
->> +			struct of_drc_info *data);
-> 
-> I'm not sure if prom.h is where this really belongs but I also do
-> not see an existing header file that it really makes sense to put it in.
+Hm, RISC is more complicated than I realized ;-)
 
-If you think of a better place, please let me know.
+> Thinking about this more, aren't we only interested in relative branches
+> here (for relocations), so can we actually filter out the absolute branches?
+> Something like this?
 > 
->> +
->> +
->>  /*
->>   * There are two methods for telling firmware what our capabilities are.
->>   * Newer machines have an "ibm,client-architecture-support" method on the
->> diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
->> index 2798933..62dc8e9 100644
->> --- a/arch/powerpc/platforms/pseries/of_helpers.c
->> +++ b/arch/powerpc/platforms/pseries/of_helpers.c
->> @@ -2,6 +2,7 @@
->>  #include <linux/err.h>
->>  #include <linux/slab.h>
->>  #include <linux/of.h>
->> +#include <asm/prom.h>
->>
->>  #include "of_helpers.h"
->>
->> @@ -36,3 +37,62 @@ struct device_node *pseries_of_derive_parent(const char *path)
->>  		kfree(parent_path);
->>  	return parent ? parent : ERR_PTR(-EINVAL);
->>  }
->> +
->> +
->> +/* Helper Routines to convert between drc_index to cpu numbers */
->> +
->> +int of_one_drc_info(struct property **prop, void **curval,
->> +			struct of_drc_info *data)
-> 
-> Small nit, this should probably be of_read_drc_info_cell.
+> int instr_is_relative_branch_link(unsigned int instr)
+> {
+> 	return ((instr_is_branch_iform(instr) || instr_is_branch_bform(instr)) &&
+> 	       !(instr & BRANCH_ABSOLUTE) && (instr & BRANCH_SET_LINK));
 
-Okay.  Will change.
+Yeah, makes sense to me.  Here's another try (also untested).  If this
+looks ok, Kamalesh would you mind testing again?
 
-> 
->> +{
->> +	const char *p;
->> +	const __be32 *p2;
->> +
->> +	if (!data)
->> +		return -EINVAL;
->> +
->> +	/* Get drc-type:encode-string */
->> +	p = data->drc_type = (*curval);
->> +	p = of_prop_next_string(*prop, p);
->> +	if (!p)
->> +		return -EINVAL;
->> +
->> +	/* Get drc-name-prefix:encode-string */
->> +	data->drc_name_prefix = (char *)p;
->> +	p = of_prop_next_string(*prop, p);
->> +	if (!p)
->> +		return -EINVAL;
->> +
->> +	/* Get drc-index-start:encode-int */
->> +	p2 = (const __be32 *)p;
->> +	p2 = of_prop_next_u32(*prop, p2, &data->drc_index_start);
->> +	if (!p2)
->> +		return -EINVAL;
->> +
->> +	/* Get/skip drc-name-suffix-start:encode-int */
-> 
-> You're getting the suffix, should probably drop 'skip' in the comment.
+----8<----
 
-Okay.
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+Subject: [PATCH v4.2] powerpc/modules: Don't try to restore r2 after a sibling call
 
-> 
->> +	p2 = of_prop_next_u32(*prop, p2, &data->drc_name_suffix_start);
->> +	if (!p2)
->> +		return -EINVAL;
->> +
->> +	/* Get number-sequential-elements:encode-int */
->> +	p2 = of_prop_next_u32(*prop, p2, &data->num_sequential_elems);
->> +	if (!p2)
->> +		return -EINVAL;
->> +
->> +	/* Get sequential-increment:encode-int */
->> +	p2 = of_prop_next_u32(*prop, p2, &data->sequential_inc);
->> +	if (!p2)
->> +		return -EINVAL;
->> +
->> +	/* Get/skip drc-power-domain:encode-int */
-> 
-> Same here.
+When attempting to load a livepatch module, I got the following error:
 
-Okay.
+  module_64: patch_module: Expect noop after relocate, got 3c820000
 
-> 
->> +	p2 = of_prop_next_u32(*prop, p2, &data->drc_power_domain);
->> +	if (!p2)
->> +		return -EINVAL;
->> +
->> +	/* Should now know end of current entry */
->> +	(*curval) = (void *)p2;
->> +	data->last_drc_index = data->drc_index_start +
->> +		((data->num_sequential_elems-1)*data->sequential_inc);
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL(of_one_drc_info);
->> diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
->> index 35c891a..7160855 100644
->> --- a/arch/powerpc/platforms/pseries/pseries_energy.c
->> +++ b/arch/powerpc/platforms/pseries/pseries_energy.c
->> @@ -22,6 +22,7 @@
->>  #include <asm/page.h>
->>  #include <asm/hvcall.h>
->>  #include <asm/firmware.h>
->> +#include <asm/prom.h>
->>
->>
->>  #define MODULE_VERS "1.0"
->> @@ -38,26 +39,65 @@
->>  static u32 cpu_to_drc_index(int cpu)
->>  {
->>  	struct device_node *dn = NULL;
->> -	const int *indexes;
->> -	int i;
->> +	int thread_index;
->>  	int rc = 1;
->>  	u32 ret = 0;
->>
->>  	dn = of_find_node_by_path("/cpus");
->>  	if (dn == NULL)
->>  		goto err;
->> -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
->> -	if (indexes == NULL)
->> -		goto err_of_node_put;
->> +
->>  	/* Convert logical cpu number to core number */
->> -	i = cpu_core_index_of_thread(cpu);
->> -	/*
->> -	 * The first element indexes[0] is the number of drc_indexes
->> -	 * returned in the list.  Hence i+1 will get the drc_index
->> -	 * corresponding to core number i.
->> -	 */
->> -	WARN_ON(i > indexes[0]);
->> -	ret = indexes[i + 1];
->> +	thread_index = cpu_core_index_of_thread(cpu);
->> +
->> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
->> +		struct property *info = NULL;
-> 
-> No need to set this to NULL here.
+The error was triggered by the following code in
+unregister_netdevice_queue():
 
-Okay.
+  14c:   00 00 00 48     b       14c <unregister_netdevice_queue+0x14c>
+                         14c: R_PPC64_REL24      net_set_todo
+  150:   00 00 82 3c     addis   r4,r2,0
 
-> 
->> +		struct of_drc_info drc;
->> +		int j;
->> +		u32 num_set_entries;
->> +		void *value;
-> 
-> For device tree values, which are BE by design, this would be better as
-> 		const __be32 *value;
+GCC didn't insert a nop after the branch to net_set_todo() because it's
+a sibling call, so it never returns.  The nop isn't needed after the
+branch in that case.
 
-Okay.
+Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+---
+ arch/powerpc/include/asm/code-patching.h |  1 +
+ arch/powerpc/kernel/module_64.c          | 12 +++++++++++-
+ arch/powerpc/lib/code-patching.c         |  5 +++++
+ 3 files changed, 17 insertions(+), 1 deletion(-)
 
-> 
->> +
->> +		info = of_find_property(dn, "ibm,drc-info", NULL);
->> +		if (info == NULL)
->> +			goto err_of_node_put;
->> +
->> +		value = info->value;
->> +		value = (void *)of_prop_next_u32(info, value, &num_set_entries);
->> +		if (!value)
->> +			goto err_of_node_put;
->> +
->> +		for (j = 0; j < num_set_entries; j++) {
->> +
->> +			of_one_drc_info(&info, &value, &drc);
->> +			if (strncmp(drc.drc_type, "CPU", 3))
->> +				goto err;
->> +
->> +			if (thread_index < drc.last_drc_index)
->> +				break;
->> +
->> +			WARN_ON(((thread_index-drc.drc_index_start)%
-> 
-> Spaces around the '-' sign please.
-
-Okay.  Missed that one.
-
-> 
->> +					drc.sequential_inc) != 0);
->> +		}
->> +		WARN_ON((drc.num_sequential_elems == 0) ||
->> +			(drc.sequential_inc == 0));
-> 
-> This warning seems like it would fit better in the routine that reads the
-> drc-info property values.
-
-Wanted to have minimal impact on original calling code.  Will remove this one.
-
-> 
->> +
->> +		ret = drc.drc_index_start + (thread_index*drc.sequential_inc);
-> 
-> Spaces... '*'
-
-Okay.
-
-> 
->> +	} else {
->> +		const __be32 *indexes;
->> +
->> +		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
->> +		if (indexes == NULL)
->> +			goto err_of_node_put;
->> +
->> +		/*
->> +		 * The first element indexes[0] is the number of drc_indexes
->> +		 * returned in the list.  Hence thread_index+1 will get the
->> +		 * drc_index corresponding to core number thread_index.
->> +		 */
->> +		WARN_ON(thread_index > indexes[0]);
->> +		ret = indexes[thread_index + 1];
->> +	}
->> +
->>  	rc = 0;
->>
->>  err_of_node_put:
->> @@ -72,34 +112,77 @@ static int drc_index_to_cpu(u32 drc_index)
->>  {
->>  	struct device_node *dn = NULL;
->>  	const int *indexes;
->> -	int i, cpu = 0;
->> +	int thread_index = 0, cpu = 0;
->>  	int rc = 1;
->>
->>  	dn = of_find_node_by_path("/cpus");
->>  	if (dn == NULL)
->>  		goto err;
->> -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
->> -	if (indexes == NULL)
->> -		goto err_of_node_put;
->> -	/*
->> -	 * First element in the array is the number of drc_indexes
->> -	 * returned.  Search through the list to find the matching
->> -	 * drc_index and get the core number
->> -	 */
->> -	for (i = 0; i < indexes[0]; i++) {
->> -		if (indexes[i + 1] == drc_index)
->> +
->> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
->> +		struct property *info = NULL;
->> +		struct of_drc_info drc;
->> +		int j;
->> +		u32 num_set_entries;
->> +		void *value;
->> +
->> +		info = of_find_property(dn, "ibm,drc-info", NULL);
->> +		if (info == NULL)
->> +			goto err_of_node_put;
->> +
->> +		value = info->value;
->> +		value = (void *)of_prop_next_u32(info, value, &num_set_entries);
->> +		if (!value)
->> +			goto err_of_node_put;
->> +
->> +		for (j = 0; j < num_set_entries; j++) {
->> +
->> +			of_one_drc_info(&info, &value, &drc);
->> +			if (strncmp(drc.drc_type, "CPU", 3))
->> +				goto err;
->> +
->> +			WARN_ON(drc_index < drc.drc_index_start);
->> +			WARN_ON(((drc_index-drc.drc_index_start)%
->> +					drc.sequential_inc) != 0);
->> +
->> +			if (drc_index > drc.last_drc_index) {
->> +				cpu += drc.num_sequential_elems;
->> +				continue;
->> +			} else {
-> 
-> Since you do a continue in the if() part above you shouldn't need to
-> put this in an else block.
-
-Okay.
-
-> 
-> -Nathan
-> 
->> +				cpu += ((drc_index-drc.drc_index_start)/
->> +					drc.sequential_inc);
->> +			}
->> +
->> +			thread_index = cpu_first_thread_of_core(cpu);
->> +			rc = 0;
->>  			break;
->> +		}
->> +	} else {
->> +		unsigned long int i;
->> +
->> +		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
->> +		if (indexes == NULL)
->> +			goto err_of_node_put;
->> +		/*
->> +		 * First element in the array is the number of drc_indexes
->> +		 * returned.  Search through the list to find the matching
->> +		 * drc_index and get the core number
->> +		 */
->> +		for (i = 0; i < indexes[0]; i++) {
->> +			if (indexes[i + 1] == drc_index)
->> +				break;
->> +		}
->> +		/* Convert core number to logical cpu number */
->> +		thread_index = cpu_first_thread_of_core(i);
->> +		rc = 0;
->>  	}
->> -	/* Convert core number to logical cpu number */
->> -	cpu = cpu_first_thread_of_core(i);
->> -	rc = 0;
->>
->>  err_of_node_put:
->>  	of_node_put(dn);
->>  err:
->>  	if (rc)
->>  		printk(KERN_WARNING "drc_index_to_cpu(%d) failed", drc_index);
->> -	return cpu;
->> +	return thread_index;
->>  }
->>
->>  /*
->>
-> 
-
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index abef812de7f8..2c895e8d07f7 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -33,6 +33,7 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags);
+ int patch_instruction(unsigned int *addr, unsigned int instr);
+ 
+ int instr_is_relative_branch(unsigned int instr);
++int instr_is_relative_link_branch(unsigned int instr);
+ int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
+ unsigned long branch_target(const unsigned int *instr);
+ unsigned int translate_branch(const unsigned int *dest,
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 759104b99f9f..180c16f04063 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -487,7 +487,17 @@ static bool is_early_mcount_callsite(u32 *instruction)
+    restore r2. */
+ static int restore_r2(u32 *instruction, struct module *me)
+ {
+-	if (is_early_mcount_callsite(instruction - 1))
++	u32 *prev_insn = instruction - 1;
++
++	if (is_early_mcount_callsite(prev_insn))
++		return 1;
++
++	/*
++	 * Make sure the branch isn't a sibling call.  Sibling calls aren't
++	 * "link" branches and they don't return, so they don't need the r2
++	 * restore afterwards.
++	 */
++	if (!instr_is_relative_link_branch(*prev_insn))
+ 		return 1;
+ 
+ 	if (*instruction != PPC_INST_NOP) {
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index c9de03e0c1f1..d81aab7441f7 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -304,6 +304,11 @@ int instr_is_relative_branch(unsigned int instr)
+ 	return instr_is_branch_iform(instr) || instr_is_branch_bform(instr);
+ }
+ 
++int instr_is_relative_link_branch(unsigned int instr)
++{
++	return instr_is_relative_branch(instr) && (instr & BRANCH_SET_LINK);
++}
++
+ static unsigned long branch_iform_target(const unsigned int *instr)
+ {
+ 	signed long imm;
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+2.13.6
