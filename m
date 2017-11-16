@@ -1,39 +1,58 @@
-Return-Path: <michaele@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydGqJ2T1WzDrFk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 09:57:47 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAGMsNkM132817
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 17:57:45 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2e9j6rmdrd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 17:57:44 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
- Thu, 16 Nov 2017 22:57:42 -0000
-From: Michael Ellerman <michaele@au1.ibm.com>
-To: Brian King <brking@linux.vnet.ibm.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: alexander.h.duyck@intel.com, dipankar@linux.vnet.ibm.com,
- stable@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, brking@pobox.com
-Subject: Re: [Intel-wired-lan] [PATCH 0/7] [RESEND] [net] intel: Use smp_rmb
- rather than read_barrier_depends
-In-Reply-To: <f360a8cd-518c-1df5-5ffd-91a0e9688ce2@linux.vnet.ibm.com>
-References: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
- <20171116113358.00001d5a@intel.com>
- <f360a8cd-518c-1df5-5ffd-91a0e9688ce2@linux.vnet.ibm.com>
-Date: Fri, 17 Nov 2017 09:57:36 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydHq228xVzDrD1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 10:42:38 +1100 (AEDT)
+Received: by mail-oi0-x243.google.com with SMTP id n16so535910oig.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 15:42:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87375dvnkv.fsf@concordia.ellerman.id.au>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <alpine.DEB.2.20.1711160958430.2191@nanos>
+References: <20171110224259.15930-1-deepa.kernel@gmail.com>
+ <CAK8P3a2uD=xV5GKtL+nhVoPckb6uoXztEvXK-iP_OYbct8QvJA@mail.gmail.com>
+ <CABeXuvpy1jbqjeUFHHX-MrJXQLA2QNYbAa6OX7qOpPp4q-mQYQ@mail.gmail.com>
+ <alpine.DEB.2.20.1711160958430.2191@nanos>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Nov 2017 00:42:35 +0100
+Message-ID: <CAK8P3a0wxs59T1zW4ahbJXeW6QjStm0mbCFoL_RQexAa6dzh_w@mail.gmail.com>
+Subject: Re: [PATCH 0/9] posix_clocks: Prepare syscalls for 64 bit time_t
+ conversion
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Deepa Dinamani <deepa.kernel@gmail.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
+ David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
+ devel@driverdev.osuosl.org,
+ gerald.schaefer@de.ibm.com, gregkh <gregkh@linuxfoundation.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, Linux API <linux-api@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, oberpar@linux.vnet.ibm.com,
+ oprofile-list@lists.sf.net,
+ Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Robert Richter <rric@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ sebott@linux.vnet.ibm.com, sparclinux <sparclinux@vger.kernel.org>,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ "the arch/x86 maintainers" <x86@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,81 +62,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Brian King <brking@linux.vnet.ibm.com> writes:
+On Thu, Nov 16, 2017 at 10:04 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 15 Nov 2017, Deepa Dinamani wrote:
+>> > I had on concern about x32, maybe we should check
+>> > for "COMPAT_USE_64BIT_TIME" before zeroing out the tv_nsec
+>> > bits.
+>>
+>> Thanks, I think you are right. I had the check conditional on
+>> CONFIG_64BIT_TIME and then removed as I forgot why I added it. :)
+>>
+>> > Regarding CONFIG_COMPAT_TIME/CONFIG_64BIT_TIME, would
+>> > it help to just leave out that part for now and unconditionally
+>> > define '__kernel_timespec' as 'timespec' until we are ready to
+>> > convert the architectures?
+>>
+>> Another approach would be to use separate configs:
+>>
+>> 1. To indicate 64 bit time_t syscall support. This will be dependent
+>> on architectures as CONFIG_64BIT_TIME.
+>> We can delete this once all architectures have provided support for this.
+>>
+>> 2. Another config (maybe COMPAT_32BIT_TIME?) to be introduced later,
+>> which will compile out all syscalls/ features that use 32 bit time_t.
+>> This can help build a y2038 safe kernel later.
+>>
+>> Would this work for everyone?
+>
+> Having extra config switches which are selectable by architectures and
+> removed when everything is converted is definitely the right way to go.
+>
+> That allows you to gradually convert stuff w/o inflicting wreckage all over
+> the place.
 
-> On 11/16/2017 01:33 PM, Jesse Brandeburg wrote:
->> On Thu, 16 Nov 2017 09:37:48 -0600
->> Brian King <brking@linux.vnet.ibm.com> wrote:
->> 
->>> Resending as the first attempt is not showing up in the list archive.
->>>
->>> This patch converts several network drivers to use smp_rmb
->>> rather than read_barrier_depends. The initial issue was
->>> discovered with ixgbe on a Power machine which resulted
->>> in skb list corruption due to fetching a stale skb pointer.
->>> More details can be found in the ixgbe patch description.
->> 
->> Thanks for the fix Brian, I bet it was a tough debug.
->> 
->> The only users in the entire kernel of read_barrier_depends() (not
->> smp_read_barrier_depends) are the Intel network drivers.
->> 
->> Wouldn't it be better for power to just fix read_barrier_depends to do
->> the right thing on power? The question I'm not sure of the answer to is:
->> Is it really the wrong barrier to be using or is the implementation in
->> the kernel powerpc wrong?
->> 
->> So I think the right thing might actually to be to:
->> Fix arch powerpc read_barrier_depends to not be a noop, as the
->> semantics of the read_barrier_depends seems to be sufficient to solve
->> this problem, but it seems not to work for powerpc?
->
-> Jesse,
->
-> Thanks for the quick response.
->
-> Cc'ing linuxppc-dev as well. 
->
-> I did think about changing the powerpc definition of read_barrier_depends,
-> but after reading up on that barrier, decided it was not the correct barrier
-> to be used in this context. Here is some good historical background on
-> read_barrier_depends that I found, along with an example.
->
-> https://lwn.net/Articles/5159/
->
-> Since there is no data-dependency in the code in question here, I think
-> the smp_rmb is the proper barrier to use.
+The CONFIG_64BIT_TIME would do that nicely for the new stuff like
+the conditional definition of __kernel_timespec, this one would get
+removed after we convert all architectures.
 
-Yes I agree.
+A second issue is how to control the compilation of the compat syscalls.
+CONFIG_COMPAT_32BIT_TIME handles that and could be defined
+in Kconfig as 'def_bool (!64BIT && CONFIG_64BIT_TIME) || COMPAT',
+this is then just a more readable way of expressing exactly when the
+functions should be built.
 
-The read_barrier_depends() is correct to order the load of eop_desc and
-then the dependent load of eop_desc->wb.status, but it's only required
-or does anything on Alpha.
+For completeness, there may be a third category, depending on how
+we handle things like sys_nanosleep(): Here, we want the native
+sys_nanosleep on 64-bit architectures, and compat_sys_nanosleep()
+to handle the 32-bit time_t variant on both 32-bit and 64-bit targets,
+but our plan is to not have a native 32-bit sys_nanosleep on 32-bit
+architectures any more, as new glibc should call clock_nanosleep()
+with a new syscall number instead. Should we then enclose
+sys_nanosleep in "#if !defined(CONFIG_64BIT_TIME) ||
+defined(CONFIG_64BIT)", or should we try to come up with another
+Kconfig symbol name that expresses this better?
 
-> For background, the code in question looks like this:
->
-> CPU 1                                   CPU2
-> ============================            ============================
-> 1: ixgbe_xmit_frame_ring                ixgbe_clean_tx_irq
-> 2:  first->skb = skb                     eop_desc = tx_buffer->next_to_watch
->                                          if (!eop_desc)
->                                              break;
-> 3:  ixgbe_tx_map                         read_barrier_depends()
->                                          if (!(eop_desc->wb.status) ... )
->                                              break;
-> 4:   wmb                                 
-> 5:   first->next_to_watch = tx_desc      napi_consume_skb(tx_buffer->skb ..);
-> 6:   writel(i, tx_ring->tail);
->
-> What we see on powerpc is that tx_buffer->skb on CPU2 is getting loaded
-> prior to tx_buffer->next_to_watch. Changing the read_barrier_depends
-> to a smp_rmb solves this and prevents us from dereferencing old pointer.
-
-Right. Given that read_barrier_depends() is a nop, there's nothing there
-to order the load of tx_buffer->skb vs anything else.
-
-If it's actually the load of tx_buffer->skb that's the issue then the
-smp_rmb() should really be immediately prior to that, rather than where
-the read_barrier_depends() currently is.
-
-cheers
+       Arnd
