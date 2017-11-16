@@ -1,21 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yd5Zh6hZxzDr77
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:01:16 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 207so18079752pgc.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 08:01:16 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 4/4] cpuidle/powernv: avoid double irq enable coming out of
- idle
-Date: Fri, 17 Nov 2017 02:00:52 +1000
-Message-Id: <20171116160052.18672-5-npiggin@gmail.com>
-In-Reply-To: <20171116160052.18672-1-npiggin@gmail.com>
-References: <20171116160052.18672-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yd5bj6lFWzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:02:09 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAGG1d7A047430
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 11:02:05 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2e9au8tv7v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 11:02:05 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Thu, 16 Nov 2017 09:02:03 -0700
+Subject: Re: [PATCH v2 0/8] powerpc: Support ibm,dynamic-memory-v2 property
+To: Bharata B Rao <bharata.rao@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>
+References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <CAGZKiBqX+Y==jK1XRcsS=ewr+sPATcOe0MEYduKqfX78jJxasQ@mail.gmail.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Thu, 16 Nov 2017 10:01:59 -0600
+MIME-Version: 1.0
+In-Reply-To: <CAGZKiBqX+Y==jK1XRcsS=ewr+sPATcOe0MEYduKqfX78jJxasQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <77eae60c-a406-dd8c-acb5-9e137153ce7a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +39,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since e1689795a7 ("cpuidle: Add common time keeping and irq enabling"),
-cpuidle drivers are expected to return from ->enter with irqs disabled.
 
-Update the cpuidle-powernv snooze and cede loops to disable irqs before
-returning.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- drivers/cpuidle/cpuidle-pseries.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+On 11/15/2017 11:37 PM, Bharata B Rao wrote:
+> On Fri, Oct 20, 2017 at 6:51 PM, Nathan Fontenot <nfont@linux.vnet.ibm.com <mailto:nfont@linux.vnet.ibm.com>> wrote:
+> 
+>     This patch set provides a set of updates to de-couple the LMB information
+>     provided in the ibm,dynamic-memory device tree property from the device
+>     tree property format. A part of this patch series introduces a new
+>     device tree property format for dynamic memory, ibm-dynamic-meory-v2.
+>     By separating the device tree format from the information provided by
+>     the device tree property consumers of this information need not know
+>     what format is currently being used and provide multiple parsing routines
+>     for the information.
+> 
+>     The first two patches update the of_get_assoc_arrays() and
+>     of_get_usable_memory() routines to look up the device node for the
+>     properties they parse. This is needed because the calling routines for
+>     these two functions will not have the device node to pass in in
+>     subsequent patches.
+> 
+>     The third patch adds a new kernel structure, struct drmem_lmb, that
+>     is used to represent each of the possible LMBs specified in the
+>     ibm,dynamic-memory* device tree properties. The patch adds code
+>     to parse the property and build the LMB array data, and updates prom.c
+>     to use this new data structure instead of parsing the device tree directly.
+> 
+>     The fourth and fifth patches update the numa and pseries hotplug code
+>     respectively to use the new LMB array data instead of parsing the
+>     device tree directly.
+> 
+>     The sixth patch moves the of_drconf_cell struct to drmem.h where it
+>     fits better than prom.h
+> 
+>     The seventh patch introduces support for the ibm,dynamic-memory-v2
+>     property format by updating the new drmem.c code to be able to parse
+>     and create this new device tree format.
+> 
+>     The last patch in the series updates the architecture vector to indicate
+>     support for ibm,dynamic-memory-v2.
+> 
+> 
+> Here we are consolidating LMBs into LMB sets but still end up working with individual LMBs during hotplug. Can we instead start working with LMB sets together during hotplug ? In other words
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index a187a39fb866..0f2b697cbb27 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -51,8 +51,6 @@ static inline void idle_loop_epilog(unsigned long in_purr)
- 	get_lppaca()->wait_state_cycles = cpu_to_be64(wait_cycles);
- 	get_lppaca()->idle = 0;
- 
--	if (irqs_disabled())
--		local_irq_enable();
- 	ppc64_runlatch_on();
- }
- 
-@@ -87,6 +85,8 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	HMT_medium();
- 	clear_thread_flag(TIF_POLLING_NRFLAG);
- 
-+	local_irq_disable();
-+
- 	idle_loop_epilog(in_purr);
- 
- 	return index;
-@@ -121,6 +121,7 @@ static int dedicated_cede_loop(struct cpuidle_device *dev,
- 	HMT_medium();
- 	check_and_cede_processor();
- 
-+	local_irq_disable();
- 	get_lppaca()->donate_dedicated_cpu = 0;
- 
- 	idle_loop_epilog(in_purr);
-@@ -145,6 +146,7 @@ static int shared_cede_loop(struct cpuidle_device *dev,
- 	 */
- 	check_and_cede_processor();
- 
-+	local_irq_disable();
- 	idle_loop_epilog(in_purr);
- 
- 	return index;
--- 
-2.15.0
+In a sense we do do this when handling memory DLPAR indexed-count requests. This takes a starting
+drc index for a LMB and adds/removes the following <count> contiguous LMBs. This operation is
+all-or-nothing, if any LMB fails to add/remove we revert back to the original state.
+
+Thi isn't exactly what you're asking for but...
+> 
+> - The RTAS calls involved during DRC acquire stage can be done only once per LMB set.
+> - One configure-connector call for the entire LMB set.
+
+these two interfaces work on a single drc index, not a set of drc indexes. Working on a set
+of LMBs would require extending the current rtas calls or creating new ones.
+
+One thing we can look into doing for indexed-count requests is to perform each of the
+steps for all LMBs in the set at once, i.e. make the acquire call for LMBs, then make the
+configure-connector calls for all the LMBs...
+
+The only drawback is this approach would make handling failures and backing out of the
+updates a bit messier, but I've never really thought that optimizing for the failure
+case to be as important.
+
+-Nathan
+
+> 
+> I think this should help hotplugging of large amounts of memory. Other than that, if we choose to use LMB representation for PMEM, it will be useful there too to handle all the LMBs of a PMEM range as one set.
+> 
+> Regards,
+> Bharata.
