@@ -1,27 +1,24 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yck9M1SnQzDqpb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:26:31 +1100 (AEDT)
-Date: Wed, 15 Nov 2017 19:26:28 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v4 2/3] powerpc/modules: Don't try to restore r2 after a
- sibling call
-Message-ID: <20171116012628.6ajxlychto365sf6@treble>
-References: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
- <20171114092910.20399-3-kamalesh@linux.vnet.ibm.com>
- <1510654928.8xrjtkjm8m.naveen@linux.ibm.com>
- <20171114155323.3sjxx3eykinnl2ea@treble>
- <1510737417.g8rnjuztlf.naveen@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yckDL2YjzzDqpb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 12:29:05 +1100 (AEDT)
+Received: by mail-qt0-x242.google.com with SMTP id f8so38963724qta.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Nov 2017 17:29:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1510737417.g8rnjuztlf.naveen@linux.ibm.com>
+In-Reply-To: <CAA9_cmcn=VyR3xZWOtxpko6+AhnjC1xqrYXsyz4Z5A+i2DfSbQ@mail.gmail.com>
+References: <20171115175131.23631-1-oohall@gmail.com>
+ <CAA9_cmcn=VyR3xZWOtxpko6+AhnjC1xqrYXsyz4Z5A+i2DfSbQ@mail.gmail.com>
+From: Oliver <oohall@gmail.com>
+Date: Thu, 16 Nov 2017 12:29:02 +1100
+Message-ID: <CAOSf1CGuqiAfd3wFT4gwoCwPGBRBTzyM4nX8PAVBD-wXwRQ0QQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] libnvdimm: Add of_node to region and bus descriptors
+To: Dan Williams <dan.j.williams@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 15, 2017 at 02:58:33PM +0530, Naveen N. Rao wrote:
-> > +int instr_is_link_branch(unsigned int instr)
-> > +{
-> > +	return (instr_is_branch_iform(instr) || instr_is_branch_bform(instr)) &&
-> > +	       (instr & BRANCH_SET_LINK);
-> > +}
-> > +
-> 
-> Nitpicking here, but since we're not considering the other branch forms,
-> perhaps this can be renamed to instr_is_link_relative_branch() (or maybe
-> instr_is_relative_branch_link()), just so we're clear :)
+On Thu, Nov 16, 2017 at 5:05 AM, Dan Williams <dan.j.williams@gmail.com> wrote:
+> On Wed, Nov 15, 2017 at 9:51 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+>> We want to be able to cross reference the region and bus devices
+>> with the device tree node that they were spawned from. libNVDIMM
+>> handles creating the actual devices for these internally, so we
+>> need to pass in a pointer to the relevant node in the descriptor.
+>>
+>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>
+> Looks ok to me,
+>
+> Acked-by: Dan Williams <dan.j.williams@intel.com>
+>
+> ...this is late if you were expecting a 4.15 merge.
 
-My understanding is that the absolute/relative bit isn't a "form", but
-rather a bit that can be set for either the b-form (conditional) or the
-i-form (unconditional).  And the above function isn't checking the
-absolute bit, so it isn't necessarily a relative branch.  Or did I miss
-something?
-
--- 
-Josh
+I'm not that optimistic, but I wouldn't complain.
