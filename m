@@ -1,26 +1,46 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
- [IPv6:2607:f8b0:400c:c08::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anthony.yznaga@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydMyN0Lg1zDrDk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 13:49:15 +1100 (AEDT)
-Received: by mail-ua0-x242.google.com with SMTP id z43so518897uac.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 18:49:15 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <87wp2qhhbd.fsf@linux.vnet.ibm.com>
-References: <20171113081611.27374-1-bsingharora@gmail.com>
- <87wp2qhhbd.fsf@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 17 Nov 2017 13:49:11 +1100
-Message-ID: <CAKTCnzmnOzGppZf3euCN=B9uwotC5u4YySYdi5bg4ZdYVA708w@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/npu: Cleanup MMIO ATSD flushing
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydMDY5yHczDrDk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 13:16:29 +1100 (AEDT)
+Subject: Re: [PATCH RESEND v10 00/10] Application Data Integrity feature
+ introduced by SPARC M7
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=us-ascii
+From: Anthony Yznaga <anthony.yznaga@oracle.com>
+In-Reply-To: <cover.1510768775.git.khalid.aziz@oracle.com>
+Date: Thu, 16 Nov 2017 18:14:37 -0800
+Cc: David Miller <davem@davemloft.net>, dave.hansen@linux.intel.com,
+ akpm@linux-foundation.org, 0x7f454c46@gmail.com, aarcange@redhat.com,
+ ak@linux.intel.com, Allen Pais <allen.pais@oracle.com>,
+ aneesh.kumar@linux.vnet.ibm.com, arnd@arndb.de,
+ Atish Patra <atish.patra@oracle.com>, benh@kernel.crashing.org,
+ Bob Picco <bob.picco@oracle.com>, bsingharora@gmail.com,
+ chris.hyser@oracle.com, cmetcalf@mellanox.com, corbet@lwn.net,
+ dan.carpenter@oracle.com, dave.jiang@intel.com, dja@axtens.net,
+ Eric Saint Etienne <eric.saint.etienne@oracle.com>,
+ geert@linux-m68k.org, hannes@cmpxchg.org, heiko.carstens@de.ibm.com,
+ hpa@zytor.com, hughd@google.com, imbrenda@linux.vnet.ibm.com,
+ jack@suse.cz, jmarchan@redhat.com, jroedel@suse.de,
+ Khalid Aziz <khalid@gonehiking.org>, kirill.shutemov@linux.intel.com,
+ Liam.Howlett@oracle.com, lstoakes@gmail.com, mgorman@suse.de,
+ mhocko@suse.com, Mike Kravetz <mike.kravetz@oracle.com>,
+ minchan@kernel.org, mingo@redhat.com, mpe@ellerman.id.au,
+ nitin.m.gupta@oracle.com, pasha.tatashin@oracle.com,
+ paul.gortmaker@windriver.com, paulus@samba.org, peterz@infradead.org,
+ rientjes@google.com, ross.zwisler@linux.intel.com, shli@fb.com,
+ steven.sistare@oracle.com, tglx@linutronix.de, thomas.tai@oracle.com,
+ tklauser@distanz.ch, tom.hromatka@oracle.com, vegard.nossum@oracle.com,
+ vijay.ac.kumar@oracle.com, viro@zeniv.linux.org.uk,
+ willy@infradead.org, x86@kernel.org, ying.huang@intel.com,
+ zhongjiang@huawei.com, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
+Message-Id: <3D32E16F-281B-464B-8F6D-D6A8FE62FAB2@oracle.com>
+References: <cover.1510768775.git.khalid.aziz@oracle.com>
+To: Khalid Aziz <khalid.aziz@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +50,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 16, 2017 at 5:24 PM, Aneesh Kumar K.V
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
->
->  +      address = start;
->> +     do {
->> +             local_irq_disable();
->> +             find_linux_pte(mm->pgd, address, &is_thp, &hshift);
->> +             if (!is_thp)
->> +                     shift = PAGE_SHIFT;
->
-> It can still be hugetlb if is_thp is false.
->
 
-Yep, the hshift check needs to be upfront, the version below makes sense.
+> On Nov 16, 2017, at 6:38 AM, Khalid Aziz <khalid.aziz@oracle.com> wrote:
+> 
+> Changelog v10:
+> 
+> 	- Patch 1/10: Updated si_codes definitions for SEGV to match 4.14
+> 	- Patch 2/10: No changes
+> 	- Patch 3/10: Updated copyright
+> 	- Patch 4/10: No changes
+> 	- Patch 5/10: No changes
+> 	- Patch 6/10: Updated copyright
+> 	- Patch 7/10: No changes
+> 	- Patch 8/10: No changes
+> 	- Patch 9/10: No changes
+> 	- Patch 10/10: Added code to return from kernel path to set
+> 	  PSTATE.mcde if kernel continues execution in another thread
+> 	  (Suggested by Anthony)
 
->> +             else if (hshift && !is_thp)
->> +                     shift = hshift;
->> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
->> +             else
->> +                     shift = HPAGE_PMD_SIZE;
->
-> That is wrong. I guess it should be shift = HPAGE_PMD_SHIFT. But i am
-> not sure we need to make it this complex at all. See below.
->
->> +#else
->> +             else {
->> +                     shift = PAGE_SHIFT;
->> +                     pr_warn_once("unsupport page size for mm %p,addr %lx\n",
->> +                                     mm, start);
->> +             }
->> +#endif
->
-> I am still not sure this is correct from a pure page table walking
-> point. Why not
->
->        if (hshift)
->           shift = hshift;
->        else
->           shift = PAGE_SHIFT;
->
+Looks good, Khalid.  Thanks for making the changes.
 
-I don't think I care about THP at this point
+For the entire series:
 
-I'll respin
-
-Balbir
+Reviewed-by: Anthony Yznaga <anthony.yznaga@oracle.com>
