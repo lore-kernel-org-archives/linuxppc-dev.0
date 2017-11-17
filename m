@@ -1,44 +1,58 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydWDl3mxxzDr8x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 19:17:11 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAH8F6vm064341
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:17:08 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e9tbs46wk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 03:17:08 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Fri, 17 Nov 2017 08:17:07 -0000
-Subject: Re: [PATCH v4.2] powerpc/modules: Don't try to restore r2 after a
- sibling call
-To: Josh Poimboeuf <jpoimboe@redhat.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-References: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
- <20171114092910.20399-3-kamalesh@linux.vnet.ibm.com>
- <1510654928.8xrjtkjm8m.naveen@linux.ibm.com>
- <20171114155323.3sjxx3eykinnl2ea@treble>
- <1510737417.g8rnjuztlf.naveen@linux.ibm.com>
- <20171116012628.6ajxlychto365sf6@treble>
- <1510837263.5d3ac8knzo.naveen@linux.ibm.com>
- <20171116174537.duz4x6vfzhp44lfh@treble>
-Cc: Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Fri, 17 Nov 2017 13:47:03 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydX8n1pYbzDrK2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 19:58:48 +1100 (AEDT)
+Date: Fri, 17 Nov 2017 09:58:26 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Deepa Dinamani <deepa.kernel@gmail.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
+ David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
+ devel@driverdev.osuosl.org, gerald.schaefer@de.ibm.com,
+ gregkh <gregkh@linuxfoundation.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>,
+ Linux API <linux-api@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, oberpar@linux.vnet.ibm.com,
+ oprofile-list@lists.sf.net, Paul Mackerras <paulus@samba.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Robert Richter <rric@kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, sebott@linux.vnet.ibm.com,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 0/9] posix_clocks: Prepare syscalls for 64 bit time_t
+ conversion
+In-Reply-To: <CAK8P3a0wxs59T1zW4ahbJXeW6QjStm0mbCFoL_RQexAa6dzh_w@mail.gmail.com>
+Message-ID: <alpine.DEB.2.20.1711170954000.1709@nanos>
+References: <20171110224259.15930-1-deepa.kernel@gmail.com>
+ <CAK8P3a2uD=xV5GKtL+nhVoPckb6uoXztEvXK-iP_OYbct8QvJA@mail.gmail.com>
+ <CABeXuvpy1jbqjeUFHHX-MrJXQLA2QNYbAa6OX7qOpPp4q-mQYQ@mail.gmail.com>
+ <alpine.DEB.2.20.1711160958430.2191@nanos>
+ <CAK8P3a0wxs59T1zW4ahbJXeW6QjStm0mbCFoL_RQexAa6dzh_w@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20171116174537.duz4x6vfzhp44lfh@treble>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <2094a573-d236-e1b7-6f4d-47049f3d0dfb@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,124 +62,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 16 November 2017 11:15 PM, Josh Poimboeuf wrote:
-> On Thu, Nov 16, 2017 at 06:39:03PM +0530, Naveen N. Rao wrote:
->> Josh Poimboeuf wrote:
->>> On Wed, Nov 15, 2017 at 02:58:33PM +0530, Naveen N. Rao wrote:
->>>>> +int instr_is_link_branch(unsigned int instr)
->>>>> +{
->>>>> +	return (instr_is_branch_iform(instr) || instr_is_branch_bform(instr)) &&
->>>>> +	       (instr & BRANCH_SET_LINK);
->>>>> +}
->>>>> +
->>>>
->>>> Nitpicking here, but since we're not considering the other branch forms,
->>>> perhaps this can be renamed to instr_is_link_relative_branch() (or maybe
->>>> instr_is_relative_branch_link()), just so we're clear :)
->>>
->>> My understanding is that the absolute/relative bit isn't a "form", but
->>> rather a bit that can be set for either the b-form (conditional) or the
->>> i-form (unconditional).  And the above function isn't checking the
->>> absolute bit, so it isn't necessarily a relative branch.  Or did I miss
->>> something?
->>
->> Ah, good point. I was coming from the fact that we are only considering the
->> i-form and b-form branches and not the lr/ctr/tar based branches, which are
->> always absolute branches, but can also set the link register.
->
-> Hm, RISC is more complicated than I realized ;-)
->
->> Thinking about this more, aren't we only interested in relative branches
->> here (for relocations), so can we actually filter out the absolute branches?
->> Something like this?
->>
->> int instr_is_relative_branch_link(unsigned int instr)
->> {
->> 	return ((instr_is_branch_iform(instr) || instr_is_branch_bform(instr)) &&
->> 	       !(instr & BRANCH_ABSOLUTE) && (instr & BRANCH_SET_LINK));
->
-> Yeah, makes sense to me.  Here's another try (also untested).  If this
-> looks ok, Kamalesh would you mind testing again?
->
-> ----8<----
->
-> From: Josh Poimboeuf <jpoimboe@redhat.com>
-> Subject: [PATCH v4.2] powerpc/modules: Don't try to restore r2 after a sibling call
->
-> When attempting to load a livepatch module, I got the following error:
->
->   module_64: patch_module: Expect noop after relocate, got 3c820000
->
-> The error was triggered by the following code in
-> unregister_netdevice_queue():
->
->   14c:   00 00 00 48     b       14c <unregister_netdevice_queue+0x14c>
->                          14c: R_PPC64_REL24      net_set_todo
->   150:   00 00 82 3c     addis   r4,r2,0
->
-> GCC didn't insert a nop after the branch to net_set_todo() because it's
-> a sibling call, so it never returns.  The nop isn't needed after the
-> branch in that case.
->
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+On Fri, 17 Nov 2017, Arnd Bergmann wrote:
+> On Thu, Nov 16, 2017 at 10:04 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Wed, 15 Nov 2017, Deepa Dinamani wrote:
+> >> Would this work for everyone?
+> >
+> > Having extra config switches which are selectable by architectures and
+> > removed when everything is converted is definitely the right way to go.
+> >
+> > That allows you to gradually convert stuff w/o inflicting wreckage all over
+> > the place.
+> 
+> The CONFIG_64BIT_TIME would do that nicely for the new stuff like
+> the conditional definition of __kernel_timespec, this one would get
+> removed after we convert all architectures.
+> 
+> A second issue is how to control the compilation of the compat syscalls.
+> CONFIG_COMPAT_32BIT_TIME handles that and could be defined
+> in Kconfig as 'def_bool (!64BIT && CONFIG_64BIT_TIME) || COMPAT',
+> this is then just a more readable way of expressing exactly when the
+> functions should be built.
+> 
+> For completeness, there may be a third category, depending on how
+> we handle things like sys_nanosleep(): Here, we want the native
+> sys_nanosleep on 64-bit architectures, and compat_sys_nanosleep()
+> to handle the 32-bit time_t variant on both 32-bit and 64-bit targets,
+> but our plan is to not have a native 32-bit sys_nanosleep on 32-bit
+> architectures any more, as new glibc should call clock_nanosleep()
+> with a new syscall number instead. Should we then enclose
 
-Reviewed-and-tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Isn't that going to break existing userspace?
 
-> ---
->  arch/powerpc/include/asm/code-patching.h |  1 +
->  arch/powerpc/kernel/module_64.c          | 12 +++++++++++-
->  arch/powerpc/lib/code-patching.c         |  5 +++++
->  3 files changed, 17 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-> index abef812de7f8..2c895e8d07f7 100644
-> --- a/arch/powerpc/include/asm/code-patching.h
-> +++ b/arch/powerpc/include/asm/code-patching.h
-> @@ -33,6 +33,7 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags);
->  int patch_instruction(unsigned int *addr, unsigned int instr);
->
->  int instr_is_relative_branch(unsigned int instr);
-> +int instr_is_relative_link_branch(unsigned int instr);
->  int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
->  unsigned long branch_target(const unsigned int *instr);
->  unsigned int translate_branch(const unsigned int *dest,
-> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-> index 759104b99f9f..180c16f04063 100644
-> --- a/arch/powerpc/kernel/module_64.c
-> +++ b/arch/powerpc/kernel/module_64.c
-> @@ -487,7 +487,17 @@ static bool is_early_mcount_callsite(u32 *instruction)
->     restore r2. */
->  static int restore_r2(u32 *instruction, struct module *me)
->  {
-> -	if (is_early_mcount_callsite(instruction - 1))
-> +	u32 *prev_insn = instruction - 1;
-> +
-> +	if (is_early_mcount_callsite(prev_insn))
-> +		return 1;
-> +
-> +	/*
-> +	 * Make sure the branch isn't a sibling call.  Sibling calls aren't
-> +	 * "link" branches and they don't return, so they don't need the r2
-> +	 * restore afterwards.
-> +	 */
-> +	if (!instr_is_relative_link_branch(*prev_insn))
->  		return 1;
->
->  	if (*instruction != PPC_INST_NOP) {
-> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-> index c9de03e0c1f1..d81aab7441f7 100644
-> --- a/arch/powerpc/lib/code-patching.c
-> +++ b/arch/powerpc/lib/code-patching.c
-> @@ -304,6 +304,11 @@ int instr_is_relative_branch(unsigned int instr)
->  	return instr_is_branch_iform(instr) || instr_is_branch_bform(instr);
->  }
->
-> +int instr_is_relative_link_branch(unsigned int instr)
-> +{
-> +	return instr_is_relative_branch(instr) && (instr & BRANCH_SET_LINK);
-> +}
-> +
->  static unsigned long branch_iform_target(const unsigned int *instr)
->  {
->  	signed long imm;
->
+Thanks
+
+	tglx
