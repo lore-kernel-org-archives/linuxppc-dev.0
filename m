@@ -1,20 +1,26 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
+ [IPv6:2607:f8b0:400c:c08::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydLZd3bxhzDrD8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 12:47:05 +1100 (AEDT)
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-To: steven.sistare@oracle.com, daniel.m.jordan@oracle.com,
- benh@kernel.crashing.org, paulus@samba.org, akpm@linux-foundation.org,
- kirill.shutemov@linux.intel.com, arbab@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, x86@kernel.org,
- linux-kernel@vger.kernel.org, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, mhocko@suse.com, linux-mm@kvack.org,
- linux-s390@vger.kernel.org, mgorman@techsingularity.net
-Subject: [PATCH v1] mm: relax deferred struct page requirements
-Date: Thu, 16 Nov 2017 20:46:01 -0500
-Message-Id: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydMyN0Lg1zDrDk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 13:49:15 +1100 (AEDT)
+Received: by mail-ua0-x242.google.com with SMTP id z43so518897uac.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Nov 2017 18:49:15 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <87wp2qhhbd.fsf@linux.vnet.ibm.com>
+References: <20171113081611.27374-1-bsingharora@gmail.com>
+ <87wp2qhhbd.fsf@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 17 Nov 2017 13:49:11 +1100
+Message-ID: <CAKTCnzmnOzGppZf3euCN=B9uwotC5u4YySYdi5bg4ZdYVA708w@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/npu: Cleanup MMIO ATSD flushing
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,83 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
-as all the page initialization code is in common code.
+On Thu, Nov 16, 2017 at 5:24 PM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
+>
+>  +      address = start;
+>> +     do {
+>> +             local_irq_disable();
+>> +             find_linux_pte(mm->pgd, address, &is_thp, &hshift);
+>> +             if (!is_thp)
+>> +                     shift = PAGE_SHIFT;
+>
+> It can still be hugetlb if is_thp is false.
+>
 
-Also, there is no need to depend on MEMORY_HOTPLUG, as initialization code
-does not really use hotplug memory functionality. So, we can remove this
-requirement as well.
+Yep, the hshift check needs to be upfront, the version below makes sense.
 
-This patch allows to use deferred struct page initialization on all
-platforms with memblock allocator.
+>> +             else if (hshift && !is_thp)
+>> +                     shift = hshift;
+>> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>> +             else
+>> +                     shift = HPAGE_PMD_SIZE;
+>
+> That is wrong. I guess it should be shift = HPAGE_PMD_SHIFT. But i am
+> not sure we need to make it this complex at all. See below.
+>
+>> +#else
+>> +             else {
+>> +                     shift = PAGE_SHIFT;
+>> +                     pr_warn_once("unsupport page size for mm %p,addr %lx\n",
+>> +                                     mm, start);
+>> +             }
+>> +#endif
+>
+> I am still not sure this is correct from a pure page table walking
+> point. Why not
+>
+>        if (hshift)
+>           shift = hshift;
+>        else
+>           shift = PAGE_SHIFT;
+>
 
-Tested on x86, arm64, and sparc. Also, verified that code compiles on
-PPC with CONFIG_MEMORY_HOTPLUG disabled.
+I don't think I care about THP at this point
 
-Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
----
- arch/powerpc/Kconfig | 1 -
- arch/s390/Kconfig    | 1 -
- arch/x86/Kconfig     | 1 -
- mm/Kconfig           | 7 +------
- 4 files changed, 1 insertion(+), 9 deletions(-)
+I'll respin
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index cb782ac1c35d..1540348691c9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -148,7 +148,6 @@ config PPC
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select ARCH_SUPPORTS_ATOMIC_RMW
--	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
- 	select ARCH_WANT_IPC_PARSE_VERSION
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 863a62a6de3c..525c2e3df6f5 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -108,7 +108,6 @@ config S390
- 	select ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
- 	select ARCH_SAVE_PAGE_KEYS if HIBERNATION
- 	select ARCH_SUPPORTS_ATOMIC_RMW
--	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index df3276d6bfe3..00a5446de394 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -69,7 +69,6 @@ config X86
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select ARCH_SUPPORTS_ATOMIC_RMW
--	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
- 	select ARCH_SUPPORTS_NUMA_BALANCING	if X86_64
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_QUEUED_RWLOCKS
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 9c4bdddd80c2..c6bd0309ce7a 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -639,15 +639,10 @@ config MAX_STACK_SIZE_MB
- 
- 	  A sane initial value is 80 MB.
- 
--# For architectures that support deferred memory initialisation
--config ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
--	bool
--
- config DEFERRED_STRUCT_PAGE_INIT
- 	bool "Defer initialisation of struct pages to kthreads"
- 	default n
--	depends on ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
--	depends on NO_BOOTMEM && MEMORY_HOTPLUG
-+	depends on NO_BOOTMEM
- 	depends on !FLATMEM
- 	help
- 	  Ordinarily all struct pages are initialised during early boot in a
--- 
-2.15.0
+Balbir
