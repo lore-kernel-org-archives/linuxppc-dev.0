@@ -1,39 +1,30 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <alexander.h.duyck@intel.com>
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydjsx3k8KzDrFt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2017 03:16:36 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAHGD2Eq038446
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 11:16:33 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e9ykw2qw3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 11:16:32 -0500
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Fri, 17 Nov 2017 11:16:31 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydkdc0mqyzDrMt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2017 03:50:56 +1100 (AEDT)
+From: "Duyck, Alexander H" <alexander.h.duyck@intel.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>
+CC: "michaele@au1.ibm.com" <michaele@au1.ibm.com>,
+ "dipankar@linux.vnet.ibm.com" <dipankar@linux.vnet.ibm.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>, "brking@pobox.com"
+ <brking@pobox.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
 Subject: Re: [Intel-wired-lan] [PATCH 0/7] [RESEND] [net] intel: Use smp_rmb
  rather than read_barrier_depends
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>, alexander.h.duyck@intel.com
-Cc: Michael Ellerman <michaele@au1.ibm.com>, dipankar@linux.vnet.ibm.com,
- stable@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, brking@pobox.com
+Date: Fri, 17 Nov 2017 16:50:46 +0000
+Message-ID: <1510937442.28435.28.camel@intel.com>
 References: <1510846675-15169-1-git-send-email-brking@linux.vnet.ibm.com>
  <20171116113358.00001d5a@intel.com>
  <f360a8cd-518c-1df5-5ffd-91a0e9688ce2@linux.vnet.ibm.com>
  <87375dvnkv.fsf@concordia.ellerman.id.au>
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Fri, 17 Nov 2017 10:16:28 -0600
+ <678bfe68-286a-0ac8-23c3-1c40c9d5c4c3@linux.vnet.ibm.com>
+In-Reply-To: <678bfe68-286a-0ac8-23c3-1c40c9d5c4c3@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <87375dvnkv.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <678bfe68-286a-0ac8-23c3-1c40c9d5c4c3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,106 +34,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2017 04:57 PM, Michael Ellerman wrote:
-> Brian King <brking@linux.vnet.ibm.com> writes:
-> 
->> On 11/16/2017 01:33 PM, Jesse Brandeburg wrote:
->>> On Thu, 16 Nov 2017 09:37:48 -0600
->>> Brian King <brking@linux.vnet.ibm.com> wrote:
->>>
->>>> Resending as the first attempt is not showing up in the list archive.
->>>>
->>>> This patch converts several network drivers to use smp_rmb
->>>> rather than read_barrier_depends. The initial issue was
->>>> discovered with ixgbe on a Power machine which resulted
->>>> in skb list corruption due to fetching a stale skb pointer.
->>>> More details can be found in the ixgbe patch description.
->>>
->>> Thanks for the fix Brian, I bet it was a tough debug.
->>>
->>> The only users in the entire kernel of read_barrier_depends() (not
->>> smp_read_barrier_depends) are the Intel network drivers.
->>>
->>> Wouldn't it be better for power to just fix read_barrier_depends to do
->>> the right thing on power? The question I'm not sure of the answer to is:
->>> Is it really the wrong barrier to be using or is the implementation in
->>> the kernel powerpc wrong?
->>>
->>> So I think the right thing might actually to be to:
->>> Fix arch powerpc read_barrier_depends to not be a noop, as the
->>> semantics of the read_barrier_depends seems to be sufficient to solve
->>> this problem, but it seems not to work for powerpc?
->>
->> Jesse,
->>
->> Thanks for the quick response.
->>
->> Cc'ing linuxppc-dev as well. 
->>
->> I did think about changing the powerpc definition of read_barrier_depends,
->> but after reading up on that barrier, decided it was not the correct barrier
->> to be used in this context. Here is some good historical background on
->> read_barrier_depends that I found, along with an example.
->>
->> https://lwn.net/Articles/5159/
->>
->> Since there is no data-dependency in the code in question here, I think
->> the smp_rmb is the proper barrier to use.
-> 
-> Yes I agree.
-> 
-> The read_barrier_depends() is correct to order the load of eop_desc and
-> then the dependent load of eop_desc->wb.status, but it's only required
-> or does anything on Alpha.
-> 
->> For background, the code in question looks like this:
->>
->> CPU 1                                   CPU2
->> ============================            ============================
->> 1: ixgbe_xmit_frame_ring                ixgbe_clean_tx_irq
->> 2:  first->skb = skb                     eop_desc = tx_buffer->next_to_watch
->>                                          if (!eop_desc)
->>                                              break;
->> 3:  ixgbe_tx_map                         read_barrier_depends()
->>                                          if (!(eop_desc->wb.status) ... )
->>                                              break;
->> 4:   wmb                                 
->> 5:   first->next_to_watch = tx_desc      napi_consume_skb(tx_buffer->skb ..);
->> 6:   writel(i, tx_ring->tail);
->>
->> What we see on powerpc is that tx_buffer->skb on CPU2 is getting loaded
->> prior to tx_buffer->next_to_watch. Changing the read_barrier_depends
->> to a smp_rmb solves this and prevents us from dereferencing old pointer.
-> 
-> Right. Given that read_barrier_depends() is a nop, there's nothing there
-> to order the load of tx_buffer->skb vs anything else.
-> 
-> If it's actually the load of tx_buffer->skb that's the issue then the
-> smp_rmb() should really be immediately prior to that, rather than where
-> the read_barrier_depends() currently is.
-
-Alex,
-
-How would you like to proceed? read_barrier_depends is a noop on all archs
-except alpha and blackfin. On those two archs, read_barrier_depends and
-smp_rmb end up resulting in the same code. So, I can either:
-
-1. Remove the setting of tx_buffer->skb to NULL to address your concern and proceed
-with the rest of the patch set unchanged.
-
-2. Leave the read_barrier_depends, as it is the right barrier to order the load
-of eop_desc with respect to eop_desc->wb.status, and then *add* an smp_rmb in
-the same code path to address the speculative load of the skb that I was running into.
-This is arguably more pure from the perspective of the use of the different
-barriers, but has the downside of additional overhead on alpha and blackfin.
-
-Do you have a preference? 
-
-Thanks,
-
-Brian
-
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+T24gRnJpLCAyMDE3LTExLTE3IGF0IDEwOjE2IC0wNjAwLCBCcmlhbiBLaW5nIHdyb3RlOg0KPiBP
+biAxMS8xNi8yMDE3IDA0OjU3IFBNLCBNaWNoYWVsIEVsbGVybWFuIHdyb3RlOg0KPiA+IEJyaWFu
+IEtpbmcgPGJya2luZ0BsaW51eC52bmV0LmlibS5jb20+IHdyaXRlczoNCj4gPiANCj4gPiA+IE9u
+IDExLzE2LzIwMTcgMDE6MzMgUE0sIEplc3NlIEJyYW5kZWJ1cmcgd3JvdGU6DQo+ID4gPiA+IE9u
+IFRodSwgMTYgTm92IDIwMTcgMDk6Mzc6NDggLTA2MDANCj4gPiA+ID4gQnJpYW4gS2luZyA8YnJr
+aW5nQGxpbnV4LnZuZXQuaWJtLmNvbT4gd3JvdGU6DQo+ID4gPiA+IA0KPiA+ID4gPiA+IFJlc2Vu
+ZGluZyBhcyB0aGUgZmlyc3QgYXR0ZW1wdCBpcyBub3Qgc2hvd2luZyB1cCBpbiB0aGUgbGlzdCBh
+cmNoaXZlLg0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IFRoaXMgcGF0Y2ggY29udmVydHMgc2V2ZXJh
+bCBuZXR3b3JrIGRyaXZlcnMgdG8gdXNlIHNtcF9ybWINCj4gPiA+ID4gPiByYXRoZXIgdGhhbiBy
+ZWFkX2JhcnJpZXJfZGVwZW5kcy4gVGhlIGluaXRpYWwgaXNzdWUgd2FzDQo+ID4gPiA+ID4gZGlz
+Y292ZXJlZCB3aXRoIGl4Z2JlIG9uIGEgUG93ZXIgbWFjaGluZSB3aGljaCByZXN1bHRlZA0KPiA+
+ID4gPiA+IGluIHNrYiBsaXN0IGNvcnJ1cHRpb24gZHVlIHRvIGZldGNoaW5nIGEgc3RhbGUgc2ti
+IHBvaW50ZXIuDQo+ID4gPiA+ID4gTW9yZSBkZXRhaWxzIGNhbiBiZSBmb3VuZCBpbiB0aGUgaXhn
+YmUgcGF0Y2ggZGVzY3JpcHRpb24uDQo+ID4gPiA+IA0KPiA+ID4gPiBUaGFua3MgZm9yIHRoZSBm
+aXggQnJpYW4sIEkgYmV0IGl0IHdhcyBhIHRvdWdoIGRlYnVnLg0KPiA+ID4gPiANCj4gPiA+ID4g
+VGhlIG9ubHkgdXNlcnMgaW4gdGhlIGVudGlyZSBrZXJuZWwgb2YgcmVhZF9iYXJyaWVyX2RlcGVu
+ZHMoKSAobm90DQo+ID4gPiA+IHNtcF9yZWFkX2JhcnJpZXJfZGVwZW5kcykgYXJlIHRoZSBJbnRl
+bCBuZXR3b3JrIGRyaXZlcnMuDQo+ID4gPiA+IA0KPiA+ID4gPiBXb3VsZG4ndCBpdCBiZSBiZXR0
+ZXIgZm9yIHBvd2VyIHRvIGp1c3QgZml4IHJlYWRfYmFycmllcl9kZXBlbmRzIHRvIGRvDQo+ID4g
+PiA+IHRoZSByaWdodCB0aGluZyBvbiBwb3dlcj8gVGhlIHF1ZXN0aW9uIEknbSBub3Qgc3VyZSBv
+ZiB0aGUgYW5zd2VyIHRvIGlzOg0KPiA+ID4gPiBJcyBpdCByZWFsbHkgdGhlIHdyb25nIGJhcnJp
+ZXIgdG8gYmUgdXNpbmcgb3IgaXMgdGhlIGltcGxlbWVudGF0aW9uIGluDQo+ID4gPiA+IHRoZSBr
+ZXJuZWwgcG93ZXJwYyB3cm9uZz8NCj4gPiA+ID4gDQo+ID4gPiA+IFNvIEkgdGhpbmsgdGhlIHJp
+Z2h0IHRoaW5nIG1pZ2h0IGFjdHVhbGx5IHRvIGJlIHRvOg0KPiA+ID4gPiBGaXggYXJjaCBwb3dl
+cnBjIHJlYWRfYmFycmllcl9kZXBlbmRzIHRvIG5vdCBiZSBhIG5vb3AsIGFzIHRoZQ0KPiA+ID4g
+PiBzZW1hbnRpY3Mgb2YgdGhlIHJlYWRfYmFycmllcl9kZXBlbmRzIHNlZW1zIHRvIGJlIHN1ZmZp
+Y2llbnQgdG8gc29sdmUNCj4gPiA+ID4gdGhpcyBwcm9ibGVtLCBidXQgaXQgc2VlbXMgbm90IHRv
+IHdvcmsgZm9yIHBvd2VycGM/DQo+ID4gPiANCj4gPiA+IEplc3NlLA0KPiA+ID4gDQo+ID4gPiBU
+aGFua3MgZm9yIHRoZSBxdWljayByZXNwb25zZS4NCj4gPiA+IA0KPiA+ID4gQ2MnaW5nIGxpbnV4
+cHBjLWRldiBhcyB3ZWxsLiANCj4gPiA+IA0KPiA+ID4gSSBkaWQgdGhpbmsgYWJvdXQgY2hhbmdp
+bmcgdGhlIHBvd2VycGMgZGVmaW5pdGlvbiBvZiByZWFkX2JhcnJpZXJfZGVwZW5kcywNCj4gPiA+
+IGJ1dCBhZnRlciByZWFkaW5nIHVwIG9uIHRoYXQgYmFycmllciwgZGVjaWRlZCBpdCB3YXMgbm90
+IHRoZSBjb3JyZWN0IGJhcnJpZXINCj4gPiA+IHRvIGJlIHVzZWQgaW4gdGhpcyBjb250ZXh0LiBI
+ZXJlIGlzIHNvbWUgZ29vZCBoaXN0b3JpY2FsIGJhY2tncm91bmQgb24NCj4gPiA+IHJlYWRfYmFy
+cmllcl9kZXBlbmRzIHRoYXQgSSBmb3VuZCwgYWxvbmcgd2l0aCBhbiBleGFtcGxlLg0KPiA+ID4g
+DQo+ID4gPiBodHRwczovL2x3bi5uZXQvQXJ0aWNsZXMvNTE1OS8NCj4gPiA+IA0KPiA+ID4gU2lu
+Y2UgdGhlcmUgaXMgbm8gZGF0YS1kZXBlbmRlbmN5IGluIHRoZSBjb2RlIGluIHF1ZXN0aW9uIGhl
+cmUsIEkgdGhpbmsNCj4gPiA+IHRoZSBzbXBfcm1iIGlzIHRoZSBwcm9wZXIgYmFycmllciB0byB1
+c2UuDQo+ID4gDQo+ID4gWWVzIEkgYWdyZWUuDQo+ID4gDQo+ID4gVGhlIHJlYWRfYmFycmllcl9k
+ZXBlbmRzKCkgaXMgY29ycmVjdCB0byBvcmRlciB0aGUgbG9hZCBvZiBlb3BfZGVzYyBhbmQNCj4g
+PiB0aGVuIHRoZSBkZXBlbmRlbnQgbG9hZCBvZiBlb3BfZGVzYy0+d2Iuc3RhdHVzLCBidXQgaXQn
+cyBvbmx5IHJlcXVpcmVkDQo+ID4gb3IgZG9lcyBhbnl0aGluZyBvbiBBbHBoYS4NCj4gPiANCj4g
+PiA+IEZvciBiYWNrZ3JvdW5kLCB0aGUgY29kZSBpbiBxdWVzdGlvbiBsb29rcyBsaWtlIHRoaXM6
+DQo+ID4gPiANCj4gPiA+IENQVSAxICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBD
+UFUyDQo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09ICAgICAgICAgICAgPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PQ0KPiA+ID4gMTogaXhnYmVfeG1pdF9mcmFtZV9yaW5nICAg
+ICAgICAgICAgICAgIGl4Z2JlX2NsZWFuX3R4X2lycQ0KPiA+ID4gMjogIGZpcnN0LT5za2IgPSBz
+a2IgICAgICAgICAgICAgICAgICAgICBlb3BfZGVzYyA9IHR4X2J1ZmZlci0+bmV4dF90b193YXRj
+aA0KPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpZiAoIWVv
+cF9kZXNjKQ0KPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgYnJlYWs7DQo+ID4gPiAzOiAgaXhnYmVfdHhfbWFwICAgICAgICAgICAgICAgICAgICAgICAg
+IHJlYWRfYmFycmllcl9kZXBlbmRzKCkNCj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgaWYgKCEoZW9wX2Rlc2MtPndiLnN0YXR1cykgLi4uICkNCj4gPiA+ICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ID4g
+NDogICB3bWIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gPiA+IDU6ICAgZmly
+c3QtPm5leHRfdG9fd2F0Y2ggPSB0eF9kZXNjICAgICAgbmFwaV9jb25zdW1lX3NrYih0eF9idWZm
+ZXItPnNrYiAuLik7DQo+ID4gPiA2OiAgIHdyaXRlbChpLCB0eF9yaW5nLT50YWlsKTsNCj4gPiA+
+IA0KPiA+ID4gV2hhdCB3ZSBzZWUgb24gcG93ZXJwYyBpcyB0aGF0IHR4X2J1ZmZlci0+c2tiIG9u
+IENQVTIgaXMgZ2V0dGluZyBsb2FkZWQNCj4gPiA+IHByaW9yIHRvIHR4X2J1ZmZlci0+bmV4dF90
+b193YXRjaC4gQ2hhbmdpbmcgdGhlIHJlYWRfYmFycmllcl9kZXBlbmRzDQo+ID4gPiB0byBhIHNt
+cF9ybWIgc29sdmVzIHRoaXMgYW5kIHByZXZlbnRzIHVzIGZyb20gZGVyZWZlcmVuY2luZyBvbGQg
+cG9pbnRlci4NCj4gPiANCj4gPiBSaWdodC4gR2l2ZW4gdGhhdCByZWFkX2JhcnJpZXJfZGVwZW5k
+cygpIGlzIGEgbm9wLCB0aGVyZSdzIG5vdGhpbmcgdGhlcmUNCj4gPiB0byBvcmRlciB0aGUgbG9h
+ZCBvZiB0eF9idWZmZXItPnNrYiB2cyBhbnl0aGluZyBlbHNlLg0KPiA+IA0KPiA+IElmIGl0J3Mg
+YWN0dWFsbHkgdGhlIGxvYWQgb2YgdHhfYnVmZmVyLT5za2IgdGhhdCdzIHRoZSBpc3N1ZSB0aGVu
+IHRoZQ0KPiA+IHNtcF9ybWIoKSBzaG91bGQgcmVhbGx5IGJlIGltbWVkaWF0ZWx5IHByaW9yIHRv
+IHRoYXQsIHJhdGhlciB0aGFuIHdoZXJlDQo+ID4gdGhlIHJlYWRfYmFycmllcl9kZXBlbmRzKCkg
+Y3VycmVudGx5IGlzLg0KPiANCj4gQWxleCwNCj4gDQo+IEhvdyB3b3VsZCB5b3UgbGlrZSB0byBw
+cm9jZWVkPyByZWFkX2JhcnJpZXJfZGVwZW5kcyBpcyBhIG5vb3Agb24gYWxsIGFyY2hzDQo+IGV4
+Y2VwdCBhbHBoYSBhbmQgYmxhY2tmaW4uIE9uIHRob3NlIHR3byBhcmNocywgcmVhZF9iYXJyaWVy
+X2RlcGVuZHMgYW5kDQo+IHNtcF9ybWIgZW5kIHVwIHJlc3VsdGluZyBpbiB0aGUgc2FtZSBjb2Rl
+LiBTbywgSSBjYW4gZWl0aGVyOg0KPiANCj4gMS4gUmVtb3ZlIHRoZSBzZXR0aW5nIG9mIHR4X2J1
+ZmZlci0+c2tiIHRvIE5VTEwgdG8gYWRkcmVzcyB5b3VyIGNvbmNlcm4gYW5kIHByb2NlZWQNCj4g
+d2l0aCB0aGUgcmVzdCBvZiB0aGUgcGF0Y2ggc2V0IHVuY2hhbmdlZC4NCg0KSSBhbSBnb29kIHdp
+dGggdGhpcyBvcHRpb24uIFdlIGp1c3QgbmVlZCB0byBiZSBjZXJ0YWluIHRoYXQgaXQgc29sdmVz
+DQp0aGUgb3JpZ2luYWwgaXNzdWUgeW91IHNhdy4NCg0KPiAyLiBMZWF2ZSB0aGUgcmVhZF9iYXJy
+aWVyX2RlcGVuZHMsIGFzIGl0IGlzIHRoZSByaWdodCBiYXJyaWVyIHRvIG9yZGVyIHRoZSBsb2Fk
+DQo+IG9mIGVvcF9kZXNjIHdpdGggcmVzcGVjdCB0byBlb3BfZGVzYy0+d2Iuc3RhdHVzLCBhbmQg
+dGhlbiAqYWRkKiBhbiBzbXBfcm1iIGluDQo+IHRoZSBzYW1lIGNvZGUgcGF0aCB0byBhZGRyZXNz
+IHRoZSBzcGVjdWxhdGl2ZSBsb2FkIG9mIHRoZSBza2IgdGhhdCBJIHdhcyBydW5uaW5nIGludG8u
+DQo+IFRoaXMgaXMgYXJndWFibHkgbW9yZSBwdXJlIGZyb20gdGhlIHBlcnNwZWN0aXZlIG9mIHRo
+ZSB1c2Ugb2YgdGhlIGRpZmZlcmVudA0KPiBiYXJyaWVycywgYnV0IGhhcyB0aGUgZG93bnNpZGUg
+b2YgYWRkaXRpb25hbCBvdmVyaGVhZCBvbiBhbHBoYSBhbmQgYmxhY2tmaW4uDQo+IA0KPiBEbyB5
+b3UgaGF2ZSBhIHByZWZlcmVuY2U/IA0KDQpJZiB5b3UgaGF2ZSB0aGUgc21wX3JtYiB0aGVyZSBp
+cyBubyBuZWVkIGZvciB0aGUgcmVhZF9iYXJyaWVyX2RlcGVuZHMNCmFzIGhhdmluZyBib3RoIGJh
+cnJpZXJzIHdvdWxkIGJlIHJlZHVuZGFudCBhbnl3YXkuIEl0IHdhcyB0aGVyZSBhcyBtb3JlDQpv
+ZiBhIG1lbnRhbCBwbGFjZSBob2xkZXIgdGhhbiBhbnl0aGluZyBlbHNlIHNpbmNlIEkgc3VzcGVj
+dCB0aGVzZQ0KZHJpdmVycyB3b3VsZCBuZXZlciBiZSBydW4gb24gYW4gYWxwaGEgYXJjaGl0ZWN0
+dXJlIGFueXdheS4NCg0KPiBUaGFua3MsDQo+IA0KPiBCcmlhbg0KDQpUaGFua3MgZm9yIGZpbmRp
+bmcgdGhpcyBpc3N1ZSBhbmQgdGFraW5nIHRoZSB0aW1lIHRvIHJlc29sdmUgaXQuDQoNCi0gQWxl
+eA==
