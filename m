@@ -3,35 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ydm6w6DWyzDrMN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2017 04:58:00 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ydnTZ585WzDrRg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Nov 2017 05:59:14 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAHHtWna148201
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 12:57:57 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2e9ykw6u7t-1
+ vAHIsBVg001560
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 13:59:11 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ea4hgtn1t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 12:57:56 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Nov 2017 13:59:11 -0500
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Fri, 17 Nov 2017 12:57:56 -0500
-Subject: Re: [PATCH v3] ppc64 boot: Wait for boot cpu to show up if nr_cpus
- limit is about to hit.
-To: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mahesh@linux.vnet.ibm.com,
- npiggin@gmail.com, Michael Ellerman <mpe@ellerman.id.au>
-References: <20171106173426.8902-1-cascardo@canonical.com>
- <116a003f-e4db-7c46-6b7a-edbe6cc54fbc@linux.vnet.ibm.com>
- <20171117172620.ph3b6ewdyvclq6xz@calabresa>
+ Fri, 17 Nov 2017 13:59:10 -0500
 From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Fri, 17 Nov 2017 15:57:49 -0200
-MIME-Version: 1.0
-In-Reply-To: <20171117172620.ph3b6ewdyvclq6xz@calabresa>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <1a5051de-40e8-1524-a9ed-9bf17873c2c8@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: gpiccoli@linux.vnet.ibm.com, paulus@samba.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, bsingharora@gmail.com
+Subject: [PATCH v3] powerpc/powernv: Add ppc_pci_reset_phbs parameter to issue
+ a PHB reset
+Date: Fri, 17 Nov 2017 16:58:59 -0200
+Message-Id: <20171117185859.2756-1-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,284 +35,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+During a kdump kernel boot in PowerPC, we request a reset of the PHBs
+to the FW. It makes sense, since if we are booting a kdump kernel it
+means we had some trouble before and we cannot rely in the adapters'
+health; they could be in a bad state, hence the reset is needed.
 
+But this reset is useful not only in kdump - there are situations,
+specially when debugging drivers, that we could break an adapter in
+a way it requires such reset. One can tell to just go ahead and
+reboot the machine, but happens that many times doing kexec is much
+faster, and so preferable than a full power cycle.
 
-On 11/17/2017 03:26 PM, Thadeu Lima de Souza Cascardo wrote:
-> On Thu, Nov 16, 2017 at 07:26:43PM -0200, Guilherme G. Piccoli wrote:
->> On 11/06/2017 03:34 PM, Thadeu Lima de Souza Cascardo wrote:
->>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>
->>> The kernel boot parameter 'nr_cpus=' allows one to specify number of
->>> possible cpus in the system. In the normal scenario the first cpu (cpu0)
->>> that shows up is the boot cpu and hence it gets covered under nr_cpus
->>> limit.
->>>
->>> But this assumption will be broken in kdump scenario where kdump kenrel
->>
->> Minor nit: s/kenrel/kernel
->>
->>> after a crash can boot up on an non-zero boot cpu. The paca structure
->>> allocation depends on value of nr_cpus and is indexed using logical cpu
->>> ids. This definetly will be an issue if boot cpu id > nr_cpus
->>
->> Minor nit (2): s/definetly/definitely
-> 
-> Hi, Guilherme.
-> 
-> Thanks a lot for testing and reviewing the patch. I will ignore those
-> small typos, unless the maintainers tell me to fix them. I hope you
-> don't mind.
-> 
-> I would like to see this merged sooner rather than later.
+This patch adds the ppc_pci_reset_phbs parameter to perform such reset.
 
-Sure Cascardo! In fact, those kind of minor/small nits could be fixed by
-Michael once/if he merges heheh
-I don't think it'd need a respin!
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+---
 
-Cheers,
+* v3: Changed parameter name, adding prefix "ppc_" [mpe suggestion]
 
+ arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-Guilherme
-
-> 
-> Thanks.
-> Cascardo.
-> 
->>>
->>> This patch modifies allocate_pacas() and smp_setup_cpu_maps() to
->>> accommodate boot cpu for the case where boot_cpuid > nr_cpu_ids.
->>>
->>> This change would help to reduce the memory reservation requirement for
->>> kdump on ppc64.
->>>
->>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
->>
->> Tested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->>
->> Without this patch, got a crash deterministically when booting with
->> nr_cpus=1 in P8 bare-metal. The patch fixes the issue...
->>
->> Thanks,
->>
->>
->> Guilherme
->>
->>
->>> ---
->>>
->>> v3: fixup signedness or nr_cpus to match nr_cpu_ids
->>>      and fix conflict due to change from %d to %u
->>>
->>> Resending this as it was not applied, and I can reproduce the issue with
->>> v4.14-rc8 when booting a kdump kernel after a crash that has been given
->>> nr_cpus=1 as a parameter. With this patch, I can't reproduce it anymore.
->>>
->>> ---
->>>  arch/powerpc/include/asm/paca.h    |  3 +++
->>>  arch/powerpc/include/asm/smp.h     |  1 +
->>>  arch/powerpc/kernel/paca.c         | 23 +++++++++++++++++-----
->>>  arch/powerpc/kernel/prom.c         | 39 +++++++++++++++++++++++++++++++++++++-
->>>  arch/powerpc/kernel/setup-common.c | 25 ++++++++++++++++++++++++
->>>  5 files changed, 85 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
->>> index 04b60af027ae..ea0dbf2bbeef 100644
->>> --- a/arch/powerpc/include/asm/paca.h
->>> +++ b/arch/powerpc/include/asm/paca.h
->>> @@ -49,6 +49,9 @@ extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
->>>  #define get_lppaca()	(get_paca()->lppaca_ptr)
->>>  #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
->>>
->>> +/* Maximum number of threads per core. */
->>> +#define	MAX_SMT		8
->>> +
->>>  struct task_struct;
->>>
->>>  /*
->>> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
->>> index fac963e10d39..553cd22b2ccc 100644
->>> --- a/arch/powerpc/include/asm/smp.h
->>> +++ b/arch/powerpc/include/asm/smp.h
->>> @@ -30,6 +30,7 @@
->>>  #include <asm/percpu.h>
->>>
->>>  extern int boot_cpuid;
->>> +extern int boot_hw_cpuid;
->>>  extern int spinning_secondaries;
->>>
->>>  extern void cpu_die(void);
->>> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
->>> index 2ff2b8a19f71..9c689ee4b6a3 100644
->>> --- a/arch/powerpc/kernel/paca.c
->>> +++ b/arch/powerpc/kernel/paca.c
->>> @@ -207,6 +207,7 @@ void __init allocate_pacas(void)
->>>  {
->>>  	u64 limit;
->>>  	int cpu;
->>> +	unsigned int nr_cpus;
->>>
->>>  	limit = ppc64_rma_size;
->>>
->>> @@ -219,20 +220,32 @@ void __init allocate_pacas(void)
->>>  	limit = min(0x10000000ULL, limit);
->>>  #endif
->>>
->>> -	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
->>> +	/*
->>> +	 * Always align up the nr_cpu_ids to SMT threads and allocate
->>> +	 * the paca. This will help us to prepare for a situation where
->>> +	 * boot cpu id > nr_cpus_id. We will use the last nthreads
->>> +	 * slots (nthreads == threads per core) to accommodate a core
->>> +	 * that contains boot cpu thread.
->>> +	 *
->>> +	 * Do not change nr_cpu_ids value here. Let us do that in
->>> +	 * early_init_dt_scan_cpus() where we know exact value
->>> +	 * of threads per core.
->>> +	 */
->>> +	nr_cpus = _ALIGN_UP(nr_cpu_ids, MAX_SMT);
->>> +	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpus);
->>>
->>>  	paca = __va(memblock_alloc_base(paca_size, PAGE_SIZE, limit));
->>>  	memset(paca, 0, paca_size);
->>>
->>>  	printk(KERN_DEBUG "Allocated %u bytes for %u pacas at %p\n",
->>> -		paca_size, nr_cpu_ids, paca);
->>> +		paca_size, nr_cpus, paca);
->>>
->>> -	allocate_lppacas(nr_cpu_ids, limit);
->>> +	allocate_lppacas(nr_cpus, limit);
->>>
->>> -	allocate_slb_shadows(nr_cpu_ids, limit);
->>> +	allocate_slb_shadows(nr_cpus, limit);
->>>
->>>  	/* Can't use for_each_*_cpu, as they aren't functional yet */
->>> -	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
->>> +	for (cpu = 0; cpu < nr_cpus; cpu++)
->>>  		initialise_paca(&paca[cpu], cpu);
->>>  }
->>>
->>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->>> index f83056297441..93837093c5cb 100644
->>> --- a/arch/powerpc/kernel/prom.c
->>> +++ b/arch/powerpc/kernel/prom.c
->>> @@ -302,6 +302,29 @@ static void __init check_cpu_feature_properties(unsigned long node)
->>>  	}
->>>  }
->>>
->>> +/*
->>> + * Adjust the logical id of a boot cpu to fall under nr_cpu_ids. Map it to
->>> + * last core slot in the allocated paca array.
->>> + *
->>> + * e.g. on SMT=8 system, kernel booted with nr_cpus=1 and boot cpu = 33,
->>> + * align nr_cpu_ids to MAX_SMT value 8. Allocate paca array to hold up-to
->>> + * MAX_SMT=8 cpus. Since boot cpu 33 is greater than nr_cpus (8), adjust
->>> + * its logical id so that new id becomes less than nr_cpu_ids. Make sure
->>> + * that boot cpu's new logical id is aligned to its thread id and falls
->>> + * under last nthreads slots available in paca array. In this case the
->>> + * boot cpu 33 is adjusted to new boot cpu id 1.
->>> + *
->>> + */
->>> +static inline void adjust_boot_cpuid(int nthreads, int phys_id)
->>> +{
->>> +	boot_hw_cpuid = phys_id;
->>> +	if (boot_cpuid >= nr_cpu_ids) {
->>> +		boot_cpuid = (boot_cpuid % nthreads) + (nr_cpu_ids - nthreads);
->>> +		pr_info("Adjusted logical boot cpu id: logical %d physical %d\n",
->>> +			boot_cpuid, phys_id);
->>> +	}
->>> +}
->>> +
->>>  static int __init early_init_dt_scan_cpus(unsigned long node,
->>>  					  const char *uname, int depth,
->>>  					  void *data)
->>> @@ -325,6 +348,18 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->>>
->>>  	nthreads = len / sizeof(int);
->>>
->>> +#ifdef CONFIG_SMP
->>> +	/*
->>> +	 * Now that we know threads per core lets align nr_cpu_ids to
->>> +	 * correct SMT value.
->>> +	 */
->>> +	if (nr_cpu_ids % nthreads) {
->>> +		nr_cpu_ids = _ALIGN_UP(nr_cpu_ids, nthreads);
->>> +		pr_info("Aligned nr_cpus to SMT=%d, nr_cpu_ids = %d\n",
->>> +				 nthreads, nr_cpu_ids);
->>> +	}
->>> +#endif
->>> +
->>>  	/*
->>>  	 * Now see if any of these threads match our boot cpu.
->>>  	 * NOTE: This must match the parsing done in smp_setup_cpu_maps.
->>> @@ -363,7 +398,9 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->>>  	DBG("boot cpu: logical %d physical %d\n", found,
->>>  	    be32_to_cpu(intserv[found_thread]));
->>>  	boot_cpuid = found;
->>> -	set_hard_smp_processor_id(found, be32_to_cpu(intserv[found_thread]));
->>> +	adjust_boot_cpuid(nthreads, be32_to_cpu(intserv[found_thread]));
->>> +	set_hard_smp_processor_id(boot_cpuid,
->>> +					be32_to_cpu(intserv[found_thread]));
->>>
->>>  	/*
->>>  	 * PAPR defines "logical" PVR values for cpus that
->>> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
->>> index 2e3bc16d02b2..46b1e0972a20 100644
->>> --- a/arch/powerpc/kernel/setup-common.c
->>> +++ b/arch/powerpc/kernel/setup-common.c
->>> @@ -85,6 +85,7 @@ struct machdep_calls *machine_id;
->>>  EXPORT_SYMBOL(machine_id);
->>>
->>>  int boot_cpuid = -1;
->>> +int boot_hw_cpuid = -1;
->>>  EXPORT_SYMBOL_GPL(boot_cpuid);
->>>
->>>  /*
->>> @@ -473,6 +474,7 @@ void __init smp_setup_cpu_maps(void)
->>>  	struct device_node *dn = NULL;
->>>  	int cpu = 0;
->>>  	int nthreads = 1;
->>> +	bool boot_cpu_added = false;
->>>
->>>  	DBG("smp_setup_cpu_maps()\n");
->>>
->>> @@ -499,6 +501,24 @@ void __init smp_setup_cpu_maps(void)
->>>  		}
->>>
->>>  		nthreads = len / sizeof(int);
->>> +		/*
->>> +		 * If boot cpu hasn't been added to paca and there are only
->>> +		 * last nthreads slots available in paca array then wait
->>> +		 * for boot cpu to show up.
->>> +		 */
->>> +		if (!boot_cpu_added && (cpu + nthreads) >= nr_cpu_ids) {
->>> +			int found = 0;
->>> +
->>> +			DBG("Holding last nthreads paca slots for boot cpu\n");
->>> +			for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
->>> +				if (boot_hw_cpuid == be32_to_cpu(intserv[j])) {
->>> +					found = 1;
->>> +					break;
->>> +				}
->>> +			}
->>> +			if (!found)
->>> +				continue;
->>> +		}
->>>
->>>  		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
->>>  			bool avail;
->>> @@ -514,6 +534,11 @@ void __init smp_setup_cpu_maps(void)
->>>  			set_cpu_present(cpu, avail);
->>>  			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
->>>  			set_cpu_possible(cpu, true);
->>> +			if (boot_hw_cpuid == be32_to_cpu(intserv[j])) {
->>> +				DBG("Boot cpu %d (hard id %d) added to paca\n",
->>> +				    cpu, be32_to_cpu(intserv[j]));
->>> +				boot_cpu_added = true;
->>> +			}
->>>  			cpu++;
->>>  		}
->>>  	}
->>>
->>
-> 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index fb5cd7511189..19f1b0021585 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -89,6 +89,7 @@ void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ }
+ 
+ static bool pnv_iommu_bypass_disabled __read_mostly;
++static bool pci_reset_phbs __read_mostly;
+ 
+ static int __init iommu_setup(char *str)
+ {
+@@ -110,6 +111,14 @@ static int __init iommu_setup(char *str)
+ }
+ early_param("iommu", iommu_setup);
+ 
++static int __init pci_reset_phbs_setup(char *str)
++{
++	pci_reset_phbs = true;
++	return 0;
++}
++
++early_param("ppc_pci_reset_phbs", pci_reset_phbs_setup);
++
+ static inline bool pnv_pci_is_m64(struct pnv_phb *phb, struct resource *r)
+ {
+ 	/*
+@@ -4014,9 +4023,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	 * If we're running in kdump kernel, the previous kernel never
+ 	 * shutdown PCI devices correctly. We already got IODA table
+ 	 * cleaned out. So we have to issue PHB reset to stop all PCI
+-	 * transactions from previous kernel.
++	 * transactions from previous kernel. The ppc_pci_reset_phbs
++	 * kernel parameter will force this reset too.
+ 	 */
+-	if (is_kdump_kernel()) {
++	if (is_kdump_kernel() || pci_reset_phbs) {
+ 		pr_info("  Issue PHB reset ...\n");
+ 		pnv_eeh_phb_reset(hose, EEH_RESET_FUNDAMENTAL);
+ 		pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
+-- 
+2.15.0.rc0
