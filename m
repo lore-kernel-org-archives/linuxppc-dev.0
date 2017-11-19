@@ -1,26 +1,28 @@
 Return-Path: <chzigotzky@xenosoft.de>
 Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::3])
+ [IPv6:2a01:238:20a:202:5300::10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yfV3t6y6vzDr8l
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Nov 2017 09:27:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yfrpC6pYmzDrST
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Nov 2017 23:32:15 +1100 (AEDT)
 Received: from [192.168.1.134] (ppp-188-174-64-161.dynamic.mnet-online.de
  [188.174.64.161]) by smtp.strato.de (RZmta 42.9 DYNA|AUTH)
- with ESMTPSA id m08e38tAIMRiNqp
+ with ESMTPSA id m08e38tAJCW9PnZ
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
  521 ECDH bits, eq. 15360 bits RSA))
  (Client did not present a certificate)
  for <linuxppc-dev@lists.ozlabs.org>;
- Sat, 18 Nov 2017 23:27:44 +0100 (CET)
-To: linuxppc-dev@lists.ozlabs.org
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+ Sun, 19 Nov 2017 13:32:09 +0100 (CET)
 Subject: Qoriq P5020 PowerPC board doesn't boot with the latest git version
  anymore
-Message-ID: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
-Date: Sat, 18 Nov 2017 23:27:43 +0100
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: linuxppc-dev@lists.ozlabs.org
+References: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
+Message-ID: <3e4805a4-6114-205d-653b-ea6cd7fdc057@xenosoft.de>
+Date: Sun, 19 Nov 2017 13:32:09 +0100
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------32E90AAADEA893ECF77833F0"
+In-Reply-To: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
+Content-Type: multipart/mixed; boundary="------------E55013ECD771A90A06B84E8F"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,60 +33,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------32E90AAADEA893ECF77833F0
+--------------E55013ECD771A90A06B84E8F
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 Hi All,
 
-I tested the latest Git kernel version on my Varisys Cyrus Plus board 
-(A-EON AmigaOne X5000) [1][2] with a Qoriq P5020 PowerPC CPU from NXP 
-today. Unfortunately it doesn't boot anymore.
+The bug is definitely in the commit 
+a8a217c22116eff6c120d753c9934089fb229af0. [1]
 
-My Varisys Nemo board (A-EON AmigaOne X1000) [3], boots without any 
-problems.
+The kernel 4.14.0 boots without any problems on my Varisys Cyrus Plus 
+board [2][3] and on my Varisys Nemo board [4]. I have patched the kernel 
+4.14.0 source code with the bad commit I found with bisect last week.
 
-I bisected between the final kernel 4.14.0 and the git version from Mon 
-Nov 13 21:14:07 2017 -0800.
+After compiling, the kernel 4.14.0 doesn't boot anymore on my Varisys 
+Cyrus Plus board [2][3].
 
-a8a217c22116eff6c120d753c9934089fb229af0 is the first bad commit. [4]
-
-Please find attached the git bisect log.
-
-I tried to revert the bad commit I have found with bisect but 
-unfortunately it doesn't work because of some conflicts.
-
-git revert a8a217c22116eff6c120d753c9934089fb229af0
-
-error: could not revert a8a217c... locking/core: Remove 
-{read,spin,write}_can_lock()
-hint: after resolving the conflicts, mark the corrected paths
-hint: with 'git add <paths>' or 'git rm <paths>'
-hint: and commit the result with 'git commit'
-
-I tried to revert the bad commit in the git version from Mon Nov 13 
-21:14:07 2017 -0800 but unfortunately it doesn't work either.
-
-error: could not revert a8a217c... locking/core: Remove 
-{read,spin,write}_can_lock()
-hint: after resolving the conflicts, mark the corrected paths
-hint: with 'git add <paths>' or 'git rm <paths>'
-hint: and commit the result with 'git commit'
-
-Could you please help me to find the bug?
+Please help to find the bug in the bad commit. (Bisect log attached)
 
 Thanks,
 Christian
 
 
-[1] http://www.amigaos.net/hardware/133/amigaone-x5000
-[2] http://wiki.amiga.org/index.php?title=AmigaONE_X5000
-[3] https://en.wikipedia.org/wiki/AmigaOne_X1000
-[4] 
+[1] 
 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a8a217c22116eff6c120d753c9934089fb229af0
+[2] http://www.amigaos.net/hardware/133/amigaone-x5000
+[3] http://wiki.amiga.org/index.php?title=AmigaONE_X5000
+[4] https://en.wikipedia.org/wiki/AmigaOne_X1000
 
-
---------------32E90AAADEA893ECF77833F0
+--------------E55013ECD771A90A06B84E8F
 Content-Type: text/plain; charset=UTF-8;
  name="bisect-4.15"
 Content-Transfer-Encoding: base64
@@ -167,4 +144,4 @@ NDAwMDAgYzNmYTJkMWZjNDEyMThlNDNhNzZlYjZkOTc4MDhkZTViZTNhMDM1NSA2ZDQ2ODJk
 ZDE5M2Q3OWY4NjhiMjhlY2E5NzE0NzE2Y2UzZGJmN2M5IE0JaW5jbHVkZQo6MDQwMDAwIDA0
 MDAwMCAyYWMyZmIxZTU4ZWRjZjNmNmY5MTJlY2Y2NjQzMWY4YjBlNjkxNGI5IGQ3Yjc4MTRi
 N2IzNDllMmYwZmQ3NTc4YjM1NzI2MDM3Mjk0ZWE5YjQgTQlrZXJuZWwK
---------------32E90AAADEA893ECF77833F0--
+--------------E55013ECD771A90A06B84E8F--
