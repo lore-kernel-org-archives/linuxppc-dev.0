@@ -1,30 +1,37 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::4])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yg7V73HKWzDrRj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 10:34:21 +1100 (AEDT)
-Received: from [192.168.1.139] (ppp-188-174-95-145.dynamic.mnet-online.de
- [188.174.95.145]) by smtp.strato.de (RZmta 42.9 DYNA|AUTH)
- with ESMTPSA id m08e38tAJNYFS6S
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate)
- for <linuxppc-dev@lists.ozlabs.org>;
- Mon, 20 Nov 2017 00:34:15 +0100 (CET)
-Subject: Qoriq P5020 PowerPC board doesn't boot with the latest git version
- anymore
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: linuxppc-dev@lists.ozlabs.org
-References: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
- <3e4805a4-6114-205d-653b-ea6cd7fdc057@xenosoft.de>
- <8ed2edc7-a14b-35b3-86c1-a9995f41df84@xenosoft.de>
-Message-ID: <d8bf23c2-1805-a9c3-566d-74c0f28e88e8@xenosoft.de>
-Date: Mon, 20 Nov 2017 00:34:14 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ygWnH5ybFzDrTc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 01:48:51 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAKEimkO092893
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 09:48:49 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ec09gk5s0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 09:48:48 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 20 Nov 2017 07:48:47 -0700
+Subject: Re: [PATCH v2 0/8] powerpc: Support ibm,dynamic-memory-v2 property
+To: Bharata B Rao <bharata.rao@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>
+References: <150850568437.9118.13945089249591962212.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <CAGZKiBqX+Y==jK1XRcsS=ewr+sPATcOe0MEYduKqfX78jJxasQ@mail.gmail.com>
+ <77eae60c-a406-dd8c-acb5-9e137153ce7a@linux.vnet.ibm.com>
+ <CAGZKiBq-QszDXcKoQwPTq1D5dfXcXHAp0an7CRd6m8Oey0s=Sg@mail.gmail.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 20 Nov 2017 08:48:43 -0600
 MIME-Version: 1.0
-In-Reply-To: <8ed2edc7-a14b-35b3-86c1-a9995f41df84@xenosoft.de>
-Content-Type: multipart/mixed; boundary="------------F40F6B177E656144746AE9C2"
+In-Reply-To: <CAGZKiBq-QszDXcKoQwPTq1D5dfXcXHAp0an7CRd6m8Oey0s=Sg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8b912a8d-7528-1576-f637-98f9d6747c9d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,148 +41,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------F40F6B177E656144746AE9C2
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On 11/16/2017 10:51 PM, Bharata B Rao wrote:
+> 
+> On Thu, Nov 16, 2017 at 9:31 PM, Nathan Fontenot <nfont@linux.vnet.ibm.com <mailto:nfont@linux.vnet.ibm.com>> wrote:
+> 
+> 
+> 
+>     On 11/15/2017 11:37 PM, Bharata B Rao wrote:
+>     > On Fri, Oct 20, 2017 at 6:51 PM, Nathan Fontenot <nfont@linux.vnet.ibm.com <mailto:nfont@linux.vnet.ibm.com> <mailto:nfont@linux.vnet.ibm.com <mailto:nfont@linux.vnet.ibm.com>>> wrote:
+>     >
+>     >     This patch set provides a set of updates to de-couple the LMB information
+>     >     provided in the ibm,dynamic-memory device tree property from the device
+>     >     tree property format. A part of this patch series introduces a new
+>     >     device tree property format for dynamic memory, ibm-dynamic-meory-v2.
+>     >     By separating the device tree format from the information provided by
+>     >     the device tree property consumers of this information need not know
+>     >     what format is currently being used and provide multiple parsing routines
+>     >     for the information.
+>     >
+>     >     The first two patches update the of_get_assoc_arrays() and
+>     >     of_get_usable_memory() routines to look up the device node for the
+>     >     properties they parse. This is needed because the calling routines for
+>     >     these two functions will not have the device node to pass in in
+>     >     subsequent patches.
+>     >
+>     >     The third patch adds a new kernel structure, struct drmem_lmb, that
+>     >     is used to represent each of the possible LMBs specified in the
+>     >     ibm,dynamic-memory* device tree properties. The patch adds code
+>     >     to parse the property and build the LMB array data, and updates prom.c
+>     >     to use this new data structure instead of parsing the device tree directly.
+>     >
+>     >     The fourth and fifth patches update the numa and pseries hotplug code
+>     >     respectively to use the new LMB array data instead of parsing the
+>     >     device tree directly.
+>     >
+>     >     The sixth patch moves the of_drconf_cell struct to drmem.h where it
+>     >     fits better than prom.h
+>     >
+>     >     The seventh patch introduces support for the ibm,dynamic-memory-v2
+>     >     property format by updating the new drmem.c code to be able to parse
+>     >     and create this new device tree format.
+>     >
+>     >     The last patch in the series updates the architecture vector to indicate
+>     >     support for ibm,dynamic-memory-v2.
+>     >
+>     >
+>     > Here we are consolidating LMBs into LMB sets but still end up working with individual LMBs during hotplug. Can we instead start working with LMB sets together during hotplug ? In other words
+> 
+>     In a sense we do do this when handling memory DLPAR indexed-count requests. This takes a starting
+>     drc index for a LMB and adds/removes the following <count> contiguous LMBs. This operation is
+>     all-or-nothing, if any LMB fails to add/remove we revert back to the original state.
+> 
+> 
+> I am aware of count-indexed and we do use it for memory hotplug/unplug for KVM on Power. However the RTAS and configure-connector calls there are still per-LMB.
+> 
+> 
+>     Thi isn't exactly what you're asking for but...
+>     >
+>     > - The RTAS calls involved during DRC acquire stage can be done only once per LMB set.
+>     > - One configure-connector call for the entire LMB set.
+> 
+>     these two interfaces work on a single drc index, not a set of drc indexes. Working on a set
+>     of LMBs would require extending the current rtas calls or creating new ones.
+> 
+> 
+> Yes.
+>  
+> 
+> 
+>     One thing we can look into doing for indexed-count requests is to perform each of the
+>     steps for all LMBs in the set at once, i.e. make the acquire call for LMBs, then make the
+>     configure-connector calls for all the LMBs...
+> 
+> 
+> That is what I am hinting at to check the feasibility of such a mechanism. Given that all the LMBs of the set are supposed to have similar attributes (like node associativity etc), it makes sense to have a single DRC acquire call and single configure-connector call for the entire set.
 
-Hi All,
+I agree. I'll talk to pHyp development to see if this is something they are interested in pursuing.
+If not we can submit updates to the PAPR to implement these new rtas calls even if they do not
+support them in pHyp.
 
-I created a patch for the git kernel today. (see attachment)
-Without the patch, the latest git kernel doesn't boot on my Cyrus Plus 
-board.
+> 
+> 
+>     The only drawback is this approach would make handling failures and backing out of the
+>     updates a bit messier, but I've never really thought that optimizing for the failure
+>     case to be as important.
+> 
+> 
+> Yes, error recovery can be messy given that we have multiple calls under DRC acquire call (get-sensor-state and set-indicator).
+> 
+> BTW I thought this reorganization involving ibm,drc-info and ibm,dynamic-memory-v2 was for representing and hotplugging huge amounts of memory efficiently and quickly. So you have not yet found the per-LMB calls to be hurting when huge amount of memory is involved ?
 
-Cheers,
-Christian
+No. The updates for the new drc properties are for reducing the size of the properties, it does not change
+the way we handle add and remove of memory.
 
+-Nathan
 
-On 19 November 2017 at 5:57PM, Christian Zigotzky wrote:
-> Hi All,
->
-> A little success. :-) I reverted the following files from the bad 
-> commit a8a217c22116eff6c120d753c9934089fb229af0 [1]:
->
-> arch/powerpc/include/asm/spinlock.h
-> kernel/locking/spinlock.c
-> include/linux/spinlock_up.h
-> include/linux/spinlock.h
-> include/linux/rwlock.h
->
-> After that I compiled the latest git kernel again. Then I was able to 
-> boot the latest git kernel on my Varisys Cyrus Plus board [2][3]. :-)
->
-> That means the bug is in one of these files.
->
-> Please help me to find the bug in these files above.
->
-> Thanks,
-> Christian
->
->
-> [1] 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a8a217c22116eff6c120d753c9934089fb229af0
-> [2] http://www.amigaos.net/hardware/133/amigaone-x5000
-> [3] http://wiki.amiga.org/index.php?title=AmigaONE_X5000
->
-
-
---------------F40F6B177E656144746AE9C2
-Content-Type: text/x-patch;
- name="spinlock_4.15-1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="spinlock_4.15-1.patch"
-
---- a/arch/powerpc/include/asm/spinlock.h	2017-11-18 20:57:47.921703650 +0100
-+++ b/arch/powerpc/include/asm/spinlock.h	2017-11-19 18:51:51.630906446 +0100
-@@ -182,6 +182,9 @@ static inline void arch_spin_unlock(arch
-  * read-locks.
-  */
- 
-+#define arch_read_can_lock(rw)		((rw)->lock >= 0)
-+#define arch_write_can_lock(rw)	(!(rw)->lock)
-+
- #ifdef CONFIG_PPC64
- #define __DO_SIGN_EXTEND	"extsw	%0,%0\n"
- #define WRLOCK_TOKEN		LOCK_TOKEN	/* it's negative */
---- a/kernel/locking/spinlock.c	2017-11-18 20:57:48.974708915 +0100
-+++ b/kernel/locking/spinlock.c	2017-11-19 18:26:18.526892449 +0100
-@@ -35,6 +35,9 @@
-  */
- #else
- 
-+#define raw_read_can_lock(l)	read_can_lock(l)
-+#define raw_write_can_lock(l)	write_can_lock(l)
-+
- /*
-  * Some architectures can relax in favour of the CPU owning the lock.
-  */
-@@ -68,7 +71,7 @@ void __lockfunc __raw_##op##_lock(lockty
- 									\
- 		if (!(lock)->break_lock)				\
- 			(lock)->break_lock = 1;				\
--		while ((lock)->break_lock)				\
-+		while (!raw_##op##_can_lock(lock) && (lock)->break_lock)\	
- 			arch_##op##_relax(&lock->raw_lock);		\
- 	}								\
- 	(lock)->break_lock = 0;						\
-@@ -88,7 +91,7 @@ unsigned long __lockfunc __raw_##op##_lo
- 									\
- 		if (!(lock)->break_lock)				\
- 			(lock)->break_lock = 1;				\
--		while ((lock)->break_lock)				\
-+		while (!raw_##op##_can_lock(lock) && (lock)->break_lock)\	
- 			arch_##op##_relax(&lock->raw_lock);		\
- 	}								\
- 	(lock)->break_lock = 0;						\
---- a/include/linux/spinlock_up.h	2017-11-18 20:57:38.788657985 +0100
-+++ b/include/linux/spinlock_up.h	2017-11-19 18:48:19.787635450 +0100
-@@ -69,4 +69,7 @@ static inline void arch_spin_unlock(arch
- 
- #define arch_spin_is_contended(lock)	(((void)(lock), 0))
- 
-+#define arch_read_can_lock(lock)	(((void)(lock), 1))
-+#define arch_write_can_lock(lock)	(((void)(lock), 1))
-+
- #endif /* __LINUX_SPINLOCK_UP_H */
---- a/include/linux/spinlock.h	2017-11-18 20:57:38.693657510 +0100
-+++ b/include/linux/spinlock.h	2017-11-19 18:37:36.933284464 +0100
-@@ -283,6 +283,12 @@ static inline void do_raw_spin_unlock(ra
- 	1 : ({ local_irq_restore(flags); 0; }); \
- })
- 
-+/**
-+ * raw_spin_can_lock - would raw_spin_trylock() succeed?
-+ * @lock: the spinlock in question.
-+ */
-+#define raw_spin_can_lock(lock)	(!raw_spin_is_locked(lock))
-+
- /* Include rwlock functions */
- #include <linux/rwlock.h>
- 
-@@ -395,6 +401,11 @@ static __always_inline int spin_is_conte
- 	return raw_spin_is_contended(&lock->rlock);
- }
- 
-+static __always_inline int spin_can_lock(spinlock_t *lock)
-+{
-+	return raw_spin_can_lock(&lock->rlock);
-+}
-+
- #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
- 
- /*
---- a/include/linux/rwlock.h	2017-11-18 20:57:38.652657305 +0100
-+++ b/include/linux/rwlock.h	2017-11-19 18:19:54.045970054 +0100
-@@ -59,6 +59,9 @@ do {								\
- # define do_raw_write_unlock(rwlock)	do {arch_write_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
- #endif
- 
-+#define read_can_lock(rwlock)		arch_read_can_lock(&(rwlock)->raw_lock)
-+#define write_can_lock(rwlock)		arch_write_can_lock(&(rwlock)->raw_lock)
-+
- /*
-  * Define the various rw_lock methods.  Note we define these
-  * regardless of whether CONFIG_SMP or CONFIG_PREEMPT are set. The various
-
---------------F40F6B177E656144746AE9C2--
+> 
+> Regards,
+> Bharata.
+> 
