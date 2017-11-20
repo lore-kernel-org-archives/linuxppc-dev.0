@@ -1,36 +1,38 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=jxmh=cs=gmail.com=jwboyer@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ygZTM6Kr3zDrST
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 03:50:15 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAKGnSnR084441
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 11:50:12 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ebydq68f2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 11:50:12 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 20 Nov 2017 09:50:11 -0700
-Subject: Re: [PATCH V7 3/3] hotplug/cpu: Fix crash with memoryless nodes
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-References: <3445a368-d2d4-f908-5f0e-df7bbd659e07@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Mon, 20 Nov 2017 10:50:06 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ygbz26Mm2zDrRY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 04:57:34 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3ygbz227r7z8t4g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 04:57:34 +1100 (AEDT)
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3ygbz13cwFz9s7C
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2017 04:57:33 +1100 (AEDT)
+Received: by mail-qk0-x244.google.com with SMTP id j202so8505248qke.10
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2017 09:57:33 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <3445a368-d2d4-f908-5f0e-df7bbd659e07@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <08960615-15b4-1a14-a10b-9f0053c8163e@linux.vnet.ibm.com>
+Sender: jwboyer@gmail.com
+In-Reply-To: <1510107838-15181-11-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1510107838-15181-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1510107838-15181-11-git-send-email-sukadev@linux.vnet.ibm.com>
+From: Josh Boyer <jwboyer@fedoraproject.org>
+Date: Mon, 20 Nov 2017 12:57:30 -0500
+Message-ID: <CA+5PVA7k+6kWoD2moFVjM9X=B3fZJxGrM=C6EVw9UtjEYrk6fQ@mail.gmail.com>
+Subject: Re: [PATCH v3 10/18] powerpc/vas,
+ nx-842: Define and use chip_to_vas_id()
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>, hbabu@us.ibm.com,
+ nicholas.piggin@gmail.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+ "kernel-team@fedoraproject.org" <kernel-team@fedoraproject.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,83 +42,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2017 11:28 AM, Michael Bringmann wrote:
-> On powerpc systems with shared configurations of CPUs and memory and
-> memoryless nodes at boot, an event ordering problem was observed on
-> a SLES12 build platforms with the hot-add of CPUs to the memoryless
-> nodes.
-> 
-> * The most common error occurred when the memory SLAB driver attempted
->   to reference the memoryless node to which a CPU was being added
->   before the kernel had finished initializing all of the data structures
->   for the CPU and exited 'device_online' under DLPAR/hot-add.
-> 
->   Normally the memoryless node would be initialized through the call
->   path device_online ... arch_update_cpu_topology ... find_cpu_nid
->   ...  try_online_node.  This patch ensures that the powerpc node will
->   be initialized as early as possible, even if it was memoryless and
->   CPU-less at the point when we are trying to hot-add a new CPU to it.
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
-> Changes in V7:
->   -- Make function find_cpu_nid() externally visible/usable so that
->      it may be used from hotplug-cpu.c
-> ---
->  arch/powerpc/mm/numa.c                       |    3 ++-
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |    3 +++
->  2 files changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 163f4cc..d6d4f7c 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1310,7 +1310,7 @@ static long vphn_get_associativity(unsigned long cpu,
->  	return rc;
->  }
-> 
-> -static inline int find_cpu_nid(int cpu)
-> +int find_cpu_nid(int cpu)
->  {
->  	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
->  	int new_nid;
-> @@ -1343,6 +1343,7 @@ static inline int find_cpu_nid(int cpu)
->  #endif
->  	}
-> 
-> +	printk(KERN_INFO "%s:%d cpu %d nid %d\n", __FUNCTION__, __LINE__, cpu, new_nid);
+On Tue, Nov 7, 2017 at 9:23 PM, Sukadev Bhattiprolu
+<sukadev@linux.vnet.ibm.com> wrote:
+> Define a helper, chip_to_vas_id() to map a given chip id to corresponding
+> vas id.
+>
+> Normally, callers of vas_rx_win_open() and vas_tx_win_open() want the VAS
+> window to be on the same chip where the calling thread is executing. These
+> callers can pass in -1 for the VAS id.
+>
+> This interface will be useful if a thread running on one chip wants to open
+> a window on another chip (like the NX-842 driver does during start up).
+>
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-This seems like a more likely pr_debug statement.
+The Fedora kernel team seems to have hit an issue with this commit
+when trying to build a rawhide kernel that includes it.  The failure
+is:
 
->  	return new_nid;
->  }
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index a7d14aa7..df8c732 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -340,6 +340,8 @@ static void pseries_remove_processor(struct device_node *np)
->  	cpu_maps_update_done();
->  }
-> 
-> +extern int find_cpu_nid(int cpu);
+ERROR: "chip_to_vas_id" [drivers/crypto/nx/nx-compress-powernv.ko] undefined!
+make[1]: *** [scripts/Makefile.modpost:92: __modpost] Error 1
+make: *** [Makefile:1218: modules] Error 2
++ exit 1
+error: Bad exit status from /var/tmp/rpm-tmp.dmbw5D (%build)
+RPM build errors:
+    Bad exit status from /var/tmp/rpm-tmp.dmbw5D (%build)
+Child return code was: 1
+EXCEPTION: [Error()]
+
+> ---
+>  arch/powerpc/include/asm/vas.h       |  9 +++++++++
+>  arch/powerpc/platforms/powernv/vas.c | 11 +++++++++++
+>  drivers/crypto/nx/nx-842-powernv.c   | 18 +++---------------
+>  3 files changed, 23 insertions(+), 15 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+> index fd5963a..044748f 100644
+> --- a/arch/powerpc/include/asm/vas.h
+> +++ b/arch/powerpc/include/asm/vas.h
+> @@ -104,6 +104,15 @@ struct vas_tx_win_attr {
+>  };
+>
+>  /*
+> + * Helper to map a chip id to VAS id.
+> + * For POWER9, this is a 1:1 mapping. In the future this maybe a 1:N
+> + * mapping in which case, we will need to update this helper.
+> + *
+> + * Return the VAS id or -1 if no matching vasid is found.
+> + */
+> +int chip_to_vas_id(int chipid);
 > +
->  static int dlpar_online_cpu(struct device_node *dn)
+> +/*
+>   * Helper to initialize receive window attributes to defaults for an
+>   * NX window.
+>   */
+> diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
+> index abb7090..cd9a733 100644
+> --- a/arch/powerpc/platforms/powernv/vas.c
+> +++ b/arch/powerpc/platforms/powernv/vas.c
+> @@ -123,6 +123,17 @@ struct vas_instance *find_vas_instance(int vasid)
+>         return NULL;
+>  }
+>
+> +int chip_to_vas_id(int chipid)
+> +{
+> +       int cpu;
+> +
+> +       for_each_possible_cpu(cpu) {
+> +               if (cpu_to_chip_id(cpu) == chipid)
+> +                       return per_cpu(cpu_vas_id, cpu);
+> +       }
+> +       return -1;
+> +}
+> +
+
+Likely need an EXPORT_SYMBOL here?
+
+>  static int vas_probe(struct platform_device *pdev)
 >  {
->  	int rc = 0;
-> @@ -364,6 +366,7 @@ static int dlpar_online_cpu(struct device_node *dn)
->  					!= CPU_STATE_OFFLINE);
->  			cpu_maps_update_done();
->  			timed_topology_update(1);
-> +			find_cpu_nid(cpu);
+>         return init_vas_instance(pdev);
+> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+> index 874ddf5..eb221ed 100644
+> --- a/drivers/crypto/nx/nx-842-powernv.c
+> +++ b/drivers/crypto/nx/nx-842-powernv.c
 
-We don't use the returned node from this call, so I'm not sure why it gets
-called. Perhaps its the possible call to try_online_node() that may get called
-in find_cpu_nid(), if so perhpas naming the routine something slightly
-different would be good, like find_and_online_cpu_nid?
+Did anyone test this driver built as a module with this commit included?
 
--Nathan
->  			rc = device_online(get_cpu_device(cpu));
->  			if (rc)
->  				goto out;
-> 
+josh
+
+> @@ -847,24 +847,12 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
+>                 return -EINVAL;
+>         }
+>
+> -       for_each_compatible_node(dn, NULL, "ibm,power9-vas-x") {
+> -               if (of_get_ibm_chip_id(dn) == chip_id)
+> -                       break;
+> -       }
+> -
+> -       if (!dn) {
+> -               pr_err("Missing VAS device node\n");
+> +       vasid = chip_to_vas_id(chip_id);
+> +       if (vasid < 0) {
+> +               pr_err("Unable to map chip_id %d to vasid\n", chip_id);
+>                 return -EINVAL;
+>         }
+>
+> -       if (of_property_read_u32(dn, "ibm,vas-id", &vasid)) {
+> -               pr_err("Missing ibm,vas-id device property\n");
+> -               of_node_put(dn);
+> -               return -EINVAL;
+> -       }
+> -
+> -       of_node_put(dn);
+> -
+>         for_each_child_of_node(pn, dn) {
+>                 if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
+>                         ret = vas_cfg_coproc_info(dn, chip_id, vasid);
+> --
+> 2.7.4
+>
