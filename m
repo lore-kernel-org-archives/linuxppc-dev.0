@@ -1,43 +1,22 @@
-Return-Path: <srs0=kcoq=cs=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ygdf62LvKzDrLW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 06:13:02 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3ygdf5449wz8t37
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 06:13:01 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3ygdf45zZfz9s7C
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Nov 2017 06:13:00 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAKJApa5029033
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2017 14:12:58 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ec3bhmwex-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Nov 2017 14:12:57 -0500
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 20 Nov 2017 14:12:56 -0500
-Date: Mon, 20 Nov 2017 11:12:48 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Josh Boyer <jwboyer@fedoraproject.org>, hbabu@us.ibm.com,
- Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, kernel-team@fedoraproject.org
-Subject: [PATCH] powerpc/vas, export chip_to_vas_id()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ygk903PZjzDrMg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 09:36:34 +1100 (AEDT)
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Subject: [PATCH 2/2] ASoC: fsl_ssi: serialize AC'97 register access operations
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Message-ID: <9010cdad-4b05-d456-bf73-24cc48e38d69@maciej.szmigiero.name>
+Date: Mon, 20 Nov 2017 23:16:07 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20171120191247.GD17769@us.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,36 +26,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 958f8db089f4b89407fc4b89bccd3eaef585aa96 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Mon, 20 Nov 2017 12:53:15 -0600
-Subject: [PATCH 1/1] powerpc/vas, export chip_to_vas_id()
+AC'97 register access operations (both read and write) on SSI use a one,
+shared set of SSI registers for AC'97 register address and data.
+This means that only one such access is possible at a time and so all these
+operations need to be serialized.
 
-Export the symbol chip_to_vas_id() to fix a build failure when
-CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV=m.
+Since an AC'97 register access operation in this driver takes 100us+ let's
+use a mutex for this.
 
-Reported-by: Haren Myneni <hbabu@us.ibm.com>
-Reported-by: Josh Boyer <jwboyer@fedoraproject.org>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Use this opportunity to also change a default value returned from AC'97
+register read function from -1 to 0, since that's what AC'97 specs require
+to be returned when unknown / undefined registers are read.
+
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 ---
+ sound/soc/fsl/fsl_ssi.c | 26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
 
-This was broken by the patch https://lkml.org/lkml/2017/11/7/915.
-
----
- arch/powerpc/platforms/powernv/vas.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
-index c488621..aebbe95 100644
---- a/arch/powerpc/platforms/powernv/vas.c
-+++ b/arch/powerpc/platforms/powernv/vas.c
-@@ -135,6 +135,7 @@ int chip_to_vas_id(int chipid)
- 	}
- 	return -1;
- }
-+EXPORT_SYMBOL(chip_to_vas_id);
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index a71bb8391f61..9dea1b16de82 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -38,6 +38,7 @@
+ #include <linux/ctype.h>
+ #include <linux/device.h>
+ #include <linux/delay.h>
++#include <linux/mutex.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/of.h>
+@@ -265,6 +266,8 @@ struct fsl_ssi_private {
  
- static int vas_probe(struct platform_device *pdev)
+ 	u32 fifo_watermark;
+ 	u32 dma_maxburst;
++
++	struct mutex ac97_reg_lock;
+ };
+ 
+ /*
+@@ -1262,11 +1265,13 @@ static void fsl_ssi_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
+ 	if (reg > 0x7f)
+ 		return;
+ 
++	mutex_lock(&fsl_ac97_data->ac97_reg_lock);
++
+ 	ret = clk_prepare_enable(fsl_ac97_data->clk);
+ 	if (ret) {
+ 		pr_err("ac97 write clk_prepare_enable failed: %d\n",
+ 			ret);
+-		return;
++		goto ret_unlock;
+ 	}
+ 
+ 	lreg = reg <<  12;
+@@ -1280,6 +1285,9 @@ static void fsl_ssi_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
+ 	udelay(100);
+ 
+ 	clk_disable_unprepare(fsl_ac97_data->clk);
++
++ret_unlock:
++	mutex_unlock(&fsl_ac97_data->ac97_reg_lock);
+ }
+ 
+ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+@@ -1287,16 +1295,18 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
  {
--- 
-2.7.4
+ 	struct regmap *regs = fsl_ac97_data->regs;
+ 
+-	unsigned short val = -1;
++	unsigned short val = 0;
+ 	u32 reg_val;
+ 	unsigned int lreg;
+ 	int ret;
+ 
++	mutex_lock(&fsl_ac97_data->ac97_reg_lock);
++
+ 	ret = clk_prepare_enable(fsl_ac97_data->clk);
+ 	if (ret) {
+ 		pr_err("ac97 read clk_prepare_enable failed: %d\n",
+ 			ret);
+-		return -1;
++		goto ret_unlock;
+ 	}
+ 
+ 	lreg = (reg & 0x7f) <<  12;
+@@ -1311,6 +1321,8 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+ 
+ 	clk_disable_unprepare(fsl_ac97_data->clk);
+ 
++ret_unlock:
++	mutex_unlock(&fsl_ac97_data->ac97_reg_lock);
+ 	return val;
+ }
+ 
+@@ -1571,6 +1583,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (fsl_ssi_is_ac97(ssi_private)) {
++		mutex_init(&ssi_private->ac97_reg_lock);
+ 		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "could not set AC'97 ops\n");
+@@ -1665,6 +1678,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		snd_soc_set_ac97_ops(NULL);
+ 
+ error_ac97_ops:
++	if (fsl_ssi_is_ac97(ssi_private))
++		mutex_destroy(&ssi_private->ac97_reg_lock);
++
+ 	if (ssi_private->soc->imx)
+ 		fsl_ssi_imx_clean(pdev, ssi_private);
+ 
+@@ -1683,8 +1699,10 @@ static int fsl_ssi_remove(struct platform_device *pdev)
+ 	if (ssi_private->soc->imx)
+ 		fsl_ssi_imx_clean(pdev, ssi_private);
+ 
+-	if (fsl_ssi_is_ac97(ssi_private))
++	if (fsl_ssi_is_ac97(ssi_private)) {
+ 		snd_soc_set_ac97_ops(NULL);
++		mutex_destroy(&ssi_private->ac97_reg_lock);
++	}
+ 
+ 	return 0;
+ }
