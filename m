@@ -1,23 +1,23 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0070.outbound.protection.outlook.com [104.47.41.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhC240R8XzDrZ4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 04:17:14 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
- <york.sun@nxp.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
-Date: Tue, 21 Nov 2017 17:17:06 +0000
-Message-ID: <1511284624.4775.138.camel@infinera.com>
-References: <20170905115943.19919-1-joakim.tjernlund@infinera.com>
- <VI1PR04MB20787FDC28E53BF15DF8E3949A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-In-Reply-To: <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-15"
+Return-Path: <mroos@linux.ee>
+Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee
+ [IPv6:2001:bb8:2002:500:20f:1fff:fe04:1bbb])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3yhCH53SF5zDqyR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 04:28:28 +1100 (AEDT)
+Date: Tue, 21 Nov 2017 19:28:24 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Balbir Singh <bsingharora@gmail.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc: fix boot on BOOK3S_32 with
+ CONFIG_STRICT_KERNEL_RWX
+In-Reply-To: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
+Message-ID: <alpine.LRH.2.21.1711211821320.8798@math.ut.ee>
+References: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-09-06 at 19:19 +0000, Leo Li wrote:
-> > -----Original Message-----
-> > From: York Sun
-> > Sent: Wednesday, September 06, 2017 10:34 AM
-> > To: Leo Li <leoyang.li@nxp.com>
-> > Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-dev linu=
-xppc-
-> > dev <linuxppc-dev@lists.ozlabs.org>
-> > Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
-> >=20
-> > On 09/05/2017 04:59 AM, Joakim Tjernlund wrote:
-> > > get_user() had it args reversed causing NIP to be NULL:ed instead of
-> > > fixing up the PCI access.
-> > >=20
-> > > Note: This still hangs my P1020 Freescale CPU hard, but at least I ge=
-t
-> > > a NIP now.
-> > >=20
-> > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
-> > > ---
-> > >   arch/powerpc/sysdev/fsl_pci.c | 2 +-
-> > >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > >=20
-> > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
-> > > b/arch/powerpc/sysdev/fsl_pci.c index 7c8b779c329a..9e64c12dff6a
-> > > 100644
-> > > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > > @@ -996,7 +996,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs=
-)
-> > >   	if (is_in_pci_mem_space(addr)) {
-> > >   		if (user_mode(regs)) {
-> > >   			pagefault_disable();
-> > > -			ret =3D get_user(regs->nip, &inst);
-> > > +			ret =3D get_user(inst, (__u32 __user *)regs->nip);
-> > >   			pagefault_enable();
-> > >   		} else {
-> > >   			ret =3D probe_kernel_address(regs->nip, inst);
-> > >=20
-> >=20
-> > Leo,
-> >=20
-> > Can you take a look, or assign it to someone who is familiar with this =
-code?
->=20
-> Acked-by: Li Yang <leoyang.li@nxp.com>
->=20
-> Regards,
-> Leo
 
-I think this is forgotten, cannot se it in Linus tree.=
+> On powerpc32, patch_instruction() is called by apply_feature_fixups()
+> which is called from early_init()
+> 
+> There is the following note in front of early_init():
+>  * Note that the kernel may be running at an address which is different
+>  * from the address that it was linked at, so we must use RELOC/PTRRELOC
+>  * to access static data (including strings).  -- paulus
+> 
+> Therefore, slab_is_available() cannot be called yet, and
+> text_poke_area must be addressed with PTRRELOC()
+> 
+> Fixes: 37bc3e5fd764f ("powerpc/lib/code-patching: Use alternate map
+> for patch_instruction()")
+> Reported-by: Meelis Roos <mroos@linux.ee>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  v2: Added missing asm/setup.h
+
+It works - thank you! Tested on top of 4.14.0.
+
+For wider powerpc audience: this warning-like INFO bit is present 
+independently of theis patch. Is it dangerous for some configuration?
+
+INFO: Uncompressed kernel (size 0x5d6c54) overlaps the address of the wrapper(0x400000)
+INFO: Fixing the link_address of wrapper to (0x600000)
+
+
+-- 
+Meelis Roos (mroos@linux.ee)
