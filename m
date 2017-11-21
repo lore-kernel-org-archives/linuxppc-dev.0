@@ -1,25 +1,23 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0070.outbound.protection.outlook.com [104.47.41.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yh7kT0jyQzDr0n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:48:32 +1100 (AEDT)
-Message-ID: <1511275666.14446.1.camel@oracle.com>
-Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
-From: Khalid Aziz <khalid.aziz@oracle.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>, steven.sistare@oracle.com,
- daniel.m.jordan@oracle.com, benh@kernel.crashing.org, paulus@samba.org,
- akpm@linux-foundation.org, kirill.shutemov@linux.intel.com,
- arbab@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
- heiko.carstens@de.ibm.com, x86@kernel.org,
- linux-kernel@vger.kernel.org, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, mhocko@suse.com, linux-mm@kvack.org,
- linux-s390@vger.kernel.org, mgorman@techsingularity.net
-Date: Tue, 21 Nov 2017 07:47:46 -0700
-In-Reply-To: <20171117014601.31606-1-pasha.tatashin@oracle.com>
-References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhC240R8XzDrZ4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 04:17:14 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "york.sun@nxp.com"
+ <york.sun@nxp.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+Date: Tue, 21 Nov 2017 17:17:06 +0000
+Message-ID: <1511284624.4775.138.camel@infinera.com>
+References: <20170905115943.19919-1-joakim.tjernlund@infinera.com>
+ <VI1PR04MB20787FDC28E53BF15DF8E3949A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+In-Reply-To: <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-11-16 at 20:46 -0500, Pavel Tatashin wrote:
-> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
-> as all the page initialization code is in common code.
+On Wed, 2017-09-06 at 19:19 +0000, Leo Li wrote:
+> > -----Original Message-----
+> > From: York Sun
+> > Sent: Wednesday, September 06, 2017 10:34 AM
+> > To: Leo Li <leoyang.li@nxp.com>
+> > Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-dev linu=
+xppc-
+> > dev <linuxppc-dev@lists.ozlabs.org>
+> > Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+> >=20
+> > On 09/05/2017 04:59 AM, Joakim Tjernlund wrote:
+> > > get_user() had it args reversed causing NIP to be NULL:ed instead of
+> > > fixing up the PCI access.
+> > >=20
+> > > Note: This still hangs my P1020 Freescale CPU hard, but at least I ge=
+t
+> > > a NIP now.
+> > >=20
+> > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+> > > ---
+> > >   arch/powerpc/sysdev/fsl_pci.c | 2 +-
+> > >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > >=20
+> > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
+> > > b/arch/powerpc/sysdev/fsl_pci.c index 7c8b779c329a..9e64c12dff6a
+> > > 100644
+> > > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > > @@ -996,7 +996,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs=
+)
+> > >   	if (is_in_pci_mem_space(addr)) {
+> > >   		if (user_mode(regs)) {
+> > >   			pagefault_disable();
+> > > -			ret =3D get_user(regs->nip, &inst);
+> > > +			ret =3D get_user(inst, (__u32 __user *)regs->nip);
+> > >   			pagefault_enable();
+> > >   		} else {
+> > >   			ret =3D probe_kernel_address(regs->nip, inst);
+> > >=20
+> >=20
+> > Leo,
+> >=20
+> > Can you take a look, or assign it to someone who is familiar with this =
+code?
 >=20
-> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization
-> code
-> does not really use hotplug memory functionality. So, we can remove
-> this
-> requirement as well.
+> Acked-by: Li Yang <leoyang.li@nxp.com>
 >=20
-> This patch allows to use deferred struct page initialization on all
-> platforms with memblock allocator.
->=20
-> Tested on x86, arm64, and sparc. Also, verified that code compiles on
-> PPC with CONFIG_MEMORY_HOTPLUG disabled.
->=20
-> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
-> ---
-> =C2=A0arch/powerpc/Kconfig | 1 -
-> =C2=A0arch/s390/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0| 1 -
-> =C2=A0arch/x86/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 1 -
-> =C2=A0mm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0| 7 +------
-> =C2=A04 files changed, 1 insertion(+), 9 deletions(-)
->=20
->=20
+> Regards,
+> Leo
 
-Looks reasonable to me.
-
-Reviewed-by: Khalid Aziz <khalid.aziz@oracle.com>
+I think this is forgotten, cannot se it in Linus tree.=
