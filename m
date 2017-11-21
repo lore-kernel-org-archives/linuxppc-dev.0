@@ -1,27 +1,31 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x22f.google.com (mail-ua0-x22f.google.com
+ [IPv6:2607:f8b0:400c:c08::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ygpWT64RgzDqm5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 12:52:52 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id x7so8703162pfa.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 17:52:52 -0800 (PST)
-Date: Mon, 20 Nov 2017 17:52:48 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- alsa-devel@alsa-project.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [alsa-devel] [PATCH 2/2] ASoC: fsl_ssi: serialize AC'97 register
- access operations
-Message-ID: <20171121015247.GE14136@Asurada-Nvidia>
-References: <9010cdad-4b05-d456-bf73-24cc48e38d69@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ygqJs1ykmzDrLx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 13:28:45 +1100 (AEDT)
+Received: by mail-ua0-x22f.google.com with SMTP id s28so7288003uag.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 18:28:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9010cdad-4b05-d456-bf73-24cc48e38d69@maciej.szmigiero.name>
+In-Reply-To: <20171118153602.Horde.MI0OsGbVxajNC565sIjEmw4@messagerie.c-s.fr>
+References: <20171116202839.Horde.gP0ycbGMQpT2Ragrd4TEog1@messagerie.c-s.fr>
+ <alpine.LRH.2.21.1711162146260.3639@math.ut.ee>
+ <20171117090609.Horde.DBRyYUc0XYQixQKoV-_Luw1@messagerie.c-s.fr>
+ <alpine.LRH.2.21.1711171606540.28670@math.ut.ee>
+ <20171117161249.Horde.si1lm_DoTH5_kKAdDjlB8Q5@messagerie.c-s.fr>
+ <alpine.LRH.2.21.1711171727120.29817@math.ut.ee>
+ <20171118153602.Horde.MI0OsGbVxajNC565sIjEmw4@messagerie.c-s.fr>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Tue, 21 Nov 2017 13:28:41 +1100
+Message-ID: <CAKTCnz=sQAhOqR0SzNt6SSqGsAz5=uieDdZLfL37dYOms99ODg@mail.gmail.com>
+Subject: Re: STRICT_KERNEL_RWX on PPC32 is broken on PowerMac G4
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: Meelis Roos <mroos@linux.ee>, Michael Ellerman <mpe@ellerman.id.au>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +35,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 20, 2017 at 11:16:07PM +0100, Maciej S. Szmigiero wrote:
-> AC'97 register access operations (both read and write) on SSI use a one,
-> shared set of SSI registers for AC'97 register address and data.
-> This means that only one such access is possible at a time and so all these
-> operations need to be serialized.
-> 
-> Since an AC'97 register access operation in this driver takes 100us+ let's
-> use a mutex for this.
-> 
-> Use this opportunity to also change a default value returned from AC'97
-> register read function from -1 to 0, since that's what AC'97 specs require
-> to be returned when unknown / undefined registers are read.
-> 
-> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+On Sun, Nov 19, 2017 at 1:36 AM, LEROY Christophe
+<christophe.leroy@c-s.fr> wrote:
+> Meelis Roos <mroos@linux.ee> a =C3=A9crit :
+>
+>>> > > How early does it hang ? Any oops or trace ?
+>>> >
+>>> > Very early - instead oif kernel emssages, I see some repeated gibberi=
+sh
+>>> > of some characteers, and the background turns white.
+>>> > I am booting from yaboot, background is normally black.
+>>>
+>>> Ok, could you try by replacing #ifdef CONFIG_STRICT_KERNEL_RWX by #if 0
+>>> in arch/powerpc/lib/code-patching.c
+>>
+>>
+>> With this change and CONFIG_STRICT_KERNEL_RWX=3Dy, it still boots.
+>>
+>> BTW, I get these warnings (sorry for the word wrap from screen paste) -
+>> may they be related or rather not?
+>>
+>>   WRAP    arch/powerpc/boot/zImage.pmac
+>>   WRAP    arch/powerpc/boot/zImage.coff
+>>   WRAP    arch/powerpc/boot/zImage.miboot
+>> INFO: Uncompressed kernel (size 0x5d4c3c) overlaps the address of the
+>> wrapper(0x400000)
+>> INFO: Fixing the link_address of wrapper to (0x600000)
+>>
+>
+> Then i believe there is something wrong with commit
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commi=
+t/?h=3Dnext-20171115&id=3D37bc3e5fd764fb258ff4fcbb90b6d1b67fb466c1
+>
+> Balbir, do you have any idea ?
+>
 
->  static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
-> @@ -1287,16 +1295,18 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
->  {
->  	struct regmap *regs = fsl_ac97_data->regs;
->  
-> -	unsigned short val = -1;
-> +	unsigned short val = 0;
->  	u32 reg_val;
->  	unsigned int lreg;
->  	int ret;
->  
-> +	mutex_lock(&fsl_ac97_data->ac97_reg_lock);
-> +
->  	ret = clk_prepare_enable(fsl_ac97_data->clk);
->  	if (ret) {
->  		pr_err("ac97 read clk_prepare_enable failed: %d\n",
->  			ret);
-> -		return -1;
-> +		goto ret_unlock;
+Hmm.. interesting, so nobats works, but code-patching has issues? Any
+chance you can boot with xmon=3Don on the command line
+when you drop into the xmon> prompt, type dl to get the kernel log.
 
-It will return val (== 0) in this case. Will this be correctly
-handled by callers? I find sound/ac97/bus.c checks if ret < 0
-for ops->read().
-
-So it might be better to add "val = ret;" before goto? Or use
-val instead of ret directly?
-
->  	}
->  
->  	lreg = (reg & 0x7f) <<  12;
-> @@ -1311,6 +1321,8 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
->  
->  	clk_disable_unprepare(fsl_ac97_data->clk);
->  
-> +ret_unlock:
-> +	mutex_unlock(&fsl_ac97_data->ac97_reg_lock);
->  	return val;
->  }
+Balbir Singh.
