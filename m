@@ -2,8 +2,8 @@ Return-Path: <mathieu.desnoyers@efficios.com>
 Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yh75C0GMMzDrDh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:19:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yh75C58CJzDrFk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:19:43 +1100 (AEDT)
 From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 To: Peter Zijlstra <peterz@infradead.org>,
  "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
@@ -25,10 +25,9 @@ Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH for 4.15 08/22] powerpc: Wire up restartable sequences
- system call
-Date: Tue, 21 Nov 2017 09:18:46 -0500
-Message-Id: <20171121141900.18471-9-mathieu.desnoyers@efficios.com>
+Subject: [RFC PATCH for 4.15 12/22] powerpc: Wire up cpu_opv system call
+Date: Tue, 21 Nov 2017 09:18:50 -0500
+Message-Id: <20171121141900.18471-13-mathieu.desnoyers@efficios.com>
 In-Reply-To: <20171121141900.18471-1-mathieu.desnoyers@efficios.com>
 References: <20171121141900.18471-1-mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,20 +39,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Boqun Feng <boqun.feng@gmail.com>
-
-Wire up the rseq system call on powerpc.
-
-This provides an ABI improving the speed of a user-space getcpu
-operation on powerpc by skipping the getcpu system call on the fast
-path, as well as improving the speed of user-space operations on per-cpu
-data compared to using load-reservation/store-conditional atomics.
-
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: Paul Mackerras <paulus@samba.org>
 CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Boqun Feng <boqun.feng@gmail.com>
 CC: Peter Zijlstra <peterz@infradead.org>
 CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 CC: linuxppc-dev@lists.ozlabs.org
@@ -64,36 +54,36 @@ CC: linuxppc-dev@lists.ozlabs.org
  3 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 449912f057f6..964321a5799c 100644
+index 964321a5799c..f9cdb896fbaa 100644
 --- a/arch/powerpc/include/asm/systbl.h
 +++ b/arch/powerpc/include/asm/systbl.h
-@@ -389,3 +389,4 @@ COMPAT_SYS_SPU(preadv2)
- COMPAT_SYS_SPU(pwritev2)
+@@ -390,3 +390,4 @@ COMPAT_SYS_SPU(pwritev2)
  SYSCALL(kexec_file_load)
  SYSCALL(statx)
-+SYSCALL(rseq)
+ SYSCALL(rseq)
++SYSCALL(cpu_opv)
 diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 9ba11dbcaca9..e76bd5601ea4 100644
+index e76bd5601ea4..48f80f452e31 100644
 --- a/arch/powerpc/include/asm/unistd.h
 +++ b/arch/powerpc/include/asm/unistd.h
 @@ -12,7 +12,7 @@
  #include <uapi/asm/unistd.h>
  
  
--#define NR_syscalls		384
-+#define NR_syscalls		385
+-#define NR_syscalls		385
++#define NR_syscalls		386
  
  #define __NR__exit __NR_exit
  
 diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index df8684f31919..b1980fcd56d5 100644
+index b1980fcd56d5..972a7d68c143 100644
 --- a/arch/powerpc/include/uapi/asm/unistd.h
 +++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -395,5 +395,6 @@
- #define __NR_pwritev2		381
+@@ -396,5 +396,6 @@
  #define __NR_kexec_file_load	382
  #define __NR_statx		383
-+#define __NR_rseq		384
+ #define __NR_rseq		384
++#define __NR_cpu_opv		385
  
  #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
