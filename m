@@ -1,27 +1,25 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ygml03ZT5zDrMg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 11:32:44 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id i15so8551523pfa.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Nov 2017 16:32:44 -0800 (PST)
-Date: Mon, 20 Nov 2017 16:32:40 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ygmzb0hjMzDr5m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 11:43:38 +1100 (AEDT)
+Subject: Re: [alsa-devel] [PATCH 1/2] ASoC: fsl_ssi: AC'97 ops need regmap,
+ clock and cleaning up on failure
+To: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
  alsa-devel@alsa-project.org, linux-kernel <linux-kernel@vger.kernel.org>,
  Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
  Mark Brown <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [alsa-devel] [PATCH 1/2] ASoC: fsl_ssi: AC'97 ops need regmap,
- clock and cleaning up on failure
-Message-ID: <20171121003239.GC14136@Asurada-Nvidia>
 References: <ecfcedaa-f0e9-ec1f-82c5-f0d319068a5d@maciej.szmigiero.name>
+ <20171121003239.GC14136@Asurada-Nvidia>
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Message-ID: <52c327d2-9be2-dd7a-68d4-41d304077309@maciej.szmigiero.name>
+Date: Tue, 21 Nov 2017 01:43:33 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ecfcedaa-f0e9-ec1f-82c5-f0d319068a5d@maciej.szmigiero.name>
+In-Reply-To: <20171121003239.GC14136@Asurada-Nvidia>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 20, 2017 at 11:14:55PM +0100, Maciej S. Szmigiero wrote:
-> AC'97 ops (register read / write) need SSI regmap and clock, so they have
-> to be set after them.
+On 21.11.2017 01:32, Nicolin Chen wrote:
+> On Mon, Nov 20, 2017 at 11:14:55PM +0100, Maciej S. Szmigiero wrote:
+(..)
+>> @@ -1460,12 +1460,6 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+>>  				sizeof(fsl_ssi_ac97_dai));
+>>  
+>>  		fsl_ac97_data = ssi_private;
 > 
-> We also need to set these ops back to NULL if we fail the probe.
-> 
-> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+> By the way, is there any better way to register the ops for AC97
+> while we could pass the ssi_private so as to remove the global
+> fsl_ac97_data?
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+This might be possible (if SSI private data is provided to AC'97 codec in
+codecs/ac97.c in platform device data which then is modified to make use
+of it), but currently ASoC AC'97 only supports one controller per system
+so for a real gain this limitation would have to be addressed first.
 
-> ---
->  sound/soc/fsl/fsl_ssi.c | 18 ++++++++++++------
->  1 file changed, 12 insertions(+), 6 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index dad80b4b0cfc..a71bb8391f61 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -1460,12 +1460,6 @@ static int fsl_ssi_probe(struct platform_device *pdev)
->  				sizeof(fsl_ssi_ac97_dai));
->  
->  		fsl_ac97_data = ssi_private;
-
-By the way, is there any better way to register the ops for AC97
-while we could pass the ssi_private so as to remove the global
-fsl_ac97_data?
+Maciej
