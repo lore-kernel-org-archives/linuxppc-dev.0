@@ -2,17 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yh7FZ1M01zDrZr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:26:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yh7HF0jldzDrcW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:28:24 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 Subject: [PATCH v2] powerpc: fix boot on BOOK3S_32 with
  CONFIG_STRICT_KERNEL_RWX
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
+ Scott Wood <oss@buserror.net>, Meelis Roos <mroos@linux.ee>,
+ Balbir Singh <bsingharora@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20171121142647.5A79A6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
-Date: Tue, 21 Nov 2017 15:26:47 +0100 (CET)
+Message-Id: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
+Date: Tue, 21 Nov 2017 15:28:20 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
