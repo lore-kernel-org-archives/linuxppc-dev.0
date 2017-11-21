@@ -1,25 +1,23 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhMYR3R7wzDqyN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 10:41:31 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id r68so4863170pfe.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Nov 2017 15:41:31 -0800 (PST)
-Message-ID: <1511307683.7121.5.camel@gmail.com>
-Subject: Re: [PATCH 2/2] selftests/powerpc: Calculate spin time in
- tm-unavailable
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: leitao@debian.org
-Date: Wed, 22 Nov 2017 10:41:23 +1100
-In-Reply-To: <5A142ABD.9060705@linux.vnet.ibm.com>
-References: <20171121071720.24619-1-cyrilbur@gmail.com>
- <20171121071720.24619-2-cyrilbur@gmail.com>
- <5A142ABD.9060705@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhMrb5D21zDr23
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 10:54:36 +1100 (AEDT)
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Subject: [PATCH v2 1/2] ASoC: fsl_ssi: only enable proper channel slots in
+ AC'97 mode
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Message-ID: <5fafe9ba-ef40-66ef-80ca-b8333e10774e@maciej.szmigiero.name>
+Date: Wed, 22 Nov 2017 00:54:26 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,273 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-11-21 at 11:31 -0200, Gustavo Romero wrote:
-> Hi Cyril,
-> 
-> On 21-11-2017 05:17, Cyril Bur wrote:
-> > Currently the tm-unavailable test spins for a fixed amount of time in
-> > an attempt to ensure the FPU/VMX/VSX facilities are off. This value was
-> > experimentally tested to be long enough.
-> > 
-> > Problems may arise if kernel heuristics were to change. This patch
-> > should future proof this test.
-> 
-> I've tried it on a VM running on '4.14.0-rc7' and apparently it gets stuck
-> pretty slow on calibration, since it ran ~7m without finding the correct value
-> (before it would take about 3m), like:
-> 
-> $ time ./tm-unavailable
-> Testing required spin time required for facility unavailable...
-> 	Trying 0x18000000...
-> 	Trying 0x19000000...
-> 	Trying 0x1a000000...
-> ...
-> 	Trying 0xfd000000... ^C
-> 
-> real	7m15.304s
-> user	7m15.291s
-> sys	0m0.004s
-> 
+We need to make sure that only proper channel slots (in SACCST register)
+are enabled at playback start time since some AC'97 CODECs (like VT1613 on
+UDOO board) were observed requesting via SLOTREQ spurious ones just after
+an AC'97 link is started but before the CODEC is configured by its driver.
+When a bit for some channel slot is set in a SLOTREQ request then SSI sets
+the relevant bit in SACCST automatically, which then 'sticks' until it is
+manually unset.
+The SACCST register is not writable directly, we have to use SACCDIS and
+SACCEN registers to configure it instead (these aren't normal registers:
+writing a '1' bit at some position in SACCEN sets the relevant bit in
+SACCST; SACCDIS operates in a similar way but allows unsetting bits in
+SACCST).
 
-Interesting! I didn't test in a VM. I guess hypervisor switching
-completely changes the heuristic. Ok I'll have to rethink.
+Theoretically, this should be necessary only for the very first playback
+but since some CODECs are so untrustworthy and extra channel slots enabled
+mean ruined playback let's play safe here and make sure that no extra
+slots are enabled in SACCST every time a playback is started.
 
-Maybe the increase should be a multiplier to get to a good state more
-quickly.
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+---
+Changes from v1: Split out this part from
+"fsl_ssi: call _fsl_ssi_set_dai_fmt() just once in AC'97 mode" commit,
+describe the problem and its solution better both in the commit message and
+in the code, move the SACCST setup code into a separate function and call
+it from TX config instead of doing it from trigger handler function.
 
-> Trying it on a BM running on '4.13.0-rc2' it indeed found an initial value for
-> the timeout but for some reason the value was not sufficient for the subsequent
-> tests and the value raised more and more  (I understand that it's an expected
-> behavior tho). Even tho it runs about half the time (~3m, good!) but I think the
-> output could be little bit less "overloaded":
-> 
+ sound/soc/fsl/fsl_ssi.c | 52 +++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 46 insertions(+), 6 deletions(-)
 
-Happy to put some (or all) of that output inside if (DEBUG)
-
-> $ ./tm-unavailable
-> Testing required spin time required for facility unavailable...
-> 	Trying 0x18000000...
-> 	Trying 0x19000000...
-> 	Trying 0x1a000000...
-> 	Trying 0x1b000000...
-> 	Trying 0x1c000000...
-> 	Trying 0x1d000000...
-> 	Trying 0x1e000000...
-> 	Trying 0x1f000000... 1, 2, 3
-> Spin time required for a reliable facility unavailable TM failure: 0x1f000000
-> Checking if FP/VEC registers are sane after a FP unavailable exception...
-> If MSR.FP=0 MSR.VEC=0:
-> 	Expecting the transaction to fail, but it didn't
-> 	FP ok VEC ok
-> Adjusting the facility unavailable spin time...
-> 	Trying 0x21000000... 1, 2, 3
-> Now using 0x21000000
-> If MSR.FP=0 MSR.VEC=0:
-> 	Expecting the transaction to fail, but it didn't
-> 	FP ok VEC ok
-> Adjusting the facility unavailable spin time...
-> 	Trying 0x23000000... 1, 2, 3
-> Now using 0x23000000
-> If MSR.FP=1 MSR.VEC=0: FP ok VEC ok
-> If MSR.FP=0 MSR.VEC=1:
-> 	Expecting the transaction to fail, but it didn't
-> 	FP ok VEC ok
-> Now using 0x47000000
-> ...
-> 
-> So, putting output question aside, are you getting a different result on VM,
-> i.e. did you notice if it got stuck/pretty slow?
-> 
-> 
-> Regards,
-> Gustavo
-> 
-> > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> > ---
-> > Because the test no longer needs to use such a conservative time for
-> > the busy wait, it actually runs much faster.
-> > 
-> > 
-> >  .../testing/selftests/powerpc/tm/tm-unavailable.c  | 92 ++++++++++++++++++++--
-> >  1 file changed, 84 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/tools/testing/selftests/powerpc/tm/tm-unavailable.c b/tools/testing/selftests/powerpc/tm/tm-unavailable.c
-> > index e6a0fad2bfd0..54aeb7a7fbb1 100644
-> > --- a/tools/testing/selftests/powerpc/tm/tm-unavailable.c
-> > +++ b/tools/testing/selftests/powerpc/tm/tm-unavailable.c
-> > @@ -33,6 +33,11 @@
-> >  #define VEC_UNA_EXCEPTION	1
-> >  #define VSX_UNA_EXCEPTION	2
-> > 
-> > +#define ERR_RETRY 1
-> > +#define ERR_ADJUST 2
-> > +
-> > +#define COUNTER_INCREMENT (0x1000000)
-> > +
-> >  #define NUM_EXCEPTIONS		3
-> >  #define err_at_line(status, errnum, format, ...) \
-> >  	error_at_line(status, errnum,  __FILE__, __LINE__, format ##__VA_ARGS__)
-> > @@ -45,6 +50,7 @@ struct Flags {
-> >  	int touch_vec;
-> >  	int result;
-> >  	int exception;
-> > +	uint64_t counter;
-> >  } flags;
-> > 
-> >  bool expecting_failure(void)
-> > @@ -87,14 +93,12 @@ void *ping(void *input)
-> >  	 * Expected values for vs0 and vs32 after a TM failure. They must never
-> >  	 * change, otherwise they got corrupted.
-> >  	 */
-> > +	long rc = 0;
-> >  	uint64_t high_vs0 = 0x5555555555555555;
-> >  	uint64_t low_vs0 = 0xffffffffffffffff;
-> >  	uint64_t high_vs32 = 0x5555555555555555;
-> >  	uint64_t low_vs32 = 0xffffffffffffffff;
-> > 
-> > -	/* Counter for busy wait */
-> > -	uint64_t counter = 0x1ff000000;
-> > -
-> >  	/*
-> >  	 * Variable to keep a copy of CR register content taken just after we
-> >  	 * leave the transactional state.
-> > @@ -217,7 +221,7 @@ void *ping(void *input)
-> >  		  [ex_fp]     "i"  (FP_UNA_EXCEPTION),
-> >  		  [ex_vec]    "i"  (VEC_UNA_EXCEPTION),
-> >  		  [ex_vsx]    "i"  (VSX_UNA_EXCEPTION),
-> > -		  [counter]   "r"  (counter)
-> > +		  [counter]   "r"  (flags.counter)
-> > 
-> >  		: "cr0", "ctr", "v10", "vs0", "vs10", "vs3", "vs32", "vs33",
-> >  		  "vs34", "fr10"
-> > @@ -232,14 +236,14 @@ void *ping(void *input)
-> >  	if (expecting_failure() && !is_failure(cr_)) {
-> >  		printf("\n\tExpecting the transaction to fail, %s",
-> >  			"but it didn't\n\t");
-> > -		flags.result++;
-> > +		rc = ERR_ADJUST;
-> >  	}
-> > 
-> >  	/* Check if we were not expecting a failure and a it occurred. */
-> >  	if (!expecting_failure() && is_failure(cr_)) {
-> >  		printf("\n\tUnexpected transaction failure 0x%02lx\n\t",
-> >  			failure_code());
-> > -		return (void *) -1;
-> > +		rc = ERR_RETRY;
-> >  	}
-> > 
-> >  	/*
-> > @@ -249,7 +253,7 @@ void *ping(void *input)
-> >  	if (is_failure(cr_) && !failure_is_unavailable()) {
-> >  		printf("\n\tUnexpected failure cause 0x%02lx\n\t",
-> >  			failure_code());
-> > -		return (void *) -1;
-> > +		rc = ERR_RETRY;
-> >  	}
-> > 
-> >  	/* 0x4 is a success and 0xa is a fail. See comment in is_failure(). */
-> > @@ -276,7 +280,7 @@ void *ping(void *input)
-> > 
-> >  	putchar('\n');
-> > 
-> > -	return NULL;
-> > +	return (void *)rc;
-> >  }
-> > 
-> >  /* Thread to force context switch */
-> > @@ -291,6 +295,55 @@ void *pong(void *not_used)
-> >  		sched_yield();
-> >  }
-> > 
-> > +static void flags_set_counter(struct Flags *flags)
-> > +{
-> > +	uint64_t cr_;
-> > +	int count = 0;
-> > +
-> > +	do {
-> > +		if (count == 0)
-> > +			printf("\tTrying 0x%08" PRIx64 "... ", flags->counter);
-> > +		else
-> > +			printf("%d, ", count);
-> > +		fflush(stdout);
-> > +		asm (
-> > +			/*
-> > +			 * Wait an amount of context switches so
-> > +			 * load_fp and load_vec overflow and MSR.FP,
-> > +			 * MSR.VEC, and MSR.VSX become zero (off).
-> > +			 */
-> > +			"	mtctr		%[counter]		;"
-> > +
-> > +			/* Decrement CTR branch if CTR non zero. */
-> > +			"1:	bdnz 1b					;"
-> > +			"	tbegin.					;"
-> > +			"	beq		tfail			;"
-> > +
-> > +			/* Get a facility unavailable */
-> > +			"	fadd		10, 10, 10		;"
-> > +			"	tend.                                   ;"
-> > +			"tfail:                                         ;"
-> > +
-> > +			/*
-> > +			 * Give CR back to C so that it can check what
-> > +			 * happened.
-> > +			 */
-> > +			"	mfcr		%[cr_]			;"
-> > +
-> > +			: [cr_]       "+r" (cr_)
-> > +			: [counter]   "r"  (flags->counter)
-> > +			: "cr0", "ctr", "fr10"
-> > +			);
-> > +		count++;
-> > +		if (!is_failure(cr_) || !failure_is_unavailable()) {
-> > +			count = 0;
-> > +			flags->counter += COUNTER_INCREMENT;
-> > +			putchar('\n');
-> > +		}
-> > +	} while (count < 3);
-> > +	printf("3\n");
-> > +}
-> > +
-> >  /* Function that creates a thread and launches the "ping" task. */
-> >  void test_fp_vec(int fp, int vec, pthread_attr_t *attr)
-> >  {
-> > @@ -322,6 +375,17 @@ void test_fp_vec(int fp, int vec, pthread_attr_t *attr)
-> >  		if (rc)
-> >  			pr_err(rc, "pthread_join");
-> > 
-> > +		if ((long)ret_value == ERR_ADJUST) {
-> > +			printf("Adjusting the facility unavailable spin time...\n");
-> > +			/*
-> > +			 * Be a bit more agressive just now - we'd
-> > +			 * really like to have it work
-> > +			 */
-> > +			flags.counter += (2 * COUNTER_INCREMENT);
-> > +			flags_set_counter(&flags);
-> > +			printf("Now using 0x%08" PRIx64 "\n", flags.counter);
-> > +		}
-> > +
-> >  		retries--;
-> >  	} while (ret_value != NULL && retries);
-> > 
-> > @@ -340,6 +404,18 @@ int main(int argc, char **argv)
-> >  	pthread_attr_t attr;
-> >  	cpu_set_t cpuset;
-> > 
-> > +	/*
-> > +	 * Default counter for busy wait.
-> > +	 * 0x18000000 is a good baseline determined by experimentation
-> > +	 * on a POWER8
-> > +	 * The autodetecting code will bump it up if it too low.
-> > +	 */
-> > +	flags.counter = 0x18000000;
-> > +
-> > +	printf("Testing required spin time required for facility unavailable...\n");
-> > +	flags_set_counter(&flags);
-> > +	printf("Spin time required for a reliable facility unavailable TM failure: 0x%" PRIx64 "\n",
-> > +			flags.counter);
-> >  	/* Set only CPU 0 in the mask. Both threads will be bound to CPU 0. */
-> >  	CPU_ZERO(&cpuset);
-> >  	CPU_SET(0, &cpuset);
-> > 
-> 
-> 
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 48bb850a34d9..375aaaf6080d 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -574,8 +574,54 @@ static void fsl_ssi_rx_config(struct fsl_ssi_private *ssi_private, bool enable)
+ 	fsl_ssi_config(ssi_private, enable, &ssi_private->rxtx_reg_val.rx);
+ }
+ 
++static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi_private *ssi_private)
++{
++	struct regmap *regs = ssi_private->regs;
++
++	/* no SACC{ST,EN,DIS} regs on imx21-class SSI */
++	if (!ssi_private->soc->imx21regs) {
++		/*
++		 * Note that these below aren't just normal registers.
++		 * They are a way to disable or enable bits in SACCST
++		 * register:
++		 * - writing a '1' bit at some position in SACCEN sets the
++		 * relevant bit in SACCST,
++		 * - writing a '1' bit at some position in SACCDIS unsets
++		 * the relevant bit in SACCST register.
++		 *
++		 * The two writes below first disable all channels slots,
++		 * then enable just slots 3 & 4 ("PCM Playback Left Channel"
++		 * and "PCM Playback Right Channel").
++		 */
++		regmap_write(regs, CCSR_SSI_SACCDIS, 0xff);
++		regmap_write(regs, CCSR_SSI_SACCEN, 0x300);
++	}
++}
++
+ static void fsl_ssi_tx_config(struct fsl_ssi_private *ssi_private, bool enable)
+ {
++	/*
++	 * Why are we setting up SACCST everytime we are starting a
++	 * playback?
++	 * Some CODECs (like VT1613 CODEC on UDOO board) like to
++	 * (sometimes) set extra bits in their SLOTREQ requests.
++	 * When a bit is set in a SLOTREQ request then SSI sets the
++	 * relevant bit in SACCST automatically (it is enough if a bit was
++	 * set in a SLOTREQ just once, bits in SACCST are 'sticky').
++	 * If an extra slot gets enabled that's a disaster for playback
++	 * because some of normal left or right channel samples are
++	 * redirected instead to this extra slot.
++	 *
++	 * A workaround implemented in fsl-asoc-card of setting an
++	 * appropriate CODEC register so that slots 3 & 4 (the normal
++	 * stereo playback slots) are used for S/PDIF seems to mostly fix
++	 * this issue on the UDOO board but since this CODEC is so
++	 * untrustworthy let's play safe here and make sure that no extra
++	 * slots are enabled every time a playback is started.
++	 */
++	if (enable && fsl_ssi_is_ac97(ssi_private))
++		fsl_ssi_tx_ac97_saccst_setup(ssi_private);
++
+ 	fsl_ssi_config(ssi_private, enable, &ssi_private->rxtx_reg_val.tx);
+ }
+ 
+@@ -630,12 +676,6 @@ static void fsl_ssi_setup_ac97(struct fsl_ssi_private *ssi_private)
+ 	regmap_write(regs, CCSR_SSI_SACNT,
+ 			CCSR_SSI_SACNT_AC97EN | CCSR_SSI_SACNT_FV);
+ 
+-	/* no SACC{ST,EN,DIS} regs on imx21-class SSI */
+-	if (!ssi_private->soc->imx21regs) {
+-		regmap_write(regs, CCSR_SSI_SACCDIS, 0xff);
+-		regmap_write(regs, CCSR_SSI_SACCEN, 0x300);
+-	}
+-
+ 	/*
+ 	 * Enable SSI, Transmit and Receive. AC97 has to communicate with the
+ 	 * codec before a stream is started.
