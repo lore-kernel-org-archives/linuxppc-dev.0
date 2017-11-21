@@ -1,19 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yh7HF0jldzDrcW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:28:24 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc: fix boot on BOOK3S_32 with
- CONFIG_STRICT_KERNEL_RWX
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Meelis Roos <mroos@linux.ee>,
- Balbir Singh <bsingharora@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
-Date: Tue, 21 Nov 2017 15:28:20 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yh7kT0jyQzDr0n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 01:48:32 +1100 (AEDT)
+Message-ID: <1511275666.14446.1.camel@oracle.com>
+Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
+From: Khalid Aziz <khalid.aziz@oracle.com>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, benh@kernel.crashing.org, paulus@samba.org,
+ akpm@linux-foundation.org, kirill.shutemov@linux.intel.com,
+ arbab@linux.vnet.ibm.com, schwidefsky@de.ibm.com,
+ heiko.carstens@de.ibm.com, x86@kernel.org,
+ linux-kernel@vger.kernel.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, mhocko@suse.com, linux-mm@kvack.org,
+ linux-s390@vger.kernel.org, mgorman@techsingularity.net
+Date: Tue, 21 Nov 2017 07:47:46 -0700
+In-Reply-To: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc32, patch_instruction() is called by apply_feature_fixups()
-which is called from early_init()
+On Thu, 2017-11-16 at 20:46 -0500, Pavel Tatashin wrote:
+> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
+> as all the page initialization code is in common code.
+>=20
+> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization
+> code
+> does not really use hotplug memory functionality. So, we can remove
+> this
+> requirement as well.
+>=20
+> This patch allows to use deferred struct page initialization on all
+> platforms with memblock allocator.
+>=20
+> Tested on x86, arm64, and sparc. Also, verified that code compiles on
+> PPC with CONFIG_MEMORY_HOTPLUG disabled.
+>=20
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> ---
+> =C2=A0arch/powerpc/Kconfig | 1 -
+> =C2=A0arch/s390/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0| 1 -
+> =C2=A0arch/x86/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 1 -
+> =C2=A0mm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0| 7 +------
+> =C2=A04 files changed, 1 insertion(+), 9 deletions(-)
+>=20
+>=20
 
-There is the following note in front of early_init():
- * Note that the kernel may be running at an address which is different
- * from the address that it was linked at, so we must use RELOC/PTRRELOC
- * to access static data (including strings).  -- paulus
+Looks reasonable to me.
 
-Therefore, slab_is_available() cannot be called yet, and
-text_poke_area must be addressed with PTRRELOC()
-
-Fixes: 37bc3e5fd764f ("powerpc/lib/code-patching: Use alternate map
-for patch_instruction()")
-Reported-by: Meelis Roos <mroos@linux.ee>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: Added missing asm/setup.h
-
- arch/powerpc/lib/code-patching.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index c9de03e0c1f1..d469224c4ada 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -21,6 +21,7 @@
- #include <asm/tlbflush.h>
- #include <asm/page.h>
- #include <asm/code-patching.h>
-+#include <asm/setup.h>
- 
- static int __patch_instruction(unsigned int *addr, unsigned int instr)
- {
-@@ -146,11 +147,8 @@ int patch_instruction(unsigned int *addr, unsigned int instr)
- 	 * During early early boot patch_instruction is called
- 	 * when text_poke_area is not ready, but we still need
- 	 * to allow patching. We just do the plain old patching
--	 * We use slab_is_available and per cpu read * via this_cpu_read
--	 * of text_poke_area. Per-CPU areas might not be up early
--	 * this can create problems with just using this_cpu_read()
- 	 */
--	if (!slab_is_available() || !this_cpu_read(text_poke_area))
-+	if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
- 		return __patch_instruction(addr, instr);
- 
- 	local_irq_save(flags);
--- 
-2.13.3
+Reviewed-by: Khalid Aziz <khalid.aziz@oracle.com>
