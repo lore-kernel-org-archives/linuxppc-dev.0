@@ -1,35 +1,15 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhhLf6t1fzDqqV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 23:18:18 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAMCGQBP103602
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 07:18:16 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ed77vxq83-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 07:18:16 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 22 Nov 2017 12:18:14 -0000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org
-Subject: [RESEND][PATCH v2] cxl: Check if vphb exists before iterating over
- AFU devices
-Date: Wed, 22 Nov 2017 17:47:44 +0530
-Message-Id: <20171122121744.18697-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhhZw3LmHzDr5S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 23:28:56 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/64s: Fix Power9 DD2.1 logic in DT CPU features
+Date: Wed, 22 Nov 2017 23:28:52 +1100
+Message-Id: <20171122122852.20078-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,69 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During an eeh a kernel-oops is reported if no vPHB to allocated to the
-AFU. This happens as during AFU init, an error in creation of vPHB is
-a non-fatal error. Hence afu->phb should always be checked for NULL
-before iterating over it for the virtual AFU pci devices.
+I got the logic wrong in the DT CPU features code when I added the
+Power9 DD2.1 feature. We should be setting the bit if we detect a
+DD2.1, not clearing it if we detect a DD2.0.
 
-This patch fixes the kenel-oops by adding a NULL pointer check for
-afu->phb before it is dereferenced.
+This code isn't actually exercised at the moment so nothing is
+actually broken.
 
-Fixes: 9e8df8a2196("cxl: EEH support")
-Cc: stable@vger.kernel.org
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Fixes: 3ffa9d9e2a7c ("powerpc/64s: Fix Power9 DD2.0 workarounds by adding DD2.1 feature")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-Changelog:
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Resend -> Added the 'Fixes' info and marking the patch to stable tree [Mpe]
-v2     -> Added the vphb NULL check to cxl_vphb_error_detected() [Andrew]
----
- drivers/misc/cxl/pci.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index bb7fd3f4edab..18773343ab3e 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -2083,6 +2083,9 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
- 	/* There should only be one entry, but go through the list
- 	 * anyway
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 602e0fde19b4..8bdc2f96c5d6 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -735,8 +735,8 @@ static __init void cpufeatures_cpu_quirks(void)
  	 */
-+	if (afu->phb == NULL)
-+		return result;
-+
- 	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
- 		if (!afu_dev->driver)
- 			continue;
-@@ -2124,8 +2127,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
- 			 * Tell the AFU drivers; but we don't care what they
- 			 * say, we're going away.
- 			 */
--			if (afu->phb != NULL)
--				cxl_vphb_error_detected(afu, state);
-+			cxl_vphb_error_detected(afu, state);
- 		}
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
-@@ -2265,6 +2267,9 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
- 		if (cxl_afu_select_best_mode(afu))
- 			goto err;
+ 	if ((version & 0xffffff00) == 0x004e0100)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
+-	else if ((version & 0xffffefff) == 0x004e0200)
+-		cur_cpu_spec->cpu_features &= ~CPU_FTR_POWER9_DD2_1;
++	else if ((version & 0xffffefff) == 0x004e0201)
++		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
+ }
  
-+		if (afu->phb == NULL)
-+			continue;
-+
- 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
- 			/* Reset the device context.
- 			 * TODO: make this less disruptive
-@@ -2327,6 +2332,9 @@ static void cxl_pci_resume(struct pci_dev *pdev)
- 	for (i = 0; i < adapter->slices; i++) {
- 		afu = adapter->afu[i];
- 
-+		if (afu->phb != NULL)
-+			continue;
-+
- 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
- 			if (afu_dev->driver && afu_dev->driver->err_handler &&
- 			    afu_dev->driver->err_handler->resume)
+ static void __init cpufeatures_setup_finished(void)
 -- 
 2.14.3
