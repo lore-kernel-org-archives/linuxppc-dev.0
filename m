@@ -1,23 +1,25 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhttW1NqRzDr2L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 07:13:07 +1100 (AEDT)
-Date: Wed, 22 Nov 2017 14:12:59 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhyM91YwMzDr6C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 09:49:40 +1100 (AEDT)
+From: Sinan Kaya <okaya@codeaurora.org>
+To: linux-pci@vger.kernel.org,
+	timur@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Sinan Kaya <okaya@codeaurora.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] powerpc/pci: convert to use for_each_pci_bridge()
- helper
-Message-ID: <20171122201259.GA21158@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
+ Rob Herring <robh@kernel.org>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Bhumika Goyal <bhumirks@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)), linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH V2 02/29] powerpc/PCI: deprecate pci_get_bus_and_slot()
+Date: Wed, 22 Nov 2017 17:48:57 -0500
+Message-Id: <1511390964-9979-3-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
+References: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 10, 2017 at 07:52:29PM +0200, Andy Shevchenko wrote:
-> ...which makes code slightly cleaner.
-> 
-> Requires: d43f59ce6c50 ("PCI: Add for_each_pci_bridge() helper")
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-Requires: 24a0c654d7d6 ("PCI: Add for_each_pci_bridge() helper")
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-(My fault, I rebased that commit before sending it to Linus.)
+Use pci_get_domain_bus_and_slot() with a domain number of 0 as the code
+is not ready to consume multiple domains and existing code used domain
+number 0.
 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ arch/powerpc/kernel/pci_32.c              | 3 ++-
+ arch/powerpc/platforms/powermac/feature.c | 2 +-
+ arch/powerpc/sysdev/mv64x60_pci.c         | 4 ++--
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
-These don't depend on anything in the PCI core, so they could go
-either via my tree or the powerpc tree.  Since you acked this,
-Michael, I corrected the SHA1 above and put these both on my pci/misc
-branch.
-
-If you pick them up, let me know and I'll drop them from my tree.
-
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  arch/powerpc/kernel/pci-hotplug.c | 7 ++-----
->  arch/powerpc/kernel/pci_of_scan.c | 7 ++-----
->  2 files changed, 4 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-> index 2d71269e7dc1..741f47295188 100644
-> --- a/arch/powerpc/kernel/pci-hotplug.c
-> +++ b/arch/powerpc/kernel/pci-hotplug.c
-> @@ -134,11 +134,8 @@ void pci_hp_add_devices(struct pci_bus *bus)
->  		pcibios_setup_bus_devices(bus);
->  		max = bus->busn_res.start;
->  		for (pass = 0; pass < 2; pass++) {
-> -			list_for_each_entry(dev, &bus->devices, bus_list) {
-> -				if (pci_is_bridge(dev))
-> -					max = pci_scan_bridge(bus, dev,
-> -							      max, pass);
-> -			}
-> +			for_each_pci_bridge(dev, bus)
-> +				max = pci_scan_bridge(bus, dev, max, pass);
->  		}
->  	}
->  	pcibios_finish_adding_to_bus(bus);
-> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-> index 0d790f8432d2..8bdaa2a6fa62 100644
-> --- a/arch/powerpc/kernel/pci_of_scan.c
-> +++ b/arch/powerpc/kernel/pci_of_scan.c
-> @@ -369,11 +369,8 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
->  	pcibios_setup_bus_devices(bus);
->  
->  	/* Now scan child busses */
-> -	list_for_each_entry(dev, &bus->devices, bus_list) {
-> -		if (pci_is_bridge(dev)) {
-> -			of_scan_pci_bridge(dev);
-> -		}
-> -	}
-> +	for_each_pci_bridge(dev, bus)
-> +		of_scan_pci_bridge(dev);
->  }
->  
->  /**
-> -- 
-> 2.14.2
-> 
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 1d817f4..85ad2f7 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -96,7 +96,8 @@
+ 		reg = of_get_property(node, "reg", NULL);
+ 		if (!reg)
+ 			continue;
+-		dev = pci_get_bus_and_slot(pci_bus, ((reg[0] >> 8) & 0xff));
++		dev = pci_get_domain_bus_and_slot(0, pci_bus,
++						  ((reg[0] >> 8) & 0xff));
+ 		if (!dev || !dev->subordinate) {
+ 			pci_dev_put(dev);
+ 			continue;
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index 9e3f39d..ed8b166 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -829,7 +829,7 @@ static long core99_scc_enable(struct device_node *node, long param, long value)
+ 
+ 	if (value) {
+ 		if (pci_device_from_OF_node(node, &pbus, &pid) == 0)
+-			pdev = pci_get_bus_and_slot(pbus, pid);
++			pdev = pci_get_domain_bus_and_slot(0, pbus, pid);
+ 		if (pdev == NULL)
+ 			return 0;
+ 		rc = pci_enable_device(pdev);
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index d52b3b8..6fe9104 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -37,7 +37,7 @@ static ssize_t mv64x60_hs_reg_read(struct file *filp, struct kobject *kobj,
+ 	if (count < MV64X60_VAL_LEN_MAX)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++	phb = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(0, 0));
+ 	if (!phb)
+ 		return -ENODEV;
+ 	pci_read_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+@@ -61,7 +61,7 @@ static ssize_t mv64x60_hs_reg_write(struct file *filp, struct kobject *kobj,
+ 	if (sscanf(buf, "%i", &v) != 1)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++	phb = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(0, 0));
+ 	if (!phb)
+ 		return -ENODEV;
+ 	pci_write_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, v);
+-- 
+1.9.1
