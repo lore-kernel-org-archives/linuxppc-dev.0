@@ -1,20 +1,42 @@
-Return-Path: <geoff@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Return-Path: <srs0=ahuq=cu=linux.vnet.ibm.com=naveen.n.rao@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhsQS2HTyzDr5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:07:12 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yhsQS1XJZz8t37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:07:12 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhqVk59HczDqws
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 04:40:45 +1100 (AEDT)
-Subject: Boot new kernel on PS3
-To: Kevin Yeske <Modournation@live.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <CO2PR04MB22627F6185164FB2FB160969BE230@CO2PR04MB2262.namprd04.prod.outlook.com>
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <8720ea07-5251-fd57-d726-0e2b03b51cc5@infradead.org>
-Date: Wed, 22 Nov 2017 09:40:34 -0800
+ by ozlabs.org (Postfix) with ESMTPS id 3yhsQR59k1z9ryv
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 06:07:11 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAMJ48wC092023
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2017 14:07:09 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2edegca38g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2017 14:07:07 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 22 Nov 2017 19:07:05 -0000
+Date: Thu, 23 Nov 2017 00:37:01 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powernv: Avoid calling trace tlbie in kexec path.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Mahesh J Salgaonkar
+ <mahesh@linux.vnet.ibm.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
+In-Reply-To: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CO2PR04MB22627F6185164FB2FB160969BE230@CO2PR04MB2262.namprd04.prod.outlook.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1511377449.2a15exj7wg.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +46,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>=20
+> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
+> called from native_hpte_clear(). This happens if the running kernel has
+> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
+> execute few RCU checks regardless of whether tracing is on or off.
+> We are already in the last phase of kexec sequence in real mode with
+> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN and
+> causes kexec to fail.
+>=20
+> Fix this by not calling trace_tlbie() from native_hpte_clear().
+>=20
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/mm/hash_native_64.c |   15 ++++++++++++---
+>  1 file changed, 12 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_nati=
+ve_64.c
+> index 3848af1..640cf56 100644
+> --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -47,7 +47,8 @@
+>=20
+>  DEFINE_RAW_SPINLOCK(native_tlbie_lock);
+>=20
+> -static inline void __tlbie(unsigned long vpn, int psize, int apsize, int=
+ ssize)
+> +static inline unsigned long  ___tlbie(unsigned long vpn, int psize,
+> +						int apsize, int ssize)
+>  {
+>  	unsigned long va;
+>  	unsigned int penc;
+> @@ -100,7 +101,15 @@ static inline void __tlbie(unsigned long vpn, int ps=
+ize, int apsize, int ssize)
+>  			     : "memory");
+>  		break;
+>  	}
+> -	trace_tlbie(0, 0, va, 0, 0, 0, 0);
 
-On 11/21/2017 12:41 PM, Kevin Yeske wrote:
-> I have been working on trying to get a newer kernel and Ubuntu version running on the PS3 within otherOS on a PS3 slim.
+Does it help if you use the _rcuidle variant instead, to turn off all=20
+rcu checks for tracing __tlbie()?
+	trace_tlbie_rcuidle(0, 0, va, 0, 0, 0, 0);
 
-There was a breakage in the kernel ABI, and the old petitboot
-bootloader (ps3-petitboot-09.11.30) cannot boot kernels newer
-than v3.15.
 
-If you want to boot a newer kernel you would need to write
-the new kernel into flash memory.  If you have a fat model
-with firmware 3.15 or lower, do this with  with ps3-flash-util.
-Since you have a slim, you'll need to ask for help in the
-hacker community.
+- Naveen
 
-If you want to try a new kernel I recommend you start with the
-latest petitboot-dev branch (currently petitboot-dev-v4.13) from
-my ps3-linux repo:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git
-
-Use the ps3_petitboot_nfs_defconfig as a start.
-
-I've been working on an updated petitboot, but that will only work
-with fat models with firmware 3.15 or lower.
-
--Geoff
+=
