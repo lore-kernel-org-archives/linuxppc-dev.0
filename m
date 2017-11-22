@@ -1,42 +1,22 @@
-Return-Path: <srs0=ahuq=cu=linux.vnet.ibm.com=naveen.n.rao@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhsQS2HTyzDr5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:07:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yhsQS1XJZz8t37
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:07:12 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yhsQR59k1z9ryv
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 06:07:11 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAMJ48wC092023
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2017 14:07:09 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2edegca38g-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Nov 2017 14:07:07 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 22 Nov 2017 19:07:05 -0000
-Date: Thu, 23 Nov 2017 00:37:01 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powernv: Avoid calling trace tlbie in kexec path.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Mahesh J Salgaonkar
- <mahesh@linux.vnet.ibm.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
-In-Reply-To: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhsfj6kcCzDqpV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:17:46 +1100 (AEDT)
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Subject: [PATCH 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S,U}20_4
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Message-ID: <53d527c0-89f6-d501-09e9-1effea8a5bac@maciej.szmigiero.name>
+Date: Wed, 22 Nov 2017 20:17:34 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1511377449.2a15exj7wg.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,54 +26,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->=20
-> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
-> called from native_hpte_clear(). This happens if the running kernel has
-> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
-> execute few RCU checks regardless of whether tracing is on or off.
-> We are already in the last phase of kexec sequence in real mode with
-> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN and
-> causes kexec to fail.
->=20
-> Fix this by not calling trace_tlbie() from native_hpte_clear().
->=20
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/mm/hash_native_64.c |   15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_nati=
-ve_64.c
-> index 3848af1..640cf56 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -47,7 +47,8 @@
->=20
->  DEFINE_RAW_SPINLOCK(native_tlbie_lock);
->=20
-> -static inline void __tlbie(unsigned long vpn, int psize, int apsize, int=
- ssize)
-> +static inline unsigned long  ___tlbie(unsigned long vpn, int psize,
-> +						int apsize, int ssize)
->  {
->  	unsigned long va;
->  	unsigned int penc;
-> @@ -100,7 +101,15 @@ static inline void __tlbie(unsigned long vpn, int ps=
-ize, int apsize, int ssize)
->  			     : "memory");
->  		break;
->  	}
-> -	trace_tlbie(0, 0, va, 0, 0, 0, 0);
+This format is similar to existing SNDRV_PCM_FORMAT_{S,U}20_3 that keep
+20-bit PCM samples in 3 bytes, however i.MX6 platform SSI FIFO does not
+allow 3-byte accesses (including DMA) so a 4-byte format is needed for it.
 
-Does it help if you use the _rcuidle variant instead, to turn off all=20
-rcu checks for tracing __tlbie()?
-	trace_tlbie_rcuidle(0, 0, va, 0, 0, 0, 0);
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+---
+ include/sound/pcm.h         |  8 ++++++++
+ include/sound/soc-dai.h     |  2 ++
+ include/uapi/sound/asound.h | 10 +++++++++-
+ sound/core/pcm_misc.c       | 16 ++++++++++++++++
+ 4 files changed, 35 insertions(+), 1 deletion(-)
 
-
-- Naveen
-
-=
+diff --git a/include/sound/pcm.h b/include/sound/pcm.h
+index 24febf9e177c..7ad2d3f0934f 100644
+--- a/include/sound/pcm.h
++++ b/include/sound/pcm.h
+@@ -191,6 +191,10 @@ struct snd_pcm_ops {
+ #define SNDRV_PCM_FMTBIT_DSD_U32_LE	_SNDRV_PCM_FMTBIT(DSD_U32_LE)
+ #define SNDRV_PCM_FMTBIT_DSD_U16_BE	_SNDRV_PCM_FMTBIT(DSD_U16_BE)
+ #define SNDRV_PCM_FMTBIT_DSD_U32_BE	_SNDRV_PCM_FMTBIT(DSD_U32_BE)
++#define SNDRV_PCM_FMTBIT_S20_4LE	_SNDRV_PCM_FMTBIT(S20_4LE)
++#define SNDRV_PCM_FMTBIT_U20_4LE	_SNDRV_PCM_FMTBIT(U20_4LE)
++#define SNDRV_PCM_FMTBIT_S20_4BE	_SNDRV_PCM_FMTBIT(S20_4BE)
++#define SNDRV_PCM_FMTBIT_U20_4BE	_SNDRV_PCM_FMTBIT(U20_4BE)
+ 
+ #ifdef SNDRV_LITTLE_ENDIAN
+ #define SNDRV_PCM_FMTBIT_S16		SNDRV_PCM_FMTBIT_S16_LE
+@@ -202,6 +206,8 @@ struct snd_pcm_ops {
+ #define SNDRV_PCM_FMTBIT_FLOAT		SNDRV_PCM_FMTBIT_FLOAT_LE
+ #define SNDRV_PCM_FMTBIT_FLOAT64	SNDRV_PCM_FMTBIT_FLOAT64_LE
+ #define SNDRV_PCM_FMTBIT_IEC958_SUBFRAME SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE
++#define SNDRV_PCM_FMTBIT_S20_4		SNDRV_PCM_FMTBIT_S20_4LE
++#define SNDRV_PCM_FMTBIT_U20_4		SNDRV_PCM_FMTBIT_U20_4LE
+ #endif
+ #ifdef SNDRV_BIG_ENDIAN
+ #define SNDRV_PCM_FMTBIT_S16		SNDRV_PCM_FMTBIT_S16_BE
+@@ -213,6 +219,8 @@ struct snd_pcm_ops {
+ #define SNDRV_PCM_FMTBIT_FLOAT		SNDRV_PCM_FMTBIT_FLOAT_BE
+ #define SNDRV_PCM_FMTBIT_FLOAT64	SNDRV_PCM_FMTBIT_FLOAT64_BE
+ #define SNDRV_PCM_FMTBIT_IEC958_SUBFRAME SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_BE
++#define SNDRV_PCM_FMTBIT_S20_4		SNDRV_PCM_FMTBIT_S20_4BE
++#define SNDRV_PCM_FMTBIT_U20_4		SNDRV_PCM_FMTBIT_U20_4BE
+ #endif
+ 
+ struct snd_pcm_file {
+diff --git a/include/sound/soc-dai.h b/include/sound/soc-dai.h
+index 58acd00cae19..16aec0cc96f5 100644
+--- a/include/sound/soc-dai.h
++++ b/include/sound/soc-dai.h
+@@ -102,6 +102,8 @@ struct snd_compr_stream;
+ 			       SNDRV_PCM_FMTBIT_S16_BE |\
+ 			       SNDRV_PCM_FMTBIT_S20_3LE |\
+ 			       SNDRV_PCM_FMTBIT_S20_3BE |\
++			       SNDRV_PCM_FMTBIT_S20_4LE |\
++			       SNDRV_PCM_FMTBIT_S20_4BE |\
+ 			       SNDRV_PCM_FMTBIT_S24_3LE |\
+ 			       SNDRV_PCM_FMTBIT_S24_3BE |\
+                                SNDRV_PCM_FMTBIT_S32_LE |\
+diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
+index c227ccba60ae..69b661816491 100644
+--- a/include/uapi/sound/asound.h
++++ b/include/uapi/sound/asound.h
+@@ -236,7 +236,11 @@ typedef int __bitwise snd_pcm_format_t;
+ #define	SNDRV_PCM_FORMAT_DSD_U32_LE	((__force snd_pcm_format_t) 50) /* DSD, 4-byte samples DSD (x32), little endian */
+ #define	SNDRV_PCM_FORMAT_DSD_U16_BE	((__force snd_pcm_format_t) 51) /* DSD, 2-byte samples DSD (x16), big endian */
+ #define	SNDRV_PCM_FORMAT_DSD_U32_BE	((__force snd_pcm_format_t) 52) /* DSD, 4-byte samples DSD (x32), big endian */
+-#define	SNDRV_PCM_FORMAT_LAST		SNDRV_PCM_FORMAT_DSD_U32_BE
++#define	SNDRV_PCM_FORMAT_S20_4LE	((__force snd_pcm_format_t) 53)	/* in four bytes */
++#define	SNDRV_PCM_FORMAT_S20_4BE	((__force snd_pcm_format_t) 54)	/* in four bytes */
++#define	SNDRV_PCM_FORMAT_U20_4LE	((__force snd_pcm_format_t) 55)	/* in four bytes */
++#define	SNDRV_PCM_FORMAT_U20_4BE	((__force snd_pcm_format_t) 56)	/* in four bytes */
++#define	SNDRV_PCM_FORMAT_LAST		SNDRV_PCM_FORMAT_U20_4BE
+ 
+ #ifdef SNDRV_LITTLE_ENDIAN
+ #define	SNDRV_PCM_FORMAT_S16		SNDRV_PCM_FORMAT_S16_LE
+@@ -248,6 +252,8 @@ typedef int __bitwise snd_pcm_format_t;
+ #define	SNDRV_PCM_FORMAT_FLOAT		SNDRV_PCM_FORMAT_FLOAT_LE
+ #define	SNDRV_PCM_FORMAT_FLOAT64	SNDRV_PCM_FORMAT_FLOAT64_LE
+ #define	SNDRV_PCM_FORMAT_IEC958_SUBFRAME SNDRV_PCM_FORMAT_IEC958_SUBFRAME_LE
++#define	SNDRV_PCM_FORMAT_S20_4		SNDRV_PCM_FORMAT_S20_4LE
++#define	SNDRV_PCM_FORMAT_U20_4		SNDRV_PCM_FORMAT_U20_4LE
+ #endif
+ #ifdef SNDRV_BIG_ENDIAN
+ #define	SNDRV_PCM_FORMAT_S16		SNDRV_PCM_FORMAT_S16_BE
+@@ -259,6 +265,8 @@ typedef int __bitwise snd_pcm_format_t;
+ #define	SNDRV_PCM_FORMAT_FLOAT		SNDRV_PCM_FORMAT_FLOAT_BE
+ #define	SNDRV_PCM_FORMAT_FLOAT64	SNDRV_PCM_FORMAT_FLOAT64_BE
+ #define	SNDRV_PCM_FORMAT_IEC958_SUBFRAME SNDRV_PCM_FORMAT_IEC958_SUBFRAME_BE
++#define	SNDRV_PCM_FORMAT_S20_4		SNDRV_PCM_FORMAT_S20_4BE
++#define	SNDRV_PCM_FORMAT_U20_4		SNDRV_PCM_FORMAT_U20_4BE
+ #endif
+ 
+ typedef int __bitwise snd_pcm_subformat_t;
+diff --git a/sound/core/pcm_misc.c b/sound/core/pcm_misc.c
+index 9be81025372f..132ee41edae1 100644
+--- a/sound/core/pcm_misc.c
++++ b/sound/core/pcm_misc.c
+@@ -229,6 +229,22 @@ static struct pcm_format_data pcm_formats[(INT)SNDRV_PCM_FORMAT_LAST+1] = {
+ 		.width = 5, .phys = 8, .le = -1, .signd = -1,
+ 		.silence = {},
+ 	},
++	[SNDRV_PCM_FORMAT_S20_4LE] = {
++		.width = 20, .phys = 32, .le = 1, .signd = 1,
++		.silence = {},
++	},
++	[SNDRV_PCM_FORMAT_S20_4BE] = {
++		.width = 20, .phys = 32, .le = 0, .signd = 1,
++		.silence = {},
++	},
++	[SNDRV_PCM_FORMAT_U20_4LE] = {
++		.width = 20, .phys = 32, .le = 1, .signd = 0,
++		.silence = { 0x00, 0x00, 0x08, 0x00 },
++	},
++	[SNDRV_PCM_FORMAT_U20_4BE] = {
++		.width = 20, .phys = 32, .le = 0, .signd = 0,
++		.silence = { 0x00, 0x08, 0x00, 0x00 },
++	},
+ };
+ 
+ 
