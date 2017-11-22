@@ -1,16 +1,20 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yhSvS5vrPzDr4S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 14:42:28 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alexander Graf <agraf@suse.com>,
- Paul Mackerras <paulus@samba.org>
-Subject: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under pHyp
-Date: Wed, 22 Nov 2017 14:42:21 +1100
-Message-Id: <20171122034221.647-1-aik@ozlabs.ru>
+Return-Path: <ruscur@russell.cc>
+Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
+ [66.111.4.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhTtT0BxzzDr1w
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 15:26:40 +1100 (AEDT)
+Message-ID: <1511324789.1886.1.camel@russell.cc>
+Subject: Re: [PATCH kernel] powerpc/powernv/idoa: Remove unnecessary pcidev
+ from pci_dn
+From: Russell Currey <ruscur@russell.cc>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 22 Nov 2017 15:26:29 +1100
+In-Reply-To: <20171023080702.23479-1-aik@ozlabs.ru>
+References: <20171023080702.23479-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,54 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
-bits preserving but it missed 2 special cases:
-- a magic page in kvmppc_mmu_book3s_64_xlate() and
-- guest real mode in kvmppc_handle_pagefault().
+On Mon, 2017-10-23 at 19:07 +1100, Alexey Kardashevskiy wrote:
+> The pcidev value stored in pci_dn is only used for NPU/NPU2
+> initialization. We can easily drop the cached pointer and
+> use an ancient helper - pci_get_domain_bus_and_slot() instead in
+> order
+> to reduce complexity.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-For these ptes WIMG were 0 and pHyp failed on these causing a guest to
-stop in the very beginning at NIP=0x100 (due to bd9166ffe
-"KVM: PPC: Book3S PR: Exit KVM on failed mapping").
+My bad, must have missed this one.  Thanks for the cleanup.
 
-This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
-as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
-kvmppc_mmu_map_page().
+s/idoa/ioda in the title.
 
-Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-This indeed fixes PR KVM + VFIO under pHyp but selection of HPTE_R_M
-is arguable.
-
----
- arch/powerpc/kvm/book3s_64_mmu.c | 1 +
- arch/powerpc/kvm/book3s_pr.c     | 1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-index 29ebe2f..a93d719 100644
---- a/arch/powerpc/kvm/book3s_64_mmu.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu.c
-@@ -235,6 +235,7 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 		gpte->may_read = true;
- 		gpte->may_write = true;
- 		gpte->page_size = MMU_PAGE_4K;
-+		gpte->wimg = HPTE_R_M;
- 
- 		return 0;
- 	}
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 69a0944..0152efe 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -557,6 +557,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		pte.eaddr = eaddr;
- 		pte.vpage = eaddr >> 12;
- 		pte.page_size = MMU_PAGE_64K;
-+		pte.wimg = HPTE_R_M;
- 	}
- 
- 	switch (kvmppc_get_msr(vcpu) & (MSR_DR|MSR_IR)) {
--- 
-2.11.0
+Acked-by: Russell Currey <ruscur@russell.cc>
