@@ -2,22 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhdhr5fCWzDqwP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 21:18:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhg0454m9zDqsP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 22:17:08 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Alastair D'Silva <alastair@linux.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Subject: Re: [PATCH v2] cxl: Check if vphb exists before iterating over AFU
- devices
-In-Reply-To: <20171122080809.14494-1-vaibhav@linux.vnet.ibm.com>
-References: <20171122080809.14494-1-vaibhav@linux.vnet.ibm.com>
-Date: Wed, 22 Nov 2017 21:18:51 +1100
-Message-ID: <87r2sq39bo.fsf@concordia.ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Subject: Re: [PATCH V7 1/3] powerpc/nodes: Ensure enough nodes avail for
+ operations
+In-Reply-To: <2a2ded0a-333f-ae8b-cb4a-94a137550fbf@linux.vnet.ibm.com>
+References: <8dc75276-0f5e-4c44-05eb-a194c3303c66@linux.vnet.ibm.com>
+ <2a2ded0a-333f-ae8b-cb4a-94a137550fbf@linux.vnet.ibm.com>
+Date: Wed, 22 Nov 2017 22:17:04 +1100
+Message-ID: <87lgiy36mn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,24 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
-
-> During an eeh a kernel-oops is reported if no vPHB to allocated to the
-> AFU. This happens as during AFU init, an error in creation of vPHB is
-> a non-fatal error. Hence afu->phb should always be checked for NULL
-> before iterating over it for the virtual AFU pci devices.
+Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+> On 11/16/2017 11:24 AM, Michael Bringmann wrote:
+...
+>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> index eb604b3..334a1ff 100644
+>> --- a/arch/powerpc/mm/numa.c
+>> +++ b/arch/powerpc/mm/numa.c
+>> @@ -892,6 +892,37 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+>>  	NODE_DATA(nid)->node_spanned_pages = spanned_pages;
+>>  }
+>> 
+>> +static void __init find_possible_nodes(void)
+>> +{
+>> +	struct device_node *rtas;
+>> +	u32 numnodes, i;
+>> +
+>> +	if (min_common_depth <= 0)
+>> +		return;
+>> +
+>> +	rtas = of_find_node_by_path("/rtas");
+>> +	if (!rtas)
+>> +		return;
+>> +
+>> +	if (of_property_read_u32_index(rtas,
+>> +				"ibm,max-associativity-domains",
+>> +				min_common_depth, &numnodes))
+>> +		goto out;
+>> +
+>> +	pr_info("numa: Nodes = %d (mcd = %d)\n", numnodes,
+>> +		min_common_depth);
 >
-> This patch fixes the kenel-oops by adding a NULL pointer check for
-> afu->phb before it is dereferenced.
->
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
->
-> ---
-> Changelog:
-> v2 -> Added the vphb NULL check to cxl_vphb_error_detected() [Andrew]
+> numa.c already has a pr_fmt define, no need to pre-pend "numa:" to the
+> information message.
 
-Fixes: ?
-
-Stable?
+And in fact no need to print that out here at all, it's covered
+elsewhere. So just drop that pr_info() entirely.
 
 cheers
