@@ -1,22 +1,28 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yhgFb6CHGzDqvB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 22:28:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yhghq3gHKzDqyH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 22:48:59 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Qoriq P5020 PowerPC board doesn't boot with the latest git
- version anymore
-In-Reply-To: <d8bf23c2-1805-a9c3-566d-74c0f28e88e8@xenosoft.de>
-References: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
- <3e4805a4-6114-205d-653b-ea6cd7fdc057@xenosoft.de>
- <8ed2edc7-a14b-35b3-86c1-a9995f41df84@xenosoft.de>
- <d8bf23c2-1805-a9c3-566d-74c0f28e88e8@xenosoft.de>
-Date: Wed, 22 Nov 2017 22:28:51 +1100
-Message-ID: <87ine23630.fsf@concordia.ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Meelis Roos <mroos@linux.ee>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2] powerpc: fix boot on BOOK3S_32 with
+ CONFIG_STRICT_KERNEL_RWX
+In-Reply-To: <141a04c4-a236-430d-f346-ad31252e146a@c-s.fr>
+References: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
+ <CAKTCnznviUQfizSdfMDGxO_8CFuwhPCNSkK2VagNSRvZdpLqyg@mail.gmail.com>
+ <141a04c4-a236-430d-f346-ad31252e146a@c-s.fr>
+Date: Wed, 22 Nov 2017 22:48:57 +1100
+Message-ID: <87h8tm355i.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
-> Hi All,
+> Le 22/11/2017 =C3=A0 00:07, Balbir Singh a =C3=A9crit=C2=A0:
+>> On Wed, Nov 22, 2017 at 1:28 AM, Christophe Leroy
+>> <christophe.leroy@c-s.fr> wrote:
+>>> On powerpc32, patch_instruction() is called by apply_feature_fixups()
+>>> which is called from early_init()
+>>>
+>>> There is the following note in front of early_init():
+>>>   * Note that the kernel may be running at an address which is different
+>>>   * from the address that it was linked at, so we must use RELOC/PTRREL=
+OC
+>>>   * to access static data (including strings).  -- paulus
+>>>
+>>> Therefore, slab_is_available() cannot be called yet, and
+>>> text_poke_area must be addressed with PTRRELOC()
+>>>
+>>> Fixes: 37bc3e5fd764f ("powerpc/lib/code-patching: Use alternate map
+>>> for patch_instruction()")
+>>> Reported-by: Meelis Roos <mroos@linux.ee>
+>>> Cc: Balbir Singh <bsingharora@gmail.com>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> ---
+>>>   v2: Added missing asm/setup.h
+>>>
+>>>   arch/powerpc/lib/code-patching.c | 6 ++----
+>>>   1 file changed, 2 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-p=
+atching.c
+>>> index c9de03e0c1f1..d469224c4ada 100644
+>>> --- a/arch/powerpc/lib/code-patching.c
+>>> +++ b/arch/powerpc/lib/code-patching.c
+>>> @@ -21,6 +21,7 @@
+>>>   #include <asm/tlbflush.h>
+>>>   #include <asm/page.h>
+>>>   #include <asm/code-patching.h>
+>>> +#include <asm/setup.h>
+>>>
+>>>   static int __patch_instruction(unsigned int *addr, unsigned int instr)
+>>>   {
+>>> @@ -146,11 +147,8 @@ int patch_instruction(unsigned int *addr, unsigned=
+ int instr)
+>>>           * During early early boot patch_instruction is called
+>>>           * when text_poke_area is not ready, but we still need
+>>>           * to allow patching. We just do the plain old patching
+>>> -        * We use slab_is_available and per cpu read * via this_cpu_read
+>>> -        * of text_poke_area. Per-CPU areas might not be up early
+>>> -        * this can create problems with just using this_cpu_read()
+>>>           */
+>>> -       if (!slab_is_available() || !this_cpu_read(text_poke_area))
+>>> +       if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
+>>>                  return __patch_instruction(addr, instr);
+>>=20
+>> On ppc64, we call apply_feature_fixups() in early_setup() after we've
+>> relocated ourselves. Sorry for missing the ppc32 case. I would like to
+>> avoid PTRRELOC when unnecessary.
 >
-> I created a patch for the git kernel today. (see attachment)
-> Without the patch, the latest git kernel doesn't boot on my Cyrus Plus 
-> board.
+> What do you suggest then ?
+>
+> Some #ifdef PPC32 around that ?
 
-Hi Christian,
+No I don't think that improves anything.
 
-This doesn't make much sense.
+I think the comment about per-cpu not being up is wrong, you'll just get
+the static version of text_poke_area, which should be NULL. So we don't
+need the slab_available() check anyway.
 
-Are you running any out of tree drivers or patches on this machine? Or
-just 100% upstream.
+So I'll take this as-is.
 
-I have a freescale p5020ds machine, but I don't have this Cyrus Plus
-board.
-
-What kernel config are you using, can you attach it?
-
-When you say it "doesn't boot" what happens exactly? Do you see any
-output at all?
+Having said that I absolutely hate PTRRELOC, so if it starts spreading
+we will have to come up with something less bug prone.
 
 cheers
