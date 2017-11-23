@@ -1,28 +1,29 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=hwms=cv=c-s.fr=christophe.leroy@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yj5Y53XxbzDrRp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 15:13:45 +1100 (AEDT)
-Received: by mail-pl0-x243.google.com with SMTP id h3so1985349pln.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 20:13:45 -0800 (PST)
-Subject: Re: [PATCH kernel] vfio/spapr: Add trace points for map/unmap
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, iommu@lists.linux-foundation.org,
- Joerg Roedel <joro@8bytes.org>
-References: <20171027030008.17200-1-aik@ozlabs.ru>
- <8c58fcaa-dedc-e6be-44bf-2cb349ef9e38@ozlabs.ru>
- <20171116171301.6552869b@t450s.home>
- <52a19cfb-431f-522b-11de-c1c47f09a4c8@ozlabs.ru>
-Message-ID: <d367b17a-6efa-26a8-821b-42080c90e16e@ozlabs.ru>
-Date: Thu, 23 Nov 2017 15:13:37 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yj9jF1gmkzDrK2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 18:21:05 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yj9jF1FCZz8tRN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 18:21:05 +1100 (AEDT)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3yj9jD32KQz9t2M
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 18:21:03 +1100 (AEDT)
+Subject: Re: [PATCH v6 06/10] powerpc/lib/code-patching: Use alternate map for
+ patch_instruction()
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ Balbir Singh <bsingharora@gmail.com>
+References: <1499086914-25695-1-git-send-email-mpe@ellerman.id.au>
+ <1499086914-25695-6-git-send-email-mpe@ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <c89803a4-3d43-d24c-171c-75a42a48f59d@c-s.fr>
+Date: Thu, 23 Nov 2017 08:12:58 +0100
 MIME-Version: 1.0
-In-Reply-To: <52a19cfb-431f-522b-11de-c1c47f09a4c8@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1499086914-25695-6-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,125 +33,196 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/11/17 17:58, Alexey Kardashevskiy wrote:
-> On 17/11/17 11:13, Alex Williamson wrote:
->> On Tue, 14 Nov 2017 10:47:12 +1100
->> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>
->>> On 27/10/17 14:00, Alexey Kardashevskiy wrote:
->>>> This adds trace_map/trace_unmap tracepoints to spapr driver. Type1 already
->>>> uses these via the IOMMU API (iommu_map/__iommu_unmap).
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>  
->>
->> Is this really legitimate to include tracepoints from a different
->> subsystem?>  The vfio type1 backend gets these trace points by virtue of
->> it actually using the IOMMU API, it doesn't call them itself.  I'm kind
->> of surprised these are actually available to be called from a module.
-> 
-> They are explicitly exported:
-> 
-> EXPORT_TRACEPOINT_SYMBOL_GPL(map);
-> EXPORT_TRACEPOINT_SYMBOL_GPL(unmap);
-> 
-> I would think this is for things like drivers/vfio/vfio_iommu_spapr_tce.c ,
-> why else?...
-> 
-> 
->> I suspect the way to do this is probably to define our own tracepoints
->> in the vfio/spapr backend or insert tracepoints into the IOMMU layers
->> that that code calls into rather than masquerading as tracepoints from
->> a different subsystem.  Right?
-> 
-> This makes sense too. But it is going to be just cut-n-paste and some
-> confusion -
-> /sys/kernel/debug/tracing/events/iommu/map will still be present but
-> won't work and
-> /sys/kernel/debug/tracing/events/vfio/vfio_iommu_spapr_tce/map will.
-> 
-> Judges? :)
 
 
-Still nak? I discussed this locally, the conclusion was it is a matter of
-taste and this proposal is not that disgusting. Thanks.
+Le 03/07/2017 à 15:01, Michael Ellerman a écrit :
+> From: Balbir Singh <bsingharora@gmail.com>
+> 
+> This patch creates the window using text_poke_area, allocated via
+> get_vm_area(). text_poke_area is per CPU to avoid locking.
+> text_poke_area for each cpu is setup using late_initcall, prior to
+> setup of these alternate mapping areas, we continue to use direct
+> write to change/modify kernel text. With the ability to use alternate
+> mappings to write to kernel text, it provides us the freedom to then
+> turn text read-only and implement CONFIG_STRICT_KERNEL_RWX.
+> 
+> This code is CPU hotplug aware to ensure that the we have mappings for
+> any new cpus as they come online and tear down mappings for any CPUs
+> that go offline.
+> 
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>   arch/powerpc/lib/code-patching.c | 171 ++++++++++++++++++++++++++++++++++++++-
+>   1 file changed, 167 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index 500b0f6a0b64..c9de03e0c1f1 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -12,23 +12,186 @@
+>   #include <linux/vmalloc.h>
+>   #include <linux/init.h>
+>   #include <linux/mm.h>
+> -#include <asm/page.h>
+> -#include <asm/code-patching.h>
+> +#include <linux/cpuhotplug.h>
+> +#include <linux/slab.h>
+>   #include <linux/uaccess.h>
+>   #include <linux/kprobes.h>
+>   
+> +#include <asm/pgtable.h>
+> +#include <asm/tlbflush.h>
+> +#include <asm/page.h>
+> +#include <asm/code-patching.h>
+>   
+> -int patch_instruction(unsigned int *addr, unsigned int instr)
+> +static int __patch_instruction(unsigned int *addr, unsigned int instr)
+>   {
+>   	int err;
+>   
+>   	__put_user_size(instr, addr, 4, err);
+>   	if (err)
+>   		return err;
+> -	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (addr));
+> +
+> +	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
+> +
+> +	return 0;
+> +}
+> +
+
+[...]
+
+> +int patch_instruction(unsigned int *addr, unsigned int instr)
+> +{
+> +	int err;
+> +	unsigned int *dest = NULL;
+> +	unsigned long flags;
+> +	unsigned long text_poke_addr;
+> +	unsigned long kaddr = (unsigned long)addr;
+> +
+> +	/*
+> +	 * During early early boot patch_instruction is called
+> +	 * when text_poke_area is not ready, but we still need
+> +	 * to allow patching. We just do the plain old patching
+> +	 * We use slab_is_available and per cpu read * via this_cpu_read
+> +	 * of text_poke_area. Per-CPU areas might not be up early
+> +	 * this can create problems with just using this_cpu_read()
+> +	 */
+> +	if (!slab_is_available() || !this_cpu_read(text_poke_area))
+> +		return __patch_instruction(addr, instr);
+> +
+> +	local_irq_save(flags);
+> +
+> +	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr;
+> +	if (map_patch_area(addr, text_poke_addr)) {
+> +		err = -1;
+> +		goto out;
+> +	}
+> +
+> +	dest = (unsigned int *)(text_poke_addr) +
+> +			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
+> +
+> +	/*
+> +	 * We use __put_user_size so that we can handle faults while
+> +	 * writing to dest and return err to handle faults gracefully
+> +	 */
+> +	__put_user_size(instr, dest, 4, err);
+> +	if (!err)
+> +		asm ("dcbst 0, %0; sync; icbi 0,%0; icbi 0,%1; sync; isync"
+> +			::"r" (dest), "r"(addr));
+
+Is the second icbi really needed since the alternative area is mapped 
+with PAGE_KERNEL which is not executable ?
+If we could avoid that, we could refactor this part as follows:
+
+diff --git a/arch/powerpc/lib/code-patching.c 
+b/arch/powerpc/lib/code-patching.c
+index d469224c4ada..85031de43bb9 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -23,15 +23,17 @@
+  #include <asm/code-patching.h>
+  #include <asm/setup.h>
+
+-static int __patch_instruction(unsigned int *addr, unsigned int instr)
++static int __patch_instruction(unsigned int *addr, unsigned int instr,
++			       unsigned int *dest)
+  {
+  	int err;
+
+-	__put_user_size(instr, addr, 4, err);
++	__put_user_size(instr, dest, 4, err);
+  	if (err)
+  		return err;
+
+-	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
++	asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (dest),
++							    "r" (addr));
+
+  	return 0;
+  }
+@@ -149,7 +151,7 @@ int patch_instruction(unsigned int *addr, unsigned 
+int instr)
+  	 * to allow patching. We just do the plain old patching
+  	 */
+  	if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
+-		return __patch_instruction(addr, instr);
++		return __patch_instruction(addr, instr, addr);
+
+  	local_irq_save(flags);
+
+@@ -162,14 +164,7 @@ int patch_instruction(unsigned int *addr, unsigned 
+int instr)
+  	dest = (unsigned int *)(text_poke_addr) +
+  			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
+
+-	/*
+-	 * We use __put_user_size so that we can handle faults while
+-	 * writing to dest and return err to handle faults gracefully
+-	 */
+-	__put_user_size(instr, dest, 4, err);
+-	if (!err)
+-		asm ("dcbst 0, %0; sync; icbi 0,%0; icbi 0,%1; sync; isync"
+-			::"r" (dest), "r"(addr));
++	__patch_instruction(addr, instr, dest);
+
+  	err = unmap_patch_area(text_poke_addr);
+  	if (err)
+@@ -184,7 +179,7 @@ int patch_instruction(unsigned int *addr, unsigned 
+int instr)
+
+  int patch_instruction(unsigned int *addr, unsigned int instr)
+  {
+-	return __patch_instruction(addr, instr);
++	return __patch_instruction(addr, instr, addr);
+  }
+
+  #endif /* CONFIG_STRICT_KERNEL_RWX */
 
 
+> +
+> +	err = unmap_patch_area(text_poke_addr);
+> +	if (err)
+> +		pr_warn("failed to unmap %lx\n", text_poke_addr);
+> +
+> +out:
+> +	local_irq_restore(flags);
+> +
+> +	return err;
+> +}
+> +#else /* !CONFIG_STRICT_KERNEL_RWX */
+> +
+> +int patch_instruction(unsigned int *addr, unsigned int instr)
+> +{
+> +	return __patch_instruction(addr, instr);
+> +}
+> +
+> +#endif /* CONFIG_STRICT_KERNEL_RWX */
+> +NOKPROBE_SYMBOL(patch_instruction);
+> +
+>   int patch_branch(unsigned int *addr, unsigned long target, int flags)
+>   {
+>   	return patch_instruction(addr, create_branch(addr, target, flags));
 > 
-> 
-> 
->>  Thanks,
->>
->> Alex
->>
->>>> ---
->>>>
->>>> Example:
->>>>  qemu-system-ppc-8655  [096]   724.662740: unmap:                IOMMU: iova=0x000000003ffff000 size=4096 unmapped_size=4096
->>>>  qemu-system-ppc-8656  [104]   724.970912: map:                  IOMMU: iova=0x0800000000000000 paddr=0x00007ffef7ff0000 size=65536
->>>> ---
->>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 12 ++++++++++--
->>>>  1 file changed, 10 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> index 63112c36ab2d..4531486c77c6 100644
->>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> @@ -22,6 +22,7 @@
->>>>  #include <linux/vmalloc.h>
->>>>  #include <linux/sched/mm.h>
->>>>  #include <linux/sched/signal.h>
->>>> +#include <trace/events/iommu.h>
->>>>  
->>>>  #include <asm/iommu.h>
->>>>  #include <asm/tce.h>
->>>> @@ -502,17 +503,19 @@ static int tce_iommu_clear(struct tce_container *container,
->>>>  		struct iommu_table *tbl,
->>>>  		unsigned long entry, unsigned long pages)
->>>>  {
->>>> -	unsigned long oldhpa;
->>>> +	unsigned long oldhpa, unmapped, firstentry = entry, totalpages = pages;
->>>>  	long ret;
->>>>  	enum dma_data_direction direction;
->>>>  
->>>> -	for ( ; pages; --pages, ++entry) {
->>>> +	for (unmapped = 0; pages; --pages, ++entry) {
->>>>  		direction = DMA_NONE;
->>>>  		oldhpa = 0;
->>>>  		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
->>>>  		if (ret)
->>>>  			continue;
->>>>  
->>>> +		++unmapped;
->>>> +
->>>>  		if (direction == DMA_NONE)
->>>>  			continue;
->>>>  
->>>> @@ -523,6 +526,9 @@ static int tce_iommu_clear(struct tce_container *container,
->>>>  
->>>>  		tce_iommu_unuse_page(container, oldhpa);
->>>>  	}
->>>> +	trace_unmap(firstentry << tbl->it_page_shift,
->>>> +			totalpages << tbl->it_page_shift,
->>>> +			unmapped << tbl->it_page_shift);
->>>>  
->>>>  	return 0;
->>>>  }
->>>> @@ -965,6 +971,8 @@ static long tce_iommu_ioctl(void *iommu_data,
->>>>  					direction);
->>>>  
->>>>  		iommu_flush_tce(tbl);
->>>> +		if (!ret)
->>>> +			trace_map(param.iova, param.vaddr, param.size);
->>>>  
->>>>  		return ret;
->>>>  	}
->>>>   
->>>
->>>
->>
-> 
-> 
-
-
--- 
-Alexey
