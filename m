@@ -2,21 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjJyr1sf4zDrbP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 23:48:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjK3x5BdwzDqp1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 23:52:45 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] powerpc/pci: convert to use for_each_pci_bridge()
- helper
-In-Reply-To: <20171122201259.GA21158@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
- <20171122201259.GA21158@bhelgaas-glaptop.roam.corp.google.com>
-Date: Thu, 23 Nov 2017 23:48:18 +1100
-Message-ID: <87zi7d17ql.fsf@concordia.ellerman.id.au>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>, steven.sistare@oracle.com,
+ daniel.m.jordan@oracle.com, benh@kernel.crashing.org, paulus@samba.org,
+ akpm@linux-foundation.org, kirill.shutemov@linux.intel.com,
+ arbab@linux.vnet.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+ x86@kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, mhocko@suse.com, linux-mm@kvack.org,
+ linux-s390@vger.kernel.org, mgorman@techsingularity.net
+Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
+In-Reply-To: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+Date: Thu, 23 Nov 2017 23:52:45 +1100
+Message-ID: <87wp2h17j6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,24 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+Pavel Tatashin <pasha.tatashin@oracle.com> writes:
 
-> On Fri, Nov 10, 2017 at 07:52:29PM +0200, Andy Shevchenko wrote:
->> ...which makes code slightly cleaner.
->> 
->> Requires: d43f59ce6c50 ("PCI: Add for_each_pci_bridge() helper")
+> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
+> as all the page initialization code is in common code.
 >
-> Requires: 24a0c654d7d6 ("PCI: Add for_each_pci_bridge() helper")
+> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization code
+> does not really use hotplug memory functionality. So, we can remove this
+> requirement as well.
 >
-> (My fault, I rebased that commit before sending it to Linus.)
+> This patch allows to use deferred struct page initialization on all
+> platforms with memblock allocator.
 >
->> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> Tested on x86, arm64, and sparc. Also, verified that code compiles on
+> PPC with CONFIG_MEMORY_HOTPLUG disabled.
 >
-> These don't depend on anything in the PCI core, so they could go
-> either via my tree or the powerpc tree.  Since you acked this,
-> Michael, I corrected the SHA1 above and put these both on my pci/misc
-> branch.
+> Signed-off-by: Pavel Tatashin <pasha.tatashin@oracle.com>
+> ---
+>  arch/powerpc/Kconfig | 1 -
+>  arch/s390/Kconfig    | 1 -
+>  arch/x86/Kconfig     | 1 -
+>  mm/Kconfig           | 7 +------
+>  4 files changed, 1 insertion(+), 9 deletions(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index cb782ac1c35d..1540348691c9 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -148,7 +148,6 @@ config PPC
+>  	select ARCH_MIGHT_HAVE_PC_PARPORT
+>  	select ARCH_MIGHT_HAVE_PC_SERIO
+>  	select ARCH_SUPPORTS_ATOMIC_RMW
+> -	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
 
-Thanks. That's aiming for 4.16 I assume?
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
