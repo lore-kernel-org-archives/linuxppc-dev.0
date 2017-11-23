@@ -1,20 +1,43 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=nyc3=cv=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjD3J1mQ7zDr4J
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 20:06:51 +1100 (AEDT)
-From: Laurent Vivier <lvivier@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@ozlabs.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Huth <thuth@redhat.com>, Sam Bobroff <sbobroff@redhat.com>,
- Laurent Vivier <lvivier@redhat.com>
-Subject: [PATCH] powerpc/xive: store server for masked interrupt in
- kvmppc_xive_set_xive()
-Date: Thu, 23 Nov 2017 10:06:33 +0100
-Message-Id: <20171123090633.873-1-lvivier@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjDld0x5dzDqpV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 20:38:21 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yjDld01pmz8vsd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 20:38:21 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3yjDlc2H5mz9s71
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 20:38:19 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAN9Y3eM091530
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 04:38:17 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2edrv0mb75-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 04:38:16 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 23 Nov 2017 09:38:15 -0000
+Subject: Re: [PATCH] powernv: Avoid calling trace tlbie in kexec path.
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
+ <1511377449.2a15exj7wg.naveen@linux.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 23 Nov 2017 15:08:11 +0530
+MIME-Version: 1.0
+In-Reply-To: <1511377449.2a15exj7wg.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <ff1f787c-afac-96fb-423e-ba55d05c835e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +47,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is needed to map kvmppc_xive_set_xive() behavior
-to kvmppc_xics_set_xive().
+On 11/23/2017 12:37 AM, Naveen N. Rao wrote:
+> Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
+>> called from native_hpte_clear(). This happens if the running kernel has
+>> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
+>> execute few RCU checks regardless of whether tracing is on or off.
+>> We are already in the last phase of kexec sequence in real mode with
+>> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN and
+>> causes kexec to fail.
+>>
+>> Fix this by not calling trace_tlbie() from native_hpte_clear().
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  arch/powerpc/mm/hash_native_64.c |   15 ++++++++++++---
+>>  1 file changed, 12 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/hash_native_64.c
+>> b/arch/powerpc/mm/hash_native_64.c
+>> index 3848af1..640cf56 100644
+>> --- a/arch/powerpc/mm/hash_native_64.c
+>> +++ b/arch/powerpc/mm/hash_native_64.c
+>> @@ -47,7 +47,8 @@
+>>
+>>  DEFINE_RAW_SPINLOCK(native_tlbie_lock);
+>>
+>> -static inline void __tlbie(unsigned long vpn, int psize, int apsize,
+>> int ssize)
+>> +static inline unsigned long  ___tlbie(unsigned long vpn, int psize,
+>> +                        int apsize, int ssize)
+>>  {
+>>      unsigned long va;
+>>      unsigned int penc;
+>> @@ -100,7 +101,15 @@ static inline void __tlbie(unsigned long vpn, int
+>> psize, int apsize, int ssize)
+>>                   : "memory");
+>>          break;
+>>      }
+>> -    trace_tlbie(0, 0, va, 0, 0, 0, 0);
+> 
+> Does it help if you use the _rcuidle variant instead, to turn off all
+> rcu checks for tracing __tlbie()?
+>     trace_tlbie_rcuidle(0, 0, va, 0, 0, 0, 0);
 
-As we store the server, kvmppc_xive_get_xive() can return
-the good value and we can also allow kvmppc_xive_int_on().
+It helps if tracepoint is not enabled. But with tracepoint enabled kexec
+still fails. I think we should not have tracepoint in kexec path at all.
+If someone enables it, kexec will definitely fail regardless of
+CONFIG_LOCKDEP.
 
-Signed-off-by: Laurent Vivier <lvivier@redhat.com>
----
- arch/powerpc/kvm/book3s_xive.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index bf457843e032..2781b8733038 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -584,10 +584,14 @@ int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
- 	 *       we could initialize interrupts with valid default
- 	 */
- 
--	if (new_act_prio != MASKED &&
--	    (state->act_server != server ||
--	     state->act_priority != new_act_prio))
--		rc = xive_target_interrupt(kvm, state, server, new_act_prio);
-+	if (state->act_server != server ||
-+	    state->act_priority != new_act_prio) {
-+		if (new_act_prio != MASKED)
-+			rc = xive_target_interrupt(kvm, state, server,
-+						   new_act_prio);
-+		if (!rc)
-+			state->act_server = server;
-+	}
- 
- 	/*
- 	 * Perform the final unmasking of the interrupt source
-@@ -646,14 +650,6 @@ int kvmppc_xive_int_on(struct kvm *kvm, u32 irq)
- 
- 	pr_devel("int_on(irq=0x%x)\n", irq);
- 
--	/*
--	 * Check if interrupt was not targetted
--	 */
--	if (state->act_priority == MASKED) {
--		pr_devel("int_on on untargetted interrupt\n");
--		return -EINVAL;
--	}
--
- 	/* If saved_priority is 0xff, do nothing */
- 	if (state->saved_priority == MASKED)
- 		return 0;
--- 
-2.13.6
+Thanks,
+-Mahesh.
