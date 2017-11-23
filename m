@@ -1,38 +1,28 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yj4rg0J2jzDrpV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 14:42:10 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAN3d8BN025225
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 22:42:09 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ednwbhx0r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 22:42:08 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 23 Nov 2017 03:42:06 -0000
-Subject: Re: [PATCH v3] cxl: Check if vphb exists before iterating over AFU
- devices
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org
-References: <20171123033857.13122-1-vaibhav@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 23 Nov 2017 14:41:58 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yj5Y53XxbzDrRp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 15:13:45 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id h3so1985349pln.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Nov 2017 20:13:45 -0800 (PST)
+Subject: Re: [PATCH kernel] vfio/spapr: Add trace points for map/unmap
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, iommu@lists.linux-foundation.org,
+ Joerg Roedel <joro@8bytes.org>
+References: <20171027030008.17200-1-aik@ozlabs.ru>
+ <8c58fcaa-dedc-e6be-44bf-2cb349ef9e38@ozlabs.ru>
+ <20171116171301.6552869b@t450s.home>
+ <52a19cfb-431f-522b-11de-c1c47f09a4c8@ozlabs.ru>
+Message-ID: <d367b17a-6efa-26a8-821b-42080c90e16e@ozlabs.ru>
+Date: Thu, 23 Nov 2017 15:13:37 +1100
 MIME-Version: 1.0
-In-Reply-To: <20171123033857.13122-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <304d5dd4-374e-24d3-36e9-b77bffe0b615@au1.ibm.com>
+In-Reply-To: <52a19cfb-431f-522b-11de-c1c47f09a4c8@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,81 +32,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/11/17 14:38, Vaibhav Jain wrote:
-> During an eeh a kernel-oops is reported if no vPHB is allocated to the
-> AFU. This happens as during AFU init, an error in creation of vPHB is
-> a non-fatal error. Hence afu->phb should always be checked for NULL
-> before iterating over it for the virtual AFU pci devices.
+On 17/11/17 17:58, Alexey Kardashevskiy wrote:
+> On 17/11/17 11:13, Alex Williamson wrote:
+>> On Tue, 14 Nov 2017 10:47:12 +1100
+>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>
+>>> On 27/10/17 14:00, Alexey Kardashevskiy wrote:
+>>>> This adds trace_map/trace_unmap tracepoints to spapr driver. Type1 already
+>>>> uses these via the IOMMU API (iommu_map/__iommu_unmap).
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>  
+>>
+>> Is this really legitimate to include tracepoints from a different
+>> subsystem?>  The vfio type1 backend gets these trace points by virtue of
+>> it actually using the IOMMU API, it doesn't call them itself.  I'm kind
+>> of surprised these are actually available to be called from a module.
 > 
-> This patch fixes the kenel-oops by adding a NULL pointer check for
-> afu->phb before it is dereferenced.
+> They are explicitly exported:
 > 
-> Fixes: 9e8df8a2196("cxl: EEH support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> EXPORT_TRACEPOINT_SYMBOL_GPL(map);
+> EXPORT_TRACEPOINT_SYMBOL_GPL(unmap);
+> 
+> I would think this is for things like drivers/vfio/vfio_iommu_spapr_tce.c ,
+> why else?...
+> 
+> 
+>> I suspect the way to do this is probably to define our own tracepoints
+>> in the vfio/spapr backend or insert tracepoints into the IOMMU layers
+>> that that code calls into rather than masquerading as tracepoints from
+>> a different subsystem.  Right?
+> 
+> This makes sense too. But it is going to be just cut-n-paste and some
+> confusion -
+> /sys/kernel/debug/tracing/events/iommu/map will still be present but
+> won't work and
+> /sys/kernel/debug/tracing/events/vfio/vfio_iommu_spapr_tce/map will.
+> 
+> Judges? :)
 
-Thanks for fixing it!
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Still nak? I discussed this locally, the conclusion was it is a matter of
+taste and this proposal is not that disgusting. Thanks.
 
-> ---
-> Changelog:
+
 > 
-> v3	-> Fixed a reverse NULL check [Fred]
 > 
-> Resend 	-> Added the 'Fixes' info and marking the patch to stable tree [Mpe]
 > 
-> v2     	-> Added the vphb NULL check to cxl_vphb_error_detected() [Andrew]
-> ---
->   drivers/misc/cxl/pci.c | 12 ++++++++++--
->   1 file changed, 10 insertions(+), 2 deletions(-)
+>>  Thanks,
+>>
+>> Alex
+>>
+>>>> ---
+>>>>
+>>>> Example:
+>>>>  qemu-system-ppc-8655  [096]   724.662740: unmap:                IOMMU: iova=0x000000003ffff000 size=4096 unmapped_size=4096
+>>>>  qemu-system-ppc-8656  [104]   724.970912: map:                  IOMMU: iova=0x0800000000000000 paddr=0x00007ffef7ff0000 size=65536
+>>>> ---
+>>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 12 ++++++++++--
+>>>>  1 file changed, 10 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>>>> index 63112c36ab2d..4531486c77c6 100644
+>>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>>>> @@ -22,6 +22,7 @@
+>>>>  #include <linux/vmalloc.h>
+>>>>  #include <linux/sched/mm.h>
+>>>>  #include <linux/sched/signal.h>
+>>>> +#include <trace/events/iommu.h>
+>>>>  
+>>>>  #include <asm/iommu.h>
+>>>>  #include <asm/tce.h>
+>>>> @@ -502,17 +503,19 @@ static int tce_iommu_clear(struct tce_container *container,
+>>>>  		struct iommu_table *tbl,
+>>>>  		unsigned long entry, unsigned long pages)
+>>>>  {
+>>>> -	unsigned long oldhpa;
+>>>> +	unsigned long oldhpa, unmapped, firstentry = entry, totalpages = pages;
+>>>>  	long ret;
+>>>>  	enum dma_data_direction direction;
+>>>>  
+>>>> -	for ( ; pages; --pages, ++entry) {
+>>>> +	for (unmapped = 0; pages; --pages, ++entry) {
+>>>>  		direction = DMA_NONE;
+>>>>  		oldhpa = 0;
+>>>>  		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
+>>>>  		if (ret)
+>>>>  			continue;
+>>>>  
+>>>> +		++unmapped;
+>>>> +
+>>>>  		if (direction == DMA_NONE)
+>>>>  			continue;
+>>>>  
+>>>> @@ -523,6 +526,9 @@ static int tce_iommu_clear(struct tce_container *container,
+>>>>  
+>>>>  		tce_iommu_unuse_page(container, oldhpa);
+>>>>  	}
+>>>> +	trace_unmap(firstentry << tbl->it_page_shift,
+>>>> +			totalpages << tbl->it_page_shift,
+>>>> +			unmapped << tbl->it_page_shift);
+>>>>  
+>>>>  	return 0;
+>>>>  }
+>>>> @@ -965,6 +971,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+>>>>  					direction);
+>>>>  
+>>>>  		iommu_flush_tce(tbl);
+>>>> +		if (!ret)
+>>>> +			trace_map(param.iova, param.vaddr, param.size);
+>>>>  
+>>>>  		return ret;
+>>>>  	}
+>>>>   
+>>>
+>>>
+>>
 > 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index bb7fd3f4edab..19969ee86d6f 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -2083,6 +2083,9 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
->   	/* There should only be one entry, but go through the list
->   	 * anyway
->   	 */
-> +	if (afu->phb == NULL)
-> +		return result;
-> +
->   	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
->   		if (!afu_dev->driver)
->   			continue;
-> @@ -2124,8 +2127,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
->   			 * Tell the AFU drivers; but we don't care what they
->   			 * say, we're going away.
->   			 */
-> -			if (afu->phb != NULL)
-> -				cxl_vphb_error_detected(afu, state);
-> +			cxl_vphb_error_detected(afu, state);
->   		}
->   		return PCI_ERS_RESULT_DISCONNECT;
->   	}
-> @@ -2265,6 +2267,9 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
->   		if (cxl_afu_select_best_mode(afu))
->   			goto err;
 > 
-> +		if (afu->phb == NULL)
-> +			continue;
-> +
->   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
->   			/* Reset the device context.
->   			 * TODO: make this less disruptive
-> @@ -2327,6 +2332,9 @@ static void cxl_pci_resume(struct pci_dev *pdev)
->   	for (i = 0; i < adapter->slices; i++) {
->   		afu = adapter->afu[i];
-> 
-> +		if (afu->phb == NULL)
-> +			continue;
-> +
->   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
->   			if (afu_dev->driver && afu_dev->driver->err_handler &&
->   			    afu_dev->driver->err_handler->resume)
-> 
+
 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Alexey
