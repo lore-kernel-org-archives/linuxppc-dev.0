@@ -1,44 +1,38 @@
-Return-Path: <srs0=2nzt=cv=linux.vnet.ibm.com=naveen.n.rao@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjFH74ZdqzDrJB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 21:02:11 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3yjFH73rSHz8tD0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 21:02:11 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3yjFH62MCXz9t2M
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 21:02:10 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjGX41Gk1zDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 21:58:27 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAN9xHJZ081727
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 05:02:08 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2edtj4fgbu-1
+ vANAvvIg070004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 05:58:25 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2edvyn8a68-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Nov 2017 05:02:07 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 05:58:24 -0500
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 23 Nov 2017 10:02:06 -0000
-Date: Thu, 23 Nov 2017 15:32:00 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powernv: Avoid calling trace tlbie in kexec path.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Mahesh Jagannath Salgaonkar
- <mahesh@linux.vnet.ibm.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
- <1511377449.2a15exj7wg.naveen@linux.ibm.com>
- <ff1f787c-afac-96fb-423e-ba55d05c835e@linux.vnet.ibm.com>
-In-Reply-To: <ff1f787c-afac-96fb-423e-ba55d05c835e@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 23 Nov 2017 10:58:22 -0000
+Subject: Re: [PATCH v3] cxl: Check if vphb exists before iterating over AFU
+ devices
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org
+References: <20171123033857.13122-1-vaibhav@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Thu, 23 Nov 2017 11:58:18 +0100
 MIME-Version: 1.0
+In-Reply-To: <20171123033857.13122-1-vaibhav@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1511430895.ji4w98bqzo.naveen@linux.ibm.com>
+Message-Id: <1d37c502-61fe-2df2-41d8-05cf46d45e47@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,59 +42,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh Jagannath Salgaonkar wrote:
-> On 11/23/2017 12:37 AM, Naveen N. Rao wrote:
->> Mahesh J Salgaonkar wrote:
->>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>
->>> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
->>> called from native_hpte_clear(). This happens if the running kernel has
->>> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
->>> execute few RCU checks regardless of whether tracing is on or off.
->>> We are already in the last phase of kexec sequence in real mode with
->>> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN an=
-d
->>> causes kexec to fail.
->>>
->>> Fix this by not calling trace_tlbie() from native_hpte_clear().
->>>
->>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
->>> ---
->>> =C2=A0arch/powerpc/mm/hash_native_64.c |=C2=A0=C2=A0 15 ++++++++++++---
->>> =C2=A01 file changed, 12 insertions(+), 3 deletions(-)
->>>
-
-[snip]
-
->>> @@ -100,7 +101,15 @@ static inline void __tlbie(unsigned long vpn,=20
->>> int
->>> psize, int apsize, int ssize)
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 : "memory");
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 break;
->>> =C2=A0=C2=A0=C2=A0=C2=A0 }
->>> -=C2=A0=C2=A0=C2=A0 trace_tlbie(0, 0, va, 0, 0, 0, 0);
->>=20
->> Does it help if you use the _rcuidle variant instead, to turn off all
->> rcu checks for tracing __tlbie()?
->> =C2=A0=C2=A0=C2=A0=C2=A0trace_tlbie_rcuidle(0, 0, va, 0, 0, 0, 0);
->=20
-> It helps if tracepoint is not enabled. But with tracepoint enabled kexec
-> still fails. I think we should not have tracepoint in kexec path at all.
-> If someone enables it, kexec will definitely fail regardless of
-> CONFIG_LOCKDEP.
-
-Ok, thanks for confirming that other tracepoints don't interfere with=20
-kexec. As Balbir points out, moving to TRACE_EVENT_CONDITION() with a=20
-global in_kexec variable may be the other option, but is probably=20
-overkill for a single tracepoint.
-
-Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 
-Thanks,
-Naveen
+Le 23/11/2017 à 04:38, Vaibhav Jain a écrit :
+> During an eeh a kernel-oops is reported if no vPHB is allocated to the
+> AFU. This happens as during AFU init, an error in creation of vPHB is
+> a non-fatal error. Hence afu->phb should always be checked for NULL
+> before iterating over it for the virtual AFU pci devices.
+> 
+> This patch fixes the kenel-oops by adding a NULL pointer check for
+> afu->phb before it is dereferenced.
+> 
+> Fixes: 9e8df8a2196("cxl: EEH support")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
 
-=
+Thanks.
+
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+> Changelog:
+> 
+> v3	-> Fixed a reverse NULL check [Fred]
+> 
+> Resend 	-> Added the 'Fixes' info and marking the patch to stable tree [Mpe]
+> 
+> v2     	-> Added the vphb NULL check to cxl_vphb_error_detected() [Andrew]
+> ---
+>   drivers/misc/cxl/pci.c | 12 ++++++++++--
+>   1 file changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index bb7fd3f4edab..19969ee86d6f 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -2083,6 +2083,9 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
+>   	/* There should only be one entry, but go through the list
+>   	 * anyway
+>   	 */
+> +	if (afu->phb == NULL)
+> +		return result;
+> +
+>   	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+>   		if (!afu_dev->driver)
+>   			continue;
+> @@ -2124,8 +2127,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   			 * Tell the AFU drivers; but we don't care what they
+>   			 * say, we're going away.
+>   			 */
+> -			if (afu->phb != NULL)
+> -				cxl_vphb_error_detected(afu, state);
+> +			cxl_vphb_error_detected(afu, state);
+>   		}
+>   		return PCI_ERS_RESULT_DISCONNECT;
+>   	}
+> @@ -2265,6 +2267,9 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+>   		if (cxl_afu_select_best_mode(afu))
+>   			goto err;
+> 
+> +		if (afu->phb == NULL)
+> +			continue;
+> +
+>   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+>   			/* Reset the device context.
+>   			 * TODO: make this less disruptive
+> @@ -2327,6 +2332,9 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+> 
+> +		if (afu->phb == NULL)
+> +			continue;
+> +
+>   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+>   			if (afu_dev->driver && afu_dev->driver->err_handler &&
+>   			    afu_dev->driver->err_handler->resume)
+> 
