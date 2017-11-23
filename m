@@ -2,23 +2,24 @@ Return-Path: <mail@maciej.szmigiero.name>
 Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjJTm5SHDzDrN5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 23:26:34 +1100 (AEDT)
-Subject: Re: [PATCH 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S,U}20_4
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Timur Tabi <timur@tabi.org>,
- alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Fabio Estevam <fabio.estevam@nxp.com>,
- linux-kernel <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjJTw1K6qzDrb6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 23:26:44 +1100 (AEDT)
+Subject: Re: [PATCH 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S, U}20_4
+To: Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Takashi Iwai <tiwai@suse.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 References: <53d527c0-89f6-d501-09e9-1effea8a5bac@maciej.szmigiero.name>
- <s5hwp2h4dto.wl-tiwai@suse.de>
+ <ff52e871-fec0-9095-f2c1-9680aedec431@sakamocchi.jp>
+ <4d0f43f5-0161-3dfb-1692-e755ad7fe641@maciej.szmigiero.name>
+ <181cd3a8-cc74-d858-071a-7ae3e465406a@sakamocchi.jp>
 From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Message-ID: <38602575-acc5-2106-38ef-3a71076de398@maciej.szmigiero.name>
-Date: Thu, 23 Nov 2017 13:26:25 +0100
+Message-ID: <e514c578-9ea1-8bbf-2c6e-84658f043a31@maciej.szmigiero.name>
+Date: Thu, 23 Nov 2017 13:26:37 +0100
 MIME-Version: 1.0
-In-Reply-To: <s5hwp2h4dto.wl-tiwai@suse.de>
+In-Reply-To: <181cd3a8-cc74-d858-071a-7ae3e465406a@sakamocchi.jp>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,59 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23.11.2017 09:08, Takashi Iwai wrote:
-> On Wed, 22 Nov 2017 20:17:34 +0100,
->  Maciej S. Szmigiero  wrote:
+On 23.11.2017 08:40, Takashi Sakamoto wrote:
+> On Nov 23 2017 08:44, Maciej S. Szmigiero wrote:
+>> On 23.11.2017 00:27, Takashi Sakamoto wrote:
+>>> On Nov 23 2017 04:17, Maciej S. Szmigiero wrote:
+>> (..)
+>>>> --- a/include/uapi/sound/asound.h
+>>>> +++ b/include/uapi/sound/asound.h
+>>>> @@ -236,7 +236,11 @@ typedef int __bitwise snd_pcm_format_t;
+>>>>    #define    SNDRV_PCM_FORMAT_DSD_U32_LE    ((__force snd_pcm_format_t) 50) /* DSD, 4-byte samples DSD (x32), little endian */
+>>>>    #define    SNDRV_PCM_FORMAT_DSD_U16_BE    ((__force snd_pcm_format_t) 51) /* DSD, 2-byte samples DSD (x16), big endian */
+>>>>    #define    SNDRV_PCM_FORMAT_DSD_U32_BE    ((__force snd_pcm_format_t) 52) /* DSD, 4-byte samples DSD (x32), big endian */
+>>>> -#define    SNDRV_PCM_FORMAT_LAST        SNDRV_PCM_FORMAT_DSD_U32_BE
+>>>> +#define    SNDRV_PCM_FORMAT_S20_4LE    ((__force snd_pcm_format_t) 53)    /* in four bytes */
+>>>> +#define    SNDRV_PCM_FORMAT_S20_4BE    ((__force snd_pcm_format_t) 54)    /* in four bytes */
+>>>> +#define    SNDRV_PCM_FORMAT_U20_4LE    ((__force snd_pcm_format_t) 55)    /* in four bytes */
+>>>> +#define    SNDRV_PCM_FORMAT_U20_4BE    ((__force snd_pcm_format_t) 56)    /* in four bytes */
+>>>> +#define    SNDRV_PCM_FORMAT_LAST        SNDRV_PCM_FORMAT_U20_4BE
+>>>
+>>> In my opinion, for this type of definition, it's better to declare left/right-adjusted or padding side. (Of course, silence definition is already a hint, however the lack of information forces developers to have a careful behaviour to handle entries on the list.
+>>> (I note that in current ALSA PCM interface there's no way to deliver MSB/LSB-first information about sample format.)
 >>
->> This format is similar to existing SNDRV_PCM_FORMAT_{S,U}20_3 that keep
->> 20-bit PCM samples in 3 bytes, however i.MX6 platform SSI FIFO does not
->> allow 3-byte accesses (including DMA) so a 4-byte format is needed for it.
+>> No other sound format includes this information in its name
+> 
+> You overlook comments in 'SNDRV_PCM_FORMAT_[U|S]24_[LE|BE]'. Let me refer to them [1]:
+> 
+> 198 #define SNDRV_PCM_FORMAT_S24_LE ((__force snd_pcm_format_t) 6) /* low three bytes */
+> 199 #define SNDRV_PCM_FORMAT_S24_BE ((__force snd_pcm_format_t) 7) /* low three bytes */
+> 200 #define SNDRV_PCM_FORMAT_U24_LE ((__force snd_pcm_format_t) 8) /* low three bytes */
+> 201 #define SNDRV_PCM_FORMAT_U24_BE ((__force snd_pcm_format_t) 9) /* low three bytes */
+
+Yes, I can add this information in a comment, just like these formats are
+described as "low three bytes" (in other words, LSB justified formats)
+
+> In your way, these types of format can be represented by 'SNDRV_PCM_FORMAT_[U|S]24_4[LE|BE]', thus for playback direction they
+> mean:
+> 
+> ```
+> #include <sound/asound.h>
+> #include <endian.h>
+> 
+> uint32_t *buf;
+> uint32_t sample;
+> snd_pcm_format_t format;
+> 
+> sample = generate_a_sample();
+> (sample & ~0x00ffffff) /* invalid bits as sample */
+> 
+> if (format == SNDRV_PCM_FORMAT_[U|S]24_LE) {
+>   buf[0] = htole32(sample);
+> else
+>   buf[0] = htobe32(sample);
+> 
+> /* transfer content of the buf via ALSA kernel stuffs. */
+> ```
+> 
+> The comments are good enough for application developers in an aspect of a position for padding.
+> 
+> In general, studying from the past is preferable behaviour to be genius, however accumulated history includes mistakes and defects. Just pretending the past is not so genius, without further consideration.
+> 
+> Actually additions of the rest of entries for PCM format were done without enough cares of what information they give to application developers. Adding new entries is easier than fixing and improving them once exposed. It's a reason that they're left what they're.
+> 
+> I wish you had enough care to assist applications developers. Without applications, drivers are worthless and just waste of code base.
+
+Right, I will add this information to a comment.
+
+(..)
+>>> Additionally, alsa-lib includes some codes related to the definition[1]. If you'd like to thing goes well out of ALSA SoC part, it's better to submit changes to the library as well.
+>>>
+>>> [1] http://git.alsa-project.org/?p=alsa-lib.git;a=blob;f=src/pcm/pcm_misc.c;h=5420b1895713a3aec3624a5218794a7b49baf167;hb=HEAD
 >>
->> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
->> ---
->>  include/sound/pcm.h         |  8 ++++++++
->>  include/sound/soc-dai.h     |  2 ++
->>  include/uapi/sound/asound.h | 10 +++++++++-
->>  sound/core/pcm_misc.c       | 16 ++++++++++++++++
->>  4 files changed, 35 insertions(+), 1 deletion(-)
->>
->> diff --git a/include/sound/pcm.h b/include/sound/pcm.h
->> index 24febf9e177c..7ad2d3f0934f 100644
->> --- a/include/sound/pcm.h
->> +++ b/include/sound/pcm.h
->> @@ -191,6 +191,10 @@ struct snd_pcm_ops {
->>  #define SNDRV_PCM_FMTBIT_DSD_U32_LE	_SNDRV_PCM_FMTBIT(DSD_U32_LE)
->>  #define SNDRV_PCM_FMTBIT_DSD_U16_BE	_SNDRV_PCM_FMTBIT(DSD_U16_BE)
->>  #define SNDRV_PCM_FMTBIT_DSD_U32_BE	_SNDRV_PCM_FMTBIT(DSD_U32_BE)
->> +#define SNDRV_PCM_FMTBIT_S20_4LE	_SNDRV_PCM_FMTBIT(S20_4LE)
->> +#define SNDRV_PCM_FMTBIT_U20_4LE	_SNDRV_PCM_FMTBIT(U20_4LE)
->> +#define SNDRV_PCM_FMTBIT_S20_4BE	_SNDRV_PCM_FMTBIT(S20_4BE)
->> +#define SNDRV_PCM_FMTBIT_U20_4BE	_SNDRV_PCM_FMTBIT(U20_4BE)
+>> I have alsa-lib changes ready for these formats - they were needed to
+>> test these patches, will post them when this is merged on the kernel
+>> side (in case some changes are needed which affect both).
 > 
-> The conventional names aren't with "4" suffix,
-> e.g. SNDRV_PCM_FMTBIT_S20_LE.
-
-Will rename it in a respin.
-> Also, there are still empty slots under 32, e.g. start from 25.
-> The formats over 31 were used for 3 bytes or other unusual formats
-> (although nowadays it makes little sense), and the slots < 32 would
-> fit for 4 bytes linear format.
-
-Will renumber these formats to start from 25 in a respin.
-
-> It's still an open question whether we should increase the protocol
-> number when we add a new PCM format definition.  I guess it's not, as
-> the ABI behavior itself doesn't change, but I might have overlooked
-> some possible breakage.
-
-This isn't an incompatible, application-breaking, ABI change (it is
-rather kind of an additional "ABI"), so I think an ALSA protocol number
-should not be increased for it.
-
-> thanks,
+> Please pay enough care when writing patch comment. Silence means nothing, at least for reviewers, even if you have good preparations.
 > 
-> Takashi
-> 
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound.git/tree/include/uapi/sound/asound.h?h=sound-4.15-rc1#n198
 
-Thanks,
-Maciej
+I will add this information (about alsa-lib changes) to commit notes in this patch description.
+
+> Regards
+> 
+> Takashi Sakamoto
+
+Best regards,
+Maciej Szmigiero
