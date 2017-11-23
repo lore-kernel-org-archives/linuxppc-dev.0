@@ -1,22 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjGgH6mmdzDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 22:04:43 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v6 06/10] powerpc/lib/code-patching: Use alternate map for
- patch_instruction()
-In-Reply-To: <c89803a4-3d43-d24c-171c-75a42a48f59d@c-s.fr>
-References: <1499086914-25695-1-git-send-email-mpe@ellerman.id.au>
- <1499086914-25695-6-git-send-email-mpe@ellerman.id.au>
- <c89803a4-3d43-d24c-171c-75a42a48f59d@c-s.fr>
-Date: Thu, 23 Nov 2017 22:04:41 +1100
-Message-ID: <877euh2r3q.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjGhN4XyFzDrpf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 22:05:40 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vANB5CTL145085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:05:38 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2edscsg2ky-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Nov 2017 06:05:37 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Thu, 23 Nov 2017 11:05:35 -0000
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH] cxl: Add support for ASB_Notify on POWER9
+Date: Thu, 23 Nov 2017 12:05:32 +0100
+Message-Id: <1511435132-24020-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,220 +33,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
+The POWER9 core supports a new feature: ASB_Notify which requires the
+support of the Special Purpose Register: TIDR.
 
-> Le 03/07/2017 =C3=A0 15:01, Michael Ellerman a =C3=A9crit=C2=A0:
->> From: Balbir Singh <bsingharora@gmail.com>
->>=20
->> This patch creates the window using text_poke_area, allocated via
->> get_vm_area(). text_poke_area is per CPU to avoid locking.
->> text_poke_area for each cpu is setup using late_initcall, prior to
->> setup of these alternate mapping areas, we continue to use direct
->> write to change/modify kernel text. With the ability to use alternate
->> mappings to write to kernel text, it provides us the freedom to then
->> turn text read-only and implement CONFIG_STRICT_KERNEL_RWX.
->>=20
->> This code is CPU hotplug aware to ensure that the we have mappings for
->> any new cpus as they come online and tear down mappings for any CPUs
->> that go offline.
->>=20
->> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->>   arch/powerpc/lib/code-patching.c | 171 +++++++++++++++++++++++++++++++=
-+++++++-
->>   1 file changed, 167 insertions(+), 4 deletions(-)
->>=20
->> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-pa=
-tching.c
->> index 500b0f6a0b64..c9de03e0c1f1 100644
->> --- a/arch/powerpc/lib/code-patching.c
->> +++ b/arch/powerpc/lib/code-patching.c
->> @@ -12,23 +12,186 @@
->>   #include <linux/vmalloc.h>
->>   #include <linux/init.h>
->>   #include <linux/mm.h>
->> -#include <asm/page.h>
->> -#include <asm/code-patching.h>
->> +#include <linux/cpuhotplug.h>
->> +#include <linux/slab.h>
->>   #include <linux/uaccess.h>
->>   #include <linux/kprobes.h>
->>=20=20=20
->> +#include <asm/pgtable.h>
->> +#include <asm/tlbflush.h>
->> +#include <asm/page.h>
->> +#include <asm/code-patching.h>
->>=20=20=20
->> -int patch_instruction(unsigned int *addr, unsigned int instr)
->> +static int __patch_instruction(unsigned int *addr, unsigned int instr)
->>   {
->>   	int err;
->>=20=20=20
->>   	__put_user_size(instr, addr, 4, err);
->>   	if (err)
->>   		return err;
->> -	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (addr));
->> +
->> +	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
->> +
->> +	return 0;
->> +}
->> +
->
-> [...]
->
->> +int patch_instruction(unsigned int *addr, unsigned int instr)
->> +{
->> +	int err;
->> +	unsigned int *dest =3D NULL;
->> +	unsigned long flags;
->> +	unsigned long text_poke_addr;
->> +	unsigned long kaddr =3D (unsigned long)addr;
->> +
->> +	/*
->> +	 * During early early boot patch_instruction is called
->> +	 * when text_poke_area is not ready, but we still need
->> +	 * to allow patching. We just do the plain old patching
->> +	 * We use slab_is_available and per cpu read * via this_cpu_read
->> +	 * of text_poke_area. Per-CPU areas might not be up early
->> +	 * this can create problems with just using this_cpu_read()
->> +	 */
->> +	if (!slab_is_available() || !this_cpu_read(text_poke_area))
->> +		return __patch_instruction(addr, instr);
->> +
->> +	local_irq_save(flags);
->> +
->> +	text_poke_addr =3D (unsigned long)__this_cpu_read(text_poke_area)->add=
-r;
->> +	if (map_patch_area(addr, text_poke_addr)) {
->> +		err =3D -1;
->> +		goto out;
->> +	}
->> +
->> +	dest =3D (unsigned int *)(text_poke_addr) +
->> +			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
->> +
->> +	/*
->> +	 * We use __put_user_size so that we can handle faults while
->> +	 * writing to dest and return err to handle faults gracefully
->> +	 */
->> +	__put_user_size(instr, dest, 4, err);
->> +	if (!err)
->> +		asm ("dcbst 0, %0; sync; icbi 0,%0; icbi 0,%1; sync; isync"
->> +			::"r" (dest), "r"(addr));
->
-> Is the second icbi really needed since the alternative area is mapped=20
-> with PAGE_KERNEL which is not executable ?
+The ASB_Notify command, generated by the AFU, will attempt to
+wake-up the host thread identified by the particular LPID:PID:TID.
 
-The use of dest vs addr is hard to follow. The second icbi is of addr,
-which is the executable mapping, so yes we need that icbi.
+This patch assign a unique TIDR (thread id) for the current thread which
+will be used in the process element entry.
 
-But the first icbi could be skipped, it's to dest which is not
-executable. Is that what you meant? Or am I missing the point entirely.
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/process.c |  2 ++
+ drivers/misc/cxl/api.c        |  9 +++++++++
+ drivers/misc/cxl/context.c    | 21 +++++++++++++++++++++
+ drivers/misc/cxl/cxl.h        |  6 ++++++
+ drivers/misc/cxl/cxllib.c     |  2 +-
+ drivers/misc/cxl/file.c       | 13 +++++++++++++
+ drivers/misc/cxl/native.c     |  2 +-
+ include/uapi/misc/cxl.h       |  3 ++-
+ 8 files changed, 55 insertions(+), 3 deletions(-)
 
-> If we could avoid that, we could refactor this part as follows:
-
-Yeah that would be a good clean up I think.
-
-> diff --git a/arch/powerpc/lib/code-patching.c=20
-> b/arch/powerpc/lib/code-patching.c
-> index d469224c4ada..85031de43bb9 100644
-> --- a/arch/powerpc/lib/code-patching.c
-> +++ b/arch/powerpc/lib/code-patching.c
-> @@ -23,15 +23,17 @@
->   #include <asm/code-patching.h>
->   #include <asm/setup.h>
->
-> -static int __patch_instruction(unsigned int *addr, unsigned int instr)
-> +static int __patch_instruction(unsigned int *addr, unsigned int instr,
-> +			       unsigned int *dest)
-
-Renaming addr vs dest would help I think.
-
-ie. maybe:
-
-static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
-			       unsigned int *patch_addr)
-
-Or something.
-
-cheers
-
->   {
->   	int err;
->
-> -	__put_user_size(instr, addr, 4, err);
-> +	__put_user_size(instr, dest, 4, err);
->   	if (err)
->   		return err;
->
-> -	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
-> +	asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (dest),
-> +							    "r" (addr));
->
->   	return 0;
->   }
-> @@ -149,7 +151,7 @@ int patch_instruction(unsigned int *addr, unsigned=20
-> int instr)
->   	 * to allow patching. We just do the plain old patching
->   	 */
->   	if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
-> -		return __patch_instruction(addr, instr);
-> +		return __patch_instruction(addr, instr, addr);
->
->   	local_irq_save(flags);
->
-> @@ -162,14 +164,7 @@ int patch_instruction(unsigned int *addr, unsigned=20
-> int instr)
->   	dest =3D (unsigned int *)(text_poke_addr) +
->   			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
->
-> -	/*
-> -	 * We use __put_user_size so that we can handle faults while
-> -	 * writing to dest and return err to handle faults gracefully
-> -	 */
-> -	__put_user_size(instr, dest, 4, err);
-> -	if (!err)
-> -		asm ("dcbst 0, %0; sync; icbi 0,%0; icbi 0,%1; sync; isync"
-> -			::"r" (dest), "r"(addr));
-> +	__patch_instruction(addr, instr, dest);
->
->   	err =3D unmap_patch_area(text_poke_addr);
->   	if (err)
-> @@ -184,7 +179,7 @@ int patch_instruction(unsigned int *addr, unsigned=20
-> int instr)
->
->   int patch_instruction(unsigned int *addr, unsigned int instr)
->   {
-> -	return __patch_instruction(addr, instr);
-> +	return __patch_instruction(addr, instr, addr);
->   }
->
->   #endif /* CONFIG_STRICT_KERNEL_RWX */
->
->
->> +
->> +	err =3D unmap_patch_area(text_poke_addr);
->> +	if (err)
->> +		pr_warn("failed to unmap %lx\n", text_poke_addr);
->> +
->> +out:
->> +	local_irq_restore(flags);
->> +
->> +	return err;
->> +}
->> +#else /* !CONFIG_STRICT_KERNEL_RWX */
->> +
->> +int patch_instruction(unsigned int *addr, unsigned int instr)
->> +{
->> +	return __patch_instruction(addr, instr);
->> +}
->> +
->> +#endif /* CONFIG_STRICT_KERNEL_RWX */
->> +NOKPROBE_SYMBOL(patch_instruction);
->> +
->>   int patch_branch(unsigned int *addr, unsigned long target, int flags)
->>   {
->>   	return patch_instruction(addr, create_branch(addr, target, flags));
->>=20
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index bfdd783..370fec9 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1557,6 +1557,7 @@ void clear_thread_tidr(struct task_struct *t)
+ 	free_thread_tidr(t->thread.tidr);
+ 	t->thread.tidr = 0;
+ }
++EXPORT_SYMBOL_GPL(clear_thread_tidr);
+ 
+ void arch_release_task_struct(struct task_struct *t)
+ {
+@@ -1583,6 +1584,7 @@ int set_thread_tidr(struct task_struct *t)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(set_thread_tidr);
+ 
+ #endif /* CONFIG_PPC64 */
+ 
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 7c11bad..121bfbc 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -684,3 +684,12 @@ void _cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
+ 	}
+ }
+ /* Exported via cxl_base */
++
++int cxl_thread_tidr(struct cxl_context *ctx, int assign)
++{
++	if (!ctx)
++		return -EINVAL;
++
++	return cxl_context_thread_tidr(ctx, assign);
++}
++EXPORT_SYMBOL_GPL(cxl_thread_tidr);
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 12a41b2..6fd61a8 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -22,6 +22,7 @@
+ #include <asm/cputable.h>
+ #include <asm/current.h>
+ #include <asm/copro.h>
++#include <asm/switch_to.h>
+ 
+ #include "cxl.h"
+ 
+@@ -42,6 +43,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
+ 
+ 	ctx->afu = afu;
+ 	ctx->master = master;
++	ctx->tid = 0;
+ 	ctx->pid = NULL; /* Set in start work ioctl */
+ 	mutex_init(&ctx->mapping_lock);
+ 	ctx->mapping = NULL;
+@@ -362,3 +364,22 @@ void cxl_context_mm_count_put(struct cxl_context *ctx)
+ 	if (ctx->mm)
+ 		mmdrop(ctx->mm);
+ }
++
++int cxl_context_thread_tidr(struct cxl_context *ctx, int assign)
++{
++	int rc = 0;
++
++	/* Clear any TIDR value assigned to the current thread */
++	if (!assign) {
++		clear_thread_tidr(current);
++		ctx->tid = 0;
++	} else {
++		/* Assign a unique TIDR (thread id) for the current thread */
++		rc = set_thread_tidr(current);
++		if (!rc)
++			ctx->tid = current->thread.tidr;
++	}
++	pr_devel("%s: current tidr: %d\n", __func__, ctx->tid);
++
++	return rc;
++}
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index e46a406..5f8678f 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -561,6 +561,7 @@ struct cxl_context {
+ 	unsigned int sst_size, sst_lru;
+ 
+ 	wait_queue_head_t wq;
++	u32 tid;
+ 	/* use mm context associated with this pid for ds faults */
+ 	struct pid *pid;
+ 	spinlock_t lock; /* Protects pending_irq_mask, pending_fault and fault_addr */
+@@ -1169,4 +1170,9 @@ void cxl_context_mm_count_get(struct cxl_context *ctx);
+ /* Decrements the reference count to "struct mm_struct" */
+ void cxl_context_mm_count_put(struct cxl_context *ctx);
+ 
++/* Clear any TIDR value or assign a unique TIDR (thread id) for the
++ * current thread
++ */
++int cxl_context_thread_tidr(struct cxl_context *ctx, int assign);
++
+ #endif
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index dc9bc18..126d988 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -202,7 +202,7 @@ int cxllib_get_PE_attributes(struct task_struct *task,
+ 	} else {
+ 		attr->pid = 0;
+ 	}
+-	attr->tid = 0;
++	attr->tid = current->thread.tidr;
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 76c0b0c..f0666ee 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -300,6 +300,17 @@ static long afu_ioctl_get_afu_id(struct cxl_context *ctx,
+ 	return 0;
+ }
+ 
++static long afu_ioctl_thread_tidr(struct cxl_context *ctx,
++				  int __user *uassign)
++{
++	int assign;
++
++	if (copy_from_user(&assign, uassign, sizeof(assign)))
++		return -EFAULT;
++
++	return cxl_context_thread_tidr(ctx, assign);
++}
++
+ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+@@ -319,6 +330,8 @@ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	case CXL_IOCTL_GET_AFU_ID:
+ 		return afu_ioctl_get_afu_id(ctx, (struct cxl_afu_id __user *)
+ 					    arg);
++	case CXL_IOCTL_THREAD_TIDR:
++		return afu_ioctl_thread_tidr(ctx, (int __user *)arg);
+ 	}
+ 	return -EINVAL;
+ }
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 02b6b45..657c4a9 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -673,7 +673,7 @@ static int process_element_entry_psl9(struct cxl_context *ctx, u64 wed, u64 amr)
+ 		pid = ctx->mm->context.id;
+ 	}
+ 
+-	ctx->elem->common.tid = 0;
++	ctx->elem->common.tid = cpu_to_be32(ctx->tid);
+ 	ctx->elem->common.pid = cpu_to_be32(pid);
+ 
+ 	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx));
+diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
+index 49e8fd0..78b5eb5 100644
+--- a/include/uapi/misc/cxl.h
++++ b/include/uapi/misc/cxl.h
+@@ -81,7 +81,8 @@ struct cxl_adapter_image {
+ /* AFU devices */
+ #define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
+ #define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
+-#define CXL_IOCTL_GET_AFU_ID            _IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
++#define CXL_IOCTL_GET_AFU_ID		_IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
++#define CXL_IOCTL_THREAD_TIDR		_IOR(CXL_MAGIC, 0x03, int)
+ /* adapter devices */
+ #define CXL_IOCTL_DOWNLOAD_IMAGE        _IOW(CXL_MAGIC, 0x0A, struct cxl_adapter_image)
+ #define CXL_IOCTL_VALIDATE_IMAGE        _IOW(CXL_MAGIC, 0x0B, struct cxl_adapter_image)
+-- 
+2.7.4
