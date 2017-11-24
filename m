@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtl44xvzDrbn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:39 +1100 (AEDT)
-In-Reply-To: <1511327739-21688-2-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtm4Xs4zDrcT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:40 +1100 (AEDT)
+In-Reply-To: <20171122122852.20078-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: anju@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [v2,2/2] powerpc/perf: Fix IMC_MAX_PMU macro
-Message-Id: <3yjrtl1ZdSz9t2Q@ozlabs.org>
-Date: Fri, 24 Nov 2017 20:46:38 +1100 (AEDT)
+Cc: npiggin@gmail.com
+Subject: Re: powerpc/64s: Fix Power9 DD2.1 logic in DT CPU features
+Message-Id: <3yjrtm0MsXz9t2d@ozlabs.org>
+Date: Fri, 24 Nov 2017 20:46:39 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,19 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-11-22 at 05:15:39 UTC, Madhavan Srinivasan wrote:
-> IMC_MAX_PMU is used for static storage (per_nest_pmu_arr) which holds
-> nest pmu information. Current value for the macro is 32 based on
-> the initial number of nest pmu units supported by the nest microcode.
-> But going forward, microcode could support more nest units. Instead
-> of static storage, patch to fix the code to dynamically allocate an
-> array based on the number of nest imc units found in the device tree.
+On Wed, 2017-11-22 at 12:28:52 UTC, Michael Ellerman wrote:
+> I got the logic wrong in the DT CPU features code when I added the
+> Power9 DD2.1 feature. We should be setting the bit if we detect a
+> DD2.1, not clearing it if we detect a DD2.0.
 > 
-> Fixes:8f95faaac56c1 ('powerpc/powernv: Detect and create IMC device')
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> This code isn't actually exercised at the moment so nothing is
+> actually broken.
+> 
+> Fixes: 3ffa9d9e2a7c ("powerpc/64s: Fix Power9 DD2.0 workarounds by adding DD2.1 feature")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/73ce9aec65b17433e18163d07eb5cb
+https://git.kernel.org/powerpc/c/4d6c51b107cc73b15a377224549aa5
 
 cheers
