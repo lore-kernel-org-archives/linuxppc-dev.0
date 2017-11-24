@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <colin.king@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtp6RztzDrnw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:42 +1100 (AEDT)
-In-Reply-To: <20171124035102.28051-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: yilzhang@redhat.com, david@gibson.dropbear.id.au
-Subject: Re: powerpc/kexec: Fix kexec/kdump in P9 guest kernels
-Message-Id: <3yjrtp24pQz9t20@ozlabs.org>
-Date: Fri, 24 Nov 2017 20:46:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjsQg2ZwtzDr1w
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 21:10:51 +1100 (AEDT)
+From: Colin King <colin.king@canonical.com>
+To: Li Yang <leoyang.li@nxp.com>, Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] USB: gadget: udc: fix spelling mistake "unexpect" ->
+ "unexpected"
+Date: Fri, 24 Nov 2017 10:10:44 +0000
+Message-Id: <20171124101044.26554-1-colin.king@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,28 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-11-24 at 03:51:02 UTC, Michael Ellerman wrote:
-> The code that cleans up the IAMR/AMOR before kexec'ing failed to
-> remember that when we're running as a guest AMOR is not writable, it's
-> hypervisor privileged.
-> 
-> They symptom is that the kexec stops before entering purgatory and
-> nothing else is seen on the console. If you examine the state of the
-> system all threads will be in the 0x700 program check handler.
-> 
-> Fix it by making the write to AMOR dependent on HV mode.
-> 
-> Fixes: 1e2a516e89fc ("powerpc/kexec: Fix radix to hash kexec due to IAMR/AMOR")
-> Cc: stable@vger.kernel.org # v4.10+
-> Reported-by: Yilin Zhang <yilzhang@redhat.com>
-> Debugged-by: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> Tested-by: David Gibson <david@gibson.dropbear.id.au>
+From: Colin Ian King <colin.king@canonical.com>
 
-Applied to powerpc fixes.
+Trival fix to spelling mistake in ERR message
 
-https://git.kernel.org/powerpc/c/2621e945fbf1d6df5f3f0ba7be5bae
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/usb/gadget/udc/fsl_udc_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index d606d4f13098..e5b4ee96c4bf 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -1543,7 +1543,7 @@ static void ep0_req_complete(struct fsl_udc *udc, struct fsl_ep *ep0,
+ 		udc->ep0_state = WAIT_FOR_SETUP;
+ 		break;
+ 	case WAIT_FOR_SETUP:
+-		ERR("Unexpect ep0 packets\n");
++		ERR("Unexpected ep0 packets\n");
+ 		break;
+ 	default:
+ 		ep0stall(udc);
+-- 
+2.14.1
