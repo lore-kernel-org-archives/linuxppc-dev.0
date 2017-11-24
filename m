@@ -1,16 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtm6X5dzDrnn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:40 +1100 (AEDT)
-In-Reply-To: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtn41wYzDrnn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:41 +1100 (AEDT)
+In-Reply-To: <20171123033857.13122-1-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powernv: Avoid calling trace tlbie in kexec path.
-Message-Id: <3yjrtm43yYz9sRn@ozlabs.org>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
+ Alastair D'Silva <alastair@linux.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [v3] cxl: Check if vphb exists before iterating over AFU devices
+Message-Id: <3yjrtn33cvz9s71@ozlabs.org>
 Date: Fri, 24 Nov 2017 20:46:40 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,26 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-11-22 at 17:32:07 UTC, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, 2017-11-23 at 03:38:57 UTC, Vaibhav Jain wrote:
+> During an eeh a kernel-oops is reported if no vPHB is allocated to the
+> AFU. This happens as during AFU init, an error in creation of vPHB is
+> a non-fatal error. Hence afu->phb should always be checked for NULL
+> before iterating over it for the virtual AFU pci devices.
 > 
-> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
-> called from native_hpte_clear(). This happens if the running kernel has
-> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
-> execute few RCU checks regardless of whether tracing is on or off.
-> We are already in the last phase of kexec sequence in real mode with
-> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN and
-> causes kexec to fail.
+> This patch fixes the kenel-oops by adding a NULL pointer check for
+> afu->phb before it is dereferenced.
 > 
-> Fix this by not calling trace_tlbie() from native_hpte_clear().
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Fixes: 9e8df8a2196("cxl: EEH support")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/a3961f824cdbe7eb431254dc7d8f6f
+https://git.kernel.org/powerpc/c/12841f87b7a8ceb3d54f171660f72a
 
 cheers
