@@ -2,16 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjntX055KzDrZc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 18:31:15 +1100 (AEDT)
-Message-Id: <d282fc60052bbe13c3ac19e3e9389603d0d46e44.1511506950.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjntd3RmDzDrbB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 18:31:21 +1100 (AEDT)
+Message-Id: <8703033cf68861aba6424b8c13694e9823f50f98.1511506950.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/2] powerpc/lib/feature-fixups: use raw_patch_instruction()
+Subject: [PATCH 1/2] powerpc/lib/code-patching: refactor patch_instruction()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 24 Nov 2017 08:31:09 +0100 (CET)
+Date: Fri, 24 Nov 2017 08:31:07 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,94 +21,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-feature fixups need to use patch_instruction() early in the boot,
-even before the code is relocated to its final address, requiring
-patch_instruction() to use PTRRELOC() in order to address data.
+patch_instruction() uses almost the same sequence as
+__patch_instruction()
 
-But feature fixups applies on code before it is set to read only,
-even for modules. Therefore, feature fixups can use
-raw_patch_instruction() instead.
+This patch refactor it so that patch_instruction() uses
+__patch_instruction() instead of duplicating code.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/code-patching.h | 1 +
- arch/powerpc/lib/code-patching.c         | 4 ++--
- arch/powerpc/lib/feature-fixups.c        | 8 ++++----
- 3 files changed, 7 insertions(+), 6 deletions(-)
+ arch/powerpc/lib/code-patching.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index abef812de7f8..1090024e8519 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -31,6 +31,7 @@ unsigned int create_cond_branch(const unsigned int *addr,
- 				unsigned long target, int flags);
- int patch_branch(unsigned int *addr, unsigned long target, int flags);
- int patch_instruction(unsigned int *addr, unsigned int instr);
-+int raw_patch_instruction(unsigned int *addr, unsigned int instr);
- 
- int instr_is_relative_branch(unsigned int instr);
- int instr_is_branch_to_addr(const unsigned int *instr, unsigned long addr);
 diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 80954c910b66..b7c555df5cd6 100644
+index d469224c4ada..80954c910b66 100644
 --- a/arch/powerpc/lib/code-patching.c
 +++ b/arch/powerpc/lib/code-patching.c
-@@ -38,7 +38,7 @@ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+@@ -23,19 +23,26 @@
+ #include <asm/code-patching.h>
+ #include <asm/setup.h>
+ 
+-static int __patch_instruction(unsigned int *addr, unsigned int instr)
++static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
++			       unsigned int *patch_addr)
+ {
+ 	int err;
+ 
+-	__put_user_size(instr, addr, 4, err);
++	__put_user_size(instr, patch_addr, 4, err);
+ 	if (err)
+ 		return err;
+ 
+-	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" :: "r" (addr));
++	asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (patch_addr),
++							    "r" (exec_addr));
+ 
  	return 0;
  }
  
--static int raw_patch_instruction(unsigned int *addr, unsigned int instr)
-+int raw_patch_instruction(unsigned int *addr, unsigned int instr)
++static int raw_patch_instruction(unsigned int *addr, unsigned int instr)
++{
++	return __patch_instruction(addr, instr, addr);
++}
++
+ #ifdef CONFIG_STRICT_KERNEL_RWX
+ static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
+ 
+@@ -138,7 +145,7 @@ static inline int unmap_patch_area(unsigned long addr)
+ int patch_instruction(unsigned int *addr, unsigned int instr)
  {
- 	return __patch_instruction(addr, instr, addr);
- }
-@@ -155,7 +155,7 @@ int patch_instruction(unsigned int *addr, unsigned int instr)
- 	 * when text_poke_area is not ready, but we still need
+ 	int err;
+-	unsigned int *dest = NULL;
++	unsigned int *patch_addr = NULL;
+ 	unsigned long flags;
+ 	unsigned long text_poke_addr;
+ 	unsigned long kaddr = (unsigned long)addr;
+@@ -149,7 +156,7 @@ int patch_instruction(unsigned int *addr, unsigned int instr)
  	 * to allow patching. We just do the plain old patching
  	 */
--	if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
-+	if (!this_cpu_read(text_poke_area))
- 		return raw_patch_instruction(addr, instr);
+ 	if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
+-		return __patch_instruction(addr, instr);
++		return raw_patch_instruction(addr, instr);
  
  	local_irq_save(flags);
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 41cf5ae273cf..0872d60ede10 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -62,7 +62,7 @@ static int patch_alt_instruction(unsigned int *src, unsigned int *dest,
- 		}
+ 
+@@ -159,17 +166,10 @@ int patch_instruction(unsigned int *addr, unsigned int instr)
+ 		goto out;
  	}
  
--	patch_instruction(dest, instr);
-+	raw_patch_instruction(dest, instr);
+-	dest = (unsigned int *)(text_poke_addr) +
++	patch_addr = (unsigned int *)(text_poke_addr) +
+ 			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
  
- 	return 0;
- }
-@@ -91,7 +91,7 @@ static int patch_feature_section(unsigned long value, struct fixup_entry *fcur)
- 	}
+-	/*
+-	 * We use __put_user_size so that we can handle faults while
+-	 * writing to dest and return err to handle faults gracefully
+-	 */
+-	__put_user_size(instr, dest, 4, err);
+-	if (!err)
+-		asm ("dcbst 0, %0; sync; icbi 0,%0; icbi 0,%1; sync; isync"
+-			::"r" (dest), "r"(addr));
++	__patch_instruction(addr, instr, patch_addr);
  
- 	for (; dest < end; dest++)
--		patch_instruction(dest, PPC_INST_NOP);
-+		raw_patch_instruction(dest, PPC_INST_NOP);
+ 	err = unmap_patch_area(text_poke_addr);
+ 	if (err)
+@@ -184,7 +184,7 @@ int patch_instruction(unsigned int *addr, unsigned int instr)
  
- 	return 0;
- }
-@@ -129,7 +129,7 @@ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 
- 	for (; start < end; start++) {
- 		dest = (void *)start + *start;
--		patch_instruction(dest, PPC_INST_LWSYNC);
-+		raw_patch_instruction(dest, PPC_INST_LWSYNC);
- 	}
+ int patch_instruction(unsigned int *addr, unsigned int instr)
+ {
+-	return __patch_instruction(addr, instr);
++	return raw_patch_instruction(addr, instr);
  }
  
-@@ -147,7 +147,7 @@ static void do_final_fixups(void)
- 	length = (__end_interrupts - _stext) / sizeof(int);
- 
- 	while (length--) {
--		patch_instruction(dest, *src);
-+		raw_patch_instruction(dest, *src);
- 		src++;
- 		dest++;
- 	}
+ #endif /* CONFIG_STRICT_KERNEL_RWX */
 -- 
 2.13.3
