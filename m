@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtj4vwZzDrbl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtj5c7vzDrbn
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:37 +1100 (AEDT)
-In-Reply-To: <20171120191247.GD17769@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+In-Reply-To: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Meelis Roos <mroos@linux.ee>, Balbir Singh <bsingharora@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kernel-team@fedoraproject.org, Michael Neuling <mikey@neuling.org>,
- Josh Boyer <jwboyer@fedoraproject.org>, linux-kernel@vger.kernel.org,
- nicholas.piggin@gmail.com, linuxppc-dev@ozlabs.org
-Subject: Re: powerpc/vas, export chip_to_vas_id()
-Message-Id: <3yjrth6C1Wz9sRg@ozlabs.org>
-Date: Fri, 24 Nov 2017 20:46:36 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v2] powerpc: fix boot on BOOK3S_32 with CONFIG_STRICT_KERNEL_RWX
+Message-Id: <3yjrtj40HRz9rxl@ozlabs.org>
+Date: Fri, 24 Nov 2017 20:46:37 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-11-20 at 19:12:48 UTC, Sukadev Bhattiprolu wrote:
-> >From 958f8db089f4b89407fc4b89bccd3eaef585aa96 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Mon, 20 Nov 2017 12:53:15 -0600
-> Subject: [PATCH 1/1] powerpc/vas, export chip_to_vas_id()
+On Tue, 2017-11-21 at 14:28:20 UTC, Christophe Leroy wrote:
+> On powerpc32, patch_instruction() is called by apply_feature_fixups()
+> which is called from early_init()
 > 
-> Export the symbol chip_to_vas_id() to fix a build failure when
-> CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV=m.
+> There is the following note in front of early_init():
+>  * Note that the kernel may be running at an address which is different
+>  * from the address that it was linked at, so we must use RELOC/PTRRELOC
+>  * to access static data (including strings).  -- paulus
 > 
-> Reported-by: Haren Myneni <hbabu@us.ibm.com>
-> Reported-by: Josh Boyer <jwboyer@fedoraproject.org>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Therefore, slab_is_available() cannot be called yet, and
+> text_poke_area must be addressed with PTRRELOC()
+> 
+> Fixes: 37bc3e5fd764f ("powerpc/lib/code-patching: Use alternate map
+> for patch_instruction()")
+> Reported-by: Meelis Roos <mroos@linux.ee>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/62b49c42107efd973edffc75f4f874
+https://git.kernel.org/powerpc/c/252eb55816a6f69ef9464cad303cdb
 
 cheers
