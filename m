@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtm4Xs4zDrcT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjrtm6X5dzDrnn
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 20:46:40 +1100 (AEDT)
-In-Reply-To: <20171122122852.20078-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: npiggin@gmail.com
-Subject: Re: powerpc/64s: Fix Power9 DD2.1 logic in DT CPU features
-Message-Id: <3yjrtm0MsXz9t2d@ozlabs.org>
-Date: Fri, 24 Nov 2017 20:46:39 +1100 (AEDT)
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powernv: Avoid calling trace tlbie in kexec path.
+Message-Id: <3yjrtm43yYz9sRn@ozlabs.org>
+Date: Fri, 24 Nov 2017 20:46:40 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-11-22 at 12:28:52 UTC, Michael Ellerman wrote:
-> I got the logic wrong in the DT CPU features code when I added the
-> Power9 DD2.1 feature. We should be setting the bit if we detect a
-> DD2.1, not clearing it if we detect a DD2.0.
+On Wed, 2017-11-22 at 17:32:07 UTC, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> This code isn't actually exercised at the moment so nothing is
-> actually broken.
+> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
+> called from native_hpte_clear(). This happens if the running kernel has
+> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
+> execute few RCU checks regardless of whether tracing is on or off.
+> We are already in the last phase of kexec sequence in real mode with
+> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN and
+> causes kexec to fail.
 > 
-> Fixes: 3ffa9d9e2a7c ("powerpc/64s: Fix Power9 DD2.0 workarounds by adding DD2.1 feature")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fix this by not calling trace_tlbie() from native_hpte_clear().
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/4d6c51b107cc73b15a377224549aa5
+https://git.kernel.org/powerpc/c/a3961f824cdbe7eb431254dc7d8f6f
 
 cheers
