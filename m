@@ -1,26 +1,17 @@
-Return-Path: <groug@kaod.org>
-Received: from 20.mo3.mail-out.ovh.net (20.mo3.mail-out.ovh.net [178.33.47.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjfxw5dFwzDrZq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 13:18:43 +1100 (AEDT)
-Received: from player758.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo3.mail-out.ovh.net (Postfix) with ESMTP id AFEA716E7FB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 00:33:46 +0100 (CET)
-Date: Fri, 24 Nov 2017 00:33:30 +0100
-From: Greg Kurz <groug@kaod.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alexander Graf <agraf@suse.com>, Paul Mackerras
- <paulus@samba.org>
-Subject: Re: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under
- pHyp
-Message-ID: <20171124003330.2a980994@bahia.lan>
-In-Reply-To: <20171122034221.647-1-aik@ozlabs.ru>
-References: <20171122034221.647-1-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjj0f5bxlzDrb2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 14:51:14 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: david@gibson.dropbear.id.au,
+	bsingharora@gmail.com,
+	yilzhang@redhat.com
+Subject: [PATCH] powerpc/kexec: Fix kexec/kdump in P9 guest kernels
+Date: Fri, 24 Nov 2017 14:51:02 +1100
+Message-Id: <20171124035102.28051-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 22 Nov 2017 14:42:21 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+The code that cleans up the IAMR/AMOR before kexec'ing failed to
+remember that when we're running as a guest AMOR is not writable, it's
+hypervisor privileged.
 
-> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
-> bits preserving but it missed 2 special cases:
-> - a magic page in kvmppc_mmu_book3s_64_xlate() and
-> - guest real mode in kvmppc_handle_pagefault().
-> 
-> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
-> stop in the very beginning at NIP=0x100 (due to bd9166ffe
-> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
-> 
-> This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
-> as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
-> kvmppc_mmu_map_page().
-> 
-> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> 
-> This indeed fixes PR KVM + VFIO under pHyp but selection of HPTE_R_M
-> is arguable.
-> 
+They symptom is that the kexec stops before entering purgatory and
+nothing else is seen on the console. If you examine the state of the
+system all threads will be in the 0x700 program check handler.
 
-The initial page fault at 0x100 on machine startup causes H_ENTER to fail in
-pHyp with H_PARAMETER, as described in PAPR:
+Fix it by making the write to AMOR dependent on HV mode.
 
- The hypervisor checks that the WIMG bits within the PTE are appropriate for the
- physical page number else H_Parameter return. (For System Memory pages WIMG=0010,
- or, 1110 if the SAO option is enabled, and for IO pages WIMG=01**.)
+Fixes: 1e2a516e89fc ("powerpc/kexec: Fix radix to hash kexec due to IAMR/AMOR")
+Cc: stable@vger.kernel.org # v4.10+
+Reported-by: Yilin Zhang <yilzhang@redhat.com>
+Debugged-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/misc_64.S | 2 ++
+ 1 file changed, 2 insertions(+)
 
-I'm not aware we care for SAO so HPTE_R_M looks like the only sensible choice,
-or I'm missing something ?
-
-Anyway, this patch allows to start a PR guest on PowerVM again.
-
-Reviewed-by: Greg Kurz <groug@kaod.org>
-
-and
-
-Tested-by: Greg Kurz <groug@kaod.org>
-
-> ---
->  arch/powerpc/kvm/book3s_64_mmu.c | 1 +
->  arch/powerpc/kvm/book3s_pr.c     | 1 +
->  2 files changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-> index 29ebe2f..a93d719 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
-> @@ -235,6 +235,7 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
->  		gpte->may_read = true;
->  		gpte->may_write = true;
->  		gpte->page_size = MMU_PAGE_4K;
-> +		gpte->wimg = HPTE_R_M;
->  
->  		return 0;
->  	}
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 69a0944..0152efe 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -557,6 +557,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  		pte.eaddr = eaddr;
->  		pte.vpage = eaddr >> 12;
->  		pte.page_size = MMU_PAGE_64K;
-> +		pte.wimg = HPTE_R_M;
->  	}
->  
->  	switch (kvmppc_get_msr(vcpu) & (MSR_DR|MSR_IR)) {
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 8ac0bd2bddb0..3280953a82cf 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -623,7 +623,9 @@ BEGIN_FTR_SECTION
+ 	 * NOTE, we rely on r0 being 0 from above.
+ 	 */
+ 	mtspr	SPRN_IAMR,r0
++BEGIN_FTR_SECTION_NESTED(42)
+ 	mtspr	SPRN_AMOR,r0
++END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 
+ 	/* save regs for local vars on new stack.
+-- 
+2.14.3
