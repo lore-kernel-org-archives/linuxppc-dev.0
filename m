@@ -2,22 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yjm5Z2W9BzDrb6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 17:10:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yjmFR6c92zDrSw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Nov 2017 17:17:31 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powernv: Avoid calling trace tlbie in kexec path.
-In-Reply-To: <1511442295.rqmndvaowx.naveen@linux.ibm.com>
-References: <151137178794.14123.18003389448303728066.stgit@jupiter.in.ibm.com>
- <CAKTCnzkSJo0wKx96=N2fxDVZ8KaM+uT3sUHGNgtdOD=RLajwCg@mail.gmail.com>
- <8737552nta.fsf@concordia.ellerman.id.au>
- <1511442295.rqmndvaowx.naveen@linux.ibm.com>
-Date: Fri, 24 Nov 2017 17:10:41 +1100
-Message-ID: <87o9ns1a1q.fsf@concordia.ellerman.id.au>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Alastair D'Silva <alastair@linux.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc: Avoid signed to unsigned conversion in
+ set_thread_tidr()
+In-Reply-To: <20171123124718.16839-1-vaibhav@linux.vnet.ibm.com>
+References: <20171123124718.16839-1-vaibhav@linux.vnet.ibm.com>
+Date: Fri, 24 Nov 2017 17:17:30 +1100
+Message-ID: <87lgiw19qd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,48 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
 
-> Michael Ellerman wrote:
->> Balbir Singh <bsingharora@gmail.com> writes:
->> 
->>> On Thu, Nov 23, 2017 at 4:32 AM, Mahesh J Salgaonkar
->>> <mahesh@linux.vnet.ibm.com> wrote:
->>>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>>
->>>> Rebooting into a new kernel with kexec fails in trace_tlbie() which is
->>>> called from native_hpte_clear(). This happens if the running kernel has
->>>> CONFIG_LOCKDEP enabled. With lockdep enabled, the tracepoints always
->>>> execute few RCU checks regardless of whether tracing is on or off.
->>>> We are already in the last phase of kexec sequence in real mode with
->>>> HILE_BE set. At this point the RCU check ends up in RCU_LOCKDEP_WARN and
->>>> causes kexec to fail.
->>>>
->>>
->>> Effectively we can't enter the trace point code after we've set
->>> HILE_BE.  Do we need
->>> a fixes tag? Or is this a side-effect of a new generic change?
->> 
->> Yes I added:
->> 
->> Fixes: 0428491cba92 ("powerpc/mm: Trace tlbie(l) instructions")
->> Cc: stable@vger.kernel.org # v4.13+
->> 
->>> I think the right thing in the longer run might be to do a TRACE_EVENT_CONDITION
->>> and have the condition do the right thing, but what you have for now is good.
->> 
->> No I think the right thing is to not call trace points from kexec code,
->> it's too fragile. TRACE_EVENT_CONDITION wouldn't have saved us from this
->> RCU breakage.
+> There is an unsafe signed to unsigned conversion in set_thread_tidr()
+> that may cause an error value to be assigned to SPRN_TIDR register and
+> used as thread-id.
 >
-> I agree on the fragile part, though it appears to me that a 
-> TRACE_EVENT_CONDITION() with a check for is_kexec (that needs to be 
-> added) will prevent breakage since both the LOCKDEP block as well as the 
-> tracepoint itself are guarded by the condition. So, none of the rcu code 
-> should be executed as long as we set is_kexec at the right time.  
+> The issue happens as assign_thread_tidr() returns an int and
+> thread.tidr is an unsigned-long. So a negative error code returned
+> from assign_thread_tidr() will fail the error check and gets assigned
+> as tidr as a large positive value.
+>
+> To fix this the patch assigns the return value of assign_thread_tidr()
+> to a temporary int and assigns it to thread.tidr iff its '> 0'.
 
-Yes you're right, I misread that.
+.. and changes the calling convention of the function.
 
-So maybe that is an option. But it still makes me nervous :)
+Now it returns -ve error values, or a +ve TIDR value when it succeeds,
+or possibly 0 if that's returned by assign_thread_tidr().
+
+Which I'm not sure you meant to do. If you did, you should at least
+document it.
+
+But frankly I'd rather we left it the way it was, -ve error or 0 for
+success.
 
 cheers
+
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index bfdd783e3916..a6eaf924c8b6 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1569,19 +1569,21 @@ void arch_release_task_struct(struct task_struct *t)
+>   */
+>  int set_thread_tidr(struct task_struct *t)
+>  {
+> +	int rc;
+> +
+>  	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+>  		return -EINVAL;
+>  
+>  	if (t != current)
+>  		return -EINVAL;
+>  
+> -	t->thread.tidr = assign_thread_tidr();
+> -	if (t->thread.tidr < 0)
+> -		return t->thread.tidr;
+> -
+> -	mtspr(SPRN_TIDR, t->thread.tidr);
+> +	rc = assign_thread_tidr();
+> +	if (rc > 0) {
+> +		t->thread.tidr = assign_thread_tidr();
+> +		mtspr(SPRN_TIDR, t->thread.tidr);
+> +	}
+>  
+> -	return 0;
+> +	return rc;
+>  }
+>  
+>  #endif /* CONFIG_PPC64 */
+> -- 
+> 2.14.3
