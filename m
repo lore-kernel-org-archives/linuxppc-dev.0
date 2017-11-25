@@ -1,31 +1,34 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
+ [IPv6:2607:f8b0:400c:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ykqBv0BNlzDqyH
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Nov 2017 10:33:56 +1100 (AEDT)
-Received: from [192.168.1.134] (ppp-188-174-95-49.dynamic.mnet-online.de
- [188.174.95.49]) by smtp.strato.de (RZmta 42.9 DYNA|AUTH)
- with ESMTPSA id m08e38tAPNXmoMV
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate)
- for <linuxppc-dev@lists.ozlabs.org>;
- Sun, 26 Nov 2017 00:33:48 +0100 (CET)
-Subject: Qoriq P5020 PowerPC board doesn't boot with the latest git version
- anymore
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: linuxppc-dev@lists.ozlabs.org
-References: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
- <3e4805a4-6114-205d-653b-ea6cd7fdc057@xenosoft.de>
- <8ed2edc7-a14b-35b3-86c1-a9995f41df84@xenosoft.de>
- <d8bf23c2-1805-a9c3-566d-74c0f28e88e8@xenosoft.de>
-Message-ID: <ab5f9c39-e801-0c6c-15fb-c5b782ab10b7@xenosoft.de>
-Date: Sun, 26 Nov 2017 00:33:48 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ykqjp23JyzDrbl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Nov 2017 10:57:18 +1100 (AEDT)
+Received: by mail-vk0-x242.google.com with SMTP id o145so15431866vkd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Nov 2017 15:57:17 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <d8bf23c2-1805-a9c3-566d-74c0f28e88e8@xenosoft.de>
-Content-Type: multipart/mixed; boundary="------------5EE2804635FC960AE405758A"
+In-Reply-To: <8760a12obz.fsf@concordia.ellerman.id.au>
+References: <20171121142820.C744F6BB8F@po15668-vm-win7.idsi0.si.c-s.fr>
+ <CAKTCnznviUQfizSdfMDGxO_8CFuwhPCNSkK2VagNSRvZdpLqyg@mail.gmail.com>
+ <141a04c4-a236-430d-f346-ad31252e146a@c-s.fr>
+ <87h8tm355i.fsf@concordia.ellerman.id.au>
+ <74521488-5ddb-4fe2-f419-9a9debeaaf0f@c-s.fr>
+ <8760a12obz.fsf@concordia.ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Sun, 26 Nov 2017 10:57:15 +1100
+Message-ID: <CAKTCnzm2SGGV16z+V4i3agzLTS4BA_oJxi8NkFuNbpPOrre66Q@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc: fix boot on BOOK3S_32 with
+ CONFIG_STRICT_KERNEL_RWX
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Scott Wood <oss@buserror.net>, Meelis Roos <mroos@linux.ee>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,165 +38,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------5EE2804635FC960AE405758A
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hi All,
-
-I compiled the latest git kernel today. Unfortunately my Varisys Cyrus 
-Plus board still doesn't boot with the latest git kernel.
-
-After that I patched the kernel source code with the spinlock patch and 
-compiled the kernel again. With the spinlock patch, the latest git 
-kernel boots without any problems.
-
-Please find attached the spinlock patch.
-
-Cheers,
-Christian
-
-
-On 20 November 2017 at 00:34AM, Christian Zigotzky wrote:
-> Hi All,
+On Thu, Nov 23, 2017 at 11:04 PM, Michael Ellerman <mpe@ellerman.id.au> wro=
+te:
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>> Le 22/11/2017 =C3=A0 12:48, Michael Ellerman a =C3=A9crit :
+>>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>>>> Le 22/11/2017 =C3=A0 00:07, Balbir Singh a =C3=A9crit :
+>>>>> On Wed, Nov 22, 2017 at 1:28 AM, Christophe Leroy
+>>>>> <christophe.leroy@c-s.fr> wrote:
+>>>>>> On powerpc32, patch_instruction() is called by apply_feature_fixups(=
+)
+>>>>>> which is called from early_init()
+> ...
+>>>>>> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/cod=
+e-patching.c
+>>>>>> index c9de03e0c1f1..d469224c4ada 100644
+>>>>>> --- a/arch/powerpc/lib/code-patching.c
+>>>>>> +++ b/arch/powerpc/lib/code-patching.c
+>>>>>> @@ -146,11 +147,8 @@ int patch_instruction(unsigned int *addr, unsig=
+ned int instr)
+>>>>>>            * During early early boot patch_instruction is called
+>>>>>>            * when text_poke_area is not ready, but we still need
+>>>>>>            * to allow patching. We just do the plain old patching
+>>>>>> -        * We use slab_is_available and per cpu read * via this_cpu_=
+read
+>>>>>> -        * of text_poke_area. Per-CPU areas might not be up early
+>>>>>> -        * this can create problems with just using this_cpu_read()
+>>>>>>            */
+>>>>>> -       if (!slab_is_available() || !this_cpu_read(text_poke_area))
+>>>>>> +       if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
+>>>>>>                   return __patch_instruction(addr, instr);
+>>>>>
+>>>>> On ppc64, we call apply_feature_fixups() in early_setup() after we've
+>>>>> relocated ourselves. Sorry for missing the ppc32 case. I would like t=
+o
+>>>>> avoid PTRRELOC when unnecessary.
+>>>>
+>>>> What do you suggest then ?
+>>>>
+>>>> Some #ifdef PPC32 around that ?
+>>>
+>>> No I don't think that improves anything.
+>>>
+>>> I think the comment about per-cpu not being up is wrong, you'll just ge=
+t
+>>> the static version of text_poke_area, which should be NULL. So we don't
+>>> need the slab_available() check anyway.
+>>>
+>>> So I'll take this as-is.
+>>>
+>>> Having said that I absolutely hate PTRRELOC, so if it starts spreading
+>>> we will have to come up with something less bug prone.
+>>
+>> Would something like that be the solution ?
 >
-> I created a patch for the git kernel today. (see attachment)
-> Without the patch, the latest git kernel doesn't boot on my Cyrus Plus 
-> board.
+> I don't love that actual patch, there's a lot of churn just for one
+> flag.
 >
-> Cheers,
-> Christian
+> But the idea is not so bad.
+>
+> In fact I don't think we ever need to use the text_poke_area when we
+> call do_feature_fixups().
+>
+> Most of the calls are in early boot.
+>
+> The exception is for modules, but when we do the fixups *of the module*,
+> the module text is not mapped read only yet.
+>
+> So I think we can just do something like below.
+>
+> cheers
 >
 >
-> On 19 November 2017 at 5:57PM, Christian Zigotzky wrote:
->> Hi All,
->>
->> A little success. :-) I reverted the following files from the bad 
->> commit a8a217c22116eff6c120d753c9934089fb229af0 [1]:
->>
->> arch/powerpc/include/asm/spinlock.h
->> kernel/locking/spinlock.c
->> include/linux/spinlock_up.h
->> include/linux/spinlock.h
->> include/linux/rwlock.h
->>
->> After that I compiled the latest git kernel again. Then I was able to 
->> boot the latest git kernel on my Varisys Cyrus Plus board [2][3]. :-)
->>
->> That means the bug is in one of these files.
->>
->> Please help me to find the bug in these files above.
->>
->> Thanks,
->> Christian
->>
->>
->> [1] 
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a8a217c22116eff6c120d753c9934089fb229af0
->> [2] http://www.amigaos.net/hardware/133/amigaone-x5000
->> [3] http://wiki.amiga.org/index.php?title=AmigaONE_X5000
->>
+> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/incl=
+ude/asm/code-patching.h
+> index abef812de7f8..1090024e8519 100644
+> --- a/arch/powerpc/include/asm/code-patching.h
+> +++ b/arch/powerpc/include/asm/code-patching.h
+> @@ -31,6 +31,7 @@ unsigned int create_cond_branch(const unsigned int *add=
+r,
+>                                 unsigned long target, int flags);
+>  int patch_branch(unsigned int *addr, unsigned long target, int flags);
+>  int patch_instruction(unsigned int *addr, unsigned int instr);
+> +int raw_patch_instruction(unsigned int *addr, unsigned int instr);
 >
+>  int instr_is_relative_branch(unsigned int instr);
+>  int instr_is_branch_to_addr(const unsigned int *instr, unsigned long add=
+r);
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-pat=
+ching.c
+> index d469224c4ada..d1eb24cbef58 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -23,7 +23,7 @@
+>  #include <asm/code-patching.h>
+>  #include <asm/setup.h>
+>
+> -static int __patch_instruction(unsigned int *addr, unsigned int instr)
+> +int raw_patch_instruction(unsigned int *addr, unsigned int instr)
+>  {
+>         int err;
+>
+> @@ -148,8 +148,8 @@ int patch_instruction(unsigned int *addr, unsigned in=
+t instr)
+>          * when text_poke_area is not ready, but we still need
+>          * to allow patching. We just do the plain old patching
+>          */
+> -       if (!this_cpu_read(*PTRRELOC(&text_poke_area)))
+> -               return __patch_instruction(addr, instr);
+> +       if (!this_cpu_read(text_poke_area))
+> +               return raw_patch_instruction(addr, instr);
+>
+>         local_irq_save(flags);
+>
+> @@ -184,7 +184,7 @@ int patch_instruction(unsigned int *addr, unsigned in=
+t instr)
+>
+>  int patch_instruction(unsigned int *addr, unsigned int instr)
+>  {
+> -       return __patch_instruction(addr, instr);
+> +       return raw_patch_instruction(addr, instr);
+>  }
+>
+>  #endif /* CONFIG_STRICT_KERNEL_RWX */
+> diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature=
+-fixups.c
+> index 41cf5ae273cf..0872d60ede10 100644
+> --- a/arch/powerpc/lib/feature-fixups.c
+> +++ b/arch/powerpc/lib/feature-fixups.c
+> @@ -62,7 +62,7 @@ static int patch_alt_instruction(unsigned int *src, uns=
+igned int *dest,
+>                 }
+>         }
+>
+> -       patch_instruction(dest, instr);
+> +       raw_patch_instruction(dest, instr);
+>
+>         return 0;
+>  }
+> @@ -91,7 +91,7 @@ static int patch_feature_section(unsigned long value, s=
+truct fixup_entry *fcur)
+>         }
+>
+>         for (; dest < end; dest++)
+> -               patch_instruction(dest, PPC_INST_NOP);
+> +               raw_patch_instruction(dest, PPC_INST_NOP);
+>
+>         return 0;
+>  }
+> @@ -129,7 +129,7 @@ void do_lwsync_fixups(unsigned long value, void *fixu=
+p_start, void *fixup_end)
+>
+>         for (; start < end; start++) {
+>                 dest =3D (void *)start + *start;
+> -               patch_instruction(dest, PPC_INST_LWSYNC);
+> +               raw_patch_instruction(dest, PPC_INST_LWSYNC);
+>         }
+>  }
+>
+> @@ -147,7 +147,7 @@ static void do_final_fixups(void)
+>         length =3D (__end_interrupts - _stext) / sizeof(int);
+>
+>         while (length--) {
+> -               patch_instruction(dest, *src);
+> +               raw_patch_instruction(dest, *src);
+>                 src++;
+>                 dest++;
+>         }
 
+This looks more promising, but there is a subtle dependence between
+marking areas as R/O/X and the raw_patch_ins* bits
 
---------------5EE2804635FC960AE405758A
-Content-Type: text/x-patch;
- name="spinlock_4.15-1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="spinlock_4.15-1.patch"
+I saw that Michael has merged that patch as is, I guess we get to
+continue to optimise :)
 
---- a/arch/powerpc/include/asm/spinlock.h	2017-11-18 20:57:47.921703650 +0100
-+++ b/arch/powerpc/include/asm/spinlock.h	2017-11-19 18:51:51.630906446 +0100
-@@ -182,6 +182,9 @@ static inline void arch_spin_unlock(arch
-  * read-locks.
-  */
- 
-+#define arch_read_can_lock(rw)		((rw)->lock >= 0)
-+#define arch_write_can_lock(rw)	(!(rw)->lock)
-+
- #ifdef CONFIG_PPC64
- #define __DO_SIGN_EXTEND	"extsw	%0,%0\n"
- #define WRLOCK_TOKEN		LOCK_TOKEN	/* it's negative */
---- a/kernel/locking/spinlock.c	2017-11-18 20:57:48.974708915 +0100
-+++ b/kernel/locking/spinlock.c	2017-11-19 18:26:18.526892449 +0100
-@@ -35,6 +35,9 @@
-  */
- #else
- 
-+#define raw_read_can_lock(l)	read_can_lock(l)
-+#define raw_write_can_lock(l)	write_can_lock(l)
-+
- /*
-  * Some architectures can relax in favour of the CPU owning the lock.
-  */
-@@ -68,7 +71,7 @@ void __lockfunc __raw_##op##_lock(lockty
- 									\
- 		if (!(lock)->break_lock)				\
- 			(lock)->break_lock = 1;				\
--		while ((lock)->break_lock)				\
-+		while (!raw_##op##_can_lock(lock) && (lock)->break_lock)\	
- 			arch_##op##_relax(&lock->raw_lock);		\
- 	}								\
- 	(lock)->break_lock = 0;						\
-@@ -88,7 +91,7 @@ unsigned long __lockfunc __raw_##op##_lo
- 									\
- 		if (!(lock)->break_lock)				\
- 			(lock)->break_lock = 1;				\
--		while ((lock)->break_lock)				\
-+		while (!raw_##op##_can_lock(lock) && (lock)->break_lock)\	
- 			arch_##op##_relax(&lock->raw_lock);		\
- 	}								\
- 	(lock)->break_lock = 0;						\
---- a/include/linux/spinlock_up.h	2017-11-18 20:57:38.788657985 +0100
-+++ b/include/linux/spinlock_up.h	2017-11-19 18:48:19.787635450 +0100
-@@ -69,4 +69,7 @@ static inline void arch_spin_unlock(arch
- 
- #define arch_spin_is_contended(lock)	(((void)(lock), 0))
- 
-+#define arch_read_can_lock(lock)	(((void)(lock), 1))
-+#define arch_write_can_lock(lock)	(((void)(lock), 1))
-+
- #endif /* __LINUX_SPINLOCK_UP_H */
---- a/include/linux/spinlock.h	2017-11-18 20:57:38.693657510 +0100
-+++ b/include/linux/spinlock.h	2017-11-19 18:37:36.933284464 +0100
-@@ -283,6 +283,12 @@ static inline void do_raw_spin_unlock(ra
- 	1 : ({ local_irq_restore(flags); 0; }); \
- })
- 
-+/**
-+ * raw_spin_can_lock - would raw_spin_trylock() succeed?
-+ * @lock: the spinlock in question.
-+ */
-+#define raw_spin_can_lock(lock)	(!raw_spin_is_locked(lock))
-+
- /* Include rwlock functions */
- #include <linux/rwlock.h>
- 
-@@ -395,6 +401,11 @@ static __always_inline int spin_is_conte
- 	return raw_spin_is_contended(&lock->rlock);
- }
- 
-+static __always_inline int spin_can_lock(spinlock_t *lock)
-+{
-+	return raw_spin_can_lock(&lock->rlock);
-+}
-+
- #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
- 
- /*
---- a/include/linux/rwlock.h	2017-11-18 20:57:38.652657305 +0100
-+++ b/include/linux/rwlock.h	2017-11-19 18:19:54.045970054 +0100
-@@ -59,6 +59,9 @@ do {								\
- # define do_raw_write_unlock(rwlock)	do {arch_write_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
- #endif
- 
-+#define read_can_lock(rwlock)		arch_read_can_lock(&(rwlock)->raw_lock)
-+#define write_can_lock(rwlock)		arch_write_can_lock(&(rwlock)->raw_lock)
-+
- /*
-  * Define the various rw_lock methods.  Note we define these
-  * regardless of whether CONFIG_SMP or CONFIG_PREEMPT are set. The various
-
---------------5EE2804635FC960AE405758A--
+Balbir
