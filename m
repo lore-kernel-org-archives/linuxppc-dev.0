@@ -2,21 +2,24 @@ Return-Path: <mail@maciej.szmigiero.name>
 Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ylQdv4GxszDrnt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 10:10:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ylQj63zVlzDqlF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 10:13:46 +1100 (AEDT)
+Subject: Re: [PATCH v2 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S, U}20
+To: Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown
+ <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <a54e6905-6124-9a59-b7ca-97cc650a8f99@maciej.szmigiero.name>
+ <c9310a8f-d16d-ee8f-fe86-8316e71cf7fc@sakamocchi.jp>
 From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Subject: [PATCH v3 2/2] ASoC: fsl_ssi: add 20-bit sample format for AC'97 and
- use it for capture
-To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood
- <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>
-Message-ID: <4c45ccaf-004d-30ec-3306-7f9d4698188c@maciej.szmigiero.name>
-Date: Mon, 27 Nov 2017 00:10:53 +0100
+Message-ID: <618daa73-dfd4-6e88-617f-10478b45ad64@maciej.szmigiero.name>
+Date: Mon, 27 Nov 2017 00:13:39 +0100
 MIME-Version: 1.0
+In-Reply-To: <c9310a8f-d16d-ee8f-fe86-8316e71cf7fc@sakamocchi.jp>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,74 +30,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When testing AC'97 capture on UDOO board (currently the only user of
-fsl_ssi driver in the AC'97 mode) it become obvious that there is a massive
-distortion above certain, small input signal.
+Hi,
 
-This problem has been traced to silicon errata ERR003778:
-"In AC97, 16-bit mode, received data is shifted by 4-bit locations" that
-has "No fix scheduled".
-This errata suggests a workaround of doing a 4-bit shift back in SDMA
-script for this specific operation mode, however our SDMA scripts are
-shared between various SoC peripherals so we can't really modify them.
+On 26.11.2017 10:27, Takashi Sakamoto wrote:
+> Hi,
+> 
+(..)
+> Before applying this patch:
+> 166         /* FIXME: the following three formats are not defined properly yet */
+> 167         [SNDRV_PCM_FORMAT_MPEG] = {
+> 168                 .le = -1, .signd = -1,
+> 169         },
+> 170         [SNDRV_PCM_FORMAT_GSM] = {
+> 171                 .le = -1, .signd = -1,
+> 172         },
+> 173         [SNDRV_PCM_FORMAT_SPECIAL] = {
+> 174                 .le = -1, .signd = -1,
+> 175         },
+> 
+> After applying this patch:
+> 
+> 166         /* FIXME: the following three formats are not defined properly yet */
+> 167         [SNDRV_PCM_FORMAT_MPEG] = {
+> 168                 .le = -1, .signd = -1,
+> 169         },
+> 170         [SNDRV_PCM_FORMAT_GSM] = {
+> 171                 .le = -1, .signd = -1,
+> 172         },
+> 173         [SNDRV_PCM_FORMAT_S20_LE] = {
+(..)> 
+> I think it good to add an alternative comment for each of entry which is not defined yet, like:
+> 
+> -> 166         /* FIXME: this format is not defined properly yet */
+> 167         [SNDRV_PCM_FORMAT_MPEG] = {
+> 168                 .le = -1, .signd = -1,
+> 169         },
+> -> 170         /* FIXME: this format is not defined properly yet */
+> 171         [SNDRV_PCM_FORMAT_GSM] = {
+> 172                 .le = -1, .signd = -1,
+> 173         },
+> 174         [SNDRV_PCM_FORMAT_S20_LE] = {
+> 175                 .width = 20, .phys = 32, .le = 1, .signd = 1,
+> 176                 .silence = {},
+> 177         },
+> 178         [SNDRV_PCM_FORMAT_S20_BE] = {
+> 179                 .width = 20, .phys = 32, .le = 0, .signd = 1,
+> 180                 .silence = {},
+> 181         },
+> 182         [SNDRV_PCM_FORMAT_U20_LE] = {
+> 183                 .width = 20, .phys = 32, .le = 1, .signd = 0,
+> 184                 .silence = { 0x00, 0x00, 0x08, 0x00 },
+> 185         },
+> 186         [SNDRV_PCM_FORMAT_U20_BE] = {
+> 187                 .width = 20, .phys = 32, .le = 0, .signd = 0,
+> 188                 .silence = { 0x00, 0x08, 0x00, 0x00 },
+> 189         },
+> -> 190         /* FIXME: this format is not defined properly yet */
+> 191         [SNDRV_PCM_FORMAT_SPECIAL] = {
+> 192                 .le = -1, .signd = -1,
+> 193         },
+> 
 
-There is a simple way to avoid this problem, however, that is to disallow
-recording in 16-bit mode and only support it in AC'97-native 20-bit mode.
-We have to use a 4-byte format for this since SSI FIFOs do not allow 3-byte
-accesses (and these aren't supported by imx-sdma driver anyway).
-With this change the capture distortion is gone.
+Thanks, fixed now in v3.
 
-We can also add this format as an additional one supported for playback,
-using this opportunity to make sure that we use CPU-endian-native formats
-in AC'97 mode as we already do in I2S mode.
+> Regards
+> 
+> Takashi Sakamoto
 
-There is no problem in using different bit widths in playback and capture
-in AC'97 mode so allow this, too.
-
-Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
----
-Changes from v1: Adapt format name to changes in the first patch from
-this series.
-
-Changes from v2: None.
-
- sound/soc/fsl/fsl_ssi.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 20ef09e1a395..c350117c8e31 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -1278,14 +1278,15 @@ static struct snd_soc_dai_driver fsl_ssi_ac97_dai = {
- 		.channels_min = 2,
- 		.channels_max = 2,
- 		.rates = SNDRV_PCM_RATE_8000_48000,
--		.formats = SNDRV_PCM_FMTBIT_S16_LE,
-+		.formats = SNDRV_PCM_FMTBIT_S16 | SNDRV_PCM_FMTBIT_S20,
- 	},
- 	.capture = {
- 		.stream_name = "AC97 Capture",
- 		.channels_min = 2,
- 		.channels_max = 2,
- 		.rates = SNDRV_PCM_RATE_48000,
--		.formats = SNDRV_PCM_FMTBIT_S16_LE,
-+		/* 16-bit capture is broken (errata ERR003778) */
-+		.formats = SNDRV_PCM_FMTBIT_S20,
- 	},
- 	.ops = &fsl_ssi_dai_ops,
- };
-@@ -1557,11 +1558,12 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 
- 	/* Are the RX and the TX clocks locked? */
- 	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
--		if (!fsl_ssi_is_ac97(ssi_private))
-+		if (!fsl_ssi_is_ac97(ssi_private)) {
- 			ssi_private->cpu_dai_drv.symmetric_rates = 1;
-+			ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
-+		}
- 
- 		ssi_private->cpu_dai_drv.symmetric_channels = 1;
--		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
- 	}
- 
- 	/* Determine the FIFO depth. */
+Best regards,
+Maciej Szmigiero
