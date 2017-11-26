@@ -1,29 +1,31 @@
-Return-Path: <debmc@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <lukma@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ylC5F5Gz9zDrMj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 01:30:24 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAQETbUG029433
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Nov 2017 09:30:22 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2efpxawbr2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Nov 2017 09:30:21 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <debmc@linux.vnet.ibm.com>;
- Sun, 26 Nov 2017 09:30:20 -0500
-From: Deb McLemore <debmc@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: jk@ozlabs.org, Deb McLemore <debmc@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/powernv: Add queue mechanism for early messages
-Date: Sun, 26 Nov 2017 08:30:15 -0600
-Message-Id: <1511706615-7126-1-git-send-email-debmc@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ylLvc485yzDrMj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 07:22:33 +1100 (AEDT)
+Date: Sun, 26 Nov 2017 21:22:15 +0100
+From: Lukasz Majewski <lukma@denx.de>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Arnaud Mouiche <arnaud.mouiche@invoxia.com>, broonie@kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com, timur@tabi.org,
+ caleb@crome.org, max.krummenacher@toradex.com, mpa@pengutronix.de,
+ mail@maciej.szmigiero.name
+Subject: Re: [PATCH] ASoC: fsl_ssi: Override bit clock rate based on slot
+ number
+Message-ID: <20171126212215.1f984a9c@jawa>
+In-Reply-To: <20171126003622.GA7276@Asurada>
+References: <1504848223-3376-1-git-send-email-nicoleotsuka@gmail.com>
+ <2020d72a-4517-55d0-59a1-171c71f91c7b@invoxia.com>
+ <20170912213233.GA11419@Asurada-Nvidia>
+ <fdb71350-0b89-8c5a-9ed0-c744bb6f2118@invoxia.com>
+ <20170913230147.GA21287@Asurada-Nvidia>
+ <20171125232921.01994d72@jawa> <20171126003622.GA7276@Asurada>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/crbDPMbWs4Bbum9pNHcdk6i"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,148 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a check for do_notify to confirm that a message handler
-has been registered before an attempt is made to call notifier
-call chain.
+--Sig_/crbDPMbWs4Bbum9pNHcdk6i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-If the message handler has not been registered queue up the message
-to be replayed when the proper registration is called.
+Hi Nicolin,
 
-Signed-off-by: Deb McLemore <debmc@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal.c | 88 +++++++++++++++++++++++++++++++++--
- 1 file changed, 83 insertions(+), 5 deletions(-)
+> On Sat, Nov 25, 2017 at 11:29:48PM +0100, Lukasz Majewski wrote:
+>=20
+> > Nicolin, do you know what happened with this patch? I couldn't find
+> > it in current linux/master.
+> >=20
+> > Has it been applied to any asoc tree for being upstreamed? =20
+>=20
+> A similar patch with an updated subject got applied:
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commi=
+t/?h=3Dnext-20171124&id=3Db0a7043d5c2ccdd306959f295bf1a62be025cbf5
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 65c79ec..0e3b464 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -40,6 +40,16 @@
- 
- #include "powernv.h"
- 
-+#define OPAL_MSG_QUEUE_MAX 16
-+
-+struct OpalMsgNode {
-+	struct list_head	opal_queue_list_node;
-+	struct opal_msg		msg;
-+	uint32_t		queue_msg_type;
-+};
-+
-+static LIST_HEAD(opal_msg_queue_pending);
-+
- /* /sys/firmware/opal */
- struct kobject *opal_kobj;
- 
-@@ -55,11 +65,15 @@ struct mcheck_recoverable_range {
- 	u64 recover_addr;
- };
- 
-+static unsigned long opal_msg_notify_reg_mask;
-+static int opal_active_queue_elements;
-+
- static struct mcheck_recoverable_range *mc_recoverable_range;
- static int mc_recoverable_range_len;
- 
- struct device_node *opal_node;
- static DEFINE_SPINLOCK(opal_write_lock);
-+static DEFINE_SPINLOCK(opal_msg_lock);
- static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
- static uint32_t opal_heartbeat;
- static struct task_struct *kopald_tsk;
-@@ -238,14 +252,47 @@ machine_early_initcall(powernv, opal_register_exception_handlers);
- int opal_message_notifier_register(enum opal_msg_type msg_type,
- 					struct notifier_block *nb)
- {
-+	struct OpalMsgNode *msg_node, *tmp;
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&opal_msg_lock, flags);
-+
-+	opal_msg_notify_reg_mask |= 1 << msg_type;
-+
-+	spin_unlock_irqrestore(&opal_msg_lock, flags);
-+
- 	if (!nb || msg_type >= OPAL_MSG_TYPE_MAX) {
- 		pr_warning("%s: Invalid arguments, msg_type:%d\n",
- 			   __func__, msg_type);
- 		return -EINVAL;
- 	}
- 
--	return atomic_notifier_chain_register(
--				&opal_msg_notifier_head[msg_type], nb);
-+	ret = atomic_notifier_chain_register(
-+		&opal_msg_notifier_head[msg_type], nb);
-+
-+	if (ret)
-+		return ret;
-+
-+	spin_lock_irqsave(&opal_msg_lock, flags);
-+	list_for_each_entry_safe(msg_node,
-+				tmp,
-+				&opal_msg_queue_pending,
-+				opal_queue_list_node) {
-+		if (msg_node->queue_msg_type == msg_type) {
-+			atomic_notifier_call_chain(
-+				&opal_msg_notifier_head[msg_type],
-+				msg_type,
-+				&msg_node->msg);
-+			list_del(&msg_node->opal_queue_list_node);
-+			kfree(msg_node);
-+			opal_active_queue_elements--;
-+		}
-+	}
-+	spin_unlock_irqrestore(&opal_msg_lock, flags);
-+
-+	return ret;
-+
- }
- EXPORT_SYMBOL_GPL(opal_message_notifier_register);
- 
-@@ -259,9 +306,40 @@ EXPORT_SYMBOL_GPL(opal_message_notifier_unregister);
- 
- static void opal_message_do_notify(uint32_t msg_type, void *msg)
- {
--	/* notify subscribers */
--	atomic_notifier_call_chain(&opal_msg_notifier_head[msg_type],
--					msg_type, msg);
-+	struct OpalMsgNode *msg_node;
-+
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&opal_msg_lock, flags);
-+
-+	if (opal_msg_notify_reg_mask & (1 << msg_type)) {
-+		/* notify subscribers */
-+		atomic_notifier_call_chain(&opal_msg_notifier_head[msg_type],
-+						msg_type, msg);
-+	} else {
-+		if (opal_active_queue_elements < OPAL_MSG_QUEUE_MAX) {
-+			msg_node = kzalloc(sizeof(*msg_node), GFP_ATOMIC);
-+			if (msg_node) {
-+				INIT_LIST_HEAD(&msg_node->opal_queue_list_node);
-+				memcpy(&msg_node->msg,
-+					msg,
-+					sizeof(struct opal_msg));
-+				msg_node->queue_msg_type = msg_type;
-+				list_add_tail(&msg_node->opal_queue_list_node,
-+						&opal_msg_queue_pending);
-+				opal_active_queue_elements++;
-+			}
-+		}
-+
-+		if (opal_active_queue_elements >= OPAL_MSG_QUEUE_MAX) {
-+			pr_warn_once("%s: Notifier Register Queue full at %i\n",
-+					__func__,
-+					opal_active_queue_elements);
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&opal_msg_lock, flags);
-+
- }
- 
- static void opal_handle_message(void)
--- 
-2.7.4
+Thanks for update - I was not aware of it.
+
+Tested-by: Lukasz Majewski <lukma@denx.de>
+
+HW: iMX6Q.
+
+Best regards,
+
+Lukasz Majewski
+
+--
+
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+
+--Sig_/crbDPMbWs4Bbum9pNHcdk6i
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEgAyFJ+N6uu6+XupJAR8vZIA0zr0FAlobIngACgkQAR8vZIA0
+zr3a6Af/Tnsxno4ByiusDxsJjRrTblzhiSpcXrLvPziM9WxNDQECI6JUTFAByXJF
+ZWoPHG2R6clJUmnWfuqxnSa8L+p322Jas4ypmNU7cZPHPGvX79j7NqbWkCskn4lS
+YYSkRgDxjuwDD4JmGbG6NcmdwUMgGCrqMsAvz2XdHPolKKMZq+/Vk5ue2MykZzMb
+QIm0SoRKvWUkUw4jU/K2wBqwNGq7D5iIB4iKyOs6eoCeM8E7I0RRVZ8zhd7RBnEA
+hGMHWur+EpVg19RWL9/c2Aj7v2CJYqB8SCKoWARpojC7g722wT+yWrzJIK26XFbM
+wIc7GWjsVlHhlS1jcbtQVxZq3oaO0w==
+=omi6
+-----END PGP SIGNATURE-----
+
+--Sig_/crbDPMbWs4Bbum9pNHcdk6i--
