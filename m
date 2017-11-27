@@ -1,25 +1,26 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ylvmn1Kd3zDr77
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 05:03:36 +1100 (AEDT)
-Date: Mon, 27 Nov 2017 12:03:32 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] powerpc/pci: convert to use for_each_pci_bridge()
- helper
-Message-ID: <20171127180332.GA11228@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171110175230.82522-1-andriy.shevchenko@linux.intel.com>
- <20171122201259.GA21158@bhelgaas-glaptop.roam.corp.google.com>
- <87zi7d17ql.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ylwc24YrFzDrKR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 05:41:04 +1100 (AEDT)
+Subject: Re: [PATCH v3 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S, U}20
+To: Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown
+ <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <c0667b29-661d-2b48-d5c2-75291f97d55a@maciej.szmigiero.name>
+ <cd3bc8b1-612b-7e9d-fa67-7b88b1a6f251@sakamocchi.jp>
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Message-ID: <afbe88bb-b7bb-7556-ebbc-b2c8f161f574@maciej.szmigiero.name>
+Date: Mon, 27 Nov 2017 19:40:52 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87zi7d17ql.fsf@concordia.ellerman.id.au>
+In-Reply-To: <cd3bc8b1-612b-7e9d-fa67-7b88b1a6f251@sakamocchi.jp>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 23, 2017 at 11:48:18PM +1100, Michael Ellerman wrote:
-> Bjorn Helgaas <helgaas@kernel.org> writes:
+On 27.11.2017 18:40, Takashi Sakamoto wrote:
+(..)
 > 
-> > On Fri, Nov 10, 2017 at 07:52:29PM +0200, Andy Shevchenko wrote:
-> >> ...which makes code slightly cleaner.
-> >> 
-> >> Requires: d43f59ce6c50 ("PCI: Add for_each_pci_bridge() helper")
-> >
-> > Requires: 24a0c654d7d6 ("PCI: Add for_each_pci_bridge() helper")
-> >
-> > (My fault, I rebased that commit before sending it to Linus.)
-> >
-> >> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> >
-> > These don't depend on anything in the PCI core, so they could go
-> > either via my tree or the powerpc tree.  Since you acked this,
-> > Michael, I corrected the SHA1 above and put these both on my pci/misc
-> > branch.
+> Looks good to me.
 > 
-> Thanks. That's aiming for 4.16 I assume?
+> Reviewed-by: Takashi Sakamoto <o-takashi@sakamocchi.jp>
 
-Right.
+Thanks.
+
+> In next time to post any of your v2 patchset, it's better to add commenters of v1 patchset to CC list, so that your patch reaches the person who has practical interests in it.
+
+Will do it the next time.
+
+> Thanks
+> 
+> Takashi Sakamoto
+
+Best regards,
+Maciej Szmigiero
