@@ -1,24 +1,25 @@
-Return-Path: <clg@kaod.org>
-Received: from 16.mo4.mail-out.ovh.net (16.mo4.mail-out.ovh.net
- [188.165.55.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ylm7K1m3xzDr2T
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 23:19:07 +1100 (AEDT)
-Received: from player798.ha.ovh.net (b7.ovh.net [213.186.33.57])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 2C05410AB5F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 08:30:31 +0100 (CET)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH] KVM: PPC: Book3S HV: check for XIVE device before executing
- the XICS hcalls
-Date: Mon, 27 Nov 2017 08:30:17 +0100
-Message-Id: <20171127073017.25463-1-clg@kaod.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yltKf1P8qzDr8P
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 03:58:30 +1100 (AEDT)
+From: Sinan Kaya <okaya@codeaurora.org>
+To: linux-pci@vger.kernel.org,
+	timur@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ intel-gfx@lists.freedesktop.org, Sinan Kaya <okaya@codeaurora.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Rob Herring <robh@kernel.org>,
+ Bhumika Goyal <bhumirks@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)), linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH V3 02/29] powerpc/PCI: deprecate pci_get_bus_and_slot()
+Date: Mon, 27 Nov 2017 11:57:39 -0500
+Message-Id: <1511801886-6753-3-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
+References: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,91 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When QEMU is started with the option kernel_irqchip=òff, the kvm XICS
-hcalls are being used even though a kvm XICS device has not been
-created on the host, resulting quickly in a failure and a broken
-guest.
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-The test checking if there is a XIVE device in the VM before executing
-the XICS hcalls is missing from the recent XICS-over-XIVE glue.
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Use pci_get_domain_bus_and_slot() with a domain number of 0 as the code
+is not ready to consume multiple domains and existing code used domain
+number 0.
+
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- arch/powerpc/kvm/book3s_xive_template.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/kernel/pci_32.c              | 3 ++-
+ arch/powerpc/platforms/powermac/feature.c | 2 +-
+ arch/powerpc/sysdev/mv64x60_pci.c         | 4 ++--
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
-index c7a5deadd1cc..7aa4e02df97c 100644
---- a/arch/powerpc/kvm/book3s_xive_template.c
-+++ b/arch/powerpc/kvm/book3s_xive_template.c
-@@ -276,11 +276,15 @@ static u32 GLUE(X_PFX,scan_interrupts)(struct kvmppc_xive_vcpu *xc,
- X_STATIC unsigned long GLUE(X_PFX,h_xirr)(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
- 	u8 old_cppr;
- 	u32 hirq;
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 1d817f4..85ad2f7 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -96,7 +96,8 @@
+ 		reg = of_get_property(node, "reg", NULL);
+ 		if (!reg)
+ 			continue;
+-		dev = pci_get_bus_and_slot(pci_bus, ((reg[0] >> 8) & 0xff));
++		dev = pci_get_domain_bus_and_slot(0, pci_bus,
++						  ((reg[0] >> 8) & 0xff));
+ 		if (!dev || !dev->subordinate) {
+ 			pci_dev_put(dev);
+ 			continue;
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index 9e3f39d..ed8b166 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -829,7 +829,7 @@ static long core99_scc_enable(struct device_node *node, long param, long value)
  
- 	pr_devel("H_XIRR\n");
+ 	if (value) {
+ 		if (pci_device_from_OF_node(node, &pbus, &pid) == 0)
+-			pdev = pci_get_bus_and_slot(pbus, pid);
++			pdev = pci_get_domain_bus_and_slot(0, pbus, pid);
+ 		if (pdev == NULL)
+ 			return 0;
+ 		rc = pci_enable_device(pdev);
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index d52b3b8..6fe9104 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -37,7 +37,7 @@ static ssize_t mv64x60_hs_reg_read(struct file *filp, struct kobject *kobj,
+ 	if (count < MV64X60_VAL_LEN_MAX)
+ 		return -EINVAL;
  
-+	if (!xive)
-+		return H_TOO_HARD;
-+
- 	xc->GLUE(X_STAT_PFX,h_xirr)++;
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++	phb = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(0, 0));
+ 	if (!phb)
+ 		return -ENODEV;
+ 	pci_read_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+@@ -61,7 +61,7 @@ static ssize_t mv64x60_hs_reg_write(struct file *filp, struct kobject *kobj,
+ 	if (sscanf(buf, "%i", &v) != 1)
+ 		return -EINVAL;
  
- 	/* First collect pending bits from HW */
-@@ -335,11 +339,15 @@ X_STATIC unsigned long GLUE(X_PFX,h_xirr)(struct kvm_vcpu *vcpu)
- X_STATIC unsigned long GLUE(X_PFX,h_ipoll)(struct kvm_vcpu *vcpu, unsigned long server)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
- 	u8 pending = xc->pending;
- 	u32 hirq;
- 
- 	pr_devel("H_IPOLL(server=%ld)\n", server);
- 
-+	if (!xive)
-+		return H_TOO_HARD;
-+
- 	xc->GLUE(X_STAT_PFX,h_ipoll)++;
- 
- 	/* Grab the target VCPU if not the current one */
-@@ -388,8 +396,12 @@ static void GLUE(X_PFX,push_pending_to_hw)(struct kvmppc_xive_vcpu *xc)
- X_STATIC int GLUE(X_PFX,h_cppr)(struct kvm_vcpu *vcpu, unsigned long cppr)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
- 	u8 old_cppr;
- 
-+	if (!xive)
-+		return H_TOO_HARD;
-+
- 	pr_devel("H_CPPR(cppr=%ld)\n", cppr);
- 
- 	xc->GLUE(X_STAT_PFX,h_cppr)++;
-@@ -435,6 +447,9 @@ X_STATIC int GLUE(X_PFX,h_eoi)(struct kvm_vcpu *vcpu, unsigned long xirr)
- 	u16 src;
- 	int rc = 0;
- 
-+	if (!xive)
-+		return H_TOO_HARD;
-+
- 	pr_devel("H_EOI(xirr=%08lx)\n", xirr);
- 
- 	xc->GLUE(X_STAT_PFX,h_eoi)++;
-@@ -532,9 +547,13 @@ X_STATIC int GLUE(X_PFX,h_ipi)(struct kvm_vcpu *vcpu, unsigned long server,
- 			       unsigned long mfrr)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
- 
- 	pr_devel("H_IPI(server=%08lx,mfrr=%ld)\n", server, mfrr);
- 
-+	if (!xive)
-+		return H_TOO_HARD;
-+
- 	xc->GLUE(X_STAT_PFX,h_ipi)++;
- 
- 	/* Find target */
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++	phb = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(0, 0));
+ 	if (!phb)
+ 		return -ENODEV;
+ 	pci_write_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, v);
 -- 
-2.13.6
+1.9.1
