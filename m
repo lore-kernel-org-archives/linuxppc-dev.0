@@ -1,27 +1,54 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
+ [IPv6:2607:f8b0:4003:c0f::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ym0HB2tFVzDrTw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 08:26:45 +1100 (AEDT)
-Subject: Re: [alsa-devel] [PATCH v3 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S,
- U}20
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- Liam Girdwood <lgirdwood@gmail.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown
- <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, Takashi Sakamoto <o-takashi@sakamocchi.jp>
-References: <c0667b29-661d-2b48-d5c2-75291f97d55a@maciej.szmigiero.name>
- <s5h374zmpoi.wl-tiwai@suse.de>
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Message-ID: <8110a97f-c230-8117-2a2d-81b42766a8ec@maciej.szmigiero.name>
-Date: Mon, 27 Nov 2017 22:26:36 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ym0zz6gcTzDrLn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 08:58:39 +1100 (AEDT)
+Received: by mail-ot0-x244.google.com with SMTP id v15so25636275ote.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 13:58:39 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <s5h374zmpoi.wl-tiwai@suse.de>
-Content-Type: text/plain; charset=utf-8
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20171127193037.8711-1-deepa.kernel@gmail.com>
+References: <20171127193037.8711-1-deepa.kernel@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 27 Nov 2017 22:58:36 +0100
+Message-ID: <CAK8P3a2pcpQqf_TNGVxLBePBSKYhxD90UN-FjBor4d-dKhAwbQ@mail.gmail.com>
+Subject: Re: [PATCH v2 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
+ conversion
+To: Deepa Dinamani <deepa.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
+ David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
+ devel@driverdev.osuosl.org,
+ gerald.schaefer@de.ibm.com, gregkh <gregkh@linuxfoundation.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, Linux API <linux-api@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, oberpar@linux.vnet.ibm.com,
+ oprofile-list@lists.sf.net,
+ Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Robert Richter <rric@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ sebott@linux.vnet.ibm.com, sparclinux <sparclinux@vger.kernel.org>,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ "the arch/x86 maintainers" <x86@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,61 +58,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.11.2017 21:28, Takashi Iwai wrote:
-> On Mon, 27 Nov 2017 00:09:47 +0100,
-> Maciej S. Szmigiero wrote:
->> diff --git a/include/sound/soc-dai.h b/include/sound/soc-dai.h
->> index 58acd00cae19..d970879944fc 100644
->> --- a/include/sound/soc-dai.h
->> +++ b/include/sound/soc-dai.h
->> @@ -102,6 +102,8 @@ struct snd_compr_stream;
->>  			       SNDRV_PCM_FMTBIT_S16_BE |\
->>  			       SNDRV_PCM_FMTBIT_S20_3LE |\
->>  			       SNDRV_PCM_FMTBIT_S20_3BE |\
->> +			       SNDRV_PCM_FMTBIT_S20_LE |\
->> +			       SNDRV_PCM_FMTBIT_S20_BE |\
->>  			       SNDRV_PCM_FMTBIT_S24_3LE |\
->>  			       SNDRV_PCM_FMTBIT_S24_3BE |\
->>                                 SNDRV_PCM_FMTBIT_S32_LE |\
-> 
-> Is it really safe to include them unconditionally...?
+On Mon, Nov 27, 2017 at 8:30 PM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
+> The series is a preparation series for individual architectures
+> to use 64 bit time_t syscalls in compat and 32 bit emulation modes.
+>
+> This is a follow up to the series Arnd Bergmann posted:
+> https://sourceware.org/ml/libc-alpha/2015-05/msg00070.html [1]
+>
+> Big picture is as per the lwn article:
+> https://lwn.net/Articles/643234/ [2]
+>
+> The series is directed at converting posix clock syscalls:
+> clock_gettime, clock_settime, clock_getres and clock_nanosleep
+> to use a new data structure __kernel_timespec at syscall boundaries.
+> __kernel_timespec maintains 64 bit time_t across all execution modes.
+>
+> vdso will be handled as part of each architecture when they enable
+> support for 64 bit time_t.
+>
+> The compat syscalls are repurposed to provide backward compatibility
+> by using them as native syscalls as well for 32 bit architectures.
+> They will continue to use timespec at syscall boundaries.
+>
+> CONFIG_64_BIT_TIME controls whether the syscalls use __kernel_timespec
+> or timespec at syscall boundaries.
+>
+> The series does the following:
+> 1. Enable compat syscalls on 32 bit architectures.
+> 2. Add a new __kernel_timespec type to be used as the data structure
+>    for all the new syscalls.
+> 3. Add new config CONFIG_64BIT_TIME(intead of the CONFIG_COMPAT_TIME in
+>    [1] and [2] to switch to new definition of __kernel_timespec. It is
+>    the same as struct timespec otherwise.
+> 4. Add new CONFIG_32BIT_TIME to conditionally compile compat syscalls.
+>
+> * Changes since v1:
+>  * Introduce CONFIG_32BIT_TIME
+>  * Fixed zeroing out of higher order bits of tv_nsec
+>  * Included Arnd's changes to fix up use of compat headers
 
-This define is used as a template of supported formats only in ASoC AC'97
-CODECs.
-A list of effective supported sample formats will be calculated as an
-intersection of CODEC and CPU-supported formats (and DMA
-controller-supported bit widths).
+Very nice. I think it would be good to get this into linux-next soon so we
+can build on top of this. I have submitted most other y2038 patches today
+that don't depend on either this or one of my other patches.
 
-This means that as long as ASoC CPUs don't add these sample formats to
-their list of supported formats they should not be offered as supported
-by any sound card.
+There is one patch that I want to do but haven't imlpemented yet, to merge
+get_timespec64() and compat_get_timespec() into one function that
+take a bunch of flags (check nanosecond, nano/microsecond,
+zero upper half of nanoseconds, 32-bit or 64-bit wide), since I found
+a few functions that need more than one of these, and they don't
+all need the same combinations. My patch will certainly conflict
+with yours, as your touch the same functions, but that's fine.
 
-Also, we already have similar SNDRV_PCM_FMTBIT_S20_3 formats in this
-define.
+If you end up doing another version of the series though, it might
+be better to move the compat accessors into kernel/time/time.c
+along with the native functions, that should make it easier to
+consolidate them later.
 
->> diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
->> index c227ccba60ae..7385024041d2 100644
->> --- a/include/uapi/sound/asound.h
->> +++ b/include/uapi/sound/asound.h
->> @@ -214,6 +214,11 @@ typedef int __bitwise snd_pcm_format_t;
->>  #define	SNDRV_PCM_FORMAT_IMA_ADPCM	((__force snd_pcm_format_t) 22)
->>  #define	SNDRV_PCM_FORMAT_MPEG		((__force snd_pcm_format_t) 23)
->>  #define	SNDRV_PCM_FORMAT_GSM		((__force snd_pcm_format_t) 24)
->> +#define	SNDRV_PCM_FORMAT_S20_LE	((__force snd_pcm_format_t) 25) /* \ 			*/
->> +#define	SNDRV_PCM_FORMAT_S20_BE	((__force snd_pcm_format_t) 26) /* | 			*/
->> +#define	SNDRV_PCM_FORMAT_U20_LE	((__force snd_pcm_format_t) 27) /* | in four bytes,	*/
->> +#define	SNDRV_PCM_FORMAT_U20_BE	((__force snd_pcm_format_t) 28) /* / LSB justified	*/
-> 
-> This style of comments is unusual, so I prefer rather a dumb style,
-> even don't mind repeating the same text in each line.  They'll be over
-> 80 chars in anyway, so ignore what checkpatch complains.
+> I decided against using LEGACY_TIME_SYSCALLS to conditionally compile
+> legacy time syscalls such as sys_nanosleep because this will need to
+> enclose compat_sys_nanosleep as well. So, defining it as
+>
+> config LEGACY_TIME_SYSCALLS
+>      def_bool 64BIT || !64BIT_TIME
+>
+> will not include compat_sys_nanosleep. We will instead need a new config to
+> exclusively mark legacy syscalls.
 
-OK, will change it to the repetitive style then in a respin.
+Do you mean we would need to do this separately for native and compat
+syscalls, and have yet another option, like LEGACY_TIME_SYSCALLS
+and LEGACY_TIME_COMPAT_SYSCALLS, to cover all cases? I would
+think that CONFIG_COMPAT_32BIT_TIME handles all the compat versions,
+while CONFIG_LEGACY_TIME_SYSCALLS handles all the native ones.
 
-> thanks,
-> 
-> Takashi
-> 
-
-Thanks,
-Maciej
+       Arnd
