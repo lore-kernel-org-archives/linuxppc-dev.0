@@ -1,26 +1,24 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ylXny3qPmzDrKS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 14:48:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ylY7L5jd6zDr8c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 15:03:26 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Alastair D'Silva <alastair@linux.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/2] powerpc: Avoid signed to unsigned conversion in
- set_thread_tidr()
-In-Reply-To: <20171124083338.15283-1-vaibhav@linux.vnet.ibm.com>
-References: <20171124083338.15283-1-vaibhav@linux.vnet.ibm.com>
-Date: Mon, 27 Nov 2017 14:48:22 +1100
-Message-ID: <8737504c1l.fsf@concordia.ellerman.id.au>
+To: christophe lombard <clombard@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH] cxl: Add support for ASB_Notify on POWER9
+In-Reply-To: <d18c47e1-d40f-1d6e-e68c-99ae7be01737@linux.vnet.ibm.com>
+References: <1511435132-24020-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1511469668.2466.48.camel@au1.ibm.com>
+ <49cd46e7-c13e-c82c-404c-2c9e989b9774@linux.vnet.ibm.com>
+ <1511528547.2466.52.camel@au1.ibm.com>
+ <d18c47e1-d40f-1d6e-e68c-99ae7be01737@linux.vnet.ibm.com>
+Date: Mon, 27 Nov 2017 15:03:26 +1100
+Message-ID: <87zi782ws1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,69 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+christophe lombard <clombard@linux.vnet.ibm.com> writes:
 
-> There is an unsafe signed to unsigned conversion in set_thread_tidr()
-> that may cause an error value to be assigned to SPRN_TIDR register and
-> used as thread-id.
+> Le 24/11/2017 =C3=A0 14:02, Benjamin Herrenschmidt a =C3=A9crit=C2=A0:
+>> On Fri, 2017-11-24 at 11:14 +0100, christophe lombard wrote:
+>>> To my knowledge, there is no property (or similar), somewhere, that
+>>> indicating that the TIDR is supported or not.
+>>> For the time being, if I am not wrong, the only check we have, is
+>>> this condition in the function set_thread_tidr(struct task_struct *t):
+>>>
+>>>          if (!cpu_has_feature(CPU_FTR_ARCH_300))
+>>>                  return -EINVAL;
+>>>
+>>>
+>>> Christophe
+>>=20
+>> Then we need to fix that
+>>=20
+>> Ben.
+>>=20
 >
-> The issue happens as assign_thread_tidr() returns an int and
-> thread.tidr is an unsigned-long. So a negative error code returned
-> from assign_thread_tidr() will fail the error check and gets assigned
-> as tidr as a large positive value.
->
-> To fix this the patch assigns the return value of assign_thread_tidr()
-> to a temporary int and assigns it to thread.tidr iff its '> 0'.
->
-> The patch shouldn't impact the calling convention of set_thread_tidr()
+> You are right. We will insert a checking in the cxl driver to allow
+> updating the TIDR if a P9 is present. This will be in the patch V2.
+> Thanks
 
-But it does? I'm really confused.
+A cxl_is_power9() check should be fine.
 
-Please fix and resend.
+When the check fails you should return an error code that can be
+distinguished and interpreted correctly by userspace, ie. not EINVAL.
+That implies if the program calls with a different set of arguments the
+call might succeed, which is not true.
 
-cheers
-
->  int set_thread_tidr(struct task_struct *t)
->  {
-> +	int rc;
-> +
->  	if (!cpu_has_feature(CPU_FTR_ARCH_300))
->  		return -EINVAL;
-                ^
-                -ve error
-
->  
->  	if (t != current)
->  		return -EINVAL;
-                ^
-                -ve error
-
->  
-> -	t->thread.tidr = assign_thread_tidr();
-> -	if (t->thread.tidr < 0)
-> -		return t->thread.tidr;
-                ^
-                -ve error
-
-Yes I know we never hit that case because of the bug, that is what this
-patch should be fixing, and only that.
-
-> -
-> -	mtspr(SPRN_TIDR, t->thread.tidr);
-> +	rc = assign_thread_tidr();
-> +	if (rc > 0) {
-> +		t->thread.tidr = rc;
-> +		mtspr(SPRN_TIDR, t->thread.tidr);
-> +	}
->  
-> -	return 0;
-
-Success == 0
-
-> +	return rc;
-
-Success == +ve TIDR
-
->  }
+Either ENODEV or ENXIO would be best I think.
 
 cheers
