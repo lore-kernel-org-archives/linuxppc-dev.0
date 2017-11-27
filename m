@@ -1,45 +1,35 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deepa.kernel@gmail.com>
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ylxcy70zbzDr21
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 06:26:58 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vARJQ1vn090054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 14:26:55 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2egrnm8kd6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 14:26:55 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 27 Nov 2017 12:26:54 -0700
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- vARJQrbV9896246
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 12:26:53 -0700
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8D7236E03A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 12:26:53 -0700 (MST)
-Received: from oc2832402873.ibm.com (unknown [9.53.92.243])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP id 5B9346E03D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 12:26:53 -0700 (MST)
-Subject: Re: Subject: [PATCH V4 3/4] hotplug/drc-info: Add code to search
- ibm,drc-info property
-To: linuxppc-dev@lists.ozlabs.org
-References: <6a94bcc7-20c5-98fc-3f17-ab1b9d4385fa@linux.vnet.ibm.com>
- <fbdcc435-1741-ad87-86c9-4150ca747f5e@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Mon, 27 Nov 2017 13:26:53 -0600
-MIME-Version: 1.0
-In-Reply-To: <fbdcc435-1741-ad87-86c9-4150ca747f5e@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <dece0022-0021-ebee-24a2-4940877cf448@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ylxk70hmczDqmy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 06:31:26 +1100 (AEDT)
+Received: by mail-qk0-x241.google.com with SMTP id n3so33944206qkn.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 11:31:26 -0800 (PST)
+From: Deepa Dinamani <deepa.kernel@gmail.com>
+To: tglx@linutronix.de,
+	john.stultz@linaro.org
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
+ acme@kernel.org, benh@kernel.crashing.org, borntraeger@de.ibm.com,
+ catalin.marinas@arm.com, cmetcalf@mellanox.com, cohuck@redhat.com,
+ davem@davemloft.net, deller@gmx.de, devel@driverdev.osuosl.org,
+ gerald.schaefer@de.ibm.com, gregkh@linuxfoundation.org,
+ heiko.carstens@de.ibm.com, hoeppner@linux.vnet.ibm.com, hpa@zytor.com,
+ jejb@parisc-linux.org, jwi@linux.vnet.ibm.com, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, mark.rutland@arm.com, mingo@redhat.com,
+ mpe@ellerman.id.au, oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
+ paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
+ rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
+ sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com, will.deacon@arm.com,
+ x86@kernel.org
+Subject: [PATCH v2 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
+ conversion
+Date: Mon, 27 Nov 2017 11:30:27 -0800
+Message-Id: <20171127193037.8711-1-deepa.kernel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,281 +39,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
+The series is a preparation series for individual architectures
+to use 64 bit time_t syscalls in compat and 32 bit emulation modes.
 
-On 11/20/2017 09:38 AM, Nathan Fontenot wrote:
-> On 11/16/2017 02:11 PM, Michael Bringmann wrote:
->> rpadlpar_core.c: Provide parallel routines to search the older device-
->> tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
->> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
->>
->> The interface to examine the DRC information is changed from a "get"
->> function that returns values for local verification elsewhere, to a
->> "check" function that validates the 'name' and/or 'type' of a device
->> node.  This update hides the format of the underlying device-tree
->> properties, and concentrates the value checks into a single function
->> without requiring the user to verify whether a search was successful.
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->> Changes in V4:
->>   -- Rename of_one_drc_info to of_read_drc_info_cell
->>   -- Fix some spacing within arguments
->> ---
->>  drivers/pci/hotplug/rpadlpar_core.c |   13 ++--
->>  drivers/pci/hotplug/rpaphp.h        |    4 +
->>  drivers/pci/hotplug/rpaphp_core.c   |  110 +++++++++++++++++++++++++++--------
->>  3 files changed, 92 insertions(+), 35 deletions(-)
->>
->> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
->> index a3449d7..fc01d7d 100644
->> --- a/drivers/pci/hotplug/rpadlpar_core.c
->> +++ b/drivers/pci/hotplug/rpadlpar_core.c
->> @@ -27,6 +27,7 @@
->>  #include <linux/mutex.h>
->>  #include <asm/rtas.h>
->>  #include <asm/vio.h>
->> +#include <linux/firmware.h>
->>
->>  #include "../pci.h"
->>  #include "rpaphp.h"
->> @@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
->>  {
->>  	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
->>  	struct device_node *dn = NULL;
->> -	char *name;
->>  	int rc;
->>
->>  	if (!parent)
->>  		return NULL;
->>
->>  	while ((dn = of_get_next_child(parent, dn))) {
->> -		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
->> -		if ((rc == 0) && (!strcmp(drc_name, name)))
->> +		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
->> +		if (rc == 0)
->>  			break;
->>  	}
->>
->> @@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
->>  						  char *drc_type)
->>  {
->>  	struct device_node *np = NULL;
->> -	char *name;
->> -	char *type;
->>  	int rc;
->>
->>  	while ((np = of_find_node_by_name(np, "pci"))) {
->> -		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
->> +		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
->>  		if (rc == 0)
->> -			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
->> -				break;
->> +			break;
->>  	}
->>
->>  	return np;
->> diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
->> index 7db024e..8db5f2e 100644
->> --- a/drivers/pci/hotplug/rpaphp.h
->> +++ b/drivers/pci/hotplug/rpaphp.h
->> @@ -91,8 +91,8 @@ struct slot {
->>
->>  /* rpaphp_core.c */
->>  int rpaphp_add_slot(struct device_node *dn);
->> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->> -		char **drc_name, char **drc_type, int *drc_power_domain);
->> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> +		char *drc_type);
->>
->>  /* rpaphp_slot.c */
->>  void dealloc_slot_struct(struct slot *slot);
->> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
->> index 1e29aba..0a3b5f5 100644
->> --- a/drivers/pci/hotplug/rpaphp_core.c
->> +++ b/drivers/pci/hotplug/rpaphp_core.c
->> @@ -30,6 +30,7 @@
->>  #include <linux/smp.h>
->>  #include <linux/init.h>
->>  #include <linux/vmalloc.h>
->> +#include <asm/firmware.h>
->>  #include <asm/eeh.h>       /* for eeh_add_device() */
->>  #include <asm/rtas.h>		/* rtas_call */
->>  #include <asm/pci-bridge.h>	/* for pci_controller */
->> @@ -196,25 +197,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
->>  	return 0;
->>  }
->>
->> -/* To get the DRC props describing the current node, first obtain it's
->> - * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
->> - * the my-drc-index for correlation, and obtain the requested properties.
->> +
->> +/* Verify the existence of 'drc_name' and/or 'drc_type' within the
->> + * current node.  First obtain it's my-drc-index property.  Next,
->> + * obtain the DRC info from it's parent.  Use the my-drc-index for
->> + * correlation, and obtain/validate the requested properties.
->>   */
->> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->> -		char **drc_name, char **drc_type, int *drc_power_domain)
->> +
->> +static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->>  {
->> +	char *name_tmp, *type_tmp;
->>  	const int *indexes, *names;
->>  	const int *types, *domains;
->> -	const unsigned int *my_index;
->> -	char *name_tmp, *type_tmp;
->>  	int i, rc;
->>
->> -	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
->> -	if (!my_index) {
->> -		/* Node isn't DLPAR/hotplug capable */
->> -		return -EINVAL;
->> -	}
->> -
->>  	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
->>  	if (rc < 0) {
->>  		return -EINVAL;
->> @@ -225,24 +222,87 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->>
->>  	/* Iterate through parent properties, looking for my-drc-index */
->>  	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
->> -		if ((unsigned int) indexes[i + 1] == *my_index) {
->> -			if (drc_name)
->> -				*drc_name = name_tmp;
->> -			if (drc_type)
->> -				*drc_type = type_tmp;
->> -			if (drc_index)
->> -				*drc_index = be32_to_cpu(*my_index);
->> -			if (drc_power_domain)
->> -				*drc_power_domain = be32_to_cpu(domains[i+1]);
->> -			return 0;
->> -		}
->> +		if ((unsigned int) indexes[i + 1] == my_index)
->> +			break;
->> +
->>  		name_tmp += (strlen(name_tmp) + 1);
->>  		type_tmp += (strlen(type_tmp) + 1);
->>  	}
->>
->> +	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
->> +	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
->> +		return 0;
->> +
->> +	return -EINVAL;
->> +}
->> +
->> +static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->> +{
->> +	struct property *info;
->> +	unsigned int entries;
->> +	struct of_drc_info drc;
->> +	const __be32 *value;
->> +	int j;
->> +
->> +	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
->> +	if (info == NULL)
->> +		return -EINVAL;
->> +
->> +	value = info->value;
->> +	value = (void *)of_prop_next_u32(info, value, &entries);
->> +	if (!value)
->> +		return -EINVAL;
->> +
->> +	for (j = 0; j < entries; j++) {
->> +		of_read_drc_info_cell(&info, &value, &drc);
->> +
->> +		/* Should now know end of current entry */
->> +
->> +		WARN_ON((my_index < drc.drc_index_start) ||
->> +			(((my_index - drc.drc_index_start) %
->> +				drc.sequential_inc) != 0));
-> 
-> This WARN_ON would also fit better in of_read_drc_info_cell()
-> 
-> -Nathan
+This is a follow up to the series Arnd Bergmann posted:
+https://sourceware.org/ml/libc-alpha/2015-05/msg00070.html [1]
 
-Problem with absorbing this check into 'of_read_drc_info_cell()'
-is that the function reads an LMB set at a time, and does not
-pay attention to the specific drc_index of interest.  it would
-be possible to recast the interface of of_read_drc_info_cell()
-as,
+Big picture is as per the lwn article:
+https://lwn.net/Articles/643234/ [2]
 
-extern int of_read_drc_info_cell(struct property **prop,
-                        const __be32 **curval, const int index,
-			struct of_drc_info *data);
+The series is directed at converting posix clock syscalls:
+clock_gettime, clock_settime, clock_getres and clock_nanosleep
+to use a new data structure __kernel_timespec at syscall boundaries.
+__kernel_timespec maintains 64 bit time_t across all execution modes.
 
-where sequential invocations to the LMB set would be like,
+vdso will be handled as part of each architecture when they enable
+support for 64 bit time_t.
 
-	ret = of_read_drc_info_cell(prop, value, -1, &drc);
+The compat syscalls are repurposed to provide backward compatibility
+by using them as native syscalls as well for 32 bit architectures.
+They will continue to use timespec at syscall boundaries.
 
-where invocations to the ith LMB representation would be like,
+CONFIG_64_BIT_TIME controls whether the syscalls use __kernel_timespec
+or timespec at syscall boundaries.
 
-	ret = of_read_drc_info_cell(prop, value, i, &drc);
+The series does the following:
+1. Enable compat syscalls on 32 bit architectures.
+2. Add a new __kernel_timespec type to be used as the data structure
+   for all the new syscalls.
+3. Add new config CONFIG_64BIT_TIME(intead of the CONFIG_COMPAT_TIME in
+   [1] and [2] to switch to new definition of __kernel_timespec. It is
+   the same as struct timespec otherwise.
+4. Add new CONFIG_32BIT_TIME to conditionally compile compat syscalls.
 
-Then the function would have the information to report errors
-out of range of an LMB set.
+* Changes since v1:
+ * Introduce CONFIG_32BIT_TIME
+ * Fixed zeroing out of higher order bits of tv_nsec
+ * Included Arnd's changes to fix up use of compat headers
 
-Or am I missing something other that you were trying to communicate?
+I decided against using LEGACY_TIME_SYSCALLS to conditionally compile
+legacy time syscalls such as sys_nanosleep because this will need to
+enclose compat_sys_nanosleep as well. So, defining it as 
 
-Michael
+config LEGACY_TIME_SYSCALLS
+     def_bool 64BIT || !64BIT_TIME
 
->> +
->> +		if (my_index > drc.last_drc_index)
->> +			continue;
->> +
->> +		break;
->> +	}
->> +	/* Found it */
->> +
->> +	if (((drc_name == NULL) ||
->> +	     (drc_name && !strncmp(drc_name,
->> +				drc.drc_name_prefix,
->> +				strlen(drc.drc_name_prefix)))) &&
->> +	    ((drc_type == NULL) ||
->> +	     (drc_type && !strncmp(drc_type,
->> +				drc.drc_type,
->> +				strlen(drc.drc_type)))))
->> +		return 0;
->> +
->>  	return -EINVAL;
->>  }
->> -EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
->> +
->> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> +			char *drc_type)
->> +{
->> +	const unsigned int *my_index;
->> +
->> +	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
->> +	if (!my_index) {
->> +		/* Node isn't DLPAR/hotplug capable */
->> +		return -EINVAL;
->> +	}
->> +
->> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
->> +		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
->> +						*my_index);
->> +	else
->> +		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
->> +						*my_index);
->> +}
->> +EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
->> +
->>
->>  static int is_php_type(char *drc_type)
->>  {
->>
-> 
-> 
+will not include compat_sys_nanosleep. We will instead need a new config to
+exclusively mark legacy syscalls.
 
+Deepa Dinamani (10):
+  compat: Make compat helpers independent of CONFIG_COMPAT
+  include: Move compat_timespec/ timeval to compat_time.h
+  compat: enable compat_get/put_timespec64 always
+  arch: introduce CONFIG_64BIT_TIME
+  arch: Introduce CONFIG_COMPAT_32BIT_TIME
+  posix-clocks: Make compat syscalls depend on CONFIG_COMPAT_32BIT_TIME
+  include: Add new y2038 safe __kernel_timespec
+  fix get_timespec64() for y2038 safe compat interfaces
+  change time types to new y2038 safe __kernel_* types
+  nanosleep: change time types to safe __kernel_* types
+
+ arch/Kconfig                           | 18 +++++++
+ arch/arm64/include/asm/compat.h        | 11 ----
+ arch/arm64/include/asm/stat.h          |  1 +
+ arch/arm64/kernel/hw_breakpoint.c      |  1 -
+ arch/arm64/kernel/perf_regs.c          |  2 +-
+ arch/arm64/kernel/process.c            |  1 -
+ arch/mips/include/asm/compat.h         | 11 ----
+ arch/mips/kernel/signal32.c            |  2 +-
+ arch/parisc/include/asm/compat.h       | 11 ----
+ arch/powerpc/include/asm/compat.h      | 11 ----
+ arch/powerpc/kernel/asm-offsets.c      |  2 +-
+ arch/powerpc/oprofile/backtrace.c      |  2 +-
+ arch/s390/hypfs/hypfs_sprp.c           |  1 -
+ arch/s390/include/asm/compat.h         | 11 ----
+ arch/s390/include/asm/elf.h            |  3 +-
+ arch/s390/kvm/priv.c                   |  1 -
+ arch/s390/pci/pci_clp.c                |  1 -
+ arch/sparc/include/asm/compat.h        | 11 ----
+ arch/tile/include/asm/compat.h         | 11 ----
+ arch/x86/events/core.c                 |  2 +-
+ arch/x86/include/asm/compat.h          | 11 ----
+ arch/x86/include/asm/ftrace.h          |  2 +-
+ arch/x86/include/asm/sys_ia32.h        |  2 +-
+ arch/x86/kernel/sys_x86_64.c           |  2 +-
+ drivers/s390/block/dasd_ioctl.c        |  1 -
+ drivers/s390/char/fs3270.c             |  1 -
+ drivers/s390/char/sclp_ctl.c           |  1 -
+ drivers/s390/char/vmcp.c               |  1 -
+ drivers/s390/cio/chsc_sch.c            |  1 -
+ drivers/s390/net/qeth_core_main.c      |  2 +-
+ drivers/staging/pi433/pi433_if.c       |  2 +-
+ include/linux/compat.h                 | 11 ++--
+ include/linux/compat_time.h            | 23 +++++++++
+ include/linux/restart_block.h          |  7 +--
+ include/linux/syscalls.h               | 12 ++---
+ include/linux/time.h                   |  4 +-
+ include/linux/time64.h                 | 10 +++-
+ include/uapi/asm-generic/posix_types.h |  1 +
+ include/uapi/linux/time.h              |  7 +++
+ kernel/Makefile                        |  2 +-
+ kernel/compat.c                        | 92 ++++++++++++++++++----------------
+ kernel/time/hrtimer.c                  | 10 ++--
+ kernel/time/posix-stubs.c              | 12 +++--
+ kernel/time/posix-timers.c             | 24 ++++++---
+ kernel/time/time.c                     | 10 +++-
+ 45 files changed, 175 insertions(+), 190 deletions(-)
+ create mode 100644 include/linux/compat_time.h
+
+base-commit: b0a84f19a5161418d4360cd57603e94ed489915e
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+2.14.1
+
+Cc: acme@kernel.org
+Cc: benh@kernel.crashing.org
+Cc: borntraeger@de.ibm.com
+Cc: catalin.marinas@arm.com
+Cc: cmetcalf@mellanox.com
+Cc: cohuck@redhat.com
+Cc: davem@davemloft.net
+Cc: deller@gmx.de
+Cc: devel@driverdev.osuosl.org
+Cc: gerald.schaefer@de.ibm.com
+Cc: gregkh@linuxfoundation.org
+Cc: heiko.carstens@de.ibm.com
+Cc: hoeppner@linux.vnet.ibm.com
+Cc: hpa@zytor.com
+Cc: jejb@parisc-linux.org
+Cc: jwi@linux.vnet.ibm.com
+Cc: linux-api@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: mark.rutland@arm.com
+Cc: mingo@redhat.com
+Cc: mpe@ellerman.id.au
+Cc: oberpar@linux.vnet.ibm.com
+Cc: oprofile-list@lists.sf.net
+Cc: paulus@samba.org
+Cc: peterz@infradead.org
+Cc: ralf@linux-mips.org
+Cc: rostedt@goodmis.org
+Cc: rric@kernel.org
+Cc: schwidefsky@de.ibm.com
+Cc: sebott@linux.vnet.ibm.com
+Cc: sparclinux@vger.kernel.org
+Cc: sth@linux.vnet.ibm.com
+Cc: ubraun@linux.vnet.ibm.com
+Cc: will.deacon@arm.com
+Cc: x86@kernel.org
