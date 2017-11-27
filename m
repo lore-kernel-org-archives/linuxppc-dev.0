@@ -1,22 +1,42 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yltLC24wBzDr8k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 03:58:58 +1100 (AEDT)
-From: Sinan Kaya <okaya@codeaurora.org>
-To: linux-pci@vger.kernel.org,
-	timur@codeaurora.org
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- intel-gfx@lists.freedesktop.org, Sinan Kaya <okaya@codeaurora.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWER MACINTOSH),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH V3 13/29] powerpc/powermac: deprecate pci_get_bus_and_slot()
-Date: Mon, 27 Nov 2017 11:57:50 -0500
-Message-Id: <1511801886-6753-14-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
-References: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yltVZ03TXzDrCy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 04:06:13 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vARH63cQ122481
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 12:06:11 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2egn99d1ce-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 12:06:09 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Mon, 27 Nov 2017 17:05:35 -0000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>
+Cc: "Alastair D'Silva" <alastair@linux.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc: Avoid signed to unsigned conversion in
+ set_thread_tidr()
+In-Reply-To: <87609w4c8t.fsf@concordia.ellerman.id.au>
+References: <20171123124718.16839-1-vaibhav@linux.vnet.ibm.com>
+ <87lgiw19qd.fsf@concordia.ellerman.id.au>
+ <87fu94f925.fsf@vajain21.in.ibm.com>
+ <87609w4c8t.fsf@concordia.ellerman.id.au>
+Date: Mon, 27 Nov 2017 22:35:24 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87k1ybmz3f.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +46,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-where a PCI device is present. This restricts the device drivers to be
-reused for other domain numbers.
 
-Getting ready to remove pci_get_bus_and_slot() function in favor of
-pci_get_domain_bus_and_slot().
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Hard-code the domain number as 0 to match the previous behavior.
+> Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+>
+>> Thanks Mpe for reviewing the patch
+>>
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>>
+>>>> To fix this the patch assigns the return value of assign_thread_tidr()
+>>>> to a temporary int and assigns it to thread.tidr iff its '> 0'.
+>>>
+>>> .. and changes the calling convention of the function.
+>>>
+>>> Now it returns -ve error values, or a +ve TIDR value when it succeeds,
+>>> or possibly 0 if that's returned by assign_thread_tidr().
+>>>
+>>> Which I'm not sure you meant to do. If you did, you should at least
+>>> document it.
+>>
+>> Yes this is intentional and this was supposed to be the calling
+>> convention of set_thread_tidr() in first place. At-least that what I
+>> gather from subsequent cxl patch to add its support
+>> http://patchwork.ozlabs.org/patch/840719/
+>
+> That's not at all what I gather from that patch.
+>
+> +		/* Assign a unique TIDR (thread id) for the current thread */
+> +		rc = set_thread_tidr(current);
+> +		if (!rc)
+> +			ctx->tid = current->thread.tidr;
+>
+> That expects 0 on success, anything else is an error.
+>
+> Which is what set_thread_tidr() currently implements, and is the most
+> common calling convention in kernel code.
+>
+> Please don't change that as part of an unrelated fix.
+>
+> If you want to change the calling convention, send a patch to do that
+> and only that.
+>
+> cheers
+>
+Agreed Mpe, checked with Christophe and he too echoed similar inputs. I
+will update my v2 patch by not causing a change to he call convention.
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/macintosh/via-pmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index c4c2b3b..3e8b3b6 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -1799,7 +1799,7 @@ static int powerbook_sleep_grackle(void)
- 	struct adb_request req;
- 	struct pci_dev *grackle;
- 
--	grackle = pci_get_bus_and_slot(0, 0);
-+	grackle = pci_get_domain_bus_and_slot(0, 0, 0);
- 	if (!grackle)
- 		return -ENODEV;
- 
 -- 
-1.9.1
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
