@@ -1,54 +1,23 @@
-Return-Path: <deepa.kernel@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ym1hB5tXFzDrTf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 09:30:02 +1100 (AEDT)
-Received: by mail-it0-x243.google.com with SMTP id x13so23352735iti.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Nov 2017 14:30:02 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ym1mN75RczDrTf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 09:33:39 +1100 (AEDT)
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Subject: [PATCH v4 1/2] ALSA: pcm: add SNDRV_PCM_FORMAT_{S,U}20
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Message-ID: <3a279ea2-8098-d5a4-a53e-b0e3585fa9bf@maciej.szmigiero.name>
+Date: Mon, 27 Nov 2017 23:33:29 +0100
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a2pcpQqf_TNGVxLBePBSKYhxD90UN-FjBor4d-dKhAwbQ@mail.gmail.com>
-References: <20171127193037.8711-1-deepa.kernel@gmail.com>
- <CAK8P3a2pcpQqf_TNGVxLBePBSKYhxD90UN-FjBor4d-dKhAwbQ@mail.gmail.com>
-From: Deepa Dinamani <deepa.kernel@gmail.com>
-Date: Mon, 27 Nov 2017 14:29:59 -0800
-Message-ID: <CABeXuvrBOSVTNSbEZZMKmuTgWeU_VDqjSZkwGAM+bnPh0-72zA@mail.gmail.com>
-Subject: Re: [PATCH v2 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
- conversion
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
- David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
- devel@driverdev.osuosl.org,
- gerald.schaefer@de.ibm.com, gregkh <gregkh@linuxfoundation.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>, Linux API <linux-api@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, oberpar@linux.vnet.ibm.com,
- oprofile-list@lists.sf.net,
- Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
- Ralf Baechle <ralf@linux-mips.org>, Steven Rostedt <rostedt@goodmis.org>,
- Robert Richter <rric@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- sebott@linux.vnet.ibm.com, sparclinux <sparclinux@vger.kernel.org>,
- Stefan Haberland <sth@linux.vnet.ibm.com>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
- "the arch/x86 maintainers" <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,48 +27,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> I decided against using LEGACY_TIME_SYSCALLS to conditionally compile
->> legacy time syscalls such as sys_nanosleep because this will need to
->> enclose compat_sys_nanosleep as well. So, defining it as
->>
->> config LEGACY_TIME_SYSCALLS
->>      def_bool 64BIT || !64BIT_TIME
->>
->> will not include compat_sys_nanosleep. We will instead need a new config to
->> exclusively mark legacy syscalls.
->
-> Do you mean we would need to do this separately for native and compat
-> syscalls, and have yet another option, like LEGACY_TIME_SYSCALLS
-> and LEGACY_TIME_COMPAT_SYSCALLS, to cover all cases? I would
-> think that CONFIG_COMPAT_32BIT_TIME handles all the compat versions,
-> while CONFIG_LEGACY_TIME_SYSCALLS handles all the native ones.
+This format is similar to existing SNDRV_PCM_FORMAT_{S,U}20_3 that keep
+20-bit PCM samples in 3 bytes, however i.MX6 platform SSI FIFO does not
+allow 3-byte accesses (including DMA) so a 4-byte (more conventional)
+format is needed for it.
 
-I meant sys_nanosleep would be covered by LEGACY_TIME_SYSCALLS, but
-compat_sys_nanosleep would be covered by CONFIG_COMPAT_32BIT_TIME
-along with other compat syscalls.
-So, if we define the LEGACY_TIME_SYSCALLS as
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+---
+Changes from v1: Drop "_4" suffix from these formats since they aren't
+non-standard ones, use empty format slots starting from format number 25
+for them, add information that they are LSB justified formats.
 
+Changes from v2: Adapt a comment in sound/core/pcm_misc.c so it still
+refers to the same sample formats as before.
 
-        "This controls the compilation of the following system calls:
-        time, stime, gettimeofday, settimeofday, adjtimex, nanosleep,
-alarm, getitimer,
-        setitimer, select, utime, utimes, futimesat, and
-{old,new}{l,f,}stat{,64}.
-        These all pass 32-bit time_t arguments on 32-bit architectures and
-        are replaced by other interfaces (e.g. posix timers and clocks, statx).
-        C libraries implementing 64-bit time_t in 32-bit architectures have to
-        implement the handles by wrapping around the newer interfaces.
-        New architectures should not explicitly enable this."
+Changes from v3: Make the comment style in include/uapi/sound/asound.h
+match the style of comments at other sample formats.
 
-This would not be really true as compat interfaces have nothing to do
-with this config.
+Corresponding alsa-lib changes will be posted as soon as this patch is
+merged on the kernel side, to keep alsa-lib and kernel synchronized.
 
-I was proposing that we could have LEGACY_TIME_SYSCALLS config, but
-then have all these "deprecated" syscalls be enclosed within this,
-compat or not.
-This will also mean that we will have to come up representing these
-syscalls in the syscall header files.
-This can be a separate patch and this series can be merged as is if
-everyone agrees.
+ include/sound/pcm.h         |  8 ++++++++
+ include/sound/soc-dai.h     |  2 ++
+ include/uapi/sound/asound.h |  9 +++++++++
+ sound/core/pcm_misc.c       | 19 ++++++++++++++++++-
+ 4 files changed, 37 insertions(+), 1 deletion(-)
 
--Deepa
+diff --git a/include/sound/pcm.h b/include/sound/pcm.h
+index 24febf9e177c..e054c583d3b3 100644
+--- a/include/sound/pcm.h
++++ b/include/sound/pcm.h
+@@ -169,6 +169,10 @@ struct snd_pcm_ops {
+ #define SNDRV_PCM_FMTBIT_IMA_ADPCM	_SNDRV_PCM_FMTBIT(IMA_ADPCM)
+ #define SNDRV_PCM_FMTBIT_MPEG		_SNDRV_PCM_FMTBIT(MPEG)
+ #define SNDRV_PCM_FMTBIT_GSM		_SNDRV_PCM_FMTBIT(GSM)
++#define SNDRV_PCM_FMTBIT_S20_LE	_SNDRV_PCM_FMTBIT(S20_LE)
++#define SNDRV_PCM_FMTBIT_U20_LE	_SNDRV_PCM_FMTBIT(U20_LE)
++#define SNDRV_PCM_FMTBIT_S20_BE	_SNDRV_PCM_FMTBIT(S20_BE)
++#define SNDRV_PCM_FMTBIT_U20_BE	_SNDRV_PCM_FMTBIT(U20_BE)
+ #define SNDRV_PCM_FMTBIT_SPECIAL	_SNDRV_PCM_FMTBIT(SPECIAL)
+ #define SNDRV_PCM_FMTBIT_S24_3LE	_SNDRV_PCM_FMTBIT(S24_3LE)
+ #define SNDRV_PCM_FMTBIT_U24_3LE	_SNDRV_PCM_FMTBIT(U24_3LE)
+@@ -202,6 +206,8 @@ struct snd_pcm_ops {
+ #define SNDRV_PCM_FMTBIT_FLOAT		SNDRV_PCM_FMTBIT_FLOAT_LE
+ #define SNDRV_PCM_FMTBIT_FLOAT64	SNDRV_PCM_FMTBIT_FLOAT64_LE
+ #define SNDRV_PCM_FMTBIT_IEC958_SUBFRAME SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE
++#define SNDRV_PCM_FMTBIT_S20		SNDRV_PCM_FMTBIT_S20_LE
++#define SNDRV_PCM_FMTBIT_U20		SNDRV_PCM_FMTBIT_U20_LE
+ #endif
+ #ifdef SNDRV_BIG_ENDIAN
+ #define SNDRV_PCM_FMTBIT_S16		SNDRV_PCM_FMTBIT_S16_BE
+@@ -213,6 +219,8 @@ struct snd_pcm_ops {
+ #define SNDRV_PCM_FMTBIT_FLOAT		SNDRV_PCM_FMTBIT_FLOAT_BE
+ #define SNDRV_PCM_FMTBIT_FLOAT64	SNDRV_PCM_FMTBIT_FLOAT64_BE
+ #define SNDRV_PCM_FMTBIT_IEC958_SUBFRAME SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_BE
++#define SNDRV_PCM_FMTBIT_S20		SNDRV_PCM_FMTBIT_S20_BE
++#define SNDRV_PCM_FMTBIT_U20		SNDRV_PCM_FMTBIT_U20_BE
+ #endif
+ 
+ struct snd_pcm_file {
+diff --git a/include/sound/soc-dai.h b/include/sound/soc-dai.h
+index 58acd00cae19..d970879944fc 100644
+--- a/include/sound/soc-dai.h
++++ b/include/sound/soc-dai.h
+@@ -102,6 +102,8 @@ struct snd_compr_stream;
+ 			       SNDRV_PCM_FMTBIT_S16_BE |\
+ 			       SNDRV_PCM_FMTBIT_S20_3LE |\
+ 			       SNDRV_PCM_FMTBIT_S20_3BE |\
++			       SNDRV_PCM_FMTBIT_S20_LE |\
++			       SNDRV_PCM_FMTBIT_S20_BE |\
+ 			       SNDRV_PCM_FMTBIT_S24_3LE |\
+ 			       SNDRV_PCM_FMTBIT_S24_3BE |\
+                                SNDRV_PCM_FMTBIT_S32_LE |\
+diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
+index c227ccba60ae..07d61583fd02 100644
+--- a/include/uapi/sound/asound.h
++++ b/include/uapi/sound/asound.h
+@@ -214,6 +214,11 @@ typedef int __bitwise snd_pcm_format_t;
+ #define	SNDRV_PCM_FORMAT_IMA_ADPCM	((__force snd_pcm_format_t) 22)
+ #define	SNDRV_PCM_FORMAT_MPEG		((__force snd_pcm_format_t) 23)
+ #define	SNDRV_PCM_FORMAT_GSM		((__force snd_pcm_format_t) 24)
++#define	SNDRV_PCM_FORMAT_S20_LE	((__force snd_pcm_format_t) 25) /* in four bytes, LSB justified */
++#define	SNDRV_PCM_FORMAT_S20_BE	((__force snd_pcm_format_t) 26) /* in four bytes, LSB justified */
++#define	SNDRV_PCM_FORMAT_U20_LE	((__force snd_pcm_format_t) 27) /* in four bytes, LSB justified */
++#define	SNDRV_PCM_FORMAT_U20_BE	((__force snd_pcm_format_t) 28) /* in four bytes, LSB justified */
++/* gap in the numbering for a future standard linear format */
+ #define	SNDRV_PCM_FORMAT_SPECIAL	((__force snd_pcm_format_t) 31)
+ #define	SNDRV_PCM_FORMAT_S24_3LE	((__force snd_pcm_format_t) 32)	/* in three bytes */
+ #define	SNDRV_PCM_FORMAT_S24_3BE	((__force snd_pcm_format_t) 33)	/* in three bytes */
+@@ -248,6 +253,8 @@ typedef int __bitwise snd_pcm_format_t;
+ #define	SNDRV_PCM_FORMAT_FLOAT		SNDRV_PCM_FORMAT_FLOAT_LE
+ #define	SNDRV_PCM_FORMAT_FLOAT64	SNDRV_PCM_FORMAT_FLOAT64_LE
+ #define	SNDRV_PCM_FORMAT_IEC958_SUBFRAME SNDRV_PCM_FORMAT_IEC958_SUBFRAME_LE
++#define	SNDRV_PCM_FORMAT_S20		SNDRV_PCM_FORMAT_S20_LE
++#define	SNDRV_PCM_FORMAT_U20		SNDRV_PCM_FORMAT_U20_LE
+ #endif
+ #ifdef SNDRV_BIG_ENDIAN
+ #define	SNDRV_PCM_FORMAT_S16		SNDRV_PCM_FORMAT_S16_BE
+@@ -259,6 +266,8 @@ typedef int __bitwise snd_pcm_format_t;
+ #define	SNDRV_PCM_FORMAT_FLOAT		SNDRV_PCM_FORMAT_FLOAT_BE
+ #define	SNDRV_PCM_FORMAT_FLOAT64	SNDRV_PCM_FORMAT_FLOAT64_BE
+ #define	SNDRV_PCM_FORMAT_IEC958_SUBFRAME SNDRV_PCM_FORMAT_IEC958_SUBFRAME_BE
++#define	SNDRV_PCM_FORMAT_S20		SNDRV_PCM_FORMAT_S20_BE
++#define	SNDRV_PCM_FORMAT_U20		SNDRV_PCM_FORMAT_U20_BE
+ #endif
+ 
+ typedef int __bitwise snd_pcm_subformat_t;
+diff --git a/sound/core/pcm_misc.c b/sound/core/pcm_misc.c
+index 9be81025372f..c4eb561d2008 100644
+--- a/sound/core/pcm_misc.c
++++ b/sound/core/pcm_misc.c
+@@ -163,13 +163,30 @@ static struct pcm_format_data pcm_formats[(INT)SNDRV_PCM_FORMAT_LAST+1] = {
+ 		.width = 32, .phys = 32, .le = 0, .signd = 0,
+ 		.silence = { 0x69, 0x69, 0x69, 0x69 },
+ 	},
+-	/* FIXME: the following three formats are not defined properly yet */
++	/* FIXME: the following two formats are not defined properly yet */
+ 	[SNDRV_PCM_FORMAT_MPEG] = {
+ 		.le = -1, .signd = -1,
+ 	},
+ 	[SNDRV_PCM_FORMAT_GSM] = {
+ 		.le = -1, .signd = -1,
+ 	},
++	[SNDRV_PCM_FORMAT_S20_LE] = {
++		.width = 20, .phys = 32, .le = 1, .signd = 1,
++		.silence = {},
++	},
++	[SNDRV_PCM_FORMAT_S20_BE] = {
++		.width = 20, .phys = 32, .le = 0, .signd = 1,
++		.silence = {},
++	},
++	[SNDRV_PCM_FORMAT_U20_LE] = {
++		.width = 20, .phys = 32, .le = 1, .signd = 0,
++		.silence = { 0x00, 0x00, 0x08, 0x00 },
++	},
++	[SNDRV_PCM_FORMAT_U20_BE] = {
++		.width = 20, .phys = 32, .le = 0, .signd = 0,
++		.silence = { 0x00, 0x08, 0x00, 0x00 },
++	},
++	/* FIXME: the following format is not defined properly yet */
+ 	[SNDRV_PCM_FORMAT_SPECIAL] = {
+ 		.le = -1, .signd = -1,
+ 	},
