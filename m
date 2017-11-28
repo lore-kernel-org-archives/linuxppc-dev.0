@@ -1,21 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ymKqs5jQzzDrST
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 21:37:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ymLS502qvzDrTf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 22:05:41 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Qoriq P5020 PowerPC board doesn't boot with the latest git
- version anymore
-In-Reply-To: <ab5f9c39-e801-0c6c-15fb-c5b782ab10b7@xenosoft.de>
-References: <ce2c842f-df48-6763-4626-adead5606acc@xenosoft.de>
- <3e4805a4-6114-205d-653b-ea6cd7fdc057@xenosoft.de>
- <8ed2edc7-a14b-35b3-86c1-a9995f41df84@xenosoft.de>
- <d8bf23c2-1805-a9c3-566d-74c0f28e88e8@xenosoft.de>
- <ab5f9c39-e801-0c6c-15fb-c5b782ab10b7@xenosoft.de>
-Date: Tue, 28 Nov 2017 21:37:42 +1100
-Message-ID: <87k1yazo21.fsf@concordia.ellerman.id.au>
+To: Liu ping fan <kernelfans@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: what is the state about "[v2] ppc64 boot: Wait for boot cpu to
+ show up if nr_cpus limit is about to hit"
+In-Reply-To: <CAFgQCTvOGfq2b861rgosCWD3EMNUOd-vVUp2K_sQYcWqeVepcQ@mail.gmail.com>
+References: <CAFgQCTvOGfq2b861rgosCWD3EMNUOd-vVUp2K_sQYcWqeVepcQ@mail.gmail.com>
+Date: Tue, 28 Nov 2017 22:05:40 +1100
+Message-ID: <87h8tezmrf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,20 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+Liu ping fan <kernelfans@gmail.com> writes:
 
-> Hi All,
+> Hi,
 >
-> I compiled the latest git kernel today. Unfortunately my Varisys Cyrus 
-> Plus board still doesn't boot with the latest git kernel.
+> I can not find the history about:
+> https://patchwork.ozlabs.org/patch/577193/
 >
-> After that I patched the kernel source code with the spinlock patch and 
-> compiled the kernel again. With the spinlock patch, the latest git 
-> kernel boots without any problems.
 >
-> Please find attached the spinlock patch.
+> Can we have this patch?
 
-Can you remove the patch, and then build your kernel with
-CONFIG_PREEMPT=n.
+I strongly dislike it.
+
+Our CPU discovery code is already a big mess, in two separate places,
+and this makes it worse.
+
+In theory we have a split between logical and hardware CPU numbers, so
+we should just be able to call the whatever CPU we boot on CPU 0. Why
+does that not work? And should we fix that?
 
 cheers
