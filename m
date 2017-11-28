@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ymfHB4lYdzDrp7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 09:59:02 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vASMrbSi073083
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 17:59:00 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ehgavhtvm-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ymfHF5s0BzDrb3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 09:59:05 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vASMrdak123651
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 17:59:03 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ehfhfuskc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 17:59:00 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 17:59:03 -0500
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 28 Nov 2017 17:58:59 -0500
+ Tue, 28 Nov 2017 17:59:02 -0500
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V8 2/3] poserpc/initnodes: Ensure nodes initialized for hotplug
 In-Reply-To: <79bd4c96-2381-c9b1-8222-b350e069655b@linux.vnet.ibm.com>
-Date: Tue, 28 Nov 2017 16:58:40 -0600
+Subject: [PATCH V8 3/3] hotplug/cpu: Fix crash with memoryless nodes
+Date: Tue, 28 Nov 2017 16:58:43 -0600
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <ebf6e441-6d56-5150-6171-b56c0937a3b6@linux.vnet.ibm.com>
+Message-Id: <55ff4b6a-7f43-e171-d214-cf10d466aa71@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,166 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc systems which allow 'hot-add' of CPU, it may occur that
-the new resources are to be inserted into nodes that were not used
-for memory resources at bootup.  Many different configurations of
-PowerPC resources may need to be supported depending upon the
-environment.  Important characteristics of the nodes and operating
-environment include:
+On powerpc systems with shared configurations of CPUs and memory and
+memoryless nodes at boot, an event ordering problem was observed on
+a SLES12 build platforms with the hot-add of CPUs to the memoryless
+nodes.
 
-* Dedicated vs. shared CPUs.  Shared CPUs require information such
-  as the VPHN hcall for CPU assignment to nodes, since shared CPUs
-  have their affinity set to node 0 at boot and when hot-added.
-  Associativity decisions made based on dedicated resource rules,
-  such as associativity properties in the device tree, may vary from
-  decisions made using the values returned by the VPHN hcall.
-* memoryless nodes at boot.  Nodes need to be defined as 'possible'
-  at boot for operation with other code modules.  Previously, the
-  powerpc code would limit the set of possible nodes to those which
-  have memory assigned at boot, and were thus online.  Subsequent
-  add/remove of CPUs or memory would only work with this subset of
-  possible nodes.
-* memoryless nodes with CPUs at boot.  Due to the previous restriction
-  on nodes, nodes that had CPUs but no memory were being collapsed
-  into other nodes that did have memory at boot.  In practice this
-  meant that the node assignment presented by the runtime kernel
-  differed from the affinity and associativity attributes presented
-  by the device tree or VPHN hcalls.  Nodes that might be known to
-  the pHyp were not 'possible' in the runtime kernel because they did
-  not have memory at boot.
+* The most common error occurred when the memory SLAB driver attempted
+  to reference the memoryless node to which a CPU was being added
+  before the kernel had finished initializing all of the data structures
+  for the CPU and exited 'device_online' under DLPAR/hot-add.
 
-This patch fixes some problems encountered at runtime with
-configurations that support memory-less nodes, or that hot-add CPUs
-into nodes that are memoryless during system execution after boot.
-The problems of interest include,
-
-* Nodes known to powerpc to be memoryless at boot, but to have
-  CPUs in them are allowed to be 'possible' and 'online'.  Memory
-  allocations for those nodes are taken from another node that does
-  have memory until and if memory is hot-added to the node.
-* Nodes which have no resources assigned at boot, but which may still
-  be referenced subsequently by affinity or associativity attributes,
-  are kept in the list of 'possible' nodes for powerpc.  Hot-add of
-  memory or CPUs to the system can reference these nodes and bring
-  them online instead of redirecting the references to one of the set
-  of nodes known to have memory at boot.
-
-Note that this software operates under the context of CPU hotplug.
-We are not doing memory hotplug in this code, but rather updating
-the kernel's CPU topology (i.e. arch_update_cpu_topology /
-numa_update_cpu_topology).  We are initializing a node that may be
-used by CPUs or memory before it can be referenced as invalid by a
-CPU hotplug operation.  CPU hotplug operations are protected by a
-range of APIs including cpu_maps_update_begin/cpu_maps_update_done,
-cpus_read/write_lock / cpus_read/write_unlock, device locks, and more.
-Memory hotplug operations, including try_online_node, are protected
-by mem_hotplug_begin/mem_hotplug_done, device locks, and more.  In
-the case of CPUs being hot-added to a previously memoryless node, the
-try_online_node operation occurs wholly within the CPU locks with no
-overlap.  Using HMC hot-add/hot-remove operations, we have been able
-to add and remove CPUs to any possible node without failures.  HMC
-operations involve a degree self-serialization, though.
+  Normally the memoryless node would be initialized through the call
+  path device_online ... arch_update_cpu_topology ... find_cpu_nid
+  ...  try_online_node.  This patch ensures that the powerpc node will
+  be initialized as early as possible, even if it was memoryless and
+  CPU-less at the point when we are trying to hot-add a new CPU to it.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
 Changes in V8:
-  -- Clarify 'resources' as CPUs in patch description regarding
-     VPHN call.  Add another clause to statement mentioning that
-     shared CPUs start in node 0, and are finally assigned per
-     VPHN information.
+  -- Change a 'printk(KERN_INFO ...)' statement to be a pr_debug()
+     statement.
   -- Rename 'find_cpu_nid' to 'find_and_online_cpu_nid' for better
      clarity of its function.
-  -- Restore '__init' tag to definition of 'setup_node_data'
 ---
- arch/powerpc/mm/numa.c |   49 ++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 39 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/numa.c                       |    4 +++-
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    3 +++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 735e3fd..6b08dd8 100644
+index 6b08dd8..a182f9e 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -551,7 +551,7 @@ static int numa_setup_cpu(unsigned long lcpu)
- 	nid = of_node_to_nid_single(cpu);
- 
- out_present:
--	if (nid < 0 || !node_online(nid))
-+	if (nid < 0 || !node_possible(nid))
- 		nid = first_online_node;
- 
- 	map_cpu_to_node(lcpu, nid);
-@@ -910,10 +910,8 @@ static void __init find_possible_nodes(void)
- 		goto out;
- 
- 	for (i = 0; i < numnodes; i++) {
--		if (!node_possible(i)) {
--			setup_node_data(i, 0, 0);
-+		if (!node_possible(i))
- 			node_set(i, node_possible_map);
--		}
- 	}
- 
- out:
-@@ -1309,6 +1307,42 @@ static long vphn_get_associativity(unsigned long cpu,
+@@ -1307,7 +1307,7 @@ static long vphn_get_associativity(unsigned long cpu,
  	return rc;
  }
  
-+static inline int find_and_online_cpu_nid(int cpu)
-+{
-+	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
-+	int new_nid;
-+
-+	/* Use associativity from first thread for all siblings */
-+	vphn_get_associativity(cpu, associativity);
-+	new_nid = associativity_to_nid(associativity);
-+	if (new_nid < 0 || !node_possible(new_nid))
-+		new_nid = first_online_node;
-+
-+	if (NODE_DATA(new_nid) == NULL) {
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+		/*
-+		 * Need to ensure that NODE_DATA is initialized
-+		 * for a node from available memory (see
-+		 * memblock_alloc_try_nid).  If unable to init
-+		 * the node, then default to nearest node that
-+		 * has memory installed.
-+		 */
-+		if (try_online_node(new_nid))
-+			new_nid = first_online_node;
-+#else
-+		/*
-+		 * Default to using the nearest node that has
-+		 * memory installed.  Otherwise, it would be 
-+		 * necessary to patch the kernel MM code to deal
-+		 * with more memoryless-node error conditions.
-+		 */
-+		new_nid = first_online_node;
-+#endif
-+	}
-+
-+	return new_nid;
-+}
-+
- /*
-  * Update the CPU maps and sysfs entries for a single CPU when its NUMA
-  * characteristics change. This function doesn't perform any locking and is
-@@ -1376,7 +1410,6 @@ int numa_update_cpu_topology(bool cpus_locked)
+-static inline int find_and_online_cpu_nid(int cpu)
++int find_and_online_cpu_nid(int cpu)
  {
- 	unsigned int cpu, sibling, changed = 0;
- 	struct topology_update_data *updates, *ud;
--	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
- 	cpumask_t updated_cpus;
- 	struct device *dev;
- 	int weight, new_nid, i = 0;
-@@ -1414,11 +1447,7 @@ int numa_update_cpu_topology(bool cpus_locked)
- 			continue;
- 		}
+ 	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
+ 	int new_nid;
+@@ -1340,6 +1340,8 @@ static inline int find_and_online_cpu_nid(int cpu)
+ #endif
+ 	}
  
--		/* Use associativity from first thread for all siblings */
--		vphn_get_associativity(cpu, associativity);
--		new_nid = associativity_to_nid(associativity);
--		if (new_nid < 0 || !node_online(new_nid))
--			new_nid = first_online_node;
-+		new_nid = find_and_online_cpu_nid(cpu);
++	pr_debug("%s:%d cpu %d nid %d\n", __FUNCTION__, __LINE__,
++		cpu, new_nid);
+ 	return new_nid;
+ }
  
- 		if (new_nid == numa_cpu_lookup_table[cpu]) {
- 			cpumask_andnot(&cpu_associativity_changes_mask,
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index a7d14aa7..dceb514 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -340,6 +340,8 @@ static void pseries_remove_processor(struct device_node *np)
+ 	cpu_maps_update_done();
+ }
+ 
++extern int find_and_online_cpu_nid(int cpu);
++
+ static int dlpar_online_cpu(struct device_node *dn)
+ {
+ 	int rc = 0;
+@@ -364,6 +366,7 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 					!= CPU_STATE_OFFLINE);
+ 			cpu_maps_update_done();
+ 			timed_topology_update(1);
++			find_and_online_cpu_nid(cpu);
+ 			rc = device_online(get_cpu_device(cpu));
+ 			if (rc)
+ 				goto out;
