@@ -1,56 +1,34 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-ot0-x242.google.com (mail-ot0-x242.google.com
- [IPv6:2607:f8b0:4003:c0f::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <debmc@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ymQjQ02xTzDr8k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 01:17:29 +1100 (AEDT)
-Received: by mail-ot0-x242.google.com with SMTP id j29so396318oth.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 06:17:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ymSJz5l20zDrM5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 02:29:54 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vASFTZQ9109977
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 10:29:52 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ehag0g0u2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 10:29:52 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <debmc@linux.vnet.ibm.com>;
+ Tue, 28 Nov 2017 08:29:50 -0700
+Subject: Re: [PATCH] powerpc/powernv: Add queue mechanism for early messages
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: jk@ozlabs.org
+References: <1511706615-7126-1-git-send-email-debmc@linux.vnet.ibm.com>
+ <878teqzg1x.fsf@concordia.ellerman.id.au>
+From: Deb McLemore <debmc@linux.vnet.ibm.com>
+Date: Tue, 28 Nov 2017 09:29:45 -0600
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CABeXuvrBOSVTNSbEZZMKmuTgWeU_VDqjSZkwGAM+bnPh0-72zA@mail.gmail.com>
-References: <20171127193037.8711-1-deepa.kernel@gmail.com>
- <CAK8P3a2pcpQqf_TNGVxLBePBSKYhxD90UN-FjBor4d-dKhAwbQ@mail.gmail.com>
- <CABeXuvrBOSVTNSbEZZMKmuTgWeU_VDqjSZkwGAM+bnPh0-72zA@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 28 Nov 2017 15:17:26 +0100
-Message-ID: <CAK8P3a26g74UA5J5uQLwdjK3hq+htzjrdTYRKqfy_MawY7st+g@mail.gmail.com>
-Subject: Re: [PATCH v2 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
- conversion
-To: Deepa Dinamani <deepa.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
- David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
- devel@driverdev.osuosl.org,
- gerald.schaefer@de.ibm.com, gregkh <gregkh@linuxfoundation.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>, Linux API <linux-api@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, oberpar@linux.vnet.ibm.com,
- oprofile-list@lists.sf.net,
- Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
- Ralf Baechle <ralf@linux-mips.org>, Steven Rostedt <rostedt@goodmis.org>,
- Robert Richter <rric@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- sebott@linux.vnet.ibm.com, sparclinux <sparclinux@vger.kernel.org>,
- Stefan Haberland <sth@linux.vnet.ibm.com>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
- "the arch/x86 maintainers" <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <878teqzg1x.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <cc9d63a2-c548-0669-4abc-f816dc99b8cc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,74 +38,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 27, 2017 at 11:29 PM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
->>> I decided against using LEGACY_TIME_SYSCALLS to conditionally compile
->>> legacy time syscalls such as sys_nanosleep because this will need to
->>> enclose compat_sys_nanosleep as well. So, defining it as
->>>
->>> config LEGACY_TIME_SYSCALLS
->>>      def_bool 64BIT || !64BIT_TIME
->>>
->>> will not include compat_sys_nanosleep. We will instead need a new config to
->>> exclusively mark legacy syscalls.
+Hi Michael,
+
+Thanks for the comments, I'll respin the patch and send another version.
+
+Summary on the problem being solved:
+
+When issuing a BMC soft poweroff during IPL the poweroff was being lost,
+
+so the machine would not poweroff.
+
+Opal messages were being received before the opal-power code registered its notifiers.
+
+A few alternatives were discussed (option #3 was chosen):
+
+1 - Have opal_message_init() explicitly call opal_power_control_init() before it
+
+dequeues any OPAL messages (i.e. before we register the opal-msg IRQ handler).
+
+2 - Introduce concept of "critical" message types and when we register handlers
+
+we track which message types have a registered handler, then defer the opal-msg
+
+IRQ registration until we have a handler registered for all the critical types.
+
+3 - Buffering messages, if we receive a message and do not yet have a handler
+
+for that type, store the message and replay when a handler for that type is registered.
+
+
+There was also a patch submitted for Busybox to close an exposed path there.
+
+http://lists.busybox.net/pipermail/busybox/2017-November/085980.html
+
+
+On 11/28/2017 07:30 AM, Michael Ellerman wrote:
+> Hi Deb,
+>
+> Thanks for the patch.
+>
+> Some comments below ...
+>
+> Deb McLemore <debmc@linux.vnet.ibm.com> writes:
+>> Add a check for do_notify to confirm that a message handler
+>> has been registered before an attempt is made to call notifier
+>> call chain.
 >>
->> Do you mean we would need to do this separately for native and compat
->> syscalls, and have yet another option, like LEGACY_TIME_SYSCALLS
->> and LEGACY_TIME_COMPAT_SYSCALLS, to cover all cases? I would
->> think that CONFIG_COMPAT_32BIT_TIME handles all the compat versions,
->> while CONFIG_LEGACY_TIME_SYSCALLS handles all the native ones.
+>> If the message handler has not been registered queue up the message
+>> to be replayed when the proper registration is called.
+> Can you give me a bit more detail here on why we want to do this,
+> what the alternatives are (if any), and what problem it solves.
 >
-> I meant sys_nanosleep would be covered by LEGACY_TIME_SYSCALLS, but
-> compat_sys_nanosleep would be covered by CONFIG_COMPAT_32BIT_TIME
-> along with other compat syscalls.
-> So, if we define the LEGACY_TIME_SYSCALLS as
+>> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+>> index 65c79ec..0e3b464 100644
+>> --- a/arch/powerpc/platforms/powernv/opal.c
+>> +++ b/arch/powerpc/platforms/powernv/opal.c
+>> @@ -40,6 +40,16 @@
+>>  
+>>  #include "powernv.h"
+>>  
+>> +#define OPAL_MSG_QUEUE_MAX 16
+> Why 16?
+Arbitrary limit, the case of not having a handler registered is a short-lived
+window and the replay queue is not meant to hide bugs, if messages are
+being sent and no one has registered there is a problem and having things
+be surfaced earlier rather than later seems more helpful in identifying exposures.
+If future use cases need larger replay queue limits that can be re-visited.
+>
+> It seems a bit arbitrary. You're kzalloc'ing them, and they're < 100
+> bytes or so, so I don't see any reason to restrict it so much?
+>
+> Having some sort of limit is probably good, but it could be 1024 or
+> something, just to catch the case where nothing ever registers for that
+> message type due to a bug.
+>
+>> +
+>> +struct OpalMsgNode {
+> Please use snake case, rather than camel case. I know some of the
+> existing opal code uses camel case, but it's still wrong :)
+>
+> So that'd be opal_msg_node.
+>
+>> +	struct list_head	opal_queue_list_node;
+> It's usual practice to just use "list" as the name for these. It doesn't
+> need to be fully qualified like that, and "list" will look familiar to
+> people.
+>
+>> +	struct opal_msg		msg;
+>> +	uint32_t		queue_msg_type;
+> The type is in the struct opal_msg, so I don't think we need it here do
+> we? You will have to endian-convert it though.
+>
+>> +};
+>> +
+>> +static LIST_HEAD(opal_msg_queue_pending);
+> Being a list head this would usually have "list" in the name, so it
+> could just be "msg_list".
+>
+>> @@ -55,11 +65,15 @@ struct mcheck_recoverable_range {
+>>  	u64 recover_addr;
+>>  };
+>>  
+>> +static unsigned long opal_msg_notify_reg_mask;
+>> +static int opal_active_queue_elements;
+> And then this could just be "msg_list_size" or "len".
 >
 >
->         "This controls the compilation of the following system calls:
->         time, stime, gettimeofday, settimeofday, adjtimex, nanosleep,
-> alarm, getitimer,
->         setitimer, select, utime, utimes, futimesat, and
-> {old,new}{l,f,}stat{,64}.
->         These all pass 32-bit time_t arguments on 32-bit architectures and
->         are replaced by other interfaces (e.g. posix timers and clocks, statx).
->         C libraries implementing 64-bit time_t in 32-bit architectures have to
->         implement the handles by wrapping around the newer interfaces.
->         New architectures should not explicitly enable this."
+>>  static struct mcheck_recoverable_range *mc_recoverable_range;
+>>  static int mc_recoverable_range_len;
+>>  
+>>  struct device_node *opal_node;
+>>  static DEFINE_SPINLOCK(opal_write_lock);
+>> +static DEFINE_SPINLOCK(opal_msg_lock);
+> You've grouped this with the other lock, but it would actually be better
+> with the list head that it protects. And if you accept my suggestion of
+> renaming the list to "msg_list" then this would be "msg_list_lock".
 >
-> This would not be really true as compat interfaces have nothing to do
-> with this config.
+>> @@ -238,14 +252,47 @@ machine_early_initcall(powernv, opal_register_exception_handlers);
+>>  int opal_message_notifier_register(enum opal_msg_type msg_type,
+>>  					struct notifier_block *nb)
+>>  {
+>> +	struct OpalMsgNode *msg_node, *tmp;
+>> +	int ret;
+>> +	unsigned long flags;
+> I prefer this style:
 >
-> I was proposing that we could have LEGACY_TIME_SYSCALLS config, but
-> then have all these "deprecated" syscalls be enclosed within this,
-> compat or not.
-> This will also mean that we will have to come up representing these
-> syscalls in the syscall header files.
-> This can be a separate patch and this series can be merged as is if
-> everyone agrees.
-
-I think doing this separately  would be good, I don't see any interdependency
-with the other patches, we just need to decide what we want in the long
-run.
-
-I agree my text that you cited doesn't capture the situation correctly,
-as this is really about the obsolete system calls that take 64-bit time_t
-arguments on architectures that are converted to allow 64-bit time_t
-for non-obsolete system calls.
-
-Maybe it's better to just reword this to
-
-      "This controls the compilation of the following system calls:
-      time, stime, gettimeofday, settimeofday, adjtimex, nanosleep,
-alarm, getitimer,
-      setitimer, select, utime, utimes, futimesat, and {old,new}{l,f,}stat{,64}.
-      These are all replaced by other interfaces (e.g. posix timers and clocks,
-      statx) on architectures that got converted from 32-bit time_t to
-64-bit time_t.
-      C libraries implementing 64-bit time_t in 32-bit architectures have to
-      implement the handles by wrapping around the newer interfaces.
-      New architectures should not explicitly enable this."
-
-That would clarify that it's not about the compat system calls, while
-also allowing the two options to be set independently.
-
-        Arnd
+>> +	struct OpalMsgNode *msg_node, *tmp;
+>> +	unsigned long flags;
+>> +	int ret;
+>> +
+>> +	spin_lock_irqsave(&opal_msg_lock, flags);
+>> +
+>> +	opal_msg_notify_reg_mask |= 1 << msg_type;
+>> +
+>> +	spin_unlock_irqrestore(&opal_msg_lock, flags);
+> So setting the bit in the mask here, before you check the args below is
+> a bit fishy. It's also a bit fishy to take the lock, then drop it, then
+> take it again below, though I don't think there's actually a bug.
+>
+> But, do we even need the mask? The only place it's used is in
+> opal_message_do_notify(), and I think that could just be replaced with a
+> list_empty() check of the notifier chain?
+>
+>
+>>  	if (!nb || msg_type >= OPAL_MSG_TYPE_MAX) {
+>>  		pr_warning("%s: Invalid arguments, msg_type:%d\n",
+>>  			   __func__, msg_type);
+>>  		return -EINVAL;
+>>  	}
+>>  
+>> -	return atomic_notifier_chain_register(
+>> -				&opal_msg_notifier_head[msg_type], nb);
+>> +	ret = atomic_notifier_chain_register(
+>> +		&opal_msg_notifier_head[msg_type], nb);
+>> +
+>> +	if (ret)
+>> +		return ret;
+> The logic below should probably be in a helper function.
+>
+>> +	spin_lock_irqsave(&opal_msg_lock, flags);
+>> +	list_for_each_entry_safe(msg_node,
+>> +				tmp,
+>> +				&opal_msg_queue_pending,
+>> +				opal_queue_list_node) {
+>> +		if (msg_node->queue_msg_type == msg_type) {
+> You can reduce the indentation by doing:
+>
+> 		if (msg_node->queue_msg_type != msg_type)
+> 			continue;
+>
+> 		atomic_notifier_call_chain(
+> 				&opal_msg_notifier_head[msg_type],
+> 				msg_type,
+> 				&msg_node->msg);
+> 		list_del(&msg_node->opal_queue_list_node);
+> 		kfree(msg_node);
+> 		opal_active_queue_elements--;
+> 	}
+>
+>> +	spin_unlock_irqrestore(&opal_msg_lock, flags);
+>> +
+>> +	return ret;
+> ret can only be 0 here, so it's clearer to just return 0.
+>
+>> +
+>>  }
+>>  EXPORT_SYMBOL_GPL(opal_message_notifier_register);
+>>  
+>> @@ -259,9 +306,40 @@ EXPORT_SYMBOL_GPL(opal_message_notifier_unregister);
+>>  
+>>  static void opal_message_do_notify(uint32_t msg_type, void *msg)
+>>  {
+>> -	/* notify subscribers */
+>> -	atomic_notifier_call_chain(&opal_msg_notifier_head[msg_type],
+>> -					msg_type, msg);
+>> +	struct OpalMsgNode *msg_node;
+>> +
+> Extraneous blank line here.
+>
+>> +	unsigned long flags;
+>> +
+>> +	spin_lock_irqsave(&opal_msg_lock, flags);
+>> +
+>> +	if (opal_msg_notify_reg_mask & (1 << msg_type)) {
+> So like I was saying above, this could become:
+>
+> 	if (!list_empty(&opal_msg_notifier_head[msg_type])) {
+>
+>> +		/* notify subscribers */
+>> +		atomic_notifier_call_chain(&opal_msg_notifier_head[msg_type],
+>> +						msg_type, msg);
+>> +	} else {
+> That should all be in a helper:
+>
+>> +		if (opal_active_queue_elements < OPAL_MSG_QUEUE_MAX) {
+>> +			msg_node = kzalloc(sizeof(*msg_node), GFP_ATOMIC);
+>> +			if (msg_node) {
+>> +				INIT_LIST_HEAD(&msg_node->opal_queue_list_node);
+>> +				memcpy(&msg_node->msg,
+>> +					msg,
+>> +					sizeof(struct opal_msg));
+>> +				msg_node->queue_msg_type = msg_type;
+>> +				list_add_tail(&msg_node->opal_queue_list_node,
+>> +						&opal_msg_queue_pending);
+>> +				opal_active_queue_elements++;
+>> +			}
+> Should you pr_warn_once() if we ran out of memory?
+>
+>> +		}
+>> +
+>> +		if (opal_active_queue_elements >= OPAL_MSG_QUEUE_MAX) {
+>> +			pr_warn_once("%s: Notifier Register Queue full at %i\n",
+>> +					__func__,
+> Using __func__ is overkill. You get an "opal:" prefix automatically in
+> this file, so you just need to say "message queue full". The size isn't
+> that helpful, because it's a constant, we know what it is.
+>
+>> +					opal_active_queue_elements);
+>> +		}
+>> +	}
+>> +
+>> +	spin_unlock_irqrestore(&opal_msg_lock, flags);
+>> +
+>>  }
+>>  
+>>  static void opal_handle_message(void)
+> cheers
+>
