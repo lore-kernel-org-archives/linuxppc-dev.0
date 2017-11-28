@@ -2,12 +2,12 @@ Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ymSfR27J0zDrD6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 02:45:02 +1100 (AEDT)
-Date: Tue, 28 Nov 2017 16:44:57 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ymShy1BGKzDqm5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 02:47:14 +1100 (AEDT)
+Date: Tue, 28 Nov 2017 16:47:10 +0100
 From: Petr Mladek <pmladek@suse.com>
 To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Helge Deller <deller@gmx.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -17,16 +17,13 @@ Cc: "Luck, Tony" <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: [PATCHv4 5/6] symbol lookup: introduce
- dereference_symbol_descriptor()
-Message-ID: <20171128154457.fa44duhcjiux2wbh@pathway.suse.cz>
+Subject: Re: [PATCHv4 0/6] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+Message-ID: <20171128154710.ytqixlioc3hrcbl3@pathway.suse.cz>
 References: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
- <20171109234830.5067-6-sergey.senozhatsky@gmail.com>
- <20171110180931.xhhi35osclzceba2@agluck-desk>
- <20171111044932.GB596@tigerII.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171111044932.GB596@tigerII.localdomain>
+In-Reply-To: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,34 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat 2017-11-11 13:49:32, Sergey Senozhatsky wrote:
-> On (11/10/17 10:09), Luck, Tony wrote:
-> > On Fri, Nov 10, 2017 at 08:48:29AM +0900, Sergey Senozhatsky wrote:
-> > > -Examples::
-> > > -
-> > > -	printk("Going to call: %pF\n", gettimeofday);
-> > > -	printk("Going to call: %pF\n", p->func);
-> > > -	printk("%s: called from %pS\n", __func__, (void *)_RET_IP_);
-> > > -	printk("%s: called from %pS\n", __func__,
-> > > -				(void *)__builtin_return_address(0));
-> > > -	printk("Faulted at %pS\n", (void *)regs->ip);
-> > > -	printk(" %s%pB\n", (reliable ? "" : "? "), (void *)*stack);
-> > 
-> > Did you mean to delete the Examples completely?  Wouldn't it
-> > be better to just update (s/%pF/%pS/g)?
+On Fri 2017-11-10 08:48:24, Sergey Senozhatsky wrote:
+> 	Hello,
 > 
-> good question. yes, I think I did it deliberately :) we still
-> kinda have some sort of "examples", right at the beginning of
-> section "Symbols/Function Pointers"
+> 	A reworked version. There is a new dereference_symbol_descriptor()
+> function now, where "the magic happens", so I don't touch kallsyms_lookup()
+> and module_address_lookup() anymore.
 
-These extra examples were added just recently (v4.14-rc1)
-by the commit fd46cd55fbc5a8e8c ("printk-formats.txt: Add examples
-for %pF and %pS usage"). They were supposed to help using
-%pF and %pS correctly according to the situation. But we
-have a better solution now. %pF is obsoleted by this
-patchset.
+The new version looks good to me. Thanks a lot for reworking it.
+I feel much better now. For the whole series:
 
-IMHO, it is perfectly fine to remove the extra examples.
+Reviewed-by: Petr Mladek <pmladek@suse.com>
+
+> 	All Ack-s/Tested-by-s were dropped, since the patch set has been
+> reworked. I'm kindly asking arch-s maintainers and developers to test it
+> once again. Sorry for any inconveniences and thanks for your help in
+> advance.
+
+I see that it was tested on all affected architectures. Thanks a lot
+all testers.
+
+It seems that we are ready to go. I am going to push this into
+for-4.16 branch in printk.git.
 
 Best Regards,
 Petr
