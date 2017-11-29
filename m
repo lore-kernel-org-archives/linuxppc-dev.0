@@ -1,24 +1,21 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yn8xP5jBnzDrnr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 06:00:22 +1100 (AEDT)
-From: Mark Brown <broonie@kernel.org>
-To: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Cc: Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown <broonie@kernel.org>,
- Fabio Estevam <fabio.estevam@nxp.com>,
- Takashi Sakamoto <o-takashi@sakamocchi.jp>, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org
-Subject: Applied "ALSA: pcm: add SNDRV_PCM_FORMAT_{S,U}20" to the asoc tree
-In-Reply-To: <3a279ea2-8098-d5a4-a53e-b0e3585fa9bf@maciej.szmigiero.name>
-Message-Id: <E1eK7aT-0004iV-CY@debutante>
-Date: Wed, 29 Nov 2017 19:00:01 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yn9Yz3RWVzDr3x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 06:28:38 +1100 (AEDT)
+Subject: [PATCH] SB600 for the Nemo board has non-zero devices on non-root bus
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Bjorn Helgaas <bhelgaas@google.com>
+References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
+ <87tvxl15qx.fsf@concordia.ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+Date: Wed, 29 Nov 2017 20:28:25 +0100
+MIME-Version: 1.0
+In-Reply-To: <87tvxl15qx.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,168 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+On 23 November 2017 2:31PM, Michael Ellerman wrote:
+> Hi Christian,
+>
+> Thanks for your patch.
+>
+> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+>> Hi All,
+>>
+>> Just a small patch for the P.A. Semi Nemo board:
+>>
+>> -----
+>>
+>> diff -rupN a/drivers/pci/probe.c b/drivers/pci/probe.c
+>> --- a/drivers/pci/probe.c    2017-11-16 08:18:40.504012010 +0100
+>> +++ b/drivers/pci/probe.c    2017-11-16 08:17:22.044368405 +0100
+>> @@ -2219,6 +2219,8 @@ static int only_one_child(struct pci_bus
+> As this is a patch to the PCI code I can't merge it via the powerpc
+> tree. You would need to send it to linux-pci@vger.kernel.org.
+>
+>>        if (!parent || !pci_is_pcie(parent))
+>>            return 0;
+>> +    #ifndef CONFIG_PPC_PASEMI_NEMO
+>> +    // SB600 for the Nemo board has non-zero devices on non-root bus.
+>>        if (pci_pcie_type(parent) == PCI_EXP_TYPE_ROOT_PORT)
+>>            return 1;
+>>
+>> @@ -2231,6 +2233,7 @@ static int only_one_child(struct pci_bus
+>>        if (parent->has_secondary_link &&
+>>            !pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
+>>            return 1;
+>> +    #endif
+> But the PCI maintainer is not going to accept a patch like this, which
+> adds a platform specific #ifdef in core code like this.
+>
+> If you look at the rest of that file I don't think you'll find a single
+> #ifdef other than for generic configuration symbols.
+>
+> Are you sure the PCI_SCAN_ALL_PCIE_DEVS logic doesn't work for you? It
+> sounds like it was added for exactly this problem.
+>
+> cheers
+>
+Hi Michael,
 
-   ALSA: pcm: add SNDRV_PCM_FORMAT_{S,U}20
-
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+Thanks for your reply. Sorry for my late answer. I removed the patch 
+above from the RC1 and compiled the RC1 again. Unfortunately without the 
+patch, the kernel doesn't recognize any drives and partitions. Do you 
+have another idea?
 
 Thanks,
-Mark
-
->From 823dbb6eb08a2865bcd236b4f52b1b9de216418a Mon Sep 17 00:00:00 2001
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Date: Mon, 27 Nov 2017 23:33:29 +0100
-Subject: [PATCH] ALSA: pcm: add SNDRV_PCM_FORMAT_{S,U}20
-
-This format is similar to existing SNDRV_PCM_FORMAT_{S,U}20_3 that keep
-20-bit PCM samples in 3 bytes, however i.MX6 platform SSI FIFO does not
-allow 3-byte accesses (including DMA) so a 4-byte (more conventional)
-format is needed for it.
-
-Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Reviewed-by: Takashi Sakamoto <o-takashi@sakamocchi.jp>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
----
- include/sound/pcm.h         |  8 ++++++++
- include/sound/soc-dai.h     |  2 ++
- include/uapi/sound/asound.h |  9 +++++++++
- sound/core/pcm_misc.c       | 19 ++++++++++++++++++-
- 4 files changed, 37 insertions(+), 1 deletion(-)
-
-diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-index 24febf9e177c..e054c583d3b3 100644
---- a/include/sound/pcm.h
-+++ b/include/sound/pcm.h
-@@ -169,6 +169,10 @@ struct snd_pcm_ops {
- #define SNDRV_PCM_FMTBIT_IMA_ADPCM	_SNDRV_PCM_FMTBIT(IMA_ADPCM)
- #define SNDRV_PCM_FMTBIT_MPEG		_SNDRV_PCM_FMTBIT(MPEG)
- #define SNDRV_PCM_FMTBIT_GSM		_SNDRV_PCM_FMTBIT(GSM)
-+#define SNDRV_PCM_FMTBIT_S20_LE	_SNDRV_PCM_FMTBIT(S20_LE)
-+#define SNDRV_PCM_FMTBIT_U20_LE	_SNDRV_PCM_FMTBIT(U20_LE)
-+#define SNDRV_PCM_FMTBIT_S20_BE	_SNDRV_PCM_FMTBIT(S20_BE)
-+#define SNDRV_PCM_FMTBIT_U20_BE	_SNDRV_PCM_FMTBIT(U20_BE)
- #define SNDRV_PCM_FMTBIT_SPECIAL	_SNDRV_PCM_FMTBIT(SPECIAL)
- #define SNDRV_PCM_FMTBIT_S24_3LE	_SNDRV_PCM_FMTBIT(S24_3LE)
- #define SNDRV_PCM_FMTBIT_U24_3LE	_SNDRV_PCM_FMTBIT(U24_3LE)
-@@ -202,6 +206,8 @@ struct snd_pcm_ops {
- #define SNDRV_PCM_FMTBIT_FLOAT		SNDRV_PCM_FMTBIT_FLOAT_LE
- #define SNDRV_PCM_FMTBIT_FLOAT64	SNDRV_PCM_FMTBIT_FLOAT64_LE
- #define SNDRV_PCM_FMTBIT_IEC958_SUBFRAME SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE
-+#define SNDRV_PCM_FMTBIT_S20		SNDRV_PCM_FMTBIT_S20_LE
-+#define SNDRV_PCM_FMTBIT_U20		SNDRV_PCM_FMTBIT_U20_LE
- #endif
- #ifdef SNDRV_BIG_ENDIAN
- #define SNDRV_PCM_FMTBIT_S16		SNDRV_PCM_FMTBIT_S16_BE
-@@ -213,6 +219,8 @@ struct snd_pcm_ops {
- #define SNDRV_PCM_FMTBIT_FLOAT		SNDRV_PCM_FMTBIT_FLOAT_BE
- #define SNDRV_PCM_FMTBIT_FLOAT64	SNDRV_PCM_FMTBIT_FLOAT64_BE
- #define SNDRV_PCM_FMTBIT_IEC958_SUBFRAME SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_BE
-+#define SNDRV_PCM_FMTBIT_S20		SNDRV_PCM_FMTBIT_S20_BE
-+#define SNDRV_PCM_FMTBIT_U20		SNDRV_PCM_FMTBIT_U20_BE
- #endif
- 
- struct snd_pcm_file {
-diff --git a/include/sound/soc-dai.h b/include/sound/soc-dai.h
-index 58acd00cae19..d970879944fc 100644
---- a/include/sound/soc-dai.h
-+++ b/include/sound/soc-dai.h
-@@ -102,6 +102,8 @@ struct snd_compr_stream;
- 			       SNDRV_PCM_FMTBIT_S16_BE |\
- 			       SNDRV_PCM_FMTBIT_S20_3LE |\
- 			       SNDRV_PCM_FMTBIT_S20_3BE |\
-+			       SNDRV_PCM_FMTBIT_S20_LE |\
-+			       SNDRV_PCM_FMTBIT_S20_BE |\
- 			       SNDRV_PCM_FMTBIT_S24_3LE |\
- 			       SNDRV_PCM_FMTBIT_S24_3BE |\
-                                SNDRV_PCM_FMTBIT_S32_LE |\
-diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
-index c227ccba60ae..07d61583fd02 100644
---- a/include/uapi/sound/asound.h
-+++ b/include/uapi/sound/asound.h
-@@ -214,6 +214,11 @@ typedef int __bitwise snd_pcm_format_t;
- #define	SNDRV_PCM_FORMAT_IMA_ADPCM	((__force snd_pcm_format_t) 22)
- #define	SNDRV_PCM_FORMAT_MPEG		((__force snd_pcm_format_t) 23)
- #define	SNDRV_PCM_FORMAT_GSM		((__force snd_pcm_format_t) 24)
-+#define	SNDRV_PCM_FORMAT_S20_LE	((__force snd_pcm_format_t) 25) /* in four bytes, LSB justified */
-+#define	SNDRV_PCM_FORMAT_S20_BE	((__force snd_pcm_format_t) 26) /* in four bytes, LSB justified */
-+#define	SNDRV_PCM_FORMAT_U20_LE	((__force snd_pcm_format_t) 27) /* in four bytes, LSB justified */
-+#define	SNDRV_PCM_FORMAT_U20_BE	((__force snd_pcm_format_t) 28) /* in four bytes, LSB justified */
-+/* gap in the numbering for a future standard linear format */
- #define	SNDRV_PCM_FORMAT_SPECIAL	((__force snd_pcm_format_t) 31)
- #define	SNDRV_PCM_FORMAT_S24_3LE	((__force snd_pcm_format_t) 32)	/* in three bytes */
- #define	SNDRV_PCM_FORMAT_S24_3BE	((__force snd_pcm_format_t) 33)	/* in three bytes */
-@@ -248,6 +253,8 @@ typedef int __bitwise snd_pcm_format_t;
- #define	SNDRV_PCM_FORMAT_FLOAT		SNDRV_PCM_FORMAT_FLOAT_LE
- #define	SNDRV_PCM_FORMAT_FLOAT64	SNDRV_PCM_FORMAT_FLOAT64_LE
- #define	SNDRV_PCM_FORMAT_IEC958_SUBFRAME SNDRV_PCM_FORMAT_IEC958_SUBFRAME_LE
-+#define	SNDRV_PCM_FORMAT_S20		SNDRV_PCM_FORMAT_S20_LE
-+#define	SNDRV_PCM_FORMAT_U20		SNDRV_PCM_FORMAT_U20_LE
- #endif
- #ifdef SNDRV_BIG_ENDIAN
- #define	SNDRV_PCM_FORMAT_S16		SNDRV_PCM_FORMAT_S16_BE
-@@ -259,6 +266,8 @@ typedef int __bitwise snd_pcm_format_t;
- #define	SNDRV_PCM_FORMAT_FLOAT		SNDRV_PCM_FORMAT_FLOAT_BE
- #define	SNDRV_PCM_FORMAT_FLOAT64	SNDRV_PCM_FORMAT_FLOAT64_BE
- #define	SNDRV_PCM_FORMAT_IEC958_SUBFRAME SNDRV_PCM_FORMAT_IEC958_SUBFRAME_BE
-+#define	SNDRV_PCM_FORMAT_S20		SNDRV_PCM_FORMAT_S20_BE
-+#define	SNDRV_PCM_FORMAT_U20		SNDRV_PCM_FORMAT_U20_BE
- #endif
- 
- typedef int __bitwise snd_pcm_subformat_t;
-diff --git a/sound/core/pcm_misc.c b/sound/core/pcm_misc.c
-index 9be81025372f..c4eb561d2008 100644
---- a/sound/core/pcm_misc.c
-+++ b/sound/core/pcm_misc.c
-@@ -163,13 +163,30 @@ static struct pcm_format_data pcm_formats[(INT)SNDRV_PCM_FORMAT_LAST+1] = {
- 		.width = 32, .phys = 32, .le = 0, .signd = 0,
- 		.silence = { 0x69, 0x69, 0x69, 0x69 },
- 	},
--	/* FIXME: the following three formats are not defined properly yet */
-+	/* FIXME: the following two formats are not defined properly yet */
- 	[SNDRV_PCM_FORMAT_MPEG] = {
- 		.le = -1, .signd = -1,
- 	},
- 	[SNDRV_PCM_FORMAT_GSM] = {
- 		.le = -1, .signd = -1,
- 	},
-+	[SNDRV_PCM_FORMAT_S20_LE] = {
-+		.width = 20, .phys = 32, .le = 1, .signd = 1,
-+		.silence = {},
-+	},
-+	[SNDRV_PCM_FORMAT_S20_BE] = {
-+		.width = 20, .phys = 32, .le = 0, .signd = 1,
-+		.silence = {},
-+	},
-+	[SNDRV_PCM_FORMAT_U20_LE] = {
-+		.width = 20, .phys = 32, .le = 1, .signd = 0,
-+		.silence = { 0x00, 0x00, 0x08, 0x00 },
-+	},
-+	[SNDRV_PCM_FORMAT_U20_BE] = {
-+		.width = 20, .phys = 32, .le = 0, .signd = 0,
-+		.silence = { 0x00, 0x08, 0x00, 0x00 },
-+	},
-+	/* FIXME: the following format is not defined properly yet */
- 	[SNDRV_PCM_FORMAT_SPECIAL] = {
- 		.le = -1, .signd = -1,
- 	},
--- 
-2.15.0
+Christian
