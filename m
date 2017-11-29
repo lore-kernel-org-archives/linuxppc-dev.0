@@ -1,35 +1,34 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sergey.senozhatsky.work@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yms0G6jhQzDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 18:01:50 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAT6xkUb090706
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 02:01:48 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ehqy08gkk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 02:01:48 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 29 Nov 2017 07:01:46 -0000
-Subject: Re: [PATCH] powerpc/powernv : Add support to enable sensor groups
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <1511760988-10377-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <87bmjmzla7.fsf@concordia.ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Date: Wed, 29 Nov 2017 12:31:41 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ymsW53jGDzDr8x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 18:25:05 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id e14so1121274pgr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 23:25:05 -0800 (PST)
+Date: Wed, 29 Nov 2017 16:24:58 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ James Bottomley <jejb@parisc-linux.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: [PATCHv4 0/6] printk/ia64/ppc64/parisc64: let's deprecate
+ %pF/%pf printk specifiers
+Message-ID: <20171129072458.GA468@jagdpanzerIV>
+References: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
+ <20171128154710.ytqixlioc3hrcbl3@pathway.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <87bmjmzla7.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171128154710.ytqixlioc3hrcbl3@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On 11/28/2017 05:07 PM, Michael Ellerman wrote:
-> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+On (11/28/17 16:47), Petr Mladek wrote:
+> On Fri 2017-11-10 08:48:24, Sergey Senozhatsky wrote:
+> > 	Hello,
+> > 
+> > 	A reworked version. There is a new dereference_symbol_descriptor()
+> > function now, where "the magic happens", so I don't touch kallsyms_lookup()
+> > and module_address_lookup() anymore.
 > 
->> Adds support to enable/disable a sensor group. This can be used to
->> select the sensor groups that needs to be copied to main memory by
->> OCC. Sensor groups like power, temperature, current, voltage,
->> frequency, utilization can be enabled/disabled at runtime.
->>
->> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->> ---
->> The skiboot patch for the opal call is posted below:
->> https://lists.ozlabs.org/pipermail/skiboot/2017-November/009713.html
+> The new version looks good to me. Thanks a lot for reworking it.
+> I feel much better now. For the whole series:
 > 
-> Can you remind me why we're doing this with a completely bespoke sysfs
-> API, rather than using some generic sensors API?
+> Reviewed-by: Petr Mladek <pmladek@suse.com>
 > 
-
-Disabling/Enabling sensor groups is not supported in the current generic sensors
-API. And also we dont export all type of sensors in HWMON as not all of them are
-environment sensors (like performance).
-
-> And if we must do it that way, please add documentation for the sysfs
-> file(s) in Documentation/ABI/.
+> > 	All Ack-s/Tested-by-s were dropped, since the patch set has been
+> > reworked. I'm kindly asking arch-s maintainers and developers to test it
+> > once again. Sorry for any inconveniences and thanks for your help in
+> > advance.
 > 
-
-Will do.
-
-Thanks and Regards,
-Shilpa
-
-> cheers
+> I see that it was tested on all affected architectures. Thanks a lot
+> all testers.
 > 
+> It seems that we are ready to go. I am going to push this into
+> for-4.16 branch in printk.git.
+
+thanks.
+
+	-ss
