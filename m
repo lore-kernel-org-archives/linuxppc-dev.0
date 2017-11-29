@@ -2,16 +2,16 @@ Return-Path: <spopovyc@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yn5nf61g8zDql1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:38:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yn5ng4X5LzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:38:31 +1100 (AEDT)
 From: Serhii Popovych <spopovyc@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: michael@ellerman.id.au, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
  kvm-ppc@vger.kernel.org, david@gibson.dropbear.id.au
-Subject: [PATCH 1/4] KVM: PPC: Book3S HV: Drop prepare_done from struct
- kvm_resize_hpt and cleanups
-Date: Wed, 29 Nov 2017 11:38:23 -0500
-Message-Id: <1511973506-65683-2-git-send-email-spopovyc@redhat.com>
+Subject: [PATCH 2/4] KVM: PPC: Book3S HV: Improve
+ kvmppc_allocate_hpt()/kvmppc_free_hpt()
+Date: Wed, 29 Nov 2017 11:38:24 -0500
+Message-Id: <1511973506-65683-3-git-send-email-spopovyc@redhat.com>
 In-Reply-To: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
 References: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,121 +23,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace ->prepare_done flag functionality with special handling
-of -EBUSY in ->error as indicator that allocation work is running.
+There are several points of improvements:
 
-Besides cosmetics this reduces size of struct kvm_resize_hpt by
-__alignof__(struct kvm_hpt_info) and saves few bytes of code.
+  1) Make kvmppc_free_hpt() check if allocation is made before attempt
+     to release. This follows kfree(p) semantics where p == NULL.
 
-While there correct comment in struct kvm_resize_hpt about locking
-used to protect access to certain fields.
+  2) Return initialized @info parameter from kvmppc_allocate_hpt()
+     even if allocation fails.
 
-Assert with BUG_ON() in case of HPT allocation thread work runs
-more than once for resize request or resize_hpt_allocate()
-returns -EBUSY that is treated specially.
+     This allows to use kvmppc_free_hpt() in the caller without
+     checking that preceded kvmppc_allocate_hpt() was successful
 
-Change comparison against zero to make checkpatch.pl happy.
+         p = kmalloc(size, gfp);
+         kfree(p);
+
+     which is correct for both p != NULL and p == NULL. Followup
+     change will rely on this behaviour.
+
+  3) Better code reuse: kvmppc_free_hpt() can be reused on error
+     path in kvmppc_allocate_hpt() to avoid code duplication.
+
+  4) No need to check for !hpt if allocated from CMA: neither
+     pfn_to_kaddr() nor page_to_pfn() is 0 in case of page != NULL.
 
 Signed-off-by: Serhii Popovych <spopovyc@redhat.com>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 42 ++++++++++++++++++++++---------------
- 1 file changed, 25 insertions(+), 17 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 54 ++++++++++++++++++-------------------
+ 1 file changed, 26 insertions(+), 28 deletions(-)
 
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 235319c..0534aab 100644
+index 0534aab..3e9abd9 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -65,11 +65,17 @@ struct kvm_resize_hpt {
- 	u32 order;
+@@ -82,47 +82,44 @@ struct kvm_resize_hpt {
+ int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order)
+ {
+ 	unsigned long hpt = 0;
+-	int cma = 0;
+-	struct page *page = NULL;
+-	struct revmap_entry *rev;
++	int err, cma = 0;
++	struct page *page;
++	struct revmap_entry *rev = NULL;
+ 	unsigned long npte;
  
- 	/* These fields protected by kvm->lock */
-+
-+	/* Possible values and their usage:
-+	 *  <0     an error occurred during allocation,
-+	  * -EBUSY allocation is in the progress,
-+	 *  0      allocation made successfuly.
-+	 */
- 	int error;
--	bool prepare_done;
++	err = -EINVAL;
+ 	if ((order < PPC_MIN_HPT_ORDER) || (order > PPC_MAX_HPT_ORDER))
+-		return -EINVAL;
++		goto out;
  
--	/* Private to the work thread, until prepare_done is true,
--	 * then protected by kvm->resize_hpt_sem */
-+	/* Private to the work thread, until error != -EBUSY,
-+	 * then protected by kvm->lock.
-+	 */
- 	struct kvm_hpt_info hpt;
- };
- 
-@@ -1432,15 +1438,21 @@ static void resize_hpt_prepare_work(struct work_struct *work)
- 	struct kvm *kvm = resize->kvm;
- 	int err;
- 
-+	BUG_ON(resize->error != -EBUSY);
-+
- 	resize_hpt_debug(resize, "resize_hpt_prepare_work(): order = %d\n",
- 			 resize->order);
- 
- 	err = resize_hpt_allocate(resize);
- 
-+	/* We have strict assumption about -EBUSY
-+	 * when preparing for HPT resize.
-+	 */
-+	BUG_ON(err == -EBUSY);
-+
- 	mutex_lock(&kvm->lock);
- 
- 	resize->error = err;
--	resize->prepare_done = true;
- 
- 	mutex_unlock(&kvm->lock);
- }
-@@ -1465,14 +1477,12 @@ long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *kvm,
- 
- 	if (resize) {
- 		if (resize->order == shift) {
--			/* Suitable resize in progress */
--			if (resize->prepare_done) {
--				ret = resize->error;
--				if (ret != 0)
--					resize_hpt_release(kvm, resize);
--			} else {
-+			/* Suitable resize in progress? */
-+			ret = resize->error;
-+			if (ret == -EBUSY)
- 				ret = 100; /* estimated time in ms */
--			}
-+			else if (ret)
-+				resize_hpt_release(kvm, resize);
- 
- 			goto out;
- 		}
-@@ -1492,6 +1502,8 @@ long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *kvm,
- 		ret = -ENOMEM;
- 		goto out;
- 	}
-+
-+	resize->error = -EBUSY;
- 	resize->order = shift;
- 	resize->kvm = kvm;
- 	INIT_WORK(&resize->work, resize_hpt_prepare_work);
-@@ -1546,16 +1558,12 @@ long kvm_vm_ioctl_resize_hpt_commit(struct kvm *kvm,
- 	if (!resize || (resize->order != shift))
- 		goto out;
- 
--	ret = -EBUSY;
--	if (!resize->prepare_done)
--		goto out;
++	err = -ENOMEM;
+ 	page = kvm_alloc_hpt_cma(1ul << (order - PAGE_SHIFT));
+ 	if (page) {
+ 		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
+ 		memset((void *)hpt, 0, (1ul << order));
+ 		cma = 1;
+-	}
 -
- 	ret = resize->error;
--	if (ret != 0)
-+	if (ret)
- 		goto out;
+-	if (!hpt)
++	} else {
+ 		hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_RETRY_MAYFAIL
+ 				       |__GFP_NOWARN, order - PAGE_SHIFT);
+-
+-	if (!hpt)
+-		return -ENOMEM;
++		if (!hpt)
++			goto out;
++	}
  
- 	ret = resize_hpt_rehash(resize);
--	if (ret != 0)
-+	if (ret)
- 		goto out;
+ 	/* HPTEs are 2**4 bytes long */
+ 	npte = 1ul << (order - 4);
  
- 	resize_hpt_pivot(resize);
+ 	/* Allocate reverse map array */
+-	rev = vmalloc(sizeof(struct revmap_entry) * npte);
+-	if (!rev) {
+-		if (cma)
+-			kvm_free_hpt_cma(page, 1 << (order - PAGE_SHIFT));
+-		else
+-			free_pages(hpt, order - PAGE_SHIFT);
+-		return -ENOMEM;
+-	}
+-
++	rev = vmalloc(sizeof(*rev) * npte);
++	if (rev)
++		err = 0;
++out:
+ 	info->order = order;
+ 	info->virt = hpt;
+ 	info->cma = cma;
+ 	info->rev = rev;
+ 
+-	return 0;
++	if (err)
++		kvmppc_free_hpt(info);
++	return err;
+ }
+ 
+ void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info)
+@@ -190,12 +187,14 @@ void kvmppc_free_hpt(struct kvm_hpt_info *info)
+ {
+ 	vfree(info->rev);
+ 	info->rev = NULL;
+-	if (info->cma)
+-		kvm_free_hpt_cma(virt_to_page(info->virt),
+-				 1 << (info->order - PAGE_SHIFT));
+-	else if (info->virt)
+-		free_pages(info->virt, info->order - PAGE_SHIFT);
+-	info->virt = 0;
++	if (info->virt) {
++		if (info->cma)
++			kvm_free_hpt_cma(virt_to_page(info->virt),
++					 1 << (info->order - PAGE_SHIFT));
++		else
++			free_pages(info->virt, info->order - PAGE_SHIFT);
++		info->virt = 0;
++	}
+ 	info->order = 0;
+ }
+ 
+@@ -1423,8 +1422,7 @@ static void resize_hpt_release(struct kvm *kvm, struct kvm_resize_hpt *resize)
+ 	if (!resize)
+ 		return;
+ 
+-	if (resize->hpt.virt)
+-		kvmppc_free_hpt(&resize->hpt);
++	kvmppc_free_hpt(&resize->hpt);
+ 
+ 	kvm->arch.resize_hpt = NULL;
+ 	kfree(resize);
 -- 
 1.8.3.1
