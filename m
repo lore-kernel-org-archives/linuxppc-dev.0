@@ -1,20 +1,23 @@
-Return-Path: <cascardo@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yn0WL0CrgzDrb3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 23:40:44 +1100 (AEDT)
-Date: Wed, 29 Nov 2017 10:40:36 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mahesh@linux.vnet.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com
-Subject: Re: [PATCH v3] ppc64 boot: Wait for boot cpu to show up if nr_cpus
- limit is about to hit.
-Message-ID: <20171129124035.qp3sdmfprcbwh2sn@calabresa>
-References: <20171106173426.8902-1-cascardo@canonical.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171106173426.8902-1-cascardo@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yn3G11ZdzzDrb3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 01:44:15 +1100 (AEDT)
+Date: Wed, 29 Nov 2017 09:44:10 -0500 (EST)
+Message-Id: <20171129.094410.1537008794654450709.davem@davemloft.net>
+To: geert+renesas@glider.be
+Cc: michal.simek@xilinx.com, arnd@arndb.de, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: ethernet: xilinx: Mark XILINX_LL_TEMAC broken on
+ 64-bit
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1511949669-30379-1-git-send-email-geert+renesas@glider.be>
+References: <1511949669-30379-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,8 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping. Any further reviews/comments? Or any chance of this getting
-applied soon?
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Wed, 29 Nov 2017 11:01:09 +0100
 
-Thanks.
-Cascardo.
+> On 64-bit (e.g. powerpc64/allmodconfig):
+> 
+>     drivers/net/ethernet/xilinx/ll_temac_main.c: In function 'temac_start_xmit_done':
+>     drivers/net/ethernet/xilinx/ll_temac_main.c:633:22: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+> 	dev_kfree_skb_irq((struct sk_buff *)cur_p->app4);
+> 			  ^
+> 
+> cdmac_bd.app4 is u32, so it is too small to hold a kernel pointer.
+> 
+> Note that several other fields in struct cdmac_bd are also too small to
+> hold physical addresses on 64-bit platforms.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Yeah, I can't see much value in implementing a hash table converting between
+32-bit cookies and 64-bit points just for this if it'll never be actually
+used.
+
+Applied, thanks Geert.
