@@ -1,26 +1,23 @@
-Return-Path: <shuahkh@osg.samsung.com>
-Received: from osg.samsung.com (osg.samsung.com [64.30.133.232])
- by lists.ozlabs.org (Postfix) with ESMTP id 3yn5wh2QkXzDrns
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:44:35 +1100 (AEDT)
-Subject: Re: [PATCH kernel] vfio/spapr: Add trace points for map/unmap
-To: Alex Williamson <alex.williamson@redhat.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- iommu@lists.linux-foundation.org, Joerg Roedel <joro@8bytes.org>,
- Shuah Khan <shuahkh@osg.samsung.com>
-References: <20171027030008.17200-1-aik@ozlabs.ru>
- <8c58fcaa-dedc-e6be-44bf-2cb349ef9e38@ozlabs.ru>
- <20171116171301.6552869b@t450s.home>
- <52a19cfb-431f-522b-11de-c1c47f09a4c8@ozlabs.ru>
- <d367b17a-6efa-26a8-821b-42080c90e16e@ozlabs.ru>
- <20171129093244.0849fd7c@t450s.home>
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Message-ID: <a009f8a2-d107-e121-6184-ad80591e45de@osg.samsung.com>
-Date: Wed, 29 Nov 2017 09:44:13 -0700
-MIME-Version: 1.0
-In-Reply-To: <20171129093244.0849fd7c@t450s.home>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <broonie@sirena.org.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yn8xB5fqfzDrnq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 06:00:11 +1100 (AEDT)
+From: Mark Brown <broonie@kernel.org>
+To: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ alsa-devel@alsa-project.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+Subject: Applied "ASoC: fsl_ssi: add 20-bit sample format for AC'97 and use it
+ for capture" to the asoc tree
+In-Reply-To: <b05cc20e-90cf-5cc3-c331-1beba28764ca@maciej.szmigiero.name>
+Message-Id: <E1eK7aQ-0004hM-AY@debutante>
+Date: Wed, 29 Nov 2017 18:59:58 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +27,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/29/2017 09:32 AM, Alex Williamson wrote:
-> On Thu, 23 Nov 2017 15:13:37 +1100
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> On 17/11/17 17:58, Alexey Kardashevskiy wrote:
->>> On 17/11/17 11:13, Alex Williamson wrote:  
->>>> On Tue, 14 Nov 2017 10:47:12 +1100
->>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>>  
->>>>> On 27/10/17 14:00, Alexey Kardashevskiy wrote:  
->>>>>> This adds trace_map/trace_unmap tracepoints to spapr driver. Type1 already
->>>>>> uses these via the IOMMU API (iommu_map/__iommu_unmap).
->>>>>>
->>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>    
->>>>
->>>> Is this really legitimate to include tracepoints from a different  
->>>> subsystem?>  The vfio type1 backend gets these trace points by virtue of  
->>>> it actually using the IOMMU API, it doesn't call them itself.  I'm kind
->>>> of surprised these are actually available to be called from a module.  
->>>
->>> They are explicitly exported:
->>>
->>> EXPORT_TRACEPOINT_SYMBOL_GPL(map);
->>> EXPORT_TRACEPOINT_SYMBOL_GPL(unmap);
+The patch
 
-Tracepoints need to be exported as per the tracepoint sub-system
-requirements.
+   ASoC: fsl_ssi: add 20-bit sample format for AC'97 and use it for capture
 
->>>
->>> I would think this is for things like drivers/vfio/vfio_iommu_spapr_tce.c ,
->>> why else?...
->>>
->>>   
->>>> I suspect the way to do this is probably to define our own tracepoints
->>>> in the vfio/spapr backend or insert tracepoints into the IOMMU layers
->>>> that that code calls into rather than masquerading as tracepoints from
->>>> a different subsystem.  Right?  
->>>
->>> This makes sense too. But it is going to be just cut-n-paste and some
->>> confusion -
->>> /sys/kernel/debug/tracing/events/iommu/map will still be present but
->>> won't work and
->>> /sys/kernel/debug/tracing/events/vfio/vfio_iommu_spapr_tce/map will.
-> 
-> But iommu/map does work, it's just not called by the vfio spapr tce
-> backend, which is absolutely correct.  In fact, that's part of my
-> reservation about this approach is that it could be interpreted as
-> implying a call path that doesn't exist on this arch.
+has been applied to the asoc tree at
 
-These tracepoints are intended to be called after a iommo/map/unmap
-calls from IOMMU API. It doesn't make any sense to call them from
-random places. It is totally useless to do so and makes it difficult
-to debug problems.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-As an author of these tracepoints - that is my opinion.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-thanks,
--- Shuah
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+>From 10582635dc8f4f99448c5dcddac38cc18a72dfde Mon Sep 17 00:00:00 2001
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Date: Mon, 27 Nov 2017 23:34:44 +0100
+Subject: [PATCH] ASoC: fsl_ssi: add 20-bit sample format for AC'97 and use it
+ for capture
+
+When testing AC'97 capture on UDOO board (currently the only user of
+fsl_ssi driver in the AC'97 mode) it become obvious that there is a massive
+distortion above certain, small input signal.
+
+This problem has been traced to silicon errata ERR003778:
+"In AC97, 16-bit mode, received data is shifted by 4-bit locations" that
+has "No fix scheduled".
+This errata suggests a workaround of doing a 4-bit shift back in SDMA
+script for this specific operation mode, however our SDMA scripts are
+shared between various SoC peripherals so we can't really modify them.
+
+There is a simple way to avoid this problem, however, that is to disallow
+recording in 16-bit mode and only support it in AC'97-native 20-bit mode.
+We have to use a 4-byte format for this since SSI FIFOs do not allow 3-byte
+accesses (and these aren't supported by imx-sdma driver anyway).
+With this change the capture distortion is gone.
+
+We can also add this format as an additional one supported for playback,
+using this opportunity to make sure that we use CPU-endian-native formats
+in AC'97 mode as we already do in I2S mode.
+
+There is no problem in using different bit widths in playback and capture
+in AC'97 mode so allow this, too.
+
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_ssi.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 20ef09e1a395..c350117c8e31 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -1278,14 +1278,15 @@ static struct snd_soc_dai_driver fsl_ssi_ac97_dai = {
+ 		.channels_min = 2,
+ 		.channels_max = 2,
+ 		.rates = SNDRV_PCM_RATE_8000_48000,
+-		.formats = SNDRV_PCM_FMTBIT_S16_LE,
++		.formats = SNDRV_PCM_FMTBIT_S16 | SNDRV_PCM_FMTBIT_S20,
+ 	},
+ 	.capture = {
+ 		.stream_name = "AC97 Capture",
+ 		.channels_min = 2,
+ 		.channels_max = 2,
+ 		.rates = SNDRV_PCM_RATE_48000,
+-		.formats = SNDRV_PCM_FMTBIT_S16_LE,
++		/* 16-bit capture is broken (errata ERR003778) */
++		.formats = SNDRV_PCM_FMTBIT_S20,
+ 	},
+ 	.ops = &fsl_ssi_dai_ops,
+ };
+@@ -1557,11 +1558,12 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 
+ 	/* Are the RX and the TX clocks locked? */
+ 	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
+-		if (!fsl_ssi_is_ac97(ssi_private))
++		if (!fsl_ssi_is_ac97(ssi_private)) {
+ 			ssi_private->cpu_dai_drv.symmetric_rates = 1;
++			ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
++		}
+ 
+ 		ssi_private->cpu_dai_drv.symmetric_channels = 1;
+-		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
+ 	}
+ 
+ 	/* Determine the FIFO depth. */
+-- 
+2.15.0
