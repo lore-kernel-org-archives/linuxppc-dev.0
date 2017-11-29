@@ -1,37 +1,26 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yn5DY0D9szDrb5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:13:16 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vATGAVb1003558
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 11:13:14 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ehxp1cy83-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 11:13:13 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Wed, 29 Nov 2017 11:13:13 -0500
-Subject: Re: [PATCH v5 0/3] Prepartion for SR-IOV PowerVM Enablement
-To: helgaas@kernel.org, bhelgaas@google.com, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com
-References: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Wed, 29 Nov 2017 10:13:07 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yn5g42XyVzDrb7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:32:48 +1100 (AEDT)
+Date: Wed, 29 Nov 2017 09:32:44 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>,
+ iommu@lists.linux-foundation.org, Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH kernel] vfio/spapr: Add trace points for map/unmap
+Message-ID: <20171129093244.0849fd7c@t450s.home>
+In-Reply-To: <d367b17a-6efa-26a8-821b-42080c90e16e@ozlabs.ru>
+References: <20171027030008.17200-1-aik@ozlabs.ru>
+ <8c58fcaa-dedc-e6be-44bf-2cb349ef9e38@ozlabs.ru>
+ <20171116171301.6552869b@t450s.home>
+ <52a19cfb-431f-522b-11de-c1c47f09a4c8@ozlabs.ru>
+ <d367b17a-6efa-26a8-821b-42080c90e16e@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <8f9ebacd-5e4e-a6d3-b1c2-dcf9bd0ea811@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +30,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 23 Nov 2017 15:13:37 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+
+> On 17/11/17 17:58, Alexey Kardashevskiy wrote:
+> > On 17/11/17 11:13, Alex Williamson wrote:  
+> >> On Tue, 14 Nov 2017 10:47:12 +1100
+> >> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> >>  
+> >>> On 27/10/17 14:00, Alexey Kardashevskiy wrote:  
+> >>>> This adds trace_map/trace_unmap tracepoints to spapr driver. Type1 already
+> >>>> uses these via the IOMMU API (iommu_map/__iommu_unmap).
+> >>>>
+> >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>    
+> >>
+> >> Is this really legitimate to include tracepoints from a different  
+> >> subsystem?>  The vfio type1 backend gets these trace points by virtue of  
+> >> it actually using the IOMMU API, it doesn't call them itself.  I'm kind
+> >> of surprised these are actually available to be called from a module.  
+> > 
+> > They are explicitly exported:
+> > 
+> > EXPORT_TRACEPOINT_SYMBOL_GPL(map);
+> > EXPORT_TRACEPOINT_SYMBOL_GPL(unmap);
+> > 
+> > I would think this is for things like drivers/vfio/vfio_iommu_spapr_tce.c ,
+> > why else?...
+> > 
+> >   
+> >> I suspect the way to do this is probably to define our own tracepoints
+> >> in the vfio/spapr backend or insert tracepoints into the IOMMU layers
+> >> that that code calls into rather than masquerading as tracepoints from
+> >> a different subsystem.  Right?  
+> > 
+> > This makes sense too. But it is going to be just cut-n-paste and some
+> > confusion -
+> > /sys/kernel/debug/tracing/events/iommu/map will still be present but
+> > won't work and
+> > /sys/kernel/debug/tracing/events/vfio/vfio_iommu_spapr_tce/map will.
+
+But iommu/map does work, it's just not called by the vfio spapr tce
+backend, which is absolutely correct.  In fact, that's part of my
+reservation about this approach is that it could be interpreted as
+implying a call path that doesn't exist on this arch.
+
+> > Judges? :)  
+> 
+> 
+> Still nak? I discussed this locally, the conclusion was it is a matter of
+> taste and this proposal is not that disgusting. Thanks.
+
+Is that our goal now, proposals that aren't too disgusting?  I think
+it's an opportunity to introduce our own tracing infrastructure and it
+feels a lot more correct to do that than to generalize existing trace
+points from other subsystems.  Thanks,
+
+Alex
 
 
-On 11/9/17 8:00 AM, Bryant G. Ly wrote:
-
-> v1 - Initial patch
-> v2 - Addressed Bjorn's comment on creating a highly platform
->      dependent global exported symbol.
-> v3 - Based patch off linux-ppc/master
-> v4 - Using the sriov-drivers_autoprobe mechanism per Bjorn's request
-> v5 - Fixed comments and commit message
->
-> Bryant G. Ly (3):
->   powerpc/kernel: Separate SR-IOV Calls
->   pseries: Add PSeries SR-IOV Machine dependent calls
->   PCI/IOV: Add pci_vf_drivers_autoprobe() interface
->
->  arch/powerpc/include/asm/machdep.h           |  7 ++++++
->  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
->  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
->  arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
->  arch/powerpc/kernel/pci_dn.c                 |  6 -----
->  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
->  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
->  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
->  arch/powerpc/platforms/pseries/pci.c         | 31 ++++++++++++++++++++++----
->  drivers/pci/iov.c                            | 11 ++++++++++
->  include/linux/pci.h                          |  2 ++
->  11 files changed, 118 insertions(+), 33 deletions(-)
->
-Hi Mike,
-
-Any updates on when this is going to get pulled? I want to submit the full SR-IOV enablement on PowerVM,
-but I haven't seen this get merged into 4.15 yet.
-
--Bryant
+> >>>> ---
+> >>>>
+> >>>> Example:
+> >>>>  qemu-system-ppc-8655  [096]   724.662740: unmap:                IOMMU: iova=0x000000003ffff000 size=4096 unmapped_size=4096
+> >>>>  qemu-system-ppc-8656  [104]   724.970912: map:                  IOMMU: iova=0x0800000000000000 paddr=0x00007ffef7ff0000 size=65536
+> >>>> ---
+> >>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 12 ++++++++++--
+> >>>>  1 file changed, 10 insertions(+), 2 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>> index 63112c36ab2d..4531486c77c6 100644
+> >>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>> @@ -22,6 +22,7 @@
+> >>>>  #include <linux/vmalloc.h>
+> >>>>  #include <linux/sched/mm.h>
+> >>>>  #include <linux/sched/signal.h>
+> >>>> +#include <trace/events/iommu.h>
+> >>>>  
+> >>>>  #include <asm/iommu.h>
+> >>>>  #include <asm/tce.h>
+> >>>> @@ -502,17 +503,19 @@ static int tce_iommu_clear(struct tce_container *container,
+> >>>>  		struct iommu_table *tbl,
+> >>>>  		unsigned long entry, unsigned long pages)
+> >>>>  {
+> >>>> -	unsigned long oldhpa;
+> >>>> +	unsigned long oldhpa, unmapped, firstentry = entry, totalpages = pages;
+> >>>>  	long ret;
+> >>>>  	enum dma_data_direction direction;
+> >>>>  
+> >>>> -	for ( ; pages; --pages, ++entry) {
+> >>>> +	for (unmapped = 0; pages; --pages, ++entry) {
+> >>>>  		direction = DMA_NONE;
+> >>>>  		oldhpa = 0;
+> >>>>  		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
+> >>>>  		if (ret)
+> >>>>  			continue;
+> >>>>  
+> >>>> +		++unmapped;
+> >>>> +
+> >>>>  		if (direction == DMA_NONE)
+> >>>>  			continue;
+> >>>>  
+> >>>> @@ -523,6 +526,9 @@ static int tce_iommu_clear(struct tce_container *container,
+> >>>>  
+> >>>>  		tce_iommu_unuse_page(container, oldhpa);
+> >>>>  	}
+> >>>> +	trace_unmap(firstentry << tbl->it_page_shift,
+> >>>> +			totalpages << tbl->it_page_shift,
+> >>>> +			unmapped << tbl->it_page_shift);
+> >>>>  
+> >>>>  	return 0;
+> >>>>  }
+> >>>> @@ -965,6 +971,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+> >>>>  					direction);
+> >>>>  
+> >>>>  		iommu_flush_tce(tbl);
+> >>>> +		if (!ret)
+> >>>> +			trace_map(param.iova, param.vaddr, param.size);
+> >>>>  
+> >>>>  		return ret;
+> >>>>  	}
+> >>>>     
+> >>>
+> >>>  
+> >>  
+> > 
+> >   
+> 
+> 
