@@ -1,27 +1,20 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ymk012KW4zDrcN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 12:46:09 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id 1so1104094pla.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Nov 2017 17:46:08 -0800 (PST)
-Date: Tue, 28 Nov 2017 17:46:13 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 2/2] ASoC: fsl_ssi: call _fsl_ssi_set_dai_fmt() just
- once in AC'97 mode
-Message-ID: <20171129014612.GB7918@Asurada-Nvidia>
-References: <5c2325bd-3e7b-0026-4c1a-65f32737a74a@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ymn6S2HNxzDrbb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 15:06:56 +1100 (AEDT)
+Date: Wed, 29 Nov 2017 15:06:52 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: a3b2cb30 broken panic reporting for qemu guests
+Message-ID: <20171129040652.GF3023@umbus.fritz.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5c2325bd-3e7b-0026-4c1a-65f32737a74a@maciej.szmigiero.name>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="B0nZA57HJSoPbsHY"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,36 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 22, 2017 at 12:55:14AM +0100, Maciej S. Szmigiero wrote:
-> In AC'97 mode we configure and start SSI RX / TX on probe path via
-> a call to _fsl_ssi_set_dai_fmt() function.
-> We don't need to call this function again later and in fact don't want to
-> do it since this function temporarily sets STCR, SRCR and SCR to some
-> intermediate values.
-> 
-> Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+--B0nZA57HJSoPbsHY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> ---
-> Changes from v1: The SACCST setup code was split out into a separate
-> commit.
-> 
->  sound/soc/fsl/fsl_ssi.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index 375aaaf6080d..70df6bf832df 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -1116,6 +1116,9 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
->  {
->  	struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
->  
-> +	if (fsl_ssi_is_ac97(ssi_private))
-> +		return 0;
-> +
->  	return _fsl_ssi_set_dai_fmt(cpu_dai->dev, ssi_private, fmt);
->  }
->  
-> 
+a3b2cb30 "powerpc: Do not call ppc_md.panic in fadump panic notifier"
+purports to fix a problem when the kernel panics with fadump not
+registered, but it breaks something else instead.  I _think_ it was
+working on the incorrect assumption that ppc_md.panic was (or should
+be) only used with fadump, but I'm not really sure.
+
+Panic works with kdump enabled, and (I think) with fadump enabled).
+However, with neither of these enabled, we always go to the generic
+panic logic.
+
+That's incorrect for PAPR guests - they should call ibm,os-term via
+RTAS.  Under qemu this leads to a "GUEST_PANICKED" event notification
+which higher-level management pays attention to.  Since a3b2cb30 we
+now reboot instead of reporting that.
+
+I believe it will also break panic for PS3 machines, but since that
+platform basically no longer exists, we probably don't care.
+
+I'm not entirely sure how to fix this.  I _think_ what we want is to
+call ppc_md.panic from a late panic notifier, the way this patch does
+for fadump_panic_event() if fadump is registered.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--B0nZA57HJSoPbsHY
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAloeMlwACgkQbDjKyiDZ
+s5LtpBAAoED64ll1UqluDExj7X52d2OQJlKqJpRgRm9+3U9xyNYDlfTNEw69EYQN
+r5WzW5s1heCtEmlRCXcrcfvfh6zli5JADHmQwpVIn3P3MiVVp8eZIR/cxHAd9kRS
+69l30XZIojmd1tm++PX621PdPzdNbQpAe9DSiJNjXn1GysnVHJhRvH1+aS8dwK5t
+m/bKzdXVOs0cU6Vh5kUYxnTEBP54oRqB7HOTBQi6G+DBkSsFEUOaCdEIIDMovdeL
+Pko6R5AVqu2GxvTH+5uhLeRqwGRIRiv79MSGuucft4G1lomVAgEVllliwzh69mpM
+UbuMes4qMKjt94bZbTZgJVr3Uu0D7CnHTFaXsr2sk95jzpnvvyfVtVBYhNM8g1xQ
+mlOzKWu61rjk/1egF2h97LbSCnHu2u7/2LydxhvlX9StRFGue1B96bPU3I2PUuvT
+2VVvBniOieLzc5e7Gr5uW7KPIcSaqSUznQ/RS2wGG2javeHXpSHknfIH1MYJgpMS
+juFdEo68lmKb1OpneAQKHh8hOYDudQR38JTsj0wNSqwrqWOzSFsBFzyDJC7OLuNR
+GTfsYmT4PPBw6iBwVCkNAG1VU6Rv90WvNoDQcu49owCFmW22V/nJZiopuBkOGHuT
+MR5dEMti574+8ZDnnn99dsNhE1YtHgeOGlJCpCCRGipXqGhDKP4=
+=GhFX
+-----END PGP SIGNATURE-----
+
+--B0nZA57HJSoPbsHY--
