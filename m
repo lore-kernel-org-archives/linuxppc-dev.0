@@ -1,28 +1,32 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
- [IPv6:2607:f8b0:400e:c00::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ynTRb2CPmzDrq6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 18:24:10 +1100 (AEDT)
-Received: by mail-pf0-x236.google.com with SMTP id u25so2753136pfg.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 23:24:10 -0800 (PST)
-Date: Wed, 29 Nov 2017 23:23:58 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Takashi Sakamoto <o-takashi@sakamocchi.jp>
-Subject: Re: [PATCH v4 2/2] ASoC: fsl_ssi: add 20-bit sample format for AC'97
- and use it for capture
-Message-ID: <20171130072357.GA992@Asurada>
-References: <5dfa7813-385e-d9c7-84e0-12cf1f7d3a5f@maciej.szmigiero.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5dfa7813-385e-d9c7-84e0-12cf1f7d3a5f@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ynVz90YlKzDrq7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 19:33:08 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vAU8WQd5120536
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:33:06 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eje6710rj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:33:06 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Thu, 30 Nov 2017 08:33:03 -0000
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, paulus@samba.org, maddy@linux.vnet.ibm.com,
+ tglx@linutronix.de, kan.liang@intel.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: Fix oops when grouping different pmu events
+Date: Thu, 30 Nov 2017 14:03:22 +0530
+Message-Id: <20171130083322.31206-1-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Maciej,
+When user tries to group imc (In-Memory Collections) event with
+normal event, (sometime) kernel crashes with following log:
 
-On Mon, Nov 27, 2017 at 11:34:44PM +0100, Maciej S. Szmigiero wrote:
-> There is no problem in using different bit widths in playback and capture
-> in AC'97 mode so allow this, too.
+    Faulting instruction address: 0x00000000
+    [link register   ] c00000000010ce88 power_check_constraints+0x128/0x980
+    ...
+    c00000000010e238 power_pmu_event_init+0x268/0x6f0
+    c0000000002dc60c perf_try_init_event+0xdc/0x1a0
+    c0000000002dce88 perf_event_alloc+0x7b8/0xac0
+    c0000000002e92e0 SyS_perf_event_open+0x530/0xda0
+    c00000000000b004 system_call+0x38/0xe0
 
-> @@ -1557,11 +1558,12 @@ static int fsl_ssi_probe(struct platform_device *pdev)
->  
->  	/* Are the RX and the TX clocks locked? */
->  	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
-> -		if (!fsl_ssi_is_ac97(ssi_private))
-> +		if (!fsl_ssi_is_ac97(ssi_private)) {
->  			ssi_private->cpu_dai_drv.symmetric_rates = 1;
-> +			ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
-> +		}
->  
->  		ssi_private->cpu_dai_drv.symmetric_channels = 1;
-> -		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
->  	}
+'event_base' field of 'struct hw_perf_event' is used as flags for
+normal hw events and used as memory address for imc events. While
+grouping these two types of events, collect_events() tries to
+interpret imc 'event_base' as a flag, which causes a corruption
+resulting in a crash.
 
-I was actually wondering how the AC97 works in the synchronous mode
-while being able to handle different bit widths. Then I found that
-the drivers does corresponding configurations for synchronous mode
-only if symmetric_rates is set -- which is unset for AC97 cases. So
-in fact AC97 case (symmetric_rates unset) is probably being treated
-as asynchronous mode by the driver -- it'd be better if you confirm
-this for me.
+Consider only those events which belongs to 'perf_hw_context' in
+collect_events().
 
-And I am not so sure about the physical pin connections in an AC97
-situation, but I started to think that, instead of having a change
-above, AC97 cases might be supposed to have "fsl,ssi-asynchronous"
-property in DT since it's working when the driver sets both TX and
-RX control registers (i.e. asynchronous mode), not like synchronous
-mode that only sets TX's registers.
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/core-book3s.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks
-Nicolin
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 9e3da16..1538129 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1415,7 +1415,7 @@ static int collect_events(struct perf_event *group, int max_count,
+ 	int n = 0;
+ 	struct perf_event *event;
+ 
+-	if (!is_software_event(group)) {
++	if (group->pmu->task_ctx_nr == perf_hw_context) {
+ 		if (n >= max_count)
+ 			return -1;
+ 		ctrs[n] = group;
+@@ -1423,7 +1423,7 @@ static int collect_events(struct perf_event *group, int max_count,
+ 		events[n++] = group->hw.config;
+ 	}
+ 	list_for_each_entry(event, &group->sibling_list, group_entry) {
+-		if (!is_software_event(event) &&
++		if (event->pmu->task_ctx_nr == perf_hw_context &&
+ 		    event->state != PERF_EVENT_STATE_OFF) {
+ 			if (n >= max_count)
+ 				return -1;
+-- 
+1.8.3.1
