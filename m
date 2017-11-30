@@ -1,30 +1,28 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
+ [IPv6:2607:f8b0:400e:c00::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ynRrq2ycczDrq3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 17:12:26 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAU6B0fg110059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 01:12:23 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ej712k6ts-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 01:12:22 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 30 Nov 2017 06:12:20 -0000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/mm: Invalidate subpage_prot() system call on radix
- platforms
-Date: Thu, 30 Nov 2017 11:42:15 +0530
-Message-Id: <20171130061215.22861-1-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ynTRb2CPmzDrq6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 18:24:10 +1100 (AEDT)
+Received: by mail-pf0-x236.google.com with SMTP id u25so2753136pfg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Nov 2017 23:24:10 -0800 (PST)
+Date: Wed, 29 Nov 2017 23:23:58 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Subject: Re: [PATCH v4 2/2] ASoC: fsl_ssi: add 20-bit sample format for AC'97
+ and use it for capture
+Message-ID: <20171130072357.GA992@Asurada>
+References: <5dfa7813-385e-d9c7-84e0-12cf1f7d3a5f@maciej.szmigiero.name>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5dfa7813-385e-d9c7-84e0-12cf1f7d3a5f@maciej.szmigiero.name>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Radix enabled platforms don't support subpage_prot() system calls. But
-at present the system calls goes through without an error and fails
-later on while validating expected subpage accesses. Lets not allow
-the system call on powerpc radix platforms to begin with to prevent
-this confusion in user space.
+Hi Maciej,
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/mm/subpage-prot.c | 3 +++
- 1 file changed, 3 insertions(+)
+On Mon, Nov 27, 2017 at 11:34:44PM +0100, Maciej S. Szmigiero wrote:
+> There is no problem in using different bit widths in playback and capture
+> in AC'97 mode so allow this, too.
 
-diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-index 781532d..4005468 100644
---- a/arch/powerpc/mm/subpage-prot.c
-+++ b/arch/powerpc/mm/subpage-prot.c
-@@ -195,6 +195,9 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
- 	unsigned long next, limit;
- 	int err;
- 
-+	if (radix_enabled())
-+		return -ENOSYS;
-+
- 	/* Check parameters */
- 	if ((addr & ~PAGE_MASK) || (len & ~PAGE_MASK) ||
- 	    addr >= mm->task_size || len >= mm->task_size ||
--- 
-1.8.5.2
+> @@ -1557,11 +1558,12 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+>  
+>  	/* Are the RX and the TX clocks locked? */
+>  	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
+> -		if (!fsl_ssi_is_ac97(ssi_private))
+> +		if (!fsl_ssi_is_ac97(ssi_private)) {
+>  			ssi_private->cpu_dai_drv.symmetric_rates = 1;
+> +			ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
+> +		}
+>  
+>  		ssi_private->cpu_dai_drv.symmetric_channels = 1;
+> -		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
+>  	}
+
+I was actually wondering how the AC97 works in the synchronous mode
+while being able to handle different bit widths. Then I found that
+the drivers does corresponding configurations for synchronous mode
+only if symmetric_rates is set -- which is unset for AC97 cases. So
+in fact AC97 case (symmetric_rates unset) is probably being treated
+as asynchronous mode by the driver -- it'd be better if you confirm
+this for me.
+
+And I am not so sure about the physical pin connections in an AC97
+situation, but I started to think that, instead of having a change
+above, AC97 cases might be supposed to have "fsl,ssi-asynchronous"
+property in DT since it's working when the driver sets both TX and
+RX control registers (i.e. asynchronous mode), not like synchronous
+mode that only sets TX's registers.
+
+Thanks
+Nicolin
