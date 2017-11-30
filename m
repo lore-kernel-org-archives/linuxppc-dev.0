@@ -1,32 +1,42 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Return-Path: <srs0=ddqe=c4=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ynWj90JCHzDrq9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 20:06:04 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3ynWj855BYz8tCT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 20:06:04 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ynVz90YlKzDrq7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 19:33:08 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3ynWj81s6Lz9t2V
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2017 20:06:03 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vAU8WQd5120536
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:33:06 -0500
+ vAU945OC080495
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2017 04:06:02 -0500
 Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2eje6710rj-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eje4j2fbp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 03:33:06 -0500
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2017 04:06:01 -0500
 Received: from localhost
  by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Thu, 30 Nov 2017 08:33:03 -0000
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, paulus@samba.org, maddy@linux.vnet.ibm.com,
- tglx@linutronix.de, kan.liang@intel.com, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/perf: Fix oops when grouping different pmu events
-Date: Thu, 30 Nov 2017 14:03:22 +0530
-Message-Id: <20171130083322.31206-1-ravi.bangoria@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 30 Nov 2017 09:05:58 -0000
+Subject: [PATCH] powerpc/radix: Remove trace_tlbie call from
+ radix__flush_tlb_all
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 30 Nov 2017 14:35:54 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <151203273555.16587.12957613472048945542.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,53 +46,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When user tries to group imc (In-Memory Collections) event with
-normal event, (sometime) kernel crashes with following log:
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-    Faulting instruction address: 0x00000000
-    [link register   ] c00000000010ce88 power_check_constraints+0x128/0x980
-    ...
-    c00000000010e238 power_pmu_event_init+0x268/0x6f0
-    c0000000002dc60c perf_try_init_event+0xdc/0x1a0
-    c0000000002dce88 perf_event_alloc+0x7b8/0xac0
-    c0000000002e92e0 SyS_perf_event_open+0x530/0xda0
-    c00000000000b004 system_call+0x38/0xe0
+radix__flush_tlb_all() is called only in kexec path in real mode and any
+tracepoints at this stage will make kexec to fail if enabled.
 
-'event_base' field of 'struct hw_perf_event' is used as flags for
-normal hw events and used as memory address for imc events. While
-grouping these two types of events, collect_events() tries to
-interpret imc 'event_base' as a flag, which causes a corruption
-resulting in a crash.
+To verify enable tlbie trace before kexec.
 
-Consider only those events which belongs to 'perf_hw_context' in
-collect_events().
+$ echo 1 > /sys/kernel/debug/tracing/events/powerpc/tlbie/enable
+== kexec into new kernel and kexec fails.
 
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Fix this by not calling trace_tlbie from radix__flush_tlb_all().
+
+Fixes: 0428491cba92 ("powerpc/mm: Trace tlbie(l) instructions")
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/core-book3s.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/tlb-radix.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 9e3da16..1538129 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1415,7 +1415,7 @@ static int collect_events(struct perf_event *group, int max_count,
- 	int n = 0;
- 	struct perf_event *event;
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 884f4b7..913a2b8 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -600,14 +600,12 @@ void radix__flush_tlb_all(void)
+ 	 */
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(1), "i"(ric), "r"(rs) : "memory");
+-	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+ 	/*
+ 	 * now flush host entires by passing PRS = 0 and LPID == 0
+ 	 */
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(0) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+-	trace_tlbie(0, 0, rb, 0, ric, prs, r);
+ }
  
--	if (!is_software_event(group)) {
-+	if (group->pmu->task_ctx_nr == perf_hw_context) {
- 		if (n >= max_count)
- 			return -1;
- 		ctrs[n] = group;
-@@ -1423,7 +1423,7 @@ static int collect_events(struct perf_event *group, int max_count,
- 		events[n++] = group->hw.config;
- 	}
- 	list_for_each_entry(event, &group->sibling_list, group_entry) {
--		if (!is_software_event(event) &&
-+		if (event->pmu->task_ctx_nr == perf_hw_context &&
- 		    event->state != PERF_EVENT_STATE_OFF) {
- 			if (n >= max_count)
- 				return -1;
--- 
-1.8.3.1
+ void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
