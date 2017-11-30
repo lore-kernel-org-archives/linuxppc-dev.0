@@ -1,33 +1,32 @@
-Return-Path: <srs0=f6o4=c4=gmail.com=bsingharora@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rkrcmar@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ynbGk5tp5zDqpl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 22:46:54 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3ynbGk5KNLz8t9s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 22:46:54 +1100 (AEDT)
-Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
- [IPv6:2607:f8b0:400c:c08::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3ynbGk0v6Zz9t6n
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2017 22:46:53 +1100 (AEDT)
-Received: by mail-ua0-x241.google.com with SMTP id w47so5524463uah.3
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Nov 2017 03:46:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ynjKZ1qYvzDrq7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 03:19:45 +1100 (AEDT)
+Date: Thu, 30 Nov 2017 17:19:34 +0100
+From: Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, Joerg Roedel <jroedel@suse.de>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Dimitri Sivanich <sivanich@sgi.com>, Jack Steiner <steiner@sgi.com>,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
+ xen-devel@lists.xenproject.org, kvm@vger.kernel.org
+Subject: Re: BSOD with [PATCH 00/13] mmu_notifier kill invalidate_page callback
+Message-ID: <20171130161933.GB1606@flask>
+References: <20170829235447.10050-1-jglisse@redhat.com>
+ <20171130093320.66cxaoj45g2ttzoh@nora.maurer-it.com>
+ <39823aee-4918-f87c-8342-89eff622ee43@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <151203273555.16587.12957613472048945542.stgit@jupiter.in.ibm.com>
-References: <151203273555.16587.12957613472048945542.stgit@jupiter.in.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 30 Nov 2017 22:46:51 +1100
-Message-ID: <CAKTCnz=xS87Gp3g5ThThq1_m-kahOZx+9ZuJcdU7eZY87j1i6g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/radix: Remove trace_tlbie call from
- radix__flush_tlb_all
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <39823aee-4918-f87c-8342-89eff622ee43@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,22 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 30, 2017 at 8:05 PM, Mahesh J Salgaonkar
-<mahesh@linux.vnet.ibm.com> wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->
-> radix__flush_tlb_all() is called only in kexec path in real mode and any
-> tracepoints at this stage will make kexec to fail if enabled.
->
-> To verify enable tlbie trace before kexec.
->
-> $ echo 1 > /sys/kernel/debug/tracing/events/powerpc/tlbie/enable
-> == kexec into new kernel and kexec fails.
->
-> Fix this by not calling trace_tlbie from radix__flush_tlb_all().
->
-> Fixes: 0428491cba92 ("powerpc/mm: Trace tlbie(l) instructions")
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
+2017-11-30 12:20+0100, Paolo Bonzini:
+> On 30/11/2017 10:33, Fabian Grünbichler wrote:
+> > 
+> > It was reverted in 785373b4c38719f4af6775845df6be1dfaea120f after which
+> > the symptoms disappeared until this series was merged, which contains
+> > 
+> > 369ea8242c0fb5239b4ddf0dc568f694bd244de4 mm/rmap: update to new mmu_notifier semantic v2
+> > 
+> > We haven't bisected the individual commits of the series yet, but the
+> > commit immediately preceding its merge exhibits no problems, while
+> > everything after does. It is not known whether the bug is actually in
+> > the series itself, or whether increasing the likelihood of triggering it
+> > is just a side-effect. There is a similar report[2] concerning an
+> > upgrade from 4.12.12 to 4.12.13, which does not contain this series in
+> > any form AFAICT but might be worth another look as well.
+> 
+> I know of one issue in this series (invalidate_page was removed from KVM
+> without reimplementing it as invalidate_range).  I'll try to prioritize
+> the fix, but I don't think I can do it before Monday.
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+The series also dropped the reloading of the APIC access page and we
+never had it in invalidate_range_start ... I'll look into it today.
