@@ -1,32 +1,29 @@
-Return-Path: <f.gruenbichler@proxmox.com>
-Received: from proxmox-new.maurer-it.com (proxmox.maurer-it.com
- [212.186.127.180])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ynXS104rWzDrpV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 20:39:44 +1100 (AEDT)
-Date: Thu, 30 Nov 2017 10:33:20 +0100
-From: Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>
-To: =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andrea Arcangeli <aarcange@redhat.com>, Joerg Roedel <jroedel@suse.de>,
- Dan Williams <dan.j.williams@intel.com>,
- Sudeep Dutt <sudeep.dutt@intel.com>,
- Ashutosh Dixit <ashutosh.dixit@intel.com>,
- Dimitri Sivanich <sivanich@sgi.com>, Jack Steiner <steiner@sgi.com>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
- xen-devel@lists.xenproject.org, kvm@vger.kernel.org
-Subject: BSOD with [PATCH 00/13] mmu_notifier kill invalidate_page callback
-Message-ID: <20171130093320.66cxaoj45g2ttzoh@nora.maurer-it.com>
-References: <20170829235447.10050-1-jglisse@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ynYr80zCtzDrqC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 21:42:15 +1100 (AEDT)
+Date: Thu, 30 Nov 2017 10:41:59 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>,
+ alsa-devel@alsa-project.org, Timur Tabi <timur@tabi.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>,
+ Takashi Sakamoto <o-takashi@sakamocchi.jp>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] Applied "ALSA: pcm: add SNDRV_PCM_FORMAT_{S,	U}20"
+ to the asoc tree
+Message-ID: <20171130104159.r2zgwblievcyfpya@sirena.org.uk>
+References: <3a279ea2-8098-d5a4-a53e-b0e3585fa9bf@maciej.szmigiero.name>
+ <E1eK7aT-0004iV-CY@debutante> <s5hmv34ixtg.wl-tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20170829235447.10050-1-jglisse@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="amgpeomm6p7ycbrs"
+In-Reply-To: <s5hmv34ixtg.wl-tiwai@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,123 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 29, 2017 at 07:54:34PM -0400, Jérôme Glisse wrote:
-> (Sorry for so many list cross-posting and big cc)
 
-Ditto (trimmed it a bit already, feel free to limit replies as you see
-fit).
+--amgpeomm6p7ycbrs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> 
-> Please help testing !
-> 
+On Wed, Nov 29, 2017 at 10:23:23PM +0100, Takashi Iwai wrote:
 
-Kernels 4.13 and 4.14 (which both contain these patch series in its
-final form) are affected by a bug triggering BSOD
-(CRITICAL_STRUCTURE_CORRUPTION) in Windows 10/2016 VMs in Qemu under
-certain conditions on certain hardware/microcode versions (see below for
-details).
+> Mark, I already took this into my tree, as it's a change in ALSA core
+> stuff.  As mentioned in another mail, the branch was exposed to
+> topic/pcm-20bit branch, so that you can pull cleanly.
 
-Testing this proved to be quite cumbersome, as only some systems are
-affected and it took a while to find a semi-reliable test setup. Some
-users reported that microcode updates made the problem disappear on some
-affected systems[1].
+That's what this is reporting - the result of my pull.  My script
+reports all new patches I push rather than things I apply, I pull
+infrequently enough I didn't need to fix it yet.
 
-Bisecting the 4.13 release cycle first pointed to
+--amgpeomm6p7ycbrs
+Content-Type: application/pgp-signature; name="signature.asc"
 
-aac2fea94f7a3df8ad1eeb477eb2643f81fd5393 rmap: do not call mmu_notifier_invalidate_page() under ptl
+-----BEGIN PGP SIGNATURE-----
 
-as likely culprit (although it was not possible to bisect exactly down
-to this commit).
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlof4HYACgkQJNaLcl1U
+h9C8dwf/c225aQcNBAPeEDVGx59FZBrBkNJeUG8Gqt8mDKvCyQ8NkBXXZxLi2URn
+BexsCUBUBqq/0HnaI+EpiZZyR/Uk0e+lxAJ6E7QTnLAfuTiMPuU5sp0n5Lrj5e/C
+UNTBwZEPut4+VkQMWvd5jjSrwcmDK2hf9xDhfnmhFIgC8PAuPBFm0qP1UvJWHhls
+VNKSYh0Awl9ZDJ5n9R4Ufxve7/3faCEq6uTWq8BHA2VQva3KOGODhpCD+bBCNBzf
+j4EHzUyx08rfSNXy1muAMnz92mbJ/wl5yLcUx2OaZzu5w65tWHh2UIL/Hh2FtTwl
+9wkajHmo4MudzuK+oBejRaLu1JjNJA==
+=tO2u
+-----END PGP SIGNATURE-----
 
-It was reverted in 785373b4c38719f4af6775845df6be1dfaea120f after which
-the symptoms disappeared until this series was merged, which contains
-
-369ea8242c0fb5239b4ddf0dc568f694bd244de4 mm/rmap: update to new mmu_notifier semantic v2
-
-We haven't bisected the individual commits of the series yet, but the
-commit immediately preceding its merge exhibits no problems, while
-everything after does. It is not known whether the bug is actually in
-the series itself, or whether increasing the likelihood of triggering it
-is just a side-effect. There is a similar report[2] concerning an
-upgrade from 4.12.12 to 4.12.13, which does not contain this series in
-any form AFAICT but might be worth another look as well.
-
-Our test setup consists of the following:
-CPU: Intel(R) Xeon(R) CPU D-1528 @ 1.90GHz (single socket)
-Flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb
-rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology
-nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx
-est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic
-movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm
-3dnowprefetch cpuid_fault epb cat_l3 cdp_l3 intel_ppin intel_pt
-tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2
-smep bmi2 erms invpcid rtm cqm rdt_a rdseed adx smap xsaveopt cqm_llc
-cqm_occup_llc cqm_mbm_total cqm_mbm_local dtherm arat pln pts
-microcode: 0x700000e
-Mainboard: Supermicro X10SDV-6C+-TLN4F
-RAM: 64G DDR4 [3]
-Swap: 8G on an LV
-Qemu: 2.9.1 with some patches on top ([4])
-OS: Debian Stretch based (PVE 5.1)
-KSM is enabled, but turning it off just increases the number of test
-iterations needed to trigger the bug.
-Kernel config: [5]
-
-VMs:
-A: Windows 2016 with virtio-blk disks, 6G RAM
-B: Windows 10 with (virtual) IDE disks, 6G RAM
-C: Debian Stretch, ~55G RAM
-
-fio config:
-[global]
-thread=2
-runtime=1800
-
-[write1]
-ioengine=windowsaio
-sync=0
-direct=0
-bs=4k
-size=30G
-rw=randwrite
-iodepth=16
-
-[read1]
-ioengine=windowsaio
-sync=0
-direct=0
-bs=4k
-size=30G
-rw=randread
-iodepth=16
-
-Test run:
-
-- Start all three VMs
-- run 'stress-ng --vm-bytes 1G --vm 52 -t 6000' in VM C
-- wait until swap is (almost) full and KSM starts to merge pages
-- start fio in VM A and B
-- stop stress-ng in VM C, power off VM C
-- run 'swapoff -av' on host
-- wait until swap content has been swapped in again (this takes a while)
-- observe BSOD in at least one of A / B around 30% of the time
-
-While this test case is pretty artifical, the BSOD issue does affect
-users in the wild running regular work loads (where it can take from
-multiple hours up to several days to trigger).
-
-We have reverted this patch series in our 4.13 based kernel for now,
-with positive feedback from users and our own testing. If more detailed
-traces or data from a test run on an affected system is needed, we will
-of course provide it.
-
-Any further input / pointers are highly appreciated!
-
-1: https://forum.proxmox.com/threads/blue-screen-with-5-1.37664/
-2: http://www.spinics.net/lists/kvm/msg159179.html
-https://bugs.launchpad.net/qemu/+bug/1728256
-https://bugzilla.kernel.org/show_bug.cgi?id=197951
-3: http://www.samsung.com/semiconductor/products/dram/server-dram/ddr4-registered-dimm/M393A2K40BB1?ia=2503
-5: https://git.proxmox.com/?p=pve-qemu.git;a=tree;f=debian/patches;h=2c516be8e69a033d14809b17e8a661b3808257f7;hb=8d4a2d3f5569817221c19a91f763964c40e00292
-6: https://gist.github.com/Fabian-Gruenbichler/5c3af22ac7e6faae46840bdcebd7df14
+--amgpeomm6p7ycbrs--
