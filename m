@@ -1,24 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ypDCK2R3kzDrqQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 23:31:09 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- Michal Hocko <mhocko@suse.com>, Wei Wang <wei.w.wang@intel.com>,
- Jason Wang <jasowang@redhat.com>, virtualization@lists.linux-foundation.org,
- linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
-Subject: Memory corruption in powerpc guests with virtio_balloon (was Re:
- [PATCH v3] virtio_balloon: fix deadlock on OOM)
-In-Reply-To: <1510154064-9709-1-git-send-email-mst@redhat.com>
-References: <1510154064-9709-1-git-send-email-mst@redhat.com>
-Date: Fri, 01 Dec 2017 23:31:08 +1100
-Message-ID: <87o9nid3zn.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ypDTY4VR4zDrJk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 23:43:29 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB1CdgaC096907
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Dec 2017 07:43:26 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ek6m4299u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Dec 2017 07:43:26 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Fri, 1 Dec 2017 12:43:24 -0000
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com, benh@au1.ibm.com,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/2] powerpc/powernv: Enable tunneled operations
+Date: Fri,  1 Dec 2017 13:43:17 +0100
+Message-Id: <20171201124318.4159-1-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,250 +34,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Michael S. Tsirkin" <mst@redhat.com> writes:
+P9 supports PCI tunneled operations (atomics and as_notify). This
+patch adds support for tunneled operations on powernv, with a new
+API, to be called by device drivers:
 
-> fill_balloon doing memory allocations under balloon_lock
-> can cause a deadlock when leak_balloon is called from
-> virtballoon_oom_notify and tries to take same lock.
->
-> To fix, split page allocation and enqueue and do allocations outside the lock.
->
-> Here's a detailed analysis of the deadlock by Tetsuo Handa:
->
-> In leak_balloon(), mutex_lock(&vb->balloon_lock) is called in order to
-> serialize against fill_balloon(). But in fill_balloon(),
-> alloc_page(GFP_HIGHUSER[_MOVABLE] | __GFP_NOMEMALLOC | __GFP_NORETRY) is
-> called with vb->balloon_lock mutex held. Since GFP_HIGHUSER[_MOVABLE]
-> implies __GFP_DIRECT_RECLAIM | __GFP_IO | __GFP_FS, despite __GFP_NORETRY
-> is specified, this allocation attempt might indirectly depend on somebody
-> else's __GFP_DIRECT_RECLAIM memory allocation. And such indirect
-> __GFP_DIRECT_RECLAIM memory allocation might call leak_balloon() via
-> virtballoon_oom_notify() via blocking_notifier_call_chain() callback via
-> out_of_memory() when it reached __alloc_pages_may_oom() and held oom_lock
-> mutex. Since vb->balloon_lock mutex is already held by fill_balloon(), it
-> will cause OOM lockup.
->
->   Thread1                                       Thread2
->     fill_balloon()
->       takes a balloon_lock
->       balloon_page_enqueue()
->         alloc_page(GFP_HIGHUSER_MOVABLE)
->           direct reclaim (__GFP_FS context)       takes a fs lock
->             waits for that fs lock                  alloc_page(GFP_NOFS)
->                                                       __alloc_pages_may_oom()
->                                                         takes the oom_lock
->                                                         out_of_memory()
->                                                           blocking_notifier_call_chain()
->                                                             leak_balloon()
->                                                               tries to take that balloon_lock and deadlocks
->
-> Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Wei Wang <wei.w.wang@intel.com>
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
->
->  drivers/virtio/virtio_balloon.c    | 24 +++++++++++++++++++-----
->  include/linux/balloon_compaction.h | 35 ++++++++++++++++++++++++++++++++++-
->  mm/balloon_compaction.c            | 28 +++++++++++++++++++++-------
->  3 files changed, 74 insertions(+), 13 deletions(-)
+pnv_pci_get_tunnel_ind()
+   Tell driver the 16-bit ASN indication used by kernel.
 
+pnv_pci_set_tunnel_bar()
+   Tell kernel the Tunnel BAR Response address used by driver.
 
-Somehow this commit seems to be killing powerpc guests.
+The latter uses two new OPAL calls, as the PBCQ Tunnel BAR register
+is configured by skiboot.
 
-The symptom is that the first page (64K) of the guests memory gets over
-written with zeroes, which is where our interrupt handlers are, so the
-system rapidly locks up due to illegal instructions in the illegal
-instruction handler.
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+Changelog:
 
-There seems to be some element of a race, because it doesn't always
-crash. Sometimes I can boot to a shell, but not often. When it does
-happen it's fairly late in boot, but before I get to a shell.
+v2: Do not set the ASN indication. Get it from the device tree.
 
-I had a few bisects go off into the weeds due to the intermittent
-nature. But once I realised that I changed my script to boot 5 times
-before declaring a kernel good, and that bisected straight here.
+This patch depends on the following skiboot prerequisites:
 
-I can also revert this commit on v4.15-rc1 and everything's fine again -
-I got through ~250 boots with that kernel.
+    https://patchwork.ozlabs.org/patch/843474/
+    https://patchwork.ozlabs.org/patch/843473/
+---
+ arch/powerpc/include/asm/opal-api.h            |  4 +-
+ arch/powerpc/include/asm/opal.h                |  2 +
+ arch/powerpc/include/asm/pnv-pci.h             |  4 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  2 +
+ arch/powerpc/platforms/powernv/pci.c           | 69 ++++++++++++++++++++++++++
+ 5 files changed, 79 insertions(+), 2 deletions(-)
 
-So I'm pretty sure this commit is triggering/exposing/causing the bug.
-
-The other data point is that the page that's overwritten is mapped read
-only in the guest kernel. So either the guest kernel is writing to it in
-real mode (MMU off), or the hypervisor/DMA is doing it.
-
-I haven't isolated if it's host kernel/qemu version dependent, at the
-moment I'm just using distro packaged versions of both.
-
-Anyway I'll try and dig further into it on Monday, but I thought I'd let
-you know in case this is a known bug with a fix in the pipeline, or
-rings any bells or whatever.
-
-cheers
-
-
-> diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-> index f0b3a0b..7960746 100644
-> --- a/drivers/virtio/virtio_balloon.c
-> +++ b/drivers/virtio/virtio_balloon.c
-> @@ -143,16 +143,17 @@ static void set_page_pfns(struct virtio_balloon *vb,
->  
->  static unsigned fill_balloon(struct virtio_balloon *vb, size_t num)
->  {
-> -	struct balloon_dev_info *vb_dev_info = &vb->vb_dev_info;
->  	unsigned num_allocated_pages;
-> +	unsigned num_pfns;
-> +	struct page *page;
-> +	LIST_HEAD(pages);
->  
->  	/* We can only do one array worth at a time. */
->  	num = min(num, ARRAY_SIZE(vb->pfns));
->  
-> -	mutex_lock(&vb->balloon_lock);
-> -	for (vb->num_pfns = 0; vb->num_pfns < num;
-> -	     vb->num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE) {
-> -		struct page *page = balloon_page_enqueue(vb_dev_info);
-> +	for (num_pfns = 0; num_pfns < num;
-> +	     num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE) {
-> +		struct page *page = balloon_page_alloc();
->  
->  		if (!page) {
->  			dev_info_ratelimited(&vb->vdev->dev,
-> @@ -162,6 +163,19 @@ static unsigned fill_balloon(struct virtio_balloon *vb, size_t num)
->  			msleep(200);
->  			break;
->  		}
-> +
-> +		balloon_page_push(&pages, page);
-> +	}
-> +
-> +	mutex_lock(&vb->balloon_lock);
-> +
-> +	vb->num_pfns = 0;
-> +
-> +	while ((page = balloon_page_pop(&pages))) {
-> +		balloon_page_enqueue(&vb->vb_dev_info, page);
-> +
-> +		vb->num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE;
-> +
->  		set_page_pfns(vb, vb->pfns + vb->num_pfns, page);
->  		vb->num_pages += VIRTIO_BALLOON_PAGES_PER_PAGE;
->  		if (!virtio_has_feature(vb->vdev,
-> diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
-> index fbbe6da..c4c8df9 100644
-> --- a/include/linux/balloon_compaction.h
-> +++ b/include/linux/balloon_compaction.h
-> @@ -50,6 +50,7 @@
->  #include <linux/gfp.h>
->  #include <linux/err.h>
->  #include <linux/fs.h>
-> +#include <linux/list.h>
->  
->  /*
->   * Balloon device information descriptor.
-> @@ -67,7 +68,9 @@ struct balloon_dev_info {
->  	struct inode *inode;
->  };
->  
-> -extern struct page *balloon_page_enqueue(struct balloon_dev_info *b_dev_info);
-> +extern struct page *balloon_page_alloc(void);
-> +extern void balloon_page_enqueue(struct balloon_dev_info *b_dev_info,
-> +				 struct page *page);
->  extern struct page *balloon_page_dequeue(struct balloon_dev_info *b_dev_info);
->  
->  static inline void balloon_devinfo_init(struct balloon_dev_info *balloon)
-> @@ -89,6 +92,36 @@ extern int balloon_page_migrate(struct address_space *mapping,
->  				struct page *page, enum migrate_mode mode);
->  
->  /*
-> + * balloon_page_push - insert a page into a page list.
-> + * @head : pointer to list
-> + * @page : page to be added
-> + *
-> + * Caller must ensure the page is private and protect the list.
-> + */
-> +static inline void balloon_page_push(struct list_head *pages, struct page *page)
-> +{
-> +	list_add(&page->lru, pages);
-> +}
-> +
-> +/*
-> + * balloon_page_pop - remove a page from a page list.
-> + * @head : pointer to list
-> + * @page : page to be added
-> + *
-> + * Caller must ensure the page is private and protect the list.
-> + */
-> +static inline struct page *balloon_page_pop(struct list_head *pages)
-> +{
-> +	struct page *page = list_first_entry_or_null(pages, struct page, lru);
-> +
-> +	if (!page)
-> +		return NULL;
-> +
-> +	list_del(&page->lru);
-> +	return page;
-> +}
-> +
-> +/*
->   * balloon_page_insert - insert a page into the balloon's page list and make
->   *			 the page->private assignment accordingly.
->   * @balloon : pointer to balloon device
-> diff --git a/mm/balloon_compaction.c b/mm/balloon_compaction.c
-> index 68d2892..ef858d5 100644
-> --- a/mm/balloon_compaction.c
-> +++ b/mm/balloon_compaction.c
-> @@ -11,22 +11,37 @@
->  #include <linux/balloon_compaction.h>
->  
->  /*
-> + * balloon_page_alloc - allocates a new page for insertion into the balloon
-> + *			  page list.
-> + *
-> + * Driver must call it to properly allocate a new enlisted balloon page.
-> + * Driver must call balloon_page_enqueue before definitively removing it from
-> + * the guest system.  This function returns the page address for the recently
-> + * allocated page or NULL in the case we fail to allocate a new page this turn.
-> + */
-> +struct page *balloon_page_alloc(void)
-> +{
-> +	struct page *page = alloc_page(balloon_mapping_gfp_mask() |
-> +				       __GFP_NOMEMALLOC | __GFP_NORETRY);
-> +	return page;
-> +}
-> +EXPORT_SYMBOL_GPL(balloon_page_alloc);
-> +
-> +/*
->   * balloon_page_enqueue - allocates a new page and inserts it into the balloon
->   *			  page list.
->   * @b_dev_info: balloon device descriptor where we will insert a new page to
-> + * @page: new page to enqueue - allocated using balloon_page_alloc.
->   *
-> - * Driver must call it to properly allocate a new enlisted balloon page
-> + * Driver must call it to properly enqueue a new allocated balloon page
->   * before definitively removing it from the guest system.
->   * This function returns the page address for the recently enqueued page or
->   * NULL in the case we fail to allocate a new page this turn.
->   */
-> -struct page *balloon_page_enqueue(struct balloon_dev_info *b_dev_info)
-> +void balloon_page_enqueue(struct balloon_dev_info *b_dev_info,
-> +			  struct page *page)
->  {
->  	unsigned long flags;
-> -	struct page *page = alloc_page(balloon_mapping_gfp_mask() |
-> -				       __GFP_NOMEMALLOC | __GFP_NORETRY);
-> -	if (!page)
-> -		return NULL;
->  
->  	/*
->  	 * Block others from accessing the 'page' when we get around to
-> @@ -39,7 +54,6 @@ struct page *balloon_page_enqueue(struct balloon_dev_info *b_dev_info)
->  	__count_vm_event(BALLOON_INFLATE);
->  	spin_unlock_irqrestore(&b_dev_info->pages_lock, flags);
->  	unlock_page(page);
-> -	return page;
->  }
->  EXPORT_SYMBOL_GPL(balloon_page_enqueue);
->  
-> -- 
-> MST
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 233c7504b1f2..1aa069cc2d61 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -201,7 +201,9 @@
+ #define OPAL_SET_POWER_SHIFT_RATIO		155
+ #define OPAL_SENSOR_GROUP_CLEAR			156
+ #define OPAL_PCI_SET_P2P			157
+-#define OPAL_LAST				157
++#define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		158
++#define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		159
++#define OPAL_LAST				159
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0c545f7fc77b..8705e422b893 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -198,6 +198,8 @@ int64_t opal_unregister_dump_region(uint32_t id);
+ int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
+ int64_t opal_config_cpu_idle_state(uint64_t state, uint64_t flag);
+ int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
++int64_t opal_pci_get_pbcq_tunnel_bar(uint64_t phb_id, uint64_t *addr);
++int64_t opal_pci_set_pbcq_tunnel_bar(uint64_t phb_id, uint64_t addr);
+ int64_t opal_ipmi_send(uint64_t interface, struct opal_ipmi_msg *msg,
+ 		uint64_t msg_len);
+ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index 3e5cf251ad9a..f064e93495ac 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -28,7 +28,9 @@ extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
+ 				   struct opal_msg *msg);
+ extern int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target,
+ 			   u64 desc);
+-
++extern int pnv_pci_get_tunnel_ind(struct pci_dev *dev, uint64_t *ind);
++extern int pnv_pci_set_tunnel_bar(struct pci_dev *dev, uint64_t addr,
++				  int enable);
+ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
+ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ 			   unsigned int virq);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 6f4b00a2ac46..5da790fb7fef 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -320,3 +320,5 @@ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
+ OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
++OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
++OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 5422f4a6317c..63a903c88b72 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -38,6 +38,7 @@
+ #include "pci.h"
+ 
+ static DEFINE_MUTEX(p2p_mutex);
++static DEFINE_MUTEX(tunnel_mutex);
+ 
+ int pnv_pci_get_slot_id(struct device_node *np, uint64_t *id)
+ {
+@@ -1092,6 +1093,74 @@ int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target, u64 desc)
+ }
+ EXPORT_SYMBOL_GPL(pnv_pci_set_p2p);
+ 
++int pnv_pci_get_tunnel_ind(struct pci_dev *dev, u64 *asnind)
++{
++	struct device_node *np;
++	const __be32 *prop;
++
++	if (!(np = pnv_pci_get_phb_node(dev)))
++		return -ENXIO;
++
++	prop = of_get_property(np, "ibm,phb-indications", NULL);
++	if (!prop || !prop[1])
++		return -ENXIO;
++
++	*asnind = (u64)be32_to_cpu(prop[1]);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_tunnel_ind);
++
++int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
++{
++	__be64 val;
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	u64 tunnel_bar;
++	int rc;
++
++	if (!opal_check_token(OPAL_PCI_GET_PBCQ_TUNNEL_BAR))
++		return -ENXIO;
++	if (!opal_check_token(OPAL_PCI_SET_PBCQ_TUNNEL_BAR))
++		return -ENXIO;
++
++	hose = pci_bus_to_host(dev->bus);
++	phb = hose->private_data;
++
++	mutex_lock(&tunnel_mutex);
++	rc = opal_pci_get_pbcq_tunnel_bar(phb->opal_id, &val);
++	if (rc != OPAL_SUCCESS) {
++		rc = -EIO;
++		goto out;
++	}
++	tunnel_bar = be64_to_cpu(val);
++	if (enable) {
++		/*
++		* Only one device per PHB can use atomics.
++		* Our policy is first-come, first-served.
++		*/
++		if (tunnel_bar) {
++			rc = -EBUSY;
++			goto out;
++		}
++	} else {
++		/*
++		* The device that owns atomics and wants to release
++		* them must pass the same address with enable == 0.
++		*/
++		if (tunnel_bar != addr) {
++			rc = -EPERM;
++			goto out;
++		}
++		addr = 0x0ULL;
++	}
++	rc = opal_pci_set_pbcq_tunnel_bar(phb->opal_id, addr);
++	rc = opal_error_code(rc);
++out:
++	mutex_unlock(&tunnel_mutex);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pnv_pci_set_tunnel_bar);
++
+ void pnv_pci_shutdown(void)
+ {
+ 	struct pci_controller *hose;
+-- 
+2.15.0
