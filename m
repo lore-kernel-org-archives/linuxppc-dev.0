@@ -1,26 +1,29 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ypH6V6HQdzDsFB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Dec 2017 01:42:10 +1100 (AEDT)
-Date: Fri, 1 Dec 2017 16:42:01 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- Michal Hocko <mhocko@suse.com>, Wei Wang <wei.w.wang@intel.com>,
- Jason Wang <jasowang@redhat.com>,
- virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: Memory corruption in powerpc guests with virtio_balloon (was Re:
- [PATCH v3] virtio_balloon: fix deadlock on OOM)
-Message-ID: <20171201164129-mutt-send-email-mst@kernel.org>
-References: <1510154064-9709-1-git-send-email-mst@redhat.com>
- <87o9nid3zn.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87o9nid3zn.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ypJj966cgzDsTf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Dec 2017 02:53:49 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB1FqxV7145215
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Dec 2017 10:53:47 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ek7serjs6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Dec 2017 10:53:46 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Fri, 1 Dec 2017 15:53:44 -0000
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH V2] cxl: Add support for ASB_Notify on POWER9
+Date: Fri,  1 Dec 2017 16:53:40 +0100
+Message-Id: <1512143620-31330-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,257 +33,242 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 01, 2017 at 11:31:08PM +1100, Michael Ellerman wrote:
-> "Michael S. Tsirkin" <mst@redhat.com> writes:
-> 
-> > fill_balloon doing memory allocations under balloon_lock
-> > can cause a deadlock when leak_balloon is called from
-> > virtballoon_oom_notify and tries to take same lock.
-> >
-> > To fix, split page allocation and enqueue and do allocations outside the lock.
-> >
-> > Here's a detailed analysis of the deadlock by Tetsuo Handa:
-> >
-> > In leak_balloon(), mutex_lock(&vb->balloon_lock) is called in order to
-> > serialize against fill_balloon(). But in fill_balloon(),
-> > alloc_page(GFP_HIGHUSER[_MOVABLE] | __GFP_NOMEMALLOC | __GFP_NORETRY) is
-> > called with vb->balloon_lock mutex held. Since GFP_HIGHUSER[_MOVABLE]
-> > implies __GFP_DIRECT_RECLAIM | __GFP_IO | __GFP_FS, despite __GFP_NORETRY
-> > is specified, this allocation attempt might indirectly depend on somebody
-> > else's __GFP_DIRECT_RECLAIM memory allocation. And such indirect
-> > __GFP_DIRECT_RECLAIM memory allocation might call leak_balloon() via
-> > virtballoon_oom_notify() via blocking_notifier_call_chain() callback via
-> > out_of_memory() when it reached __alloc_pages_may_oom() and held oom_lock
-> > mutex. Since vb->balloon_lock mutex is already held by fill_balloon(), it
-> > will cause OOM lockup.
-> >
-> >   Thread1                                       Thread2
-> >     fill_balloon()
-> >       takes a balloon_lock
-> >       balloon_page_enqueue()
-> >         alloc_page(GFP_HIGHUSER_MOVABLE)
-> >           direct reclaim (__GFP_FS context)       takes a fs lock
-> >             waits for that fs lock                  alloc_page(GFP_NOFS)
-> >                                                       __alloc_pages_may_oom()
-> >                                                         takes the oom_lock
-> >                                                         out_of_memory()
-> >                                                           blocking_notifier_call_chain()
-> >                                                             leak_balloon()
-> >                                                               tries to take that balloon_lock and deadlocks
-> >
-> > Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> > Cc: Michal Hocko <mhocko@suse.com>
-> > Cc: Wei Wang <wei.w.wang@intel.com>
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> >
-> >  drivers/virtio/virtio_balloon.c    | 24 +++++++++++++++++++-----
-> >  include/linux/balloon_compaction.h | 35 ++++++++++++++++++++++++++++++++++-
-> >  mm/balloon_compaction.c            | 28 +++++++++++++++++++++-------
-> >  3 files changed, 74 insertions(+), 13 deletions(-)
-> 
-> 
-> Somehow this commit seems to be killing powerpc guests.
-> 
-> The symptom is that the first page (64K) of the guests memory gets over
-> written with zeroes, which is where our interrupt handlers are, so the
-> system rapidly locks up due to illegal instructions in the illegal
-> instruction handler.
-> 
-> There seems to be some element of a race, because it doesn't always
-> crash. Sometimes I can boot to a shell, but not often. When it does
-> happen it's fairly late in boot, but before I get to a shell.
-> 
-> I had a few bisects go off into the weeds due to the intermittent
-> nature. But once I realised that I changed my script to boot 5 times
-> before declaring a kernel good, and that bisected straight here.
-> 
-> I can also revert this commit on v4.15-rc1 and everything's fine again -
-> I got through ~250 boots with that kernel.
-> 
-> So I'm pretty sure this commit is triggering/exposing/causing the bug.
-> 
-> The other data point is that the page that's overwritten is mapped read
-> only in the guest kernel. So either the guest kernel is writing to it in
-> real mode (MMU off), or the hypervisor/DMA is doing it.
-> 
-> I haven't isolated if it's host kernel/qemu version dependent, at the
-> moment I'm just using distro packaged versions of both.
-> 
-> Anyway I'll try and dig further into it on Monday, but I thought I'd let
-> you know in case this is a known bug with a fix in the pipeline, or
-> rings any bells or whatever.
-> 
-> cheers
+The POWER9 core supports a new feature: ASB_Notify which requires the
+support of the Special Purpose Register: TIDR.
 
-Thanks for the report!
-A fix was just posted:
-virtio_balloon: fix increment of vb->num_pfns in fill_balloon()
+The ASB_Notify command, generated by the AFU, will attempt to
+wake-up the host thread identified by the particular LPID:PID:TID.
 
-Would appreciate testing.
+This patch assign a unique TIDR (thread id) for the current thread which
+will be used in the process element entry.
 
-> 
-> > diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-> > index f0b3a0b..7960746 100644
-> > --- a/drivers/virtio/virtio_balloon.c
-> > +++ b/drivers/virtio/virtio_balloon.c
-> > @@ -143,16 +143,17 @@ static void set_page_pfns(struct virtio_balloon *vb,
-> >  
-> >  static unsigned fill_balloon(struct virtio_balloon *vb, size_t num)
-> >  {
-> > -	struct balloon_dev_info *vb_dev_info = &vb->vb_dev_info;
-> >  	unsigned num_allocated_pages;
-> > +	unsigned num_pfns;
-> > +	struct page *page;
-> > +	LIST_HEAD(pages);
-> >  
-> >  	/* We can only do one array worth at a time. */
-> >  	num = min(num, ARRAY_SIZE(vb->pfns));
-> >  
-> > -	mutex_lock(&vb->balloon_lock);
-> > -	for (vb->num_pfns = 0; vb->num_pfns < num;
-> > -	     vb->num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE) {
-> > -		struct page *page = balloon_page_enqueue(vb_dev_info);
-> > +	for (num_pfns = 0; num_pfns < num;
-> > +	     num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE) {
-> > +		struct page *page = balloon_page_alloc();
-> >  
-> >  		if (!page) {
-> >  			dev_info_ratelimited(&vb->vdev->dev,
-> > @@ -162,6 +163,19 @@ static unsigned fill_balloon(struct virtio_balloon *vb, size_t num)
-> >  			msleep(200);
-> >  			break;
-> >  		}
-> > +
-> > +		balloon_page_push(&pages, page);
-> > +	}
-> > +
-> > +	mutex_lock(&vb->balloon_lock);
-> > +
-> > +	vb->num_pfns = 0;
-> > +
-> > +	while ((page = balloon_page_pop(&pages))) {
-> > +		balloon_page_enqueue(&vb->vb_dev_info, page);
-> > +
-> > +		vb->num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE;
-> > +
-> >  		set_page_pfns(vb, vb->pfns + vb->num_pfns, page);
-> >  		vb->num_pages += VIRTIO_BALLOON_PAGES_PER_PAGE;
-> >  		if (!virtio_has_feature(vb->vdev,
-> > diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
-> > index fbbe6da..c4c8df9 100644
-> > --- a/include/linux/balloon_compaction.h
-> > +++ b/include/linux/balloon_compaction.h
-> > @@ -50,6 +50,7 @@
-> >  #include <linux/gfp.h>
-> >  #include <linux/err.h>
-> >  #include <linux/fs.h>
-> > +#include <linux/list.h>
-> >  
-> >  /*
-> >   * Balloon device information descriptor.
-> > @@ -67,7 +68,9 @@ struct balloon_dev_info {
-> >  	struct inode *inode;
-> >  };
-> >  
-> > -extern struct page *balloon_page_enqueue(struct balloon_dev_info *b_dev_info);
-> > +extern struct page *balloon_page_alloc(void);
-> > +extern void balloon_page_enqueue(struct balloon_dev_info *b_dev_info,
-> > +				 struct page *page);
-> >  extern struct page *balloon_page_dequeue(struct balloon_dev_info *b_dev_info);
-> >  
-> >  static inline void balloon_devinfo_init(struct balloon_dev_info *balloon)
-> > @@ -89,6 +92,36 @@ extern int balloon_page_migrate(struct address_space *mapping,
-> >  				struct page *page, enum migrate_mode mode);
-> >  
-> >  /*
-> > + * balloon_page_push - insert a page into a page list.
-> > + * @head : pointer to list
-> > + * @page : page to be added
-> > + *
-> > + * Caller must ensure the page is private and protect the list.
-> > + */
-> > +static inline void balloon_page_push(struct list_head *pages, struct page *page)
-> > +{
-> > +	list_add(&page->lru, pages);
-> > +}
-> > +
-> > +/*
-> > + * balloon_page_pop - remove a page from a page list.
-> > + * @head : pointer to list
-> > + * @page : page to be added
-> > + *
-> > + * Caller must ensure the page is private and protect the list.
-> > + */
-> > +static inline struct page *balloon_page_pop(struct list_head *pages)
-> > +{
-> > +	struct page *page = list_first_entry_or_null(pages, struct page, lru);
-> > +
-> > +	if (!page)
-> > +		return NULL;
-> > +
-> > +	list_del(&page->lru);
-> > +	return page;
-> > +}
-> > +
-> > +/*
-> >   * balloon_page_insert - insert a page into the balloon's page list and make
-> >   *			 the page->private assignment accordingly.
-> >   * @balloon : pointer to balloon device
-> > diff --git a/mm/balloon_compaction.c b/mm/balloon_compaction.c
-> > index 68d2892..ef858d5 100644
-> > --- a/mm/balloon_compaction.c
-> > +++ b/mm/balloon_compaction.c
-> > @@ -11,22 +11,37 @@
-> >  #include <linux/balloon_compaction.h>
-> >  
-> >  /*
-> > + * balloon_page_alloc - allocates a new page for insertion into the balloon
-> > + *			  page list.
-> > + *
-> > + * Driver must call it to properly allocate a new enlisted balloon page.
-> > + * Driver must call balloon_page_enqueue before definitively removing it from
-> > + * the guest system.  This function returns the page address for the recently
-> > + * allocated page or NULL in the case we fail to allocate a new page this turn.
-> > + */
-> > +struct page *balloon_page_alloc(void)
-> > +{
-> > +	struct page *page = alloc_page(balloon_mapping_gfp_mask() |
-> > +				       __GFP_NOMEMALLOC | __GFP_NORETRY);
-> > +	return page;
-> > +}
-> > +EXPORT_SYMBOL_GPL(balloon_page_alloc);
-> > +
-> > +/*
-> >   * balloon_page_enqueue - allocates a new page and inserts it into the balloon
-> >   *			  page list.
-> >   * @b_dev_info: balloon device descriptor where we will insert a new page to
-> > + * @page: new page to enqueue - allocated using balloon_page_alloc.
-> >   *
-> > - * Driver must call it to properly allocate a new enlisted balloon page
-> > + * Driver must call it to properly enqueue a new allocated balloon page
-> >   * before definitively removing it from the guest system.
-> >   * This function returns the page address for the recently enqueued page or
-> >   * NULL in the case we fail to allocate a new page this turn.
-> >   */
-> > -struct page *balloon_page_enqueue(struct balloon_dev_info *b_dev_info)
-> > +void balloon_page_enqueue(struct balloon_dev_info *b_dev_info,
-> > +			  struct page *page)
-> >  {
-> >  	unsigned long flags;
-> > -	struct page *page = alloc_page(balloon_mapping_gfp_mask() |
-> > -				       __GFP_NOMEMALLOC | __GFP_NORETRY);
-> > -	if (!page)
-> > -		return NULL;
-> >  
-> >  	/*
-> >  	 * Block others from accessing the 'page' when we get around to
-> > @@ -39,7 +54,6 @@ struct page *balloon_page_enqueue(struct balloon_dev_info *b_dev_info)
-> >  	__count_vm_event(BALLOON_INFLATE);
-> >  	spin_unlock_irqrestore(&b_dev_info->pages_lock, flags);
-> >  	unlock_page(page);
-> > -	return page;
-> >  }
-> >  EXPORT_SYMBOL_GPL(balloon_page_enqueue);
-> >  
-> > -- 
-> > MST
+A next patch will handle a new kind of "compatible" property in the
+device-tree (PHB DT node) indicating which version of CAPI and which
+features are supported.
+
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+
+---
+Changelog[v2]
+ - Rebased to latest upstream.
+ - Updated the ioctl interface.
+ - Added a checking to allow updating the TIDR if a P9 chip is present.
+---
+ arch/powerpc/kernel/process.c |  2 ++
+ drivers/misc/cxl/api.c        |  9 +++++++++
+ drivers/misc/cxl/context.c    | 26 ++++++++++++++++++++++++++
+ drivers/misc/cxl/cxl.h        |  4 ++++
+ drivers/misc/cxl/cxllib.c     |  2 +-
+ drivers/misc/cxl/file.c       | 24 ++++++++++++++++++++++++
+ drivers/misc/cxl/native.c     |  2 +-
+ include/uapi/misc/cxl.h       | 17 ++++++++++++++++-
+ 8 files changed, 83 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index bfdd783..b3489ab 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1738,6 +1738,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 	kregs->nip = ppc_function_entry(f);
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(clear_thread_tidr);
+ 
+ /*
+  * Set up a thread for executing a new program
+@@ -1913,6 +1914,7 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
+ 			| tsk->thread.fpexc_mode;
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(set_thread_tidr);
+ 
+ int get_fpexc_mode(struct task_struct *tsk, unsigned long adr)
+ {
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 7c11bad..605272c 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -684,3 +684,12 @@ void _cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
+ 	}
+ }
+ /* Exported via cxl_base */
++
++int cxl_thread_tidr(struct cxl_context *ctx, u64 flags)
++{
++	if (!ctx)
++		return -EINVAL;
++
++	return cxl_context_thread_tidr(ctx, flags);
++}
++EXPORT_SYMBOL_GPL(cxl_thread_tidr);
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 12a41b2..14e1a51 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -22,6 +22,7 @@
+ #include <asm/cputable.h>
+ #include <asm/current.h>
+ #include <asm/copro.h>
++#include <asm/switch_to.h>
+ 
+ #include "cxl.h"
+ 
+@@ -42,6 +43,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
+ 
+ 	ctx->afu = afu;
+ 	ctx->master = master;
++	ctx->tid = 0;
+ 	ctx->pid = NULL; /* Set in start work ioctl */
+ 	mutex_init(&ctx->mapping_lock);
+ 	ctx->mapping = NULL;
+@@ -362,3 +364,27 @@ void cxl_context_mm_count_put(struct cxl_context *ctx)
+ 	if (ctx->mm)
+ 		mmdrop(ctx->mm);
+ }
++
++int cxl_context_thread_tidr(struct cxl_context *ctx, u64 flags)
++{
++	int rc = 0;
++
++	if (!cxl_is_power9())
++		return -ENODEV;
++
++	/* Clear any TIDR value assigned to the current thread */
++	if (flags == CXL_THREAD_TID_CLEAN) {
++		clear_thread_tidr(current);
++		ctx->tid = 0;
++	}
++
++	/* Assign a unique TIDR (thread id) for the current thread */
++	if (flags == CXL_THREAD_TID_ASSIGN) {
++		rc = set_thread_tidr(current);
++		if (!rc)
++			ctx->tid = current->thread.tidr;
++	}
++	pr_devel("%s: current tidr: %d\n", __func__, ctx->tid);
++
++	return rc;
++}
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index e46a406..e372291 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -561,6 +561,7 @@ struct cxl_context {
+ 	unsigned int sst_size, sst_lru;
+ 
+ 	wait_queue_head_t wq;
++	u32 tid;
+ 	/* use mm context associated with this pid for ds faults */
+ 	struct pid *pid;
+ 	spinlock_t lock; /* Protects pending_irq_mask, pending_fault and fault_addr */
+@@ -1169,4 +1170,7 @@ void cxl_context_mm_count_get(struct cxl_context *ctx);
+ /* Decrements the reference count to "struct mm_struct" */
+ void cxl_context_mm_count_put(struct cxl_context *ctx);
+ 
++/* Handles an unique TIDR (thread id) for the current thread */
++int cxl_context_thread_tidr(struct cxl_context *ctx, u64 flags);
++
+ #endif
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index dc9bc18..126d988 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -202,7 +202,7 @@ int cxllib_get_PE_attributes(struct task_struct *task,
+ 	} else {
+ 		attr->pid = 0;
+ 	}
+-	attr->tid = 0;
++	attr->tid = current->thread.tidr;
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 76c0b0c..c9c79a9 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -300,6 +300,28 @@ static long afu_ioctl_get_afu_id(struct cxl_context *ctx,
+ 	return 0;
+ }
+ 
++static long afu_ioctl_thread_tidr(struct cxl_context *ctx,
++				  struct cxl_ttid __user *uthreadtid)
++{
++	struct cxl_ttid threadtid = { 0 };
++	int rc;
++
++	if (copy_from_user(&threadtid, uthreadtid, sizeof(threadtid)))
++		return -EFAULT;
++
++	rc = cxl_context_thread_tidr(ctx, threadtid.flags);
++	if (rc)
++		goto out;
++
++	threadtid.tid = ctx->tid;
++	if (copy_to_user(uthreadtid, &threadtid, sizeof(threadtid)))
++		return -EFAULT;
++
++	rc = 0;
++out:
++	return rc;
++}
++
+ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+@@ -319,6 +341,8 @@ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	case CXL_IOCTL_GET_AFU_ID:
+ 		return afu_ioctl_get_afu_id(ctx, (struct cxl_afu_id __user *)
+ 					    arg);
++	case CXL_IOCTL_THREAD_TID:
++		return afu_ioctl_thread_tidr(ctx, (struct cxl_ttid __user *)arg);
+ 	}
+ 	return -EINVAL;
+ }
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 02b6b45..657c4a9 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -673,7 +673,7 @@ static int process_element_entry_psl9(struct cxl_context *ctx, u64 wed, u64 amr)
+ 		pid = ctx->mm->context.id;
+ 	}
+ 
+-	ctx->elem->common.tid = 0;
++	ctx->elem->common.tid = cpu_to_be32(ctx->tid);
+ 	ctx->elem->common.pid = cpu_to_be32(pid);
+ 
+ 	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx));
+diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
+index 49e8fd0..e703597 100644
+--- a/include/uapi/misc/cxl.h
++++ b/include/uapi/misc/cxl.h
+@@ -76,12 +76,27 @@ struct cxl_adapter_image {
+ 	__u64 reserved4;
+ };
+ 
++struct cxl_ttid {
++	__u64 flags;
++	__u64 tid;
++	__u64 reserved1;
++	__u64 reserved2;
++	__u64 reserved3;
++	__u64 reserved4;
++	__u64 reserved5;
++	__u64 reserved6;
++};
++
++#define CXL_THREAD_TID_CLEAN		0x0000000000000001ULL
++#define CXL_THREAD_TID_ASSIGN		0x0000000000000002ULL
++
+ /* ioctl numbers */
+ #define CXL_MAGIC 0xCA
+ /* AFU devices */
+ #define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
+ #define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
+-#define CXL_IOCTL_GET_AFU_ID            _IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
++#define CXL_IOCTL_GET_AFU_ID		_IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
++#define CXL_IOCTL_THREAD_TID		_IOW(CXL_MAGIC, 0x03, struct cxl_ttid)
+ /* adapter devices */
+ #define CXL_IOCTL_DOWNLOAD_IMAGE        _IOW(CXL_MAGIC, 0x0A, struct cxl_adapter_image)
+ #define CXL_IOCTL_VALIDATE_IMAGE        _IOW(CXL_MAGIC, 0x0B, struct cxl_adapter_image)
+-- 
+2.7.4
