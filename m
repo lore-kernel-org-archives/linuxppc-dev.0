@@ -1,32 +1,23 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ynxX55gRFzDsF8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 12:29:41 +1100 (AEDT)
-Received: by mail-pf0-x232.google.com with SMTP id j124so3933732pfc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 17:29:40 -0800 (PST)
-Date: Thu, 30 Nov 2017 17:29:35 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Takashi Sakamoto <o-takashi@sakamocchi.jp>
-Subject: Re: [PATCH v4 2/2] ASoC: fsl_ssi: add 20-bit sample format for AC'97
- and use it for capture
-Message-ID: <20171201012934.GA32588@Asurada-Nvidia>
-References: <5dfa7813-385e-d9c7-84e0-12cf1f7d3a5f@maciej.szmigiero.name>
- <20171130072357.GA992@Asurada>
- <ba46e597-6ae7-5fb4-40b3-bb2a5e08066a@maciej.szmigiero.name>
- <20171130235335.GA26530@Asurada-Nvidia>
- <aaedc37a-1536-462f-515e-19c6cb711e4f@maciej.szmigiero.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <aaedc37a-1536-462f-515e-19c6cb711e4f@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yp1Bv3qT5zDsFS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 15:15:01 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id m26so4096415pfj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 20:15:01 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: [PATCH] powerpc/64s: ISAv3 initialize MMU registers before setting
+ partition table
+Date: Fri,  1 Dec 2017 14:14:48 +1000
+Message-Id: <20171201041448.28053-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 01, 2017 at 02:02:29AM +0100, Maciej S. Szmigiero wrote:
+kexec can leave MMU registers set, PIDR in particular, when booting the
+new kernel. The boot sequence does not zero PIDR ever, and it only gets
+changed as CPUs first switch to userspace processes. This can leave a
+window where speculative accesses from a CPU to quadrant 0 can pick up
+translations in the partition table that may be set up for processes
+running on other CPUs. These cached translations will not be involved in
+the invalidation protocol, so we can end with stable TLB and PWC.
 
-> > I will clean up the driver a bit and I think the change would be
-> > highly related to AC97 code. So I'll later need you review/test.
+This can cause the kernel to hang in infinite page fault loops (usually
+in schedule_tail, which is usually the first quardant 0 access to a new
+PID.
 
-> From my perspective it would be great if the whole cleanup was in one
-> series, so the whole testing doesn't need to be repeated per patch
-> (it involves a lot of manual work).
+Fix this by zeroing out PIDR before setting PTCR.
 
-Understood.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/mm/hash_utils_64.c |  6 ++++++
+ arch/powerpc/mm/pgtable-radix.c | 15 +++++++++++++++
+ 2 files changed, 21 insertions(+)
 
-> >> Regarding a sample rate in AC'97 mode its effective value isn't really
-> >> controlled by the CPU (that is, SSI), but by a CODEC since it is
-> >> the CODEC which tells the CPU when it should send a next sample for
-> >> playback and when a next capture sample is ready.
-> >> There are no problems if they are different (as long as the CODEC
-> >> supports this, naturally, but it's up to its driver to restrict the
-> >> sample rate space accordingly).
-> > 
-> > It's because CODEC drives the bit clock and framesync clock, isn't
-> > it? 
-> 
-> Strictly speaking, the frame sync is driven by the controller (SSI),
-> but it is simply the CODEC-provided bit clock divided by 256.
-> And the CODEC-provided bit clock is fixed at 12.288MHz by the AC'97
-> specs.
-> 
-> But every frame from CODEC also has 'TAG' bits which tell the
-> controller whether this frame contains valid capture samples or not.
-> If the capture sample rate currently programmed in CODEC is less
-> than 48kHz (the frame rate) it simply means that some of incoming
-> frames will contain 'TAG' bits indicating that these frames do not
-> contain valid capture samples (for example, if the capture rate is
-> 24kHz then only half of the frames, on average, will be marked by CODEC
-> as containing valid capture samples).
-> 
-> The situation with playback is similar: the frame from CODEC also has
-> 'SLOTREQ' bits which tell the controller if it should send playback
-> samples (and which) in the next frame - for example, if the playback
-> rate is 24kHz then in half of the frames, on average, the CODEC will
-> request playback samples.
-> 
-> Hope it is clear now.
-
-Thanks for the explain. It's clear now.
-
-Nicolin
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 655a5a9a183d..9176e1dda8e0 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1029,6 +1029,9 @@ void __init hash__early_init_mmu(void)
+ 	pci_io_base = ISA_IO_BASE;
+ #endif
+ 
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		mtspr(SPRN_PID, 0);
++
+ 	/* Select appropriate backend */
+ 	if (firmware_has_feature(FW_FEATURE_PS3_LV1))
+ 		ps3_early_mm_init();
+@@ -1055,6 +1058,9 @@ void __init hash__early_init_mmu(void)
+ void hash__early_init_mmu_secondary(void)
+ {
+ 	/* Initialize hash table for that CPU */
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		mtspr(SPRN_PID, 0);
++
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 
+ 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index cfbbee941a76..88430acf4b85 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -563,12 +563,25 @@ void __init radix__early_init_mmu(void)
+ 	__pte_frag_nr = H_PTE_FRAG_NR;
+ 	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
+ 
++	/*
++	 * kexec kernels can boot into the new kernel with PIDR non-zero.
++	 *
++	 * PIDR should be zeroed before we set the partition table,
++	 * to ensure no speculative TLB fill goes off to non-zero PIDs.
++	 * This shouldn't be a problem in real-mode, but I have not
++	 * found definitively in the ISA.
++	 *
++	 * We do need to ensure all CPUs have PID=0 when the MMU
++	 * is turned on.
++	 */
++	mtspr(SPRN_PID, 0);
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		radix_init_native();
+ 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+ 			update_hid_for_radix();
+ 		lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
++		mtspr(SPRN_LPID, 0);
+ 		radix_init_partition_table();
+ 		radix_init_amor();
+ 	} else {
+@@ -587,6 +600,7 @@ void radix__early_init_mmu_secondary(void)
+ 	/*
+ 	 * update partition table control register and UPRT
+ 	 */
++	mtspr(SPRN_PID, 0);
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 
+ 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+@@ -595,6 +609,7 @@ void radix__early_init_mmu_secondary(void)
+ 		lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
+ 
++		mtspr(SPRN_LPID, 0);
+ 		mtspr(SPRN_PTCR,
+ 		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+ 		radix_init_amor();
+-- 
+2.15.0
