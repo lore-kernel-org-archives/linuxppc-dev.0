@@ -1,45 +1,27 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ypSj459dhzDsTh
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Dec 2017 08:54:16 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB1LsDRf015435
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Dec 2017 16:54:14 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ekdjdc9u0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Dec 2017 16:54:13 -0500
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 1 Dec 2017 16:54:06 -0500
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- vB1Ls34O42533062
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Dec 2017 21:54:03 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 26733AC03A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 16:55:01 -0500 (EST)
-Received: from oc5000245537.ibm.com (unknown [9.53.92.223])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP id E9172AC040
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 16:55:00 -0500 (EST)
-Subject: Re: Resend: [PATCH V5 3/4] hotplug/drc-info: Add code to search
- ibm,drc-info property
-To: linuxppc-dev@lists.ozlabs.org
-References: <88bcb9e8-e0a5-0ca2-d691-c28fb4ea1e84@linux.vnet.ibm.com>
- <e807cc7c-8e92-ea38-7303-f375f4d8822f@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Fri, 1 Dec 2017 15:53:47 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ypT243v1mzDsMC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Dec 2017 09:08:57 +1100 (AEDT)
+Subject: [PATCH] SB600 for the Nemo board has non-zero devices on non-root bus
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-pci@vger.kernel.org
+References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
+ <87tvxl15qx.fsf@concordia.ellerman.id.au>
+ <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+ <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
+ <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
+ <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
+ <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
+ <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
+Date: Fri, 1 Dec 2017 23:08:46 +0100
 MIME-Version: 1.0
-In-Reply-To: <e807cc7c-8e92-ea38-7303-f375f4d8822f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <d16ae470-d6fb-3d9a-525c-16d8fa0ab70f@linux.vnet.ibm.com>
+In-Reply-To: <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: multipart/mixed; boundary="------------5E30C47088605C2C2C212BBE"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,273 +31,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
+This is a multi-part message in MIME format.
+--------------5E30C47088605C2C2C212BBE
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On 11/30/2017 01:51 PM, Nathan Fontenot wrote:
-> 
-> 
-> On 11/28/2017 05:07 PM, Michael Bringmann wrote:
->> rpadlpar_core.c: Provide parallel routines to search the older device-
->> tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
->> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
->>
->> The interface to examine the DRC information is changed from a "get"
->> function that returns values for local verification elsewhere, to a
->> "check" function that validates the 'name' and/or 'type' of a device
->> node.  This update hides the format of the underlying device-tree
->> properties, and concentrates the value checks into a single function
->> without requiring the user to verify whether a search was successful.
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->> Changes in V5:
->>   -- Simplify of_prop_next_u32 invocation
->>   -- Fix some spacing within arguments
->> ---
->>  drivers/pci/hotplug/rpadlpar_core.c |   13 ++--
->>  drivers/pci/hotplug/rpaphp.h        |    4 +
->>  drivers/pci/hotplug/rpaphp_core.c   |  109 +++++++++++++++++++++++++++--------
->>  3 files changed, 91 insertions(+), 35 deletions(-)
->>
->> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
->> index a3449d7..fc01d7d 100644
->> --- a/drivers/pci/hotplug/rpadlpar_core.c
->> +++ b/drivers/pci/hotplug/rpadlpar_core.c
->> @@ -27,6 +27,7 @@
->>  #include <linux/mutex.h>
->>  #include <asm/rtas.h>
->>  #include <asm/vio.h>
->> +#include <linux/firmware.h>
->>
->>  #include "../pci.h"
->>  #include "rpaphp.h"
->> @@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
->>  {
->>  	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
->>  	struct device_node *dn = NULL;
->> -	char *name;
->>  	int rc;
->>
->>  	if (!parent)
->>  		return NULL;
->>
->>  	while ((dn = of_get_next_child(parent, dn))) {
->> -		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
->> -		if ((rc == 0) && (!strcmp(drc_name, name)))
->> +		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
->> +		if (rc == 0)
->>  			break;
->>  	}
->>
->> @@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
->>  						  char *drc_type)
->>  {
->>  	struct device_node *np = NULL;
->> -	char *name;
->> -	char *type;
->>  	int rc;
->>
->>  	while ((np = of_find_node_by_name(np, "pci"))) {
->> -		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
->> +		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
->>  		if (rc == 0)
->> -			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
->> -				break;
->> +			break;
->>  	}
->>
->>  	return np;
->> diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
->> index 7db024e..8db5f2e 100644
->> --- a/drivers/pci/hotplug/rpaphp.h
->> +++ b/drivers/pci/hotplug/rpaphp.h
->> @@ -91,8 +91,8 @@ struct slot {
->>
->>  /* rpaphp_core.c */
->>  int rpaphp_add_slot(struct device_node *dn);
->> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->> -		char **drc_name, char **drc_type, int *drc_power_domain);
->> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> +		char *drc_type);
->>
->>  /* rpaphp_slot.c */
->>  void dealloc_slot_struct(struct slot *slot);
->> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
->> index 1e29aba..6da613a 100644
->> --- a/drivers/pci/hotplug/rpaphp_core.c
->> +++ b/drivers/pci/hotplug/rpaphp_core.c
->> @@ -30,6 +30,7 @@
->>  #include <linux/smp.h>
->>  #include <linux/init.h>
->>  #include <linux/vmalloc.h>
->> +#include <asm/firmware.h>
->>  #include <asm/eeh.h>       /* for eeh_add_device() */
->>  #include <asm/rtas.h>		/* rtas_call */
->>  #include <asm/pci-bridge.h>	/* for pci_controller */
->> @@ -196,25 +197,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
->>  	return 0;
->>  }
->>
->> -/* To get the DRC props describing the current node, first obtain it's
->> - * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
->> - * the my-drc-index for correlation, and obtain the requested properties.
->> +
->> +/* Verify the existence of 'drc_name' and/or 'drc_type' within the
->> + * current node.  First obtain it's my-drc-index property.  Next,
->> + * obtain the DRC info from it's parent.  Use the my-drc-index for
->> + * correlation, and obtain/validate the requested properties.
->>   */
->> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->> -		char **drc_name, char **drc_type, int *drc_power_domain)
->> +
->> +static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->>  {
->> +	char *name_tmp, *type_tmp;
->>  	const int *indexes, *names;
->>  	const int *types, *domains;
->> -	const unsigned int *my_index;
->> -	char *name_tmp, *type_tmp;
->>  	int i, rc;
->>
->> -	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
->> -	if (!my_index) {
->> -		/* Node isn't DLPAR/hotplug capable */
->> -		return -EINVAL;
->> -	}
->> -
->>  	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
->>  	if (rc < 0) {
->>  		return -EINVAL;
->> @@ -225,24 +222,86 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->>
->>  	/* Iterate through parent properties, looking for my-drc-index */
->>  	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
->> -		if ((unsigned int) indexes[i + 1] == *my_index) {
->> -			if (drc_name)
->> -				*drc_name = name_tmp;
->> -			if (drc_type)
->> -				*drc_type = type_tmp;
->> -			if (drc_index)
->> -				*drc_index = be32_to_cpu(*my_index);
->> -			if (drc_power_domain)
->> -				*drc_power_domain = be32_to_cpu(domains[i+1]);
->> -			return 0;
->> -		}
->> +		if ((unsigned int) indexes[i + 1] == my_index)
->> +			break;
->> +
->>  		name_tmp += (strlen(name_tmp) + 1);
->>  		type_tmp += (strlen(type_tmp) + 1);
->>  	}
->>
->> +	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
->> +	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
->> +		return 0;
->> +
->> +	return -EINVAL;
->> +}
->> +
->> +static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->> +{
->> +	struct property *info;
->> +	unsigned int entries;
->> +	struct of_drc_info drc;
->> +	const __be32 *value;
->> +	int j;
->> +
->> +	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
->> +	if (info == NULL)
->> +		return -EINVAL;
->> +
->> +	value = (void *)of_prop_next_u32(info, NULL, &entries);
->> +	if (!value)
->> +		return -EINVAL;
->> +
->> +	for (j = 0; j < entries; j++) {
->> +		of_read_drc_info_cell(&info, &value, &drc);
->> +
->> +		/* Should now know end of current entry */
->> +
->> +		WARN_ON((my_index < drc.drc_index_start) ||
->> +			(((my_index - drc.drc_index_start) %
->> +				drc.sequential_inc) != 0));
->> +
->> +		if (my_index > drc.last_drc_index)
->> +			continue;
->> +
->> +		break;
->> +	}
->> +	/* Found it */
->> +
->> +	if (((drc_name == NULL) ||
->> +	     (drc_name && !strncmp(drc_name,
->> +				drc.drc_name_prefix,
->> +				strlen(drc.drc_name_prefix)))) &&
-> 
-> I'm still not convinced this is correct. If I understand correctly
-> the new drc-info property has a name prefix field, which for the
-> entries we are looking up here are likely "PHB", and a name suffix
-> start filed for the first number to use as the suffix to the name in
-> the current set.
-> 
-> The name we would be trying to compare to would be something like "PHB 34".
-> What you have is just doing a compare on the prefix, or "PHB", part of
-> the name and not the full name.
+On 30.11.2017 23:42, Bjorn Helgaas wrote:
+ >
+ > 00:11.0 claims to be a PCIe Root Port leading to [bus 05-06]. That
+ > means there's a Link (presumably this A-Link II Express thing), and the
+ > downstream end of the Link *should* be a PCIe Upstream Port on bus 05,
+ > but no such device is visible.  I suppose the SB600 does implement
+ > some sort of PCIe Port there, but keeps it invisible to software, and
+ > at the same time, contains an invisible bridge that connects the Link
+ > to all the conventional PCI devices on bus 05.
+ >
+ > When we scan bus 05, we do this:
+ >
+ >   pci_scan_child_bus_extend(bus=05)
+ >     for (devfn = 0; devfn < 0x100; devfn += 8)
+ >       pci_scan_slot(05, 00.0)
+ >         pci_scan_single_device
+ >           pci_scan_device(05, 00.0)           # fails; no 05:00.0
+ >       pci_scan_slot(05, 01.0)
+ >         only_one_child(bus=05)
+ >           parent = 00:11.0
+ >           pci_pcie_type(00:11.0) == ROOT_PORT # returns true
+ >
+ > Since only_one_child() sees that 00:11.0 is a Root Port, we give up
+ > before we even get to the PCI_SCAN_ALL_PCIE_DEVS test.
+ >
+ > I *think* something like the patch below should make this work if you
+ > use the "pci=pcie_scan_all" parameter.  We have some x86 DMI quirks
+ > that set PCI_SCAN_ALL_PCIE_DEVS automatically.  I don't know how to do
+ > something similar on powerpc, but maybe you do?
+ >
 
-Okay, I agree.  I will make the change in the next version of the patch.
+Hi Bjorn,
 
-> 
-> -Nathan
+I tested your new patch today. It boots with the boot argument 
+"pci=pcie_scan_all". Well done! :-)
 
-Thanks.
+It doesn't boot without the boot argument "pci=pcie_scan_all".
 
-Michael
+Many thanks for your help.
 
-> 
->> +	    ((drc_type == NULL) ||
->> +	     (drc_type && !strncmp(drc_type,
->> +				drc.drc_type,
->> +				strlen(drc.drc_type)))))
->> +		return 0;
->> +
->>  	return -EINVAL;
->>  }
->> -EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
->> +
->> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> +			char *drc_type)
->> +{
->> +	const unsigned int *my_index;
->> +
->> +	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
->> +	if (!my_index) {
->> +		/* Node isn't DLPAR/hotplug capable */
->> +		return -EINVAL;
->> +	}
->> +
->> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
->> +		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
->> +						*my_index);
->> +	else
->> +		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
->> +						*my_index);
->> +}
->> +EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
->> +
->>
->>  static int is_php_type(char *drc_type)
->>  {
->>
-> 
-> 
+Cheers,
+Christian
 
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+
+--------------5E30C47088605C2C2C212BBE
+Content-Type: text/x-patch;
+ name="probe.c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="probe.c.patch"
+
+commit 75eaf674066590e79b3e03d32488871fc881ab40
+Author: Bjorn Helgaas <bhelgaas@google.com>
+Date:   Thu Nov 30 15:22:39 2017 -0600
+
+    PCI: Make PCI_SCAN_ALL_PCIE_DEVS work for Root Ports as well as Downstream
+    
+    Previously PCI_SCAN_ALL_PCIE_DEVS (set by quirks or the "pci=pcie_scan_all"
+    kernel parameter) only affected Switch Downstream Ports, not Root Ports.
+    
+    Simplify and restructure only_one_child() so PCI_SCAN_ALL_PCIE_DEVS means
+    we scan for all possible devices below Root Ports as well as Switch
+    Downstream Ports.
+    
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 14e0ea1ff38b..9e57d4ef0c1f 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -2217,20 +2217,28 @@ static int only_one_child(struct pci_bus *bus)
+ {
+ 	struct pci_dev *parent = bus->self;
+ 
+-	if (!parent || !pci_is_pcie(parent))
++	if (!parent)
++		return 0;
++
++	/*
++	 * Systems with unusual topologies set PCI_SCAN_ALL_PCIE_DEVS so
++	 * we scan for all possible devices, not just Device 0.
++	 */
++	if (pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
+ 		return 0;
+-	if (pci_pcie_type(parent) == PCI_EXP_TYPE_ROOT_PORT)
+-		return 1;
+ 
+ 	/*
+-	 * PCIe downstream ports are bridges that normally lead to only a
+-	 * device 0, but if PCI_SCAN_ALL_PCIE_DEVS is set, scan all
+-	 * possible devices, not just device 0.  See PCIe spec r3.0,
+-	 * sec 7.3.1.
++	 * A PCIe Downstream Port normally leads to a Link with only Device
++	 * 0 on it (PCIe spec r3.1, sec 7.3.1).  As an optimization, scan
++	 * only for Device 0 in that situation.
++	 *
++	 * Checking has_secondary_link is a hack to identify Downstream
++	 * Ports because sometimes Switches are configured such that the
++	 * PCIe Port Type labels are backwards.
+ 	 */
+-	if (parent->has_secondary_link &&
+-	    !pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
++	if (pci_is_pcie(parent) && parent->has_secondary_link)
+ 		return 1;
++
+ 	return 0;
+ }
+
+--------------5E30C47088605C2C2C212BBE--
