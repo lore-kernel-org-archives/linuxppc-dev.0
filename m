@@ -1,23 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yp1Bv3qT5zDsFS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 15:15:01 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id m26so4096415pfj.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Nov 2017 20:15:01 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH] powerpc/64s: ISAv3 initialize MMU registers before setting
- partition table
-Date: Fri,  1 Dec 2017 14:14:48 +1000
-Message-Id: <20171201041448.28053-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yp2Kw274szDsF5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Dec 2017 16:06:11 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB155p4K040543
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Dec 2017 00:06:05 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ek0cdgtrj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Dec 2017 00:06:05 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 1 Dec 2017 05:06:02 -0000
+Subject: Re: [PATCH] powerpc/perf: Fix oops when grouping different pmu events
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, paulus@samba.org, tglx@linutronix.de,
+ kan.liang@intel.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20171130083322.31206-1-ravi.bangoria@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Fri, 1 Dec 2017 10:35:56 +0530
+MIME-Version: 1.0
+In-Reply-To: <20171130083322.31206-1-ravi.bangoria@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <a50fe9d0-e07a-267b-6cf3-609d02b13e88@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,95 +39,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec can leave MMU registers set, PIDR in particular, when booting the
-new kernel. The boot sequence does not zero PIDR ever, and it only gets
-changed as CPUs first switch to userspace processes. This can leave a
-window where speculative accesses from a CPU to quadrant 0 can pick up
-translations in the partition table that may be set up for processes
-running on other CPUs. These cached translations will not be involved in
-the invalidation protocol, so we can end with stable TLB and PWC.
 
-This can cause the kernel to hang in infinite page fault loops (usually
-in schedule_tail, which is usually the first quardant 0 access to a new
-PID.
 
-Fix this by zeroing out PIDR before setting PTCR.
+On Thursday 30 November 2017 02:03 PM, Ravi Bangoria wrote:
+> When user tries to group imc (In-Memory Collections) event with
+> normal event, (sometime) kernel crashes with following log:
+>
+>      Faulting instruction address: 0x00000000
+>      [link register   ] c00000000010ce88 power_check_constraints+0x128/0x980
+>      ...
+>      c00000000010e238 power_pmu_event_init+0x268/0x6f0
+>      c0000000002dc60c perf_try_init_event+0xdc/0x1a0
+>      c0000000002dce88 perf_event_alloc+0x7b8/0xac0
+>      c0000000002e92e0 SyS_perf_event_open+0x530/0xda0
+>      c00000000000b004 system_call+0x38/0xe0
+>
+> 'event_base' field of 'struct hw_perf_event' is used as flags for
+> normal hw events and used as memory address for imc events. While
+> grouping these two types of events, collect_events() tries to
+> interpret imc 'event_base' as a flag, which causes a corruption
+> resulting in a crash.
+>
+> Consider only those events which belongs to 'perf_hw_context' in
+> collect_events().
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/mm/hash_utils_64.c |  6 ++++++
- arch/powerpc/mm/pgtable-radix.c | 15 +++++++++++++++
- 2 files changed, 21 insertions(+)
+Reviewed-By: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 655a5a9a183d..9176e1dda8e0 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1029,6 +1029,9 @@ void __init hash__early_init_mmu(void)
- 	pci_io_base = ISA_IO_BASE;
- #endif
- 
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		mtspr(SPRN_PID, 0);
-+
- 	/* Select appropriate backend */
- 	if (firmware_has_feature(FW_FEATURE_PS3_LV1))
- 		ps3_early_mm_init();
-@@ -1055,6 +1058,9 @@ void __init hash__early_init_mmu(void)
- void hash__early_init_mmu_secondary(void)
- {
- 	/* Initialize hash table for that CPU */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		mtspr(SPRN_PID, 0);
-+
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 
- 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index cfbbee941a76..88430acf4b85 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -563,12 +563,25 @@ void __init radix__early_init_mmu(void)
- 	__pte_frag_nr = H_PTE_FRAG_NR;
- 	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
- 
-+	/*
-+	 * kexec kernels can boot into the new kernel with PIDR non-zero.
-+	 *
-+	 * PIDR should be zeroed before we set the partition table,
-+	 * to ensure no speculative TLB fill goes off to non-zero PIDs.
-+	 * This shouldn't be a problem in real-mode, but I have not
-+	 * found definitively in the ISA.
-+	 *
-+	 * We do need to ensure all CPUs have PID=0 when the MMU
-+	 * is turned on.
-+	 */
-+	mtspr(SPRN_PID, 0);
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 		radix_init_native();
- 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
- 			update_hid_for_radix();
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
-+		mtspr(SPRN_LPID, 0);
- 		radix_init_partition_table();
- 		radix_init_amor();
- 	} else {
-@@ -587,6 +600,7 @@ void radix__early_init_mmu_secondary(void)
- 	/*
- 	 * update partition table control register and UPRT
- 	 */
-+	mtspr(SPRN_PID, 0);
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 
- 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-@@ -595,6 +609,7 @@ void radix__early_init_mmu_secondary(void)
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
- 
-+		mtspr(SPRN_LPID, 0);
- 		mtspr(SPRN_PTCR,
- 		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
- 		radix_init_amor();
--- 
-2.15.0
+>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/perf/core-book3s.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index 9e3da16..1538129 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -1415,7 +1415,7 @@ static int collect_events(struct perf_event *group, int max_count,
+>   	int n = 0;
+>   	struct perf_event *event;
+>
+> -	if (!is_software_event(group)) {
+> +	if (group->pmu->task_ctx_nr == perf_hw_context) {
+>   		if (n >= max_count)
+>   			return -1;
+>   		ctrs[n] = group;
+> @@ -1423,7 +1423,7 @@ static int collect_events(struct perf_event *group, int max_count,
+>   		events[n++] = group->hw.config;
+>   	}
+>   	list_for_each_entry(event, &group->sibling_list, group_entry) {
+> -		if (!is_software_event(event) &&
+> +		if (event->pmu->task_ctx_nr == perf_hw_context &&
+>   		    event->state != PERF_EVENT_STATE_OFF) {
+>   			if (n >= max_count)
+>   				return -1;
