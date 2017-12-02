@@ -1,21 +1,34 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <olof@lixom.net>
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yq1C13DGRzDrbW
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Dec 2017 06:18:37 +1100 (AEDT)
-Date: Sat, 2 Dec 2017 13:18:27 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: linux-pci@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: [PATCH v1] PCI: Make PCI_SCAN_ALL_PCIE_DEVS work for Root as
- well as Downstream Ports
-Message-ID: <20171202191827.GB18780@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171202002710.17686.21340.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yq67z1VlPzDsFW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Dec 2017 10:01:17 +1100 (AEDT)
+Received: by mail-lf0-x241.google.com with SMTP id 94so15327489lfy.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Dec 2017 15:01:17 -0800 (PST)
+Date: Sat, 2 Dec 2017 15:00:52 -0800
+From: Olof Johansson <olof@lixom.net>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Darren Stevens <darren@stevens-zone.net>
+Subject: Re: [PATCH] SB600 for the Nemo board has non-zero devices on
+ non-root bus
+Message-ID: <20171202230052.34y2ivxgpgr3osct@localhost>
+References: <87tvxl15qx.fsf@concordia.ellerman.id.au>
+ <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+ <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
+ <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
+ <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
+ <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
+ <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+ <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
+ <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
+ <6d2505ab-a985-bdb0-ad3a-e7659cc2c54d@xenosoft.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171202002710.17686.21340.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <6d2505ab-a985-bdb0-ad3a-e7659cc2c54d@xenosoft.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +38,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 01, 2017 at 06:27:10PM -0600, Bjorn Helgaas wrote:
-> From: Bjorn Helgaas <bhelgaas@google.com>
+On Sat, Dec 02, 2017 at 01:54:41PM +0100, Christian Zigotzky wrote:
+> On 02 December 2017 at 00:27AM, Bjorn Helgaas wrote:
+> > 
+> > Thanks for testing that.  I'll merge a similar patch for v4.16.
+> > 
+> > I don't think using "pci=pcie_scan_all" is really an acceptable
+> > long-term answer for you, though.  Is there some way we can identify
+> > at run-time whether we're on a Nemo system?  If so, we can make this
+> > happen automatically.
+> > 
+> > Bjorn
+> > 
+> Hi Bjorn,
 > 
-> PCIe Downstream Ports normally have only a Device 0 below them.  To
-> optimize enumeration, we don't scan for other devices *unless* the
-> PCI_SCAN_ALL_PCIE_DEVS flag is set by set by quirks or the
-> "pci=pcie_scan_all" kernel parameter.
+> Many thanks for your effort! I appreciate it very much. :-)
 > 
-> Previously PCI_SCAN_ALL_PCIE_DEVS only affected scanning below Switch
-> Downstream Ports, not Root Ports.
+> We can identify the Nemo board at the boot time. See dmesg output: [   
+> 0.061592] NEMO SB600 IOB base e0000000
 > 
-> But the "Nemo" system, also known as the AmigaOne X1000, has a PA Semi Root
-> Port whose link leads to an AMD/ATI SB600 South Bridge.  The Root Port is a
-> PCIe device, of course, but the SB600 contains only conventional PCI
-> devices with no visible PCIe port.
+> @linuxppc-dev
+> Any other ideas? Maybe the same as we can identify the other P.A. Semi
+> boards (Electra, Chitra, and Athena).
 > 
-> Simplify and restructure only_one_child() so that we scan for all possible
-> devices below Root Ports as well as Switch Downstream Ports when
-> PCI_SCAN_ALL_PCIE_DEVS is set.
+> @Olof
+> Maybe you know how we can identify the P.A. Semi Nemo board at the run-time.
 > 
-> This is enough to make Nemo work with "pci=pcie_scan_all".  We would also
-> like to add a quirk to set PCI_SCAN_ALL_PCIE_DEVS automatically on Nemo so
-> users wouldn't have to use the "pci=pcie_scan_all" parameter, but we don't
-> have that yet.
-> 
-> Link: https://lkml.kernel.org/r/CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198057
-> Reported-and-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> @Darren
+> Do you have an idea?
 
-Applied to pci/enumeration for v4.16.
 
-> ---
->  drivers/pci/probe.c |   25 +++++++++++++++----------
->  1 file changed, 15 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 14e0ea1ff38b..303c0cb0550c 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -2215,22 +2215,27 @@ static unsigned next_fn(struct pci_bus *bus, struct pci_dev *dev, unsigned fn)
->  
->  static int only_one_child(struct pci_bus *bus)
->  {
-> -	struct pci_dev *parent = bus->self;
-> +	struct pci_dev *bridge = bus->self;
->  
-> -	if (!parent || !pci_is_pcie(parent))
-> +	/*
-> +	 * Systems with unusual topologies set PCI_SCAN_ALL_PCIE_DEVS so
-> +	 * we scan for all possible devices, not just Device 0.
-> +	 */
-> +	if (pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
->  		return 0;
-> -	if (pci_pcie_type(parent) == PCI_EXP_TYPE_ROOT_PORT)
-> -		return 1;
->  
->  	/*
-> -	 * PCIe downstream ports are bridges that normally lead to only a
-> -	 * device 0, but if PCI_SCAN_ALL_PCIE_DEVS is set, scan all
-> -	 * possible devices, not just device 0.  See PCIe spec r3.0,
-> -	 * sec 7.3.1.
-> +	 * A PCIe Downstream Port normally leads to a Link with only Device
-> +	 * 0 on it (PCIe spec r3.1, sec 7.3.1).  As an optimization, scan
-> +	 * only for Device 0 in that situation.
-> +	 *
-> +	 * Checking has_secondary_link is a hack to identify Downstream
-> +	 * Ports because sometimes Switches are configured such that the
-> +	 * PCIe Port Type labels are backwards.
->  	 */
-> -	if (parent->has_secondary_link &&
-> -	    !pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
-> +	if (bridge && pci_is_pcie(bridge) && bridge->has_secondary_link)
->  		return 1;
-> +
->  	return 0;
->  }
->  
-> 
+The below patch, together with Bjorn's, should do it. Christian, can you test
+and report back?
+
+I'm guessing it won't do any harm to set this on non-X1000 platforms. My
+test system is currently powered down so I can't check.
+
+
+>From a3b390277627b0342c8ccfc16e58679e0d8abdde Mon Sep 17 00:00:00 2001
+From: Olof Johansson <olof@lixom.net>
+Date: Sat, 2 Dec 2017 14:56:36 -0800
+Subject: [PATCH] powerpc/pasemi: set PCI_SCAN_ALL_PCI_DEVS
+
+Needed on Amiga X1000 with SB600.
+
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Olof Johansson <olof@lixom.net>
+---
+ arch/powerpc/platforms/pasemi/pci.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index 5ff6108..ea54ed2 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -224,6 +224,8 @@ void __init pas_pci_init(void)
+ 		return;
+ 	}
+ 
++	pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS):
++
+ 	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
+ 		if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
+ 			of_node_get(np);
+-- 
+2.8.6
