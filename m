@@ -1,21 +1,20 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrH4j4QqqzDrpX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 07:47:33 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id y89so9440592pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 12:47:33 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrH4k4KLtzDsFR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 07:47:34 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id m25so9031685pgv.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 12:47:34 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: broonie@kernel.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, fabio.estevam@nxp.com, timur@tabi.org,
  mail@maciej.szmigiero.name, caleb@crome.org, lgirdwood@gmail.com
-Subject: [PATCH 10/10] ASoC: fsl_ssi: Replace fsl_ssi_rxtx_reg_val with
- fsl_ssi_regvals
-Date: Mon,  4 Dec 2017 12:46:43 -0800
-Message-Id: <1512420403-10164-11-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH 07/10] ASoC: fsl_ssi: Refine printk outputs
+Date: Mon,  4 Dec 2017 12:46:40 -0800
+Message-Id: <1512420403-10164-8-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,214 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The name fsl_ssi_rxtx_reg_val is too long to read comfortably.
-So this patch shortens it by using an array (fsl_ssi_regvals,
-renamed from fsl_ssi_reg_val). To do that, it also introduces
-two macros (TX and RX) to replace the wrapper structure. This
-will also help for further cleanups.
+This patches unifies the error message in the "failed to xxxx" format.
 
-Meanwhile, it unifies all local variable with the name "vals"
-to get rid of the name "reg" -- could be confusing with "regs"
-in the private struct for regmap.
+It also reduces the length of one line and adds spaces to an operator.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 79 +++++++++++++++++++++++--------------------------
- sound/soc/fsl/fsl_ssi.h |  3 ++
- 2 files changed, 40 insertions(+), 42 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 55f6a1f..50b470d 100644
+index ae5d98b..e1c985b 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -106,18 +106,13 @@ enum fsl_ssi_type {
- 	FSL_SSI_MX51,
- };
- 
--struct fsl_ssi_reg_val {
-+struct fsl_ssi_regvals {
- 	u32 sier;
- 	u32 srcr;
- 	u32 stcr;
- 	u32 scr;
- };
- 
--struct fsl_ssi_rxtx_reg_val {
--	struct fsl_ssi_reg_val rx;
--	struct fsl_ssi_reg_val tx;
--};
--
- static bool fsl_ssi_readable_reg(struct device *dev, unsigned int reg)
- {
- 	switch (reg) {
-@@ -213,7 +208,7 @@ struct fsl_ssi_soc_data {
-  * @fifo_depth: Depth of the SSI FIFOs
-  * @slot_width: Width of each DAI slot
-  * @slots: Number of slots
-- * @rxtx_reg_val: Specific RX/TX register settings
-+ * @regvals: Specific RX/TX register settings
-  *
-  * @clk: Clock source to access register
-  * @baudclk: Clock source to generate bit and frame-sync clocks
-@@ -257,7 +252,7 @@ struct fsl_ssi {
- 	unsigned int fifo_depth;
- 	unsigned int slot_width;
- 	unsigned int slots;
--	struct fsl_ssi_rxtx_reg_val rxtx_reg_val;
-+	struct fsl_ssi_regvals regvals[2];
- 
- 	struct clk *clk;
- 	struct clk *baudclk;
-@@ -379,25 +374,25 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
- static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
- {
- 	struct regmap *regs = ssi->regs;
--	struct fsl_ssi_rxtx_reg_val *vals = &ssi->rxtx_reg_val;
-+	struct fsl_ssi_regvals *vals = ssi->regvals;
- 
- 	if (enable) {
- 		regmap_update_bits(regs, REG_SSI_SIER,
--				   vals->rx.sier | vals->tx.sier,
--				   vals->rx.sier | vals->tx.sier);
-+				   vals[RX].sier | vals[TX].sier,
-+				   vals[RX].sier | vals[TX].sier);
- 		regmap_update_bits(regs, REG_SSI_SRCR,
--				   vals->rx.srcr | vals->tx.srcr,
--				   vals->rx.srcr | vals->tx.srcr);
-+				   vals[RX].srcr | vals[TX].srcr,
-+				   vals[RX].srcr | vals[TX].srcr);
- 		regmap_update_bits(regs, REG_SSI_STCR,
--				   vals->rx.stcr | vals->tx.stcr,
--				   vals->rx.stcr | vals->tx.stcr);
-+				   vals[RX].stcr | vals[TX].stcr,
-+				   vals[RX].stcr | vals[TX].stcr);
- 	} else {
- 		regmap_update_bits(regs, REG_SSI_SRCR,
--				   vals->rx.srcr | vals->tx.srcr, 0);
-+				   vals[RX].srcr | vals[TX].srcr, 0);
- 		regmap_update_bits(regs, REG_SSI_STCR,
--				   vals->rx.stcr | vals->tx.stcr, 0);
-+				   vals[RX].stcr | vals[TX].stcr, 0);
- 		regmap_update_bits(regs, REG_SSI_SIER,
--				   vals->rx.sier | vals->tx.sier, 0);
-+				   vals[RX].sier | vals[TX].sier, 0);
- 	}
- }
- 
-@@ -439,10 +434,10 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
-  * Enable or disable SSI configuration.
-  */
- static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
--			   struct fsl_ssi_reg_val *vals)
-+			   struct fsl_ssi_regvals *vals)
- {
- 	struct regmap *regs = ssi->regs;
--	struct fsl_ssi_reg_val *avals;
-+	struct fsl_ssi_regvals *avals;
- 	int nr_active_streams;
- 	u32 scr;
- 	int keep_active;
-@@ -457,10 +452,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		keep_active = 0;
- 
- 	/* Get the opposite direction to keep its values untouched */
--	if (&ssi->rxtx_reg_val.rx == vals)
--		avals = &ssi->rxtx_reg_val.tx;
-+	if (&ssi->regvals[RX] == vals)
-+		avals = &ssi->regvals[TX];
- 	else
--		avals = &ssi->rxtx_reg_val.rx;
-+		avals = &ssi->regvals[RX];
- 
- 	if (!enable) {
- 		/* Exclude necessary bits for the opposite stream */
-@@ -537,7 +532,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 
- static void fsl_ssi_rx_config(struct fsl_ssi *ssi, bool enable)
- {
--	fsl_ssi_config(ssi, enable, &ssi->rxtx_reg_val.rx);
-+	fsl_ssi_config(ssi, enable, &ssi->regvals[RX]);
- }
- 
- static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
-@@ -565,38 +560,38 @@ static void fsl_ssi_tx_config(struct fsl_ssi *ssi, bool enable)
- 	if (enable && fsl_ssi_is_ac97(ssi))
- 		fsl_ssi_tx_ac97_saccst_setup(ssi);
- 
--	fsl_ssi_config(ssi, enable, &ssi->rxtx_reg_val.tx);
-+	fsl_ssi_config(ssi, enable, &ssi->regvals[TX]);
- }
- 
- /**
-  * Cache register values to later set them at once
-  */
--static void fsl_ssi_setup_reg_vals(struct fsl_ssi *ssi)
-+static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
- {
--	struct fsl_ssi_rxtx_reg_val *reg = &ssi->rxtx_reg_val;
-+	struct fsl_ssi_regvals *vals = ssi->regvals;
- 
--	reg->rx.sier = SSI_SIER_RFF0_EN;
--	reg->rx.srcr = SSI_SRCR_RFEN0;
--	reg->rx.scr = 0;
--	reg->tx.sier = SSI_SIER_TFE0_EN;
--	reg->tx.stcr = SSI_STCR_TFEN0;
--	reg->tx.scr = 0;
-+	vals[RX].sier = SSI_SIER_RFF0_EN;
-+	vals[RX].srcr = SSI_SRCR_RFEN0;
-+	vals[RX].scr = 0;
-+	vals[TX].sier = SSI_SIER_TFE0_EN;
-+	vals[TX].stcr = SSI_STCR_TFEN0;
-+	vals[TX].scr = 0;
- 
- 	if (!fsl_ssi_is_ac97(ssi)) {
--		reg->rx.scr = SSI_SCR_SSIEN | SSI_SCR_RE;
--		reg->tx.scr = SSI_SCR_SSIEN | SSI_SCR_TE;
-+		vals[RX].scr = SSI_SCR_SSIEN | SSI_SCR_RE;
-+		vals[TX].scr = SSI_SCR_SSIEN | SSI_SCR_TE;
- 	}
- 
- 	if (ssi->use_dma) {
--		reg->rx.sier |= SSI_SIER_RDMAE;
--		reg->tx.sier |= SSI_SIER_TDMAE;
-+		vals[RX].sier |= SSI_SIER_RDMAE;
-+		vals[TX].sier |= SSI_SIER_TDMAE;
- 	} else {
--		reg->rx.sier |= SSI_SIER_RIE;
--		reg->tx.sier |= SSI_SIER_TIE;
-+		vals[RX].sier |= SSI_SIER_RIE;
-+		vals[TX].sier |= SSI_SIER_TIE;
- 	}
- 
--	reg->rx.sier |= FSLSSI_SIER_DBG_RX_FLAGS;
--	reg->tx.sier |= FSLSSI_SIER_DBG_TX_FLAGS;
-+	vals[RX].sier |= FSLSSI_SIER_DBG_RX_FLAGS;
-+	vals[TX].sier |= FSLSSI_SIER_DBG_TX_FLAGS;
- }
- 
- static void fsl_ssi_setup_ac97(struct fsl_ssi *ssi)
-@@ -862,7 +857,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+@@ -694,7 +694,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 	 * never greater than 1/5 IPG clock rate
+ 	 */
+ 	if (freq * 5 > clk_get_rate(ssi->clk)) {
+-		dev_err(cpu_dai->dev, "bitclk > ipgclk/5\n");
++		dev_err(cpu_dai->dev, "bitclk > ipgclk / 5\n");
  		return -EINVAL;
  	}
  
--	fsl_ssi_setup_reg_vals(ssi);
-+	fsl_ssi_setup_regvals(ssi);
+@@ -858,7 +858,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	ssi->dai_fmt = fmt;
  
- 	regmap_read(regs, REG_SSI_SCR, &scr);
- 	scr &= ~(SSI_SCR_SYN | SSI_SCR_I2S_MODE_MASK);
-diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
-index 7bb8a08..71a305c 100644
---- a/sound/soc/fsl/fsl_ssi.h
-+++ b/sound/soc/fsl/fsl_ssi.h
-@@ -12,6 +12,9 @@
- #ifndef _MPC8610_I2S_H
- #define _MPC8610_I2S_H
+ 	if (fsl_ssi_is_i2s_master(ssi) && IS_ERR(ssi->baudclk)) {
+-		dev_err(dev, "baudclk is missing which is necessary for master mode\n");
++		dev_err(dev, "missing baudclk for master mode\n");
+ 		return -EINVAL;
+ 	}
  
-+#define RX 0
-+#define TX 1
-+
- /* -- SSI Register Map -- */
+@@ -1268,7 +1268,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 		ssi->clk = devm_clk_get(dev, NULL);
+ 	if (IS_ERR(ssi->clk)) {
+ 		ret = PTR_ERR(ssi->clk);
+-		dev_err(dev, "could not get clock: %d\n", ret);
++		dev_err(dev, "failed to get clock: %d\n", ret);
+ 		return ret;
+ 	}
  
- /* SSI Transmit Data Register 0 */
+@@ -1284,7 +1284,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	/* Do not error out for slave cases that live without a baud clock */
+ 	ssi->baudclk = devm_clk_get(dev, "baud");
+ 	if (IS_ERR(ssi->baudclk))
+-		dev_dbg(dev, "could not get baud clock: %ld\n",
++		dev_dbg(dev, "failed to get baud clock: %ld\n",
+ 			 PTR_ERR(ssi->baudclk));
+ 
+ 	ssi->dma_params_tx.maxburst = ssi->dma_maxburst;
+@@ -1403,7 +1403,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 						      &regconfig);
+ 	}
+ 	if (IS_ERR(ssi->regs)) {
+-		dev_err(dev, "Failed to init register map\n");
++		dev_err(dev, "failed to init register map\n");
+ 		return PTR_ERR(ssi->regs);
+ 	}
+ 
+@@ -1462,7 +1462,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		mutex_init(&ssi->ac97_reg_lock);
+ 		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
+ 		if (ret) {
+-			dev_err(dev, "could not set AC'97 ops\n");
++			dev_err(dev, "failed to set AC'97 ops\n");
+ 			goto error_ac97_ops;
+ 		}
+ 	}
+@@ -1478,7 +1478,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		ret = devm_request_irq(dev, ssi->irq, fsl_ssi_isr, 0,
+ 				       dev_name(dev), ssi);
+ 		if (ret < 0) {
+-			dev_err(dev, "could not claim irq %u\n", ssi->irq);
++			dev_err(dev, "failed to claim irq %u\n", ssi->irq);
+ 			goto error_asoc_register;
+ 		}
+ 	}
+@@ -1520,7 +1520,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 
+ 		ret = of_property_read_u32(np, "cell-index", &ssi_idx);
+ 		if (ret) {
+-			dev_err(dev, "cannot get SSI index property\n");
++			dev_err(dev, "failed to get SSI index property\n");
+ 			goto error_sound_card;
+ 		}
+ 
 -- 
 2.7.4
