@@ -2,19 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqsjH5qGzzDrbr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:44:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqskw0X1vzDsPq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:45:44 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: [PATCH v1] PCI: Make PCI_SCAN_ALL_PCIE_DEVS work for Root as well
- as Downstream Ports
-In-Reply-To: <20171202191827.GB18780@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171202002710.17686.21340.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20171202191827.GB18780@bhelgaas-glaptop.roam.corp.google.com>
-Date: Mon, 04 Dec 2017 15:44:15 +1100
-Message-ID: <87k1y33xwg.fsf@concordia.ellerman.id.au>
+To: Fabio Estevam <festevam@gmail.com>
+Cc: paulus@samba.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "robh+dt\@kernel.org" <robh+dt@kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Fabio Estevam <fabio.estevam@nxp.com>
+Subject: Re: [PATCH] powerpc/40x: acadia: Fix the 'interrupt-parent' property
+In-Reply-To: <CAOMZO5Ai_S7LpY20pH2LoGuQTrX4ZLevfEhvj+LRrK7DG06oNw@mail.gmail.com>
+References: <1508245278-5692-1-git-send-email-fabio.estevam@nxp.com>
+ <CAOMZO5Ai_S7LpY20pH2LoGuQTrX4ZLevfEhvj+LRrK7DG06oNw@mail.gmail.com>
+Date: Mon, 04 Dec 2017 15:45:43 +1100
+Message-ID: <87h8t73xu0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,40 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+Fabio Estevam <festevam@gmail.com> writes:
 
-> On Fri, Dec 01, 2017 at 06:27:10PM -0600, Bjorn Helgaas wrote:
->> From: Bjorn Helgaas <bhelgaas@google.com>
->> 
->> PCIe Downstream Ports normally have only a Device 0 below them.  To
->> optimize enumeration, we don't scan for other devices *unless* the
->> PCI_SCAN_ALL_PCIE_DEVS flag is set by set by quirks or the
->> "pci=pcie_scan_all" kernel parameter.
->> 
->> Previously PCI_SCAN_ALL_PCIE_DEVS only affected scanning below Switch
->> Downstream Ports, not Root Ports.
->> 
->> But the "Nemo" system, also known as the AmigaOne X1000, has a PA Semi Root
->> Port whose link leads to an AMD/ATI SB600 South Bridge.  The Root Port is a
->> PCIe device, of course, but the SB600 contains only conventional PCI
->> devices with no visible PCIe port.
->> 
->> Simplify and restructure only_one_child() so that we scan for all possible
->> devices below Root Ports as well as Switch Downstream Ports when
->> PCI_SCAN_ALL_PCIE_DEVS is set.
->> 
->> This is enough to make Nemo work with "pci=pcie_scan_all".  We would also
->> like to add a quirk to set PCI_SCAN_ALL_PCIE_DEVS automatically on Nemo so
->> users wouldn't have to use the "pci=pcie_scan_all" parameter, but we don't
->> have that yet.
->> 
->> Link: https://lkml.kernel.org/r/CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198057
->> Reported-and-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
->> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> Hi Michael,
 >
-> Applied to pci/enumeration for v4.16.
+> On Tue, Oct 17, 2017 at 11:01 AM, Fabio Estevam <fabio.estevam@nxp.com> wrote:
+>> 'interrupts-parent' property does not exist. Fix the typo.
+>>
+>> Fixes: 00f3ca740a9c26 ("powerpc/40x: AMCC PowerPC 405EZ Acadia DTS")
+>> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+>> ---
+>>  arch/powerpc/boot/dts/acadia.dts | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
+>> index 57291f6..8626615 100644
+>> --- a/arch/powerpc/boot/dts/acadia.dts
+>> +++ b/arch/powerpc/boot/dts/acadia.dts
+>> @@ -183,7 +183,7 @@
+>>                         usb@ef603000 {
+>>                                 compatible = "ohci-be";
+>>                                 reg = <0xef603000 0x80>;
+>> -                               interrupts-parent = <&UIC0>;
+>> +                               interrupt-parent = <&UIC0>;
+>
+> Any comments?
 
-Thanks Bjorn.
+Nope :)
+
+Will pick it up for 4.16.
 
 cheers
