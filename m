@@ -1,31 +1,20 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c00::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yr5QC2yh3zDrvJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 00:31:59 +1100 (AEDT)
-Content-Type: multipart/alternative;
- boundary=Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423
-Mime-Version: 1.0 (1.0)
-Subject: SB600 for the Nemo board has non-zero devices on non-root bus
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <4b18f51024d.45f899c9@auth.smtp.1and1.co.uk>
-Date: Mon, 4 Dec 2017 14:31:52 +0100
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-pci@vger.kernel.org,
- olof@lixom.net
-Message-Id: <9AED1664-A71D-4C15-A828-E64DF5C0498C@xenosoft.de>
-References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
- <87tvxl15qx.fsf@concordia.ellerman.id.au>
- <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
- <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
- <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
- <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
- <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
- <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <4b18f51024d.45f899c9@auth.smtp.1and1.co.uk>
-To: Darren Stevens <darren@stevens-zone.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrH4R5smGzDwNX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 07:47:19 +1100 (AEDT)
+Received: by mail-pf0-x22d.google.com with SMTP id u25so9433636pfg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 12:47:19 -0800 (PST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, fabio.estevam@nxp.com, timur@tabi.org,
+ mail@maciej.szmigiero.name, caleb@crome.org, lgirdwood@gmail.com
+Subject: [PATCH 00/10] ASoC: fsl_ssi: Clean up - coding style level
+Date: Mon,  4 Dec 2017 12:46:33 -0800
+Message-Id: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,84 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+==Background==
+The fsl_ssi driver was designed for PPC originally and then it has
+been updated to support different modes for i.MX Series, including
+SDMA, I2S Master mode, AC97 and older i.MXs with FIQ, by different
+contributors for different use cases in different coding styles.
 
---Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423
-Content-Type: text/plain;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Additionally, in order to fix/work-around hardware bugs and design
+flaws, the driver made a lot of compromise so now its program flow
+looks very complicated and it's getting hard to maintain or update.
 
-Darren,
+So I am going to clean up the driver in both coding style level and
+program flow level.
 
-What do you think about Olof=E2=80=99s solution?
+==Introduction==
+This series of patches is the first set to clean up fsl_ssi driver
+in the coding style level. Any patch here is not supposed to change
+the program flow.
 
-Link: http://forum.hyperion-entertainment.biz/viewtopic.php?f=3D35&t=3D3891&=
-p=3D43206#p43201
+==Verification==
+Theoretically, it only needs code review, build and sanity tests. I
+have done build and sanity tests on an i.MX 6 platform by building
+using imx_v6_v7_defconfig and testing with I2S slave/master mode.
 
-Thanks,
-Christian
+Nicolin Chen (10):
+  ASoC: fsl_ssi: Remove unused struct device
+  ASoC: fsl_ssi: Rename fsl_ssi_private to fsl_ssi
+  ASoC: fsl_ssi: Cache pdev->dev pointer
+  ASoC: fsl_ssi: Refine all comments
+  ASoC: fsl_ssi: Rename registers and fields macros
+  ASoC: fsl_ssi: Refine indentations and wrappings
+  ASoC: fsl_ssi: Refine printk outputs
+  ASoC: fsl_ssi: Rename cpu_dai parameter to dai
+  ASoC: fsl_ssi: Rename scr_val to scr
+  ASoC: fsl_ssi: Replace fsl_ssi_rxtx_reg_val with fsl_ssi_regvals
 
-Sent from my iPhone
+ sound/soc/fsl/fsl_ssi.c     | 1338 +++++++++++++++++++------------------------
+ sound/soc/fsl/fsl_ssi.h     |  422 ++++++++------
+ sound/soc/fsl/fsl_ssi_dbg.c |   59 +-
+ 3 files changed, 846 insertions(+), 973 deletions(-)
 
-> On 4. Dec 2017, at 12:40, Darren Stevens <darren@stevens-zone.net> wrote:
->=20
-> Hello Bjorn
->=20
-> Firstly sorry for not being able to join in this discussion, I have been
-> moving house and only got my X1000 set up again yesterday..
->=20
->> On 30/11/2017, Bjorn Helgaas wrote:
->> I *think* something like the patch below should make this work if you
->> use the "pci=3Dpcie_scan_all" parameter.  We have some x86 DMI quirks
->> that set PCI_SCAN_ALL_PCIE_DEVS automatically.  I don't know how to do
->> something similar on powerpc, but maybe you do?
->=20
-> Actually the root ports on the Nemo's PA6T processor don't respond to the
-> SB600 unless we turn on a special 'relax pci-e' bit in one of its control
-> registers. We use a small out of tree init routine to do this, and there
-> would be the ideal place to put a call to
-> pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS).
->=20
-> This patch fixes the last major hurdle to getting the X1000 fully supporte=
-d in
-> the linux kernel, so thanks very much for that.
->=20
-> Regards
-> Darren
->=20
-
---Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423
-Content-Type: text/html;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
-utf-8"></head><body dir=3D"auto">Darren,<div><br></div><div>What do you thin=
-k about Olof=E2=80=99s solution?</div><div><br></div><div>Link:&nbsp;<a href=
-=3D"http://forum.hyperion-entertainment.biz/viewtopic.php?f=3D35&amp;t=3D389=
-1&amp;p=3D43206#p43201">http://forum.hyperion-entertainment.biz/viewtopic.ph=
-p?f=3D35&amp;t=3D3891&amp;p=3D43206#p43201</a></div><div><br></div><div>Than=
-ks,</div><div>Christian<br><br><div id=3D"AppleMailSignature">Sent from my i=
-Phone</div><div><br>On 4. Dec 2017, at 12:40, Darren Stevens &lt;<a href=3D"=
-mailto:darren@stevens-zone.net">darren@stevens-zone.net</a>&gt; wrote:<br><b=
-r></div><blockquote type=3D"cite"><div><span>Hello Bjorn</span><br><span></s=
-pan><br><span>Firstly sorry for not being&nbsp;able to join in this discussi=
-on, I have been</span><br><span>moving house and only got my X1000 set up ag=
-ain yesterday..</span><br><span></span><br><span>On 30/11/2017, Bjorn Helgaa=
-s wrote:</span><br><blockquote type=3D"cite"><span>I *think* something like t=
-he patch below should make this work if you</span><br></blockquote><blockquo=
-te type=3D"cite"><span>use the "pci=3Dpcie_scan_all" parameter. &nbsp;We hav=
-e some x86 DMI quirks</span><br></blockquote><blockquote type=3D"cite"><span=
->that set PCI_SCAN_ALL_PCIE_DEVS automatically. &nbsp;I don't know how to do=
-</span><br></blockquote><blockquote type=3D"cite"><span>something similar on=
- powerpc, but maybe you do?</span><br></blockquote><span></span><br><span>Ac=
-tually the root ports on the Nemo's PA6T processor don't respond to the</spa=
-n><br><span>SB600 unless we turn on a special 'relax pci-e' bit in one of it=
-s control</span><br><span>registers. We use a small out of tree init routine=
- to do this, and there</span><br><span>would be the ideal place to put a cal=
-l to</span><br><span>pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS).</span><br><span><=
-/span><br><span>This patch fixes the last major hurdle to getting the X1000 f=
-ully supported in</span><br><span>the linux kernel, so thanks very much for t=
-hat.</span><br><span></span><br><span>Regards</span><br><span>Darren</span><=
-br><span></span><br></div></blockquote></div></body></html>=
-
---Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423--
+-- 
+2.7.4
