@@ -1,28 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqvfr322SzDrMq
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 17:12:20 +1100 (AEDT)
-Received: by mail-pf0-x234.google.com with SMTP id v26so7795431pfl.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 22:12:20 -0800 (PST)
-Date: Mon, 4 Dec 2017 16:12:06 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Mahesh Salgaonkar
- <mahesh@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: a3b2cb30 broken panic reporting for qemu guests
-Message-ID: <20171204161206.3ee101db@roar.ozlabs.ibm.com>
-In-Reply-To: <20171204054914.GP2130@umbus.fritz.box>
-References: <20171129040652.GF3023@umbus.fritz.box>
- <20171129142343.1e371cbb@roar.ozlabs.ibm.com>
- <20171130051126.GE3023@umbus.fritz.box>
- <87mv32bt3d.fsf@concordia.ellerman.id.au>
- <20171201214038.2bf70cba@roar.ozlabs.ibm.com>
- <20171204054914.GP2130@umbus.fritz.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqvft74JQzDrMq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 17:12:22 +1100 (AEDT)
+Date: Mon, 4 Dec 2017 17:10:25 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Serhii Popovych <spopovyc@redhat.com>
+Cc: linux-kernel@vger.kernel.org, michael@ellerman.id.au, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 0/4] Fix use after free in HPT resizing code and related
+ minor improvements
+Message-ID: <20171204061025.GQ2130@umbus.fritz.box>
+References: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="4dIe/AmYstFUGHTF"
+In-Reply-To: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,116 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 4 Dec 2017 16:49:14 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
 
-> On Fri, Dec 01, 2017 at 09:40:38PM +1000, Nicholas Piggin wrote:
-> > On Fri, 01 Dec 2017 22:11:50 +1100
-> > Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >   
-> > > David Gibson <david@gibson.dropbear.id.au> writes:
-> > >   
-> > > > On Wed, Nov 29, 2017 at 02:23:43PM +1000, Nicholas Piggin wrote:    
-> > > >> On Wed, 29 Nov 2017 15:06:52 +1100
-> > > >> David Gibson <david@gibson.dropbear.id.au> wrote:
-> > > >>     
-> > > >> > a3b2cb30 "powerpc: Do not call ppc_md.panic in fadump panic notifier"
-> > > >> > purports to fix a problem when the kernel panics with fadump not
-> > > >> > registered, but it breaks something else instead.  I _think_ it was
-> > > >> > working on the incorrect assumption that ppc_md.panic was (or should
-> > > >> > be) only used with fadump, but I'm not really sure.
-> > > >> > 
-> > > >> > Panic works with kdump enabled, and (I think) with fadump enabled).
-> > > >> > However, with neither of these enabled, we always go to the generic
-> > > >> > panic logic.    
-> > > >> 
-> > > >> Yeah thanks, I can't remember what assumption I was working on tbh.
-> > > >>      
-> > > >> > That's incorrect for PAPR guests - they should call ibm,os-term via
-> > > >> > RTAS.  Under qemu this leads to a "GUEST_PANICKED" event notification
-> > > >> > which higher-level management pays attention to.  Since a3b2cb30 we
-> > > >> > now reboot instead of reporting that.
-> > > >> > 
-> > > >> > I believe it will also break panic for PS3 machines, but since that
-> > > >> > platform basically no longer exists, we probably don't care.    
-> > > >> 
-> > > >> I (hope) it should just go down to the normal panic path and not do
-> > > >> much worse than it already does -- although it won't print out that
-> > > >> message.
-> > > >>     
-> > > >> > I'm not entirely sure how to fix this.  I _think_ what we want is to
-> > > >> > call ppc_md.panic from a late panic notifier, the way this patch does
-> > > >> > for fadump_panic_event() if fadump is registered.    
-> > > >> 
-> > > >> The problem I had there is that some of the printk and console stuff
-> > > >> wasn't getting flushed out, so I was getting a blank screen. This was
-> > > >> probably in conjunction with panicing from NMI context that we're now
-> > > >> starting to introduce.
-> > > >> 
-> > > >> So it's a bit annoying. There's other ugliness we have for being unable
-> > > >> to control panic code well enough from arch code
-> > > >> (arch/powerpc/platforms/powernv/opal.c)
-> > > >> 
-> > > >> I guess a really minimal fix is to put an #ifdef powerpc down the bottom
-> > > >> there (/me *cries*).    
-> > > >
-> > > > Um.. right.  I'm not really sure from that how to go forward from
-> > > > here.  We want to fix this for RHEL7.5, which doesn't give us a lot of
-> > > > time.
-> > > >
-> > > > Adding the #ifdef at the bottom of the generic panic code is gross,
-> > > > but there's already a bunch of that, so maybe adequate until a better
-> > > > solution can be found?    
-> > > 
-> > > I think you mean put an #ifdef at the bottom of panic(). If so that
-> > > won't work. Our default panic_timeout is 180 so we never get to the
-> > > bottom of panic(), we call emergency_restart().
-> > > 
-> > > You *could* put an #ifdef powerpc before that, but that's even more
-> > > gross because it's in a different place to the sparc/s390 #ifdefs.
-> > > 
-> > > I notice we don't implement machine_emergency_restart(), it just
-> > > becomes machine_restart(NULL).
-> > > 
-> > > So it seems like that's the place we should be hooking,
-> > > machine_emergency_restart(). That's what x86 does.
-> > > 
-> > > But panic() is not the only caller of emergency_restart(), so it's not
-> > > an entirely straight forward conversion.
-> > > 
-> > > So I think for 4.15 and 4.14 I'm inclined to revert. Then we can do a
-> > > bigger rework for 4.16.
-> > > 
-> > > Nick that shouldn't break your original aim too badly I think? ie. worst
-> > > case is we panic() but don't see the output if we came from NMI?  
-> > 
-> > If the fix is not pretty obvious, then I guess revert. We actually
-> > do have a bit of a regression though, since we've started marking
-> > system reset interrupts as NMI. Previously a system reset would have
-> > a better chance of printing something there.
-> > 
-> > So I wonder is an ifdef really all that much worse just because it's not
-> > in the same exact place as the others? We do get bug reports that were
-> > triggered by a system reset from hypervisor console. Hopefully they would
-> > be running with crash dumps usually.  
-> 
-> I don't think an ifdef there is really correct though.  Sounds like we
-> might instead need to move some console flushes before calling of all
-> the notifiers, so that things like platforms/pseries or pvpanic can
-> insert non-returning notifiers.
+--4dIe/AmYstFUGHTF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Well, I don't necessarily think that's the right thing to do either.
-If we have a crash dump handler, we should get the console memory
-and rather do that immediately than try to flush it, no?
+On Wed, Nov 29, 2017 at 11:38:22AM -0500, Serhii Popovych wrote:
+> It is possible to trigger use after free during HPT resize
+> causing host kernel to crash. More details and analysis of
+> the problem can be found in change with corresponding subject
+> (KVM: PPC: Book3S HV: Fix use after free in case of multiple
+> resize requests).
+>=20
+> We need some changes to prepare for the fix, especially
+> make ->error in HPT resize instance single point for
+> tracking allocation state, improve kvmppc_allocate_hpt()
+> and kvmppc_free_hpt() so they can be used more safely.
+>=20
+> See individual commit description message to get more
+> information on changes presented.
 
-I think a helper function that would do all the necessary generic
-panic flushing might be better, than handlers can decide for
-themselves.
+I spoke with Paul Mackerras about these patches on IRC today.  We want
+this as a fix, ASAP, in 4.15.  However, he's uncomfortable with
+pushing some of extra cleanups which aren't necessary for the bug fix
+this late for 4.15, and was having trouble following what was the core
+of the fix.  He was also nervous about the addition of more BUG_ON()s.
 
-But a pseries rtas hcall at the end of panic should be okay for a
-backport, no? Revert would be easy, but if distros and things pick it
-up then we might get a bunch of bugs without console data then
-just have to backport something anway. That's my worry.
+To avoid the round trip to Ukraine time and back, I've made revised
+versions of patches 1 & 3 which should apply standalone, replaced the
+BUG_ON()s with WARN_ON()s and revised the commit messages to better
+explain the crucial part of the fix.
 
-Thanks,
-Nick
+However, I've run out of time to test them.
+
+Serhii,  I'll send you my revised patches shortly.  Can you please
+test them and repost.  Then you can rebase patches 2 & 4 from this
+series on top of the revised patches and post those separately (as a
+cleanup with less urgency than the actual fix).
+
+A couple of people have also suggested CCing kvm@vger.kernel.org on
+the next round in addition to the lists already included.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--4dIe/AmYstFUGHTF
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlok5s8ACgkQbDjKyiDZ
+s5JE7BAAhOXROb4XsPRNQdKrulpQ09aShopMonE64HS+S2SL6OAuuSwkXw6EmePr
+9XzARMnVDuCwt8ticRgBR1o34PHR0Gh0JbDe6dY00/oARbH0cck8buHtfeTBpton
+F+QG1muBymoH3suC+UF42/orUFbdIxF6CKGbzWeLu1utdF0p/RTEyEBTZ4opnEVA
+tzoKlFFCFfKFB+kBUfMdcr/m237G+gISyUWDZKH8okWz7qjQYT0Pgsv8JILp7ufX
+qpC0RXrS5qu7BbeyvS8VF0Vx1iqlP1PpgdzNfjFYtIk1vq1PQzo167VHUqBQrz+t
+Nq2azhveo8EhEz3OOeDJTafoaif1RBRIN3ejDFnzzkt00eBYDPGmAb8+UQgfdG0Z
+woDhdqwMAibxs1GhSWJHSi+l/y0ydFCgpQOjWJNco9oFkuYq0CkyLxkVCu9TsGZo
+r7ZYgLXb9z51GpKk7mVyr8nUrzut9YmRydeaSswOWXZ+AZFgi7QWi+jbKSjEMhBS
+QI6kIv3k87TwBnpTEskiJNKGzVaMgwtVFdnzJqUaoFgLuhX984niyuG0g8ly8qr4
+61bubQg9speHVvioSaFv/R0Oj0uVMpOAtWeB6iFSV0IeUvlx7A/PlunbCd1vb8P/
+1aWaWeDOGrxTeETjbD3q2RHGevhnAHOV1thQf7eDZNPDArpxX3g=
+=AWt3
+-----END PGP SIGNATURE-----
+
+--4dIe/AmYstFUGHTF--
