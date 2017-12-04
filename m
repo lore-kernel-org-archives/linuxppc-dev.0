@@ -1,26 +1,37 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqqdP5pZLzDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 14:10:49 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id k134so7242734pga.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 19:10:49 -0800 (PST)
-Date: Mon, 4 Dec 2017 13:10:33 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [rfc] powernv/kdump: Fix cases where the kdump kernel can get
- HMI's
-Message-ID: <20171204131033.2df6ea84@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKTCnz=w5KEECS2RwWjrfDVgMVZWYJqQb4C8EOUbfZh2Bb=z4A@mail.gmail.com>
-References: <20171202134808.27480-1-bsingharora@gmail.com>
- <20171203123658.056226c1@roar.ozlabs.ibm.com>
- <CAKTCnz=w5KEECS2RwWjrfDVgMVZWYJqQb4C8EOUbfZh2Bb=z4A@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqsf46BFwzDrbr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:41:32 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB44dkt7094725
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Dec 2017 23:41:30 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2emuju1dre-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 23:41:29 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Sun, 3 Dec 2017 21:41:29 -0700
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
+ akshay.adiga@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/powernv : Add support to enable sensor groups
+In-Reply-To: <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
+References: <1511760988-10377-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <87bmjmzla7.fsf@concordia.ellerman.id.au>
+ <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
+Date: Mon, 04 Dec 2017 15:41:21 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
+Message-Id: <87609nxfym.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 4 Dec 2017 11:37:01 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+> On 11/28/2017 05:07 PM, Michael Ellerman wrote:
+>> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>> 
+>>> Adds support to enable/disable a sensor group. This can be used to
+>>> select the sensor groups that needs to be copied to main memory by
+>>> OCC. Sensor groups like power, temperature, current, voltage,
+>>> frequency, utilization can be enabled/disabled at runtime.
+>>>
+>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>> ---
+>>> The skiboot patch for the opal call is posted below:
+>>> https://lists.ozlabs.org/pipermail/skiboot/2017-November/009713.html
+>> 
+>> Can you remind me why we're doing this with a completely bespoke sysfs
+>> API, rather than using some generic sensors API?
+>> 
+>
+> Disabling/Enabling sensor groups is not supported in the current generic sensors
+> API. And also we dont export all type of sensors in HWMON as not all of them are
+> environment sensors (like performance).
 
-> On Sun, Dec 3, 2017 at 1:36 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > Seems like a reasonable approach. Why do we only do this for
-> > powernv? It seems like a good idea in general to pull all
-> > offlined CPUs out and into the same state for all platforms
-> > and for all shutdown/restart/crash paths.
-> >  
-> 
-> The reason is largely wake-up related, do we expect offline CPUs to wake
-> up in the kdump kernel. Largely the infrastructure allows us to selectively
-> decide what platforms need this support. I did not want to break the world
-> by enabling it across platforms (pseries for example) without good reason.
+Are there barriers to adding such concepts to the generic sensors API?
 
-What happens if a pseries offlined CPU gets an exception for some reason
-though? It seems like it would return into pseries_mach_cpu_die of the
-old kernel which will go wrong.
-
-Maybe the platform has stronger guarantees that it won't wake up there,
-like requiring a specific hcall or something?
-
-I was just thinking trying to move all platforms in general to the same
-scheme would be preferable, unless there is a good reason not to. Just
-for sharing code and behaviour.
-
-> 
-> > Also I wonder if there is anything we should do on the other
-> > side of the equation for the kdump kernel to pull CPUs into a
-> > known state rather than rely on the crash kernel to do it for
-> > us. We might have a better ability to do that with system
-> > reset IPIs now.
-> >  
-> 
-> Yes, but do we need to do that or quickly dump the vmcore to a file
-> and exit?
-
-Well if the previous kernel did not shut them down properly, we need
-to do that. Don't we? My point is the previous kernel crashed somehow,
-we should be trying to fix everything up rather than hoping it crashed
-"nicely" for us.
-
-Yes we shouldn't disturb things as much as possible, but we've booted
-an entire new kernel in its own reserved memory, so I'm not sure if
-it's such a concern to try fixing up wayward CPUs.
-
-Thanks,
-Nick
+-- 
+Stewart Smith
+OPAL Architect, IBM.
