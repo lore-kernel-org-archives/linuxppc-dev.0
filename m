@@ -2,19 +2,23 @@ Return-Path: <spopovyc@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yr6rw1ZbdzDsZF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 01:36:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yr70R1zCFzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 01:43:19 +1100 (AEDT)
+Subject: Re: [PATCH 0/4] Fix use after free in HPT resizing code and related
+ minor improvements
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-kernel@vger.kernel.org, michael@ellerman.id.au, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+References: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
+ <20171204061025.GQ2130@umbus.fritz.box>
 From: Serhii Popovych <spopovyc@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, michael@ellerman.id.au,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- david@gibson.dropbear.id.au
-Subject: [PATCH v2 2/2] KVM: PPC: Book3S HV: Fix use after free in case of
- multiple resize requests
-Date: Mon,  4 Dec 2017 09:36:42 -0500
-Message-Id: <1512398202-8195-3-git-send-email-spopovyc@redhat.com>
-In-Reply-To: <1512398202-8195-1-git-send-email-spopovyc@redhat.com>
-References: <1512398202-8195-1-git-send-email-spopovyc@redhat.com>
+Message-ID: <dececaf0-3a41-9342-f244-4c1305f70e61@redhat.com>
+Date: Mon, 4 Dec 2017 16:43:01 +0200
+MIME-Version: 1.0
+In-Reply-To: <20171204061025.GQ2130@umbus.fritz.box>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="IBQBKV9ECxlM94Ux51vFdtmdAxbNlxIGd"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,195 +28,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When serving multiple resize requests following could happen:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--IBQBKV9ECxlM94Ux51vFdtmdAxbNlxIGd
+Content-Type: multipart/mixed; boundary="NNuEQoKljIAcsQ3ofCpciqBOmoTuLd35a";
+ protected-headers="v1"
+From: Serhii Popovych <spopovyc@redhat.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-kernel@vger.kernel.org, michael@ellerman.id.au, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Message-ID: <dececaf0-3a41-9342-f244-4c1305f70e61@redhat.com>
+Subject: Re: [PATCH 0/4] Fix use after free in HPT resizing code and related
+ minor improvements
+References: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
+ <20171204061025.GQ2130@umbus.fritz.box>
+In-Reply-To: <20171204061025.GQ2130@umbus.fritz.box>
 
-    CPU0                                    CPU1
-    ----                                    ----
-    kvm_vm_ioctl_resize_hpt_prepare(1);
-      -> schedule_work()
-                                            /* system_rq might be busy: delay */
-    kvm_vm_ioctl_resize_hpt_prepare(2);
-      mutex_lock();
-      if (resize) {
-         ...
-         release_hpt_resize();
-      }
-      ...                                   resize_hpt_prepare_work()
-      -> schedule_work()                    {
-      mutex_unlock()                           /* resize->kvm could be wrong */
-                                               struct kvm *kvm = resize->kvm;
+--NNuEQoKljIAcsQ3ofCpciqBOmoTuLd35a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-                                               mutex_lock(&kvm->lock);   <<<< UAF
-                                               ...
-                                            }
+David Gibson wrote:
+> On Wed, Nov 29, 2017 at 11:38:22AM -0500, Serhii Popovych wrote:
+>> It is possible to trigger use after free during HPT resize
+>> causing host kernel to crash. More details and analysis of
+>> the problem can be found in change with corresponding subject
+>> (KVM: PPC: Book3S HV: Fix use after free in case of multiple
+>> resize requests).
+>>
+>> We need some changes to prepare for the fix, especially
+>> make ->error in HPT resize instance single point for
+>> tracking allocation state, improve kvmppc_allocate_hpt()
+>> and kvmppc_free_hpt() so they can be used more safely.
+>>
+>> See individual commit description message to get more
+>> information on changes presented.
+>=20
+> I spoke with Paul Mackerras about these patches on IRC today.  We want
+> this as a fix, ASAP, in 4.15.  However, he's uncomfortable with
+> pushing some of extra cleanups which aren't necessary for the bug fix
+> this late for 4.15, and was having trouble following what was the core
+> of the fix.  He was also nervous about the addition of more BUG_ON()s.
 
-i.e. a second resize request with different order could be started by
-kvm_vm_ioctl_resize_hpt_prepare(), causing the previous request to be
-free()d when there's still an active worker thread which will try to
-access it.  This leads to a use after free in point marked with UAF on
-the diagram above.
+Good, no problem, cleanups will be pushed additionally.
 
-To prevent this from happening, instead of unconditionally releasing a
-pre-existing resize structure from the prepare ioctl(), we check if
-the existing structure has an in-progress worker.  We do that by
-checking if the resize->error == -EBUSY, which is safe because the
-resize->error field is protected by the kvm->lock.  If there is an
-active worker, instead of releasing, we mark the structure as stale by
-unlinking it from kvm_struct.
+>=20
+> To avoid the round trip to Ukraine time and back, I've made revised
+> versions of patches 1 & 3 which should apply standalone, replaced the
+> BUG_ON()s with WARN_ON()s and revised the commit messages to better
+> explain the crucial part of the fix.
+>=20
+> However, I've run out of time to test them.
 
-In the worker thread we check for a stale structure (with kvm->lock
-held), and in that case abort, releasing the stale structure ourself.
-We make the check both before and the actual allocation.  Strictly,
-only the check afterwards is needed, the check before is an
-optimization: if the structure happens to become stale before the
-worker thread is dispatched, rather than during the allocation, it
-means we can avoid allocating then immediately freeing a potentially
-substantial amount of memory.
+I did the same test as for this v1 series and found no problem with v2
+you sent to me: it seems patch improving kvmppc_allocate_hpt() and
+kvmppc_free_hpt() isn't actually necessary as I was thinking when
+submitting v1.
 
-This fixes following or similar host kernel crash message:
+>=20
+> Serhii,  I'll send you my revised patches shortly.  Can you please
+> test them and repost.  Then you can rebase patches 2 & 4 from this
+> series on top of the revised patches and post those separately (as a
+> cleanup with less urgency than the actual fix).
 
-[  635.277361] Unable to handle kernel paging request for data at address 0x00000000
-[  635.277438] Faulting instruction address: 0xc00000000052f568
-[  635.277446] Oops: Kernel access of bad area, sig: 11 [#1]
-[  635.277451] SMP NR_CPUS=2048 NUMA PowerNV
-[  635.277470] Modules linked in: xt_CHECKSUM iptable_mangle ipt_MASQUERADE
-nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4
-nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 tun bridge stp llc
-ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter nfsv3 nfs_acl nfs
-lockd grace fscache kvm_hv kvm rpcrdma sunrpc ib_isert iscsi_target_mod ib_iser libiscsi
-scsi_transport_iscsi ib_srpt target_core_mod ext4 ib_srp scsi_transport_srp
-ib_ipoib mbcache jbd2 rdma_ucm ib_ucm ib_uverbs ib_umad rdma_cm ib_cm iw_cm ocrdma(T)
-ib_core ses enclosure scsi_transport_sas sg shpchp leds_powernv ibmpowernv i2c_opal
-i2c_core powernv_rng ipmi_powernv ipmi_devintf ipmi_msghandler ip_tables xfs
-libcrc32c sr_mod sd_mod cdrom lpfc nvme_fc(T) nvme_fabrics nvme_core ipr nvmet_fc(T)
-tg3 nvmet libata be2net crc_t10dif crct10dif_generic scsi_transport_fc ptp scsi_tgt
-pps_core crct10dif_common dm_mirror dm_region_hash dm_log dm_mod
-[  635.278687] CPU: 40 PID: 749 Comm: kworker/40:1 Tainted: G
------------- T 3.10.0.bz1510771+ #1
-[  635.278782] Workqueue: events resize_hpt_prepare_work [kvm_hv]
-[  635.278851] task: c0000007e6840000 ti: c0000007e9180000 task.ti: c0000007e9180000
-[  635.278919] NIP: c00000000052f568 LR: c0000000009ea310 CTR: c0000000009ea4f0
-[  635.278988] REGS: c0000007e91837f0 TRAP: 0300   Tainted: G
------------- T  (3.10.0.bz1510771+)
-[  635.279077] MSR: 9000000100009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 24002022  XER:
-00000000
-[  635.279248] CFAR: c000000000009368 DAR: 0000000000000000 DSISR: 40000000 SOFTE: 1
-GPR00: c0000000009ea310 c0000007e9183a70 c000000001250b00 c0000007e9183b10
-GPR04: 0000000000000000 0000000000000000 c0000007e9183650 0000000000000000
-GPR08: c0000007ffff7b80 00000000ffffffff 0000000080000028 d00000000d2529a0
-GPR12: 0000000000002200 c000000007b56800 c000000000120028 c0000007f135bb40
-GPR16: 0000000000000000 c000000005c1e018 c000000005c1e018 0000000000000000
-GPR20: 0000000000000001 c0000000011bf778 0000000000000001 fffffffffffffef7
-GPR24: 0000000000000000 c000000f1e262e50 0000000000000002 c0000007e9180000
-GPR28: c000000f1e262e4c c000000f1e262e50 0000000000000000 c0000007e9183b10
-[  635.280149] NIP [c00000000052f568] __list_add+0x38/0x110
-[  635.280197] LR [c0000000009ea310] __mutex_lock_slowpath+0xe0/0x2c0
-[  635.280253] Call Trace:
-[  635.280277] [c0000007e9183af0] [c0000000009ea310] __mutex_lock_slowpath+0xe0/0x2c0
-[  635.280356] [c0000007e9183b70] [c0000000009ea554] mutex_lock+0x64/0x70
-[  635.280426] [c0000007e9183ba0] [d00000000d24da04]
-resize_hpt_prepare_work+0xe4/0x1c0 [kvm_hv]
-[  635.280507] [c0000007e9183c40] [c000000000113c0c] process_one_work+0x1dc/0x680
-[  635.280587] [c0000007e9183ce0] [c000000000114250] worker_thread+0x1a0/0x520
-[  635.280655] [c0000007e9183d80] [c00000000012010c] kthread+0xec/0x100
-[  635.280724] [c0000007e9183e30] [c00000000000a4b8] ret_from_kernel_thread+0x5c/0xa4
-[  635.280814] Instruction dump:
-[  635.280880] 7c0802a6 fba1ffe8 fbc1fff0 7cbd2b78 fbe1fff8 7c9e2378 7c7f1b78
-f8010010
-[  635.281099] f821ff81 e8a50008 7fa52040 40de00b8 <e8be0000> 7fbd2840 40de008c
-7fbff040
-[  635.281324] ---[ end trace b628b73449719b9d ]---
+Tested with same test case as with v1: no problem so far.
 
-Signed-off-by: Serhii Popovych <spopovyc@redhat.com>
-[dwg: Replaced BUG_ON()s with WARN_ONs() and reworded commit message
- for clarity]
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 50 ++++++++++++++++++++++++++-----------
- 1 file changed, 35 insertions(+), 15 deletions(-)
+>=20
+> A couple of people have also suggested CCing kvm@vger.kernel.org on
+> the next round in addition to the lists already included.
+>=20
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 31fa710..7948b84 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1419,16 +1419,20 @@ static void resize_hpt_pivot(struct kvm_resize_hpt *resize)
- 
- static void resize_hpt_release(struct kvm *kvm, struct kvm_resize_hpt *resize)
- {
--	BUG_ON(kvm->arch.resize_hpt != resize);
-+	if (WARN_ON(!mutex_is_locked(&kvm->lock)))
-+		return;
- 
- 	if (!resize)
- 		return;
- 
--	if (resize->hpt.virt)
--		kvmppc_free_hpt(&resize->hpt);
-+	if (resize->error != -EBUSY) {
-+		if (resize->hpt.virt)
-+			kvmppc_free_hpt(&resize->hpt);
-+		kfree(resize);
-+	}
- 
--	kvm->arch.resize_hpt = NULL;
--	kfree(resize);
-+	if (kvm->arch.resize_hpt == resize)
-+		kvm->arch.resize_hpt = NULL;
- }
- 
- static void resize_hpt_prepare_work(struct work_struct *work)
-@@ -1437,26 +1441,42 @@ static void resize_hpt_prepare_work(struct work_struct *work)
- 						     struct kvm_resize_hpt,
- 						     work);
- 	struct kvm *kvm = resize->kvm;
--	int err;
-+	int err = 0;
- 
- 	if (WARN_ON(resize->error != -EBUSY))
- 		return;
- 
--	resize_hpt_debug(resize, "resize_hpt_prepare_work(): order = %d\n",
--			 resize->order);
-+	mutex_lock(&kvm->lock);
- 
--	err = resize_hpt_allocate(resize);
-+	/* Request is still current? */
-+	if (kvm->arch.resize_hpt == resize) {
-+		/* We may request large allocations here:
-+		 * do not sleep with kvm->lock held for a while.
-+		 */
-+		mutex_unlock(&kvm->lock);
- 
--	/* We have strict assumption about -EBUSY
--	 * when preparing for HPT resize.
--	 */
--	if (WARN_ON(err == -EBUSY))
--		err = -EINPROGRESS;
-+		resize_hpt_debug(resize, "resize_hpt_prepare_work(): order = %d\n",
-+				 resize->order);
- 
--	mutex_lock(&kvm->lock);
-+		err = resize_hpt_allocate(resize);
-+
-+		/* We have strict assumption about -EBUSY
-+		 * when preparing for HPT resize.
-+		 */
-+		if (WARN_ON(err == -EBUSY))
-+			err = -EINPROGRESS;
-+
-+		mutex_lock(&kvm->lock);
-+		/* It is possible that kvm->arch.resize_hpt != resize
-+		 * after we grab kvm->lock again.
-+		 */
-+	}
- 
- 	resize->error = err;
- 
-+	if (kvm->arch.resize_hpt != resize)
-+		resize_hpt_release(kvm, resize);
-+
- 	mutex_unlock(&kvm->lock);
- }
- 
--- 
-1.8.3.1
+Done.
+
+--=20
+Thanks,
+Serhii
+
+
+--NNuEQoKljIAcsQ3ofCpciqBOmoTuLd35a--
+
+--IBQBKV9ECxlM94Ux51vFdtmdAxbNlxIGd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJaJV8AAAoJEBTawMmQ61bBa2EH/ioiJXKYSoxZozSBnZJKPKFh
+WU+cPgD0RgdDrrxMrxY0YarcqsKh6q7nPVKWf0w88gWxFQDTksSjlzVfcMV2TAT4
+6y1aUxshO6rjmGaBWJmlF34G0lGPnpbCZRiWjpnKZNj1H2xgAS9+6c1I+7HhgPaV
+ZhIqRDKAQctOwp0wWA4BjBzcVmP4F5ggAN7pIMSGao+o1uZGFq9Q1d+KjUJSC+uC
+erXSsN+Fs2pIKuN65Tbl6l4p9Sp6jYyEYrirSA6ArB+4T0wnARoQpLKsxPa07fWS
+Nc0Iv76aL35eIbdvQOuRm1apIZ/Zm2qOAb9oqYNqwCLwJZPLH6oZhLkp9CgtdOY=
+=q5Bs
+-----END PGP SIGNATURE-----
+
+--IBQBKV9ECxlM94Ux51vFdtmdAxbNlxIGd--
