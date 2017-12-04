@@ -1,23 +1,26 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqpz85p56zDrZW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 13:41:08 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id a90so7462199pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 18:41:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqqdP5pZLzDrYf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 14:10:49 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id k134so7242734pga.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 19:10:49 -0800 (PST)
+Date: Mon, 4 Dec 2017 13:10:33 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@ozlabs.org>, Michael Neuling <mikey@neuling.org>
-Subject: [PATCH v2] powerpc/64s: ISAv3 initialize MMU registers before setting
- partition table
-Date: Mon,  4 Dec 2017 12:40:55 +1000
-Message-Id: <20171204024055.11108-1-npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [rfc] powernv/kdump: Fix cases where the kdump kernel can get
+ HMI's
+Message-ID: <20171204131033.2df6ea84@roar.ozlabs.ibm.com>
+In-Reply-To: <CAKTCnz=w5KEECS2RwWjrfDVgMVZWYJqQb4C8EOUbfZh2Bb=z4A@mail.gmail.com>
+References: <20171202134808.27480-1-bsingharora@gmail.com>
+ <20171203123658.056226c1@roar.ozlabs.ibm.com>
+ <CAKTCnz=w5KEECS2RwWjrfDVgMVZWYJqQb4C8EOUbfZh2Bb=z4A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,128 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec can leave MMU registers set when booting into a new kernel, PIDR
-in particular. The boot sequence does not zero PIDR, so it only gets
-set when CPUs first switch to a userspace processes (until then it's
-running a kernel thread with effective PID = 0).
+On Mon, 4 Dec 2017 11:37:01 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-This leaves a window where a process table entry and page tables are
-set up due to user processes running on other CPUs, that happen to
-match with a stale PID. The CPU with that PID may cause speculative
-accesses that address quadrant 0, which will result in cached
-translations and PWC for that process, on a CPU which is not in the
-mm_cpumask and so they will not get invalidated properly.
+> On Sun, Dec 3, 2017 at 1:36 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> > Seems like a reasonable approach. Why do we only do this for
+> > powernv? It seems like a good idea in general to pull all
+> > offlined CPUs out and into the same state for all platforms
+> > and for all shutdown/restart/crash paths.
+> >  
+> 
+> The reason is largely wake-up related, do we expect offline CPUs to wake
+> up in the kdump kernel. Largely the infrastructure allows us to selectively
+> decide what platforms need this support. I did not want to break the world
+> by enabling it across platforms (pseries for example) without good reason.
 
-The most common result is the kernel hanging in infinite page fault
-loops soon after kexec (usually in schedule_tail, which is usually the
-first non-speculative quardant 0 access to a new PID) due to a stale
-PWC. However being a stale translation erorr, it could result in
-anything up to security and data corruption errors.
+What happens if a pseries offlined CPU gets an exception for some reason
+though? It seems like it would return into pseries_mach_cpu_die of the
+old kernel which will go wrong.
 
-Fix this by zeroing out PIDR before setting PTCR.
+Maybe the platform has stronger guarantees that it won't wake up there,
+like requiring a specific hcall or something?
 
-LPIDR is also not initialized, and may cause a similar issue with
-speculative access to quadrant 1/2. This has not been observed, but
-LPIDR is cleared to prevent that possibility.
+I was just thinking trying to move all platforms in general to the same
+scheme would be preferable, unless there is a good reason not to. Just
+for sharing code and behaviour.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Since v1:
-- Aneesh noticed hash was not clearing LPID
-- Improved changelog
-- Improved comments
+> 
+> > Also I wonder if there is anything we should do on the other
+> > side of the equation for the kdump kernel to pull CPUs into a
+> > known state rather than rely on the crash kernel to do it for
+> > us. We might have a better ability to do that with system
+> > reset IPIs now.
+> >  
+> 
+> Yes, but do we need to do that or quickly dump the vmcore to a file
+> and exit?
 
-Please review.
+Well if the previous kernel did not shut them down properly, we need
+to do that. Don't we? My point is the previous kernel crashed somehow,
+we should be trying to fix everything up rather than hoping it crashed
+"nicely" for us.
+
+Yes we shouldn't disturb things as much as possible, but we've booted
+an entire new kernel in its own reserved memory, so I'm not sure if
+it's such a concern to try fixing up wayward CPUs.
 
 Thanks,
 Nick
-
- arch/powerpc/mm/hash_utils_64.c | 19 +++++++++++++++++--
- arch/powerpc/mm/pgtable-radix.c | 10 ++++++++++
- 2 files changed, 27 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 655a5a9a183d..d9f3a72f3981 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1029,13 +1029,24 @@ void __init hash__early_init_mmu(void)
- 	pci_io_base = ISA_IO_BASE;
- #endif
- 
-+	/*
-+	 * kexec kernels can boot into the new kernel with PID and LPID
-+	 * registers non-zero. Zero them to prevent speculative accesses
-+	 * setting up cached translations when we turn the MMU on and
-+	 * process/partition table entries start being added.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		mtspr(SPRN_PID, 0);
-+
- 	/* Select appropriate backend */
- 	if (firmware_has_feature(FW_FEATURE_PS3_LV1))
- 		ps3_early_mm_init();
- 	else if (firmware_has_feature(FW_FEATURE_LPAR))
- 		hpte_init_pseries();
--	else if (IS_ENABLED(CONFIG_PPC_NATIVE))
-+	else if (IS_ENABLED(CONFIG_PPC_NATIVE)) {
-+		mtspr(SPRN_LPID, 0);
- 		hpte_init_native();
-+	}
- 
- 	if (!mmu_hash_ops.hpte_insert)
- 		panic("hash__early_init_mmu: No MMU hash ops defined!\n");
-@@ -1055,11 +1066,15 @@ void __init hash__early_init_mmu(void)
- void hash__early_init_mmu_secondary(void)
- {
- 	/* Initialize hash table for that CPU */
--	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		mtspr(SPRN_PID, 0);
- 
-+	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
- 			update_hid_for_hash();
- 
-+		mtspr(SPRN_LPID, 0);
-+
- 		if (!cpu_has_feature(CPU_FTR_ARCH_300))
- 			mtspr(SPRN_SDR1, _SDR1);
- 		else
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index cfbbee941a76..0c13355ddc2a 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -563,10 +563,18 @@ void __init radix__early_init_mmu(void)
- 	__pte_frag_nr = H_PTE_FRAG_NR;
- 	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
- 
-+	/*
-+	 * kexec kernels can boot into the new kernel with PID and LPID
-+	 * registers non-zero. Zero them to prevent speculative accesses
-+	 * setting up cached translations when we turn the MMU on and
-+	 * process/partition table entries start being added.
-+	 */
-+	mtspr(SPRN_PID, 0);
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 		radix_init_native();
- 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
- 			update_hid_for_radix();
-+		mtspr(SPRN_LPID, 0);
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
- 		radix_init_partition_table();
-@@ -587,10 +595,12 @@ void radix__early_init_mmu_secondary(void)
- 	/*
- 	 * update partition table control register and UPRT
- 	 */
-+	mtspr(SPRN_PID, 0);
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 
- 		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
- 			update_hid_for_radix();
-+		mtspr(SPRN_LPID, 0);
- 
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
--- 
-2.15.0
