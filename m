@@ -2,17 +2,17 @@ Return-Path: <spopovyc@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yr6rv3c7GzDsPq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 01:36:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yr6rw1ZbdzDsZF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 01:36:48 +1100 (AEDT)
 From: Serhii Popovych <spopovyc@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, michael@ellerman.id.au,
  paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
  david@gibson.dropbear.id.au
-Subject: [PATCH v2 1/2] KVM: PPC: Book3S HV: Drop prepare_done from struct
- kvm_resize_hpt and cleanups
-Date: Mon,  4 Dec 2017 09:36:41 -0500
-Message-Id: <1512398202-8195-2-git-send-email-spopovyc@redhat.com>
+Subject: [PATCH v2 2/2] KVM: PPC: Book3S HV: Fix use after free in case of
+ multiple resize requests
+Date: Mon,  4 Dec 2017 09:36:42 -0500
+Message-Id: <1512398202-8195-3-git-send-email-spopovyc@redhat.com>
 In-Reply-To: <1512398202-8195-1-git-send-email-spopovyc@redhat.com>
 References: <1512398202-8195-1-git-send-email-spopovyc@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,134 +24,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the kvm_resize_hpt structure has two fields relevant to the
-state of an ongoing resize: 'prepare_done', which indicates whether
-the worker thread has completed or not, and 'error' which indicates
-whether it was successful or not.
+When serving multiple resize requests following could happen:
 
-Since the success/failure isn't known until completion, this is
-confusingly redundant.  This patch consolidates the information into
-just the 'error' value: -EBUSY indicates the worked is still in
-progress, other negative values indicate (completed) failure, 0
-indicates successful completion.
+    CPU0                                    CPU1
+    ----                                    ----
+    kvm_vm_ioctl_resize_hpt_prepare(1);
+      -> schedule_work()
+                                            /* system_rq might be busy: delay */
+    kvm_vm_ioctl_resize_hpt_prepare(2);
+      mutex_lock();
+      if (resize) {
+         ...
+         release_hpt_resize();
+      }
+      ...                                   resize_hpt_prepare_work()
+      -> schedule_work()                    {
+      mutex_unlock()                           /* resize->kvm could be wrong */
+                                               struct kvm *kvm = resize->kvm;
 
-As a bonus this reduces size of struct kvm_resize_hpt by
-__alignof__(struct kvm_hpt_info) and saves few bytes of code.
+                                               mutex_lock(&kvm->lock);   <<<< UAF
+                                               ...
+                                            }
 
-While there correct comment in struct kvm_resize_hpt which references
-a non-existent semaphore (leftover from an early draft).
+i.e. a second resize request with different order could be started by
+kvm_vm_ioctl_resize_hpt_prepare(), causing the previous request to be
+free()d when there's still an active worker thread which will try to
+access it.  This leads to a use after free in point marked with UAF on
+the diagram above.
 
-Assert with WARN_ON() in case of HPT allocation thread work runs more
-than once for resize request or resize_hpt_allocate() returns -EBUSY
-that is treated specially.
+To prevent this from happening, instead of unconditionally releasing a
+pre-existing resize structure from the prepare ioctl(), we check if
+the existing structure has an in-progress worker.  We do that by
+checking if the resize->error == -EBUSY, which is safe because the
+resize->error field is protected by the kvm->lock.  If there is an
+active worker, instead of releasing, we mark the structure as stale by
+unlinking it from kvm_struct.
 
-Change comparison against zero to make checkpatch.pl happy.
+In the worker thread we check for a stale structure (with kvm->lock
+held), and in that case abort, releasing the stale structure ourself.
+We make the check both before and the actual allocation.  Strictly,
+only the check afterwards is needed, the check before is an
+optimization: if the structure happens to become stale before the
+worker thread is dispatched, rather than during the allocation, it
+means we can avoid allocating then immediately freeing a potentially
+substantial amount of memory.
+
+This fixes following or similar host kernel crash message:
+
+[  635.277361] Unable to handle kernel paging request for data at address 0x00000000
+[  635.277438] Faulting instruction address: 0xc00000000052f568
+[  635.277446] Oops: Kernel access of bad area, sig: 11 [#1]
+[  635.277451] SMP NR_CPUS=2048 NUMA PowerNV
+[  635.277470] Modules linked in: xt_CHECKSUM iptable_mangle ipt_MASQUERADE
+nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4
+nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 tun bridge stp llc
+ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter nfsv3 nfs_acl nfs
+lockd grace fscache kvm_hv kvm rpcrdma sunrpc ib_isert iscsi_target_mod ib_iser libiscsi
+scsi_transport_iscsi ib_srpt target_core_mod ext4 ib_srp scsi_transport_srp
+ib_ipoib mbcache jbd2 rdma_ucm ib_ucm ib_uverbs ib_umad rdma_cm ib_cm iw_cm ocrdma(T)
+ib_core ses enclosure scsi_transport_sas sg shpchp leds_powernv ibmpowernv i2c_opal
+i2c_core powernv_rng ipmi_powernv ipmi_devintf ipmi_msghandler ip_tables xfs
+libcrc32c sr_mod sd_mod cdrom lpfc nvme_fc(T) nvme_fabrics nvme_core ipr nvmet_fc(T)
+tg3 nvmet libata be2net crc_t10dif crct10dif_generic scsi_transport_fc ptp scsi_tgt
+pps_core crct10dif_common dm_mirror dm_region_hash dm_log dm_mod
+[  635.278687] CPU: 40 PID: 749 Comm: kworker/40:1 Tainted: G
+------------ T 3.10.0.bz1510771+ #1
+[  635.278782] Workqueue: events resize_hpt_prepare_work [kvm_hv]
+[  635.278851] task: c0000007e6840000 ti: c0000007e9180000 task.ti: c0000007e9180000
+[  635.278919] NIP: c00000000052f568 LR: c0000000009ea310 CTR: c0000000009ea4f0
+[  635.278988] REGS: c0000007e91837f0 TRAP: 0300   Tainted: G
+------------ T  (3.10.0.bz1510771+)
+[  635.279077] MSR: 9000000100009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 24002022  XER:
+00000000
+[  635.279248] CFAR: c000000000009368 DAR: 0000000000000000 DSISR: 40000000 SOFTE: 1
+GPR00: c0000000009ea310 c0000007e9183a70 c000000001250b00 c0000007e9183b10
+GPR04: 0000000000000000 0000000000000000 c0000007e9183650 0000000000000000
+GPR08: c0000007ffff7b80 00000000ffffffff 0000000080000028 d00000000d2529a0
+GPR12: 0000000000002200 c000000007b56800 c000000000120028 c0000007f135bb40
+GPR16: 0000000000000000 c000000005c1e018 c000000005c1e018 0000000000000000
+GPR20: 0000000000000001 c0000000011bf778 0000000000000001 fffffffffffffef7
+GPR24: 0000000000000000 c000000f1e262e50 0000000000000002 c0000007e9180000
+GPR28: c000000f1e262e4c c000000f1e262e50 0000000000000000 c0000007e9183b10
+[  635.280149] NIP [c00000000052f568] __list_add+0x38/0x110
+[  635.280197] LR [c0000000009ea310] __mutex_lock_slowpath+0xe0/0x2c0
+[  635.280253] Call Trace:
+[  635.280277] [c0000007e9183af0] [c0000000009ea310] __mutex_lock_slowpath+0xe0/0x2c0
+[  635.280356] [c0000007e9183b70] [c0000000009ea554] mutex_lock+0x64/0x70
+[  635.280426] [c0000007e9183ba0] [d00000000d24da04]
+resize_hpt_prepare_work+0xe4/0x1c0 [kvm_hv]
+[  635.280507] [c0000007e9183c40] [c000000000113c0c] process_one_work+0x1dc/0x680
+[  635.280587] [c0000007e9183ce0] [c000000000114250] worker_thread+0x1a0/0x520
+[  635.280655] [c0000007e9183d80] [c00000000012010c] kthread+0xec/0x100
+[  635.280724] [c0000007e9183e30] [c00000000000a4b8] ret_from_kernel_thread+0x5c/0xa4
+[  635.280814] Instruction dump:
+[  635.280880] 7c0802a6 fba1ffe8 fbc1fff0 7cbd2b78 fbe1fff8 7c9e2378 7c7f1b78
+f8010010
+[  635.281099] f821ff81 e8a50008 7fa52040 40de00b8 <e8be0000> 7fbd2840 40de008c
+7fbff040
+[  635.281324] ---[ end trace b628b73449719b9d ]---
 
 Signed-off-by: Serhii Popovych <spopovyc@redhat.com>
-[dwg: Changed BUG_ON()s to WARN_ON()s and altered commit message for
- clarity]
+[dwg: Replaced BUG_ON()s with WARN_ONs() and reworded commit message
+ for clarity]
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 44 +++++++++++++++++++++++--------------
- 1 file changed, 27 insertions(+), 17 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 50 ++++++++++++++++++++++++++-----------
+ 1 file changed, 35 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 9660972..31fa710 100644
+index 31fa710..7948b84 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -65,11 +65,17 @@ struct kvm_resize_hpt {
- 	u32 order;
+@@ -1419,16 +1419,20 @@ static void resize_hpt_pivot(struct kvm_resize_hpt *resize)
  
- 	/* These fields protected by kvm->lock */
-+
-+	/* Possible values and their usage:
-+	 *  <0     an error occurred during allocation,
-+	  * -EBUSY allocation is in the progress,
-+	 *  0      allocation made successfuly.
-+	 */
- 	int error;
--	bool prepare_done;
- 
--	/* Private to the work thread, until prepare_done is true,
--	 * then protected by kvm->resize_hpt_sem */
-+	/* Private to the work thread, until error != -EBUSY,
-+	 * then protected by kvm->lock.
-+	 */
- 	struct kvm_hpt_info hpt;
- };
- 
-@@ -1433,15 +1439,23 @@ static void resize_hpt_prepare_work(struct work_struct *work)
- 	struct kvm *kvm = resize->kvm;
- 	int err;
- 
-+	if (WARN_ON(resize->error != -EBUSY))
+ static void resize_hpt_release(struct kvm *kvm, struct kvm_resize_hpt *resize)
+ {
+-	BUG_ON(kvm->arch.resize_hpt != resize);
++	if (WARN_ON(!mutex_is_locked(&kvm->lock)))
 +		return;
-+
- 	resize_hpt_debug(resize, "resize_hpt_prepare_work(): order = %d\n",
- 			 resize->order);
  
- 	err = resize_hpt_allocate(resize);
+ 	if (!resize)
+ 		return;
  
-+	/* We have strict assumption about -EBUSY
-+	 * when preparing for HPT resize.
-+	 */
-+	if (WARN_ON(err == -EBUSY))
-+		err = -EINPROGRESS;
+-	if (resize->hpt.virt)
+-		kvmppc_free_hpt(&resize->hpt);
++	if (resize->error != -EBUSY) {
++		if (resize->hpt.virt)
++			kvmppc_free_hpt(&resize->hpt);
++		kfree(resize);
++	}
+ 
+-	kvm->arch.resize_hpt = NULL;
+-	kfree(resize);
++	if (kvm->arch.resize_hpt == resize)
++		kvm->arch.resize_hpt = NULL;
+ }
+ 
+ static void resize_hpt_prepare_work(struct work_struct *work)
+@@ -1437,26 +1441,42 @@ static void resize_hpt_prepare_work(struct work_struct *work)
+ 						     struct kvm_resize_hpt,
+ 						     work);
+ 	struct kvm *kvm = resize->kvm;
+-	int err;
++	int err = 0;
+ 
+ 	if (WARN_ON(resize->error != -EBUSY))
+ 		return;
+ 
+-	resize_hpt_debug(resize, "resize_hpt_prepare_work(): order = %d\n",
+-			 resize->order);
++	mutex_lock(&kvm->lock);
+ 
+-	err = resize_hpt_allocate(resize);
++	/* Request is still current? */
++	if (kvm->arch.resize_hpt == resize) {
++		/* We may request large allocations here:
++		 * do not sleep with kvm->lock held for a while.
++		 */
++		mutex_unlock(&kvm->lock);
+ 
+-	/* We have strict assumption about -EBUSY
+-	 * when preparing for HPT resize.
+-	 */
+-	if (WARN_ON(err == -EBUSY))
+-		err = -EINPROGRESS;
++		resize_hpt_debug(resize, "resize_hpt_prepare_work(): order = %d\n",
++				 resize->order);
+ 
+-	mutex_lock(&kvm->lock);
++		err = resize_hpt_allocate(resize);
 +
- 	mutex_lock(&kvm->lock);
++		/* We have strict assumption about -EBUSY
++		 * when preparing for HPT resize.
++		 */
++		if (WARN_ON(err == -EBUSY))
++			err = -EINPROGRESS;
++
++		mutex_lock(&kvm->lock);
++		/* It is possible that kvm->arch.resize_hpt != resize
++		 * after we grab kvm->lock again.
++		 */
++	}
  
  	resize->error = err;
--	resize->prepare_done = true;
  
++	if (kvm->arch.resize_hpt != resize)
++		resize_hpt_release(kvm, resize);
++
  	mutex_unlock(&kvm->lock);
  }
-@@ -1466,14 +1480,12 @@ long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *kvm,
  
- 	if (resize) {
- 		if (resize->order == shift) {
--			/* Suitable resize in progress */
--			if (resize->prepare_done) {
--				ret = resize->error;
--				if (ret != 0)
--					resize_hpt_release(kvm, resize);
--			} else {
-+			/* Suitable resize in progress? */
-+			ret = resize->error;
-+			if (ret == -EBUSY)
- 				ret = 100; /* estimated time in ms */
--			}
-+			else if (ret)
-+				resize_hpt_release(kvm, resize);
- 
- 			goto out;
- 		}
-@@ -1493,6 +1505,8 @@ long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *kvm,
- 		ret = -ENOMEM;
- 		goto out;
- 	}
-+
-+	resize->error = -EBUSY;
- 	resize->order = shift;
- 	resize->kvm = kvm;
- 	INIT_WORK(&resize->work, resize_hpt_prepare_work);
-@@ -1547,16 +1561,12 @@ long kvm_vm_ioctl_resize_hpt_commit(struct kvm *kvm,
- 	if (!resize || (resize->order != shift))
- 		goto out;
- 
--	ret = -EBUSY;
--	if (!resize->prepare_done)
--		goto out;
--
- 	ret = resize->error;
--	if (ret != 0)
-+	if (ret)
- 		goto out;
- 
- 	ret = resize_hpt_rehash(resize);
--	if (ret != 0)
-+	if (ret)
- 		goto out;
- 
- 	resize_hpt_pivot(resize);
 -- 
 1.8.3.1
