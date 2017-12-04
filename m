@@ -2,17 +2,21 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqtgC3Q2NzDrcT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 16:27:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqv8K4qY8zDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 16:49:21 +1100 (AEDT)
+Date: Mon, 4 Dec 2017 16:45:43 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: mpe@ellerman.id.au,
-	npiggin@gmail.com
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH] Revert "powerpc: Do not call ppc_md.panic in fadump panic
- notifier"
-Date: Mon,  4 Dec 2017 16:27:25 +1100
-Message-Id: <20171204052725.28195-1-david@gibson.dropbear.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: a3b2cb30 broken panic reporting for qemu guests
+Message-ID: <20171204054543.GN2130@umbus.fritz.box>
+References: <20171129040652.GF3023@umbus.fritz.box>
+ <20171129142343.1e371cbb@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="WU3I8Do+sziGY3UL"
+In-Reply-To: <20171129142343.1e371cbb@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,185 +26,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit a3b2cb30f252b21a6f962e0dd107c8b897ca65e4.
 
-The earlier patch tried to fix problems with panic on powerpc in
-certain circumstances, where some output from the generic panic code
-was being dropped.
+--WU3I8Do+sziGY3UL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately, it breaks things worse in other circumstances.  In
-particular when running a PAPR guest, it will now attempt to reboot
-instead of informing the hypervisor (KVM or PowerVM) that the guest
-has crashed.  The crash notification is important to some
-virtualization management layers.
+On Wed, Nov 29, 2017 at 02:23:43PM +1000, Nicholas Piggin wrote:
+> On Wed, 29 Nov 2017 15:06:52 +1100
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+>=20
+> > a3b2cb30 "powerpc: Do not call ppc_md.panic in fadump panic notifier"
+> > purports to fix a problem when the kernel panics with fadump not
+> > registered, but it breaks something else instead.  I _think_ it was
+> > working on the incorrect assumption that ppc_md.panic was (or should
+> > be) only used with fadump, but I'm not really sure.
+> >=20
+> > Panic works with kdump enabled, and (I think) with fadump enabled).
+> > However, with neither of these enabled, we always go to the generic
+> > panic logic.
+>=20
+> Yeah thanks, I can't remember what assumption I was working on tbh.
+> =20
+> > That's incorrect for PAPR guests - they should call ibm,os-term via
+> > RTAS.  Under qemu this leads to a "GUEST_PANICKED" event notification
+> > which higher-level management pays attention to.  Since a3b2cb30 we
+> > now reboot instead of reporting that.
+> >=20
+> > I believe it will also break panic for PS3 machines, but since that
+> > platform basically no longer exists, we probably don't care.
+>=20
+> I (hope) it should just go down to the normal panic path and not do
+> much worse than it already does -- although it won't print out that
+> message.
 
-Since the circumstances in which the original patch helped are
-somewhat obscure, revert it for now until we figure out how to do it
-properly.
+Sounds plausible.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/include/asm/machdep.h     |  1 +
- arch/powerpc/include/asm/setup.h       |  1 +
- arch/powerpc/kernel/fadump.c           | 22 ----------------------
- arch/powerpc/kernel/setup-common.c     | 27 +++++++++++++++++++++++++++
- arch/powerpc/platforms/ps3/setup.c     | 15 +++++++++++++++
- arch/powerpc/platforms/pseries/setup.c |  1 +
- 6 files changed, 45 insertions(+), 22 deletions(-)
+> > I'm not entirely sure how to fix this.  I _think_ what we want is to
+> > call ppc_md.panic from a late panic notifier, the way this patch does
+> > for fadump_panic_event() if fadump is registered.
+>=20
+> The problem I had there is that some of the printk and console stuff
+> wasn't getting flushed out, so I was getting a blank screen. This was
+> probably in conjunction with panicing from NMI context that we're now
+> starting to introduce.
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 73b92017b6d7..cd2fc1cc1cc7 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -76,6 +76,7 @@ struct machdep_calls {
- 
- 	void __noreturn	(*restart)(char *cmd);
- 	void __noreturn (*halt)(void);
-+	void		(*panic)(char *str);
- 	void		(*cpu_die)(void);
- 
- 	long		(*time_init)(void); /* Optional, may be NULL */
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 257d23dbf55d..cf00ec26303a 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -24,6 +24,7 @@ extern void reloc_got2(unsigned long);
- 
- void check_for_initrd(void);
- void initmem_init(void);
-+void setup_panic(void);
- #define ARCH_PANIC_TIMEOUT 180
- 
- #ifdef CONFIG_PPC_PSERIES
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 04ea5c04fd24..3c2c2688918f 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1462,25 +1462,6 @@ static void fadump_init_files(void)
- 	return;
- }
- 
--static int fadump_panic_event(struct notifier_block *this,
--			      unsigned long event, void *ptr)
--{
--	/*
--	 * If firmware-assisted dump has been registered then trigger
--	 * firmware-assisted dump and let firmware handle everything
--	 * else. If this returns, then fadump was not registered, so
--	 * go through the rest of the panic path.
--	 */
--	crash_fadump(NULL, ptr);
--
--	return NOTIFY_DONE;
--}
--
--static struct notifier_block fadump_panic_block = {
--	.notifier_call = fadump_panic_event,
--	.priority = INT_MIN /* may not return; must be done last */
--};
--
- /*
-  * Prepare for firmware-assisted dump.
-  */
-@@ -1513,9 +1494,6 @@ int __init setup_fadump(void)
- 		init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
- 	fadump_init_files();
- 
--	atomic_notifier_chain_register(&panic_notifier_list,
--					&fadump_panic_block);
--
- 	return 1;
- }
- subsys_initcall(setup_fadump);
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 2075322cd225..9d213542a48b 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -704,6 +704,30 @@ int check_legacy_ioport(unsigned long base_port)
- }
- EXPORT_SYMBOL(check_legacy_ioport);
- 
-+static int ppc_panic_event(struct notifier_block *this,
-+                             unsigned long event, void *ptr)
-+{
-+	/*
-+	 * If firmware-assisted dump has been registered then trigger
-+	 * firmware-assisted dump and let firmware handle everything else.
-+	 */
-+	crash_fadump(NULL, ptr);
-+	ppc_md.panic(ptr);  /* May not return */
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block ppc_panic_block = {
-+	.notifier_call = ppc_panic_event,
-+	.priority = INT_MIN /* may not return; must be done last */
-+};
-+
-+void __init setup_panic(void)
-+{
-+	if (!ppc_md.panic)
-+		return;
-+	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
-+}
-+
- #ifdef CONFIG_CHECK_CACHE_COHERENCY
- /*
-  * For platforms that have configurable cache-coherency.  This function
-@@ -848,6 +872,9 @@ void __init setup_arch(char **cmdline_p)
- 	/* Probe the machine type, establish ppc_md. */
- 	probe_machine();
- 
-+	/* Setup panic notifier if requested by the platform. */
-+	setup_panic();
-+
- 	/*
- 	 * Configure ppc_md.power_save (ppc32 only, 64-bit machines do
- 	 * it from their respective probe() function.
-diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-index 9dabea6e1443..6244bc849469 100644
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -104,6 +104,20 @@ static void __noreturn ps3_halt(void)
- 	ps3_sys_manager_halt(); /* never returns */
- }
- 
-+static void ps3_panic(char *str)
-+{
-+	DBG("%s:%d %s\n", __func__, __LINE__, str);
-+
-+	smp_send_stop();
-+	printk("\n");
-+	printk("   System does not reboot automatically.\n");
-+	printk("   Please press POWER button.\n");
-+	printk("\n");
-+
-+	while(1)
-+		lv1_pause(1);
-+}
-+
- #if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE) || \
-     defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
- static void __init prealloc(struct ps3_prealloc *p)
-@@ -255,6 +269,7 @@ define_machine(ps3) {
- 	.probe				= ps3_probe,
- 	.setup_arch			= ps3_setup_arch,
- 	.init_IRQ			= ps3_init_IRQ,
-+	.panic				= ps3_panic,
- 	.get_boot_time			= ps3_get_boot_time,
- 	.set_dabr			= ps3_set_dabr,
- 	.calibrate_decr			= ps3_calibrate_decr,
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 5f1beb8367ac..a8531e012658 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -726,6 +726,7 @@ define_machine(pseries) {
- 	.pcibios_fixup		= pSeries_final_fixup,
- 	.restart		= rtas_restart,
- 	.halt			= rtas_halt,
-+	.panic			= rtas_os_term,
- 	.get_boot_time		= rtas_get_boot_time,
- 	.get_rtc_time		= rtas_get_rtc_time,
- 	.set_rtc_time		= rtas_set_rtc_time,
--- 
-2.14.3
+Ok.  What was the exact bit of panic() that wasn't getting invoked
+that needed to be?
+
+AFAICT ppc_md.panic was already being called at the end of the panic
+notifiers, by using INT_MIN priority.  Note that this is the same way
+that the pvpanic device (used on x86 for similar panic notification
+functionality) does it.  Well, pvpanic uses priority 1, which seems
+less thorough than INT_MIN.
+
+> So it's a bit annoying. There's other ugliness we have for being unable
+> to control panic code well enough from arch code
+> (arch/powerpc/platforms/powernv/opal.c)
+>=20
+> I guess a really minimal fix is to put an #ifdef powerpc down the bottom
+> there (/me *cries*).
+
+That would work for the PAPR os-term thing, but wouldn't if we ever
+had a specific device that worked like pvpanic.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--WU3I8Do+sziGY3UL
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlok4QUACgkQbDjKyiDZ
+s5I4Mg/9GBn0TWl1xfSMEFGJnLbS74Xj0oRmPzQMkJkJHINw8y/il9GeB0jIiy0y
+ogjPQqaMYAVnfQP2n8ppx980/um0TZGHA8Ka7bIyWsWXOFBsOA5bnmKOOHIFHDOC
+v/15gTPJ7x9qNn0mAs2GFGODyIa67vjh3QP0XXZPEVxXWAAagah+d/l5pezX7kmN
+Eoo3XKgtvnh5SgxlsMdt6AUaHrfmGAmJQIVqNdlmxbIjD8osK7K3Vp0wbUETCptN
+8eQKeC+X3Iz8GCM+ktVk+km2r/BH4naTNZDWajgVM8ee01L0n1OiCRfDd8zzLtKU
+TJib1kI1LsqF/t4QRbpGZhBlKuXaEyIXF7URfUqLOYtGUf00yvNYY5gtNgUxrMvk
+KQW113cjCjbvw6hmtEhLPQO8bN28j1x79HaAWo7JIJvsb/NU4C/t49IDJMCpRL3k
+FRwQnvCmz5T6sYuSDV7tqSObu2QF5Q3PAWBXA4OvfhNzgtgZUOml6mNJ6D2BPDuk
+SnUx4JXwUEAzoQN+UyAt7hHpfd/BILYkFgEF3H+clXvGy5gR+1uc9gLL40ZkmvKt
+iB1pLMjdnHZ9eXpjAGtc+JTuv/oD8Kk5MjQHIy9VuNsIciioUUwuM7FQXFTRCRei
+zBOJlefIVqjRYwEqoq9z/idu6n3DY5mRxADwn3nWRq9Qws0WGAk=
+=TqZT
+-----END PGP SIGNATURE-----
+
+--WU3I8Do+sziGY3UL--
