@@ -1,25 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
- [IPv6:2607:f8b0:400c:c08::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqmD10hJQzDrpw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 11:37:04 +1100 (AEDT)
-Received: by mail-ua0-x243.google.com with SMTP id t24so11351087uaa.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 16:37:04 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqpMh5l7GzDrZc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 13:13:52 +1100 (AEDT)
+Date: Mon, 4 Dec 2017 12:04:09 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Cc: kvm-ppc@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: check for XIVE device before
+ executing the XICS hcalls
+Message-ID: <20171204010409.rasszyk4rsc3bbhm@oak.ozlabs.ibm.com>
+References: <20171127073017.25463-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <20171203123658.056226c1@roar.ozlabs.ibm.com>
-References: <20171202134808.27480-1-bsingharora@gmail.com>
- <20171203123658.056226c1@roar.ozlabs.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Mon, 4 Dec 2017 11:37:01 +1100
-Message-ID: <CAKTCnz=w5KEECS2RwWjrfDVgMVZWYJqQb4C8EOUbfZh2Bb=z4A@mail.gmail.com>
-Subject: Re: [rfc] powernv/kdump: Fix cases where the kdump kernel can get
- HMI's
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20171127073017.25463-1-clg@kaod.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 3, 2017 at 1:36 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> Seems like a reasonable approach. Why do we only do this for
-> powernv? It seems like a good idea in general to pull all
-> offlined CPUs out and into the same state for all platforms
-> and for all shutdown/restart/crash paths.
->
+On Mon, Nov 27, 2017 at 08:30:17AM +0100, Cédric Le Goater wrote:
+> When QEMU is started with the option kernel_irqchip=òff, the kvm XICS
+> hcalls are being used even though a kvm XICS device has not been
+> created on the host, resulting quickly in a failure and a broken
+> guest.
+> 
+> The test checking if there is a XIVE device in the VM before executing
+> the XICS hcalls is missing from the recent XICS-over-XIVE glue.
+> 
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
 
-The reason is largely wake-up related, do we expect offline CPUs to wake
-up in the kdump kernel. Largely the infrastructure allows us to selectively
-decide what platforms need this support. I did not want to break the world
-by enabling it across platforms (pseries for example) without good reason.
+I think this is fixing the same bug that commit 00bb6ae50062 ("KVM:
+PPC: Book3S HV: Don't call real-mode XICS hypercall handlers if not
+enabled", 2017-10-26) addresses.
 
-> Also I wonder if there is anything we should do on the other
-> side of the equation for the kdump kernel to pull CPUs into a
-> known state rather than rely on the crash kernel to do it for
-> us. We might have a better ability to do that with system
-> reset IPIs now.
->
+Do you think this patch is needed in addition to 00bb6ae50062?
 
-Yes, but do we need to do that or quickly dump the vmcore to a file
-and exit? Ideally we want the original kernel to wake offline cpus
-as appropriate (as we do with kexec) and send them to opal_reinit_cpus
-and make them spin on kexec_spin_wait(). The kdump kernel boots
-with maxcpus=1 and leaves them spinning
-
-> We still need to support platforms without NMI IPIs, so we
-> still need this patch as well.
->
-
-True
-
-Thanks for the review!
-Balbir Singh
+Paul.
