@@ -1,37 +1,22 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqsf46BFwzDrbr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:41:32 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB44dkt7094725
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Dec 2017 23:41:30 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2emuju1dre-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 23:41:29 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Sun, 3 Dec 2017 21:41:29 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/powernv : Add support to enable sensor groups
-In-Reply-To: <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
-References: <1511760988-10377-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <87bmjmzla7.fsf@concordia.ellerman.id.au>
- <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
-Date: Mon, 04 Dec 2017 15:41:21 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqsjH5qGzzDrbr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:44:19 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: [PATCH v1] PCI: Make PCI_SCAN_ALL_PCIE_DEVS work for Root as well
+ as Downstream Ports
+In-Reply-To: <20171202191827.GB18780@bhelgaas-glaptop.roam.corp.google.com>
+References: <20171202002710.17686.21340.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171202191827.GB18780@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 04 Dec 2017 15:44:15 +1100
+Message-ID: <87k1y33xwg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87609nxfym.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> On 11/28/2017 05:07 PM, Michael Ellerman wrote:
->> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+Bjorn Helgaas <helgaas@kernel.org> writes:
+
+> On Fri, Dec 01, 2017 at 06:27:10PM -0600, Bjorn Helgaas wrote:
+>> From: Bjorn Helgaas <bhelgaas@google.com>
 >> 
->>> Adds support to enable/disable a sensor group. This can be used to
->>> select the sensor groups that needs to be copied to main memory by
->>> OCC. Sensor groups like power, temperature, current, voltage,
->>> frequency, utilization can be enabled/disabled at runtime.
->>>
->>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->>> ---
->>> The skiboot patch for the opal call is posted below:
->>> https://lists.ozlabs.org/pipermail/skiboot/2017-November/009713.html
+>> PCIe Downstream Ports normally have only a Device 0 below them.  To
+>> optimize enumeration, we don't scan for other devices *unless* the
+>> PCI_SCAN_ALL_PCIE_DEVS flag is set by set by quirks or the
+>> "pci=pcie_scan_all" kernel parameter.
 >> 
->> Can you remind me why we're doing this with a completely bespoke sysfs
->> API, rather than using some generic sensors API?
+>> Previously PCI_SCAN_ALL_PCIE_DEVS only affected scanning below Switch
+>> Downstream Ports, not Root Ports.
 >> 
+>> But the "Nemo" system, also known as the AmigaOne X1000, has a PA Semi Root
+>> Port whose link leads to an AMD/ATI SB600 South Bridge.  The Root Port is a
+>> PCIe device, of course, but the SB600 contains only conventional PCI
+>> devices with no visible PCIe port.
+>> 
+>> Simplify and restructure only_one_child() so that we scan for all possible
+>> devices below Root Ports as well as Switch Downstream Ports when
+>> PCI_SCAN_ALL_PCIE_DEVS is set.
+>> 
+>> This is enough to make Nemo work with "pci=pcie_scan_all".  We would also
+>> like to add a quirk to set PCI_SCAN_ALL_PCIE_DEVS automatically on Nemo so
+>> users wouldn't have to use the "pci=pcie_scan_all" parameter, but we don't
+>> have that yet.
+>> 
+>> Link: https://lkml.kernel.org/r/CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com
+>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198057
+>> Reported-and-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+>> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 >
-> Disabling/Enabling sensor groups is not supported in the current generic sensors
-> API. And also we dont export all type of sensors in HWMON as not all of them are
-> environment sensors (like performance).
+> Applied to pci/enumeration for v4.16.
 
-Are there barriers to adding such concepts to the generic sensors API?
+Thanks Bjorn.
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+cheers
