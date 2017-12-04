@@ -1,45 +1,31 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrFm22sZpzDwvM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 06:48:01 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB4Jl1Oc139399
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Dec 2017 14:47:59 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ena21hytb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 14:47:58 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 4 Dec 2017 12:47:58 -0700
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- vB4JltTe6095270
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Dec 2017 12:47:55 -0700
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0B499C603E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 12:47:55 -0700 (MST)
-Received: from oc5000245537.ibm.com (unknown [9.53.92.223])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP id C5CFAC6043
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 12:47:54 -0700 (MST)
-Subject: Re: Resend: [PATCH V5 3/4] hotplug/drc-info: Add code to search
- ibm,drc-info property
-To: linuxppc-dev@lists.ozlabs.org
-References: <88bcb9e8-e0a5-0ca2-d691-c28fb4ea1e84@linux.vnet.ibm.com>
- <e807cc7c-8e92-ea38-7303-f375f4d8822f@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Mon, 4 Dec 2017 13:47:39 -0600
-MIME-Version: 1.0
-In-Reply-To: <e807cc7c-8e92-ea38-7303-f375f4d8822f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <560cdf29-765c-ee32-4596-e8c0ea4bc02d@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yr5QC2yh3zDrvJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 00:31:59 +1100 (AEDT)
+Content-Type: multipart/alternative;
+ boundary=Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423
+Mime-Version: 1.0 (1.0)
+Subject: SB600 for the Nemo board has non-zero devices on non-root bus
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <4b18f51024d.45f899c9@auth.smtp.1and1.co.uk>
+Date: Mon, 4 Dec 2017 14:31:52 +0100
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-pci@vger.kernel.org,
+ olof@lixom.net
+Message-Id: <9AED1664-A71D-4C15-A828-E64DF5C0498C@xenosoft.de>
+References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
+ <87tvxl15qx.fsf@concordia.ellerman.id.au>
+ <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+ <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
+ <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
+ <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
+ <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
+ <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+ <4b18f51024d.45f899c9@auth.smtp.1and1.co.uk>
+To: Darren Stevens <darren@stevens-zone.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,272 +35,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
 
-On 11/30/2017 01:51 PM, Nathan Fontenot wrote:
-> 
-> 
-> On 11/28/2017 05:07 PM, Michael Bringmann wrote:
->> rpadlpar_core.c: Provide parallel routines to search the older device-
->> tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
->> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
->>
->> The interface to examine the DRC information is changed from a "get"
->> function that returns values for local verification elsewhere, to a
->> "check" function that validates the 'name' and/or 'type' of a device
->> node.  This update hides the format of the underlying device-tree
->> properties, and concentrates the value checks into a single function
->> without requiring the user to verify whether a search was successful.
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->> Changes in V5:
->>   -- Simplify of_prop_next_u32 invocation
->>   -- Fix some spacing within arguments
->> ---
->>  drivers/pci/hotplug/rpadlpar_core.c |   13 ++--
->>  drivers/pci/hotplug/rpaphp.h        |    4 +
->>  drivers/pci/hotplug/rpaphp_core.c   |  109 +++++++++++++++++++++++++++--------
->>  3 files changed, 91 insertions(+), 35 deletions(-)
->>
->> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
->> index a3449d7..fc01d7d 100644
->> --- a/drivers/pci/hotplug/rpadlpar_core.c
->> +++ b/drivers/pci/hotplug/rpadlpar_core.c
->> @@ -27,6 +27,7 @@
->>  #include <linux/mutex.h>
->>  #include <asm/rtas.h>
->>  #include <asm/vio.h>
->> +#include <linux/firmware.h>
->>
->>  #include "../pci.h"
->>  #include "rpaphp.h"
->> @@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
->>  {
->>  	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
->>  	struct device_node *dn = NULL;
->> -	char *name;
->>  	int rc;
->>
->>  	if (!parent)
->>  		return NULL;
->>
->>  	while ((dn = of_get_next_child(parent, dn))) {
->> -		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
->> -		if ((rc == 0) && (!strcmp(drc_name, name)))
->> +		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
->> +		if (rc == 0)
->>  			break;
->>  	}
->>
->> @@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
->>  						  char *drc_type)
->>  {
->>  	struct device_node *np = NULL;
->> -	char *name;
->> -	char *type;
->>  	int rc;
->>
->>  	while ((np = of_find_node_by_name(np, "pci"))) {
->> -		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
->> +		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
->>  		if (rc == 0)
->> -			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
->> -				break;
->> +			break;
->>  	}
->>
->>  	return np;
->> diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
->> index 7db024e..8db5f2e 100644
->> --- a/drivers/pci/hotplug/rpaphp.h
->> +++ b/drivers/pci/hotplug/rpaphp.h
->> @@ -91,8 +91,8 @@ struct slot {
->>
->>  /* rpaphp_core.c */
->>  int rpaphp_add_slot(struct device_node *dn);
->> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->> -		char **drc_name, char **drc_type, int *drc_power_domain);
->> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> +		char *drc_type);
->>
->>  /* rpaphp_slot.c */
->>  void dealloc_slot_struct(struct slot *slot);
->> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
->> index 1e29aba..6da613a 100644
->> --- a/drivers/pci/hotplug/rpaphp_core.c
->> +++ b/drivers/pci/hotplug/rpaphp_core.c
->> @@ -30,6 +30,7 @@
->>  #include <linux/smp.h>
->>  #include <linux/init.h>
->>  #include <linux/vmalloc.h>
->> +#include <asm/firmware.h>
->>  #include <asm/eeh.h>       /* for eeh_add_device() */
->>  #include <asm/rtas.h>		/* rtas_call */
->>  #include <asm/pci-bridge.h>	/* for pci_controller */
->> @@ -196,25 +197,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
->>  	return 0;
->>  }
->>
->> -/* To get the DRC props describing the current node, first obtain it's
->> - * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
->> - * the my-drc-index for correlation, and obtain the requested properties.
->> +
->> +/* Verify the existence of 'drc_name' and/or 'drc_type' within the
->> + * current node.  First obtain it's my-drc-index property.  Next,
->> + * obtain the DRC info from it's parent.  Use the my-drc-index for
->> + * correlation, and obtain/validate the requested properties.
->>   */
->> -int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->> -		char **drc_name, char **drc_type, int *drc_power_domain)
->> +
->> +static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->>  {
->> +	char *name_tmp, *type_tmp;
->>  	const int *indexes, *names;
->>  	const int *types, *domains;
->> -	const unsigned int *my_index;
->> -	char *name_tmp, *type_tmp;
->>  	int i, rc;
->>
->> -	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
->> -	if (!my_index) {
->> -		/* Node isn't DLPAR/hotplug capable */
->> -		return -EINVAL;
->> -	}
->> -
->>  	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
->>  	if (rc < 0) {
->>  		return -EINVAL;
->> @@ -225,24 +222,86 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
->>
->>  	/* Iterate through parent properties, looking for my-drc-index */
->>  	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
->> -		if ((unsigned int) indexes[i + 1] == *my_index) {
->> -			if (drc_name)
->> -				*drc_name = name_tmp;
->> -			if (drc_type)
->> -				*drc_type = type_tmp;
->> -			if (drc_index)
->> -				*drc_index = be32_to_cpu(*my_index);
->> -			if (drc_power_domain)
->> -				*drc_power_domain = be32_to_cpu(domains[i+1]);
->> -			return 0;
->> -		}
->> +		if ((unsigned int) indexes[i + 1] == my_index)
->> +			break;
->> +
->>  		name_tmp += (strlen(name_tmp) + 1);
->>  		type_tmp += (strlen(type_tmp) + 1);
->>  	}
->>
->> +	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
->> +	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
->> +		return 0;
->> +
->> +	return -EINVAL;
->> +}
->> +
->> +static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->> +{
->> +	struct property *info;
->> +	unsigned int entries;
->> +	struct of_drc_info drc;
->> +	const __be32 *value;
->> +	int j;
->> +
->> +	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
->> +	if (info == NULL)
->> +		return -EINVAL;
->> +
->> +	value = (void *)of_prop_next_u32(info, NULL, &entries);
->> +	if (!value)
->> +		return -EINVAL;
->> +
->> +	for (j = 0; j < entries; j++) {
->> +		of_read_drc_info_cell(&info, &value, &drc);
->> +
->> +		/* Should now know end of current entry */
->> +
->> +		WARN_ON((my_index < drc.drc_index_start) ||
->> +			(((my_index - drc.drc_index_start) %
->> +				drc.sequential_inc) != 0));
->> +
->> +		if (my_index > drc.last_drc_index)
->> +			continue;
->> +
->> +		break;
->> +	}
->> +	/* Found it */
->> +
->> +	if (((drc_name == NULL) ||
->> +	     (drc_name && !strncmp(drc_name,
->> +				drc.drc_name_prefix,
->> +				strlen(drc.drc_name_prefix)))) &&
-> 
-> I'm still not convinced this is correct. If I understand correctly
-> the new drc-info property has a name prefix field, which for the
-> entries we are looking up here are likely "PHB", and a name suffix
-> start filed for the first number to use as the suffix to the name in
-> the current set.
-> 
-> The name we would be trying to compare to would be something like "PHB 34".
-> What you have is just doing a compare on the prefix, or "PHB", part of
-> the name and not the full name.
+--Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-I reviewed the execution again, and I agree with you.  Updates to correct
-the check will be in the next submission.
+Darren,
 
-> 
-> -Nathan
+What do you think about Olof=E2=80=99s solution?
 
-Michael
+Link: http://forum.hyperion-entertainment.biz/viewtopic.php?f=3D35&t=3D3891&=
+p=3D43206#p43201
 
-> 
->> +	    ((drc_type == NULL) ||
->> +	     (drc_type && !strncmp(drc_type,
->> +				drc.drc_type,
->> +				strlen(drc.drc_type)))))
->> +		return 0;
->> +
->>  	return -EINVAL;
->>  }
->> -EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
->> +
->> +int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> +			char *drc_type)
->> +{
->> +	const unsigned int *my_index;
->> +
->> +	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
->> +	if (!my_index) {
->> +		/* Node isn't DLPAR/hotplug capable */
->> +		return -EINVAL;
->> +	}
->> +
->> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
->> +		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
->> +						*my_index);
->> +	else
->> +		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
->> +						*my_index);
->> +}
->> +EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
->> +
->>
->>  static int is_php_type(char *drc_type)
->>  {
->>
-> 
-> 
+Thanks,
+Christian
 
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+Sent from my iPhone
+
+> On 4. Dec 2017, at 12:40, Darren Stevens <darren@stevens-zone.net> wrote:
+>=20
+> Hello Bjorn
+>=20
+> Firstly sorry for not being able to join in this discussion, I have been
+> moving house and only got my X1000 set up again yesterday..
+>=20
+>> On 30/11/2017, Bjorn Helgaas wrote:
+>> I *think* something like the patch below should make this work if you
+>> use the "pci=3Dpcie_scan_all" parameter.  We have some x86 DMI quirks
+>> that set PCI_SCAN_ALL_PCIE_DEVS automatically.  I don't know how to do
+>> something similar on powerpc, but maybe you do?
+>=20
+> Actually the root ports on the Nemo's PA6T processor don't respond to the
+> SB600 unless we turn on a special 'relax pci-e' bit in one of its control
+> registers. We use a small out of tree init routine to do this, and there
+> would be the ideal place to put a call to
+> pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS).
+>=20
+> This patch fixes the last major hurdle to getting the X1000 fully supporte=
+d in
+> the linux kernel, so thanks very much for that.
+>=20
+> Regards
+> Darren
+>=20
+
+--Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
+utf-8"></head><body dir=3D"auto">Darren,<div><br></div><div>What do you thin=
+k about Olof=E2=80=99s solution?</div><div><br></div><div>Link:&nbsp;<a href=
+=3D"http://forum.hyperion-entertainment.biz/viewtopic.php?f=3D35&amp;t=3D389=
+1&amp;p=3D43206#p43201">http://forum.hyperion-entertainment.biz/viewtopic.ph=
+p?f=3D35&amp;t=3D3891&amp;p=3D43206#p43201</a></div><div><br></div><div>Than=
+ks,</div><div>Christian<br><br><div id=3D"AppleMailSignature">Sent from my i=
+Phone</div><div><br>On 4. Dec 2017, at 12:40, Darren Stevens &lt;<a href=3D"=
+mailto:darren@stevens-zone.net">darren@stevens-zone.net</a>&gt; wrote:<br><b=
+r></div><blockquote type=3D"cite"><div><span>Hello Bjorn</span><br><span></s=
+pan><br><span>Firstly sorry for not being&nbsp;able to join in this discussi=
+on, I have been</span><br><span>moving house and only got my X1000 set up ag=
+ain yesterday..</span><br><span></span><br><span>On 30/11/2017, Bjorn Helgaa=
+s wrote:</span><br><blockquote type=3D"cite"><span>I *think* something like t=
+he patch below should make this work if you</span><br></blockquote><blockquo=
+te type=3D"cite"><span>use the "pci=3Dpcie_scan_all" parameter. &nbsp;We hav=
+e some x86 DMI quirks</span><br></blockquote><blockquote type=3D"cite"><span=
+>that set PCI_SCAN_ALL_PCIE_DEVS automatically. &nbsp;I don't know how to do=
+</span><br></blockquote><blockquote type=3D"cite"><span>something similar on=
+ powerpc, but maybe you do?</span><br></blockquote><span></span><br><span>Ac=
+tually the root ports on the Nemo's PA6T processor don't respond to the</spa=
+n><br><span>SB600 unless we turn on a special 'relax pci-e' bit in one of it=
+s control</span><br><span>registers. We use a small out of tree init routine=
+ to do this, and there</span><br><span>would be the ideal place to put a cal=
+l to</span><br><span>pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS).</span><br><span><=
+/span><br><span>This patch fixes the last major hurdle to getting the X1000 f=
+ully supported in</span><br><span>the linux kernel, so thanks very much for t=
+hat.</span><br><span></span><br><span>Regards</span><br><span>Darren</span><=
+br><span></span><br></div></blockquote></div></body></html>=
+
+--Apple-Mail-5D467DE6-51B4-44F9-88F1-E7CE1EBB7423--
