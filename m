@@ -1,23 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
+ [66.111.4.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqskw0X1vzDsPq
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:45:44 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Fabio Estevam <festevam@gmail.com>
-Cc: paulus@samba.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "robh+dt\@kernel.org" <robh+dt@kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Fabio Estevam <fabio.estevam@nxp.com>
-Subject: Re: [PATCH] powerpc/40x: acadia: Fix the 'interrupt-parent' property
-In-Reply-To: <CAOMZO5Ai_S7LpY20pH2LoGuQTrX4ZLevfEhvj+LRrK7DG06oNw@mail.gmail.com>
-References: <1508245278-5692-1-git-send-email-fabio.estevam@nxp.com>
- <CAOMZO5Ai_S7LpY20pH2LoGuQTrX4ZLevfEhvj+LRrK7DG06oNw@mail.gmail.com>
-Date: Mon, 04 Dec 2017 15:45:43 +1100
-Message-ID: <87h8t73xu0.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqspd086XzDqmH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 15:48:56 +1100 (AEDT)
+Message-ID: <1512362926.1689.1.camel@russell.cc>
+Subject: Re: [PATCH v5 0/3] Prepartion for SR-IOV PowerVM Enablement
+From: Russell Currey <ruscur@russell.cc>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, helgaas@kernel.org,
+ bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
+ saeedm@mellanox.com
+Date: Mon, 04 Dec 2017 15:48:46 +1100
+In-Reply-To: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
+References: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fabio Estevam <festevam@gmail.com> writes:
+On Thu, 2017-11-09 at 08:00 -0600, Bryant G. Ly wrote:
+> v1 - Initial patch
+> v2 - Addressed Bjorn's comment on creating a highly platform
+>      dependent global exported symbol.
+> v3 - Based patch off linux-ppc/master
+> v4 - Using the sriov-drivers_autoprobe mechanism per Bjorn's request
+> v5 - Fixed comments and commit message
 
-> Hi Michael,
->
-> On Tue, Oct 17, 2017 at 11:01 AM, Fabio Estevam <fabio.estevam@nxp.com> wrote:
->> 'interrupts-parent' property does not exist. Fix the typo.
->>
->> Fixes: 00f3ca740a9c26 ("powerpc/40x: AMCC PowerPC 405EZ Acadia DTS")
->> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
->> ---
->>  arch/powerpc/boot/dts/acadia.dts | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
->> index 57291f6..8626615 100644
->> --- a/arch/powerpc/boot/dts/acadia.dts
->> +++ b/arch/powerpc/boot/dts/acadia.dts
->> @@ -183,7 +183,7 @@
->>                         usb@ef603000 {
->>                                 compatible = "ohci-be";
->>                                 reg = <0xef603000 0x80>;
->> -                               interrupts-parent = <&UIC0>;
->> +                               interrupt-parent = <&UIC0>;
->
-> Any comments?
+Looks good to me, for the whole series:
 
-Nope :)
+Acked-by: Russell Currey <ruscur@russell.cc>
 
-Will pick it up for 4.16.
-
-cheers
+> 
+> Bryant G. Ly (3):
+>   powerpc/kernel: Separate SR-IOV Calls
+>   pseries: Add PSeries SR-IOV Machine dependent calls
+>   PCI/IOV: Add pci_vf_drivers_autoprobe() interface
+> 
+>  arch/powerpc/include/asm/machdep.h           |  7 ++++++
+>  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
+>  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
+>  arch/powerpc/kernel/pci-common.c             | 23
+> +++++++++++++++++++
+>  arch/powerpc/kernel/pci_dn.c                 |  6 -----
+>  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--
+> ------------
+>  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24
+> ++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/pci.c         | 31
+> ++++++++++++++++++++++----
+>  drivers/pci/iov.c                            | 11 ++++++++++
+>  include/linux/pci.h                          |  2 ++
+>  11 files changed, 118 insertions(+), 33 deletions(-)
+> 
