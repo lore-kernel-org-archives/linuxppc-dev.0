@@ -1,21 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yr3tL3KMbzDrRT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 23:22:50 +1100 (AEDT)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Gibson <david@gibson.dropbear.id.au>,
- Serhii Popovych <spopovyc@redhat.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 0/4] Fix use after free in HPT resizing code and related
- minor improvements
-In-Reply-To: <20171204061025.GQ2130@umbus.fritz.box>
-References: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
- <20171204061025.GQ2130@umbus.fritz.box>
-Date: Mon, 04 Dec 2017 23:22:47 +1100
-Message-ID: <87indmsmw8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yr4cX1cHBzDrbM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 23:55:56 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] powerpc/64: do not trace irqs-off at interrupt return
+ to soft-disabled context
+In-Reply-To: <20171204160714.2ff62d11@roar.ozlabs.ibm.com>
+References: <20171116160052.18672-1-npiggin@gmail.com>
+ <20171116160052.18672-3-npiggin@gmail.com>
+ <87d13v3wpm.fsf@concordia.ellerman.id.au>
+ <20171204160714.2ff62d11@roar.ozlabs.ibm.com>
+Date: Mon, 04 Dec 2017 23:55:55 +1100
+Message-ID: <87fu8qsld0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,35 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Gibson <david@gibson.dropbear.id.au> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Wed, Nov 29, 2017 at 11:38:22AM -0500, Serhii Popovych wrote:
->> It is possible to trigger use after free during HPT resize
->> causing host kernel to crash. More details and analysis of
->> the problem can be found in change with corresponding subject
->> (KVM: PPC: Book3S HV: Fix use after free in case of multiple
->> resize requests).
->> 
->> We need some changes to prepare for the fix, especially
->> make ->error in HPT resize instance single point for
->> tracking allocation state, improve kvmppc_allocate_hpt()
->> and kvmppc_free_hpt() so they can be used more safely.
->> 
->> See individual commit description message to get more
->> information on changes presented.
+> On Mon, 04 Dec 2017 16:09:57 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> I spoke with Paul Mackerras about these patches on IRC today.  We want
-> this as a fix, ASAP, in 4.15.  However, he's uncomfortable with
-> pushing some of extra cleanups which aren't necessary for the bug fix
-> this late for 4.15, and was having trouble following what was the core
-> of the fix.  He was also nervous about the addition of more BUG_ON()s.
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> 
+>> > When an interrupt is returning to a soft-disabled context (which can
+>> > happen for non-maskable interrupts or synchronous interrupts), it goes
+>> > through the motions of soft-disabling again, including calling
+>> > TRACE_DISABLE_INTS (i.e., trace_hardirqs_off()).
+>> >
+>> > This is not necessary, because we must already be soft-disabled in the
+>> > interrupt context, it also may be causing crashes in the irq tracing
+>> > code to re-enter as an nmi. Replace it with a warning to ensure that
+>> > soft-interrupts are still disabled.
+>> >
+>> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> > ---
+>> >  arch/powerpc/kernel/entry_64.S | 10 +++++++---
+>> >  1 file changed, 7 insertions(+), 3 deletions(-)  
+>> 
+>> So this patch is the core of the bug fix I gather.
+>> 
+>> Git blames says:
+>> 
+>>   Fixes: 7c0482e3d055 ("powerpc/irq: Fix another case of lazy IRQ state getting out of sync")
+>>   Cc: stable@vger.kernel.org # v3.4+
+>> 
+>> But I'm wondering how this has been broken that long without us
+>> noticing? You hit it doing some sort of perf stress test I think - so is
+>> it just that we've never pushed hard enough? Or did something change to
+>> expose this? Or we're just not sure?
+>
+> I'm not really sure. A customer hit it, during either a stress test or
+> long running workload with lockdep irq tracing and perf running at the
+> same time. I don't have a lot more details but we might be able to get
+> some offline if necessary.
 
-As was I.
+No worries.
 
-> To avoid the round trip to Ukraine time and back, I've made revised
-> versions of patches 1 & 3 which should apply standalone, replaced the
-> BUG_ON()s with WARN_ON()s
-
-Thanks.
+I'll put it in and add it to my maybe-for-stable list. We can let it
+soak a bit and then send it to stable if we think it's necessary and has
+no issues.
 
 cheers
