@@ -1,28 +1,23 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yr3874tcHzDrp3
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 22:49:43 +1100 (AEDT)
-From: Darren Stevens <darren@stevens-zone.net>
-To: Bjorn Helgaas <helgaas@kernel.org>
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-pci@vger.kernel.org
-Date: Mon, 04 Dec 2017 11:40:11 +0000 (GMT)
-Message-ID: <4b18f51024d.45f899c9@auth.smtp.1and1.co.uk>
-In-Reply-To: <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
-References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
- <87tvxl15qx.fsf@concordia.ellerman.id.au>
- <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
- <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
- <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
- <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
- <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
- <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
-Subject: Re: SB600 for the Nemo board has non-zero devices on non-root bus
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yr3tL3KMbzDrRT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 23:22:50 +1100 (AEDT)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>,
+ Serhii Popovych <spopovyc@redhat.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 0/4] Fix use after free in HPT resizing code and related
+ minor improvements
+In-Reply-To: <20171204061025.GQ2130@umbus.fritz.box>
+References: <1511973506-65683-1-git-send-email-spopovyc@redhat.com>
+ <20171204061025.GQ2130@umbus.fritz.box>
+Date: Mon, 04 Dec 2017 23:22:47 +1100
+Message-ID: <87indmsmw8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Bjorn
+David Gibson <david@gibson.dropbear.id.au> writes:
 
-Firstly sorry for not being=A0able to join in this discussion, I have been
-moving house and only got my X1000 set up again yesterday..
+> On Wed, Nov 29, 2017 at 11:38:22AM -0500, Serhii Popovych wrote:
+>> It is possible to trigger use after free during HPT resize
+>> causing host kernel to crash. More details and analysis of
+>> the problem can be found in change with corresponding subject
+>> (KVM: PPC: Book3S HV: Fix use after free in case of multiple
+>> resize requests).
+>> 
+>> We need some changes to prepare for the fix, especially
+>> make ->error in HPT resize instance single point for
+>> tracking allocation state, improve kvmppc_allocate_hpt()
+>> and kvmppc_free_hpt() so they can be used more safely.
+>> 
+>> See individual commit description message to get more
+>> information on changes presented.
+>
+> I spoke with Paul Mackerras about these patches on IRC today.  We want
+> this as a fix, ASAP, in 4.15.  However, he's uncomfortable with
+> pushing some of extra cleanups which aren't necessary for the bug fix
+> this late for 4.15, and was having trouble following what was the core
+> of the fix.  He was also nervous about the addition of more BUG_ON()s.
 
-On 30/11/2017, Bjorn Helgaas wrote:
-> I *think* something like the patch below should make this work if you
-> use the "pci=3Dpcie_scan_all" parameter.  We have some x86 DMI quirks
-> that set PCI_SCAN_ALL_PCIE_DEVS automatically.  I don't know how to do
-> something similar on powerpc, but maybe you do?
+As was I.
 
-Actually the root ports on the Nemo's PA6T processor don't respond to the
-SB600 unless we turn on a special 'relax pci-e' bit in one of its control
-registers. We use a small out of tree init routine to do this, and there
-would be the ideal place to put a call to
-pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS).
+> To avoid the round trip to Ukraine time and back, I've made revised
+> versions of patches 1 & 3 which should apply standalone, replaced the
+> BUG_ON()s with WARN_ON()s
 
-This patch fixes the last major hurdle to getting the X1000 fully supporte=
-d in
-the linux kernel, so thanks very much for that.
+Thanks.
 
-Regards
-Darren
+cheers
