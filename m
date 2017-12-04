@@ -1,30 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yqv8W5yCbzDvJ4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 16:49:31 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB45mvSs100376
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Dec 2017 00:49:29 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2en0htr0g5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 00:49:28 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 4 Dec 2017 05:49:27 -0000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH V2] powerpc/mm: Invalidate subpage_prot() system call on radix
- platforms
-Date: Mon,  4 Dec 2017 11:19:22 +0530
-Message-Id: <20171204054922.16075-1-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yqvYJ10sgzDr1t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Dec 2017 17:07:31 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id f12so7511656pgo.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Dec 2017 22:07:31 -0800 (PST)
+Date: Mon, 4 Dec 2017 16:07:14 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] powerpc/64: do not trace irqs-off at interrupt
+ return to soft-disabled context
+Message-ID: <20171204160714.2ff62d11@roar.ozlabs.ibm.com>
+In-Reply-To: <87d13v3wpm.fsf@concordia.ellerman.id.au>
+References: <20171116160052.18672-1-npiggin@gmail.com>
+ <20171116160052.18672-3-npiggin@gmail.com>
+ <87d13v3wpm.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Radix enabled platforms don't support subpage_prot() system calls. But
-at present the system call goes through without an error and fails
-later on while validating expected subpage accesses. Lets not allow
-the system call on powerpc radix platforms to begin with to prevent
-this confusion in user space.
+On Mon, 04 Dec 2017 16:09:57 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
-Changes in V2:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > When an interrupt is returning to a soft-disabled context (which can
+> > happen for non-maskable interrupts or synchronous interrupts), it goes
+> > through the motions of soft-disabling again, including calling
+> > TRACE_DISABLE_INTS (i.e., trace_hardirqs_off()).
+> >
+> > This is not necessary, because we must already be soft-disabled in the
+> > interrupt context, it also may be causing crashes in the irq tracing
+> > code to re-enter as an nmi. Replace it with a warning to ensure that
+> > soft-interrupts are still disabled.
+> >
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/kernel/entry_64.S | 10 +++++++---
+> >  1 file changed, 7 insertions(+), 3 deletions(-)  
+> 
+> So this patch is the core of the bug fix I gather.
+> 
+> Git blames says:
+> 
+>   Fixes: 7c0482e3d055 ("powerpc/irq: Fix another case of lazy IRQ state getting out of sync")
+>   Cc: stable@vger.kernel.org # v3.4+
+> 
+> But I'm wondering how this has been broken that long without us
+> noticing? You hit it doing some sort of perf stress test I think - so is
+> it just that we've never pushed hard enough? Or did something change to
+> expose this? Or we're just not sure?
 
-Now it returns -ENOENT error instead as per Michael Ellerman.
+I'm not really sure. A customer hit it, during either a stress test or
+long running workload with lockdep irq tracing and perf running at the
+same time. I don't have a lot more details but we might be able to get
+some offline if necessary.
 
- arch/powerpc/mm/subpage-prot.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-index 781532d..f14a07c 100644
---- a/arch/powerpc/mm/subpage-prot.c
-+++ b/arch/powerpc/mm/subpage-prot.c
-@@ -195,6 +195,9 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
- 	unsigned long next, limit;
- 	int err;
- 
-+	if (radix_enabled())
-+		return -ENOENT;
-+
- 	/* Check parameters */
- 	if ((addr & ~PAGE_MASK) || (len & ~PAGE_MASK) ||
- 	    addr >= mm->task_size || len >= mm->task_size ||
--- 
-1.8.3.1
+Thanks,
+Nick
