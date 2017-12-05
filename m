@@ -1,29 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrPDL0ZtczDrKp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 12:24:31 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id j4so9537996pgp.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 17:24:31 -0800 (PST)
-Subject: Re: [PATCH v5 0/3] Prepartion for SR-IOV PowerVM Enablement
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, helgaas@kernel.org,
- bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com
-References: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
- <520bad85-e4a5-a8a8-c893-e53e7b46c65c@ozlabs.ru>
- <3a49b44e-833a-8440-aa3c-a4984ac47147@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <466ac4c0-6503-a2eb-e352-d2bdfca10cb5@ozlabs.ru>
-Date: Tue, 5 Dec 2017 12:24:21 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrRRw3CBTzDsFZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 14:04:44 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@ozlabs.org>, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2] powerpc/64s: ISAv3 initialize MMU registers before
+ setting partition table
+In-Reply-To: <20171204024055.11108-1-npiggin@gmail.com>
+References: <20171204024055.11108-1-npiggin@gmail.com>
+Date: Tue, 05 Dec 2017 14:04:42 +1100
+Message-ID: <87d13tswmt.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <3a49b44e-833a-8440-aa3c-a4984ac47147@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/12/17 02:08, Bryant G. Ly wrote:
-> 
-> 
-> On 12/2/17 7:45 PM, Alexey Kardashevskiy wrote:
->> On 10/11/17 01:00, Bryant G. Ly wrote:
->>> v1 - Initial patch
->>> v2 - Addressed Bjorn's comment on creating a highly platform
->>>      dependent global exported symbol.
->>> v3 - Based patch off linux-ppc/master
->>> v4 - Using the sriov-drivers_autoprobe mechanism per Bjorn's request
->>> v5 - Fixed comments and commit message
->>
->> What is this made against of? I'd like to give it a try but it does not
->> apply to Linus'es tree or powerpc/next. Thanks.
->>
-> This was made against powerpc/next back when it was still under 4.14-rc6.
-> It has been in review for awhile... 
+Hi Nick,
 
-Sure, sha1 or github tree would be enough though to try.
+Sorry I didn't reply sooner.
+
+Nicholas Piggin <npiggin@gmail.com> writes:
+
+> kexec can leave MMU registers set when booting into a new kernel, PIDR
+> in particular. The boot sequence does not zero PIDR, so it only gets
+> set when CPUs first switch to a userspace processes (until then it's
+> running a kernel thread with effective PID = 0).
+>
+> This leaves a window where a process table entry and page tables are
+> set up due to user processes running on other CPUs, that happen to
+> match with a stale PID. The CPU with that PID may cause speculative
+> accesses that address quadrant 0, which will result in cached
+> translations and PWC for that process, on a CPU which is not in the
+> mm_cpumask and so they will not get invalidated properly.
+>
+> The most common result is the kernel hanging in infinite page fault
+> loops soon after kexec (usually in schedule_tail, which is usually the
+> first non-speculative quardant 0 access to a new PID) due to a stale
+> PWC. However being a stale translation erorr, it could result in
+> anything up to security and data corruption errors.
+>
+> Fix this by zeroing out PIDR before setting PTCR.
+>
+> LPIDR is also not initialized, and may cause a similar issue with
+> speculative access to quadrant 1/2. This has not been observed, but
+> LPIDR is cleared to prevent that possibility.
+
+Isn't LPID initialised in __setup_cpu_power9() and __restore_cpu_power9() ?
+
+eg:
+
+_GLOBAL(__setup_cpu_power9)
+	mflr	r11
+	bl	__init_FSCR
+	bl	__init_PMU
+	bl	__init_hvmode_206
+	mtlr	r11
+	beqlr
+	li	r0,0
+	mtspr	SPRN_PSSCR,r0
+	mtspr	SPRN_LPID,r0
 
 
-> 
-> -Bryant
-> 
->>> Bryant G. Ly (3):
->>>   powerpc/kernel: Separate SR-IOV Calls
->>>   pseries: Add PSeries SR-IOV Machine dependent calls
->>>   PCI/IOV: Add pci_vf_drivers_autoprobe() interface
->>>
->>>  arch/powerpc/include/asm/machdep.h           |  7 ++++++
->>>  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
->>>  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
->>>  arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
->>>  arch/powerpc/kernel/pci_dn.c                 |  6 -----
->>>  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
->>>  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
->>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
->>>  arch/powerpc/platforms/pseries/pci.c         | 31 ++++++++++++++++++++++----
->>>  drivers/pci/iov.c                            | 11 ++++++++++
->>>  include/linux/pci.h                          |  2 ++
->>>  11 files changed, 118 insertions(+), 33 deletions(-)
->>>
->>
-> 
+Similarly, shouldn't we be doing the PID initialisation there as well?
 
-
--- 
-Alexey
+cheers
