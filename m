@@ -1,24 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrRSY73RtzF065
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 14:05:17 +1100 (AEDT)
-Date: Tue, 5 Dec 2017 14:05:12 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Paolo Bonzini <pbonzini@redhat.com>, Thomas Huth <thuth@redhat.com>,
- Sam Bobroff <sbobroff@redhat.com>
-Subject: Re: [PATCH] powerpc/xive: store server for masked interrupt in
- kvmppc_xive_set_xive()
-Message-ID: <20171205030512.daghjczlensy7252@rohan>
-References: <20171123090633.873-1-lvivier@redhat.com>
- <1511469493.2466.47.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrSzV0s0lzDrpk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 15:13:41 +1100 (AEDT)
+Subject: Re: [PATCH 04/10] ASoC: fsl_ssi: Refine all comments
+To: Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, fabio.estevam@nxp.com,
+ mail@maciej.szmigiero.name, caleb@crome.org, lgirdwood@gmail.com
+References: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
+ <1512420403-10164-5-git-send-email-nicoleotsuka@gmail.com>
+From: Timur Tabi <timur@tabi.org>
+Message-ID: <8e5229a8-5f3f-d55f-95dc-2b33657b9c9a@tabi.org>
+Date: Mon, 4 Dec 2017 22:04:57 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1511469493.2466.47.camel@kernel.crashing.org>
+In-Reply-To: <1512420403-10164-5-git-send-email-nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 24, 2017 at 07:38:13AM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2017-11-23 at 10:06 +0100, Laurent Vivier wrote:
-> > This is needed to map kvmppc_xive_set_xive() behavior
-> > to kvmppc_xics_set_xive().
-> > 
-> > As we store the server, kvmppc_xive_get_xive() can return
-> > the good value and we can also allow kvmppc_xive_int_on().
-> > 
-> > Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> > ---
-> >  arch/powerpc/kvm/book3s_xive.c | 20 ++++++++------------
-> >  1 file changed, 8 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-> > index bf457843e032..2781b8733038 100644
-> > --- a/arch/powerpc/kvm/book3s_xive.c
-> > +++ b/arch/powerpc/kvm/book3s_xive.c
-> > @@ -584,10 +584,14 @@ int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
-> >  	 *       we could initialize interrupts with valid default
-> >  	 */
-> >  
-> > -	if (new_act_prio != MASKED &&
-> > -	    (state->act_server != server ||
-> > -	     state->act_priority != new_act_prio))
-> > -		rc = xive_target_interrupt(kvm, state, server, new_act_prio);
-> > +	if (state->act_server != server ||
-> > +	    state->act_priority != new_act_prio) {
-> > +		if (new_act_prio != MASKED)
-> > +			rc = xive_target_interrupt(kvm, state, server,
-> > +						   new_act_prio);
-> > +		if (!rc)
-> > +			state->act_server = server;
-> > +	}
+On 12/4/17 2:46 PM, Nicolin Chen wrote:
+> This patch refines the comments by:
+> 1) Removing all out-of-date comments
+> 2) Removing all not-so-useful comments
+> 3) Unifying the styles of all comments
+> 4) Simplifying over-descriptive comments
+> 5) Adding comments to improve code readablity
+> 6) Moving all register related comments to fsl_ssi.h
+> 7) Adding comments to all register and field defines
 > 
-> That leads to another problem with this code. My current implementation
-> is such that is a target queue is full, it will pick another target.
-> But here, we still update act_server to the passed-in server and
-> not the actual target...
+> Even after adding dozens of lines in fsl_ssi.h, this patch reduces
+> 100 lines totally.
 
-So does that amount to a NAK?
-
-> >  	/*
-> >  	 * Perform the final unmasking of the interrupt source
-> > @@ -646,14 +650,6 @@ int kvmppc_xive_int_on(struct kvm *kvm, u32 irq)
-> >  
-> >  	pr_devel("int_on(irq=0x%x)\n", irq);
-> >  
-> > -	/*
-> > -	 * Check if interrupt was not targetted
-> > -	 */
-> > -	if (state->act_priority == MASKED) {
-> > -		pr_devel("int_on on untargetted interrupt\n");
-> > -		return -EINVAL;
-> > -	}
-> > -
-> 
-> So my thinking here was that act_priority was never going to be MASKED
-> except if the interrupt had never been targetted anywhere at machine
-> startup time. Thus if act_priority is masked, the act_server field
-> cannot be trusted.
-> 
-> >  	/* If saved_priority is 0xff, do nothing */
-> >  	if (state->saved_priority == MASKED)
-> >  		return 0;
-
-How do you think this should be fixed?
-
-Laurent, are you reworking the patch at the moment?
-
-Paul.
+I'll review the other patches later, but I'm not keen on your removal of 
+some of the comments in this patch.  I don't see why line count is so 
+important, and you're removing some informative text.  I can see 
+removing trivial comments and outdated ones, but "no-so-useful" and 
+"over-descriptive" are subjective.
