@@ -1,34 +1,25 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrpzZ577jzDrpd
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 04:44:57 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB5HcrFZ035135
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Dec 2017 12:44:54 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2envy1ty8q-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 12:44:53 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 5 Dec 2017 17:44:51 -0000
-Subject: Re: [PATCH] cxl: Enable PCI device ID for future CAPI adapter
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-References: <1512493568-1751-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Tue, 5 Dec 2017 18:44:49 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrqSx6G6DzDrqK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 05:06:55 +1100 (AEDT)
+Date: Tue, 5 Dec 2017 18:06:50 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, mpe <mpe@ellerman.id.au>,
+ sachinp <sachinp@linux.vnet.ibm.com>
+Subject: Re: [linux-next][41e83b9][gcc 4.8.5] make modules fail at
+ net/netfilter/xt_bpf.ko
+Message-ID: <20171205180650.GV21978@ZenIV.linux.org.uk>
+References: <1512484991.13113.11.camel@abdul>
 MIME-Version: 1.0
-In-Reply-To: <1512493568-1751-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <2560a2da-622a-c12e-984c-72cdc796a82f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1512484991.13113.11.camel@abdul>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 05/12/2017 à 18:06, Christophe Lombard a écrit :
-> Add support for future Coherent Accelerator device with an
-> ID of 0x060e.
+On Tue, Dec 05, 2017 at 08:13:11PM +0530, Abdul Haleem wrote:
+> Hi Al Viro,
 > 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
-
-mpe, you can drop that patch, it's not needed. Christophe and I have 
-sync'd up.
-
-   Fred
-
-
->   drivers/misc/cxl/pci.c | 1 +
->   1 file changed, 1 insertion(+)
+> Today's next kernel build failed with commit 41e83b9: fix "netfilter:
+> xt_bpf: Fix XT_BPF_MODE_FD_PINNED
 > 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 19969ee..5f5b9aa 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -123,6 +123,7 @@ static const struct pci_device_id cxl_pci_tbl[] = {
->   	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
->   	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
->   	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x060e), },
->   	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0623), },
->   	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0628), },
->   	{ PCI_DEVICE_CLASS(0x120000, ~0), },
+> Machine Type: Power 7
+> kernel version: 4.15.0-rc2-next-20171204
+> kernel config: attached
+> test: 'make modules'
 > 
+> ERROR: ".bpf_prog_get_type_path" [net/netfilter/xt_bpf.ko] undefined!
+> 
+> Kernel built fine when bad commit is reverted.
+
+In the same commit there's
+
++EXPORT_SYMBOL(bpf_prog_get_type_path);
+
+so I really wonder WTF is going on...
+
+Oh, I see.  !BPF_SYSCALL and NETFILTER_XT_MATCH_BPF in .config triggers
+that.  Incremental (to be folded into the commit in question) follows:
+
+diff --git a/include/linux/bpf.h b/include/linux/bpf.h
+index a7000e4775e7..571450f98006 100644
+--- a/include/linux/bpf.h
++++ b/include/linux/bpf.h
+@@ -419,6 +419,8 @@ static inline int bpf_map_attr_numa_node(const union bpf_attr *attr)
+ 		attr->numa_node : NUMA_NO_NODE;
+ }
+ 
++struct bpf_prog *bpf_prog_get_type_path(const char *name, enum bpf_prog_type type);
++
+ #else /* !CONFIG_BPF_SYSCALL */
+ static inline struct bpf_prog *bpf_prog_get(u32 ufd)
+ {
+@@ -506,6 +508,12 @@ static inline int cpu_map_enqueue(struct bpf_cpu_map_entry *rcpu,
+ {
+ 	return 0;
+ }
++
++static inline struct bpf_prog *bpf_prog_get_type_path(const char *name,
++				enum bpf_prog_type type)
++{
++	return -EOPNOTSUPP;
++}
+ #endif /* CONFIG_BPF_SYSCALL */
+ 
+ static inline struct bpf_prog *bpf_prog_get_type(u32 ufd,
+@@ -514,7 +522,6 @@ static inline struct bpf_prog *bpf_prog_get_type(u32 ufd,
+ 	return bpf_prog_get_type_dev(ufd, type, false);
+ }
+ 
+-struct bpf_prog *bpf_prog_get_type_path(const char *name, enum bpf_prog_type type);
+ bool bpf_prog_get_ok(struct bpf_prog *, enum bpf_prog_type *, bool);
+ 
+ int bpf_prog_offload_compile(struct bpf_prog *prog);
