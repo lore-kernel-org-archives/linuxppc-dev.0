@@ -1,24 +1,41 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrtw84pCbzDrcP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 07:42:16 +1100 (AEDT)
-Message-ID: <1512504621.10062.10.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Leo Li <leoyang.li@nxp.com>, Joakim Tjernlund
- <Joakim.Tjernlund@infinera.com>, York Sun <york.sun@nxp.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 05 Dec 2017 14:10:21 -0600
-In-Reply-To: <AM4PR0401MB1699F76EB10DD25705C4A8B98F3D0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-References: <20170905115943.19919-1-joakim.tjernlund@infinera.com>
- <VI1PR04MB20787FDC28E53BF15DF8E3949A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1511284624.4775.138.camel@infinera.com>
- <AM4PR0401MB1699F76EB10DD25705C4A8B98F3D0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrvYb0hv6zDr8Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 08:11:14 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB5L9oT3010499
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Dec 2017 16:11:11 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eny1qvj9e-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 16:11:10 -0500
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 5 Dec 2017 16:11:09 -0500
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ vB5LB7VC46989520
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Dec 2017 21:11:07 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 82A172803E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 16:10:34 -0500 (EST)
+Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id 542042803D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 16:10:34 -0500 (EST)
+Subject: [PATCH] powerpc/numa: Invalidate numa_cpu_lookup_table on cpu remove
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 05 Dec 2017 14:55:41 -0600
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <151250734088.18010.16614705059743383721.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,72 +45,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-12-05 at 15:16 +0000, Leo Li wrote:
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> > Sent: Tuesday, November 21, 2017 11:17 AM
-> > To: Leo Li <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
-> > 
-> > On Wed, 2017-09-06 at 19:19 +0000, Leo Li wrote:
-> > > > -----Original Message-----
-> > > > From: York Sun
-> > > > Sent: Wednesday, September 06, 2017 10:34 AM
-> > > > To: Leo Li <leoyang.li@nxp.com>
-> > > > Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-dev
-> > > > linuxppc- dev <linuxppc-dev@lists.ozlabs.org>
-> > > > Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
-> > > > 
-> > > > On 09/05/2017 04:59 AM, Joakim Tjernlund wrote:
-> > > > > get_user() had it args reversed causing NIP to be NULL:ed instead
-> > > > > of fixing up the PCI access.
-> > > > > 
-> > > > > Note: This still hangs my P1020 Freescale CPU hard, but at least I
-> > > > > get a NIP now.
-> > > > > 
-> > > > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
-> > > > > ---
-> > > > >   arch/powerpc/sysdev/fsl_pci.c | 2 +-
-> > > > >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > 
-> > > > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
-> > > > > b/arch/powerpc/sysdev/fsl_pci.c index 7c8b779c329a..9e64c12dff6a
-> > > > > 100644
-> > > > > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > > > > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > > > > @@ -996,7 +996,7 @@ int fsl_pci_mcheck_exception(struct pt_regs
-> > 
-> > *regs)
-> > > > >   	if (is_in_pci_mem_space(addr)) {
-> > > > >   		if (user_mode(regs)) {
-> > > > >   			pagefault_disable();
-> > > > > -			ret = get_user(regs->nip, &inst);
-> > > > > +			ret = get_user(inst, (__u32 __user *)regs-
-> > > > > >nip);
-> > > > >   			pagefault_enable();
-> > > > >   		} else {
-> > > > >   			ret = probe_kernel_address(regs->nip,
-> > > > > inst);
-> > > > > 
-> > > > 
-> > > > Leo,
-> > > > 
-> > > > Can you take a look, or assign it to someone who is familiar with this
-> > 
-> > code?
-> > > 
-> > > Acked-by: Li Yang <leoyang.li@nxp.com>
-> > > 
-> > > Regards,
-> > > Leo
-> > 
-> > I think this is forgotten, cannot se it in Linus tree.
-> 
-> Hi Scott,
-> 
-> Could you help to review this patch and pick it up?  Thanks.
+When DLPAR removing a CPU, the unmapping of the cpu from a node in
+unmap_cpu_from_node() should also invalidate the CPUs entry in the
+numa_cpu_lookup_table. There is not a guarantee that on a subsequent
+DLPAR add of the CPU the associativity will be the same and thus
+could be in a different node. Invalidating the entry in the
+numa_cpu_lookup_table causes the associativity to be read from the
+device tree at the time of the add.
 
-Sure... In the future please CC me on patches you want me to pick up.
+The current behavior of not invalidating the CPUs entry in the
+numa_cpu_lookup_table can result in scenarios where the the topology
+layout of CPUs in the partition does not match the device tree
+or the topology reported by the HMC.
 
--Scott
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index adb6364f4091..415b1a76b429 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -164,6 +164,8 @@ static void unmap_cpu_from_node(unsigned long cpu)
+ 
+ 	dbg("removing cpu %lu from node %d\n", cpu, node);
+ 
++	update_numa_cpu_lookup_table(cpu, -1);
++
+ 	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
+ 		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
+ 	} else {
