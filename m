@@ -1,27 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
- [IPv6:2607:f8b0:400e:c00::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrWBs1t4JzF07C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 16:53:41 +1100 (AEDT)
-Received: by mail-pf0-x235.google.com with SMTP id e3so10439673pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 21:53:40 -0800 (PST)
-Date: Tue, 5 Dec 2017 15:53:17 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@ozlabs.org>, Michael
- Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v2] powerpc/64s: ISAv3 initialize MMU registers before
- setting partition table
-Message-ID: <20171205155317.6df2a891@roar.ozlabs.ibm.com>
-In-Reply-To: <87d13tswmt.fsf@concordia.ellerman.id.au>
-References: <20171204024055.11108-1-npiggin@gmail.com>
- <87d13tswmt.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrZ8W0srbzDrbY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 19:06:51 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/xive: store server for masked interrupt in
+ kvmppc_xive_set_xive()
+To: Paul Mackerras <paulus@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Huth <thuth@redhat.com>, Sam Bobroff <sbobroff@redhat.com>
+References: <20171123090633.873-1-lvivier@redhat.com>
+ <1511469493.2466.47.camel@kernel.crashing.org>
+ <20171205030512.daghjczlensy7252@rohan>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <04b2c33d-f080-83d0-229c-77bb70eced4a@redhat.com>
+Date: Tue, 5 Dec 2017 09:06:46 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20171205030512.daghjczlensy7252@rohan>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,59 +29,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 05 Dec 2017 14:04:42 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On 05/12/2017 04:05, Paul Mackerras wrote:
+> On Fri, Nov 24, 2017 at 07:38:13AM +1100, Benjamin Herrenschmidt wrote:
+>> On Thu, 2017-11-23 at 10:06 +0100, Laurent Vivier wrote:
+>>> This is needed to map kvmppc_xive_set_xive() behavior
+>>> to kvmppc_xics_set_xive().
+>>>
+>>> As we store the server, kvmppc_xive_get_xive() can return
+>>> the good value and we can also allow kvmppc_xive_int_on().
+>>>
+>>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>>> ---
+>>>  arch/powerpc/kvm/book3s_xive.c | 20 ++++++++------------
+>>>  1 file changed, 8 insertions(+), 12 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+>>> index bf457843e032..2781b8733038 100644
+>>> --- a/arch/powerpc/kvm/book3s_xive.c
+>>> +++ b/arch/powerpc/kvm/book3s_xive.c
+>>> @@ -584,10 +584,14 @@ int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
+>>>  	 *       we could initialize interrupts with valid default
+>>>  	 */
+>>>  
+>>> -	if (new_act_prio != MASKED &&
+>>> -	    (state->act_server != server ||
+>>> -	     state->act_priority != new_act_prio))
+>>> -		rc = xive_target_interrupt(kvm, state, server, new_act_prio);
+>>> +	if (state->act_server != server ||
+>>> +	    state->act_priority != new_act_prio) {
+>>> +		if (new_act_prio != MASKED)
+>>> +			rc = xive_target_interrupt(kvm, state, server,
+>>> +						   new_act_prio);
+>>> +		if (!rc)
+>>> +			state->act_server = server;
+>>> +	}
+>>
+>> That leads to another problem with this code. My current implementation
+>> is such that is a target queue is full, it will pick another target.
+>> But here, we still update act_server to the passed-in server and
+>> not the actual target...
+> 
+> So does that amount to a NAK?
+> 
+>>>  	/*
+>>>  	 * Perform the final unmasking of the interrupt source
+>>> @@ -646,14 +650,6 @@ int kvmppc_xive_int_on(struct kvm *kvm, u32 irq)
+>>>  
+>>>  	pr_devel("int_on(irq=0x%x)\n", irq);
+>>>  
+>>> -	/*
+>>> -	 * Check if interrupt was not targetted
+>>> -	 */
+>>> -	if (state->act_priority == MASKED) {
+>>> -		pr_devel("int_on on untargetted interrupt\n");
+>>> -		return -EINVAL;
+>>> -	}
+>>> -
+>>
+>> So my thinking here was that act_priority was never going to be MASKED
+>> except if the interrupt had never been targetted anywhere at machine
+>> startup time. Thus if act_priority is masked, the act_server field
+>> cannot be trusted.
+>>
+>>>  	/* If saved_priority is 0xff, do nothing */
+>>>  	if (state->saved_priority == MASKED)
+>>>  		return 0;
+> 
+> How do you think this should be fixed?
+> 
+> Laurent, are you reworking the patch at the moment?
 
-> Hi Nick,
-> 
-> Sorry I didn't reply sooner.
-> 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > kexec can leave MMU registers set when booting into a new kernel, PIDR
-> > in particular. The boot sequence does not zero PIDR, so it only gets
-> > set when CPUs first switch to a userspace processes (until then it's
-> > running a kernel thread with effective PID = 0).
-> >
-> > This leaves a window where a process table entry and page tables are
-> > set up due to user processes running on other CPUs, that happen to
-> > match with a stale PID. The CPU with that PID may cause speculative
-> > accesses that address quadrant 0, which will result in cached
-> > translations and PWC for that process, on a CPU which is not in the
-> > mm_cpumask and so they will not get invalidated properly.
-> >
-> > The most common result is the kernel hanging in infinite page fault
-> > loops soon after kexec (usually in schedule_tail, which is usually the
-> > first non-speculative quardant 0 access to a new PID) due to a stale
-> > PWC. However being a stale translation erorr, it could result in
-> > anything up to security and data corruption errors.
-> >
-> > Fix this by zeroing out PIDR before setting PTCR.
-> >
-> > LPIDR is also not initialized, and may cause a similar issue with
-> > speculative access to quadrant 1/2. This has not been observed, but
-> > LPIDR is cleared to prevent that possibility.  
-> 
-> Isn't LPID initialised in __setup_cpu_power9() and __restore_cpu_power9() ?
-> 
-> eg:
-> 
-> _GLOBAL(__setup_cpu_power9)
-> 	mflr	r11
-> 	bl	__init_FSCR
-> 	bl	__init_PMU
-> 	bl	__init_hvmode_206
-> 	mtlr	r11
-> 	beqlr
-> 	li	r0,0
-> 	mtspr	SPRN_PSSCR,r0
-> 	mtspr	SPRN_LPID,r0
-> 
-> 
-> Similarly, shouldn't we be doing the PID initialisation there as well?
+Not for the moment.
 
-Hmm, yes I must have missed that! Yes that would be the best place to
-put it.
+The easy way is to forbid to set interrupt value to the MASKED one with
+xive_set_xive. I think it's allowed by the specs.
+
+I've got another bug in the XICS emulation: when we migrate a guest
+under stress, the pending interrupt is lost and the guest hangs on the
+destination side. I'm trying to understand why.
 
 Thanks,
-Nick
+Laurent
