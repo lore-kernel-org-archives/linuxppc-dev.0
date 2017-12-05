@@ -1,24 +1,29 @@
-Return-Path: <leoyang.li@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00041.outbound.protection.outlook.com [40.107.0.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrlhQ2FvnzDrJY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 02:16:35 +1100 (AEDT)
-From: Leo Li <leoyang.li@nxp.com>
-To: "oss@buserror.net" <oss@buserror.net>, Joakim Tjernlund
- <Joakim.Tjernlund@infinera.com>, York Sun <york.sun@nxp.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
-Date: Tue, 5 Dec 2017 15:16:28 +0000
-Message-ID: <AM4PR0401MB1699F76EB10DD25705C4A8B98F3D0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
-References: <20170905115943.19919-1-joakim.tjernlund@infinera.com>
- <VI1PR04MB20787FDC28E53BF15DF8E3949A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <1511284624.4775.138.camel@infinera.com>
-In-Reply-To: <1511284624.4775.138.camel@infinera.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrp6x5Rt9zDqrG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 04:06:17 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB5H6AtP002983
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Dec 2017 12:06:13 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eny3f9kyn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 12:06:13 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Tue, 5 Dec 2017 17:06:11 -0000
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH] cxl: Enable PCI device ID for future CAPI adapter
+Date: Tue,  5 Dec 2017 18:06:08 +0100
+Message-Id: <1512493568-1751-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add support for future Coherent Accelerator device with an
+ID of 0x060e.
 
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/pci.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
-> Sent: Tuesday, November 21, 2017 11:17 AM
-> To: Leo Li <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
->=20
-> On Wed, 2017-09-06 at 19:19 +0000, Leo Li wrote:
-> > > -----Original Message-----
-> > > From: York Sun
-> > > Sent: Wednesday, September 06, 2017 10:34 AM
-> > > To: Leo Li <leoyang.li@nxp.com>
-> > > Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-dev
-> > > linuxppc- dev <linuxppc-dev@lists.ozlabs.org>
-> > > Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
-> > >
-> > > On 09/05/2017 04:59 AM, Joakim Tjernlund wrote:
-> > > > get_user() had it args reversed causing NIP to be NULL:ed instead
-> > > > of fixing up the PCI access.
-> > > >
-> > > > Note: This still hangs my P1020 Freescale CPU hard, but at least I
-> > > > get a NIP now.
-> > > >
-> > > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
-> > > > ---
-> > > >   arch/powerpc/sysdev/fsl_pci.c | 2 +-
-> > > >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > > >
-> > > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
-> > > > b/arch/powerpc/sysdev/fsl_pci.c index 7c8b779c329a..9e64c12dff6a
-> > > > 100644
-> > > > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > > > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > > > @@ -996,7 +996,7 @@ int fsl_pci_mcheck_exception(struct pt_regs
-> *regs)
-> > > >   	if (is_in_pci_mem_space(addr)) {
-> > > >   		if (user_mode(regs)) {
-> > > >   			pagefault_disable();
-> > > > -			ret =3D get_user(regs->nip, &inst);
-> > > > +			ret =3D get_user(inst, (__u32 __user *)regs->nip);
-> > > >   			pagefault_enable();
-> > > >   		} else {
-> > > >   			ret =3D probe_kernel_address(regs->nip, inst);
-> > > >
-> > >
-> > > Leo,
-> > >
-> > > Can you take a look, or assign it to someone who is familiar with thi=
-s
-> code?
-> >
-> > Acked-by: Li Yang <leoyang.li@nxp.com>
-> >
-> > Regards,
-> > Leo
->=20
-> I think this is forgotten, cannot se it in Linus tree.
-
-Hi Scott,
-
-Could you help to review this patch and pick it up?  Thanks.
-
-Regards,
-Leo
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 19969ee..5f5b9aa 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -123,6 +123,7 @@ static const struct pci_device_id cxl_pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
++	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x060e), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0623), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0628), },
+ 	{ PCI_DEVICE_CLASS(0x120000, ~0), },
+-- 
+2.7.4
