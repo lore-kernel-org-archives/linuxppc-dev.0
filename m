@@ -1,25 +1,26 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrsNF41hhzDrvB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 06:33:00 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id q20so862500pgv.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 11:33:00 -0800 (PST)
-Date: Tue, 5 Dec 2017 11:33:00 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrsWN1VJJzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 06:39:11 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id d23so908309pfe.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 11:39:11 -0800 (PST)
+Date: Tue, 5 Dec 2017 11:39:13 -0800
 From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: broonie@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- fabio.estevam@nxp.com, timur@tabi.org, caleb@crome.org, lgirdwood@gmail.com
-Subject: Re: [PATCH 00/10] ASoC: fsl_ssi: Clean up - coding style level
-Message-ID: <20171205193258.GA11039@Asurada-Nvidia>
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, fabio.estevam@nxp.com, timur@tabi.org,
+ mail@maciej.szmigiero.name, caleb@crome.org, lgirdwood@gmail.com
+Subject: Re: [PATCH 01/10] ASoC: fsl_ssi: Remove unused struct device
+Message-ID: <20171205193912.GB11039@Asurada-Nvidia>
 References: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
- <81e17b9c-e878-1fe9-bb6f-b074d5766232@maciej.szmigiero.name>
+ <1512420403-10164-2-git-send-email-nicoleotsuka@gmail.com>
+ <20171205130446.GI11658@finisterre>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <81e17b9c-e878-1fe9-bb6f-b074d5766232@maciej.szmigiero.name>
+In-Reply-To: <20171205130446.GI11658@finisterre>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 05, 2017 at 02:01:17PM +0100, Maciej S. Szmigiero wrote:
+On Tue, Dec 05, 2017 at 01:04:46PM +0000, Mark Brown wrote:
+> On Mon, Dec 04, 2017 at 12:46:34PM -0800, Nicolin Chen wrote:
+> > struct device is defined in system level header files any way.
+> > As long as fsl_ssi.h is included after those header files, it
+> > should be safe to remove this line.
+> 
+> It's better practice to either directly include those headers or have a
+> forward declaration like this, it means there's no way things can go
+> wrong.
 
-> > ==Verification==
-> > Theoretically, it only needs code review, build and sanity tests. I
-> > have done build and sanity tests on an i.MX 6 platform by building
-> > using imx_v6_v7_defconfig and testing with I2S slave/master mode.
-
-> Due to my current workload I will be able to go through this and test
-> the AC'97 mode on a UDOO board only in about a week.
-
-This is the first round which doesn't touch program flow. If you
-prefer to verify it other than merely reviewing it, I would like
-to wait for your Tested-by. There will be another set to simplify
-all functions and their program flows after this set gets merged.
-That one will need to be fully tested.
+I see. I will drop this patch then.
