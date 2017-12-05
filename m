@@ -1,41 +1,24 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <leoyang.li@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00041.outbound.protection.outlook.com [40.107.0.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrlcZ4XwkzDqxp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 02:13:18 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB5F8xMK091419
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Dec 2017 10:13:16 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2entet2w13-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 10:13:15 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Tue, 5 Dec 2017 08:13:14 -0700
-Subject: Re: [PATCH v5 0/3] Prepartion for SR-IOV PowerVM Enablement
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, helgaas@kernel.org,
- bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com
-References: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
- <520bad85-e4a5-a8a8-c893-e53e7b46c65c@ozlabs.ru>
- <3a49b44e-833a-8440-aa3c-a4984ac47147@linux.vnet.ibm.com>
- <466ac4c0-6503-a2eb-e352-d2bdfca10cb5@ozlabs.ru>
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Tue, 5 Dec 2017 09:13:04 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrlhQ2FvnzDrJY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 02:16:35 +1100 (AEDT)
+From: Leo Li <leoyang.li@nxp.com>
+To: "oss@buserror.net" <oss@buserror.net>, Joakim Tjernlund
+ <Joakim.Tjernlund@infinera.com>, York Sun <york.sun@nxp.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+Date: Tue, 5 Dec 2017 15:16:28 +0000
+Message-ID: <AM4PR0401MB1699F76EB10DD25705C4A8B98F3D0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+References: <20170905115943.19919-1-joakim.tjernlund@infinera.com>
+ <VI1PR04MB20787FDC28E53BF15DF8E3949A970@VI1PR04MB2078.eurprd04.prod.outlook.com>
+ <AM4PR0401MB16991E3E16496C848E3AB9078F970@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+ <1511284624.4775.138.camel@infinera.com>
+In-Reply-To: <1511284624.4775.138.camel@infinera.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <466ac4c0-6503-a2eb-e352-d2bdfca10cb5@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <9777301b-3807-2b1d-fbd5-ffa62b78d8f5@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,49 +30,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 12/4/17 7:24 PM, Alexey Kardashevskiy wrote:
-> On 05/12/17 02:08, Bryant G. Ly wrote:
->>
->> On 12/2/17 7:45 PM, Alexey Kardashevskiy wrote:
->>> On 10/11/17 01:00, Bryant G. Ly wrote:
->>>> v1 - Initial patch
->>>> v2 - Addressed Bjorn's comment on creating a highly platform
->>>>      dependent global exported symbol.
->>>> v3 - Based patch off linux-ppc/master
->>>> v4 - Using the sriov-drivers_autoprobe mechanism per Bjorn's request
->>>> v5 - Fixed comments and commit message
->>> What is this made against of? I'd like to give it a try but it does not
->>> apply to Linus'es tree or powerpc/next. Thanks.
->>>
->> This was made against powerpc/next back when it was still under 4.14-rc6.
->> It has been in review for awhile... 
-> Sure, sha1 or github tree would be enough though to try.
+> -----Original Message-----
+> From: Joakim Tjernlund [mailto:Joakim.Tjernlund@infinera.com]
+> Sent: Tuesday, November 21, 2017 11:17 AM
+> To: Leo Li <leoyang.li@nxp.com>; York Sun <york.sun@nxp.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+>=20
+> On Wed, 2017-09-06 at 19:19 +0000, Leo Li wrote:
+> > > -----Original Message-----
+> > > From: York Sun
+> > > Sent: Wednesday, September 06, 2017 10:34 AM
+> > > To: Leo Li <leoyang.li@nxp.com>
+> > > Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>; linuxppc-dev
+> > > linuxppc- dev <linuxppc-dev@lists.ozlabs.org>
+> > > Subject: Re: [PATCH] fsl_pci: Correct fsl_pci_mcheck_exception
+> > >
+> > > On 09/05/2017 04:59 AM, Joakim Tjernlund wrote:
+> > > > get_user() had it args reversed causing NIP to be NULL:ed instead
+> > > > of fixing up the PCI access.
+> > > >
+> > > > Note: This still hangs my P1020 Freescale CPU hard, but at least I
+> > > > get a NIP now.
+> > > >
+> > > > Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+> > > > ---
+> > > >   arch/powerpc/sysdev/fsl_pci.c | 2 +-
+> > > >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > > >
+> > > > diff --git a/arch/powerpc/sysdev/fsl_pci.c
+> > > > b/arch/powerpc/sysdev/fsl_pci.c index 7c8b779c329a..9e64c12dff6a
+> > > > 100644
+> > > > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > > > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > > > @@ -996,7 +996,7 @@ int fsl_pci_mcheck_exception(struct pt_regs
+> *regs)
+> > > >   	if (is_in_pci_mem_space(addr)) {
+> > > >   		if (user_mode(regs)) {
+> > > >   			pagefault_disable();
+> > > > -			ret =3D get_user(regs->nip, &inst);
+> > > > +			ret =3D get_user(inst, (__u32 __user *)regs->nip);
+> > > >   			pagefault_enable();
+> > > >   		} else {
+> > > >   			ret =3D probe_kernel_address(regs->nip, inst);
+> > > >
+> > >
+> > > Leo,
+> > >
+> > > Can you take a look, or assign it to someone who is familiar with thi=
+s
+> code?
+> >
+> > Acked-by: Li Yang <leoyang.li@nxp.com>
+> >
+> > Regards,
+> > Leo
+>=20
+> I think this is forgotten, cannot se it in Linus tree.
 
-6cff0a118f23b98c604a3604ea9de11338e24fbe
+Hi Scott,
 
-or if you want to just use the github tree its:
+Could you help to review this patch and pick it up?  Thanks.
 
-https://github.com/powervm/sriov-ppc/tree/upstream
-
->
->> -Bryant
->>
->>>> Bryant G. Ly (3):
->>>>   powerpc/kernel: Separate SR-IOV Calls
->>>>   pseries: Add PSeries SR-IOV Machine dependent calls
->>>>   PCI/IOV: Add pci_vf_drivers_autoprobe() interface
->>>>
->>>>  arch/powerpc/include/asm/machdep.h           |  7 ++++++
->>>>  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
->>>>  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
->>>>  arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
->>>>  arch/powerpc/kernel/pci_dn.c                 |  6 -----
->>>>  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
->>>>  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
->>>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
->>>>  arch/powerpc/platforms/pseries/pci.c         | 31 ++++++++++++++++++++++----
->>>>  drivers/pci/iov.c                            | 11 ++++++++++
->>>>  include/linux/pci.h                          |  2 ++
->>>>  11 files changed, 118 insertions(+), 33 deletions(-)
->>>>
->
+Regards,
+Leo
