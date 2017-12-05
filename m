@@ -1,26 +1,23 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yrVwx3FW1zF068
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 16:41:36 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id j124so10433923pfc.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Dec 2017 21:41:36 -0800 (PST)
-Date: Tue, 5 Dec 2017 11:11:30 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
- svaidy@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
- huntbag@linux.vnet.ibm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: Define methods to parse positive &
- negative pstates
-Message-ID: <20171205054130.vsr45ekas3f5k3cg@vireshk-mac-ubuntu>
-References: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yrW9j6Tm4zDwPC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Dec 2017 16:52:41 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/4] powerpc/64: do not trace irqs-off at interrupt return
+ to soft-disabled context
+In-Reply-To: <1512403922.2224.82.camel@kernel.crashing.org>
+References: <20171116160052.18672-1-npiggin@gmail.com>
+ <20171116160052.18672-3-npiggin@gmail.com>
+ <87d13v3wpm.fsf@concordia.ellerman.id.au>
+ <1512403922.2224.82.camel@kernel.crashing.org>
+Date: Tue, 05 Dec 2017 16:52:38 +1100
+Message-ID: <87a7yxsoux.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30-11-17, 10:13, Shilpasri G Bhat wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> Pstates are 8bit values but on POWER8 they are negative and on POWER9
-> they are positive. This patch adds helper routines to differentiate
-> the sign to read the correct pstate value.
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
->  1 file changed, 33 insertions(+), 10 deletions(-)
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> On Mon, 2017-12-04 at 16:09 +1100, Michael Ellerman wrote:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> 
+>> > When an interrupt is returning to a soft-disabled context (which can
+>> > happen for non-maskable interrupts or synchronous interrupts), it goes
+>> > through the motions of soft-disabling again, including calling
+>> > TRACE_DISABLE_INTS (i.e., trace_hardirqs_off()).
+>> > 
+>> > This is not necessary, because we must already be soft-disabled in the
+>> > interrupt context, it also may be causing crashes in the irq tracing
+>> > code to re-enter as an nmi. Replace it with a warning to ensure that
+>> > soft-interrupts are still disabled.
+>> > 
+>> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> > ---
+>> >  arch/powerpc/kernel/entry_64.S | 10 +++++++---
+>> >  1 file changed, 7 insertions(+), 3 deletions(-)
+>> 
+>> So this patch is the core of the bug fix I gather.
+>> 
+>> Git blames says:
+>> 
+>>   Fixes: 7c0482e3d055 ("powerpc/irq: Fix another case of lazy IRQ state getting out of sync")
+>>   Cc: stable@vger.kernel.org # v3.4+
+>> 
+>> But I'm wondering how this has been broken that long without us
+>> noticing? You hit it doing some sort of perf stress test I think - so is
+>> it just that we've never pushed hard enough? Or did something change to
+>> expose this? Or we're just not sure?
+>
+> We have some traps that do local_irq_enable ... you may want to double
+> check instruction emu, page faults, alignment etc... I wouldn't be
+> surprised if we have case where an interrupt "returns" soft enabled.
 
--- 
-viresh
+AFAICT those all check that they're coming from a soft-enabled context:
+
+	if (!arch_irq_disabled_regs(regs))
+		local_irq_enable();
+
+
+And the code Nick is patching is the case where we're returning to a
+soft-disabled context. So I think the patch is good.
+
+cheers
