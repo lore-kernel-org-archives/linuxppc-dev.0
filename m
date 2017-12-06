@@ -1,33 +1,19 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysWPs4ZHVzDqtM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 08:06:41 +1100 (AEDT)
-Date: Wed, 6 Dec 2017 15:06:37 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Olof Johansson <olof@lixom.net>, Bjorn Helgaas <bhelgaas@google.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] SB600 for the Nemo board has non-zero devices on
- non-root bus
-Message-ID: <20171206210637.GO23510@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
- <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
- <6d2505ab-a985-bdb0-ad3a-e7659cc2c54d@xenosoft.de>
- <20171202230052.34y2ivxgpgr3osct@localhost>
- <CAOesGMhfMpt+xG1vhVHU+O5o4W5y2S5mZyn9tp+CPn9G6XrNVA@mail.gmail.com>
- <4CEE49CE-68F3-457F-B302-54BA8550F36A@xenosoft.de>
- <1d5276c3-1d29-114a-c868-6f022eee58e7@xenosoft.de>
- <99f78122-cd53-100f-4f58-be5bf7927d4e@xenosoft.de>
- <87fu8odnfk.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysWcH458VzDrbh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 08:15:43 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.com>, Timur Tabi <timur@tabi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH 0/3] tty/serial/ucc_uart: Adjustments for two functions
+Message-ID: <5c6d363d-398b-4695-78c3-33b9e8dbffa3@users.sourceforge.net>
+Date: Wed, 6 Dec 2017 22:10:06 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <87fu8odnfk.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,30 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 06, 2017 at 11:57:03PM +1100, Michael Ellerman wrote:
-> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
-> ...
-> >
-> > Hi Olof,
-> >
-> > Many thanks for your patch! :-) The RC2 of kernel 4.15 boots without any 
-> > problems on my P.A. Semi Nemo board (A-EON AmigaOne X1000). I don’t need 
-> > the additional boot argument 'pci=pcie_scan_all' anymore.
-> >
-> > Is it possible to merge it via the powerpc tree?
-> 
-> Yes.
-> 
-> It would be good to confirm that the change is harmless on other pasemi
-> boards. I'll try and get mine booted tomorrow, unless someone beats me
-> to it.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 6 Dec 2017 22:06:44 +0100
 
-Theoretically, it should not do any harm since it only turns off an
-enumeration optimization.  Boot will be slightly slower but should
-still work fine.
+Three update suggestions were taken into account
+from static source code analysis.
 
-Darren's idea of doing it at the same time you tweak the SB600 "relax
-pci-e" bit is ideal because then the two pieces are obviously
-connected and it wouldn't affect any other systems at all.
+Markus Elfring (3):
+  Delete an error message for a failed memory allocation in ucc_uart_probe()
+  Improve a size determination in ucc_uart_probe()
+  Fix a typo in a comment line
 
-Bjorn
+ drivers/tty/serial/ucc_uart.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+-- 
+2.15.1
