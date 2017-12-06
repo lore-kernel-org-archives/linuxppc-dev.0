@@ -1,21 +1,21 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0044.outbound.protection.outlook.com [104.47.37.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysZ0D2TRzzDsCS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 10:03:07 +1100 (AEDT)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysb6X2hdZzDrKp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 10:53:39 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "schwab@linux-m68k.org" <schwab@linux-m68k.org>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Subject: Re: ppc32: semctl fails
+Date: Wed, 6 Dec 2017 23:53:33 +0000
+Message-ID: <1512604410.8313.159.camel@infinera.com>
 References: <1512581010.8313.153.camel__41464.7176782184$1512581316$gmane$org@infinera.com>
-Date: Wed, 06 Dec 2017 23:56:06 +0100
-In-Reply-To: <1512581010.8313.153.camel__41464.7176782184$1512581316$gmane$org@infinera.com>
- (Joakim Tjernlund's message of "Wed, 6 Dec 2017 17:23:33 +0000")
-Message-ID: <87lgif31q1.fsf@linux-m68k.org>
+ <87lgif31q1.fsf@linux-m68k.org>
+In-Reply-To: <87lgif31q1.fsf@linux-m68k.org>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Dez 06 2017, Joakim Tjernlund <Joakim.Tjernlund@infinera.com> wrote:
+On Wed, 2017-12-06 at 23:56 +0100, Andreas Schwab wrote:
+>=20
+> On Dez 06 2017, Joakim Tjernlund <Joakim.Tjernlund@infinera.com> wrote:
+>=20
+> >     st =3D semctl(sem, 0, IPC_STAT, &arg);
+>=20
+> This is not a valid use of IPC_STAT.  The fourth argument must be a
+> object of type union semun (not a pointer), with the .buf member
+> pointing to the struct semid_ds object.
 
->     st = semctl(sem, 0, IPC_STAT, &arg);
+Ahh, so perl had it wrong (Any perl guys here?). This is what I came up wit=
+h and it works:
 
-This is not a valid use of IPC_STAT.  The fourth argument must be a
-object of type union semun (not a pointer), with the .buf member
-pointing to the struct semid_ds object.
+struct semid_ds arg;
+  union semun {
+    int              val;    /* Value for SETVAL */
+    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+    unsigned short  *array;  /* Array for GETALL, SETALL */
+    struct seminfo  *__buf;  /* Buffer for IPC_INFO                        =
+                                                               =20
+                                (Linux-specific) */
+  } semopts =3D {0};
+  semopts.buf =3D &arg;
 
-Andreas.
+#if defined(IPC_PRIVATE) && defined(S_IRWXU) && defined(S_IRWXG) &&  define=
+d(S_IRWXO) && defined(IPC_CREAT)
+  sem =3D semget(IPC_PRIVATE, 1, S_IRWXU|S_IRWXG|S_IRWXO|IPC_CREAT);
+  if (sem > -1) {
+    #ifdef IPC_STAT
+    st =3D semctl(sem, 0, IPC_STAT, semopts);
+    if (st =3D=3D 0)
+      printf("semid_ds\n");
+    else
+#endif /* IPC_STAT */
+      printf("semctl IPC_STAT failed: errno =3D %s\n", strerror(errno));
+    #ifdef IPC_RMID
+    if (semctl(sem, 0, IPC_RMID, semopts) !=3D 0)
+#endif /* IPC_RMID */
+      printf("semctl IPC_RMID failed: errno =3D %d\n", errno);
+  } else
+#endif /* IPC_PRIVATE && ... */
+    printf("semget failed: errno =3D %d\n", errno);
+  return 0;
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+ Jocke=
