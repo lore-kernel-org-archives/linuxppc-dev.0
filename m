@@ -1,21 +1,21 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pravin.shedge4linux@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysY5G06pFzDrcV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 09:22:23 +1100 (AEDT)
-Subject: Re: [PATCH 0/3] tty/serial/ucc_uart: Adjustments for two functions
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <5c6d363d-398b-4695-78c3-33b9e8dbffa3@users.sourceforge.net>
-From: Timur Tabi <timur@tabi.org>
-Message-ID: <cf5c7c5d-ceee-58bd-1dfb-8f9dff48abe3@tabi.org>
-Date: Wed, 6 Dec 2017 16:22:18 -0600
-MIME-Version: 1.0
-In-Reply-To: <5c6d363d-398b-4695-78c3-33b9e8dbffa3@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysR0Y2pWGzDqrG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 04:47:56 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id e14so2481901pgr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Dec 2017 09:47:56 -0800 (PST)
+From: Pravin Shedge <pravin.shedge4linux@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+ linux-gpio@vger.kernel.org, john.stultz@linaro.org, shuah@kernel.org,
+ bamvor.zhangjian@linaro.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org,
+	pravin.shedge4linux@gmail.com
+Subject: [PATCH 32/45] tools/testing/selftests: remove duplicate includes
+Date: Wed,  6 Dec 2017 23:17:45 +0530
+Message-Id: <1512582465-6581-1-git-send-email-pravin.shedge4linux@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +25,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/06/2017 03:10 PM, SF Markus Elfring wrote:
-> 
-> Three update suggestions were taken into account
-> from static source code analysis.
-> 
-> Markus Elfring (3):
->    Delete an error message for a failed memory allocation in ucc_uart_probe()
->    Improve a size determination in ucc_uart_probe()
->    Fix a typo in a comment line
+These duplicate includes have been found with scripts/checkincludes.pl but
+they have been removed manually to avoid removing false positives.
 
-All three:
+Signed-off-by: Pravin Shedge <pravin.shedge4linux@gmail.com>
+---
+ tools/testing/selftests/gpio/gpio-mockup-chardev.c          | 1 -
+ tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c | 1 -
+ tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c         | 1 -
+ tools/testing/selftests/timers/skew_consistency.c           | 1 -
+ tools/testing/selftests/x86/mpx-dig.c                       | 2 --
+ tools/testing/selftests/x86/mpx-mini-test.c                 | 4 ----
+ tools/testing/selftests/x86/unwind_vdso.c                   | 1 -
+ 7 files changed, 11 deletions(-)
 
-Acked-by: Timur Tabi <timur@tabi.org>
+diff --git a/tools/testing/selftests/gpio/gpio-mockup-chardev.c b/tools/testing/selftests/gpio/gpio-mockup-chardev.c
+index 667e916..0424aaa 100644
+--- a/tools/testing/selftests/gpio/gpio-mockup-chardev.c
++++ b/tools/testing/selftests/gpio/gpio-mockup-chardev.c
+@@ -12,7 +12,6 @@
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <stdio.h>
+ #include <errno.h>
+ #include <string.h>
+ #include <fcntl.h>
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c b/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
+index 167135b..bf599d4 100644
+--- a/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
++++ b/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
+@@ -3,7 +3,6 @@
+  * Licensed under GPLv2.
+  */
+ 
+-#include <signal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <stdbool.h>
+diff --git a/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c b/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
+index 137185b..be05b2c 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
++++ b/tools/testing/selftests/powerpc/tm/tm-vmx-unavail.c
+@@ -14,7 +14,6 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+-#include <pthread.h>
+ #include <sys/mman.h>
+ #include <unistd.h>
+ #include <pthread.h>
+diff --git a/tools/testing/selftests/timers/skew_consistency.c b/tools/testing/selftests/timers/skew_consistency.c
+index 022b711..8066be9 100644
+--- a/tools/testing/selftests/timers/skew_consistency.c
++++ b/tools/testing/selftests/timers/skew_consistency.c
+@@ -32,7 +32,6 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+-#include <stdlib.h>
+ #include <string.h>
+ #include <sys/wait.h>
+ #include "../kselftest.h"
+diff --git a/tools/testing/selftests/x86/mpx-dig.c b/tools/testing/selftests/x86/mpx-dig.c
+index c13607e..880fbf6 100644
+--- a/tools/testing/selftests/x86/mpx-dig.c
++++ b/tools/testing/selftests/x86/mpx-dig.c
+@@ -8,9 +8,7 @@
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <errno.h>
+-#include <sys/types.h>
+ #include <sys/stat.h>
+-#include <unistd.h>
+ #include <sys/mman.h>
+ #include <string.h>
+ #include <fcntl.h>
+diff --git a/tools/testing/selftests/x86/mpx-mini-test.c b/tools/testing/selftests/x86/mpx-mini-test.c
+index ec0f6b4..f17e0a1 100644
+--- a/tools/testing/selftests/x86/mpx-mini-test.c
++++ b/tools/testing/selftests/x86/mpx-mini-test.c
+@@ -722,10 +722,6 @@ void mpx_cleanup(void)
+ }
+ 
+ /*-------------- the following is test case ---------------*/
+-#include <stdint.h>
+-#include <stdbool.h>
+-#include <stdlib.h>
+-#include <stdio.h>
+ #include <time.h>
+ 
+ uint64_t num_lower_brs;
+diff --git a/tools/testing/selftests/x86/unwind_vdso.c b/tools/testing/selftests/x86/unwind_vdso.c
+index 00a26a8..9731133 100644
+--- a/tools/testing/selftests/x86/unwind_vdso.c
++++ b/tools/testing/selftests/x86/unwind_vdso.c
+@@ -44,7 +44,6 @@ int main()
+ #include <stdbool.h>
+ #include <sys/ptrace.h>
+ #include <sys/user.h>
+-#include <sys/ucontext.h>
+ #include <link.h>
+ #include <sys/auxv.h>
+ #include <dlfcn.h>
+-- 
+2.7.4
