@@ -1,34 +1,14 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysHmJ5qW9zDrSR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 23:21:52 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB6CIi4u139718
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Dec 2017 07:21:49 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2epfuktbqp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Dec 2017 07:21:49 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Wed, 6 Dec 2017 12:21:47 -0000
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: fbarrat@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com, benh@au1.ibm.com,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [PATCH v3 2/2] cxl: read PHB indications from the device tree
-Date: Wed,  6 Dec 2017 13:21:26 +0100
-In-Reply-To: <20171206122126.6432-1-felix@linux.vnet.ibm.com>
-References: <20171206122126.6432-1-felix@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <20171206122126.6432-2-felix@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysHpP1KFxzDrns
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 23:23:41 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/xmon: Don't print hashed pointers in xmon
+Date: Wed,  6 Dec 2017 23:23:28 +1100
+Message-Id: <20171206122328.913-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,134 +18,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Configure the P9 XSL_DSNCTL register with PHB indications found
-in the device tree, or else use legacy hard-coded values.
+Since commit ad67b74d2469 ("printk: hash addresses printed with %p")
+pointers printed with %p are hashed, ie. you don't see the actual
+pointer value but rather a cryptographic hash of its value.
 
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+In xmon we want to see the actual pointer values, because xmon is a
+debugger, so replace %p with %px which prints the actual pointer
+value.
+
+We justify doing this in xmon because 1) xmon is a kernel crash
+debugger, it's only accessible via the console 2) xmon doesn't print
+to dmesg, so the pointers it prints are not able to be leaked that
+way.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-Changelog:
+ arch/powerpc/xmon/xmon.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-v2: New patch. Use the new device tree property "ibm,phb-indications".
-
-v3: No change.
-
-This patch depends on the following skiboot prerequisite:
-
-    https://patchwork.ozlabs.org/patch/843474/
----
- drivers/misc/cxl/cxl.h    |  2 +-
- drivers/misc/cxl/cxllib.c |  2 +-
- drivers/misc/cxl/pci.c    | 44 +++++++++++++++++++++++++++++++++++++-------
- 3 files changed, 39 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index e46a4062904a..5a6e9a921c2b 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -1062,7 +1062,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
- int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
- 			  u32 *phb_index, u64 *capp_unit_id);
- int cxl_slot_is_switched(struct pci_dev *dev);
--int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
-+int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
- u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
- 
- void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index dc9bc1807fdf..61f80d586279 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
- 	if (rc)
- 		return rc;
- 
--	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
-+	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
- 	if (rc)
- 		return rc;
- 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 19969ee86d6f..a891abb1edbb 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -409,7 +409,36 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
- 	return 0;
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 1b2d8cb49abb..cab24f549e7c 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1590,7 +1590,7 @@ static void print_bug_trap(struct pt_regs *regs)
+ 	printf("kernel BUG at %s:%u!\n",
+ 	       bug->file, bug->line);
+ #else
+-	printf("kernel BUG at %p!\n", (void *)bug->bug_addr);
++	printf("kernel BUG at %px!\n", (void *)bug->bug_addr);
+ #endif
+ #endif /* CONFIG_BUG */
  }
+@@ -2329,7 +2329,7 @@ static void dump_one_paca(int cpu)
  
--int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
-+static u64 nbwind = 0;
-+static u64 asnind = 0;
-+static u64 capiind = 0;
-+
-+static int get_phb_indications(struct pci_dev *dev)
-+{
-+	struct device_node *np;
-+	const __be32 *prop;
-+
-+	if (capiind)
-+		return 0;
-+
-+	if (!(np = pnv_pci_get_phb_node(dev)))
-+		return -1;
-+
-+	prop = of_get_property(np, "ibm,phb-indications", NULL);
-+	if (!prop) {
-+		nbwind = 0x0300UL; /* legacy values */
-+		asnind = 0x0400UL;
-+		capiind = 0x0200UL;
-+	} else {
-+		nbwind = (u64)be32_to_cpu(prop[2]);
-+		asnind = (u64)be32_to_cpu(prop[1]);
-+		capiind = (u64)be32_to_cpu(prop[0]);
-+	}
-+	of_node_put(np);
-+	return 0;
-+}
-+
-+int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
- {
- 	u64 xsl_dsnctl;
+ 	p = &paca[cpu];
  
-@@ -423,10 +452,11 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
- 	 * Tell XSL where to route data to.
- 	 * The field chipid should match the PHB CAPI_CMPM register
- 	 */
--	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
-+	get_phb_indications(dev);
-+	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
- 	xsl_dsnctl |= (capp_unit_id << (63-15));
+-	printf("paca for cpu 0x%x @ %p:\n", cpu, p);
++	printf("paca for cpu 0x%x @ %px:\n", cpu, p);
  
--	/* nMMU_ID Defaults to: b’000001001’*/
-+	/* nMMU_ID Defaults to: b'000001001'*/
- 	xsl_dsnctl |= ((u64)0x09 << (63-28));
+ 	printf(" %-*s = %s\n", 20, "possible", cpu_possible(cpu) ? "yes" : "no");
+ 	printf(" %-*s = %s\n", 20, "present", cpu_present(cpu) ? "yes" : "no");
+@@ -2945,7 +2945,7 @@ static void show_task(struct task_struct *tsk)
+ 		(tsk->exit_state & EXIT_DEAD) ? 'E' :
+ 		(tsk->state & TASK_INTERRUPTIBLE) ? 'S' : '?';
  
- 	if (!(cxl_is_power9_dd1())) {
-@@ -437,14 +467,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
- 		 * nbwind=0x03, bits [57:58], must include capi indicator.
- 		 * Not supported on P9 DD1.
- 		 */
--		xsl_dsnctl |= ((u64)0x03 << (63-47));
-+		xsl_dsnctl |= (nbwind << (63-55));
+-	printf("%p %016lx %6d %6d %c %2d %s\n", tsk,
++	printf("%px %016lx %6d %6d %c %2d %s\n", tsk,
+ 		tsk->thread.ksp,
+ 		tsk->pid, tsk->parent->pid,
+ 		state, task_thread_info(tsk)->cpu,
+@@ -2988,7 +2988,7 @@ static void show_pte(unsigned long addr)
  
- 		/*
- 		 * Upper 16b address bits of ASB_Notify messages sent to the
--		 * system. Need to match the PHB’s ASN Compare/Mask Register.
-+		 * system. Need to match the PHB's ASN Compare/Mask Register.
- 		 * Not supported on P9 DD1.
- 		 */
--		xsl_dsnctl |= ((u64)0x04 << (63-55));
-+		xsl_dsnctl |= asnind;
+ 	if (setjmp(bus_error_jmp) != 0) {
+ 		catch_memory_errors = 0;
+-		printf("*** Error dumping pte for task %p\n", tsk);
++		printf("*** Error dumping pte for task %px\n", tsk);
+ 		return;
  	}
  
- 	*reg = xsl_dsnctl;
-@@ -464,7 +494,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	if (rc)
- 		return rc;
+@@ -3074,7 +3074,7 @@ static void show_tasks(void)
  
--	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
-+	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
- 	if (rc)
- 		return rc;
+ 	if (setjmp(bus_error_jmp) != 0) {
+ 		catch_memory_errors = 0;
+-		printf("*** Error dumping task %p\n", tsk);
++		printf("*** Error dumping task %px\n", tsk);
+ 		return;
+ 	}
  
 -- 
-2.15.0
+2.14.3
