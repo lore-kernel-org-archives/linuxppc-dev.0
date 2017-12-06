@@ -1,27 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
- [IPv6:2607:f8b0:400c:c08::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ys5HF5NXSzF0GX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 15:29:29 +1100 (AEDT)
-Received: by mail-ua0-x242.google.com with SMTP id l2so1975631uak.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Dec 2017 20:29:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ys5LD3tMVzF0GW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 15:32:04 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ live-patching@vger.kernel.org, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 3/3] powerpc/modules: Improve restore_r2() error message
+In-Reply-To: <20171114092910.20399-4-kamalesh@linux.vnet.ibm.com>
+References: <20171114092910.20399-1-kamalesh@linux.vnet.ibm.com>
+ <20171114092910.20399-4-kamalesh@linux.vnet.ibm.com>
+Date: Wed, 06 Dec 2017 15:32:01 +1100
+Message-ID: <87374ofpdq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171204131033.2df6ea84@roar.ozlabs.ibm.com>
-References: <20171202134808.27480-1-bsingharora@gmail.com>
- <20171203123658.056226c1@roar.ozlabs.ibm.com>
- <CAKTCnz=w5KEECS2RwWjrfDVgMVZWYJqQb4C8EOUbfZh2Bb=z4A@mail.gmail.com>
- <20171204131033.2df6ea84@roar.ozlabs.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 6 Dec 2017 15:29:26 +1100
-Message-ID: <CAKTCnzkwJMhq2qRO=WNGj-nUVjd-0omHLURdB6VLQ35S8fgqcA@mail.gmail.com>
-Subject: Re: [rfc] powernv/kdump: Fix cases where the kdump kernel can get
- HMI's
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 4, 2017 at 2:10 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Mon, 4 Dec 2017 11:37:01 +1100
-> Balbir Singh <bsingharora@gmail.com> wrote:
->
->> On Sun, Dec 3, 2017 at 1:36 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
->> > Seems like a reasonable approach. Why do we only do this for
->> > powernv? It seems like a good idea in general to pull all
->> > offlined CPUs out and into the same state for all platforms
->> > and for all shutdown/restart/crash paths.
->> >
->>
->> The reason is largely wake-up related, do we expect offline CPUs to wake
->> up in the kdump kernel. Largely the infrastructure allows us to selectively
->> decide what platforms need this support. I did not want to break the world
->> by enabling it across platforms (pseries for example) without good reason.
->
-> What happens if a pseries offlined CPU gets an exception for some reason
-> though? It seems like it would return into pseries_mach_cpu_die of the
-> old kernel which will go wrong.
->
-> Maybe the platform has stronger guarantees that it won't wake up there,
-> like requiring a specific hcall or something?
->
-> I was just thinking trying to move all platforms in general to the same
-> scheme would be preferable, unless there is a good reason not to. Just
-> for sharing code and behaviour.
->
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
 
-I am all for it, can I propose we start with powernv, since I've tested that
-and as I test I can start enabling other platforms with follow-on patches.
-
->>
->> > Also I wonder if there is anything we should do on the other
->> > side of the equation for the kdump kernel to pull CPUs into a
->> > known state rather than rely on the crash kernel to do it for
->> > us. We might have a better ability to do that with system
->> > reset IPIs now.
->> >
->>
->> Yes, but do we need to do that or quickly dump the vmcore to a file
->> and exit?
+> From: Josh Poimboeuf <jpoimboe@redhat.com>
 >
-> Well if the previous kernel did not shut them down properly, we need
-> to do that. Don't we? My point is the previous kernel crashed somehow,
-> we should be trying to fix everything up rather than hoping it crashed
-> "nicely" for us.
+> Print the function address associated with the restore_r2() error to
+> make it easier to debug the problem.
 >
-> Yes we shouldn't disturb things as much as possible, but we've booted
-> an entire new kernel in its own reserved memory, so I'm not sure if
-> it's such a concern to try fixing up wayward CPUs.
+> Also clarify the wording a bit.
+>
+> Before:
+>
+>   module_64: patch_foo: Expect noop after relocate, got 3c820000
+>
+> After:
+>
+>   module_64: patch_foo: Expected noop after call, got 7c630034 at netdev_has_upper_dev+0x54/0xb0 [patch_foo]
 
-I think it might be a little late to fix them up, since their stack traces won't
-show up in the crash. We can of-course revisit this if required. Consider
-for example a crash I saw where the kernel crashed and held a spinlock
-at the time of crash, other CPUs were stuck spinning on that lock and did
-not report back on either side of the crash. I think we'd want our dump to
-show that. In my case I'm waking up offline CPUs to prevent them from
-waking up and doing processing that would otherwise break the system.
-I'm open to doing the same thing on the other-side, but I think the logic
-is more complex on the new kernel side
+I renamed noop to nop, as that's the name of the instruction.
 
-Balbir Singh.
+cheers
