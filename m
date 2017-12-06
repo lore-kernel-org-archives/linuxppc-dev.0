@@ -1,32 +1,39 @@
-Return-Path: <desnesn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysSw54TlQzDrvV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 06:14:13 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB6JE9TE024372
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Dec 2017 14:14:09 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2epm4y6nya-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysTDx6xcJzDsLw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 06:28:49 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB6JSDfV001374
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Dec 2017 14:28:46 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2epm1wfkvu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Dec 2017 14:14:09 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Dec 2017 14:28:46 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
- Wed, 6 Dec 2017 12:14:05 -0700
-From: Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- amodra@gmail.com
-Cc: desnesn@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, ard.biesheuvel@linaro.org, rusty@rustcorp.com.au
-Subject: [PATCH] [powerpc-next] Fix powerpc64 alignment of .toc section in
- kernel modules
-Date: Wed,  6 Dec 2017 17:12:28 -0200
-Message-Id: <20171206191228.30830-1-desnesn@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Wed, 6 Dec 2017 14:28:44 -0500
+Subject: Re: [PATCH v2] powerpc/powernv: Add pci_reset_phbs parameter to issue
+ a PHB reset
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+References: <20171025152754.25166-1-gpiccoli@linux.vnet.ibm.com>
+ <CAKTCnz=yR1Nm1mCzNVVbDkxz=es5H9v-+J-y+8FN5ttB1EZ=Bg@mail.gmail.com>
+ <95c483cf-93dc-6b99-f406-cb59d3263442@linux.vnet.ibm.com>
+ <CAKTCnz=JLBGDF7O9saMiGNC4jUsHDpp1A3oRk+7TDfn5st_CKA@mail.gmail.com>
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Date: Wed, 6 Dec 2017 17:28:39 -0200
+MIME-Version: 1.0
+In-Reply-To: <CAKTCnz=JLBGDF7O9saMiGNC4jUsHDpp1A3oRk+7TDfn5st_CKA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c756e923-791e-154e-cdcb-50cb6bd06dd7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,95 +43,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc64 gcc can generate code that offsets an address, to access part of
-an object in memory. If the address is a -mcmodel=medium toc pointer
-relative address then code like the following is possible.
+On 11/21/2017 12:35 AM, Balbir Singh wrote:
+> On Thu, Nov 16, 2017 at 11:14 PM, Guilherme G. Piccoli
+> <gpiccoli@linux.vnet.ibm.com> wrote:
+>> On 11/16/2017 01:49 AM, Balbir Singh wrote:
+>>> On Thu, Oct 26, 2017 at 2:27 AM, Guilherme G. Piccoli
+>>> <gpiccoli@linux.vnet.ibm.com> wrote:
+>>>> During a kdump kernel boot in PowerPC, we request a reset of the PHBs
+>>>> to the FW. It makes sense, since if we are booting a kdump kernel it
+>>>> means we had some trouble before and we cannot rely in the adapters'
+>>>> health; they could be in a bad state, hence the reset is needed.
+>>>>
+>>>> But this reset is useful not only in kdump - there are situations,
+>>>> specially when debugging drivers, that we could break an adapter in
+>>>> a way it requires such reset. One can tell to just go ahead and
+>>>> reboot the machine, but happens that many times doing kexec is much
+>>>> faster, and so preferable than a full power cycle.
+>>>>
+>>>> This patch adds the pci_reset_phbs parameter to perform such reset
+>>>> when desired by the user.
+>>>>
+>>>
+>>> Do we care to reset specific phbs or all of them? I guess all based on
+>>> your description.
+>>
+>> Exactly Balbir, it does reset all of them. We could add such
+>> granularity, but I don't see much usability..
+>> But if somebody feels it's useful, we can change...
+>>
+> 
+> OK.. makes sense, any reason why this can't be folded into reset_devices?
+> I guess we want reset_phbs to be independent of reset_devices
 
- addis r9,r2,var@toc@ha
- ld r3,var@toc@l(r9)
- ld r4,(var+8)@toc@l(r9)
+It was, in v1. But mpe asked it to be a powerpc specific parameter heheh
+Cheers,
 
-This works fine so long as var is naturally aligned, *and* r2 is
-sufficiently aligned. If not, there is a possibility that the offset added
-to access var+8 wraps over a n*64k+32k boundary. Modules don't have any
-guarantee that r2 is sufficiently aligned. Moreover, code generated by
-older compilers generates a .toc section with 2**0 alignment, which can
-result in relocation failures at module load time even without the wrap
-problem.
 
-Thus, this patch links modules with an aligned .toc section (Makefile and
-module.lds changes), and forces alignment for out of tree modules or those
-without a .toc section (module_64.c changes).
+Guilherme
 
-Signed-off-by: Alan Modra <amodra@gmail.com>
-[ desnesn: updated patch to apply to powerpc-next kernel v4.15 ]
-Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
----
- arch/powerpc/Makefile           |  1 +
- arch/powerpc/kernel/module.lds  |  8 ++++++++
- arch/powerpc/kernel/module_64.c | 13 +++++++++----
- 3 files changed, 18 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/kernel/module.lds
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 1381693..c472f5b 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -63,6 +63,7 @@ UTS_MACHINE := $(subst $(space),,$(machine-y))
- ifdef CONFIG_PPC32
- KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
- else
-+KBUILD_LDFLAGS_MODULE += -T arch/powerpc/kernel/module.lds
- ifeq ($(call ld-ifversion, -ge, 225000000, y),y)
- # Have the linker provide sfpr if possible.
- # There is a corresponding test in arch/powerpc/lib/Makefile
-diff --git a/arch/powerpc/kernel/module.lds b/arch/powerpc/kernel/module.lds
-new file mode 100644
-index 0000000..cea5dc1
---- /dev/null
-+++ b/arch/powerpc/kernel/module.lds
-@@ -0,0 +1,8 @@
-+/* Force alignment of .toc section.  */
-+SECTIONS
-+{
-+	.toc 0 : ALIGN(256)
-+	{
-+		*(.got .toc)
-+	}
-+}
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 759104b..9b2c5c1 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -339,8 +339,11 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
- 		char *p;
- 		if (strcmp(secstrings + sechdrs[i].sh_name, ".stubs") == 0)
- 			me->arch.stubs_section = i;
--		else if (strcmp(secstrings + sechdrs[i].sh_name, ".toc") == 0)
-+		else if (strcmp(secstrings + sechdrs[i].sh_name, ".toc") == 0) {
- 			me->arch.toc_section = i;
-+			if (sechdrs[i].sh_addralign < 8)
-+				sechdrs[i].sh_addralign = 8;
-+		}
- 		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
- 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
- 					  sechdrs[i].sh_size);
-@@ -374,11 +377,13 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
- }
- 
- /* r2 is the TOC pointer: it actually points 0x8000 into the TOC (this
--   gives the value maximum span in an instruction which uses a signed
--   offset) */
-+ * gives the value maximum span in an instruction which uses a signed
-+ * offset).  Round down to a 256 byte boundary for the odd case where
-+ * we are setting up r2 without a .toc section.
-+ */
- static inline unsigned long my_r2(const Elf64_Shdr *sechdrs, struct module *me)
- {
--	return sechdrs[me->arch.toc_section].sh_addr + 0x8000;
-+	return (sechdrs[me->arch.toc_section].sh_addr & -256) + 0x8000;
- }
- 
- /* Both low and high 16 bits are added as SIGNED additions, so if low
--- 
-2.9.5
+> 
+> Balbir
+> 
