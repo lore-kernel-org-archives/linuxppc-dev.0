@@ -1,36 +1,22 @@
-Return-Path: <sergey.senozhatsky.work@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysFfw5RnmzDrnr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 21:47:04 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id b18so2014352pgv.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Dec 2017 02:47:04 -0800 (PST)
-Date: Wed, 6 Dec 2017 19:46:56 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- James Bottomley <jejb@parisc-linux.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv4 5/6] symbol lookup: introduce
- dereference_symbol_descriptor()
-Message-ID: <20171206104656.GC462@jagdpanzerIV>
-References: <20171109234830.5067-1-sergey.senozhatsky@gmail.com>
- <20171109234830.5067-6-sergey.senozhatsky@gmail.com>
- <20171206043649.GB15885@jagdpanzerIV>
- <20171206103241.t2jbljml7it7wsnz@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysFqS3vwdzDrKS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 21:54:28 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, viresh.kumar@linaro.org,
+ rjw@rjwysocki.net, linux-kernel@vger.kernel.org, huntbag@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, akshay.adiga@linux.vnet.ibm.com
+Subject: Re: [PATCH] cpufreq: powernv: Define methods to parse positive &
+ negative pstates
+In-Reply-To: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Wed, 06 Dec 2017 21:54:27 +1100
+Message-ID: <87r2s8dt3w.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171206103241.t2jbljml7it7wsnz@pathway.suse.cz>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,62 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (12/06/17 11:32), Petr Mladek wrote:
-[..]
-> > diff --git a/Documentation/printk-formats.txt b/Documentation/printk-formats.txt
-> > index aa0a776c817a..02745028e909 100644
-> > --- a/Documentation/printk-formats.txt
-> > +++ b/Documentation/printk-formats.txt
-> > @@ -61,41 +61,31 @@ Symbols/Function Pointers
-> >  
-> >  ::
-> >  
-> > -	%pF	versatile_init+0x0/0x110
-> > -	%pf	versatile_init
-> > -	%pS	versatile_init+0x0/0x110
-> > -	%pSR	versatile_init+0x9/0x110
-> > +	%pS     versatile_init+0x0/0x110
-> > +	%ps     versatile_init
-> > +	%pF     versatile_init+0x0/0x110
-> > +	%pf     versatile_init
-> > +	%pSR    versatile_init+0x9/0x110
-> >  		(with __builtin_extract_return_addr() translation)
-> > -	%ps	versatile_init
-> > -	%pB	prev_fn_of_versatile_init+0x88/0x88
-> > +	%pB     prev_fn_of_versatile_init+0x88/0x88
-> 
-> I was curious why so many lines were changed here. You converted
-> the 2nd tab to spaces. I put back the tab. The result is:
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
 
-ew... how did that happen. thanks for fixing up.
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> Pstates are 8bit values but on POWER8 they are negative and on POWER9
+> they are positive. This patch adds helper routines to differentiate
+> the sign to read the correct pstate value.
 
-> > +static inline void *dereference_symbol_descriptor(void *ptr)
-> > +{
-> > +#ifdef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
-> > +	struct module *mod;
-> > +
-> > +	ptr = dereference_kernel_function_descriptor(ptr);
-> > +	if (is_ksym_addr((unsigned long)ptr))
-> > +		return ptr;
-> > +
-> > +	preempt_disable();
-> > +	mod = __module_address((unsigned long)ptr);
-> > +	preempt_enable();
-> > +
-> > +	if (mod)
-> > +		ptr = dereference_module_function_descriptor(mod, ptr);
-> > +#endif
-> > +	return ptr;
-> > +}
-> 
-> It is a bit too long for an inline function but I did not find a
-> better solution. It should always be defined and all suitable
-> .c files are compiled only under certain configuration. Well,
-> it is a nop on most architectures.
+This sounds like it could be a bad bug, but I can't really tell from the
+change log. What is the actual impact of not having this patch?
 
-or we can move dereference_symbol_descriptor() to vsprintf.c,
-since all the functions it depends on are now available either
-as exported symbols or via kallsyms header file. not that it
-annoys me, so we can keep it as it is.
+Should it have a Fixes/Cc-stable tag?
 
-	-ss
+cheers
