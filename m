@@ -1,18 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysJGj3byRzDqwS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 23:44:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysJXw50GpzDrqV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Dec 2017 23:57:04 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Olof Johansson <olof@lixom.net>, Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
  Darren Stevens <darren@stevens-zone.net>, Bjorn Helgaas <helgaas@kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Subject: Re: [PATCH] SB600 for the Nemo board has non-zero devices on non-root
  bus
-In-Reply-To: <20171202230052.34y2ivxgpgr3osct@localhost>
+In-Reply-To: <99f78122-cd53-100f-4f58-be5bf7927d4e@xenosoft.de>
 References: <87tvxl15qx.fsf@concordia.ellerman.id.au>
  <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
  <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
@@ -24,8 +24,12 @@ References: <87tvxl15qx.fsf@concordia.ellerman.id.au>
  <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
  <6d2505ab-a985-bdb0-ad3a-e7659cc2c54d@xenosoft.de>
  <20171202230052.34y2ivxgpgr3osct@localhost>
-Date: Wed, 06 Dec 2017 23:44:44 +1100
-Message-ID: <87indkdo03.fsf@concordia.ellerman.id.au>
+ <CAOesGMhfMpt+xG1vhVHU+O5o4W5y2S5mZyn9tp+CPn9G6XrNVA@mail.gmail.com>
+ <4CEE49CE-68F3-457F-B302-54BA8550F36A@xenosoft.de>
+ <1d5276c3-1d29-114a-c868-6f022eee58e7@xenosoft.de>
+ <99f78122-cd53-100f-4f58-be5bf7927d4e@xenosoft.de>
+Date: Wed, 06 Dec 2017 23:57:03 +1100
+Message-ID: <87fu8odnfk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,52 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Olof Johansson <olof@lixom.net> writes:
-
-> On Sat, Dec 02, 2017 at 01:54:41PM +0100, Christian Zigotzky wrote:
->> On 02 December 2017 at 00:27AM, Bjorn Helgaas wrote:
->> >=20
->> > Thanks for testing that.  I'll merge a similar patch for v4.16.
->> >=20
->> > I don't think using "pci=3Dpcie_scan_all" is really an acceptable
->> > long-term answer for you, though.  Is there some way we can identify
->> > at run-time whether we're on a Nemo system?  If so, we can make this
->> > happen automatically.
->> >=20
->> > Bjorn
->> >=20
->> Hi Bjorn,
->>=20
->> Many thanks for your effort! I appreciate it very much. :-)
->>=20
->> We can identify the Nemo board at the boot time. See dmesg output: [=C2=
-=A0=C2=A0=C2=A0
->> 0.061592] NEMO SB600 IOB base e0000000
->>=20
->> @linuxppc-dev
->> Any other ideas? Maybe the same as we can identify the other P.A. Semi
->> boards (Electra, Chitra, and Athena).
->>=20
->> @Olof
->> Maybe you know how we can identify the P.A. Semi Nemo board at the run-t=
-ime.
->>=20
->> @Darren
->> Do you have an idea?
+Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+...
 >
+> Hi Olof,
 >
-> The below patch, together with Bjorn's, should do it. Christian, can you =
-test
-> and report back?
+> Many thanks for your patch! :-) The RC2 of kernel 4.15 boots without any=
+=20
+> problems on my P.A. Semi Nemo board (A-EON AmigaOne X1000). I don=E2=80=
+=99t need=20
+> the additional boot argument 'pci=3Dpcie_scan_all' anymore.
 >
-> I'm guessing it won't do any harm to set this on non-X1000 platforms. My
-> test system is currently powered down so I can't check.
+> Is it possible to merge it via the powerpc tree?
 
-My pasemi board had been powered off for a while and when I turned it
-back on something popped, the power supply blew up and tripped a
-breaker.
+Yes.
 
-So I also can't test this, at least for now, until I get my "allowed to
-use hardware" license back from my colleagues in the office.
+It would be good to confirm that the change is harmless on other pasemi
+boards. I'll try and get mine booted tomorrow, unless someone beats me
+to it.
 
 cheers
