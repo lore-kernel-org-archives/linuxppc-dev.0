@@ -2,18 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ysJcJ5YqQzDqkv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 00:00:00 +1100 (AEDT)
-In-Reply-To: <20171130083322.31206-1-ravi.bangoria@linux.vnet.ibm.com>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ysJcL0rKBzDqkv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 00:00:02 +1100 (AEDT)
+In-Reply-To: <20171204052725.28195-1-david@gibson.dropbear.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>, npiggin@gmail.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: maddy@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>, paulus@samba.org,
- kan.liang@intel.com, tglx@linutronix.de, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/perf: Fix oops when grouping different pmu events
-Message-Id: <3ysJcJ3ygHz9sRV@ozlabs.org>
-Date: Wed,  6 Dec 2017 23:59:59 +1100 (AEDT)
+Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Revert "powerpc: Do not call ppc_md.panic in fadump panic
+ notifier"
+Message-Id: <3ysJcK4XMCz9sRW@ozlabs.org>
+Date: Thu,  7 Dec 2017 00:00:00 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-11-30 at 08:33:22 UTC, Ravi Bangoria wrote:
-> When user tries to group imc (In-Memory Collections) event with
-> normal event, (sometime) kernel crashes with following log:
+On Mon, 2017-12-04 at 05:27:25 UTC, David Gibson wrote:
+> This reverts commit a3b2cb30f252b21a6f962e0dd107c8b897ca65e4.
 > 
->     Faulting instruction address: 0x00000000
->     [link register   ] c00000000010ce88 power_check_constraints+0x128/0x980
->     ...
->     c00000000010e238 power_pmu_event_init+0x268/0x6f0
->     c0000000002dc60c perf_try_init_event+0xdc/0x1a0
->     c0000000002dce88 perf_event_alloc+0x7b8/0xac0
->     c0000000002e92e0 SyS_perf_event_open+0x530/0xda0
->     c00000000000b004 system_call+0x38/0xe0
+> The earlier patch tried to fix problems with panic on powerpc in
+> certain circumstances, where some output from the generic panic code
+> was being dropped.
 > 
-> 'event_base' field of 'struct hw_perf_event' is used as flags for
-> normal hw events and used as memory address for imc events. While
-> grouping these two types of events, collect_events() tries to
-> interpret imc 'event_base' as a flag, which causes a corruption
-> resulting in a crash.
+> Unfortunately, it breaks things worse in other circumstances.  In
+> particular when running a PAPR guest, it will now attempt to reboot
+> instead of informing the hypervisor (KVM or PowerVM) that the guest
+> has crashed.  The crash notification is important to some
+> virtualization management layers.
 > 
-> Consider only those events which belongs to 'perf_hw_context' in
-> collect_events().
+> Since the circumstances in which the original patch helped are
+> somewhat obscure, revert it for now until we figure out how to do it
+> properly.
 > 
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-> Reviewed-By: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/5aa04b3eb6fca63d2e9827be656dca
+https://git.kernel.org/powerpc/c/ab9dbf771ff9b6b7e814e759213ed0
 
 cheers
