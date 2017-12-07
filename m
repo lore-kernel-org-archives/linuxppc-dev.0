@@ -1,35 +1,16 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yslF06wjkzDsGh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 16:59:48 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vB75xA4n129460
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Dec 2017 00:59:45 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2epygx8w01-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2017 00:59:45 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 7 Dec 2017 00:59:41 -0500
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org,
- rjw@rjwysocki.net, huntbag@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, <stable@vger.kernel.org>
-Subject: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates on
- POWER8 vs POWER9
-Date: Thu,  7 Dec 2017 11:29:25 +0530
-Message-Id: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yssR05fZ2zDsM2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Dec 2017 21:38:50 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] watchdog: core: make sure the watchdog_worker always works
+To: Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-watchdog@vger.kernel.org
+Message-Id: <20171207103844.4C4BE6C6C4@po15668-vm-win7.idsi0.si.c-s.fr>
+Date: Thu,  7 Dec 2017 11:38:44 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,137 +20,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+When running a command like 'chrt -f 99 dd if=/dev/zero of=/dev/null',
+the watchdog_worker fails to service the HW watchdog and the
+HW watchdog fires long before the watchdog soft timeout.
 
-On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
-negatively numbered while on POWER9 they are positively
-numbered. Thus, on POWER9, the maximum number of pstates could be as
-high as 256.
+At the moment, the watchdog_worker is invoked as a delayed work.
+Delayed works are handled by non realtime kernel threads. The
+WQ_HIGHPRI flag only increases the niceness of that threads.
 
-The current code interprets pstates as a signed 8-bit value. This
-causes a problem on POWER9 platforms which have more than 128 pstates.
-On such systems, on a CPU that is in a lower pstate whose number is
-greater than 128, querying the current pstate returns a "pstate X is
-out of bound" error message and the current pstate is reported as the
-nominal pstate.
+This patchs replaces the delayed work logic by hrtimer, in order to
+ensure that the watchdog_worker will already have priority.
 
-This patch fixes the aforementioned issue by correctly differentiating
-the sign whenever a pstate value read, depending on whether the
-pstates are positively numbered or negatively numbered.
-
-Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
-Cc: <stable@vger.kernel.org> #v4.8
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
- 1 file changed, 33 insertions(+), 10 deletions(-)
+ drivers/watchdog/watchdog_dev.c | 87 +++++++++++++++++++----------------------
+ 1 file changed, 41 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b6d7c4c..bb7586e 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -41,11 +41,14 @@
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
- #define PMSR_SPR_EM_DISABLE	(1UL << 31)
--#define PMSR_MAX(x)		((x >> 32) & 0xFF)
-+#define EXTRACT_BYTE(x, shift)	(((x) >> shift) & 0xFF)
-+#define MAX_SHIFT		32
- #define LPSTATE_SHIFT		48
- #define GPSTATE_SHIFT		56
--#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
--#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
-+#define GET_PMSR_MAX(x)		EXTRACT_BYTE(x, MAX_SHIFT)
-+#define GET_LPSTATE(x)		EXTRACT_BYTE(x, LPSTATE_SHIFT)
-+#define GET_GPSTATE(x)		EXTRACT_BYTE(x, GPSTATE_SHIFT)
+diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
+index 1e971a50d7fb..e9b234c4ff67 100644
+--- a/drivers/watchdog/watchdog_dev.c
++++ b/drivers/watchdog/watchdog_dev.c
+@@ -36,7 +36,7 @@
+ #include <linux/errno.h>	/* For the -ENODEV/... values */
+ #include <linux/fs.h>		/* For file operations */
+ #include <linux/init.h>		/* For __init/__exit/... */
+-#include <linux/jiffies.h>	/* For timeout functions */
++#include <linux/hrtimer.h>
+ #include <linux/kernel.h>	/* For printk/panic/... */
+ #include <linux/kref.h>		/* For data references */
+ #include <linux/miscdevice.h>	/* For handling misc devices */
+@@ -46,7 +46,6 @@
+ #include <linux/slab.h>		/* For memory functions */
+ #include <linux/types.h>	/* For standard types (like size_t) */
+ #include <linux/watchdog.h>	/* For watchdog specific items */
+-#include <linux/workqueue.h>	/* For workqueue */
+ #include <linux/uaccess.h>	/* For copy_to_user/put_user/... */
+ 
+ #include "watchdog_core.h"
+@@ -65,9 +64,9 @@ struct watchdog_core_data {
+ 	struct cdev cdev;
+ 	struct watchdog_device *wdd;
+ 	struct mutex lock;
+-	unsigned long last_keepalive;
+-	unsigned long last_hw_keepalive;
+-	struct delayed_work work;
++	ktime_t last_keepalive;
++	ktime_t last_hw_keepalive;
++	struct hrtimer timer;
+ 	unsigned long status;		/* Internal status bits */
+ #define _WDOG_DEV_OPEN		0	/* Opened ? */
+ #define _WDOG_ALLOW_RELEASE	1	/* Did we receive the magic char ? */
+@@ -79,8 +78,6 @@ static dev_t watchdog_devt;
+ /* Reference to watchdog device behind /dev/watchdog */
+ static struct watchdog_core_data *old_wd_data;
+ 
+-static struct workqueue_struct *watchdog_wq;
+-
+ static bool handle_boot_enabled =
+ 	IS_ENABLED(CONFIG_WATCHDOG_HANDLE_BOOT_ENABLED);
+ 
+@@ -107,18 +104,19 @@ static inline bool watchdog_need_worker(struct watchdog_device *wdd)
+ 		(t && !watchdog_active(wdd) && watchdog_hw_running(wdd));
+ }
+ 
+-static long watchdog_next_keepalive(struct watchdog_device *wdd)
++static ktime_t watchdog_next_keepalive(struct watchdog_device *wdd)
+ {
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+ 	unsigned int timeout_ms = wdd->timeout * 1000;
+-	unsigned long keepalive_interval;
+-	unsigned long last_heartbeat;
+-	unsigned long virt_timeout;
++	ktime_t keepalive_interval;
++	ktime_t last_heartbeat, latest_heartbeat;
++	ktime_t virt_timeout;
+ 	unsigned int hw_heartbeat_ms;
+ 
+-	virt_timeout = wd_data->last_keepalive + msecs_to_jiffies(timeout_ms);
++	virt_timeout = ktime_add(wd_data->last_keepalive,
++				 ms_to_ktime(timeout_ms));
+ 	hw_heartbeat_ms = min_not_zero(timeout_ms, wdd->max_hw_heartbeat_ms);
+-	keepalive_interval = msecs_to_jiffies(hw_heartbeat_ms / 2);
++	keepalive_interval = ms_to_ktime(hw_heartbeat_ms / 2);
+ 
+ 	if (!watchdog_active(wdd))
+ 		return keepalive_interval;
+@@ -128,8 +126,11 @@ static long watchdog_next_keepalive(struct watchdog_device *wdd)
+ 	 * after the most recent ping from userspace, the last
+ 	 * worker ping has to come in hw_heartbeat_ms before this timeout.
+ 	 */
+-	last_heartbeat = virt_timeout - msecs_to_jiffies(hw_heartbeat_ms);
+-	return min_t(long, last_heartbeat - jiffies, keepalive_interval);
++	last_heartbeat = ktime_sub(virt_timeout, ms_to_ktime(hw_heartbeat_ms));
++	latest_heartbeat = ktime_sub(last_heartbeat, ktime_get());
++	if (ktime_before(latest_heartbeat, keepalive_interval))
++		return latest_heartbeat;
++	return keepalive_interval;
+ }
+ 
+ static inline void watchdog_update_worker(struct watchdog_device *wdd)
+@@ -137,29 +138,33 @@ static inline void watchdog_update_worker(struct watchdog_device *wdd)
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+ 
+ 	if (watchdog_need_worker(wdd)) {
+-		long t = watchdog_next_keepalive(wdd);
++		ktime_t t = watchdog_next_keepalive(wdd);
+ 
+ 		if (t > 0)
+-			mod_delayed_work(watchdog_wq, &wd_data->work, t);
++			hrtimer_start(&wd_data->timer, t, HRTIMER_MODE_REL);
+ 	} else {
+-		cancel_delayed_work(&wd_data->work);
++		hrtimer_cancel(&wd_data->timer);
+ 	}
+ }
+ 
+ static int __watchdog_ping(struct watchdog_device *wdd)
+ {
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+-	unsigned long earliest_keepalive = wd_data->last_hw_keepalive +
+-				msecs_to_jiffies(wdd->min_hw_heartbeat_ms);
++	ktime_t earliest_keepalive, now;
+ 	int err;
+ 
+-	if (time_is_after_jiffies(earliest_keepalive)) {
+-		mod_delayed_work(watchdog_wq, &wd_data->work,
+-				 earliest_keepalive - jiffies);
++	earliest_keepalive = ktime_add(wd_data->last_hw_keepalive,
++				       ms_to_ktime(wdd->min_hw_heartbeat_ms));
++	now = ktime_get();
 +
- 
- #define MAX_RAMP_DOWN_TIME				5120
- /*
-@@ -64,6 +67,12 @@
- 
- /* Interval after which the timer is queued to bring down global pstate */
- #define GPSTATE_TIMER_INTERVAL				2000
-+/*
-+ * On POWER8 the pstates are negatively numbered. On POWER9, they are
-+ * positively numbered.  Use this flag to track whether we have
-+ * positive or negative numbered pstates.
-+ */
-+static bool pos_pstates;
- 
- /**
-  * struct global_pstate_info -	Per policy data structure to maintain history of
-@@ -164,7 +173,7 @@ static inline unsigned int pstate_to_idx(int pstate)
- 	int min = powernv_freqs[powernv_pstate_info.min].driver_data;
- 	int max = powernv_freqs[powernv_pstate_info.max].driver_data;
- 
--	if (min > 0) {
-+	if (pos_pstates) {
- 		if (unlikely((pstate < max) || (pstate > min))) {
- 			pr_warn_once("pstate %d is out of bound\n", pstate);
- 			return powernv_pstate_info.nominal;
-@@ -301,6 +310,9 @@ static int init_powernv_pstates(void)
- 		}
++	if (ktime_after(earliest_keepalive, now)) {
++		hrtimer_start(&wd_data->timer,
++			      ktime_sub(earliest_keepalive, now),
++			      HRTIMER_MODE_REL);
+ 		return 0;
  	}
  
-+	if ((int)pstate_min > 0)
-+		pos_pstates = true;
-+
- 	/* End of list marker entry */
- 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
- 	return 0;
-@@ -438,7 +450,6 @@ struct powernv_smp_call_data {
- static void powernv_read_cpu_freq(void *arg)
+-	wd_data->last_hw_keepalive = jiffies;
++	wd_data->last_hw_keepalive = now;
+ 
+ 	if (wdd->ops->ping)
+ 		err = wdd->ops->ping(wdd);  /* ping the watchdog */
+@@ -192,7 +197,7 @@ static int watchdog_ping(struct watchdog_device *wdd)
+ 
+ 	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
+ 
+-	wd_data->last_keepalive = jiffies;
++	wd_data->last_keepalive = ktime_get();
+ 	return __watchdog_ping(wdd);
+ }
+ 
+@@ -203,17 +208,18 @@ static bool watchdog_worker_should_ping(struct watchdog_core_data *wd_data)
+ 	return wdd && (watchdog_active(wdd) || watchdog_hw_running(wdd));
+ }
+ 
+-static void watchdog_ping_work(struct work_struct *work)
++enum hrtimer_restart watchdog_ping_work(struct hrtimer *timer)
  {
- 	unsigned long pmspr_val;
--	s8 local_pstate_id;
- 	struct powernv_smp_call_data *freq_data = arg;
+ 	struct watchdog_core_data *wd_data;
  
- 	pmspr_val = get_pmspr(SPRN_PMSR);
-@@ -447,8 +458,11 @@ static void powernv_read_cpu_freq(void *arg)
- 	 * The local pstate id corresponds bits 48..55 in the PMSR.
- 	 * Note: Watch out for the sign!
- 	 */
--	local_pstate_id = (pmspr_val >> 48) & 0xFF;
--	freq_data->pstate_id = local_pstate_id;
-+	if (pos_pstates)
-+		freq_data->pstate_id = (u8)GET_LPSTATE(pmspr_val);
-+	else
-+		freq_data->pstate_id = (s8)GET_LPSTATE(pmspr_val);
+-	wd_data = container_of(to_delayed_work(work), struct watchdog_core_data,
+-			       work);
++	wd_data = container_of(timer, struct watchdog_core_data, timer);
+ 
+ 	mutex_lock(&wd_data->lock);
+ 	if (watchdog_worker_should_ping(wd_data))
+ 		__watchdog_ping(wd_data->wdd);
+ 	mutex_unlock(&wd_data->lock);
 +
- 	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
++	return HRTIMER_NORESTART;
+ }
  
- 	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
-@@ -522,7 +536,10 @@ static void powernv_cpufreq_throttle_check(void *data)
- 	chip = this_cpu_read(chip_info);
+ /*
+@@ -230,7 +236,7 @@ static void watchdog_ping_work(struct work_struct *work)
+ static int watchdog_start(struct watchdog_device *wdd)
+ {
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+-	unsigned long started_at;
++	ktime_t started_at;
+ 	int err;
  
- 	/* Check for Pmax Capping */
--	pmsr_pmax = (s8)PMSR_MAX(pmsr);
-+	if (pos_pstates)
-+		pmsr_pmax = (u8)GET_PMSR_MAX(pmsr);
-+	else
-+		pmsr_pmax = (s8)GET_PMSR_MAX(pmsr);
- 	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
- 	if (pmsr_pmax_idx != powernv_pstate_info.max) {
- 		if (chip->throttled)
-@@ -645,8 +662,14 @@ void gpstate_timer_handler(struct timer_list *t)
- 	 * value. Hence, read from PMCR to get correct data.
- 	 */
- 	val = get_pmspr(SPRN_PMCR);
--	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
--	freq_data.pstate_id = (s8)GET_LPSTATE(val);
-+	if (pos_pstates) {
-+		freq_data.gpstate_id = (u8)GET_GPSTATE(val);
-+		freq_data.pstate_id = (u8)GET_LPSTATE(val);
-+	} else {
-+		freq_data.gpstate_id = (s8)GET_GPSTATE(val);
-+		freq_data.pstate_id = (s8)GET_LPSTATE(val);
-+	}
-+
- 	if (freq_data.gpstate_id  == freq_data.pstate_id) {
- 		reset_gpstates(policy);
- 		spin_unlock(&gpstates->gpstate_lock);
+ 	if (watchdog_active(wdd))
+@@ -238,7 +244,7 @@ static int watchdog_start(struct watchdog_device *wdd)
+ 
+ 	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
+ 
+-	started_at = jiffies;
++	started_at = ktime_get();
+ 	if (watchdog_hw_running(wdd) && wdd->ops->ping)
+ 		err = wdd->ops->ping(wdd);
+ 	else
+@@ -919,10 +925,8 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+ 	wd_data->wdd = wdd;
+ 	wdd->wd_data = wd_data;
+ 
+-	if (!watchdog_wq)
+-		return -ENODEV;
+-
+-	INIT_DELAYED_WORK(&wd_data->work, watchdog_ping_work);
++	hrtimer_init(&wd_data->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	wd_data->timer.function = watchdog_ping_work;
+ 
+ 	if (wdd->id == 0) {
+ 		old_wd_data = wd_data;
+@@ -958,7 +962,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+ 	}
+ 
+ 	/* Record time of most recent heartbeat as 'just before now'. */
+-	wd_data->last_hw_keepalive = jiffies - 1;
++	wd_data->last_hw_keepalive = ktime_get();
+ 
+ 	/*
+ 	 * If the watchdog is running, prevent its driver from being unloaded,
+@@ -968,7 +972,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+ 		if (handle_boot_enabled) {
+ 			__module_get(wdd->ops->owner);
+ 			kref_get(&wd_data->kref);
+-			queue_delayed_work(watchdog_wq, &wd_data->work, 0);
++			hrtimer_start(&wd_data->timer, 0, HRTIMER_MODE_REL);
+ 		} else {
+ 			pr_info("watchdog%d running and kernel based pre-userspace handler disabled\n",
+ 					wdd->id);
+@@ -1006,7 +1010,7 @@ static void watchdog_cdev_unregister(struct watchdog_device *wdd)
+ 		watchdog_stop(wdd);
+ 	}
+ 
+-	cancel_delayed_work_sync(&wd_data->work);
++	hrtimer_cancel(&wd_data->timer);
+ 
+ 	kref_put(&wd_data->kref, watchdog_core_data_release);
+ }
+@@ -1111,13 +1115,6 @@ int __init watchdog_dev_init(void)
+ {
+ 	int err;
+ 
+-	watchdog_wq = alloc_workqueue("watchdogd",
+-				      WQ_HIGHPRI | WQ_MEM_RECLAIM, 0);
+-	if (!watchdog_wq) {
+-		pr_err("Failed to create watchdog workqueue\n");
+-		return -ENOMEM;
+-	}
+-
+ 	err = class_register(&watchdog_class);
+ 	if (err < 0) {
+ 		pr_err("couldn't register class\n");
+@@ -1135,7 +1132,6 @@ int __init watchdog_dev_init(void)
+ err_alloc:
+ 	class_unregister(&watchdog_class);
+ err_register:
+-	destroy_workqueue(watchdog_wq);
+ 	return err;
+ }
+ 
+@@ -1149,7 +1145,6 @@ void __exit watchdog_dev_exit(void)
+ {
+ 	unregister_chrdev_region(watchdog_devt, MAX_DOGS);
+ 	class_unregister(&watchdog_class);
+-	destroy_workqueue(watchdog_wq);
+ }
+ 
+ module_param(handle_boot_enabled, bool, 0444);
 -- 
-1.8.3.1
+2.13.3
