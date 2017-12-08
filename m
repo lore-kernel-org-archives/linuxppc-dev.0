@@ -1,32 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
- [IPv6:2607:f8b0:400c:c08::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ytJBj22FVzDrZW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 14:44:45 +1100 (AEDT)
-Received: by mail-ua0-x242.google.com with SMTP id q13so6724898uaq.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2017 19:44:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ytKjk3FH8zDsTh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 15:53:14 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id l24so6429501pfj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2017 20:53:13 -0800 (PST)
+Date: Fri, 8 Dec 2017 14:53:00 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [resend-without-rfc] powernv/kdump: Fix cases where the kdump
+ kernel can get HMI's
+Message-ID: <20171208145300.3d7e3003@roar.ozlabs.ibm.com>
+In-Reply-To: <20171208033533.8014-1-bsingharora@gmail.com>
+References: <20171208033533.8014-1-bsingharora@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 8 Dec 2017 14:44:40 +1100
-Message-ID: <CAKTCnzkWRm6BOoHLvO+rTmXh8frCJW4uGuccHLSW+WQnWseuhQ@mail.gmail.com>
-Subject: Re: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates
- on POWER8 vs POWER9
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- stable@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,64 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 7, 2017 at 4:59 PM, Gautham R. Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
-> negatively numbered while on POWER9 they are positively
-> numbered. Thus, on POWER9, the maximum number of pstates could be as
-> high as 256.
->
-> The current code interprets pstates as a signed 8-bit value. This
-> causes a problem on POWER9 platforms which have more than 128 pstates.
-> On such systems, on a CPU that is in a lower pstate whose number is
-> greater than 128, querying the current pstate returns a "pstate X is
-> out of bound" error message and the current pstate is reported as the
-> nominal pstate.
->
-> This patch fixes the aforementioned issue by correctly differentiating
-> the sign whenever a pstate value read, depending on whether the
-> pstates are positively numbered or negatively numbered.
+On Fri,  8 Dec 2017 14:35:33 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-Yikes! Is there no better way of fixing this?
-
->
-> Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
-> Cc: <stable@vger.kernel.org> #v4.8
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Certain HMI's such as malfunction error propagate through
+> all threads/core on the system. If a thread was offline
+> prior to us crashing the system and jumping to the kdump
+> kernel, bad things happen when it wakes up due to an HMI
+> in the kdump kernel.
+> 
+> There are several possible ways to solve this problem
+> 
+> 1. Put the offline cores in a state such that they are
+> not woken up for machine check and HMI errors. This
+> does not work, since we might need to wake up offline
+> threads occasionally to handle TB errors
+> 2. Ignore HMI errors, setup HMEER to mask HMI errors,
+> but this still leads the window open for any MCEs
+> and masking them for the duration of the dump might
+> be a concern
+> 3. Wake up offline CPUs, as in send them to crash_ipi_callback
+> (not wake them up as in mark them online as seen by
+> the scheduler). kexec does a wake_online_cpus() call,
+> this patch does something similar, but instead sends
+> an IPI and forces them to crash_ipi_callback
+> 
+> Care is taken to enable this only for powenv platforms
+> via crash_wake_offline (a global value set at setup
+> time). The crash code sends out IPI's to all CPU's
+> which then move to crash_ipi_callback and kexec_smp_wait().
+> We don't grab the pt_regs for offline CPU's.
+> 
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
->  1 file changed, 33 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..bb7586e 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -41,11 +41,14 @@
->  #define POWERNV_MAX_PSTATES    256
->  #define PMSR_PSAFE_ENABLE      (1UL << 30)
->  #define PMSR_SPR_EM_DISABLE    (1UL << 31)
-> -#define PMSR_MAX(x)            ((x >> 32) & 0xFF)
-> +#define EXTRACT_BYTE(x, shift) (((x) >> shift) & 0xFF)
-> +#define MAX_SHIFT              32
->  #define LPSTATE_SHIFT          48
->  #define GPSTATE_SHIFT          56
-> -#define GET_LPSTATE(x)         (((x) >> LPSTATE_SHIFT) & 0xFF)
-> -#define GET_GPSTATE(x)         (((x) >> GPSTATE_SHIFT) & 0xFF)
-> +#define GET_PMSR_MAX(x)                EXTRACT_BYTE(x, MAX_SHIFT)
-> +#define GET_LPSTATE(x)         EXTRACT_BYTE(x, LPSTATE_SHIFT)
-> +#define GET_GPSTATE(x)         EXTRACT_BYTE(x, GPSTATE_SHIFT)
+> 
+> Nick reviewed the patches and asked if
+> 
+> 1. We need to do anything on the otherside of the kernel?
+> The answer is not clear at this point, but I don't want
+> to block this patch as it fixes a critical problem with
+> kdump in SMT=2/1 mode
+> 2. We should do this for other platforms
+> The answer is same as above, other platforms require testing
+> and I can selectively enable them as needed as I test them
+
+Yeah I didn't intend those as a nack for the patch... It's
+a bit annoying to have these selections between online cpus
+and present cpus depending on kdump.
+
+We don't want to do a full CPU online in the kdump path of
+course, but what if the crash code has a call that can IPI
+offline CPUs to get them into the crash callback, rather than
+put it in the general NMI IPI code?
+
+
+> @@ -187,6 +188,14 @@ static void pnv_smp_cpu_kill_self(void)
+>  		WARN_ON(lazy_irq_pending());
+>  
+>  		/*
+> +		 * For kdump kernels, we process the ipi and jump to
+> +		 * crash_ipi_callback. For more details see the description
+> +		 * at crash_wake_offline
+> +		 */
+> +		if (kdump_in_progress())
+> +			crash_ipi_callback(NULL);
 > +
+> +		/*
+>  		 * If the SRR1 value indicates that we woke up due to
+>  		 * an external interrupt, then clear the interrupt.
+>  		 * We clear the interrupt before checking for the
 
-Can you hide all of this in pstate_to_idx(), do the casting inside? I
-was reviewing this
-code earlier before being distracted with something else, this did
-come across as
-strange and I was looking at using abs values to simplify the code,
-but I did not get
-to it.
+I think you need to do this _after_ clearing the interrupt,
+otherwise you get a lost wakeup window, don't you?
 
-Balbir Singh.
+Thanks,
+Nick
