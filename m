@@ -1,32 +1,19 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yt7mv13TfzDsQ0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 08:25:18 +1100 (AEDT)
-Received: by mail-ot0-x241.google.com with SMTP id e74so7589278ote.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2017 13:25:18 -0800 (PST)
-MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 7 Dec 2017 22:25:15 +0100
-Message-ID: <CAJZ5v0jzh1B_8FYciWhpJZVPZNzm3n30NEE25LO_YJ17Wi+h+w@mail.gmail.com>
-Subject: Re: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates
- on POWER8 vs POWER9
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Linux PM <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Stable <stable@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ytJ0K0SmzzDrYp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 14:35:44 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id q20so5963366pgv.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Dec 2017 19:35:44 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, Balbir Singh <bsingharora@gmail.com>
+Subject: [resend-without-rfc] powernv/kdump: Fix cases where the kdump kernel
+ can get HMI's
+Date: Fri,  8 Dec 2017 14:35:33 +1100
+Message-Id: <20171208033533.8014-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,144 +23,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 7, 2017 at 6:59 AM, Gautham R. Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
-> negatively numbered while on POWER9 they are positively
-> numbered. Thus, on POWER9, the maximum number of pstates could be as
-> high as 256.
->
-> The current code interprets pstates as a signed 8-bit value. This
-> causes a problem on POWER9 platforms which have more than 128 pstates.
-> On such systems, on a CPU that is in a lower pstate whose number is
-> greater than 128, querying the current pstate returns a "pstate X is
-> out of bound" error message and the current pstate is reported as the
-> nominal pstate.
->
-> This patch fixes the aforementioned issue by correctly differentiating
-> the sign whenever a pstate value read, depending on whether the
-> pstates are positively numbered or negatively numbered.
->
-> Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
-> Cc: <stable@vger.kernel.org> #v4.8
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Certain HMI's such as malfunction error propagate through
+all threads/core on the system. If a thread was offline
+prior to us crashing the system and jumping to the kdump
+kernel, bad things happen when it wakes up due to an HMI
+in the kdump kernel.
 
-I'm going to apply this, or please let me know if you want to route it
-differently.
+There are several possible ways to solve this problem
 
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
->  1 file changed, 33 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..bb7586e 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -41,11 +41,14 @@
->  #define POWERNV_MAX_PSTATES    256
->  #define PMSR_PSAFE_ENABLE      (1UL << 30)
->  #define PMSR_SPR_EM_DISABLE    (1UL << 31)
-> -#define PMSR_MAX(x)            ((x >> 32) & 0xFF)
-> +#define EXTRACT_BYTE(x, shift) (((x) >> shift) & 0xFF)
-> +#define MAX_SHIFT              32
->  #define LPSTATE_SHIFT          48
->  #define GPSTATE_SHIFT          56
-> -#define GET_LPSTATE(x)         (((x) >> LPSTATE_SHIFT) & 0xFF)
-> -#define GET_GPSTATE(x)         (((x) >> GPSTATE_SHIFT) & 0xFF)
-> +#define GET_PMSR_MAX(x)                EXTRACT_BYTE(x, MAX_SHIFT)
-> +#define GET_LPSTATE(x)         EXTRACT_BYTE(x, LPSTATE_SHIFT)
-> +#define GET_GPSTATE(x)         EXTRACT_BYTE(x, GPSTATE_SHIFT)
-> +
->
->  #define MAX_RAMP_DOWN_TIME                             5120
->  /*
-> @@ -64,6 +67,12 @@
->
->  /* Interval after which the timer is queued to bring down global pstate */
->  #define GPSTATE_TIMER_INTERVAL                         2000
-> +/*
-> + * On POWER8 the pstates are negatively numbered. On POWER9, they are
-> + * positively numbered.  Use this flag to track whether we have
-> + * positive or negative numbered pstates.
-> + */
-> +static bool pos_pstates;
->
->  /**
->   * struct global_pstate_info - Per policy data structure to maintain history of
-> @@ -164,7 +173,7 @@ static inline unsigned int pstate_to_idx(int pstate)
->         int min = powernv_freqs[powernv_pstate_info.min].driver_data;
->         int max = powernv_freqs[powernv_pstate_info.max].driver_data;
->
-> -       if (min > 0) {
-> +       if (pos_pstates) {
->                 if (unlikely((pstate < max) || (pstate > min))) {
->                         pr_warn_once("pstate %d is out of bound\n", pstate);
->                         return powernv_pstate_info.nominal;
-> @@ -301,6 +310,9 @@ static int init_powernv_pstates(void)
->                 }
->         }
->
-> +       if ((int)pstate_min > 0)
-> +               pos_pstates = true;
-> +
->         /* End of list marker entry */
->         powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
->         return 0;
-> @@ -438,7 +450,6 @@ struct powernv_smp_call_data {
->  static void powernv_read_cpu_freq(void *arg)
->  {
->         unsigned long pmspr_val;
-> -       s8 local_pstate_id;
->         struct powernv_smp_call_data *freq_data = arg;
->
->         pmspr_val = get_pmspr(SPRN_PMSR);
-> @@ -447,8 +458,11 @@ static void powernv_read_cpu_freq(void *arg)
->          * The local pstate id corresponds bits 48..55 in the PMSR.
->          * Note: Watch out for the sign!
->          */
-> -       local_pstate_id = (pmspr_val >> 48) & 0xFF;
-> -       freq_data->pstate_id = local_pstate_id;
-> +       if (pos_pstates)
-> +               freq_data->pstate_id = (u8)GET_LPSTATE(pmspr_val);
-> +       else
-> +               freq_data->pstate_id = (s8)GET_LPSTATE(pmspr_val);
-> +
->         freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
->
->         pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
-> @@ -522,7 +536,10 @@ static void powernv_cpufreq_throttle_check(void *data)
->         chip = this_cpu_read(chip_info);
->
->         /* Check for Pmax Capping */
-> -       pmsr_pmax = (s8)PMSR_MAX(pmsr);
-> +       if (pos_pstates)
-> +               pmsr_pmax = (u8)GET_PMSR_MAX(pmsr);
-> +       else
-> +               pmsr_pmax = (s8)GET_PMSR_MAX(pmsr);
->         pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
->         if (pmsr_pmax_idx != powernv_pstate_info.max) {
->                 if (chip->throttled)
-> @@ -645,8 +662,14 @@ void gpstate_timer_handler(struct timer_list *t)
->          * value. Hence, read from PMCR to get correct data.
->          */
->         val = get_pmspr(SPRN_PMCR);
-> -       freq_data.gpstate_id = (s8)GET_GPSTATE(val);
-> -       freq_data.pstate_id = (s8)GET_LPSTATE(val);
-> +       if (pos_pstates) {
-> +               freq_data.gpstate_id = (u8)GET_GPSTATE(val);
-> +               freq_data.pstate_id = (u8)GET_LPSTATE(val);
-> +       } else {
-> +               freq_data.gpstate_id = (s8)GET_GPSTATE(val);
-> +               freq_data.pstate_id = (s8)GET_LPSTATE(val);
-> +       }
-> +
->         if (freq_data.gpstate_id  == freq_data.pstate_id) {
->                 reset_gpstates(policy);
->                 spin_unlock(&gpstates->gpstate_lock);
-> --
-> 1.8.3.1
->
+1. Put the offline cores in a state such that they are
+not woken up for machine check and HMI errors. This
+does not work, since we might need to wake up offline
+threads occasionally to handle TB errors
+2. Ignore HMI errors, setup HMEER to mask HMI errors,
+but this still leads the window open for any MCEs
+and masking them for the duration of the dump might
+be a concern
+3. Wake up offline CPUs, as in send them to crash_ipi_callback
+(not wake them up as in mark them online as seen by
+the scheduler). kexec does a wake_online_cpus() call,
+this patch does something similar, but instead sends
+an IPI and forces them to crash_ipi_callback
+
+Care is taken to enable this only for powenv platforms
+via crash_wake_offline (a global value set at setup
+time). The crash code sends out IPI's to all CPU's
+which then move to crash_ipi_callback and kexec_smp_wait().
+We don't grab the pt_regs for offline CPU's.
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+
+Nick reviewed the patches and asked if
+
+1. We need to do anything on the otherside of the kernel?
+The answer is not clear at this point, but I don't want
+to block this patch as it fixes a critical problem with
+kdump in SMT=2/1 mode
+2. We should do this for other platforms
+The answer is same as above, other platforms require testing
+and I can selectively enable them as needed as I test them
+
+ arch/powerpc/include/asm/kexec.h     |  2 ++
+ arch/powerpc/kernel/crash.c          | 18 +++++++++++++-----
+ arch/powerpc/kernel/smp.c            | 11 ++++++++---
+ arch/powerpc/platforms/powernv/smp.c | 23 +++++++++++++++++++----
+ 4 files changed, 42 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 4419d435639a..9dcbfa6bbb91 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -73,6 +73,8 @@ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
+ 					  master to copy new code to 0 */
+ extern int crashing_cpu;
+ extern void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *));
++extern void crash_ipi_callback(struct pt_regs *);
++extern int crash_wake_offline;
+ 
+ struct kimage;
+ struct pt_regs;
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index cbabb5adccd9..7e2ddfa9213e 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -44,6 +44,14 @@
+ #define REAL_MODE_TIMEOUT	10000
+ 
+ static int time_to_dump;
++/*
++ * crash_wake_offline should be set to 1 by platforms that intend to wake
++ * up offline cpus prior to jumping to a kdump kernel. Currently powernv
++ * sets it to 1, since we want to avoid things from happening when an
++ * offline CPU wakes up due to something like an HMI (malfunction error),
++ * which propagates to all threads.
++ */
++int crash_wake_offline;
+ 
+ #define CRASH_HANDLER_MAX 3
+ /* List of shutdown handles */
+@@ -63,17 +71,14 @@ static int handle_fault(struct pt_regs *regs)
+ #ifdef CONFIG_SMP
+ 
+ static atomic_t cpus_in_crash;
+-static void crash_ipi_callback(struct pt_regs *regs)
++void crash_ipi_callback(struct pt_regs *regs)
+ {
+ 	static cpumask_t cpus_state_saved = CPU_MASK_NONE;
+ 
+ 	int cpu = smp_processor_id();
+ 
+-	if (!cpu_online(cpu))
+-		return;
+-
+ 	hard_irq_disable();
+-	if (!cpumask_test_cpu(cpu, &cpus_state_saved)) {
++	if (cpu_online(cpu) && !cpumask_test_cpu(cpu, &cpus_state_saved)) {
+ 		crash_save_cpu(regs, cpu);
+ 		cpumask_set_cpu(cpu, &cpus_state_saved);
+ 	}
+@@ -109,6 +114,9 @@ static void crash_kexec_prepare_cpus(int cpu)
+ 
+ 	printk(KERN_EMERG "Sending IPI to other CPUs\n");
+ 
++	if (crash_wake_offline)
++		ncpus = num_present_cpus() - 1;
++
+ 	crash_send_ipi(crash_ipi_callback);
+ 	smp_wmb();
+ 
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index e0a4c1f82e25..f485db54c2f9 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -429,10 +429,12 @@ static void do_smp_send_nmi_ipi(int cpu)
+ 	} else {
+ 		int c;
+ 
+-		for_each_online_cpu(c) {
++		for_each_present_cpu(c) {
+ 			if (c == raw_smp_processor_id())
+ 				continue;
+-			do_message_pass(c, PPC_MSG_NMI_IPI);
++			if (cpu_online(c) ||
++				(kdump_in_progress() && crash_wake_offline))
++				do_message_pass(c, PPC_MSG_NMI_IPI);
+ 		}
+ 	}
+ }
+@@ -485,7 +487,10 @@ int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us)
+ 
+ 	if (cpu < 0) {
+ 		/* ALL_OTHERS */
+-		cpumask_copy(&nmi_ipi_pending_mask, cpu_online_mask);
++		if (kdump_in_progress() && crash_wake_offline)
++			cpumask_copy(&nmi_ipi_pending_mask, cpu_present_mask);
++		else
++			cpumask_copy(&nmi_ipi_pending_mask, cpu_online_mask);
+ 		cpumask_clear_cpu(me, &nmi_ipi_pending_mask);
+ 	} else {
+ 		/* cpumask starts clear */
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index ba030669eca1..a8d8f6aaeb11 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -37,6 +37,7 @@
+ #include <asm/kvm_ppc.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/cpuidle.h>
++#include <asm/kexec.h>
+ 
+ #include "powernv.h"
+ 
+@@ -187,6 +188,14 @@ static void pnv_smp_cpu_kill_self(void)
+ 		WARN_ON(lazy_irq_pending());
+ 
+ 		/*
++		 * For kdump kernels, we process the ipi and jump to
++		 * crash_ipi_callback. For more details see the description
++		 * at crash_wake_offline
++		 */
++		if (kdump_in_progress())
++			crash_ipi_callback(NULL);
++
++		/*
+ 		 * If the SRR1 value indicates that we woke up due to
+ 		 * an external interrupt, then clear the interrupt.
+ 		 * We clear the interrupt before checking for the
+@@ -324,14 +333,17 @@ static int pnv_cause_nmi_ipi(int cpu)
+ 		 * exactly what semantics Linux wants or the firmware should
+ 		 * provide.
+ 		 */
+-		for_each_online_cpu(c) {
++		for_each_present_cpu(c) {
+ 			if (c == smp_processor_id())
+ 				continue;
+ 
+-			rc = opal_signal_system_reset(
++			if (cpu_online(c) ||
++				(kdump_in_progress() && crash_wake_offline)) {
++				rc = opal_signal_system_reset(
+ 						get_hard_smp_processor_id(c));
+-			if (rc != OPAL_SUCCESS)
+-				success = false;
++				if (rc != OPAL_SUCCESS)
++					success = false;
++			}
+ 		}
+ 		if (success)
+ 			return 1;
+@@ -371,5 +383,8 @@ void __init pnv_smp_init(void)
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	ppc_md.cpu_die	= pnv_smp_cpu_kill_self;
++#ifdef CONFIG_KEXEC_CORE
++	crash_wake_offline = 1;
++#endif
+ #endif
+ }
+-- 
+2.13.6
