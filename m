@@ -1,27 +1,18 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0099.hostedemail.com
- [216.40.44.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ytWjn2N14zDrpH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 23:23:56 +1100 (AEDT)
-Message-ID: <1512735829.1845.15.camel@perches.com>
-Subject: Re: [PATCH] powerpc/xmon: use ARRAY_SIZE on various array sizing
- calculations
-From: Joe Perches <joe@perches.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Balbir Singh
- <bsingharora@gmail.com>,  Colin King <colin.king@canonical.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, kernel-janitors@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 08 Dec 2017 04:23:49 -0800
-In-Reply-To: <87efo5h1yh.fsf@concordia.ellerman.id.au>
-References: <20171207110134.22566-1-colin.king@canonical.com>
- <CAKTCnzmNKtg1morOPS7D3iGHFxZxd1uioex1eGtChBVppcctKA@mail.gmail.com>
- <87efo5h1yh.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ytX3r3BJ5zDrKp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 23:39:36 +1100 (AEDT)
+In-Reply-To: <20171206082114.30302-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [v3] powerpc/64s: ISAv3 initialize MMU registers before setting
+ partition table
+Message-Id: <3ytX3q6wHhz9s83@ozlabs.org>
+Date: Fri,  8 Dec 2017 23:39:35 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-12-08 at 22:51 +1100, Michael Ellerman wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
+On Wed, 2017-12-06 at 08:21:14 UTC, Nicholas Piggin wrote:
+> kexec can leave MMU registers set when booting into a new kernel, PIDR
+> in particular. The boot sequence does not zero PIDR, so it only gets
+> set when CPUs first switch to a userspace processes (until then it's
+> running a kernel thread with effective PID = 0).
 > 
-> > On Thu, Dec 7, 2017 at 10:01 PM, Colin King <colin.king@canonical.com> wrote:
-> > > From: Colin Ian King <colin.king@canonical.com>
-> > > 
-> > > Use the ARRAY_SIZE macro on several arrays to determine their size.
-> > > Improvement suggested by coccinelle.
-> > 
-> > This file is taken from binutils and re-licensed. Keeping the file
-> > as-is helps apply newer patches easily on top as opposed to redoing
-> > the changes. I would prefer not to move to ARRAY_SIZE and stick to
-> > what's already in the file.
+> This leaves a window where a process table entry and page tables are
+> set up due to user processes running on other CPUs, that happen to
+> match with a stale PID. The CPU with that PID may cause speculative
+> accesses that address quadrant 0, which will result in cached
+> translations and PWC for that process, on a CPU which is not in the
+> mm_cpumask and so they will not get invalidated properly.
 > 
-> Yep.
+> The most common result is the kernel hanging in infinite page fault
+> loops soon after kexec (usually in schedule_tail, which is usually the
+> first non-speculative quardant 0 access to a new PID) due to a stale
+> PWC. However being a stale translation error, it could result in
+> anything up to security and data corruption problems.
 > 
-> Thanks but no thanks on this one Colin.
+> Fix this by zeroing out PIDR at boot and kexec.
 > 
-> Is there a checkpatch blacklist anywhere? So we don't keep discovering
-> things in this file that need to be fixed?
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Nope.  Besides, this came via a coccinelle suggestion.
+Applied to powerpc fixes, thanks.
 
-What might be useful is a generic marker somewhere in
-a file that shows the file as a generated file and
-indicates the file should not otherwise be modified.
+https://git.kernel.org/powerpc/c/371b80447ff33ddac392c189cf884a
+
+cheers
