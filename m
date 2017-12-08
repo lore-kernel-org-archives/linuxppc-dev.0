@@ -1,34 +1,26 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ytW9n0vSjzDqlc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 22:59:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ytWFl242jzDqlc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 23:03:07 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Olof Johansson <olof@lixom.net>, Bjorn Helgaas <bhelgaas@google.com>,
- "linux-pci\@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] SB600 for the Nemo board has non-zero devices on non-root
- bus
-In-Reply-To: <20171206210637.GO23510@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
- <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
- <6d2505ab-a985-bdb0-ad3a-e7659cc2c54d@xenosoft.de>
- <20171202230052.34y2ivxgpgr3osct@localhost>
- <CAOesGMhfMpt+xG1vhVHU+O5o4W5y2S5mZyn9tp+CPn9G6XrNVA@mail.gmail.com>
- <4CEE49CE-68F3-457F-B302-54BA8550F36A@xenosoft.de>
- <1d5276c3-1d29-114a-c868-6f022eee58e7@xenosoft.de>
- <99f78122-cd53-100f-4f58-be5bf7927d4e@xenosoft.de>
- <87fu8odnfk.fsf@concordia.ellerman.id.au>
- <20171206210637.GO23510@bhelgaas-glaptop.roam.corp.google.com>
-Date: Fri, 08 Dec 2017 22:59:40 +1100
-Message-ID: <877etxh1lf.fsf@concordia.ellerman.id.au>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2] powerpc/powernv: Add pci_reset_phbs parameter to issue
+ a PHB reset
+In-Reply-To: <c756e923-791e-154e-cdcb-50cb6bd06dd7@linux.vnet.ibm.com>
+References: <20171025152754.25166-1-gpiccoli@linux.vnet.ibm.com>
+ <CAKTCnz=yR1Nm1mCzNVVbDkxz=es5H9v-+J-y+8FN5ttB1EZ=Bg@mail.gmail.com>
+ <95c483cf-93dc-6b99-f406-cb59d3263442@linux.vnet.ibm.com>
+ <CAKTCnz=JLBGDF7O9saMiGNC4jUsHDpp1A3oRk+7TDfn5st_CKA@mail.gmail.com>
+ <c756e923-791e-154e-cdcb-50cb6bd06dd7@linux.vnet.ibm.com>
+Date: Fri, 08 Dec 2017 23:03:06 +1100
+Message-ID: <874lp1h1fp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,43 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
 
-> On Wed, Dec 06, 2017 at 11:57:03PM +1100, Michael Ellerman wrote:
->> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
->> ...
->> >
->> > Hi Olof,
->> >
->> > Many thanks for your patch! :-) The RC2 of kernel 4.15 boots without a=
-ny=20
->> > problems on my P.A. Semi Nemo board (A-EON AmigaOne X1000). I don=E2=
-=80=99t need=20
->> > the additional boot argument 'pci=3Dpcie_scan_all' anymore.
->> >
->> > Is it possible to merge it via the powerpc tree?
->>=20
->> Yes.
->>=20
->> It would be good to confirm that the change is harmless on other pasemi
->> boards. I'll try and get mine booted tomorrow, unless someone beats me
->> to it.
+> On 11/21/2017 12:35 AM, Balbir Singh wrote:
+>> On Thu, Nov 16, 2017 at 11:14 PM, Guilherme G. Piccoli
+>> <gpiccoli@linux.vnet.ibm.com> wrote:
+>>> On 11/16/2017 01:49 AM, Balbir Singh wrote:
+>>>> On Thu, Oct 26, 2017 at 2:27 AM, Guilherme G. Piccoli
+>>>> <gpiccoli@linux.vnet.ibm.com> wrote:
+>>>>> During a kdump kernel boot in PowerPC, we request a reset of the PHBs
+>>>>> to the FW. It makes sense, since if we are booting a kdump kernel it
+>>>>> means we had some trouble before and we cannot rely in the adapters'
+>>>>> health; they could be in a bad state, hence the reset is needed.
+>>>>>
+>>>>> But this reset is useful not only in kdump - there are situations,
+>>>>> specially when debugging drivers, that we could break an adapter in
+>>>>> a way it requires such reset. One can tell to just go ahead and
+>>>>> reboot the machine, but happens that many times doing kexec is much
+>>>>> faster, and so preferable than a full power cycle.
+>>>>>
+>>>>> This patch adds the pci_reset_phbs parameter to perform such reset
+>>>>> when desired by the user.
+>>>>>
+>>>>
+>>>> Do we care to reset specific phbs or all of them? I guess all based on
+>>>> your description.
+>>>
+>>> Exactly Balbir, it does reset all of them. We could add such
+>>> granularity, but I don't see much usability..
+>>> But if somebody feels it's useful, we can change...
+>>>
+>> 
+>> OK.. makes sense, any reason why this can't be folded into reset_devices?
+>> I guess we want reset_phbs to be independent of reset_devices
 >
-> Theoretically, it should not do any harm since it only turns off an
-> enumeration optimization.  Boot will be slightly slower but should
-> still work fine.
+> It was, in v1. But mpe asked it to be a powerpc specific parameter heheh
 
-Yep OK.
+LOL. Turtles.
 
-> Darren's idea of doing it at the same time you tweak the SB600 "relax
-> pci-e" bit is ideal because then the two pieces are obviously
-> connected and it wouldn't affect any other systems at all.
+I still feel like we shouldn't be creating a generically named parameter
+like this, though we have done it many times in the past.
 
-Yes that would be ideal. That patch is currently out-of-tree I gather,
-but I guess everyone who's using these machines must have that patch
-anyway.
-
-Darren what does that code look like? Can we get it upstream and close
-the loop on this?
+Can we call it "ppc_reset_phbs". And then I'll merge it without further
+quibbling, honest.
 
 cheers
