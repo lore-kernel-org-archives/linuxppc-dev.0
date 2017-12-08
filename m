@@ -1,36 +1,43 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ytZ2D3gW6zDx9R
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2017 01:08:20 +1100 (AEDT)
-Received: by mail-oi0-x243.google.com with SMTP id r63so7233183oia.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Dec 2017 06:08:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ytb2Q1gm1zDwNT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2017 01:53:33 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vB8EpxAO016284
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Dec 2017 09:53:31 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eqvs70dad-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Dec 2017 09:53:23 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Fri, 8 Dec 2017 07:53:14 -0700
+Subject: Re: [PATCH v5 0/3] Prepartion for SR-IOV PowerVM Enablement
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, helgaas@kernel.org,
+ bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
+ saeedm@mellanox.com
+References: <20171109140035.64975-1-bryantly@linux.vnet.ibm.com>
+ <520bad85-e4a5-a8a8-c893-e53e7b46c65c@ozlabs.ru>
+ <3a49b44e-833a-8440-aa3c-a4984ac47147@linux.vnet.ibm.com>
+ <466ac4c0-6503-a2eb-e352-d2bdfca10cb5@ozlabs.ru>
+ <9777301b-3807-2b1d-fbd5-ffa62b78d8f5@linux.vnet.ibm.com>
+ <e4b660df-f23d-9f4f-6b1b-d681e4ff8bae@ozlabs.ru>
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Date: Fri, 8 Dec 2017 08:52:57 -0600
 MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <87indhh25h.fsf@concordia.ellerman.id.au>
-References: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
- <CAJZ5v0jzh1B_8FYciWhpJZVPZNzm3n30NEE25LO_YJ17Wi+h+w@mail.gmail.com>
- <87indhh25h.fsf@concordia.ellerman.id.au>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 8 Dec 2017 15:08:17 +0100
-Message-ID: <CAJZ5v0hg7AAJBeKpAi2Bv6-udGjGT7RywgofCPmO7j3BsZ2P9A@mail.gmail.com>
-Subject: Re: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates
- on POWER8 vs POWER9
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Linux PM <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Stable <stable@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <e4b660df-f23d-9f4f-6b1b-d681e4ff8bae@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <daf93824-1f46-a4ab-050d-180cd3765816@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,40 +47,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 8, 2017 at 12:47 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> "Rafael J. Wysocki" <rafael@kernel.org> writes:
->
->> On Thu, Dec 7, 2017 at 6:59 AM, Gautham R. Shenoy
->> <ego@linux.vnet.ibm.com> wrote:
->>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>>
->>> On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
->>> negatively numbered while on POWER9 they are positively
->>> numbered. Thus, on POWER9, the maximum number of pstates could be as
->>> high as 256.
->>>
->>> The current code interprets pstates as a signed 8-bit value. This
->>> causes a problem on POWER9 platforms which have more than 128 pstates.
->>> On such systems, on a CPU that is in a lower pstate whose number is
->>> greater than 128, querying the current pstate returns a "pstate X is
->>> out of bound" error message and the current pstate is reported as the
->>> nominal pstate.
->>>
->>> This patch fixes the aforementioned issue by correctly differentiating
->>> the sign whenever a pstate value read, depending on whether the
->>> pstates are positively numbered or negatively numbered.
->>>
->>> Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
->>> Cc: <stable@vger.kernel.org> #v4.8
->>> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->>> Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 12/8/17 12:03 AM, Alexey Kardashevskiy wrote:
+
+> On 06/12/17 02:13, Bryant G. Ly wrote:
 >>
->> I'm going to apply this, or please let me know if you want to route it
->> differently.
+>> On 12/4/17 7:24 PM, Alexey Kardashevskiy wrote:
+>>> On 05/12/17 02:08, Bryant G. Ly wrote:
+>>>> On 12/2/17 7:45 PM, Alexey Kardashevskiy wrote:
+>>>>> On 10/11/17 01:00, Bryant G. Ly wrote:
+>>>>>> v1 - Initial patch
+>>>>>> v2 - Addressed Bjorn's comment on creating a highly platform
+>>>>>>      dependent global exported symbol.
+>>>>>> v3 - Based patch off linux-ppc/master
+>>>>>> v4 - Using the sriov-drivers_autoprobe mechanism per Bjorn's request
+>>>>>> v5 - Fixed comments and commit message
+>>>>> What is this made against of? I'd like to give it a try but it does not
+>>>>> apply to Linus'es tree or powerpc/next. Thanks.
+>>>>>
+>>>> This was made against powerpc/next back when it was still under 4.14-rc6.
+>>>> It has been in review for awhile... 
+>>> Sure, sha1 or github tree would be enough though to try.
+>> 6cff0a118f23b98c604a3604ea9de11338e24fbe
+>>
+>> or if you want to just use the github tree its:
+>>
+>> https://github.com/powervm/sriov-ppc/tree/upstream
 >
-> Do you mind waiting for now, we're still debating how to fix it.
+> Thanks! Looks good, works fine (tried MLX5 wit hpowernv - works, pseries
+> under KVM - prints a nice error instead of crashing),
+>
+> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>
+>
+Thanks for the review/testing. I will drop the full patch that enables SRIOV on PowerVM next week.
+The patch will require unreleased PHYP and PFW firmware to fully function.
 
-No problem. :-)
+I will include you and Russell to those patches. 
 
-Just please let me know when you're ready.
+-Bryant
+
+>
+>>>> -Bryant
+>>>>
+>>>>>> Bryant G. Ly (3):
+>>>>>>   powerpc/kernel: Separate SR-IOV Calls
+>>>>>>   pseries: Add PSeries SR-IOV Machine dependent calls
+>>>>>>   PCI/IOV: Add pci_vf_drivers_autoprobe() interface
+>>>>>>
+>>>>>>  arch/powerpc/include/asm/machdep.h           |  7 ++++++
+>>>>>>  arch/powerpc/include/asm/pci-bridge.h        |  4 +---
+>>>>>>  arch/powerpc/kernel/eeh_driver.c             |  4 ++--
+>>>>>>  arch/powerpc/kernel/pci-common.c             | 23 +++++++++++++++++++
+>>>>>>  arch/powerpc/kernel/pci_dn.c                 |  6 -----
+>>>>>>  arch/powerpc/platforms/powernv/eeh-powernv.c | 33 ++++++++++++++--------------
+>>>>>>  arch/powerpc/platforms/powernv/pci-ioda.c    |  6 +++--
+>>>>>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 24 ++++++++++++++++++++
+>>>>>>  arch/powerpc/platforms/pseries/pci.c         | 31 ++++++++++++++++++++++----
+>>>>>>  drivers/pci/iov.c                            | 11 ++++++++++
+>>>>>>  include/linux/pci.h                          |  2 ++
+>>>>>>  11 files changed, 118 insertions(+), 33 deletions(-)
+>>>>>>
+>
