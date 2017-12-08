@@ -1,20 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ytXDt381hzDrTj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Dec 2017 23:47:26 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: david@gibson.dropbear.id.au, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- ravi.bangoria@linux.vnet.ibm.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.15-4 tag
-Date: Fri, 08 Dec 2017 23:47:21 +1100
-Message-ID: <87zi6tfkti.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ytXyc4HzRzDwNt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Dec 2017 00:20:07 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id e14so6873676pgr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Dec 2017 05:20:07 -0800 (PST)
+Date: Fri, 8 Dec 2017 23:19:54 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [resend-without-rfc] powernv/kdump: Fix cases where the kdump
+ kernel can get HMI's
+Message-ID: <20171208231954.225a6bf5@roar.ozlabs.ibm.com>
+In-Reply-To: <87lgidh26u.fsf@concordia.ellerman.id.au>
+References: <20171208033533.8014-1-bsingharora@gmail.com>
+ <20171208145300.3d7e3003@roar.ozlabs.ibm.com>
+ <87lgidh26u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,81 +29,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Fri, 08 Dec 2017 22:46:49 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Hi Linus,
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > On Fri,  8 Dec 2017 14:35:33 +1100
+> > Balbir Singh <bsingharora@gmail.com> wrote:
+> >  
+> >> Certain HMI's such as malfunction error propagate through
+> >> all threads/core on the system. If a thread was offline
+> >> prior to us crashing the system and jumping to the kdump
+> >> kernel, bad things happen when it wakes up due to an HMI
+> >> in the kdump kernel.
+> >> 
+> >> There are several possible ways to solve this problem
+> >> 
+> >> 1. Put the offline cores in a state such that they are
+> >> not woken up for machine check and HMI errors. This
+> >> does not work, since we might need to wake up offline
+> >> threads occasionally to handle TB errors
+> >> 2. Ignore HMI errors, setup HMEER to mask HMI errors,
+> >> but this still leads the window open for any MCEs
+> >> and masking them for the duration of the dump might
+> >> be a concern
+> >> 3. Wake up offline CPUs, as in send them to crash_ipi_callback
+> >> (not wake them up as in mark them online as seen by
+> >> the scheduler). kexec does a wake_online_cpus() call,
+> >> this patch does something similar, but instead sends
+> >> an IPI and forces them to crash_ipi_callback
+> >> 
+> >> Care is taken to enable this only for powenv platforms
+> >> via crash_wake_offline (a global value set at setup
+> >> time). The crash code sends out IPI's to all CPU's
+> >> which then move to crash_ipi_callback and kexec_smp_wait().
+> >> We don't grab the pt_regs for offline CPU's.
+> >> 
+> >> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> >> ---
+> >> 
+> >> Nick reviewed the patches and asked if
+> >> 
+> >> 1. We need to do anything on the otherside of the kernel?
+> >> The answer is not clear at this point, but I don't want
+> >> to block this patch as it fixes a critical problem with
+> >> kdump in SMT=2/1 mode
+> >> 2. We should do this for other platforms
+> >> The answer is same as above, other platforms require testing
+> >> and I can selectively enable them as needed as I test them  
+> >
+> > Yeah I didn't intend those as a nack for the patch... It's
+> > a bit annoying to have these selections between online cpus
+> > and present cpus depending on kdump.
+> >
+> > We don't want to do a full CPU online in the kdump path of
+> > course, but what if the crash code has a call that can IPI
+> > offline CPUs to get them into the crash callback, rather than
+> > put it in the general NMI IPI code?  
+> 
+> Yeah. I reworked it with Balbir and I think that's pretty much what we
+> came up with. The crash code does the normal NMI callback and then goes
+> through any offline CPUs and sends them a do-nothing NMI.
 
-Please pull some more powerpc fixes for 4.15:
+Okay good. Well actually it doesn't need to be an NMI because it
+comes directly out of stop, so a doorbell would actually be less
+code. Anyway NBD.
 
-The following changes since commit ae64f9bd1d3621b5e60d7363bc20afb46aede215:
+> 
+> >> @@ -187,6 +188,14 @@ static void pnv_smp_cpu_kill_self(void)
+> >>  		WARN_ON(lazy_irq_pending());
+> >>  
+> >>  		/*
+> >> +		 * For kdump kernels, we process the ipi and jump to
+> >> +		 * crash_ipi_callback. For more details see the description
+> >> +		 * at crash_wake_offline
+> >> +		 */
+> >> +		if (kdump_in_progress())
+> >> +			crash_ipi_callback(NULL);
+> >> +
+> >> +		/*
+> >>  		 * If the SRR1 value indicates that we woke up due to
+> >>  		 * an external interrupt, then clear the interrupt.
+> >>  		 * We clear the interrupt before checking for the  
+> >
+> > I think you need to do this _after_ clearing the interrupt,
+> > otherwise you get a lost wakeup window, don't you?  
+> 
+> Yeah I originally thought that, but it depends how you actually do the
+> wake up I think.
+> 
+> On P9 bare metal we will do OPAL_SIGNAL_SYS_RESET. I don't think that
+> actually sends an interrupt does it? But that's just from me skimming
+> the opal code you wrote :)
 
-  Linux 4.15-rc2 (2017-12-03 11:01:47 -0500)
+It effectively does send an interrupt. Hotplug is in stop, so it
+will take a powersave wakeup system reset with system reset reason
+in SRR1.
 
-are available in the Git repository at:
+> 
+> For the non-NMI case where it's a doorbell or xics/xive IPI yes as
+> currently written it will leave the interrupt uncleared.
+> 
+> On P9 if we don't have the NMI for some reason we should be using
+> doorbells, which is nice because it's just the msgclr, ie. we don't have
+> to call xive and run all that code.
+> 
+> On P8 it'll be a doorbell for threads with the same core, and for other
+> threads we'll call icp_native_flush_interrupt() which is also nice and
+> small and unlikely to break during kdump.
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.15-4
-
-for you to fetch changes up to d8104182087319fd753d6d8e0afcd95d84c2aa2f:
-
-  powerpc/xmon: Don't print hashed pointers in xmon (2017-12-07 00:27:01 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.15 #4
-
-One notable fix for kexec on Power9, where we were not clearing MMU PID properly
-which sometimes leads to hangs. Finally debugged to a root cause by Nick.
-
-A revert of a patch which tried to rework our panic handling to get more output
-on the console, but inadvertently broke reporting the panic to the hypervisor,
-which apparently people care about.
-
-Then a fix for an oops in the PMU code, and finally some s/%p/%px/ in xmon.
-
-Thanks to:
-  David Gibson, Nicholas Piggin, Ravi Bangoria.
-
-----------------------------------------------------------------
-David Gibson (1):
-      Revert "powerpc: Do not call ppc_md.panic in fadump panic notifier"
-
-Michael Ellerman (1):
-      powerpc/xmon: Don't print hashed pointers in xmon
-
-Nicholas Piggin (1):
-      powerpc/64s: Initialize ISAv3 MMU registers before setting partition table
-
-Ravi Bangoria (1):
-      powerpc/perf: Fix oops when grouping different pmu events
-
- arch/powerpc/include/asm/machdep.h     |  1 +
- arch/powerpc/include/asm/setup.h       |  1 +
- arch/powerpc/kernel/cpu_setup_power.S  |  2 ++
- arch/powerpc/kernel/fadump.c           | 22 ----------------------
- arch/powerpc/kernel/setup-common.c     | 27 +++++++++++++++++++++++++++
- arch/powerpc/perf/core-book3s.c        |  4 ++--
- arch/powerpc/platforms/ps3/setup.c     | 15 +++++++++++++++
- arch/powerpc/platforms/pseries/setup.c |  1 +
- arch/powerpc/xmon/xmon.c               | 10 +++++-----
- 9 files changed, 54 insertions(+), 29 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJaKonaAAoJEFHr6jzI4aWAzKgP/0OywTLJO0SYoyQ6JOiY5ZMF
-6UPC+TZYGxF04GGzeRgvhjTIrw/5nbOVQBSQ5QSfTsZ1/z+awkQAxT5cHPppykYd
-taP0h+Z4FGR/IY4ij6lxAW4DllBPHo2TmqSyoDlcC0HNuN9RAqghgwOaAq8FwBLW
-b3GP9kIRzrlnDjLe4zpBn06fn1yyzSLeMkAzTqm1pi2QqIsKkyQKaxuttr7iAcTI
-0I4P6AYG78yNR7Icw2uN+FlYPUD+r4YRHVyw+Hw++4y0T5ZudfZHUB6Y0TAShwI4
-efRREXXTEH7qNnD0u/gLn9tQdeQ9U0gjMaMqBwyoPhXqOhRvBQ0s5nNTqTPrrv5w
-dvk1UPxHdwUU/Wb+GMhRHOcisDh+36WnnQZR9+7Gx/9+47X8oW/9OyHjsZB56GZa
-jYjvYAyEbEUyWGoSZE8qT/rEE4+dxYxeF38jliQRinSU2cTD9lLEchmmCDNxBc+j
-MC/LDmkOGR+DCEZarnDMhCI3X1mE8B30odt80o8CVjPHS64WnWs17rqfElX+zChR
-LAgQB3EqUwuLFZkr2Yp5601xV8VYI8hZnMtt3DFmZJkbiHfpxBh4a2AJ5QEYkvEt
-wCMb1XFjJzftlEnOIOdQxqhaXMw32wiMmm3MbJTwp61ioW/XrX31rMnn2wTln947
-QE7SBj/MCIg9mocAUvOF
-=9UnR
------END PGP SIGNATURE-----
---=-=-=--
+I was worried that you take a superfluous interrupt for some other
+reason, then you get past the kdump check, then another CPU crashes
+and sends you a dump IPI, then you clear it and lose it.
