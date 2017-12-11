@@ -1,23 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from ringil.hmeau.com (unknown [128.1.224.119])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywKWw1jP0zDqpb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2017 21:51:39 +1100 (AEDT)
-Subject: Re: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under
- pHyp
-To: Greg Kurz <groug@kaod.org>, Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-References: <20171122034221.647-1-aik@ozlabs.ru>
- <20171124003330.2a980994@bahia.lan>
-From: Alexander Graf <agraf@suse.de>
-Message-ID: <d49d9dac-6230-8c60-51bc-cce7efb6ac56@suse.de>
-Date: Mon, 11 Dec 2017 11:51:31 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywKvQ5Q6gzDqsk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2017 22:08:33 +1100 (AEDT)
+Date: Mon, 11 Dec 2017 22:07:54 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ "David S. Miller" <davem@davemloft.net>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 00/18] crypto: talitos - fixes and performance improvement
+Message-ID: <20171211110754.GB8823@gondor.apana.org.au>
+References: <cover.1507284818.git.christophe.leroy@c-s.fr>
+ <20171012151959.GI31122@gondor.apana.org.au>
+ <VI1PR0402MB3342A19DE16BEEB714DAA98A98300@VI1PR0402MB3342.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <20171124003330.2a980994@bahia.lan>
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <VI1PR0402MB3342A19DE16BEEB714DAA98A98300@VI1PR0402MB3342.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Dec 08, 2017 at 03:20:40PM +0000, Horia Geantă wrote:
+> On 10/12/2017 6:20 PM, Herbert Xu wrote:
+> > On Fri, Oct 06, 2017 at 03:04:31PM +0200, Christophe Leroy wrote:
+> >> This serie fixes and improves the talitos crypto driver.
+> >>
+> >> First 6 patchs are fixes of failures reported by the new tests in the
+> >> kernel crypto test manager.
+> >>
+> Looks like these fixes are required also on older 4.9+ -stable kernels.
+> (I haven't seen them on latest 4.9.68-stable mail from Greg, even though
+> they are in main tree.)
+> 
+> In case you agree, what would be the recommended way to add the patches
+> to -stable?
 
-
-On 24.11.17 00:33, Greg Kurz wrote:
-> On Wed, 22 Nov 2017 14:42:21 +1100
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
->> bits preserving but it missed 2 special cases:
->> - a magic page in kvmppc_mmu_book3s_64_xlate() and
->> - guest real mode in kvmppc_handle_pagefault().
->>
->> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
->> stop in the very beginning at NIP=0x100 (due to bd9166ffe
->> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
->>
->> This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
->> as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
->> kvmppc_mmu_map_page().
->>
->> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>
->> This indeed fixes PR KVM + VFIO under pHyp but selection of HPTE_R_M
->> is arguable.
->>
-> 
-> The initial page fault at 0x100 on machine startup causes H_ENTER to fail in
-> pHyp with H_PARAMETER, as described in PAPR:
-> 
->  The hypervisor checks that the WIMG bits within the PTE are appropriate for the
->  physical page number else H_Parameter return. (For System Memory pages WIMG=0010,
->  or, 1110 if the SAO option is enabled, and for IO pages WIMG=01**.)
-> 
-> I'm not aware we care for SAO so HPTE_R_M looks like the only sensible choice,
-> or I'm missing something ?
-> 
-> Anyway, this patch allows to start a PR guest on PowerVM again.
-> 
-> Reviewed-by: Greg Kurz <groug@kaod.org>
-> 
-> and
-> 
-> Tested-by: Greg Kurz <groug@kaod.org>
-
-So doesn't that mean we should pick it up, mark it CC stable and push it
-upstream?
-
-
-Alex
+I'll forward them to stable.  Thanks!
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
