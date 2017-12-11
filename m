@@ -1,32 +1,23 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywC286ZBvzDqnt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2017 16:58:56 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBB5v2eG058475
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2017 00:58:54 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2eskgca6ec-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2017 00:58:51 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 11 Dec 2017 05:58:47 -0000
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com
-Subject: [PATCH 2/3] powerpc/perf: IMC code cleanup with some code refactoring
-Date: Mon, 11 Dec 2017 11:28:36 +0530
-In-Reply-To: <1512971917-23851-1-git-send-email-anju@linux.vnet.ibm.com>
-References: <1512971917-23851-1-git-send-email-anju@linux.vnet.ibm.com>
-Message-Id: <1512971917-23851-3-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywKWw1jP0zDqpb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Dec 2017 21:51:39 +1100 (AEDT)
+Subject: Re: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under
+ pHyp
+To: Greg Kurz <groug@kaod.org>, Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+References: <20171122034221.647-1-aik@ozlabs.ru>
+ <20171124003330.2a980994@bahia.lan>
+From: Alexander Graf <agraf@suse.de>
+Message-ID: <d49d9dac-6230-8c60-51bc-cce7efb6ac56@suse.de>
+Date: Mon, 11 Dec 2017 11:51:31 +0100
+MIME-Version: 1.0
+In-Reply-To: <20171124003330.2a980994@bahia.lan>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,92 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Factor out memory freeing part for attribute elements from
-imc_common_cpuhp_mem_free().
 
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
----
- arch/powerpc/perf/imc-pmu.c | 31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index ef7f9dd..71f425f 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -1157,6 +1157,15 @@ static void cleanup_all_thread_imc_memory(void)
- 	}
- }
- 
-+/* Function to free the attr_groups which are dynamically allocated */
-+static void imc_common_mem_free(struct imc_pmu *pmu_ptr)
-+{
-+	if (pmu_ptr->attr_groups[IMC_EVENT_ATTR])
-+		kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
-+	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
-+	kfree(pmu_ptr);
-+}
-+
- /*
-  * Common function to unregister cpu hotplug callback and
-  * free the memory.
-@@ -1189,13 +1198,6 @@ static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
- 		cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_THREAD_IMC_ONLINE);
- 		cleanup_all_thread_imc_memory();
- 	}
--
--	/* Only free the attr_groups which are dynamically allocated  */
--	if (pmu_ptr->attr_groups[IMC_EVENT_ATTR])
--		kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
--	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
--	kfree(pmu_ptr);
--	return;
- }
- 
- 
-@@ -1244,8 +1246,10 @@ static int imc_mem_init(struct imc_pmu *pmu_ptr, struct device_node *parent,
- 		core_imc_refc = kcalloc(nr_cores, sizeof(struct imc_pmu_ref),
- 								GFP_KERNEL);
- 
--		if (!core_imc_refc)
-+		if (!core_imc_refc) {
-+			kfree(pmu_ptr->mem_info);
- 			return -ENOMEM;
-+		}
- 
- 		core_imc_pmu = pmu_ptr;
- 		break;
-@@ -1258,8 +1262,10 @@ static int imc_mem_init(struct imc_pmu *pmu_ptr, struct device_node *parent,
- 		thread_imc_mem_size = pmu_ptr->counter_mem_size;
- 		for_each_online_cpu(cpu) {
- 			res = thread_imc_mem_alloc(cpu, pmu_ptr->counter_mem_size);
--			if (res)
-+			if (res) {
-+				cleanup_all_thread_imc_memory();
- 				return res;
-+			}
- 		}
- 
- 		break;
-@@ -1285,8 +1291,10 @@ int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_id
- 	int ret;
- 
- 	ret = imc_mem_init(pmu_ptr, parent, pmu_idx);
--	if (ret)
--		goto err_free;
-+	if (ret) {
-+		imc_common_mem_free(pmu_ptr);
-+		return ret;
-+	}
- 
- 	switch (pmu_ptr->domain) {
- 	case IMC_DOMAIN_NEST:
-@@ -1353,6 +1361,7 @@ int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_id
- 	return 0;
- 
- err_free:
-+	imc_common_mem_free(pmu_ptr);
- 	imc_common_cpuhp_mem_free(pmu_ptr);
- 	return ret;
- }
--- 
-2.7.4
+On 24.11.17 00:33, Greg Kurz wrote:
+> On Wed, 22 Nov 2017 14:42:21 +1100
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> 
+>> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
+>> bits preserving but it missed 2 special cases:
+>> - a magic page in kvmppc_mmu_book3s_64_xlate() and
+>> - guest real mode in kvmppc_handle_pagefault().
+>>
+>> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
+>> stop in the very beginning at NIP=0x100 (due to bd9166ffe
+>> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
+>>
+>> This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
+>> as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
+>> kvmppc_mmu_map_page().
+>>
+>> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>
+>> This indeed fixes PR KVM + VFIO under pHyp but selection of HPTE_R_M
+>> is arguable.
+>>
+> 
+> The initial page fault at 0x100 on machine startup causes H_ENTER to fail in
+> pHyp with H_PARAMETER, as described in PAPR:
+> 
+>  The hypervisor checks that the WIMG bits within the PTE are appropriate for the
+>  physical page number else H_Parameter return. (For System Memory pages WIMG=0010,
+>  or, 1110 if the SAO option is enabled, and for IO pages WIMG=01**.)
+> 
+> I'm not aware we care for SAO so HPTE_R_M looks like the only sensible choice,
+> or I'm missing something ?
+> 
+> Anyway, this patch allows to start a PR guest on PowerVM again.
+> 
+> Reviewed-by: Greg Kurz <groug@kaod.org>
+> 
+> and
+> 
+> Tested-by: Greg Kurz <groug@kaod.org>
+
+So doesn't that mean we should pick it up, mark it CC stable and push it
+upstream?
+
+
+Alex
