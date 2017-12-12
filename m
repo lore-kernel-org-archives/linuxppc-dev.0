@@ -1,23 +1,33 @@
-Return-Path: <clg@kaod.org>
-Received: from 14.mo7.mail-out.ovh.net (14.mo7.mail-out.ovh.net
- [178.33.251.19])
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywzPG0Xk1zDrcL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 23:18:09 +1100 (AEDT)
-Received: from player697.ha.ovh.net (gw6.ovh.net [213.251.189.206])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id 9C35C838B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 13:02:17 +0100 (CET)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH] KVM: PPC: Book3S: fix XIVE migration of pending interrupts
-Date: Tue, 12 Dec 2017 12:02:04 +0000
-Message-Id: <20171212120204.6799-1-clg@kaod.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywzdP621KzDqRQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 23:28:41 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBCCQnPp112079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 07:28:39 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2etcggfsdk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 07:28:38 -0500
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Tue, 12 Dec 2017 12:28:37 -0000
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, paulus@samba.org, maddy@linux.vnet.ibm.com,
+ tglx@linutronix.de, kamalesh@linux.vnet.ibm.com, kan.liang@intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: Dereference bhrb entries safely
+Date: Tue, 12 Dec 2017 17:59:15 +0530
+Message-Id: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +37,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When restoring a pending interrupt, we are setting the Q bit to force
-a retrigger in xive_finish_unmask(). But we also need to force an EOI
-in this case to reach the same initial state : P=1, Q=0.
+It may very well happen that branch instructions recorded by
+bhrb entries already get unmapped before they get processed by
+the kernel. Hence, trying to dereference such memory location
+will endup in a crash. Ex,
 
-This can be done by not setting 'old_p' for pending interrupts which
-will inform xive_finish_unmask() that an EOI needs to be sent.
+    Unable to handle kernel paging request for data at address 0xc008000019c41764
+    Faulting instruction address: 0xc000000000084a14
+    NIP [c000000000084a14] branch_target+0x4/0x70
+    LR [c0000000000eb828] record_and_restart+0x568/0x5c0
+    Call Trace:
+    [c0000000000eb3b4] record_and_restart+0xf4/0x5c0 (unreliable)
+    [c0000000000ec378] perf_event_interrupt+0x298/0x460
+    [c000000000027964] performance_monitor_exception+0x54/0x70
+    [c000000000009ba4] performance_monitor_common+0x114/0x120
 
-Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Fix this by deferefencing them safely.
+
+Suggested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 ---
+ arch/powerpc/perf/core-book3s.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
- Tested with a guest running iozone.
-
- arch/powerpc/kvm/book3s_xive.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index bf457843e032..b5e6d227a034 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -1558,7 +1558,7 @@ static int xive_set_source(struct kvmppc_xive *xive, long irq, u64 addr)
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 9e3da168d54c..5a68d2effdf9 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -410,8 +410,11 @@ static __u64 power_pmu_bhrb_to(u64 addr)
+ 	int ret;
+ 	__u64 target;
  
- 	/*
- 	 * Restore P and Q. If the interrupt was pending, we
--	 * force both P and Q, which will trigger a resend.
-+	 * force Q and !P, which will trigger a resend.
- 	 *
- 	 * That means that a guest that had both an interrupt
- 	 * pending (queued) and Q set will restore with only
-@@ -1566,7 +1566,7 @@ static int xive_set_source(struct kvmppc_xive *xive, long irq, u64 addr)
- 	 * is perfectly fine as coalescing interrupts that haven't
- 	 * been presented yet is always allowed.
- 	 */
--	if (val & KVM_XICS_PRESENTED || val & KVM_XICS_PENDING)
-+	if (val & KVM_XICS_PRESENTED && !(val & KVM_XICS_PENDING))
- 		state->old_p = true;
- 	if (val & KVM_XICS_QUEUED || val & KVM_XICS_PENDING)
- 		state->old_q = true;
+-	if (is_kernel_addr(addr))
+-		return branch_target((unsigned int *)addr);
++	if (is_kernel_addr(addr)) {
++		if (probe_kernel_address((void *)addr, instr))
++			return 0;
++		return branch_target(&instr);
++	}
+ 
+ 	/* Userspace: need copy instruction here then translate it */
+ 	pagefault_disable();
 -- 
 2.13.6
