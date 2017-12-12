@@ -1,35 +1,46 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <felix@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yx3sk6nxqzDrWg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 02:39:38 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yx3sq2CYWzDrWg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 02:39:43 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBCFbEfa107933
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 10:39:34 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ethhw1ece-1
+ vBCFa7kc071108
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 10:39:41 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ethhxsj6y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 10:39:33 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 10:39:40 -0500
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 12 Dec 2017 15:39:32 -0000
-Date: Tue, 12 Dec 2017 21:09:26 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/perf: Dereference bhrb entries safely
-To: mpe@ellerman.id.au, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, kamalesh@linux.vnet.ibm.com, kan.liang@intel.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- maddy@linux.vnet.ibm.com, paulus@samba.org, tglx@linutronix.de
-References: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
-In-Reply-To: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Tue, 12 Dec 2017 15:39:36 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ vBCFdZRA64487652
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 15:39:35 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4EA524C050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 15:34:20 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3657F4C044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 15:34:20 +0000 (GMT)
+Received: from [9.101.4.37] (unknown [9.101.4.37])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 15:34:20 +0000 (GMT)
+Subject: Re: [PATCH V2] cxl: Add support for ASB_Notify on POWER9
+To: linuxppc-dev@lists.ozlabs.org
+References: <1512143620-31330-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Date: Tue, 12 Dec 2017 16:39:34 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1513093135.p9uc48ls6m.naveen@linux.ibm.com>
+In-Reply-To: <1512143620-31330-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3024654d-dba5-3394-2a78-a94b7de4d995@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +50,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ravi Bangoria wrote:
-> It may very well happen that branch instructions recorded by
-> bhrb entries already get unmapped before they get processed by
-> the kernel. Hence, trying to dereference such memory location
-> will endup in a crash. Ex,
->=20
->     Unable to handle kernel paging request for data at address 0xc0080000=
-19c41764
->     Faulting instruction address: 0xc000000000084a14
->     NIP [c000000000084a14] branch_target+0x4/0x70
->     LR [c0000000000eb828] record_and_restart+0x568/0x5c0
->     Call Trace:
->     [c0000000000eb3b4] record_and_restart+0xf4/0x5c0 (unreliable)
->     [c0000000000ec378] perf_event_interrupt+0x298/0x460
->     [c000000000027964] performance_monitor_exception+0x54/0x70
->     [c000000000009ba4] performance_monitor_common+0x114/0x120
->=20
-> Fix this by deferefencing them safely.
->=20
-> Suggested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+On 01/12/2017 16:53, Christophe Lombard wrote:
+> The POWER9 core supports a new feature: ASB_Notify which requires the
+> support of the Special Purpose Register: TIDR.
+>
+> The ASB_Notify command, generated by the AFU, will attempt to
+> wake-up the host thread identified by the particular LPID:PID:TID.
+>
+> This patch assign a unique TIDR (thread id) for the current thread which
+> will be used in the process element entry.
+>
+> A next patch will handle a new kind of "compatible" property in the
+> device-tree (PHB DT node) indicating which version of CAPI and which
+> features are supported.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>
 
-Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-
-
-- Naveen
-
-=
+Reviewed-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
