@@ -1,21 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXX6zqkzDrVC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:24 +1100 (AEDT)
-In-Reply-To: <20171109140035.64975-2-bryantly@linux.vnet.ibm.com>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, helgaas@kernel.org,
- bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXZ0CggzDqmD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:26 +1100 (AEDT)
+In-Reply-To: <20171113120655.30725-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: jjalvare@linux.vnet.ibm.com, linux-pci@vger.kernel.org, saeedm@mellanox.com,
- alex.williamson@redhat.com, seroyer@linux.vnet.ibm.com,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, eli@mellanox.com,
- "Juan J . Alvarez" <jjalvare@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- bodong@mellanox.com
-Subject: Re: [v5,1/3] powerpc/kernel: Separate SR-IOV Calls
-Message-Id: <3ywyXX5ZKtz9t6n@ozlabs.org>
-Date: Tue, 12 Dec 2017 22:39:24 +1100 (AEDT)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/32: Add .data.rel* sections explicitly
+Message-Id: <3ywyXY3Tfmz9t3t@ozlabs.org>
+Date: Tue, 12 Dec 2017 22:39:25 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-11-09 at 14:00:33 UTC, "Bryant G. Ly" wrote:
-> SR-IOV can now be enabled in PowerNV platforms and Pseries
-> platforms. Therefore, the appropriate calls were moved to
-> machine dependent code instead of definition at compile time.
+On Mon, 2017-11-13 at 12:06:55 UTC, Nicholas Piggin wrote:
+> Match powerpc/64 and include .data.rel* input sections in the .data output
+> section explicitly.
 > 
-> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
+> This solves the warning:
+> 
+> powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
+> 
+> Link: https://lists.01.org/pipermail/kbuild-all/2017-November/040010.html
+> Reported-by: kbuild test robot <fengguang.wu@intel.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/988fc3ba5653278a8c14d6ccf68737
+https://git.kernel.org/powerpc/c/a10726075dec4ceb050c2f775e5436
 
 cheers
