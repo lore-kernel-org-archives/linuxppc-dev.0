@@ -2,14 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXZ0CggzDqmD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXZ6Nj5zDqmD
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:26 +1100 (AEDT)
-In-Reply-To: <20171113120655.30725-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20171116174537.duz4x6vfzhp44lfh@treble>
+To: Josh Poimboeuf <jpoimboe@redhat.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/32: Add .data.rel* sections explicitly
-Message-Id: <3ywyXY3Tfmz9t3t@ozlabs.org>
+Cc: linux-kernel@vger.kernel.org,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v4.2] powerpc/modules: Don't try to restore r2 after a sibling
+ call
+Message-Id: <3ywyXY71NTz9t3m@ozlabs.org>
 Date: Tue, 12 Dec 2017 22:39:25 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,20 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-11-13 at 12:06:55 UTC, Nicholas Piggin wrote:
-> Match powerpc/64 and include .data.rel* input sections in the .data output
-> section explicitly.
+On Thu, 2017-11-16 at 17:45:37 UTC, Josh Poimboeuf wrote:
 > 
-> This solves the warning:
+> From: Josh Poimboeuf <jpoimboe@redhat.com>
+> Subject: [PATCH v4.2] powerpc/modules: Don't try to restore r2 after a sibling call
 > 
-> powerpc-linux-gnu-ld: warning: orphan section `.data.rel.ro' from `arch/powerpc/kernel/head_44x.o' being placed in section `.data.rel.ro'.
+> When attempting to load a livepatch module, I got the following error:
 > 
-> Link: https://lists.01.org/pipermail/kbuild-all/2017-November/040010.html
-> Reported-by: kbuild test robot <fengguang.wu@intel.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>   module_64: patch_module: Expect noop after relocate, got 3c820000
+> 
+> The error was triggered by the following code in
+> unregister_netdevice_queue():
+> 
+>   14c:   00 00 00 48     b       14c <unregister_netdevice_queue+0x14c>
+>                          14c: R_PPC64_REL24      net_set_todo
+>   150:   00 00 82 3c     addis   r4,r2,0
+> 
+> GCC didn't insert a nop after the branch to net_set_todo() because it's
+> a sibling call, so it never returns.  The nop isn't needed after the
+> branch in that case.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a10726075dec4ceb050c2f775e5436
+https://git.kernel.org/powerpc/c/b9eab08d012fa093947b230f9a8725
 
 cheers
