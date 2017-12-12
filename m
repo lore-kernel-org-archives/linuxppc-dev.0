@@ -2,14 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXX5D6TzDqmD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXX6zqkzDrVC
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:24 +1100 (AEDT)
-In-Reply-To: <1510139129-8335-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20171109140035.64975-2-bryantly@linux.vnet.ibm.com>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, helgaas@kernel.org,
+ bhelgaas@google.com, benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc/boot: Only build uartlite if XILINX_VIRTEX=y
-Message-Id: <3ywyXW6BjDz9t8F@ozlabs.org>
-Date: Tue, 12 Dec 2017 22:39:23 +1100 (AEDT)
+Cc: jjalvare@linux.vnet.ibm.com, linux-pci@vger.kernel.org, saeedm@mellanox.com,
+ alex.williamson@redhat.com, seroyer@linux.vnet.ibm.com,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, eli@mellanox.com,
+ "Juan J . Alvarez" <jjalvare@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ bodong@mellanox.com
+Subject: Re: [v5,1/3] powerpc/kernel: Separate SR-IOV Calls
+Message-Id: <3ywyXX5ZKtz9t6n@ozlabs.org>
+Date: Tue, 12 Dec 2017 22:39:24 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,18 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-11-08 at 11:05:27 UTC, Michael Ellerman wrote:
-> The serial code in uartlite.c only matches if we find one of two
-> Xilinx (xlnx) nodes in the device tree, there's no need to build or
-> link the code on other platforms.
+On Thu, 2017-11-09 at 14:00:33 UTC, "Bryant G. Ly" wrote:
+> SR-IOV can now be enabled in PowerNV platforms and Pseries
+> platforms. Therefore, the appropriate calls were moved to
+> machine dependent code instead of definition at compile time.
 > 
-> As far as I can tell CONFIG_XILINX_VIRTEX is the appropriate symbol to
-> use to conditionally compile the code.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Signed-off-by: Juan J. Alvarez <jjalvare@us.ibm.com>
 
-Series applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3d6bf693d8bc63f2e5eca7373916c4
+https://git.kernel.org/powerpc/c/988fc3ba5653278a8c14d6ccf68737
 
 cheers
