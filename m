@@ -2,20 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXW6hyXzDqmD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:23 +1100 (AEDT)
-In-Reply-To: <20171016054914.24832-1-santosh@fossix.org>
-To: Santosh Sivaraj <santosh@fossix.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXX5D6TzDqmD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:24 +1100 (AEDT)
+In-Reply-To: <1510139129-8335-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- John Stultz <john.stultz@linaro.org>, Frederic Weisbecker <fweisbec@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [v6] powerpc/vdso64: Add support for
- CLOCK_{REALTIME/MONOTONIC}_COARSE
-Message-Id: <3ywyXW1GZ6z9sPm@ozlabs.org>
-Date: Tue, 12 Dec 2017 22:39:22 +1100 (AEDT)
+Subject: Re: [1/3] powerpc/boot: Only build uartlite if XILINX_VIRTEX=y
+Message-Id: <3ywyXW6BjDz9t8F@ozlabs.org>
+Date: Tue, 12 Dec 2017 22:39:23 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-10-16 at 05:49:14 UTC, Santosh Sivaraj wrote:
-> Current vDSO64 implementation does not have support for coarse clocks
-> (CLOCK_MONOTONIC_COARSE, CLOCK_REALTIME_COARSE), for which it falls back
-> to system call, increasing the response time, vDSO implementation reduces
-> the cycle time. Below is a benchmark of the difference in execution times.
+On Wed, 2017-11-08 at 11:05:27 UTC, Michael Ellerman wrote:
+> The serial code in uartlite.c only matches if we find one of two
+> Xilinx (xlnx) nodes in the device tree, there's no need to build or
+> link the code on other platforms.
 > 
-> (Non-coarse clocks are also included just for completion)
+> As far as I can tell CONFIG_XILINX_VIRTEX is the appropriate symbol to
+> use to conditionally compile the code.
 > 
-> clock-gettime-realtime: syscall: 172 nsec/call
-> clock-gettime-realtime:    libc: 28 nsec/call
-> clock-gettime-realtime:    vdso: 22 nsec/call
-> clock-gettime-monotonic: syscall: 171 nsec/call
-> clock-gettime-monotonic:    libc: 30 nsec/call
-> clock-gettime-monotonic:    vdso: 25 nsec/call
-> clock-gettime-realtime-coarse: syscall: 153 nsec/call
-> clock-gettime-realtime-coarse:    libc: 16 nsec/call
-> clock-gettime-realtime-coarse:    vdso: 10 nsec/call
-> clock-gettime-monotonic-coarse: syscall: 167 nsec/call
-> clock-gettime-monotonic-coarse:    libc: 17 nsec/call
-> clock-gettime-monotonic-coarse:    vdso: 11 nsec/call
-> 
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/5c929885f1bb4b77f85b1769c49405
+https://git.kernel.org/powerpc/c/3d6bf693d8bc63f2e5eca7373916c4
 
 cheers
