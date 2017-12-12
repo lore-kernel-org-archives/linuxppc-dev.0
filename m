@@ -2,15 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXg6FLhzDqmD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:31 +1100 (AEDT)
-In-Reply-To: <20171122060106.27847-2-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXh1J8HzDrVZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:32 +1100 (AEDT)
+In-Reply-To: <20171201155827.57979-1-ivan@de.ibm.com>
+To: Ivan Mikhaylov <ivan@de.ibm.com>, Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [2/2] powerpc: Reduce log level of "OPAL detected !" message
-Message-Id: <3ywyXg3BnBz9t3V@ozlabs.org>
-Date: Tue, 12 Dec 2017 22:39:30 +1100 (AEDT)
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v2,1/4] 44x/fsp2: add fsp2 headers
+Message-Id: <3ywyXg5x03z9t9s@ozlabs.org>
+Date: Tue, 12 Dec 2017 22:39:31 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,13 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-11-22 at 06:01:06 UTC, Benjamin Herrenschmidt wrote:
-> This message isn't terribly useful.
+On Fri, 2017-12-01 at 15:58:24 UTC, Ivan Mikhaylov wrote:
+> add cmu, plbX, l2, ddr3/4, crcs register definitions.
+> add mfcmu, mtcmu functions for indirect access to cmu.
+> add mtl2, mfl2 same for l2 cache core reg set.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Ivan Mikhaylov <ivan@de.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5138b31422efec897461951f7ce72e
+https://git.kernel.org/powerpc/c/494d82ceae7f3b9fdb5154b4469e5b
 
 cheers
