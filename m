@@ -1,20 +1,26 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXQ3h1yzDqmD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:18 +1100 (AEDT)
-In-Reply-To: <20160830171450.GA1890@Karyakshetra>
-To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>,
- Geoff Levand <geoff@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: ps3: Remove deprecated create_singlethread_workqueue
-Message-Id: <3ywyXQ0zsZz9s83@ozlabs.org>
-Date: Tue, 12 Dec 2017 22:39:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ywyXQ6TWmzDqmM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:39:16 +1100 (AEDT)
+Date: Tue, 12 Dec 2017 12:39:12 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>
+Cc: Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
+Subject: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20171212113912.GA1907@lst.de>
+References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
+ <20171005124313.GA25100@lst.de>
+ <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
+ <20171017144733.GB2136@lst.de>
+ <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+ <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
+ <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-30 at 17:14:51 UTC, Bhaktipriya Shridhar wrote:
-> The workqueue "ps3av->wq" queues a single work item &ps3av->work and hence
-> doesn't require ordering. It is involved in waking up ps3avd to do the
-> video mode setting and hence it's not being used on a memory reclaim
-> path. Hence, it has been converted to use system_wq.
-> 
-> System workqueues have been able to handle high level of concurrency
-> for a long time now and hence it's not required to have a singlethreaded
-> workqueue just to gain concurrency. Unlike a dedicated per-cpu workqueue
-> created with create_singlethread_workqueue(), system_wq allows multiple
-> work items to overlap executions even on the same CPU; however, a
-> per-cpu workqueue doesn't have any CPU locality or global ordering
-> guarantee unless the target CPU is explicitly specified and thus the
-> increase of local concurrency shouldn't make any difference.
-> 
-> The work item has been flushed in ps3av_remove to ensure that
-> there are no pending tasks while disconnecting the driver.
-> 
-> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-> Acked-by: Tejun Heo <tj@kernel.org>
+Hi all,
 
-Applied to powerpc next, thanks.
+The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
 
-https://git.kernel.org/powerpc/c/f0200c02883367f0eb6c9e2f19a8ab
+[...] There are several rules that must be adhered to in order to ensure
+reliable and consistent call chain backtracing:
 
-cheers
+* Before a function calls any other function, it shall establish its
+  own stack frame, whose size shall be a multiple of 16 bytes.
+
+ – In instances where a function’s prologue creates a stack frame, the
+   back-chain word of the stack frame shall be updated atomically with
+   the value of the stack pointer (r1) when a back chain is implemented.
+   (This must be supported as default by all ELF V2 ABI-compliant
+   environments.)
+[...]
+ – The function shall save the link register that contains its return
+   address in the LR save doubleword of its caller’s stack frame before
+   calling another function.
+
+To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+This patch may be unneccessarily limited to ppc64le, but OTOH the only
+user of this flag so far is livepatching, which is only implemented on
+PPCs with 64-LE, a.k.a. ELF ABI v2.
+
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+
+---
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c51e6ce42e7a..3e3a6ab2e089 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -218,6 +218,7 @@ config PPC
+ 	select HAVE_PERF_USER_STACK_DUMP
+ 	select HAVE_RCU_TABLE_FREE		if SMP
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
++	select HAVE_RELIABLE_STACKTRACE		if PPC64 && CPU_LITTLE_ENDIAN
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_IRQ_TIME_ACCOUNTING
