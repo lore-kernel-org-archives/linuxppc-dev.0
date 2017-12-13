@@ -1,20 +1,22 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxkQL0kGLzDrcH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 04:36:41 +1100 (AEDT)
-Subject: [PATCH 3/3] soc/fsl/qe: Use common error handling code in
- ucc_fast_init()
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Li Yang <leoyang.li@nxp.com>, Qiang Zhao <qiang.zhao@nxp.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <07738369-a787-98b4-41a5-71b7d630c356@users.sourceforge.net>
-Message-ID: <9668351a-8189-037f-5912-5663ac8706b1@users.sourceforge.net>
-Date: Wed, 13 Dec 2017 18:36:08 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxrvn2RmjzDrpG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 09:29:06 +1100 (AEDT)
+Subject: Re: [PATCH v2 03/11] ASoC: fsl_ssi: Refine all comments
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: broonie@kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com, timur@tabi.org, caleb@crome.org,
+ arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
+References: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
+ <1513146874-25476-4-git-send-email-nicoleotsuka@gmail.com>
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Message-ID: <e264f260-c8df-a51a-4756-cf2ebf979c66@maciej.szmigiero.name>
+Date: Wed, 13 Dec 2017 23:28:51 +0100
 MIME-Version: 1.0
-In-Reply-To: <07738369-a787-98b4-41a5-71b7d630c356@users.sourceforge.net>
+In-Reply-To: <1513146874-25476-4-git-send-email-nicoleotsuka@gmail.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,115 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 13 Dec 2017 18:18:56 +0100
+On 13.12.2017 07:34, Nicolin Chen wrote:
+> This patch refines the comments by:
+> 1) Removing all out-of-date comments
+> 2) Removing all not-so-useful comments
+> 3) Unifying the styles of all comments
+> 4) Simplifying over-descriptive comments
+> 5) Adding comments to improve code readablity
+> 6) Moving all register related comments to fsl_ssi.h
+> 7) Adding comments to all register and field defines
+> 
+> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> ---
+> 
+> Changelog
+> v1->v2
+>  * Added some new comments at "SoC specific data" to be more precise.
+>  * Revised one comment in fsl_ssi_config().
+>  * Revised the comment of fsl_ssi_setup_reg_vals().
+>  * Added one comment for AC97 in fsl_ssi_setup_reg_vals().
+>  * Revised the comment of fsl_ssi_hw_params() to be more precise.
+>  * Added some comments in _fsl_ssi_set_dai_fmt() to help understand the formats.
+>  * Added one comment in fsl_ssi_set_dai_fmt() to state why AC97 needs to bypass it.
+>  * Revised comments in fsl_ssi_set_dai_tdm_slot() to be more precise.
+>  * Revised comments around dual FIFO code in fsl_ssi_imx_probe() to be more precise.
+> 
+>  sound/soc/fsl/fsl_ssi.c     | 376 ++++++++++++++------------------------------
+>  sound/soc/fsl/fsl_ssi.h     |  67 +++++++-
+>  sound/soc/fsl/fsl_ssi_dbg.c |  12 +-
+>  3 files changed, 188 insertions(+), 267 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+> index e903c92..796a7ea 100644
+> --- a/sound/soc/fsl/fsl_ssi.c
+> +++ b/sound/soc/fsl/fsl_ssi.c
+(..)
+> @@ -878,10 +794,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+>  	regmap_read(regs, CCSR_SSI_SCR, &scr_val);
+>  	enabled = scr_val & CCSR_SSI_SCR_SSIEN;
+>  
+> -	/*
+> -	 * If we're in synchronous mode, and the SSI is already enabled,
+> -	 * then STCCR is already set properly.
+> -	 */
+> +	/* To support simultaneous TX and RX, bypass it if SSI is enabled */
+>  	if (enabled && ssi->cpu_dai_drv.symmetric_rates)
+>  		return 0;
+>  
 
-Add jump targets so that a bit of exception handling can be better reused
-at the end of this function.
+I would say that the old comment described better what is happening -
+since in synchronous (& non-AC'97) mode STCCR controls both TX and RX
+the first direction that is started (either playback or capture) is the
+only direction that needs to configure SSI in hw_params().
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/soc/fsl/qe/ucc_fast.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+When the opposite direction enters hw_params() (while the first one is
+still running) there is no need to do anything and we can exit early.
 
-diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-index 2092bfdcf1bc..268dfc5dc89b 100644
---- a/drivers/soc/fsl/qe/ucc_fast.c
-+++ b/drivers/soc/fsl/qe/ucc_fast.c
-@@ -269,8 +269,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
- 			__func__);
- 		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
--		ucc_fast_free(uccf);
--		return -ENOMEM;
-+		goto free_nomem;
- 	}
- 
- 	/* Allocate memory for Rx Virtual Fifo */
-@@ -282,8 +281,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
- 			__func__);
- 		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
--		ucc_fast_free(uccf);
--		return -ENOMEM;
-+		goto free_nomem;
- 	}
- 
- 	/* Set Virtual Fifo registers */
-@@ -312,8 +310,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 					COMM_DIR_RX)) {
- 			printk(KERN_ERR "%s: illegal value for RX clock\n",
- 			       __func__);
--			ucc_fast_free(uccf);
--			return -EINVAL;
-+			goto free_inval;
- 		}
- 		/* Tx clock routing */
- 		if ((uf_info->tx_clock != QE_CLK_NONE) &&
-@@ -321,8 +318,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 					COMM_DIR_TX)) {
- 			printk(KERN_ERR "%s: illegal value for TX clock\n",
- 			       __func__);
--			ucc_fast_free(uccf);
--			return -EINVAL;
-+			goto free_inval;
- 		}
- 	} else {
- 		/* tdm Rx clock routing */
-@@ -330,8 +326,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		    ucc_set_tdm_rxtx_clk(uf_info->tdm_num, uf_info->rx_clock,
- 					 COMM_DIR_RX)) {
- 			pr_err("%s: illegal value for RX clock", __func__);
--			ucc_fast_free(uccf);
--			return -EINVAL;
-+			goto free_inval;
- 		}
- 
- 		/* tdm Tx clock routing */
-@@ -339,8 +334,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		    ucc_set_tdm_rxtx_clk(uf_info->tdm_num, uf_info->tx_clock,
- 					 COMM_DIR_TX)) {
- 			pr_err("%s: illegal value for TX clock", __func__);
--			ucc_fast_free(uccf);
--			return -EINVAL;
-+			goto free_inval;
- 		}
- 
- 		/* tdm Rx sync clock routing */
-@@ -348,8 +342,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		    ucc_set_tdm_rxtx_sync(uf_info->tdm_num, uf_info->rx_sync,
- 					  COMM_DIR_RX)) {
- 			pr_err("%s: illegal value for RX clock", __func__);
--			ucc_fast_free(uccf);
--			return -EINVAL;
-+			goto free_inval;
- 		}
- 
- 		/* tdm Tx sync clock routing */
-@@ -357,8 +350,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		    ucc_set_tdm_rxtx_sync(uf_info->tdm_num, uf_info->tx_sync,
- 					  COMM_DIR_TX)) {
- 			pr_err("%s: illegal value for TX clock", __func__);
--			ucc_fast_free(uccf);
--			return -EINVAL;
-+			goto free_inval;
- 		}
- 	}
- 
-@@ -374,6 +366,14 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 
- 	*uccf_ret = uccf;
- 	return 0;
-+
-+free_nomem:
-+	ucc_fast_free(uccf);
-+	return -ENOMEM;
-+
-+free_inval:
-+	ucc_fast_free(uccf);
-+	return -EINVAL;
- }
- EXPORT_SYMBOL(ucc_fast_init);
- 
--- 
-2.15.1
+Maciej
