@@ -1,22 +1,23 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxs640STDzDsNJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 09:38:02 +1100 (AEDT)
-Subject: Re: [PATCH v2 00/11] ASoC: fsl_ssi: Clean up - coding style level
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: broonie@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, timur@tabi.org, caleb@crome.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxt1G4BsZzDrW2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 10:18:58 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id k134so2127115pga.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 15:18:58 -0800 (PST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, fabio.estevam@nxp.com, timur@tabi.org,
+ mail@maciej.szmigiero.name, caleb@crome.org, lgirdwood@gmail.com,
  arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-References: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Message-ID: <55c0bd4e-078e-2825-9fac-f062a08e3450@maciej.szmigiero.name>
-Date: Wed, 13 Dec 2017 23:37:53 +0100
-MIME-Version: 1.0
-In-Reply-To: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset=utf-8
+Subject: [PATCH v3 02/11] ASoC: fsl_ssi: Cache pdev->dev pointer
+Date: Wed, 13 Dec 2017 15:18:19 -0800
+Message-Id: <1513207108-30430-3-git-send-email-nicoleotsuka@gmail.com>
+In-Reply-To: <1513207108-30430-1-git-send-email-nicoleotsuka@gmail.com>
+References: <1513207108-30430-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +27,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13.12.2017 07:34, Nicolin Chen wrote:
-> ==Changelog==
-> v1->v2
->  * Dropped one patch to remove "struct device"
->  * Revised PATCH-03 "Refine all comments"
->  * Revised PATCH-05 "Refine indentations and wrappings"
->  * Rebased all other patches
->  * Added PATCH-10 "Rename i2smode to i2s_net"
->  * Added PATCH-11 "Define ternary macros to simplify code"
-> 
->  # Detialed changes are described in each updated patch.
-> 
-> ==Background==
-> The fsl_ssi driver was designed for PPC originally and then it has
-> been updated to support different modes for i.MX Series, including
-> SDMA, I2S Master mode, AC97 and older i.MXs with FIQ, by different
-> contributors for different use cases in different coding styles.
-> 
-> Additionally, in order to fix/work-around hardware bugs and design
-> flaws, the driver made a lot of compromise so now its program flow
-> looks very complicated and it's getting hard to maintain or update.
-> 
-> So I am going to clean up the driver on both coding style level and
-> program flow level.
-> 
-> ==Introduction==
-> This series of patches is the first set to clean up fsl_ssi driver
-> in the coding style level. Any patch here is not supposed to change
-> the program flow.
-> 
-> ==Verification==
-> Theoretically, since these patches do not change program flow, they
-> only need code review, build or sanity tests. I have done build and
-> sanity tests on an i.MX6SoloX with WM8962 using imx_v6_v7_defconfig
-> and playback/record tests in I2S Master/Slave modes.
-> 
-> Nicolin Chen (11):
->   ASoC: fsl_ssi: Rename fsl_ssi_private to fsl_ssi
->   ASoC: fsl_ssi: Cache pdev->dev pointer
->   ASoC: fsl_ssi: Refine all comments
->   ASoC: fsl_ssi: Rename registers and fields macros
->   ASoC: fsl_ssi: Refine indentations and wrappings
->   ASoC: fsl_ssi: Refine printk outputs
->   ASoC: fsl_ssi: Rename cpu_dai parameter to dai
->   ASoC: fsl_ssi: Rename scr_val to scr
->   ASoC: fsl_ssi: Replace fsl_ssi_rxtx_reg_val with fsl_ssi_regvals
->   ASoC: fsl_ssi: Rename i2smode to i2s_net
->   ASoC: fsl_ssi: Define ternary macros to simplify code
-> 
->  sound/soc/fsl/fsl_ssi.c     | 1373 +++++++++++++++++++------------------------
->  sound/soc/fsl/fsl_ssi.h     |  427 ++++++++------
->  sound/soc/fsl/fsl_ssi_dbg.c |   59 +-
->  3 files changed, 876 insertions(+), 983 deletions(-)
-> 
+There should be no trouble to understand dev = pdev->dev.
+This can save some space to have more print info or save
+some wrapped lines.
 
-For the whole series:
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+---
+ sound/soc/fsl/fsl_ssi.c | 64 ++++++++++++++++++++++++-------------------------
+ 1 file changed, 31 insertions(+), 33 deletions(-)
 
-Thanks.
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 84d2f7e..e903c92 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -1379,23 +1379,24 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 		struct fsl_ssi *ssi, void __iomem *iomem)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
++	struct device *dev = &pdev->dev;
+ 	u32 dmas[4];
+ 	int ret;
+ 
+ 	if (ssi->has_ipg_clk_name)
+-		ssi->clk = devm_clk_get(&pdev->dev, "ipg");
++		ssi->clk = devm_clk_get(dev, "ipg");
+ 	else
+-		ssi->clk = devm_clk_get(&pdev->dev, NULL);
++		ssi->clk = devm_clk_get(dev, NULL);
+ 	if (IS_ERR(ssi->clk)) {
+ 		ret = PTR_ERR(ssi->clk);
+-		dev_err(&pdev->dev, "could not get clock: %d\n", ret);
++		dev_err(dev, "could not get clock: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+ 	if (!ssi->has_ipg_clk_name) {
+ 		ret = clk_prepare_enable(ssi->clk);
+ 		if (ret) {
+-			dev_err(&pdev->dev, "clk_prepare_enable failed: %d\n", ret);
++			dev_err(dev, "clk_prepare_enable failed: %d\n", ret);
+ 			return ret;
+ 		}
+ 	}
+@@ -1403,9 +1404,9 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	/* For those SLAVE implementations, we ignore non-baudclk cases
+ 	 * and, instead, abandon MASTER mode that needs baud clock.
+ 	 */
+-	ssi->baudclk = devm_clk_get(&pdev->dev, "baud");
++	ssi->baudclk = devm_clk_get(dev, "baud");
+ 	if (IS_ERR(ssi->baudclk))
+-		dev_dbg(&pdev->dev, "could not get baud clock: %ld\n",
++		dev_dbg(dev, "could not get baud clock: %ld\n",
+ 			 PTR_ERR(ssi->baudclk));
+ 
+ 	ssi->dma_params_tx.maxburst = ssi->dma_maxburst;
+@@ -1469,6 +1470,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	struct fsl_ssi *ssi;
+ 	int ret = 0;
+ 	struct device_node *np = pdev->dev.of_node;
++	struct device *dev = &pdev->dev;
+ 	const struct of_device_id *of_id;
+ 	const char *p, *sprop;
+ 	const uint32_t *iprop;
+@@ -1477,17 +1479,16 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	char name[64];
+ 	struct regmap_config regconfig = fsl_ssi_regconfig;
+ 
+-	of_id = of_match_device(fsl_ssi_ids, &pdev->dev);
++	of_id = of_match_device(fsl_ssi_ids, dev);
+ 	if (!of_id || !of_id->data)
+ 		return -EINVAL;
+ 
+-	ssi = devm_kzalloc(&pdev->dev, sizeof(*ssi),
+-			GFP_KERNEL);
++	ssi = devm_kzalloc(dev, sizeof(*ssi), GFP_KERNEL);
+ 	if (!ssi)
+ 		return -ENOMEM;
+ 
+ 	ssi->soc = of_id->data;
+-	ssi->dev = &pdev->dev;
++	ssi->dev = dev;
+ 
+ 	sprop = of_get_property(np, "fsl,mode", NULL);
+ 	if (sprop) {
+@@ -1507,10 +1508,10 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		memcpy(&ssi->cpu_dai_drv, &fsl_ssi_dai_template,
+ 		       sizeof(fsl_ssi_dai_template));
+ 	}
+-	ssi->cpu_dai_drv.name = dev_name(&pdev->dev);
++	ssi->cpu_dai_drv.name = dev_name(dev);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	iomem = devm_ioremap_resource(&pdev->dev, res);
++	iomem = devm_ioremap_resource(dev, res);
+ 	if (IS_ERR(iomem))
+ 		return PTR_ERR(iomem);
+ 	ssi->ssi_phys = res->start;
+@@ -1528,21 +1529,20 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	ret = of_property_match_string(np, "clock-names", "ipg");
+ 	if (ret < 0) {
+ 		ssi->has_ipg_clk_name = false;
+-		ssi->regs = devm_regmap_init_mmio(&pdev->dev, iomem,
+-			&regconfig);
++		ssi->regs = devm_regmap_init_mmio(dev, iomem, &regconfig);
+ 	} else {
+ 		ssi->has_ipg_clk_name = true;
+-		ssi->regs = devm_regmap_init_mmio_clk(&pdev->dev,
+-			"ipg", iomem, &regconfig);
++		ssi->regs = devm_regmap_init_mmio_clk(dev, "ipg", iomem,
++						      &regconfig);
+ 	}
+ 	if (IS_ERR(ssi->regs)) {
+-		dev_err(&pdev->dev, "Failed to init register map\n");
++		dev_err(dev, "Failed to init register map\n");
+ 		return PTR_ERR(ssi->regs);
+ 	}
+ 
+ 	ssi->irq = platform_get_irq(pdev, 0);
+ 	if (ssi->irq < 0) {
+-		dev_err(&pdev->dev, "no irq for node %s\n", pdev->name);
++		dev_err(dev, "no irq for node %s\n", pdev->name);
+ 		return ssi->irq;
+ 	}
+ 
+@@ -1605,7 +1605,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		break;
+ 	}
+ 
+-	dev_set_drvdata(&pdev->dev, ssi);
++	dev_set_drvdata(dev, ssi);
+ 
+ 	if (ssi->soc->imx) {
+ 		ret = fsl_ssi_imx_probe(pdev, ssi, iomem);
+@@ -1617,30 +1617,28 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		mutex_init(&ssi->ac97_reg_lock);
+ 		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
+ 		if (ret) {
+-			dev_err(&pdev->dev, "could not set AC'97 ops\n");
++			dev_err(dev, "could not set AC'97 ops\n");
+ 			goto error_ac97_ops;
+ 		}
+ 	}
+ 
+-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_ssi_component,
++	ret = devm_snd_soc_register_component(dev, &fsl_ssi_component,
+ 					      &ssi->cpu_dai_drv, 1);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "failed to register DAI: %d\n", ret);
++		dev_err(dev, "failed to register DAI: %d\n", ret);
+ 		goto error_asoc_register;
+ 	}
+ 
+ 	if (ssi->use_dma) {
+-		ret = devm_request_irq(&pdev->dev, ssi->irq,
+-					fsl_ssi_isr, 0, dev_name(&pdev->dev),
+-					ssi);
++		ret = devm_request_irq(dev, ssi->irq, fsl_ssi_isr, 0,
++				       dev_name(dev), ssi);
+ 		if (ret < 0) {
+-			dev_err(&pdev->dev, "could not claim irq %u\n",
+-					ssi->irq);
++			dev_err(dev, "could not claim irq %u\n", ssi->irq);
+ 			goto error_asoc_register;
+ 		}
+ 	}
+ 
+-	ret = fsl_ssi_debugfs_create(&ssi->dbg_stats, &pdev->dev);
++	ret = fsl_ssi_debugfs_create(&ssi->dbg_stats, dev);
+ 	if (ret)
+ 		goto error_asoc_register;
+ 
+@@ -1665,23 +1663,23 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	snprintf(name, sizeof(name), "snd-soc-%s", sprop);
+ 	make_lowercase(name);
+ 
+-	ssi->pdev = platform_device_register_data(&pdev->dev, name, 0, NULL, 0);
++	ssi->pdev = platform_device_register_data(dev, name, 0, NULL, 0);
+ 	if (IS_ERR(ssi->pdev)) {
+ 		ret = PTR_ERR(ssi->pdev);
+-		dev_err(&pdev->dev, "failed to register platform: %d\n", ret);
++		dev_err(dev, "failed to register platform: %d\n", ret);
+ 		goto error_sound_card;
+ 	}
+ 
+ done:
+ 	if (ssi->dai_fmt)
+-		_fsl_ssi_set_dai_fmt(&pdev->dev, ssi, ssi->dai_fmt);
++		_fsl_ssi_set_dai_fmt(dev, ssi, ssi->dai_fmt);
+ 
+ 	if (fsl_ssi_is_ac97(ssi)) {
+ 		u32 ssi_idx;
+ 
+ 		ret = of_property_read_u32(np, "cell-index", &ssi_idx);
+ 		if (ret) {
+-			dev_err(&pdev->dev, "cannot get SSI index property\n");
++			dev_err(dev, "cannot get SSI index property\n");
+ 			goto error_sound_card;
+ 		}
+ 
+@@ -1689,7 +1687,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 					"ac97-codec", ssi_idx, NULL, 0);
+ 		if (IS_ERR(ssi->pdev)) {
+ 			ret = PTR_ERR(ssi->pdev);
+-			dev_err(&pdev->dev,
++			dev_err(dev,
+ 				"failed to register AC97 codec platform: %d\n",
+ 				ret);
+ 			goto error_sound_card;
+-- 
+2.1.4
