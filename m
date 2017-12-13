@@ -1,18 +1,17 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.4])
+Received: from mout.web.de (mout.web.de [212.227.15.14])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxkMN4fM8zDqnC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 04:34:08 +1100 (AEDT)
-Subject: [PATCH 1/3] soc/fsl/qe: Delete an error message for a failed memory
- allocation in three functions
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxkNC3hlpzDrp4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 04:34:51 +1100 (AEDT)
+Subject: [PATCH 2/3] soc/fsl/qe: Improve a size determination in two functions
 From: SF Markus Elfring <elfring@users.sourceforge.net>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Li Yang <leoyang.li@nxp.com>, Qiang Zhao <qiang.zhao@nxp.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 References: <07738369-a787-98b4-41a5-71b7d630c356@users.sourceforge.net>
-Message-ID: <c979f5f0-dc1d-1e10-644a-d32e65fadf82@users.sourceforge.net>
-Date: Wed, 13 Dec 2017 18:33:34 +0100
+Message-ID: <24d6e67d-6bbf-5d2b-5003-79b50a84f268@users.sourceforge.net>
+Date: Wed, 13 Dec 2017 18:34:42 +0100
 MIME-Version: 1.0
 In-Reply-To: <07738369-a787-98b4-41a5-71b7d630c356@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -26,68 +25,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 13 Dec 2017 17:45:23 +0100
+Date: Wed, 13 Dec 2017 17:51:21 +0100
 
-Omit an extra message for a memory allocation failure in these functions.
+Replace the specification of data structures by pointer dereferences
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
 
 This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/soc/fsl/qe/gpio.c     | 4 +---
- drivers/soc/fsl/qe/ucc_fast.c | 5 +----
- drivers/soc/fsl/qe/ucc_slow.c | 5 +----
- 3 files changed, 3 insertions(+), 11 deletions(-)
+ drivers/soc/fsl/qe/ucc_fast.c | 2 +-
+ drivers/soc/fsl/qe/ucc_slow.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 3b27075c21a7..9239cf176e67 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -143,10 +143,8 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
- 	unsigned long flags;
- 
- 	qe_pin = kzalloc(sizeof(*qe_pin), GFP_KERNEL);
--	if (!qe_pin) {
--		pr_debug("%s: can't allocate memory\n", __func__);
-+	if (!qe_pin)
- 		return ERR_PTR(-ENOMEM);
--	}
- 
- 	err = of_get_gpio(np, index);
- 	if (err < 0)
 diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-index 83d8d16e3a69..59b68bf4aebb 100644
+index 59b68bf4aebb..2092bfdcf1bc 100644
 --- a/drivers/soc/fsl/qe/ucc_fast.c
 +++ b/drivers/soc/fsl/qe/ucc_fast.c
-@@ -195,11 +195,8 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+@@ -194,7 +194,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 		return -EINVAL;
  	}
  
- 	uccf = kzalloc(sizeof(struct ucc_fast_private), GFP_KERNEL);
--	if (!uccf) {
--		printk(KERN_ERR "%s: Cannot allocate private data\n",
--			__func__);
-+	if (!uccf)
+-	uccf = kzalloc(sizeof(struct ucc_fast_private), GFP_KERNEL);
++	uccf = kzalloc(sizeof(*uccf), GFP_KERNEL);
+ 	if (!uccf)
  		return -ENOMEM;
--	}
  
- 	/* Fill fast UCC structure */
- 	uccf->uf_info = uf_info;
 diff --git a/drivers/soc/fsl/qe/ucc_slow.c b/drivers/soc/fsl/qe/ucc_slow.c
-index 9334bdbd9b30..fc91412e2300 100644
+index fc91412e2300..c21a42c11080 100644
 --- a/drivers/soc/fsl/qe/ucc_slow.c
 +++ b/drivers/soc/fsl/qe/ucc_slow.c
-@@ -153,11 +153,8 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
+@@ -152,7 +152,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
+ 		return -EINVAL;
  	}
  
- 	uccs = kzalloc(sizeof(struct ucc_slow_private), GFP_KERNEL);
--	if (!uccs) {
--		printk(KERN_ERR "%s: Cannot allocate private data\n",
--			__func__);
-+	if (!uccs)
+-	uccs = kzalloc(sizeof(struct ucc_slow_private), GFP_KERNEL);
++	uccs = kzalloc(sizeof(*uccs), GFP_KERNEL);
+ 	if (!uccs)
  		return -ENOMEM;
--	}
  
- 	/* Fill slow UCC structure */
- 	uccs->us_info = us_info;
 -- 
 2.15.1
