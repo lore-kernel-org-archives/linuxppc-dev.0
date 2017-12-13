@@ -1,36 +1,19 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxSFQ0rY0zDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:58:01 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBD6tItS085858
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:57:59 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2etrs7xygn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:57:59 -0500
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 13 Dec 2017 01:57:58 -0500
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org,
- rjw@rjwysocki.net, huntbag@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v3 PATCH 1/3] powernv-cpufreq: Add helper to extract pstate from PMSR
-Date: Wed, 13 Dec 2017 12:27:39 +0530
-In-Reply-To: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1513148261-21097-2-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxTpt3XGYzDrcs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 19:08:38 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id o2so940950pgc.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 00:08:38 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH 1/2] powerpc/crash: Remove the test for cpu_online in the IPI
+ callback
+Date: Wed, 13 Dec 2017 19:08:27 +1100
+Message-Id: <20171213080828.2800-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,134 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Our check was extra cautious, we've audited crash_send_ipi
+and it sends an IPI only to online CPU's. Removal of this
+check should have not functional impact on crash kdump.
 
-On POWERNV platform, the fields for pstates in the Power Management
-Status Register (PMSR) and the Power Management Control Register
-(PMCR) are 8-bits wide. On POWER8 the pstates are negatively numbered
-while on POWER9 they are positively numbered.
-
-The device-tree exports pstates as 32-bit entries. The device-tree
-implementation sign-extends the 8-bit pstate values to obtain the
-corresponding 32-bit entry.
-
-Eg: On POWER8, a pstate value 0x82 [-126] is represented in the
-device-tree as 0xfffffff82 while on POWER9, the same value 0x82 [130]
-is represented in the device-tree as 0x00000082.
-
-The powernv-cpufreq driver implementation represents pstates using the
-integer type. In multiple places in the driver, the code interprets
-the pstates extracted from the PMSR as a signed byte and assigns it to
-a integer variable to get the sign-extention.
-
-On POWER9 platforms which have greater than 128 pstates, this results
-in the driver performing incorrect sign-extention, and thereby
-treating a legitimate pstate (say 130) as an invalid pstates (since it
-is interpreted as -126).
-
-This patch fixes the issue by implementing a helper function to
-extract Pstates from PMSR register, and correctly sign-extend it to be
-consistent with the values provided by the device-tree.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 37 +++++++++++++++++++++++--------------
- 1 file changed, 23 insertions(+), 14 deletions(-)
+ arch/powerpc/kernel/crash.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b6d7c4c..f46b60f 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -41,11 +41,9 @@
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
- #define PMSR_SPR_EM_DISABLE	(1UL << 31)
--#define PMSR_MAX(x)		((x >> 32) & 0xFF)
-+#define MAX_PSTATE_SHIFT	32
- #define LPSTATE_SHIFT		48
- #define GPSTATE_SHIFT		56
--#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
--#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index cbabb5adccd9..29c56ca2ddfd 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -69,9 +69,6 @@ static void crash_ipi_callback(struct pt_regs *regs)
  
- #define MAX_RAMP_DOWN_TIME				5120
- /*
-@@ -94,6 +92,7 @@ struct global_pstate_info {
- };
+ 	int cpu = smp_processor_id();
  
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-+u32 pstate_sign_prefix;
- static bool rebooting, throttled, occ_reset;
- 
- static const char * const throttle_reason[] = {
-@@ -148,6 +147,20 @@ enum throttle_reason_type {
- 	bool wof_enabled;
- } powernv_pstate_info;
- 
-+static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
-+{
-+	int ret = ((pmsr_val >> shift) & 0xFF);
-+
-+	if (!ret)
-+		return ret;
-+
-+	return (pstate_sign_prefix | ret);
-+}
-+
-+#define extract_local_pstate(x) extract_pstate(x, LPSTATE_SHIFT)
-+#define extract_global_pstate(x) extract_pstate(x, GPSTATE_SHIFT)
-+#define extract_max_pstate(x)  extract_pstate(x, MAX_PSTATE_SHIFT)
-+
- /* Use following macros for conversions between pstate_id and index */
- static inline int idx_to_pstate(unsigned int i)
- {
-@@ -278,6 +291,9 @@ static int init_powernv_pstates(void)
- 
- 	powernv_pstate_info.nr_pstates = nr_pstates;
- 	pr_debug("NR PStates %d\n", nr_pstates);
-+
-+	pstate_sign_prefix = pstate_min & ~0xFF;
-+
- 	for (i = 0; i < nr_pstates; i++) {
- 		u32 id = be32_to_cpu(pstate_ids[i]);
- 		u32 freq = be32_to_cpu(pstate_freqs[i]);
-@@ -438,17 +454,10 @@ struct powernv_smp_call_data {
- static void powernv_read_cpu_freq(void *arg)
- {
- 	unsigned long pmspr_val;
--	s8 local_pstate_id;
- 	struct powernv_smp_call_data *freq_data = arg;
- 
- 	pmspr_val = get_pmspr(SPRN_PMSR);
+-	if (!cpu_online(cpu))
+-		return;
 -
--	/*
--	 * The local pstate id corresponds bits 48..55 in the PMSR.
--	 * Note: Watch out for the sign!
--	 */
--	local_pstate_id = (pmspr_val >> 48) & 0xFF;
--	freq_data->pstate_id = local_pstate_id;
-+	freq_data->pstate_id = extract_local_pstate(pmspr_val);
- 	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
- 
- 	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
-@@ -522,7 +531,7 @@ static void powernv_cpufreq_throttle_check(void *data)
- 	chip = this_cpu_read(chip_info);
- 
- 	/* Check for Pmax Capping */
--	pmsr_pmax = (s8)PMSR_MAX(pmsr);
-+	pmsr_pmax = extract_max_pstate(pmsr);
- 	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
- 	if (pmsr_pmax_idx != powernv_pstate_info.max) {
- 		if (chip->throttled)
-@@ -645,8 +654,8 @@ void gpstate_timer_handler(struct timer_list *t)
- 	 * value. Hence, read from PMCR to get correct data.
- 	 */
- 	val = get_pmspr(SPRN_PMCR);
--	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
--	freq_data.pstate_id = (s8)GET_LPSTATE(val);
-+	freq_data.gpstate_id = extract_global_pstate(val);
-+	freq_data.pstate_id = extract_local_pstate(val);
- 	if (freq_data.gpstate_id  == freq_data.pstate_id) {
- 		reset_gpstates(policy);
- 		spin_unlock(&gpstates->gpstate_lock);
+ 	hard_irq_disable();
+ 	if (!cpumask_test_cpu(cpu, &cpus_state_saved)) {
+ 		crash_save_cpu(regs, cpu);
 -- 
-1.9.4
+2.13.6
