@@ -1,24 +1,31 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x235.google.com (mail-pg0-x235.google.com
- [IPv6:2607:f8b0:400e:c05::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxGMQ3vRQzDrXd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 10:32:33 +1100 (AEDT)
-Received: by mail-pg0-x235.google.com with SMTP id y6so416963pgp.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 15:32:33 -0800 (PST)
-Date: Tue, 12 Dec 2017 15:32:24 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: broonie@kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, fabio.estevam@nxp.com, timur@tabi.org,
- mail@maciej.szmigiero.name, caleb@crome.org, lgirdwood@gmail.com
-Subject: Re: [PATCH 00/10] ASoC: fsl_ssi: Clean up - coding style level
-Message-ID: <20171212233223.GA2019@Asurada-Nvidia>
-References: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1512420403-10164-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxRBN16BszDrYx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:10:19 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBD6A9ES068808
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:10:17 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2etxb9s246-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:10:15 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Wed, 13 Dec 2017 06:09:59 -0000
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com
+Subject: [PATCH v2] platform/powernv: Add debugfs interface for imc-mode and
+ imc-command
+Date: Wed, 13 Dec 2017 11:39:54 +0530
+Message-Id: <1513145394-6100-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +35,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 04, 2017 at 12:46:33PM -0800, Nicolin Chen wrote:
+In memory Collection (IMC) counter pmu driver controls the ucode's execution
+state. At the system boot, IMC perf driver pause the ucode. Ucode state is
+changed to "running" only when any of the nest units are monitored or profiled
+using perf tool.                                      
+                                                                                
+Nest units support only limited set of hardware counters and ucode is always
+programmed in the "production mode" ("accumulation") mode. This mode is
+configured to provide key performance metric data for most of the nest units.                                                         
+                                                                                
+But ucode also supports other modes which would be used for "debug" to drill    
+down specific nest units. That is, ucode when switched to "powerbus" debug      
+mode (for example), will dynamically reconfigure the nest counters to target    
+only "powerbus" related events in the hardware counters. This allows the IMC
+nest unit to focus on powerbus related transactions in the system in more
+detail. At this point, production mode events may or may not be counted.                                                          
+                                                                                
+IMC nest counters has both in-band (ucode access) and out of band access to it. 
+Since not all nest counter configurations are supported by ucode, out of band   
+tools are used to characterize other nest counter configurations.               
+                                                                                
+Patch provides an interface via "debugfs" to enable the switching of ucode
+modes in the system. To switch ucode mode, one has to first pause the microcode 
+(imc_cmd), and then write the target mode value to the "imc_mode" file.                                                   
+                                                                                
+Proposed Approach                                                               
+===================                                                             
+                                                                                
+In the proposed approach, the function (export_imc_mode_and_cmd) which creates   
+the debugfs interface for imc mode and command is implemented in opal-imc.c.    
+Thus we can use imc_get_mem_addr() to get the homer base address for each chip. 
+                                                                                
+The interface to expose imc mode and command is required only if we have nest
+pmu units registered. Employing the existing data structures to track whether
+we have any nest units registered will require to extend data from perf side
+to opal-imc.c. Instead an integer is introduced to hold that information by
+counting successful nest unit registration. Debugfs interface is removed
+based on the integer count.                                           
 
-> Nicolin Chen (10):
->   ASoC: fsl_ssi: Remove unused struct device
->   ASoC: fsl_ssi: Rename fsl_ssi_private to fsl_ssi
->   ASoC: fsl_ssi: Cache pdev->dev pointer
->   ASoC: fsl_ssi: Refine all comments
->   ASoC: fsl_ssi: Rename registers and fields macros
->   ASoC: fsl_ssi: Refine indentations and wrappings
->   ASoC: fsl_ssi: Refine printk outputs
->   ASoC: fsl_ssi: Rename cpu_dai parameter to dai
->   ASoC: fsl_ssi: Rename scr_val to scr
->   ASoC: fsl_ssi: Replace fsl_ssi_rxtx_reg_val with fsl_ssi_regvals
+Example for the interface:                                                      
+                                                                                
+root@XXXX:/sys/kernel/debug/imc# ls                                             
+imc_cmd_0  imc_cmd_8  imc_mode_0  imc_mode_8               
 
-Have revised some comments at one of patches and rebased the rest.
-Will send v2 tonight. So let's ignore this version for now. Thanks
+Changes from v1 -> v2
+- The latest commit by Rajarshi Das adds the control block offset in the       
+  ima-catalog file. So if there is cb_offset specified in the                   
+  ima-catalog, that is used to export the imc mode/command, otherwise           
+  IMC_CNTL_BLK_OFFSET is used. 
+
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/imc-pmu.h        |  7 +++
+ arch/powerpc/platforms/powernv/opal-imc.c | 77 +++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
+index fad0e6f..e760401 100644
+--- a/arch/powerpc/include/asm/imc-pmu.h
++++ b/arch/powerpc/include/asm/imc-pmu.h
+@@ -35,6 +35,13 @@
+ #define THREAD_IMC_ENABLE               0x8000000000000000ULL
+ 
+ /*
++ * For debugfs interface for imc-mode and imc-command
++ */
++#define IMC_CNTL_BLK_OFFSET		0x3FC00
++#define IMC_CNTL_BLK_CMD_OFFSET		8
++#define IMC_CNTL_BLK_MODE_OFFSET	32
++
++/*
+  * Structure to hold memory address information for imc units.
+  */
+ struct imc_mem_info {
+diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+index 465ea10..dd4c9b8 100644
+--- a/arch/powerpc/platforms/powernv/opal-imc.c
++++ b/arch/powerpc/platforms/powernv/opal-imc.c
+@@ -21,6 +21,78 @@
+ #include <asm/io.h>
+ #include <asm/imc-pmu.h>
+ #include <asm/cputhreads.h>
++#include <asm/debugfs.h>
++
++static struct dentry *imc_debugfs_parent;
++
++/* Helpers to export imc command and mode via debugfs */
++static int imc_mem_get(void *data, u64 *val)
++{
++	*val = cpu_to_be64(*(u64 *)data);
++	return 0;
++}
++
++static int imc_mem_set(void *data, u64 val)
++{
++	*(u64 *)data = cpu_to_be64(val);
++	return 0;
++}
++DEFINE_DEBUGFS_ATTRIBUTE(fops_imc_x64, imc_mem_get, imc_mem_set, "0x%016llx\n");
++
++static struct dentry *imc_debugfs_create_x64(const char *name, umode_t mode,
++					     struct dentry *parent, u64  *value)
++{
++	return debugfs_create_file_unsafe(name, mode, parent,
++					  value, &fops_imc_x64);
++}
++
++/*
++ * export_imc_mode_and_cmd: Create a debugfs interface
++ *                     for imc_cmd and imc_mode
++ *                     for each node in the system.
++ *  imc_mode and imc_cmd can be changed by echo into
++ *  this interface.
++ */
++static void export_imc_mode_and_cmd(struct device_node *node,
++				    struct imc_pmu *pmu_ptr)
++{
++	static u64 loc, *imc_mode_addr, *imc_cmd_addr;
++	int chip = 0, nid;
++	char mode[16], cmd[16];
++	u32 cb_offset;
++
++	imc_debugfs_parent = debugfs_create_dir("imc", powerpc_debugfs_root);
++
++	/*
++	 * Return here, either because 'imc' directory already exists,
++	 * Or failed to create a new one.
++	 */
++	if (!imc_debugfs_parent)
++		return;
++
++	if (of_property_read_u32(node, "cb_offset", &cb_offset))
++		cb_offset = IMC_CNTL_BLK_OFFSET;
++
++	for_each_node(nid) {
++		loc = (u64)(pmu_ptr->mem_info[chip].vbase) + cb_offset;
++		imc_mode_addr = (u64 *)(loc + IMC_CNTL_BLK_MODE_OFFSET);
++		sprintf(mode, "imc_mode_%d", nid);
++		if (!imc_debugfs_create_x64(mode, 0600, imc_debugfs_parent,
++					    imc_mode_addr))
++			goto err;
++
++		imc_cmd_addr = (u64 *)(loc + IMC_CNTL_BLK_CMD_OFFSET);
++		sprintf(cmd, "imc_cmd_%d", nid);
++		if (!imc_debugfs_create_x64(cmd, 0600, imc_debugfs_parent,
++					    imc_cmd_addr))
++			goto err;
++		chip++;
++	}
++	return;
++
++err:
++	debugfs_remove_recursive(imc_debugfs_parent);
++}
+ 
+ /*
+  * imc_get_mem_addr_nest: Function to get nest counter memory region
+@@ -65,6 +137,7 @@ static int imc_get_mem_addr_nest(struct device_node *node,
+ 	}
+ 
+ 	pmu_ptr->imc_counter_mmaped = true;
++	export_imc_mode_and_cmd(node, pmu_ptr);
+ 	kfree(base_addr_arr);
+ 	kfree(chipid_arr);
+ 	return 0;
+@@ -213,6 +286,10 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	/* If none of the nest units are registered, remove debugfs interface */
++	if (pmu_count == 0)
++		debugfs_remove_recursive(imc_debugfs_parent);
++
+ 	return 0;
+ }
+ 
+-- 
+2.7.4
