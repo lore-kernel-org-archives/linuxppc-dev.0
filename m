@@ -1,23 +1,33 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxRll5qCgzDrbW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:35:47 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id e3so924612pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:35:47 -0800 (PST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: broonie@kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
- timur@tabi.org, mail@maciej.szmigiero.name, caleb@crome.org,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v2 11/11] ASoC: fsl_ssi: Define ternary macros to simplify code
-Date: Tue, 12 Dec 2017 22:34:34 -0800
-Message-Id: <1513146874-25476-12-git-send-email-nicoleotsuka@gmail.com>
-In-Reply-To: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxS4K31ppzDqhM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:50:08 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBD6nkRn143004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:50:06 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2etxpshkha-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:50:06 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 13 Dec 2017 06:50:04 -0000
+Subject: Re: [PATCH] powerpc/perf: Fix kfree memory allocated for nest pmus
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <1512667407-30067-1-git-send-email-anju@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Wed, 13 Dec 2017 12:19:59 +0530
+MIME-Version: 1.0
+In-Reply-To: <1512667407-30067-1-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <e0b3dc1d-9a9d-83e5-7034-c7b4c0563a44@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,112 +37,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some regmap code looks redudant. So simplify it.
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- sound/soc/fsl/fsl_ssi.c | 27 +++++++++++----------------
- sound/soc/fsl/fsl_ssi.h |  4 ++++
- 2 files changed, 15 insertions(+), 16 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index dd091eb..5b4fa43 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -405,13 +405,10 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
-  */
- static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
- {
--	if (is_rx) {
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_RX_CLR, SSI_SOR_RX_CLR);
--	} else {
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_TX_CLR, SSI_SOR_TX_CLR);
--	}
-+	bool tx = !is_rx;
-+
-+	regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
- }
- 
- /**
-@@ -666,6 +663,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 			    struct snd_soc_dai *dai,
- 			    struct snd_pcm_hw_params *hw_params)
- {
-+	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	int synchronous = ssi->cpu_dai_drv.symmetric_rates, ret;
-@@ -753,10 +751,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 		(psr ? SSI_SxCCR_PSR : 0);
- 	mask = SSI_SxCCR_PM_MASK | SSI_SxCCR_DIV2 | SSI_SxCCR_PSR;
- 
--	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK || synchronous)
--		regmap_update_bits(regs, REG_SSI_STCCR, mask, stccr);
--	else
--		regmap_update_bits(regs, REG_SSI_SRCCR, mask, stccr);
-+	/* STCCR is used for RX in synchronous mode */
-+	tx2 = tx || synchronous;
-+	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), mask, stccr);
- 
- 	if (!baudclk_is_used) {
- 		ret = clk_set_rate(ssi->baudclk, baudrate);
-@@ -784,6 +781,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 			     struct snd_pcm_hw_params *hw_params,
- 			     struct snd_soc_dai *dai)
- {
-+	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	unsigned int channels = params_channels(hw_params);
-@@ -829,11 +827,8 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	}
- 
- 	/* In synchronous mode, the SSI uses STCCR for capture */
--	if ((substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ||
--	    ssi->cpu_dai_drv.symmetric_rates)
--		regmap_update_bits(regs, REG_SSI_STCCR, SSI_SxCCR_WL_MASK, wl);
--	else
--		regmap_update_bits(regs, REG_SSI_SRCCR, SSI_SxCCR_WL_MASK, wl);
-+	tx2 = tx || ssi->cpu_dai_drv.symmetric_rates;
-+	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), SSI_SxCCR_WL_MASK, wl);
- 
- 	return 0;
- }
-diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
-index b610087..de2fdc5 100644
---- a/sound/soc/fsl/fsl_ssi.h
-+++ b/sound/soc/fsl/fsl_ssi.h
-@@ -35,10 +35,12 @@
- #define REG_SSI_STCR			0x1c
- /* SSI Receive Configuration Register */
- #define REG_SSI_SRCR			0x20
-+#define REG_SSI_SxCR(tx)		((tx) ? REG_SSI_STCR : REG_SSI_SRCR)
- /* SSI Transmit Clock Control Register */
- #define REG_SSI_STCCR			0x24
- /* SSI Receive Clock Control Register */
- #define REG_SSI_SRCCR			0x28
-+#define REG_SSI_SxCCR(tx)		((tx) ? REG_SSI_STCCR : REG_SSI_SRCCR)
- /* SSI FIFO Control/Status Register */
- #define REG_SSI_SFCSR			0x2c
- /*
-@@ -67,6 +69,7 @@
- #define REG_SSI_STMSK			0x48
- /* SSI  Receive Time Slot Mask Register */
- #define REG_SSI_SRMSK			0x4c
-+#define REG_SSI_SxMSK(tx)		((tx) ? REG_SSI_STMSK : REG_SSI_SRMSK)
- /*
-  * SSI AC97 Channel Status Register
-  *
-@@ -249,6 +252,7 @@
- #define SSI_SOR_CLKOFF			0x00000040
- #define SSI_SOR_RX_CLR			0x00000020
- #define SSI_SOR_TX_CLR			0x00000010
-+#define SSI_SOR_xX_CLR(tx)		((tx) ? SSI_SOR_TX_CLR : SSI_SOR_RX_CLR)
- #define SSI_SOR_INIT			0x00000008
- #define SSI_SOR_WAIT_SHIFT		1
- #define SSI_SOR_WAIT_MASK		0x00000006
--- 
-2.7.4
+On Thursday 07 December 2017 10:53 PM, Anju T Sudhakar wrote:
+> imc_common_cpuhp_mem_free() is the common function for all IMC (In-memory
+> Collection counters) domains to unregister cpuhotplug callback and free memory.
+> Since kfree of memory allocated for nest-imc (per_nest_pmu_arr) is in the common
+> code, all domains (core/nest/thread) can do the kfree in the failure case.
+>
+> This could potentially create a call trace as shown below, where core(/thread/nest)
+> imc pmu initialization fails and in the failure path imc_common_cpuhp_mem_free()
+> free the memory(per_nest_pmu_arr), which is allocated by successfully registered
+> nest units.
+>
+>
+> The call trace is generated in a scenario where core-imc initialization is
+> made to fail and a cpuhotplug is performed in a p9 system.
+> During cpuhotplug ppc_nest_imc_cpu_offline() tries to access per_nest_pmu_arr,
+> which is already freed by core-imc.
+>
+> [  136.563618] NIP [c000000000cb6a94] mutex_lock+0x34/0x90
+> [  136.563653] LR [c000000000cb6a88] mutex_lock+0x28/0x90
+> [  136.563687] Call Trace:
+> [  136.563707] [c0000016b7a93b90] [c000000000cb6a88] mutex_lock+0x28/0x90 (unreliable)
+> [  136.563762] [c0000016b7a93bc0] [c0000000002bc720] perf_pmu_migrate_context+0x90/0x3a0
+> [  136.563814] [c0000016b7a93c60] [c0000000000f7a40] ppc_nest_imc_cpu_offline+0x190/0x1f0
+> [  136.563867] [c0000016b7a93cb0] [c000000000108140] cpuhp_invoke_callback+0x160/0x820
+> [  136.563918] [c0000016b7a93d30] [c00000000010939c] cpuhp_thread_fun+0x1bc/0x270
+> [  136.563970] [c0000016b7a93d60] [c00000000013d2b0] smpboot_thread_fn+0x250/0x290
+> [  136.564022] [c0000016b7a93dc0] [c000000000136f18] kthread+0x1a8/0x1b0
+> [  136.564067] [c0000016b7a93e30] [c00000000000b4e8] ret_from_kernel_thread+0x5c/0x74
+>
+> To address this scenario do the kfree(per_nest_pmu_arr) only in case of
+> nest-imc initialization failure, and when there is no other nest units registered.
+
+My bad. Broke it when fixing the IMC_MAX_PMU. Sorry about it.
+
+Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+
+
+>
+> Fixes: 73ce9aec65b1 ("powerpc/perf: Fix IMC_MAX_PMU macro")
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/perf/imc-pmu.c | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> index 0ead3cd..4eb9e2b 100644
+> --- a/arch/powerpc/perf/imc-pmu.c
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -1171,6 +1171,7 @@ static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
+>   		if (nest_pmus == 1) {
+>   			cpuhp_remove_state(CPUHP_AP_PERF_POWERPC_NEST_IMC_ONLINE);
+>   			kfree(nest_imc_refc);
+> +			kfree(per_nest_pmu_arr);
+>   		}
+>
+>   		if (nest_pmus > 0)
+> @@ -1195,7 +1196,6 @@ static void imc_common_cpuhp_mem_free(struct imc_pmu *pmu_ptr)
+>   		kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]->attrs);
+>   	kfree(pmu_ptr->attr_groups[IMC_EVENT_ATTR]);
+>   	kfree(pmu_ptr);
+> -	kfree(per_nest_pmu_arr);
+>   	return;
+>   }
+>
+> @@ -1309,6 +1309,8 @@ int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_id
+>   			ret = nest_pmu_cpumask_init();
+>   			if (ret) {
+>   				mutex_unlock(&nest_init_lock);
+> +				kfree(nest_imc_refc);
+> +				kfree(per_nest_pmu_arr);
+>   				goto err_free;
+>   			}
+>   		}
