@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxSFR0BxQzDrS0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:58:02 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxSFQ0rY0zDqC2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:58:01 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBD6tIJt063938
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:58:00 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2etrs9exx0-1
+ vBD6tItS085858
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:57:59 -0500
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2etrs7xygn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:58:00 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 01:57:59 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 13 Dec 2017 01:57:59 -0500
+ Wed, 13 Dec 2017 01:57:58 -0500
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org,
  rjw@rjwysocki.net, huntbag@linux.vnet.ibm.com,
@@ -26,12 +26,11 @@ To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org,
  Balbir Singh <bsingharora@gmail.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
- non-continguous pstates
-Date: Wed, 13 Dec 2017 12:27:40 +0530
+Subject: [v3 PATCH 1/3] powernv-cpufreq: Add helper to extract pstate from PMSR
+Date: Wed, 13 Dec 2017 12:27:39 +0530
 In-Reply-To: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1513148261-21097-3-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1513148261-21097-2-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,176 +42,132 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-The code in powernv-cpufreq, makes the following two assumptions which
-are not guaranteed by the device-tree bindings:
+On POWERNV platform, the fields for pstates in the Power Management
+Status Register (PMSR) and the Power Management Control Register
+(PMCR) are 8-bits wide. On POWER8 the pstates are negatively numbered
+while on POWER9 they are positively numbered.
 
-    1) Pstate ids are continguous: This is used in pstate_to_idx() to
-       obtain the reverse map from a pstate to it's corresponding
-       entry into the cpufreq frequency table.
+The device-tree exports pstates as 32-bit entries. The device-tree
+implementation sign-extends the 8-bit pstate values to obtain the
+corresponding 32-bit entry.
 
-    2) Every Pstate should always lie between the max and the min
-       pstates that are explicitly reported in the device tree: This
-       is used to determine whether a pstate reported by the PMSR is
-       out of bounds.
+Eg: On POWER8, a pstate value 0x82 [-126] is represented in the
+device-tree as 0xfffffff82 while on POWER9, the same value 0x82 [130]
+is represented in the device-tree as 0x00000082.
 
-Both these assumptions are unwarranted and can change on future
-platforms.
+The powernv-cpufreq driver implementation represents pstates using the
+integer type. In multiple places in the driver, the code interprets
+the pstates extracted from the PMSR as a signed byte and assigns it to
+a integer variable to get the sign-extention.
 
-In this patch, we maintain the reverse map from a pstate to it's index
-in the cpufreq frequency table and use this in pstate_to_idx(). This
-does away with the assumptions (1) mentioned above, and will work with
-non continguous pstate ids. If no entry exists for a particular
-pstate, then such a pstate is treated as being out of bounds. This
-gets rid of assumption (2).
+On POWER9 platforms which have greater than 128 pstates, this results
+in the driver performing incorrect sign-extention, and thereby
+treating a legitimate pstate (say 130) as an invalid pstates (since it
+is interpreted as -126).
 
-On all the existing platforms, where the pstates are 8-bit long
-values, the new implementation of pstate_to_idx() takes constant time.
+This patch fixes the issue by implementing a helper function to
+extract Pstates from PMSR register, and correctly sign-extend it to be
+consistent with the values provided by the device-tree.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 85 +++++++++++++++++++++++++++++----------
- 1 file changed, 63 insertions(+), 22 deletions(-)
+ drivers/cpufreq/powernv-cpufreq.c | 37 +++++++++++++++++++++++--------------
+ 1 file changed, 23 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index f46b60f..8e3dbca 100644
+index b6d7c4c..f46b60f 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -29,6 +29,7 @@
- #include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/cpu.h>
-+#include <linux/hashtable.h>
- #include <trace/events/power.h>
- 
- #include <asm/cputhreads.h>
-@@ -38,7 +39,8 @@
- #include <asm/opal.h>
- #include <linux/timer.h>
- 
--#define POWERNV_MAX_PSTATES	256
-+#define POWERNV_MAX_PSTATES_ORDER  8
-+#define POWERNV_MAX_PSTATES	(1UL << (POWERNV_MAX_PSTATES_ORDER))
+@@ -41,11 +41,9 @@
+ #define POWERNV_MAX_PSTATES	256
  #define PMSR_PSAFE_ENABLE	(1UL << 30)
  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
- #define MAX_PSTATE_SHIFT	32
-@@ -92,6 +94,27 @@ struct global_pstate_info {
+-#define PMSR_MAX(x)		((x >> 32) & 0xFF)
++#define MAX_PSTATE_SHIFT	32
+ #define LPSTATE_SHIFT		48
+ #define GPSTATE_SHIFT		56
+-#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
+-#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
+ 
+ #define MAX_RAMP_DOWN_TIME				5120
+ /*
+@@ -94,6 +92,7 @@ struct global_pstate_info {
  };
  
  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-+
-+DEFINE_HASHTABLE(pstate_revmap, POWERNV_MAX_PSTATES_ORDER);
-+/**
-+ * struct pstate_idx_revmap_data: Entry in the hashmap pstate_revmap
-+ *				  indexed by a function of pstate id.
-+ *
-+ * @pstate_id: pstate id for this entry.
-+ *
-+ * @cpufreq_table_idx: Index into the powernv_freqs
-+ *		       cpufreq_frequency_table for frequency
-+ *		       corresponding to pstate_id.
-+ *
-+ * @hentry: hlist_node that hooks this entry into the pstate_revmap
-+ *	    hashtable
-+ */
-+struct pstate_idx_revmap_data {
-+	int pstate_id;
-+	unsigned int cpufreq_table_idx;
-+	struct hlist_node hentry;
-+};
-+
- u32 pstate_sign_prefix;
++u32 pstate_sign_prefix;
  static bool rebooting, throttled, occ_reset;
  
-@@ -161,39 +184,47 @@ static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
- #define extract_global_pstate(x) extract_pstate(x, GPSTATE_SHIFT)
- #define extract_max_pstate(x)  extract_pstate(x, MAX_PSTATE_SHIFT)
+ static const char * const throttle_reason[] = {
+@@ -148,6 +147,20 @@ enum throttle_reason_type {
+ 	bool wof_enabled;
+ } powernv_pstate_info;
  
--/* Use following macros for conversions between pstate_id and index */
-+/* Use following functions for conversions between pstate_id and index */
++static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
++{
++	int ret = ((pmsr_val >> shift) & 0xFF);
 +
-+/**
-+ * idx_to_pstate : Returns the pstate id corresponding to the
-+ *		   frequency in the cpufreq frequency table
-+ *		   powernv_freqs indexed by @i.
-+ *
-+ *		   If @i is out of bound, this will return the pstate
-+ *		   corresponding to the nominal frequency.
-+ */
++	if (!ret)
++		return ret;
++
++	return (pstate_sign_prefix | ret);
++}
++
++#define extract_local_pstate(x) extract_pstate(x, LPSTATE_SHIFT)
++#define extract_global_pstate(x) extract_pstate(x, GPSTATE_SHIFT)
++#define extract_max_pstate(x)  extract_pstate(x, MAX_PSTATE_SHIFT)
++
+ /* Use following macros for conversions between pstate_id and index */
  static inline int idx_to_pstate(unsigned int i)
  {
- 	if (unlikely(i >= powernv_pstate_info.nr_pstates)) {
--		pr_warn_once("index %u is out of bound\n", i);
-+		pr_warn_once("idx_to_pstate: index %u is out of bound\n", i);
- 		return powernv_freqs[powernv_pstate_info.nominal].driver_data;
- 	}
+@@ -278,6 +291,9 @@ static int init_powernv_pstates(void)
  
- 	return powernv_freqs[i].driver_data;
- }
- 
--static inline unsigned int pstate_to_idx(int pstate)
-+/**
-+ * pstate_to_idx : Returns the index in the cpufreq frequencytable
-+ *		   powernv_freqs for the frequency whose corresponding
-+ *		   pstate id is @pstate.
-+ *
-+ *		   If no frequency corresponding to @pstate is found,
-+ *		   this will return the index of the nominal
-+ *		   frequency.
-+ */
-+static unsigned int pstate_to_idx(int pstate)
- {
--	int min = powernv_freqs[powernv_pstate_info.min].driver_data;
--	int max = powernv_freqs[powernv_pstate_info.max].driver_data;
-+	unsigned int key = pstate % POWERNV_MAX_PSTATES;
-+	struct pstate_idx_revmap_data *revmap_data;
- 
--	if (min > 0) {
--		if (unlikely((pstate < max) || (pstate > min))) {
--			pr_warn_once("pstate %d is out of bound\n", pstate);
--			return powernv_pstate_info.nominal;
--		}
--	} else {
--		if (unlikely((pstate > max) || (pstate < min))) {
--			pr_warn_once("pstate %d is out of bound\n", pstate);
--			return powernv_pstate_info.nominal;
--		}
-+	hash_for_each_possible(pstate_revmap, revmap_data, hentry, key) {
-+		if (revmap_data->pstate_id == pstate)
-+			return revmap_data->cpufreq_table_idx;
- 	}
--	/*
--	 * abs() is deliberately used so that is works with
--	 * both monotonically increasing and decreasing
--	 * pstate values
--	 */
--	return abs(pstate - idx_to_pstate(powernv_pstate_info.max));
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
 +
-+	pr_warn_once("pstate_to_idx: pstate %d not found\n", pstate);
-+	return powernv_pstate_info.nominal;
- }
- 
- static inline void reset_gpstates(struct cpufreq_policy *policy)
-@@ -297,11 +328,21 @@ static int init_powernv_pstates(void)
++	pstate_sign_prefix = pstate_min & ~0xFF;
++
  	for (i = 0; i < nr_pstates; i++) {
  		u32 id = be32_to_cpu(pstate_ids[i]);
  		u32 freq = be32_to_cpu(pstate_freqs[i]);
-+		struct pstate_idx_revmap_data *revmap_data;
-+		unsigned int key;
+@@ -438,17 +454,10 @@ struct powernv_smp_call_data {
+ static void powernv_read_cpu_freq(void *arg)
+ {
+ 	unsigned long pmspr_val;
+-	s8 local_pstate_id;
+ 	struct powernv_smp_call_data *freq_data = arg;
  
- 		pr_debug("PState id %d freq %d MHz\n", id, freq);
- 		powernv_freqs[i].frequency = freq * 1000; /* kHz */
- 		powernv_freqs[i].driver_data = id;
+ 	pmspr_val = get_pmspr(SPRN_PMSR);
+-
+-	/*
+-	 * The local pstate id corresponds bits 48..55 in the PMSR.
+-	 * Note: Watch out for the sign!
+-	 */
+-	local_pstate_id = (pmspr_val >> 48) & 0xFF;
+-	freq_data->pstate_id = local_pstate_id;
++	freq_data->pstate_id = extract_local_pstate(pmspr_val);
+ 	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
  
-+		revmap_data = (struct pstate_idx_revmap_data *)
-+			      kmalloc(sizeof(*revmap_data), GFP_KERNEL);
-+
-+		revmap_data->pstate_id = id;
-+		revmap_data->cpufreq_table_idx = i;
-+		key = id % POWERNV_MAX_PSTATES;
-+		hash_add(pstate_revmap, &revmap_data->hentry, key);
-+
- 		if (id == pstate_max)
- 			powernv_pstate_info.max = i;
- 		else if (id == pstate_nominal)
+ 	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
+@@ -522,7 +531,7 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 	chip = this_cpu_read(chip_info);
+ 
+ 	/* Check for Pmax Capping */
+-	pmsr_pmax = (s8)PMSR_MAX(pmsr);
++	pmsr_pmax = extract_max_pstate(pmsr);
+ 	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
+ 	if (pmsr_pmax_idx != powernv_pstate_info.max) {
+ 		if (chip->throttled)
+@@ -645,8 +654,8 @@ void gpstate_timer_handler(struct timer_list *t)
+ 	 * value. Hence, read from PMCR to get correct data.
+ 	 */
+ 	val = get_pmspr(SPRN_PMCR);
+-	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
+-	freq_data.pstate_id = (s8)GET_LPSTATE(val);
++	freq_data.gpstate_id = extract_global_pstate(val);
++	freq_data.pstate_id = extract_local_pstate(val);
+ 	if (freq_data.gpstate_id  == freq_data.pstate_id) {
+ 		reset_gpstates(policy);
+ 		spin_unlock(&gpstates->gpstate_lock);
 -- 
 1.9.4
