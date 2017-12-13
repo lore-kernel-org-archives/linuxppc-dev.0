@@ -1,23 +1,23 @@
 Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxghM1RY9zDrd8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 02:33:38 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBDFTKCZ038967
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 10:33:36 -0500
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2eu65cakbh-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxghR1RdSzDrd5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 02:33:42 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBDFTLUs041887
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 10:33:41 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eu3m3aqva-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 10:33:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 10:33:40 -0500
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Wed, 13 Dec 2017 10:33:33 -0500
+ Wed, 13 Dec 2017 10:33:27 -0500
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -25,11 +25,11 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
  saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v1 6/7] pseries/pci: Associate PEs to VFs in configure SR-IOV
-Date: Wed, 13 Dec 2017 09:32:41 -0600
+Subject: [PATCH v1 2/7] powerpc/kernel: Add uevents in EEH error/resume
+Date: Wed, 13 Dec 2017 09:32:37 -0600
 In-Reply-To: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
 References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20171213153242.98015-7-bryantly@linux.vnet.ibm.com>
+Message-Id: <20171213153242.98015-3-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,192 +39,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After initial validation of SR-IOV resources, firmware will
-associate PEs to the dynamic VFs created within this call. This
-patch adds the association of PEs to the PF array of PE numbers
-indexed by VF.
+Devices can go offline when EEH is reported. This patch adds
+a change to the kernel object and lets udev know of error.
+When device resumes a change is also set reporting device as
+online. Therefore, EEH events are better propagated to user
+space for devices in powerpc arch.
 
 Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/pci.c | 156 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 153 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/eeh_driver.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 48d3af026f90..c90e7d1247a8 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -57,18 +57,168 @@ void pcibios_name_device(struct pci_dev *dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
- #endif
--
- #ifdef CONFIG_PCI_IOV
-+#define MAX_VFS_FOR_MAP_PE 256
-+struct pe_map_bar_entry {
-+	__be64     bar;       ///< Input:  Virtual Function BAR
-+	__be16     rid;       ///< Input:  Virtual Function Router ID
-+	__be16     pe_num;    ///< Output: Virtual Function PE Number
-+	__be32     reserved;  ///< Reserved Space
-+};
-+
-+int pseries_send_map_pe(struct pci_dev *pdev,
-+			u16 num_vfs,
-+			struct pe_map_bar_entry *vf_pe_array)
-+{
-+	struct pci_dn *pdn;
-+	int   rc;
-+	unsigned long buid, addr;
-+	int ibm_map_pes = rtas_token("ibm,open-sriov-map-pe-number");
-+
-+	if (ibm_map_pes == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	pdn = pci_get_pdn(pdev);
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+	spin_lock(&rtas_data_buf_lock);
-+	memcpy(rtas_data_buf, vf_pe_array,
-+	       RTAS_DATA_BUF_SIZE);
-+	rc = rtas_call(ibm_map_pes, 5, 1, NULL, addr,
-+		       BUID_HI(buid), BUID_LO(buid),
-+		       rtas_data_buf,
-+		       num_vfs * sizeof(struct pe_map_bar_entry));
-+	memcpy(vf_pe_array, rtas_data_buf,
-+	       RTAS_DATA_BUF_SIZE);
-+	spin_unlock(&rtas_data_buf_lock);
-+
-+	if (rc)
-+		dev_err(&pdev->dev,
-+			"%s: Failed to associate pes PE#%lx, rc=%x\n",
-+			__func__,  addr, rc);
-+
-+	return rc;
-+}
-+
-+void pseries_set_pe_num(struct pci_dev         *pdev,
-+			u16 vf_index, __be16 pe_num)
-+{
-+	struct pci_dn *pdn;
-+
-+	pdn = pci_get_pdn(pdev);
-+	pdn->pe_num_map[vf_index] = be16_to_cpu(pe_num);
-+	dev_dbg(&pdev->dev, "VF %04x:%02x:%02x.%x associated with PE#%x\n",
-+		pci_domain_nr(pdev->bus),
-+		pdev->bus->number,
-+		PCI_SLOT(pci_iov_virtfn_devfn(pdev, vf_index)),
-+		PCI_FUNC(pci_iov_virtfn_devfn(pdev, vf_index)),
-+		pdn->pe_num_map[vf_index]);
-+}
-+
-+int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
-+{
-+	struct pci_dn *pdn;
-+	int i,  rc,  vf_index;
-+	struct pe_map_bar_entry *vf_pe_array;
-+	struct resource *res;
-+	u64 size;
-+
-+	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!vf_pe_array)
-+		return -ENOMEM;
-+
-+	memset(vf_pe_array, 0, RTAS_DATA_BUF_SIZE);
-+	pdn = pci_get_pdn(pdev);
-+	/* create firmware structure to associate pes */
-+	for (vf_index = 0; vf_index < num_vfs && vf_index < MAX_VFS_FOR_MAP_PE;
-+	     vf_index++) {
-+		pdn->pe_num_map[vf_index] = IODA_INVALID_PE;
-+		for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-+			res = &pdev->resource[i + PCI_IOV_RESOURCES];
-+			if (!res->parent)
-+				continue;
-+			size = pcibios_iov_resource_alignment(pdev, i +
-+							      PCI_IOV_RESOURCES
-+							      );
-+			vf_pe_array[vf_index].bar =
-+				be64_to_cpu(res->start + size * vf_index);
-+			vf_pe_array[vf_index].rid =
-+				be16_to_cpu((pci_iov_virtfn_bus(pdev, vf_index)
-+					    << 8) | pci_iov_virtfn_devfn(pdev,
-+					    vf_index));
-+			vf_pe_array[vf_index].pe_num =
-+				be16_to_cpu(IODA_INVALID_PE);
-+		}
-+	}
-+
-+	rc = pseries_send_map_pe(pdev, num_vfs, vf_pe_array);
-+	/* Only zero is success */
-+	if (!rc)
-+		for (vf_index = 0; vf_index < num_vfs && vf_index <
-+		     MAX_VFS_FOR_MAP_PE; vf_index++)
-+			pseries_set_pe_num(pdev, vf_index,
-+					   vf_pe_array[vf_index].pe_num);
-+
-+	kfree(vf_pe_array);
-+	return rc;
-+}
-+
-+int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-+{
-+	struct pci_dn         *pdn;
-+	int                    rc;
-+	const int *max_vfs;
-+	int max_config_vfs;
-+	struct device_node *dn = pci_device_to_OF_node(pdev);
-+
-+	max_vfs = of_get_property(dn, "ibm,number-of-configurable-vfs", NULL);
-+
-+	if (!max_vfs)
-+		return -EINVAL;
-+
-+	/* First integer stores max config */
-+	max_config_vfs = of_read_number(&max_vfs[0], 1);
-+	if (max_config_vfs < num_vfs) {
-+		dev_err(&pdev->dev,
-+			"Num VFs %x > %x Configurable VFs\n",
-+			num_vfs, max_config_vfs);
-+		return -EINVAL;
-+	}
-+
-+	pdn = pci_get_pdn(pdev);
-+	pdn->pe_num_map = kmalloc_array(num_vfs,
-+					sizeof(*pdn->pe_num_map),
-+					GFP_KERNEL);
-+	if (!pdn->pe_num_map)
-+		return -ENOMEM;
-+
-+	rc = pseries_associate_pes(pdev, num_vfs);
-+
-+	/* Anything other than zero is failure */
-+	if (rc) {
-+		dev_err(&pdev->dev, "Failure to enable sriov: %x\n", rc);
-+		kfree(pdn->pe_num_map);
-+	} else {
-+		pci_vf_drivers_autoprobe(pdev, false);
-+	}
-+
-+	return rc;
-+}
-+
- int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- {
- 	/* Allocate PCI data */
- 	add_dev_pci_data(pdev);
--	pci_vf_drivers_autoprobe(pdev, false);
--	return 0;
-+	return pseries_pci_sriov_enable(pdev, num_vfs);
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 3c0fa99c5533..c61bf770282b 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -204,6 +204,7 @@ static void *eeh_report_error(void *data, void *userdata)
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
++	char *envp[] = {"EVENT=EEH_ERROR", "ONLINE=0", NULL};
+ 
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+@@ -228,6 +229,7 @@ static void *eeh_report_error(void *data, void *userdata)
+ 
+ 	edev->in_error = true;
+ 	eeh_pcid_put(dev);
++	kobject_uevent_env(&dev->dev.kobj, KOBJ_CHANGE, envp);
+ 	return NULL;
  }
  
- int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
- {
-+	struct pci_dn         *pdn;
-+
-+	pdn = pci_get_pdn(pdev);
-+	/* Releasing pe_num_map */
-+	kfree(pdn->pe_num_map);
- 	/* Release PCI data */
- 	remove_dev_pci_data(pdev);
- 	pci_vf_drivers_autoprobe(pdev, true);
+@@ -358,6 +360,7 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	bool was_in_error;
+ 	struct pci_driver *driver;
++	char *envp[] = {"EVENT=EEH_RESUME", "ONLINE=1", NULL};
+ 
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+@@ -379,8 +382,8 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 	}
+ 
+ 	driver->err_handler->resume(dev);
+-
+ 	eeh_pcid_put(dev);
++	kobject_uevent_env(&dev->dev.kobj, KOBJ_CHANGE, envp);
+ 	return NULL;
+ }
+ 
 -- 
 2.14.3 (Apple Git-98)
