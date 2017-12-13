@@ -1,21 +1,21 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxRlf2PgfzDrZJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:35:42 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id q20so881333pgv.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:35:42 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxRlg3wBvzDrZq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:35:43 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id w7so875022pgv.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Dec 2017 22:35:43 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: broonie@kernel.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  timur@tabi.org, mail@maciej.szmigiero.name, caleb@crome.org,
  arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v2 07/11] ASoC: fsl_ssi: Rename cpu_dai parameter to dai
-Date: Tue, 12 Dec 2017 22:34:30 -0800
-Message-Id: <1513146874-25476-8-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v2 08/11] ASoC: fsl_ssi: Rename scr_val to scr
+Date: Tue, 12 Dec 2017 22:34:31 -0800
+Message-Id: <1513146874-25476-9-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1513146874-25476-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,132 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shortens the variable name to save space, useful for dev_err outputs.
+Simplify the variable name. This reduces one over-80-character line.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index d3bb662..69fa86d 100644
+index 69fa86d..7fcc6bd 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -668,10 +668,10 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
-  *       (In 2-channel I2S Master mode, slot_width is fixed 32)
-  */
- static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
--			    struct snd_soc_dai *cpu_dai,
-+			    struct snd_soc_dai *dai,
- 			    struct snd_pcm_hw_params *hw_params)
- {
--	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(cpu_dai);
-+	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+@@ -448,12 +448,12 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
  	struct regmap *regs = ssi->regs;
- 	int synchronous = ssi->cpu_dai_drv.symmetric_rates, ret;
- 	u32 pm = 999, div2, psr, stccr, mask, afreq, factor, i;
-@@ -701,7 +701,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	 * never greater than 1/5 IPG clock rate
- 	 */
- 	if (freq * 5 > clk_get_rate(ssi->clk)) {
--		dev_err(cpu_dai->dev, "bitclk > ipgclk / 5\n");
-+		dev_err(dai->dev, "bitclk > ipgclk / 5\n");
- 		return -EINVAL;
- 	}
+ 	struct fsl_ssi_reg_val *avals;
+ 	int nr_active_streams;
+-	u32 scr_val;
++	u32 scr;
+ 	int keep_active;
  
-@@ -750,7 +750,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+-	regmap_read(regs, REG_SSI_SCR, &scr_val);
++	regmap_read(regs, REG_SSI_SCR, &scr);
  
- 	/* No proper pm found if it is still remaining the initial value */
- 	if (pm == 999) {
--		dev_err(cpu_dai->dev, "failed to handle the required sysclk\n");
-+		dev_err(dai->dev, "failed to handle the required sysclk\n");
- 		return -EINVAL;
- 	}
+-	nr_active_streams = !!(scr_val & SSI_SCR_TE) + !!(scr_val & SSI_SCR_RE);
++	nr_active_streams = !!(scr & SSI_SCR_TE) + !!(scr & SSI_SCR_RE);
  
-@@ -766,7 +766,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	if (!baudclk_is_used) {
- 		ret = clk_set_rate(ssi->baudclk, baudrate);
- 		if (ret) {
--			dev_err(cpu_dai->dev, "failed to set baudclk rate\n");
-+			dev_err(dai->dev, "failed to set baudclk rate\n");
- 			return -EINVAL;
- 		}
- 	}
-@@ -787,9 +787,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
-  */
- static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 			     struct snd_pcm_hw_params *hw_params,
--			     struct snd_soc_dai *cpu_dai)
-+			     struct snd_soc_dai *dai)
- {
--	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(cpu_dai);
-+	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	unsigned int channels = params_channels(hw_params);
+ 	if (nr_active_streams - 1 > 0)
+ 		keep_active = 1;
+@@ -795,11 +795,11 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
  	unsigned int sample_size = params_width(hw_params);
-@@ -806,7 +806,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 		return 0;
+ 	u32 wl = SSI_SxCCR_WL(sample_size);
+ 	int ret;
+-	u32 scr_val;
++	u32 scr;
+ 	int enabled;
  
- 	if (fsl_ssi_is_i2s_master(ssi)) {
--		ret = fsl_ssi_set_bclk(substream, cpu_dai, hw_params);
-+		ret = fsl_ssi_set_bclk(substream, dai, hw_params);
- 		if (ret)
- 			return ret;
+-	regmap_read(regs, REG_SSI_SCR, &scr_val);
+-	enabled = scr_val & SSI_SCR_SSIEN;
++	regmap_read(regs, REG_SSI_SCR, &scr);
++	enabled = scr & SSI_SCR_SSIEN;
  
-@@ -844,7 +844,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- }
- 
- static int fsl_ssi_hw_free(struct snd_pcm_substream *substream,
--			   struct snd_soc_dai *cpu_dai)
-+			   struct snd_soc_dai *dai)
- {
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(rtd->cpu_dai);
-@@ -1013,30 +1013,30 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- /**
-  * Configure Digital Audio Interface (DAI) Format
-  */
--static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
-+static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
- {
--	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(cpu_dai);
-+	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 
- 	/* AC97 configured DAIFMT earlier in the probe() */
- 	if (fsl_ssi_is_ac97(ssi))
- 		return 0;
- 
--	return _fsl_ssi_set_dai_fmt(cpu_dai->dev, ssi, fmt);
-+	return _fsl_ssi_set_dai_fmt(dai->dev, ssi, fmt);
- }
- 
- /**
-  * Set TDM slot number and slot width
-  */
--static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
-+static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
- 				    u32 rx_mask, int slots, int slot_width)
- {
--	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(cpu_dai);
-+	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	u32 val;
- 
- 	/* The word length should be 8, 10, 12, 16, 18, 20, 22 or 24 */
- 	if (slot_width & 1 || slot_width < 8 || slot_width > 24) {
--		dev_err(cpu_dai->dev, "invalid slot width: %d\n", slot_width);
-+		dev_err(dai->dev, "invalid slot width: %d\n", slot_width);
- 		return -EINVAL;
- 	}
- 
-@@ -1044,7 +1044,7 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
- 	regmap_read(regs, REG_SSI_SCR, &val);
- 	val &= SSI_SCR_I2S_MODE_MASK | SSI_SCR_NET;
- 	if (val && slots < 2) {
--		dev_err(cpu_dai->dev, "slot number should be >= 2 in I2S or NET\n");
-+		dev_err(dai->dev, "slot number should be >= 2 in I2S or NET\n");
- 		return -EINVAL;
- 	}
- 
+ 	/* To support simultaneous TX and RX, bypass it if SSI is enabled */
+ 	if (enabled && ssi->cpu_dai_drv.symmetric_rates)
 -- 
 2.7.4
