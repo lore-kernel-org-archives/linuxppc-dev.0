@@ -1,17 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <huntbag@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxZC84sMgzDrd5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 22:26:27 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/sysdev: change CPM GPIO to platform_device
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20171213112623.7FEB76C91C@localhost.localdomain>
-Date: Wed, 13 Dec 2017 12:26:23 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxV3z5fTKzDrfk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 19:19:59 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBD8JL4W053747
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 03:19:56 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2etxh5wm54-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 03:19:56 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
+ Wed, 13 Dec 2017 08:19:53 -0000
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Add support of frequency domain
+Date: Wed, 13 Dec 2017 13:49:37 +0530
+Message-Id: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,262 +35,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 9427ecbed46cc ("gpio: Rework of_gpiochip_set_names()
-to use device property accessors"), gpio chips have to have a
-parent, otherwise devprop_gpiochip_set_names() prematurely exists
-with message "GPIO chip parent is NULL" and doesn't proceed
-'gpio-line-names' DT property.
+Frequency-domain indicates group of CPUs that would share same frequency.
+It is detected using device-tree node "frequency-domain-indicator".
+frequency-domain-indicator is a bitmask which will have different value
+depending upon the generation of the processor.
 
-This patch wraps the CPM GPIO into a platform driver to allow
-assignment of the parent device.
+CPUs of the same chip for which the result of a bitwise AND between
+their PIR and the frequency-domain-indicator is the same share the same
+frequency.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+In this patch, we define hash-table indexed by the aforementioned
+bitwise ANDed value to store the cpumask of the CPUs sharing the same
+frequency domain. Further, the cpufreq policy will be created per
+frequency-domain
+
+So for POWER9, a cpufreq policy is created per quad while for POWER8 it
+is created per core. Governor decides frequency for each policy but
+multiple cores may come under same policy. In such case frequency needs
+to be set on each core sharing that policy.
+
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cpm.h   |  2 +-
- arch/powerpc/include/asm/cpm1.h  |  2 +
- arch/powerpc/sysdev/Makefile     |  3 +-
- arch/powerpc/sysdev/cpm1.c       | 33 ++++-------------
- arch/powerpc/sysdev/cpm2.c       | 11 ------
- arch/powerpc/sysdev/cpm_common.c |  5 ++-
- arch/powerpc/sysdev/cpm_gpio.c   | 80 ++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 97 insertions(+), 39 deletions(-)
- create mode 100644 arch/powerpc/sysdev/cpm_gpio.c
+ drivers/cpufreq/powernv-cpufreq.c | 95 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 87 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpm.h b/arch/powerpc/include/asm/cpm.h
-index b925df1b87d0..4c24ea8209bb 100644
---- a/arch/powerpc/include/asm/cpm.h
-+++ b/arch/powerpc/include/asm/cpm.h
-@@ -166,6 +166,6 @@ static inline int cpm_command(u32 command, u8 opcode)
- }
- #endif /* CONFIG_CPM */
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..9384110 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -37,6 +37,7 @@
+ #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+ #include <asm/opal.h>
+ #include <linux/timer.h>
++#include <linux/hashtable.h>
  
--int cpm2_gpiochip_add32(struct device_node *np);
-+int cpm2_gpiochip_add32(struct device *dev);
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+@@ -130,6 +131,8 @@ static struct chip {
+ static int nr_chips;
+ static DEFINE_PER_CPU(struct chip *, chip_info);
  
- #endif
-diff --git a/arch/powerpc/include/asm/cpm1.h b/arch/powerpc/include/asm/cpm1.h
-index 3db821876d48..a116fe931789 100644
---- a/arch/powerpc/include/asm/cpm1.h
-+++ b/arch/powerpc/include/asm/cpm1.h
-@@ -605,5 +605,7 @@ enum cpm_clk {
- };
- 
- int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode);
-+int cpm1_gpiochip_add16(struct device *dev);
-+int cpm1_gpiochip_add32(struct device *dev);
- 
- #endif /* __CPM1__ */
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 0baba21404dc..fc31a271830b 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -43,7 +43,8 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
- 
- obj-$(CONFIG_CPM)		+= cpm_common.o
- obj-$(CONFIG_CPM1)		+= cpm1.o
--obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o
-+obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o cpm_gpio.o
-+obj-$(CONFIG_8xx_GPIO)		+= cpm_gpio.o
- obj-$(CONFIG_QUICC_ENGINE)	+= cpm_common.o
- obj-$(CONFIG_PPC_DCR)		+= dcr.o
- obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
-diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
-index f5544c6fbd18..e6ec2b1263b1 100644
---- a/arch/powerpc/sysdev/cpm1.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -635,8 +635,9 @@ static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	return 0;
- }
- 
--int cpm1_gpiochip_add16(struct device_node *np)
-+int cpm1_gpiochip_add16(struct device *dev)
- {
-+	struct device_node *np = dev->of_node;
- 	struct cpm1_gpio16_chip *cpm1_gc;
- 	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
-@@ -666,6 +667,8 @@ int cpm1_gpiochip_add16(struct device_node *np)
- 	gc->get = cpm1_gpio16_get;
- 	gc->set = cpm1_gpio16_set;
- 	gc->to_irq = cpm1_gpio16_to_irq;
-+	gc->parent = dev;
-+	gc->owner = THIS_MODULE;
- 
- 	return of_mm_gpiochip_add_data(np, mm_gc, cpm1_gc);
- }
-@@ -761,8 +764,9 @@ static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	return 0;
- }
- 
--int cpm1_gpiochip_add32(struct device_node *np)
-+int cpm1_gpiochip_add32(struct device *dev)
- {
-+	struct device_node *np = dev->of_node;
- 	struct cpm1_gpio32_chip *cpm1_gc;
- 	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
-@@ -782,31 +786,10 @@ int cpm1_gpiochip_add32(struct device_node *np)
- 	gc->direction_output = cpm1_gpio32_dir_out;
- 	gc->get = cpm1_gpio32_get;
- 	gc->set = cpm1_gpio32_set;
-+	gc->parent = dev;
-+	gc->owner = THIS_MODULE;
- 
- 	return of_mm_gpiochip_add_data(np, mm_gc, cpm1_gc);
- }
- 
--static int cpm_init_par_io(void)
--{
--	struct device_node *np;
--
--	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank-a")
--		cpm1_gpiochip_add16(np);
--
--	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank-b")
--		cpm1_gpiochip_add32(np);
--
--	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank-c")
--		cpm1_gpiochip_add16(np);
--
--	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank-d")
--		cpm1_gpiochip_add16(np);
--
--	/* Port E uses CPM2 layout */
--	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank-e")
--		cpm2_gpiochip_add32(np);
--	return 0;
--}
--arch_initcall(cpm_init_par_io);
--
- #endif /* CONFIG_8xx_GPIO */
-diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
-index f78ff841652c..07718b9a2c99 100644
---- a/arch/powerpc/sysdev/cpm2.c
-+++ b/arch/powerpc/sysdev/cpm2.c
-@@ -354,14 +354,3 @@ void cpm2_set_pin(int port, int pin, int flags)
- 	else
- 		clrbits32(&iop[port].odr, pin);
- }
--
--static int cpm_init_par_io(void)
--{
--	struct device_node *np;
--
--	for_each_compatible_node(np, NULL, "fsl,cpm2-pario-bank")
--		cpm2_gpiochip_add32(np);
--	return 0;
--}
--arch_initcall(cpm_init_par_io);
--
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 51bf749a4f3a..b74508175b67 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -190,8 +190,9 @@ static int cpm2_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	return 0;
- }
- 
--int cpm2_gpiochip_add32(struct device_node *np)
-+int cpm2_gpiochip_add32(struct device *dev)
- {
-+	struct device_node *np = dev->of_node;
- 	struct cpm2_gpio32_chip *cpm2_gc;
- 	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
-@@ -211,6 +212,8 @@ int cpm2_gpiochip_add32(struct device_node *np)
- 	gc->direction_output = cpm2_gpio32_dir_out;
- 	gc->get = cpm2_gpio32_get;
- 	gc->set = cpm2_gpio32_set;
-+	gc->parent = dev;
-+	gc->owner = THIS_MODULE;
- 
- 	return of_mm_gpiochip_add_data(np, mm_gc, cpm2_gc);
- }
-diff --git a/arch/powerpc/sysdev/cpm_gpio.c b/arch/powerpc/sysdev/cpm_gpio.c
-new file mode 100644
-index 000000000000..0badc90be666
---- /dev/null
-+++ b/arch/powerpc/sysdev/cpm_gpio.c
-@@ -0,0 +1,80 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Common CPM GPIO wrapper for the CPM GPIO ports
-+ *
-+ * Author: Christophe Leroy <christophe.leroy@c-s.fr>
-+ *
-+ * Copyright 2017 CS Systemes d'Information.
-+ *
-+ */
++static u32 freq_domain_indicator;
 +
-+#include <linux/module.h>
-+#include <linux/of_device.h>
+ /*
+  * Note:
+  * The set of pstates consists of contiguous integers.
+@@ -194,6 +197,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+ 	gpstates->last_gpstate_idx = 0;
+ }
+ 
++#define SIZE NR_CPUS
++#define ORDER_FREQ_MAP ilog2(SIZE)
 +
-+#include <asm/cpm.h>
-+#ifdef CONFIG_8xx_GPIO
-+#include <asm/cpm1.h>
-+#endif
++static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
 +
-+static int cpm_gpio_probe(struct platform_device *ofdev)
-+{
-+	struct device *dev = &ofdev->dev;
-+	int (*gp_add)(struct device *dev) = of_device_get_match_data(dev);
-+
-+	if (!gp_add)
-+		return -ENODEV;
-+
-+	return gp_add(dev);
-+}
-+
-+static const struct of_device_id cpm_gpio_match[] = {
-+#ifdef CONFIG_8xx_GPIO
-+	{
-+		.compatible = "fsl,cpm1-pario-bank-a",
-+		.data = cpm1_gpiochip_add16,
-+	},
-+	{
-+		.compatible = "fsl,cpm1-pario-bank-b",
-+		.data = cpm1_gpiochip_add32,
-+	},
-+	{
-+		.compatible = "fsl,cpm1-pario-bank-c",
-+		.data = cpm1_gpiochip_add16,
-+	},
-+	{
-+		.compatible = "fsl,cpm1-pario-bank-d",
-+		.data = cpm1_gpiochip_add16,
-+	},
-+	/* Port E uses CPM2 layout */
-+	{
-+		.compatible = "fsl,cpm1-pario-bank-e",
-+		.data = cpm2_gpiochip_add32,
-+	},
-+#endif
-+	{
-+		.compatible = "fsl,cpm2-pario-bank",
-+		.data = cpm2_gpiochip_add32,
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, cpm_gpio_match);
-+
-+static struct platform_driver cpm_gpio_driver = {
-+	.probe		= cpm_gpio_probe,
-+	.driver		= {
-+		.name	= "cpm-gpio",
-+		.owner	= THIS_MODULE,
-+		.of_match_table	= cpm_gpio_match,
-+	},
++struct hashmap {
++	cpumask_t mask;
++	int chip_id;
++	u32 pir_key;
++	struct hlist_node hash_node;
 +};
 +
-+static int __init cpm_gpio_init(void)
++static void insert(u32 key, int cpu)
 +{
-+	return platform_driver_register(&cpm_gpio_driver);
-+}
-+arch_initcall(cpm_gpio_init);
++	struct hashmap *data;
 +
-+MODULE_AUTHOR("Christophe Leroy <christophe.leroy@c-s.fr>");
-+MODULE_DESCRIPTION("Driver for CPM GPIO");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:cpm-gpio");
++	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
++		if (data->chip_id == cpu_to_chip_id(cpu) &&
++			data->pir_key == key) {
++			cpumask_set_cpu(cpu, &data->mask);
++			return;
++		}
++	}
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
++	cpumask_set_cpu(cpu, &data->mask);
++	data->chip_id = cpu_to_chip_id(cpu);
++	data->pir_key = key;
++
++}
++
+ /*
+  * Initialize the freq table based on data obtained
+  * from the firmware passed via device-tree
+@@ -206,6 +241,7 @@ static int init_powernv_pstates(void)
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
+ 	u32 pstate_turbo, pstate_ultra_turbo;
++	u32 key;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -229,6 +265,13 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
+ 	}
+ 
++	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
++		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
++				 &freq_domain_indicator)) {
++		pr_warn("ibm,freq-domain-indicator not found\n");
++		freq_domain_indicator = 0;
++	}
++
+ 	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
+ 				 &pstate_ultra_turbo)) {
+ 		powernv_pstate_info.wof_enabled = false;
+@@ -249,6 +292,7 @@ static int init_powernv_pstates(void)
+ next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
++	pr_info("frequency domain indicator %d", freq_domain_indicator);
+ 	pr_info("Workload Optimized Frequency is %s in the platform\n",
+ 		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
+ 
+@@ -276,6 +320,15 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
+ 	}
+ 
++	if (freq_domain_indicator) {
++		hash_init(freq_domain_map);
++		for_each_possible_cpu(i) {
++			key = ((u32) get_hard_smp_processor_id(i) &
++				freq_domain_indicator);
++			insert(key, i);
++		}
++	}
++
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
+ 	for (i = 0; i < nr_pstates; i++) {
+@@ -693,6 +746,8 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ {
+ 	struct powernv_smp_call_data freq_data;
+ 	unsigned int cur_msec, gpstate_idx;
++	cpumask_t temp;
++	u32 cpu;
+ 	struct global_pstate_info *gpstates = policy->driver_data;
+ 
+ 	if (unlikely(rebooting) && new_index != get_nominal_index())
+@@ -761,24 +816,48 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 	spin_unlock(&gpstates->gpstate_lock);
+ 
+ 	/*
+-	 * Use smp_call_function to send IPI and execute the
+-	 * mtspr on target CPU.  We could do that without IPI
+-	 * if current CPU is within policy->cpus (core)
++	 * Use smp_call_function to send IPI and execute the mtspr on CPU.
++	 * This needs to be done on every core of the policy
+ 	 */
+-	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++	cpumask_copy(&temp, policy->cpus);
++
++	while (!cpumask_empty(&temp)) {
++		cpu = cpumask_first(&temp);
++		smp_call_function_any(cpu_sibling_mask(cpu),
++					set_pstate, &freq_data, 1);
++		cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
++	}
++
+ 	return 0;
+ }
+ 
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i, ret;
++	int ret;
+ 	struct kernfs_node *kn;
+ 	struct global_pstate_info *gpstates;
+ 
+-	base = cpu_first_thread_sibling(policy->cpu);
++	if (!freq_domain_indicator) {
++		int base, i;
+ 
+-	for (i = 0; i < threads_per_core; i++)
+-		cpumask_set_cpu(base + i, policy->cpus);
++		base = cpu_first_thread_sibling(policy->cpu);
++		for (i = 0; i < threads_per_core; i++)
++			cpumask_set_cpu(base + i, policy->cpus);
++	} else {
++		u32 key;
++		struct hashmap *data;
++
++		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
++				freq_domain_indicator);
++		hash_for_each_possible(freq_domain_map, data, hash_node,
++								 key%SIZE) {
++			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
++				data->pir_key == key) {
++				cpumask_copy(policy->cpus, &data->mask);
++				break;
++			}
++		}
++	}
+ 
+ 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+ 	if (!kn) {
 -- 
-2.13.3
+2.9.3
