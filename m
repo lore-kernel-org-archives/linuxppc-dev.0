@@ -1,30 +1,29 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
- [IPv6:2607:f8b0:400c:c05::244])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yyCRK5fl9zDrcF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 23:24:13 +1100 (AEDT)
-Received: by mail-vk0-x244.google.com with SMTP id u84so3384016vke.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 04:24:13 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yyDy92pXnzDrcK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 00:32:33 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id k15so3411480pgr.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 05:32:33 -0800 (PST)
+Date: Thu, 14 Dec 2017 23:32:20 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powernv/kdump: Fix cases where the kdump kernel can
+ get HMI's
+Message-ID: <20171214233220.19f3b36d@roar.ozlabs.ibm.com>
+In-Reply-To: <CAKTCnzkF0ntwaXs3STmCT0tNz-LZyyPnSMHh8rTG=oFQw7fL=w@mail.gmail.com>
+References: <20171213080828.2800-1-bsingharora@gmail.com>
+ <20171213080828.2800-2-bsingharora@gmail.com>
+ <20171213205101.2cc0c830@roar.ozlabs.ibm.com>
+ <20171214111213.07ba99a4@gmail.com>
+ <20171214115137.5603f77d@roar.ozlabs.ibm.com>
+ <CAKTCnzkF0ntwaXs3STmCT0tNz-LZyyPnSMHh8rTG=oFQw7fL=w@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
-References: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 14 Dec 2017 23:24:10 +1100
-Message-ID: <CAKTCnzmuwkBLxaFpROo7TTcky970w7s14ETacHseL6Vu1JPTQA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/perf: Dereference bhrb entries safely
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, kan.liang@intel.com,
- Thomas Gleixner <tglx@linutronix.de>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 12, 2017 at 11:29 PM, Ravi Bangoria
-<ravi.bangoria@linux.vnet.ibm.com> wrote:
-> It may very well happen that branch instructions recorded by
-> bhrb entries already get unmapped before they get processed by
-> the kernel. Hence, trying to dereference such memory location
-> will endup in a crash. Ex,
->
->     Unable to handle kernel paging request for data at address 0xc008000019c41764
->     Faulting instruction address: 0xc000000000084a14
->     NIP [c000000000084a14] branch_target+0x4/0x70
->     LR [c0000000000eb828] record_and_restart+0x568/0x5c0
->     Call Trace:
->     [c0000000000eb3b4] record_and_restart+0xf4/0x5c0 (unreliable)
->     [c0000000000ec378] perf_event_interrupt+0x298/0x460
->     [c000000000027964] performance_monitor_exception+0x54/0x70
->     [c000000000009ba4] performance_monitor_common+0x114/0x120
->
-> Fix this by deferefencing them safely.
->
-> Suggested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/core-book3s.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 9e3da168d54c..5a68d2effdf9 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -410,8 +410,11 @@ static __u64 power_pmu_bhrb_to(u64 addr)
->         int ret;
->         __u64 target;
->
-> -       if (is_kernel_addr(addr))
-> -               return branch_target((unsigned int *)addr);
-> +       if (is_kernel_addr(addr)) {
+On Thu, 14 Dec 2017 23:16:26 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-I think __kernel_text_address() is more accurate right? In which case
-you need to check for is_kernel_addr(addr) and if its not kernel_text_address()
-then we have an interesting case of a branch from something not text.
-It would be nice to catch such cases.
+> On Thu, Dec 14, 2017 at 12:51 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
 
-> +               if (probe_kernel_address((void *)addr, instr))
-> +                       return 0;
-> +               return branch_target(&instr);
-> +       }
->
->         /* Userspace: need copy instruction here then translate it */
->         pagefault_disable();
 
-Otherwise,
+> >> I can't call smp_send_nmi_ipi due to the nmi_ipi_busy_count and
+> >> I'm worried about calling a stale nmi_ipi_function via the
+> >> system_reset_exception path, if we are OK with it, I can revisit
+> >> the code path  
+> >
+> > You shouldn't get a stale one, that would also be a bug -- we
+> > have to cope with NMIs coming in at any time that are triggered
+> > externally (not by smp_send_nmi_ipi), so if you see any bugs
+> > there those need to be fixed separately.
+> >  
+> 
+> Yes, I think it's a bug, nothing clears nmi_ipi_function (from what
+> I can see), so when the next NMI comes in and goes into
+> pnv_system_reset_exception
+> it'll execute the stale handler.
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+The CPU won't be in the nmi_ipi_pending_mask though, so it shouldn't
+get that far. You could add a bit of paranoia to clear the function
+pointer I suppose, but AFAIKS it's not needed.
+
+> I'll respin things based on the
+> suggestion above
+> and deal with any bugs as well.
+
+Thanks,
+Nick
