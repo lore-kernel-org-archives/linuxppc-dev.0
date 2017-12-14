@@ -1,20 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yxwTr13BNzDsQK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 12:10:24 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id d23so2449720pfe.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:10:23 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-To: alistair@popple.id.au,
-	linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v2] powerpc/npu: Cleanup MMIO ATSD flushing
-Date: Thu, 14 Dec 2017 12:10:08 +1100
-Message-Id: <20171214011008.4388-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yxxPn3gs6zDsQV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 12:51:56 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id u25so2539640pfg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Dec 2017 17:51:56 -0800 (PST)
+Date: Thu, 14 Dec 2017 11:51:37 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 2/2] powernv/kdump: Fix cases where the kdump kernel
+ can get HMI's
+Message-ID: <20171214115137.5603f77d@roar.ozlabs.ibm.com>
+In-Reply-To: <20171214111213.07ba99a4@gmail.com>
+References: <20171213080828.2800-1-bsingharora@gmail.com>
+ <20171213080828.2800-2-bsingharora@gmail.com>
+ <20171213205101.2cc0c830@roar.ozlabs.ibm.com>
+ <20171214111213.07ba99a4@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,173 +30,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While reviewing the code I found that the flush assumes all
-pages are of mmu_linear_psize, which is not correct. The patch
-uses find_linux_pte to find the right page size and uses that
-for launching the ATSD invalidation. A new helper is added
-to abstract the invalidation from the various notifiers.
+On Thu, 14 Dec 2017 11:12:13 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-The patch also cleans up a bit by removing AP size from PID
-flushes.
+> On Wed, 13 Dec 2017 20:51:01 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > This is looking pretty nice now...
+> > 
+> > On Wed, 13 Dec 2017 19:08:28 +1100
+> > Balbir Singh <bsingharora@gmail.com> wrote:
+> >   
+> > > @@ -543,7 +543,25 @@ void smp_send_debugger_break(void)
+> > >  #ifdef CONFIG_KEXEC_CORE
+> > >  void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
+> > >  {
+> > > +	int cpu;
+> > > +
+> > >  	smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, crash_ipi_callback, 1000000);
+> > > +	if (kdump_in_progress() && crash_wake_offline) {
+> > > +		for_each_present_cpu(cpu) {
+> > > +			if (cpu_online(cpu))
+> > > +				continue;
+> > > +			/*
+> > > +			 * crash_ipi_callback will wait for
+> > > +			 * all cpus, including offline CPUs.
+> > > +			 * We don't care about nmi_ipi_function.
+> > > +			 * Offline cpus will jump straight into
+> > > +			 * crash_ipi_callback, we can skip the
+> > > +			 * entire NMI dance and waiting for
+> > > +			 * cpus to clear pending mask, etc.
+> > > +			 */
+> > > +			do_smp_send_nmi_ipi(cpu);    
+> > 
+> > Still a little bit concerned about using NMI IPI for this.
+> >  
+> 
+> OK -- for offline CPUs you mean?
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
+Yes.
 
-Changelog:
-  Refactor the handling of return values from find_linux_pte
-  as suggested by Aneesh
+> > If you take an NMI IPI from stop, the idle code should do the
+> > right thing and we would just return the system reset wakeup
+> > reason in SRR1 here (which does not need to be cleared).
+> > 
+> > If you take the system reset anywhere else in the loop, it's
+> > going to go out via system_reset_exception. I guess that
+> > would end up doing the right thing, it probably gets to
+> > crash_ipi_callback from crash_kexec_secondary?  
+> 
+> You mean like if we are online at the time of NMI'ing? If so
+> the original loop will NMI us back into crash_ipi_callback
+> anyway. We don't expect this to occur for offline CPUs
 
- arch/powerpc/platforms/powernv/npu-dma.c | 55 ++++++++++++++++++++++----------
- 1 file changed, 38 insertions(+), 17 deletions(-)
+No, if the offline CPU is executing any instruction except for
+stop when the crash occurs.
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index f6cbc1a71472..e8caa3e2019d 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -17,6 +17,7 @@
- #include <linux/pci.h>
- #include <linux/memblock.h>
- #include <linux/iommu.h>
-+#include <linux/huge_mm.h>
- 
- #include <asm/tlb.h>
- #include <asm/powernv.h>
-@@ -27,6 +28,7 @@
- #include <asm/pnv-pci.h>
- #include <asm/msi_bitmap.h>
- #include <asm/opal.h>
-+#include <asm/pte-walk.h>
- 
- #include "powernv.h"
- #include "pci.h"
-@@ -460,9 +462,6 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
- 	/* PRS set to process-scoped */
- 	launch |= PPC_BIT(13);
- 
--	/* AP */
--	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
--
- 	/* PID */
- 	launch |= pid << PPC_BITLSHIFT(38);
- 
-@@ -474,7 +473,8 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
- }
- 
- static int mmio_invalidate_va(struct npu *npu, unsigned long va,
--			unsigned long pid, bool flush)
-+			unsigned long pid, bool flush,
-+			unsigned int shift)
- {
- 	unsigned long launch;
- 
-@@ -485,9 +485,8 @@ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
- 	launch |= PPC_BIT(13);
- 
- 	/* AP */
--	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
-+	launch |= (u64) mmu_get_ap(shift) << PPC_BITLSHIFT(17);
- 
--	/* PID */
- 	launch |= pid << PPC_BITLSHIFT(38);
- 
- 	/* No flush */
-@@ -504,7 +503,8 @@ struct mmio_atsd_reg {
- };
- 
- static void mmio_invalidate_wait(
--	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
-+	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush,
-+	unsigned int shift)
- {
- 	struct npu *npu;
- 	int i, reg;
-@@ -537,7 +537,8 @@ static void mmio_invalidate_wait(
-  * the value of va.
-  */
- static void mmio_invalidate(struct npu_context *npu_context, int va,
--			unsigned long address, bool flush)
-+			unsigned long address, bool flush,
-+			unsigned int shift)
- {
- 	int i, j;
- 	struct npu *npu;
-@@ -572,7 +573,7 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
- 			if (va)
- 				mmio_atsd_reg[i].reg =
- 					mmio_invalidate_va(npu, address, pid,
--							flush);
-+							flush, shift);
- 			else
- 				mmio_atsd_reg[i].reg =
- 					mmio_invalidate_pid(npu, pid, flush);
-@@ -585,10 +586,32 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
- 		}
- 	}
- 
--	mmio_invalidate_wait(mmio_atsd_reg, flush);
-+	mmio_invalidate_wait(mmio_atsd_reg, flush, shift);
- 	if (flush)
- 		/* Wait for the flush to complete */
--		mmio_invalidate_wait(mmio_atsd_reg, false);
-+		mmio_invalidate_wait(mmio_atsd_reg, false, shift);
-+}
-+
-+static void pnv_npu2_invalidate_helper(struct npu_context *npu_context,
-+		struct mm_struct *mm, unsigned long start,
-+		unsigned long end, bool flush)
-+{
-+	unsigned long address;
-+	unsigned int hshift = 0, shift;
-+
-+	address = start;
-+	do {
-+		local_irq_disable();
-+		find_linux_pte(mm->pgd, address, NULL, &hshift);
-+		if (hshift)
-+			shift = hshift;
-+		else
-+			shift = PAGE_SHIFT;
-+		mmio_invalidate(npu_context, address > 0, address, flush,
-+				shift);
-+		local_irq_enable();
-+		address += (1ull << shift);
-+	} while (address < end);
- }
- 
- static void pnv_npu2_mn_release(struct mmu_notifier *mn,
-@@ -604,7 +627,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
- 	 * There should be no more translation requests for this PID, but we
- 	 * need to ensure any entries for it are removed from the TLB.
- 	 */
--	mmio_invalidate(npu_context, 0, 0, true);
-+	pnv_npu2_invalidate_helper(npu_context, mm, 0, PAGE_SIZE, true);
- }
- 
- static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
-@@ -614,7 +637,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
- {
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
- 
--	mmio_invalidate(npu_context, 1, address, true);
-+	pnv_npu2_invalidate_helper(npu_context, mm, address, address, true);
- }
- 
- static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
-@@ -622,13 +645,11 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
- 					unsigned long start, unsigned long end)
- {
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
--	unsigned long address;
- 
--	for (address = start; address < end; address += PAGE_SIZE)
--		mmio_invalidate(npu_context, 1, address, false);
-+	pnv_npu2_invalidate_helper(npu_context, mm, start, end, false);
- 
- 	/* Do the flush only on the final addess == end */
--	mmio_invalidate(npu_context, 1, address, true);
-+	pnv_npu2_invalidate_helper(npu_context, mm, end, end, true);
- }
- 
- static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
--- 
-2.13.6
+> 
+> > 
+> > It's just going to be a very untested code path :( What we
+> > gain I suppose is better ability to handle a CPU that's locked
+> > up somewhere in the cpu offline path. Assuming the uncommon
+> > case works...
+> > 
+> > Actually, if you *always* go via the system reset exception
+> > handler, then code paths will be shared. That might be the
+> > way to go. So I would check for system reset wakeup SRR1 reason
+> > and call replay_system_reset() for it. What do you think?
+> >   
+> 
+> We could do that, but that would call pnv_system_reset_exception
+> and try to call the NMI function, but we've not used that path
+> to initiate the NMI, so it should call the stale nmi_ipi_function
+> which is crash_ipi_callback and not go via the crash_kexec path.
+
+It shouldn't, if the CPU is not set in the NMI bitmask, I think
+it should go back out and do the rest of the system_reset_exception
+handler.
+
+Anyway we have to get this case right, because it can already hit
+as I said if the offline CPU takes the NMI when it is not stopped.
+This is why I want to try to use a unified code path.
+
+> I can't call smp_send_nmi_ipi due to the nmi_ipi_busy_count and
+> I'm worried about calling a stale nmi_ipi_function via the
+> system_reset_exception path, if we are OK with it, I can revisit
+> the code path
+
+You shouldn't get a stale one, that would also be a bug -- we
+have to cope with NMIs coming in at any time that are triggered
+externally (not by smp_send_nmi_ipi), so if you see any bugs
+there those need to be fixed separately.
+
+Thanks,
+Nick
