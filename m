@@ -1,33 +1,32 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=gpzr=dl=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yz23v2QL2zDsFj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 07:25:15 +1100 (AEDT)
-Date: Fri, 15 Dec 2017 14:25:10 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Darren Stevens <darren@stevens-zone.net>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] SB600 for the Nemo board has non-zero devices on
- non-root bus
-Message-ID: <20171215202509.GZ30595@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171202230052.34y2ivxgpgr3osct@localhost>
- <CAOesGMhfMpt+xG1vhVHU+O5o4W5y2S5mZyn9tp+CPn9G6XrNVA@mail.gmail.com>
- <4CEE49CE-68F3-457F-B302-54BA8550F36A@xenosoft.de>
- <1d5276c3-1d29-114a-c868-6f022eee58e7@xenosoft.de>
- <99f78122-cd53-100f-4f58-be5bf7927d4e@xenosoft.de>
- <87fu8odnfk.fsf@concordia.ellerman.id.au>
- <20171206210637.GO23510@bhelgaas-glaptop.roam.corp.google.com>
- <877etxh1lf.fsf@concordia.ellerman.id.au>
- <f5fe03d3-87f8-2a2d-2d83-fbefcd489a77@xenosoft.de>
- <98c7e034-b523-a703-e637-957e2857ab32@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yz2Y90w8bzDsFl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 07:47:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3yz2Y838Gtz8w0c
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 07:47:08 +1100 (AEDT)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3yz2Y74VwNz9sCZ
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Dec 2017 07:47:06 +1100 (AEDT)
+Date: Fri, 15 Dec 2017 21:47:02 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Andrew Morton
+ <akpm@linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>, Ankit
+ Kumar <ankit@linux.vnet.ibm.com>, Mahesh J Salgaonkar
+ <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH v9 2/8] boot/param: add pointer to current and next
+ argument to unknown parameter callback
+Message-ID: <20171215214702.7c7afba1@kitsune.suse.cz>
+In-Reply-To: <151075902585.14434.14102853902713018755.stgit@hbathini.in.ibm.com>
+References: <151075897205.14434.9005256552409420263.stgit@hbathini.in.ibm.com>
+ <151075902585.14434.14102853902713018755.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <98c7e034-b523-a703-e637-957e2857ab32@xenosoft.de>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,149 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 15, 2017 at 09:04:51AM +0100, Christian Zigotzky wrote:
-> On 09 December 2017 at 7:03PM, Christian Zigotzky wrote:
-> > On 08 December 2017 at 12:59PM, Michael Ellerman wrote:
-> > >
-> > >> Darren's idea of doing it at the same time you tweak the SB600 "relax
-> > >> pci-e" bit is ideal because then the two pieces are obviously
-> > >> connected and it wouldn't affect any other systems at all.
-> > >
-> > > Yes that would be ideal. That patch is currently out-of-tree I gather,
-> > > but I guess everyone who's using these machines must have that patch
-> > > anyway.
-> > >
-> > > Darren what does that code look like? Can we get it upstream and close
-> > > the loop on this?
-> > >
-> > > cheers
-> > >
-> >
-> > Hi Michael,
-> >
-> > Please find attached the code.
-> >
-> > Thanks,
-> > Christian
+Hello,
+
+On Wed, 15 Nov 2017 20:47:14 +0530
+Hari Bathini <hbathini@linux.vnet.ibm.com> wrote:
+
+> From: Michal Suchanek <msuchanek@suse.de>
 > 
-> Hi All,
+> Add pointer to current and next argument to make parameter processing
+> more robust. This can make parameter processing easier and less error
+> prone in cases where the parameters need to be enforced/ignored based
+> on firmware/system state.
 > 
-> I haven't received any response yet. Is this the correct patch you
-> are looking for?
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 
-This is a powerpc patch that doesn't affect the PCI core, so I would
-say this is Michael's bailiwick.
+> @@ -179,16 +183,18 @@ char *parse_args(const char *doing,
+>  	if (*args)
+>  		pr_debug("doing %s, parsing ARGS: '%s'\n", doing,
+> args); 
+> -	while (*args) {
+> +	next = next_arg(args, &param, &val);
+> +	while (*next) {
+>  		int ret;
+>  		int irq_was_disabled;
+>  
+> -		args = next_arg(args, &param, &val);
+> +		args = next;
+> +		next = next_arg(args, &param, &val);
+>  		/* Stop at -- */
 
-I guess you're only looking for a hint about whether this is the right
-approach, because it's obviously fully baked yet (no changelog,
-signed-off-by, etc, not a "safe for all powerpc" run-time solution,
-not in Linux indentation style, etc).
+The [PATCH v8 5/6] you refreshed here moves the while(*next) to the end
+of the cycle for a reason. Checking *args at the start is mostly
+equivalent checking *next at the end. Checking *next at the start on
+the other hand skips the last argument.
 
-It looks like the "pasemi,1682m-iob" DT property is required and
-possibly sufficient to identify this system at run-time.
+The "mostly" part is that there is a bug here because *args is not
+checked at the start of the cycle making it possible to crash if it is
+0. To fix that the if(*args) above should be extended to wrap the cycle.
 
-My advice is to finish that stuff up, post it to the powerpc
-maintainers and the linuxppc-dev@lists.ozlabs.org list, and go from
-there.
+Thanks
 
-> diff -rupN a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-> --- a/arch/powerpc/platforms/pasemi/pci.c	2017-11-16 08:18:35.078874462 +0100
-> +++ b/arch/powerpc/platforms/pasemi/pci.c	2017-11-16 08:17:22.034367975 +0100
-> @@ -27,6 +27,7 @@
->  #include <linux/pci.h>
->  
->  #include <asm/pci-bridge.h>
-> +#include <asm/isa-bridge.h>
->  #include <asm/machdep.h>
->  
->  #include <asm/ppc-pci.h>
-> @@ -108,6 +109,69 @@ static int workaround_5945(struct pci_bu
->  	return 1;
->  }
->  
-> +#ifdef CONFIG_PPC_PASEMI_NEMO
-> +static int sb600_bus = 5;
-> +static void __iomem *iob_mapbase = NULL;
-> +
-> +static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
-> +                             int offset, int len, u32 *val);
-> +
-> +static void sb600_set_flag(int bus)
-> +{
-> +    struct resource res;
-> +    struct device_node *dn;
-> +       struct pci_bus *busp;
-> +       u32 val;
-> +       int err;
-> +
-> +       if (sb600_bus == -1)
-> +       {
-> +               busp = pci_find_bus(0, 0);
-> +               pa_pxp_read_config(busp, PCI_DEVFN(17,0), PCI_SECONDARY_BUS, 1, &val);
-> +
-> +               sb600_bus = val;
-> +
-> +               printk(KERN_CRIT "NEMO SB600 on bus %d.\n",sb600_bus);
-> +       }
-> +
-> +       if (iob_mapbase == NULL)
-> +       {
-> +        dn = of_find_compatible_node(NULL, "isa", "pasemi,1682m-iob");
-> +        if (!dn)
-> +        {
-> +               printk(KERN_CRIT "NEMO SB600 missing iob node\n");
-> +                       return;
-> +               }
-> +
-> +               err = of_address_to_resource(dn, 0, &res);
-> +        of_node_put(dn);
-> +
-> +               if (err)
-> +               {
-> +               printk(KERN_CRIT "NEMO SB600 missing resource\n");
-> +                       return;
-> +               }
-> +
-> +               printk(KERN_CRIT "NEMO SB600 IOB base %08lx\n",res.start);
-> +
-> +               iob_mapbase = ioremap(res.start + 0x100, 0x94);
-> +       }
-> +
-> +       if (iob_mapbase != NULL)
-> +       {
-> +               if (bus == sb600_bus)
-> +               {
-> +                       out_le32(iob_mapbase + 4, in_le32(iob_mapbase + 4) | 0x800);
-> +               }
-> +               else
-> +               {
-> +                       out_le32(iob_mapbase + 4, in_le32(iob_mapbase + 4) & ~0x800);
-> +               }
-> +       }
-> +}
-> +#endif
-> +
-> +
->  static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
->  			      int offset, int len, u32 *val)
->  {
-> @@ -126,6 +190,10 @@ static int pa_pxp_read_config(struct pci
->  
->  	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
->  
-> +#ifdef CONFIG_PPC_PASEMI_NEMO
-> +       sb600_set_flag(bus->number);
-> +#endif
-> +
->  	/*
->  	 * Note: the caller has already checked that offset is
->  	 * suitably aligned and that len is 1, 2 or 4.
-> @@ -210,6 +278,9 @@ static int __init pas_add_bridge(struct
->  	/* Interpret the "ranges" property */
->  	pci_process_bridge_OF_ranges(hose, dev, 1);
->  
-> +	/* Scan for an isa bridge. */
-> +	isa_bridge_find_early(hose);
-> +
->  	return 0;
->  }
+Michal
