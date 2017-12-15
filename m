@@ -1,30 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
- [IPv6:2607:f8b0:400c:c08::244])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yyZn43fCxzDrn2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 13:55:52 +1100 (AEDT)
-Received: by mail-ua0-x244.google.com with SMTP id p33so5318979uag.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 18:55:52 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20171214233220.19f3b36d@roar.ozlabs.ibm.com>
-References: <20171213080828.2800-1-bsingharora@gmail.com>
- <20171213080828.2800-2-bsingharora@gmail.com>
- <20171213205101.2cc0c830@roar.ozlabs.ibm.com>
- <20171214111213.07ba99a4@gmail.com>
- <20171214115137.5603f77d@roar.ozlabs.ibm.com>
- <CAKTCnzkF0ntwaXs3STmCT0tNz-LZyyPnSMHh8rTG=oFQw7fL=w@mail.gmail.com>
- <20171214233220.19f3b36d@roar.ozlabs.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 15 Dec 2017 13:55:49 +1100
-Message-ID: <CAKTCnznRRNT3cBP911KGAbAPn=_7W9T6h_SdG9wu5nCfFsegKA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powernv/kdump: Fix cases where the kdump kernel can
- get HMI's
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yyZrh5GPpzDrV0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 13:59:00 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id e3so5135168pfi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 18:59:00 -0800 (PST)
+Date: Fri, 15 Dec 2017 12:58:48 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
 Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
  <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH v3 2/3] powerpc/powernv: Identify scom driven system reset
+Message-ID: <20171215125848.71da3d0e@roar.ozlabs.ibm.com>
+In-Reply-To: <CAKTCnzm+Ha2SLqp1q4W0i82TFP3wjZzPjLsyP2qdCAZf34o9CA@mail.gmail.com>
+References: <20171215012740.30291-1-bsingharora@gmail.com>
+ <20171215012740.30291-2-bsingharora@gmail.com>
+ <20171215124457.69841739@roar.ozlabs.ibm.com>
+ <CAKTCnzm+Ha2SLqp1q4W0i82TFP3wjZzPjLsyP2qdCAZf34o9CA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 15, 2017 at 12:32 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Thu, 14 Dec 2017 23:16:26 +1100
-> Balbir Singh <bsingharora@gmail.com> wrote:
->
->> On Thu, Dec 14, 2017 at 12:51 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
->
->
->> >> I can't call smp_send_nmi_ipi due to the nmi_ipi_busy_count and
->> >> I'm worried about calling a stale nmi_ipi_function via the
->> >> system_reset_exception path, if we are OK with it, I can revisit
->> >> the code path
->> >
->> > You shouldn't get a stale one, that would also be a bug -- we
->> > have to cope with NMIs coming in at any time that are triggered
->> > externally (not by smp_send_nmi_ipi), so if you see any bugs
->> > there those need to be fixed separately.
->> >
->>
->> Yes, I think it's a bug, nothing clears nmi_ipi_function (from what
->> I can see), so when the next NMI comes in and goes into
->> pnv_system_reset_exception
->> it'll execute the stale handler.
->
-> The CPU won't be in the nmi_ipi_pending_mask though, so it shouldn't
-> get that far. You could add a bit of paranoia to clear the function
-> pointer I suppose, but AFAIKS it's not needed.
->
+On Fri, 15 Dec 2017 13:54:18 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-Yep your right, but these things are so subtle :) I will as paranoia
-cleanup nmi_ipi_function, but I'll add that as a TODO
+> On Fri, Dec 15, 2017 at 1:44 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> > On Fri, 15 Dec 2017 12:27:39 +1100
+> > Balbir Singh <bsingharora@gmail.com> wrote:
+> >  
+> >> In irq_set_pending_from_srr1() we were missing 0x2 as system
+> >> reset identified from SRR1 caused by back to back system
+> >> resets or when interrupts are caused by SCOM when the thread
+> >> is not in power saving mode.
+> >>
+> >> This helps us get to NMI handling in both the case where NMI
+> >> is caused when in power-saving and not in power-saving mode.
+> >> The actual exploitation is expected when we are doing a kdump
+> >> and an offline CPU might not be in power-saving mode due to
+> >> an already spurious IPI or any other reason.
+> >>
+> >> Signed-off-by: Balbir Singh <bsingharora@gmail.com>  
+> >
+> > When not in power saving mode, we don't look at SRR1 at all, so
+> > we don't need this. You should never be getting it returned as the
+> > result of your idle instruction (except on DD1 which has a bug,
+> > but firmware doesn't implement the NMI IPI).
+> >  
+> 
+> I added this for the next patch. We call irq_set_pending_from_srr1
+> while coming out of CPU idle, but if for any reason the IPI was spurious
+> and then we see an NMI during kdump, I did want to detect that
+> and callback into the NMI handler.
 
-Balbir Singh.
+You'll never see it. The SRR1 value you get is the idle wakeup code.
+So any scom-when-not-idle bit should never be set.
+
+Thanks,
+Nick
