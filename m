@@ -1,20 +1,20 @@
-Return-Path: <BATV+f9b51a8ca15fdac5c6a2+5227+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yysmL3qtpzDrmv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 01:11:14 +1100 (AEDT)
-From: Christoph Hellwig <hch@lst.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Logan Gunthorpe <logang@deltatee.com>, linux-nvdimm@lists.01.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 17/17] memremap: merge find_dev_pagemap into get_dev_pagemap
-Date: Fri, 15 Dec 2017 15:09:47 +0100
-Message-Id: <20171215140947.26075-18-hch@lst.de>
-In-Reply-To: <20171215140947.26075-1-hch@lst.de>
-References: <20171215140947.26075-1-hch@lst.de>
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ua0-x22f.google.com (mail-ua0-x22f.google.com
+ [IPv6:2607:f8b0:400c:c08::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yz1JG2W0WzDsFf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 06:50:53 +1100 (AEDT)
+Received: by mail-ua0-x22f.google.com with SMTP id i20so6950193uak.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 11:50:53 -0800 (PST)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 15 Dec 2017 20:50:29 +0100
+Message-ID: <CA+7wUszecRH7p5iHNXNqmb956PnhZa=4zCx+E4c2ur8Jzf6c4w@mail.gmail.com>
+Subject: Mac Mini G4 defconfig ?
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +24,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is only one caller of the trivial function find_dev_pagemap left,
-so just merge it into the caller.
+Hi there,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- kernel/memremap.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+Does anyone has working defconfig for a Mac Mini G4 ?
 
-diff --git a/kernel/memremap.c b/kernel/memremap.c
-index fd0e7c44e6bd..c04000361664 100644
---- a/kernel/memremap.c
-+++ b/kernel/memremap.c
-@@ -306,14 +306,6 @@ static void devm_memremap_pages_release(void *data)
- 		      "%s: failed to free all reserved pages\n", __func__);
- }
- 
--/* assumes rcu_read_lock() held at entry */
--static struct dev_pagemap *find_dev_pagemap(resource_size_t phys)
--{
--	WARN_ON_ONCE(!rcu_read_lock_held());
--
--	return radix_tree_lookup(&pgmap_radix, PHYS_PFN(phys));
--}
--
- /**
-  * devm_memremap_pages - remap and provide memmap backing for the given resource
-  * @dev: hosting device for @res
-@@ -466,7 +458,7 @@ struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
- 
- 	/* fall back to slow path lookup */
- 	rcu_read_lock();
--	pgmap = find_dev_pagemap(phys);
-+	pgmap = radix_tree_lookup(&pgmap_radix, PHYS_PFN(phys));
- 	if (pgmap && !percpu_ref_tryget_live(pgmap->ref))
- 		pgmap = NULL;
- 	rcu_read_unlock();
--- 
-2.14.2
+Here is what I tried:
+
+$ cat ./arch/powerpc/configs/g4_defconfig
+CONFIG_PPC_FPU=y
+CONFIG_ALTIVEC=y
+$ make ARCH=powerpc g4_defconfig
+$ make -j8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- V=1
+set -e; : '  CHK     include/config/kernel.release'; mkdir -p
+include/config/; echo "4.15.0-rc3$(/bin/sh ./scripts/setlocalversion
+.)" < include/config/auto.conf > include/config/kernel.release.tmp; if
+[ -r include/config/kernel.release ] && cmp -s
+include/config/kernel.release include/config/kernel.release.tmp; then
+rm -f include/config/kernel.release.tmp; else : '  UPD
+include/config/kernel.release'; mv -f
+include/config/kernel.release.tmp include/config/kernel.release; fi
+make -f ./scripts/Makefile.asm-generic \
+            src=uapi/asm obj=arch/powerpc/include/generated/uapi/asm
+set -e; : '  CHK     include/generated/uapi/linux/version.h'; mkdir -p
+include/generated/uapi/linux/; (echo \#define LINUX_VERSION_CODE
+265984; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8)
++ (c))';) < Makefile > include/generated/uapi/linux/version.h.tmp; if
+[ -r include/generated/uapi/linux/version.h ] && cmp -s
+include/generated/uapi/linux/version.h
+include/generated/uapi/linux/version.h.tmp; then rm -f
+include/generated/uapi/linux/version.h.tmp; else : '  UPD
+include/generated/uapi/linux/version.h'; mv -f
+include/generated/uapi/linux/version.h.tmp
+include/generated/uapi/linux/version.h; fi
+make -f ./scripts/Makefile.build obj=scripts/basic
+rm -f include/linux/version.h
+make -f ./scripts/Makefile.asm-generic \
+            src=asm obj=arch/powerpc/include/generated/asm
+(cat /dev/null; ) > scripts/basic/modules.order
+rm -f .tmp_quiet_recordmcount
+make -f ./scripts/Makefile.build obj=scripts
+make -f ./scripts/Makefile.build obj=scripts/dtc need-builtin=
+make -f ./scripts/Makefile.build obj=scripts/mod need-builtin=
+(cat /dev/null; ) > scripts/mod/modules.order
+(cat /dev/null; ) > scripts/dtc/modules.order
+  powerpc-linux-gnu-gcc -Wp,-MD,scripts/mod/.devicetable-offsets.s.d
+-nostdinc -isystem  -I./arch/powerpc/include
+-I./arch/powerpc/include/generated  -I./include
+-I./arch/powerpc/include/uapi -I./arch/powerpc/include/generated/uapi
+-I./include/uapi -I./include/generated/uapi -include
+./include/linux/kconfig.h -D__KERNEL__ -Iarch/powerpc -Wall -Wundef
+-Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+-fshort-wchar -Werror-implicit-function-declaration
+-Wno-format-security -std=gnu89 -pipe -Iarch/powerpc -ffixed-r2
+-mmultiple -mcpu=powerpc -O2 -fomit-frame-pointer
+-DKBUILD_BASENAME='"devicetable_offsets"'
+-DKBUILD_MODNAME='"devicetable_offsets"'  -fverbose-asm -S -o
+scripts/mod/devicetable-offsets.s scripts/mod/devicetable-offsets.c
+In file included from ./include/linux/string.h:6:0,
+                 from ./include/uapi/linux/uuid.h:22,
+                 from ./include/linux/uuid.h:19,
+                 from ./include/linux/mod_devicetable.h:13,
+                 from scripts/mod/devicetable-offsets.c:3:
+./include/linux/compiler.h:242:25: fatal error: asm/barrier.h: No such
+file or directory
+ #include <asm/barrier.h>
+                         ^
+compilation terminated.
+scripts/Makefile.build:150: recipe for target
+'scripts/mod/devicetable-offsets.s' failed
+make[2]: *** [scripts/mod/devicetable-offsets.s] Error 1
+scripts/Makefile.build:569: recipe for target 'scripts/mod' failed
+make[1]: *** [scripts/mod] Error 2
+Makefile:576: recipe for target 'scripts' failed
+make: *** [scripts] Error 2
+make: *** Waiting for unfinished jobs....
