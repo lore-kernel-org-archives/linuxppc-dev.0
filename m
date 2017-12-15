@@ -1,22 +1,30 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yykl25Ls6zDrnF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 19:54:38 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id g7so5383621pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 00:54:38 -0800 (PST)
-Date: Fri, 15 Dec 2017 18:54:26 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yyllq5B21zDrhq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 20:40:23 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id f12so5446332pgo.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 01:40:23 -0800 (PST)
+Date: Fri, 15 Dec 2017 19:40:09 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v4 2/2] powernv/kdump: Fix cases where the kdump kernel
- can get HMI's
-Message-ID: <20171215185352.4bc1d810@roar.ozlabs.ibm.com>
-In-Reply-To: <20171215081455.11941-2-bsingharora@gmail.com>
-References: <20171215081455.11941-1-bsingharora@gmail.com>
- <20171215081455.11941-2-bsingharora@gmail.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Torsten Duwe <duwe@lst.de>, linux-kernel@vger.kernel.org, Jiri Kosina
+ <jkosina@suse.cz>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20171215194009.349b04da@roar.ozlabs.ibm.com>
+In-Reply-To: <20171212140501.44vf4xcz6jhbqofd@treble>
+References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
+ <20171005124313.GA25100@lst.de>
+ <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
+ <20171017144733.GB2136@lst.de>
+ <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+ <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
+ <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
+ <20171212113912.GA1907@lst.de>
+ <20171212140501.44vf4xcz6jhbqofd@treble>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,189 +36,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Dec 2017 19:14:55 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+On Tue, 12 Dec 2017 08:05:01 -0600
+Josh Poimboeuf <jpoimboe@redhat.com> wrote:
 
-> Certain HMI's such as malfunction error propagate through
-> all threads/core on the system. If a thread was offline
-> prior to us crashing the system and jumping to the kdump
-> kernel, bad things happen when it wakes up due to an HMI
-> in the kdump kernel.
+> On Tue, Dec 12, 2017 at 12:39:12PM +0100, Torsten Duwe wrote:
+> > Hi all,
+> > 
+> > The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
+> > 
+> > [...] There are several rules that must be adhered to in order to ensure
+> > reliable and consistent call chain backtracing:
+> > 
+> > * Before a function calls any other function, it shall establish its
+> >   own stack frame, whose size shall be a multiple of 16 bytes.  
 > 
-> There are several possible ways to solve this problem
+> What about leaf functions?  If a leaf function doesn't establish a stack
+> frame, and it has inline asm which contains a blr to another function,
+> this ABI is broken.
 > 
-> 1. Put the offline cores in a state such that they are
-> not woken up for machine check and HMI errors. This
-> does not work, since we might need to wake up offline
-> threads to handle TB errors
-> 2. Ignore HMI errors, setup HMEER to mask HMI errors,
-> but this still leads the window open for any MCEs
-> and masking them for the duration of the dump might
-> be a concern
-> 3. Wake up offline CPUs, as in send them to
-> crash_ipi_callback (not wake them up as in mark them
-> online as seen by the hotplug). kexec does a
-> wake_online_cpus() call, this patch does something
-> similar, but instead sends an IPI and forces them to
-> crash_ipi_callback()
+> Also, even for non-leaf functions, is it possible for GCC to insert the
+> inline asm before it sets up the stack frame?  (This is an occasional
+> problem on x86.)
+
+Inline asm must not have control transfer out of the statement unless
+it is asm goto.
+
 > 
-> This patch takes approach #3.
+> Also, what about hand-coded asm?
+
+Should follow the same rules if it uses the stack.
+
 > 
-> Care is taken to enable this only for powenv platforms
-> via crash_wake_offline (a global value set at setup
-> time). The crash code sends out IPI's to all CPU's
-> which then move to crash_ipi_callback and kexec_smp_wait().
+> > To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+> > This patch may be unneccessarily limited to ppc64le, but OTOH the only
+> > user of this flag so far is livepatching, which is only implemented on
+> > PPCs with 64-LE, a.k.a. ELF ABI v2.  
+> 
+> In addition to fixing the above issues, the unwinder also needs to
+> detect interrupts (i.e., preemption) and page faults on the stack of a
+> blocked task.  If a function were preempted before it created a stack
+> frame, or if a leaf function blocked on a page fault, the stack trace
+> will skip the function's caller, so such a trace will need to be
+> reported to livepatch as unreliable.
+
+I don't think there is much problem there for powerpc. Stack frame
+creation and function call with return pointer are each atomic.
+
+> 
+> Furthermore, the "reliable" unwinder needs to have a way to report an
+> error if it doesn't reach the end.  This probably just means ensuring
+> that it reaches the user mode registers on the stack.
+> 
+> And as Miroslav mentioned, once that's all done, implement
+> save_stack_trace_tsk_reliable().
+> 
+> I don't think the above is documented anywhere, it would be good to put
+> it in the livepatch doc.
 > 
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> ---
-> 
-> Changelog v4
->  - Handle the case for crash IPI's sent via non NMI
->  - Drop system reset via SCOM in non-power saving
->    mode
-> 
->  arch/powerpc/include/asm/kexec.h     |  2 ++
->  arch/powerpc/kernel/crash.c          | 13 ++++++++++++-
->  arch/powerpc/kernel/smp.c            | 18 ++++++++++++++++++
->  arch/powerpc/platforms/powernv/smp.c | 28 ++++++++++++++++++++++++++++
->  4 files changed, 60 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-> index 4419d435639a..9dcbfa6bbb91 100644
-> --- a/arch/powerpc/include/asm/kexec.h
-> +++ b/arch/powerpc/include/asm/kexec.h
-> @@ -73,6 +73,8 @@ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
->  					  master to copy new code to 0 */
->  extern int crashing_cpu;
->  extern void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *));
-> +extern void crash_ipi_callback(struct pt_regs *);
-> +extern int crash_wake_offline;
->  
->  struct kimage;
->  struct pt_regs;
-> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-> index 29c56ca2ddfd..00b215125d3e 100644
-> --- a/arch/powerpc/kernel/crash.c
-> +++ b/arch/powerpc/kernel/crash.c
-> @@ -44,6 +44,14 @@
->  #define REAL_MODE_TIMEOUT	10000
->  
->  static int time_to_dump;
-> +/*
-> + * crash_wake_offline should be set to 1 by platforms that intend to wake
-> + * up offline cpus prior to jumping to a kdump kernel. Currently powernv
-> + * sets it to 1, since we want to avoid things from happening when an
-> + * offline CPU wakes up due to something like an HMI (malfunction error),
-> + * which propagates to all threads.
-> + */
-> +int crash_wake_offline;
->  
->  #define CRASH_HANDLER_MAX 3
->  /* List of shutdown handles */
-> @@ -63,7 +71,7 @@ static int handle_fault(struct pt_regs *regs)
->  #ifdef CONFIG_SMP
->  
->  static atomic_t cpus_in_crash;
-> -static void crash_ipi_callback(struct pt_regs *regs)
-> +void crash_ipi_callback(struct pt_regs *regs)
->  {
->  	static cpumask_t cpus_state_saved = CPU_MASK_NONE;
->  
-> @@ -106,6 +114,9 @@ static void crash_kexec_prepare_cpus(int cpu)
->  
->  	printk(KERN_EMERG "Sending IPI to other CPUs\n");
->  
-> +	if (crash_wake_offline)
-> +		ncpus = num_present_cpus() - 1;
-> +
->  	crash_send_ipi(crash_ipi_callback);
->  	smp_wmb();
->  
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index e0a4c1f82e25..bbe7634b3a43 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -543,7 +543,25 @@ void smp_send_debugger_break(void)
->  #ifdef CONFIG_KEXEC_CORE
->  void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
->  {
-> +	int cpu;
-> +
->  	smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, crash_ipi_callback, 1000000);
-> +	if (kdump_in_progress() && crash_wake_offline) {
-> +		for_each_present_cpu(cpu) {
-> +			if (cpu_online(cpu))
-> +				continue;
-> +			/*
-> +			 * crash_ipi_callback will wait for
-> +			 * all cpus, including offline CPUs.
-> +			 * We don't care about nmi_ipi_function.
-> +			 * Offline cpus will jump straight into
-> +			 * crash_ipi_callback, we can skip the
-> +			 * entire NMI dance and waiting for
-> +			 * cpus to clear pending mask, etc.
-> +			 */
-> +			do_smp_send_nmi_ipi(cpu);
-> +		}
-> +	}
->  }
->  #endif
->  
-> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-> index ba030669eca1..9664c8461f03 100644
-> --- a/arch/powerpc/platforms/powernv/smp.c
-> +++ b/arch/powerpc/platforms/powernv/smp.c
-> @@ -37,6 +37,8 @@
->  #include <asm/kvm_ppc.h>
->  #include <asm/ppc-opcode.h>
->  #include <asm/cpuidle.h>
-> +#include <asm/kexec.h>
-> +#include <asm/reg.h>
->  
->  #include "powernv.h"
->  
-> @@ -209,9 +211,32 @@ static void pnv_smp_cpu_kill_self(void)
->  		} else if ((srr1 & wmask) == SRR1_WAKEHDBELL) {
->  			unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
->  			asm volatile(PPC_MSGCLR(%0) : : "r" (msg));
-> +		} else if ((srr1 & wmask) == SRR1_WAKERESET) {
-> +			irq_set_pending_from_srr1(srr1);
-> +			/* Does not return */
->  		}
-> +
->  		smp_mb();
->  
-> +		/*
-> +		 * For kdump kernels, we process the ipi and jump to
-> +		 * crash_ipi_callback
-> +		 */
-> +		if (kdump_in_progress()) {
-> +			/*
-> +			 * If we got to this point, we've not used
-> +			 * NMI's, otherwise we would have gone
-> +			 * via the SRR1_WAKERESET path. We are
-> +			 * using regular IPI's for waking up offline
-> +			 * threads.
-> +			 */
-> +			struct pt_regs regs;
-> +
-> +			ppc_save_regs(&regs);
-> +			crash_ipi_callback(&regs);
-> +			/* Does not return */
-> +		}
-> +
->  		if (cpu_core_split_required())
->  			continue;
->  
-> @@ -371,5 +396,8 @@ void __init pnv_smp_init(void)
->  
->  #ifdef CONFIG_HOTPLUG_CPU
->  	ppc_md.cpu_die	= pnv_smp_cpu_kill_self;
-> +#ifdef CONFIG_KEXEC_CORE
-> +	crash_wake_offline = 1;
-> +#endif
->  #endif
->  }
+Thanks,
+Nick
