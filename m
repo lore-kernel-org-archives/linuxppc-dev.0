@@ -1,27 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yydGB1g3LzDrYp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 15:47:46 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id a90so5358240pfk.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 20:47:45 -0800 (PST)
-Date: Fri, 15 Dec 2017 14:47:33 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 3/3] powernv/kdump: Fix cases where the kdump kernel
- can get HMI's
-Message-ID: <20171215144733.1ca08521@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKTCnzkn2_LUn=NLQS6-c4hHR4uXt=jX4q-eGO_9xZhjo0v26Q@mail.gmail.com>
-References: <20171215012740.30291-1-bsingharora@gmail.com>
- <20171215012740.30291-3-bsingharora@gmail.com>
- <20171215131053.10948c93@roar.ozlabs.ibm.com>
- <CAKTCnzkn2_LUn=NLQS6-c4hHR4uXt=jX4q-eGO_9xZhjo0v26Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yyjgH5hrhzDrjD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 19:06:19 +1100 (AEDT)
+Subject: [PATCH] SB600 for the Nemo board has non-zero devices on non-root bus
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Michael Ellerman <mpe@ellerman.id.au>, Bjorn Helgaas
+ <helgaas@kernel.org>, Darren Stevens <darren@stevens-zone.net>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+ <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
+ <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
+ <6d2505ab-a985-bdb0-ad3a-e7659cc2c54d@xenosoft.de>
+ <20171202230052.34y2ivxgpgr3osct@localhost>
+ <CAOesGMhfMpt+xG1vhVHU+O5o4W5y2S5mZyn9tp+CPn9G6XrNVA@mail.gmail.com>
+ <4CEE49CE-68F3-457F-B302-54BA8550F36A@xenosoft.de>
+ <1d5276c3-1d29-114a-c868-6f022eee58e7@xenosoft.de>
+ <99f78122-cd53-100f-4f58-be5bf7927d4e@xenosoft.de>
+ <87fu8odnfk.fsf@concordia.ellerman.id.au>
+ <20171206210637.GO23510@bhelgaas-glaptop.roam.corp.google.com>
+ <877etxh1lf.fsf@concordia.ellerman.id.au>
+ <f5fe03d3-87f8-2a2d-2d83-fbefcd489a77@xenosoft.de>
+Message-ID: <98c7e034-b523-a703-e637-957e2857ab32@xenosoft.de>
+Date: Fri, 15 Dec 2017 09:04:51 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <f5fe03d3-87f8-2a2d-2d83-fbefcd489a77@xenosoft.de>
+Content-Type: multipart/mixed; boundary="------------E08C0AD0991F6B3C48E43A89"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +39,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Dec 2017 14:34:03 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+This is a multi-part message in MIME format.
+--------------E08C0AD0991F6B3C48E43A89
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Fri, Dec 15, 2017 at 2:10 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > On Fri, 15 Dec 2017 12:27:40 +1100
-> > Balbir Singh <bsingharora@gmail.com> wrote:
+On 09 December 2017 at 7:03PM, Christian Zigotzky wrote:
+ > On 08 December 2017 at 12:59PM, Michael Ellerman wrote:
+ > >
+ > >> Darren's idea of doing it at the same time you tweak the SB600 "relax
+ > >> pci-e" bit is ideal because then the two pieces are obviously
+ > >> connected and it wouldn't affect any other systems at all.
+ > >
+ > > Yes that would be ideal. That patch is currently out-of-tree I gather,
+ > > but I guess everyone who's using these machines must have that patch
+ > > anyway.
+ > >
+ > > Darren what does that code look like? Can we get it upstream and close
+ > > the loop on this?
+ > >
+ > > cheers
+ > >
+ >
+ > Hi Michael,
+ >
+ > Please find attached the code.
+ >
+ > Thanks,
+ > Christian
 
-> > But then you still need an explicit kdump check for non-sreset wakeups
-> > because the platform may not implement sreset, or it may fall back to
-> > normal IPI if the sreset scom fails. So you then still need your
-> >
-> > if (kdump) crash_ipi_callback  
-> 
-> Yep, its required for the the non NMI case.
-> 
-> 
-> How does this look -- based on your comment
-> 
-> +               } else if ((srr1 & wmask) == SRR1_WAKESRESET) {
-> +                       irq_set_pending_from_srr1(srr1);
-> +                       /* Does not return */
->                 }
-> +
->                 smp_mb();
-> 
->                 /*
->                  * For kdump kernels, we process the ipi and jump to
-> -                * handling the system reset exception.
-> +                * crash_ipi_callback
->                  */
-> -               if (kdump_in_progress())
-> -                       irq_set_pending_from_srr1(srr1);
-> +               if (kdump_in_progress()) {
-> +                       /*
-> +                        * If we got to this point, we've not used
-> +                        * NMI's, otherwise we would have gone
-> +                        * via the SRR1_WAKESRESET path. We are
-> +                        * using regular IPI's for waking up offline
-> +                        * threads.
-> +                        */
-> +                       struct pt_regs regs;
-> +
-> +                       ppc_save_regs(&regs);
-> +                       crash_ipi_callback(regs);
-> +                       /* Does not return */
-> +               }
+Hi All,
 
-That looks like it should do the trick.
+I haven't received any response yet. Is this the correct patch you are 
+looking for?
 
 Thanks,
-Nick
+Christian
+
+--------------E08C0AD0991F6B3C48E43A89
+Content-Type: text/x-patch;
+ name="sb600.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="sb600.patch"
+
+diff -rupN a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+--- a/arch/powerpc/platforms/pasemi/pci.c	2017-11-16 08:18:35.078874462 +0100
++++ b/arch/powerpc/platforms/pasemi/pci.c	2017-11-16 08:17:22.034367975 +0100
+@@ -27,6 +27,7 @@
+ #include <linux/pci.h>
+ 
+ #include <asm/pci-bridge.h>
++#include <asm/isa-bridge.h>
+ #include <asm/machdep.h>
+ 
+ #include <asm/ppc-pci.h>
+@@ -108,6 +109,69 @@ static int workaround_5945(struct pci_bu
+ 	return 1;
+ }
+ 
++#ifdef CONFIG_PPC_PASEMI_NEMO
++static int sb600_bus = 5;
++static void __iomem *iob_mapbase = NULL;
++
++static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
++                             int offset, int len, u32 *val);
++
++static void sb600_set_flag(int bus)
++{
++    struct resource res;
++    struct device_node *dn;
++       struct pci_bus *busp;
++       u32 val;
++       int err;
++
++       if (sb600_bus == -1)
++       {
++               busp = pci_find_bus(0, 0);
++               pa_pxp_read_config(busp, PCI_DEVFN(17,0), PCI_SECONDARY_BUS, 1, &val);
++
++               sb600_bus = val;
++
++               printk(KERN_CRIT "NEMO SB600 on bus %d.\n",sb600_bus);
++       }
++
++       if (iob_mapbase == NULL)
++       {
++        dn = of_find_compatible_node(NULL, "isa", "pasemi,1682m-iob");
++        if (!dn)
++        {
++               printk(KERN_CRIT "NEMO SB600 missing iob node\n");
++                       return;
++               }
++
++               err = of_address_to_resource(dn, 0, &res);
++        of_node_put(dn);
++
++               if (err)
++               {
++               printk(KERN_CRIT "NEMO SB600 missing resource\n");
++                       return;
++               }
++
++               printk(KERN_CRIT "NEMO SB600 IOB base %08lx\n",res.start);
++
++               iob_mapbase = ioremap(res.start + 0x100, 0x94);
++       }
++
++       if (iob_mapbase != NULL)
++       {
++               if (bus == sb600_bus)
++               {
++                       out_le32(iob_mapbase + 4, in_le32(iob_mapbase + 4) | 0x800);
++               }
++               else
++               {
++                       out_le32(iob_mapbase + 4, in_le32(iob_mapbase + 4) & ~0x800);
++               }
++       }
++}
++#endif
++
++
+ static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
+ 			      int offset, int len, u32 *val)
+ {
+@@ -126,6 +190,10 @@ static int pa_pxp_read_config(struct pci
+ 
+ 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
+ 
++#ifdef CONFIG_PPC_PASEMI_NEMO
++       sb600_set_flag(bus->number);
++#endif
++
+ 	/*
+ 	 * Note: the caller has already checked that offset is
+ 	 * suitably aligned and that len is 1, 2 or 4.
+@@ -210,6 +278,9 @@ static int __init pas_add_bridge(struct
+ 	/* Interpret the "ranges" property */
+ 	pci_process_bridge_OF_ranges(hose, dev, 1);
+ 
++	/* Scan for an isa bridge. */
++	isa_bridge_find_early(hose);
++
+ 	return 0;
+ }
+
+--------------E08C0AD0991F6B3C48E43A89--
