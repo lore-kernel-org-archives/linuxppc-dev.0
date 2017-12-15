@@ -1,26 +1,30 @@
-Return-Path: <hare@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yyq704S14zDrnK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 23:12:11 +1100 (AEDT)
-Subject: Re: [mainline] rcu stalls on CPU when unbinding mpt3sas driver
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next <linux-next@vger.kernel.org>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- suganath-prabu.subramani@broadcom.com, chaitra.basappa@broadcom.com,
- mpe <mpe@ellerman.id.au>, Stephen Rothwell <sfr@canb.auug.org.au>,
- sachinp <sachinp@linux.vnet.ibm.com>, sim@linux.vnet.ibm.com
-References: <1513075128.13113.36.camel@abdul>
-From: Hannes Reinecke <hare@suse.de>
-Message-ID: <8a07d687-3c42-dda3-3b36-dec1fe16805e@suse.de>
-Date: Fri, 15 Dec 2017 13:12:07 +0100
-MIME-Version: 1.0
-In-Reply-To: <1513075128.13113.36.camel@abdul>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yysG76NV8zDqRQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 00:48:31 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBFDhv79077922
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 08:48:29 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2evcea38tx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 08:48:29 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Fri, 15 Dec 2017 13:48:27 -0000
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com, benh@au1.ibm.com,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: [PATCH v4 1/2] powerpc/powernv: Enable tunneled operations
+Date: Fri, 15 Dec 2017 14:48:17 +0100
+Message-Id: <20171215134818.23864-1-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,111 +34,228 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/12/2017 11:38 AM, Abdul Haleem wrote:
-> Hi,
-> 
-> Off late we are seeing cpu stalls messages while mpt3sas driver unbind
-> on powerpc machine for both mainline and linux-next kernels
-> 
-> Machine Type: Power 8 Bare-metal
-> Kernel version: 4.15.0-rc2
-> config: attached.
-> test: driver unbind
-> 
-> $ echo -n 0001:03:00.0 > /sys/bus/pci/drivers/mpt3sas/unbind
-> mpt3sas_cm0: removing handle(0x000a), sas_addr(0x500304801f080d00)
-> mpt3sas_cm0: removing : enclosure logical id(0x500304801f080d3f), slot(0)
-> mpt3sas_cm0: removing enclosure level(0x0000), connector name(     )
-> mpt3sas_cm0: removing handle(0x000b), sas_addr(0x500304801f080d01)
-> mpt3sas_cm0: removing : enclosure logical id(0x500304801f080d3f), slot(1)
-> mpt3sas_cm0: removing enclosure level(0x0000), connector name(     )
-> mpt3sas_cm0: removing handle(0x000c), sas_addr(0x500304801f080d02)
-> mpt3sas_cm0: removing : enclosure logical id(0x500304801f080d3f), slot(2)
-> mpt3sas_cm0: removing enclosure level(0x0000), connector name(     )
-> mpt3sas_cm0: removing handle(0x000d), sas_addr(0x500304801f080d03)
-> mpt3sas_cm0: removing : enclosure logical id(0x500304801f080d3f), slot(3)
-> mpt3sas_cm0: removing enclosure level(0x0000), connector name(     )
-> mpt3sas_cm0: removing handle(0x000e), sas_addr(0x500304801f080d04)
-> mpt3sas_cm0: removing : enclosure logical id(0x500304801f080d3f), slot(4)
-> mpt3sas_cm0: removing enclosure level(0x0000), connector name(     )
-> mpt3sas_cm0: removing handle(0x000f), sas_addr(0x500304801f080d3d)
-> mpt3sas_cm0: removing : enclosure logical id(0x500304801f080d3f), slot(12)
-> mpt3sas_cm0: removing enclosure level(0x0000), connector name(     )
-> sd 16:0:0:0: [sdb] Synchronizing SCSI cache
-> sd 16:0:0:0: [sdb] Synchronize Cache(10) failed: Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
-> sd 16:0:1:0: [sdc] tag#0 FAILED Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
-> sd 16:0:1:0: [sdc] tag#0 CDB: ATA command pass through(16) 85 06 2c 00 00 00 00 00 00 00 00 00 00 00 e5 00
-> sd 16:0:2:0: [sdd] tag#0 FAILED Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
-> sd 16:0:2:0: [sdd] tag#0 CDB: ATA command pass through(16) 85 06 2c 00 00 00 00 00 00 00 00 00 00 00 e5 00
-> sd 16:0:3:0: [sde] tag#0 FAILED Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
-> sd 16:0:3:0: [sde] tag#0 CDB: ATA command pass through(16) 85 06 2c 00 00 00 00 00 00 00 00 00 00 00 e5 00
-> sd 16:0:4:0: [sdf] tag#0 FAILED Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
-> sd 16:0:4:0: [sdf] tag#0 CDB: ATA command pass through(16) 85 06 2c 00 00 00 00 00 00 00 00 00 00 00 e5 00
-> 
-> few minutes after above command was executed, machine is flooded with rcu stalls messages.
-> 
-> INFO: rcu_sched detected expedited stalls on CPUs/tasks: { 86-... } 44191221 jiffies s: 3445 root: 0x20/.
-> blocking rcu_node structures: l=1:80-95:0x40/.
-> Task dump for CPU 86:
-> sh              R  running task    10384 18136      1 0x00042086
-> Call Trace:
-> [c000007792d47370] [c000007933667200] 0xc000007933667200 (unreliable)
-> INFO: rcu_sched self-detected stall on CPU
-> 	86-....: (50420459 ticks this GP) idle=0ae/140000000000001/0 softirq=11962/11962 fqs=24724293 
-> 	 (t=50420460 jiffies g=80217 c=80216 q=36817447)
-> NMI backtrace for cpu 86
-> CPU: 86 PID: 18136 Comm: sh Not tainted 4.15.0-rc2-autotest #1
-> Call Trace:
-> [c000007792d46f20] [c00000000099b83c] dump_stack+0xb0/0xf4 (unreliable)
-> [c000007792d46f60] [c0000000009a43e4] nmi_cpu_backtrace+0x1a4/0x210
-> [c000007792d46ff0] [c0000000009a462c] nmi_trigger_cpumask_backtrace+0x1dc/0x220
-> [c000007792d47090] [c00000000002c7d0] arch_trigger_cpumask_backtrace+0x20/0x40
-> [c000007792d470b0] [c00000000017496c] rcu_dump_cpu_stacks+0xf4/0x158
-> [c000007792d47100] [c000000000173cb0] rcu_check_callbacks+0x8f0/0xb00
-> [c000007792d47230] [c00000000017c25c] update_process_times+0x3c/0x90
-> [c000007792d47260] [c0000000001921e4] tick_sched_handle.isra.13+0x44/0x80
-> [c000007792d47280] [c000000000192278] tick_sched_timer+0x58/0xb0
-> [c000007792d472c0] [c00000000017cd58] __hrtimer_run_queues+0xf8/0x330
-> [c000007792d47340] [c00000000017da74] hrtimer_interrupt+0xe4/0x280
-> [c000007792d47400] [c000000000022660] __timer_interrupt+0x90/0x270
-> [c000007792d47450] [c000000000022d30] timer_interrupt+0xa0/0xe0
-> [c000007792d47480] [c000000000009238] decrementer_common+0x158/0x160
-> --- interrupt: 901 at replay_interrupt_return+0x0/0x4
->     LR = arch_local_irq_restore+0x74/0x90
-> [c000007792d47770] [c000003fb3185000] 0xc000003fb3185000 (unreliable)
-> [c000007792d47790] [c0000000009bb658] _raw_spin_unlock_irqrestore+0x38/0x60
-> [c000007792d477b0] [c00000000066f274] scsi_remove_target+0x204/0x270
-> [c000007792d47820] [d00000000fc72604] sas_rphy_remove+0x94/0xa0 [scsi_transport_sas]
-> [c000007792d47850] [d00000000fc745bc] sas_port_delete+0x4c/0x238 [scsi_transport_sas]
-> [c000007792d478b0] [d000000010e82990] mpt3sas_transport_port_remove+0x2d0/0x310 [mpt3sas]
-> [c000007792d47950] [d000000010e71ba0] _scsih_remove_device+0x100/0x2a0 [mpt3sas]
-> [c000007792d47a10] [d000000010e774d4] mpt3sas_device_remove_by_sas_address.part.44+0xb4/0x160 [mpt3sas]
-> [c000007792d47a70] [d000000010e77614] _scsih_expander_node_remove+0x94/0x170 [mpt3sas]
-> [c000007792d47af0] [d000000010e77a88] mpt3sas_expander_remove.part.46+0x398/0xe70 [mpt3sas]
-> [c000007792d47b90] [c00000000056a9c4] pci_device_remove+0x64/0x110
-> [c000007792d47bd0] [c00000000060fa74] device_release_driver_internal+0x1e4/0x2c0
-> [c000007792d47c20] [c00000000060d260] unbind_store+0x110/0x140
-> [c000007792d47c70] [c00000000060c2fc] drv_attr_store+0x3c/0x60
-> [c000007792d47c90] [c0000000003a03c4] sysfs_kf_write+0x64/0xa0
-> [c000007792d47cb0] [c00000000039f1b0] kernfs_fop_write+0x170/0x250
-> [c000007792d47d00] [c0000000002fd370] __vfs_write+0x40/0x200
-> [c000007792d47d90] [c0000000002fd748] vfs_write+0xc8/0x240
-> [c000007792d47de0] [c0000000002fda80] SyS_write+0x60/0x110
-> [c000007792d47e30] [c00000000000b8e0] system_call+0x58/0x6c
-> 
-This is probably the same issue as discussed in threads "[PATCH] scsi:
-check for device state in __scsi_remove_target()" and "[PATCH] scsi: fix
-race condition when removing target".
+P9 supports PCI tunneled operations (atomics and as_notify). This
+patch adds support for tunneled operations on powernv, with a new
+API, to be called by device drivers:
 
-Please test with a patch from there.
+pnv_pci_get_tunnel_ind()
+   Tell driver the 16-bit ASN indication used by kernel.
 
-Cheers,
+pnv_pci_set_tunnel_bar()
+   Tell kernel the Tunnel BAR Response address used by driver.
+   This function uses two new OPAL calls, as the PBCQ Tunnel BAR
+   register is configured by skiboot.
 
-Hannes
+void pnv_pci_get_as_notify_info()
+   Return the ASN info of the thread to be woken up.
 
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+Changelog:
+
+v2: Do not set the ASN indication. Get it from the device tree.
+
+v3: Make pnv_pci_get_phb_node() available when compiling without cxl.
+
+v4: Add pnv_pci_get_as_notify_info().
+    Rebase opal call numbers on skiboot 5.9.6.
+
+This patch depends on the following skiboot prerequisites:
+
+https://patchwork.ozlabs.org/patch/849162/
+https://patchwork.ozlabs.org/patch/849163/
+---
+ arch/powerpc/include/asm/opal-api.h            |  4 +-
+ arch/powerpc/include/asm/opal.h                |  2 +
+ arch/powerpc/include/asm/pnv-pci.h             |  5 ++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  2 +
+ arch/powerpc/platforms/powernv/pci-cxl.c       |  8 ---
+ arch/powerpc/platforms/powernv/pci.c           | 93 ++++++++++++++++++++++++++
+ 6 files changed, 105 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 233c7504b1f2..b901f4d9f009 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -201,7 +201,9 @@
+ #define OPAL_SET_POWER_SHIFT_RATIO		155
+ #define OPAL_SENSOR_GROUP_CLEAR			156
+ #define OPAL_PCI_SET_P2P			157
+-#define OPAL_LAST				157
++#define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		159
++#define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		160
++#define OPAL_LAST				160
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0c545f7fc77b..8705e422b893 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -198,6 +198,8 @@ int64_t opal_unregister_dump_region(uint32_t id);
+ int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
+ int64_t opal_config_cpu_idle_state(uint64_t state, uint64_t flag);
+ int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
++int64_t opal_pci_get_pbcq_tunnel_bar(uint64_t phb_id, uint64_t *addr);
++int64_t opal_pci_set_pbcq_tunnel_bar(uint64_t phb_id, uint64_t addr);
+ int64_t opal_ipmi_send(uint64_t interface, struct opal_ipmi_msg *msg,
+ 		uint64_t msg_len);
+ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index 3e5cf251ad9a..4839e09663f2 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -29,6 +29,11 @@ extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
+ extern int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target,
+ 			   u64 desc);
+ 
++extern int pnv_pci_get_tunnel_ind(struct pci_dev *dev, uint64_t *ind);
++extern int pnv_pci_set_tunnel_bar(struct pci_dev *dev, uint64_t addr,
++				  int enable);
++extern void pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid,
++				       u32 *pid, u32 *tid);
+ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
+ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ 			   unsigned int virq);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 6f4b00a2ac46..5da790fb7fef 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -320,3 +320,5 @@ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
+ OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
++OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
++OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
+diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
+index 94498a04558b..cee003de63af 100644
+--- a/arch/powerpc/platforms/powernv/pci-cxl.c
++++ b/arch/powerpc/platforms/powernv/pci-cxl.c
+@@ -16,14 +16,6 @@
+ 
+ #include "pci.h"
+ 
+-struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
+-{
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-
+-	return of_node_get(hose->dn);
+-}
+-EXPORT_SYMBOL(pnv_pci_get_phb_node);
+-
+ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 5422f4a6317c..c42e69789bd2 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -38,6 +38,7 @@
+ #include "pci.h"
+ 
+ static DEFINE_MUTEX(p2p_mutex);
++static DEFINE_MUTEX(tunnel_mutex);
+ 
+ int pnv_pci_get_slot_id(struct device_node *np, uint64_t *id)
+ {
+@@ -1092,6 +1093,98 @@ int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target, u64 desc)
+ }
+ EXPORT_SYMBOL_GPL(pnv_pci_set_p2p);
+ 
++struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++
++	return of_node_get(hose->dn);
++}
++EXPORT_SYMBOL(pnv_pci_get_phb_node);
++
++int pnv_pci_get_tunnel_ind(struct pci_dev *dev, u64 *asnind)
++{
++	struct device_node *np;
++	const __be32 *prop;
++
++	if (!(np = pnv_pci_get_phb_node(dev)))
++		return -ENXIO;
++
++	prop = of_get_property(np, "ibm,phb-indications", NULL);
++	if (!prop || !prop[1])
++		return -ENXIO;
++
++	*asnind = (u64)be32_to_cpu(prop[1]);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_tunnel_ind);
++
++int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
++{
++	__be64 val;
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	u64 tunnel_bar;
++	int rc;
++
++	if (!opal_check_token(OPAL_PCI_GET_PBCQ_TUNNEL_BAR))
++		return -ENXIO;
++	if (!opal_check_token(OPAL_PCI_SET_PBCQ_TUNNEL_BAR))
++		return -ENXIO;
++
++	hose = pci_bus_to_host(dev->bus);
++	phb = hose->private_data;
++
++	mutex_lock(&tunnel_mutex);
++	rc = opal_pci_get_pbcq_tunnel_bar(phb->opal_id, &val);
++	if (rc != OPAL_SUCCESS) {
++		rc = -EIO;
++		goto out;
++	}
++	tunnel_bar = be64_to_cpu(val);
++	if (enable) {
++		/*
++		* Only one device per PHB can use atomics.
++		* Our policy is first-come, first-served.
++		*/
++		if (tunnel_bar) {
++			rc = -EBUSY;
++			goto out;
++		}
++	} else {
++		/*
++		* The device that owns atomics and wants to release
++		* them must pass the same address with enable == 0.
++		*/
++		if (tunnel_bar != addr) {
++			rc = -EPERM;
++			goto out;
++		}
++		addr = 0x0ULL;
++	}
++	rc = opal_pci_set_pbcq_tunnel_bar(phb->opal_id, addr);
++	rc = opal_error_code(rc);
++out:
++	mutex_unlock(&tunnel_mutex);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pnv_pci_set_tunnel_bar);
++
++#ifdef CONFIG_PPC64
++void pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid, u32 *pid,
++				u32 *tid)
++{
++	*lpid = mfspr(SPRN_LPID);
++	if (task) {
++		*pid = pid_nr(get_task_pid(task, PIDTYPE_PID));
++		*tid = task->thread.tidr;
++	} else {
++		*pid = 0;
++		*tid = 0;
++	}
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_as_notify_info);
++#endif
++
+ void pnv_pci_shutdown(void)
+ {
+ 	struct pci_controller *hose;
 -- 
-Dr. Hannes Reinecke		   Teamlead Storage & Networking
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+2.15.0
