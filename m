@@ -1,24 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yyZrh5GPpzDrV0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 13:59:00 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id e3so5135168pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 18:59:00 -0800 (PST)
-Date: Fri, 15 Dec 2017 12:58:48 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yyb6f24HZzDrSX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 14:11:06 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id b11so4852074pgu.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Dec 2017 19:11:05 -0800 (PST)
+Date: Fri, 15 Dec 2017 13:10:53 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 2/3] powerpc/powernv: Identify scom driven system reset
-Message-ID: <20171215125848.71da3d0e@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKTCnzm+Ha2SLqp1q4W0i82TFP3wjZzPjLsyP2qdCAZf34o9CA@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v3 3/3] powernv/kdump: Fix cases where the kdump kernel
+ can get HMI's
+Message-ID: <20171215131053.10948c93@roar.ozlabs.ibm.com>
+In-Reply-To: <20171215012740.30291-3-bsingharora@gmail.com>
 References: <20171215012740.30291-1-bsingharora@gmail.com>
- <20171215012740.30291-2-bsingharora@gmail.com>
- <20171215124457.69841739@roar.ozlabs.ibm.com>
- <CAKTCnzm+Ha2SLqp1q4W0i82TFP3wjZzPjLsyP2qdCAZf34o9CA@mail.gmail.com>
+ <20171215012740.30291-3-bsingharora@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,39 +28,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 15 Dec 2017 13:54:18 +1100
+On Fri, 15 Dec 2017 12:27:40 +1100
 Balbir Singh <bsingharora@gmail.com> wrote:
 
-> On Fri, Dec 15, 2017 at 1:44 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > On Fri, 15 Dec 2017 12:27:39 +1100
-> > Balbir Singh <bsingharora@gmail.com> wrote:
-> >  
-> >> In irq_set_pending_from_srr1() we were missing 0x2 as system
-> >> reset identified from SRR1 caused by back to back system
-> >> resets or when interrupts are caused by SCOM when the thread
-> >> is not in power saving mode.
-> >>
-> >> This helps us get to NMI handling in both the case where NMI
-> >> is caused when in power-saving and not in power-saving mode.
-> >> The actual exploitation is expected when we are doing a kdump
-> >> and an offline CPU might not be in power-saving mode due to
-> >> an already spurious IPI or any other reason.
-> >>
-> >> Signed-off-by: Balbir Singh <bsingharora@gmail.com>  
-> >
-> > When not in power saving mode, we don't look at SRR1 at all, so
-> > we don't need this. You should never be getting it returned as the
-> > result of your idle instruction (except on DD1 which has a bug,
-> > but firmware doesn't implement the NMI IPI).
-> >  
+> Certain HMI's such as malfunction error propagate through
+> all threads/core on the system. If a thread was offline
+> prior to us crashing the system and jumping to the kdump
+> kernel, bad things happen when it wakes up due to an HMI
+> in the kdump kernel.
 > 
-> I added this for the next patch. We call irq_set_pending_from_srr1
-> while coming out of CPU idle, but if for any reason the IPI was spurious
-> and then we see an NMI during kdump, I did want to detect that
-> and callback into the NMI handler.
+> There are several possible ways to solve this problem
+> 
+> 1. Put the offline cores in a state such that they are
+> not woken up for machine check and HMI errors. This
+> does not work, since we might need to wake up offline
+> threads to handle TB errors
+> 2. Ignore HMI errors, setup HMEER to mask HMI errors,
+> but this still leads the window open for any MCEs
+> and masking them for the duration of the dump might
+> be a concern
+> 3. Wake up offline CPUs, as in send them to
+> crash_ipi_callback (not wake them up as in mark them
+> online as seen by the hotplug). kexec does a
+> wake_online_cpus() call, this patch does something
+> similar, but instead sends an IPI and forces them to
+> crash_ipi_callback()
+> 
+> This patch takes approach #3.
+> 
+> Care is taken to enable this only for powenv platforms
+> via crash_wake_offline (a global value set at setup
+> time). The crash code sends out IPI's to all CPU's
+> which then move to crash_ipi_callback and kexec_smp_wait().
+> 
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+> 
+> Changelog v3
+>  - Use SRR1's reason to wake up to drive replay_system_reset()
+>    as a means of getting to kdump() as opposed to calling
+>    crash_ipi_callback based on comments from Nick Piggin.
+> 
+>  arch/powerpc/include/asm/kexec.h     |  2 ++
+>  arch/powerpc/kernel/crash.c          | 13 ++++++++++++-
+>  arch/powerpc/kernel/smp.c            | 18 ++++++++++++++++++
+>  arch/powerpc/platforms/powernv/smp.c | 12 ++++++++++++
+>  4 files changed, 44 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+> index 4419d435639a..9dcbfa6bbb91 100644
+> --- a/arch/powerpc/include/asm/kexec.h
+> +++ b/arch/powerpc/include/asm/kexec.h
+> @@ -73,6 +73,8 @@ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
+>  					  master to copy new code to 0 */
+>  extern int crashing_cpu;
+>  extern void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *));
+> +extern void crash_ipi_callback(struct pt_regs *);
+> +extern int crash_wake_offline;
+>  
+>  struct kimage;
+>  struct pt_regs;
+> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+> index 29c56ca2ddfd..00b215125d3e 100644
+> --- a/arch/powerpc/kernel/crash.c
+> +++ b/arch/powerpc/kernel/crash.c
+> @@ -44,6 +44,14 @@
+>  #define REAL_MODE_TIMEOUT	10000
+>  
+>  static int time_to_dump;
+> +/*
+> + * crash_wake_offline should be set to 1 by platforms that intend to wake
+> + * up offline cpus prior to jumping to a kdump kernel. Currently powernv
+> + * sets it to 1, since we want to avoid things from happening when an
+> + * offline CPU wakes up due to something like an HMI (malfunction error),
+> + * which propagates to all threads.
+> + */
+> +int crash_wake_offline;
+>  
+>  #define CRASH_HANDLER_MAX 3
+>  /* List of shutdown handles */
+> @@ -63,7 +71,7 @@ static int handle_fault(struct pt_regs *regs)
+>  #ifdef CONFIG_SMP
+>  
+>  static atomic_t cpus_in_crash;
+> -static void crash_ipi_callback(struct pt_regs *regs)
+> +void crash_ipi_callback(struct pt_regs *regs)
+>  {
+>  	static cpumask_t cpus_state_saved = CPU_MASK_NONE;
+>  
+> @@ -106,6 +114,9 @@ static void crash_kexec_prepare_cpus(int cpu)
+>  
+>  	printk(KERN_EMERG "Sending IPI to other CPUs\n");
+>  
+> +	if (crash_wake_offline)
+> +		ncpus = num_present_cpus() - 1;
+> +
+>  	crash_send_ipi(crash_ipi_callback);
+>  	smp_wmb();
+>  
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index e0a4c1f82e25..bbe7634b3a43 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -543,7 +543,25 @@ void smp_send_debugger_break(void)
+>  #ifdef CONFIG_KEXEC_CORE
+>  void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
+>  {
+> +	int cpu;
+> +
+>  	smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, crash_ipi_callback, 1000000);
+> +	if (kdump_in_progress() && crash_wake_offline) {
+> +		for_each_present_cpu(cpu) {
+> +			if (cpu_online(cpu))
+> +				continue;
+> +			/*
+> +			 * crash_ipi_callback will wait for
+> +			 * all cpus, including offline CPUs.
+> +			 * We don't care about nmi_ipi_function.
+> +			 * Offline cpus will jump straight into
+> +			 * crash_ipi_callback, we can skip the
+> +			 * entire NMI dance and waiting for
+> +			 * cpus to clear pending mask, etc.
+> +			 */
+> +			do_smp_send_nmi_ipi(cpu);
+> +		}
+> +	}
+>  }
+>  #endif
+>  
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index ba030669eca1..1594bbff3dec 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -37,6 +37,8 @@
+>  #include <asm/kvm_ppc.h>
+>  #include <asm/ppc-opcode.h>
+>  #include <asm/cpuidle.h>
+> +#include <asm/kexec.h>
+> +#include <asm/reg.h>
+>  
+>  #include "powernv.h"
+>  
+> @@ -212,6 +214,13 @@ static void pnv_smp_cpu_kill_self(void)
+>  		}
+>  		smp_mb();
+>  
+> +		/*
+> +		 * For kdump kernels, we process the ipi and jump to
+> +		 * handling the system reset exception.
+> +		 */
+> +		if (kdump_in_progress())
+> +			irq_set_pending_from_srr1(srr1);
+> +
+>  		if (cpu_core_split_required())
+>  			continue;
+>  
 
-You'll never see it. The SRR1 value you get is the idle wakeup code.
-So any scom-when-not-idle bit should never be set.
+I wonder if we want to special-case it for system reset only? Everything
+is all going down for kdump anyway I guess, but theoretically we don't
+want to put other interrupts in our pending mask.
+
+We might as well just do it unconditionally as well, so we can easily test
+and make sure we do something sane if we happen to take a stray sreset
+here for some reason (e.g., pdbg).
+
+I would do this:
+
+ } else if ((srr1 & wmask) == SRR1_WAKERESET) {
+     /* kdump or debug tools can sreset offline CPUs */
+     irq_set_pending_from_srr1(srr1);
+ }
+
+But then you still need an explicit kdump check for non-sreset wakeups
+because the platform may not implement sreset, or it may fall back to
+normal IPI if the sreset scom fails. So you then still need your
+
+if (kdump) crash_ipi_callback 
 
 Thanks,
 Nick
