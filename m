@@ -2,7 +2,7 @@ Return-Path: <BATV+f9b51a8ca15fdac5c6a2+5227+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yysl83yHTzDrjK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yysl83yFGzDrZJ
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 01:10:11 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: Dan Williams <dan.j.williams@intel.com>
@@ -10,9 +10,10 @@ Cc: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>, linux-nvdimm@lists.01.org,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 02/17] mm: don't export arch_add_memory
-Date: Fri, 15 Dec 2017 15:09:32 +0100
-Message-Id: <20171215140947.26075-3-hch@lst.de>
+Subject: [PATCH 01/17] memremap: provide stubs for vmem_altmap_offset and
+ vmem_altmap_free
+Date: Fri, 15 Dec 2017 15:09:31 +0100
+Message-Id: <20171215140947.26075-2-hch@lst.de>
 In-Reply-To: <20171215140947.26075-1-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,38 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only x86_64 and sh export this symbol, and it is not used by any
-modular code.
+Currently all calls to those functions are eliminated by the compiler when
+CONFIG_ZONE_DEVICE is not set, but this soon won't be the case.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/sh/mm/init.c     | 1 -
- arch/x86/mm/init_64.c | 1 -
- 2 files changed, 2 deletions(-)
+ include/linux/memremap.h | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index bf726af5f1a5..afc54d593a26 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -498,7 +498,6 @@ int arch_add_memory(int nid, u64 start, u64 size, bool want_memblock)
+diff --git a/include/linux/memremap.h b/include/linux/memremap.h
+index 10d23c367048..d5a6736d9737 100644
+--- a/include/linux/memremap.h
++++ b/include/linux/memremap.h
+@@ -26,9 +26,6 @@ struct vmem_altmap {
+ 	unsigned long alloc;
+ };
  
- 	return ret;
+-unsigned long vmem_altmap_offset(struct vmem_altmap *altmap);
+-void vmem_altmap_free(struct vmem_altmap *altmap, unsigned long nr_pfns);
+-
+ #ifdef CONFIG_ZONE_DEVICE
+ struct vmem_altmap *to_vmem_altmap(unsigned long memmap_start);
+ #else
+@@ -138,6 +135,9 @@ void *devm_memremap_pages(struct device *dev, struct resource *res,
+ 		struct percpu_ref *ref, struct vmem_altmap *altmap);
+ struct dev_pagemap *find_dev_pagemap(resource_size_t phys);
+ 
++unsigned long vmem_altmap_offset(struct vmem_altmap *altmap);
++void vmem_altmap_free(struct vmem_altmap *altmap, unsigned long nr_pfns);
++
+ static inline bool is_zone_device_page(const struct page *page);
+ #else
+ static inline void *devm_memremap_pages(struct device *dev,
+@@ -157,7 +157,17 @@ static inline struct dev_pagemap *find_dev_pagemap(resource_size_t phys)
+ {
+ 	return NULL;
  }
--EXPORT_SYMBOL_GPL(arch_add_memory);
+-#endif
++
++static inline unsigned long vmem_altmap_offset(struct vmem_altmap *altmap)
++{
++	return 0;
++}
++
++static inline void vmem_altmap_free(struct vmem_altmap *altmap,
++		unsigned long nr_pfns)
++{
++}
++#endif /* CONFIG_ZONE_DEVICE */
  
- #ifdef CONFIG_NUMA
- int memory_add_physaddr_to_nid(u64 addr)
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 4a837289f2ad..8acdc35c2dfa 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -796,7 +796,6 @@ int arch_add_memory(int nid, u64 start, u64 size, bool want_memblock)
- 
- 	return add_pages(nid, start_pfn, nr_pages, want_memblock);
- }
--EXPORT_SYMBOL_GPL(arch_add_memory);
- 
- #define PAGE_INUSE 0xFD
- 
+ #if defined(CONFIG_DEVICE_PRIVATE) || defined(CONFIG_DEVICE_PUBLIC)
+ static inline bool is_device_private_page(const struct page *page)
 -- 
 2.14.2
