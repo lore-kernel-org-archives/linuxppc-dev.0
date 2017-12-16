@@ -1,20 +1,20 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x232.google.com (mail-oi0-x232.google.com
- [IPv6:2607:f8b0:4003:c06::232])
+Received: from mail-oi0-x22e.google.com (mail-oi0-x22e.google.com
+ [IPv6:2607:f8b0:4003:c06::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yz95D4DK9zDsPm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 12:41:52 +1100 (AEDT)
-Received: by mail-oi0-x232.google.com with SMTP id 184so7383924oii.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 17:41:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yz95c6S8VzDsNS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 12:42:12 +1100 (AEDT)
+Received: by mail-oi0-x22e.google.com with SMTP id 184so7384196oii.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 17:42:12 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20171215140947.26075-3-hch@lst.de>
+In-Reply-To: <20171215140947.26075-4-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
- <20171215140947.26075-3-hch@lst.de>
+ <20171215140947.26075-4-hch@lst.de>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 15 Dec 2017 17:41:49 -0800
-Message-ID: <CAPcyv4jduU6jZgfGWzirj2oj5-7g_mArriNGBhueaQzmUOLL6Q@mail.gmail.com>
-Subject: Re: [PATCH 02/17] mm: don't export arch_add_memory
+Date: Fri, 15 Dec 2017 17:42:10 -0800
+Message-ID: <CAPcyv4iuLNA4JSm7S1dg=7baxMPTPhKa=9HMJB=iwycz20mfCw@mail.gmail.com>
+Subject: Re: [PATCH 03/17] mm: don't export __add_pages
 To: Christoph Hellwig <hch@lst.de>
 Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>,
@@ -33,8 +33,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
-> Only x86_64 and sh export this symbol, and it is not used by any
-> modular code.
+> This function isn't used by any modules, and is only to be called
+> from core MM code.  This includes the calls for the add_pages wrapper
+> that might be inlined.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
