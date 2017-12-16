@@ -1,27 +1,30 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yzZWP05kwzDsQ8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 04:47:27 +1100 (AEDT)
-Subject: Re: [PATCH v3 03/11] ASoC: fsl_ssi: Refine all comments
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yzZYv15bgzDrp4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 04:49:38 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id e14so7563100pgr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 09:49:38 -0800 (PST)
+Date: Sat, 16 Dec 2017 09:49:33 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: Caleb Crome <caleb@crome.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+Cc: Timur Tabi <timur@tabi.org>, Mark Brown <broonie@kernel.org>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, Fabio Estevam <fabio.estevam@nxp.com>,
  mail@maciej.szmigiero.name, Liam Girdwood <lgirdwood@gmail.com>,
  Arnaud Mouiche <arnaud.mouiche@invoxia.com>, lukma@denx.de,
  Sascha Hauer <kernel@pengutronix.de>
+Subject: Re: [PATCH v3 03/11] ASoC: fsl_ssi: Refine all comments
+Message-ID: <20171216174932.GB3840@Asurada>
 References: <1513207108-30430-1-git-send-email-nicoleotsuka@gmail.com>
  <1513207108-30430-4-git-send-email-nicoleotsuka@gmail.com>
  <01a7d97b-7e80-83b2-e850-d513d7dc35aa@tabi.org>
  <CAG5mAdw04U5gpRMqLYOBeujH=t+59WJLFeGe+Qareh-cuWsDvg@mail.gmail.com>
-From: Timur Tabi <timur@tabi.org>
-Message-ID: <4680f3e1-e0c8-baa5-6ca4-85d3feb4eb87@tabi.org>
-Date: Sat, 16 Dec 2017 11:47:21 -0600
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <CAG5mAdw04U5gpRMqLYOBeujH=t+59WJLFeGe+Qareh-cuWsDvg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,7 +34,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/16/17 11:30 AM, Caleb Crome wrote:
+On Sat, Dec 16, 2017 at 09:30:14AM -0800, Caleb Crome wrote:
+
 > Having come to work on this driver with very little knowledge about
 > kernel programming, and i.MX, I have to agree with Timur. It's an
 > amazingly complex driver (with support of so many variants).  By
@@ -41,14 +45,11 @@ On 12/16/17 11:30 AM, Caleb Crome wrote:
 > in knowledge about the SSI port and linux, and it's interaction with
 > DMA.
 
-This is exactly why I wrote the comments the way I did.  As I was 
-learning about the hardware and ASoC drivers, whenever I was confused 
-about something and then figured it out, I would add a comment about 
-that.  I figured if it wasn't obvious to me, it wouldn't be obvious to 
-anyone else.  And since this was one of the first ASoC drivers, and the 
-first to use device tree, it would become a reference driver for years 
-to come.  That made it even more important that I document everything I 
-learned.
+I never said that I don't agree with Timur. Every change here is
+to simplify things. As long as Timur or any reviewer feels one of
+new comments is harder to understand, I am totally fine to rework.
+I respect everyone's opinion, but I hope everyone can respect my
+effort too by telling me which one needs to rework and why?
 
-I am pleased that other developers kept up that commenting style.  This 
-patch destroys all of that.
+Thanks
+Nicolin
