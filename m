@@ -1,20 +1,21 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x22e.google.com (mail-oi0-x22e.google.com
- [IPv6:2607:f8b0:4003:c06::22e])
+Received: from mail-ot0-x229.google.com (mail-ot0-x229.google.com
+ [IPv6:2607:f8b0:4003:c0f::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yz95c6S8VzDsNS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 12:42:12 +1100 (AEDT)
-Received: by mail-oi0-x22e.google.com with SMTP id 184so7384196oii.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 17:42:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yz9Dk6lWCzDrYD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 12:48:22 +1100 (AEDT)
+Received: by mail-ot0-x229.google.com with SMTP id o23so9319152otd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 17:48:22 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20171215140947.26075-4-hch@lst.de>
+In-Reply-To: <20171215140947.26075-5-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
- <20171215140947.26075-4-hch@lst.de>
+ <20171215140947.26075-5-hch@lst.de>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 15 Dec 2017 17:42:10 -0800
-Message-ID: <CAPcyv4iuLNA4JSm7S1dg=7baxMPTPhKa=9HMJB=iwycz20mfCw@mail.gmail.com>
-Subject: Re: [PATCH 03/17] mm: don't export __add_pages
+Date: Fri, 15 Dec 2017 17:48:20 -0800
+Message-ID: <CAPcyv4g_6izDX780Fqv=zx=aYrASivwYpQcNkRmZW3iSZfKQHQ@mail.gmail.com>
+Subject: Re: [PATCH 04/17] mm: pass the vmem_altmap to arch_add_memory and
+ __add_pages
 To: Christoph Hellwig <hch@lst.de>
 Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>,
@@ -33,12 +34,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
-> This function isn't used by any modules, and is only to be called
-> from core MM code.  This includes the calls for the add_pages wrapper
-> that might be inlined.
+> We can just pass this on instead of having to do a radix tree lookup
+> without proper locking 2 levels into the callchain.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Looks good,
+Yeah, the lookup of vmem_altmap is too magical and surprising this is better.
 
 Reviewed-by: Dan Williams <dan.j.williams@intel.com>
