@@ -3,19 +3,18 @@ Received: from mail-ot0-x22d.google.com (mail-ot0-x22d.google.com
  [IPv6:2607:f8b0:4003:c0f::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yz9bX3yS6zDsQ5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 13:04:40 +1100 (AEDT)
-Received: by mail-ot0-x22d.google.com with SMTP id 103so9297996otj.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 18:04:40 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yz9mv3DLPzDrW7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 13:12:47 +1100 (AEDT)
+Received: by mail-ot0-x22d.google.com with SMTP id p3so9333483oti.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 18:12:47 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20171215140947.26075-7-hch@lst.de>
+In-Reply-To: <20171215140947.26075-8-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
- <20171215140947.26075-7-hch@lst.de>
+ <20171215140947.26075-8-hch@lst.de>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 15 Dec 2017 18:04:37 -0800
-Message-ID: <CAPcyv4iNDonroVQy7YFsM-uC_0GMsjQgSBj=ZfdOB-XUK5tsKw@mail.gmail.com>
-Subject: Re: [PATCH 06/17] mm: pass the vmem_altmap to arch_remove_memory and
- __remove_pages
+Date: Fri, 15 Dec 2017 18:12:44 -0800
+Message-ID: <CAPcyv4g_XRG+xXBP0Z-8qjT1-t0h2eHQanDXHkH6WbeLqcaS_g@mail.gmail.com>
+Subject: Re: [PATCH 07/17] mm: pass the vmem_altmap to vmemmap_free
 To: Christoph Hellwig <hch@lst.de>
 Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>,
@@ -35,12 +34,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
 > We can just pass this on instead of having to do a radix tree lookup
-> without proper locking 2 levels into the callchain.
+> without proper locking a few levels into the callchain.
 >
-> Signed-off-by: Christoph Hellwig <hch@lst.de>wip
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-I assume that "wip" is a typo?
+Now I remember why I went with the radix lookup, laziness!
 
-Otherwise,
+This looks good to me, I appreciate you digging in.
 
 Reviewed-by: Dan Williams <dan.j.williams@intel.com>
