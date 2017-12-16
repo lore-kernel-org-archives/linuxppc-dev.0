@@ -1,21 +1,21 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x22d.google.com (mail-oi0-x22d.google.com
- [IPv6:2607:f8b0:4003:c06::22d])
+Received: from mail-ot0-x229.google.com (mail-ot0-x229.google.com
+ [IPv6:2607:f8b0:4003:c0f::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yz9v60F9HzDqm7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 13:18:07 +1100 (AEDT)
-Received: by mail-oi0-x22d.google.com with SMTP id t78so7404097oie.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 18:18:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yzB2M096zzDrYp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 13:24:26 +1100 (AEDT)
+Received: by mail-ot0-x229.google.com with SMTP id i1so9335804oth.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 18:24:26 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20171215140947.26075-10-hch@lst.de>
+In-Reply-To: <20171215140947.26075-11-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
- <20171215140947.26075-10-hch@lst.de>
+ <20171215140947.26075-11-hch@lst.de>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 15 Dec 2017 18:18:05 -0800
-Message-ID: <CAPcyv4g0074zD9ztrMu3cT-sVpZfkCK=i6F0XohRxw5TKDupVA@mail.gmail.com>
-Subject: Re: [PATCH 09/17] mm: split altmap memory map allocation from normal
- case
+Date: Fri, 15 Dec 2017 18:24:24 -0800
+Message-ID: <CAPcyv4gu=Q4bW+hOJFbeWr7t6T8CyiOSYCcNRYCy3HnokBFd=w@mail.gmail.com>
+Subject: Re: [PATCH 10/17] mm: merge vmem_altmap_alloc into
+ altmap_alloc_block_buf
 To: Christoph Hellwig <hch@lst.de>
 Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>,
@@ -34,14 +34,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
-> No functional changes, just untangling the call chain.
-
-I'd also mention that creating more helper functions in the altmap_
-namespace helps document why altmap is passed all around the hotplug
-code.
-
+> There is no clear separation between the two, so merge them.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > Reviewed-by: Logan Gunthorpe <logang@deltatee.com>
+
+Looks good,
 
 Reviewed-by: Dan Williams <dan.j.williams@intel.com>
