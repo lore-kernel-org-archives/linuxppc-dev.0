@@ -1,21 +1,20 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-ot0-x22d.google.com (mail-ot0-x22d.google.com
- [IPv6:2607:f8b0:4003:c0f::22d])
+Received: from mail-oi0-x232.google.com (mail-oi0-x232.google.com
+ [IPv6:2607:f8b0:4003:c06::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yz94y4d9FzDsNS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 12:41:34 +1100 (AEDT)
-Received: by mail-ot0-x22d.google.com with SMTP id j2so9291435ota.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 17:41:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3yz95D4DK9zDsPm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 12:41:52 +1100 (AEDT)
+Received: by mail-oi0-x232.google.com with SMTP id 184so7383924oii.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Dec 2017 17:41:52 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20171215140947.26075-2-hch@lst.de>
+In-Reply-To: <20171215140947.26075-3-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
- <20171215140947.26075-2-hch@lst.de>
+ <20171215140947.26075-3-hch@lst.de>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 15 Dec 2017 17:41:31 -0800
-Message-ID: <CAPcyv4iENTTRvoigbdtztrtKiAFbBuCcwYwQ+c02XuCRGToH6g@mail.gmail.com>
-Subject: Re: [PATCH 01/17] memremap: provide stubs for vmem_altmap_offset and
- vmem_altmap_free
+Date: Fri, 15 Dec 2017 17:41:49 -0800
+Message-ID: <CAPcyv4jduU6jZgfGWzirj2oj5-7g_mArriNGBhueaQzmUOLL6Q@mail.gmail.com>
+Subject: Re: [PATCH 02/17] mm: don't export arch_add_memory
 To: Christoph Hellwig <hch@lst.de>
 Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>,
@@ -34,8 +33,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
-> Currently all calls to those functions are eliminated by the compiler when
-> CONFIG_ZONE_DEVICE is not set, but this soon won't be the case.
+> Only x86_64 and sh export this symbol, and it is not used by any
+> modular code.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
