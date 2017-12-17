@@ -1,31 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x241.google.com (mail-vk0-x241.google.com
- [IPv6:2607:f8b0:400c:c05::241])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-vk0-x22c.google.com (mail-vk0-x22c.google.com
+ [IPv6:2607:f8b0:400c:c05::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3yzq8d3dkmzDsRq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 14:17:05 +1100 (AEDT)
-Received: by mail-vk0-x241.google.com with SMTP id j192so7755390vkc.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Dec 2017 19:17:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z01Js3W1zzDrnr
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 21:54:52 +1100 (AEDT)
+Received: by mail-vk0-x22c.google.com with SMTP id o16so7980264vke.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 02:54:52 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1513148261-21097-4-git-send-email-ego@linux.vnet.ibm.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
- <1513148261-21097-4-git-send-email-ego@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Sun, 17 Dec 2017 14:17:02 +1100
-Message-ID: <CAKTCnz=qMNECSSfVGXNfN9JfxAZUB86-dwtx1ZCicmj7b7Kweg@mail.gmail.com>
-Subject: Re: [v3 PATCH 3/3] powernv-cpufreq: Treat pstates as opaque 8-bit
- values
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <CA+7wUsw-BrxyAmYsj5tmUSLJWsJ1OUOEK0zx98RD1+YsQ8MRJA@mail.gmail.com>
+References: <CA+7wUszecRH7p5iHNXNqmb956PnhZa=4zCx+E4c2ur8Jzf6c4w@mail.gmail.com>
+ <CA+7wUsxuhWXn8raBsp29umpHhVO7BnX_B3CALTddBx5gJeLoCA@mail.gmail.com>
+ <CA+7wUsw-BrxyAmYsj5tmUSLJWsJ1OUOEK0zx98RD1+YsQ8MRJA@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Sun, 17 Dec 2017 11:54:29 +0100
+Message-ID: <CA+7wUszdpmbScwEkAKSLjDFV5ufJToECxuoJ1tPyA15hG+H+kw@mail.gmail.com>
+Subject: Re: Mac Mini G4 defconfig ?
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Douglas Anderson <dianders@chromium.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,66 +30,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Fri, Dec 15, 2017 at 10:01 PM, Mathieu Malaterre <malat@debian.org> wrote:
+> On Fri, Dec 15, 2017 at 9:52 PM, Mathieu Malaterre <malat@debian.org> wrote:
+>> On Fri, Dec 15, 2017 at 8:50 PM, Mathieu Malaterre <malat@debian.org> wrote:
+>>> Hi there,
+>>>
+>>> Does anyone has working defconfig for a Mac Mini G4 ?
+>>>
+>>> Here is what I tried:
+>>>
+>>> $ cat ./arch/powerpc/configs/g4_defconfig
+>>> CONFIG_PPC_FPU=y
+>>> CONFIG_ALTIVEC=y
+>>> $ make ARCH=powerpc g4_defconfig
+>>> $ make -j8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- V=1
+>>> set -e; : '  CHK     include/config/kernel.release'; mkdir -p
+>>
+>> That is odd. Doing a quick git bisect:
+>>
+>> $ git checkout 3298b690b21cdbe6b2ae8076d9147027f396f2b1
+>> $ make -n ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -f ./Makefile
+>> silentoldconfig V=1
+>> + make -n ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -f ./Makefile
+>> silentoldconfig V=1
+>> /bin/sh: line 0: [: -ge: unary operator expected
+>> make -f ./scripts/Makefile.build obj=scripts/basic
+>>
+>> I cannot make sense of this shell error, maybe this is unrelated but
+>> things start breaking around this commit.
 >
-> On POWER8 and POWER9, the PMSR and the PMCR registers define pstates
-> to be 8-bit wide values. The device-tree exports pstates as 32-bit
-> wide values of which the lower byte is the actual pstate.
+> Even if I discard this shell error, the next error comes with:
 >
-> The current implementation in the kernel treats pstates as integer
-> type, since it used to use the sign of the pstate for performing some
-> boundary-checks. This is no longer required after the patch
-> "powernv-cpufreq: Fix pstate_to_idx() to handle non-continguous
-> pstates".
+> 433dc2ebe7d17dd21cba7ad5c362d37323592236 is the first bad commit
 >
-> So, in this patch, we modify the powernv-cpufreq driver to uniformly
-> treat pstates as opaque 8-bit values obtained from the device-tree or
-> the PMCR. This simplifies the extract_pstate() helper function since
-> we no longer no longer require to worry about the sign-extentions.
+> With:
 >
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 47 ++++++++++++++++-----------------------
->  1 file changed, 19 insertions(+), 28 deletions(-)
+> $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- V=1
+> [...]
+>   powerpc-linux-gnu-gcc -Wp,-MD,kernel/.bounds.s.d  -nostdinc -isystem
+>  -I./arch/powerpc/include -I./arch/powerpc/include/generated
+> -I./include -I./arch/powerpc/include/uapi
+> -I./arch/powerpc/include/generated/uapi -I./include/uapi
+> -I./include/generated/uapi -include ./include/linux/kconfig.h
+> -D__KERNEL__ -Iarch/powerpc -Wall -Wundef -Wstrict-prototypes
+> -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar
+> -Werror-implicit-function-declaration -Wno-format-security -std=gnu89
+> -pipe -Iarch/powerpc -ffixed-r2 -mmultiple -mcpu=powerpc -Wa,-maltivec
+> -mbig-endian -fno-delete-null-pointer-checks -Wno-frame-address -O2
+> -Wno-maybe-uninitialized --param=allow-store-data-races=0
+> -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fno-stack-protector
+> -Wno-unused-but-set-variable -Wno-unused-const-variable
+> -fomit-frame-pointer -fno-var-tracking-assignments
+> -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow
+> -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes
+> -Werror=date-time -Werror=incompatible-pointer-types
+> -Werror=designated-init    -DKBUILD_BASENAME='"bounds"'
+> -DKBUILD_MODNAME='"bounds"'  -fverbose-asm -S -o kernel/bounds.s
+> kernel/bounds.c
+> In file included from ./include/linux/page-flags.h:9:0,
+>                  from kernel/bounds.c:9:
+> ./include/linux/bug.h:4:21: fatal error: asm/bug.h: No such file or directory
+>  #include <asm/bug.h>
+>                      ^
+> compilation terminated.
+> Kbuild:20: recipe for target 'kernel/bounds.s' failed
+> make[1]: *** [kernel/bounds.s] Error 1
+> Makefile:1051: recipe for target 'prepare0' failed
+> make: *** [prepare0] Error 2
 >
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 8e3dbca..8a4e2ce 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -110,12 +110,11 @@ struct global_pstate_info {
->   *         hashtable
->   */
->  struct pstate_idx_revmap_data {
-> -       int pstate_id;
-> +       u8 pstate_id;
->         unsigned int cpufreq_table_idx;
->         struct hlist_node hentry;
->  };
 >
-> -u32 pstate_sign_prefix;
->  static bool rebooting, throttled, occ_reset;
->
->  static const char * const throttle_reason[] = {
-> @@ -170,14 +169,9 @@ enum throttle_reason_type {
->         bool wof_enabled;
->  } powernv_pstate_info;
->
-> -static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
-> +static inline u8 extract_pstate(u64 pmsr_val, unsigned int shift)
->  {
-> -       int ret = ((pmsr_val >> shift) & 0xFF);
-> -
-> -       if (!ret)
-> -               return ret;
-> -
-> -       return (pstate_sign_prefix | ret);
-> +       return ((pmsr_val >> shift) & 0xFF);
->  }
+> Comments ?
 
-So we just added this and moved from an int to u8. I was going to ask
-if we still need an int in patch1, but I thought the driver dealt with
-just integers because of the larger framework.
+Solution is:
 
-Balbir Singh.
+$ rm .cache.mk
+
+I guess the cache was not cleared in between my different kernel compilations.
+
+Sorry for the noise
