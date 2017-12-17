@@ -1,21 +1,20 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
+Received: from mail-oi0-x232.google.com (mail-oi0-x232.google.com
+ [IPv6:2607:f8b0:4003:c06::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0B3S4H7mzDqn6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 04:28:52 +1100 (AEDT)
-Received: by mail-ot0-x241.google.com with SMTP id p3so11637076oti.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 09:28:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0B4t3QWpzDrWh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 04:30:06 +1100 (AEDT)
+Received: by mail-oi0-x232.google.com with SMTP id u193so9231927oie.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 09:30:06 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20171215140947.26075-13-hch@lst.de>
+In-Reply-To: <20171215140947.26075-14-hch@lst.de>
 References: <20171215140947.26075-1-hch@lst.de>
- <20171215140947.26075-13-hch@lst.de>
+ <20171215140947.26075-14-hch@lst.de>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Sun, 17 Dec 2017 09:28:49 -0800
-Message-ID: <CAPcyv4gTnFzT0a5Q3XrLRWjNzc5QtBq3Pypwxz2hsar5b+17hg@mail.gmail.com>
-Subject: Re: [PATCH 12/17] mm: optimize dev_pagemap reference counting around
- get_dev_pagemap
+Date: Sun, 17 Dec 2017 09:30:03 -0800
+Message-ID: <CAPcyv4j+wo17xRHuJsDqHKZT_xjnt94xaT4VBQ+uhKykoqvywA@mail.gmail.com>
+Subject: Re: [PATCH 13/17] memremap: remove to_vmem_altmap
 To: Christoph Hellwig <hch@lst.de>
 Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>,
@@ -34,36 +33,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
-> Change the calling convention so that get_dev_pagemap always consumes the
-> previous reference instead of doing this using an explicit earlier call to
-> put_dev_pagemap in the callers.
->
-> The callers will still need to put the final reference after finishing the
-> loop over the pages.
+> All callers are gone now.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Reviewed-by: Logan Gunthorpe <logang@deltatee.com>
 > ---
->  kernel/memremap.c | 17 +++++++++--------
->  mm/gup.c          |  7 +++++--
->  2 files changed, 14 insertions(+), 10 deletions(-)
->
-> diff --git a/kernel/memremap.c b/kernel/memremap.c
-> index 43d94db97ff4..26764085785d 100644
-> --- a/kernel/memremap.c
-> +++ b/kernel/memremap.c
-> @@ -506,22 +506,23 @@ struct vmem_altmap *to_vmem_altmap(unsigned long memmap_start)
->   * @pfn: page frame number to lookup page_map
->   * @pgmap: optional known pgmap that already has a reference
->   *
-> - * @pgmap allows the overhead of a lookup to be bypassed when @pfn lands in the
-> - * same mapping.
-> + * If @pgmap is non-NULL and covers @pfn it will be returned as-is.  If @pgmap
-> + * is non-NULL but does not cover @pfn the reference to it while be released.
 
-s/while/will/
-
-
-Other than that you can add:
+Nice,
 
 Reviewed-by: Dan Williams <dan.j.williams@intel.com>
