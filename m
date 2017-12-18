@@ -1,34 +1,23 @@
-Return-Path: <srs0=pl8l=do=infradead.org=rdunlap@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0pfN6LFMzDrWw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 04:57:48 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3z0pfL0B8Bz8vt8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 04:57:46 +1100 (AEDT)
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3z0pf6185pz9t3F
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Dec 2017 04:57:31 +1100 (AEDT)
-Subject: Re: [PATCH] Fix parse_args cycle limit check.
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Ankit Kumar <ankit@linux.vnet.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-References: <20171215214702.7c7afba1@kitsune.suse.cz>
- <20171215214149.3692-1-msuchanek@suse.de>
- <12296c9b-d215-20d4-843e-4c9c9c06f0be@infradead.org>
- <20171218183413.53358649@kitsune.suse.cz>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <0fd14d20-ae3a-07d9-ee73-fe08ee9af770@infradead.org>
-Date: Mon, 18 Dec 2017 09:57:17 -0800
+Return-Path: <geoff@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0qBx4CbXzDqZC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 05:22:33 +1100 (AEDT)
+Subject: Re: [PATCH 1/2] ps3: Delete an error message for a failed memory
+ allocation in two functions
+To: SF Markus Elfring <elfring@users.sourceforge.net>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+References: <9b6464bc-a408-de2a-1b54-cb7794b92506@users.sourceforge.net>
+ <58807b28-b2b9-7e77-11b8-21db43c9d5ba@users.sourceforge.net>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <1fb2955d-7233-7069-7c4b-316a4eb764f0@infradead.org>
+Date: Mon, 18 Dec 2017 10:22:18 -0800
 MIME-Version: 1.0
-In-Reply-To: <20171218183413.53358649@kitsune.suse.cz>
+In-Reply-To: <58807b28-b2b9-7e77-11b8-21db43c9d5ba@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,31 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/18/2017 09:34 AM, Michal Suchánek wrote:
-> On Fri, 15 Dec 2017 15:49:09 -0800
-> Randy Dunlap <rdunlap@infradead.org> wrote:
+On 12/16/2017 05:51 AM, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sat, 16 Dec 2017 12:32:42 +0100
 > 
->> On 12/15/2017 01:41 PM, Michal Suchanek wrote:
->>> Actually args are supposed to be renamed to next so both and args
->>> hold the previous argument so both can be passed to the callback.
->>> This additionla patch  
->>
->>                                                                 additional
->>
->>> should fix up the rename.  
->>
->> Would you try rewriting the first sentence, please? I don't get it.
-> 
-> Ok, I guess this should be clarified. For the original patch and the
-> fixup squashed together this is what the patch is supposed to do:
-> 
-> This patch adds variable for tracking the parameter which is currently
-> being processed. There is "args" variable which tracks the parameter
-> which will be processed next so this patch adds "next" variable to
-> track that and uses "args" to track the current argument.
+> Omit an extra message for a memory allocation failure in these functions.
 
-OK, thanks.
+This is OK, I'll add it to my ps3-queue branch.
 
-
--- 
-~Randy
+-Geoff
