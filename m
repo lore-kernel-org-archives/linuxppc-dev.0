@@ -1,33 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0V7z45zBzDsN5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 16:33:50 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id c204so9250726pfc.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 21:33:49 -0800 (PST)
-Date: Mon, 18 Dec 2017 15:33:34 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Torsten Duwe <duwe@lst.de>, linux-kernel@vger.kernel.org, Jiri Kosina
- <jkosina@suse.cz>, live-patching@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
-Message-ID: <20171218153334.618c0b66@roar.ozlabs.ibm.com>
-In-Reply-To: <20171218025854.angid7h33gnmxsrg@treble>
-References: <20171005124313.GA25100@lst.de>
- <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
- <20171017144733.GB2136@lst.de>
- <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
- <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
- <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
- <20171212113912.GA1907@lst.de>
- <20171212140501.44vf4xcz6jhbqofd@treble>
- <20171215194009.349b04da@roar.ozlabs.ibm.com>
- <20171218025854.angid7h33gnmxsrg@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0W5F4DXPzDsRp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 17:16:32 +1100 (AEDT)
+Received: by mail-io0-x242.google.com with SMTP id d16so8592033iob.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 22:16:32 -0800 (PST)
+Subject: Re: [PATCH v1 6/7] pseries/pci: Associate PEs to VFs in configure
+ SR-IOV
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, helgaas@kernel.org, ruscur@russell.cc,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
+References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
+ <20171213153242.98015-7-bryantly@linux.vnet.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <f3fae65e-eac7-140a-788a-70a43495f4fe@ozlabs.ru>
+Date: Mon, 18 Dec 2017 17:16:21 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20171213153242.98015-7-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,72 +32,254 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 17 Dec 2017 20:58:54 -0600
-Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+On 14/12/17 02:32, Bryant G. Ly wrote:
+> After initial validation of SR-IOV resources, firmware will
+> associate PEs to the dynamic VFs created within this call. This
+> patch adds the association of PEs to the PF array of PE numbers
+> indexed by VF.
+> 
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/pci.c | 156 ++++++++++++++++++++++++++++++++++-
+>  1 file changed, 153 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+> index 48d3af026f90..c90e7d1247a8 100644
+> --- a/arch/powerpc/platforms/pseries/pci.c
+> +++ b/arch/powerpc/platforms/pseries/pci.c
+> @@ -57,18 +57,168 @@ void pcibios_name_device(struct pci_dev *dev)
+>  }
+>  DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
+>  #endif
+> -
+>  #ifdef CONFIG_PCI_IOV
+> +#define MAX_VFS_FOR_MAP_PE 256
+> +struct pe_map_bar_entry {
+> +	__be64     bar;       ///< Input:  Virtual Function BAR
+> +	__be16     rid;       ///< Input:  Virtual Function Router ID
+> +	__be16     pe_num;    ///< Output: Virtual Function PE Number
+> +	__be32     reserved;  ///< Reserved Space
 
-> On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
-> > On Tue, 12 Dec 2017 08:05:01 -0600
-> > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> >   
-> > > On Tue, Dec 12, 2017 at 12:39:12PM +0100, Torsten Duwe wrote:  
-> > > > Hi all,
-> > > > 
-> > > > The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
-> > > > 
-> > > > [...] There are several rules that must be adhered to in order to ensure
-> > > > reliable and consistent call chain backtracing:
-> > > > 
-> > > > * Before a function calls any other function, it shall establish its
-> > > >   own stack frame, whose size shall be a multiple of 16 bytes.    
-> > > 
-> > > What about leaf functions?  If a leaf function doesn't establish a stack
-> > > frame, and it has inline asm which contains a blr to another function,
-> > > this ABI is broken.  
-> 
-> Oops, I meant to say "bl" instead of "blr".
-> 
-> > > Also, even for non-leaf functions, is it possible for GCC to insert the
-> > > inline asm before it sets up the stack frame?  (This is an occasional
-> > > problem on x86.)  
-> > 
-> > Inline asm must not have control transfer out of the statement unless
-> > it is asm goto.  
-> 
-> Can inline asm have calls to other functions?
 
-I don't believe so.
+'///<' is a very unusual commenting style...
 
-> 
-> > > Also, what about hand-coded asm?  
-> > 
-> > Should follow the same rules if it uses the stack.  
-> 
-> How is that enforced?
 
-It's not, AFAIK. Gcc doesn't understand what's inside asm("").
+> +};
+> +
+> +int pseries_send_map_pe(struct pci_dev *pdev,
+> +			u16 num_vfs,
+> +			struct pe_map_bar_entry *vf_pe_array)
+> +{
+> +	struct pci_dn *pdn;
+> +	int   rc;
 
-> 
-> > > > To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
-> > > > This patch may be unneccessarily limited to ppc64le, but OTOH the only
-> > > > user of this flag so far is livepatching, which is only implemented on
-> > > > PPCs with 64-LE, a.k.a. ELF ABI v2.    
-> > > 
-> > > In addition to fixing the above issues, the unwinder also needs to
-> > > detect interrupts (i.e., preemption) and page faults on the stack of a
-> > > blocked task.  If a function were preempted before it created a stack
-> > > frame, or if a leaf function blocked on a page fault, the stack trace
-> > > will skip the function's caller, so such a trace will need to be
-> > > reported to livepatch as unreliable.  
-> > 
-> > I don't think there is much problem there for powerpc. Stack frame
-> > creation and function call with return pointer are each atomic.  
-> 
-> What if the function is interrupted before it creates the stack frame?
+Spaces?
+
+
+> +	unsigned long buid, addr;
+> +	int ibm_map_pes = rtas_token("ibm,open-sriov-map-pe-number");
+> +
+> +	if (ibm_map_pes == RTAS_UNKNOWN_SERVICE)
+> +		return -EINVAL;
+> +
+> +	pdn = pci_get_pdn(pdev);
+> +	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
+> +	buid = pdn->phb->buid;
+> +	spin_lock(&rtas_data_buf_lock);
+> +	memcpy(rtas_data_buf, vf_pe_array,
+> +	       RTAS_DATA_BUF_SIZE);
+> +	rc = rtas_call(ibm_map_pes, 5, 1, NULL, addr,
+> +		       BUID_HI(buid), BUID_LO(buid),
+> +		       rtas_data_buf,
+> +		       num_vfs * sizeof(struct pe_map_bar_entry));
+> +	memcpy(vf_pe_array, rtas_data_buf,
+> +	       RTAS_DATA_BUF_SIZE);
+
+
+Can easily be a single line.
+
+> +	spin_unlock(&rtas_data_buf_lock);
+> +
+> +	if (rc)
+> +		dev_err(&pdev->dev,
+> +			"%s: Failed to associate pes PE#%lx, rc=%x\n",
+> +			__func__,  addr, rc);
+> +
+> +	return rc;
+> +}
+> +
+> +void pseries_set_pe_num(struct pci_dev         *pdev,
+
+Spaces again :)
+
+
+> +			u16 vf_index, __be16 pe_num)
+> +{
+> +	struct pci_dn *pdn;
+> +
+> +	pdn = pci_get_pdn(pdev);
+> +	pdn->pe_num_map[vf_index] = be16_to_cpu(pe_num);
+> +	dev_dbg(&pdev->dev, "VF %04x:%02x:%02x.%x associated with PE#%x\n",
+> +		pci_domain_nr(pdev->bus),
+> +		pdev->bus->number,
+> +		PCI_SLOT(pci_iov_virtfn_devfn(pdev, vf_index)),
+> +		PCI_FUNC(pci_iov_virtfn_devfn(pdev, vf_index)),
+> +		pdn->pe_num_map[vf_index]);
+> +}
+> +
+> +int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
+> +{
+> +	struct pci_dn *pdn;
+> +	int i,  rc,  vf_index;
+
+Spaces.
+
+
+> +	struct pe_map_bar_entry *vf_pe_array;
+> +	struct resource *res;
+> +	u64 size;
+> +
+> +	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
+> +	if (!vf_pe_array)
+> +		return -ENOMEM;
+> +
+> +	memset(vf_pe_array, 0, RTAS_DATA_BUF_SIZE);
+
+
+As mentioned elsewhere, kzalloc() above resets memory.
+
+
+> +	pdn = pci_get_pdn(pdev);
+> +	/* create firmware structure to associate pes */
+> +	for (vf_index = 0; vf_index < num_vfs && vf_index < MAX_VFS_FOR_MAP_PE;
+
+
+It would make the code and your life easier if you check for
+num_vfs<=MAX_VFS_FOR_MAP_PE in pseries_pci_sriov_enable() and then you
+won't have to check for MAX_VFS_FOR_MAP_PE. As for now, if
+num_vfs>=MAX_VFS_FOR_MAP_PE, all VFs above MAX_VFS_FOR_MAP_PE will be ignored.
+
+
+> +	     vf_index++) {
+> +		pdn->pe_num_map[vf_index] = IODA_INVALID_PE;
+> +		for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+> +			res = &pdev->resource[i + PCI_IOV_RESOURCES];
+> +			if (!res->parent)
+> +				continue;
+> +			size = pcibios_iov_resource_alignment(pdev, i +
+> +							      PCI_IOV_RESOURCES
+> +							      );
+
+afaik the kernel coding style is tolerant to 2 tabs indents so it is not
+necessary to align under the opening bracket and you can do:
+
+> +			size = pcibios_iov_resource_alignment(pdev,
+					i + PCI_IOV_RESOURCES);
+
+
+
+
+> +			vf_pe_array[vf_index].bar =
+> +				be64_to_cpu(res->start + size * vf_index);
+
+cpu_to_be64?
+
+
+> +			vf_pe_array[vf_index].rid =
+> +				be16_to_cpu((pci_iov_virtfn_bus(pdev, vf_index)
+> +					    << 8) | pci_iov_virtfn_devfn(pdev,
+> +					    vf_index));
+
+
+cpu_to_be16?
+
+
+> +			vf_pe_array[vf_index].pe_num =
+> +				be16_to_cpu(IODA_INVALID_PE);
+
+
+cpu_to_be16?
+
+
+> +		}
+> +	}
+> +
+> +	rc = pseries_send_map_pe(pdev, num_vfs, vf_pe_array);
+> +	/* Only zero is success */
+> +	if (!rc)
+> +		for (vf_index = 0; vf_index < num_vfs && vf_index <
+> +		     MAX_VFS_FOR_MAP_PE; vf_index++)
+> +			pseries_set_pe_num(pdev, vf_index,
+> +					   vf_pe_array[vf_index].pe_num);
+> +
+> +	kfree(vf_pe_array);
+> +	return rc;
+> +}
+> +
+> +int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+> +{
+> +	struct pci_dn         *pdn;
+> +	int                    rc;
+> +	const int *max_vfs;
+> +	int max_config_vfs;
+> +	struct device_node *dn = pci_device_to_OF_node(pdev);
+> +
+> +	max_vfs = of_get_property(dn, "ibm,number-of-configurable-vfs", NULL);
+> +
+> +	if (!max_vfs)
+> +		return -EINVAL;
+> +
+> +	/* First integer stores max config */
+> +	max_config_vfs = of_read_number(&max_vfs[0], 1);
+> +	if (max_config_vfs < num_vfs) {
+> +		dev_err(&pdev->dev,
+> +			"Num VFs %x > %x Configurable VFs\n",
+> +			num_vfs, max_config_vfs);
+> +		return -EINVAL;
+> +	}
+> +
+> +	pdn = pci_get_pdn(pdev);
+> +	pdn->pe_num_map = kmalloc_array(num_vfs,
+> +					sizeof(*pdn->pe_num_map),
+> +					GFP_KERNEL);
+> +	if (!pdn->pe_num_map)
+> +		return -ENOMEM;
+> +
+> +	rc = pseries_associate_pes(pdev, num_vfs);
+> +
+> +	/* Anything other than zero is failure */
+> +	if (rc) {
+> +		dev_err(&pdev->dev, "Failure to enable sriov: %x\n", rc);
+> +		kfree(pdn->pe_num_map);
+> +	} else {
+> +		pci_vf_drivers_autoprobe(pdev, false);
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+>  int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>  {
+>  	/* Allocate PCI data */
+>  	add_dev_pci_data(pdev);
+> -	pci_vf_drivers_autoprobe(pdev, false);
+> -	return 0;
+> +	return pseries_pci_sriov_enable(pdev, num_vfs);
+>  }
+>  
+>  int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
+>  {
+> +	struct pci_dn         *pdn;
+> +
+> +	pdn = pci_get_pdn(pdev);
+> +	/* Releasing pe_num_map */
+> +	kfree(pdn->pe_num_map);
+>  	/* Release PCI data */
+>  	remove_dev_pci_data(pdev);
+>  	pci_vf_drivers_autoprobe(pdev, true);
 > 
 
-Then there will be no stack frame, but you still get the caller address
-because it's saved in LR register as part of the function call. Then
-you get the caller's caller in its stack frame.
 
-Thanks,
-Nick
+-- 
+Alexey
