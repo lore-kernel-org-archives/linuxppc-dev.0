@@ -1,36 +1,33 @@
-Return-Path: <huntbag@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Tf36KvPzDrVJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 16:11:23 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBI59Upl007300
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 00:11:21 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ex69aj0hd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 00:11:21 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
- Mon, 18 Dec 2017 05:11:18 -0000
-Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
-To: Viresh Kumar <viresh.kumar@linaro.org>, ego@linux.vnet.ibm.com
-Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
- <20171214044239.GU3322@vireshk-i7>
-From: Abhishek <huntbag@linux.vnet.ibm.com>
-Date: Mon, 18 Dec 2017 10:41:12 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0V7z45zBzDsN5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 16:33:50 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id c204so9250726pfc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 21:33:49 -0800 (PST)
+Date: Mon, 18 Dec 2017 15:33:34 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Torsten Duwe <duwe@lst.de>, linux-kernel@vger.kernel.org, Jiri Kosina
+ <jkosina@suse.cz>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20171218153334.618c0b66@roar.ozlabs.ibm.com>
+In-Reply-To: <20171218025854.angid7h33gnmxsrg@treble>
+References: <20171005124313.GA25100@lst.de>
+ <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
+ <20171017144733.GB2136@lst.de>
+ <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+ <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
+ <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
+ <20171212113912.GA1907@lst.de>
+ <20171212140501.44vf4xcz6jhbqofd@treble>
+ <20171215194009.349b04da@roar.ozlabs.ibm.com>
+ <20171218025854.angid7h33gnmxsrg@treble>
 MIME-Version: 1.0
-In-Reply-To: <20171214044239.GU3322@vireshk-i7>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,47 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/14/2017 10:12 AM, Viresh Kumar wrote:
-> + Gautham,
->
-> @Gautham: Can you please help reviewing this one ?
->
-> On 13-12-17, 13:49, Abhishek Goel wrote:
->> @@ -693,6 +746,8 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->>   {
->>   	struct powernv_smp_call_data freq_data;
->>   	unsigned int cur_msec, gpstate_idx;
->> +	cpumask_t temp;
->> +	u32 cpu;
->>   	struct global_pstate_info *gpstates = policy->driver_data;
->>   
->>   	if (unlikely(rebooting) && new_index != get_nominal_index())
->> @@ -761,24 +816,48 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->>   	spin_unlock(&gpstates->gpstate_lock);
->>   
->>   	/*
->> -	 * Use smp_call_function to send IPI and execute the
->> -	 * mtspr on target CPU.  We could do that without IPI
->> -	 * if current CPU is within policy->cpus (core)
->> +	 * Use smp_call_function to send IPI and execute the mtspr on CPU.
->> +	 * This needs to be done on every core of the policy
-> Why on each CPU ?
-We need to do it in this way as the current implementation takes the max 
-of the PMSR of the cores. Thus, when the frequency is required to be 
-ramped up, it suffices to write to just the local PMSR, but when the 
-frequency is to be ramped down, if we don't send the IPI it breaks the 
-compatibility with P8.
->
->>   	 */
->> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
->> +	cpumask_copy(&temp, policy->cpus);
->> +
->> +	while (!cpumask_empty(&temp)) {
->> +		cpu = cpumask_first(&temp);
->> +		smp_call_function_any(cpu_sibling_mask(cpu),
->> +					set_pstate, &freq_data, 1);
->> +		cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
->> +	}
->> +
->>   	return 0;
->>   }
+On Sun, 17 Dec 2017 20:58:54 -0600
+Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+
+> On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
+> > On Tue, 12 Dec 2017 08:05:01 -0600
+> > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> >   
+> > > On Tue, Dec 12, 2017 at 12:39:12PM +0100, Torsten Duwe wrote:  
+> > > > Hi all,
+> > > > 
+> > > > The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
+> > > > 
+> > > > [...] There are several rules that must be adhered to in order to ensure
+> > > > reliable and consistent call chain backtracing:
+> > > > 
+> > > > * Before a function calls any other function, it shall establish its
+> > > >   own stack frame, whose size shall be a multiple of 16 bytes.    
+> > > 
+> > > What about leaf functions?  If a leaf function doesn't establish a stack
+> > > frame, and it has inline asm which contains a blr to another function,
+> > > this ABI is broken.  
+> 
+> Oops, I meant to say "bl" instead of "blr".
+> 
+> > > Also, even for non-leaf functions, is it possible for GCC to insert the
+> > > inline asm before it sets up the stack frame?  (This is an occasional
+> > > problem on x86.)  
+> > 
+> > Inline asm must not have control transfer out of the statement unless
+> > it is asm goto.  
+> 
+> Can inline asm have calls to other functions?
+
+I don't believe so.
+
+> 
+> > > Also, what about hand-coded asm?  
+> > 
+> > Should follow the same rules if it uses the stack.  
+> 
+> How is that enforced?
+
+It's not, AFAIK. Gcc doesn't understand what's inside asm("").
+
+> 
+> > > > To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+> > > > This patch may be unneccessarily limited to ppc64le, but OTOH the only
+> > > > user of this flag so far is livepatching, which is only implemented on
+> > > > PPCs with 64-LE, a.k.a. ELF ABI v2.    
+> > > 
+> > > In addition to fixing the above issues, the unwinder also needs to
+> > > detect interrupts (i.e., preemption) and page faults on the stack of a
+> > > blocked task.  If a function were preempted before it created a stack
+> > > frame, or if a leaf function blocked on a page fault, the stack trace
+> > > will skip the function's caller, so such a trace will need to be
+> > > reported to livepatch as unreliable.  
+> > 
+> > I don't think there is much problem there for powerpc. Stack frame
+> > creation and function call with return pointer are each atomic.  
+> 
+> What if the function is interrupted before it creates the stack frame?
+> 
+
+Then there will be no stack frame, but you still get the caller address
+because it's saved in LR register as part of the function call. Then
+you get the caller's caller in its stack frame.
+
+Thanks,
+Nick
