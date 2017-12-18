@@ -1,10 +1,9 @@
-Return-Path: <david@fromorbit.com>
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [150.101.137.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 3z0wGC0VkCzDqgv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:10:42 +1100 (AEDT)
-Date: Tue, 19 Dec 2017 09:10:41 +1100
-From: Dave Chinner <david@fromorbit.com>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3z0wMc6PzGzDrX0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:15:24 +1100 (AEDT)
+Date: Mon, 18 Dec 2017 23:15:11 +0100
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 To: Joe Perches <joe@perches.com>
 Cc: Jiri Kosina <trivial@kernel.org>,
  Linus Torvalds <torvalds@linux-foundation.org>,
@@ -19,7 +18,7 @@ Cc: Jiri Kosina <trivial@kernel.org>,
  alsa-devel@alsa-project.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Subject: Re: [trivial PATCH] treewide: Align function definition open/close
  braces
-Message-ID: <20171218221040.GG4094@dastard>
+Message-ID: <20171218221511.GH15162@piout.net>
 References: <1513556924.31581.51.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,7 +32,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 17, 2017 at 04:28:44PM -0800, Joe Perches wrote:
+On 17/12/2017 at 16:28:44 -0800, Joe Perches wrote:
 > Some functions definitions have either the initial open brace and/or
 > the closing brace outside of column 1.
 > 
@@ -47,13 +46,13 @@ On Sun, Dec 17, 2017 at 04:28:44PM -0800, Joe Perches wrote:
 > o Remove extra trailing ; and blank line from xfs_agf_verify
 > 
 > Signed-off-by: Joe Perches <joe@perches.com>
-> ---
-....
 
-XFS bits look fine.
+For RTC:
 
-Acked-by: Dave Chinner <dchinner@redhat.com>
+Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+
 
 -- 
-Dave Chinner
-david@fromorbit.com
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
