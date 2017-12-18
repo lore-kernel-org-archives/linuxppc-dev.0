@@ -3,33 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBN2PF9zDsFf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBP6GKszDsF7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:49 +1100 (AEDT)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBIFJK5j140383
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:46 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2exegund59-1
+ vBIFJLN5140455
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:47 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2exegund48-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:45 -0500
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 18 Dec 2017 15:21:43 -0000
+ Mon, 18 Dec 2017 15:21:42 -0000
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
  andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
-Subject: [PATCH 04/13] powerpc/powernv: Add platform-specific services for
- opencapi
-Date: Mon, 18 Dec 2017 16:21:17 +0100
+Subject: [PATCH 03/13] powerpc/powernv: Add opal calls for opencapi
+Date: Mon, 18 Dec 2017 16:21:16 +0100
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
-Message-Id: <daaa7e08af012047baed61a79ed5dc62e5738766.1513608243.git.fbarrat@linux.vnet.ibm.com>
+Message-Id: <f2189f8a9c578e5515472b0f44e5469ce36f9e5f.1513608243.git.fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,273 +38,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement a few platform-specific calls which can be used by drivers:
+Add opal calls to interact with the NPU:
 
-- provide the Transaction Layer capabilities of the host, so that the
-  driver can find some common ground and configure the device and host
-  appropriately.
+OPAL_NPU_SPA_SETUP: set the Shared Process Area (SPA)
+The SPA is a table containing one entry (Process Element) per memory
+context which can be accessed by the opencapi device.
 
-- provide the hw interrupt to be used for translation faults raised by
-  the NPU
+OPAL_NPU_SPA_CLEAR_CACHE: clear the context cache
+The NPU keeps a cache of recently accessed memory contexts. When a
+Process Element is removed from the SPA, the cache for the link must
+be cleared.
 
-- map/unmap some NPU mmio registers to get the fault context when the
-  NPU raises an address translation fault
-
-The rest are wrappers around the previously-introduced opal calls.
+OPAL_NPU_TL_SET: configure the Transaction Layer
+The Transaction Layer specification defines several templates for
+messages to be exchanged on the link. During link setup, the host and
+device must negotiate what templates are supported on both sides and
+at what rates those messages can be sent.
 
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pnv-ocxl.h     |  36 ++++++
- arch/powerpc/platforms/powernv/Makefile |   1 +
- arch/powerpc/platforms/powernv/ocxl.c   | 187 ++++++++++++++++++++++++++++++++
- 3 files changed, 224 insertions(+)
- create mode 100644 arch/powerpc/include/asm/pnv-ocxl.h
- create mode 100644 arch/powerpc/platforms/powernv/ocxl.c
+ arch/powerpc/include/asm/opal-api.h            | 5 ++++-
+ arch/powerpc/include/asm/opal.h                | 6 ++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 3 +++
+ 3 files changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-new file mode 100644
-index 000000000000..b9ab3f0a9634
---- /dev/null
-+++ b/arch/powerpc/include/asm/pnv-ocxl.h
-@@ -0,0 +1,36 @@
-+/*
-+ * Copyright 2017 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _ASM_PVN_OCXL_H
-+#define _ASM_PVN_OCXL_H
-+
-+#include <linux/pci.h>
-+
-+#define PNV_OCXL_TL_MAX_TEMPLATE        63
-+#define PNV_OCXL_TL_BITS_PER_RATE       4
-+#define PNV_OCXL_TL_RATE_BUF_SIZE       ((PNV_OCXL_TL_MAX_TEMPLATE+1) * PNV_OCXL_TL_BITS_PER_RATE / 8)
-+
-+extern int pnv_ocxl_get_tl_cap(struct pci_dev *dev, long *cap,
-+			char *rate_buf, int rate_buf_size);
-+extern int pnv_ocxl_set_tl_conf(struct pci_dev *dev, long cap,
-+			uint64_t rate_buf_phys, int rate_buf_size);
-+
-+extern int pnv_ocxl_get_xsl_irq(struct pci_dev *dev, int *hwirq);
-+extern void pnv_ocxl_unmap_xsl_regs(void __iomem *dsisr, void __iomem *dar,
-+				void __iomem *tfc, void __iomem *pe_handle);
-+extern int pnv_ocxl_map_xsl_regs(struct pci_dev *dev, void __iomem **dsisr,
-+				void __iomem **dar, void __iomem **tfc,
-+				void __iomem **pe_handle);
-+
-+extern int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
-+			void **platform_data);
-+extern void pnv_ocxl_spa_release(void *platform_data);
-+extern int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle);
-+
-+#endif /* _ASM_PVN_OCXL_H */
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 3732118a0482..6c9d5199a7e2 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -17,3 +17,4 @@ obj-$(CONFIG_PERF_EVENTS) += opal-imc.o
- obj-$(CONFIG_PPC_MEMTRACE)	+= memtrace.o
- obj-$(CONFIG_PPC_VAS)	+= vas.o vas-window.o vas-debug.o
- obj-$(CONFIG_PPC_FTW)	+= nx-ftw.o
-+obj-$(CONFIG_OCXL_BASE)	+= ocxl.o
-diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-new file mode 100644
-index 000000000000..3378b75cf5e5
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/ocxl.c
-@@ -0,0 +1,187 @@
-+/*
-+ * Copyright 2017 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <asm/pnv-ocxl.h>
-+#include <asm/opal.h>
-+#include "pci.h"
-+
-+#define PNV_OCXL_TL_P9_RECV_CAP		0x000000000000000Full
-+/* PASIDs are 20-bit, but on P9, NPU can only handle 15 bits */
-+#define PNV_OCXL_PASID_BITS		15
-+#define PNV_OCXL_PASID_MAX		((1 << PNV_OCXL_PASID_BITS) - 1)
-+
-+
-+static void set_templ_rate(unsigned int templ, unsigned int rate, char *buf)
-+{
-+	int shift, idx;
-+
-+	WARN_ON(templ > PNV_OCXL_TL_MAX_TEMPLATE);
-+	idx = (PNV_OCXL_TL_MAX_TEMPLATE - templ) / 2;
-+	shift = 4 * (1 - ((PNV_OCXL_TL_MAX_TEMPLATE - templ) % 2));
-+	buf[idx] |= rate << shift;
-+}
-+
-+int pnv_ocxl_get_tl_cap(struct pci_dev *dev, long *cap,
-+			char *rate_buf, int rate_buf_size)
-+{
-+	if (rate_buf_size != PNV_OCXL_TL_RATE_BUF_SIZE)
-+		return -EINVAL;
-+	/*
-+	 * The TL capabilities are a characteristic of the NPU, so
-+	 * we go with hard-coded values.
-+	 *
-+	 * The receiving rate of each template is encoded on 4 bits.
-+	 *
-+	 * On P9:
-+	 * - templates 0 -> 3 are supported
-+	 * - templates 0, 1 and 3 have a 0 receiving rate
-+	 * - template 2 has receiving rate of 1 (extra cycle)
-+	 */
-+	memset(rate_buf, 0, rate_buf_size);
-+	set_templ_rate(2, 1, rate_buf);
-+	*cap = PNV_OCXL_TL_P9_RECV_CAP;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_get_tl_cap);
-+
-+int pnv_ocxl_set_tl_conf(struct pci_dev *dev, long cap,
-+			uint64_t rate_buf_phys, int rate_buf_size)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	int rc;
-+
-+	if (rate_buf_size != PNV_OCXL_TL_RATE_BUF_SIZE)
-+		return -EINVAL;
-+
-+	rc = opal_npu_tl_set(phb->opal_id, dev->devfn, cap,
-+			rate_buf_phys, rate_buf_size);
-+	if (rc) {
-+		dev_err(&dev->dev, "Can't configure host TL: %d\n", rc);
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_set_tl_conf);
-+
-+int pnv_ocxl_get_xsl_irq(struct pci_dev *dev, int *hwirq)
-+{
-+	int rc;
-+
-+	rc = of_property_read_u32(dev->dev.of_node, "ibm,opal-xsl-irq", hwirq);
-+	if (rc) {
-+		dev_err(&dev->dev,
-+			"Can't translation xsl interrupt for device\n");
-+		return rc;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_get_xsl_irq);
-+
-+void pnv_ocxl_unmap_xsl_regs(void __iomem *dsisr, void __iomem *dar,
-+			void __iomem *tfc, void __iomem *pe_handle)
-+{
-+	iounmap(dsisr);
-+	iounmap(dar);
-+	iounmap(tfc);
-+	iounmap(pe_handle);
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_unmap_xsl_regs);
-+
-+int pnv_ocxl_map_xsl_regs(struct pci_dev *dev, void __iomem **dsisr,
-+			void __iomem **dar, void __iomem **tfc,
-+			void __iomem **pe_handle)
-+{
-+	u64 reg;
-+	int i, j, rc = 0;
-+	void __iomem *regs[4];
-+
-+	/*
-+	 * opal stores the mmio addresses of the DSISR, DAR, TFC and
-+	 * PE_HANDLE registers in a device tree property, in that
-+	 * order
-+	 */
-+	for (i = 0; i < 4; i++) {
-+		rc = of_property_read_u64_index(dev->dev.of_node,
-+						"ibm,opal-xsl-mmio", i, &reg);
-+		if (rc)
-+			break;
-+		regs[i] = ioremap(reg, 8);
-+		if (!regs[i]) {
-+			rc = -EINVAL;
-+			break;
-+		}
-+	}
-+	if (rc) {
-+		dev_err(&dev->dev, "Can't map translation mmio registers\n");
-+		for (j = i - 1; j >= 0; j--)
-+			iounmap(regs[j]);
-+	} else {
-+		*dsisr = regs[0];
-+		*dar = regs[1];
-+		*tfc = regs[2];
-+		*pe_handle = regs[3];
-+	}
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_map_xsl_regs);
-+
-+struct spa_data {
-+	u64 phb_opal_id;
-+	u32 bdfn;
-+};
-+
-+int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
-+		void **platform_data)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct spa_data *data;
-+	u32 bdfn;
-+	int rc;
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	bdfn = (dev->bus->number << 8) | dev->devfn;
-+	rc = opal_npu_spa_setup(phb->opal_id, bdfn, virt_to_phys(spa_mem),
-+				PE_mask);
-+	if (rc) {
-+		dev_err(&dev->dev, "Can't setup Shared Process Area: %d\n", rc);
-+		kfree(data);
-+		return rc;
-+	}
-+	data->phb_opal_id = phb->opal_id;
-+	data->bdfn = bdfn;
-+	*platform_data = (void *) data;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_spa_setup);
-+
-+void pnv_ocxl_spa_release(void *platform_data)
-+{
-+	struct spa_data *data = (struct spa_data *) platform_data;
-+	int rc;
-+
-+	rc = opal_npu_spa_setup(data->phb_opal_id, data->bdfn, 0, 0);
-+	WARN_ON(rc);
-+	kfree(data);
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_spa_release);
-+
-+int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle)
-+{
-+	struct spa_data *data = (struct spa_data *) platform_data;
-+	int rc;
-+
-+	rc = opal_npu_spa_clear_cache(data->phb_opal_id, data->bdfn, pe_handle);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe);
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 233c7504b1f2..24c73f5575ee 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -201,7 +201,10 @@
+ #define OPAL_SET_POWER_SHIFT_RATIO		155
+ #define OPAL_SENSOR_GROUP_CLEAR			156
+ #define OPAL_PCI_SET_P2P			157
+-#define OPAL_LAST				157
++#define OPAL_NPU_SPA_SETUP			159
++#define OPAL_NPU_SPA_CLEAR_CACHE		160
++#define OPAL_NPU_TL_SET				161
++#define OPAL_LAST				161
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0c545f7fc77b..12e70fb58700 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -34,6 +34,12 @@ int64_t opal_npu_init_context(uint64_t phb_id, int pasid, uint64_t msr,
+ 			uint64_t bdf);
+ int64_t opal_npu_map_lpar(uint64_t phb_id, uint64_t bdf, uint64_t lparid,
+ 			uint64_t lpcr);
++int64_t opal_npu_spa_setup(uint64_t phb_id, uint32_t bdfn,
++			uint64_t addr, uint64_t PE_mask);
++int64_t opal_npu_spa_clear_cache(uint64_t phb_id, uint32_t bdfn,
++				uint64_t PE_handle);
++int64_t opal_npu_tl_set(uint64_t phb_id, uint32_t bdfn, long cap,
++			uint64_t rate_phys, uint32_t size);
+ int64_t opal_console_write(int64_t term_number, __be64 *length,
+ 			   const uint8_t *buffer);
+ int64_t opal_console_read(int64_t term_number, __be64 *length,
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 6f4b00a2ac46..1b2936ba6040 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -320,3 +320,6 @@ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
+ OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
+ OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
++OPAL_CALL(opal_npu_spa_setup,			OPAL_NPU_SPA_SETUP);
++OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
++OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
 -- 
 2.14.1
