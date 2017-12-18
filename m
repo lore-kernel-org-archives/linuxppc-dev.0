@@ -1,35 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x241.google.com (mail-vk0-x241.google.com
- [IPv6:2607:f8b0:400c:c05::241])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Rbd5bmYzDsPl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 14:39:09 +1100 (AEDT)
-Received: by mail-vk0-x241.google.com with SMTP id n2so3437889vkf.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 19:39:09 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Rpq4SjSzDr23
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 14:48:50 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id 1so2616468plv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 19:48:50 -0800 (PST)
+Subject: Re: [PATCH v1 1/7] platform/pseries: Update VF config space after EEH
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, helgaas@kernel.org, ruscur@russell.cc,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
+References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
+ <20171213153242.98015-2-bryantly@linux.vnet.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <bc7caa8a-f13b-b3e8-36ee-191a7d541425@ozlabs.ru>
+Date: Mon, 18 Dec 2017 14:48:41 +1100
 MIME-Version: 1.0
-In-Reply-To: <20171218025854.angid7h33gnmxsrg@treble>
-References: <20171005124313.GA25100@lst.de>
- <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
- <20171017144733.GB2136@lst.de>
- <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
- <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
- <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
- <20171212113912.GA1907@lst.de>
- <20171212140501.44vf4xcz6jhbqofd@treble>
- <20171215194009.349b04da@roar.ozlabs.ibm.com>
- <20171218025854.angid7h33gnmxsrg@treble>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Mon, 18 Dec 2017 14:39:06 +1100
-Message-ID: <CAKTCnz=jukr_dY5PNRQYcFT9NMu+tmViw1UUfzrPUvE7HsHurg@mail.gmail.com>
-Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Torsten Duwe <duwe@lst.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Jiri Kosina <jkosina@suse.cz>, live-patching@vger.kernel.org,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20171213153242.98015-2-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,70 +31,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 18, 2017 at 1:58 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
->> On Tue, 12 Dec 2017 08:05:01 -0600
->> Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->>
->> > On Tue, Dec 12, 2017 at 12:39:12PM +0100, Torsten Duwe wrote:
->> > > Hi all,
->> > >
->> > > The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
->> > >
->> > > [...] There are several rules that must be adhered to in order to ensure
->> > > reliable and consistent call chain backtracing:
->> > >
->> > > * Before a function calls any other function, it shall establish its
->> > >   own stack frame, whose size shall be a multiple of 16 bytes.
->> >
->> > What about leaf functions?  If a leaf function doesn't establish a stack
->> > frame, and it has inline asm which contains a blr to another function,
->> > this ABI is broken.
->
-> Oops, I meant to say "bl" instead of "blr".
+On 14/12/17 02:32, Bryant G. Ly wrote:
+> Add EEH platform operations for pseries to update VF
+> config space. With this change after EEH, the VF
+> will have updated config space for pseries platform.
+> 
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 85 +++++++++++++++++++++++++++-
+>  1 file changed, 84 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index 2295f117e2d3..1a9a6fa91151 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -708,6 +708,89 @@ static int pseries_eeh_write_config(struct pci_dn *pdn, int where, int size, u32
+>  	return rtas_write_config(pdn, where, size, val);
+>  }
+>  
+> +static int pseries_eeh_restore_vf_config(struct pci_dn *pdn)
 
-I was wondering why "blr" mattered, but I guess we should speak of the
-consistency
-model. By walking a stack trace we expect to find whether a function is in use
-or not and can/cannot be live-patched at this point in time. Right?
 
->
->> > Also, even for non-leaf functions, is it possible for GCC to insert the
->> > inline asm before it sets up the stack frame?  (This is an occasional
->> > problem on x86.)
->>
->> Inline asm must not have control transfer out of the statement unless
->> it is asm goto.
->
-> Can inline asm have calls to other functions?
->
->> > Also, what about hand-coded asm?
->>
->> Should follow the same rules if it uses the stack.
->
-> How is that enforced?
->
->> > > To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
->> > > This patch may be unneccessarily limited to ppc64le, but OTOH the only
->> > > user of this flag so far is livepatching, which is only implemented on
->> > > PPCs with 64-LE, a.k.a. ELF ABI v2.
->> >
->> > In addition to fixing the above issues, the unwinder also needs to
->> > detect interrupts (i.e., preemption) and page faults on the stack of a
->> > blocked task.  If a function were preempted before it created a stack
->> > frame, or if a leaf function blocked on a page fault, the stack trace
->> > will skip the function's caller, so such a trace will need to be
->> > reported to livepatch as unreliable.
->>
->> I don't think there is much problem there for powerpc. Stack frame
->> creation and function call with return pointer are each atomic.
->
-> What if the function is interrupted before it creates the stack frame?
->
+This particular function is just a copy of its powernv counterpart -
+pnv_eeh_restore_vf_config(), it could go to arch/powerpc/kernel/eeh.c, for
+example. Or I am missing something here?
 
-If it is interrupted, the exception handler will establish a new stack frame.
->From a consistency viewpoint, I guess the question is -- has the function
-been entered or considered to be entered when a stack frame has not
-yet been established
 
-Balbir Singh.
+
+
+> +{
+> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+> +	u32 devctl, cmd, cap2, aer_capctl;
+> +	int old_mps;
+> +
+> +	if (edev->pcie_cap) {
+> +		/* Restore MPS */
+> +		old_mps = (ffs(pdn->mps) - 8) << 5;
+> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+> +				     2, &devctl);
+> +		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
+> +		devctl |= old_mps;
+> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+> +				      2, devctl);
+> +
+> +		/* Disable Completion Timeout */
+> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
+> +				     4, &cap2);
+> +		if (cap2 & 0x10) {
+> +			eeh_ops->read_config(pdn,
+> +					     edev->pcie_cap + PCI_EXP_DEVCTL2,
+> +					     4, &cap2);
+> +			cap2 |= 0x10;
+> +			eeh_ops->write_config(pdn,
+> +					      edev->pcie_cap + PCI_EXP_DEVCTL2,
+> +					      4, cap2);
+> +		}
+> +	}
+> +
+> +	/* Enable SERR and parity checking */
+> +	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
+> +	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+> +	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
+> +
+> +	/* Enable report various errors */
+> +	if (edev->pcie_cap) {
+> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+> +				     2, &devctl);
+> +		devctl &= ~PCI_EXP_DEVCTL_CERE;
+> +		devctl |= (PCI_EXP_DEVCTL_NFERE |
+> +			   PCI_EXP_DEVCTL_FERE |
+> +			   PCI_EXP_DEVCTL_URRE);
+> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+> +				      2, devctl);
+> +	}
+> +
+> +	/* Enable ECRC generation and check */
+> +	if (edev->pcie_cap && edev->aer_cap) {
+> +		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+> +				     4, &aer_capctl);
+> +		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+> +		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+> +				      4, aer_capctl);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int pseries_eeh_restore_config(struct pci_dn *pdn)
+> +{
+> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+> +	s64 ret;
+> +
+> +	if (!edev)
+> +		return -EEXIST;
+> +
+> +	/*
+> +	 * FIXME: The MPS, error routing rules, timeout setting are worthy
+> +	 * to be exported by firmware in extendible way.
+> +	 */
+> +	if (edev->physfn)
+> +		ret = pseries_eeh_restore_vf_config(pdn);
+> +
+> +	if (ret) {
+> +		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+> +			__func__, edev->pe_config_addr, ret);
+> +		return -EIO;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static struct eeh_ops pseries_eeh_ops = {
+>  	.name			= "pseries",
+>  	.init			= pseries_eeh_init,
+> @@ -723,7 +806,7 @@ static struct eeh_ops pseries_eeh_ops = {
+>  	.read_config		= pseries_eeh_read_config,
+>  	.write_config		= pseries_eeh_write_config,
+>  	.next_error		= NULL,
+> -	.restore_config		= NULL
+> +	.restore_config		= pseries_eeh_restore_config
+>  };
+>  
+>  /**
+> 
+
+
+-- 
+Alexey
