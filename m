@@ -1,14 +1,13 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0W5F4DXPzDsRp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 17:16:32 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id d16so8592033iob.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 22:16:32 -0800 (PST)
-Subject: Re: [PATCH v1 6/7] pseries/pci: Associate PEs to VFs in configure
- SR-IOV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0XWx5jxnzDrVH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 18:21:15 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id p139so27231108itb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 23:21:15 -0800 (PST)
+Subject: Re: [PATCH v1 7/7] pseries/setup: Add Initialization of VF Bars
 To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
  paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -16,12 +15,12 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
 References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
- <20171213153242.98015-7-bryantly@linux.vnet.ibm.com>
+ <20171213153242.98015-8-bryantly@linux.vnet.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <f3fae65e-eac7-140a-788a-70a43495f4fe@ozlabs.ru>
-Date: Mon, 18 Dec 2017 17:16:21 +1100
+Message-ID: <4ea33f2e-d98c-85ef-eedf-2e8ca49aa839@ozlabs.ru>
+Date: Mon, 18 Dec 2017 18:21:04 +1100
 MIME-Version: 1.0
-In-Reply-To: <20171213153242.98015-7-bryantly@linux.vnet.ibm.com>
+In-Reply-To: <20171213153242.98015-8-bryantly@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,251 +32,329 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 14/12/17 02:32, Bryant G. Ly wrote:
-> After initial validation of SR-IOV resources, firmware will
-> associate PEs to the dynamic VFs created within this call. This
-> patch adds the association of PEs to the PF array of PE numbers
-> indexed by VF.
+> When enabling SR-IOV in pseries platform,
+> the VF bar properties for a PF are reported on
+> the device node in the device tree.
+> 
+> This patch adds the IOV Bar resources to Linux
+> structures from the device tree for later use
+> when configuring SR-IOV by PF driver.
 > 
 > Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 > Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/pseries/pci.c | 156 ++++++++++++++++++++++++++++++++++-
->  1 file changed, 153 insertions(+), 3 deletions(-)
+>  arch/powerpc/include/asm/pci.h         |   2 +
+>  arch/powerpc/kernel/pci_of_scan.c      |   2 +-
+>  arch/powerpc/platforms/pseries/setup.c | 183 +++++++++++++++++++++++++++++++++
+>  3 files changed, 186 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-> index 48d3af026f90..c90e7d1247a8 100644
-> --- a/arch/powerpc/platforms/pseries/pci.c
-> +++ b/arch/powerpc/platforms/pseries/pci.c
-> @@ -57,18 +57,168 @@ void pcibios_name_device(struct pci_dev *dev)
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
->  #endif
-> -
->  #ifdef CONFIG_PCI_IOV
-> +#define MAX_VFS_FOR_MAP_PE 256
-> +struct pe_map_bar_entry {
-> +	__be64     bar;       ///< Input:  Virtual Function BAR
-> +	__be16     rid;       ///< Input:  Virtual Function Router ID
-> +	__be16     pe_num;    ///< Output: Virtual Function PE Number
-> +	__be32     reserved;  ///< Reserved Space
-
-
-'///<' is a very unusual commenting style...
-
-
-> +};
+> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+> index 8dc32eacc97c..d82802ff5088 100644
+> --- a/arch/powerpc/include/asm/pci.h
+> +++ b/arch/powerpc/include/asm/pci.h
+> @@ -121,6 +121,8 @@ extern int remove_phb_dynamic(struct pci_controller *phb);
+>  extern struct pci_dev *of_create_pci_dev(struct device_node *node,
+>  					struct pci_bus *bus, int devfn);
+>  
+> +extern unsigned int pci_parse_of_flags(u32 addr0, int bridge);
 > +
-> +int pseries_send_map_pe(struct pci_dev *pdev,
-> +			u16 num_vfs,
-> +			struct pe_map_bar_entry *vf_pe_array)
-> +{
-> +	struct pci_dn *pdn;
-> +	int   rc;
-
-Spaces?
-
-
-> +	unsigned long buid, addr;
-> +	int ibm_map_pes = rtas_token("ibm,open-sriov-map-pe-number");
-> +
-> +	if (ibm_map_pes == RTAS_UNKNOWN_SERVICE)
-> +		return -EINVAL;
-> +
-> +	pdn = pci_get_pdn(pdev);
-> +	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-> +	buid = pdn->phb->buid;
-> +	spin_lock(&rtas_data_buf_lock);
-> +	memcpy(rtas_data_buf, vf_pe_array,
-> +	       RTAS_DATA_BUF_SIZE);
-> +	rc = rtas_call(ibm_map_pes, 5, 1, NULL, addr,
-> +		       BUID_HI(buid), BUID_LO(buid),
-> +		       rtas_data_buf,
-> +		       num_vfs * sizeof(struct pe_map_bar_entry));
-> +	memcpy(vf_pe_array, rtas_data_buf,
-> +	       RTAS_DATA_BUF_SIZE);
-
-
-Can easily be a single line.
-
-> +	spin_unlock(&rtas_data_buf_lock);
-> +
-> +	if (rc)
-> +		dev_err(&pdev->dev,
-> +			"%s: Failed to associate pes PE#%lx, rc=%x\n",
-> +			__func__,  addr, rc);
-> +
-> +	return rc;
-> +}
-> +
-> +void pseries_set_pe_num(struct pci_dev         *pdev,
-
-Spaces again :)
-
-
-> +			u16 vf_index, __be16 pe_num)
-> +{
-> +	struct pci_dn *pdn;
-> +
-> +	pdn = pci_get_pdn(pdev);
-> +	pdn->pe_num_map[vf_index] = be16_to_cpu(pe_num);
-> +	dev_dbg(&pdev->dev, "VF %04x:%02x:%02x.%x associated with PE#%x\n",
-> +		pci_domain_nr(pdev->bus),
-> +		pdev->bus->number,
-> +		PCI_SLOT(pci_iov_virtfn_devfn(pdev, vf_index)),
-> +		PCI_FUNC(pci_iov_virtfn_devfn(pdev, vf_index)),
-> +		pdn->pe_num_map[vf_index]);
-> +}
-> +
-> +int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
-> +{
-> +	struct pci_dn *pdn;
-> +	int i,  rc,  vf_index;
-
-Spaces.
-
-
-> +	struct pe_map_bar_entry *vf_pe_array;
-> +	struct resource *res;
-> +	u64 size;
-> +
-> +	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-> +	if (!vf_pe_array)
-> +		return -ENOMEM;
-> +
-> +	memset(vf_pe_array, 0, RTAS_DATA_BUF_SIZE);
-
-
-As mentioned elsewhere, kzalloc() above resets memory.
-
-
-> +	pdn = pci_get_pdn(pdev);
-> +	/* create firmware structure to associate pes */
-> +	for (vf_index = 0; vf_index < num_vfs && vf_index < MAX_VFS_FOR_MAP_PE;
-
-
-It would make the code and your life easier if you check for
-num_vfs<=MAX_VFS_FOR_MAP_PE in pseries_pci_sriov_enable() and then you
-won't have to check for MAX_VFS_FOR_MAP_PE. As for now, if
-num_vfs>=MAX_VFS_FOR_MAP_PE, all VFs above MAX_VFS_FOR_MAP_PE will be ignored.
-
-
-> +	     vf_index++) {
-> +		pdn->pe_num_map[vf_index] = IODA_INVALID_PE;
-> +		for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-> +			res = &pdev->resource[i + PCI_IOV_RESOURCES];
-> +			if (!res->parent)
-> +				continue;
-> +			size = pcibios_iov_resource_alignment(pdev, i +
-> +							      PCI_IOV_RESOURCES
-> +							      );
-
-afaik the kernel coding style is tolerant to 2 tabs indents so it is not
-necessary to align under the opening bracket and you can do:
-
-> +			size = pcibios_iov_resource_alignment(pdev,
-					i + PCI_IOV_RESOURCES);
-
-
-
-
-> +			vf_pe_array[vf_index].bar =
-> +				be64_to_cpu(res->start + size * vf_index);
-
-cpu_to_be64?
-
-
-> +			vf_pe_array[vf_index].rid =
-> +				be16_to_cpu((pci_iov_virtfn_bus(pdev, vf_index)
-> +					    << 8) | pci_iov_virtfn_devfn(pdev,
-> +					    vf_index));
-
-
-cpu_to_be16?
-
-
-> +			vf_pe_array[vf_index].pe_num =
-> +				be16_to_cpu(IODA_INVALID_PE);
-
-
-cpu_to_be16?
-
-
-> +		}
-> +	}
-> +
-> +	rc = pseries_send_map_pe(pdev, num_vfs, vf_pe_array);
-> +	/* Only zero is success */
-> +	if (!rc)
-> +		for (vf_index = 0; vf_index < num_vfs && vf_index <
-> +		     MAX_VFS_FOR_MAP_PE; vf_index++)
-> +			pseries_set_pe_num(pdev, vf_index,
-> +					   vf_pe_array[vf_index].pe_num);
-> +
-> +	kfree(vf_pe_array);
-> +	return rc;
-> +}
-> +
-> +int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> +{
-> +	struct pci_dn         *pdn;
-> +	int                    rc;
-> +	const int *max_vfs;
-> +	int max_config_vfs;
-> +	struct device_node *dn = pci_device_to_OF_node(pdev);
-> +
-> +	max_vfs = of_get_property(dn, "ibm,number-of-configurable-vfs", NULL);
-> +
-> +	if (!max_vfs)
-> +		return -EINVAL;
-> +
-> +	/* First integer stores max config */
-> +	max_config_vfs = of_read_number(&max_vfs[0], 1);
-> +	if (max_config_vfs < num_vfs) {
-> +		dev_err(&pdev->dev,
-> +			"Num VFs %x > %x Configurable VFs\n",
-> +			num_vfs, max_config_vfs);
-> +		return -EINVAL;
-> +	}
-> +
-> +	pdn = pci_get_pdn(pdev);
-> +	pdn->pe_num_map = kmalloc_array(num_vfs,
-> +					sizeof(*pdn->pe_num_map),
-> +					GFP_KERNEL);
-> +	if (!pdn->pe_num_map)
-> +		return -ENOMEM;
-> +
-> +	rc = pseries_associate_pes(pdev, num_vfs);
-> +
-> +	/* Anything other than zero is failure */
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "Failure to enable sriov: %x\n", rc);
-> +		kfree(pdn->pe_num_map);
-> +	} else {
-> +		pci_vf_drivers_autoprobe(pdev, false);
-> +	}
-> +
-> +	return rc;
-> +}
-> +
->  int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>  extern void of_scan_pci_bridge(struct pci_dev *dev);
+>  
+>  extern void of_scan_bus(struct device_node *node, struct pci_bus *bus);
+> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+> index 0d790f8432d2..20ceec4a5f5e 100644
+> --- a/arch/powerpc/kernel/pci_of_scan.c
+> +++ b/arch/powerpc/kernel/pci_of_scan.c
+> @@ -38,7 +38,7 @@ static u32 get_int_prop(struct device_node *np, const char *name, u32 def)
+>   * @addr0: value of 1st cell of a device tree PCI address.
+>   * @bridge: Set this flag if the address is from a bridge 'ranges' property
+>   */
+> -static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
+> +unsigned int pci_parse_of_flags(u32 addr0, int bridge)
 >  {
->  	/* Allocate PCI data */
->  	add_dev_pci_data(pdev);
-> -	pci_vf_drivers_autoprobe(pdev, false);
-> -	return 0;
-> +	return pseries_pci_sriov_enable(pdev, num_vfs);
+>  	unsigned int flags = 0;
+>  
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index 5f1beb8367ac..ce28882cbde8 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -459,6 +459,181 @@ static void __init find_and_init_phbs(void)
+>  	of_pci_check_probe_only();
 >  }
 >  
->  int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
->  {
-> +	struct pci_dn         *pdn;
+> +#ifdef CONFIG_PCI_IOV
+> +enum rtas_iov_fw_value_map {
+> +	NUM_RES_PROPERTY  = 0, ///< Number of Resources
+> +	LOW_INT           = 1, ///< Lowest 32 bits of Address
+> +	START_OF_ENTRIES  = 2, ///< Always start of entry
+> +	APERTURE_PROPERTY = 2, ///< Start of entry+ to  Aperture Size
+> +	WDW_SIZE_PROPERTY = 4, ///< Start of entry+ to Window Size
+> +	NEXT_ENTRY        = 7  ///< Go to next entry on array
+> +};
 > +
-> +	pdn = pci_get_pdn(pdev);
-> +	/* Releasing pe_num_map */
-> +	kfree(pdn->pe_num_map);
->  	/* Release PCI data */
->  	remove_dev_pci_data(pdev);
->  	pci_vf_drivers_autoprobe(pdev, true);
+> +enum get_iov_fw_value_index {
+> +	BAR_ADDRS     = 1,    ///<  Get Bar Address
+> +	APERTURE_SIZE = 2,    ///<  Get Aperture Size
+> +	WDW_SIZE      = 3     ///<  Get Window Size
+> +};
+> +
+> +resource_size_t pseries_get_iov_fw_values(struct pci_dev *dev, int resno,
+
+s/pseries_get_iov_fw_values/pseries_get_iov_fw_value/  as it returns a
+single value.
+
+> +					  enum get_iov_fw_value_index value)
+> +{
+> +	struct vf_bar_wdw {
+> +		__be64  addr;
+> +		__be64  aperture_size;
+> +		__be64  wdw_size;
+> +	};
+> +
+> +	struct vf_bar_wdw window_avail[PCI_SRIOV_NUM_BARS];
+> +	const int *indexes;
+> +	struct device_node *dn = pci_device_to_OF_node(dev);
+> +	int i, r, num_res;
+> +	resource_size_t return_value;
+
+resource_size_t return_value = 0;
+
+
+and remove initialization below. Also, way too long, @ret is a more common
+name.
+
+> +
+> +	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> +	if (!indexes)
+> +		return  0;
+> +
+> +	memset(window_avail,
+> +	       0, sizeof(struct vf_bar_wdw) * PCI_SRIOV_NUM_BARS);
+
+
+This is more common way of doing the same initialization:
+
+	struct vf_bar_wdw {
+		__be64  addr;
+		__be64  aperture_size;
+		__be64  wdw_size;
+	} window_avail[PCI_SRIOV_NUM_BARS] = { 0 };
+
+
+
+> +	return_value = 0;
+> +	/*
+> +	 * First element in the array is the number of Bars
+> +	 * returned.  Search through the list to find the matching
+> +	 * bar
+> +	 */
+> +	num_res = of_read_number(&indexes[NUM_RES_PROPERTY], 1);
+
+	if (resno >= num_res)
+		return 0; /* or an errror */
+
+	i = START_OF_ENTRIES + NEXT_ENTRY * resno;
+	switch (value) {
+	case BAR_ADDRS:
+		ret = f_read_number(&indexes[i], 2);
+		break;
+	case APERTURE_SIZE:
+		ret = of_read_number(&indexes[i + APERTURE_PROPERTY], 2);
+		break;
+	case WDW_SIZE:
+		ret = of_read_number(&indexes[i + WDW_SIZE_PROPERTY], 2);
+		break;
+	}
+
+	return ret;
+}
+
+and remove the reminder of the function, and window_avail, and vf_bar_wdw?
+
+
+> +	for (i = START_OF_ENTRIES, r = 0; r < num_res && r < PCI_SRIOV_NUM_BARS;
+> +	     i += NEXT_ENTRY, r++) {
+> +		window_avail[r].addr = of_read_number(&indexes[i], 2);
+> +		window_avail[r].aperture_size =
+> +			of_read_number(&indexes[i + APERTURE_PROPERTY], 2);
+> +		window_avail[r].wdw_size =
+> +			of_read_number(&indexes[i + WDW_SIZE_PROPERTY], 2);
+> +	}
+> +
+> +	switch (value) {
+> +	case BAR_ADDRS:
+> +		return_value = window_avail[resno].addr;
+> +		break;
+> +	case APERTURE_SIZE:
+> +		return_value = window_avail[resno].aperture_size;
+> +		break;
+> +	case WDW_SIZE:
+> +		return_value = window_avail[resno].wdw_size;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +	return  return_value;
+> +}
+> +
+> +void of_pci_parse_vf_bar_size(struct pci_dev *dev, const int *indexes)
+
+It does not seem to make a lot of sense as a separate function imho...
+
+
+> +{
+> +	struct resource *res;
+> +	resource_size_t base, size;
+> +	int i, r, num_res;
+> +
+> +	num_res = of_read_number(&indexes[NUM_RES_PROPERTY], 1);
+
+
+num_res = min_t(int, num_res, PCI_SRIOV_NUM_BARS) ? Matter of personal
+taste though.
+
+> +	for (i = START_OF_ENTRIES, r = 0; r < num_res && r < PCI_SRIOV_NUM_BARS;
+> +	     i += NEXT_ENTRY, r++) {
+> +		res = &dev->resource[r + PCI_IOV_RESOURCES];
+> +		base = of_read_number(&indexes[i], 2);
+> +		size = of_read_number(&indexes[i + APERTURE_PROPERTY], 2);
+> +		res->flags = pci_parse_of_flags(of_read_number
+> +						(&indexes[i + LOW_INT], 1), 0);
+> +		res->flags |= (IORESOURCE_MEM_64 | IORESOURCE_PCI_FIXED);
+> +		res->name = pci_name(dev);
+> +		res->start = base;
+> +		res->end = base + size - 1;
+
+
+The function name suggests it only parses sizes but just above it assigns
+all resource parameters - size, address, flags.
+
+
+> +	}
+> +}
+> +
+> +void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
+> +{
+> +	struct resource *res, *root, *conflict;
+> +	resource_size_t base, size;
+> +	int i, r, num_res;
+> +
+> +	/*
+> +	 * First element in the array is the number of Bars
+> +	 * returned.  Search through the list to find the matching
+> +	 * bars assign them from firmware into resources structure.
+> +	 */
+> +	num_res = of_read_number(&indexes[NUM_RES_PROPERTY], 1);
+> +	for (i = START_OF_ENTRIES, r = 0; r < num_res && r < PCI_SRIOV_NUM_BARS;
+> +	     i += NEXT_ENTRY, r++) {
+> +		res = &dev->resource[r + PCI_IOV_RESOURCES];
+> +		base = of_read_number(&indexes[i], 2);
+> +		size = of_read_number(&indexes[i + WDW_SIZE_PROPERTY], 2);
+> +		res->name = pci_name(dev);
+> +		res->start = base;
+> +		res->end = base + size - 1;
+> +		root = pci_find_parent_resource(dev, res);
+> +
+> +		if (!root)
+> +			root = &iomem_resource;
+
+
+@dev here is a VF, right? I am not familiar with powervn much but from what
+I see - the devices are sitting on a root bus of their own PHB and they all
+either have a root returned from pci_find_parent_resource() or none of them
+has a root and will fall back to &iomem_resource, or both cases are possible?
+
+
+
+> +		dev_dbg(&dev->dev,
+> +			"Pseries IOV BAR %d: trying firmware assignment %pR\n",
+
+s/Pseries/pSeries/ ?
+
+
+> +			 r + PCI_IOV_RESOURCES, res);
+> +		conflict = request_resource_conflict(root, res);
+> +		if (conflict) {
+> +			dev_info(&dev->dev,
+> +				 "BAR %d: %pR conflicts with %s %pR\n",
+> +				 r + PCI_IOV_RESOURCES, res,
+> +				 conflict->name, conflict);
+> +			res->flags |= IORESOURCE_UNSET;
+> +		}
+> +	}
+> +}
+> +
+> +static void pseries_pci_fixup_resources(struct pci_dev *pdev)
+> +{
+> +	const int *indexes;
+> +	struct device_node *dn = pci_device_to_OF_node(pdev);
+> +
+> +	/*Firmware must support open sriov otherwise dont configure*/
+> +	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> +	if (!indexes)
+> +		return;
+> +	/* Assign the addresses from device tree*/
+> +	of_pci_parse_vf_bar_size(pdev, indexes);
+> +}
+> +
+> +static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
+> +{
+> +	const int *indexes;
+> +	struct device_node *dn = pci_device_to_OF_node(pdev);
+> +
+> +	if (!pdev->is_physfn || pdev->is_added)
+> +		return;
+> +	/*Firmware must support open sriov otherwise dont configure*/
+> +	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> +	if (!indexes)
+> +		return;
+> +	/* Assign the addresses from device tree*/
+> +	of_pci_parse_iov_addrs(pdev, indexes);
+> +}
+> +
+> +static resource_size_t pseries_pci_iov_resource_alignment(struct pci_dev *pdev,
+> +							  int resno)
+> +{
+> +	const __be32 *reg;
+> +	struct device_node *dn = pci_device_to_OF_node(pdev);
+> +
+> +	/*Firmware must support open sriov otherwise report regular alignment*/
+> +	reg = of_get_property(dn, "ibm,is-open-sriov-pf", NULL);
+> +	if (!reg)
+> +		return pci_iov_resource_size(pdev, resno);
+> +
+> +	if (!pdev->is_physfn)
+> +		return 0;
+> +	return pseries_get_iov_fw_values(pdev,
+> +					 resno - PCI_IOV_RESOURCES,
+> +					 APERTURE_SIZE);
+> +}
+> +#endif
+> +
+>  static void __init pSeries_setup_arch(void)
+>  {
+>  	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
+> @@ -490,6 +665,14 @@ static void __init pSeries_setup_arch(void)
+>  		vpa_init(boot_cpuid);
+>  		ppc_md.power_save = pseries_lpar_idle;
+>  		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
+> +#ifdef CONFIG_PCI_IOV
+> +		ppc_md.pcibios_fixup_resources =
+> +			pseries_pci_fixup_resources;
+> +		ppc_md.pcibios_fixup_sriov =
+> +			pseries_pci_fixup_iov_resources;
+> +		ppc_md.pcibios_iov_resource_alignment =
+> +			pseries_pci_iov_resource_alignment;
+> +#endif
+
+
+I wish one day this horrible ppc_md monster dies and all these helpers will
+go to PHB ops, hose ops, bus ops, whatever ops...
+
+
+>  	} else {
+>  		/* No special idle routine */
+>  		ppc_md.enable_pmcs = power4_enable_pmcs;
 > 
 
 
