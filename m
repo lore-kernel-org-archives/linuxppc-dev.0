@@ -1,24 +1,32 @@
-Return-Path: <pombredanne@nexb.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Return-Path: <paul@paul-moore.com>
+Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
+ [IPv6:2a00:1450:4010:c07::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0n6q0bydzDqXn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 03:48:50 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id g130so8301087wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 08:48:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0w6r2cTYzDrp7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:04:19 +1100 (AEDT)
+Received: by mail-lf0-x242.google.com with SMTP id y78so13791505lfd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 14:04:18 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <7a59e8575bcb8c2de4a68be688fb2a4d0699d61b.1513608243.git.fbarrat@linux.vnet.ibm.com>
-References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
- <7a59e8575bcb8c2de4a68be688fb2a4d0699d61b.1513608243.git.fbarrat@linux.vnet.ibm.com>
-From: Philippe Ombredanne <pombredanne@nexb.com>
-Date: Mon, 18 Dec 2017 17:48:05 +0100
-Message-ID: <CAOFm3uGpELv+X+DdESofnFqQZDw7V4TcCg3v5NHX3cVCFxQP_A@mail.gmail.com>
-Subject: Re: [PATCH 09/13] ocxl: Add trace points
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
+In-Reply-To: <1513556924.31581.51.camel@perches.com>
+References: <1513556924.31581.51.camel@perches.com>
+From: Paul Moore <paul@paul-moore.com>
+Date: Mon, 18 Dec 2017 17:04:14 -0500
+Message-ID: <CAHC9VhTEcj5o1789dZ2CR9W=buPGNa6gSJRc0m8GpUSpn1-xRA@mail.gmail.com>
+Subject: Re: [trivial PATCH] treewide: Align function definition open/close
+ braces
+To: Joe Perches <joe@perches.com>
+Cc: Jiri Kosina <trivial@kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-rtc@vger.kernel.org, alsa-devel@alsa-project.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-scsi@vger.kernel.org,
+ netdev@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org,
+ linux-xfs@vger.kernel.org, linux-acpi@vger.kernel.org, linux-audit@redhat.com,
+ amd-gfx@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
+ MPT-FusionLinux.pdl@broadcom.com, ocfs2-devel@oss.oracle.com,
+ linux-media@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,36 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic,
-
-On Mon, Dec 18, 2017 at 4:21 PM, Frederic Barrat
-<fbarrat@linux.vnet.ibm.com> wrote:
-> Define a few trace points so that we can use the standard tracing
-> mechanism for debug and/or monitoring.
+On Sun, Dec 17, 2017 at 7:28 PM, Joe Perches <joe@perches.com> wrote:
+> Some functions definitions have either the initial open brace and/or
+> the closing brace outside of column 1.
 >
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Move those braces to column 1.
+>
+> This allows various function analyzers like gnu complexity to work
+> properly for these modified functions.
+>
+> Miscellanea:
+>
+> o Remove extra trailing ; and blank line from xfs_agf_verify
+>
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> git diff -w shows no difference other than the above 'Miscellanea'
+>
+> (this is against -next, but it applies against Linus' tree
+>  with a couple offsets)
+>
+>  arch/x86/include/asm/atomic64_32.h                   |  2 +-
+>  drivers/acpi/custom_method.c                         |  2 +-
+>  drivers/acpi/fan.c                                   |  2 +-
+>  drivers/gpu/drm/amd/display/dc/core/dc.c             |  2 +-
+>  drivers/media/i2c/msp3400-kthreads.c                 |  2 +-
+>  drivers/message/fusion/mptsas.c                      |  2 +-
+>  drivers/net/ethernet/qlogic/netxen/netxen_nic_init.c |  2 +-
+>  drivers/net/wireless/ath/ath9k/xmit.c                |  2 +-
+>  drivers/platform/x86/eeepc-laptop.c                  |  2 +-
+>  drivers/rtc/rtc-ab-b5ze-s3.c                         |  2 +-
+>  drivers/scsi/dpt_i2o.c                               |  2 +-
+>  drivers/scsi/sym53c8xx_2/sym_glue.c                  |  2 +-
+>  fs/locks.c                                           |  2 +-
+>  fs/ocfs2/stack_user.c                                |  2 +-
+>  fs/xfs/libxfs/xfs_alloc.c                            |  5 ++---
+>  fs/xfs/xfs_export.c                                  |  2 +-
+>  kernel/audit.c                                       |  6 +++---
+>  kernel/trace/trace_printk.c                          |  4 ++--
+>  lib/raid6/sse2.c                                     | 14 +++++++-------
+>  sound/soc/fsl/fsl_dma.c                              |  2 +-
+>  20 files changed, 30 insertions(+), 31 deletions(-)
 
-<snip>
+For the audit bits ...
 
-> --- /dev/null
-> +++ b/drivers/misc/ocxl/trace.h
-> @@ -0,0 +1,189 @@
-> +/*
-> + * Copyright 2017 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-
-Would you mind using the new SPDX tags documented in Thomas patch set
-[1] rather than this legalese?
-
-Thank you!
-
-[1] https://lkml.org/lkml/2017/12/4/934
+Acked-by: Paul Moore <paul@paul-moore.com>
 
 -- 
-Cordially
-Philippe Ombredanne
+paul moore
+www.paul-moore.com
