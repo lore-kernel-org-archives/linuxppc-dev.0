@@ -1,38 +1,30 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0gPb4crBzDrnb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 23:31:15 +1100 (AEDT)
-Received: by mail-qk0-x243.google.com with SMTP id h19so18070787qkj.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 04:31:15 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1513556924.31581.51.camel@perches.com>
-References: <1513556924.31581.51.camel@perches.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 18 Dec 2017 14:31:12 +0200
-Message-ID: <CAHp75Vfw=AQHkiC7WhUkuytxG_reO8rmEfpA7z-2yAekFQ4AYQ@mail.gmail.com>
-Subject: Re: [trivial PATCH] treewide: Align function definition open/close
- braces
-To: Joe Perches <joe@perches.com>
-Cc: Jiri Kosina <trivial@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
- amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- MPT-FusionLinux.pdl@broadcom.com,
- linux-scsi <linux-scsi@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
- "open list:TI WILINK WIRELES..." <linux-wireless@vger.kernel.org>,
- acpi4asus-user <acpi4asus-user@lists.sourceforge.net>,
- Platform Driver <platform-driver-x86@vger.kernel.org>,
- linux-rtc@vger.kernel.org,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>, ocfs2-devel@oss.oracle.com,
- linux-xfs@vger.kernel.org, linux-audit@redhat.com,
- ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBG1jvNzDrcj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:42 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBIFJJSx140216
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:39 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2exeguncvv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:39 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 18 Dec 2017 15:21:35 -0000
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
+ andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
+Subject: [PATCH 00/13] New driver to support OpenCAPI devices on POWER9
+Date: Mon, 18 Dec 2017 16:21:13 +0100
+Message-Id: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +34,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 18, 2017 at 2:28 AM, Joe Perches <joe@perches.com> wrote:
-> Some functions definitions have either the initial open brace and/or
-> the closing brace outside of column 1.
->
-> Move those braces to column 1.
->
-> This allows various function analyzers like gnu complexity to work
-> properly for these modified functions.
->
-> Miscellanea:
->
-> o Remove extra trailing ; and blank line from xfs_agf_verify
->
-> Signed-off-by: Joe Perches <joe@perches.com>
 
->  drivers/platform/x86/eeepc-laptop.c                  |  2 +-
+This series adds support for Open Coherent Accelerator (ocxl) devices
+on POWER9 processor. OpenCAPI is a consortium developing the
+specifications for an interface between processors and accelerators,
+allowing sharing the host memory with the accelerators, using virtual
+addresses.
 
-> diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-> index 5a681962899c..4c38904a8a32 100644
-> --- a/drivers/platform/x86/eeepc-laptop.c
-> +++ b/drivers/platform/x86/eeepc-laptop.c
-> @@ -492,7 +492,7 @@ static void eeepc_platform_exit(struct eeepc_laptop *eeepc)
->   * potentially bad time, such as a timer interrupt.
->   */
->  static void tpd_led_update(struct work_struct *work)
-> - {
-> +{
->         struct eeepc_laptop *eeepc;
->
->         eeepc = container_of(work, struct eeepc_laptop, tpd_led_work);
-> diff --git a/drivers/rtc/rtc-ab-b5ze-s3.c b/drivers/rtc/rtc-ab-b5ze-s3.c
-> index a319bf1e49de..ef5c16dfabfa 100644
+The OpenCAPI device can also have its own local memory and provide
+access to the host, though it is not supported by that series.
 
-Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+The OpenCAPI specification is processor agnostic, but this series adds
+support specifically for powerpc.
 
-for PDx86 changes.
+Even though the underlying transport is not PCI, the firmware
+abstracts the hardware like a PCI host bridge and Linux sees the
+OpenCAPI devices as PCI devices. So a lot of existing infrastructure
+and commands can be reused.
 
+Patches 1-5:  add the platform-specific services needed by the driver
+Patches 6-10: driver code
+Patch 11:     small correction to existing cxl driver
+Patch 12:     documentation
+
+Current limitations, that will be addressed in later patches:
+ - no capability to trigger a reset of the opencapi adapter
+ - no support for the 'wake_host_thread' command
+ - no support for adapters with a dual-link connection (none exists yet)
+ - no access to the adapter-local memory
+
+Many people contributed directly or indirectly, from the software,
+hardware and bringup teams. In particular Andrew Donnellan and
+Alastair D'Silva, who are developing the related firmware and library.
+
+Feedback welcome!
+
+
+
+Frederic Barrat (13):
+  powerpc/powernv: Introduce new PHB type for opencapi links
+  powerpc/powernv: Set correct configuration space size for opencapi
+    devices
+  powerpc/powernv: Add opal calls for opencapi
+  powerpc/powernv: Add platform-specific services for opencapi
+  powerpc/powernv: Capture actag information for the device
+  ocxl: Driver code for 'generic' opencapi devices
+  ocxl: Add AFU interrupt support
+  ocxl: Add a kernel API for other opencapi drivers
+  ocxl: Add trace points
+  ocxl: Add Makefile and Kconfig
+  cxl: Remove support for "Processing accelerators" class
+  ocxl: Documentation
+  ocxl: add MAINTAINERS entry
+
+ Documentation/accelerators/ocxl.rst            | 151 +++++
+ Documentation/ioctl/ioctl-number.txt           |   1 +
+ MAINTAINERS                                    |  12 +
+ arch/powerpc/include/asm/opal-api.h            |   5 +-
+ arch/powerpc/include/asm/opal.h                |   6 +
+ arch/powerpc/include/asm/pnv-ocxl.h            |  43 ++
+ arch/powerpc/platforms/powernv/Makefile        |   1 +
+ arch/powerpc/platforms/powernv/npu-dma.c       |   2 +-
+ arch/powerpc/platforms/powernv/ocxl.c          | 519 ++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   3 +
+ arch/powerpc/platforms/powernv/pci-ioda.c      |  56 +-
+ arch/powerpc/platforms/powernv/pci.c           |   4 +
+ arch/powerpc/platforms/powernv/pci.h           |   8 +-
+ drivers/misc/Kconfig                           |   1 +
+ drivers/misc/Makefile                          |   1 +
+ drivers/misc/cxl/pci.c                         |   2 -
+ drivers/misc/ocxl/Kconfig                      |  25 +
+ drivers/misc/ocxl/Makefile                     |  10 +
+ drivers/misc/ocxl/afu_irq.c                    | 209 +++++++
+ drivers/misc/ocxl/config.c                     | 729 +++++++++++++++++++++++++
+ drivers/misc/ocxl/context.c                    | 275 ++++++++++
+ drivers/misc/ocxl/file.c                       | 438 +++++++++++++++
+ drivers/misc/ocxl/link.c                       | 654 ++++++++++++++++++++++
+ drivers/misc/ocxl/main.c                       |  40 ++
+ drivers/misc/ocxl/ocxl_internal.h              | 138 +++++
+ drivers/misc/ocxl/pasid.c                      | 114 ++++
+ drivers/misc/ocxl/pci.c                        | 592 ++++++++++++++++++++
+ drivers/misc/ocxl/sysfs.c                      | 150 +++++
+ drivers/misc/ocxl/trace.c                      |  13 +
+ drivers/misc/ocxl/trace.h                      | 189 +++++++
+ include/misc/ocxl-config.h                     |  52 ++
+ include/misc/ocxl.h                            | 221 ++++++++
+ include/uapi/misc/ocxl.h                       |  56 ++
+ 33 files changed, 4702 insertions(+), 18 deletions(-)
+ create mode 100644 Documentation/accelerators/ocxl.rst
+ create mode 100644 arch/powerpc/include/asm/pnv-ocxl.h
+ create mode 100644 arch/powerpc/platforms/powernv/ocxl.c
+ create mode 100644 drivers/misc/ocxl/Kconfig
+ create mode 100644 drivers/misc/ocxl/Makefile
+ create mode 100644 drivers/misc/ocxl/afu_irq.c
+ create mode 100644 drivers/misc/ocxl/config.c
+ create mode 100644 drivers/misc/ocxl/context.c
+ create mode 100644 drivers/misc/ocxl/file.c
+ create mode 100644 drivers/misc/ocxl/link.c
+ create mode 100644 drivers/misc/ocxl/main.c
+ create mode 100644 drivers/misc/ocxl/ocxl_internal.h
+ create mode 100644 drivers/misc/ocxl/pasid.c
+ create mode 100644 drivers/misc/ocxl/pci.c
+ create mode 100644 drivers/misc/ocxl/sysfs.c
+ create mode 100644 drivers/misc/ocxl/trace.c
+ create mode 100644 drivers/misc/ocxl/trace.h
+ create mode 100644 include/misc/ocxl-config.h
+ create mode 100644 include/misc/ocxl.h
+ create mode 100644 include/uapi/misc/ocxl.h
 
 -- 
-With Best Regards,
-Andy Shevchenko
+2.14.1
