@@ -3,33 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBJ0jQczDrcj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBL5nbzzDsF8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:46 +1100 (AEDT)
 Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBIFJvSr138906
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:41 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2exd8d93u6-1
+ vBIFJxL3139001
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:45 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2exd8d93vj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:41 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:44 -0500
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 18 Dec 2017 15:21:38 -0000
+ Mon, 18 Dec 2017 15:21:40 -0000
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
  andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
-Subject: [PATCH 01/13] powerpc/powernv: Introduce new PHB type for opencapi
- links
-Date: Mon, 18 Dec 2017 16:21:14 +0100
+Subject: [PATCH 02/13] powerpc/powernv: Set correct configuration space size
+ for opencapi devices
+Date: Mon, 18 Dec 2017 16:21:15 +0100
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
-Message-Id: <6870a754d346e7d8a47325e5ba4327853aea9226.1513608243.git.fbarrat@linux.vnet.ibm.com>
+Message-Id: <386af9b4afde2a0f9cd699d79b0fdf3e4fc0e2d7.1513608243.git.fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,200 +39,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The NPU was already abstracted by opal as a virtual PHB for nvlink,
-but it helps to be able to differentiate between a nvlink or opencapi
-PHB, as it's not completely transparent to linux. In particular, PE
-assignment differs and we'll also need the information in later
-patches.
+>From Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-So rename existing PNV_PHB_NPU type to PNV_PHB_NPU_NVLINK and add a
-new type PNV_PHB_NPU_OCAPI.
+The configuration space for opencapi devices doesn't have a PCI
+Express capability, therefore confusing linux in thinking it's of an
+old PCI type with a 256-byte configuration space size, instead of the
+desired 4k. So add a PCI fixup to declare the correct size.
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
 Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c  |  2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c | 46 +++++++++++++++++++++++--------
- arch/powerpc/platforms/powernv/pci.c      |  4 +++
- arch/powerpc/platforms/powernv/pci.h      |  8 ++++--
- 4 files changed, 45 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index f6cbc1a71472..c5899c107d59 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -277,7 +277,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
- 	int64_t rc = 0;
- 	phys_addr_t top = memblock_end_of_DRAM();
- 
--	if (phb->type != PNV_PHB_NPU || !npe->pdev)
-+	if (phb->type != PNV_PHB_NPU_NVLINK || !npe->pdev)
- 		return -EINVAL;
- 
- 	rc = pnv_npu_unset_window(npe, 0);
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 749055553064..c37b5d288f9c 100644
+index c37b5d288f9c..b8ec76aa266f 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -54,7 +54,8 @@
- #define POWERNV_IOMMU_DEFAULT_LEVELS	1
- #define POWERNV_IOMMU_MAX_LEVELS	5
- 
--static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU" };
-+static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
-+					      "NPU_OCAPI" };
- static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
- 
- void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
-@@ -924,7 +925,7 @@ static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 	 * Configure PELTV. NPUs don't have a PELTV table so skip
- 	 * configuration on them.
- 	 */
--	if (phb->type != PNV_PHB_NPU)
-+	if (phb->type != PNV_PHB_NPU_NVLINK && phb->type != PNV_PHB_NPU_OCAPI)
- 		pnv_ioda_set_peltv(phb, pe, true);
- 
- 	/* Setup reverse map */
-@@ -1260,12 +1261,13 @@ static struct pnv_ioda_pe *pnv_ioda_setup_npu_PE(struct pci_dev *npu_pdev)
- 		return pe;
+@@ -4079,6 +4079,16 @@ void __init pnv_pci_init_npu2_opencapi_phb(struct device_node *np)
+ 	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_NPU_OCAPI);
  }
  
--static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus)
-+static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus,
-+			    struct pnv_ioda_pe *fn(struct pci_dev *npu_pdev))
- {
- 	struct pci_dev *pdev;
- 
- 	list_for_each_entry(pdev, &bus->devices, bus_list)
--		pnv_ioda_setup_npu_PE(pdev);
-+		fn(pdev);
- }
- 
- static void pnv_pci_ioda_setup_PEs(void)
-@@ -1275,13 +1277,18 @@ static void pnv_pci_ioda_setup_PEs(void)
- 
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		phb = hose->private_data;
--		if (phb->type == PNV_PHB_NPU) {
-+		if (phb->type == PNV_PHB_NPU_NVLINK) {
- 			/* PE#0 is needed for error reporting */
- 			pnv_ioda_reserve_pe(phb, 0);
--			pnv_ioda_setup_npu_PEs(hose->bus);
-+			pnv_ioda_setup_npu_PEs(hose->bus,
-+					pnv_ioda_setup_npu_PE);
- 			if (phb->model == PNV_PHB_MODEL_NPU2)
- 				pnv_npu2_init(phb);
- 		}
-+		if (phb->type == PNV_PHB_NPU_OCAPI) {
-+			pnv_ioda_setup_npu_PEs(hose->bus,
-+					pnv_ioda_setup_dev_PE);
-+		}
- 	}
- }
- 
-@@ -2640,7 +2647,7 @@ static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
- 
- 	hose = pci_bus_to_host(pdev->bus);
- 	phb = hose->private_data;
--	if (phb->type != PNV_PHB_NPU)
-+	if (phb->type != PNV_PHB_NPU_NVLINK)
- 		return 0;
- 
- 	*ptmppe = &phb->ioda.pe_array[pdn->pe_number];
-@@ -2724,7 +2731,7 @@ static void pnv_pci_ioda_setup_iommu_api(void)
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		phb = hose->private_data;
- 
--		if (phb->type != PNV_PHB_NPU)
-+		if (phb->type != PNV_PHB_NPU_NVLINK)
- 			continue;
- 
- 		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
-@@ -3774,6 +3781,13 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
- 	.shutdown		= pnv_pci_ioda_shutdown,
- };
- 
-+static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
-+	.enable_device_hook	= pnv_pci_enable_device_hook,
-+	.window_alignment	= pnv_pci_window_alignment,
-+	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
-+	.shutdown		= pnv_pci_ioda_shutdown,
-+};
-+
- #ifdef CONFIG_CXL_BASE
- const struct pci_controller_ops pnv_cxl_cx4_ioda_controller_ops = {
- 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
-@@ -4007,9 +4021,14 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	 */
- 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
- 
--	if (phb->type == PNV_PHB_NPU) {
-+	switch (phb->type) {
-+	case PNV_PHB_NPU_NVLINK:
- 		hose->controller_ops = pnv_npu_ioda_controller_ops;
--	} else {
-+		break;
-+	case PNV_PHB_NPU_OCAPI:
-+		hose->controller_ops = pnv_npu_ocapi_ioda_controller_ops;
-+		break;
-+	default:
- 		phb->dma_dev_setup = pnv_pci_ioda_dma_dev_setup;
- 		hose->controller_ops = pnv_pci_ioda_controller_ops;
- 	}
-@@ -4052,7 +4071,12 @@ void __init pnv_pci_init_ioda2_phb(struct device_node *np)
- 
- void __init pnv_pci_init_npu_phb(struct device_node *np)
- {
--	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_NPU);
-+	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_NPU_NVLINK);
-+}
-+
-+void __init pnv_pci_init_npu2_opencapi_phb(struct device_node *np)
++static void pnv_npu2_opencapi_cfg_size_fixup(struct pci_dev *dev)
 +{
-+	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_NPU_OCAPI);
- }
- 
- void __init pnv_pci_init_ioda_hub(struct device_node *np)
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 5422f4a6317c..69d102cbf48f 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -1142,6 +1142,10 @@ void __init pnv_pci_init(void)
- 	for_each_compatible_node(np, NULL, "ibm,ioda2-npu2-phb")
- 		pnv_pci_init_npu_phb(np);
- 
-+	/* Look for NPU2 OpenCAPI PHBs */
-+	for_each_compatible_node(np, NULL, "ibm,ioda2-npu2-opencapi-phb")
-+		pnv_pci_init_npu2_opencapi_phb(np);
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
 +
- 	/* Configure IOMMU DMA hooks */
- 	set_pci_dma_ops(&dma_iommu_ops);
- }
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index b772d7473896..eada4b6068cb 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -12,9 +12,10 @@ struct pci_dn;
- #define NV_NMMU_ATSD_REGS 8
- 
- enum pnv_phb_type {
--	PNV_PHB_IODA1	= 0,
--	PNV_PHB_IODA2	= 1,
--	PNV_PHB_NPU	= 2,
-+	PNV_PHB_IODA1		= 0,
-+	PNV_PHB_IODA2		= 1,
-+	PNV_PHB_NPU_NVLINK	= 2,
-+	PNV_PHB_NPU_OCAPI	= 3,
- };
- 
- /* Precise PHB model for error management */
-@@ -227,6 +228,7 @@ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- extern void pnv_pci_init_ioda_hub(struct device_node *np);
- extern void pnv_pci_init_ioda2_phb(struct device_node *np);
- extern void pnv_pci_init_npu_phb(struct device_node *np);
-+extern void pnv_pci_init_npu2_opencapi_phb(struct device_node *np);
- extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
- extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
- 
++	if (phb->type == PNV_PHB_NPU_OCAPI)
++		dev->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
++}
++DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pnv_npu2_opencapi_cfg_size_fixup);
++
+ void __init pnv_pci_init_ioda_hub(struct device_node *np)
+ {
+ 	struct device_node *phbn;
 -- 
 2.14.1
