@@ -1,20 +1,20 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBf3F8wzDsFY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:22:02 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBg3wVVzDsFY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:22:03 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBIFJIVe067241
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:22:00 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2exdeu88g2-1
+ vBIFJGjv022779
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:22:01 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2exehywfgp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:22:00 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
  Mon, 18 Dec 2017 15:21:58 -0000
@@ -22,13 +22,13 @@ From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
  andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
-Subject: [PATCH 10/13] ocxl: Add Makefile and Kconfig
-Date: Mon, 18 Dec 2017 16:21:23 +0100
+Subject: [PATCH 11/13] cxl: Remove support for "Processing accelerators" class
+Date: Mon, 18 Dec 2017 16:21:24 +0100
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
-Message-Id: <ddc10e7f73d714bb02bcac4958fc22ab10f7e129.1513608243.git.fbarrat@linux.vnet.ibm.com>
+Message-Id: <199cdb186d837daa838a37d937c6586bb9cfe1a2.1513608243.git.fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,86 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OCXL_BASE triggers the platform support needed by the driver.
+The cxl driver currently declares in its table of supported PCI
+devices the class "Processing accelerators". Therefore it may be
+called to probe for opencapi devices, which generates errors, as the
+config space of a cxl device is not compatible with opencapi.
+
+So remove support for the generic class, as we now have (at least) two
+drivers for devices of the same class. Most cxl devices are FPGAs with
+a PSL which will show a known device ID of 0x477. Other devices are
+really supported by the cxlflash driver and are already listed in the
+table. So removing the class is expected to go unnoticed.
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- drivers/misc/Kconfig       |  1 +
- drivers/misc/Makefile      |  1 +
- drivers/misc/ocxl/Kconfig  | 25 +++++++++++++++++++++++++
- drivers/misc/ocxl/Makefile | 10 ++++++++++
- 4 files changed, 37 insertions(+)
- create mode 100644 drivers/misc/ocxl/Kconfig
- create mode 100644 drivers/misc/ocxl/Makefile
+ drivers/misc/cxl/pci.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index f1a5c2357b14..0534f338c84a 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -508,4 +508,5 @@ source "drivers/misc/mic/Kconfig"
- source "drivers/misc/genwqe/Kconfig"
- source "drivers/misc/echo/Kconfig"
- source "drivers/misc/cxl/Kconfig"
-+source "drivers/misc/ocxl/Kconfig"
- endmenu
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 5ca5f64df478..73326d54e246 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_CXL_BASE)		+= cxl/
- obj-$(CONFIG_ASPEED_LPC_CTRL)	+= aspeed-lpc-ctrl.o
- obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
- obj-$(CONFIG_PCI_ENDPOINT_TEST)	+= pci_endpoint_test.o
-+obj-$(CONFIG_OCXL)		+= ocxl/
- 
- lkdtm-$(CONFIG_LKDTM)		+= lkdtm_core.o
- lkdtm-$(CONFIG_LKDTM)		+= lkdtm_bugs.o
-diff --git a/drivers/misc/ocxl/Kconfig b/drivers/misc/ocxl/Kconfig
-new file mode 100644
-index 000000000000..4496b61f48db
---- /dev/null
-+++ b/drivers/misc/ocxl/Kconfig
-@@ -0,0 +1,25 @@
-+#
-+# Open Coherent Accelerator (OCXL) compatible devices
-+#
-+
-+config OCXL_BASE
-+	bool
-+	default n
-+	select PPC_COPRO_BASE
-+
-+config OCXL
-+	tristate "Support for Open Coherent Accelerators (OCXL)"
-+	depends on PPC_POWERNV && PCI && EEH
-+	select OCXL_BASE
-+	default m
-+	help
-+
-+	  Select this option to enable driver support for Open
-+	  Coherent Accelerators (OCXL).  OCXL is otherwise known as
-+	  Open Coherent Accelerator Processor Interface (OCAPI).
-+	  OCAPI allows accelerators in FPGAs to be coherently attached
-+	  to a CPU through a Open CAPI link.  This driver enables
-+	  userspace programs to access these accelerators through
-+	  devices found in /dev/ocxl/
-+
-+	  If unsure, say N.
-diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
-new file mode 100644
-index 000000000000..f75853411cfd
---- /dev/null
-+++ b/drivers/misc/ocxl/Makefile
-@@ -0,0 +1,10 @@
-+ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
-+
-+ocxl-y				+= main.o pci.o config.o file.o pasid.o
-+ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
-+obj-$(CONFIG_OCXL)		+= ocxl.o
-+
-+# For tracepoints to include our trace.h from tracepoint infrastructure:
-+CFLAGS_trace.o := -I$(src)
-+
-+# ccflags-y += -DDEBUG
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 19969ee86d6f..758842f65a1b 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -125,8 +125,6 @@ static const struct pci_device_id cxl_pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0623), },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0628), },
+-	{ PCI_DEVICE_CLASS(0x120000, ~0), },
+-
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, cxl_pci_tbl);
 -- 
 2.14.1
