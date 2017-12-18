@@ -1,24 +1,29 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Qb45CkSzDsNR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 13:53:36 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id 62so2547836pld.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 18:53:36 -0800 (PST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: timur@tabi.org,
-	broonie@kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
- mail@maciej.szmigiero.name, caleb@crome.org, arnaud.mouiche@invoxia.com,
- lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v4 11/11] ASoC: fsl_ssi: Define ternary macros to simplify code
-Date: Sun, 17 Dec 2017 18:52:10 -0800
-Message-Id: <1513565530-33957-12-git-send-email-nicoleotsuka@gmail.com>
-In-Reply-To: <1513565530-33957-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1513565530-33957-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0QjH2HkHzDrZD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 13:58:58 +1100 (AEDT)
+Date: Sun, 17 Dec 2017 20:58:54 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Torsten Duwe <duwe@lst.de>, linux-kernel@vger.kernel.org,
+ Jiri Kosina <jkosina@suse.cz>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20171218025854.angid7h33gnmxsrg@treble>
+References: <20171005124313.GA25100@lst.de>
+ <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
+ <20171017144733.GB2136@lst.de>
+ <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+ <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
+ <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
+ <20171212113912.GA1907@lst.de>
+ <20171212140501.44vf4xcz6jhbqofd@treble>
+ <20171215194009.349b04da@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20171215194009.349b04da@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,114 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some regmap code looks redudant. So simplify it.
+On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
+> On Tue, 12 Dec 2017 08:05:01 -0600
+> Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> 
+> > On Tue, Dec 12, 2017 at 12:39:12PM +0100, Torsten Duwe wrote:
+> > > Hi all,
+> > > 
+> > > The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
+> > > 
+> > > [...] There are several rules that must be adhered to in order to ensure
+> > > reliable and consistent call chain backtracing:
+> > > 
+> > > * Before a function calls any other function, it shall establish its
+> > >   own stack frame, whose size shall be a multiple of 16 bytes.  
+> > 
+> > What about leaf functions?  If a leaf function doesn't establish a stack
+> > frame, and it has inline asm which contains a blr to another function,
+> > this ABI is broken.
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
----
- sound/soc/fsl/fsl_ssi.c | 27 +++++++++++----------------
- sound/soc/fsl/fsl_ssi.h |  4 ++++
- 2 files changed, 15 insertions(+), 16 deletions(-)
+Oops, I meant to say "bl" instead of "blr".
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2b3915c..aecd00f 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -408,13 +408,10 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
-  */
- static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
- {
--	if (is_rx) {
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_RX_CLR, SSI_SOR_RX_CLR);
--	} else {
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_TX_CLR, SSI_SOR_TX_CLR);
--	}
-+	bool tx = !is_rx;
-+
-+	regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
- }
- 
- /**
-@@ -681,6 +678,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 			    struct snd_soc_dai *dai,
- 			    struct snd_pcm_hw_params *hw_params)
- {
-+	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	int synchronous = ssi->cpu_dai_drv.symmetric_rates, ret;
-@@ -768,10 +766,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 		(psr ? SSI_SxCCR_PSR : 0);
- 	mask = SSI_SxCCR_PM_MASK | SSI_SxCCR_DIV2 | SSI_SxCCR_PSR;
- 
--	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK || synchronous)
--		regmap_update_bits(regs, REG_SSI_STCCR, mask, stccr);
--	else
--		regmap_update_bits(regs, REG_SSI_SRCCR, mask, stccr);
-+	/* STCCR is used for RX in synchronous mode */
-+	tx2 = tx || synchronous;
-+	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), mask, stccr);
- 
- 	if (!baudclk_is_used) {
- 		ret = clk_set_rate(ssi->baudclk, baudrate);
-@@ -799,6 +796,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 			     struct snd_pcm_hw_params *hw_params,
- 			     struct snd_soc_dai *dai)
- {
-+	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	unsigned int channels = params_channels(hw_params);
-@@ -849,11 +847,8 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	}
- 
- 	/* In synchronous mode, the SSI uses STCCR for capture */
--	if ((substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ||
--	    ssi->cpu_dai_drv.symmetric_rates)
--		regmap_update_bits(regs, REG_SSI_STCCR, SSI_SxCCR_WL_MASK, wl);
--	else
--		regmap_update_bits(regs, REG_SSI_SRCCR, SSI_SxCCR_WL_MASK, wl);
-+	tx2 = tx || ssi->cpu_dai_drv.symmetric_rates;
-+	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), SSI_SxCCR_WL_MASK, wl);
- 
- 	return 0;
- }
-diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
-index b610087..de2fdc5 100644
---- a/sound/soc/fsl/fsl_ssi.h
-+++ b/sound/soc/fsl/fsl_ssi.h
-@@ -35,10 +35,12 @@
- #define REG_SSI_STCR			0x1c
- /* SSI Receive Configuration Register */
- #define REG_SSI_SRCR			0x20
-+#define REG_SSI_SxCR(tx)		((tx) ? REG_SSI_STCR : REG_SSI_SRCR)
- /* SSI Transmit Clock Control Register */
- #define REG_SSI_STCCR			0x24
- /* SSI Receive Clock Control Register */
- #define REG_SSI_SRCCR			0x28
-+#define REG_SSI_SxCCR(tx)		((tx) ? REG_SSI_STCCR : REG_SSI_SRCCR)
- /* SSI FIFO Control/Status Register */
- #define REG_SSI_SFCSR			0x2c
- /*
-@@ -67,6 +69,7 @@
- #define REG_SSI_STMSK			0x48
- /* SSI  Receive Time Slot Mask Register */
- #define REG_SSI_SRMSK			0x4c
-+#define REG_SSI_SxMSK(tx)		((tx) ? REG_SSI_STMSK : REG_SSI_SRMSK)
- /*
-  * SSI AC97 Channel Status Register
-  *
-@@ -249,6 +252,7 @@
- #define SSI_SOR_CLKOFF			0x00000040
- #define SSI_SOR_RX_CLR			0x00000020
- #define SSI_SOR_TX_CLR			0x00000010
-+#define SSI_SOR_xX_CLR(tx)		((tx) ? SSI_SOR_TX_CLR : SSI_SOR_RX_CLR)
- #define SSI_SOR_INIT			0x00000008
- #define SSI_SOR_WAIT_SHIFT		1
- #define SSI_SOR_WAIT_MASK		0x00000006
+> > Also, even for non-leaf functions, is it possible for GCC to insert the
+> > inline asm before it sets up the stack frame?  (This is an occasional
+> > problem on x86.)
+> 
+> Inline asm must not have control transfer out of the statement unless
+> it is asm goto.
+
+Can inline asm have calls to other functions?
+
+> > Also, what about hand-coded asm?
+> 
+> Should follow the same rules if it uses the stack.
+
+How is that enforced?
+
+> > > To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+> > > This patch may be unneccessarily limited to ppc64le, but OTOH the only
+> > > user of this flag so far is livepatching, which is only implemented on
+> > > PPCs with 64-LE, a.k.a. ELF ABI v2.  
+> > 
+> > In addition to fixing the above issues, the unwinder also needs to
+> > detect interrupts (i.e., preemption) and page faults on the stack of a
+> > blocked task.  If a function were preempted before it created a stack
+> > frame, or if a leaf function blocked on a page fault, the stack trace
+> > will skip the function's caller, so such a trace will need to be
+> > reported to livepatch as unreliable.
+> 
+> I don't think there is much problem there for powerpc. Stack frame
+> creation and function call with return pointer are each atomic.
+
+What if the function is interrupted before it creates the stack frame?
+
 -- 
-2.7.4
+Josh
