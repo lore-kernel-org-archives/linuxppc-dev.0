@@ -1,13 +1,13 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Rpq4SjSzDr23
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 14:48:50 +1100 (AEDT)
-Received: by mail-pl0-x244.google.com with SMTP id 1so2616468plv.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 19:48:50 -0800 (PST)
-Subject: Re: [PATCH v1 1/7] platform/pseries: Update VF config space after EEH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Rxc2zT9zDrV0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 14:54:43 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id s10so4073883plj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 19:54:43 -0800 (PST)
+Subject: Re: [PATCH v1 2/7] powerpc/kernel: Add uevents in EEH error/resume
 To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
  paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -15,12 +15,12 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
 References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
- <20171213153242.98015-2-bryantly@linux.vnet.ibm.com>
+ <20171213153242.98015-3-bryantly@linux.vnet.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <bc7caa8a-f13b-b3e8-36ee-191a7d541425@ozlabs.ru>
-Date: Mon, 18 Dec 2017 14:48:41 +1100
+Message-ID: <79cea2a4-510d-37b5-0892-c87ffd0221b4@ozlabs.ru>
+Date: Mon, 18 Dec 2017 14:54:35 +1100
 MIME-Version: 1.0
-In-Reply-To: <20171213153242.98015-2-bryantly@linux.vnet.ibm.com>
+In-Reply-To: <20171213153242.98015-3-bryantly@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,128 +32,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 14/12/17 02:32, Bryant G. Ly wrote:
-> Add EEH platform operations for pseries to update VF
-> config space. With this change after EEH, the VF
-> will have updated config space for pseries platform.
+> Devices can go offline when EEH is reported. This patch adds
+> a change to the kernel object and lets udev know of error.
+> When device resumes a change is also set reporting device as
+> online. Therefore, EEH events are better propagated to user
+> space for devices in powerpc arch.
 > 
 > Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 > Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/pseries/eeh_pseries.c | 85 +++++++++++++++++++++++++++-
->  1 file changed, 84 insertions(+), 1 deletion(-)
+>  arch/powerpc/kernel/eeh_driver.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> index 2295f117e2d3..1a9a6fa91151 100644
-> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> @@ -708,6 +708,89 @@ static int pseries_eeh_write_config(struct pci_dn *pdn, int where, int size, u32
->  	return rtas_write_config(pdn, where, size, val);
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index 3c0fa99c5533..c61bf770282b 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -204,6 +204,7 @@ static void *eeh_report_error(void *data, void *userdata)
+>  	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+>  	enum pci_ers_result rc, *res = userdata;
+>  	struct pci_driver *driver;
+> +	char *envp[] = {"EVENT=EEH_ERROR", "ONLINE=0", NULL};
+
+scripts/checkpatch.pl:
+
+WARNING: char * array declaration might be better as static const
+#27: FILE: arch/powerpc/kernel/eeh_driver.c:207:
++       char *envp[] = {"EVENT=EEH_ERROR", "ONLINE=0", NULL};
+
+
+
+>  
+>  	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+>  		return NULL;
+> @@ -228,6 +229,7 @@ static void *eeh_report_error(void *data, void *userdata)
+>  
+>  	edev->in_error = true;
+>  	eeh_pcid_put(dev);
+> +	kobject_uevent_env(&dev->dev.kobj, KOBJ_CHANGE, envp);
+>  	return NULL;
 >  }
 >  
-> +static int pseries_eeh_restore_vf_config(struct pci_dn *pdn)
+> @@ -358,6 +360,7 @@ static void *eeh_report_resume(void *data, void *userdata)
+>  	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+>  	bool was_in_error;
+>  	struct pci_driver *driver;
+> +	char *envp[] = {"EVENT=EEH_RESUME", "ONLINE=1", NULL};
 
 
-This particular function is just a copy of its powernv counterpart -
-pnv_eeh_restore_vf_config(), it could go to arch/powerpc/kernel/eeh.c, for
-example. Or I am missing something here?
+WARNING: char * array declaration might be better as static const
+#43: FILE: arch/powerpc/kernel/eeh_driver.c:363:
++       char *envp[] = {"EVENT=EEH_RESUME", "ONLINE=1", NULL};
 
 
-
-
-> +{
-> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-> +	u32 devctl, cmd, cap2, aer_capctl;
-> +	int old_mps;
-> +
-> +	if (edev->pcie_cap) {
-> +		/* Restore MPS */
-> +		old_mps = (ffs(pdn->mps) - 8) << 5;
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				     2, &devctl);
-> +		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
-> +		devctl |= old_mps;
-> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				      2, devctl);
-> +
-> +		/* Disable Completion Timeout */
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
-> +				     4, &cap2);
-> +		if (cap2 & 0x10) {
-> +			eeh_ops->read_config(pdn,
-> +					     edev->pcie_cap + PCI_EXP_DEVCTL2,
-> +					     4, &cap2);
-> +			cap2 |= 0x10;
-> +			eeh_ops->write_config(pdn,
-> +					      edev->pcie_cap + PCI_EXP_DEVCTL2,
-> +					      4, cap2);
-> +		}
-> +	}
-> +
-> +	/* Enable SERR and parity checking */
-> +	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
-> +	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
-> +	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
-> +
-> +	/* Enable report various errors */
-> +	if (edev->pcie_cap) {
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				     2, &devctl);
-> +		devctl &= ~PCI_EXP_DEVCTL_CERE;
-> +		devctl |= (PCI_EXP_DEVCTL_NFERE |
-> +			   PCI_EXP_DEVCTL_FERE |
-> +			   PCI_EXP_DEVCTL_URRE);
-> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				      2, devctl);
-> +	}
-> +
-> +	/* Enable ECRC generation and check */
-> +	if (edev->pcie_cap && edev->aer_cap) {
-> +		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-> +				     4, &aer_capctl);
-> +		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
-> +		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-> +				      4, aer_capctl);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int pseries_eeh_restore_config(struct pci_dn *pdn)
-> +{
-> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-> +	s64 ret;
-> +
-> +	if (!edev)
-> +		return -EEXIST;
-> +
-> +	/*
-> +	 * FIXME: The MPS, error routing rules, timeout setting are worthy
-> +	 * to be exported by firmware in extendible way.
-> +	 */
-> +	if (edev->physfn)
-> +		ret = pseries_eeh_restore_vf_config(pdn);
-> +
-> +	if (ret) {
-> +		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
-> +			__func__, edev->pe_config_addr, ret);
-> +		return -EIO;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static struct eeh_ops pseries_eeh_ops = {
->  	.name			= "pseries",
->  	.init			= pseries_eeh_init,
-> @@ -723,7 +806,7 @@ static struct eeh_ops pseries_eeh_ops = {
->  	.read_config		= pseries_eeh_read_config,
->  	.write_config		= pseries_eeh_write_config,
->  	.next_error		= NULL,
-> -	.restore_config		= NULL
-> +	.restore_config		= pseries_eeh_restore_config
->  };
 >  
->  /**
+>  	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+>  		return NULL;
+> @@ -379,8 +382,8 @@ static void *eeh_report_resume(void *data, void *userdata)
+>  	}
+>  
+>  	driver->err_handler->resume(dev);
+> -
+
+Unnecessary change.
+
+
+>  	eeh_pcid_put(dev);
+> +	kobject_uevent_env(&dev->dev.kobj, KOBJ_CHANGE, envp);
+>  	return NULL;
+>  }
+>  
 > 
 
 
