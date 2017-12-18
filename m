@@ -1,34 +1,34 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBb5v2YzDsFf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBb5j0dzDsFR
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:59 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBIFLmeZ002323
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:58 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2exd8d947r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBIFJL59032243
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:57 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2exekc5b5v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:56 -0500
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 18 Dec 2017 15:21:53 -0000
+ Mon, 18 Dec 2017 15:21:54 -0000
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
  andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
-Subject: [PATCH 08/13] ocxl: Add a kernel API for other opencapi drivers
-Date: Mon, 18 Dec 2017 16:21:21 +0100
+Subject: [PATCH 09/13] ocxl: Add trace points
+Date: Mon, 18 Dec 2017 16:21:22 +0100
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
-Message-Id: <da32753e297a7a76379533a483affc187f72bb7a.1513608243.git.fbarrat@linux.vnet.ibm.com>
+Message-Id: <7a59e8575bcb8c2de4a68be688fb2a4d0699d61b.1513608243.git.fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,283 +38,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of the functions done by the generic driver should also be needed
-by other opencapi drivers: attaching a context to an adapter,
-translation fault handling, AFU interrupt allocation...
-
-So to avoid code duplication, the driver provides a kernel API that
-other drivers can use, similar to calling a in-kernel library.
-
-It is still a bit theoretical, for lack of real hardware, and will
-likely need adjustements down the road. But we used the cxlflash
-driver as a guinea pig.
+Define a few trace points so that we can use the standard tracing
+mechanism for debug and/or monitoring.
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- drivers/misc/ocxl/config.c        |  13 ++-
- drivers/misc/ocxl/link.c          |   7 ++
- drivers/misc/ocxl/ocxl_internal.h |  71 +-----------
- include/misc/ocxl.h               | 221 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 241 insertions(+), 71 deletions(-)
- create mode 100644 include/misc/ocxl.h
+ drivers/misc/ocxl/afu_irq.c |   5 ++
+ drivers/misc/ocxl/context.c |   2 +
+ drivers/misc/ocxl/link.c    |  11 ++-
+ drivers/misc/ocxl/trace.c   |  13 +++
+ drivers/misc/ocxl/trace.h   | 189 ++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 219 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/misc/ocxl/trace.c
+ create mode 100644 drivers/misc/ocxl/trace.h
 
-diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-index bb2fde5967e2..2326e8da4029 100644
---- a/drivers/misc/ocxl/config.c
-+++ b/drivers/misc/ocxl/config.c
-@@ -9,8 +9,8 @@
- 
- #include <linux/pci.h>
+diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
+index 0b217a854837..472fe1fb9fd9 100644
+--- a/drivers/misc/ocxl/afu_irq.c
++++ b/drivers/misc/ocxl/afu_irq.c
+@@ -11,6 +11,7 @@
+ #include <linux/eventfd.h>
  #include <asm/pnv-ocxl.h>
-+#include <misc/ocxl.h>
- #include <misc/ocxl-config.h>
--#include "ocxl_internal.h"
+ #include "ocxl_internal.h"
++#include "trace.h"
  
- #define EXTRACT_BIT(val, bit) (!!(val & BIT(bit)))
- #define EXTRACT_BITS(val, s, e) ((val & GENMASK(e, s)) >> s)
-@@ -250,6 +250,7 @@ int ocxl_config_read_function(struct pci_dev *dev, struct ocxl_fn_config *fn)
- 	rc = validate_function(dev, fn);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_read_function);
+ struct afu_irq {
+ 	int id;
+@@ -35,6 +36,7 @@ static irqreturn_t afu_irq_handler(int virq, void *data)
+ {
+ 	struct afu_irq *irq = (struct afu_irq *) data;
  
- static int read_afu_info(struct pci_dev *dev, struct ocxl_fn_config *fn,
- 			int offset, u32 *data)
-@@ -308,6 +309,7 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
- 	}
- 	return 1;
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_check_afu_index);
++	trace_ocxl_afu_irq_receive(virq);
+ 	if (irq->ev_ctx)
+ 		eventfd_signal(irq->ev_ctx, 1);
+ 	return IRQ_HANDLED;
+@@ -109,6 +111,8 @@ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
  
- static int read_afu_name(struct pci_dev *dev, struct ocxl_fn_config *fn,
- 			struct ocxl_afu_config *afu)
-@@ -505,6 +507,7 @@ int ocxl_config_read_afu(struct pci_dev *dev, struct ocxl_fn_config *fn,
- 	rc = validate_afu(dev, afu);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_read_afu);
+ 	*irq_offset = irq_id_to_offset(ctx, irq->id);
  
- int ocxl_config_get_actag_info(struct pci_dev *dev, u16 *base, u16 *enabled,
- 			u16 *supported)
-@@ -523,6 +526,7 @@ int ocxl_config_get_actag_info(struct pci_dev *dev, u16 *base, u16 *enabled,
- 	}
++	trace_ocxl_afu_irq_alloc(ctx->pasid, irq->id, irq->virq, irq->hw_irq,
++				*irq_offset);
+ 	mutex_unlock(&ctx->irq_lock);
  	return 0;
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_get_actag_info);
  
- void ocxl_config_set_afu_actag(struct pci_dev *dev, int pos, int actag_base,
- 			int actag_count)
-@@ -535,11 +539,13 @@ void ocxl_config_set_afu_actag(struct pci_dev *dev, int pos, int actag_base,
- 	val = actag_base & OCXL_DVSEC_ACTAG_MASK;
- 	pci_write_config_dword(dev, pos + OCXL_DVSEC_AFU_CTRL_ACTAG_BASE, val);
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_set_afu_actag);
+@@ -124,6 +128,7 @@ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
  
- int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count)
+ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
  {
- 	return pnv_ocxl_get_pasid_count(dev, count);
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_get_pasid_info);
++	trace_ocxl_afu_irq_free(ctx->pasid, irq->id);
+ 	if (ctx->mapping)
+ 		unmap_mapping_range(ctx->mapping,
+ 				irq_id_to_offset(ctx, irq->id),
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index 19575269ed22..bc6546a8877e 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -8,6 +8,7 @@
+  */
  
- void ocxl_config_set_afu_pasid(struct pci_dev *dev, int pos, int pasid_base,
- 			u32 pasid_count_log)
-@@ -557,6 +563,7 @@ void ocxl_config_set_afu_pasid(struct pci_dev *dev, int pos, int pasid_base,
- 	pci_write_config_dword(dev, pos + OCXL_DVSEC_AFU_CTRL_PASID_BASE,
- 			val32);
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_set_afu_pasid);
- 
- void ocxl_config_set_afu_state(struct pci_dev *dev, int pos, int enable)
- {
-@@ -569,6 +576,7 @@ void ocxl_config_set_afu_state(struct pci_dev *dev, int pos, int enable)
- 		val &= 0xFE;
- 	pci_write_config_byte(dev, pos + OCXL_DVSEC_AFU_CTRL_ENABLE, val);
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_set_afu_state);
- 
- int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec)
- {
-@@ -666,6 +674,7 @@ int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec)
- 	kfree(recv_rate);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_set_TL);
- 
- int ocxl_config_terminate_pasid(struct pci_dev *dev, int afu_control, int pasid)
- {
-@@ -705,6 +714,7 @@ int ocxl_config_terminate_pasid(struct pci_dev *dev, int afu_control, int pasid)
- 	}
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_terminate_pasid);
- 
- void ocxl_config_set_actag(struct pci_dev *dev, int func_dvsec, u32 tag_first,
- 			u32 tag_count)
-@@ -716,3 +726,4 @@ void ocxl_config_set_actag(struct pci_dev *dev, int func_dvsec, u32 tag_first,
- 	pci_write_config_dword(dev, func_dvsec + OCXL_DVSEC_FUNC_OFF_ACTAG,
- 			val);
- }
-+EXPORT_SYMBOL_GPL(ocxl_config_set_actag);
-diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-index 5f12564eea99..fda2c9def4ff 100644
---- a/drivers/misc/ocxl/link.c
-+++ b/drivers/misc/ocxl/link.c
-@@ -12,6 +12,7 @@
- #include <linux/mmu_context.h>
- #include <asm/copro.h>
- #include <asm/pnv-ocxl.h>
-+#include <misc/ocxl.h>
+ #include <linux/sched/mm.h>
++#include "trace.h"
  #include "ocxl_internal.h"
  
+ struct ocxl_context *ocxl_context_alloc(void)
+@@ -210,6 +211,7 @@ int ocxl_context_detach(struct ocxl_context *ctx)
+ 	mutex_lock(&ctx->afu->afu_control_lock);
+ 	rc = ocxl_config_terminate_pasid(dev, afu_control_pos, ctx->pasid);
+ 	mutex_unlock(&ctx->afu->afu_control_lock);
++	trace_ocxl_terminate_pasid(ctx->pasid, rc);
+ 	if (rc) {
+ 		/*
+ 		 * If we timeout waiting for the AFU to terminate the
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index fda2c9def4ff..99dfb198b3d9 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -14,6 +14,7 @@
+ #include <asm/pnv-ocxl.h>
+ #include <misc/ocxl.h>
+ #include "ocxl_internal.h"
++#include "trace.h"
  
-@@ -427,6 +428,7 @@ int ocxl_link_setup(struct pci_dev *dev, int PE_mask, void **link_handle)
- 	mutex_unlock(&links_list_lock);
- 	return rc;
+ 
+ #define SPA_PASID_BITS		15
+@@ -123,8 +124,11 @@ static void ack_irq(struct spa *spa, enum xsl_response r)
+ 	else
+ 		WARN(1, "Invalid irq response %d\n", r);
+ 
+-	if (reg)
++	if (reg) {
++		trace_ocxl_fault_ack(spa->spa_mem, spa->xsl_fault.pe,
++				spa->xsl_fault.dsisr, spa->xsl_fault.dar, reg);
+ 		out_be64(spa->reg_tfc, reg);
++	}
  }
-+EXPORT_SYMBOL_GPL(ocxl_link_setup);
  
- static void release_xsl(struct kref *ref)
- {
-@@ -446,6 +448,7 @@ void ocxl_link_release(struct pci_dev *dev, void *link_handle)
- 	kref_put(&link->ref, release_xsl);
- 	mutex_unlock(&links_list_lock);
- }
-+EXPORT_SYMBOL_GPL(ocxl_link_release);
+ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+@@ -189,6 +193,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
+ 	int lpid, pid, tid;
  
- static u64 calculate_cfg_state(bool kernel)
- {
-@@ -540,6 +543,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+ 	read_irq(spa, &dsisr, &dar, &pe_handle);
++	trace_ocxl_fault(spa->spa_mem, pe_handle, dsisr, dar, -1);
+ 
+ 	WARN_ON(pe_handle > SPA_PE_MASK);
+ 	pe = spa->spa_mem + pe_handle;
+@@ -539,6 +544,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+ 	 * the problem.
+ 	 */
+ 	mmgrab(mm);
++	trace_ocxl_context_add(current->pid, spa->spa_mem, pasid, pidr, tidr);
+ unlock:
  	mutex_unlock(&spa->spa_lock);
  	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
+@@ -584,6 +590,9 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
+ 		goto unlock;
+ 	}
  
- int ocxl_link_remove_pe(void *link_handle, int pasid)
- {
-@@ -608,6 +612,7 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
- 	mutex_unlock(&spa->spa_lock);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
- 
- int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
- {
-@@ -628,6 +633,7 @@ int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
- 	*trigger_addr = addr;
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
- 
- void ocxl_link_free_irq(void *link_handle, int hw_irq)
- {
-@@ -636,3 +642,4 @@ void ocxl_link_free_irq(void *link_handle, int hw_irq)
- 	pnv_ocxl_free_xive_irq(hw_irq);
- 	atomic_inc(&link->irq_available);
- }
-+EXPORT_SYMBOL_GPL(ocxl_link_free_irq);
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index 829369c5f004..18ec28c0a5cb 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -13,8 +13,8 @@
- #include <linux/pci.h>
- #include <linux/cdev.h>
- #include <linux/list.h>
-+#include <misc/ocxl.h>
- 
--#define OCXL_AFU_NAME_SZ      (24+1)  /* add 1 for NULL termination */
- #define MAX_IRQ_PER_LINK	2000
- #define MAX_IRQ_PER_CONTEXT	MAX_IRQ_PER_LINK
- 
-@@ -23,38 +23,6 @@
- 
- extern struct pci_driver ocxl_pci_driver;
- 
--/*
-- * The following 2 structures are a fairly generic way of representing
-- * the configuration data for a function and AFU, as read from the
-- * configuration space.
-- */
--struct ocxl_afu_config {
--	u8 idx;
--	int dvsec_afu_control_pos;
--	char name[OCXL_AFU_NAME_SZ];
--	u8 version_major;
--	u8 version_minor;
--	u8 afuc_type;
--	u8 afum_type;
--	u8 profile;
--	u8 global_mmio_bar;
--	u64 global_mmio_offset;
--	u32 global_mmio_size;
--	u8 pp_mmio_bar;
--	u64 pp_mmio_offset;
--	u32 pp_mmio_stride;
--	u8 log_mem_size;
--	u8 pasid_supported_log;
--	u16 actag_supported;
--};
--
--struct ocxl_fn_config {
--	int dvsec_tl_pos;
--	int dvsec_function_pos;
--	int dvsec_afu_info_pos;
--	s8 max_pasid_log;
--	s8 max_afu_index;
--};
- 
- struct ocxl_fn {
- 	struct device dev;
-@@ -142,43 +110,6 @@ extern void ocxl_unregister_afu(struct ocxl_afu *afu);
- extern int ocxl_file_init(void);
- extern void ocxl_file_exit(void);
- 
--extern int ocxl_config_read_function(struct pci_dev *dev,
--				struct ocxl_fn_config *fn);
--
--extern int ocxl_config_check_afu_index(struct pci_dev *dev,
--				struct ocxl_fn_config *fn, int afu_idx);
--extern int ocxl_config_read_afu(struct pci_dev *dev,
--				struct ocxl_fn_config *fn,
--				struct ocxl_afu_config *afu,
--				u8 afu_idx);
--extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
--extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
--				int afu_control,
--				int pasid_base, u32 pasid_count_log);
--extern int ocxl_config_get_actag_info(struct pci_dev *dev,
--				u16 *base, u16 *enabled, u16 *supported);
--extern void ocxl_config_set_actag(struct pci_dev *dev, int func_dvsec,
--				u32 tag_first, u32 tag_count);
--extern void ocxl_config_set_afu_actag(struct pci_dev *dev, int afu_control,
--				int actag_base, int actag_count);
--extern void ocxl_config_set_afu_state(struct pci_dev *dev, int afu_control,
--				int enable);
--extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
--extern int ocxl_config_terminate_pasid(struct pci_dev *dev, int afu_control,
--				int pasid);
--
--extern int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
--			void **link_handle);
--extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
--extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
--		u64 amr, struct mm_struct *mm,
--		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
--		void *xsl_err_data);
--extern int ocxl_link_remove_pe(void *link_handle, int pasid);
--extern int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
--			u64 *addr);
--extern void ocxl_link_free_irq(void *link_handle, int hw_irq);
--
- extern int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
- extern void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
- extern int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
++	trace_ocxl_context_remove(current->pid, spa->spa_mem, pasid,
++				be32_to_cpu(pe->pid), be32_to_cpu(pe->tid));
++
+ 	memset(pe, 0, sizeof(struct ocxl_process_element));
+ 	/*
+ 	 * The barrier makes sure the PE is removed from the SPA
+diff --git a/drivers/misc/ocxl/trace.c b/drivers/misc/ocxl/trace.c
 new file mode 100644
-index 000000000000..2b66a2083a23
+index 000000000000..7d3993283f8d
 --- /dev/null
-+++ b/include/misc/ocxl.h
-@@ -0,0 +1,221 @@
++++ b/drivers/misc/ocxl/trace.c
+@@ -0,0 +1,13 @@
 +/*
 + * Copyright 2017 IBM Corp.
 + *
@@ -324,217 +175,204 @@ index 000000000000..2b66a2083a23
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#ifndef _MISC_OCXL_H_
-+#define _MISC_OCXL_H_
-+
-+#include <linux/pci.h>
-+
++#ifndef __CHECKER__
++#define CREATE_TRACE_POINTS
++#include "trace.h"
++#endif
+diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
+new file mode 100644
+index 000000000000..2ec202c79c2d
+--- /dev/null
++++ b/drivers/misc/ocxl/trace.h
+@@ -0,0 +1,189 @@
 +/*
-+ * Opencapi drivers all need some common facilities, like parsing the
-+ * device configuration space, adding a Process Element to the Shared
-+ * Process Area, etc...
++ * Copyright 2017 IBM Corp.
 + *
-+ * The ocxl module provides a kernel API, to allow other drivers to
-+ * reuse common code. A bit like a in-kernel library.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
 +
-+#define OCXL_AFU_NAME_SZ      (24+1)  /* add 1 for NULL termination */
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM ocxl
 +
-+/*
-+ * The following 2 structures are a fairly generic way of representing
-+ * the configuration data for a function and AFU, as read from the
-+ * configuration space.
-+ */
-+struct ocxl_afu_config {
-+	u8 idx;
-+	int dvsec_afu_control_pos; /* offset of AFU control DVSEC */
-+	char name[OCXL_AFU_NAME_SZ];
-+	u8 version_major;
-+	u8 version_minor;
-+	u8 afuc_type;
-+	u8 afum_type;
-+	u8 profile;
-+	u8 global_mmio_bar;     /* global MMIO area */
-+	u64 global_mmio_offset;
-+	u32 global_mmio_size;
-+	u8 pp_mmio_bar;         /* per-process MMIO area */
-+	u64 pp_mmio_offset;
-+	u32 pp_mmio_stride;
-+	u8 log_mem_size;
-+	u8 pasid_supported_log;
-+	u16 actag_supported;
-+};
++#if !defined(_TRACE_OCXL_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_OCXL_H
 +
-+struct ocxl_fn_config {
-+	int dvsec_tl_pos;       /* offset of the Transaction Layer DVSEC */
-+	int dvsec_function_pos; /* offset of the Function DVSEC */
-+	int dvsec_afu_info_pos; /* offset of the AFU information DVSEC */
-+	s8 max_pasid_log;
-+	s8 max_afu_index;
-+};
++#include <linux/tracepoint.h>
 +
-+/*
-+ * Read the configuration space of a function and fill in a
-+ * ocxl_fn_config structure with all the function details
-+ */
-+extern int ocxl_config_read_function(struct pci_dev *dev,
-+				struct ocxl_fn_config *fn);
++DECLARE_EVENT_CLASS(ocxl_context,
++	TP_PROTO(pid_t pid, void *spa, int pasid, u32 pidr, u32 tidr),
++	TP_ARGS(pid, spa, pasid, pidr, tidr),
 +
-+/*
-+ * Check if an AFU index is valid for the given function.
-+ *
-+ * AFU indexes can be sparse, so a driver should check all indexes up
-+ * to the maximum found in the function description
-+ */
-+extern int ocxl_config_check_afu_index(struct pci_dev *dev,
-+				struct ocxl_fn_config *fn, int afu_idx);
++	TP_STRUCT__entry(
++		__field(pid_t, pid)
++		__field(void*, spa)
++		__field(int, pasid)
++		__field(u32, pidr)
++		__field(u32, tidr)
++	),
 +
-+/*
-+ * Read the configuration space of a function for the AFU specified by
-+ * the index 'afu_idx'. Fills in a ocxl_afu_config structure
-+ */
-+extern int ocxl_config_read_afu(struct pci_dev *dev,
-+				struct ocxl_fn_config *fn,
-+				struct ocxl_afu_config *afu,
-+				u8 afu_idx);
++	TP_fast_assign(
++		__entry->pid = pid;
++		__entry->spa = spa;
++		__entry->pasid = pasid;
++		__entry->pidr = pidr;
++		__entry->tidr = tidr;
++	),
 +
-+/*
-+ * Get the max PASID value that can be used by the function
-+ */
-+extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
++	TP_printk("linux pid=%d spa=0x%p pasid=0x%x pidr=0x%x tidr=0x%x",
++		__entry->pid,
++		__entry->spa,
++		__entry->pasid,
++		__entry->pidr,
++		__entry->tidr
++	)
++);
 +
-+/*
-+ * Tell an AFU, by writing in the configuration space, the PASIDs that
-+ * it can use. Range starts at 'pasid_base' and its size is a multiple
-+ * of 2
-+ *
-+ * 'afu_control_offset' is the offset of the AFU control DVSEC which
-+ * can be found in the function configuration
-+ */
-+extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
-+				int afu_control_offset,
-+				int pasid_base, u32 pasid_count_log);
++DEFINE_EVENT(ocxl_context, ocxl_context_add,
++	TP_PROTO(pid_t pid, void *spa, int pasid, u32 pidr, u32 tidr),
++	TP_ARGS(pid, spa, pasid, pidr, tidr)
++);
 +
-+/*
-+ * Get the actag configuration for the function:
-+ * 'base' is the first actag value that can be used.
-+ * 'enabled' it the number of actags available, starting from base.
-+ * 'supported' is the total number of actags desired by all the AFUs
-+ *             of the function.
-+ */
-+extern int ocxl_config_get_actag_info(struct pci_dev *dev,
-+				u16 *base, u16 *enabled, u16 *supported);
++DEFINE_EVENT(ocxl_context, ocxl_context_remove,
++	TP_PROTO(pid_t pid, void *spa, int pasid, u32 pidr, u32 tidr),
++	TP_ARGS(pid, spa, pasid, pidr, tidr)
++);
 +
-+/*
-+ * Tell a function, by writing in the configuration space, the actags
-+ * it can use.
-+ *
-+ * 'func_offset' is the offset of the Function DVSEC that can found in
-+ * the function configuration
-+ */
-+extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
-+				u32 actag_base, u32 actag_count);
++TRACE_EVENT(ocxl_terminate_pasid,
++	TP_PROTO(int pasid, int rc),
++	TP_ARGS(pasid, rc),
 +
-+/*
-+ * Tell an AFU, by writing in the configuration space, the actags it
-+ * can use.
-+ *
-+ * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-+ * desired AFU. It can be found in the AFU configuration
-+ */
-+extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
-+				int afu_control_offset,
-+				int actag_base, int actag_count);
++	TP_STRUCT__entry(
++		__field(int, pasid)
++		__field(int, rc)
++	),
 +
-+/*
-+ * Enable/disable an AFU, by writing in the configuration space.
-+ *
-+ * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-+ * desired AFU. It can be found in the AFU configuration
-+ */
-+extern void ocxl_config_set_afu_state(struct pci_dev *dev,
-+				int afu_control_offset, int enable);
++	TP_fast_assign(
++		__entry->pasid = pasid;
++		__entry->rc = rc;
++	),
 +
-+/*
-+ * Set the Transaction Layer configuration in the configuration space.
-+ * Only needed for function 0.
-+ *
-+ * It queries the host TL capabilities, find some common ground
-+ * between the host and device, and set the Transaction Layer on both
-+ * accordingly.
-+ */
-+extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
++	TP_printk("pasid=0x%x rc=%d",
++		__entry->pasid,
++		__entry->rc
++	)
++);
 +
-+/*
-+ * Request an AFU to terminate a PASID.
-+ * Will return once the AFU has acked the request, or an error in case
-+ * of timeout.
-+ *
-+ * The hardware can only terminate one PASID at a time, so caller must
-+ * guarantee some kind of serialization.
-+ *
-+ * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-+ * desired AFU. It can be found in the AFU configuration
-+ */
-+extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
-+				int afu_control_offset, int pasid);
++DECLARE_EVENT_CLASS(ocxl_fault_handler,
++	TP_PROTO(void *spa, u64 pe, u64 dsisr, u64 dar, u64 tfc),
++	TP_ARGS(spa, pe, dsisr, dar, tfc),
 +
-+/*
-+ * Set up the opencapi link for the function.
-+ *
-+ * When called for the first time for a link, it sets up the Shared
-+ * Process Area for the link and the interrupt handler to process
-+ * translation faults.
-+ *
-+ * Returns a 'link handle' that should be used for further calls for
-+ * the link
-+ */
-+extern int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
-+			void **link_handle);
++	TP_STRUCT__entry(
++		__field(void *, spa)
++		__field(u64, pe)
++		__field(u64, dsisr)
++		__field(u64, dar)
++		__field(u64, tfc)
++	),
 +
-+/*
-+ * Remove the association between the function and its link.
-+ */
-+extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
++	TP_fast_assign(
++		__entry->spa = spa;
++		__entry->pe = pe;
++		__entry->dsisr = dsisr;
++		__entry->dar = dar;
++		__entry->tfc = tfc;
++	),
 +
-+/*
-+ * Add a Process Element to the Shared Process Area for a link.
-+ * The process is defined by its PASID, pid, tid and its mm_struct.
-+ *
-+ * 'xsl_err_cb' is an optional callback if the driver wants to be
-+ * notified when the translation fault interrupt handler detects an
-+ * address error.
-+ * 'xsl_err_data' is an argument passed to the above callback, if
-+ * defined
-+ */
-+extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-+		u64 amr, struct mm_struct *mm,
-+		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
-+		void *xsl_err_data);
++	TP_printk("spa=%p pe=0x%llx dsisr=0x%llx dar=0x%llx tfc=0x%llx",
++		__entry->spa,
++		__entry->pe,
++		__entry->dsisr,
++		__entry->dar,
++		__entry->tfc
++	)
++);
 +
-+/*
-+ * Remove a Process Element from the Shared Process Area for a link
-+ */
-+extern int ocxl_link_remove_pe(void *link_handle, int pasid);
++DEFINE_EVENT(ocxl_fault_handler, ocxl_fault,
++	TP_PROTO(void *spa, u64 pe, u64 dsisr, u64 dar, u64 tfc),
++	TP_ARGS(spa, pe, dsisr, dar, tfc)
++);
 +
-+/*
-+ * Allocate an AFU interrupt associated to the link.
-+ *
-+ * 'hw_irq' is the hardware interrupt number
-+ * 'obj_handle' is the 64-bit object handle to be passed to the AFU to
-+ * trigger the interrupt.
-+ * On P9, 'obj_handle' is an address, which, if written, triggers the
-+ * interrupt. It is an MMIO address which needs to be remapped (one
-+ * page).
-+ */
-+extern int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
-+			u64 *obj_handle);
++DEFINE_EVENT(ocxl_fault_handler, ocxl_fault_ack,
++	TP_PROTO(void *spa, u64 pe, u64 dsisr, u64 dar, u64 tfc),
++	TP_ARGS(spa, pe, dsisr, dar, tfc)
++);
 +
-+/*
-+ * Free a previously allocated AFU interrupt
-+ */
-+extern void ocxl_link_free_irq(void *link_handle, int hw_irq);
++TRACE_EVENT(ocxl_afu_irq_alloc,
++	TP_PROTO(int pasid, int irq_id, unsigned int virq, int hw_irq,
++		u64 irq_offset),
++	TP_ARGS(pasid, irq_id, virq, hw_irq, irq_offset),
 +
-+#endif /* _MISC_OCXL_H_ */
++	TP_STRUCT__entry(
++		__field(int, pasid)
++		__field(int, irq_id)
++		__field(unsigned int, virq)
++		__field(int, hw_irq)
++		__field(u64, irq_offset)
++	),
++
++	TP_fast_assign(
++		__entry->pasid = pasid;
++		__entry->irq_id = irq_id;
++		__entry->virq = virq;
++		__entry->hw_irq = hw_irq;
++		__entry->irq_offset = irq_offset;
++	),
++
++	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
++		__entry->pasid,
++		__entry->irq_id,
++		__entry->virq,
++		__entry->hw_irq,
++		__entry->irq_offset
++	)
++);
++
++TRACE_EVENT(ocxl_afu_irq_free,
++	TP_PROTO(int pasid, int irq_id),
++	TP_ARGS(pasid, irq_id),
++
++	TP_STRUCT__entry(
++		__field(int, pasid)
++		__field(int, irq_id)
++	),
++
++	TP_fast_assign(
++		__entry->pasid = pasid;
++		__entry->irq_id = irq_id;
++	),
++
++	TP_printk("pasid=0x%x irq_id=%d",
++		__entry->pasid,
++		__entry->irq_id
++	)
++);
++
++TRACE_EVENT(ocxl_afu_irq_receive,
++	TP_PROTO(int virq),
++	TP_ARGS(virq),
++
++	TP_STRUCT__entry(
++		__field(int, virq)
++	),
++
++	TP_fast_assign(
++		__entry->virq = virq;
++	),
++
++	TP_printk("virq=%d",
++		__entry->virq
++	)
++);
++
++#endif /* _TRACE_OCXL_H */
++
++/* This part must be outside protection */
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#define TRACE_INCLUDE_FILE trace
++#include <trace/define_trace.h>
 -- 
 2.14.1
