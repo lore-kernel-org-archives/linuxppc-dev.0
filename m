@@ -1,27 +1,31 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0Rxc2zT9zDrV0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 14:54:43 +1100 (AEDT)
-Received: by mail-pl0-x243.google.com with SMTP id s10so4073883plj.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Dec 2017 19:54:43 -0800 (PST)
-Subject: Re: [PATCH v1 2/7] powerpc/kernel: Add uevents in EEH error/resume
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, helgaas@kernel.org, ruscur@russell.cc,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
-References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
- <20171213153242.98015-3-bryantly@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <79cea2a4-510d-37b5-0892-c87ffd0221b4@ozlabs.ru>
-Date: Mon, 18 Dec 2017 14:54:35 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0S5N3tPrzDrXy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 15:01:27 +1100 (AEDT)
+Date: Sun, 17 Dec 2017 22:01:24 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Torsten Duwe <duwe@lst.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Jiri Kosina <jkosina@suse.cz>, live-patching@vger.kernel.org,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20171218040124.xmjeq6x3m2hpl6g4@treble>
+References: <20171017144733.GB2136@lst.de>
+ <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
+ <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
+ <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
+ <20171212113912.GA1907@lst.de>
+ <20171212140501.44vf4xcz6jhbqofd@treble>
+ <20171215194009.349b04da@roar.ozlabs.ibm.com>
+ <20171218025854.angid7h33gnmxsrg@treble>
+ <CAKTCnz=jukr_dY5PNRQYcFT9NMu+tmViw1UUfzrPUvE7HsHurg@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20171213153242.98015-3-bryantly@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CAKTCnz=jukr_dY5PNRQYcFT9NMu+tmViw1UUfzrPUvE7HsHurg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,79 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/12/17 02:32, Bryant G. Ly wrote:
-> Devices can go offline when EEH is reported. This patch adds
-> a change to the kernel object and lets udev know of error.
-> When device resumes a change is also set reporting device as
-> online. Therefore, EEH events are better propagated to user
-> space for devices in powerpc arch.
+On Mon, Dec 18, 2017 at 02:39:06PM +1100, Balbir Singh wrote:
+> On Mon, Dec 18, 2017 at 1:58 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> > On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
+> >> On Tue, 12 Dec 2017 08:05:01 -0600
+> >> Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> >>
+> >> > On Tue, Dec 12, 2017 at 12:39:12PM +0100, Torsten Duwe wrote:
+> >> > > Hi all,
+> >> > >
+> >> > > The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
+> >> > >
+> >> > > [...] There are several rules that must be adhered to in order to ensure
+> >> > > reliable and consistent call chain backtracing:
+> >> > >
+> >> > > * Before a function calls any other function, it shall establish its
+> >> > >   own stack frame, whose size shall be a multiple of 16 bytes.
+> >> >
+> >> > What about leaf functions?  If a leaf function doesn't establish a stack
+> >> > frame, and it has inline asm which contains a blr to another function,
+> >> > this ABI is broken.
+> >
+> > Oops, I meant to say "bl" instead of "blr".
 > 
-> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/eeh_driver.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+> I was wondering why "blr" mattered, but I guess we should speak of the
+> consistency
+> model. By walking a stack trace we expect to find whether a function is in use
+> or not and can/cannot be live-patched at this point in time. Right?
+
+Right.
+
+> >> > Also, even for non-leaf functions, is it possible for GCC to insert the
+> >> > inline asm before it sets up the stack frame?  (This is an occasional
+> >> > problem on x86.)
+> >>
+> >> Inline asm must not have control transfer out of the statement unless
+> >> it is asm goto.
+> >
+> > Can inline asm have calls to other functions?
+> >
+> >> > Also, what about hand-coded asm?
+> >>
+> >> Should follow the same rules if it uses the stack.
+> >
+> > How is that enforced?
+> >
+> >> > > To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+> >> > > This patch may be unneccessarily limited to ppc64le, but OTOH the only
+> >> > > user of this flag so far is livepatching, which is only implemented on
+> >> > > PPCs with 64-LE, a.k.a. ELF ABI v2.
+> >> >
+> >> > In addition to fixing the above issues, the unwinder also needs to
+> >> > detect interrupts (i.e., preemption) and page faults on the stack of a
+> >> > blocked task.  If a function were preempted before it created a stack
+> >> > frame, or if a leaf function blocked on a page fault, the stack trace
+> >> > will skip the function's caller, so such a trace will need to be
+> >> > reported to livepatch as unreliable.
+> >>
+> >> I don't think there is much problem there for powerpc. Stack frame
+> >> creation and function call with return pointer are each atomic.
+> >
+> > What if the function is interrupted before it creates the stack frame?
+> >
 > 
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 3c0fa99c5533..c61bf770282b 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -204,6 +204,7 @@ static void *eeh_report_error(void *data, void *userdata)
->  	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
->  	enum pci_ers_result rc, *res = userdata;
->  	struct pci_driver *driver;
-> +	char *envp[] = {"EVENT=EEH_ERROR", "ONLINE=0", NULL};
+> If it is interrupted, the exception handler will establish a new stack frame.
+> From a consistency viewpoint, I guess the question is -- has the function
+> been entered or considered to be entered when a stack frame has not
+> yet been established
 
-scripts/checkpatch.pl:
-
-WARNING: char * array declaration might be better as static const
-#27: FILE: arch/powerpc/kernel/eeh_driver.c:207:
-+       char *envp[] = {"EVENT=EEH_ERROR", "ONLINE=0", NULL};
-
-
-
->  
->  	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
->  		return NULL;
-> @@ -228,6 +229,7 @@ static void *eeh_report_error(void *data, void *userdata)
->  
->  	edev->in_error = true;
->  	eeh_pcid_put(dev);
-> +	kobject_uevent_env(&dev->dev.kobj, KOBJ_CHANGE, envp);
->  	return NULL;
->  }
->  
-> @@ -358,6 +360,7 @@ static void *eeh_report_resume(void *data, void *userdata)
->  	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
->  	bool was_in_error;
->  	struct pci_driver *driver;
-> +	char *envp[] = {"EVENT=EEH_RESUME", "ONLINE=1", NULL};
-
-
-WARNING: char * array declaration might be better as static const
-#43: FILE: arch/powerpc/kernel/eeh_driver.c:363:
-+       char *envp[] = {"EVENT=EEH_RESUME", "ONLINE=1", NULL};
-
-
->  
->  	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
->  		return NULL;
-> @@ -379,8 +382,8 @@ static void *eeh_report_resume(void *data, void *userdata)
->  	}
->  
->  	driver->err_handler->resume(dev);
-> -
-
-Unnecessary change.
-
-
->  	eeh_pcid_put(dev);
-> +	kobject_uevent_env(&dev->dev.kobj, KOBJ_CHANGE, envp);
->  	return NULL;
->  }
->  
-> 
-
+Actually I think it's the function's *caller* which gets skipped.  r1
+(stack pointer) will point to the caller's stack frame, and presumably
+the unwinder would read the caller's caller's stack frame to get the
+next LR, skipping the caller's return address because it hasn't been
+saved yet.
 
 -- 
-Alexey
+Josh
