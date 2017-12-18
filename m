@@ -1,35 +1,34 @@
 Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBR45w4zDsF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:51 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBIFJJTD140216
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:49 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2exegund8k-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0lBX1cqHzDsNR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:56 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBIFJvhF138937
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:54 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2exd8d9461-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:48 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 10:21:54 -0500
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 18 Dec 2017 15:21:46 -0000
+ Mon, 18 Dec 2017 15:21:51 -0000
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
  andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
-Subject: [PATCH 05/13] powerpc/powernv: Capture actag information for the
- device
-Date: Mon, 18 Dec 2017 16:21:18 +0100
+Subject: [PATCH 07/13] ocxl: Add AFU interrupt support
+Date: Mon, 18 Dec 2017 16:21:20 +0100
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 In-Reply-To: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
-Message-Id: <0575f03a450f732f6de4f3ab82714b8181d3e3b7.1513608243.git.fbarrat@linux.vnet.ibm.com>
+Message-Id: <d7666f69b09f1e5dc713bf0524912184c978b963.1513608243.git.fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,373 +38,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the opencapi protocol, host memory contexts are referenced by a
-'actag'. During setup, a driver must tell the device how many actags
-it can used, and what values are acceptable.
+Add user APIs through ioctl to allocate, free, and be notified of an
+AFU interrupt.
 
-On POWER9, the NPU can handle 64 actags per link, so they must be
-shared between all the PCI functions of the link. To get a global
-picture of how many actags are used by each AFU of every function, we
-capture some data at the end of PCI enumeration, so that actags can be
-shared fairly if needed.
-
-This is not powernv specific per say, but rather a consequence of the
-opencapi configuration specification being quite general. The number
-of available actags on POWER9 makes it more likely to be hit. This is
-somewhat mitigated by the fact that existing AFUs are coded by
-requesting a reasonable count of actags and existing devices carry
-only one AFU.
-
+For opencapi, an AFU can trigger an interrupt on the host by sending a
+specific command targeting a 64-bit object handle. On POWER9, this is
+implemented by mapping a special page in the address space of a
+process and a write to that page will trigger an interrupt.
 
 Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pnv-ocxl.h   |   4 +
- arch/powerpc/platforms/powernv/ocxl.c | 302 ++++++++++++++++++++++++++++++++++
- include/misc/ocxl-config.h            |  52 ++++++
- 3 files changed, 358 insertions(+)
- create mode 100644 include/misc/ocxl-config.h
+ arch/powerpc/include/asm/pnv-ocxl.h   |   3 +
+ arch/powerpc/platforms/powernv/ocxl.c |  30 +++++
+ drivers/misc/ocxl/afu_irq.c           | 204 ++++++++++++++++++++++++++++++++++
+ drivers/misc/ocxl/context.c           |  40 ++++++-
+ drivers/misc/ocxl/file.c              |  33 ++++++
+ drivers/misc/ocxl/link.c              |  28 +++++
+ drivers/misc/ocxl/ocxl_internal.h     |   7 ++
+ include/uapi/misc/ocxl.h              |   9 ++
+ 8 files changed, 352 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/misc/ocxl/afu_irq.c
 
 diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-index b9ab3f0a9634..5a7ae7f28209 100644
+index 5a7ae7f28209..1e26f0a39500 100644
 --- a/arch/powerpc/include/asm/pnv-ocxl.h
 +++ b/arch/powerpc/include/asm/pnv-ocxl.h
-@@ -16,6 +16,10 @@
- #define PNV_OCXL_TL_BITS_PER_RATE       4
- #define PNV_OCXL_TL_RATE_BUF_SIZE       ((PNV_OCXL_TL_MAX_TEMPLATE+1) * PNV_OCXL_TL_BITS_PER_RATE / 8)
+@@ -37,4 +37,7 @@ extern int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
+ extern void pnv_ocxl_spa_release(void *platform_data);
+ extern int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle);
  
-+extern int pnv_ocxl_get_actag(struct pci_dev *dev, u16 *base, u16 *enabled,
-+			u16 *supported);
-+extern int pnv_ocxl_get_pasid_count(struct pci_dev *dev, int *count);
++extern int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr);
++extern void pnv_ocxl_free_xive_irq(u32 irq);
 +
- extern int pnv_ocxl_get_tl_cap(struct pci_dev *dev, long *cap,
- 			char *rate_buf, int rate_buf_size);
- extern int pnv_ocxl_set_tl_conf(struct pci_dev *dev, long cap,
+ #endif /* _ASM_PVN_OCXL_H */
 diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-index 3378b75cf5e5..6c79924b95c8 100644
+index 6c79924b95c8..96cafba6aef1 100644
 --- a/arch/powerpc/platforms/powernv/ocxl.c
 +++ b/arch/powerpc/platforms/powernv/ocxl.c
-@@ -9,13 +9,315 @@
+@@ -9,6 +9,7 @@
  
  #include <asm/pnv-ocxl.h>
  #include <asm/opal.h>
-+#include <misc/ocxl-config.h>
++#include <asm/xive.h>
+ #include <misc/ocxl-config.h>
  #include "pci.h"
  
- #define PNV_OCXL_TL_P9_RECV_CAP		0x000000000000000Full
-+#define PNV_OCXL_ACTAG_MAX		64
- /* PASIDs are 20-bit, but on P9, NPU can only handle 15 bits */
- #define PNV_OCXL_PASID_BITS		15
- #define PNV_OCXL_PASID_MAX		((1 << PNV_OCXL_PASID_BITS) - 1)
- 
-+#define AFU_PRESENT (1 << 31)
-+#define AFU_INDEX_MASK 0x3F000000
-+#define AFU_INDEX_SHIFT 24
-+#define ACTAG_MASK 0xFFF
+@@ -487,3 +488,32 @@ int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle)
+ 	return rc;
+ }
+ EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe);
 +
-+
-+struct actag_range {
-+	u16 start;
-+	u16 count;
-+};
-+
-+struct npu_link {
-+	struct list_head list;
-+	int domain;
-+	int bus;
-+	int dev;
-+	u16 fn_desired_actags[8];
-+	struct actag_range fn_actags[8];
-+	bool assignment_done;
-+};
-+static struct list_head links_list = LIST_HEAD_INIT(links_list);
-+static DEFINE_MUTEX(links_list_lock);
-+
-+
-+/*
-+ * opencapi actags handling:
-+ *
-+ * When sending commands, the opencapi device references the memory
-+ * context it's targeting with an 'actag', which is really an alias
-+ * for a (BDF, pasid) combination. When it receives a command, the NPU
-+ * must do a lookup of the actag to identify the memory context. The
-+ * hardware supports a finite number of actags per link (64 for
-+ * POWER9).
-+ *
-+ * The device can carry multiple functions, and each function can have
-+ * multiple AFUs. Each AFU advertises in its config space the number
-+ * of desired actags. The host must configure in the config space of
-+ * the AFU how many actags the AFU is really allowed to use (which can
-+ * be less than what the AFU desires).
-+ *
-+ * When a PCI function is probed by the driver, it has no visibility
-+ * about the other PCI functions and how many actags they'd like,
-+ * which makes it impossible to distribute actags fairly among AFUs.
-+ *
-+ * Unfortunately, the only way to know how many actags a function
-+ * desires is by looking at the data for each AFU in the config space
-+ * and add them up. Similarly, the only way to know how many actags
-+ * all the functions of the physical device desire is by adding the
-+ * previously computed function counts. Then we can match that against
-+ * what the hardware supports.
-+ *
-+ * To get a comprehensive view, we use a 'pci fixup': at the end of
-+ * PCI enumeration, each function counts how many actags its AFUs
-+ * desire and we save it in a 'npu_link' structure, shared between all
-+ * the PCI functions of a same device. Therefore, when the first
-+ * function is probed by the driver, we can get an idea of the total
-+ * count of desired actags for the device, and assign the actags to
-+ * the AFUs, by pro-rating if needed.
-+ */
-+
-+static int find_dvsec_from_pos(struct pci_dev *dev, int dvsec_id, int pos)
++int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr)
 +{
-+	int vsec = pos;
-+	u16 vendor, id;
++	__be64 flags, trigger_page;
++	s64 rc;
++	u32 hwirq;
 +
-+	while ((vsec = pci_find_next_ext_capability(dev, vsec,
-+						    OCXL_EXT_CAP_ID_DVSEC))) {
-+		pci_read_config_word(dev, vsec + OCXL_DVSEC_VENDOR_OFFSET,
-+				&vendor);
-+		pci_read_config_word(dev, vsec + OCXL_DVSEC_ID_OFFSET, &id);
-+		if (vendor == PCI_VENDOR_ID_IBM && id == dvsec_id)
-+			return vsec;
++	hwirq = xive_native_alloc_irq();
++	if (!hwirq)
++		return -ENOENT;
++
++	rc = opal_xive_get_irq_info(hwirq, &flags, NULL, &trigger_page, NULL,
++				NULL);
++	if (rc || !trigger_page) {
++		xive_native_free_irq(hwirq);
++		return -ENOENT;
 +	}
++	*irq = hwirq;
++	*trigger_addr = be64_to_cpu(trigger_page);
 +	return 0;
-+}
 +
-+static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
++}
++EXPORT_SYMBOL_GPL(pnv_ocxl_alloc_xive_irq);
++
++void pnv_ocxl_free_xive_irq(u32 irq)
 +{
-+	int vsec = 0;
-+	u8 idx;
-+
-+	while ((vsec = find_dvsec_from_pos(dev, OCXL_DVSEC_AFU_CTRL_ID,
-+					   vsec))) {
-+		pci_read_config_byte(dev, vsec + OCXL_DVSEC_AFU_CTRL_AFU_IDX,
-+				&idx);
-+		if (idx == afu_idx)
-+			return vsec;
-+	}
-+	return 0;
++	xive_native_free_irq(irq);
 +}
-+
-+static int get_max_afu_index(struct pci_dev *dev, int *afu_idx)
-+{
-+	int pos;
-+	u32 val;
-+
-+	pos = find_dvsec_from_pos(dev, OCXL_DVSEC_FUNC_ID, 0);
-+	if (!pos)
-+		return -ESRCH;
-+
-+	pci_read_config_dword(dev, pos + OCXL_DVSEC_FUNC_OFF_INDEX, &val);
-+	if (val & AFU_PRESENT)
-+		*afu_idx = (val & AFU_INDEX_MASK) >> AFU_INDEX_SHIFT;
-+	else
-+		*afu_idx = -1;
-+	return 0;
-+}
-+
-+static int get_actag_count(struct pci_dev *dev, int afu_idx, int *actag)
-+{
-+	int pos;
-+	u16 actag_sup;
-+
-+	pos = find_dvsec_afu_ctrl(dev, afu_idx);
-+	if (!pos)
-+		return -ESRCH;
-+
-+	pci_read_config_word(dev, pos + OCXL_DVSEC_AFU_CTRL_ACTAG_SUP,
-+			&actag_sup);
-+	*actag = actag_sup & ACTAG_MASK;
-+	return 0;
-+}
-+
-+static struct npu_link *find_link(struct pci_dev *dev)
-+{
-+	struct npu_link *link;
-+
-+	list_for_each_entry(link, &links_list, list) {
-+		/* The functions of a device all share the same link */
-+		if (link->domain == pci_domain_nr(dev->bus) &&
-+			link->bus == dev->bus->number &&
-+			link->dev == PCI_SLOT(dev->devfn)) {
-+			return link;
-+		}
-+	}
-+
-+	/* link doesn't exist yet. Allocate one */
-+	link = kzalloc(sizeof(struct npu_link), GFP_KERNEL);
-+	if (!link)
-+		return NULL;
-+	link->domain = pci_domain_nr(dev->bus);
-+	link->bus = dev->bus->number;
-+	link->dev = PCI_SLOT(dev->devfn);
-+	list_add(&link->list, &links_list);
-+	return link;
-+}
-+
-+static void pnv_ocxl_fixup_actag(struct pci_dev *dev)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct npu_link *link;
-+	int rc, afu_idx = -1, i, actag;
-+
-+	if (phb->type != PNV_PHB_NPU_OCAPI)
-+		return;
-+
-+	mutex_lock(&links_list_lock);
-+
-+	link = find_link(dev);
-+	if (!link) {
-+		dev_warn(&dev->dev, "couldn't update actag information\n");
-+		mutex_unlock(&links_list_lock);
-+		return;
-+	}
-+
-+	/*
-+	 * Check how many actags are desired for the AFUs under that
-+	 * function and add it to the count for the link
-+	 */
-+	rc = get_max_afu_index(dev, &afu_idx);
-+	if (rc) {
-+		/* Most likely an invalid config space */
-+		dev_dbg(&dev->dev, "couldn't find AFU information\n");
-+		afu_idx = -1;
-+	}
-+
-+	link->fn_desired_actags[PCI_FUNC(dev->devfn)] = 0;
-+	for (i = 0; i <= afu_idx; i++) {
-+		/*
-+		 * AFU index 'holes' are allowed. So don't fail if we
-+		 * can't read the actag info for an index
-+		 */
-+		rc = get_actag_count(dev, i, &actag);
-+		if (rc)
-+			continue;
-+		link->fn_desired_actags[PCI_FUNC(dev->devfn)] += actag;
-+	}
-+	dev_dbg(&dev->dev, "total actags for function: %d\n",
-+		link->fn_desired_actags[PCI_FUNC(dev->devfn)]);
-+
-+	mutex_unlock(&links_list_lock);
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_ocxl_fixup_actag);
-+
-+static u16 assign_fn_actags(u16 desired, u16 total)
-+{
-+	u16 count;
-+
-+	if (total <= PNV_OCXL_ACTAG_MAX)
-+		count = desired;
-+	else
-+		count = PNV_OCXL_ACTAG_MAX * desired / total;
-+
-+	return count;
-+}
-+
-+static void assign_actags(struct npu_link *link)
-+{
-+	u16 actag_count, range_start = 0, total_desired = 0;
-+	int i;
-+
-+	for (i = 0; i < 8; i++)
-+		total_desired += link->fn_desired_actags[i];
-+
-+	for (i = 0; i < 8; i++) {
-+		if (link->fn_desired_actags[i]) {
-+			actag_count = assign_fn_actags(
-+				link->fn_desired_actags[i],
-+				total_desired);
-+			link->fn_actags[i].start = range_start;
-+			link->fn_actags[i].count = actag_count;
-+			range_start += actag_count;
-+			WARN_ON(range_start >= PNV_OCXL_ACTAG_MAX);
-+		}
-+		pr_debug("link %x:%x:%x fct %d actags: start=%d count=%d (desired=%d)\n",
-+			link->domain, link->bus, link->dev, i,
-+			link->fn_actags[i].start, link->fn_actags[i].count,
-+			link->fn_desired_actags[i]);
-+	}
-+	link->assignment_done = true;
-+}
-+
-+int pnv_ocxl_get_actag(struct pci_dev *dev, u16 *base, u16 *enabled,
-+		u16 *supported)
-+{
-+	struct npu_link *link;
-+
-+	mutex_lock(&links_list_lock);
-+
-+	link = find_link(dev);
-+	if (!link) {
-+		dev_err(&dev->dev, "actag information not found\n");
-+		mutex_unlock(&links_list_lock);
-+		return -ENODEV;
-+	}
-+	/*
-+	 * On p9, we only have 64 actags per link, so they must be
-+	 * shared by all the functions of the same adapter. We counted
-+	 * the desired actag counts during PCI enumeration, so that we
-+	 * can allocate a pro-rated number of actags to each function.
-+	 */
-+	if (!link->assignment_done)
-+		assign_actags(link);
-+
-+	*base      = link->fn_actags[PCI_FUNC(dev->devfn)].start;
-+	*enabled   = link->fn_actags[PCI_FUNC(dev->devfn)].count;
-+	*supported = link->fn_desired_actags[PCI_FUNC(dev->devfn)];
-+
-+	mutex_unlock(&links_list_lock);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_get_actag);
-+
-+int pnv_ocxl_get_pasid_count(struct pci_dev *dev, int *count)
-+{
-+	struct npu_link *link;
-+	int i, rc = -EINVAL;
-+
-+	/*
-+	 * The number of PASIDs (process address space ID) which can
-+	 * be used by a function depends on how many functions exist
-+	 * on the device. The NPU needs to be configured to know how
-+	 * many bits are available to PASIDs and how many are to be
-+	 * used by the function BDF indentifier.
-+	 *
-+	 * We only support one AFU-carrying function for now.
-+	 */
-+	mutex_lock(&links_list_lock);
-+
-+	link = find_link(dev);
-+	if (!link) {
-+		dev_err(&dev->dev, "actag information not found\n");
-+		mutex_unlock(&links_list_lock);
-+		return -ENODEV;
-+	}
-+
-+	for (i = 0; i < 8; i++)
-+		if (link->fn_desired_actags[i] && (i == PCI_FUNC(dev->devfn))) {
-+			*count = PNV_OCXL_PASID_MAX;
-+			rc = 0;
-+			break;
-+		}
-+
-+	mutex_unlock(&links_list_lock);
-+	dev_dbg(&dev->dev, "%d PASIDs available for function\n",
-+		rc ? 0 : *count);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_get_pasid_count);
- 
- static void set_templ_rate(unsigned int templ, unsigned int rate, char *buf)
- {
-diff --git a/include/misc/ocxl-config.h b/include/misc/ocxl-config.h
++EXPORT_SYMBOL_GPL(pnv_ocxl_free_xive_irq);
+diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
 new file mode 100644
-index 000000000000..b6677899ed09
+index 000000000000..0b217a854837
 --- /dev/null
-+++ b/include/misc/ocxl-config.h
-@@ -0,0 +1,52 @@
++++ b/drivers/misc/ocxl/afu_irq.c
+@@ -0,0 +1,204 @@
 +/*
 + * Copyright 2017 IBM Corp.
 + *
@@ -415,48 +131,418 @@ index 000000000000..b6677899ed09
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#ifndef _OCXL_CONFIG_H_
-+#define _OCXL_CONFIG_H_
++#include <linux/interrupt.h>
++#include <linux/eventfd.h>
++#include <asm/pnv-ocxl.h>
++#include "ocxl_internal.h"
 +
-+/*
-+ * This file lists the various constants used to read the
-+ * configuration space of an opencapi adapter.
-+ *
-+ * It follows the specification for opencapi 3.0
-+ */
++struct afu_irq {
++	int id;
++	int hw_irq;
++	unsigned int virq;
++	char *name;
++	u64 trigger_page;
++	struct eventfd_ctx *ev_ctx;
++};
 +
-+#define OCXL_EXT_CAP_ID_DVSEC                 0x23
++static int irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
++{
++	return (offset - ctx->afu->irq_base_offset) >> PAGE_SHIFT;
++}
 +
-+#define OCXL_DVSEC_VENDOR_OFFSET              0x4
-+#define OCXL_DVSEC_ID_OFFSET                  0x8
-+#define OCXL_DVSEC_TL_ID                      0xF000
-+#define   OCXL_DVSEC_TL_BACKOFF_TIMERS          0x10
-+#define   OCXL_DVSEC_TL_RECV_CAP                0x18
-+#define   OCXL_DVSEC_TL_SEND_CAP                0x20
-+#define   OCXL_DVSEC_TL_RECV_RATE               0x30
-+#define   OCXL_DVSEC_TL_SEND_RATE               0x50
-+#define OCXL_DVSEC_FUNC_ID                    0xF001
-+#define   OCXL_DVSEC_FUNC_OFF_INDEX             0x08
-+#define   OCXL_DVSEC_FUNC_OFF_ACTAG             0x0C
-+#define OCXL_DVSEC_AFU_INFO_ID                0xF003
-+#define   OCXL_DVSEC_AFU_INFO_AFU_IDX           0x0A
-+#define   OCXL_DVSEC_AFU_INFO_OFF               0x0C
-+#define   OCXL_DVSEC_AFU_INFO_DATA              0x10
-+#define OCXL_DVSEC_AFU_CTRL_ID                0xF004
-+#define   OCXL_DVSEC_AFU_CTRL_AFU_IDX           0x0A
-+#define   OCXL_DVSEC_AFU_CTRL_TERM_PASID        0x0C
-+#define   OCXL_DVSEC_AFU_CTRL_ENABLE            0x0F
-+#define   OCXL_DVSEC_AFU_CTRL_PASID_SUP         0x10
-+#define   OCXL_DVSEC_AFU_CTRL_PASID_EN          0x11
-+#define   OCXL_DVSEC_AFU_CTRL_PASID_BASE        0x14
-+#define   OCXL_DVSEC_AFU_CTRL_ACTAG_SUP         0x18
-+#define   OCXL_DVSEC_AFU_CTRL_ACTAG_EN          0x1A
-+#define   OCXL_DVSEC_AFU_CTRL_ACTAG_BASE        0x1C
-+#define OCXL_DVSEC_VENDOR_ID                  0xF0F0
-+#define   OCXL_DVSEC_VENDOR_CFG_VERS            0x0C
-+#define   OCXL_DVSEC_VENDOR_TLX_VERS            0x10
-+#define   OCXL_DVSEC_VENDOR_DLX_VERS            0x20
++static u64 irq_id_to_offset(struct ocxl_context *ctx, int id)
++{
++	return ctx->afu->irq_base_offset + (id << PAGE_SHIFT);
++}
 +
-+#endif /* _OCXL_CONFIG_H_ */
++static irqreturn_t afu_irq_handler(int virq, void *data)
++{
++	struct afu_irq *irq = (struct afu_irq *) data;
++
++	if (irq->ev_ctx)
++		eventfd_signal(irq->ev_ctx, 1);
++	return IRQ_HANDLED;
++}
++
++static int setup_afu_irq(struct ocxl_context *ctx, struct afu_irq *irq)
++{
++	int rc;
++
++	irq->virq = irq_create_mapping(NULL, irq->hw_irq);
++	if (!irq->virq) {
++		pr_err("irq_create_mapping failed\n");
++		return -ENOMEM;
++	}
++	pr_debug("hw_irq %d mapped to virq %u\n", irq->hw_irq, irq->virq);
++
++	irq->name = kasprintf(GFP_KERNEL, "ocxl-afu-%u", irq->virq);
++	if (!irq->name) {
++		irq_dispose_mapping(irq->virq);
++		return -ENOMEM;
++	}
++
++	rc = request_irq(irq->virq, afu_irq_handler, 0, irq->name, irq);
++	if (rc) {
++		kfree(irq->name);
++		irq->name = NULL;
++		irq_dispose_mapping(irq->virq);
++		pr_err("request_irq failed: %d\n", rc);
++		return rc;
++	}
++	return 0;
++}
++
++static void release_afu_irq(struct afu_irq *irq)
++{
++	free_irq(irq->virq, irq);
++	irq_dispose_mapping(irq->virq);
++	kfree(irq->name);
++}
++
++int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
++{
++	struct afu_irq *irq;
++	int rc;
++
++	irq = kzalloc(sizeof(struct afu_irq), GFP_KERNEL);
++	if (!irq)
++		return -ENOMEM;
++
++	/*
++	 * We limit the number of afu irqs per context and per link to
++	 * avoid a single process or user depleting the pool of IPIs
++	 */
++
++	mutex_lock(&ctx->irq_lock);
++
++	irq->id = idr_alloc(&ctx->irq_idr, irq, 0, MAX_IRQ_PER_CONTEXT,
++			GFP_KERNEL);
++	if (irq->id < 0) {
++		rc = -ENOSPC;
++		goto err_unlock;
++	}
++
++	rc = ocxl_link_irq_alloc(ctx->afu->fn->link, &irq->hw_irq,
++				&irq->trigger_page);
++	if (rc)
++		goto err_idr;
++
++	rc = setup_afu_irq(ctx, irq);
++	if (rc)
++		goto err_alloc;
++
++	*irq_offset = irq_id_to_offset(ctx, irq->id);
++
++	mutex_unlock(&ctx->irq_lock);
++	return 0;
++
++err_alloc:
++	ocxl_link_free_irq(ctx->afu->fn->link, irq->hw_irq);
++err_idr:
++	idr_remove(&ctx->irq_idr, irq->id);
++err_unlock:
++	mutex_unlock(&ctx->irq_lock);
++	kfree(irq);
++	return rc;
++}
++
++static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
++{
++	if (ctx->mapping)
++		unmap_mapping_range(ctx->mapping,
++				irq_id_to_offset(ctx, irq->id),
++				1 << PAGE_SHIFT, 1);
++	release_afu_irq(irq);
++	if (irq->ev_ctx)
++		eventfd_ctx_put(irq->ev_ctx);
++	ocxl_link_free_irq(ctx->afu->fn->link, irq->hw_irq);
++	kfree(irq);
++}
++
++int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset)
++{
++	struct afu_irq *irq;
++	int id = irq_offset_to_id(ctx, irq_offset);
++
++	mutex_lock(&ctx->irq_lock);
++
++	irq = idr_find(&ctx->irq_idr, id);
++	if (!irq) {
++		mutex_unlock(&ctx->irq_lock);
++		return -EINVAL;
++	}
++	idr_remove(&ctx->irq_idr, irq->id);
++	afu_irq_free(irq, ctx);
++	mutex_unlock(&ctx->irq_lock);
++	return 0;
++}
++
++void ocxl_afu_irq_free_all(struct ocxl_context *ctx)
++{
++	struct afu_irq *irq;
++	int id;
++
++	mutex_lock(&ctx->irq_lock);
++	idr_for_each_entry(&ctx->irq_idr, irq, id)
++		afu_irq_free(irq, ctx);
++	mutex_unlock(&ctx->irq_lock);
++}
++
++int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset, int eventfd)
++{
++	struct afu_irq *irq;
++	struct eventfd_ctx *ev_ctx;
++	int rc = 0, id = irq_offset_to_id(ctx, irq_offset);
++
++	mutex_lock(&ctx->irq_lock);
++	irq = idr_find(&ctx->irq_idr, id);
++	if (!irq) {
++		rc = -EINVAL;
++		goto unlock;
++	}
++
++	ev_ctx = eventfd_ctx_fdget(eventfd);
++	if (IS_ERR(ev_ctx)) {
++		rc = -EINVAL;
++		goto unlock;
++	}
++
++	irq->ev_ctx = ev_ctx;
++unlock:
++	mutex_unlock(&ctx->irq_lock);
++	return rc;
++}
++
++u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset)
++{
++	struct afu_irq *irq;
++	int id = irq_offset_to_id(ctx, irq_offset);
++	u64 addr = 0;
++
++	mutex_lock(&ctx->irq_lock);
++	irq = idr_find(&ctx->irq_idr, id);
++	if (irq)
++		addr = irq->trigger_page;
++	mutex_unlock(&ctx->irq_lock);
++	return addr;
++}
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index 0bc0dd97d784..19575269ed22 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -38,6 +38,8 @@ int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
+ 	mutex_init(&ctx->mapping_lock);
+ 	init_waitqueue_head(&ctx->events_wq);
+ 	mutex_init(&ctx->xsl_error_lock);
++	mutex_init(&ctx->irq_lock);
++	idr_init(&ctx->irq_idr);
+ 	/*
+ 	 * Keep a reference on the AFU to make sure it's valid for the
+ 	 * duration of the life of the context
+@@ -87,6 +89,19 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr)
+ 	return rc;
+ }
+ 
++static int map_afu_irq(struct vm_area_struct *vma, unsigned long address,
++		u64 offset, struct ocxl_context *ctx)
++{
++	u64 trigger_addr;
++
++	trigger_addr = ocxl_afu_irq_get_addr(ctx, offset);
++	if (!trigger_addr)
++		return VM_FAULT_SIGBUS;
++
++	vm_insert_pfn(vma, address, trigger_addr >> PAGE_SHIFT);
++	return VM_FAULT_NOPAGE;
++}
++
+ static int map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
+ 		u64 offset, struct ocxl_context *ctx)
+ {
+@@ -125,7 +140,10 @@ static int ocxl_mmap_fault(struct vm_fault *vmf)
+ 	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
+ 		ctx->pasid, vmf->address, offset);
+ 
+-	rc = map_pp_mmio(vma, vmf->address, offset, ctx);
++	if (offset < ctx->afu->irq_base_offset)
++		rc = map_pp_mmio(vma, vmf->address, offset, ctx);
++	else
++		rc = map_afu_irq(vma, vmf->address, offset, ctx);
+ 	return rc;
+ }
+ 
+@@ -133,6 +151,19 @@ static const struct vm_operations_struct ocxl_vmops = {
+ 	.fault = ocxl_mmap_fault,
+ };
+ 
++static int check_mmap_afu_irq(struct ocxl_context *ctx,
++			struct vm_area_struct *vma)
++{
++	/* only one page */
++	if (vma_pages(vma) != 1)
++		return -EINVAL;
++
++	/* check offset validty */
++	if (!ocxl_afu_irq_get_addr(ctx, vma->vm_pgoff << PAGE_SHIFT))
++		return -EINVAL;
++	return 0;
++}
++
+ static int check_mmap_mmio(struct ocxl_context *ctx,
+ 			struct vm_area_struct *vma)
+ {
+@@ -146,7 +177,10 @@ int ocxl_context_mmap(struct ocxl_context *ctx, struct vm_area_struct *vma)
+ {
+ 	int rc;
+ 
+-	rc = check_mmap_mmio(ctx, vma);
++	if ((vma->vm_pgoff << PAGE_SHIFT) < ctx->afu->irq_base_offset)
++		rc = check_mmap_mmio(ctx, vma);
++	else
++		rc = check_mmap_afu_irq(ctx, vma);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -231,6 +265,8 @@ void ocxl_context_free(struct ocxl_context *ctx)
+ 	idr_remove(&ctx->afu->contexts_idr, ctx->pasid);
+ 	mutex_unlock(&ctx->afu->contexts_lock);
+ 
++	ocxl_afu_irq_free_all(ctx);
++	idr_destroy(&ctx->irq_idr);
+ 	/* reference to the AFU taken in ocxl_context_init */
+ 	ocxl_afu_put(ctx->afu);
+ 	kfree(ctx);
+diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+index a51386eff4f5..0a73e2c11ba6 100644
+--- a/drivers/misc/ocxl/file.c
++++ b/drivers/misc/ocxl/file.c
+@@ -110,12 +110,17 @@ static long afu_ioctl_attach(struct ocxl_context *ctx,
+ }
+ 
+ #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :			\
++			x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :	\
++			x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :		\
++			x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :	\
+ 			"UNKNOWN")
+ 
+ static long afu_ioctl(struct file *file, unsigned int cmd,
+ 		unsigned long args)
+ {
+ 	struct ocxl_context *ctx = file->private_data;
++	struct ocxl_ioctl_irq_fd irq_fd;
++	u64 irq_offset;
+ 	long rc;
+ 
+ 	pr_debug("%s for context %d, command %s\n", __func__, ctx->pasid,
+@@ -130,6 +135,34 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+ 				(struct ocxl_ioctl_attach __user *) args);
+ 		break;
+ 
++	case OCXL_IOCTL_IRQ_ALLOC:
++		rc = ocxl_afu_irq_alloc(ctx, &irq_offset);
++		if (!rc) {
++			rc = copy_to_user((u64 *) args, &irq_offset,
++					sizeof(irq_offset));
++			if (rc)
++				ocxl_afu_irq_free(ctx, irq_offset);
++		}
++		break;
++
++	case OCXL_IOCTL_IRQ_FREE:
++		rc = copy_from_user(&irq_offset, (u64 *) args,
++				sizeof(irq_offset));
++		if (rc)
++			return -EFAULT;
++		rc = ocxl_afu_irq_free(ctx, irq_offset);
++		break;
++
++	case OCXL_IOCTL_IRQ_SET_FD:
++		rc = copy_from_user(&irq_fd, (u64 *) args, sizeof(irq_fd));
++		if (rc)
++			return -EFAULT;
++		if (irq_fd.reserved)
++			return -EINVAL;
++		rc = ocxl_afu_irq_set_fd(ctx, irq_fd.irq_offset,
++					irq_fd.eventfd);
++		break;
++
+ 	default:
+ 		rc = -EINVAL;
+ 	}
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index 6b184cd7d2a6..5f12564eea99 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -608,3 +608,31 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
+ 	mutex_unlock(&spa->spa_lock);
+ 	return rc;
+ }
++
++int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
++{
++	struct link *link = (struct link *) link_handle;
++	int rc, irq;
++	u64 addr;
++
++	if (atomic_dec_if_positive(&link->irq_available) < 0)
++		return -ENOSPC;
++
++	rc = pnv_ocxl_alloc_xive_irq(&irq, &addr);
++	if (rc) {
++		atomic_inc(&link->irq_available);
++		return rc;
++	}
++
++	*hw_irq = irq;
++	*trigger_addr = addr;
++	return 0;
++}
++
++void ocxl_link_free_irq(void *link_handle, int hw_irq)
++{
++	struct link *link = (struct link *) link_handle;
++
++	pnv_ocxl_free_xive_irq(hw_irq);
++	atomic_inc(&link->irq_available);
++}
+diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+index e07f7d523275..829369c5f004 100644
+--- a/drivers/misc/ocxl/ocxl_internal.h
++++ b/drivers/misc/ocxl/ocxl_internal.h
+@@ -197,4 +197,11 @@ extern void ocxl_context_free(struct ocxl_context *ctx);
+ extern int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
+ extern void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
+ 
++extern int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
++extern int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
++extern void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
++extern int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
++			int eventfd);
++extern u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
++
+ #endif /* _OCXL_INTERNAL_H_ */
+diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
+index 71fa387f2efd..488e75228c33 100644
+--- a/include/uapi/misc/ocxl.h
++++ b/include/uapi/misc/ocxl.h
+@@ -39,9 +39,18 @@ struct ocxl_ioctl_attach {
+ 	__u64 reserved3;
+ };
+ 
++struct ocxl_ioctl_irq_fd {
++	__u64 irq_offset;
++	__s32 eventfd;
++	__u32 reserved;
++};
++
+ /* ioctl numbers */
+ #define OCXL_MAGIC 0xCA
+ /* AFU devices */
+ #define OCXL_IOCTL_ATTACH	_IOW(OCXL_MAGIC, 0x10, struct ocxl_ioctl_attach)
++#define OCXL_IOCTL_IRQ_ALLOC	_IOR(OCXL_MAGIC, 0x11, __u64)
++#define OCXL_IOCTL_IRQ_FREE	_IOW(OCXL_MAGIC, 0x12, __u64)
++#define OCXL_IOCTL_IRQ_SET_FD	_IOW(OCXL_MAGIC, 0x13, struct ocxl_ioctl_irq_fd)
+ 
+ #endif /* _UAPI_MISC_OCXL_H */
 -- 
 2.14.1
