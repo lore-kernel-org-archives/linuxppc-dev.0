@@ -1,30 +1,33 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0wfd6CPPzDqnt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:28:23 +1100 (AEDT)
-Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys: Add
- sysfs interface
-To: Ram Pai <linuxram@us.ibm.com>
-References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
- <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
- <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
- <20171218221850.GD5461@ram.oc3035372033.ibm.com>
-Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
- corbet@lwn.net, arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, x86@kernel.org, linux-arch@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linux-kernel@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
-Date: Mon, 18 Dec 2017 14:28:14 -0800
-MIME-Version: 1.0
-In-Reply-To: <20171218221850.GD5461@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0wtJ3ZYczDrWD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:38:32 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBIMT3fl052848
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 17:38:29 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2exjf8hke7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 17:38:29 -0500
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Mon, 18 Dec 2017 17:38:28 -0500
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, helgaas@kernel.org, aik@ozlabs.ru,
+ ruscur@russell.cc, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
+ saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Subject: [PATCH v1 0/7] SR-IOV Enablement on PowerVM
+Date: Mon, 18 Dec 2017 16:38:01 -0600
+Message-Id: <20171218223808.83928-1-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,43 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/18/2017 02:18 PM, Ram Pai wrote:
-> b) minimum number of keys available to the application.
-> 	if libraries consumes a few, they could provide a library
-> 	interface to the application informing the number available to
-> 	the application.  The library interface can leverage (b) to
-> 	provide the information.
+This patch series will enable SR-IOV on PowerVM. A specific set of
+lids for PFW/PHYP is required. They are planned to release with
+920 at the moment.
 
-OK, let's see a real user of this including a few libraries.  Then we'll
-put it in the kernel.
+For IBM internal testers let me know of a system you want to test on
+and we can put on the lids required or we can provide a system to run
+the tests.
 
-> c) types of disable-rights supported by keys.
-> 	Helps the application to determine the types of disable-features
-> 	available. This is helpful, otherwise the app has to 
-> 	make pkey_alloc() call with the corresponding parameter set
-> 	and see if it suceeds or fails. Painful from an application
-> 	point of view, in my opinion.
+This patch depends on the three patches:
+988fc3ba5653278a8c14d6ccf687371775930d2b
+dae7253f9f78a731755ca20c66b2d2c40b86baea
+608c0d8804ef3ca4cda8ec6ad914e47deb283d7b
 
-Again, let's see a real-world use of this.  How does it look?  How does
-an app "fall back" if it can't set a restriction the way it wants to?
+v1 - Initial Patch
+v2 - Addressed Alexey and Russell's comments
 
-Are we *sure* that such an interface makes sense?  For instance, will it
-be possible for some keys to be execute-disable while other are only
-write-disable?
+Bryant G. Ly (7):
+  platform/pseries: Update VF config space after EEH
+  powerpc/kernel: Add uevents in EEH error/resume
+  platforms/pseries: Set eeh_pe of EEH_PE_VF type
+  powerpc/kernel Add EEH operations to notify resume
+  powerpc/kernel: Add EEH notify resume sysfs
+  pseries/pci: Associate PEs to VFs in configure SR-IOV
+  pseries/setup: Add Initialization of VF Bars
 
-> I think on x86 you look for some hardware registers to determine which
-> hardware features are enabled by the kernel.
+ arch/powerpc/include/asm/eeh.h               |   1 +
+ arch/powerpc/include/asm/pci-bridge.h        |   5 +-
+ arch/powerpc/include/asm/pci.h               |   2 +
+ arch/powerpc/kernel/eeh_driver.c             |   9 +-
+ arch/powerpc/kernel/eeh_sysfs.c              |  46 ++++++-
+ arch/powerpc/kernel/pci_of_scan.c            |   2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |   3 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 192 ++++++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/pci.c         | 156 +++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/setup.c       | 183 +++++++++++++++++++++++++
+ 10 files changed, 589 insertions(+), 10 deletions(-)
 
-No, we use CPUID.  It's a part of the ISA that's designed for
-enumerating CPU and (sometimes) OS support for CPU features.
-
-> We do not have generic support for something like that on ppc.
-> The kernel looks at the device tree to determine what hardware features
-> are available. But does not have mechanism to tell the hardware to track
-> which of its features are currently enabled/used by the kernel; atleast
-> not for the memory-key feature.
-
-Bummer.  You're missing out.
-
-But, you could still do this with a syscall.  "Hey, kernel, do you
-support this feature?"
+-- 
+2.14.3 (Apple Git-98)
