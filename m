@@ -1,31 +1,45 @@
-Return-Path: <caleb@crome.org>
-Received: from mail-pl0-x22b.google.com (mail-pl0-x22b.google.com
- [IPv6:2607:f8b0:400e:c01::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0zFk0yxFzDwNm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 11:25:29 +1100 (AEDT)
-Received: by mail-pl0-x22b.google.com with SMTP id s10so5869761plj.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 16:25:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0zP069M9zDqjP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 11:31:48 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBINDjRh113047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 18:16:04 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2exhukd33p-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 18:16:03 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 18 Dec 2017 16:16:02 -0700
+Date: Mon, 18 Dec 2017 15:15:51 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: linux-arch@vger.kernel.org, ebiederm@xmission.com, arnd@arndb.de,
+ corbet@lwn.net, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, mhocko@kernel.org, linux-mm@kvack.org,
+ mingo@redhat.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
+ linux-kselftest@vger.kernel.org, bauerman@linux.vnet.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
+ Add sysfs interface
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
+ <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
+ <20171218221850.GD5461@ram.oc3035372033.ibm.com>
+ <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20171218230220.GA16161@Asurada-Nvidia>
-References: <1513565530-33957-1-git-send-email-nicoleotsuka@gmail.com>
- <4e69ef31-3aa6-66ea-331b-8a7472a66a15@tabi.org>
- <CAG5mAdxsWmHfCc=vFkO+Wmi8m0c_9t7B6BTUBGVOmPoGOQrsyg@mail.gmail.com>
- <20171218230220.GA16161@Asurada-Nvidia>
-From: Caleb Crome <caleb@crome.org>
-Date: Mon, 18 Dec 2017 16:25:06 -0800
-Message-ID: <CAG5mAdzPuUo8SkJ_AqrgrouLWash4tge4YG7EMrdCTv9=K5FOQ@mail.gmail.com>
-Subject: Re: [PATCH v4 00/11] ASoC: fsl_ssi: Clean up - coding style level
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
- linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- Liam Girdwood <lgirdwood@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- mail@maciej.szmigiero.name,
- Arnaud Mouiche <arnaud.mouiche@invoxia.com>, lukma@denx.de,
- Sascha Hauer <kernel@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
+Message-Id: <20171218231551.GA5481@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,84 +49,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 18, 2017 at 3:02 PM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> On Mon, Dec 18, 2017 at 02:19:08PM -0800, Caleb Crome wrote:
->
->> > Acked-by: Timur Tabi <timur@tabi.org>
->
-> --- To Mark ---
->
-> Mark, can you still take these changes first? Since this failed
-> test that Caleb reported here is already existing on the top of
-> the mainline tree, I would like to treat this mail as a separate
-> bug report and fix it with a separate patch.
->
-> Besides, this series of changes don't change any function flow.
->
-> Thank you
->
+On Mon, Dec 18, 2017 at 02:28:14PM -0800, Dave Hansen wrote:
+> On 12/18/2017 02:18 PM, Ram Pai wrote:
+> > b) minimum number of keys available to the application.
+> > 	if libraries consumes a few, they could provide a library
+> > 	interface to the application informing the number available to
+> > 	the application.  The library interface can leverage (b) to
+> > 	provide the information.
+> 
+> OK, let's see a real user of this including a few libraries.  Then we'll
+> put it in the kernel.
+> 
+> > c) types of disable-rights supported by keys.
+> > 	Helps the application to determine the types of disable-features
+> > 	available. This is helpful, otherwise the app has to 
+> > 	make pkey_alloc() call with the corresponding parameter set
+> > 	and see if it suceeds or fails. Painful from an application
+> > 	point of view, in my opinion.
+> 
+> Again, let's see a real-world use of this.  How does it look?  How does
+> an app "fall back" if it can't set a restriction the way it wants to?
+> 
+> Are we *sure* that such an interface makes sense?  For instance, will it
+> be possible for some keys to be execute-disable while other are only
+> write-disable?
 
-Sorry!  I should have created a separate thread for this subject.  My
-comments have *nothing* to do with this patch set, except they are
-about the same source files.
+Can it be on x86?
 
->
-> --- To Caleb ---
->
->> I'm re-setting up my loopback test to try to verify these most recent changes.
->
-> I really appreciate your verification and help.
+its not possible on ppc. the keys can *all* be  the-same-attributes-disable all the
+time.
 
-Of course!  I have this wandboard permanently set up for this
-verification test, so that I can easily repeat whenever I touch our
-kernel.
+However you are right. Its conceivable that some arch could provide a
+feature where it can be x-attribute-disable for key 'a' and
+y-attribute-disable for key 'b'.  But than its a bit of a headache
+for an application to consume such a feature.
 
-It's a dead-simple hardware mod just to connect TX to RX.
+Ben: I recall you requesting this feature.  Thoughts?
 
->
->> warn:   11a0 11a1 1160 11a3 11a4 11a5 11a6 11a7
->> warn: Valid frame after 1 invalid frames
->> warn:   11c0 11c1 11c2 11c3 11c4 11c5 11c6 11c7
->> warn: first invalid frame while expecting frame 0x00a0
->> warn:   13e7 1400 1401 1402 1403 1404 1405 1404
->> warn:   1407 1420 1421 1422 1423 1424 1425 1426
->> warn:   1427 1440 1441 1442 1443 1444 1445 1484
->> warn:   1447 1460 1461 1462 1463 1464 1465 1466
->>
->> Those last 4 lines are the channel slips -- the least significant
->> nibble should be the channel number:  i.e. should go 0, 1, 2, 3, 4, 5,
->> 6, 7.
->>
->> Ugh, so it's basically quite broken again -- before these patches.
->
-> I remember Arnaud reviewed one of my changes back to September.
-> So I suppose the test should be fine at that time -- so a change
-> being merged recently might have impacted the test result.
+> 
+> > I think on x86 you look for some hardware registers to determine
+> > which hardware features are enabled by the kernel.
+> 
+> No, we use CPUID.  It's a part of the ISA that's designed for
+> enumerating CPU and (sometimes) OS support for CPU features.
+> 
+> > We do not have generic support for something like that on ppc.  The
+> > kernel looks at the device tree to determine what hardware features
+> > are available. But does not have mechanism to tell the hardware to
+> > track which of its features are currently enabled/used by the
+> > kernel; atleast not for the memory-key feature.
+> 
+> Bummer.  You're missing out.
+> 
+> But, you could still do this with a syscall.  "Hey, kernel, do you
+> support this feature?"
 
+or do powerpc specific sysfs interface.
+or a debugfs interface.
 
-It's certainly possible that I'm doing something wrong again -- it
-wouldn't be the first time :-)
-
->
->> I guess I need to go backwards in time and see what rev re-broke it.
->> I don't really have time to dig too deep on this again.
->>
->> I'd be happy to provide the hardware to anybody that can diagnose and
->> debug this more quickly than I can.  I'm very inefficient at kernel
->> drivers I think.   My day job is acoustical and electrical
->> engineering.
->>
->> Here's what the hardware looks like for anybody that's interested.
->> Just a single wire loopback on the wandboard header.
->
-> I would definitely like to take the hardware to debug it as long
-> as you are willing to provide me. Can you send me a private mail
-> to discuss about it?
-
-Absolutely.
--Caleb
-
-
->
-> Thanks
-> Nicolin
+RP
