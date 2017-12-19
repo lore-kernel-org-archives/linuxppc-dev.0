@@ -1,11 +1,11 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1PLp3VWQzDx9R
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1PLp2rwjzDx6D
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 04:01:22 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id v26so11369879pfl.7
+Received: by mail-pf0-x243.google.com with SMTP id u25so11368708pfg.5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:01:22 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
@@ -14,9 +14,9 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  mail@maciej.szmigiero.name, caleb@crome.org, arnaud.mouiche@invoxia.com,
  lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v1 12/15] ASoC: fsl_ssi: Clean up _fsl_ssi_set_dai_fmt()
-Date: Tue, 19 Dec 2017 09:00:16 -0800
-Message-Id: <1513702819-42310-13-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v1 11/15] ASoC: fsl_ssi: Setup AC97 in dai_probe()
+Date: Tue, 19 Dec 2017 09:00:15 -0800
+Message-Id: <1513702819-42310-12-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,182 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The _fsl_ssi_set_dai_fmt() is a helper function being called from
-fsl_ssi_set_dai_fmt() as an ASoC operation and from dai_probe(),
-mainly for AC97 format initialization.
+AC97 configures some registers earlier to start a communication
+with CODECs, so this patch moves those register settings to the
+dai_probe() as well, along with other register configurations.
 
-This patch cleans the _fsl_ssi_set_dai_fmt() in following ways:
-* Removing *dev pointer in the parameters as it's included in the
-  *ssi pointer of struct fsl_ssi.
-* Using regmap_update_bits() instead of regmap_read() and masking
-  the value manually.
-* Removing TXBIT0 configurations since this bit is set to 1 as its
-  reset value and there is no use case so far to unset it. And it
-  is safe to remove since regmap_update_bits() won't touch it.
-* Moving baudclk check to the switch-case routine to skip the I2S
-  master check. And moving SxCCR.DC settings after baudclk check.
-* Adding format settings for SND_SOC_DAIFMT_AC97 like others.
+It also applies _fsl_ssi_set_dai_fmt() to AC97 only since other
+formats would be configured via fsl_ssi_set_dai_fmt() directly.
+
+Meanwhile, this patch adds fsl_ssi_dai_ac97_remove() to cleanup
+some control bits for AC97.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 70 ++++++++++++++++++++++---------------------------
- 1 file changed, 31 insertions(+), 39 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2fdae78..898f837 100644
+index 4673709..2fdae78 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -850,42 +850,27 @@ static int fsl_ssi_hw_free(struct snd_pcm_substream *substream,
+@@ -977,9 +977,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	regmap_write(regs, REG_SSI_SRCR, srcr);
+ 	regmap_write(regs, REG_SSI_SCR, scr);
+ 
+-	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_AC97)
+-		fsl_ssi_setup_ac97(ssi);
+-
  	return 0;
  }
  
--static int _fsl_ssi_set_dai_fmt(struct device *dev,
--				struct fsl_ssi *ssi, unsigned int fmt)
-+static int _fsl_ssi_set_dai_fmt(struct fsl_ssi *ssi, unsigned int fmt)
- {
--	struct regmap *regs = ssi->regs;
--	u32 strcr = 0, stcr, srcr, scr, mask;
-+	u32 strcr = 0, scr = 0, stcr, srcr, mask;
+@@ -1108,6 +1105,26 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+ 		regmap_update_bits(ssi->regs, REG_SSI_SCR,
+ 				   SSI_SCR_TCH_EN, SSI_SCR_TCH_EN);
  
- 	ssi->dai_fmt = fmt;
- 
--	if (fsl_ssi_is_i2s_master(ssi) && IS_ERR(ssi->baudclk)) {
--		dev_err(dev, "missing baudclk for master mode\n");
--		return -EINVAL;
--	}
--
--	regmap_read(regs, REG_SSI_SCR, &scr);
--	scr &= ~(SSI_SCR_SYN | SSI_SCR_I2S_MODE_MASK);
- 	/* Synchronize frame sync clock for TE to avoid data slipping */
- 	scr |= SSI_SCR_SYNC_TX_FS;
- 
--	mask = SSI_STCR_TXBIT0 | SSI_STCR_TFDIR | SSI_STCR_TXDIR |
--	       SSI_STCR_TSCKP | SSI_STCR_TFSI | SSI_STCR_TFSL | SSI_STCR_TEFS;
--	regmap_read(regs, REG_SSI_STCR, &stcr);
--	regmap_read(regs, REG_SSI_SRCR, &srcr);
--	stcr &= ~mask;
--	srcr &= ~mask;
--
- 	/* Use Network mode as default */
- 	ssi->i2s_net = SSI_SCR_NET;
- 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
- 	case SND_SOC_DAIFMT_I2S:
--		regmap_update_bits(regs, REG_SSI_STCCR,
--				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
--		regmap_update_bits(regs, REG_SSI_SRCCR,
--				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
- 		switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
- 		case SND_SOC_DAIFMT_CBM_CFS:
- 		case SND_SOC_DAIFMT_CBS_CFS:
-+			if (IS_ERR(ssi->baudclk)) {
-+				dev_err(ssi->dev,
-+					"missing baudclk for master mode\n");
-+				return -EINVAL;
-+			}
- 			ssi->i2s_net |= SSI_SCR_I2S_MODE_MASTER;
- 			break;
- 		case SND_SOC_DAIFMT_CBM_CFM:
-@@ -895,30 +880,34 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 			return -EINVAL;
- 		}
- 
-+		regmap_update_bits(ssi->regs, REG_SSI_STCCR,
-+				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
-+		regmap_update_bits(ssi->regs, REG_SSI_SRCCR,
-+				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
++	/* AC97 should start earlier to communicate with CODECs */
++	if (fsl_ssi_is_ac97(ssi)) {
++		_fsl_ssi_set_dai_fmt(ssi->dev, ssi, ssi->dai_fmt);
++		fsl_ssi_setup_ac97(ssi);
++	}
 +
- 		/* Data on rising edge of bclk, frame low, 1clk before data */
--		strcr |= SSI_STCR_TFSI | SSI_STCR_TSCKP |
--			 SSI_STCR_TXBIT0 | SSI_STCR_TEFS;
-+		strcr |= SSI_STCR_TFSI | SSI_STCR_TSCKP | SSI_STCR_TEFS;
- 		break;
- 	case SND_SOC_DAIFMT_LEFT_J:
- 		/* Data on rising edge of bclk, frame high */
--		strcr |= SSI_STCR_TXBIT0 | SSI_STCR_TSCKP;
-+		strcr |= SSI_STCR_TSCKP;
- 		break;
- 	case SND_SOC_DAIFMT_DSP_A:
- 		/* Data on rising edge of bclk, frame high, 1clk before data */
--		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP |
--			 SSI_STCR_TXBIT0 | SSI_STCR_TEFS;
-+		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP | SSI_STCR_TEFS;
- 		break;
- 	case SND_SOC_DAIFMT_DSP_B:
- 		/* Data on rising edge of bclk, frame high */
--		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP | SSI_STCR_TXBIT0;
-+		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP;
- 		break;
- 	case SND_SOC_DAIFMT_AC97:
- 		/* Data on falling edge of bclk, frame high, 1clk before data */
--		ssi->i2s_net |= SSI_SCR_I2S_MODE_NORMAL;
-+		strcr |= SSI_STCR_TEFS;
- 		break;
- 	default:
- 		return -EINVAL;
- 	}
++	return 0;
++}
 +
- 	scr |= ssi->i2s_net;
- 
- 	/* DAI clock inversion */
-@@ -952,20 +941,17 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 		break;
- 	case SND_SOC_DAIFMT_CBM_CFM:
- 		/* Input bit or frame sync clocks */
--		scr &= ~SSI_SCR_SYS_CLK_EN;
- 		break;
- 	case SND_SOC_DAIFMT_CBM_CFS:
- 		/* Input bit clock but output frame sync clock */
--		strcr &= ~SSI_STCR_TXDIR;
- 		strcr |= SSI_STCR_TFDIR;
--		scr &= ~SSI_SCR_SYS_CLK_EN;
- 		break;
- 	default:
- 		return -EINVAL;
- 	}
- 
--	stcr |= strcr;
--	srcr |= strcr;
-+	stcr = strcr;
-+	srcr = strcr;
- 
- 	/* Set SYN mode and clear RXDIR bit when using SYN or AC97 mode */
- 	if (ssi->cpu_dai_drv.symmetric_rates || fsl_ssi_is_ac97(ssi)) {
-@@ -973,9 +959,15 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 		scr |= SSI_SCR_SYN;
- 	}
- 
--	regmap_write(regs, REG_SSI_STCR, stcr);
--	regmap_write(regs, REG_SSI_SRCR, srcr);
--	regmap_write(regs, REG_SSI_SCR, scr);
-+	mask = SSI_STCR_TFDIR | SSI_STCR_TXDIR | SSI_STCR_TSCKP |
-+	       SSI_STCR_TFSI | SSI_STCR_TFSL | SSI_STCR_TEFS;
++/**
++ * Disable register bits for AC97
++ */
++static int fsl_ssi_dai_ac97_remove(struct snd_soc_dai *dai)
++{
++	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
 +
-+	regmap_update_bits(ssi->regs, REG_SSI_STCR, mask, stcr);
-+	regmap_update_bits(ssi->regs, REG_SSI_SRCR, mask, srcr);
++	regmap_write(ssi->regs, REG_SSI_SCR, 0);
++	regmap_write(ssi->regs, REG_SSI_SACNT, 0);
++	regmap_write(ssi->regs, REG_SSI_SOR, 0);
 +
-+	mask = SSI_SCR_SYNC_TX_FS | SSI_SCR_I2S_MODE_MASK |
-+	       SSI_SCR_SYS_CLK_EN | SSI_SCR_SYN;
-+	regmap_update_bits(ssi->regs, REG_SSI_SCR, mask, scr);
- 
  	return 0;
  }
-@@ -991,7 +983,7 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
- 	if (fsl_ssi_is_ac97(ssi))
- 		return 0;
  
--	return _fsl_ssi_set_dai_fmt(dai->dev, ssi, fmt);
-+	return _fsl_ssi_set_dai_fmt(ssi, fmt);
- }
+@@ -1147,6 +1164,7 @@ static const struct snd_soc_component_driver fsl_ssi_component = {
+ static struct snd_soc_dai_driver fsl_ssi_ac97_dai = {
+ 	.bus_control = true,
+ 	.probe = fsl_ssi_dai_probe,
++	.remove = fsl_ssi_dai_ac97_remove,
+ 	.playback = {
+ 		.stream_name = "AC97 Playback",
+ 		.channels_min = 2,
+@@ -1524,9 +1542,6 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	}
  
- /**
-@@ -1107,7 +1099,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- 
- 	/* AC97 should start earlier to communicate with CODECs */
+ done:
+-	if (ssi->dai_fmt)
+-		_fsl_ssi_set_dai_fmt(dev, ssi, ssi->dai_fmt);
+-
  	if (fsl_ssi_is_ac97(ssi)) {
--		_fsl_ssi_set_dai_fmt(ssi->dev, ssi, ssi->dai_fmt);
-+		_fsl_ssi_set_dai_fmt(ssi, ssi->dai_fmt);
- 		fsl_ssi_setup_ac97(ssi);
- 	}
+ 		u32 ssi_idx;
  
 -- 
 2.7.4
