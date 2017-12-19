@@ -1,45 +1,35 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0zP069M9zDqjP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 11:31:48 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBINDjRh113047
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 18:16:04 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2exhukd33p-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z0zl838V0zDsN5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 11:47:32 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBJ0iKeq121986
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 19:47:29 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2exr0es4be-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 18:16:03 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 19:47:29 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 18 Dec 2017 16:16:02 -0700
-Date: Mon, 18 Dec 2017 15:15:51 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: linux-arch@vger.kernel.org, ebiederm@xmission.com, arnd@arndb.de,
- corbet@lwn.net, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, mhocko@kernel.org, linux-mm@kvack.org,
- mingo@redhat.com, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- linux-kselftest@vger.kernel.org, bauerman@linux.vnet.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- khandual@linux.vnet.ibm.com
-Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
- Add sysfs interface
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
- <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
- <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
- <20171218221850.GD5461@ram.oc3035372033.ibm.com>
- <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 19 Dec 2017 00:47:28 -0000
+Subject: Re: [PATCH 03/13] powerpc/powernv: Add opal calls for opencapi
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, alastair@au1.ibm.com, arnd@arndb.de
+References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
+ <f2189f8a9c578e5515472b0f44e5469ce36f9e5f.1513608243.git.fbarrat@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 19 Dec 2017 11:47:21 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
-Message-Id: <20171218231551.GA5481@ram.oc3035372033.ibm.com>
+In-Reply-To: <f2189f8a9c578e5515472b0f44e5469ce36f9e5f.1513608243.git.fbarrat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <d12638e1-3860-1540-4397-8a0fa5cc758d@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,62 +39,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 18, 2017 at 02:28:14PM -0800, Dave Hansen wrote:
-> On 12/18/2017 02:18 PM, Ram Pai wrote:
-> > b) minimum number of keys available to the application.
-> > 	if libraries consumes a few, they could provide a library
-> > 	interface to the application informing the number available to
-> > 	the application.  The library interface can leverage (b) to
-> > 	provide the information.
+On 19/12/17 02:21, Frederic Barrat wrote:
+> Add opal calls to interact with the NPU:
 > 
-> OK, let's see a real user of this including a few libraries.  Then we'll
-> put it in the kernel.
+> OPAL_NPU_SPA_SETUP: set the Shared Process Area (SPA)
+> The SPA is a table containing one entry (Process Element) per memory
+> context which can be accessed by the opencapi device.
 > 
-> > c) types of disable-rights supported by keys.
-> > 	Helps the application to determine the types of disable-features
-> > 	available. This is helpful, otherwise the app has to 
-> > 	make pkey_alloc() call with the corresponding parameter set
-> > 	and see if it suceeds or fails. Painful from an application
-> > 	point of view, in my opinion.
+> OPAL_NPU_SPA_CLEAR_CACHE: clear the context cache
+> The NPU keeps a cache of recently accessed memory contexts. When a
+> Process Element is removed from the SPA, the cache for the link must
+> be cleared.
 > 
-> Again, let's see a real-world use of this.  How does it look?  How does
-> an app "fall back" if it can't set a restriction the way it wants to?
+> OPAL_NPU_TL_SET: configure the Transaction Layer
+> The Transaction Layer specification defines several templates for
+> messages to be exchanged on the link. During link setup, the host and
+> device must negotiate what templates are supported on both sides and
+> at what rates those messages can be sent.
 > 
-> Are we *sure* that such an interface makes sense?  For instance, will it
-> be possible for some keys to be execute-disable while other are only
-> write-disable?
+> 
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-Can it be on x86?
+Corresponding skiboot patch: https://patchwork.ozlabs.org/patch/849830/
 
-its not possible on ppc. the keys can *all* be  the-same-attributes-disable all the
-time.
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-However you are right. Its conceivable that some arch could provide a
-feature where it can be x-attribute-disable for key 'a' and
-y-attribute-disable for key 'b'.  But than its a bit of a headache
-for an application to consume such a feature.
-
-Ben: I recall you requesting this feature.  Thoughts?
-
+> ---
+>   arch/powerpc/include/asm/opal-api.h            | 5 ++++-
+>   arch/powerpc/include/asm/opal.h                | 6 ++++++
+>   arch/powerpc/platforms/powernv/opal-wrappers.S | 3 +++
+>   3 files changed, 13 insertions(+), 1 deletion(-)
 > 
-> > I think on x86 you look for some hardware registers to determine
-> > which hardware features are enabled by the kernel.
-> 
-> No, we use CPUID.  It's a part of the ISA that's designed for
-> enumerating CPU and (sometimes) OS support for CPU features.
-> 
-> > We do not have generic support for something like that on ppc.  The
-> > kernel looks at the device tree to determine what hardware features
-> > are available. But does not have mechanism to tell the hardware to
-> > track which of its features are currently enabled/used by the
-> > kernel; atleast not for the memory-key feature.
-> 
-> Bummer.  You're missing out.
-> 
-> But, you could still do this with a syscall.  "Hey, kernel, do you
-> support this feature?"
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 233c7504b1f2..24c73f5575ee 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -201,7 +201,10 @@
+>   #define OPAL_SET_POWER_SHIFT_RATIO		155
+>   #define OPAL_SENSOR_GROUP_CLEAR			156
+>   #define OPAL_PCI_SET_P2P			157
+> -#define OPAL_LAST				157
+> +#define OPAL_NPU_SPA_SETUP			159
+> +#define OPAL_NPU_SPA_CLEAR_CACHE		160
+> +#define OPAL_NPU_TL_SET				161
+> +#define OPAL_LAST				161
+>   
+>   /* Device tree flags */
+>   
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 0c545f7fc77b..12e70fb58700 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -34,6 +34,12 @@ int64_t opal_npu_init_context(uint64_t phb_id, int pasid, uint64_t msr,
+>   			uint64_t bdf);
+>   int64_t opal_npu_map_lpar(uint64_t phb_id, uint64_t bdf, uint64_t lparid,
+>   			uint64_t lpcr);
+> +int64_t opal_npu_spa_setup(uint64_t phb_id, uint32_t bdfn,
+> +			uint64_t addr, uint64_t PE_mask);
+> +int64_t opal_npu_spa_clear_cache(uint64_t phb_id, uint32_t bdfn,
+> +				uint64_t PE_handle);
+> +int64_t opal_npu_tl_set(uint64_t phb_id, uint32_t bdfn, long cap,
+> +			uint64_t rate_phys, uint32_t size);
 
-or do powerpc specific sysfs interface.
-or a debugfs interface.
+The function prototype on the skiboot side has slightly different 
+parameter names: long capabilities, uint32_t rate_sz.
 
-RP
+>   int64_t opal_console_write(int64_t term_number, __be64 *length,
+>   			   const uint8_t *buffer);
+>   int64_t opal_console_read(int64_t term_number, __be64 *length,
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index 6f4b00a2ac46..1b2936ba6040 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -320,3 +320,6 @@ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
+>   OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
+>   OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
+>   OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
+> +OPAL_CALL(opal_npu_spa_setup,			OPAL_NPU_SPA_SETUP);
+> +OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
+> +OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
+> 
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
