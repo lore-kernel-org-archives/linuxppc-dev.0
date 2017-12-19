@@ -3,8 +3,8 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1FLW0rKYzDwP9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 22:00:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1FLh0pLnzDwbP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 22:00:44 +1100 (AEDT)
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
@@ -14,11 +14,10 @@ Cc: Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
  linux-kernel@vger.kernel.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  fabio.estevam@nxp.com, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_ssi: Rename registers and fields macros" to the
- asoc tree
-In-Reply-To: <1513565530-33957-5-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1eRFdL-00013s-1b@debutante>
-Date: Tue, 19 Dec 2017 11:00:27 +0000
+Subject: Applied "ASoC: fsl_ssi: Refine all comments" to the asoc tree
+In-Reply-To: <1513565530-33957-4-git-send-email-nicoleotsuka@gmail.com>
+Message-Id: <E1eRFdU-00017D-1x@debutante>
+Date: Tue, 19 Dec 2017 11:00:36 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl_ssi: Rename registers and fields macros
+   ASoC: fsl_ssi: Refine all comments
 
 has been applied to the asoc tree at
 
@@ -55,13 +54,19 @@ to this mail.
 Thanks,
 Mark
 
->From a818aa5f967ba60522ee0ad181a0c5a96b65d999 Mon Sep 17 00:00:00 2001
+>From 7a8fceb74de407f65201f3eaaee35377c2b71dbb Mon Sep 17 00:00:00 2001
 From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Sun, 17 Dec 2017 18:52:03 -0800
-Subject: [PATCH] ASoC: fsl_ssi: Rename registers and fields macros
+Date: Sun, 17 Dec 2017 18:52:02 -0800
+Subject: [PATCH] ASoC: fsl_ssi: Refine all comments
 
-This patch renames CCSR_SSI_xxx to REG_SSI_xxx and SSI_xxx_yyy style.
-It also slightly reduces the length of them to save some space.
+This patch refines the comments by:
+1) Removing all out-of-date comments
+2) Removing all not-so-useful comments
+3) Unifying the styles of all comments
+4) Shortening comments to be more conise
+5) Adding comments to improve code readablity
+6) Moving all register related comments to fsl_ssi.h
+7) Adding comments to all register and field defines
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
@@ -69,1313 +74,1059 @@ Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Acked-by: Timur Tabi <timur@tabi.org>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_ssi.c     | 374 +++++++++++++++++++++----------------------
- sound/soc/fsl/fsl_ssi.h     | 376 ++++++++++++++++++++++----------------------
- sound/soc/fsl/fsl_ssi_dbg.c |  44 +++---
- 3 files changed, 397 insertions(+), 397 deletions(-)
+ sound/soc/fsl/fsl_ssi.c     | 383 ++++++++++++++++----------------------------
+ sound/soc/fsl/fsl_ssi.h     |  67 +++++++-
+ sound/soc/fsl/fsl_ssi_dbg.c |  12 +-
+ 3 files changed, 208 insertions(+), 254 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index ff1827a074be..24d96956b53a 100644
+index e903c92d5512..ff1827a074be 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -78,12 +78,12 @@
- 	 SNDRV_PCM_FMTBIT_S24_3LE | SNDRV_PCM_FMTBIT_S24_LE)
- #endif
+@@ -187,42 +187,48 @@ struct fsl_ssi_soc_data {
+ /**
+  * fsl_ssi: per-SSI private data
+  *
+- * @reg: Pointer to the regmap registers
++ * @regs: Pointer to the regmap registers
+  * @irq: IRQ of this SSI
+  * @cpu_dai_drv: CPU DAI driver for this device
+  *
+  * @dai_fmt: DAI configuration this device is currently used with
+- * @i2s_mode: i2s and network mode configuration of the device. Is used to
+- * switch between normal and i2s/network mode
+- * mode depending on the number of channels
++ * @i2s_mode: I2S and Network mode configuration of SCR register
+  * @use_dma: DMA is used or FIQ with stream filter
+- * @use_dual_fifo: DMA with support for both FIFOs used
+- * @fifo_deph: Depth of the SSI FIFOs
+- * @slot_width: width of each DAI slot
+- * @slots: number of slots
+- * @rxtx_reg_val: Specific register settings for receive/transmit configuration
++ * @use_dual_fifo: DMA with support for dual FIFO mode
++ * @has_ipg_clk_name: If "ipg" is in the clock name list of device tree
++ * @fifo_depth: Depth of the SSI FIFOs
++ * @slot_width: Width of each DAI slot
++ * @slots: Number of slots
++ * @rxtx_reg_val: Specific RX/TX register settings
+  *
+- * @clk: SSI clock
+- * @baudclk: SSI baud clock for master mode
++ * @clk: Clock source to access register
++ * @baudclk: Clock source to generate bit and frame-sync clocks
+  * @baudclk_streams: Active streams that are using baudclk
+  *
++ * @regcache_sfcsr: Cache sfcsr register value during suspend and resume
++ * @regcache_sacnt: Cache sacnt register value during suspend and resume
++ *
+  * @dma_params_tx: DMA transmit parameters
+  * @dma_params_rx: DMA receive parameters
+  * @ssi_phys: physical address of the SSI registers
+  *
+  * @fiq_params: FIQ stream filtering parameters
+  *
+- * @pdev: Pointer to pdev used for deprecated fsl-ssi sound card
++ * @pdev: Pointer to pdev when using fsl-ssi as sound card (ppc only)
++ *        TODO: Should be replaced with simple-sound-card
+  *
+  * @dbg_stats: Debugging statistics
+  *
+  * @soc: SoC specific data
++ * @dev: Pointer to &pdev->dev
++ *
++ * @fifo_watermark: The FIFO watermark setting. Notifies DMA when there are
++ *                  @fifo_watermark or fewer words in TX fifo or
++ *                  @fifo_watermark or more empty words in RX fifo.
++ * @dma_maxburst: Max number of words to transfer in one go. So far,
++ *                this is always the same as fifo_watermark.
+  *
+- * @fifo_watermark: the FIFO watermark setting.  Notifies DMA when
+- *             there are @fifo_watermark or fewer words in TX fifo or
+- *             @fifo_watermark or more empty words in RX fifo.
+- * @dma_maxburst: max number of words to transfer in one go.  So far,
+- *             this is always the same as fifo_watermark.
++ * @ac97_reg_lock: Mutex lock to serialize AC97 register access operations
+  */
+ struct fsl_ssi {
+ 	struct regmap *regs;
+@@ -243,20 +249,15 @@ struct fsl_ssi {
+ 	struct clk *baudclk;
+ 	unsigned int baudclk_streams;
  
--#define FSLSSI_SIER_DBG_RX_FLAGS (CCSR_SSI_SIER_RFF0_EN | \
--		CCSR_SSI_SIER_RLS_EN | CCSR_SSI_SIER_RFS_EN | \
--		CCSR_SSI_SIER_ROE0_EN | CCSR_SSI_SIER_RFRC_EN)
--#define FSLSSI_SIER_DBG_TX_FLAGS (CCSR_SSI_SIER_TFE0_EN | \
--		CCSR_SSI_SIER_TLS_EN | CCSR_SSI_SIER_TFS_EN | \
--		CCSR_SSI_SIER_TUE0_EN | CCSR_SSI_SIER_TFRC_EN)
-+#define FSLSSI_SIER_DBG_RX_FLAGS (SSI_SIER_RFF0_EN | \
-+		SSI_SIER_RLS_EN | SSI_SIER_RFS_EN | \
-+		SSI_SIER_ROE0_EN | SSI_SIER_RFRC_EN)
-+#define FSLSSI_SIER_DBG_TX_FLAGS (SSI_SIER_TFE0_EN | \
-+		SSI_SIER_TLS_EN | SSI_SIER_TFS_EN | \
-+		SSI_SIER_TUE0_EN | SSI_SIER_TFRC_EN)
+-	/* regcache for volatile regs */
+ 	u32 regcache_sfcsr;
+ 	u32 regcache_sacnt;
  
- enum fsl_ssi_type {
- 	FSL_SSI_MCP8610,
-@@ -107,8 +107,8 @@ struct fsl_ssi_rxtx_reg_val {
- static bool fsl_ssi_readable_reg(struct device *dev, unsigned int reg)
- {
- 	switch (reg) {
--	case CCSR_SSI_SACCEN:
--	case CCSR_SSI_SACCDIS:
-+	case REG_SSI_SACCEN:
-+	case REG_SSI_SACCDIS:
- 		return false;
- 	default:
- 		return true;
-@@ -118,18 +118,18 @@ static bool fsl_ssi_readable_reg(struct device *dev, unsigned int reg)
- static bool fsl_ssi_volatile_reg(struct device *dev, unsigned int reg)
- {
- 	switch (reg) {
--	case CCSR_SSI_STX0:
--	case CCSR_SSI_STX1:
--	case CCSR_SSI_SRX0:
--	case CCSR_SSI_SRX1:
--	case CCSR_SSI_SISR:
--	case CCSR_SSI_SFCSR:
--	case CCSR_SSI_SACNT:
--	case CCSR_SSI_SACADD:
--	case CCSR_SSI_SACDAT:
--	case CCSR_SSI_SATAG:
--	case CCSR_SSI_SACCST:
--	case CCSR_SSI_SOR:
-+	case REG_SSI_STX0:
-+	case REG_SSI_STX1:
-+	case REG_SSI_SRX0:
-+	case REG_SSI_SRX1:
-+	case REG_SSI_SISR:
-+	case REG_SSI_SFCSR:
-+	case REG_SSI_SACNT:
-+	case REG_SSI_SACADD:
-+	case REG_SSI_SACDAT:
-+	case REG_SSI_SATAG:
-+	case REG_SSI_SACCST:
-+	case REG_SSI_SOR:
- 		return true;
- 	default:
- 		return false;
-@@ -139,12 +139,12 @@ static bool fsl_ssi_volatile_reg(struct device *dev, unsigned int reg)
- static bool fsl_ssi_precious_reg(struct device *dev, unsigned int reg)
- {
- 	switch (reg) {
--	case CCSR_SSI_SRX0:
--	case CCSR_SSI_SRX1:
--	case CCSR_SSI_SISR:
--	case CCSR_SSI_SACADD:
--	case CCSR_SSI_SACDAT:
--	case CCSR_SSI_SATAG:
-+	case REG_SSI_SRX0:
-+	case REG_SSI_SRX1:
-+	case REG_SSI_SISR:
-+	case REG_SSI_SACADD:
-+	case REG_SSI_SACDAT:
-+	case REG_SSI_SATAG:
- 		return true;
- 	default:
- 		return false;
-@@ -154,9 +154,9 @@ static bool fsl_ssi_precious_reg(struct device *dev, unsigned int reg)
- static bool fsl_ssi_writeable_reg(struct device *dev, unsigned int reg)
- {
- 	switch (reg) {
--	case CCSR_SSI_SRX0:
--	case CCSR_SSI_SRX1:
--	case CCSR_SSI_SACCST:
-+	case REG_SSI_SRX0:
-+	case REG_SSI_SRX1:
-+	case REG_SSI_SACCST:
- 		return false;
- 	default:
- 		return true;
-@@ -164,12 +164,12 @@ static bool fsl_ssi_writeable_reg(struct device *dev, unsigned int reg)
- }
+-	/* DMA params */
+ 	struct snd_dmaengine_dai_dma_data dma_params_tx;
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+ 	dma_addr_t ssi_phys;
  
- static const struct regmap_config fsl_ssi_regconfig = {
--	.max_register = CCSR_SSI_SACCDIS,
-+	.max_register = REG_SSI_SACCDIS,
- 	.reg_bits = 32,
- 	.val_bits = 32,
- 	.reg_stride = 4,
- 	.val_format_endian = REGMAP_ENDIAN_NATIVE,
--	.num_reg_defaults_raw = CCSR_SSI_SACCDIS / sizeof(uint32_t) + 1,
-+	.num_reg_defaults_raw = REG_SSI_SACCDIS / sizeof(uint32_t) + 1,
- 	.readable_reg = fsl_ssi_readable_reg,
- 	.volatile_reg = fsl_ssi_volatile_reg,
- 	.precious_reg = fsl_ssi_precious_reg,
-@@ -290,9 +290,9 @@ struct fsl_ssi {
+-	/* params for non-dma FIQ stream filtered mode */
+ 	struct imx_pcm_fiq_params fiq_params;
+ 
+-	/* Used when using fsl-ssi as sound-card. This is only used by ppc and
+-	 * should be replaced with simple-sound-card. */
+ 	struct platform_device *pdev;
+ 
+ 	struct fsl_ssi_dbg dbg_stats;
+@@ -271,19 +272,19 @@ struct fsl_ssi {
+ };
+ 
+ /*
+- * imx51 and later SoCs have a slightly different IP that allows the
+- * SSI configuration while the SSI unit is running.
+- *
+- * More important, it is necessary on those SoCs to configure the
+- * sperate TX/RX DMA bits just before starting the stream
+- * (fsl_ssi_trigger). The SDMA unit has to be configured before fsl_ssi
+- * sends any DMA requests to the SDMA unit, otherwise it is not defined
+- * how the SDMA unit handles the DMA request.
++ * SoC specific data
+  *
+- * SDMA units are present on devices starting at imx35 but the imx35
+- * reference manual states that the DMA bits should not be changed
+- * while the SSI unit is running (SSIEN). So we support the necessary
+- * online configuration of fsl-ssi starting at imx51.
++ * Notes:
++ * 1) SSI in earlier SoCS has critical bits in control registers that
++ *    cannot be changed after SSI starts running -- a software reset
++ *    (set SSIEN to 0) is required to change their values. So adding
++ *    an offline_config flag for these SoCs.
++ * 2) SDMA is available since imx35. However, imx35 does not support
++ *    DMA bits changing when SSI is running, so set offline_config.
++ * 3) imx51 and later versions support register configurations when
++ *    SSI is running (SSIEN); For these versions, DMA needs to be
++ *    configured before SSI sends DMA request to avoid an undefined
++ *    DMA request on the SDMA side.
+  */
+ 
  static struct fsl_ssi_soc_data fsl_ssi_mpc8610 = {
- 	.imx = false,
- 	.offline_config = true,
--	.sisr_write_mask = CCSR_SSI_SISR_RFRC | CCSR_SSI_SISR_TFRC |
--			CCSR_SSI_SISR_ROE0 | CCSR_SSI_SISR_ROE1 |
--			CCSR_SSI_SISR_TUE0 | CCSR_SSI_SISR_TUE1,
-+	.sisr_write_mask = SSI_SISR_RFRC | SSI_SISR_TFRC |
-+			SSI_SISR_ROE0 | SSI_SISR_ROE1 |
-+			SSI_SISR_TUE0 | SSI_SISR_TUE1,
- };
- 
- static struct fsl_ssi_soc_data fsl_ssi_imx21 = {
-@@ -305,16 +305,16 @@ static struct fsl_ssi_soc_data fsl_ssi_imx21 = {
- static struct fsl_ssi_soc_data fsl_ssi_imx35 = {
- 	.imx = true,
- 	.offline_config = true,
--	.sisr_write_mask = CCSR_SSI_SISR_RFRC | CCSR_SSI_SISR_TFRC |
--			CCSR_SSI_SISR_ROE0 | CCSR_SSI_SISR_ROE1 |
--			CCSR_SSI_SISR_TUE0 | CCSR_SSI_SISR_TUE1,
-+	.sisr_write_mask = SSI_SISR_RFRC | SSI_SISR_TFRC |
-+			SSI_SISR_ROE0 | SSI_SISR_ROE1 |
-+			SSI_SISR_TUE0 | SSI_SISR_TUE1,
- };
- 
- static struct fsl_ssi_soc_data fsl_ssi_imx51 = {
- 	.imx = true,
- 	.offline_config = false,
--	.sisr_write_mask = CCSR_SSI_SISR_ROE0 | CCSR_SSI_SISR_ROE1 |
--		CCSR_SSI_SISR_TUE0 | CCSR_SSI_SISR_TUE1,
-+	.sisr_write_mask = SSI_SISR_ROE0 | SSI_SISR_ROE1 |
-+		SSI_SISR_TUE0 | SSI_SISR_TUE1,
- };
- 
- static const struct of_device_id fsl_ssi_ids[] = {
-@@ -354,12 +354,12 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
+@@ -342,17 +343,9 @@ static bool fsl_ssi_is_i2s_cbm_cfs(struct fsl_ssi *ssi)
+ 	return (ssi->dai_fmt & SND_SOC_DAIFMT_MASTER_MASK) ==
+ 		SND_SOC_DAIFMT_CBM_CFS;
+ }
++
+ /**
+- * fsl_ssi_isr: SSI interrupt handler
+- *
+- * Although it's possible to use the interrupt handler to send and receive
+- * data to/from the SSI, we use the DMA instead.  Programming is more
+- * complicated, but the performance is much better.
+- *
+- * This interrupt handler is used only to gather statistics.
+- *
+- * @irq: IRQ of the SSI device
+- * @dev_id: pointer to the fsl_ssi structure for this SSI device
++ * Interrupt handler to gather states
+  */
+ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
+ {
+@@ -361,10 +354,6 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
  	__be32 sisr;
  	__be32 sisr2;
  
--	regmap_read(regs, CCSR_SSI_SISR, &sisr);
-+	regmap_read(regs, REG_SSI_SISR, &sisr);
+-	/* We got an interrupt, so read the status register to see what we
+-	   were interrupted for.  We mask it with the Interrupt Enable register
+-	   so that we only check for events that we're interested in.
+-	 */
+ 	regmap_read(regs, CCSR_SSI_SISR, &sisr);
  
  	sisr2 = sisr & ssi->soc->sisr_write_mask;
- 	/* Clear the bits that we set */
- 	if (sisr2)
--		regmap_write(regs, CCSR_SSI_SISR, sisr2);
-+		regmap_write(regs, REG_SSI_SISR, sisr2);
+@@ -377,8 +366,8 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
  
- 	fsl_ssi_dbg_isr(&ssi->dbg_stats, sisr);
- 
-@@ -375,21 +375,21 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
- 	struct fsl_ssi_rxtx_reg_val *vals = &ssi->rxtx_reg_val;
- 
- 	if (enable) {
--		regmap_update_bits(regs, CCSR_SSI_SIER,
-+		regmap_update_bits(regs, REG_SSI_SIER,
- 				vals->rx.sier | vals->tx.sier,
- 				vals->rx.sier | vals->tx.sier);
--		regmap_update_bits(regs, CCSR_SSI_SRCR,
-+		regmap_update_bits(regs, REG_SSI_SRCR,
- 				vals->rx.srcr | vals->tx.srcr,
- 				vals->rx.srcr | vals->tx.srcr);
--		regmap_update_bits(regs, CCSR_SSI_STCR,
-+		regmap_update_bits(regs, REG_SSI_STCR,
- 				vals->rx.stcr | vals->tx.stcr,
- 				vals->rx.stcr | vals->tx.stcr);
- 	} else {
--		regmap_update_bits(regs, CCSR_SSI_SRCR,
-+		regmap_update_bits(regs, REG_SSI_SRCR,
- 				vals->rx.srcr | vals->tx.srcr, 0);
--		regmap_update_bits(regs, CCSR_SSI_STCR,
-+		regmap_update_bits(regs, REG_SSI_STCR,
- 				vals->rx.stcr | vals->tx.stcr, 0);
--		regmap_update_bits(regs, CCSR_SSI_SIER,
-+		regmap_update_bits(regs, REG_SSI_SIER,
- 				vals->rx.sier | vals->tx.sier, 0);
+-/*
+- * Enable/Disable all rx/tx config flags at once.
++/**
++ * Enable or disable all rx/tx config flags at once
+  */
+ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
+ {
+@@ -405,13 +394,8 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
  	}
  }
-@@ -400,11 +400,11 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
+ 
+-/*
+- * Clear RX or TX FIFO to remove samples from the previous
+- * stream session which may be still present in the FIFO and
+- * may introduce bad samples and/or channel slipping.
+- *
+- * Note: The SOR is not documented in recent IMX datasheet, but
+- * is described in IMX51 reference manual at section 56.3.3.15.
++/**
++ * Clear remaining data in the FIFO to avoid dirty data or channel slipping
+  */
  static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
  {
- 	if (is_rx) {
--		regmap_update_bits(ssi->regs, CCSR_SSI_SOR,
--			CCSR_SSI_SOR_RX_CLR, CCSR_SSI_SOR_RX_CLR);
-+		regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			SSI_SOR_RX_CLR, SSI_SOR_RX_CLR);
- 	} else {
--		regmap_update_bits(ssi->regs, CCSR_SSI_SOR,
--			CCSR_SSI_SOR_TX_CLR, CCSR_SSI_SOR_TX_CLR);
-+		regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			SSI_SOR_TX_CLR, SSI_SOR_TX_CLR);
+@@ -424,7 +408,7 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
  	}
  }
  
-@@ -440,10 +440,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 	u32 scr_val;
- 	int keep_active;
+-/*
++/**
+  * Calculate the bits that have to be disabled for the current stream that is
+  * getting disabled. This keeps the bits enabled that are necessary for the
+  * second stream to work if 'stream_active' is true.
+@@ -444,9 +428,8 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
+ 	((vals_disable) & \
+ 	 ((vals_disable) ^ ((vals_stream) * (u32)!!(stream_active))))
  
--	regmap_read(regs, CCSR_SSI_SCR, &scr_val);
-+	regmap_read(regs, REG_SSI_SCR, &scr_val);
+-/*
+- * Enable/Disable a ssi configuration. You have to pass either
+- * ssi->rxtx_reg_val.rx or tx as vals parameter.
++/**
++ * Enable or disable SSI configuration.
+  */
+ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 		struct fsl_ssi_reg_val *vals)
+@@ -467,24 +450,28 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 	else
+ 		keep_active = 0;
  
--	nr_active_streams = !!(scr_val & CCSR_SSI_SCR_TE) +
--				!!(scr_val & CCSR_SSI_SCR_RE);
-+	nr_active_streams = !!(scr_val & SSI_SCR_TE) +
-+				!!(scr_val & SSI_SCR_RE);
+-	/* Find the other direction values rx or tx which we do not want to
+-	 * modify */
++	/* Get the opposite direction to keep its values untouched */
+ 	if (&ssi->rxtx_reg_val.rx == vals)
+ 		avals = &ssi->rxtx_reg_val.tx;
+ 	else
+ 		avals = &ssi->rxtx_reg_val.rx;
  
- 	if (nr_active_streams - 1 > 0)
- 		keep_active = 1;
-@@ -464,7 +464,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+-	/* If vals should be disabled, start with disabling the unit */
+ 	if (!enable) {
++		/*
++		 * To keep the other stream safe, exclude shared bits between
++		 * both streams, and get safe bits to disable current stream
++		 */
  		u32 scr = fsl_ssi_disable_val(vals->scr, avals->scr,
  				keep_active);
- 		/* Safely disable SCR register for the stream */
--		regmap_update_bits(regs, CCSR_SSI_SCR, scr, 0);
-+		regmap_update_bits(regs, REG_SSI_SCR, scr, 0);
++		/* Safely disable SCR register for the stream */
+ 		regmap_update_bits(regs, CCSR_SSI_SCR, scr, 0);
  	}
  
  	/*
-@@ -483,11 +483,11 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+-	 * We are running on a SoC which does not support online SSI
+-	 * reconfiguration, so we have to enable all necessary flags at once
+-	 * even if we do not use them later (capture and playback configuration)
++	 * For cases where online configuration is not supported,
++	 * 1) Enable all necessary bits of both streams when 1st stream starts
++	 *    even if the opposite stream will not start
++	 * 2) Disable all remaining bits of both streams when last stream ends
+ 	 */
+ 	if (ssi->soc->offline_config) {
+ 		if ((enable && !nr_active_streams) ||
+@@ -494,10 +481,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 		goto config_done;
+ 	}
  
- 	/* Online configure single direction while SSI is running */
+-	/*
+-	 * Configure single direction units while the SSI unit is running
+-	 * (online configuration)
+-	 */
++	/* Online configure single direction while SSI is running */
  	if (enable) {
--		fsl_ssi_fifo_clear(ssi, vals->scr & CCSR_SSI_SCR_RE);
-+		fsl_ssi_fifo_clear(ssi, vals->scr & SSI_SCR_RE);
+ 		fsl_ssi_fifo_clear(ssi, vals->scr & CCSR_SSI_SCR_RE);
  
--		regmap_update_bits(regs, CCSR_SSI_SRCR, vals->srcr, vals->srcr);
--		regmap_update_bits(regs, CCSR_SSI_STCR, vals->stcr, vals->stcr);
--		regmap_update_bits(regs, CCSR_SSI_SIER, vals->sier, vals->sier);
-+		regmap_update_bits(regs, REG_SSI_SRCR, vals->srcr, vals->srcr);
-+		regmap_update_bits(regs, REG_SSI_STCR, vals->stcr, vals->stcr);
-+		regmap_update_bits(regs, REG_SSI_SIER, vals->sier, vals->sier);
- 	} else {
- 		u32 sier;
- 		u32 srcr;
-@@ -505,9 +505,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+@@ -510,15 +494,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 		u32 stcr;
+ 
+ 		/*
+-		 * Disabling the necessary flags for one of rx/tx while the
+-		 * other stream is active is a little bit more difficult. We
+-		 * have to disable only those flags that differ between both
+-		 * streams (rx XOR tx) and that are set in the stream that is
+-		 * disabled now. Otherwise we could alter flags of the other
+-		 * stream
++		 * To keep the other stream safe, exclude shared bits between
++		 * both streams, and get safe bits to disable current stream
+ 		 */
+-
+-		/* These assignments are simply vals without bits set in avals*/
+ 		sier = fsl_ssi_disable_val(vals->sier, avals->sier,
+ 				keep_active);
+ 		srcr = fsl_ssi_disable_val(vals->srcr, avals->srcr,
+@@ -526,6 +504,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 		stcr = fsl_ssi_disable_val(vals->stcr, avals->stcr,
  				keep_active);
  
- 		/* Safely disable other control registers for the stream */
--		regmap_update_bits(regs, CCSR_SSI_SRCR, srcr, 0);
--		regmap_update_bits(regs, CCSR_SSI_STCR, stcr, 0);
--		regmap_update_bits(regs, CCSR_SSI_SIER, sier, 0);
-+		regmap_update_bits(regs, REG_SSI_SRCR, srcr, 0);
-+		regmap_update_bits(regs, REG_SSI_STCR, stcr, 0);
-+		regmap_update_bits(regs, REG_SSI_SIER, sier, 0);
- 	}
- 
++		/* Safely disable other control registers for the stream */
+ 		regmap_update_bits(regs, CCSR_SSI_SRCR, srcr, 0);
+ 		regmap_update_bits(regs, CCSR_SSI_STCR, stcr, 0);
+ 		regmap_update_bits(regs, CCSR_SSI_SIER, sier, 0);
+@@ -534,26 +513,21 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
  config_done:
-@@ -519,19 +519,19 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		 *
- 		 * TODO: FIQ cases might also need this upon testing
- 		 */
--		if (ssi->use_dma && (vals->scr & CCSR_SSI_SCR_TE)) {
-+		if (ssi->use_dma && (vals->scr & SSI_SCR_TE)) {
+ 	/* Enabling of subunits is done after configuration */
+ 	if (enable) {
++		/*
++		 * Start DMA before setting TE to avoid FIFO underrun
++		 * which may cause a channel slip or a channel swap
++		 *
++		 * TODO: FIQ cases might also need this upon testing
++		 */
+ 		if (ssi->use_dma && (vals->scr & CCSR_SSI_SCR_TE)) {
+-			/*
+-			 * Be sure the Tx FIFO is filled when TE is set.
+-			 * Otherwise, there are some chances to start the
+-			 * playback with some void samples inserted first,
+-			 * generating a channel slip.
+-			 *
+-			 * First, SSIEN must be set, to let the FIFO be filled.
+-			 *
+-			 * Notes:
+-			 * - Limit this fix to the DMA case until FIQ cases can
+-			 *   be tested.
+-			 * - Limit the length of the busy loop to not lock the
+-			 *   system too long, even if 1-2 loops are sufficient
+-			 *   in general.
+-			 */
  			int i;
  			int max_loop = 100;
- 
- 			/* Enable SSI first to send TX DMA request */
--			regmap_update_bits(regs, CCSR_SSI_SCR,
--					CCSR_SSI_SCR_SSIEN, CCSR_SSI_SCR_SSIEN);
-+			regmap_update_bits(regs, REG_SSI_SCR,
-+					SSI_SCR_SSIEN, SSI_SCR_SSIEN);
- 
- 			/* Busy wait until TX FIFO not empty -- DMA working */
++
++			/* Enable SSI first to send TX DMA request */
+ 			regmap_update_bits(regs, CCSR_SSI_SCR,
+ 					CCSR_SSI_SCR_SSIEN, CCSR_SSI_SCR_SSIEN);
++
++			/* Busy wait until TX FIFO not empty -- DMA working */
  			for (i = 0; i < max_loop; i++) {
  				u32 sfcsr;
--				regmap_read(regs, CCSR_SSI_SFCSR, &sfcsr);
--				if (CCSR_SSI_SFCSR_TFCNT0(sfcsr))
-+				regmap_read(regs, REG_SSI_SFCSR, &sfcsr);
-+				if (SSI_SFCSR_TFCNT0(sfcsr))
- 					break;
- 			}
- 			if (i == max_loop) {
-@@ -540,7 +540,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 				regmap_read(regs, CCSR_SSI_SFCSR, &sfcsr);
+@@ -565,6 +539,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 					"Timeout waiting TX FIFO filling\n");
  			}
  		}
- 		/* Enable all remaining bits */
--		regmap_update_bits(regs, CCSR_SSI_SCR, vals->scr, vals->scr);
-+		regmap_update_bits(regs, REG_SSI_SCR, vals->scr, vals->scr);
++		/* Enable all remaining bits */
+ 		regmap_update_bits(regs, CCSR_SSI_SCR, vals->scr, vals->scr);
  	}
  }
+@@ -581,20 +556,9 @@ static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
  
-@@ -557,9 +557,9 @@ static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
  	/* no SACC{ST,EN,DIS} regs on imx21-class SSI */
  	if (!ssi->soc->imx21regs) {
- 		/* Disable all channel slots */
--		regmap_write(regs, CCSR_SSI_SACCDIS, 0xff);
-+		regmap_write(regs, REG_SSI_SACCDIS, 0xff);
- 		/* Enable slots 3 & 4 -- PCM Playback Left & Right channels */
--		regmap_write(regs, CCSR_SSI_SACCEN, 0x300);
-+		regmap_write(regs, REG_SSI_SACCEN, 0x300);
+-		/*
+-		 * Note that these below aren't just normal registers.
+-		 * They are a way to disable or enable bits in SACCST
+-		 * register:
+-		 * - writing a '1' bit at some position in SACCEN sets the
+-		 * relevant bit in SACCST,
+-		 * - writing a '1' bit at some position in SACCDIS unsets
+-		 * the relevant bit in SACCST register.
+-		 *
+-		 * The two writes below first disable all channels slots,
+-		 * then enable just slots 3 & 4 ("PCM Playback Left Channel"
+-		 * and "PCM Playback Right Channel").
+-		 */
++		/* Disable all channel slots */
+ 		regmap_write(regs, CCSR_SSI_SACCDIS, 0xff);
++		/* Enable slots 3 & 4 -- PCM Playback Left & Right channels */
+ 		regmap_write(regs, CCSR_SSI_SACCEN, 0x300);
  	}
  }
- 
-@@ -585,25 +585,25 @@ static void fsl_ssi_setup_reg_vals(struct fsl_ssi *ssi)
+@@ -602,23 +566,11 @@ static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
+ static void fsl_ssi_tx_config(struct fsl_ssi *ssi, bool enable)
  {
- 	struct fsl_ssi_rxtx_reg_val *reg = &ssi->rxtx_reg_val;
+ 	/*
+-	 * Why are we setting up SACCST everytime we are starting a
+-	 * playback?
+-	 * Some CODECs (like VT1613 CODEC on UDOO board) like to
+-	 * (sometimes) set extra bits in their SLOTREQ requests.
+-	 * When a bit is set in a SLOTREQ request then SSI sets the
+-	 * relevant bit in SACCST automatically (it is enough if a bit was
+-	 * set in a SLOTREQ just once, bits in SACCST are 'sticky').
+-	 * If an extra slot gets enabled that's a disaster for playback
+-	 * because some of normal left or right channel samples are
+-	 * redirected instead to this extra slot.
++	 * SACCST might be modified via AC Link by a CODEC if it sends
++	 * extra bits in their SLOTREQ requests, which'll accidentally
++	 * send valid data to slots other than normal playback slots.
+ 	 *
+-	 * A workaround implemented in fsl-asoc-card of setting an
+-	 * appropriate CODEC register so that slots 3 & 4 (the normal
+-	 * stereo playback slots) are used for S/PDIF seems to mostly fix
+-	 * this issue on the UDOO board but since this CODEC is so
+-	 * untrustworthy let's play safe here and make sure that no extra
+-	 * slots are enabled every time a playback is started.
++	 * To be safe, configure SACCST right before TX starts.
+ 	 */
+ 	if (enable && fsl_ssi_is_ac97(ssi))
+ 		fsl_ssi_tx_ac97_saccst_setup(ssi);
+@@ -626,10 +578,8 @@ static void fsl_ssi_tx_config(struct fsl_ssi *ssi, bool enable)
+ 	fsl_ssi_config(ssi, enable, &ssi->rxtx_reg_val.tx);
+ }
  
--	reg->rx.sier = CCSR_SSI_SIER_RFF0_EN;
--	reg->rx.srcr = CCSR_SSI_SRCR_RFEN0;
-+	reg->rx.sier = SSI_SIER_RFF0_EN;
-+	reg->rx.srcr = SSI_SRCR_RFEN0;
- 	reg->rx.scr = 0;
--	reg->tx.sier = CCSR_SSI_SIER_TFE0_EN;
--	reg->tx.stcr = CCSR_SSI_STCR_TFEN0;
-+	reg->tx.sier = SSI_SIER_TFE0_EN;
-+	reg->tx.stcr = SSI_STCR_TFEN0;
+-/*
+- * Setup rx/tx register values used to enable/disable the streams. These will
+- * be used later in fsl_ssi_config to setup the streams without the need to
+- * check for all different SSI modes.
++/**
++ * Cache critical bits of SIER, SRCR, STCR and SCR to later set them safely
+  */
+ static void fsl_ssi_setup_reg_vals(struct fsl_ssi *ssi)
+ {
+@@ -642,6 +592,7 @@ static void fsl_ssi_setup_reg_vals(struct fsl_ssi *ssi)
+ 	reg->tx.stcr = CCSR_SSI_STCR_TFEN0;
  	reg->tx.scr = 0;
  
- 	/* AC97 has already enabled SSIEN, RE and TE, so ignore them */
++	/* AC97 has already enabled SSIEN, RE and TE, so ignore them */
  	if (!fsl_ssi_is_ac97(ssi)) {
--		reg->rx.scr = CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_RE;
--		reg->tx.scr = CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE;
-+		reg->rx.scr = SSI_SCR_SSIEN | SSI_SCR_RE;
-+		reg->tx.scr = SSI_SCR_SSIEN | SSI_SCR_TE;
- 	}
- 
- 	if (ssi->use_dma) {
--		reg->rx.sier |= CCSR_SSI_SIER_RDMAE;
--		reg->tx.sier |= CCSR_SSI_SIER_TDMAE;
-+		reg->rx.sier |= SSI_SIER_RDMAE;
-+		reg->tx.sier |= SSI_SIER_TDMAE;
- 	} else {
--		reg->rx.sier |= CCSR_SSI_SIER_RIE;
--		reg->tx.sier |= CCSR_SSI_SIER_TIE;
-+		reg->rx.sier |= SSI_SIER_RIE;
-+		reg->tx.sier |= SSI_SIER_TIE;
- 	}
- 
- 	reg->rx.sier |= FSLSSI_SIER_DBG_RX_FLAGS;
-@@ -615,21 +615,21 @@ static void fsl_ssi_setup_ac97(struct fsl_ssi *ssi)
+ 		reg->rx.scr = CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_RE;
+ 		reg->tx.scr = CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE;
+@@ -663,24 +614,17 @@ static void fsl_ssi_setup_ac97(struct fsl_ssi *ssi)
+ {
  	struct regmap *regs = ssi->regs;
  
- 	/* Setup the clock control register */
--	regmap_write(regs, CCSR_SSI_STCCR,
--			CCSR_SSI_SxCCR_WL(17) | CCSR_SSI_SxCCR_DC(13));
--	regmap_write(regs, CCSR_SSI_SRCCR,
--			CCSR_SSI_SxCCR_WL(17) | CCSR_SSI_SxCCR_DC(13));
-+	regmap_write(regs, REG_SSI_STCCR,
-+			SSI_SxCCR_WL(17) | SSI_SxCCR_DC(13));
-+	regmap_write(regs, REG_SSI_SRCCR,
-+			SSI_SxCCR_WL(17) | SSI_SxCCR_DC(13));
+-	/*
+-	 * Setup the clock control register
+-	 */
++	/* Setup the clock control register */
+ 	regmap_write(regs, CCSR_SSI_STCCR,
+ 			CCSR_SSI_SxCCR_WL(17) | CCSR_SSI_SxCCR_DC(13));
+ 	regmap_write(regs, CCSR_SSI_SRCCR,
+ 			CCSR_SSI_SxCCR_WL(17) | CCSR_SSI_SxCCR_DC(13));
  
- 	/* Enable AC97 mode and startup the SSI */
--	regmap_write(regs, CCSR_SSI_SACNT,
--			CCSR_SSI_SACNT_AC97EN | CCSR_SSI_SACNT_FV);
-+	regmap_write(regs, REG_SSI_SACNT,
-+			SSI_SACNT_AC97EN | SSI_SACNT_FV);
+-	/*
+-	 * Enable AC97 mode and startup the SSI
+-	 */
++	/* Enable AC97 mode and startup the SSI */
+ 	regmap_write(regs, CCSR_SSI_SACNT,
+ 			CCSR_SSI_SACNT_AC97EN | CCSR_SSI_SACNT_FV);
  
- 	/* AC97 has to communicate with codec before starting a stream */
--	regmap_update_bits(regs, CCSR_SSI_SCR,
--			CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE,
--			CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE);
-+	regmap_update_bits(regs, REG_SSI_SCR,
-+			SSI_SCR_SSIEN | SSI_SCR_TE | SSI_SCR_RE,
-+			SSI_SCR_SSIEN | SSI_SCR_TE | SSI_SCR_RE);
- 
--	regmap_write(regs, CCSR_SSI_SOR, CCSR_SSI_SOR_WAIT(3));
-+	regmap_write(regs, REG_SSI_SOR, SSI_SOR_WAIT(3));
+-	/*
+-	 * Enable SSI, Transmit and Receive. AC97 has to communicate with the
+-	 * codec before a stream is started.
+-	 */
++	/* AC97 has to communicate with codec before starting a stream */
+ 	regmap_update_bits(regs, CCSR_SSI_SCR,
+ 			CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE,
+ 			CCSR_SSI_SCR_SSIEN | CCSR_SSI_SCR_TE | CCSR_SSI_SCR_RE);
+@@ -688,14 +632,6 @@ static void fsl_ssi_setup_ac97(struct fsl_ssi *ssi)
+ 	regmap_write(regs, CCSR_SSI_SOR, CCSR_SSI_SOR_WAIT(3));
  }
  
+-/**
+- * fsl_ssi_startup: create a new substream
+- *
+- * This is the first function called when a stream is opened.
+- *
+- * If this is the first stream open, then grab the IRQ and program most of
+- * the SSI registers.
+- */
  static int fsl_ssi_startup(struct snd_pcm_substream *substream,
-@@ -762,15 +762,15 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 		return -EINVAL;
- 	}
+ 			   struct snd_soc_dai *dai)
+ {
+@@ -707,7 +643,8 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ 	if (ret)
+ 		return ret;
  
--	stccr = CCSR_SSI_SxCCR_PM(pm + 1) | (div2 ? CCSR_SSI_SxCCR_DIV2 : 0) |
--		(psr ? CCSR_SSI_SxCCR_PSR : 0);
--	mask = CCSR_SSI_SxCCR_PM_MASK | CCSR_SSI_SxCCR_DIV2 |
--		CCSR_SSI_SxCCR_PSR;
-+	stccr = SSI_SxCCR_PM(pm + 1) | (div2 ? SSI_SxCCR_DIV2 : 0) |
-+		(psr ? SSI_SxCCR_PSR : 0);
-+	mask = SSI_SxCCR_PM_MASK | SSI_SxCCR_DIV2 |
-+		SSI_SxCCR_PSR;
+-	/* When using dual fifo mode, it is safer to ensure an even period
++	/*
++	 * When using dual fifo mode, it is safer to ensure an even period
+ 	 * size. If appearing to an odd number while DMA always starts its
+ 	 * task from fifo0, fifo1 would be neglected at the end of each
+ 	 * period. But SSI would still access fifo1 with an invalid data.
+@@ -719,10 +656,6 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
  
- 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK || synchronous)
--		regmap_update_bits(regs, CCSR_SSI_STCCR, mask, stccr);
-+		regmap_update_bits(regs, REG_SSI_STCCR, mask, stccr);
- 	else
--		regmap_update_bits(regs, CCSR_SSI_SRCCR, mask, stccr);
-+		regmap_update_bits(regs, REG_SSI_SRCCR, mask, stccr);
+-/**
+- * fsl_ssi_shutdown: shutdown the SSI
+- *
+- */
+ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
+ 				struct snd_soc_dai *dai)
+ {
+@@ -734,7 +667,7 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
+ }
  
- 	if (!baudclk_is_used) {
- 		ret = clk_set_rate(ssi->baudclk, baudrate);
-@@ -801,13 +801,13 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	struct regmap *regs = ssi->regs;
- 	unsigned int channels = params_channels(hw_params);
- 	unsigned int sample_size = params_width(hw_params);
--	u32 wl = CCSR_SSI_SxCCR_WL(sample_size);
-+	u32 wl = SSI_SxCCR_WL(sample_size);
- 	int ret;
- 	u32 scr_val;
- 	int enabled;
+ /**
+- * fsl_ssi_set_bclk - configure Digital Audio Interface bit clock
++ * Configure Digital Audio Interface bit clock
+  *
+  * Note: This function can be only called when using SSI as DAI master
+  *
+@@ -851,17 +784,15 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ }
  
--	regmap_read(regs, CCSR_SSI_SCR, &scr_val);
--	enabled = scr_val & CCSR_SSI_SCR_SSIEN;
-+	regmap_read(regs, REG_SSI_SCR, &scr_val);
-+	enabled = scr_val & SSI_SCR_SSIEN;
+ /**
+- * fsl_ssi_hw_params - program the sample size
+- *
+- * Most of the SSI registers have been programmed in the startup function,
+- * but the word length must be programmed here.  Unfortunately, programming
+- * the SxCCR.WL bits requires the SSI to be temporarily disabled.  This can
+- * cause a problem with supporting simultaneous playback and capture.  If
+- * the SSI is already playing a stream, then that stream may be temporarily
+- * stopped when you start capture.
++ * Configure SSI based on PCM hardware parameters
+  *
+- * Note: The SxCCR.DC and SxCCR.PM bits are only used if the SSI is the
+- * clock master.
++ * Notes:
++ * 1) SxCCR.WL bits are critical bits that require SSI to be temporarily
++ *    disabled on offline_config SoCs. Even for online configurable SoCs
++ *    running in synchronous mode (both TX and RX use STCCR), it is not
++ *    safe to re-configure them when both two streams start running.
++ * 2) SxCCR.PM, SxCCR.DIV2 and SxCCR.PSR bits will be configured in the
++ *    fsl_ssi_set_bclk() if SSI is the DAI clock master.
+  */
+ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	struct snd_pcm_hw_params *hw_params, struct snd_soc_dai *cpu_dai)
+@@ -879,8 +810,10 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	enabled = scr_val & CCSR_SSI_SCR_SSIEN;
  
  	/*
- 	 * SSI is properly configured if it is enabled and running in
-@@ -837,23 +837,23 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 		u8 i2smode;
- 		/* Normal + Network mode to send 16-bit data in 32-bit frames */
- 		if (fsl_ssi_is_i2s_cbm_cfs(ssi) && sample_size == 16)
--			i2smode = CCSR_SSI_SCR_I2S_MODE_NORMAL |
--				CCSR_SSI_SCR_NET;
-+			i2smode = SSI_SCR_I2S_MODE_NORMAL |
-+				SSI_SCR_NET;
- 		else
- 			i2smode = ssi->i2s_mode;
+-	 * If we're in synchronous mode, and the SSI is already enabled,
+-	 * then STCCR is already set properly.
++	 * SSI is properly configured if it is enabled and running in
++	 * the synchronous mode; Note that AC97 mode is an exception
++	 * that should set separate configurations for STCCR and SRCCR
++	 * despite running in the synchronous mode.
+ 	 */
+ 	if (enabled && ssi->cpu_dai_drv.symmetric_rates)
+ 		return 0;
+@@ -902,10 +835,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
  
--		regmap_update_bits(regs, CCSR_SSI_SCR,
--				CCSR_SSI_SCR_NET | CCSR_SSI_SCR_I2S_MODE_MASK,
-+		regmap_update_bits(regs, REG_SSI_SCR,
-+				SSI_SCR_NET | SSI_SCR_I2S_MODE_MASK,
+ 	if (!fsl_ssi_is_ac97(ssi)) {
+ 		u8 i2smode;
+-		/*
+-		 * Switch to normal net mode in order to have a frame sync
+-		 * signal every 32 bits instead of 16 bits
+-		 */
++		/* Normal + Network mode to send 16-bit data in 32-bit frames */
+ 		if (fsl_ssi_is_i2s_cbm_cfs(ssi) && sample_size == 16)
+ 			i2smode = CCSR_SSI_SCR_I2S_MODE_NORMAL |
+ 				CCSR_SSI_SCR_NET;
+@@ -917,16 +847,6 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
  				channels == 1 ? 0 : i2smode);
  	}
  
+-	/*
+-	 * FIXME: The documentation says that SxCCR[WL] should not be
+-	 * modified while the SSI is enabled.  The only time this can
+-	 * happen is if we're trying to do simultaneous playback and
+-	 * capture in asynchronous mode.  Unfortunately, I have been enable
+-	 * to get that to work at all on the P1022DS.  Therefore, we don't
+-	 * bother to disable/enable the SSI when setting SxCCR[WL], because
+-	 * the SSI will stop anyway.  Maybe one day, this will get fixed.
+-	 */
+-
  	/* In synchronous mode, the SSI uses STCCR for capture */
  	if ((substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ||
  	    ssi->cpu_dai_drv.symmetric_rates)
--		regmap_update_bits(regs, CCSR_SSI_STCCR, CCSR_SSI_SxCCR_WL_MASK,
-+		regmap_update_bits(regs, REG_SSI_STCCR, SSI_SxCCR_WL_MASK,
- 				wl);
- 	else
--		regmap_update_bits(regs, CCSR_SSI_SRCCR, CCSR_SSI_SxCCR_WL_MASK,
-+		regmap_update_bits(regs, REG_SSI_SRCCR, SSI_SxCCR_WL_MASK,
- 				wl);
+@@ -972,6 +892,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
  
- 	return 0;
-@@ -890,62 +890,62 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	regmap_read(regs, CCSR_SSI_SCR, &scr);
+ 	scr &= ~(CCSR_SSI_SCR_SYN | CCSR_SSI_SCR_I2S_MODE_MASK);
++	/* Synchronize frame sync clock for TE to avoid data slipping */
+ 	scr |= CCSR_SSI_SCR_SYNC_TX_FS;
  
- 	fsl_ssi_setup_reg_vals(ssi);
- 
--	regmap_read(regs, CCSR_SSI_SCR, &scr);
--	scr &= ~(CCSR_SSI_SCR_SYN | CCSR_SSI_SCR_I2S_MODE_MASK);
-+	regmap_read(regs, REG_SSI_SCR, &scr);
-+	scr &= ~(SSI_SCR_SYN | SSI_SCR_I2S_MODE_MASK);
- 	/* Synchronize frame sync clock for TE to avoid data slipping */
--	scr |= CCSR_SSI_SCR_SYNC_TX_FS;
-+	scr |= SSI_SCR_SYNC_TX_FS;
- 
--	mask = CCSR_SSI_STCR_TXBIT0 | CCSR_SSI_STCR_TFDIR | CCSR_SSI_STCR_TXDIR |
--		CCSR_SSI_STCR_TSCKP | CCSR_SSI_STCR_TFSI | CCSR_SSI_STCR_TFSL |
--		CCSR_SSI_STCR_TEFS;
--	regmap_read(regs, CCSR_SSI_STCR, &stcr);
--	regmap_read(regs, CCSR_SSI_SRCR, &srcr);
-+	mask = SSI_STCR_TXBIT0 | SSI_STCR_TFDIR | SSI_STCR_TXDIR |
-+		SSI_STCR_TSCKP | SSI_STCR_TFSI | SSI_STCR_TFSL |
-+		SSI_STCR_TEFS;
-+	regmap_read(regs, REG_SSI_STCR, &stcr);
-+	regmap_read(regs, REG_SSI_SRCR, &srcr);
+ 	mask = CCSR_SSI_STCR_TXBIT0 | CCSR_SSI_STCR_TFDIR | CCSR_SSI_STCR_TXDIR |
+@@ -982,6 +903,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
  	stcr &= ~mask;
  	srcr &= ~mask;
  
- 	/* Use Network mode as default */
--	ssi->i2s_mode = CCSR_SSI_SCR_NET;
-+	ssi->i2s_mode = SSI_SCR_NET;
++	/* Use Network mode as default */
+ 	ssi->i2s_mode = CCSR_SSI_SCR_NET;
  	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
  	case SND_SOC_DAIFMT_I2S:
--		regmap_update_bits(regs, CCSR_SSI_STCCR,
--				   CCSR_SSI_SxCCR_DC_MASK,
--				   CCSR_SSI_SxCCR_DC(2));
--		regmap_update_bits(regs, CCSR_SSI_SRCCR,
--				   CCSR_SSI_SxCCR_DC_MASK,
--				   CCSR_SSI_SxCCR_DC(2));
-+		regmap_update_bits(regs, REG_SSI_STCCR,
-+				   SSI_SxCCR_DC_MASK,
-+				   SSI_SxCCR_DC(2));
-+		regmap_update_bits(regs, REG_SSI_SRCCR,
-+				   SSI_SxCCR_DC_MASK,
-+				   SSI_SxCCR_DC(2));
- 		switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
- 		case SND_SOC_DAIFMT_CBM_CFS:
- 		case SND_SOC_DAIFMT_CBS_CFS:
--			ssi->i2s_mode |= CCSR_SSI_SCR_I2S_MODE_MASTER;
-+			ssi->i2s_mode |= SSI_SCR_I2S_MODE_MASTER;
- 			break;
- 		case SND_SOC_DAIFMT_CBM_CFM:
--			ssi->i2s_mode |= CCSR_SSI_SCR_I2S_MODE_SLAVE;
-+			ssi->i2s_mode |= SSI_SCR_I2S_MODE_SLAVE;
- 			break;
- 		default:
- 			return -EINVAL;
- 		}
- 
- 		/* Data on rising edge of bclk, frame low, 1clk before data */
--		strcr |= CCSR_SSI_STCR_TFSI | CCSR_SSI_STCR_TSCKP |
--			CCSR_SSI_STCR_TXBIT0 | CCSR_SSI_STCR_TEFS;
-+		strcr |= SSI_STCR_TFSI | SSI_STCR_TSCKP |
-+			SSI_STCR_TXBIT0 | SSI_STCR_TEFS;
- 		break;
- 	case SND_SOC_DAIFMT_LEFT_J:
- 		/* Data on rising edge of bclk, frame high */
--		strcr |= CCSR_SSI_STCR_TXBIT0 | CCSR_SSI_STCR_TSCKP;
-+		strcr |= SSI_STCR_TXBIT0 | SSI_STCR_TSCKP;
- 		break;
- 	case SND_SOC_DAIFMT_DSP_A:
- 		/* Data on rising edge of bclk, frame high, 1clk before data */
--		strcr |= CCSR_SSI_STCR_TFSL | CCSR_SSI_STCR_TSCKP |
--			CCSR_SSI_STCR_TXBIT0 | CCSR_SSI_STCR_TEFS;
-+		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP |
-+			SSI_STCR_TXBIT0 | SSI_STCR_TEFS;
- 		break;
- 	case SND_SOC_DAIFMT_DSP_B:
- 		/* Data on rising edge of bclk, frame high */
--		strcr |= CCSR_SSI_STCR_TFSL | CCSR_SSI_STCR_TSCKP |
--			CCSR_SSI_STCR_TXBIT0;
-+		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP |
-+			SSI_STCR_TXBIT0;
+@@ -1022,6 +944,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 			CCSR_SSI_STCR_TXBIT0;
  		break;
  	case SND_SOC_DAIFMT_AC97:
- 		/* Data on falling edge of bclk, frame high, 1clk before data */
--		ssi->i2s_mode |= CCSR_SSI_SCR_I2S_MODE_NORMAL;
-+		ssi->i2s_mode |= SSI_SCR_I2S_MODE_NORMAL;
++		/* Data on falling edge of bclk, frame high, 1clk before data */
+ 		ssi->i2s_mode |= CCSR_SSI_SCR_I2S_MODE_NORMAL;
  		break;
  	default:
- 		return -EINVAL;
-@@ -959,16 +959,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 		break;
- 	case SND_SOC_DAIFMT_IB_NF:
- 		/* Invert bit clock */
--		strcr ^= CCSR_SSI_STCR_TSCKP;
-+		strcr ^= SSI_STCR_TSCKP;
- 		break;
- 	case SND_SOC_DAIFMT_NB_IF:
- 		/* Invert frame clock */
--		strcr ^= CCSR_SSI_STCR_TFSI;
-+		strcr ^= SSI_STCR_TFSI;
- 		break;
- 	case SND_SOC_DAIFMT_IB_IF:
- 		/* Invert both clocks */
--		strcr ^= CCSR_SSI_STCR_TSCKP;
--		strcr ^= CCSR_SSI_STCR_TFSI;
-+		strcr ^= SSI_STCR_TSCKP;
-+		strcr ^= SSI_STCR_TFSI;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -978,18 +978,18 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+@@ -1054,13 +977,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	/* DAI clock master masks */
  	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
  	case SND_SOC_DAIFMT_CBS_CFS:
- 		/* Output bit and frame sync clocks */
--		strcr |= CCSR_SSI_STCR_TFDIR | CCSR_SSI_STCR_TXDIR;
--		scr |= CCSR_SSI_SCR_SYS_CLK_EN;
-+		strcr |= SSI_STCR_TFDIR | SSI_STCR_TXDIR;
-+		scr |= SSI_SCR_SYS_CLK_EN;
++		/* Output bit and frame sync clocks */
+ 		strcr |= CCSR_SSI_STCR_TFDIR | CCSR_SSI_STCR_TXDIR;
+ 		scr |= CCSR_SSI_SCR_SYS_CLK_EN;
  		break;
  	case SND_SOC_DAIFMT_CBM_CFM:
- 		/* Input bit or frame sync clocks */
--		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
-+		scr &= ~SSI_SCR_SYS_CLK_EN;
++		/* Input bit or frame sync clocks */
+ 		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
  		break;
  	case SND_SOC_DAIFMT_CBM_CFS:
- 		/* Input bit clock but output frame sync clock */
--		strcr &= ~CCSR_SSI_STCR_TXDIR;
--		strcr |= CCSR_SSI_STCR_TFDIR;
--		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
-+		strcr &= ~SSI_STCR_TXDIR;
-+		strcr |= SSI_STCR_TFDIR;
-+		scr &= ~SSI_SCR_SYS_CLK_EN;
- 		break;
- 	default:
- 		if (!fsl_ssi_is_ac97(ssi))
-@@ -1001,27 +1001,27 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
++		/* Input bit clock but output frame sync clock */
+ 		strcr &= ~CCSR_SSI_STCR_TXDIR;
+ 		strcr |= CCSR_SSI_STCR_TFDIR;
+ 		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
+@@ -1073,8 +999,8 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	stcr |= strcr;
+ 	srcr |= strcr;
  
- 	/* Set SYN mode and clear RXDIR bit when using SYN or AC97 mode */
++	/* Set SYN mode and clear RXDIR bit when using SYN or AC97 mode */
  	if (ssi->cpu_dai_drv.symmetric_rates || fsl_ssi_is_ac97(ssi)) {
--		srcr &= ~CCSR_SSI_SRCR_RXDIR;
--		scr |= CCSR_SSI_SCR_SYN;
-+		srcr &= ~SSI_SRCR_RXDIR;
-+		scr |= SSI_SCR_SYN;
+-		/* Need to clear RXDIR when using SYNC or AC97 mode */
+ 		srcr &= ~CCSR_SSI_SRCR_RXDIR;
+ 		scr |= CCSR_SSI_SCR_SYN;
  	}
+@@ -1106,12 +1032,13 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ }
  
--	regmap_write(regs, CCSR_SSI_STCR, stcr);
--	regmap_write(regs, CCSR_SSI_SRCR, srcr);
--	regmap_write(regs, CCSR_SSI_SCR, scr);
-+	regmap_write(regs, REG_SSI_STCR, stcr);
-+	regmap_write(regs, REG_SSI_SRCR, srcr);
-+	regmap_write(regs, REG_SSI_SCR, scr);
+ /**
+- * fsl_ssi_set_dai_fmt - configure Digital Audio Interface Format.
++ * Configure Digital Audio Interface (DAI) Format
+  */
+ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
+ {
+ 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(cpu_dai);
  
- 	wm = ssi->fifo_watermark;
++	/* AC97 configured DAIFMT earlier in the probe() */
+ 	if (fsl_ssi_is_ac97(ssi))
+ 		return 0;
  
--	regmap_write(regs, CCSR_SSI_SFCSR,
--			CCSR_SSI_SFCSR_TFWM0(wm) | CCSR_SSI_SFCSR_RFWM0(wm) |
--			CCSR_SSI_SFCSR_TFWM1(wm) | CCSR_SSI_SFCSR_RFWM1(wm));
-+	regmap_write(regs, REG_SSI_SFCSR,
-+			SSI_SFCSR_TFWM0(wm) | SSI_SFCSR_RFWM0(wm) |
-+			SSI_SFCSR_TFWM1(wm) | SSI_SFCSR_RFWM1(wm));
+@@ -1119,9 +1046,7 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
+ }
  
- 	if (ssi->use_dual_fifo) {
--		regmap_update_bits(regs, CCSR_SSI_SRCR, CCSR_SSI_SRCR_RFEN1,
--				CCSR_SSI_SRCR_RFEN1);
--		regmap_update_bits(regs, CCSR_SSI_STCR, CCSR_SSI_STCR_TFEN1,
--				CCSR_SSI_STCR_TFEN1);
--		regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_TCH_EN,
--				CCSR_SSI_SCR_TCH_EN);
-+		regmap_update_bits(regs, REG_SSI_SRCR, SSI_SRCR_RFEN1,
-+				SSI_SRCR_RFEN1);
-+		regmap_update_bits(regs, REG_SSI_STCR, SSI_STCR_TFEN1,
-+				SSI_STCR_TFEN1);
-+		regmap_update_bits(regs, REG_SSI_SCR, SSI_SCR_TCH_EN,
-+				SSI_SCR_TCH_EN);
- 	}
+ /**
+- * fsl_ssi_set_dai_tdm_slot - set TDM slot number
+- *
+- * Note: This function can be only called when using SSI as DAI master
++ * Set TDM slot number and slot width
+  */
+ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
+ 				u32 rx_mask, int slots, int slot_width)
+@@ -1149,17 +1074,17 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
+ 	regmap_update_bits(regs, CCSR_SSI_SRCCR, CCSR_SSI_SxCCR_DC_MASK,
+ 			CCSR_SSI_SxCCR_DC(slots));
  
- 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_AC97)
-@@ -1062,30 +1062,30 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
- 	}
+-	/* The register SxMSKs needs SSI to provide essential clock due to
+-	 * hardware design. So we here temporarily enable SSI to set them.
+-	 */
++	/* Save SSIEN bit of the SCR register */
+ 	regmap_read(regs, CCSR_SSI_SCR, &val);
+ 	val &= CCSR_SSI_SCR_SSIEN;
++	/* Temporarily enable SSI to allow SxMSKs to be configurable */
+ 	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN,
+ 			CCSR_SSI_SCR_SSIEN);
  
- 	/* The slot number should be >= 2 if using Network mode or I2S mode */
--	regmap_read(regs, CCSR_SSI_SCR, &val);
--	val &= CCSR_SSI_SCR_I2S_MODE_MASK | CCSR_SSI_SCR_NET;
-+	regmap_read(regs, REG_SSI_SCR, &val);
-+	val &= SSI_SCR_I2S_MODE_MASK | SSI_SCR_NET;
- 	if (val && slots < 2) {
- 		dev_err(cpu_dai->dev, "slot number should be >= 2 in I2S or NET\n");
+ 	regmap_write(regs, CCSR_SSI_STMSK, ~tx_mask);
+ 	regmap_write(regs, CCSR_SSI_SRMSK, ~rx_mask);
+ 
++	/* Restore the value of SSIEN bit */
+ 	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN, val);
+ 
+ 	ssi->slot_width = slot_width;
+@@ -1169,10 +1094,7 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
+ }
+ 
+ /**
+- * fsl_ssi_trigger: start and stop the DMA transfer.
+- *
+- * This function is called by ALSA to start, stop, pause, and resume the DMA
+- * transfer of data.
++ * Start or stop SSI and corresponding DMA transaction.
+  *
+  * The DMA channel is in external master start and pause mode, which
+  * means the SSI completely controls the flow of data.
+@@ -1207,6 +1129,7 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
  		return -EINVAL;
  	}
  
--	regmap_update_bits(regs, CCSR_SSI_STCCR, CCSR_SSI_SxCCR_DC_MASK,
--			CCSR_SSI_SxCCR_DC(slots));
--	regmap_update_bits(regs, CCSR_SSI_SRCCR, CCSR_SSI_SxCCR_DC_MASK,
--			CCSR_SSI_SxCCR_DC(slots));
-+	regmap_update_bits(regs, REG_SSI_STCCR, SSI_SxCCR_DC_MASK,
-+			SSI_SxCCR_DC(slots));
-+	regmap_update_bits(regs, REG_SSI_SRCCR, SSI_SxCCR_DC_MASK,
-+			SSI_SxCCR_DC(slots));
- 
- 	/* Save SSIEN bit of the SCR register */
--	regmap_read(regs, CCSR_SSI_SCR, &val);
--	val &= CCSR_SSI_SCR_SSIEN;
-+	regmap_read(regs, REG_SSI_SCR, &val);
-+	val &= SSI_SCR_SSIEN;
- 	/* Temporarily enable SSI to allow SxMSKs to be configurable */
--	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN,
--			CCSR_SSI_SCR_SSIEN);
-+	regmap_update_bits(regs, REG_SSI_SCR, SSI_SCR_SSIEN,
-+			SSI_SCR_SSIEN);
- 
--	regmap_write(regs, CCSR_SSI_STMSK, ~tx_mask);
--	regmap_write(regs, CCSR_SSI_SRMSK, ~rx_mask);
-+	regmap_write(regs, REG_SSI_STMSK, ~tx_mask);
-+	regmap_write(regs, REG_SSI_SRMSK, ~rx_mask);
- 
- 	/* Restore the value of SSIEN bit */
--	regmap_update_bits(regs, CCSR_SSI_SCR, CCSR_SSI_SCR_SSIEN, val);
-+	regmap_update_bits(regs, REG_SSI_SCR, SSI_SCR_SSIEN, val);
- 
- 	ssi->slot_width = slot_width;
- 	ssi->slots = slots;
-@@ -1132,9 +1132,9 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 	/* Clear corresponding FIFO */
++	/* Clear corresponding FIFO */
  	if (fsl_ssi_is_ac97(ssi)) {
  		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
--			regmap_write(regs, CCSR_SSI_SOR, CCSR_SSI_SOR_TX_CLR);
-+			regmap_write(regs, REG_SSI_SOR, SSI_SOR_TX_CLR);
- 		else
--			regmap_write(regs, CCSR_SSI_SOR, CCSR_SSI_SOR_RX_CLR);
-+			regmap_write(regs, REG_SSI_SOR, SSI_SOR_RX_CLR);
+ 			regmap_write(regs, CCSR_SSI_SOR, CCSR_SSI_SOR_TX_CLR);
+@@ -1239,7 +1162,6 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
+ 	.trigger	= fsl_ssi_trigger,
+ };
+ 
+-/* Template for the CPU dai driver structure */
+ static struct snd_soc_dai_driver fsl_ssi_dai_template = {
+ 	.probe = fsl_ssi_dai_probe,
+ 	.playback = {
+@@ -1383,6 +1305,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	u32 dmas[4];
+ 	int ret;
+ 
++	/* Backward compatible for a DT without ipg clock name assigned */
+ 	if (ssi->has_ipg_clk_name)
+ 		ssi->clk = devm_clk_get(dev, "ipg");
+ 	else
+@@ -1393,6 +1316,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 		return ret;
  	}
  
- 	return 0;
-@@ -1230,13 +1230,13 @@ static void fsl_ssi_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
++	/* Enable the clock since regmap will not handle it in this case */
+ 	if (!ssi->has_ipg_clk_name) {
+ 		ret = clk_prepare_enable(ssi->clk);
+ 		if (ret) {
+@@ -1401,9 +1325,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 		}
  	}
  
- 	lreg = reg <<  12;
--	regmap_write(regs, CCSR_SSI_SACADD, lreg);
-+	regmap_write(regs, REG_SSI_SACADD, lreg);
+-	/* For those SLAVE implementations, we ignore non-baudclk cases
+-	 * and, instead, abandon MASTER mode that needs baud clock.
+-	 */
++	/* Do not error out for slave cases that live without a baud clock */
+ 	ssi->baudclk = devm_clk_get(dev, "baud");
+ 	if (IS_ERR(ssi->baudclk))
+ 		dev_dbg(dev, "could not get baud clock: %ld\n",
+@@ -1414,25 +1336,23 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	ssi->dma_params_tx.addr = ssi->ssi_phys + CCSR_SSI_STX0;
+ 	ssi->dma_params_rx.addr = ssi->ssi_phys + CCSR_SSI_SRX0;
  
- 	lval = val << 4;
--	regmap_write(regs, CCSR_SSI_SACDAT, lval);
-+	regmap_write(regs, REG_SSI_SACDAT, lval);
- 
--	regmap_update_bits(regs, CCSR_SSI_SACNT, CCSR_SSI_SACNT_RDWR_MASK,
--			CCSR_SSI_SACNT_WR);
-+	regmap_update_bits(regs, REG_SSI_SACNT, SSI_SACNT_RDWR_MASK,
-+			SSI_SACNT_WR);
- 	udelay(100);
- 
- 	clk_disable_unprepare(fsl_ac97_data->clk);
-@@ -1265,13 +1265,13 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
- 	}
- 
- 	lreg = (reg & 0x7f) <<  12;
--	regmap_write(regs, CCSR_SSI_SACADD, lreg);
--	regmap_update_bits(regs, CCSR_SSI_SACNT, CCSR_SSI_SACNT_RDWR_MASK,
--			CCSR_SSI_SACNT_RD);
-+	regmap_write(regs, REG_SSI_SACADD, lreg);
-+	regmap_update_bits(regs, REG_SSI_SACNT, SSI_SACNT_RDWR_MASK,
-+			SSI_SACNT_RD);
- 
- 	udelay(100);
- 
--	regmap_read(regs, CCSR_SSI_SACDAT, &reg_val);
-+	regmap_read(regs, REG_SSI_SACDAT, &reg_val);
- 	val = (reg_val >> 4) & 0xffff;
- 
- 	clk_disable_unprepare(fsl_ac97_data->clk);
-@@ -1333,8 +1333,8 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 
- 	ssi->dma_params_tx.maxburst = ssi->dma_maxburst;
- 	ssi->dma_params_rx.maxburst = ssi->dma_maxburst;
--	ssi->dma_params_tx.addr = ssi->ssi_phys + CCSR_SSI_STX0;
--	ssi->dma_params_rx.addr = ssi->ssi_phys + CCSR_SSI_SRX0;
-+	ssi->dma_params_tx.addr = ssi->ssi_phys + REG_SSI_STX0;
-+	ssi->dma_params_rx.addr = ssi->ssi_phys + REG_SSI_SRX0;
- 
- 	/* Set to dual FIFO mode according to the SDMA sciprt */
++	/* Set to dual FIFO mode according to the SDMA sciprt */
  	ret = of_property_read_u32_array(np, "dmas", dmas, 4);
-@@ -1439,9 +1439,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	if (ssi->use_dma && !ret && dmas[2] == IMX_DMATYPE_SSI_DUAL) {
+ 		ssi->use_dual_fifo = true;
+-		/* When using dual fifo mode, we need to keep watermark
+-		 * as even numbers due to dma script limitation.
++		/*
++		 * Use even numbers to avoid channel swap due to SDMA
++		 * script design
+ 		 */
+ 		ssi->dma_params_tx.maxburst &= ~0x1;
+ 		ssi->dma_params_rx.maxburst &= ~0x1;
+ 	}
+ 
+ 	if (!ssi->use_dma) {
+-
+ 		/*
+-		 * Some boards use an incompatible codec. To get it
+-		 * working, we are using imx-fiq-pcm-audio, that
+-		 * can handle those codecs. DMA is not possible in this
+-		 * situation.
++		 * Some boards use an incompatible codec. Use imx-fiq-pcm-audio
++		 * to get it working, as DMA is not possible in this situation.
+ 		 */
+-
+ 		ssi->fiq_params.irq = ssi->irq;
+ 		ssi->fiq_params.base = iomem;
+ 		ssi->fiq_params.dma_params_rx = &ssi->dma_params_rx;
+@@ -1490,12 +1410,14 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	ssi->soc = of_id->data;
+ 	ssi->dev = dev;
+ 
++	/* Check if being used in AC97 mode */
+ 	sprop = of_get_property(np, "fsl,mode", NULL);
+ 	if (sprop) {
+ 		if (!strcmp(sprop, "ac97-slave"))
+ 			ssi->dai_fmt = SND_SOC_DAIFMT_AC97;
+ 	}
+ 
++	/* Select DMA or FIQ */
+ 	ssi->use_dma = !of_property_read_bool(np, "fsl,fiq-stream-filter");
+ 
+ 	if (fsl_ssi_is_ac97(ssi)) {
+@@ -1504,7 +1426,6 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 
+ 		fsl_ac97_data = ssi;
+ 	} else {
+-		/* Initialize this copy of the CPU DAI driver structure */
+ 		memcpy(&ssi->cpu_dai_drv, &fsl_ssi_dai_template,
+ 		       sizeof(fsl_ssi_dai_template));
+ 	}
+@@ -1517,10 +1438,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	ssi->ssi_phys = res->start;
  
  	if (ssi->soc->imx21regs) {
- 		/* No SACC{ST,EN,DIS} regs in imx21-class SSI */
--		regconfig.max_register = CCSR_SSI_SRMSK;
-+		regconfig.max_register = REG_SSI_SRMSK;
+-		/*
+-		 * According to datasheet imx21-class SSI
+-		 * don't have SACC{ST,EN,DIS} regs.
+-		 */
++		/* No SACC{ST,EN,DIS} regs in imx21-class SSI */
+ 		regconfig.max_register = CCSR_SSI_SRMSK;
  		regconfig.num_reg_defaults_raw =
--			CCSR_SSI_SRMSK / sizeof(uint32_t) + 1;
-+			REG_SSI_SRMSK / sizeof(uint32_t) + 1;
+ 			CCSR_SSI_SRMSK / sizeof(uint32_t) + 1;
+@@ -1546,7 +1464,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		return ssi->irq;
  	}
  
- 	ret = of_property_match_string(np, "clock-names", "ipg");
-@@ -1638,8 +1638,8 @@ static int fsl_ssi_suspend(struct device *dev)
- 	struct fsl_ssi *ssi = dev_get_drvdata(dev);
- 	struct regmap *regs = ssi->regs;
+-	/* Are the RX and the TX clocks locked? */
++	/* Set software limitations for synchronous mode */
+ 	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
+ 		if (!fsl_ssi_is_ac97(ssi)) {
+ 			ssi->cpu_dai_drv.symmetric_rates = 1;
+@@ -1556,50 +1474,35 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		ssi->cpu_dai_drv.symmetric_channels = 1;
+ 	}
  
--	regmap_read(regs, CCSR_SSI_SFCSR, &ssi->regcache_sfcsr);
--	regmap_read(regs, CCSR_SSI_SACNT, &ssi->regcache_sacnt);
-+	regmap_read(regs, REG_SSI_SFCSR, &ssi->regcache_sfcsr);
-+	regmap_read(regs, REG_SSI_SACNT, &ssi->regcache_sacnt);
+-	/* Determine the FIFO depth. */
++	/* Fetch FIFO depth; Set to 8 for older DT without this property */
+ 	iprop = of_get_property(np, "fsl,fifo-depth", NULL);
+ 	if (iprop)
+ 		ssi->fifo_depth = be32_to_cpup(iprop);
+ 	else
+-                /* Older 8610 DTs didn't have the fifo-depth property */
+ 		ssi->fifo_depth = 8;
  
- 	regcache_cache_only(regs, true);
- 	regcache_mark_dirty(regs);
-@@ -1654,11 +1654,11 @@ static int fsl_ssi_resume(struct device *dev)
+ 	/*
+-	 * Set the watermark for transmit FIFO 0 and receive FIFO 0. We don't
+-	 * use FIFO 1 but set the watermark appropriately nontheless.
+-	 * We program the transmit water to signal a DMA transfer
+-	 * if there are N elements left in the FIFO. For chips with 15-deep
+-	 * FIFOs, set watermark to 8.  This allows the SSI to operate at a
+-	 * high data rate without channel slipping. Behavior is unchanged
+-	 * for the older chips with a fifo depth of only 8.  A value of 4
+-	 * might be appropriate for the older chips, but is left at
+-	 * fifo_depth-2 until sombody has a chance to test.
++	 * Configure TX and RX DMA watermarks -- when to send a DMA request
+ 	 *
+-	 * We set the watermark on the same level as the DMA burstsize.  For
+-	 * fiq it is probably better to use the biggest possible watermark
+-	 * size.
++	 * Values should be tested to avoid FIFO under/over run. Set maxburst
++	 * to fifo_watermark to maxiumize DMA transaction to reduce overhead.
+ 	 */
+ 	switch (ssi->fifo_depth) {
+ 	case 15:
+ 		/*
+-		 * 2 samples is not enough when running at high data
+-		 * rates (like 48kHz @ 16 bits/channel, 16 channels)
+-		 * 8 seems to split things evenly and leave enough time
+-		 * for the DMA to fill the FIFO before it's over/under
+-		 * run.
++		 * Set to 8 as a balanced configuration -- When TX FIFO has 8
++		 * empty slots, send a DMA request to fill these 8 slots. The
++		 * remaining 7 slots should be able to allow DMA to finish the
++		 * transaction before TX FIFO underruns; Same applies to RX.
++		 *
++		 * Tested with cases running at 48kHz @ 16 bits x 16 channels
+ 		 */
+ 		ssi->fifo_watermark = 8;
+ 		ssi->dma_maxburst = 8;
+ 		break;
+ 	case 8:
+ 	default:
+-		/*
+-		 * maintain old behavior for older chips.
+-		 * Keeping it the same because I don't have an older
+-		 * board to test with.
+-		 * I suspect this could be changed to be something to
+-		 * leave some more space in the fifo.
+-		 */
++		/* Safely use old watermark configurations for older chips */
+ 		ssi->fifo_watermark = ssi->fifo_depth - 2;
+ 		ssi->dma_maxburst = ssi->fifo_depth - 2;
+ 		break;
+@@ -1642,18 +1545,14 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto error_asoc_register;
  
- 	regcache_cache_only(regs, false);
+-	/*
+-	 * If codec-handle property is missing from SSI node, we assume
+-	 * that the machine driver uses new binding which does not require
+-	 * SSI driver to trigger machine driver's probe.
+-	 */
++	/* Bypass it if using newer DT bindings of ASoC machine drivers */
+ 	if (!of_get_property(np, "codec-handle", NULL))
+ 		goto done;
  
--	regmap_update_bits(regs, CCSR_SSI_SFCSR,
--			CCSR_SSI_SFCSR_RFWM1_MASK | CCSR_SSI_SFCSR_TFWM1_MASK |
--			CCSR_SSI_SFCSR_RFWM0_MASK | CCSR_SSI_SFCSR_TFWM0_MASK,
-+	regmap_update_bits(regs, REG_SSI_SFCSR,
-+			SSI_SFCSR_RFWM1_MASK | SSI_SFCSR_TFWM1_MASK |
-+			SSI_SFCSR_RFWM0_MASK | SSI_SFCSR_TFWM0_MASK,
- 			ssi->regcache_sfcsr);
--	regmap_write(regs, CCSR_SSI_SACNT, ssi->regcache_sacnt);
-+	regmap_write(regs, REG_SSI_SACNT, ssi->regcache_sacnt);
- 
- 	return regcache_sync(regs);
- }
+-	/* Trigger the machine driver's probe function.  The platform driver
+-	 * name of the machine driver is taken from /compatible property of the
+-	 * device tree.  We also pass the address of the CPU DAI driver
+-	 * structure.
++	/*
++	 * Backward compatible for older bindings by manually triggering the
++	 * machine driver's probe(). Use /compatible property, including the
++	 * address of CPU DAI driver structure, as the name of machine driver.
+ 	 */
+ 	sprop = of_get_property(of_find_node_by_path("/"), "compatible", NULL);
+ 	/* Sometimes the compatible name has a "fsl," prefix, so we strip it. */
 diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
-index 1ad3bde7f065..cdcf3d23873e 100644
+index 506510540d0a..1ad3bde7f065 100644
 --- a/sound/soc/fsl/fsl_ssi.h
 +++ b/sound/soc/fsl/fsl_ssi.h
-@@ -15,55 +15,55 @@
- /* -- SSI Register Map -- */
- 
- /* SSI Transmit Data Register 0 */
--#define CCSR_SSI_STX0			0x00
-+#define REG_SSI_STX0			0x00
- /* SSI Transmit Data Register 1 */
--#define CCSR_SSI_STX1			0x04
-+#define REG_SSI_STX1			0x04
- /* SSI Receive Data Register 0 */
--#define CCSR_SSI_SRX0			0x08
-+#define REG_SSI_SRX0			0x08
- /* SSI Receive Data Register 1 */
--#define CCSR_SSI_SRX1			0x0c
-+#define REG_SSI_SRX1			0x0c
- /* SSI Control Register */
--#define CCSR_SSI_SCR			0x10
-+#define REG_SSI_SCR			0x10
- /* SSI Interrupt Status Register */
--#define CCSR_SSI_SISR			0x14
-+#define REG_SSI_SISR			0x14
- /* SSI Interrupt Enable Register */
--#define CCSR_SSI_SIER			0x18
-+#define REG_SSI_SIER			0x18
- /* SSI Transmit Configuration Register */
--#define CCSR_SSI_STCR			0x1c
-+#define REG_SSI_STCR			0x1c
- /* SSI Receive Configuration Register */
--#define CCSR_SSI_SRCR			0x20
-+#define REG_SSI_SRCR			0x20
- /* SSI Transmit Clock Control Register */
--#define CCSR_SSI_STCCR			0x24
-+#define REG_SSI_STCCR			0x24
- /* SSI Receive Clock Control Register */
--#define CCSR_SSI_SRCCR			0x28
-+#define REG_SSI_SRCCR			0x28
- /* SSI FIFO Control/Status Register */
--#define CCSR_SSI_SFCSR			0x2c
-+#define REG_SSI_SFCSR			0x2c
+@@ -1,5 +1,5 @@
  /*
-  * SSI Test Register (Intended for debugging purposes only)
+- * fsl_ssi.h - ALSA SSI interface for the Freescale MPC8610 SoC
++ * fsl_ssi.h - ALSA SSI interface for the Freescale MPC8610 and i.MX SoC
   *
-  * Note: STR is not documented in recent IMX datasheet, but
-  * is described in IMX51 reference manual at section 56.3.3.14
-  */
--#define CCSR_SSI_STR			0x30
-+#define REG_SSI_STR			0x30
- /*
-  * SSI Option Register (Intended for internal use only)
+  * Author: Timur Tabi <timur@freescale.com>
   *
-  * Note: SOR is not documented in recent IMX datasheet, but
-  * is described in IMX51 reference manual at section 56.3.3.15
-  */
--#define CCSR_SSI_SOR			0x34
-+#define REG_SSI_SOR			0x34
- /* SSI AC97 Control Register */
--#define CCSR_SSI_SACNT			0x38
-+#define REG_SSI_SACNT			0x38
- /* SSI AC97 Command Address Register */
--#define CCSR_SSI_SACADD			0x3c
-+#define REG_SSI_SACADD			0x3c
- /* SSI AC97 Command Data Register */
--#define CCSR_SSI_SACDAT			0x40
-+#define REG_SSI_SACDAT			0x40
- /* SSI AC97 Tag Register */
--#define CCSR_SSI_SATAG			0x44
-+#define REG_SSI_SATAG			0x44
- /* SSI Transmit Time Slot Mask Register */
--#define CCSR_SSI_STMSK			0x48
-+#define REG_SSI_STMSK			0x48
- /* SSI  Receive Time Slot Mask Register */
--#define CCSR_SSI_SRMSK			0x4c
-+#define REG_SSI_SRMSK			0x4c
- /*
-  * SSI AC97 Channel Status Register
-  *
-@@ -72,193 +72,193 @@
-  * 2) Writing a '1' bit at some position in SACCDIS unsets the relevant bit
-  * 3) Receivng a '1' in SLOTREQ bit from external CODEC via AC Link
-  */
--#define CCSR_SSI_SACCST			0x50
-+#define REG_SSI_SACCST			0x50
- /* SSI AC97 Channel Enable Register -- Set bits in SACCST */
--#define CCSR_SSI_SACCEN			0x54
-+#define REG_SSI_SACCEN			0x54
- /* SSI AC97 Channel Disable Register -- Clear bits in SACCST */
--#define CCSR_SSI_SACCDIS		0x58
-+#define REG_SSI_SACCDIS			0x58
+@@ -12,31 +12,75 @@
+ #ifndef _MPC8610_I2S_H
+ #define _MPC8610_I2S_H
  
- /* -- SSI Register Field Maps -- */
+-/* SSI registers */
++/* -- SSI Register Map -- */
++
++/* SSI Transmit Data Register 0 */
+ #define CCSR_SSI_STX0			0x00
++/* SSI Transmit Data Register 1 */
+ #define CCSR_SSI_STX1			0x04
++/* SSI Receive Data Register 0 */
+ #define CCSR_SSI_SRX0			0x08
++/* SSI Receive Data Register 1 */
+ #define CCSR_SSI_SRX1			0x0c
++/* SSI Control Register */
+ #define CCSR_SSI_SCR			0x10
++/* SSI Interrupt Status Register */
+ #define CCSR_SSI_SISR			0x14
++/* SSI Interrupt Enable Register */
+ #define CCSR_SSI_SIER			0x18
++/* SSI Transmit Configuration Register */
+ #define CCSR_SSI_STCR			0x1c
++/* SSI Receive Configuration Register */
+ #define CCSR_SSI_SRCR			0x20
++/* SSI Transmit Clock Control Register */
+ #define CCSR_SSI_STCCR			0x24
++/* SSI Receive Clock Control Register */
+ #define CCSR_SSI_SRCCR			0x28
++/* SSI FIFO Control/Status Register */
+ #define CCSR_SSI_SFCSR			0x2c
++/*
++ * SSI Test Register (Intended for debugging purposes only)
++ *
++ * Note: STR is not documented in recent IMX datasheet, but
++ * is described in IMX51 reference manual at section 56.3.3.14
++ */
+ #define CCSR_SSI_STR			0x30
++/*
++ * SSI Option Register (Intended for internal use only)
++ *
++ * Note: SOR is not documented in recent IMX datasheet, but
++ * is described in IMX51 reference manual at section 56.3.3.15
++ */
+ #define CCSR_SSI_SOR			0x34
++/* SSI AC97 Control Register */
+ #define CCSR_SSI_SACNT			0x38
++/* SSI AC97 Command Address Register */
+ #define CCSR_SSI_SACADD			0x3c
++/* SSI AC97 Command Data Register */
+ #define CCSR_SSI_SACDAT			0x40
++/* SSI AC97 Tag Register */
+ #define CCSR_SSI_SATAG			0x44
++/* SSI Transmit Time Slot Mask Register */
+ #define CCSR_SSI_STMSK			0x48
++/* SSI  Receive Time Slot Mask Register */
+ #define CCSR_SSI_SRMSK			0x4c
++/*
++ * SSI AC97 Channel Status Register
++ *
++ * The status could be changed by:
++ * 1) Writing a '1' bit at some position in SACCEN sets relevant bit in SACCST
++ * 2) Writing a '1' bit at some position in SACCDIS unsets the relevant bit
++ * 3) Receivng a '1' in SLOTREQ bit from external CODEC via AC Link
++ */
+ #define CCSR_SSI_SACCST			0x50
++/* SSI AC97 Channel Enable Register -- Set bits in SACCST */
+ #define CCSR_SSI_SACCEN			0x54
++/* SSI AC97 Channel Disable Register -- Clear bits in SACCST */
+ #define CCSR_SSI_SACCDIS		0x58
  
--/* SSI Control Register -- CCSR_SSI_SCR 0x10 */
--#define CCSR_SSI_SCR_SYNC_TX_FS		0x00001000
--#define CCSR_SSI_SCR_RFR_CLK_DIS	0x00000800
--#define CCSR_SSI_SCR_TFR_CLK_DIS	0x00000400
--#define CCSR_SSI_SCR_TCH_EN		0x00000100
--#define CCSR_SSI_SCR_SYS_CLK_EN		0x00000080
--#define CCSR_SSI_SCR_I2S_MODE_MASK	0x00000060
--#define CCSR_SSI_SCR_I2S_MODE_NORMAL	0x00000000
--#define CCSR_SSI_SCR_I2S_MODE_MASTER	0x00000020
--#define CCSR_SSI_SCR_I2S_MODE_SLAVE	0x00000040
--#define CCSR_SSI_SCR_SYN		0x00000010
--#define CCSR_SSI_SCR_NET		0x00000008
--#define CCSR_SSI_SCR_RE			0x00000004
--#define CCSR_SSI_SCR_TE			0x00000002
--#define CCSR_SSI_SCR_SSIEN		0x00000001
-+/* SSI Control Register -- REG_SSI_SCR 0x10 */
-+#define SSI_SCR_SYNC_TX_FS		0x00001000
-+#define SSI_SCR_RFR_CLK_DIS		0x00000800
-+#define SSI_SCR_TFR_CLK_DIS		0x00000400
-+#define SSI_SCR_TCH_EN			0x00000100
-+#define SSI_SCR_SYS_CLK_EN		0x00000080
-+#define SSI_SCR_I2S_MODE_MASK		0x00000060
-+#define SSI_SCR_I2S_MODE_NORMAL		0x00000000
-+#define SSI_SCR_I2S_MODE_MASTER		0x00000020
-+#define SSI_SCR_I2S_MODE_SLAVE		0x00000040
-+#define SSI_SCR_SYN			0x00000010
-+#define SSI_SCR_NET			0x00000008
-+#define SSI_SCR_RE			0x00000004
-+#define SSI_SCR_TE			0x00000002
-+#define SSI_SCR_SSIEN			0x00000001
++/* -- SSI Register Field Maps -- */
++
++/* SSI Control Register -- CCSR_SSI_SCR 0x10 */
+ #define CCSR_SSI_SCR_SYNC_TX_FS		0x00001000
+ #define CCSR_SSI_SCR_RFR_CLK_DIS	0x00000800
+ #define CCSR_SSI_SCR_TFR_CLK_DIS	0x00000400
+@@ -52,6 +96,7 @@
+ #define CCSR_SSI_SCR_TE			0x00000002
+ #define CCSR_SSI_SCR_SSIEN		0x00000001
  
--/* SSI Interrupt Status Register -- CCSR_SSI_SISR 0x14 */
--#define CCSR_SSI_SISR_RFRC		0x01000000
--#define CCSR_SSI_SISR_TFRC		0x00800000
--#define CCSR_SSI_SISR_CMDAU		0x00040000
--#define CCSR_SSI_SISR_CMDDU		0x00020000
--#define CCSR_SSI_SISR_RXT		0x00010000
--#define CCSR_SSI_SISR_RDR1		0x00008000
--#define CCSR_SSI_SISR_RDR0		0x00004000
--#define CCSR_SSI_SISR_TDE1		0x00002000
--#define CCSR_SSI_SISR_TDE0		0x00001000
--#define CCSR_SSI_SISR_ROE1		0x00000800
--#define CCSR_SSI_SISR_ROE0		0x00000400
--#define CCSR_SSI_SISR_TUE1		0x00000200
--#define CCSR_SSI_SISR_TUE0		0x00000100
--#define CCSR_SSI_SISR_TFS		0x00000080
--#define CCSR_SSI_SISR_RFS		0x00000040
--#define CCSR_SSI_SISR_TLS		0x00000020
--#define CCSR_SSI_SISR_RLS		0x00000010
--#define CCSR_SSI_SISR_RFF1		0x00000008
--#define CCSR_SSI_SISR_RFF0		0x00000004
--#define CCSR_SSI_SISR_TFE1		0x00000002
--#define CCSR_SSI_SISR_TFE0		0x00000001
-+/* SSI Interrupt Status Register -- REG_SSI_SISR 0x14 */
-+#define SSI_SISR_RFRC			0x01000000
-+#define SSI_SISR_TFRC			0x00800000
-+#define SSI_SISR_CMDAU			0x00040000
-+#define SSI_SISR_CMDDU			0x00020000
-+#define SSI_SISR_RXT			0x00010000
-+#define SSI_SISR_RDR1			0x00008000
-+#define SSI_SISR_RDR0			0x00004000
-+#define SSI_SISR_TDE1			0x00002000
-+#define SSI_SISR_TDE0			0x00001000
-+#define SSI_SISR_ROE1			0x00000800
-+#define SSI_SISR_ROE0			0x00000400
-+#define SSI_SISR_TUE1			0x00000200
-+#define SSI_SISR_TUE0			0x00000100
-+#define SSI_SISR_TFS			0x00000080
-+#define SSI_SISR_RFS			0x00000040
-+#define SSI_SISR_TLS			0x00000020
-+#define SSI_SISR_RLS			0x00000010
-+#define SSI_SISR_RFF1			0x00000008
-+#define SSI_SISR_RFF0			0x00000004
-+#define SSI_SISR_TFE1			0x00000002
-+#define SSI_SISR_TFE0			0x00000001
++/* SSI Interrupt Status Register -- CCSR_SSI_SISR 0x14 */
+ #define CCSR_SSI_SISR_RFRC		0x01000000
+ #define CCSR_SSI_SISR_TFRC		0x00800000
+ #define CCSR_SSI_SISR_CMDAU		0x00040000
+@@ -74,6 +119,7 @@
+ #define CCSR_SSI_SISR_TFE1		0x00000002
+ #define CCSR_SSI_SISR_TFE0		0x00000001
  
--/* SSI Interrupt Enable Register -- CCSR_SSI_SIER 0x18 */
--#define CCSR_SSI_SIER_RFRC_EN		0x01000000
--#define CCSR_SSI_SIER_TFRC_EN		0x00800000
--#define CCSR_SSI_SIER_RDMAE		0x00400000
--#define CCSR_SSI_SIER_RIE		0x00200000
--#define CCSR_SSI_SIER_TDMAE		0x00100000
--#define CCSR_SSI_SIER_TIE		0x00080000
--#define CCSR_SSI_SIER_CMDAU_EN		0x00040000
--#define CCSR_SSI_SIER_CMDDU_EN		0x00020000
--#define CCSR_SSI_SIER_RXT_EN		0x00010000
--#define CCSR_SSI_SIER_RDR1_EN		0x00008000
--#define CCSR_SSI_SIER_RDR0_EN		0x00004000
--#define CCSR_SSI_SIER_TDE1_EN		0x00002000
--#define CCSR_SSI_SIER_TDE0_EN		0x00001000
--#define CCSR_SSI_SIER_ROE1_EN		0x00000800
--#define CCSR_SSI_SIER_ROE0_EN		0x00000400
--#define CCSR_SSI_SIER_TUE1_EN		0x00000200
--#define CCSR_SSI_SIER_TUE0_EN		0x00000100
--#define CCSR_SSI_SIER_TFS_EN		0x00000080
--#define CCSR_SSI_SIER_RFS_EN		0x00000040
--#define CCSR_SSI_SIER_TLS_EN		0x00000020
--#define CCSR_SSI_SIER_RLS_EN		0x00000010
--#define CCSR_SSI_SIER_RFF1_EN		0x00000008
--#define CCSR_SSI_SIER_RFF0_EN		0x00000004
--#define CCSR_SSI_SIER_TFE1_EN		0x00000002
--#define CCSR_SSI_SIER_TFE0_EN		0x00000001
-+/* SSI Interrupt Enable Register -- REG_SSI_SIER 0x18 */
-+#define SSI_SIER_RFRC_EN		0x01000000
-+#define SSI_SIER_TFRC_EN		0x00800000
-+#define SSI_SIER_RDMAE			0x00400000
-+#define SSI_SIER_RIE			0x00200000
-+#define SSI_SIER_TDMAE			0x00100000
-+#define SSI_SIER_TIE			0x00080000
-+#define SSI_SIER_CMDAU_EN		0x00040000
-+#define SSI_SIER_CMDDU_EN		0x00020000
-+#define SSI_SIER_RXT_EN			0x00010000
-+#define SSI_SIER_RDR1_EN		0x00008000
-+#define SSI_SIER_RDR0_EN		0x00004000
-+#define SSI_SIER_TDE1_EN		0x00002000
-+#define SSI_SIER_TDE0_EN		0x00001000
-+#define SSI_SIER_ROE1_EN		0x00000800
-+#define SSI_SIER_ROE0_EN		0x00000400
-+#define SSI_SIER_TUE1_EN		0x00000200
-+#define SSI_SIER_TUE0_EN		0x00000100
-+#define SSI_SIER_TFS_EN			0x00000080
-+#define SSI_SIER_RFS_EN			0x00000040
-+#define SSI_SIER_TLS_EN			0x00000020
-+#define SSI_SIER_RLS_EN			0x00000010
-+#define SSI_SIER_RFF1_EN		0x00000008
-+#define SSI_SIER_RFF0_EN		0x00000004
-+#define SSI_SIER_TFE1_EN		0x00000002
-+#define SSI_SIER_TFE0_EN		0x00000001
++/* SSI Interrupt Enable Register -- CCSR_SSI_SIER 0x18 */
+ #define CCSR_SSI_SIER_RFRC_EN		0x01000000
+ #define CCSR_SSI_SIER_TFRC_EN		0x00800000
+ #define CCSR_SSI_SIER_RDMAE		0x00400000
+@@ -100,6 +146,7 @@
+ #define CCSR_SSI_SIER_TFE1_EN		0x00000002
+ #define CCSR_SSI_SIER_TFE0_EN		0x00000001
  
--/* SSI Transmit Configuration Register -- CCSR_SSI_STCR 0x1C */
--#define CCSR_SSI_STCR_TXBIT0		0x00000200
--#define CCSR_SSI_STCR_TFEN1		0x00000100
--#define CCSR_SSI_STCR_TFEN0		0x00000080
--#define CCSR_SSI_STCR_TFDIR		0x00000040
--#define CCSR_SSI_STCR_TXDIR		0x00000020
--#define CCSR_SSI_STCR_TSHFD		0x00000010
--#define CCSR_SSI_STCR_TSCKP		0x00000008
--#define CCSR_SSI_STCR_TFSI		0x00000004
--#define CCSR_SSI_STCR_TFSL		0x00000002
--#define CCSR_SSI_STCR_TEFS		0x00000001
-+/* SSI Transmit Configuration Register -- REG_SSI_STCR 0x1C */
-+#define SSI_STCR_TXBIT0			0x00000200
-+#define SSI_STCR_TFEN1			0x00000100
-+#define SSI_STCR_TFEN0			0x00000080
-+#define SSI_STCR_TFDIR			0x00000040
-+#define SSI_STCR_TXDIR			0x00000020
-+#define SSI_STCR_TSHFD			0x00000010
-+#define SSI_STCR_TSCKP			0x00000008
-+#define SSI_STCR_TFSI			0x00000004
-+#define SSI_STCR_TFSL			0x00000002
-+#define SSI_STCR_TEFS			0x00000001
++/* SSI Transmit Configuration Register -- CCSR_SSI_STCR 0x1C */
+ #define CCSR_SSI_STCR_TXBIT0		0x00000200
+ #define CCSR_SSI_STCR_TFEN1		0x00000100
+ #define CCSR_SSI_STCR_TFEN0		0x00000080
+@@ -111,6 +158,7 @@
+ #define CCSR_SSI_STCR_TFSL		0x00000002
+ #define CCSR_SSI_STCR_TEFS		0x00000001
  
--/* SSI Receive Configuration Register -- CCSR_SSI_SRCR 0x20 */
--#define CCSR_SSI_SRCR_RXEXT		0x00000400
--#define CCSR_SSI_SRCR_RXBIT0		0x00000200
--#define CCSR_SSI_SRCR_RFEN1		0x00000100
--#define CCSR_SSI_SRCR_RFEN0		0x00000080
--#define CCSR_SSI_SRCR_RFDIR		0x00000040
--#define CCSR_SSI_SRCR_RXDIR		0x00000020
--#define CCSR_SSI_SRCR_RSHFD		0x00000010
--#define CCSR_SSI_SRCR_RSCKP		0x00000008
--#define CCSR_SSI_SRCR_RFSI		0x00000004
--#define CCSR_SSI_SRCR_RFSL		0x00000002
--#define CCSR_SSI_SRCR_REFS		0x00000001
-+/* SSI Receive Configuration Register -- REG_SSI_SRCR 0x20 */
-+#define SSI_SRCR_RXEXT			0x00000400
-+#define SSI_SRCR_RXBIT0			0x00000200
-+#define SSI_SRCR_RFEN1			0x00000100
-+#define SSI_SRCR_RFEN0			0x00000080
-+#define SSI_SRCR_RFDIR			0x00000040
-+#define SSI_SRCR_RXDIR			0x00000020
-+#define SSI_SRCR_RSHFD			0x00000010
-+#define SSI_SRCR_RSCKP			0x00000008
-+#define SSI_SRCR_RFSI			0x00000004
-+#define SSI_SRCR_RFSL			0x00000002
-+#define SSI_SRCR_REFS			0x00000001
++/* SSI Receive Configuration Register -- CCSR_SSI_SRCR 0x20 */
+ #define CCSR_SSI_SRCR_RXEXT		0x00000400
+ #define CCSR_SSI_SRCR_RXBIT0		0x00000200
+ #define CCSR_SSI_SRCR_RFEN1		0x00000100
+@@ -123,7 +171,10 @@
+ #define CCSR_SSI_SRCR_RFSL		0x00000002
+ #define CCSR_SSI_SRCR_REFS		0x00000001
+ 
+-/* STCCR and SRCCR */
++/*
++ * SSI Transmit Clock Control Register -- CCSR_SSI_STCCR 0x24
++ * SSI Receive Clock Control Register -- CCSR_SSI_SRCCR 0x28
++ */
+ #define CCSR_SSI_SxCCR_DIV2_SHIFT	18
+ #define CCSR_SSI_SxCCR_DIV2		0x00040000
+ #define CCSR_SSI_SxCCR_PSR_SHIFT	17
+@@ -142,9 +193,10 @@
+ 	((((x) - 1) << CCSR_SSI_SxCCR_PM_SHIFT) & CCSR_SSI_SxCCR_PM_MASK)
  
  /*
-- * SSI Transmit Clock Control Register -- CCSR_SSI_STCCR 0x24
-- * SSI Receive Clock Control Register -- CCSR_SSI_SRCCR 0x28
-+ * SSI Transmit Clock Control Register -- REG_SSI_STCCR 0x24
-+ * SSI Receive Clock Control Register -- REG_SSI_SRCCR 0x28
+- * The xFCNT bits are read-only, and the xFWM bits are read/write.  Use the
+- * CCSR_SSI_SFCSR_xFCNTy() macros to read the FIFO counters, and use the
+- * CCSR_SSI_SFCSR_xFWMy() macros to set the watermarks.
++ * SSI FIFO Control/Status Register -- CCSR_SSI_SFCSR 0x2c
++ *
++ * Tx or Rx FIFO Counter -- CCSR_SSI_SFCSR_xFCNTy Read-Only
++ * Tx or Rx FIFO Watermarks -- CCSR_SSI_SFCSR_xFWMy Read/Write
   */
--#define CCSR_SSI_SxCCR_DIV2_SHIFT	18
--#define CCSR_SSI_SxCCR_DIV2		0x00040000
--#define CCSR_SSI_SxCCR_PSR_SHIFT	17
--#define CCSR_SSI_SxCCR_PSR		0x00020000
--#define CCSR_SSI_SxCCR_WL_SHIFT		13
--#define CCSR_SSI_SxCCR_WL_MASK		0x0001E000
--#define CCSR_SSI_SxCCR_WL(x) \
--	(((((x) / 2) - 1) << CCSR_SSI_SxCCR_WL_SHIFT) & CCSR_SSI_SxCCR_WL_MASK)
--#define CCSR_SSI_SxCCR_DC_SHIFT		8
--#define CCSR_SSI_SxCCR_DC_MASK		0x00001F00
--#define CCSR_SSI_SxCCR_DC(x) \
--	((((x) - 1) << CCSR_SSI_SxCCR_DC_SHIFT) & CCSR_SSI_SxCCR_DC_MASK)
--#define CCSR_SSI_SxCCR_PM_SHIFT		0
--#define CCSR_SSI_SxCCR_PM_MASK		0x000000FF
--#define CCSR_SSI_SxCCR_PM(x) \
--	((((x) - 1) << CCSR_SSI_SxCCR_PM_SHIFT) & CCSR_SSI_SxCCR_PM_MASK)
-+#define SSI_SxCCR_DIV2_SHIFT		18
-+#define SSI_SxCCR_DIV2			0x00040000
-+#define SSI_SxCCR_PSR_SHIFT		17
-+#define SSI_SxCCR_PSR			0x00020000
-+#define SSI_SxCCR_WL_SHIFT		13
-+#define SSI_SxCCR_WL_MASK		0x0001E000
-+#define SSI_SxCCR_WL(x) \
-+	(((((x) / 2) - 1) << SSI_SxCCR_WL_SHIFT) & SSI_SxCCR_WL_MASK)
-+#define SSI_SxCCR_DC_SHIFT		8
-+#define SSI_SxCCR_DC_MASK		0x00001F00
-+#define SSI_SxCCR_DC(x) \
-+	((((x) - 1) << SSI_SxCCR_DC_SHIFT) & SSI_SxCCR_DC_MASK)
-+#define SSI_SxCCR_PM_SHIFT		0
-+#define SSI_SxCCR_PM_MASK		0x000000FF
-+#define SSI_SxCCR_PM(x) \
-+	((((x) - 1) << SSI_SxCCR_PM_SHIFT) & SSI_SxCCR_PM_MASK)
+ #define CCSR_SSI_SFCSR_RFCNT1_SHIFT	28
+ #define CCSR_SSI_SFCSR_RFCNT1_MASK	0xF0000000
+@@ -179,6 +231,7 @@
+ #define CCSR_SSI_SFCSR_TFWM0(x)	\
+ 	(((x) << CCSR_SSI_SFCSR_TFWM0_SHIFT) & CCSR_SSI_SFCSR_TFWM0_MASK)
  
- /*
-- * SSI FIFO Control/Status Register -- CCSR_SSI_SFCSR 0x2c
-+ * SSI FIFO Control/Status Register -- REG_SSI_SFCSR 0x2c
-  *
-- * Tx or Rx FIFO Counter -- CCSR_SSI_SFCSR_xFCNTy Read-Only
-- * Tx or Rx FIFO Watermarks -- CCSR_SSI_SFCSR_xFWMy Read/Write
-+ * Tx or Rx FIFO Counter -- SSI_SFCSR_xFCNTy Read-Only
-+ * Tx or Rx FIFO Watermarks -- SSI_SFCSR_xFWMy Read/Write
-  */
--#define CCSR_SSI_SFCSR_RFCNT1_SHIFT	28
--#define CCSR_SSI_SFCSR_RFCNT1_MASK	0xF0000000
--#define CCSR_SSI_SFCSR_RFCNT1(x) \
--	(((x) & CCSR_SSI_SFCSR_RFCNT1_MASK) >> CCSR_SSI_SFCSR_RFCNT1_SHIFT)
--#define CCSR_SSI_SFCSR_TFCNT1_SHIFT	24
--#define CCSR_SSI_SFCSR_TFCNT1_MASK	0x0F000000
--#define CCSR_SSI_SFCSR_TFCNT1(x) \
--	(((x) & CCSR_SSI_SFCSR_TFCNT1_MASK) >> CCSR_SSI_SFCSR_TFCNT1_SHIFT)
--#define CCSR_SSI_SFCSR_RFWM1_SHIFT	20
--#define CCSR_SSI_SFCSR_RFWM1_MASK	0x00F00000
--#define CCSR_SSI_SFCSR_RFWM1(x)	\
--	(((x) << CCSR_SSI_SFCSR_RFWM1_SHIFT) & CCSR_SSI_SFCSR_RFWM1_MASK)
--#define CCSR_SSI_SFCSR_TFWM1_SHIFT	16
--#define CCSR_SSI_SFCSR_TFWM1_MASK	0x000F0000
--#define CCSR_SSI_SFCSR_TFWM1(x)	\
--	(((x) << CCSR_SSI_SFCSR_TFWM1_SHIFT) & CCSR_SSI_SFCSR_TFWM1_MASK)
--#define CCSR_SSI_SFCSR_RFCNT0_SHIFT	12
--#define CCSR_SSI_SFCSR_RFCNT0_MASK	0x0000F000
--#define CCSR_SSI_SFCSR_RFCNT0(x) \
--	(((x) & CCSR_SSI_SFCSR_RFCNT0_MASK) >> CCSR_SSI_SFCSR_RFCNT0_SHIFT)
--#define CCSR_SSI_SFCSR_TFCNT0_SHIFT	8
--#define CCSR_SSI_SFCSR_TFCNT0_MASK	0x00000F00
--#define CCSR_SSI_SFCSR_TFCNT0(x) \
--	(((x) & CCSR_SSI_SFCSR_TFCNT0_MASK) >> CCSR_SSI_SFCSR_TFCNT0_SHIFT)
--#define CCSR_SSI_SFCSR_RFWM0_SHIFT	4
--#define CCSR_SSI_SFCSR_RFWM0_MASK	0x000000F0
--#define CCSR_SSI_SFCSR_RFWM0(x)	\
--	(((x) << CCSR_SSI_SFCSR_RFWM0_SHIFT) & CCSR_SSI_SFCSR_RFWM0_MASK)
--#define CCSR_SSI_SFCSR_TFWM0_SHIFT	0
--#define CCSR_SSI_SFCSR_TFWM0_MASK	0x0000000F
--#define CCSR_SSI_SFCSR_TFWM0(x)	\
--	(((x) << CCSR_SSI_SFCSR_TFWM0_SHIFT) & CCSR_SSI_SFCSR_TFWM0_MASK)
-+#define SSI_SFCSR_RFCNT1_SHIFT		28
-+#define SSI_SFCSR_RFCNT1_MASK		0xF0000000
-+#define SSI_SFCSR_RFCNT1(x) \
-+	(((x) & SSI_SFCSR_RFCNT1_MASK) >> SSI_SFCSR_RFCNT1_SHIFT)
-+#define SSI_SFCSR_TFCNT1_SHIFT		24
-+#define SSI_SFCSR_TFCNT1_MASK		0x0F000000
-+#define SSI_SFCSR_TFCNT1(x) \
-+	(((x) & SSI_SFCSR_TFCNT1_MASK) >> SSI_SFCSR_TFCNT1_SHIFT)
-+#define SSI_SFCSR_RFWM1_SHIFT		20
-+#define SSI_SFCSR_RFWM1_MASK		0x00F00000
-+#define SSI_SFCSR_RFWM1(x)	\
-+	(((x) << SSI_SFCSR_RFWM1_SHIFT) & SSI_SFCSR_RFWM1_MASK)
-+#define SSI_SFCSR_TFWM1_SHIFT		16
-+#define SSI_SFCSR_TFWM1_MASK		0x000F0000
-+#define SSI_SFCSR_TFWM1(x)	\
-+	(((x) << SSI_SFCSR_TFWM1_SHIFT) & SSI_SFCSR_TFWM1_MASK)
-+#define SSI_SFCSR_RFCNT0_SHIFT		12
-+#define SSI_SFCSR_RFCNT0_MASK		0x0000F000
-+#define SSI_SFCSR_RFCNT0(x) \
-+	(((x) & SSI_SFCSR_RFCNT0_MASK) >> SSI_SFCSR_RFCNT0_SHIFT)
-+#define SSI_SFCSR_TFCNT0_SHIFT		8
-+#define SSI_SFCSR_TFCNT0_MASK		0x00000F00
-+#define SSI_SFCSR_TFCNT0(x) \
-+	(((x) & SSI_SFCSR_TFCNT0_MASK) >> SSI_SFCSR_TFCNT0_SHIFT)
-+#define SSI_SFCSR_RFWM0_SHIFT		4
-+#define SSI_SFCSR_RFWM0_MASK		0x000000F0
-+#define SSI_SFCSR_RFWM0(x)	\
-+	(((x) << SSI_SFCSR_RFWM0_SHIFT) & SSI_SFCSR_RFWM0_MASK)
-+#define SSI_SFCSR_TFWM0_SHIFT		0
-+#define SSI_SFCSR_TFWM0_MASK		0x0000000F
-+#define SSI_SFCSR_TFWM0(x)	\
-+	(((x) << SSI_SFCSR_TFWM0_SHIFT) & SSI_SFCSR_TFWM0_MASK)
++/* SSI Test Register -- CCSR_SSI_STR 0x30 */
+ #define CCSR_SSI_STR_TEST		0x00008000
+ #define CCSR_SSI_STR_RCK2TCK		0x00004000
+ #define CCSR_SSI_STR_RFS2TFS		0x00002000
+@@ -188,6 +241,7 @@
+ #define CCSR_SSI_STR_TFS2RFS		0x00000020
+ #define CCSR_SSI_STR_TXSTATE(x) ((x) & 0x1F)
  
--/* SSI Test Register -- CCSR_SSI_STR 0x30 */
--#define CCSR_SSI_STR_TEST		0x00008000
--#define CCSR_SSI_STR_RCK2TCK		0x00004000
--#define CCSR_SSI_STR_RFS2TFS		0x00002000
--#define CCSR_SSI_STR_RXSTATE(x) (((x) >> 8) & 0x1F)
--#define CCSR_SSI_STR_TXD2RXD		0x00000080
--#define CCSR_SSI_STR_TCK2RCK		0x00000040
--#define CCSR_SSI_STR_TFS2RFS		0x00000020
--#define CCSR_SSI_STR_TXSTATE(x) ((x) & 0x1F)
-+/* SSI Test Register -- REG_SSI_STR 0x30 */
-+#define SSI_STR_TEST			0x00008000
-+#define SSI_STR_RCK2TCK			0x00004000
-+#define SSI_STR_RFS2TFS			0x00002000
-+#define SSI_STR_RXSTATE(x)		(((x) >> 8) & 0x1F)
-+#define SSI_STR_TXD2RXD			0x00000080
-+#define SSI_STR_TCK2RCK			0x00000040
-+#define SSI_STR_TFS2RFS			0x00000020
-+#define SSI_STR_TXSTATE(x)		((x) & 0x1F)
++/* SSI Option Register -- CCSR_SSI_SOR 0x34 */
+ #define CCSR_SSI_SOR_CLKOFF		0x00000040
+ #define CCSR_SSI_SOR_RX_CLR		0x00000020
+ #define CCSR_SSI_SOR_TX_CLR		0x00000010
+@@ -197,6 +251,7 @@
+ #define CCSR_SSI_SOR_WAIT(x) (((x) & 3) << CCSR_SSI_SOR_WAIT_SHIFT)
+ #define CCSR_SSI_SOR_SYNRST 		0x00000001
  
--/* SSI Option Register -- CCSR_SSI_SOR 0x34 */
--#define CCSR_SSI_SOR_CLKOFF		0x00000040
--#define CCSR_SSI_SOR_RX_CLR		0x00000020
--#define CCSR_SSI_SOR_TX_CLR		0x00000010
--#define CCSR_SSI_SOR_INIT		0x00000008
--#define CCSR_SSI_SOR_WAIT_SHIFT		1
--#define CCSR_SSI_SOR_WAIT_MASK		0x00000006
--#define CCSR_SSI_SOR_WAIT(x) (((x) & 3) << CCSR_SSI_SOR_WAIT_SHIFT)
--#define CCSR_SSI_SOR_SYNRST 		0x00000001
-+/* SSI Option Register -- REG_SSI_SOR 0x34 */
-+#define SSI_SOR_CLKOFF			0x00000040
-+#define SSI_SOR_RX_CLR			0x00000020
-+#define SSI_SOR_TX_CLR			0x00000010
-+#define SSI_SOR_INIT			0x00000008
-+#define SSI_SOR_WAIT_SHIFT		1
-+#define SSI_SOR_WAIT_MASK		0x00000006
-+#define SSI_SOR_WAIT(x)			(((x) & 3) << SSI_SOR_WAIT_SHIFT)
-+#define SSI_SOR_SYNRST			0x00000001
- 
--/* SSI AC97 Control Register -- CCSR_SSI_SACNT 0x38 */
--#define CCSR_SSI_SACNT_FRDIV(x)		(((x) & 0x3f) << 5)
--#define CCSR_SSI_SACNT_WR		0x00000010
--#define CCSR_SSI_SACNT_RD		0x00000008
--#define CCSR_SSI_SACNT_RDWR_MASK	0x00000018
--#define CCSR_SSI_SACNT_TIF		0x00000004
--#define CCSR_SSI_SACNT_FV		0x00000002
--#define CCSR_SSI_SACNT_AC97EN		0x00000001
-+/* SSI AC97 Control Register -- REG_SSI_SACNT 0x38 */
-+#define SSI_SACNT_FRDIV(x)		(((x) & 0x3f) << 5)
-+#define SSI_SACNT_WR			0x00000010
-+#define SSI_SACNT_RD			0x00000008
-+#define SSI_SACNT_RDWR_MASK		0x00000018
-+#define SSI_SACNT_TIF			0x00000004
-+#define SSI_SACNT_FV			0x00000002
-+#define SSI_SACNT_AC97EN		0x00000001
- 
- 
- struct device;
++/* SSI AC97 Control Register -- CCSR_SSI_SACNT 0x38 */
+ #define CCSR_SSI_SACNT_FRDIV(x)		(((x) & 0x3f) << 5)
+ #define CCSR_SSI_SACNT_WR		0x00000010
+ #define CCSR_SSI_SACNT_RD		0x00000008
 diff --git a/sound/soc/fsl/fsl_ssi_dbg.c b/sound/soc/fsl/fsl_ssi_dbg.c
-index 88d9e8e08905..362df91420f6 100644
+index 5469ffbc0253..88d9e8e08905 100644
 --- a/sound/soc/fsl/fsl_ssi_dbg.c
 +++ b/sound/soc/fsl/fsl_ssi_dbg.c
-@@ -18,67 +18,67 @@
- 
- void fsl_ssi_dbg_isr(struct fsl_ssi_dbg *dbg, u32 sisr)
- {
--	if (sisr & CCSR_SSI_SISR_RFRC)
-+	if (sisr & SSI_SISR_RFRC)
- 		dbg->stats.rfrc++;
- 
--	if (sisr & CCSR_SSI_SISR_TFRC)
-+	if (sisr & SSI_SISR_TFRC)
- 		dbg->stats.tfrc++;
- 
--	if (sisr & CCSR_SSI_SISR_CMDAU)
-+	if (sisr & SSI_SISR_CMDAU)
- 		dbg->stats.cmdau++;
- 
--	if (sisr & CCSR_SSI_SISR_CMDDU)
-+	if (sisr & SSI_SISR_CMDDU)
- 		dbg->stats.cmddu++;
- 
--	if (sisr & CCSR_SSI_SISR_RXT)
-+	if (sisr & SSI_SISR_RXT)
- 		dbg->stats.rxt++;
- 
--	if (sisr & CCSR_SSI_SISR_RDR1)
-+	if (sisr & SSI_SISR_RDR1)
- 		dbg->stats.rdr1++;
- 
--	if (sisr & CCSR_SSI_SISR_RDR0)
-+	if (sisr & SSI_SISR_RDR0)
- 		dbg->stats.rdr0++;
- 
--	if (sisr & CCSR_SSI_SISR_TDE1)
-+	if (sisr & SSI_SISR_TDE1)
- 		dbg->stats.tde1++;
- 
--	if (sisr & CCSR_SSI_SISR_TDE0)
-+	if (sisr & SSI_SISR_TDE0)
- 		dbg->stats.tde0++;
- 
--	if (sisr & CCSR_SSI_SISR_ROE1)
-+	if (sisr & SSI_SISR_ROE1)
- 		dbg->stats.roe1++;
- 
--	if (sisr & CCSR_SSI_SISR_ROE0)
-+	if (sisr & SSI_SISR_ROE0)
- 		dbg->stats.roe0++;
- 
--	if (sisr & CCSR_SSI_SISR_TUE1)
-+	if (sisr & SSI_SISR_TUE1)
- 		dbg->stats.tue1++;
- 
--	if (sisr & CCSR_SSI_SISR_TUE0)
-+	if (sisr & SSI_SISR_TUE0)
- 		dbg->stats.tue0++;
- 
--	if (sisr & CCSR_SSI_SISR_TFS)
-+	if (sisr & SSI_SISR_TFS)
- 		dbg->stats.tfs++;
- 
--	if (sisr & CCSR_SSI_SISR_RFS)
-+	if (sisr & SSI_SISR_RFS)
- 		dbg->stats.rfs++;
- 
--	if (sisr & CCSR_SSI_SISR_TLS)
-+	if (sisr & SSI_SISR_TLS)
- 		dbg->stats.tls++;
- 
--	if (sisr & CCSR_SSI_SISR_RLS)
-+	if (sisr & SSI_SISR_RLS)
- 		dbg->stats.rls++;
- 
--	if (sisr & CCSR_SSI_SISR_RFF1)
-+	if (sisr & SSI_SISR_RFF1)
- 		dbg->stats.rff1++;
- 
--	if (sisr & CCSR_SSI_SISR_RFF0)
-+	if (sisr & SSI_SISR_RFF0)
- 		dbg->stats.rff0++;
- 
--	if (sisr & CCSR_SSI_SISR_TFE1)
-+	if (sisr & SSI_SISR_TFE1)
- 		dbg->stats.tfe1++;
- 
--	if (sisr & CCSR_SSI_SISR_TFE0)
-+	if (sisr & SSI_SISR_TFE0)
+@@ -82,9 +82,10 @@ void fsl_ssi_dbg_isr(struct fsl_ssi_dbg *dbg, u32 sisr)
  		dbg->stats.tfe0++;
  }
  
-@@ -89,7 +89,7 @@ void fsl_ssi_dbg_isr(struct fsl_ssi_dbg *dbg, u32 sisr)
+-/* Show the statistics of a flag only if its interrupt is enabled.  The
+- * compiler will optimze this code to a no-op if the interrupt is not
+- * enabled.
++/**
++ * Show the statistics of a flag only if its interrupt is enabled
++ *
++ * Compilers will optimize it to a no-op if the interrupt is disabled
   */
  #define SIER_SHOW(flag, name) \
  	do { \
--		if (CCSR_SSI_SIER_##flag) \
-+		if (SSI_SIER_##flag) \
- 			seq_printf(s, #name "=%u\n", ssi_dbg->stats.name); \
- 	} while (0)
+@@ -94,10 +95,9 @@ void fsl_ssi_dbg_isr(struct fsl_ssi_dbg *dbg, u32 sisr)
  
+ 
+ /**
+- * fsl_sysfs_ssi_show: display SSI statistics
++ * Display the statistics for the current SSI device
+  *
+- * Display the statistics for the current SSI device.  To avoid confusion,
+- * we only show those counts that are enabled.
++ * To avoid confusion, only show those counts that are enabled
+  */
+ static int fsl_ssi_stats_show(struct seq_file *s, void *unused)
+ {
 -- 
 2.15.1
