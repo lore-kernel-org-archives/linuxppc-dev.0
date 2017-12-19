@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1PLb3GjbzDrDG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 04:01:11 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id d23so11362461pfe.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:01:11 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1PLc3NRSzDx5y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 04:01:12 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id 62so5885471pld.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:01:12 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org
@@ -14,9 +14,10 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  mail@maciej.szmigiero.name, caleb@crome.org, arnaud.mouiche@invoxia.com,
  lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v1 03/15] ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
-Date: Tue, 19 Dec 2017 09:00:07 -0800
-Message-Id: <1513702819-42310-4-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v1 04/15] ASoC: fsl_ssi: Clear FIFO directly in
+ fsl_ssi_config()
+Date: Tue, 19 Dec 2017 09:00:08 -0800
+Message-Id: <1513702819-42310-5-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,120 +29,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The define of fsl_ssi_disable_val is not so clear as it mixes two
-steps of calculations together. And those parameter names are also
-a bit long to read.
+The FIFO clear helper function is just one line of code now.
+So it could be cleaned up by removing it and calling regmap
+directly.
 
-Since it just tries to exclude the shared bits from the regvals of
-current stream while the opposite stream is active, it's better to
-use something like ssi_excl_shared_bits.
+Meanwhile, FIFO clear could be applied to all use cases, not
+confined to AC97. So this patch also moves FIFO clear in the
+trigger() to fsl_ssi_config() and removes the AC97 check.
 
-This patch also bisects fsl_ssi_disable_val into two macros of two
-corresponding steps and then shortens its parameter names. It also
-updates callers in the fsl_ssi_config() accordingly.
+Note that SOR register is safe from offline_config HW limit.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 54 ++++++++++++++++++++-----------------------------
- 1 file changed, 22 insertions(+), 32 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 28 +++++++---------------------
+ 1 file changed, 7 insertions(+), 21 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index f05f78d..6dda2e0 100644
+index 6dda2e0..0f09caf 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -417,24 +417,24 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
+@@ -406,17 +406,6 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
  }
  
  /**
-- * Calculate the bits that have to be disabled for the current stream that is
-- * getting disabled. This keeps the bits enabled that are necessary for the
-- * second stream to work if 'stream_active' is true.
-+ * Exclude bits that are used by the opposite stream
-  *
-- * Detailed calculation:
-- * These are the values that need to be active after disabling. For non-active
-- * second stream, this is 0:
-- *	vals_stream * !!stream_active
-+ * When both streams are active, disabling some bits for the current stream
-+ * might break the other stream if these bits are used by it.
-  *
-- * The following computes the overall differences between the setup for the
-- * to-disable stream and the active stream, a simple XOR:
-- *	vals_disable ^ (vals_stream * !!(stream_active))
-+ * @vals : regvals of the current stream
-+ * @avals: regvals of the opposite stream
-+ * @aactive: active state of the opposite stream
-  *
-- * The full expression adds a mask on all values we care about
-+ *  1) XOR vals and avals to get the differences if the other stream is active;
-+ *     Otherwise, return current vals if the other stream is not active
-+ *  2) AND the result of 1) with the current vals
-  */
--#define fsl_ssi_disable_val(vals_disable, vals_stream, stream_active) \
--	((vals_disable) & \
--	 ((vals_disable) ^ ((vals_stream) * (u32)!!(stream_active))))
-+#define _ssi_xor_shared_bits(vals, avals, aactive) \
-+	((vals) ^ ((avals) * (aactive)))
-+
-+#define ssi_excl_shared_bits(vals, avals, aactive) \
-+	((vals) & _ssi_xor_shared_bits(vals, avals, aactive))
- 
- /**
-  * Enable or disable SSI configuration.
-@@ -445,16 +445,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 	bool tx = &ssi->regvals[TX] == vals;
- 	struct regmap *regs = ssi->regs;
- 	struct fsl_ssi_regvals *avals;
--	int nr_active_streams;
--	int keep_active;
+- * Clear remaining data in the FIFO to avoid dirty data or channel slipping
+- */
+-static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
+-{
+-	bool tx = !is_rx;
 -
--	nr_active_streams = !!(ssi->streams & BIT(TX)) +
--			    !!(ssi->streams & BIT(RX));
-+	bool aactive;
+-	regmap_update_bits(ssi->regs, REG_SSI_SOR,
+-			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
+-}
+-
+-/**
+  * Exclude bits that are used by the opposite stream
+  *
+  * When both streams are active, disabling some bits for the current stream
+@@ -484,7 +473,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
  
--	if (nr_active_streams - 1 > 0)
--		keep_active = 1;
--	else
--		keep_active = 0;
-+	/* Check if the opposite stream is active */
-+	aactive = ssi->streams & BIT(!tx);
+ 	/* Online configure single direction while SSI is running */
+ 	if (enable) {
+-		fsl_ssi_fifo_clear(ssi, vals->scr & SSI_SCR_RE);
++		/* Clear FIFO to prevent dirty data or channel slipping */
++		regmap_update_bits(ssi->regs, REG_SSI_SOR,
++				   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
  
- 	/* Get the opposite direction to keep its values untouched */
- 	if (&ssi->regvals[RX] == vals)
-@@ -467,8 +461,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		 * To keep the other stream safe, exclude shared bits between
- 		 * both streams, and get safe bits to disable current stream
- 		 */
--		u32 scr = fsl_ssi_disable_val(vals->scr, avals->scr,
--					      keep_active);
-+		u32 scr = ssi_excl_shared_bits(vals->scr, avals->scr, aactive);
- 		/* Safely disable SCR register for the stream */
- 		regmap_update_bits(regs, REG_SSI_SCR, scr, 0);
- 
-@@ -483,7 +476,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 	 * 2) Disable all remaining bits of both streams when last stream ends
- 	 */
- 	if (ssi->soc->offline_config) {
--		if ((enable && !nr_active_streams) || (!enable && !keep_active))
-+		if ((enable && !ssi->streams) || (!enable && !aactive))
- 			fsl_ssi_rxtx_config(ssi, enable);
- 
- 		goto config_done;
-@@ -505,12 +498,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		 * To keep the other stream safe, exclude shared bits between
- 		 * both streams, and get safe bits to disable current stream
- 		 */
--		sier = fsl_ssi_disable_val(vals->sier, avals->sier,
--					   keep_active);
--		srcr = fsl_ssi_disable_val(vals->srcr, avals->srcr,
--					   keep_active);
--		stcr = fsl_ssi_disable_val(vals->stcr, avals->stcr,
--					   keep_active);
-+		sier = ssi_excl_shared_bits(vals->sier, avals->sier, aactive);
-+		srcr = ssi_excl_shared_bits(vals->srcr, avals->srcr, aactive);
-+		stcr = ssi_excl_shared_bits(vals->stcr, avals->stcr, aactive);
- 
- 		/* Safely disable other control registers for the stream */
+ 		regmap_update_bits(regs, REG_SSI_SRCR, vals->srcr, vals->srcr);
+ 		regmap_update_bits(regs, REG_SSI_STCR, vals->stcr, vals->stcr);
+@@ -506,6 +497,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
  		regmap_update_bits(regs, REG_SSI_SRCR, srcr, 0);
+ 		regmap_update_bits(regs, REG_SSI_STCR, stcr, 0);
+ 		regmap_update_bits(regs, REG_SSI_SIER, sier, 0);
++
++		/* Clear FIFO to prevent dirty data or channel slipping */
++		regmap_update_bits(ssi->regs, REG_SSI_SOR,
++				   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
+ 	}
+ 
+ config_done:
+@@ -1086,7 +1081,6 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(rtd->cpu_dai);
+-	struct regmap *regs = ssi->regs;
+ 
+ 	switch (cmd) {
+ 	case SNDRV_PCM_TRIGGER_START:
+@@ -1111,14 +1105,6 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Clear corresponding FIFO */
+-	if (fsl_ssi_is_ac97(ssi)) {
+-		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+-			regmap_write(regs, REG_SSI_SOR, SSI_SOR_TX_CLR);
+-		else
+-			regmap_write(regs, REG_SSI_SOR, SSI_SOR_RX_CLR);
+-	}
+-
+ 	return 0;
+ }
+ 
 -- 
 2.7.4
