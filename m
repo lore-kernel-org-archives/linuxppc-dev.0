@@ -1,22 +1,27 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z16Cm1yTKzDsSY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 16:39:15 +1100 (AEDT)
-From: Sinan Kaya <okaya@codeaurora.org>
-To: linux-pci@vger.kernel.org,
-	timur@codeaurora.org
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Sinan Kaya <okaya@codeaurora.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWER MACINTOSH),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH V4 12/26] powerpc/powermac: deprecate pci_get_bus_and_slot()
-Date: Tue, 19 Dec 2017 00:37:48 -0500
-Message-Id: <1513661883-28662-13-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
-References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z17JV3KBBzDsSd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 17:28:26 +1100 (AEDT)
+Message-ID: <1513664878.2743.8.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/7] powerpc/kernel: Add uevents in EEH error/resume
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <helgaas@kernel.org>, "Bryant G. Ly"
+ <bryantly@linux.vnet.ibm.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au, seroyer@linux.vnet.ibm.com,
+ jjalvare@linux.vnet.ibm.com, alex.williamson@redhat.com, aik@ozlabs.ru,
+ ruscur@russell.cc, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
+ saeedm@mellanox.com, Keith Busch <keith.busch@intel.com>, Gabriele Paoloni
+ <gabriele.paoloni@huawei.com>, Dongdong Liu <liudongdong3@huawei.com>
+Date: Tue, 19 Dec 2017 17:27:58 +1100
+In-Reply-To: <20171219045009.GC14941@bhelgaas-glaptop.roam.corp.google.com>
+References: <20171218223808.83928-1-bryantly@linux.vnet.ibm.com>
+ <20171218223808.83928-3-bryantly@linux.vnet.ibm.com>
+ <20171219045009.GC14941@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-where a PCI device is present. This restricts the device drivers to be
-reused for other domain numbers.
+On Mon, 2017-12-18 at 22:50 -0600, Bjorn Helgaas wrote:
+> [+cc Keith, Gabriele, Dongdong]
+> 
+> On Mon, Dec 18, 2017 at 04:38:03PM -0600, Bryant G. Ly wrote:
+> > Devices can go offline when EEH is reported. This patch adds
+> > a change to the kernel object and lets udev know of error.
+> > When device resumes a change is also set reporting device as
+> > online. Therefore, EEH events are better propagated to user
+> > space for devices in powerpc arch.
+> 
+> I'm on vacation and can't review this in detail, but I wonder if you
+> can compare this with the uevents we emit for DPC, AER, and hotplug
+> events (if any).  I hope we don't end up with userspace having to be
+> aware of the differences between EEH, DPC, AER, etc.
+> 
+> > From a very quick look, I only see a few uevents even mentioned in
+> 
+> drivers/pci: KOBJ_ADD in __pci_hp_register() and KOBJ_CHANGE in the
+> SR-IOV code.  I'm worried that we're missing some important uevents in
+> the PCI core.  That's not an argument against what you're doing here;
+> it just would be nice to fill in any missing pieces in the core also,
+> and hopefully make them consistent with these EEH events.
 
-Getting ready to remove pci_get_bus_and_slot() function in favor of
-pci_get_domain_bus_and_slot().
+We also need to be careful about what specific EEH activity we are
+talking about, and if we bring into the picture things like DPDK, it
+gets even more murky...
 
-Hard-code the domain number as 0 to match the previous behavior.
+The basic way EEH is supposed to work for recovery (minus all sort of
+implementation nasties which hopefully Russell and Sam are trying to
+cleanup and fix) is that either:
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/macintosh/via-pmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+	- The driver of the device has recovery callbacks, in which
+case the driver participates in the recovery process, the device
+doesn't "go away" (though it shouldn't be accessed during that process
+by other entities, userspace originated config space could be a problem
+and needs to be blocked...). The recovery typically involves a reset of
+the device but in sync with the driver.
 
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index e8b29fc..08849e3 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -1799,7 +1799,7 @@ static int powerbook_sleep_grackle(void)
- 	struct adb_request req;
- 	struct pci_dev *grackle;
+	- The driver doesn't have the callbacks. In this case, we
+simulate an unplug, reset the device, and replug.
+
+So it makes sense for the second case to emit the same uevents as a
+normal PCI(e) hotplug.
+
+For the former case I'm less sure.... Do we really need userspace to be
+notified ? If yes, what for precisely ?
+
+Cheers,
+Ben.
  
--	grackle = pci_get_bus_and_slot(0, 0);
-+	grackle = pci_get_domain_bus_and_slot(0, 0, 0);
- 	if (!grackle)
- 		return -ENODEV;
- 
--- 
-1.9.1
