@@ -1,38 +1,34 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
- by lists.ozlabs.org (Postfix) with ESMTP id 3z1Rs41PF8zF07c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 05:54:15 +1100 (AEDT)
-Date: Tue, 19 Dec 2017 19:54:08 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Joe Perches <joe@perches.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>,
- linux-wimax@intel.com, James Smart <james.smart@broadcom.com>,
- Dick Kennedy <dick.kennedy@broadcom.com>, Zhang Rui <rui.zhang@intel.com>,
- Eduardo Valentin <edubezval@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-input@vger.kernel.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [-next PATCH 4/4] treewide: Use DEVICE_ATTR_WO
-Message-ID: <20171219185407.fdrcmrjbmzmhl72w@pd.tnic>
+Return-Path: <tcminyard@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1SZJ5PlKzDrWl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 06:26:32 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id s9so13123093oie.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 11:26:32 -0800 (PST)
+Sender: Corey Minyard <tcminyard@gmail.com>
+Reply-To: minyard@acm.org
+Subject: Re: [-next PATCH 0/4] sysfs and DEVICE_ATTR_<foo>
+To: Joe Perches <joe@perches.com>, linux-arm-kernel@lists.infradead.org,
+ linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ intel-gfx@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, linux-nvme@lists.infradead.org,
+ platform-driver-x86@vger.kernel.org, linux-s390@vger.kernel.org,
+ esc.storagedev@microsemi.com, linux-scsi@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+ alsa-devel@alsa-project.org, linux-omap@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+ devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 References: <cover.1513706701.git.joe@perches.com>
- <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
- <20171219184441.ixxh757tl44qvk5l@pd.tnic>
- <1513709474.1234.66.camel@perches.com>
+From: Corey Minyard <minyard@acm.org>
+Message-ID: <09832872-8e6c-3327-6e28-7ee6cc48df04@acm.org>
+Date: Tue, 19 Dec 2017 13:26:26 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1513709474.1234.66.camel@perches.com>
+In-Reply-To: <cover.1513706701.git.joe@perches.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,16 +38,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 19, 2017 at 10:51:14AM -0800, Joe Perches wrote:
-> > The reason for the code churn being?
-> 
-> Consistency for easier grep by use-type.
+On 12/19/2017 12:15 PM, Joe Perches wrote:
+>   drivers/char/ipmi/ipmi_msghandler.c                | 17 +++---
 
-Please explain that in the commit message so that we know why it was
-changed.
+For ipmi:
 
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+Acked-by: Corey Minyard <cminyard@mvista.com>
