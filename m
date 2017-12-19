@@ -1,30 +1,30 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x232.google.com (mail-ua0-x232.google.com
- [IPv6:2607:f8b0:400c:c08::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1DTw1nPXzDsSf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:21:55 +1100 (AEDT)
-Received: by mail-ua0-x232.google.com with SMTP id g4so5258525ual.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:21:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1DWP4HRTzDx3b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:23:13 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kan.liang@intel.com,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/perf: Dereference bhrb entries safely
+In-Reply-To: <4a72c32d-d9fb-3eea-417d-775e25a8f054@linux.vnet.ibm.com>
+References: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
+ <CAKTCnzmuwkBLxaFpROo7TTcky970w7s14ETacHseL6Vu1JPTQA@mail.gmail.com>
+ <4a72c32d-d9fb-3eea-417d-775e25a8f054@linux.vnet.ibm.com>
+Date: Tue, 19 Dec 2017 21:23:13 +1100
+Message-ID: <87ind39fu6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171219092037.GA27991@in.ibm.com>
-References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
- <20171214044239.GU3322@vireshk-i7>
- <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
- <20171218082935.GH19815@vireshk-i7> <20171219092037.GA27991@in.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 19 Dec 2017 21:21:52 +1100
-Message-ID: <CAKTCnz=Wq_qgG0=cxHuCibFZxLM7uPv0iULGBO5AkUGZgHLXkg@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Abhishek <huntbag@linux.vnet.ibm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +34,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 19, 2017 at 8:20 PM, Gautham R Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> Hi Viresh,
-> On Mon, Dec 18, 2017 at 01:59:35PM +0530, Viresh Kumar wrote:
->> On 18-12-17, 10:41, Abhishek wrote:
->> > We need to do it in this way as the current implementation takes the max of
->> > the PMSR of the cores. Thus, when the frequency is required to be ramped up,
->> > it suffices to write to just the local PMSR, but when the frequency is to be
->> > ramped down, if we don't send the IPI it breaks the compatibility with P8.
->>
->> Looks strange really that you have to program this differently for speeding up
->> or down. These CPUs are part of one cpufreq policy and so I would normally
->> expect changes to any CPU should reflect for other CPUs as well.
->>
->> @Goutham: Do you know why it is so ?
->>
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
+
+> Hi Balbir,
 >
-> These are due to some implementation quirks where the platform has
-> provided a PMCR per-core to be backward compatible with POWER8, but
-> controls the frequency at a quad-level, by taking the maximum of the
-> four PMCR values instead of the latest one. So, changes to any CPU in
-> the core will reflect on all the cores if the frequency is higher than
-> the current frequency, but not necessarily if the requested frequency
-> is lower than the current frequency.
+> Sorry was away for few days.
 >
-> Without sending the extra IPIs, we will be breaking the ABI since if
-> we set userspace governor, and change the frequency of a core by
-> lowering it, then it will not reflect on the CPUs of the cores in the
-> quad.
-
-
-What about cpufreq_policy->cpus/related_cpus? Am I missing something?
-
+> On 12/14/2017 05:54 PM, Balbir Singh wrote:
+>> On Tue, Dec 12, 2017 at 11:29 PM, Ravi Bangoria
+>> <ravi.bangoria@linux.vnet.ibm.com> wrote:
+>>> It may very well happen that branch instructions recorded by
+>>> bhrb entries already get unmapped before they get processed by
+>>> the kernel. Hence, trying to dereference such memory location
+>>> will endup in a crash. Ex,
+>>>
+>>>     Unable to handle kernel paging request for data at address 0xc00800=
+0019c41764
+>>>     Faulting instruction address: 0xc000000000084a14
+>>>     NIP [c000000000084a14] branch_target+0x4/0x70
+>>>     LR [c0000000000eb828] record_and_restart+0x568/0x5c0
+>>>     Call Trace:
+>>>     [c0000000000eb3b4] record_and_restart+0xf4/0x5c0 (unreliable)
+>>>     [c0000000000ec378] perf_event_interrupt+0x298/0x460
+>>>     [c000000000027964] performance_monitor_exception+0x54/0x70
+>>>     [c000000000009ba4] performance_monitor_common+0x114/0x120
+>>>
+>>> Fix this by deferefencing them safely.
+>>>
+>>> Suggested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>>> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+>>> ---
+>>>  arch/powerpc/perf/core-book3s.c | 7 +++++--
+>>>  1 file changed, 5 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-b=
+ook3s.c
+>>> index 9e3da168d54c..5a68d2effdf9 100644
+>>> --- a/arch/powerpc/perf/core-book3s.c
+>>> +++ b/arch/powerpc/perf/core-book3s.c
+>>> @@ -410,8 +410,11 @@ static __u64 power_pmu_bhrb_to(u64 addr)
+>>>         int ret;
+>>>         __u64 target;
+>>>
+>>> -       if (is_kernel_addr(addr))
+>>> -               return branch_target((unsigned int *)addr);
+>>> +       if (is_kernel_addr(addr)) {
+>> I think __kernel_text_address() is more accurate right? In which case
+>> you need to check for is_kernel_addr(addr) and if its not kernel_text_ad=
+dress()
+>> then we have an interesting case of a branch from something not text.
+>> It would be nice to catch such cases.
 >
-> Abhishek,
-> I think we can rework this by sending the extra IPIs only in the
-> presence of the quirk which can be indicated through a device-tree
-> parameter. If the future implementation fix this, then we won't need
-> the extra IPIs.
+> Something like this?
+>
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-boo=
+k3s.c
+> index 1538129..627af56 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -410,8 +410,13 @@ static __u64 power_pmu_bhrb_to(u64 addr)
+> =C2=A0=C2=A0=C2=A0=C2=A0 int ret;
+> =C2=A0=C2=A0=C2=A0=C2=A0 __u64 target;
+> =C2=A0
+> -=C2=A0=C2=A0=C2=A0 if (is_kernel_addr(addr))
+> -=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 return branch_target((unsigned int=
+ *)addr);
+> +=C2=A0=C2=A0=C2=A0 if (is_kernel_addr(addr)) {
+> +=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 if (probe_kernel_address((void *)a=
+ddr, instr)) {
+> +=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 WARN_ON(!__kern=
+el_text_address(addr));
+> +=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 return 0;
+> +=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 }
+> +=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 return branch_target(&instr);
+> +=C2=A0=C2=A0=C2=A0 }
+> =C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0 /* Userspace: need copy instruction here then tr=
+anslate it */
+> =C2=A0=C2=A0=C2=A0=C2=A0 pagefault_disable();
+>
+>
+> I think this will throw warnings when you try to read recently unmapped
+> vmalloced address. Is that fine?
 
-Balbir Singh.
+No.
+
+I've already merged the patch, and am fairly happy with it.
+
+cheers
