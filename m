@@ -1,8 +1,8 @@
 Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
- by lists.ozlabs.org (Postfix) with ESMTP id 3z1RpZ2fD6zF07D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 05:52:05 +1100 (AEDT)
-Date: Tue, 19 Dec 2017 19:44:41 +0100
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3z1Rs41PF8zF07c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 05:54:15 +1100 (AEDT)
+Date: Tue, 19 Dec 2017 19:54:08 +0100
 From: Borislav Petkov <bp@alien8.de>
 To: Joe Perches <joe@perches.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -25,12 +25,14 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
  linux-pm@vger.kernel.org
 Subject: Re: [-next PATCH 4/4] treewide: Use DEVICE_ATTR_WO
-Message-ID: <20171219184441.ixxh757tl44qvk5l@pd.tnic>
+Message-ID: <20171219185407.fdrcmrjbmzmhl72w@pd.tnic>
 References: <cover.1513706701.git.joe@perches.com>
  <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
+ <20171219184441.ixxh757tl44qvk5l@pd.tnic>
+ <1513709474.1234.66.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
+In-Reply-To: <1513709474.1234.66.camel@perches.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,56 +42,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 19, 2017 at 10:15:09AM -0800, Joe Perches wrote:
-> Convert DEVICE_ATTR uses to DEVICE_ATTR_WO where possible.
+On Tue, Dec 19, 2017 at 10:51:14AM -0800, Joe Perches wrote:
+> > The reason for the code churn being?
 > 
-> Done with perl script:
-> 
-> $ git grep -w --name-only DEVICE_ATTR | \
->   xargs perl -i -e 'local $/; while (<>) { s/\bDEVICE_ATTR\s*\(\s*(\w+)\s*,\s*\(?(?:\s*S_IWUSR\s*|\s*0200\s*)\)?\s*,\s*NULL\s*,\s*\s_store\s*\)/DEVICE_ATTR_WO(\1)/g; print;}'
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/s390/kernel/smp.c                 | 2 +-
->  arch/x86/kernel/cpu/microcode/core.c   | 2 +-
->  drivers/input/touchscreen/elants_i2c.c | 2 +-
->  drivers/net/ethernet/ibm/ibmvnic.c     | 2 +-
->  drivers/net/wimax/i2400m/sysfs.c       | 3 +--
->  drivers/scsi/lpfc/lpfc_attr.c          | 3 +--
->  drivers/thermal/thermal_sysfs.c        | 2 +-
->  7 files changed, 7 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-> index b8c1a85bcf2d..a919b2f0141d 100644
-> --- a/arch/s390/kernel/smp.c
-> +++ b/arch/s390/kernel/smp.c
-> @@ -1151,7 +1151,7 @@ static ssize_t __ref rescan_store(struct device *dev,
->  	rc = smp_rescan_cpus();
->  	return rc ? rc : count;
->  }
-> -static DEVICE_ATTR(rescan, 0200, NULL, rescan_store);
-> +static DEVICE_ATTR_WO(rescan);
->  #endif /* CONFIG_HOTPLUG_CPU */
->  
->  static int __init s390_smp_init(void)
-> diff --git a/arch/x86/kernel/cpu/microcode/core.c b/arch/x86/kernel/cpu/microcode/core.c
-> index c4fa4a85d4cb..09c74b0560dd 100644
-> --- a/arch/x86/kernel/cpu/microcode/core.c
-> +++ b/arch/x86/kernel/cpu/microcode/core.c
-> @@ -560,7 +560,7 @@ static ssize_t pf_show(struct device *dev,
->  	return sprintf(buf, "0x%x\n", uci->cpu_sig.pf);
->  }
->  
-> -static DEVICE_ATTR(reload, 0200, NULL, reload_store);
-> +static DEVICE_ATTR_WO(reload);
->  static DEVICE_ATTR(version, 0400, version_show, NULL);
->  static DEVICE_ATTR(processor_flags, 0400, pf_show, NULL);
->  
+> Consistency for easier grep by use-type.
 
-# cat /sys/devices/system/cpu/microcode/reload
-cat: /sys/devices/system/cpu/microcode/reload: Permission denied
-
-The reason for the code churn being?
+Please explain that in the commit message so that we know why it was
+changed.
 
 -- 
 Regards/Gruss,
