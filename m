@@ -1,43 +1,33 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <paubert@iram.es>
+Received: from telmad-lavadora-l1mail2.puc.rediris.es
+ (te-l1mail2-out03a.puc.rediris.es [IPv6:2001:720:418:ca03::85])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z18W20tFhzDsSj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 18:22:37 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBJ7JUr6072799
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:22:35 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2exwp4shce-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 02:22:34 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Tue, 19 Dec 2017 07:22:33 -0000
-Subject: Re: [PATCH] powerpc/perf: Dereference bhrb entries safely
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, kan.liang@intel.com,
- Thomas Gleixner <tglx@linutronix.de>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-References: <20171212122915.20338-1-ravi.bangoria@linux.vnet.ibm.com>
- <CAKTCnzmuwkBLxaFpROo7TTcky970w7s14ETacHseL6Vu1JPTQA@mail.gmail.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 19 Dec 2017 12:53:17 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1BJ33Z1tzDsSd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 19:43:13 +1100 (AEDT)
+Date: Tue, 19 Dec 2017 09:31:22 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: Dave Hansen <dave.hansen@intel.com>, linux-arch@vger.kernel.org,
+ corbet@lwn.net, arnd@arndb.de, linux-doc@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, mhocko@kernel.org,
+ linux-mm@kvack.org, mingo@redhat.com, paulus@samba.org,
+ ebiederm@xmission.com, linux-kselftest@vger.kernel.org,
+ bauerman@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ khandual@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
+ Add sysfs interface
+Message-ID: <20171219083122.q7ycxg2dfspgzw7z@lt-gp.iram.es>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
+ <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
+ <20171218221850.GD5461@ram.oc3035372033.ibm.com>
+ <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
+ <20171218231551.GA5481@ram.oc3035372033.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnzmuwkBLxaFpROo7TTcky970w7s14ETacHseL6Vu1JPTQA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <4a72c32d-d9fb-3eea-417d-775e25a8f054@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171218231551.GA5481@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,90 +37,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Balbir,
+On Mon, Dec 18, 2017 at 03:15:51PM -0800, Ram Pai wrote:
+> On Mon, Dec 18, 2017 at 02:28:14PM -0800, Dave Hansen wrote:
+> > On 12/18/2017 02:18 PM, Ram Pai wrote:
+> > > b) minimum number of keys available to the application.
+> > > 	if libraries consumes a few, they could provide a library
+> > > 	interface to the application informing the number available to
+> > > 	the application.  The library interface can leverage (b) to
+> > > 	provide the information.
+> > 
+> > OK, let's see a real user of this including a few libraries.  Then we'll
+> > put it in the kernel.
+> > 
+> > > c) types of disable-rights supported by keys.
+> > > 	Helps the application to determine the types of disable-features
+> > > 	available. This is helpful, otherwise the app has to 
+> > > 	make pkey_alloc() call with the corresponding parameter set
+> > > 	and see if it suceeds or fails. Painful from an application
+> > > 	point of view, in my opinion.
+> > 
+> > Again, let's see a real-world use of this.  How does it look?  How does
+> > an app "fall back" if it can't set a restriction the way it wants to?
+> > 
+> > Are we *sure* that such an interface makes sense?  For instance, will it
+> > be possible for some keys to be execute-disable while other are only
+> > write-disable?
+> 
+> Can it be on x86?
+> 
+> its not possible on ppc. the keys can *all* be  the-same-attributes-disable all the
+> time.
+> 
+> However you are right. Its conceivable that some arch could provide a
+> feature where it can be x-attribute-disable for key 'a' and
+> y-attribute-disable for key 'b'.  But than its a bit of a headache
+> for an application to consume such a feature.
+> 
+> Ben: I recall you requesting this feature.  Thoughts?
+> 
+> > 
+> > > I think on x86 you look for some hardware registers to determine
+> > > which hardware features are enabled by the kernel.
+> > 
+> > No, we use CPUID.  It's a part of the ISA that's designed for
+> > enumerating CPU and (sometimes) OS support for CPU features.
+> > 
+> > > We do not have generic support for something like that on ppc.  The
+> > > kernel looks at the device tree to determine what hardware features
+> > > are available. But does not have mechanism to tell the hardware to
+> > > track which of its features are currently enabled/used by the
+> > > kernel; atleast not for the memory-key feature.
+> > 
+> > Bummer.  You're missing out.
+> > 
+> > But, you could still do this with a syscall.  "Hey, kernel, do you
+> > support this feature?"
+> 
+> or do powerpc specific sysfs interface.
+> or a debugfs interface.
 
-Sorry was away for few days.
+getauxval(3) ?
 
-On 12/14/2017 05:54 PM, Balbir Singh wrote:
-> On Tue, Dec 12, 2017 at 11:29 PM, Ravi Bangoria
-> <ravi.bangoria@linux.vnet.ibm.com> wrote:
->> It may very well happen that branch instructions recorded by
->> bhrb entries already get unmapped before they get processed by
->> the kernel. Hence, trying to dereference such memory location
->> will endup in a crash. Ex,
->>
->>     Unable to handle kernel paging request for data at address 0xc008000019c41764
->>     Faulting instruction address: 0xc000000000084a14
->>     NIP [c000000000084a14] branch_target+0x4/0x70
->>     LR [c0000000000eb828] record_and_restart+0x568/0x5c0
->>     Call Trace:
->>     [c0000000000eb3b4] record_and_restart+0xf4/0x5c0 (unreliable)
->>     [c0000000000ec378] perf_event_interrupt+0x298/0x460
->>     [c000000000027964] performance_monitor_exception+0x54/0x70
->>     [c000000000009ba4] performance_monitor_common+0x114/0x120
->>
->> Fix this by deferefencing them safely.
->>
->> Suggested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/perf/core-book3s.c | 7 +++++--
->>  1 file changed, 5 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
->> index 9e3da168d54c..5a68d2effdf9 100644
->> --- a/arch/powerpc/perf/core-book3s.c
->> +++ b/arch/powerpc/perf/core-book3s.c
->> @@ -410,8 +410,11 @@ static __u64 power_pmu_bhrb_to(u64 addr)
->>         int ret;
->>         __u64 target;
->>
->> -       if (is_kernel_addr(addr))
->> -               return branch_target((unsigned int *)addr);
->> +       if (is_kernel_addr(addr)) {
-> I think __kernel_text_address() is more accurate right? In which case
-> you need to check for is_kernel_addr(addr) and if its not kernel_text_address()
-> then we have an interesting case of a branch from something not text.
-> It would be nice to catch such cases.
+With AT_HWCAP or HWCAP2 as parameter already gives information about
+features supported by the hardware and the kernel.
 
-Something like this?
+Taking one bit to expose the availability of protection keys to
+applications does not look impossible.
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 1538129..627af56 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -410,8 +410,13 @@ static __u64 power_pmu_bhrb_to(u64 addr)
-     int ret;
-     __u64 target;
- 
--    if (is_kernel_addr(addr))
--        return branch_target((unsigned int *)addr);
-+    if (is_kernel_addr(addr)) {
-+        if (probe_kernel_address((void *)addr, instr)) {
-+            WARN_ON(!__kernel_text_address(addr));
-+            return 0;
-+        }
-+        return branch_target(&instr);
-+    }
- 
-     /* Userspace: need copy instruction here then translate it */
-     pagefault_disable();
+Do I miss something obvious?
 
-
-I think this will throw warnings when you try to read recently unmapped
-vmalloced address. Is that fine?
-
-Thanks for the review.
-Ravi
-
->> +               if (probe_kernel_address((void *)addr, instr))
->> +                       return 0;
->> +               return branch_target(&instr);
->> +       }
->>
->>         /* Userspace: need copy instruction here then translate it */
->>         pagefault_disable();
-> Otherwise,
->
-> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
->
+	Gabriel
