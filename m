@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1PLn0Dn0zF06F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 04:01:21 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id d21so7317899pll.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:01:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1PLp3VWQzDx9R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 04:01:22 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id v26so11369879pfl.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 09:01:22 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org
@@ -14,10 +14,9 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  mail@maciej.szmigiero.name, caleb@crome.org, arnaud.mouiche@invoxia.com,
  lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v1 10/15] ASoC: fsl_ssi: Move one-time configurations to
- dai_probe()
-Date: Tue, 19 Dec 2017 09:00:14 -0800
-Message-Id: <1513702819-42310-11-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v1 12/15] ASoC: fsl_ssi: Clean up _fsl_ssi_set_dai_fmt()
+Date: Tue, 19 Dec 2017 09:00:16 -0800
+Message-Id: <1513702819-42310-13-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,83 +28,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The dai_probe() could handle some one-time configurations since
-they will not be changed once being configured.
+The _fsl_ssi_set_dai_fmt() is a helper function being called from
+fsl_ssi_set_dai_fmt() as an ASoC operation and from dai_probe(),
+mainly for AC97 format initialization.
+
+This patch cleans the _fsl_ssi_set_dai_fmt() in following ways:
+* Removing *dev pointer in the parameters as it's included in the
+  *ssi pointer of struct fsl_ssi.
+* Using regmap_update_bits() instead of regmap_read() and masking
+  the value manually.
+* Removing TXBIT0 configurations since this bit is set to 1 as its
+  reset value and there is no use case so far to unset it. And it
+  is safe to remove since regmap_update_bits() won't touch it.
+* Moving baudclk check to the switch-case routine to skip the I2S
+  master check. And moving SxCCR.DC settings after baudclk check.
+* Adding format settings for SND_SOC_DAIFMT_AC97 like others.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 70 ++++++++++++++++++++++---------------------------
+ 1 file changed, 31 insertions(+), 39 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index fd756dd..4673709 100644
+index 2fdae78..898f837 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -855,7 +855,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+@@ -850,42 +850,27 @@ static int fsl_ssi_hw_free(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static int _fsl_ssi_set_dai_fmt(struct device *dev,
+-				struct fsl_ssi *ssi, unsigned int fmt)
++static int _fsl_ssi_set_dai_fmt(struct fsl_ssi *ssi, unsigned int fmt)
  {
- 	struct regmap *regs = ssi->regs;
- 	u32 strcr = 0, stcr, srcr, scr, mask;
--	u8 wm;
+-	struct regmap *regs = ssi->regs;
+-	u32 strcr = 0, stcr, srcr, scr, mask;
++	u32 strcr = 0, scr = 0, stcr, srcr, mask;
  
  	ssi->dai_fmt = fmt;
  
-@@ -864,8 +863,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+-	if (fsl_ssi_is_i2s_master(ssi) && IS_ERR(ssi->baudclk)) {
+-		dev_err(dev, "missing baudclk for master mode\n");
+-		return -EINVAL;
+-	}
+-
+-	regmap_read(regs, REG_SSI_SCR, &scr);
+-	scr &= ~(SSI_SCR_SYN | SSI_SCR_I2S_MODE_MASK);
+ 	/* Synchronize frame sync clock for TE to avoid data slipping */
+ 	scr |= SSI_SCR_SYNC_TX_FS;
+ 
+-	mask = SSI_STCR_TXBIT0 | SSI_STCR_TFDIR | SSI_STCR_TXDIR |
+-	       SSI_STCR_TSCKP | SSI_STCR_TFSI | SSI_STCR_TFSL | SSI_STCR_TEFS;
+-	regmap_read(regs, REG_SSI_STCR, &stcr);
+-	regmap_read(regs, REG_SSI_SRCR, &srcr);
+-	stcr &= ~mask;
+-	srcr &= ~mask;
+-
+ 	/* Use Network mode as default */
+ 	ssi->i2s_net = SSI_SCR_NET;
+ 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+ 	case SND_SOC_DAIFMT_I2S:
+-		regmap_update_bits(regs, REG_SSI_STCCR,
+-				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
+-		regmap_update_bits(regs, REG_SSI_SRCCR,
+-				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
+ 		switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
+ 		case SND_SOC_DAIFMT_CBM_CFS:
+ 		case SND_SOC_DAIFMT_CBS_CFS:
++			if (IS_ERR(ssi->baudclk)) {
++				dev_err(ssi->dev,
++					"missing baudclk for master mode\n");
++				return -EINVAL;
++			}
+ 			ssi->i2s_net |= SSI_SCR_I2S_MODE_MASTER;
+ 			break;
+ 		case SND_SOC_DAIFMT_CBM_CFM:
+@@ -895,30 +880,34 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 			return -EINVAL;
+ 		}
+ 
++		regmap_update_bits(ssi->regs, REG_SSI_STCCR,
++				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
++		regmap_update_bits(ssi->regs, REG_SSI_SRCCR,
++				   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(2));
++
+ 		/* Data on rising edge of bclk, frame low, 1clk before data */
+-		strcr |= SSI_STCR_TFSI | SSI_STCR_TSCKP |
+-			 SSI_STCR_TXBIT0 | SSI_STCR_TEFS;
++		strcr |= SSI_STCR_TFSI | SSI_STCR_TSCKP | SSI_STCR_TEFS;
+ 		break;
+ 	case SND_SOC_DAIFMT_LEFT_J:
+ 		/* Data on rising edge of bclk, frame high */
+-		strcr |= SSI_STCR_TXBIT0 | SSI_STCR_TSCKP;
++		strcr |= SSI_STCR_TSCKP;
+ 		break;
+ 	case SND_SOC_DAIFMT_DSP_A:
+ 		/* Data on rising edge of bclk, frame high, 1clk before data */
+-		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP |
+-			 SSI_STCR_TXBIT0 | SSI_STCR_TEFS;
++		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP | SSI_STCR_TEFS;
+ 		break;
+ 	case SND_SOC_DAIFMT_DSP_B:
+ 		/* Data on rising edge of bclk, frame high */
+-		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP | SSI_STCR_TXBIT0;
++		strcr |= SSI_STCR_TFSL | SSI_STCR_TSCKP;
+ 		break;
+ 	case SND_SOC_DAIFMT_AC97:
+ 		/* Data on falling edge of bclk, frame high, 1clk before data */
+-		ssi->i2s_net |= SSI_SCR_I2S_MODE_NORMAL;
++		strcr |= SSI_STCR_TEFS;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
++
+ 	scr |= ssi->i2s_net;
+ 
+ 	/* DAI clock inversion */
+@@ -952,20 +941,17 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFM:
+ 		/* Input bit or frame sync clocks */
+-		scr &= ~SSI_SCR_SYS_CLK_EN;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFS:
+ 		/* Input bit clock but output frame sync clock */
+-		strcr &= ~SSI_STCR_TXDIR;
+ 		strcr |= SSI_STCR_TFDIR;
+-		scr &= ~SSI_SCR_SYS_CLK_EN;
+ 		break;
+ 	default:
  		return -EINVAL;
  	}
  
--	fsl_ssi_setup_regvals(ssi);
--
- 	regmap_read(regs, REG_SSI_SCR, &scr);
- 	scr &= ~(SSI_SCR_SYN | SSI_SCR_I2S_MODE_MASK);
- 	/* Synchronize frame sync clock for TE to avoid data slipping */
-@@ -980,16 +977,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 	regmap_write(regs, REG_SSI_SRCR, srcr);
- 	regmap_write(regs, REG_SSI_SCR, scr);
+-	stcr |= strcr;
+-	srcr |= strcr;
++	stcr = strcr;
++	srcr = strcr;
  
--	wm = ssi->fifo_watermark;
--
--	regmap_write(regs, REG_SSI_SFCSR,
--		     SSI_SFCSR_TFWM0(wm) | SSI_SFCSR_RFWM0(wm) |
--		     SSI_SFCSR_TFWM1(wm) | SSI_SFCSR_RFWM1(wm));
--
--	if (ssi->use_dual_fifo)
--		regmap_update_bits(regs, REG_SSI_SCR,
--				   SSI_SCR_TCH_EN, SSI_SCR_TCH_EN);
--
- 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_AC97)
+ 	/* Set SYN mode and clear RXDIR bit when using SYN or AC97 mode */
+ 	if (ssi->cpu_dai_drv.symmetric_rates || fsl_ssi_is_ac97(ssi)) {
+@@ -973,9 +959,15 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		scr |= SSI_SCR_SYN;
+ 	}
+ 
+-	regmap_write(regs, REG_SSI_STCR, stcr);
+-	regmap_write(regs, REG_SSI_SRCR, srcr);
+-	regmap_write(regs, REG_SSI_SCR, scr);
++	mask = SSI_STCR_TFDIR | SSI_STCR_TXDIR | SSI_STCR_TSCKP |
++	       SSI_STCR_TFSI | SSI_STCR_TFSL | SSI_STCR_TEFS;
++
++	regmap_update_bits(ssi->regs, REG_SSI_STCR, mask, stcr);
++	regmap_update_bits(ssi->regs, REG_SSI_SRCR, mask, srcr);
++
++	mask = SSI_SCR_SYNC_TX_FS | SSI_SCR_I2S_MODE_MASK |
++	       SSI_SCR_SYS_CLK_EN | SSI_SCR_SYN;
++	regmap_update_bits(ssi->regs, REG_SSI_SCR, mask, scr);
+ 
+ 	return 0;
+ }
+@@ -991,7 +983,7 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
+ 	if (fsl_ssi_is_ac97(ssi))
+ 		return 0;
+ 
+-	return _fsl_ssi_set_dai_fmt(dai->dev, ssi, fmt);
++	return _fsl_ssi_set_dai_fmt(ssi, fmt);
+ }
+ 
+ /**
+@@ -1107,7 +1099,7 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+ 
+ 	/* AC97 should start earlier to communicate with CODECs */
+ 	if (fsl_ssi_is_ac97(ssi)) {
+-		_fsl_ssi_set_dai_fmt(ssi->dev, ssi, ssi->dai_fmt);
++		_fsl_ssi_set_dai_fmt(ssi, ssi->dai_fmt);
  		fsl_ssi_setup_ac97(ssi);
- 
-@@ -1096,14 +1083,31 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 	return 0;
- }
- 
-+/**
-+ * Set DMA data and one-time configurations
-+ */
- static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
- {
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
-+	u32 wm = ssi->fifo_watermark;
- 
- 	if (ssi->soc->imx && ssi->use_dma)
- 		snd_soc_dai_init_dma_data(dai, &ssi->dma_params_tx,
- 					  &ssi->dma_params_rx);
- 
-+	/* Initialize regvals */
-+	fsl_ssi_setup_regvals(ssi);
-+
-+	/* Set watermarks */
-+	regmap_write(ssi->regs, REG_SSI_SFCSR,
-+		     SSI_SFCSR_TFWM0(wm) | SSI_SFCSR_RFWM0(wm) |
-+		     SSI_SFCSR_TFWM1(wm) | SSI_SFCSR_RFWM1(wm));
-+
-+	/* Enable Dual FIFO mode */
-+	if (ssi->use_dual_fifo)
-+		regmap_update_bits(ssi->regs, REG_SSI_SCR,
-+				   SSI_SCR_TCH_EN, SSI_SCR_TCH_EN);
-+
- 	return 0;
- }
+ 	}
  
 -- 
 2.7.4
