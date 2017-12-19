@@ -1,28 +1,25 @@
-Return-Path: <ruscur@russell.cc>
-Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
- [66.111.4.27])
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z15LG75Y0zDsRm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 15:59:49 +1100 (AEDT)
-Message-ID: <1513659576.2151.6.camel@russell.cc>
-Subject: Re: [PATCH v2 2/7] powerpc/kernel: Add uevents in EEH error/resume
-From: Russell Currey <ruscur@russell.cc>
-To: Bjorn Helgaas <helgaas@kernel.org>, "Bryant G. Ly"
- <bryantly@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, aik@ozlabs.ru, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com, Keith Busch <keith.busch@intel.com>, Gabriele Paoloni
- <gabriele.paoloni@huawei.com>, Dongdong Liu <liudongdong3@huawei.com>
-Date: Tue, 19 Dec 2017 15:59:36 +1100
-In-Reply-To: <20171219045009.GC14941@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171218223808.83928-1-bryantly@linux.vnet.ibm.com>
- <20171218223808.83928-3-bryantly@linux.vnet.ibm.com>
- <20171219045009.GC14941@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z16Bh6rtDzDqvN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 16:38:20 +1100 (AEDT)
+From: Sinan Kaya <okaya@codeaurora.org>
+To: linux-pci@vger.kernel.org,
+	timur@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Sinan Kaya <okaya@codeaurora.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Rob Herring <robh@kernel.org>,
+ Bhumika Goyal <bhumirks@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)), linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH V4 02/26] powerpc/PCI: deprecate pci_get_bus_and_slot()
+Date: Tue, 19 Dec 2017 00:37:38 -0500
+Message-Id: <1513661883-28662-3-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
+References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-12-18 at 22:50 -0600, Bjorn Helgaas wrote:
-> [+cc Keith, Gabriele, Dongdong]
-> 
-> On Mon, Dec 18, 2017 at 04:38:03PM -0600, Bryant G. Ly wrote:
-> > Devices can go offline when EEH is reported. This patch adds
-> > a change to the kernel object and lets udev know of error.
-> > When device resumes a change is also set reporting device as
-> > online. Therefore, EEH events are better propagated to user
-> > space for devices in powerpc arch.
-> 
-> I'm on vacation and can't review this in detail, but I wonder if you
-> can compare this with the uevents we emit for DPC, AER, and hotplug
-> events (if any).  I hope we don't end up with userspace having to be
-> aware of the differences between EEH, DPC, AER, etc.
-> 
-> From a very quick look, I only see a few uevents even mentioned in
-> drivers/pci: KOBJ_ADD in __pci_hp_register() and KOBJ_CHANGE in the
-> SR-IOV code.  I'm worried that we're missing some important uevents
-> in
-> the PCI core.  That's not an argument against what you're doing here;
-> it just would be nice to fill in any missing pieces in the core also,
-> and hopefully make them consistent with these EEH events.
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-I don't think this needs to be particularly complex, could we get away
-with events for when devices do the following?
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-- begin recovery
-- successfully recover
-- fail recovery
+Use pci_get_domain_bus_and_slot() with a domain number of 0 as the code
+is not ready to consume multiple domains and existing code used domain
+number 0.
 
-It might be worthwhile sorting out some consistent, non-EEH-specific
-naming, and then other device error recovery systems can do the same
-later.
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ arch/powerpc/kernel/pci_32.c              | 3 ++-
+ arch/powerpc/platforms/powermac/feature.c | 2 +-
+ arch/powerpc/sysdev/mv64x60_pci.c         | 4 ++--
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
-- Russell
-
-> 
-> > Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> > Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 1d817f4..85ad2f7 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -96,7 +96,8 @@
+ 		reg = of_get_property(node, "reg", NULL);
+ 		if (!reg)
+ 			continue;
+-		dev = pci_get_bus_and_slot(pci_bus, ((reg[0] >> 8) & 0xff));
++		dev = pci_get_domain_bus_and_slot(0, pci_bus,
++						  ((reg[0] >> 8) & 0xff));
+ 		if (!dev || !dev->subordinate) {
+ 			pci_dev_put(dev);
+ 			continue;
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index 466b842..3f82cb2 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -829,7 +829,7 @@ static long core99_scc_enable(struct device_node *node, long param, long value)
+ 
+ 	if (value) {
+ 		if (pci_device_from_OF_node(node, &pbus, &pid) == 0)
+-			pdev = pci_get_bus_and_slot(pbus, pid);
++			pdev = pci_get_domain_bus_and_slot(0, pbus, pid);
+ 		if (pdev == NULL)
+ 			return 0;
+ 		rc = pci_enable_device(pdev);
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index d52b3b8..6fe9104 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -37,7 +37,7 @@ static ssize_t mv64x60_hs_reg_read(struct file *filp, struct kobject *kobj,
+ 	if (count < MV64X60_VAL_LEN_MAX)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++	phb = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(0, 0));
+ 	if (!phb)
+ 		return -ENODEV;
+ 	pci_read_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+@@ -61,7 +61,7 @@ static ssize_t mv64x60_hs_reg_write(struct file *filp, struct kobject *kobj,
+ 	if (sscanf(buf, "%i", &v) != 1)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++	phb = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(0, 0));
+ 	if (!phb)
+ 		return -ENODEV;
+ 	pci_write_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, v);
+-- 
+1.9.1
