@@ -2,24 +2,25 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1Df812mjzDsSh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:29:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1F6m54lWzDwNV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:50:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sinan Kaya <okaya@codeaurora.org>, linux-pci@vger.kernel.org,
- timur@codeaurora.org
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Sinan Kaya <okaya@codeaurora.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Rob Herring <robh@kernel.org>, Bhumika Goyal <bhumirks@gmail.com>,
- "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH V4 02/26] powerpc/PCI: deprecate pci_get_bus_and_slot()
-In-Reply-To: <1513661883-28662-3-git-send-email-okaya@codeaurora.org>
-References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
- <1513661883-28662-3-git-send-email-okaya@codeaurora.org>
-Date: Tue, 19 Dec 2017 21:29:01 +1100
-Message-ID: <87fu879fki.fsf@concordia.ellerman.id.au>
+To: Dave Hansen <dave.hansen@intel.com>, Ram Pai <linuxram@us.ibm.com>,
+ mingo@redhat.com, akpm@linux-foundation.org, corbet@lwn.net, arnd@arndb.de
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
+Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys,
+ x86/mm/pkeys: Add sysfs interface
+In-Reply-To: <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
+ <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
+Date: Tue, 19 Dec 2017 21:50:24 +1100
+Message-ID: <877etj9ekv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,29 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sinan Kaya <okaya@codeaurora.org> writes:
+Dave Hansen <dave.hansen@intel.com> writes:
 
-> pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-> where a PCI device is present. This restricts the device drivers to be
-> reused for other domain numbers.
+> On 11/06/2017 12:57 AM, Ram Pai wrote:
+>> Expose useful information for programs using memory protection keys.
+>> Provide implementation for powerpc and x86.
+>> 
+>> On a powerpc system with pkeys support, here is what is shown:
+>> 
+>> $ head /sys/kernel/mm/protection_keys/*
+>> ==> /sys/kernel/mm/protection_keys/disable_access_supported <==
+>> true
 >
-> Getting ready to remove pci_get_bus_and_slot() function in favor of
-> pci_get_domain_bus_and_slot().
->
-> Use pci_get_domain_bus_and_slot() with a domain number of 0 as the code
-> is not ready to consume multiple domains and existing code used domain
-> number 0.
->
-> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
-> ---
->  arch/powerpc/kernel/pci_32.c              | 3 ++-
->  arch/powerpc/platforms/powermac/feature.c | 2 +-
->  arch/powerpc/sysdev/mv64x60_pci.c         | 4 ++--
->  3 files changed, 5 insertions(+), 4 deletions(-)
+> This is cute, but I don't think it should be part of the ABI.  Put it in
+> debugfs if you want it for cute tests.  The stuff that this tells you
+> can and should come from pkey_alloc() for the ABI.
 
-Looks to do what it says. I don't know if any of these call sites could
-be improved to provide the domain, but that's not really your problem.
+Yeah I agree this is not sysfs material.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+In particular the total/usable numbers are completely useless vs other
+threads allocating pkeys out from under you.
+
+> http://man7.org/linux/man-pages/man7/pkeys.7.html
+>
+>>        Any application wanting to use protection keys needs to be able to
+>>        function without them.  They might be unavailable because the
+>>        hardware that the application runs on does not support them, the
+>>        kernel code does not contain support, the kernel support has been
+>>        disabled, or because the keys have all been allocated, perhaps by a
+>>        library the application is using.  It is recommended that
+>>        applications wanting to use protection keys should simply call
+>>        pkey_alloc(2) and test whether the call succeeds, instead of
+>>        attempting to detect support for the feature in any other way.
+>
+> Do you really not have standard way on ppc to say whether hardware
+> features are supported by the kernel?  For instance, how do you know if
+> a given set of registers are known to and are being context-switched by
+> the kernel?
+
+Yes we do, we emit feature bits in the AT_HWCAP entry of the aux vector,
+same as some other architectures.
+
+But I don't see the need to use a feature bit for pkeys. If they're not
+supported then pkey_alloc() will just always fail. Apps have to handle
+that anyway because keys are a finite resource.
 
 cheers
