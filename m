@@ -1,21 +1,27 @@
-Return-Path: <srs0=dnnd=dp=concordia.ellerman.id.au=michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jani.nikula@intel.com>
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1HHp2VC3zDx5w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 23:28:22 +1100 (AEDT)
-From: Michael Ellerman <michael@concordia.ellerman.id.au>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Cc: "netdev\@vger.kernel.org" <netdev@vger.kernel.org>,
- "Jouni Malinen" <j@w1.fi>, "Rasmus Villemoes" <linux@rasmusvillemoes.dk>,
- "Johannes Berg" <johannes.berg@intel.com>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [net] Revert "net: core: maybe return -EEXIST in __dev_alloc_name"
-References: <20171202074155.29146-1-johannes@sipsolutions.net>
-Date: Tue, 19 Dec 2017 23:28:21 +1100
-In-Reply-To: <20171202074155.29146-1-johannes@sipsolutions.net> (Johannes
- Berg's message of "Sat, 2 Dec 2017 08:41:55 +0100")
-Message-ID: <87vah29a1m.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1Rsl6gKvzF07k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 05:54:51 +1100 (AEDT)
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Joe Perches <joe@perches.com>, linux-arm-kernel@lists.infradead.org,
+ linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ intel-gfx@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, linux-nvme@lists.infradead.org,
+ platform-driver-x86@vger.kernel.org, linux-s390@vger.kernel.org,
+ esc.storagedev@microsemi.com, linux-scsi@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+ alsa-devel@alsa-project.org, linux-omap@vger.kernel.org
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org,
+ linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-input@vger.kernel.org, linux-media@vger.kernel.org
+Subject: Re: [-next PATCH 0/4] sysfs and DEVICE_ATTR_<foo>
+In-Reply-To: <cover.1513706701.git.joe@perches.com>
+References: <cover.1513706701.git.joe@perches.com>
+Date: Tue, 19 Dec 2017 20:54:32 +0200
+Message-ID: <87vah2o8ev.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,55 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Johannes,
+On Tue, 19 Dec 2017, Joe Perches <joe@perches.com> wrote:
+>  drivers/gpu/drm/i915/i915_sysfs.c                  | 12 ++--
 
-> From: Johannes Berg <johannes.berg@intel.com>
-> 
-> This reverts commit d6f295e9def0; some userspace (in the case
-> we noticed it's wpa_supplicant), is relying on the current
-> error code to determine that a fixed name interface already
-> exists.
-> 
-> Reported-by: Jouni Malinen <j@w1.fi>
-> Signed-off-by: Johannes Berg <johannes.berg@intel.com>
-> ---
->  net/core/dev.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+For i915,
 
-This revert seems to have broken networking on one of my powerpc
-machines, according to git bisect.
+Acked-by: Jani Nikula <jani.nikula@intel.com>
 
-The symptom is DHCP fails and I don't get a link, I didn't dig any
-further than that. I can if it's helpful.
 
-I think the problem is that 87c320e51519 ("net: core: dev_get_valid_name
-is now the same as dev_alloc_name_ns") only makes sense while
-d6f295e9def0 remains in the tree.
-
-ie. before the entire series, dev_get_valid_name() would return EEXIST,
-and that was retained when 87c320e51519 was merged, but now that
-d6f295e9def0 has been reverted dev_get_valid_name() is returning ENFILE.
-
-I can get the network up again if I also revert 87c320e51519 ("net:
-core: dev_get_valid_name is now the same as dev_alloc_name_ns"), or with
-the gross patch below.
-
-cheers
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index f47e96b62308..d0304461ad32 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1146,7 +1146,11 @@ EXPORT_SYMBOL(dev_alloc_name);
- int dev_get_valid_name(struct net *net, struct net_device *dev,
- 		       const char *name)
- {
--	return dev_alloc_name_ns(net, dev, name);
-+	int rc = dev_alloc_name_ns(net, dev, name);
-+	if (rc == -ENFILE)
-+		rc = -EEXIST;
-+
-+	return rc;
- }
- EXPORT_SYMBOL(dev_get_valid_name);
- 
+-- 
+Jani Nikula, Intel Open Source Technology Center
