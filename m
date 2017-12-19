@@ -1,28 +1,28 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1Fyt2WTQzDsR6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 22:28:37 +1100 (AEDT)
-Date: Tue, 19 Dec 2017 12:28:33 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Jiri Kosina <jkosina@suse.cz>, live-patching@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
-Message-ID: <20171219112833.GA8758@lst.de>
-References: <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
- <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
- <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
- <20171212113912.GA1907@lst.de> <20171212140501.44vf4xcz6jhbqofd@treble>
- <20171215194009.349b04da@roar.ozlabs.ibm.com>
- <20171218025854.angid7h33gnmxsrg@treble>
- <20171218153334.618c0b66@roar.ozlabs.ibm.com>
- <20171218185622.rgoyy5doyh3gyqh5@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1HCh16kKzDx5p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 23:24:48 +1100 (AEDT)
+Subject: Re: [PATCH V4 02/26] powerpc/PCI: deprecate pci_get_bus_and_slot()
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-pci@vger.kernel.org,
+ timur@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Tyrel Datwyler
+ <tyreld@linux.vnet.ibm.com>, Rob Herring <robh@kernel.org>,
+ Bhumika Goyal <bhumirks@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
+ <1513661883-28662-3-git-send-email-okaya@codeaurora.org>
+ <87fu879fki.fsf@concordia.ellerman.id.au>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <4ef64790-5ad1-c5e5-af80-7bf4ef3abdee@codeaurora.org>
+Date: Tue, 19 Dec 2017 07:24:39 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171218185622.rgoyy5doyh3gyqh5@treble>
+In-Reply-To: <87fu879fki.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,83 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 18, 2017 at 12:56:22PM -0600, Josh Poimboeuf wrote:
-> On Mon, Dec 18, 2017 at 03:33:34PM +1000, Nicholas Piggin wrote:
-> > On Sun, 17 Dec 2017 20:58:54 -0600
-> > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> > 
-> > > On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
-> > > > On Tue, 12 Dec 2017 08:05:01 -0600
-> > > > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> > > >   
-> > > > > What about leaf functions?  If a leaf function doesn't establish a stack
-> > > > > frame, and it has inline asm which contains a blr to another function,
-> > > > > this ABI is broken.  
-> > > 
-> > > Oops, I meant to say "bl" instead of "blr".
-
-You need to save LR, one way or the other. If gcc thinks it's a leaf function and
-does not do it, nor does your asm code, you'll return in an endless loop => bug.
-
-> > > > > Also, even for non-leaf functions, is it possible for GCC to insert the
-> > > > > inline asm before it sets up the stack frame?  (This is an occasional
-> > > > > problem on x86.)  
-> > > > 
-> > > > Inline asm must not have control transfer out of the statement unless
-> > > > it is asm goto.  
-> > > 
-> > > Can inline asm have calls to other functions?
-> > 
-> > I don't believe so.
+On 12/19/2017 5:29 AM, Michael Ellerman wrote:
+> Sinan Kaya <okaya@codeaurora.org> writes:
 > 
-> It's allowed on x86, I don't see why it wouldn't be allowed on powerpc.
-> As you mentioned, GCC doesn't pay attention to what's inside asm("").
+>> pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+>> where a PCI device is present. This restricts the device drivers to be
+>> reused for other domain numbers.
+>>
+>> Getting ready to remove pci_get_bus_and_slot() function in favor of
+>> pci_get_domain_bus_and_slot().
+>>
+>> Use pci_get_domain_bus_and_slot() with a domain number of 0 as the code
+>> is not ready to consume multiple domains and existing code used domain
+>> number 0.
+>>
+>> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+>> ---
+>>  arch/powerpc/kernel/pci_32.c              | 3 ++-
+>>  arch/powerpc/platforms/powermac/feature.c | 2 +-
+>>  arch/powerpc/sysdev/mv64x60_pci.c         | 4 ++--
+>>  3 files changed, 5 insertions(+), 4 deletions(-)
 > 
-> > > > > Also, what about hand-coded asm?  
-> > > > 
-> > > > Should follow the same rules if it uses the stack.  
-> > > 
-> > > How is that enforced?
-> > 
-> > It's not, AFAIK. Gcc doesn't understand what's inside asm("").
+> Looks to do what it says. I don't know if any of these call sites could
+> be improved to provide the domain, but that's not really your problem.
 > 
-> Here I was talking about .S files.
 
-asm("") or .S ... the ABI spec is clear, and it's quite easy to follow. You
-need a place to save LR before you call another function, and STDU is so
-convenient to create a stack frame with a single instruction.
-My impression is one would have to be very determined to break the ABI
-deliberately.
+I tried to fix the places where I can at the rest of the series. I even took
+a stab at fixing powerpc. There were places where the domain information was
+not available and I couldn't locate where to extract it. I decided to leave it
+as it is and hope that someone someday may expand the powerpc PCI adaptation. 
 
-
-> > > > > In addition to fixing the above issues, the unwinder also needs to
-> > > > > detect interrupts (i.e., preemption) and page faults on the stack of a
-> > > > > blocked task.  If a function were preempted before it created a stack
-> > > > > frame, or if a leaf function blocked on a page fault, the stack trace
-> > > > > will skip the function's caller, so such a trace will need to be
-> > > > > reported to livepatch as unreliable.  
-> > > > 
-> > > > I don't think there is much problem there for powerpc. Stack frame
-> > > > creation and function call with return pointer are each atomic.  
-> > > 
-> > > What if the function is interrupted before it creates the stack frame?
-
-There should be a pt_regs that shows exactly this situation, see below.
-
-> > Then there will be no stack frame, but you still get the caller address
-> > because it's saved in LR register as part of the function call. Then
-> > you get the caller's caller in its stack frame.
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 > 
-> Ok.  So what about the interrupted function itself?  Looking at the
-> powerpc version of save_context_stack(), it doesn't do anything special
-> for exception frames like checking regs->nip.
+> cheers
 > 
-> Though it looks like that should be possible since show_stack() has a
-> way to identify exception frames.
 
-IIRC x86 errors out if a task was interrupted in kernel context. PPC
-save_stack_trace_tsk_reliable() could do the same.
 
-Would that be sufficient?
-
-	Torsten
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
