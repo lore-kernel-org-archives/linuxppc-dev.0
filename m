@@ -3,33 +3,35 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z0zl838V0zDsN5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 11:47:32 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z10M62JzHzDsQS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 12:15:14 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBJ0iKeq121986
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 19:47:29 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2exr0es4be-1
+ vBJ1F3c8096636
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 20:15:11 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2exr7psfcs-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 19:47:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 20:15:07 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 19 Dec 2017 00:47:28 -0000
-Subject: Re: [PATCH 03/13] powerpc/powernv: Add opal calls for opencapi
+ Tue, 19 Dec 2017 01:15:03 -0000
+Subject: Re: [PATCH 02/13] powerpc/powernv: Set correct configuration space
+ size for opencapi devices
 To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, alastair@au1.ibm.com, arnd@arndb.de
+Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
+ alastair@au1.ibm.com
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
- <f2189f8a9c578e5515472b0f44e5469ce36f9e5f.1513608243.git.fbarrat@linux.vnet.ibm.com>
+ <386af9b4afde2a0f9cd699d79b0fdf3e4fc0e2d7.1513608243.git.fbarrat@linux.vnet.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 19 Dec 2017 11:47:21 +1100
+Date: Tue, 19 Dec 2017 12:14:58 +1100
 MIME-Version: 1.0
-In-Reply-To: <f2189f8a9c578e5515472b0f44e5469ce36f9e5f.1513608243.git.fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <386af9b4afde2a0f9cd699d79b0fdf3e4fc0e2d7.1513608243.git.fbarrat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <d12638e1-3860-1540-4397-8a0fa5cc758d@au1.ibm.com>
+Message-Id: <266fd881-8117-967a-b70c-5db9b6211ab9@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,84 +42,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 19/12/17 02:21, Frederic Barrat wrote:
-> Add opal calls to interact with the NPU:
+>  From Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+Good try :) That should be "From: ..."
+
+git format-patch/send-email will handle this automatically if the commit 
+author is set correctly, ie:
+
+git commit --amend --author="Andrew Donnellan 
+<andrew.donnellan@au1.ibm.com>"
+
 > 
-> OPAL_NPU_SPA_SETUP: set the Shared Process Area (SPA)
-> The SPA is a table containing one entry (Process Element) per memory
-> context which can be accessed by the opencapi device.
-> 
-> OPAL_NPU_SPA_CLEAR_CACHE: clear the context cache
-> The NPU keeps a cache of recently accessed memory contexts. When a
-> Process Element is removed from the SPA, the cache for the link must
-> be cleared.
-> 
-> OPAL_NPU_TL_SET: configure the Transaction Layer
-> The Transaction Layer specification defines several templates for
-> messages to be exchanged on the link. During link setup, the host and
-> device must negotiate what templates are supported on both sides and
-> at what rates those messages can be sent.
+> The configuration space for opencapi devices doesn't have a PCI
+> Express capability, therefore confusing linux in thinking it's of an
+> old PCI type with a 256-byte configuration space size, instead of the
+> desired 4k. So add a PCI fixup to declare the correct size.
 > 
 > 
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 > Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-Corresponding skiboot patch: https://patchwork.ozlabs.org/patch/849830/
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
 > ---
->   arch/powerpc/include/asm/opal-api.h            | 5 ++++-
->   arch/powerpc/include/asm/opal.h                | 6 ++++++
->   arch/powerpc/platforms/powernv/opal-wrappers.S | 3 +++
->   3 files changed, 13 insertions(+), 1 deletion(-)
+>   arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
+>   1 file changed, 10 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 233c7504b1f2..24c73f5575ee 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -201,7 +201,10 @@
->   #define OPAL_SET_POWER_SHIFT_RATIO		155
->   #define OPAL_SENSOR_GROUP_CLEAR			156
->   #define OPAL_PCI_SET_P2P			157
-> -#define OPAL_LAST				157
-> +#define OPAL_NPU_SPA_SETUP			159
-> +#define OPAL_NPU_SPA_CLEAR_CACHE		160
-> +#define OPAL_NPU_TL_SET				161
-> +#define OPAL_LAST				161
->   
->   /* Device tree flags */
->   
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 0c545f7fc77b..12e70fb58700 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -34,6 +34,12 @@ int64_t opal_npu_init_context(uint64_t phb_id, int pasid, uint64_t msr,
->   			uint64_t bdf);
->   int64_t opal_npu_map_lpar(uint64_t phb_id, uint64_t bdf, uint64_t lparid,
->   			uint64_t lpcr);
-> +int64_t opal_npu_spa_setup(uint64_t phb_id, uint32_t bdfn,
-> +			uint64_t addr, uint64_t PE_mask);
-> +int64_t opal_npu_spa_clear_cache(uint64_t phb_id, uint32_t bdfn,
-> +				uint64_t PE_handle);
-> +int64_t opal_npu_tl_set(uint64_t phb_id, uint32_t bdfn, long cap,
-> +			uint64_t rate_phys, uint32_t size);
-
-The function prototype on the skiboot side has slightly different 
-parameter names: long capabilities, uint32_t rate_sz.
-
->   int64_t opal_console_write(int64_t term_number, __be64 *length,
->   			   const uint8_t *buffer);
->   int64_t opal_console_read(int64_t term_number, __be64 *length,
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index 6f4b00a2ac46..1b2936ba6040 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -320,3 +320,6 @@ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
->   OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
->   OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
->   OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
-> +OPAL_CALL(opal_npu_spa_setup,			OPAL_NPU_SPA_SETUP);
-> +OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
-> +OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index c37b5d288f9c..b8ec76aa266f 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -4079,6 +4079,16 @@ void __init pnv_pci_init_npu2_opencapi_phb(struct device_node *np)
+>   	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_NPU_OCAPI);
+>   }
+> 
+> +static void pnv_npu2_opencapi_cfg_size_fixup(struct pci_dev *dev)
+> +{
+> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+> +	struct pnv_phb *phb = hose->private_data;
+> +
+> +	if (phb->type == PNV_PHB_NPU_OCAPI)
+> +		dev->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
+> +}
+> +DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pnv_npu2_opencapi_cfg_size_fixup);
+> +
+>   void __init pnv_pci_init_ioda_hub(struct device_node *np)
+>   {
+>   	struct device_node *phbn;
 > 
 
 -- 
