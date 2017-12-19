@@ -1,27 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x22f.google.com (mail-it0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c0b::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z17JV3KBBzDsSd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 17:28:26 +1100 (AEDT)
-Message-ID: <1513664878.2743.8.camel@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/7] powerpc/kernel: Add uevents in EEH error/resume
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <helgaas@kernel.org>, "Bryant G. Ly"
- <bryantly@linux.vnet.ibm.com>
-Cc: paulus@samba.org, mpe@ellerman.id.au, seroyer@linux.vnet.ibm.com,
- jjalvare@linux.vnet.ibm.com, alex.williamson@redhat.com, aik@ozlabs.ru,
- ruscur@russell.cc, linux-pci@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z17Wy6Zy2zDsSf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 17:38:22 +1100 (AEDT)
+Received: by mail-it0-x22f.google.com with SMTP id r6so1539073itr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Dec 2017 22:38:22 -0800 (PST)
+Subject: Re: [PATCH v1 7/7] pseries/setup: Add Initialization of VF Bars
+To: Juan Alvarez <jjalvare@linux.vnet.ibm.com>,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, alex.williamson@redhat.com,
+ helgaas@kernel.org, ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com, Keith Busch <keith.busch@intel.com>, Gabriele Paoloni
- <gabriele.paoloni@huawei.com>, Dongdong Liu <liudongdong3@huawei.com>
-Date: Tue, 19 Dec 2017 17:27:58 +1100
-In-Reply-To: <20171219045009.GC14941@bhelgaas-glaptop.roam.corp.google.com>
-References: <20171218223808.83928-1-bryantly@linux.vnet.ibm.com>
- <20171218223808.83928-3-bryantly@linux.vnet.ibm.com>
- <20171219045009.GC14941@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ saeedm@mellanox.com
+References: <20171213153242.98015-1-bryantly@linux.vnet.ibm.com>
+ <20171213153242.98015-8-bryantly@linux.vnet.ibm.com>
+ <4ea33f2e-d98c-85ef-eedf-2e8ca49aa839@ozlabs.ru>
+ <8bdf7127-a3ec-1c75-2593-e39a8bd31e34@linux.vnet.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <fd876ee1-4c12-587b-a8a0-56233fea3401@ozlabs.ru>
+Date: Tue, 19 Dec 2017 17:38:10 +1100
+MIME-Version: 1.0
+In-Reply-To: <8bdf7127-a3ec-1c75-2593-e39a8bd31e34@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-12-18 at 22:50 -0600, Bjorn Helgaas wrote:
-> [+cc Keith, Gabriele, Dongdong]
+On 19/12/17 06:29, Juan Alvarez wrote:
+> This is PF only path. Yes either we have a root returned otherwise
+> will fall back to iomem_resource.
+
+You have removed context from my response, do not do that please.
+
+When will you have root and when you won't? imho it should always be either
+one or another.
+
+
 > 
-> On Mon, Dec 18, 2017 at 04:38:03PM -0600, Bryant G. Ly wrote:
-> > Devices can go offline when EEH is reported. This patch adds
-> > a change to the kernel object and lets udev know of error.
-> > When device resumes a change is also set reporting device as
-> > online. Therefore, EEH events are better propagated to user
-> > space for devices in powerpc arch.
+> On 12/18/17 1:21 AM, Alexey Kardashevskiy wrote:
+>> @dev here is a VF, right? I am not familiar with powervn much but from what
+>> I see - the devices are sitting on a root bus of their own PHB and they all
+>> either have a root returned from pci_find_parent_resource() or none of them
+>> has a root and will fall back to &iomem_resource, or both cases are possible?
 > 
-> I'm on vacation and can't review this in detail, but I wonder if you
-> can compare this with the uevents we emit for DPC, AER, and hotplug
-> events (if any).  I hope we don't end up with userspace having to be
-> aware of the differences between EEH, DPC, AER, etc.
-> 
-> > From a very quick look, I only see a few uevents even mentioned in
-> 
-> drivers/pci: KOBJ_ADD in __pci_hp_register() and KOBJ_CHANGE in the
-> SR-IOV code.  I'm worried that we're missing some important uevents in
-> the PCI core.  That's not an argument against what you're doing here;
-> it just would be nice to fill in any missing pieces in the core also,
-> and hopefully make them consistent with these EEH events.
 
-We also need to be careful about what specific EEH activity we are
-talking about, and if we bring into the picture things like DPDK, it
-gets even more murky...
 
-The basic way EEH is supposed to work for recovery (minus all sort of
-implementation nasties which hopefully Russell and Sam are trying to
-cleanup and fix) is that either:
-
-	- The driver of the device has recovery callbacks, in which
-case the driver participates in the recovery process, the device
-doesn't "go away" (though it shouldn't be accessed during that process
-by other entities, userspace originated config space could be a problem
-and needs to be blocked...). The recovery typically involves a reset of
-the device but in sync with the driver.
-
-	- The driver doesn't have the callbacks. In this case, we
-simulate an unplug, reset the device, and replug.
-
-So it makes sense for the second case to emit the same uevents as a
-normal PCI(e) hotplug.
-
-For the former case I'm less sure.... Do we really need userspace to be
-notified ? If yes, what for precisely ?
-
-Cheers,
-Ben.
- 
+-- 
+Alexey
