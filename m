@@ -1,28 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1F6m54lWzDwNV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:50:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dave Hansen <dave.hansen@intel.com>, Ram Pai <linuxram@us.ibm.com>,
- mingo@redhat.com, akpm@linux-foundation.org, corbet@lwn.net, arnd@arndb.de
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys,
- x86/mm/pkeys: Add sysfs interface
-In-Reply-To: <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
-References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
- <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
- <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
-Date: Tue, 19 Dec 2017 21:50:24 +1100
-Message-ID: <877etj9ekv.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1FJy4NPKzDwNW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:59:13 +1100 (AEDT)
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
+ Timur Tabi <timur@tabi.org>, Mark Brown <broonie@kernel.org>,
+ broonie@kernel.org, alsa-devel@alsa-project.org, kernel@pengutronix.de,
+ lgirdwood@gmail.com, timur@tabi.org, caleb@crome.org,
+ linux-kernel@vger.kernel.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
+ fabio.estevam@nxp.com, mail@maciej.szmigiero.name,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+Subject: Applied "ASoC: fsl_ssi: Define ternary macros to simplify code" to
+ the asoc tree
+In-Reply-To: <1513146874-25476-12-git-send-email-nicoleotsuka@gmail.com>
+Message-Id: <E1eRFbx-0000oI-5a@debutante>
+Date: Tue, 19 Dec 2017 10:59:01 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,49 +28,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dave Hansen <dave.hansen@intel.com> writes:
+The patch
 
-> On 11/06/2017 12:57 AM, Ram Pai wrote:
->> Expose useful information for programs using memory protection keys.
->> Provide implementation for powerpc and x86.
->> 
->> On a powerpc system with pkeys support, here is what is shown:
->> 
->> $ head /sys/kernel/mm/protection_keys/*
->> ==> /sys/kernel/mm/protection_keys/disable_access_supported <==
->> true
->
-> This is cute, but I don't think it should be part of the ABI.  Put it in
-> debugfs if you want it for cute tests.  The stuff that this tells you
-> can and should come from pkey_alloc() for the ABI.
+   ASoC: fsl_ssi: Define ternary macros to simplify code
 
-Yeah I agree this is not sysfs material.
+has been applied to the asoc tree at
 
-In particular the total/usable numbers are completely useless vs other
-threads allocating pkeys out from under you.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-> http://man7.org/linux/man-pages/man7/pkeys.7.html
->
->>        Any application wanting to use protection keys needs to be able to
->>        function without them.  They might be unavailable because the
->>        hardware that the application runs on does not support them, the
->>        kernel code does not contain support, the kernel support has been
->>        disabled, or because the keys have all been allocated, perhaps by a
->>        library the application is using.  It is recommended that
->>        applications wanting to use protection keys should simply call
->>        pkey_alloc(2) and test whether the call succeeds, instead of
->>        attempting to detect support for the feature in any other way.
->
-> Do you really not have standard way on ppc to say whether hardware
-> features are supported by the kernel?  For instance, how do you know if
-> a given set of registers are known to and are being context-switched by
-> the kernel?
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-Yes we do, we emit feature bits in the AT_HWCAP entry of the aux vector,
-same as some other architectures.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-But I don't see the need to use a feature bit for pkeys. If they're not
-supported then pkey_alloc() will just always fail. Apps have to handle
-that anyway because keys are a finite resource.
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-cheers
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+>From 52eee84e815e0fbaf9ada848ab5646314a529b61 Mon Sep 17 00:00:00 2001
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+Date: Sun, 17 Dec 2017 18:52:10 -0800
+Subject: [PATCH] ASoC: fsl_ssi: Define ternary macros to simplify code
+
+Some regmap code looks redudant. So simplify it.
+
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Acked-by: Timur Tabi <timur@tabi.org>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_ssi.c | 27 +++++++++++----------------
+ sound/soc/fsl/fsl_ssi.h |  4 ++++
+ 2 files changed, 15 insertions(+), 16 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 2b3915c45199..aecd00f7929d 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -408,13 +408,10 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
+  */
+ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
+ {
+-	if (is_rx) {
+-		regmap_update_bits(ssi->regs, REG_SSI_SOR,
+-				   SSI_SOR_RX_CLR, SSI_SOR_RX_CLR);
+-	} else {
+-		regmap_update_bits(ssi->regs, REG_SSI_SOR,
+-				   SSI_SOR_TX_CLR, SSI_SOR_TX_CLR);
+-	}
++	bool tx = !is_rx;
++
++	regmap_update_bits(ssi->regs, REG_SSI_SOR,
++			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
+ }
+ 
+ /**
+@@ -681,6 +678,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 			    struct snd_soc_dai *dai,
+ 			    struct snd_pcm_hw_params *hw_params)
+ {
++	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+ 	struct regmap *regs = ssi->regs;
+ 	int synchronous = ssi->cpu_dai_drv.symmetric_rates, ret;
+@@ -768,10 +766,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 		(psr ? SSI_SxCCR_PSR : 0);
+ 	mask = SSI_SxCCR_PM_MASK | SSI_SxCCR_DIV2 | SSI_SxCCR_PSR;
+ 
+-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK || synchronous)
+-		regmap_update_bits(regs, REG_SSI_STCCR, mask, stccr);
+-	else
+-		regmap_update_bits(regs, REG_SSI_SRCCR, mask, stccr);
++	/* STCCR is used for RX in synchronous mode */
++	tx2 = tx || synchronous;
++	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), mask, stccr);
+ 
+ 	if (!baudclk_is_used) {
+ 		ret = clk_set_rate(ssi->baudclk, baudrate);
+@@ -799,6 +796,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 			     struct snd_pcm_hw_params *hw_params,
+ 			     struct snd_soc_dai *dai)
+ {
++	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+ 	struct regmap *regs = ssi->regs;
+ 	unsigned int channels = params_channels(hw_params);
+@@ -849,11 +847,8 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	}
+ 
+ 	/* In synchronous mode, the SSI uses STCCR for capture */
+-	if ((substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ||
+-	    ssi->cpu_dai_drv.symmetric_rates)
+-		regmap_update_bits(regs, REG_SSI_STCCR, SSI_SxCCR_WL_MASK, wl);
+-	else
+-		regmap_update_bits(regs, REG_SSI_SRCCR, SSI_SxCCR_WL_MASK, wl);
++	tx2 = tx || ssi->cpu_dai_drv.symmetric_rates;
++	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), SSI_SxCCR_WL_MASK, wl);
+ 
+ 	return 0;
+ }
+diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
+index b61008779e3c..de2fdc5db726 100644
+--- a/sound/soc/fsl/fsl_ssi.h
++++ b/sound/soc/fsl/fsl_ssi.h
+@@ -35,10 +35,12 @@
+ #define REG_SSI_STCR			0x1c
+ /* SSI Receive Configuration Register */
+ #define REG_SSI_SRCR			0x20
++#define REG_SSI_SxCR(tx)		((tx) ? REG_SSI_STCR : REG_SSI_SRCR)
+ /* SSI Transmit Clock Control Register */
+ #define REG_SSI_STCCR			0x24
+ /* SSI Receive Clock Control Register */
+ #define REG_SSI_SRCCR			0x28
++#define REG_SSI_SxCCR(tx)		((tx) ? REG_SSI_STCCR : REG_SSI_SRCCR)
+ /* SSI FIFO Control/Status Register */
+ #define REG_SSI_SFCSR			0x2c
+ /*
+@@ -67,6 +69,7 @@
+ #define REG_SSI_STMSK			0x48
+ /* SSI  Receive Time Slot Mask Register */
+ #define REG_SSI_SRMSK			0x4c
++#define REG_SSI_SxMSK(tx)		((tx) ? REG_SSI_STMSK : REG_SSI_SRMSK)
+ /*
+  * SSI AC97 Channel Status Register
+  *
+@@ -249,6 +252,7 @@
+ #define SSI_SOR_CLKOFF			0x00000040
+ #define SSI_SOR_RX_CLR			0x00000020
+ #define SSI_SOR_TX_CLR			0x00000010
++#define SSI_SOR_xX_CLR(tx)		((tx) ? SSI_SOR_TX_CLR : SSI_SOR_RX_CLR)
+ #define SSI_SOR_INIT			0x00000008
+ #define SSI_SOR_WAIT_SHIFT		1
+ #define SSI_SOR_WAIT_MASK		0x00000006
+-- 
+2.15.1
