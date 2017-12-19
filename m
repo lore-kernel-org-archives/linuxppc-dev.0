@@ -3,8 +3,8 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1FJy4NPKzDwNW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:59:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1FK85fFWzDwP3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:59:24 +1100 (AEDT)
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
@@ -14,11 +14,10 @@ Cc: Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
  linux-kernel@vger.kernel.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  fabio.estevam@nxp.com, mail@maciej.szmigiero.name,
  linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_ssi: Define ternary macros to simplify code" to
- the asoc tree
-In-Reply-To: <1513146874-25476-12-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1eRFbx-0000oI-5a@debutante>
-Date: Tue, 19 Dec 2017 10:59:01 +0000
+Subject: Applied "ASoC: fsl_ssi: Rename i2smode to i2s_net" to the asoc tree
+In-Reply-To: <1513146874-25476-11-git-send-email-nicoleotsuka@gmail.com>
+Message-Id: <E1eRFcD-0000pZ-50@debutante>
+Date: Tue, 19 Dec 2017 10:59:17 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl_ssi: Define ternary macros to simplify code
+   ASoC: fsl_ssi: Rename i2smode to i2s_net
 
 has been applied to the asoc tree at
 
@@ -55,12 +54,13 @@ to this mail.
 Thanks,
 Mark
 
->From 52eee84e815e0fbaf9ada848ab5646314a529b61 Mon Sep 17 00:00:00 2001
+>From 8bc84a3344ca27836cff29bfbb42365753c9c557 Mon Sep 17 00:00:00 2001
 From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Sun, 17 Dec 2017 18:52:10 -0800
-Subject: [PATCH] ASoC: fsl_ssi: Define ternary macros to simplify code
+Date: Sun, 17 Dec 2017 18:52:09 -0800
+Subject: [PATCH] ASoC: fsl_ssi: Rename i2smode to i2s_net
 
-Some regmap code looks redudant. So simplify it.
+Since this i2smode also includes the setting of Network mode, it
+should have it in the name. This patch also adds its MASK define.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
@@ -68,108 +68,102 @@ Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Acked-by: Timur Tabi <timur@tabi.org>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 27 +++++++++++----------------
- sound/soc/fsl/fsl_ssi.h |  4 ++++
- 2 files changed, 15 insertions(+), 16 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 24 ++++++++++++------------
+ sound/soc/fsl/fsl_ssi.h |  1 +
+ 2 files changed, 13 insertions(+), 12 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 2b3915c45199..aecd00f7929d 100644
+index aef014c46d96..2b3915c45199 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -408,13 +408,10 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
-  */
- static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
- {
--	if (is_rx) {
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_RX_CLR, SSI_SOR_RX_CLR);
--	} else {
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_TX_CLR, SSI_SOR_TX_CLR);
--	}
-+	bool tx = !is_rx;
-+
-+	regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
- }
+@@ -201,7 +201,7 @@ struct fsl_ssi_soc_data {
+  * @cpu_dai_drv: CPU DAI driver for this device
+  *
+  * @dai_fmt: DAI configuration this device is currently used with
+- * @i2s_mode: I2S and Network mode configuration of SCR register
++ * @i2s_net: I2S and Network mode configurations of SCR register
+  * @use_dma: DMA is used or FIQ with stream filter
+  * @use_dual_fifo: DMA with support for dual FIFO mode
+  * @has_ipg_clk_name: If "ipg" is in the clock name list of device tree
+@@ -245,7 +245,7 @@ struct fsl_ssi {
+ 	struct snd_soc_dai_driver cpu_dai_drv;
  
- /**
-@@ -681,6 +678,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 			    struct snd_soc_dai *dai,
- 			    struct snd_pcm_hw_params *hw_params)
- {
-+	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	int synchronous = ssi->cpu_dai_drv.symmetric_rates, ret;
-@@ -768,10 +766,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 		(psr ? SSI_SxCCR_PSR : 0);
- 	mask = SSI_SxCCR_PM_MASK | SSI_SxCCR_DIV2 | SSI_SxCCR_PSR;
+ 	unsigned int dai_fmt;
+-	u8 i2s_mode;
++	u8 i2s_net;
+ 	bool use_dma;
+ 	bool use_dual_fifo;
+ 	bool has_ipg_clk_name;
+@@ -836,16 +836,16 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	}
  
--	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK || synchronous)
--		regmap_update_bits(regs, REG_SSI_STCCR, mask, stccr);
--	else
--		regmap_update_bits(regs, REG_SSI_SRCCR, mask, stccr);
-+	/* STCCR is used for RX in synchronous mode */
-+	tx2 = tx || synchronous;
-+	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), mask, stccr);
+ 	if (!fsl_ssi_is_ac97(ssi)) {
+-		u8 i2smode;
++		u8 i2s_net;
+ 		/* Normal + Network mode to send 16-bit data in 32-bit frames */
+ 		if (fsl_ssi_is_i2s_cbm_cfs(ssi) && sample_size == 16)
+-			i2smode = SSI_SCR_I2S_MODE_NORMAL | SSI_SCR_NET;
++			i2s_net = SSI_SCR_I2S_MODE_NORMAL | SSI_SCR_NET;
+ 		else
+-			i2smode = ssi->i2s_mode;
++			i2s_net = ssi->i2s_net;
  
- 	if (!baudclk_is_used) {
- 		ret = clk_set_rate(ssi->baudclk, baudrate);
-@@ -799,6 +796,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 			     struct snd_pcm_hw_params *hw_params,
- 			     struct snd_soc_dai *dai)
- {
-+	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
- 	struct regmap *regs = ssi->regs;
- 	unsigned int channels = params_channels(hw_params);
-@@ -849,11 +847,8 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 		regmap_update_bits(regs, REG_SSI_SCR,
+-				   SSI_SCR_NET | SSI_SCR_I2S_MODE_MASK,
+-				   channels == 1 ? 0 : i2smode);
++				   SSI_SCR_I2S_NET_MASK,
++				   channels == 1 ? 0 : i2s_net);
  	}
  
  	/* In synchronous mode, the SSI uses STCCR for capture */
--	if ((substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ||
--	    ssi->cpu_dai_drv.symmetric_rates)
--		regmap_update_bits(regs, REG_SSI_STCCR, SSI_SxCCR_WL_MASK, wl);
--	else
--		regmap_update_bits(regs, REG_SSI_SRCCR, SSI_SxCCR_WL_MASK, wl);
-+	tx2 = tx || ssi->cpu_dai_drv.symmetric_rates;
-+	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), SSI_SxCCR_WL_MASK, wl);
+@@ -902,7 +902,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	srcr &= ~mask;
  
- 	return 0;
- }
+ 	/* Use Network mode as default */
+-	ssi->i2s_mode = SSI_SCR_NET;
++	ssi->i2s_net = SSI_SCR_NET;
+ 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+ 	case SND_SOC_DAIFMT_I2S:
+ 		regmap_update_bits(regs, REG_SSI_STCCR,
+@@ -912,10 +912,10 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
+ 		case SND_SOC_DAIFMT_CBM_CFS:
+ 		case SND_SOC_DAIFMT_CBS_CFS:
+-			ssi->i2s_mode |= SSI_SCR_I2S_MODE_MASTER;
++			ssi->i2s_net |= SSI_SCR_I2S_MODE_MASTER;
+ 			break;
+ 		case SND_SOC_DAIFMT_CBM_CFM:
+-			ssi->i2s_mode |= SSI_SCR_I2S_MODE_SLAVE;
++			ssi->i2s_net |= SSI_SCR_I2S_MODE_SLAVE;
+ 			break;
+ 		default:
+ 			return -EINVAL;
+@@ -940,12 +940,12 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		break;
+ 	case SND_SOC_DAIFMT_AC97:
+ 		/* Data on falling edge of bclk, frame high, 1clk before data */
+-		ssi->i2s_mode |= SSI_SCR_I2S_MODE_NORMAL;
++		ssi->i2s_net |= SSI_SCR_I2S_MODE_NORMAL;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+-	scr |= ssi->i2s_mode;
++	scr |= ssi->i2s_net;
+ 
+ 	/* DAI clock inversion */
+ 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
-index b61008779e3c..de2fdc5db726 100644
+index 52b88f1d6c6f..b61008779e3c 100644
 --- a/sound/soc/fsl/fsl_ssi.h
 +++ b/sound/soc/fsl/fsl_ssi.h
-@@ -35,10 +35,12 @@
- #define REG_SSI_STCR			0x1c
- /* SSI Receive Configuration Register */
- #define REG_SSI_SRCR			0x20
-+#define REG_SSI_SxCR(tx)		((tx) ? REG_SSI_STCR : REG_SSI_SRCR)
- /* SSI Transmit Clock Control Register */
- #define REG_SSI_STCCR			0x24
- /* SSI Receive Clock Control Register */
- #define REG_SSI_SRCCR			0x28
-+#define REG_SSI_SxCCR(tx)		((tx) ? REG_SSI_STCCR : REG_SSI_SRCCR)
- /* SSI FIFO Control/Status Register */
- #define REG_SSI_SFCSR			0x2c
- /*
-@@ -67,6 +69,7 @@
- #define REG_SSI_STMSK			0x48
- /* SSI  Receive Time Slot Mask Register */
- #define REG_SSI_SRMSK			0x4c
-+#define REG_SSI_SxMSK(tx)		((tx) ? REG_SSI_STMSK : REG_SSI_SRMSK)
- /*
-  * SSI AC97 Channel Status Register
-  *
-@@ -249,6 +252,7 @@
- #define SSI_SOR_CLKOFF			0x00000040
- #define SSI_SOR_RX_CLR			0x00000020
- #define SSI_SOR_TX_CLR			0x00000010
-+#define SSI_SOR_xX_CLR(tx)		((tx) ? SSI_SOR_TX_CLR : SSI_SOR_RX_CLR)
- #define SSI_SOR_INIT			0x00000008
- #define SSI_SOR_WAIT_SHIFT		1
- #define SSI_SOR_WAIT_MASK		0x00000006
+@@ -95,6 +95,7 @@
+ #define SSI_SCR_I2S_MODE_SLAVE		0x00000040
+ #define SSI_SCR_SYN			0x00000010
+ #define SSI_SCR_NET			0x00000008
++#define SSI_SCR_I2S_NET_MASK		(SSI_SCR_NET | SSI_SCR_I2S_MODE_MASK)
+ #define SSI_SCR_RE			0x00000004
+ #define SSI_SCR_TE			0x00000002
+ #define SSI_SCR_SSIEN			0x00000001
 -- 
 2.15.1
