@@ -1,35 +1,21 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <paubert@iram.es>
+Received: from cica-lavadora-l1mail2.puc.rediris.es
+ (ci-l1mail2-out03a.puc.rediris.es [IPv6:2001:720:418:ca02::21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z22gL2lphzDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 05:02:54 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBKHxMLB072375
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 13:02:50 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2eyv57sybc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 13:02:50 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 20 Dec 2017 18:02:47 -0000
-Subject: Re: [PATCH v4 2/2] cxl: read PHB indications from the device tree
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.vnet.ibm.com, benh@au1.ibm.com
-References: <20171215134818.23864-1-felix@linux.vnet.ibm.com>
- <20171215134818.23864-2-felix@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 20 Dec 2017 19:02:42 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z22k86FrszF0L9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 05:05:19 +1100 (AEDT)
+Date: Wed, 20 Dec 2017 18:53:24 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 3/8] powerpc/64s: put the per-cpu data_offset in r14
+Message-ID: <20171220175324.uidr5ohzqiwsb6hu@lt-gp.iram.es>
+References: <20171220145206.12234-1-npiggin@gmail.com>
+ <20171220145206.12234-4-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20171215134818.23864-2-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57e40fbc-bc45-f69c-4442-fcaffa7dac9a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20171220145206.12234-4-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,141 +25,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 15/12/2017 à 14:48, Philippe Bergheaud a écrit :
-> Configure the P9 XSL_DSNCTL register with PHB indications found
-> in the device tree, or else use legacy hard-coded values.
-> 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+On Thu, Dec 21, 2017 at 12:52:01AM +1000, Nicholas Piggin wrote:
+> Shifted left by 16 bits, so the low 16 bits of r14 remain available.
+> This allows per-cpu pointers to be dereferenced with a single extra
+> shift whereas previously it was a load and add.
 > ---
-> Changelog:
+>  arch/powerpc/include/asm/paca.h   |  5 +++++
+>  arch/powerpc/include/asm/percpu.h |  2 +-
+>  arch/powerpc/kernel/entry_64.S    |  5 -----
+>  arch/powerpc/kernel/head_64.S     |  5 +----
+>  arch/powerpc/kernel/setup_64.c    | 11 +++++++++--
+>  5 files changed, 16 insertions(+), 12 deletions(-)
 > 
-> v2: New patch. Use the new device tree property "ibm,phb-indications".
-> 
-> v3: No change.
-> 
-> v4: No functional change.
->      Drop cosmetic fix in comment.
-> 
-> This patch depends on the following skiboot prerequisite:
-> 
-> https://patchwork.ozlabs.org/patch/849162/
-> ---
->   drivers/misc/cxl/cxl.h    |  2 +-
->   drivers/misc/cxl/cxllib.c |  2 +-
->   drivers/misc/cxl/pci.c    | 40 +++++++++++++++++++++++++++++++++++-----
->   3 files changed, 37 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index e46a4062904a..5a6e9a921c2b 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -1062,7 +1062,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
->   int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
->   			  u32 *phb_index, u64 *capp_unit_id);
->   int cxl_slot_is_switched(struct pci_dev *dev);
-> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
-> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
->   u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
-> 
->   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
-> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-> index dc9bc1807fdf..61f80d586279 100644
-> --- a/drivers/misc/cxl/cxllib.c
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
->   	if (rc)
->   		return rc;
-> 
-> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
-> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
->   	if (rc)
->   		return rc;
->   	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 19969ee86d6f..c58fb28685af 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -409,7 +409,36 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
->   	return 0;
->   }
-> 
-> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
-> +static u64 nbwind = 0;
-> +static u64 asnind = 0;
-> +static u64 capiind = 0;
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index cd6a9a010895..4dd4ac69e84f 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -35,6 +35,11 @@
+>  
+>  register struct paca_struct *local_paca asm("r13");
+>  #ifdef CONFIG_PPC_BOOK3S
+> +/*
+> + * The top 32-bits of r14 is used as the per-cpu offset, shifted by PAGE_SHIFT.
 
-Could we avoid the globals and keep the static within 
-get_phb_indications() and have the function return them as out 
-parameters? It would seem cleaner to me.
+Top 32, really? It's 48 in later comments.
 
-   Fred
+	Gabriel
 
-> +static int get_phb_indications(struct pci_dev *dev)
-> +{
-> +	struct device_node *np;
-> +	const __be32 *prop;
+> + * The per-cpu could be moved completely to vmalloc space if we had large
+> + * vmalloc page mapping? (no, must access it in real mode).
+> + */
+>  register u64 local_r14 asm("r14");
+>  #endif
+>  
+> diff --git a/arch/powerpc/include/asm/percpu.h b/arch/powerpc/include/asm/percpu.h
+> index dce863a7635c..1e0d79d30eac 100644
+> --- a/arch/powerpc/include/asm/percpu.h
+> +++ b/arch/powerpc/include/asm/percpu.h
+> @@ -12,7 +12,7 @@
+>  
+>  #include <asm/paca.h>
+>  
+> -#define __my_cpu_offset local_paca->data_offset
+> +#define __my_cpu_offset (local_r14 >> 16)
+>  
+>  #endif /* CONFIG_SMP */
+>  #endif /* __powerpc64__ */
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 592e4b36065f..6b0e3ac311e8 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -262,11 +262,6 @@ system_call_exit:
+>  BEGIN_FTR_SECTION
+>  	stdcx.	r0,0,r1			/* to clear the reservation */
+>  END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+> -	LOAD_REG_IMMEDIATE(r10, 0xdeadbeefULL << 32)
+> -	mfspr	r11,SPRN_PIR
+> -	or	r10,r10,r11
+> -	tdne	r10,r14
+> -
+>  	andi.	r6,r8,MSR_PR
+>  	ld	r4,_LINK(r1)
+>  
+> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+> index 5a9ec06eab14..cdb710f43681 100644
+> --- a/arch/powerpc/kernel/head_64.S
+> +++ b/arch/powerpc/kernel/head_64.S
+> @@ -413,10 +413,7 @@ generic_secondary_common_init:
+>  	b	kexec_wait		/* next kernel might do better	 */
+>  
+>  2:	SET_PACA(r13)
+> -	LOAD_REG_IMMEDIATE(r14, 0xdeadbeef << 32)
+> -	mfspr	r3,SPRN_PIR
+> -	or	r14,r14,r3
+> -	std	r14,PACA_R14(r13)
+> +	ld	r14,PACA_R14(r13)
+>  
+>  #ifdef CONFIG_PPC_BOOK3E
+>  	addi	r12,r13,PACA_EXTLB	/* and TLB exc frame in another  */
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 9a4c5bf35d92..f4a96ebb523a 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -192,8 +192,8 @@ static void __init fixup_boot_paca(void)
+>  	get_paca()->data_offset = 0;
+>  	/* Mark interrupts disabled in PACA */
+>  	irq_soft_mask_set(IRQ_SOFT_MASK_STD);
+> -	/* Set r14 and paca_r14 to debug value */
+> -	get_paca()->r14 = (0xdeadbeefULL << 32) | mfspr(SPRN_PIR);
+> +	/* Set r14 and paca_r14 to zero */
+> +	get_paca()->r14 = 0;
+>  	local_r14 = get_paca()->r14;
+>  }
+>  
+> @@ -761,7 +761,14 @@ void __init setup_per_cpu_areas(void)
+>  	for_each_possible_cpu(cpu) {
+>                  __per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
+>  		paca[cpu].data_offset = __per_cpu_offset[cpu];
 > +
-> +	if (capiind)
-> +		return 0;
+> +		BUG_ON(paca[cpu].data_offset & (PAGE_SIZE-1));
+> +		BUG_ON(paca[cpu].data_offset >= (1UL << (64 - 16)));
 > +
-> +	if (!(np = pnv_pci_get_phb_node(dev)))
-> +		return -1;
-> +
-> +	prop = of_get_property(np, "ibm,phb-indications", NULL);
-> +	if (!prop) {
-> +		nbwind = 0x0300UL; /* legacy values */
-> +		asnind = 0x0400UL;
-> +		capiind = 0x0200UL;
-> +	} else {
-> +		nbwind = (u64)be32_to_cpu(prop[2]);
-> +		asnind = (u64)be32_to_cpu(prop[1]);
-> +		capiind = (u64)be32_to_cpu(prop[0]);
-> +	}
-> +	of_node_put(np);
-> +	return 0;
-> +}
-> +
-> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
->   {
->   	u64 xsl_dsnctl;
-> 
-> @@ -423,7 +452,8 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
->   	 * Tell XSL where to route data to.
->   	 * The field chipid should match the PHB CAPI_CMPM register
->   	 */
-> -	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
-> +	get_phb_indications(dev);
-
-
-> +	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
->   	xsl_dsnctl |= (capp_unit_id << (63-15));
-> 
->   	/* nMMU_ID Defaults to: b’000001001’*/
-> @@ -437,14 +467,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
->   		 * nbwind=0x03, bits [57:58], must include capi indicator.
->   		 * Not supported on P9 DD1.
->   		 */
-> -		xsl_dsnctl |= ((u64)0x03 << (63-47));
-> +		xsl_dsnctl |= (nbwind << (63-55));
-> 
->   		/*
->   		 * Upper 16b address bits of ASB_Notify messages sent to the
->   		 * system. Need to match the PHB’s ASN Compare/Mask Register.
->   		 * Not supported on P9 DD1.
->   		 */
-> -		xsl_dsnctl |= ((u64)0x04 << (63-55));
-> +		xsl_dsnctl |= asnind;
->   	}
-> 
->   	*reg = xsl_dsnctl;
-> @@ -464,7 +494,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
->   	if (rc)
->   		return rc;
-> 
-> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
-> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
->   	if (rc)
->   		return rc;
-> 
+> +		/* The top 48 bits are used for per-cpu data */
+> +		paca[cpu].r14 |= paca[cpu].data_offset << 16;
+>  	}
+> +	local_r14 = paca[smp_processor_id()].r14;
+>  }
+>  #endif
+>  
+> -- 
+> 2.15.0
