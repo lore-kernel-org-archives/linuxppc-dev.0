@@ -1,48 +1,35 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z22P86x6wzF0Px
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 04:50:36 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z22gL2lphzDqXy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 05:02:54 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBKHmx8i100302
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 12:50:34 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2eyvep8gwj-1
+ vBKHxMLB072375
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 13:02:50 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eyv57sybc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 12:50:34 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 13:02:50 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 20 Dec 2017 10:50:33 -0700
-Date: Wed, 20 Dec 2017 09:50:22 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Dave Hansen <dave.hansen@intel.com>, mpe@ellerman.id.au, mingo@redhat.com,
- akpm@linux-foundation.org, corbet@lwn.net, arnd@arndb.de,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
- paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- ebiederm@xmission.com
-Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
- Add sysfs interface
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
- <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
- <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
- <20171218221850.GD5461@ram.oc3035372033.ibm.com>
- <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
- <1513719296.2743.12.camel@kernel.crashing.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 20 Dec 2017 18:02:47 -0000
+Subject: Re: [PATCH v4 2/2] cxl: read PHB indications from the device tree
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.vnet.ibm.com, benh@au1.ibm.com
+References: <20171215134818.23864-1-felix@linux.vnet.ibm.com>
+ <20171215134818.23864-2-felix@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 20 Dec 2017 19:02:42 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1513719296.2743.12.camel@kernel.crashing.org>
-Message-Id: <20171220175022.GB5619@ram.oc3035372033.ibm.com>
+In-Reply-To: <20171215134818.23864-2-felix@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <57e40fbc-bc45-f69c-4442-fcaffa7dac9a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,51 +39,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 20, 2017 at 08:34:56AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2017-12-18 at 14:28 -0800, Dave Hansen wrote:
-> > > We do not have generic support for something like that on ppc.
-> > > The kernel looks at the device tree to determine what hardware features
-> > > are available. But does not have mechanism to tell the hardware to track
-> > > which of its features are currently enabled/used by the kernel; atleast
-> > > not for the memory-key feature.
-> > 
-> > Bummer.  You're missing out.
-> > 
-> > But, you could still do this with a syscall.  "Hey, kernel, do you
-> > support this feature?"
+
+
+Le 15/12/2017 à 14:48, Philippe Bergheaud a écrit :
+> Configure the P9 XSL_DSNCTL register with PHB indications found
+> in the device tree, or else use legacy hard-coded values.
 > 
-> I'm not sure I understand Ram's original (quoted) point, but informing
-> userspace of CPU features is what AT_HWCAP's are about.
+> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> ---
+> Changelog:
+> 
+> v2: New patch. Use the new device tree property "ibm,phb-indications".
+> 
+> v3: No change.
+> 
+> v4: No functional change.
+>      Drop cosmetic fix in comment.
+> 
+> This patch depends on the following skiboot prerequisite:
+> 
+> https://patchwork.ozlabs.org/patch/849162/
+> ---
+>   drivers/misc/cxl/cxl.h    |  2 +-
+>   drivers/misc/cxl/cxllib.c |  2 +-
+>   drivers/misc/cxl/pci.c    | 40 +++++++++++++++++++++++++++++++++++-----
+>   3 files changed, 37 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index e46a4062904a..5a6e9a921c2b 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -1062,7 +1062,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
+>   int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>   			  u32 *phb_index, u64 *capp_unit_id);
+>   int cxl_slot_is_switched(struct pci_dev *dev);
+> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
+> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
+>   u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
+> 
+>   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+> index dc9bc1807fdf..61f80d586279 100644
+> --- a/drivers/misc/cxl/cxllib.c
+> +++ b/drivers/misc/cxl/cxllib.c
+> @@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
+>   	if (rc)
+>   		return rc;
+> 
+> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
+> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
+>   	if (rc)
+>   		return rc;
+>   	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 19969ee86d6f..c58fb28685af 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -409,7 +409,36 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>   	return 0;
+>   }
+> 
+> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+> +static u64 nbwind = 0;
+> +static u64 asnind = 0;
+> +static u64 capiind = 0;
 
-Ben, my original point was -- we developed this patch to satisfy a concern
-you raised back on July 11th;  cut-n-pasted below.
+Could we avoid the globals and keep the static within 
+get_phb_indications() and have the function return them as out 
+parameters? It would seem cleaner to me.
 
--------------------------------------------------------------------
-That leads to the question... How do you tell userspace.
+   Fred
 
-(apologies if I missed that in an existing patch in the series)
+> +static int get_phb_indications(struct pci_dev *dev)
+> +{
+> +	struct device_node *np;
+> +	const __be32 *prop;
+> +
+> +	if (capiind)
+> +		return 0;
+> +
+> +	if (!(np = pnv_pci_get_phb_node(dev)))
+> +		return -1;
+> +
+> +	prop = of_get_property(np, "ibm,phb-indications", NULL);
+> +	if (!prop) {
+> +		nbwind = 0x0300UL; /* legacy values */
+> +		asnind = 0x0400UL;
+> +		capiind = 0x0200UL;
+> +	} else {
+> +		nbwind = (u64)be32_to_cpu(prop[2]);
+> +		asnind = (u64)be32_to_cpu(prop[1]);
+> +		capiind = (u64)be32_to_cpu(prop[0]);
+> +	}
+> +	of_node_put(np);
+> +	return 0;
+> +}
+> +
+> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
+>   {
+>   	u64 xsl_dsnctl;
+> 
+> @@ -423,7 +452,8 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+>   	 * Tell XSL where to route data to.
+>   	 * The field chipid should match the PHB CAPI_CMPM register
+>   	 */
+> -	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
+> +	get_phb_indications(dev);
 
-How do we inform userspace of the key capabilities ? There are
-at least two things userspace may want to know already:
 
-	 - What protection bits are supported for a key
-
-	 - How many keys exist
-
-	 - Which keys are available for use by userspace. On PowerPC,
-	 the kernel can reserve some keys for itself, so can the
-	 hypervisor. In fact, they do.
---------------------------------------------------------------------
-
-
-The argument against this patch is --  it should not be baked into
-the ABI as yet, since we do not have clarity on what applications need.
-
-As it stands today the only way to figure out the information from
-userspace is by probing the kernel through calls to sys_pkey_alloc().
-
-AT_HWCAP can be used, but that will certainly not be capable of
-providing all the information that userspace might expect.
-
-Your thoughts?
-RP
+> +	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
+>   	xsl_dsnctl |= (capp_unit_id << (63-15));
+> 
+>   	/* nMMU_ID Defaults to: b’000001001’*/
+> @@ -437,14 +467,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+>   		 * nbwind=0x03, bits [57:58], must include capi indicator.
+>   		 * Not supported on P9 DD1.
+>   		 */
+> -		xsl_dsnctl |= ((u64)0x03 << (63-47));
+> +		xsl_dsnctl |= (nbwind << (63-55));
+> 
+>   		/*
+>   		 * Upper 16b address bits of ASB_Notify messages sent to the
+>   		 * system. Need to match the PHB’s ASN Compare/Mask Register.
+>   		 * Not supported on P9 DD1.
+>   		 */
+> -		xsl_dsnctl |= ((u64)0x04 << (63-55));
+> +		xsl_dsnctl |= asnind;
+>   	}
+> 
+>   	*reg = xsl_dsnctl;
+> @@ -464,7 +494,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+>   	if (rc)
+>   		return rc;
+> 
+> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
+> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
+>   	if (rc)
+>   		return rc;
+> 
