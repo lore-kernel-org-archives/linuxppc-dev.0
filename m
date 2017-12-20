@@ -1,48 +1,23 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z26zD2YwvzDrnd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 08:16:56 +1100 (AEDT)
-Date: Wed, 20 Dec 2017 13:16:49 -0800
-From: Matthew Wilcox <willy@infradead.org>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
- Michal Hocko <mhocko@kernel.org>, linux-kernel@vger.kernel.org,
- "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>,
- "Box, David E" <david.e.box@intel.com>,
- "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>,
- "Koss, Marcin" <marcin.koss@intel.com>,
- "Koziej, Artur" <artur.koziej@intel.com>,
- "Lahtinen, Joonas" <joonas.lahtinen@intel.com>,
- "Moore, Robert" <robert.moore@intel.com>,
- "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
- "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "Schmauss, Erik" <erik.schmauss@intel.com>,
- "Verma, Vishal L" <vishal.l.verma@intel.com>,
- "Zheng, Lv" <lv.zheng@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Balbir Singh <bsingharora@gmail.com>,
- Brice Goglin <brice.goglin@gmail.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Jerome Glisse <jglisse@redhat.com>,
- John Hubbard <jhubbard@nvidia.com>, Len Brown <lenb@kernel.org>,
- Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
- linux-acpi@vger.kernel.org, linux-mm@kvack.org,
- linux-nvdimm@lists.01.org, linux-api@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
-Message-ID: <20171220211649.GA32200@bombadil.infradead.org>
-References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
- <20171214130032.GK16951@dhcp22.suse.cz>
- <20171218203547.GA2366@linux.intel.com>
- <20171220181937.GB12236@bombadil.infradead.org>
- <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z274N3SwLzDqmD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 08:21:24 +1100 (AEDT)
+Subject: Re: ps3: Improve a size determination in five functions
+To: Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+References: <9b6464bc-a408-de2a-1b54-cb7794b92506@users.sourceforge.net>
+ <7aed1208-aa55-edb6-54be-f47fb1498bfd@users.sourceforge.net>
+ <cd0c8519-85d0-0ce5-14a1-54a573234a98@infradead.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <2003adbe-1849-b689-40bf-00e02ae4e01e@users.sourceforge.net>
+Date: Wed, 20 Dec 2017 22:20:36 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
+In-Reply-To: <cd0c8519-85d0-0ce5-14a1-54a573234a98@infradead.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,26 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 20, 2017 at 12:22:21PM -0800, Dave Hansen wrote:
-> On 12/20/2017 10:19 AM, Matthew Wilcox wrote:
-> > I don't know what the right interface is, but my laptop has a set of
-> > /sys/devices/system/memory/memoryN/ directories.  Perhaps this is the
-> > right place to expose write_bw (etc).
+> Some observations:
 > 
-> Those directories are already too redundant and wasteful.  I think we'd
-> really rather not add to them.  In addition, it's technically possible
-> to have a memory section span NUMA nodes and have different performance
-> properties, which make it impossible to represent there.
-> 
-> In any case, ACPI PXM's (Proximity Domains) are guaranteed to have
-> uniform performance properties in the HMAT, and we just so happen to
-> always create one NUMA node per PXM.  So, NUMA nodes really are a good fit.
+>  o Your patch fixes no bug nor replaces any depreciated feature.
 
-I think you're missing my larger point which is that I don't think this
-should be exposed to userspace as an ACPI feature.  Because if you do,
-then it'll also be exposed to userspace as an openfirmware feature.
-And sooner or later a devicetree feature.  And then writing a portable
-program becomes an exercise in suffering.
+How do you think about information from the section “14) Allocating memory”
+in the document “coding-style.rst” for the shown source code transformation?
 
-So, what's the right place in sysfs that isn't tied to ACPI?  A new
-directory or set of directories under /sys/devices/system/memory/ ?
+
+>  o There will be no functional change; …
+
+Yes. - The suggested adjustment should work in this way generally.
+
+Regards,
+Markus
