@@ -1,25 +1,34 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Bk15qSDzDsPn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 11:05:45 +1100 (AEDT)
-Subject: Re: ps3: Improve a size determination in five functions
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <9b6464bc-a408-de2a-1b54-cb7794b92506@users.sourceforge.net>
- <7aed1208-aa55-edb6-54be-f47fb1498bfd@users.sourceforge.net>
- <cd0c8519-85d0-0ce5-14a1-54a573234a98@infradead.org>
- <2003adbe-1849-b689-40bf-00e02ae4e01e@users.sourceforge.net>
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <d67137c4-5fa7-bb3a-fc38-4d50ceed02cd@infradead.org>
-Date: Wed, 20 Dec 2017 16:05:33 -0800
-MIME-Version: 1.0
-In-Reply-To: <2003adbe-1849-b689-40bf-00e02ae4e01e@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Bt32VJbzDrYY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 11:12:43 +1100 (AEDT)
+Message-ID: <1513810153.2743.25.camel@kernel.crashing.org>
+Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
+ Add sysfs interface
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: Dave Hansen <dave.hansen@intel.com>, mpe@ellerman.id.au, mingo@redhat.com,
+ akpm@linux-foundation.org, corbet@lwn.net, arnd@arndb.de,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com
+Date: Thu, 21 Dec 2017 09:49:13 +1100
+In-Reply-To: <20171220175022.GB5619@ram.oc3035372033.ibm.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
+ <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
+ <20171218221850.GD5461@ram.oc3035372033.ibm.com>
+ <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
+ <1513719296.2743.12.camel@kernel.crashing.org>
+ <20171220175022.GB5619@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/20/2017 01:20 PM, SF Markus Elfring wrote:
->>  o Your patch fixes no bug nor replaces any depreciated feature.
+On Wed, 2017-12-20 at 09:50 -0800, Ram Pai wrote:
+> The argument against this patch is --  it should not be baked into
+> the ABI as yet, since we do not have clarity on what applications need.
 > 
-> How do you think about information from the section “14) Allocating memory”
-> in the document “coding-style.rst” for the shown source code transformation?
+> As it stands today the only way to figure out the information from
+> userspace is by probing the kernel through calls to sys_pkey_alloc().
+> 
+> AT_HWCAP can be used, but that will certainly not be capable of
+> providing all the information that userspace might expect.
+> 
+> Your thoughts?
 
-In terms of importance, I would put maintenance and user support as more
-important than coding style.
+Well, there's one well known application wanting that whole keys
+business, so why not ask them what works for them ?
 
-Regarding Section 14 of coding-style.rst specifically, as I mentioned the
-PS3 support is over 10 years old.  I don't expect a change to the type of
-any structures.  If there are type changes, then we can update the
-allocation size parameters at that time.
+In the meantime, that shouldn't block the rest of the patches.
 
--Geoff
+Cheers,
+Ben.
