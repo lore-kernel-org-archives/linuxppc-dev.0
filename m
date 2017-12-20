@@ -1,24 +1,45 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1llZ3KtgzDsQ4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 17:50:33 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id bd8so8497246plb.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 22:50:33 -0800 (PST)
-Date: Wed, 20 Dec 2017 12:20:28 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] cpufreq: powernv: Add support of frequency domain
-Message-ID: <20171220065028.GW19815@vireshk-i7>
-References: <20171220064214.9057-1-huntbag@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1nPL6q5gzF08Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 19:04:54 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBK83vDl135638
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 03:04:51 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2eykxnrc01-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 03:04:50 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 20 Dec 2017 01:04:49 -0700
+Date: Wed, 20 Dec 2017 13:34:37 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Abhishek <huntbag@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
+Reply-To: ego@linux.vnet.ibm.com
+References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
+ <20171214044239.GU3322@vireshk-i7>
+ <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
+ <20171218082935.GH19815@vireshk-i7>
+ <20171219092037.GA27991@in.ibm.com>
+ <CAKTCnz=Wq_qgG0=cxHuCibFZxLM7uPv0iULGBO5AkUGZgHLXkg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171220064214.9057-1-huntbag@linux.vnet.ibm.com>
+In-Reply-To: <CAKTCnz=Wq_qgG0=cxHuCibFZxLM7uPv0iULGBO5AkUGZgHLXkg@mail.gmail.com>
+Message-Id: <20171220080437.GA31588@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,225 +49,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20-12-17, 12:12, Abhishek Goel wrote:
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..fd642bc 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -37,6 +37,7 @@
->  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
->  #include <asm/opal.h>
->  #include <linux/timer.h>
-> +#include <linux/hashtable.h>
->  
->  #define POWERNV_MAX_PSTATES	256
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
-> @@ -130,6 +131,9 @@ static struct chip {
->  static int nr_chips;
->  static DEFINE_PER_CPU(struct chip *, chip_info);
->  
-> +static u32 freq_domain_indicator;
-> +static u32 flag;
+On Tue, Dec 19, 2017 at 09:21:52PM +1100, Balbir Singh wrote:
+> On Tue, Dec 19, 2017 at 8:20 PM, Gautham R Shenoy
+> <ego@linux.vnet.ibm.com> wrote:
+> > Hi Viresh,
+> > On Mon, Dec 18, 2017 at 01:59:35PM +0530, Viresh Kumar wrote:
+> >> On 18-12-17, 10:41, Abhishek wrote:
+> >> > We need to do it in this way as the current implementation takes the max of
+> >> > the PMSR of the cores. Thus, when the frequency is required to be ramped up,
+> >> > it suffices to write to just the local PMSR, but when the frequency is to be
+> >> > ramped down, if we don't send the IPI it breaks the compatibility with P8.
+> >>
+> >> Looks strange really that you have to program this differently for speeding up
+> >> or down. These CPUs are part of one cpufreq policy and so I would normally
+> >> expect changes to any CPU should reflect for other CPUs as well.
+> >>
+> >> @Goutham: Do you know why it is so ?
+> >>
+> >
+> > These are due to some implementation quirks where the platform has
+> > provided a PMCR per-core to be backward compatible with POWER8, but
+> > controls the frequency at a quad-level, by taking the maximum of the
+> > four PMCR values instead of the latest one. So, changes to any CPU in
+> > the core will reflect on all the cores if the frequency is higher than
+> > the current frequency, but not necessarily if the requested frequency
+> > is lower than the current frequency.
+> >
+> > Without sending the extra IPIs, we will be breaking the ABI since if
+> > we set userspace governor, and change the frequency of a core by
+> > lowering it, then it will not reflect on the CPUs of the cores in the
+> > quad.
+> 
+> 
+> What about cpufreq_policy->cpus/related_cpus? Am I missing something?
 
-I wouldn't name it as flag, its unreadable. Maybe its better to name
-it based on the quirk you are trying to workaround with ?
+The frequency indicator passed via the device tree is used to derive
+the mask corresponding to the set of CPUs that share the same
+frequency. It is this mask that is set to
+cpufreq_policy->cpus/related_cpus.
 
-> +
->  /*
->   * Note:
->   * The set of pstates consists of contiguous integers.
-> @@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
->  	gpstates->last_gpstate_idx = 0;
->  }
->  
-> +#define SIZE NR_CPUS
-> +#define ORDER_FREQ_MAP ilog2(SIZE)
-> +
-> +static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
-> +
-> +struct hashmap {
-> +	cpumask_t mask;
-> +	int chip_id;
-> +	u32 pir_key;
-> +	struct hlist_node hash_node;
-> +};
-> +
-> +static void insert(u32 key, int cpu)
-> +{
-> +	struct hashmap *data;
-> +
-> +	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
-> +		if (data->chip_id == cpu_to_chip_id(cpu) &&
-> +			data->pir_key == key) {
-> +			cpumask_set_cpu(cpu, &data->mask);
-> +			return;
-> +		}
-> +	}
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
-> +	cpumask_set_cpu(cpu, &data->mask);
-> +	data->chip_id = cpu_to_chip_id(cpu);
-> +	data->pir_key = key;
-> +
-> +}
-> +
->  /*
->   * Initialize the freq table based on data obtained
->   * from the firmware passed via device-tree
-> @@ -206,7 +242,9 @@ static int init_powernv_pstates(void)
->  	u32 len_ids, len_freqs;
->  	u32 pstate_min, pstate_max, pstate_nominal;
->  	u32 pstate_turbo, pstate_ultra_turbo;
-> +	u32 key;
->  
-> +	flag = 0;
 
-Isn't flag already 0 (global-uninitialized) ?
-
->  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
->  	if (!power_mgt) {
->  		pr_warn("power-mgt node not found\n");
-> @@ -229,6 +267,17 @@ static int init_powernv_pstates(void)
->  		return -ENODEV;
->  	}
->  
-> +	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
-> +		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
-> +				 &freq_domain_indicator)) {
-> +		pr_warn("ibm,freq-domain-indicator not found\n");
-> +		freq_domain_indicator = 0;
-
-You shouldn't be required to set it to 0 here.
-
-> +	}
-> +
-> +	if (of_device_is_compatible(power_mgt, "P9-occ-quirk")) {
-> +		flag = 1;
-> +	}
-
-Remove {} and a better name like p9_occ_quirk would be good for flag.
-Also making it a bool may be better ?
-
-> +
->  	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
->  				 &pstate_ultra_turbo)) {
->  		powernv_pstate_info.wof_enabled = false;
-> @@ -249,6 +298,7 @@ static int init_powernv_pstates(void)
->  next:
->  	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
->  		pstate_nominal, pstate_max);
-> +	pr_info("frequency domain indicator %d", freq_domain_indicator);
->  	pr_info("Workload Optimized Frequency is %s in the platform\n",
->  		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
->  
-> @@ -276,6 +326,15 @@ static int init_powernv_pstates(void)
->  		return -ENODEV;
->  	}
->  
-> +	if (freq_domain_indicator) {
-> +		hash_init(freq_domain_map);
-> +		for_each_possible_cpu(i) {
-> +			key = ((u32) get_hard_smp_processor_id(i) &
-> +				freq_domain_indicator);
-
-Maybe break it like:
-
-			key = (u32) get_hard_smp_processor_id(i);
-                        key &= freq_domain_indicator;
-
-to make it easily readable ?
-
-> +			insert(key, i);
-> +		}
-> +	}
-> +
->  	powernv_pstate_info.nr_pstates = nr_pstates;
->  	pr_debug("NR PStates %d\n", nr_pstates);
->  	for (i = 0; i < nr_pstates; i++) {
-> @@ -693,6 +752,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  {
->  	struct powernv_smp_call_data freq_data;
->  	unsigned int cur_msec, gpstate_idx;
-> +
-
-:(
-
->  	struct global_pstate_info *gpstates = policy->driver_data;
->  
->  	if (unlikely(rebooting) && new_index != get_nominal_index())
-> @@ -760,25 +820,55 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	spin_unlock(&gpstates->gpstate_lock);
->  
-> -	/*
-> -	 * Use smp_call_function to send IPI and execute the
-> -	 * mtspr on target CPU.  We could do that without IPI
-> -	 * if current CPU is within policy->cpus (core)
-> -	 */
-> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> +	if (flag) {
-
-Maybe add a comment over this on why you need to do things differently
-here, as it isn't obvious.
-
-> +		cpumask_t temp;
-> +		u32 cpu;
-> +
-> +	       /*
-> +		* Use smp_call_function to send IPI and execute the mtspr
-> +		* on CPU. This needs to be done on every core of the policy.
-> +		*/
-> +		cpumask_copy(&temp, policy->cpus);
-> +		while (!cpumask_empty(&temp)) {
-> +			cpu = cpumask_first(&temp);
-> +			smp_call_function_any(cpu_sibling_mask(cpu),
-> +					set_pstate, &freq_data, 1);
-> +			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
-> +		}
-> +	} else {
-> +		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> +	}
-> +
->  	return 0;
->  }
->  
->  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> -	int base, i, ret;
-> +	int ret;
->  	struct kernfs_node *kn;
->  	struct global_pstate_info *gpstates;
->  
-> -	base = cpu_first_thread_sibling(policy->cpu);
-> +	if (!freq_domain_indicator) {
-> +		int base, i;
->  
-> -	for (i = 0; i < threads_per_core; i++)
-> -		cpumask_set_cpu(base + i, policy->cpus);
-> +		base = cpu_first_thread_sibling(policy->cpu);
-> +		for (i = 0; i < threads_per_core; i++)
-> +			cpumask_set_cpu(base + i, policy->cpus);
-> +	} else {
-> +		u32 key;
-> +		struct hashmap *data;
-> +
-> +		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
-> +				freq_domain_indicator);
-> +		hash_for_each_possible(freq_domain_map, data, hash_node,
-> +								 key%SIZE) {
-> +			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
-> +				data->pir_key == key) {
-> +				cpumask_copy(policy->cpus, &data->mask);
-> +				break;
-> +			}
-> +		}
-> +	}
->  
->  	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
->  	if (!kn) {
-> -- 
-> 2.9.3
-
--- 
-viresh
+> 
+> >
+> > Abhishek,
+> > I think we can rework this by sending the extra IPIs only in the
+> > presence of the quirk which can be indicated through a device-tree
+> > parameter. If the future implementation fix this, then we won't need
+> > the extra IPIs.
+> 
+> Balbir Singh.
+> 
