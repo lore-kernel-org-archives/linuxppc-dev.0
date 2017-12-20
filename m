@@ -1,16 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c00::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z1hXB1xx4zDr77
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 15:25:30 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- david@gibson.dropbear.id.au
-Subject: [PATCH] powerpc/pseries: Increase memory block size to 1GB on radix
-Date: Wed, 20 Dec 2017 15:25:20 +1100
-Message-Id: <20171220042520.7946-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z1jM15NVxzDrkB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 16:02:37 +1100 (AEDT)
+Received: by mail-pf0-x22d.google.com with SMTP id u25so12130190pfg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Dec 2017 21:02:37 -0800 (PST)
+Date: Wed, 20 Dec 2017 15:02:20 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, anton@samba.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v10 00/17] powerpc: "paca->soft_enabled" based local
+ atomic operation implementation
+Message-ID: <20171220150220.2a55c114@roar.ozlabs.ibm.com>
+In-Reply-To: <1513742157-28768-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1513742157-28768-1-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,52 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we're using the Radix MMU we map the kernel linear mapping with
-1G pages. That means we must do memory hot remove in blocks of at
-least that size. Otherwise the linear mapping can end up not mapping
-all of memory because we've removed part of a 1G region but unmapped
-the entire 1G region from the linear mapping.
+On Wed, 20 Dec 2017 09:25:40 +0530
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-Currently on pseries we consult the device tree to find out the the
-"LMB" (Logical Memory Block) size. This is the unit of memory hotplug
-communicated to us by the hypervisor, but it does not take into
-account anything the kernel has done itself, such as use 1G pages for
-the linear mapping.
+> Local atomic operations are fast and highly reentrant per CPU counters.
+> Used for percpu variable updates. Local atomic operations only guarantee
+> variable modification atomicity wrt the CPU which owns the data and
+> these needs to be executed in a preemption safe way.
 
-So take what's in the device tree as a start, but make sure we round
-up to 1G when Radix is enabled if the size from the device tree is
-smaller.
+As we've been discussing offline, these are all
 
-Note that this code is also theoretically broken on hash, except that
-with hash we use 16MB pages for the linear mapping and all hypervisors
-I'm aware of use at least a 256MB LMB size.
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Fixes: 4b5d62ca17a1 ("powerpc/mm: add radix__remove_section_mapping()")
-Cc: stable@vger.kernel.org # v4.11+
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/hotplug-memory.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 1d48ab424bd9..a602be935777 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -67,6 +67,15 @@ unsigned long pseries_memory_block_size(void)
- 			}
- 		}
- 	}
-+
-+	/*
-+	 * We map the kernel linear region with 1GB large pages on radix. For
-+	 * memory hot unplug to work our memory block size must be at least
-+	 * that big.
-+	 */
-+	if (radix_enabled())
-+		memblock_size = max(1u << 30, memblock_size);
-+
- 	return memblock_size;
- }
- 
--- 
-2.14.3
+Thanks,
+Nick
