@@ -1,29 +1,48 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z21tY1qmczDwNN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 04:27:33 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBKHPfZd033119
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 12:27:30 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2eyt3tnsnb-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z22P86x6wzF0Px
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 04:50:36 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBKHmx8i100302
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 12:50:34 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2eyvep8gwj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 12:27:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Dec 2017 12:50:34 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Wed, 20 Dec 2017 17:27:28 -0000
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V5] cxl: Add support for ASB_Notify on POWER9
-Date: Wed, 20 Dec 2017 18:27:24 +0100
-Message-Id: <1513790844-27779-1-git-send-email-clombard@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Wed, 20 Dec 2017 10:50:33 -0700
+Date: Wed, 20 Dec 2017 09:50:22 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dave Hansen <dave.hansen@intel.com>, mpe@ellerman.id.au, mingo@redhat.com,
+ akpm@linux-foundation.org, corbet@lwn.net, arnd@arndb.de,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com
+Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
+ Add sysfs interface
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
+ <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
+ <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
+ <20171218221850.GD5461@ram.oc3035372033.ibm.com>
+ <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
+ <1513719296.2743.12.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1513719296.2743.12.camel@kernel.crashing.org>
+Message-Id: <20171220175022.GB5619@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,256 +52,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The POWER9 core supports a new feature: ASB_Notify which requires the
-support of the Special Purpose Register: TIDR.
+On Wed, Dec 20, 2017 at 08:34:56AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2017-12-18 at 14:28 -0800, Dave Hansen wrote:
+> > > We do not have generic support for something like that on ppc.
+> > > The kernel looks at the device tree to determine what hardware features
+> > > are available. But does not have mechanism to tell the hardware to track
+> > > which of its features are currently enabled/used by the kernel; atleast
+> > > not for the memory-key feature.
+> > 
+> > Bummer.  You're missing out.
+> > 
+> > But, you could still do this with a syscall.  "Hey, kernel, do you
+> > support this feature?"
+> 
+> I'm not sure I understand Ram's original (quoted) point, but informing
+> userspace of CPU features is what AT_HWCAP's are about.
 
-The ASB_Notify command, generated by the AFU, will attempt to
-wake-up the host thread identified by the particular LPID:PID:TID.
+Ben, my original point was -- we developed this patch to satisfy a concern
+you raised back on July 11th;  cut-n-pasted below.
 
-This patch assign a unique TIDR (thread id) for the current thread which
-will be used in the process element entry.
+-------------------------------------------------------------------
+That leads to the question... How do you tell userspace.
 
-A next patch will handle a new kind of "compatible" property in the
-device-tree (PHB DT node) indicating which version of CAPI and which
-features are supported, instead of handling PVR values.
+(apologies if I missed that in an existing patch in the series)
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-Reviewed-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+How do we inform userspace of the key capabilities ? There are
+at least two things userspace may want to know already:
 
----
-Changelog[v5]
- - Rebased to latest upstream.
- - Updated the ioctl interface.
- - Returned the tid in the ioctl structure.
+	 - What protection bits are supported for a key
 
-Changelog[v4]
- - Rebased to latest upstream.
- - Updated the ioctl interface.
- - Removed the field tid in the context structure.
+	 - How many keys exist
 
-Changelog[v3]
- - Rebased to latest upstream.
- - Updated attr->tid field in cxllib_get_PE_attributes().
+	 - Which keys are available for use by userspace. On PowerPC,
+	 the kernel can reserve some keys for itself, so can the
+	 hypervisor. In fact, they do.
+--------------------------------------------------------------------
 
-Changelog[v2]
- - Rebased to latest upstream.
- - Updated the ioctl interface.
- - Added a checking to allow updating the TIDR if a P9 chip is present.
----
- arch/powerpc/kernel/process.c |  1 +
- drivers/misc/cxl/context.c    | 15 +++++++++++++++
- drivers/misc/cxl/cxl.h        |  3 +++
- drivers/misc/cxl/cxllib.c     |  3 ++-
- drivers/misc/cxl/file.c       | 19 +++++++++++++++++--
- drivers/misc/cxl/native.c     |  2 +-
- drivers/misc/cxl/trace.h      | 12 ++++++++----
- include/uapi/misc/cxl.h       | 10 ++++++----
- 8 files changed, 53 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 5acb5a1..a6a70e2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1589,6 +1589,7 @@ int set_thread_tidr(struct task_struct *t)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(set_thread_tidr);
- 
- #endif /* CONFIG_PPC64 */
- 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 12a41b2..e309d35 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -22,6 +22,7 @@
- #include <asm/cputable.h>
- #include <asm/current.h>
- #include <asm/copro.h>
-+#include <asm/switch_to.h>
- 
- #include "cxl.h"
- 
-@@ -362,3 +363,17 @@ void cxl_context_mm_count_put(struct cxl_context *ctx)
- 	if (ctx->mm)
- 		mmdrop(ctx->mm);
- }
-+
-+int cxl_context_thread_tidr(struct cxl_context *ctx)
-+{
-+	int rc = 0;
-+
-+	if (!cxl_is_power9())
-+		return -ENODEV;
-+
-+	rc = set_thread_tidr(current);
-+	pr_devel("%s: current tidr: %ld\n", __func__,
-+		 current->thread.tidr);
-+
-+	return rc;
-+}
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index e46a406..1a5db0b 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -1169,4 +1169,7 @@ void cxl_context_mm_count_get(struct cxl_context *ctx);
- /* Decrements the reference count to "struct mm_struct" */
- void cxl_context_mm_count_put(struct cxl_context *ctx);
- 
-+/* Handles an unique TIDR (thread id) for the current thread */
-+int cxl_context_thread_tidr(struct cxl_context *ctx);
-+
- #endif
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index dc9bc18..30ccba4 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -199,10 +199,11 @@ int cxllib_get_PE_attributes(struct task_struct *task,
- 		 */
- 		attr->pid = mm->context.id;
- 		mmput(mm);
-+		attr->tid = task->thread.tidr;
- 	} else {
- 		attr->pid = 0;
-+		attr->tid = 0;
- 	}
--	attr->tid = 0;
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 76c0b0c..788b3af 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -173,7 +173,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	 * flags are set it's invalid
- 	 */
- 	if (work.reserved1 || work.reserved2 || work.reserved3 ||
--	    work.reserved4 || work.reserved5 || work.reserved6 ||
-+	    work.reserved4 || work.reserved5 ||
- 	    (work.flags & ~CXL_START_WORK_ALL)) {
- 		rc = -EINVAL;
- 		goto out;
-@@ -248,7 +248,19 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	 */
- 	smp_mb();
- 
--	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
-+	/* Assign a unique TIDR (thread id) for the current thread */
-+	if (work.flags & CXL_START_WORK_TID) {
-+		rc = cxl_context_thread_tidr(ctx);
-+		if (rc)
-+			goto out;
-+	}
-+	work.tid = current->thread.tidr;
-+
-+	trace_cxl_attach(ctx,
-+			 work.work_element_descriptor,
-+			 work.num_interrupts,
-+			 amr,
-+			 work.tid);
- 
- 	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
- 							amr))) {
-@@ -263,6 +275,9 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 		goto out;
- 	}
- 
-+	if (copy_to_user(uwork, &work, sizeof(work)))
-+		return -EFAULT;
-+
- 	ctx->status = STARTED;
- 	rc = 0;
- out:
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 02b6b45..036fe5b 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -673,7 +673,7 @@ static int process_element_entry_psl9(struct cxl_context *ctx, u64 wed, u64 amr)
- 		pid = ctx->mm->context.id;
- 	}
- 
--	ctx->elem->common.tid = 0;
-+	ctx->elem->common.tid = cpu_to_be32(current->thread.tidr);
- 	ctx->elem->common.pid = cpu_to_be32(pid);
- 
- 	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx));
-diff --git a/drivers/misc/cxl/trace.h b/drivers/misc/cxl/trace.h
-index b8e300a..08436b8 100644
---- a/drivers/misc/cxl/trace.h
-+++ b/drivers/misc/cxl/trace.h
-@@ -90,9 +90,10 @@ DECLARE_EVENT_CLASS(cxl_pe_class,
- 
- 
- TRACE_EVENT(cxl_attach,
--	TP_PROTO(struct cxl_context *ctx, u64 wed, s16 num_interrupts, u64 amr),
-+	TP_PROTO(struct cxl_context *ctx, u64 wed, s16 num_interrupts,
-+		 u64 amr, s16 tidr),
- 
--	TP_ARGS(ctx, wed, num_interrupts, amr),
-+	TP_ARGS(ctx, wed, num_interrupts, amr, tidr),
- 
- 	TP_STRUCT__entry(
- 		__field(u8, card)
-@@ -102,6 +103,7 @@ TRACE_EVENT(cxl_attach,
- 		__field(u64, wed)
- 		__field(u64, amr)
- 		__field(s16, num_interrupts)
-+		__field(s16, tidr)
- 	),
- 
- 	TP_fast_assign(
-@@ -112,16 +114,18 @@ TRACE_EVENT(cxl_attach,
- 		__entry->wed = wed;
- 		__entry->amr = amr;
- 		__entry->num_interrupts = num_interrupts;
-+		__entry->tidr = tidr;
- 	),
- 
--	TP_printk("afu%i.%i pid=%i pe=%i wed=0x%016llx irqs=%i amr=0x%llx",
-+	TP_printk("afu%i.%i pid=%i pe=%i wed=0x%016llx irqs=%i amr=0x%llx tidr=%i",
- 		__entry->card,
- 		__entry->afu,
- 		__entry->pid,
- 		__entry->pe,
- 		__entry->wed,
- 		__entry->num_interrupts,
--		__entry->amr
-+		__entry->amr,
-+		__entry->tidr
- 	)
- );
- 
-diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
-index 49e8fd0..3ea2d4b4 100644
---- a/include/uapi/misc/cxl.h
-+++ b/include/uapi/misc/cxl.h
-@@ -20,20 +20,22 @@ struct cxl_ioctl_start_work {
- 	__u64 work_element_descriptor;
- 	__u64 amr;
- 	__s16 num_interrupts;
--	__s16 reserved1;
--	__s32 reserved2;
-+	__s16 tid;
-+	__s32 reserved1;
-+	__u64 reserved2;
- 	__u64 reserved3;
- 	__u64 reserved4;
- 	__u64 reserved5;
--	__u64 reserved6;
- };
- 
- #define CXL_START_WORK_AMR		0x0000000000000001ULL
- #define CXL_START_WORK_NUM_IRQS		0x0000000000000002ULL
- #define CXL_START_WORK_ERR_FF		0x0000000000000004ULL
-+#define CXL_START_WORK_TID		0x0000000000000008ULL
- #define CXL_START_WORK_ALL		(CXL_START_WORK_AMR |\
- 					 CXL_START_WORK_NUM_IRQS |\
--					 CXL_START_WORK_ERR_FF)
-+					 CXL_START_WORK_ERR_FF |\
-+					 CXL_START_WORK_TID)
- 
- 
- /* Possible modes that an afu can be in */
--- 
-2.7.4
+The argument against this patch is --  it should not be baked into
+the ABI as yet, since we do not have clarity on what applications need.
+
+As it stands today the only way to figure out the information from
+userspace is by probing the kernel through calls to sys_pkey_alloc().
+
+AT_HWCAP can be used, but that will certainly not be capable of
+providing all the information that userspace might expect.
+
+Your thoughts?
+RP
