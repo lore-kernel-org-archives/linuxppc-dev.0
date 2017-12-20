@@ -1,21 +1,45 @@
-Return-Path: <paubert@iram.es>
-Received: from cica-lavadora-l1mail2.puc.rediris.es
- (ci-l1mail2-out03a.puc.rediris.es [IPv6:2001:720:418:ca02::21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z22k86FrszF0L9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 05:05:19 +1100 (AEDT)
-Date: Wed, 20 Dec 2017 18:53:24 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 3/8] powerpc/64s: put the per-cpu data_offset in r14
-Message-ID: <20171220175324.uidr5ohzqiwsb6hu@lt-gp.iram.es>
-References: <20171220145206.12234-1-npiggin@gmail.com>
- <20171220145206.12234-4-npiggin@gmail.com>
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z232r5jMyzF08c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 05:19:48 +1100 (AEDT)
+Date: Wed, 20 Dec 2017 10:19:37 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: Ross Zwisler <ross.zwisler@linux.intel.com>
+Cc: Michal Hocko <mhocko@kernel.org>, linux-kernel@vger.kernel.org,
+ "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>,
+ "Box, David E" <david.e.box@intel.com>,
+ "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>,
+ "Koss, Marcin" <marcin.koss@intel.com>,
+ "Koziej, Artur" <artur.koziej@intel.com>,
+ "Lahtinen, Joonas" <joonas.lahtinen@intel.com>,
+ "Moore, Robert" <robert.moore@intel.com>,
+ "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
+ "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "Schmauss, Erik" <erik.schmauss@intel.com>,
+ "Verma, Vishal L" <vishal.l.verma@intel.com>,
+ "Zheng, Lv" <lv.zheng@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Brice Goglin <brice.goglin@gmail.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Dave Hansen <dave.hansen@intel.com>, Jerome Glisse <jglisse@redhat.com>,
+ John Hubbard <jhubbard@nvidia.com>, Len Brown <lenb@kernel.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
+ linux-acpi@vger.kernel.org, linux-mm@kvack.org,
+ linux-nvdimm@lists.01.org, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+Message-ID: <20171220181937.GB12236@bombadil.infradead.org>
+References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
+ <20171214130032.GK16951@dhcp22.suse.cz>
+ <20171218203547.GA2366@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171220145206.12234-4-npiggin@gmail.com>
+In-Reply-To: <20171218203547.GA2366@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,113 +49,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 21, 2017 at 12:52:01AM +1000, Nicholas Piggin wrote:
-> Shifted left by 16 bits, so the low 16 bits of r14 remain available.
-> This allows per-cpu pointers to be dereferenced with a single extra
-> shift whereas previously it was a load and add.
-> ---
->  arch/powerpc/include/asm/paca.h   |  5 +++++
->  arch/powerpc/include/asm/percpu.h |  2 +-
->  arch/powerpc/kernel/entry_64.S    |  5 -----
->  arch/powerpc/kernel/head_64.S     |  5 +----
->  arch/powerpc/kernel/setup_64.c    | 11 +++++++++--
->  5 files changed, 16 insertions(+), 12 deletions(-)
+On Mon, Dec 18, 2017 at 01:35:47PM -0700, Ross Zwisler wrote:
+> What I'm hoping to do with this series is to just provide a sysfs
+> representation of the HMAT so that applications can know which NUMA nodes to
+> select with existing utilities like numactl.  This series does not currently
+> alter any kernel behavior, it only provides a sysfs interface.
 > 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index cd6a9a010895..4dd4ac69e84f 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -35,6 +35,11 @@
->  
->  register struct paca_struct *local_paca asm("r13");
->  #ifdef CONFIG_PPC_BOOK3S
-> +/*
-> + * The top 32-bits of r14 is used as the per-cpu offset, shifted by PAGE_SHIFT.
+> Say for example you had a system with some high bandwidth memory (HBM), and
+> you wanted to use it for a specific application.  You could use the sysfs
+> representation of the HMAT to figure out which memory target held your HBM.
+> You could do this by looking at the local bandwidth values for the various
+> memory targets, so:
+> 
+> 	# grep . /sys/devices/system/hmat/mem_tgt*/local_init/write_bw_MBps
+> 	/sys/devices/system/hmat/mem_tgt2/local_init/write_bw_MBps:81920
+> 	/sys/devices/system/hmat/mem_tgt3/local_init/write_bw_MBps:40960
+> 	/sys/devices/system/hmat/mem_tgt4/local_init/write_bw_MBps:40960
+> 	/sys/devices/system/hmat/mem_tgt5/local_init/write_bw_MBps:40960
+> 
+> and look for the one that corresponds to your HBM speed. (These numbers are
+> made up, but you get the idea.)
 
-Top 32, really? It's 48 in later comments.
+Presumably ACPI-based platforms will not be the only ones who have the
+ability to expose different bandwidth memories in the future.  I think
+we need a platform-agnostic way ... right, PowerPC people?
 
-	Gabriel
+I don't know what the right interface is, but my laptop has a set of
+/sys/devices/system/memory/memoryN/ directories.  Perhaps this is the
+right place to expose write_bw (etc).
 
-> + * The per-cpu could be moved completely to vmalloc space if we had large
-> + * vmalloc page mapping? (no, must access it in real mode).
-> + */
->  register u64 local_r14 asm("r14");
->  #endif
->  
-> diff --git a/arch/powerpc/include/asm/percpu.h b/arch/powerpc/include/asm/percpu.h
-> index dce863a7635c..1e0d79d30eac 100644
-> --- a/arch/powerpc/include/asm/percpu.h
-> +++ b/arch/powerpc/include/asm/percpu.h
-> @@ -12,7 +12,7 @@
->  
->  #include <asm/paca.h>
->  
-> -#define __my_cpu_offset local_paca->data_offset
-> +#define __my_cpu_offset (local_r14 >> 16)
->  
->  #endif /* CONFIG_SMP */
->  #endif /* __powerpc64__ */
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index 592e4b36065f..6b0e3ac311e8 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -262,11 +262,6 @@ system_call_exit:
->  BEGIN_FTR_SECTION
->  	stdcx.	r0,0,r1			/* to clear the reservation */
->  END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
-> -	LOAD_REG_IMMEDIATE(r10, 0xdeadbeefULL << 32)
-> -	mfspr	r11,SPRN_PIR
-> -	or	r10,r10,r11
-> -	tdne	r10,r14
-> -
->  	andi.	r6,r8,MSR_PR
->  	ld	r4,_LINK(r1)
->  
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> index 5a9ec06eab14..cdb710f43681 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -413,10 +413,7 @@ generic_secondary_common_init:
->  	b	kexec_wait		/* next kernel might do better	 */
->  
->  2:	SET_PACA(r13)
-> -	LOAD_REG_IMMEDIATE(r14, 0xdeadbeef << 32)
-> -	mfspr	r3,SPRN_PIR
-> -	or	r14,r14,r3
-> -	std	r14,PACA_R14(r13)
-> +	ld	r14,PACA_R14(r13)
->  
->  #ifdef CONFIG_PPC_BOOK3E
->  	addi	r12,r13,PACA_EXTLB	/* and TLB exc frame in another  */
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 9a4c5bf35d92..f4a96ebb523a 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -192,8 +192,8 @@ static void __init fixup_boot_paca(void)
->  	get_paca()->data_offset = 0;
->  	/* Mark interrupts disabled in PACA */
->  	irq_soft_mask_set(IRQ_SOFT_MASK_STD);
-> -	/* Set r14 and paca_r14 to debug value */
-> -	get_paca()->r14 = (0xdeadbeefULL << 32) | mfspr(SPRN_PIR);
-> +	/* Set r14 and paca_r14 to zero */
-> +	get_paca()->r14 = 0;
->  	local_r14 = get_paca()->r14;
->  }
->  
-> @@ -761,7 +761,14 @@ void __init setup_per_cpu_areas(void)
->  	for_each_possible_cpu(cpu) {
->                  __per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
->  		paca[cpu].data_offset = __per_cpu_offset[cpu];
-> +
-> +		BUG_ON(paca[cpu].data_offset & (PAGE_SIZE-1));
-> +		BUG_ON(paca[cpu].data_offset >= (1UL << (64 - 16)));
-> +
-> +		/* The top 48 bits are used for per-cpu data */
-> +		paca[cpu].r14 |= paca[cpu].data_offset << 16;
->  	}
-> +	local_r14 = paca[smp_processor_id()].r14;
->  }
->  #endif
->  
-> -- 
-> 2.15.0
+> Once you know the NUMA node of your HBM, you can figure out the NUMA node of
+> it's local initiator:
+> 
+> 	# ls -d /sys/devices/system/hmat/mem_tgt2/local_init/mem_init*
+> 	/sys/devices/system/hmat/mem_tgt2/local_init/mem_init0
+> 
+> So, in our made-up example our HBM is located in numa node 2, and the local
+> CPU for that HBM is at numa node 0.
+
+initiator is a CPU?  I'd have expected you to expose a memory controller
+abstraction rather than re-use storage terminology.
