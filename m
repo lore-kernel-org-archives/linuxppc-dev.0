@@ -1,23 +1,28 @@
-Return-Path: <greg@kroah.com>
-Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
- [66.111.4.27])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z2PKd1rdvzF0BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 19:03:48 +1100 (AEDT)
-Date: Thu, 21 Dec 2017 09:03:47 +0100
-From: Greg KH <greg@kroah.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] cxl: Check if vphb exists before iterating over AFU
- devices
-Message-ID: <20171221080347.GA10992@kroah.com>
-References: <20171221040619.25270-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Vpc405qzDsSX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 23:10:48 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Torsten Duwe <duwe@lst.de>
+Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
+In-Reply-To: <20171219214652.u7qeb7fxov62ttke@treble>
+References: <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
+ <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
+ <20171212113912.GA1907@lst.de> <20171212140501.44vf4xcz6jhbqofd@treble>
+ <20171215194009.349b04da@roar.ozlabs.ibm.com>
+ <20171218025854.angid7h33gnmxsrg@treble>
+ <20171218153334.618c0b66@roar.ozlabs.ibm.com>
+ <20171218185622.rgoyy5doyh3gyqh5@treble> <20171219112833.GA8758@lst.de>
+ <20171219214652.u7qeb7fxov62ttke@treble>
+Date: Thu, 21 Dec 2017 23:10:46 +1100
+Message-ID: <87shc4ffi1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171221040619.25270-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,9 +32,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 21, 2017 at 09:36:19AM +0530, Vaibhav Jain wrote:
-> commit 12841f87b7a8ceb3d54f171660f72a86941bfcb3 upstream, for 4.3.
+Josh Poimboeuf <jpoimboe@redhat.com> writes:
 
-Thanks, now applied to 4.4.
+> On Tue, Dec 19, 2017 at 12:28:33PM +0100, Torsten Duwe wrote:
+>> On Mon, Dec 18, 2017 at 12:56:22PM -0600, Josh Poimboeuf wrote:
+>> > On Mon, Dec 18, 2017 at 03:33:34PM +1000, Nicholas Piggin wrote:
+>> > > On Sun, 17 Dec 2017 20:58:54 -0600
+>> > > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+>> > > 
+>> > > > On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
+>> > > > > On Tue, 12 Dec 2017 08:05:01 -0600
+>> > > > > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+>> > > > >   
+>> > > > > > What about leaf functions?  If a leaf function doesn't establish a stack
+>> > > > > > frame, and it has inline asm which contains a blr to another function,
+>> > > > > > this ABI is broken.  
+>> > > > 
+>> > > > Oops, I meant to say "bl" instead of "blr".
+>> 
+>> You need to save LR, one way or the other. If gcc thinks it's a leaf function and
+>> does not do it, nor does your asm code, you'll return in an endless loop => bug.
+>
+> Ah, so the function's return path would be corrupted, and an unreliable
+> stack trace would be the least of our problems.
 
-greg k-h
+That's mostly true.
+
+It is possible to save LR somewhere other than the correct stack slot,
+in which case you can return correctly but still confuse the unwinder. A
+function can hide its caller that way.
+
+It's stupid and we should never do it, but it's not impossible.
+
+...
+
+> So with your proposal, I think I'm convinced that we don't need objtool
+> for ppc64le.  Does anyone disagree?
+
+I don't disagree, but I'd be happier if we did have objtool support.
+
+Just because it would give us a lot more certainty that we're doing the
+right thing everywhere, including in hand-coded asm and inline asm.
+
+It's easy to write powerpc asm such that stack traces are reliable, but
+it is *possible* to break them.
+
+> There are still a few more things that need to be looked at:
+>
+> 1) With function graph tracing enabled, is the unwinder smart enough to
+>    get the original function return address, e.g. by calling
+>    ftrace_graph_ret_addr()?
+
+No I don't think so.
+
+> 2) Similar question for kretprobes.
+>
+> 3) Any other issues with generated code (e.g., bpf, ftrace trampolines),
+>    runtime patching (e.g., CPU feature alternatives), kprobes, paravirt,
+>    etc, that might confuse the unwinder?
+
+We'll have to look, I can't be sure off the top of my head.
+
+> 4) As a sanity check, it *might* be a good idea for
+>    save_stack_trace_tsk_reliable() to ensure that it always reaches the
+>    end of the stack.  There are several ways to do that:
+>
+>    - If the syscall entry stack frame is always the same size, then the
+>      "end" would simply mean that the stack pointer is at a certain
+>      offset from the end of the task stack page.  However this might not
+>      work for kthreads and idle tasks, unless their stacks also start at
+>      the same offset.  (On x86 we actually standardized the end of stack
+>      location for all tasks, both user and kernel.)
+
+Yeah it differs between user and kernel.
+
+>    - If the unwinder can get to the syscall frame, it can presumably
+>      examine regs->msr to check the PR bit to ensure it got all the way
+>      to syscall entry.  But again this might only work for user tasks,
+>      depending on how kernel task stacks are set up.
+
+That sounds like a good idea. We could possibly mark the last frame of
+kernel tasks somehow.
+
+>    - Or a different approach would be to do error checking along the
+>      way, and reporting an error for any unexpected conditions.
+>
+>    However, given that backlink/LR corruption doesn't seem possible with
+>    this architecture, maybe #4 would be overkill.  Personally I would
+>    feel more comfortable with an "end" check and a WARN() if it doesn't
+>    reach the end.
+
+Yeah I agree.
+
+cheers
