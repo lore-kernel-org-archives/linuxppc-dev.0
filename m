@@ -2,25 +2,37 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Vpc405qzDsSX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 23:10:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Whd5JkbzF0B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 23:50:41 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Torsten Duwe <duwe@lst.de>
-Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH] On ppc64le we HAVE_RELIABLE_STACKTRACE
-In-Reply-To: <20171219214652.u7qeb7fxov62ttke@treble>
-References: <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
- <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
- <20171212113912.GA1907@lst.de> <20171212140501.44vf4xcz6jhbqofd@treble>
- <20171215194009.349b04da@roar.ozlabs.ibm.com>
- <20171218025854.angid7h33gnmxsrg@treble>
- <20171218153334.618c0b66@roar.ozlabs.ibm.com>
- <20171218185622.rgoyy5doyh3gyqh5@treble> <20171219112833.GA8758@lst.de>
- <20171219214652.u7qeb7fxov62ttke@treble>
-Date: Thu, 21 Dec 2017 23:10:46 +1100
-Message-ID: <87shc4ffi1.fsf@concordia.ellerman.id.au>
+To: Matthew Wilcox <willy@infradead.org>,
+ Ross Zwisler <ross.zwisler@linux.intel.com>
+Cc: Michal Hocko <mhocko@kernel.org>, "Box\, David E" <david.e.box@intel.com>,
+ Dave Hansen <dave.hansen@intel.com>, "Zheng\, Lv" <lv.zheng@intel.com>,
+ linux-nvdimm@lists.01.org, "Verma\, Vishal L" <vishal.l.verma@intel.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Anaczkowski\,
+ Lukasz" <lukasz.anaczkowski@intel.com>, "Moore\,
+ Robert" <robert.moore@intel.com>, linux-acpi@vger.kernel.org, "Odzioba\,
+ Lukasz" <lukasz.odzioba@intel.com>, "Schmauss\, Erik" <erik.schmauss@intel.com>,
+ Len Brown <lenb@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
+ linuxppc-dev@lists.ozlabs.org, Jerome Glisse <jglisse@redhat.com>,
+ Dan Williams <dan.j.williams@intel.com>, devel@acpica.org, "Kogut\,
+ Jaroslaw" <Jaroslaw.Kogut@intel.com>, linux-mm@kvack.org, "Koss\,
+ Marcin" <marcin.koss@intel.com>, linux-api@vger.kernel.org,
+ Brice Goglin <brice.goglin@gmail.com>, "Nachimuthu\,
+ Murugasamy" <murugasamy.nachimuthu@intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ "Koziej\, Artur" <artur.koziej@intel.com>, "Lahtinen\,
+ Joonas" <joonas.lahtinen@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+In-Reply-To: <20171220181937.GB12236@bombadil.infradead.org>
+References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
+ <20171214130032.GK16951@dhcp22.suse.cz>
+ <20171218203547.GA2366@linux.intel.com>
+ <20171220181937.GB12236@bombadil.infradead.org>
+Date: Thu, 21 Dec 2017 23:50:40 +1100
+Message-ID: <87mv2cfdnj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,96 +44,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh Poimboeuf <jpoimboe@redhat.com> writes:
+Matthew Wilcox <willy@infradead.org> writes:
 
-> On Tue, Dec 19, 2017 at 12:28:33PM +0100, Torsten Duwe wrote:
->> On Mon, Dec 18, 2017 at 12:56:22PM -0600, Josh Poimboeuf wrote:
->> > On Mon, Dec 18, 2017 at 03:33:34PM +1000, Nicholas Piggin wrote:
->> > > On Sun, 17 Dec 2017 20:58:54 -0600
->> > > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> > > 
->> > > > On Fri, Dec 15, 2017 at 07:40:09PM +1000, Nicholas Piggin wrote:
->> > > > > On Tue, 12 Dec 2017 08:05:01 -0600
->> > > > > Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> > > > >   
->> > > > > > What about leaf functions?  If a leaf function doesn't establish a stack
->> > > > > > frame, and it has inline asm which contains a blr to another function,
->> > > > > > this ABI is broken.  
->> > > > 
->> > > > Oops, I meant to say "bl" instead of "blr".
+> On Mon, Dec 18, 2017 at 01:35:47PM -0700, Ross Zwisler wrote:
+>> What I'm hoping to do with this series is to just provide a sysfs
+>> representation of the HMAT so that applications can know which NUMA nodes to
+>> select with existing utilities like numactl.  This series does not currently
+>> alter any kernel behavior, it only provides a sysfs interface.
 >> 
->> You need to save LR, one way or the other. If gcc thinks it's a leaf function and
->> does not do it, nor does your asm code, you'll return in an endless loop => bug.
+>> Say for example you had a system with some high bandwidth memory (HBM), and
+>> you wanted to use it for a specific application.  You could use the sysfs
+>> representation of the HMAT to figure out which memory target held your HBM.
+>> You could do this by looking at the local bandwidth values for the various
+>> memory targets, so:
+>> 
+>> 	# grep . /sys/devices/system/hmat/mem_tgt*/local_init/write_bw_MBps
+>> 	/sys/devices/system/hmat/mem_tgt2/local_init/write_bw_MBps:81920
+>> 	/sys/devices/system/hmat/mem_tgt3/local_init/write_bw_MBps:40960
+>> 	/sys/devices/system/hmat/mem_tgt4/local_init/write_bw_MBps:40960
+>> 	/sys/devices/system/hmat/mem_tgt5/local_init/write_bw_MBps:40960
+>> 
+>> and look for the one that corresponds to your HBM speed. (These numbers are
+>> made up, but you get the idea.)
 >
-> Ah, so the function's return path would be corrupted, and an unreliable
-> stack trace would be the least of our problems.
+> Presumably ACPI-based platforms will not be the only ones who have the
+> ability to expose different bandwidth memories in the future.  I think
+> we need a platform-agnostic way ... right, PowerPC people?
 
-That's mostly true.
+Yes!
 
-It is possible to save LR somewhere other than the correct stack slot,
-in which case you can return correctly but still confuse the unwinder. A
-function can hide its caller that way.
-
-It's stupid and we should never do it, but it's not impossible.
-
-...
-
-> So with your proposal, I think I'm convinced that we don't need objtool
-> for ppc64le.  Does anyone disagree?
-
-I don't disagree, but I'd be happier if we did have objtool support.
-
-Just because it would give us a lot more certainty that we're doing the
-right thing everywhere, including in hand-coded asm and inline asm.
-
-It's easy to write powerpc asm such that stack traces are reliable, but
-it is *possible* to break them.
-
-> There are still a few more things that need to be looked at:
->
-> 1) With function graph tracing enabled, is the unwinder smart enough to
->    get the original function return address, e.g. by calling
->    ftrace_graph_ret_addr()?
-
-No I don't think so.
-
-> 2) Similar question for kretprobes.
->
-> 3) Any other issues with generated code (e.g., bpf, ftrace trampolines),
->    runtime patching (e.g., CPU feature alternatives), kprobes, paravirt,
->    etc, that might confuse the unwinder?
-
-We'll have to look, I can't be sure off the top of my head.
-
-> 4) As a sanity check, it *might* be a good idea for
->    save_stack_trace_tsk_reliable() to ensure that it always reaches the
->    end of the stack.  There are several ways to do that:
->
->    - If the syscall entry stack frame is always the same size, then the
->      "end" would simply mean that the stack pointer is at a certain
->      offset from the end of the task stack page.  However this might not
->      work for kthreads and idle tasks, unless their stacks also start at
->      the same offset.  (On x86 we actually standardized the end of stack
->      location for all tasks, both user and kernel.)
-
-Yeah it differs between user and kernel.
-
->    - If the unwinder can get to the syscall frame, it can presumably
->      examine regs->msr to check the PR bit to ensure it got all the way
->      to syscall entry.  But again this might only work for user tasks,
->      depending on how kernel task stacks are set up.
-
-That sounds like a good idea. We could possibly mark the last frame of
-kernel tasks somehow.
-
->    - Or a different approach would be to do error checking along the
->      way, and reporting an error for any unexpected conditions.
->
->    However, given that backlink/LR corruption doesn't seem possible with
->    this architecture, maybe #4 would be overkill.  Personally I would
->    feel more comfortable with an "end" check and a WARN() if it doesn't
->    reach the end.
-
-Yeah I agree.
+I don't have any detail at hand but will try and rustle something up.
 
 cheers
