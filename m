@@ -1,32 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rui.zhang@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Bt32VJbzDrYY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 11:12:43 +1100 (AEDT)
-Message-ID: <1513810153.2743.25.camel@kernel.crashing.org>
-Subject: Re: [PATCH v9 29/51] mm/mprotect, powerpc/mm/pkeys, x86/mm/pkeys:
- Add sysfs interface
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Dave Hansen <dave.hansen@intel.com>, mpe@ellerman.id.au, mingo@redhat.com,
- akpm@linux-foundation.org, corbet@lwn.net, arnd@arndb.de,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
- paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- ebiederm@xmission.com
-Date: Thu, 21 Dec 2017 09:49:13 +1100
-In-Reply-To: <20171220175022.GB5619@ram.oc3035372033.ibm.com>
-References: <1509958663-18737-1-git-send-email-linuxram@us.ibm.com>
- <1509958663-18737-30-git-send-email-linuxram@us.ibm.com>
- <bbc5593e-31ec-183a-01a5-1a253dc0c275@intel.com>
- <20171218221850.GD5461@ram.oc3035372033.ibm.com>
- <e7971d03-6ad1-40d5-9b79-f01242db5293@intel.com>
- <1513719296.2743.12.camel@kernel.crashing.org>
- <20171220175022.GB5619@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Cjt312vzDrvR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 11:50:41 +1100 (AEDT)
+Message-ID: <1513817428.2592.4.camel@intel.com>
+Subject: Re: [-next PATCH 4/4] treewide: Use DEVICE_ATTR_WO
+From: Zhang Rui <rui.zhang@intel.com>
+To: Joe Perches <joe@perches.com>, Borislav Petkov <bp@alien8.de>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Thomas Falcon
+ <tlfalcon@linux.vnet.ibm.com>, John Allen <jallen@linux.vnet.ibm.com>,
+ Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>,
+ linux-wimax@intel.com, James Smart <james.smart@broadcom.com>, Dick Kennedy
+ <dick.kennedy@broadcom.com>,  Eduardo Valentin <edubezval@gmail.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, "H.
+ Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, "James E.J. Bottomley"
+ <jejb@linux.vnet.ibm.com>, "Martin K. Petersen"
+ <martin.petersen@oracle.com>,  linux-s390@vger.kernel.org,
+ linux-kernel@vger.kernel.org,  linux-input@vger.kernel.org,
+ netdev@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
+ linux-scsi@vger.kernel.org,  linux-pm@vger.kernel.org
+Date: Thu, 21 Dec 2017 08:50:28 +0800
+In-Reply-To: <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
+References: <cover.1513706701.git.joe@perches.com>
+ <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,22 +38,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-12-20 at 09:50 -0800, Ram Pai wrote:
-> The argument against this patch is --  it should not be baked into
-> the ABI as yet, since we do not have clarity on what applications need.
+On Tue, 2017-12-19 at 10:15 -0800, Joe Perches wrote:
+> Convert DEVICE_ATTR uses to DEVICE_ATTR_WO where possible.
 > 
-> As it stands today the only way to figure out the information from
-> userspace is by probing the kernel through calls to sys_pkey_alloc().
+> Done with perl script:
 > 
-> AT_HWCAP can be used, but that will certainly not be capable of
-> providing all the information that userspace might expect.
+> $ git grep -w --name-only DEVICE_ATTR | \
+>   xargs perl -i -e 'local $/; while (<>) {
+> s/\bDEVICE_ATTR\s*\(\s*(\w+)\s*,\s*\(?(?:\s*S_IWUSR\s*|\s*0200\s*)\)?
+> \s*,\s*NULL\s*,\s*\s_store\s*\)/DEVICE_ATTR_WO(\1)/g; print;}'
 > 
-> Your thoughts?
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/s390/kernel/smp.c                 | 2 +-
+>  arch/x86/kernel/cpu/microcode/core.c   | 2 +-
+>  drivers/input/touchscreen/elants_i2c.c | 2 +-
+>  drivers/net/ethernet/ibm/ibmvnic.c     | 2 +-
+>  drivers/net/wimax/i2400m/sysfs.c       | 3 +--
+>  drivers/scsi/lpfc/lpfc_attr.c          | 3 +--
+>  drivers/thermal/thermal_sysfs.c        | 2 +-
 
-Well, there's one well known application wanting that whole keys
-business, so why not ask them what works for them ?
+For the thermal part,
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-In the meantime, that shouldn't block the rest of the patches.
+thanks,
+rui
 
-Cheers,
-Ben.
+>  7 files changed, 7 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+> index b8c1a85bcf2d..a919b2f0141d 100644
+> --- a/arch/s390/kernel/smp.c
+> +++ b/arch/s390/kernel/smp.c
+> @@ -1151,7 +1151,7 @@ static ssize_t __ref rescan_store(struct device
+> *dev,
+>  	rc = smp_rescan_cpus();
+>  	return rc ? rc : count;
+>  }
+> -static DEVICE_ATTR(rescan, 0200, NULL, rescan_store);
+> +static DEVICE_ATTR_WO(rescan);
+>  #endif /* CONFIG_HOTPLUG_CPU */
+>  
+>  static int __init s390_smp_init(void)
+> diff --git a/arch/x86/kernel/cpu/microcode/core.c
+> b/arch/x86/kernel/cpu/microcode/core.c
+> index c4fa4a85d4cb..09c74b0560dd 100644
+> --- a/arch/x86/kernel/cpu/microcode/core.c
+> +++ b/arch/x86/kernel/cpu/microcode/core.c
+> @@ -560,7 +560,7 @@ static ssize_t pf_show(struct device *dev,
+>  	return sprintf(buf, "0x%x\n", uci->cpu_sig.pf);
+>  }
+>  
+> -static DEVICE_ATTR(reload, 0200, NULL, reload_store);
+> +static DEVICE_ATTR_WO(reload);
+>  static DEVICE_ATTR(version, 0400, version_show, NULL);
+>  static DEVICE_ATTR(processor_flags, 0400, pf_show, NULL);
+>  
+> diff --git a/drivers/input/touchscreen/elants_i2c.c
+> b/drivers/input/touchscreen/elants_i2c.c
+> index a458e5ec9e41..819213e88f32 100644
+> --- a/drivers/input/touchscreen/elants_i2c.c
+> +++ b/drivers/input/touchscreen/elants_i2c.c
+> @@ -1000,7 +1000,7 @@ static ssize_t show_iap_mode(struct device
+> *dev,
+>  				"Normal" : "Recovery");
+>  }
+>  
+> -static DEVICE_ATTR(calibrate, S_IWUSR, NULL, calibrate_store);
+> +static DEVICE_ATTR_WO(calibrate);
+>  static DEVICE_ATTR(iap_mode, S_IRUGO, show_iap_mode, NULL);
+>  static DEVICE_ATTR(update_fw, S_IWUSR, NULL, write_update_fw);
+>  
+> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c
+> b/drivers/net/ethernet/ibm/ibmvnic.c
+> index 1dc4aef37d3a..42b96e1a1b13 100644
+> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+> @@ -4411,7 +4411,7 @@ static ssize_t failover_store(struct device
+> *dev, struct device_attribute *attr,
+>  	return count;
+>  }
+>  
+> -static DEVICE_ATTR(failover, 0200, NULL, failover_store);
+> +static DEVICE_ATTR_WO(failover);
+>  
+>  static unsigned long ibmvnic_get_desired_dma(struct vio_dev *vdev)
+>  {
+> diff --git a/drivers/net/wimax/i2400m/sysfs.c
+> b/drivers/net/wimax/i2400m/sysfs.c
+> index 1237109f251a..8c67df11105c 100644
+> --- a/drivers/net/wimax/i2400m/sysfs.c
+> +++ b/drivers/net/wimax/i2400m/sysfs.c
+> @@ -65,8 +65,7 @@ ssize_t i2400m_idle_timeout_store(struct device
+> *dev,
+>  }
+>  
+>  static
+> -DEVICE_ATTR(i2400m_idle_timeout, S_IWUSR,
+> -	    NULL, i2400m_idle_timeout_store);
+> +DEVICE_ATTR_WO(i2400m_idle_timeout);
+>  
+>  static
+>  struct attribute *i2400m_dev_attrs[] = {
+> diff --git a/drivers/scsi/lpfc/lpfc_attr.c
+> b/drivers/scsi/lpfc/lpfc_attr.c
+> index 517ff203cfde..6ddaf51a23f6 100644
+> --- a/drivers/scsi/lpfc/lpfc_attr.c
+> +++ b/drivers/scsi/lpfc/lpfc_attr.c
+> @@ -2418,8 +2418,7 @@ lpfc_soft_wwn_enable_store(struct device *dev,
+> struct device_attribute *attr,
+>  
+>  	return count;
+>  }
+> -static DEVICE_ATTR(lpfc_soft_wwn_enable, S_IWUSR, NULL,
+> -		   lpfc_soft_wwn_enable_store);
+> +static DEVICE_ATTR_WO(lpfc_soft_wwn_enable);
+>  
+>  /**
+>   * lpfc_soft_wwpn_show - Return the cfg soft ww port name of the
+> adapter
+> diff --git a/drivers/thermal/thermal_sysfs.c
+> b/drivers/thermal/thermal_sysfs.c
+> index 2bc964392924..ba81c9080f6e 100644
+> --- a/drivers/thermal/thermal_sysfs.c
+> +++ b/drivers/thermal/thermal_sysfs.c
+> @@ -317,7 +317,7 @@ emul_temp_store(struct device *dev, struct
+> device_attribute *attr,
+>  
+>  	return ret ? ret : count;
+>  }
+> -static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+> +static DEVICE_ATTR_WO(emul_temp);
+>  #endif
+>  
+>  static ssize_t
