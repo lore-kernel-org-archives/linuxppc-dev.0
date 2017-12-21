@@ -1,40 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Whd5JkbzF0B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 23:50:41 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Matthew Wilcox <willy@infradead.org>,
- Ross Zwisler <ross.zwisler@linux.intel.com>
-Cc: Michal Hocko <mhocko@kernel.org>, "Box\, David E" <david.e.box@intel.com>,
- Dave Hansen <dave.hansen@intel.com>, "Zheng\, Lv" <lv.zheng@intel.com>,
- linux-nvdimm@lists.01.org, "Verma\, Vishal L" <vishal.l.verma@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Anaczkowski\,
- Lukasz" <lukasz.anaczkowski@intel.com>, "Moore\,
- Robert" <robert.moore@intel.com>, linux-acpi@vger.kernel.org, "Odzioba\,
- Lukasz" <lukasz.odzioba@intel.com>, "Schmauss\, Erik" <erik.schmauss@intel.com>,
- Len Brown <lenb@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
- linuxppc-dev@lists.ozlabs.org, Jerome Glisse <jglisse@redhat.com>,
- Dan Williams <dan.j.williams@intel.com>, devel@acpica.org, "Kogut\,
- Jaroslaw" <Jaroslaw.Kogut@intel.com>, linux-mm@kvack.org, "Koss\,
- Marcin" <marcin.koss@intel.com>, linux-api@vger.kernel.org,
- Brice Goglin <brice.goglin@gmail.com>, "Nachimuthu\,
- Murugasamy" <murugasamy.nachimuthu@intel.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- "Koziej\, Artur" <artur.koziej@intel.com>, "Lahtinen\,
- Joonas" <joonas.lahtinen@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
-In-Reply-To: <20171220181937.GB12236@bombadil.infradead.org>
-References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
- <20171214130032.GK16951@dhcp22.suse.cz>
- <20171218203547.GA2366@linux.intel.com>
- <20171220181937.GB12236@bombadil.infradead.org>
-Date: Thu, 21 Dec 2017 23:50:40 +1100
-Message-ID: <87mv2cfdnj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z2bYv5VZNzDwbP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 02:45:07 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBLFiDbD050750
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 10:45:05 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2f0e5hw1xd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 10:45:05 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Thu, 21 Dec 2017 08:45:04 -0700
+From: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, david@gibson.dropbear.id.au, benh@au1.ibm.com
+Subject: [PATCH 1/1] powerpc/pseries: Use the system workqueue as fallback to
+ hotplug workqueue
+Date: Thu, 21 Dec 2017 13:44:48 -0200
+In-Reply-To: <20171221154448.22965-1-joserz@linux.vnet.ibm.com>
+References: <20171221154448.22965-1-joserz@linux.vnet.ibm.com>
+Message-Id: <20171221154448.22965-2-joserz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,35 +36,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matthew Wilcox <willy@infradead.org> writes:
+The hotplug engine uses its own workqueue to handle IRQ requests, the
+problem is that such workqueue is initialized not so early in the boot
+process.
 
-> On Mon, Dec 18, 2017 at 01:35:47PM -0700, Ross Zwisler wrote:
->> What I'm hoping to do with this series is to just provide a sysfs
->> representation of the HMAT so that applications can know which NUMA nodes to
->> select with existing utilities like numactl.  This series does not currently
->> alter any kernel behavior, it only provides a sysfs interface.
->> 
->> Say for example you had a system with some high bandwidth memory (HBM), and
->> you wanted to use it for a specific application.  You could use the sysfs
->> representation of the HMAT to figure out which memory target held your HBM.
->> You could do this by looking at the local bandwidth values for the various
->> memory targets, so:
->> 
->> 	# grep . /sys/devices/system/hmat/mem_tgt*/local_init/write_bw_MBps
->> 	/sys/devices/system/hmat/mem_tgt2/local_init/write_bw_MBps:81920
->> 	/sys/devices/system/hmat/mem_tgt3/local_init/write_bw_MBps:40960
->> 	/sys/devices/system/hmat/mem_tgt4/local_init/write_bw_MBps:40960
->> 	/sys/devices/system/hmat/mem_tgt5/local_init/write_bw_MBps:40960
->> 
->> and look for the one that corresponds to your HBM speed. (These numbers are
->> made up, but you get the idea.)
->
-> Presumably ACPI-based platforms will not be the only ones who have the
-> ability to expose different bandwidth memories in the future.  I think
-> we need a platform-agnostic way ... right, PowerPC people?
+Thus, when the kernel is ready to handle IRQ requests, after the system
+workqueue is initialized, we have a timeframe where any hotplug issued
+by the client will result in a kernel panic. That timeframe goes until
+the hotplug workqueue is initialized.
 
-Yes!
+It would be good to have the hotplug workqueue initialized as soon as
+the system workqueue but I don't think it is possible. So, this patch
+uses the system workqueue as a fallback the handle such IRQs.
 
-I don't have any detail at hand but will try and rustle something up.
+Signed-off-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-cheers
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 6e35780c5962..0474aa14b5f6 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -399,7 +399,15 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+ 		work->errlog = hp_errlog_copy;
+ 		work->hp_completion = hotplug_done;
+ 		work->rc = rc;
+-		queue_work(pseries_hp_wq, (struct work_struct *)work);
++
++		/* The hotplug workqueue may happen to be NULL at the moment
++		 * this code is executed, during the boot phase. So, in this
++		 * scenario, we can fallback to the system workqueue.
++		 */
++		if (unlikely(pseries_hp_wq == NULL))
++			schedule_work((struct work_struct *)work);
++		else
++			queue_work(pseries_hp_wq, (struct work_struct *)work);
+ 	} else {
+ 		*rc = -ENOMEM;
+ 		kfree(hp_errlog_copy);
+-- 
+2.14.1
