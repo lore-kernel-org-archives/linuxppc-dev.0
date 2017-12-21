@@ -1,34 +1,47 @@
-Return-Path: <rui.zhang@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elliott@hpe.com>
+Received: from g2t1383g.austin.hpe.com (g2t1383g.austin.hpe.com [15.233.16.89])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Cjt312vzDrvR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 11:50:41 +1100 (AEDT)
-Message-ID: <1513817428.2592.4.camel@intel.com>
-Subject: Re: [-next PATCH 4/4] treewide: Use DEVICE_ATTR_WO
-From: Zhang Rui <rui.zhang@intel.com>
-To: Joe Perches <joe@perches.com>, Borislav Petkov <bp@alien8.de>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Thomas Falcon
- <tlfalcon@linux.vnet.ibm.com>, John Allen <jallen@linux.vnet.ibm.com>,
- Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>,
- linux-wimax@intel.com, James Smart <james.smart@broadcom.com>, Dick Kennedy
- <dick.kennedy@broadcom.com>,  Eduardo Valentin <edubezval@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens
- <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, "H.
- Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Dmitry Torokhov
- <dmitry.torokhov@gmail.com>, "James E.J. Bottomley"
- <jejb@linux.vnet.ibm.com>, "Martin K. Petersen"
- <martin.petersen@oracle.com>,  linux-s390@vger.kernel.org,
- linux-kernel@vger.kernel.org,  linux-input@vger.kernel.org,
- netdev@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
- linux-scsi@vger.kernel.org,  linux-pm@vger.kernel.org
-Date: Thu, 21 Dec 2017 08:50:28 +0800
-In-Reply-To: <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
-References: <cover.1513706701.git.joe@perches.com>
- <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z2Dym0JVCzF07s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 12:46:55 +1100 (AEDT)
+Received: from g2t2352.austin.hpe.com (g2t2352.austin.hpe.com [15.233.44.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by g2t1383g.austin.hpe.com (Postfix) with ESMTPS id 1A4221E3E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Dec 2017 01:41:22 +0000 (UTC)
+From: "Elliott, Robert (Persistent Memory)" <elliott@hpe.com>
+To: Ross Zwisler <ross.zwisler@linux.intel.com>, Matthew Wilcox
+ <willy@infradead.org>
+CC: Michal Hocko <mhocko@kernel.org>, "Box, David E" <david.e.box@intel.com>,
+ Dave Hansen <dave.hansen@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>, "Rafael J. Wysocki"
+ <rafael.j.wysocki@intel.com>, "Anaczkowski, Lukasz"
+ <lukasz.anaczkowski@intel.com>, "Moore, Robert" <robert.moore@intel.com>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Odzioba, Lukasz"
+ <lukasz.odzioba@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, "Len
+ Brown" <lenb@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Jerome
+ Glisse" <jglisse@redhat.com>, "devel@acpica.org" <devel@acpica.org>, "Kogut,
+ Jaroslaw" <Jaroslaw.Kogut@intel.com>, "linux-mm@kvack.org"
+ <linux-mm@kvack.org>, "Koss, Marcin" <marcin.koss@intel.com>,
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>, Brice Goglin
+ <brice.goglin@gmail.com>, "Nachimuthu, Murugasamy"
+ <murugasamy.nachimuthu@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Koziej,
+ Artur" <artur.koziej@intel.com>, "Lahtinen, Joonas"
+ <joonas.lahtinen@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Tim
+ Chen" <tim.c.chen@linux.intel.com>
+Subject: RE: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+Date: Thu, 21 Dec 2017 01:41:15 +0000
+Message-ID: <AT5PR8401MB0387011EAD8858CC99548ED2AB0D0@AT5PR8401MB0387.NAMPRD84.PROD.OUTLOOK.COM>
+References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
+ <20171214130032.GK16951@dhcp22.suse.cz>
+ <20171218203547.GA2366@linux.intel.com>
+ <20171220181937.GB12236@bombadil.infradead.org>
+ <20171220211350.GA2688@linux.intel.com>
+In-Reply-To: <20171220211350.GA2688@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,137 +51,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-12-19 at 10:15 -0800, Joe Perches wrote:
-> Convert DEVICE_ATTR uses to DEVICE_ATTR_WO where possible.
-> 
-> Done with perl script:
-> 
-> $ git grep -w --name-only DEVICE_ATTR | \
->   xargs perl -i -e 'local $/; while (<>) {
-> s/\bDEVICE_ATTR\s*\(\s*(\w+)\s*,\s*\(?(?:\s*S_IWUSR\s*|\s*0200\s*)\)?
-> \s*,\s*NULL\s*,\s*\s_store\s*\)/DEVICE_ATTR_WO(\1)/g; print;}'
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/s390/kernel/smp.c                 | 2 +-
->  arch/x86/kernel/cpu/microcode/core.c   | 2 +-
->  drivers/input/touchscreen/elants_i2c.c | 2 +-
->  drivers/net/ethernet/ibm/ibmvnic.c     | 2 +-
->  drivers/net/wimax/i2400m/sysfs.c       | 3 +--
->  drivers/scsi/lpfc/lpfc_attr.c          | 3 +--
->  drivers/thermal/thermal_sysfs.c        | 2 +-
 
-For the thermal part,
-Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-thanks,
-rui
+> -----Original Message-----
+> From: Linux-nvdimm [mailto:linux-nvdimm-bounces@lists.01.org] On Behalf O=
+f
+> Ross Zwisler
+...
+>=20
+> On Wed, Dec 20, 2017 at 10:19:37AM -0800, Matthew Wilcox wrote:
+...
+> > initiator is a CPU?  I'd have expected you to expose a memory controlle=
+r
+> > abstraction rather than re-use storage terminology.
+>=20
+> Yea, I agree that at first blush it seems weird.  It turns out that
+> looking at it in sort of a storage initiator/target way is beneficial,
+> though, because it allows us to cut down on the number of data values
+> we need to represent.
+>=20
+> For example the SLIT, which doesn't differentiate between initiator and
+> target proximity domains (and thus nodes) always represents a system
+> with N proximity domains using a NxN distance table.  This makes sense
+> if every node contains both CPUs and memory.
+>=20
+> With the introduction of the HMAT, though, we can have memory-only
+> initiator nodes and we can explicitly associate them with their local=20
+> CPU.  This is necessary so that we can separate memory with different
+> performance characteristics (HBM vs normal memory vs persistent memory,
+> for example) that are all attached to the same CPU.
+>=20
+> So, say we now have a system with 4 CPUs, and each of those CPUs has 3
+> different types of memory attached to it.  We now have 16 total proximity
+> domains, 4 CPU and 12 memory.
 
->  7 files changed, 7 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-> index b8c1a85bcf2d..a919b2f0141d 100644
-> --- a/arch/s390/kernel/smp.c
-> +++ b/arch/s390/kernel/smp.c
-> @@ -1151,7 +1151,7 @@ static ssize_t __ref rescan_store(struct device
-> *dev,
->  	rc = smp_rescan_cpus();
->  	return rc ? rc : count;
->  }
-> -static DEVICE_ATTR(rescan, 0200, NULL, rescan_store);
-> +static DEVICE_ATTR_WO(rescan);
->  #endif /* CONFIG_HOTPLUG_CPU */
->  
->  static int __init s390_smp_init(void)
-> diff --git a/arch/x86/kernel/cpu/microcode/core.c
-> b/arch/x86/kernel/cpu/microcode/core.c
-> index c4fa4a85d4cb..09c74b0560dd 100644
-> --- a/arch/x86/kernel/cpu/microcode/core.c
-> +++ b/arch/x86/kernel/cpu/microcode/core.c
-> @@ -560,7 +560,7 @@ static ssize_t pf_show(struct device *dev,
->  	return sprintf(buf, "0x%x\n", uci->cpu_sig.pf);
->  }
->  
-> -static DEVICE_ATTR(reload, 0200, NULL, reload_store);
-> +static DEVICE_ATTR_WO(reload);
->  static DEVICE_ATTR(version, 0400, version_show, NULL);
->  static DEVICE_ATTR(processor_flags, 0400, pf_show, NULL);
->  
-> diff --git a/drivers/input/touchscreen/elants_i2c.c
-> b/drivers/input/touchscreen/elants_i2c.c
-> index a458e5ec9e41..819213e88f32 100644
-> --- a/drivers/input/touchscreen/elants_i2c.c
-> +++ b/drivers/input/touchscreen/elants_i2c.c
-> @@ -1000,7 +1000,7 @@ static ssize_t show_iap_mode(struct device
-> *dev,
->  				"Normal" : "Recovery");
->  }
->  
-> -static DEVICE_ATTR(calibrate, S_IWUSR, NULL, calibrate_store);
-> +static DEVICE_ATTR_WO(calibrate);
->  static DEVICE_ATTR(iap_mode, S_IRUGO, show_iap_mode, NULL);
->  static DEVICE_ATTR(update_fw, S_IWUSR, NULL, write_update_fw);
->  
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c
-> b/drivers/net/ethernet/ibm/ibmvnic.c
-> index 1dc4aef37d3a..42b96e1a1b13 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -4411,7 +4411,7 @@ static ssize_t failover_store(struct device
-> *dev, struct device_attribute *attr,
->  	return count;
->  }
->  
-> -static DEVICE_ATTR(failover, 0200, NULL, failover_store);
-> +static DEVICE_ATTR_WO(failover);
->  
->  static unsigned long ibmvnic_get_desired_dma(struct vio_dev *vdev)
->  {
-> diff --git a/drivers/net/wimax/i2400m/sysfs.c
-> b/drivers/net/wimax/i2400m/sysfs.c
-> index 1237109f251a..8c67df11105c 100644
-> --- a/drivers/net/wimax/i2400m/sysfs.c
-> +++ b/drivers/net/wimax/i2400m/sysfs.c
-> @@ -65,8 +65,7 @@ ssize_t i2400m_idle_timeout_store(struct device
-> *dev,
->  }
->  
->  static
-> -DEVICE_ATTR(i2400m_idle_timeout, S_IWUSR,
-> -	    NULL, i2400m_idle_timeout_store);
-> +DEVICE_ATTR_WO(i2400m_idle_timeout);
->  
->  static
->  struct attribute *i2400m_dev_attrs[] = {
-> diff --git a/drivers/scsi/lpfc/lpfc_attr.c
-> b/drivers/scsi/lpfc/lpfc_attr.c
-> index 517ff203cfde..6ddaf51a23f6 100644
-> --- a/drivers/scsi/lpfc/lpfc_attr.c
-> +++ b/drivers/scsi/lpfc/lpfc_attr.c
-> @@ -2418,8 +2418,7 @@ lpfc_soft_wwn_enable_store(struct device *dev,
-> struct device_attribute *attr,
->  
->  	return count;
->  }
-> -static DEVICE_ATTR(lpfc_soft_wwn_enable, S_IWUSR, NULL,
-> -		   lpfc_soft_wwn_enable_store);
-> +static DEVICE_ATTR_WO(lpfc_soft_wwn_enable);
->  
->  /**
->   * lpfc_soft_wwpn_show - Return the cfg soft ww port name of the
-> adapter
-> diff --git a/drivers/thermal/thermal_sysfs.c
-> b/drivers/thermal/thermal_sysfs.c
-> index 2bc964392924..ba81c9080f6e 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -317,7 +317,7 @@ emul_temp_store(struct device *dev, struct
-> device_attribute *attr,
->  
->  	return ret ? ret : count;
->  }
-> -static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-> +static DEVICE_ATTR_WO(emul_temp);
->  #endif
->  
->  static ssize_t
+The CPU cores that make up a node can have performance restrictions of
+their own; for example, they might max out at 10 GB/s even though the
+memory controller supports 120 GB/s (meaning you need to use 12 cores
+on the node to fully exercise memory).  It'd be helpful to report this,
+so software can decide how many cores to use for bandwidth-intensive work.
+
+> If we represent this with the SLIT we end up with a 16 X 16 distance tabl=
+e
+> (256 entries), most of which don't matter because they are memory-to-
+> memory distances which don't make sense.
+>=20
+> In the HMAT, though, we separate out the initiators and the targets and
+> put them into separate lists.  (See 5.2.27.4 System Locality Latency and
+> Bandwidth Information Structure in ACPI 6.2 for details.)  So, this same
+> config in the HMAT only has 4*12=3D48 performance values of each type, al=
+l
+> of which convey meaningful information.
+>=20
+> The HMAT indeed even uses the storage "initiator" and "target"
+> terminology. :)
+
+Centralized DMA engines (e.g., as used by the "DMA based blk-mq pmem
+driver") have performance differences too.  A CPU might include
+CPU cores that reach 10 GB/s, DMA engines that reach 60 GB/s, and
+memory controllers that reach 120 GB/s.  I guess these would be
+represented as extra initiators on the node?
+
+
+---
+Robert Elliott, HPE Persistent Memory
