@@ -1,29 +1,22 @@
-Return-Path: <groug@kaod.org>
-Received: from 2.mo1.mail-out.ovh.net (2.mo1.mail-out.ovh.net [178.32.119.250])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z36g12VHHzDrXN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 23:06:20 +1100 (AEDT)
-Received: from player795.ha.ovh.net (gw6.ovh.net [213.251.189.206])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id 32A4CB7856
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 12:58:54 +0100 (CET)
-Date: Fri, 22 Dec 2017 12:58:47 +0100
-From: Greg Kurz <groug@kaod.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>, Laurent Vivier <lvivier@redhat.com>,
- =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>, kvm-ppc@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] KVM: PPC: Book3S: fix XIVE migration of pending interrupts
-Message-ID: <20171222125847.1e5a4f5f@bahia.lan>
-In-Reply-To: <87wp1fnh27.fsf@concordia.ellerman.id.au>
-References: <20171212120204.6799-1-clg@kaod.org>
- <4be897d4-2d54-305b-8416-b32384de73a9@redhat.com>
- <878tdvpeib.fsf@concordia.ellerman.id.au>
- <20171222075430.GB6945@fergus.ozlabs.ibm.com>
- <87wp1fnh27.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z36m11YtZzDrbG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 23:10:40 +1100 (AEDT)
+Subject: Re: [PATCH v5] powerpc/mm: Only read faulting instruction when
+ necessary in do_page_fault()
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20170808070859.A3F3A653E4@po15668-vm-win7.idsi0.si.c-s.fr>
+Message-ID: <a8500a2f-776b-0fe4-ebe0-e27a89191271@c-s.fr>
+Date: Fri, 22 Dec 2017 13:10:35 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20170808070859.A3F3A653E4@po15668-vm-win7.idsi0.si.c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,93 +26,243 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 22 Dec 2017 22:22:08 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi Michael,
 
-> Paul Mackerras <paulus@ozlabs.org> writes:
->=20
-> > On Fri, Dec 22, 2017 at 03:34:20PM +1100, Michael Ellerman wrote: =20
-> >> Laurent Vivier <lvivier@redhat.com> writes:
-> >>  =20
-> >> > On 12/12/2017 13:02, C=C3=A9dric Le Goater wrote: =20
-> >> >> When restoring a pending interrupt, we are setting the Q bit to for=
-ce
-> >> >> a retrigger in xive_finish_unmask(). But we also need to force an E=
-OI
-> >> >> in this case to reach the same initial state : P=3D1, Q=3D0.
-> >> >>=20
-> >> >> This can be done by not setting 'old_p' for pending interrupts which
-> >> >> will inform xive_finish_unmask() that an EOI needs to be sent.
-> >> >>=20
-> >> >> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >> >> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
-> >> >> ---
-> >> >>=20
-> >> >>  Tested with a guest running iozone.
-> >> >>=20
-> >> >>  arch/powerpc/kvm/book3s_xive.c | 4 ++--
-> >> >>  1 file changed, 2 insertions(+), 2 deletions(-) =20
-> >> >
-> >> > We really need this patch to fix VM migration on POWER9.
-> >> > When will it be merged? =20
-> >>=20
-> >> Paul is away, so I'll merge it via the powerpc tree.
-> >>=20
-> >> I'll mark it:
-> >>=20
-> >>   Fixes: 5af50993850a ("KVM: PPC: Book3S HV: Native usage of the XIVE =
-interrupt controller")
-> >>   Cc: stable@vger.kernel.org # v4.12+ =20
-> >
-> > Thanks for doing that.
-> >
-> > If you felt like merging Alexey's patch "KVM: PPC: Book3S PR: Fix WIMG
-> > handling under pHyp" with my acked-by, that would be fine too.  The
-> > commit message needs a little work - the reason for using HPTE_R_M is
-> > not just because it seems to work, but because current POWER
-> > processors require M set on mappings for normal pages, and pHyp
-> > enforces that. =20
->=20
-> OK. I saw this too late, but I'll pick that one up next week. If someone
-> sends me an updated change log I will merge all of their patches for
-> ever.
->=20
+Did you have a chance to have a look ?
 
-Really ? Opportunity makes the thief, so here's my take :P
+Christophe
 
-8<---------------------------------------------------------------------->8
-KVM: PPC: Book3S: fix XIVE migration of pending interrupts
-
-96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
-bits preserving but it missed 2 special cases:
-- a magic page in kvmppc_mmu_book3s_64_xlate() and
-- guest real mode in kvmppc_handle_pagefault().
-
-For these ptes WIMG were 0 and pHyp failed on these causing a guest to
-stop in the very beginning at NIP=3D0x100 (due to bd9166ffe
-"KVM: PPC: Book3S PR: Exit KVM on failed mapping").
-
-According to LoPAPR v1.1 14.5.4.1.2 H_ENTER:
-
- The hypervisor checks that the WIMG bits within the PTE are appropriate
- for the physical page number else H_Parameter return. (For System Memory
- pages WIMG=3D0010, or, 1110 if the SAO option is enabled, and for IO pages
- WIMG=3D01**.)
-
-This hence initializes WIMG to non-zero value HPTE_R_M (0x10), as expected
-by pHyp.
-
-Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-8<---------------------------------------------------------------------->8
-
-Cheers,
-
---
-Greg
-
-> cheers
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Le 08/08/2017 à 09:08, Christophe Leroy a écrit :
+> Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
+> userspace instruction miss") has shown that limiting the read of
+> faulting instruction to likely cases improves performance.
+> 
+> This patch goes further into this direction by limiting the read
+> of the faulting instruction to the only cases where it is definitly
+> needed.
+> 
+> On an MPC885, with the same benchmark app as in the commit referred
+> above, we see a reduction of 4000 dTLB misses (approx 3%):
+> 
+> Before the patch:
+>   Performance counter stats for './fault 500' (10 runs):
+> 
+>           720495838      cpu-cycles		( +-  0.04% )
+>              141769      dTLB-load-misses	( +-  0.02% )
+>               52722      iTLB-load-misses	( +-  0.01% )
+>               19611      faults			( +-  0.02% )
+> 
+>         5.750535176 seconds time elapsed		( +-  0.16% )
+> 
+> With the patch:
+>   Performance counter stats for './fault 500' (10 runs):
+> 
+>           717669123      cpu-cycles		( +-  0.02% )
+>              137344      dTLB-load-misses	( +-  0.03% )
+>               52731      iTLB-load-misses	( +-  0.01% )
+>               19614      faults			( +-  0.03% )
+> 
+>         5.728423115 seconds time elapsed		( +-  0.14% )
+> 
+> The proper work of the huge stack expansion was tested with the
+> following app:
+> 
+> #include <stdlib.h>
+> #include <stdio.h>
+> 
+> int main(int argc, char **argv)
+> {
+> 	char buf[1024 * 1025];
+> 
+> 	sprintf(buf, "Hello world !\n");
+> 	printf(buf);
+> 
+> 	exit(0);
+> }
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>   I'm wondering if it really worth it to do something so complex. Is there really a chance that the
+>   get_user() faults ? It would mean that an instruction that as just been executed has been in the
+>   meantime swapped out. Is that really a possibility ? I'd expect not, which would mean that we
+>   could limit it to __get_user_inatomic() and then not implement this complex unlocking and retry stuff.
+> 
+>   v5: Reworked to fit after Benh do_fault improvement and rebased on top of powerpc/merge (65152902e43fef)
+> 
+>   v4: Rebased on top of powerpc/next (f718d426d7e42e) and doing access_ok() verification before __get_user_xxx()
+> 
+>   v3: Do a first try with pagefault disabled before releasing the semaphore
+> 
+>   v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
+> 
+>   arch/powerpc/mm/fault.c | 90 +++++++++++++++++++++++++++++++++++--------------
+>   1 file changed, 65 insertions(+), 25 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index f88fac3d281b..7a218f69f956 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -68,26 +68,58 @@ static inline bool notify_page_fault(struct pt_regs *regs)
+>   /*
+>    * Check whether the instruction at regs->nip is a store using
+>    * an update addressing form which will update r1.
+> + * If no, returns STACK_EXPANSION_BAD
+> + * If yes, returns STACK_EXPANSION_GOOD
+> + * In addition, the result is ored with STACK_EXPANSION_UNLOCKED if the
+> + * semaphore has been released
+>    */
+> -static bool store_updates_sp(struct pt_regs *regs)
+> +
+> +#define STACK_EXPANSION_BAD		0
+> +#define STACK_EXPANSION_GOOD		1
+> +#define STACK_EXPANSION_LOCKED		0
+> +#define STACK_EXPANSION_UNLOCKED	2
+> +
+> +int store_updates_sp(struct pt_regs *regs)
+>   {
+>   	unsigned int inst;
+> +	unsigned int __user *nip = (unsigned int __user *)regs->nip;
+> +	int ret;
+> +	int sema = STACK_EXPANSION_LOCKED;
+> +
+> +	/*
+> +	 * We want to do this outside mmap_sem, because reading code around nip
+> +	 * can result in fault, which will cause a deadlock when called with
+> +	 * mmap_sem held. However, we do a first try with pagefault disabled as
+> +	 * a fault here is very unlikely.
+> +	 */
+> +	if (!access_ok(VERIFY_READ, nip, sizeof(inst)))
+> +		return STACK_EXPANSION_BAD | STACK_EXPANSION_LOCKED;
+> +
+> +	pagefault_disable();
+> +	ret = __get_user_inatomic(inst, nip);
+> +	pagefault_enable();
+> +	if (ret) {
+> +		up_read(&current->mm->mmap_sem);
+> +		sema = STACK_EXPANSION_UNLOCKED;
+> +		if (__get_user(inst, nip))
+> +			return STACK_EXPANSION_BAD | STACK_EXPANSION_UNLOCKED;
+> +	}
+>   
+> -	if (get_user(inst, (unsigned int __user *)regs->nip))
+> -		return false;
+>   	/* check for 1 in the rA field */
+>   	if (((inst >> 16) & 0x1f) != 1)
+> -		return false;
+> +		return STACK_EXPANSION_BAD | sema;
+> +
+>   	/* check major opcode */
+>   	switch (inst >> 26) {
+> +	case 62:	/* std or stdu */
+> +		if ((inst & 3) == 0)
+> +			break;
+>   	case 37:	/* stwu */
+>   	case 39:	/* stbu */
+>   	case 45:	/* sthu */
+>   	case 53:	/* stfsu */
+>   	case 55:	/* stfdu */
+> -		return true;
+> -	case 62:	/* std or stdu */
+> -		return (inst & 3) == 1;
+> +		return STACK_EXPANSION_GOOD | sema;
+>   	case 31:
+>   		/* check minor opcode */
+>   		switch ((inst >> 1) & 0x3ff) {
+> @@ -97,10 +129,10 @@ static bool store_updates_sp(struct pt_regs *regs)
+>   		case 439:	/* sthux */
+>   		case 695:	/* stfsux */
+>   		case 759:	/* stfdux */
+> -			return true;
+> +			return STACK_EXPANSION_GOOD | sema;
+>   		}
+>   	}
+> -	return false;
+> +	return STACK_EXPANSION_BAD | sema;
+>   }
+>   /*
+>    * do_page_fault error handling helpers
+> @@ -220,9 +252,9 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
+>   	return is_exec || (address >= TASK_SIZE);
+>   }
+>   
+> -static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
+> -				struct vm_area_struct *vma,
+> -				bool store_update_sp)
+> +int query_stack_expansion(struct pt_regs *regs, unsigned long address,
+> +			  struct vm_area_struct *vma, bool store_update_sp,
+> +			  unsigned int flags)
+>   {
+>   	/*
+>   	 * N.B. The POWER/Open ABI allows programs to access up to
+> @@ -237,7 +269,7 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
+>   		/* get user regs even if this fault is in kernel mode */
+>   		struct pt_regs *uregs = current->thread.regs;
+>   		if (uregs == NULL)
+> -			return true;
+> +			return STACK_EXPANSION_BAD;
+>   
+>   		/*
+>   		 * A user-mode access to an address a long way below
+> @@ -251,10 +283,16 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
+>   		 * between the last mapped region and the stack will
+>   		 * expand the stack rather than segfaulting.
+>   		 */
+> -		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
+> -			return true;
+> +		if (address + 2048 < uregs->gpr[1]) {
+> +			if (store_update_sp)
+> +				return STACK_EXPANSION_GOOD;
+> +			if (!(flags & (FAULT_FLAG_USER)) ||
+> +			    !(flags & (FAULT_FLAG_WRITE)))
+> +				return STACK_EXPANSION_BAD;
+> +			return store_updates_sp(regs);
+> +		}
+>   	}
+> -	return false;
+> +	return STACK_EXPANSION_GOOD;
+>   }
+>   
+>   static bool access_error(bool is_write, bool is_exec,
+> @@ -386,6 +424,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>   	int is_write = page_fault_is_write(error_code);
+>   	int fault, major = 0;
+>   	bool store_update_sp = false;
+> +	int query;
+>   
+>   	if (notify_page_fault(regs))
+>   		return 0;
+> @@ -427,14 +466,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>   
+>   	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
+>   
+> -	/*
+> -	 * We want to do this outside mmap_sem, because reading code around nip
+> -	 * can result in fault, which will cause a deadlock when called with
+> -	 * mmap_sem held
+> -	 */
+> -	if (is_write && is_user)
+> -		store_update_sp = store_updates_sp(regs);
+> -
+>   	if (is_user)
+>   		flags |= FAULT_FLAG_USER;
+>   	if (is_write)
+> @@ -481,8 +512,17 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>   		return bad_area(regs, address);
+>   
+>   	/* The stack is being expanded, check if it's valid */
+> -	if (unlikely(bad_stack_expansion(regs, address, vma, store_update_sp)))
+> +	query = query_stack_expansion(regs, address, vma, store_update_sp,
+> +				      flags);
+> +	if (unlikely(!(query & STACK_EXPANSION_GOOD))) {
+> +		if (query & STACK_EXPANSION_UNLOCKED)
+> +			return bad_area_nosemaphore(regs, address);
+>   		return bad_area(regs, address);
+> +	}
+> +	if (unlikely(query & STACK_EXPANSION_UNLOCKED)) {
+> +		store_update_sp = true;
+> +		goto retry;
+> +	}
+>   
+>   	/* Try to expand it */
+>   	if (unlikely(expand_stack(vma, address)))
+> 
