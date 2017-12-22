@@ -1,34 +1,31 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <groug@kaod.org>
+Received: from 15.mo1.mail-out.ovh.net (15.mo1.mail-out.ovh.net
+ [188.165.38.232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z3Bjs1H07zF083
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 02:09:04 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- vBMF8KMn083205
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 10:09:02 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2f12cgqe04-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 10:09:01 -0500
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 22 Dec 2017 08:09:00 -0700
-References: <20171220145206.12234-1-npiggin@gmail.com>
- <20171220145206.12234-5-npiggin@gmail.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 4/8] powerpc/64s: put io_sync bit into r14
-In-reply-to: <20171220145206.12234-5-npiggin@gmail.com>
-Date: Fri, 22 Dec 2017 13:08:54 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z3Gp542v5zDx5j
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 05:12:59 +1100 (AEDT)
+Received: from player795.ha.ovh.net (gw6.ovh.net [213.251.189.206])
+ by mo1.mail-out.ovh.net (Postfix) with ESMTP id D1F77B75D5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 13:19:06 +0100 (CET)
+Date: Fri, 22 Dec 2017 13:18:59 +0100
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>, Laurent Vivier <lvivier@redhat.com>,
+ =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>, kvm-ppc@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] KVM: PPC: Book3S: fix XIVE migration of pending interrupts
+Message-ID: <20171222131859.5dff1697@bahia.lan>
+In-Reply-To: <20171222125847.1e5a4f5f@bahia.lan>
+References: <20171212120204.6799-1-clg@kaod.org>
+ <4be897d4-2d54-305b-8416-b32384de73a9@redhat.com>
+ <878tdvpeib.fsf@concordia.ellerman.id.au>
+ <20171222075430.GB6945@fergus.ozlabs.ibm.com>
+ <87wp1fnh27.fsf@concordia.ellerman.id.au>
+ <20171222125847.1e5a4f5f@bahia.lan>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87a7ya6bqx.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +35,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 22 Dec 2017 12:58:47 +0100
+Greg Kurz <groug@kaod.org> wrote:
 
-Hello Nicholas,
+> On Fri, 22 Dec 2017 22:22:08 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+> 
+> > Paul Mackerras <paulus@ozlabs.org> writes:
+[...]
+> > >
+> > > Thanks for doing that.
+> > >
+> > > If you felt like merging Alexey's patch "KVM: PPC: Book3S PR: Fix WIMG
+> > > handling under pHyp" with my acked-by, that would be fine too.  The
+> > > commit message needs a little work - the reason for using HPTE_R_M is
+> > > not just because it seems to work, but because current POWER
+> > > processors require M set on mappings for normal pages, and pHyp
+> > > enforces that.    
+> > 
+> > OK. I saw this too late, but I'll pick that one up next week. If someone
+> > sends me an updated change log I will merge all of their patches for
+> > ever.
+> >   
+> 
+> Really ? Opportunity makes the thief, so here's my take :P
+> 
+> 8<---------------------------------------------------------------------->8
+> KVM: PPC: Book3S: fix XIVE migration of pending interrupts
 
-Just a small comment about syntax. I'm afraid I can't comment much about
-the substance of the patch.
+Oops! Paste error... Title should be:
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-> index b9ebc3085fb7..182bb9304c79 100644
-> --- a/arch/powerpc/include/asm/spinlock.h
-> +++ b/arch/powerpc/include/asm/spinlock.h
-> @@ -40,16 +40,9 @@
->  #endif
->
->  #if defined(CONFIG_PPC64) && defined(CONFIG_SMP)
-> -#define CLEAR_IO_SYNC	(get_paca()->io_sync = 0)
-> -#define SYNC_IO		do {						\
-> -				if (unlikely(get_paca()->io_sync)) {	\
-> -					mb();				\
-> -					get_paca()->io_sync = 0;	\
-> -				}					\
-> -			} while (0)
-> +#define CLEAR_IO_SYNC	do { r14_clear_bits(R14_BIT_IO_SYNC); } while(0)
+KVM: PPC: Book3S PR: Fix WIMG handling under pHyp
 
-Is there a reason for the do { } while(0) idiom here? If
-r14_clear_bits() is an inline function, isn't it a single statement
-already?
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> 
+> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
+> bits preserving but it missed 2 special cases:
+> - a magic page in kvmppc_mmu_book3s_64_xlate() and
+> - guest real mode in kvmppc_handle_pagefault().
+> 
+> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
+> stop in the very beginning at NIP=0x100 (due to bd9166ffe
+> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
+> 
+> According to LoPAPR v1.1 14.5.4.1.2 H_ENTER:
+> 
+>  The hypervisor checks that the WIMG bits within the PTE are appropriate
+>  for the physical page number else H_Parameter return. (For System Memory
+>  pages WIMG=0010, or, 1110 if the SAO option is enabled, and for IO pages
+>  WIMG=01**.)
+> 
+> This hence initializes WIMG to non-zero value HPTE_R_M (0x10), as expected
+> by pHyp.
+> 
+> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 8<---------------------------------------------------------------------->8
+> 
+> Cheers,
+> 
+> --
+> Greg
+> 
+> > cheers
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html  
+> 
