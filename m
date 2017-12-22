@@ -1,19 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z35kC602DzF0Cc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:24:03 +1100 (AEDT)
-In-Reply-To: <20171212120204.6799-1-clg@kaod.org>
-To: =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z35kD606VzDx69
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:24:04 +1100 (AEDT)
+In-Reply-To: <20171212172356.2397-1-lvivier@redhat.com>
+To: Laurent Vivier <lvivier@redhat.com>, kvm-ppc@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
-Subject: Re: KVM: PPC: Book3S: fix XIVE migration of pending interrupts
-Message-Id: <3z35kC53mWz9s7n@ozlabs.org>
-Date: Fri, 22 Dec 2017 22:24:03 +1100 (AEDT)
+Cc: linux-kernel@vger.kernel.org,
+ =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: KVM: PPC: Book3S HV: Fix pending_pri value in
+ kvmppc_xive_get_icp()
+Message-Id: <3z35kD3TMXz9sMN@ozlabs.org>
+Date: Fri, 22 Dec 2017 22:24:04 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-12-12 at 12:02:04 UTC, =?utf-8?q?C=C3=A9dric_Le_Goater?= wrote:
-> When restoring a pending interrupt, we are setting the Q bit to force
-> a retrigger in xive_finish_unmask(). But we also need to force an EOI
-> in this case to reach the same initial state : P=1, Q=0.
+On Tue, 2017-12-12 at 17:23:56 UTC, Laurent Vivier wrote:
+> When we migrate a VM from a POWER8 host (XICS) to a POWER9 host
+> (XICS-on-XIVE), we have an error:
 > 
-> This can be done by not setting 'old_p' for pending interrupts which
-> will inform xive_finish_unmask() that an EOI needs to be sent.
+> qemu-kvm: Unable to restore KVM interrupt controller state \
+>           (0xff000000) for CPU 0: Invalid argument
 > 
-> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
-> Reviewed-by: Laurent Vivier <lvivier@redhat.com>
-> Tested-by: Laurent Vivier <lvivier@redhat.com>
+> This is because kvmppc_xics_set_icp() checks the new state
+> is internaly consistent, and especially:
+> 
+> ...
+>    1129         if (xisr == 0) {
+>    1130                 if (pending_pri != 0xff)
+>    1131                         return -EINVAL;
+> ...
+> 
+> On the other side, kvmppc_xive_get_icp() doesn't set
+> neither the pending_pri value, nor the xisr value (set to 0)
+> (and kvmppc_xive_set_icp() ignores the pending_pri value)
+> 
+> As xisr is 0, pending_pri must be set to 0xff.
+> 
+> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/dc1c4165d189350cb51bdd3057deb6
+https://git.kernel.org/powerpc/c/7333b5aca412d6ad02667b5a513485
 
 cheers
