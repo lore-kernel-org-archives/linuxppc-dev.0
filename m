@@ -1,20 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z35Pd2HtKzDx69
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:09:41 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: anju@linux.vnet.ibm.com, benh@kernel.crashing.org, clg@kaod.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- lvivier@redhat.com, ravi.bangoria@linux.vnet.ibm.com, paulus@samba.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.15-5 tag
-Date: Fri, 22 Dec 2017 22:09:38 +1100
-Message-ID: <873743ow7h.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z35Zd30rnzDrdP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:17:28 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id s3so12729934plp.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 03:17:28 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 0/9] modernize early memory allocation limits and
+Date: Fri, 22 Dec 2017 21:17:07 +1000
+Message-Id: <20171222111716.13101-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,95 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+This series improves (mostly relaxes) limits on early memory
+allocations for stacks, pacas, etc. on 64s.
 
-Hi Linus,
+It also avoids allocating lppacas for bare metal, and it changes
+allocation of paca and lppaca from single big arrays to inividual
+allocations.
 
-Please pull some more powerpc fixes for 4.15.
+The main goal of this is toward allocating these basic structures
+per-node. We're not there yet, but closer.
 
-This is all fairly boring, except that there's two KVM fixes that you'd
-normally get via Paul's kvm-ppc tree. He's away so I picked them up. I
-was waiting to see if he would apply them, which is why they have only
-been in my tree since today. But they were on the list for a while and
-have been tested on the relevant hardware.
+Thanks,
+Nick
 
-cheers
+Nicholas Piggin (9):
+  powerpc/powernv: Remove real mode access limit for early allocations
+  powerpc/pseries: radix is not subject to RMA limit, remove it
+  powerpc/64: rtas avoid accessing paca in 32-bit mode
+  powerpc/pseries: lift RTAS limit for radix
+  powerpc/pseries: lift RTAS limit for hash
+  powerpc/64s: Relax PACA address limitations
+  powerpc/64s: do not allocate lppaca if we are not virtualized
+  powerpc/64: Use array of paca pointers and allocate pacas individually
+  powerpc/64s: Use array of lppaca pointers and allocate lppacas
+    individually
 
+ arch/powerpc/include/asm/kvm_ppc.h           |   8 +-
+ arch/powerpc/include/asm/lppaca.h            |  26 ++--
+ arch/powerpc/include/asm/paca.h              |  12 +-
+ arch/powerpc/include/asm/pmc.h               |  13 +-
+ arch/powerpc/include/asm/smp.h               |   4 +-
+ arch/powerpc/kernel/asm-offsets.c            |   5 +
+ arch/powerpc/kernel/crash.c                  |   2 +-
+ arch/powerpc/kernel/entry_64.S               |  17 ++-
+ arch/powerpc/kernel/head_64.S                |  19 +--
+ arch/powerpc/kernel/machine_kexec_64.c       |  37 +++---
+ arch/powerpc/kernel/paca.c                   | 174 ++++++++++++++-------------
+ arch/powerpc/kernel/setup.h                  |   4 +
+ arch/powerpc/kernel/setup_64.c               |  40 +++---
+ arch/powerpc/kernel/smp.c                    |  10 +-
+ arch/powerpc/kernel/sysfs.c                  |   2 +-
+ arch/powerpc/kvm/book3s_hv.c                 |  34 +++---
+ arch/powerpc/kvm/book3s_hv_builtin.c         |   2 +-
+ arch/powerpc/kvm/book3s_hv_interrupts.S      |   3 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S      |   3 +-
+ arch/powerpc/mm/hash_utils_64.c              |  24 ++--
+ arch/powerpc/mm/numa.c                       |   4 +-
+ arch/powerpc/mm/pgtable-radix.c              |  17 +--
+ arch/powerpc/mm/tlb-radix.c                  |   2 +-
+ arch/powerpc/platforms/85xx/smp.c            |   8 +-
+ arch/powerpc/platforms/cell/smp.c            |   4 +-
+ arch/powerpc/platforms/powernv/idle.c        |  13 +-
+ arch/powerpc/platforms/powernv/setup.c       |   4 +-
+ arch/powerpc/platforms/powernv/smp.c         |   2 +-
+ arch/powerpc/platforms/powernv/subcore.c     |   2 +-
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |   2 +-
+ arch/powerpc/platforms/pseries/kexec.c       |   7 +-
+ arch/powerpc/platforms/pseries/lpar.c        |   4 +-
+ arch/powerpc/platforms/pseries/setup.c       |   2 +-
+ arch/powerpc/platforms/pseries/smp.c         |   4 +-
+ arch/powerpc/sysdev/xics/icp-native.c        |   2 +-
+ arch/powerpc/xmon/xmon.c                     |   2 +-
+ 36 files changed, 289 insertions(+), 229 deletions(-)
 
-The following changes since commit d8104182087319fd753d6d8e0afcd95d84c2aa2f:
-
-  powerpc/xmon: Don't print hashed pointers in xmon (2017-12-07 00:27:01 +1=
-100)
-
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/po=
-werpc-4.15-5
-
-for you to fetch changes up to 7333b5aca412d6ad02667b5a513485838a91b136:
-
-  KVM: PPC: Book3S HV: Fix pending_pri value in kvmppc_xive_get_icp() (2017=
--12-22 15:36:24 +1100)
-
-=2D---------------------------------------------------------------
-powerpc fixes for 4.15 #5
-
-Of note is two fixes for KVM XIVE (Power9 interrupt controller). These would
-normally go via the KVM tree but Paul is away so I've picked them up.
-
-Other than that, two fixes for error handling in the IMC driver, and one fo=
-r a
-potential oops in the BHRB code if the hardware records a branch address th=
-at
-has subsequently been unmapped, and finally a s/%p/%px/ in our oops code.
-
-Thanks to:
-  Anju T Sudhakar, C=C3=A9dric Le Goater, Laurent Vivier, Madhavan Srinivas=
-an, Naveen
-  N. Rao, Ravi Bangoria.
-
-=2D---------------------------------------------------------------
-Anju T Sudhakar (2):
-      powerpc/perf/imc: Fix nest-imc cpuhotplug callback failure
-      powerpc/perf: Fix kfree memory allocated for nest pmus
-
-C=C3=A9dric Le Goater (1):
-      KVM: PPC: Book3S: fix XIVE migration of pending interrupts
-
-Laurent Vivier (1):
-      KVM: PPC: Book3S HV: Fix pending_pri value in kvmppc_xive_get_icp()
-
-Michael Ellerman (1):
-      powerpc/kernel: Print actual address of regs when oopsing
-
-Ravi Bangoria (1):
-      powerpc/perf: Dereference BHRB entries safely
-
- arch/powerpc/kernel/process.c   |  2 +-
- arch/powerpc/kvm/book3s_xive.c  |  7 ++++---
- arch/powerpc/perf/core-book3s.c |  8 ++++++--
- arch/powerpc/perf/imc-pmu.c     | 17 ++++++++++++++++-
- 4 files changed, 27 insertions(+), 7 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJaPOfzAAoJEFHr6jzI4aWA2VAP/3LNLSY2ZNz5kWWpB4rbOmgH
-imShGRdi6B+8UkyLS6bvGPSdWA95cSlCkPpdTBiO9b6pk9aYhuqhk3Q2WYBN9eTc
-j2aZjmGMa9WpPpPBvLKyKmxsLOnDFT2XH6kejptqdN1Q/jjPM50pn/GXPbFLIC6a
-HDSJfLDs+GqtgsA39B4GaszAOIv0xrm6kcULl1EjrMs+oZR2+UJ01atXkHI35GXP
-9VI/Aak50RXw9Yx4/8F9OZNYpNXQrKv+BRRNVFrKQXl/qIguDUhohgeNNcBIugfD
-wGX9FntChetulaGqZxJrRVqcqy8we3btaFl9lt8aIG7P6C+Z/6q3UVrl9o70FmqM
-2yqZ2Y0WaThGz2hkGVeeWdlEAqLiwGyhBL6wYeQaaY7skXl6FE50r9Y5B3lehLoB
-TWBg9A8O25Y+MDrS35QIphWzgDaJmqAQF8+FDUpudi3PvFKYp/TT1UXAUGiGXj2Y
-pOyuirQjP5vPHg9wXIO4iLkoF8tK1nGSXtYgcGgJcE2Mbnp3sPEgPkEtanwIyzcw
-jHqTg8aW0qlEFDK/JthdupssyQgilAHDiNE0/kXsPGFq3DF6L0SlNiBxICoXcysg
-kO91Sy0ugziKS7Vbidofvex3vawSvM1SVRChIe7C3GE6TqdwAXIxaenBniIBphnP
-aSNiRUuuHXwvI0AVbBKv
-=zMPa
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+2.15.0
