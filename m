@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z35Zq2MX9zF0C0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:17:39 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id 62so11289797pld.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 03:17:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z35Zv0HlCzDrdP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:17:42 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id k15so14390969pgr.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 03:17:42 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 3/9] powerpc/64: rtas avoid accessing paca in 32-bit mode
-Date: Fri, 22 Dec 2017 21:17:10 +1000
-Message-Id: <20171222111716.13101-4-npiggin@gmail.com>
+Subject: [PATCH 4/9] powerpc/pseries: lift RTAS limit for radix
+Date: Fri, 22 Dec 2017 21:17:11 +1000
+Message-Id: <20171222111716.13101-5-npiggin@gmail.com>
 In-Reply-To: <20171222111716.13101-1-npiggin@gmail.com>
 References: <20171222111716.13101-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,56 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 177ba7c647f3 ("powerpc/mm/radix: Limit paca allocation in radix")
-limited the paca allocation address to 1G on pSeries because RTAS return
-accesses the paca in 32-bit mode:
+With the previous patch to switch to 64-bit mode after returning from
+RTAS and before doing any memory accesses, the RMA limit need not be
+clamped to 1GB to avoid RTAS bugs.
 
-    On return from RTAS we access the paca variables and we have 64 bit
-    disabled. This requires us to limit paca in 32 bit range.
-
-    Fix this by setting ppc64_rma_size to first_memblock_size/1G range.
-
-Avoid this limit by switching to 64-bit mode before accessing any memory.
+Keep the 1GB limit for older firmware (although this is more of a kernel
+concern than RTAS), and remove it starting with POWER9.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/entry_64.S | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/mm/pgtable-radix.c | 21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 36878b6ee8b8..371c05fe250a 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1083,6 +1083,17 @@ __enter_rtas:
- rtas_return_loc:
- 	FIXUP_ENDIAN
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 6606216f1992..b8c49e6623ae 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -623,23 +623,10 @@ void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	 */
+ 	BUG_ON(first_memblock_base != 0);
  
+-	if (!early_cpu_has_feature(CPU_FTR_HVMODE)) {
+-		/*
+-		 * Radix mode guests are not limited by RMA / VRMA addressing.
+-		 *
+-		 * We do clamp addresses to 1GB to avoid some funky things
+-		 * such as RTAS bugs.
+-		 */
+-		ppc64_rma_size = 0x40000000;
+-		/*
+-		 * Finally limit subsequent allocations. We really don't want
+-		 * to limit the memblock allocations to rma_size. FIXME!! should
+-		 * we even limit at all ?
+-		 */
+-		memblock_set_current_limit(first_memblock_base + first_memblock_size);
+-	} else {
+-		ppc64_rma_size = ULONG_MAX;
+-	}
 +	/*
-+	 * Clear RI and set SF before anything.
++	 * Radix mode is not limited by RMA / VRMA addressing.
 +	 */
-+	mfmsr   r6
-+	li	r0,MSR_RI
-+	andc	r6,r6,r0
-+	sldi	r0,r0,(MSR_SF_LG - MSR_RI_LG)
-+	or	r6,r6,r0
-+	sync
-+	mtmsrd  r6
-+
- 	/* relocation is off at this point */
- 	GET_PACA(r4)
- 	clrldi	r4,r4,2			/* convert to realmode address */
-@@ -1091,12 +1102,6 @@ rtas_return_loc:
- 0:	mflr	r3
- 	ld	r3,(1f-0b)(r3)		/* get &rtas_restore_regs */
++	ppc64_rma_size = ULONG_MAX;
+ }
  
--	mfmsr   r6
--	li	r0,MSR_RI
--	andc	r6,r6,r0
--	sync	
--	mtmsrd  r6
--        
-         ld	r1,PACAR1(r4)           /* Restore our SP */
-         ld	r4,PACASAVEDMSR(r4)     /* Restore our MSR */
- 
+ #ifdef CONFIG_MEMORY_HOTPLUG
 -- 
 2.15.0
