@@ -1,19 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z35kD606VzDx69
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:24:04 +1100 (AEDT)
-In-Reply-To: <20171212172356.2397-1-lvivier@redhat.com>
-To: Laurent Vivier <lvivier@redhat.com>, kvm-ppc@vger.kernel.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org,
- =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: KVM: PPC: Book3S HV: Fix pending_pri value in
- kvmppc_xive_get_icp()
-Message-Id: <3z35kD3TMXz9sMN@ozlabs.org>
-Date: Fri, 22 Dec 2017 22:24:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z36bz1XsbzDr5x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 23:03:42 +1100 (AEDT)
+Subject: Re: WARNING: CPU: 0 PID: 2777 at arch/powerpc/mm/hugetlbpage.c:354
+ h,ugetlb_free_pgd_range+0xc8/0x1e4
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <d569112a-2d43-c77e-3579-a8a2176ddcf7@c-s.fr>
+ <752a6444-dc65-88e0-343f-d3361ec042cc@c-s.fr>
+Message-ID: <cb0cb5fa-8012-4fa5-0a2f-eb31b0a7c5b7@c-s.fr>
+Date: Fri, 22 Dec 2017 13:03:38 +0100
+MIME-Version: 1.0
+In-Reply-To: <752a6444-dc65-88e0-343f-d3361ec042cc@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-12-12 at 17:23:56 UTC, Laurent Vivier wrote:
-> When we migrate a VM from a POWER8 host (XICS) to a POWER9 host
-> (XICS-on-XIVE), we have an error:
-> 
-> qemu-kvm: Unable to restore KVM interrupt controller state \
->           (0xff000000) for CPU 0: Invalid argument
-> 
-> This is because kvmppc_xics_set_icp() checks the new state
-> is internaly consistent, and especially:
-> 
-> ...
->    1129         if (xisr == 0) {
->    1130                 if (pending_pri != 0xff)
->    1131                         return -EINVAL;
-> ...
-> 
-> On the other side, kvmppc_xive_get_icp() doesn't set
-> neither the pending_pri value, nor the xisr value (set to 0)
-> (and kvmppc_xive_set_icp() ignores the pending_pri value)
-> 
-> As xisr is 0, pending_pri must be set to 0xff.
-> 
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/7333b5aca412d6ad02667b5a513485
+Le 22/12/2017 à 10:32, Christophe LEROY a écrit :
+> 
+> 
+> Le 20/12/2017 à 13:17, Christophe LEROY a écrit :
+>> Trying to malloc() with libhugetlbfs, it runs indefinitly doing page 
+>> faults in do_page_fault()/hugetlb_fault().
+>> When interrupting the blocked app with CTRL+C, I get the following 
+>> WARNING:
+>>
+>> Any idea of what can be wrong ? I'm on a 8xx with 512k huge pages.
+> 
+> 
+> It looks like something goes wrong when the app tries to mmap a 
+> hugetlbpage at a given address.
+> When it requests the page with a NULL address, it works well.
+> 
+> Any idea ?
 
-cheers
+Now I have found the reason:
+
+I have something allocated
+
+10000000-10001000 r-xp 00000000 00:0f 2597       /root/malloc
+10010000-10011000 rwxp 00000000 00:0f 2597       /root/malloc
+
+And mmap() accepts the hint, which is in the same PMD which is not a 
+huge PMD:
+
+mmap(0x10080000, 524288, PROT_READ|PROT_WRITE, 
+MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x10080000
+
+Apparently, hugetlb_get_unmapped_area() doesn't care about that.
+
+What should we do to handle it ? Have our own 
+hugetlb_get_unmapped_area(), which does all the same, checking this in 
+addition ?
+
+Christophe
+
+> 
+> Christophe
+> 
+>>
+>> [162980.035629] WARNING: CPU: 0 PID: 2777 at 
+>> arch/powerpc/mm/hugetlbpage.c:354 h
+>> ugetlb_free_pgd_range+0xc8/0x1e4
+>> [162980.035699] CPU: 0 PID: 2777 Comm: malloc Tainted: G W       4.14.6-s
+>> 3k-dev-ga8e8e8b176-svn9134 #85
+>> [162980.035744] task: c67e2c00 task.stack: c668e000
+>> [162980.035783] NIP:  c000fe18 LR: c00e1eec CTR: c00f90c0
+>> [162980.035830] REGS: c668fc20 TRAP: 0700   Tainted: G W        (4.14.6-s
+>> 3k-dev-ga8e8e8b176-svn9134)
+>> [162980.035854] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24044224 XER: 
+>> 20000000
+>> [162980.036003]
+>> [162980.036003] GPR00: c00e1eec c668fcd0 c67e2c00 00000010 c6869410 
+>> 10080000 000
+>> 00000 77fb4000
+>> [162980.036003] GPR08: ffff0001 0683c001 00000000 ffffff80 44028228 
+>> 10018a34 000
+>> 04008 418004fc
+>> [162980.036003] GPR16: c668e000 00040100 c668e000 c06c0000 c668fe78 
+>> c668e000 c68
+>> 35ba0 c668fd48
+>> [162980.036003] GPR24: 00000000 73ffffff 74000000 00000001 77fb4000 
+>> 100fffff 101
+>> 00000 10100000
+>> [162980.036743] NIP [c000fe18] hugetlb_free_pgd_range+0xc8/0x1e4
+>> [162980.036839] LR [c00e1eec] free_pgtables+0x12c/0x150
+>> [162980.036861] Call Trace:
+>> [162980.036939] [c668fcd0] [c00f0774] unlink_anon_vmas+0x1c4/0x214 
+>> (unreliable)
+>> [162980.037040] [c668fd10] [c00e1eec] free_pgtables+0x12c/0x150
+>> [162980.037118] [c668fd40] [c00eabac] exit_mmap+0xe8/0x1b4
+>> [162980.037210] [c668fda0] [c0019710] mmput.part.9+0x20/0xd8
+>> [162980.037301] [c668fdb0] [c001ecb0] do_exit+0x1f0/0x93c
+>> [162980.037386] [c668fe00] [c001f478] do_group_exit+0x40/0xcc
+>> [162980.037479] [c668fe10] [c002a76c] get_signal+0x47c/0x614
+>> [162980.037570] [c668fe70] [c0007840] do_signal+0x54/0x244
+>> [162980.037654] [c668ff30] [c0007ae8] do_notify_resume+0x34/0x88
+>> [162980.037744] [c668ff40] [c000dae8] do_user_signal+0x74/0xc4
+>> [162980.037781] Instruction dump:
+>> [162980.037821] 7fdff378 81370000 54a3463a 80890020 7d24182e 7c841a14 
+>> 712a0004 4
+>> 082ff94
+>> [162980.038014] 2f890000 419e0010 712a0ff0 408200e0 <0fe00000> 
+>> 54a9000a 7f984840
+>>   419d0094
+>> [162980.038216] ---[ end trace c0ceeca8e7a5800a ]---
+>> [162980.038754] BUG: non-zero nr_ptes on freeing mm: 1
+>> [162985.363322] BUG: non-zero nr_ptes on freeing mm: -1
+>>
+>> Christophe
