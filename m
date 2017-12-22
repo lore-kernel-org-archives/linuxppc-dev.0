@@ -1,24 +1,20 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z318X45BWzDsQN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 18:58:04 +1100 (AEDT)
-Subject: Re: [PATCH] KVM: PPC: Book3S: fix XIVE migration of pending interrupts
-To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
- kvm-ppc@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <20171212120204.6799-1-clg@kaod.org>
- <4be897d4-2d54-305b-8416-b32384de73a9@redhat.com>
- <878tdvpeib.fsf@concordia.ellerman.id.au>
- <20171222075430.GB6945@fergus.ozlabs.ibm.com>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <f7e4d221-aa4a-5166-62f7-b0eec735cb57@redhat.com>
-Date: Fri, 22 Dec 2017 08:57:58 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z33Fc638yzF0BP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 20:32:34 +1100 (AEDT)
+Subject: Re: WARNING: CPU: 0 PID: 2777 at arch/powerpc/mm/hugetlbpage.c:354
+ h,ugetlb_free_pgd_range+0xc8/0x1e4
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <d569112a-2d43-c77e-3579-a8a2176ddcf7@c-s.fr>
+Message-ID: <752a6444-dc65-88e0-343f-d3361ec042cc@c-s.fr>
+Date: Fri, 22 Dec 2017 10:32:26 +0100
 MIME-Version: 1.0
-In-Reply-To: <20171222075430.GB6945@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <d569112a-2d43-c77e-3579-a8a2176ddcf7@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +24,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/12/2017 08:54, Paul Mackerras wrote:
-> On Fri, Dec 22, 2017 at 03:34:20PM +1100, Michael Ellerman wrote:
->> Laurent Vivier <lvivier@redhat.com> writes:
->>
->>> On 12/12/2017 13:02, Cédric Le Goater wrote:
->>>> When restoring a pending interrupt, we are setting the Q bit to force
->>>> a retrigger in xive_finish_unmask(). But we also need to force an EOI
->>>> in this case to reach the same initial state : P=1, Q=0.
->>>>
->>>> This can be done by not setting 'old_p' for pending interrupts which
->>>> will inform xive_finish_unmask() that an EOI needs to be sent.
->>>>
->>>> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->>>> ---
->>>>
->>>>  Tested with a guest running iozone.
->>>>
->>>>  arch/powerpc/kvm/book3s_xive.c | 4 ++--
->>>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>>
->>> We really need this patch to fix VM migration on POWER9.
->>> When will it be merged?
->>
->> Paul is away, so I'll merge it via the powerpc tree.
->>
->> I'll mark it:
->>
->>   Fixes: 5af50993850a ("KVM: PPC: Book3S HV: Native usage of the XIVE interrupt controller")
->>   Cc: stable@vger.kernel.org # v4.12+
+
+
+Le 20/12/2017 à 13:17, Christophe LEROY a écrit :
+> Trying to malloc() with libhugetlbfs, it runs indefinitly doing page 
+> faults in do_page_fault()/hugetlb_fault().
+> When interrupting the blocked app with CTRL+C, I get the following WARNING:
 > 
-> Thanks for doing that.
+> Any idea of what can be wrong ? I'm on a 8xx with 512k huge pages.
+
+
+It looks like something goes wrong when the app tries to mmap a 
+hugetlbpage at a given address.
+When it requests the page with a NULL address, it works well.
+
+Any idea ?
+
+Christophe
+
 > 
-> If you felt like merging Alexey's patch "KVM: PPC: Book3S PR: Fix WIMG
-> handling under pHyp" with my acked-by, that would be fine too.  The
-> commit message needs a little work - the reason for using HPTE_R_M is
-> not just because it seems to work, but because current POWER
-> processors require M set on mappings for normal pages, and pHyp
-> enforces that.
-
-We also need:
-
-KVM: PPC: Book3S HV: Fix pending_pri value in kvmppc_xive_get_icp()
-
-Thanks,
-Laurent
+> [162980.035629] WARNING: CPU: 0 PID: 2777 at 
+> arch/powerpc/mm/hugetlbpage.c:354 h
+> ugetlb_free_pgd_range+0xc8/0x1e4
+> [162980.035699] CPU: 0 PID: 2777 Comm: malloc Tainted: G W       4.14.6-s
+> 3k-dev-ga8e8e8b176-svn9134 #85
+> [162980.035744] task: c67e2c00 task.stack: c668e000
+> [162980.035783] NIP:  c000fe18 LR: c00e1eec CTR: c00f90c0
+> [162980.035830] REGS: c668fc20 TRAP: 0700   Tainted: G W        (4.14.6-s
+> 3k-dev-ga8e8e8b176-svn9134)
+> [162980.035854] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24044224 XER: 20000000
+> [162980.036003]
+> [162980.036003] GPR00: c00e1eec c668fcd0 c67e2c00 00000010 c6869410 
+> 10080000 000
+> 00000 77fb4000
+> [162980.036003] GPR08: ffff0001 0683c001 00000000 ffffff80 44028228 
+> 10018a34 000
+> 04008 418004fc
+> [162980.036003] GPR16: c668e000 00040100 c668e000 c06c0000 c668fe78 
+> c668e000 c68
+> 35ba0 c668fd48
+> [162980.036003] GPR24: 00000000 73ffffff 74000000 00000001 77fb4000 
+> 100fffff 101
+> 00000 10100000
+> [162980.036743] NIP [c000fe18] hugetlb_free_pgd_range+0xc8/0x1e4
+> [162980.036839] LR [c00e1eec] free_pgtables+0x12c/0x150
+> [162980.036861] Call Trace:
+> [162980.036939] [c668fcd0] [c00f0774] unlink_anon_vmas+0x1c4/0x214 
+> (unreliable)
+> [162980.037040] [c668fd10] [c00e1eec] free_pgtables+0x12c/0x150
+> [162980.037118] [c668fd40] [c00eabac] exit_mmap+0xe8/0x1b4
+> [162980.037210] [c668fda0] [c0019710] mmput.part.9+0x20/0xd8
+> [162980.037301] [c668fdb0] [c001ecb0] do_exit+0x1f0/0x93c
+> [162980.037386] [c668fe00] [c001f478] do_group_exit+0x40/0xcc
+> [162980.037479] [c668fe10] [c002a76c] get_signal+0x47c/0x614
+> [162980.037570] [c668fe70] [c0007840] do_signal+0x54/0x244
+> [162980.037654] [c668ff30] [c0007ae8] do_notify_resume+0x34/0x88
+> [162980.037744] [c668ff40] [c000dae8] do_user_signal+0x74/0xc4
+> [162980.037781] Instruction dump:
+> [162980.037821] 7fdff378 81370000 54a3463a 80890020 7d24182e 7c841a14 
+> 712a0004 4
+> 082ff94
+> [162980.038014] 2f890000 419e0010 712a0ff0 408200e0 <0fe00000> 54a9000a 
+> 7f984840
+>   419d0094
+> [162980.038216] ---[ end trace c0ceeca8e7a5800a ]---
+> [162980.038754] BUG: non-zero nr_ptes on freeing mm: 1
+> [162985.363322] BUG: non-zero nr_ptes on freeing mm: -1
+> 
+> Christophe
