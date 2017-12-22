@@ -1,19 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z35Zd30rnzDrdP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:17:28 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id s3so12729934plp.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 03:17:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z35Zh6PM6zDrdP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 22:17:32 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id q67so5163345pga.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 03:17:32 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 0/9] modernize early memory allocation limits and
-Date: Fri, 22 Dec 2017 21:17:07 +1000
-Message-Id: <20171222111716.13101-1-npiggin@gmail.com>
+Subject: [PATCH 1/9] powerpc/powernv: Remove real mode access limit for early
+ allocations
+Date: Fri, 22 Dec 2017 21:17:08 +1000
+Message-Id: <20171222111716.13101-2-npiggin@gmail.com>
+In-Reply-To: <20171222111716.13101-1-npiggin@gmail.com>
+References: <20171222111716.13101-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,68 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series improves (mostly relaxes) limits on early memory
-allocations for stacks, pacas, etc. on 64s.
+This removes the RMA limit on powernv platform, which constrains
+early allocations such as PACAs and stacks. There are still other
+restrictions that must be followed, such as bolted SLB limits, but
+real mode addressing has no constraints.
 
-It also avoids allocating lppacas for bare metal, and it changes
-allocation of paca and lppaca from single big arrays to inividual
-allocations.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/mm/hash_utils_64.c | 20 +++++++++++++-------
+ arch/powerpc/mm/pgtable-radix.c | 37 +++++++++++++++++++++----------------
+ 2 files changed, 34 insertions(+), 23 deletions(-)
 
-The main goal of this is toward allocating these basic structures
-per-node. We're not there yet, but closer.
-
-Thanks,
-Nick
-
-Nicholas Piggin (9):
-  powerpc/powernv: Remove real mode access limit for early allocations
-  powerpc/pseries: radix is not subject to RMA limit, remove it
-  powerpc/64: rtas avoid accessing paca in 32-bit mode
-  powerpc/pseries: lift RTAS limit for radix
-  powerpc/pseries: lift RTAS limit for hash
-  powerpc/64s: Relax PACA address limitations
-  powerpc/64s: do not allocate lppaca if we are not virtualized
-  powerpc/64: Use array of paca pointers and allocate pacas individually
-  powerpc/64s: Use array of lppaca pointers and allocate lppacas
-    individually
-
- arch/powerpc/include/asm/kvm_ppc.h           |   8 +-
- arch/powerpc/include/asm/lppaca.h            |  26 ++--
- arch/powerpc/include/asm/paca.h              |  12 +-
- arch/powerpc/include/asm/pmc.h               |  13 +-
- arch/powerpc/include/asm/smp.h               |   4 +-
- arch/powerpc/kernel/asm-offsets.c            |   5 +
- arch/powerpc/kernel/crash.c                  |   2 +-
- arch/powerpc/kernel/entry_64.S               |  17 ++-
- arch/powerpc/kernel/head_64.S                |  19 +--
- arch/powerpc/kernel/machine_kexec_64.c       |  37 +++---
- arch/powerpc/kernel/paca.c                   | 174 ++++++++++++++-------------
- arch/powerpc/kernel/setup.h                  |   4 +
- arch/powerpc/kernel/setup_64.c               |  40 +++---
- arch/powerpc/kernel/smp.c                    |  10 +-
- arch/powerpc/kernel/sysfs.c                  |   2 +-
- arch/powerpc/kvm/book3s_hv.c                 |  34 +++---
- arch/powerpc/kvm/book3s_hv_builtin.c         |   2 +-
- arch/powerpc/kvm/book3s_hv_interrupts.S      |   3 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S      |   3 +-
- arch/powerpc/mm/hash_utils_64.c              |  24 ++--
- arch/powerpc/mm/numa.c                       |   4 +-
- arch/powerpc/mm/pgtable-radix.c              |  17 +--
- arch/powerpc/mm/tlb-radix.c                  |   2 +-
- arch/powerpc/platforms/85xx/smp.c            |   8 +-
- arch/powerpc/platforms/cell/smp.c            |   4 +-
- arch/powerpc/platforms/powernv/idle.c        |  13 +-
- arch/powerpc/platforms/powernv/setup.c       |   4 +-
- arch/powerpc/platforms/powernv/smp.c         |   2 +-
- arch/powerpc/platforms/powernv/subcore.c     |   2 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   2 +-
- arch/powerpc/platforms/pseries/kexec.c       |   7 +-
- arch/powerpc/platforms/pseries/lpar.c        |   4 +-
- arch/powerpc/platforms/pseries/setup.c       |   2 +-
- arch/powerpc/platforms/pseries/smp.c         |   4 +-
- arch/powerpc/sysdev/xics/icp-native.c        |   2 +-
- arch/powerpc/xmon/xmon.c                     |   2 +-
- 36 files changed, 289 insertions(+), 229 deletions(-)
-
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 655a5a9a183d..8922e069b073 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1825,16 +1825,22 @@ void hash__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	 */
+ 	BUG_ON(first_memblock_base != 0);
+ 
+-	/* On LPAR systems, the first entry is our RMA region,
+-	 * non-LPAR 64-bit hash MMU systems don't have a limitation
+-	 * on real mode access, but using the first entry works well
+-	 * enough. We also clamp it to 1G to avoid some funky things
++	/*
++	 * On virtualized systems the first entry is our RMA region aka VRMA,
++	 * non-virtualized 64-bit hash MMU systems don't have a limitation
++	 * on real mode access.
++	 *
++	 * We also clamp it to 1G to avoid some funky things
+ 	 * such as RTAS bugs etc...
+ 	 */
+-	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
++	if (!early_cpu_has_feature(CPU_FTR_HVMODE)) {
++		ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
+ 
+-	/* Finally limit subsequent allocations */
+-	memblock_set_current_limit(ppc64_rma_size);
++		/* Finally limit subsequent allocations */
++		memblock_set_current_limit(ppc64_rma_size);
++	} else {
++		ppc64_rma_size = ULONG_MAX;
++	}
+ }
+ 
+ #ifdef CONFIG_DEBUG_FS
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index cfbbee941a76..d73816960825 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -622,22 +622,27 @@ void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	 * physical on those processors
+ 	 */
+ 	BUG_ON(first_memblock_base != 0);
+-	/*
+-	 * We limit the allocation that depend on ppc64_rma_size
+-	 * to first_memblock_size. We also clamp it to 1GB to
+-	 * avoid some funky things such as RTAS bugs.
+-	 *
+-	 * On radix config we really don't have a limitation
+-	 * on real mode access. But keeping it as above works
+-	 * well enough.
+-	 */
+-	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
+-	/*
+-	 * Finally limit subsequent allocations. We really don't want
+-	 * to limit the memblock allocations to rma_size. FIXME!! should
+-	 * we even limit at all ?
+-	 */
+-	memblock_set_current_limit(first_memblock_base + first_memblock_size);
++
++	if (!early_cpu_has_feature(CPU_FTR_HVMODE)) {
++		/*
++		 * We limit the allocation that depend on ppc64_rma_size
++		 * to first_memblock_size. We also clamp it to 1GB to
++		 * avoid some funky things such as RTAS bugs.
++		 *
++		 * On radix config we really don't have a limitation
++		 * on real mode access. But keeping it as above works
++		 * well enough.
++		 */
++		ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
++		/*
++		 * Finally limit subsequent allocations. We really don't want
++		 * to limit the memblock allocations to rma_size. FIXME!! should
++		 * we even limit at all ?
++		 */
++		memblock_set_current_limit(first_memblock_base + first_memblock_size);
++	} else {
++		ppc64_rma_size = ULONG_MAX;
++	}
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
 -- 
 2.15.0
