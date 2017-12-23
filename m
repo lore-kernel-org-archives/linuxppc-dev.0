@@ -1,58 +1,26 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-ot0-x243.google.com (mail-ot0-x243.google.com
- [IPv6:2607:f8b0:4003:c0f::243])
+Return-Path: <dan.j.williams@intel.com>
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z3S8h3dnwzF0CT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 12:14:44 +1100 (AEDT)
-Received: by mail-ot0-x243.google.com with SMTP id q39so20015846otb.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 17:14:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z3SwP14L2zF06l
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 12:49:05 +1100 (AEDT)
+Received: by mail-ot0-x241.google.com with SMTP id v21so26500176oth.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 17:49:05 -0800 (PST)
 MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <CAPcyv4j95rWmFM5NDvoRJakwVE5YUgcipQW2Ju+40+FD6vYs+Q@mail.gmail.com>
-References: <20171214130032.GK16951@dhcp22.suse.cz>
- <20171218203547.GA2366@linux.intel.com>
- <20171220181937.GB12236@bombadil.infradead.org>
- <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
- <20171220211649.GA32200@bombadil.infradead.org>
- <20171220212408.GA8308@linux.intel.com>
- <CAPcyv4gTknp=0yQnVrrB5Ui+mJE_x-wdkV86UD4hsYnx3CAjfA@mail.gmail.com>
- <20171220224105.GA27258@linux.intel.com>
- <39cbe02a-d309-443d-54c9-678a0799342d@gmail.com>
- <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
- <20171222232231.GA26715@linux.intel.com>
- <CAPcyv4j95rWmFM5NDvoRJakwVE5YUgcipQW2Ju+40+FD6vYs+Q@mail.gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Sat, 23 Dec 2017 02:14:41 +0100
-Message-ID: <CAJZ5v0j22oRwsO7uULdeamUK-BwQAYq_v6h1LUZw3vpwqCLunQ@mail.gmail.com>
-Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
- Brice Goglin <brice.goglin@gmail.com>,
- Matthew Wilcox <willy@infradead.org>, Dave Hansen <dave.hansen@intel.com>,
- Michal Hocko <mhocko@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>, "Box,
- David E" <david.e.box@intel.com>,
- "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>, "Koss,
- Marcin" <marcin.koss@intel.com>,
- "Koziej, Artur" <artur.koziej@intel.com>, "Lahtinen,
- Joonas" <joonas.lahtinen@intel.com>,
- "Moore, Robert" <robert.moore@intel.com>,
- "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
- "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Schmauss,
- Erik" <erik.schmauss@intel.com>,
- "Verma, Vishal L" <vishal.l.verma@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Balbir Singh <bsingharora@gmail.com>,
- Jerome Glisse <jglisse@redhat.com>, John Hubbard <jhubbard@nvidia.com>,
- Len Brown <lenb@kernel.org>,
- Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
- Linux ACPI <linux-acpi@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Linux API <linux-api@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20171215140947.26075-5-hch@lst.de>
+References: <20171215140947.26075-1-hch@lst.de>
+ <20171215140947.26075-5-hch@lst.de>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Fri, 22 Dec 2017 17:49:01 -0800
+Message-ID: <CAPcyv4jyjNM1nRskA5Q9Q6w69OeL1=mssyTYDqFXqW2X40Oc0g@mail.gmail.com>
+Subject: Re: [PATCH 04/17] mm: pass the vmem_altmap to arch_add_memory and
+ __add_pages
+To: Christoph Hellwig <hch@lst.de>
+Cc: =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
+ Logan Gunthorpe <logang@deltatee.com>, linux-nvdimm@lists.01.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, X86 ML <x86@kernel.org>,
+ Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -63,85 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 23, 2017 at 12:57 AM, Dan Williams <dan.j.williams@intel.com> w=
-rote:
-> On Fri, Dec 22, 2017 at 3:22 PM, Ross Zwisler
-> <ross.zwisler@linux.intel.com> wrote:
->> On Fri, Dec 22, 2017 at 02:53:42PM -0800, Dan Williams wrote:
->>> On Thu, Dec 21, 2017 at 12:31 PM, Brice Goglin <brice.goglin@gmail.com>=
- wrote:
->>> > Le 20/12/2017 =C3=A0 23:41, Ross Zwisler a =C3=A9crit :
->>> [..]
->>> > Hello
->>> >
->>> > I can confirm that HPC runtimes are going to use these patches (at le=
-ast
->>> > all runtimes that use hwloc for topology discovery, but that's the va=
-st
->>> > majority of HPC anyway).
->>> >
->>> > We really didn't like KNL exposing a hacky SLIT table [1]. We had to
->>> > explicitly detect that specific crazy table to find out which NUMA no=
-des
->>> > were local to which cores, and to find out which NUMA nodes were
->>> > HBM/MCDRAM or DDR. And then we had to hide the SLIT values to the
->>> > application because the reported latencies didn't match reality. Quit=
-e
->>> > annoying.
->>> >
->>> > With Ross' patches, we can easily get what we need:
->>> > * which NUMA nodes are local to which CPUs? /sys/devices/system/node/
->>> > can only report a single local node per CPU (doesn't work for KNL and
->>> > upcoming architectures with HBM+DDR+...)
->>> > * which NUMA nodes are slow/fast (for both bandwidth and latency)
->>> > And we can still look at SLIT under /sys/devices/system/node if reall=
-y
->>> > needed.
->>> >
->>> > And of course having this in sysfs is much better than parsing ACPI
->>> > tables that are only accessible to root :)
->>>
->>> On this point, it's not clear to me that we should allow these sysfs
->>> entries to be world readable. Given /proc/iomem now hides physical
->>> address information from non-root we at least need to be careful not
->>> to undo that with new sysfs HMAT attributes.
->>
->> This enabling does not expose any physical addresses to userspace.  It o=
-nly
->> provides performance numbers from the HMAT and associates them with exis=
-ting
->> NUMA nodes.  Are you worried that exposing performance numbers to non-ro=
-ot
->> users via sysfs poses a security risk?
+On Fri, Dec 15, 2017 at 6:09 AM, Christoph Hellwig <hch@lst.de> wrote:
+> We can just pass this on instead of having to do a radix tree lookup
+> without proper locking 2 levels into the callchain.
 >
-> It's an information disclosure that's not clear we need to make to
-> non-root processes.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+[..]
+> diff --git a/kernel/memremap.c b/kernel/memremap.c
+> index 403ab9cdb949..16456117a1b1 100644
+> --- a/kernel/memremap.c
+> +++ b/kernel/memremap.c
+> @@ -427,7 +427,7 @@ void *devm_memremap_pages(struct device *dev, struct resource *res,
+>                 goto err_pfn_remap;
 >
-> I'm more worried about userspace growing dependencies on the absolute
-> numbers when those numbers can change from platform to platform.
-> Differentiated memory on one platform may be the common memory pool on
-> another.
->
-> To me this has parallels with storage device hinting where
-> specifications like T10 have a complex enumeration of all the
-> performance hints that can be passed to the device, but the Linux
-> enabling effort aims for a sanitzed set of relative hints that make
-> sense. It's more flexible if userspace specifies a relative intent
-> rather than an absolute performance target. Putting all the HMAT
-> information into sysfs gives userspace more information than it could
-> possibly do anything reasonable, at least outside of specialized apps
-> that are hand tuned for a given hardware platform.
+>         mem_hotplug_begin();
+> -       error = arch_add_memory(nid, align_start, align_size, false);
+> +       error = arch_add_memory(nid, align_start, align_size, altmap, false);
+>         if (!error)
+>                 move_pfn_range_to_zone(&NODE_DATA(nid)->node_zones[ZONE_DEVICE],
+>                                         align_start >> PAGE_SHIFT,
 
-That's a valid point IMO.
+Subtle bug here. This altmap is the one that was passed in that we
+copy into its permanent location in the pgmap, so it looks like this
+patch needs to fold the following fix:
 
-It is sort of tempting to expose everything to user space verbatim,
-especially early in the enabling process when the kernel has not yet
-found suitable ways to utilize the given information, but the very act
-of exposing it may affect what can be done with it in the future.
-
-User space interfaces need to stay around and be supported forever, at
-least potentially, so adding every one of them is a serious
-commitment.
-
-Thanks,
-Rafael
+diff --git a/kernel/memremap.c b/kernel/memremap.c
+index f277bf5b8c57..157a3756e1d5 100644
+--- a/kernel/memremap.c
++++ b/kernel/memremap.c
+@@ -382,6 +382,7 @@ void *devm_memremap_pages(struct device *dev,
+struct resource *res,
+        if (altmap) {
+                memcpy(&page_map->altmap, altmap, sizeof(*altmap));
+                pgmap->altmap = &page_map->altmap;
++               altmap = pgmap->altmap;
+        }
+        pgmap->ref = ref;
+        pgmap->res = &page_map->res;
