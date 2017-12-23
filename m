@@ -1,32 +1,59 @@
-Return-Path: <srs0=fum0=dt=ozlabs.ru=aik@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z3RPl3fbbzF0CG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 11:40:59 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3z3RPl2gkQz8t5d
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 11:40:59 +1100 (AEDT)
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-ot0-x243.google.com (mail-ot0-x243.google.com
+ [IPv6:2607:f8b0:4003:c0f::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3z3RPk1mjfz9ryQ
- for <linuxppc-dev@ozlabs.org>; Sat, 23 Dec 2017 11:40:56 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id u25so15897042pfg.5
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Dec 2017 16:40:55 -0800 (PST)
-Subject: Re: [PATCH] powerpc: Add aacraid and nvme to powernv_defconfig
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-References: <1513734660.2743.14.camel@kernel.crashing.org>
- <ed9aaffc-bb59-a39a-7ddc-55d664a93d8c@ozlabs.ru>
- <1513736065.2743.16.camel@kernel.crashing.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <043ac9d2-04ad-0e9a-4b01-2baae48a1e1d@ozlabs.ru>
-Date: Sat, 23 Dec 2017 11:40:49 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z3S8h3dnwzF0CT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Dec 2017 12:14:44 +1100 (AEDT)
+Received: by mail-ot0-x243.google.com with SMTP id q39so20015846otb.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Dec 2017 17:14:44 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1513736065.2743.16.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
+Sender: rjwysocki@gmail.com
+In-Reply-To: <CAPcyv4j95rWmFM5NDvoRJakwVE5YUgcipQW2Ju+40+FD6vYs+Q@mail.gmail.com>
+References: <20171214130032.GK16951@dhcp22.suse.cz>
+ <20171218203547.GA2366@linux.intel.com>
+ <20171220181937.GB12236@bombadil.infradead.org>
+ <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
+ <20171220211649.GA32200@bombadil.infradead.org>
+ <20171220212408.GA8308@linux.intel.com>
+ <CAPcyv4gTknp=0yQnVrrB5Ui+mJE_x-wdkV86UD4hsYnx3CAjfA@mail.gmail.com>
+ <20171220224105.GA27258@linux.intel.com>
+ <39cbe02a-d309-443d-54c9-678a0799342d@gmail.com>
+ <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
+ <20171222232231.GA26715@linux.intel.com>
+ <CAPcyv4j95rWmFM5NDvoRJakwVE5YUgcipQW2Ju+40+FD6vYs+Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Sat, 23 Dec 2017 02:14:41 +0100
+Message-ID: <CAJZ5v0j22oRwsO7uULdeamUK-BwQAYq_v6h1LUZw3vpwqCLunQ@mail.gmail.com>
+Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
+ Brice Goglin <brice.goglin@gmail.com>,
+ Matthew Wilcox <willy@infradead.org>, Dave Hansen <dave.hansen@intel.com>,
+ Michal Hocko <mhocko@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>, "Box,
+ David E" <david.e.box@intel.com>,
+ "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>, "Koss,
+ Marcin" <marcin.koss@intel.com>,
+ "Koziej, Artur" <artur.koziej@intel.com>, "Lahtinen,
+ Joonas" <joonas.lahtinen@intel.com>,
+ "Moore, Robert" <robert.moore@intel.com>,
+ "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
+ "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Schmauss,
+ Erik" <erik.schmauss@intel.com>,
+ "Verma, Vishal L" <vishal.l.verma@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Balbir Singh <bsingharora@gmail.com>,
+ Jerome Glisse <jglisse@redhat.com>, John Hubbard <jhubbard@nvidia.com>,
+ Len Brown <lenb@kernel.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
+ Linux ACPI <linux-acpi@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +63,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/12/17 13:14, Benjamin Herrenschmidt wrote:
-> On Wed, 2017-12-20 at 12:59 +1100, Alexey Kardashevskiy wrote:
->> On 20/12/17 12:51, Benjamin Herrenschmidt wrote:
->>> These adapters can be found in a number of our systems, so let's
->>> enable the corresponding drivers by default.
+On Sat, Dec 23, 2017 at 12:57 AM, Dan Williams <dan.j.williams@intel.com> w=
+rote:
+> On Fri, Dec 22, 2017 at 3:22 PM, Ross Zwisler
+> <ross.zwisler@linux.intel.com> wrote:
+>> On Fri, Dec 22, 2017 at 02:53:42PM -0800, Dan Williams wrote:
+>>> On Thu, Dec 21, 2017 at 12:31 PM, Brice Goglin <brice.goglin@gmail.com>=
+ wrote:
+>>> > Le 20/12/2017 =C3=A0 23:41, Ross Zwisler a =C3=A9crit :
+>>> [..]
+>>> > Hello
+>>> >
+>>> > I can confirm that HPC runtimes are going to use these patches (at le=
+ast
+>>> > all runtimes that use hwloc for topology discovery, but that's the va=
+st
+>>> > majority of HPC anyway).
+>>> >
+>>> > We really didn't like KNL exposing a hacky SLIT table [1]. We had to
+>>> > explicitly detect that specific crazy table to find out which NUMA no=
+des
+>>> > were local to which cores, and to find out which NUMA nodes were
+>>> > HBM/MCDRAM or DDR. And then we had to hide the SLIT values to the
+>>> > application because the reported latencies didn't match reality. Quit=
+e
+>>> > annoying.
+>>> >
+>>> > With Ross' patches, we can easily get what we need:
+>>> > * which NUMA nodes are local to which CPUs? /sys/devices/system/node/
+>>> > can only report a single local node per CPU (doesn't work for KNL and
+>>> > upcoming architectures with HBM+DDR+...)
+>>> > * which NUMA nodes are slow/fast (for both bandwidth and latency)
+>>> > And we can still look at SLIT under /sys/devices/system/node if reall=
+y
+>>> > needed.
+>>> >
+>>> > And of course having this in sysfs is much better than parsing ACPI
+>>> > tables that are only accessible to root :)
 >>>
->>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> ---
->>> --- a/arch/powerpc/configs/powernv_defconfig	2017-12-19 18:37:24.803470591 -0600
->>> +++ b/arch/powerpc/configs/powernv_defconfig	2017-12-19 19:47:57.931952417 -0600
->>> @@ -97,6 +97,7 @@
->>>  CONFIG_BLK_DEV_RAM=y
->>>  CONFIG_BLK_DEV_RAM_SIZE=65536
->>>  CONFIG_VIRTIO_BLK=m
->>> +CONFIG_BLK_DEV_NVME=y
->>>  CONFIG_IDE=y
->>>  CONFIG_BLK_DEV_IDECD=y
->>>  CONFIG_BLK_DEV_GENERIC=y
->>> @@ -113,6 +114,7 @@
->>>  CONFIG_SCSI_CXGB4_ISCSI=m
->>>  CONFIG_SCSI_BNX2_ISCSI=m
->>>  CONFIG_BE2ISCSI=m
->>> +CONFIG_SCSI_AACRAID=y
->>>  CONFIG_SCSI_MPT2SAS=m
->>>  CONFIG_SCSI_SYM53C8XX_2=m
->>>  CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
->>>
+>>> On this point, it's not clear to me that we should allow these sysfs
+>>> entries to be world readable. Given /proc/iomem now hides physical
+>>> address information from non-root we at least need to be careful not
+>>> to undo that with new sysfs HMAT attributes.
 >>
->> "y", not "m"?
-> 
-> Yes. I like my boot devices to be "y"
+>> This enabling does not expose any physical addresses to userspace.  It o=
+nly
+>> provides performance numbers from the HMAT and associates them with exis=
+ting
+>> NUMA nodes.  Are you worried that exposing performance numbers to non-ro=
+ot
+>> users via sysfs poses a security risk?
+>
+> It's an information disclosure that's not clear we need to make to
+> non-root processes.
+>
+> I'm more worried about userspace growing dependencies on the absolute
+> numbers when those numbers can change from platform to platform.
+> Differentiated memory on one platform may be the common memory pool on
+> another.
+>
+> To me this has parallels with storage device hinting where
+> specifications like T10 have a complex enumeration of all the
+> performance hints that can be passed to the device, but the Linux
+> enabling effort aims for a sanitzed set of relative hints that make
+> sense. It's more flexible if userspace specifies a relative intent
+> rather than an absolute performance target. Putting all the HMAT
+> information into sysfs gives userspace more information than it could
+> possibly do anything reasonable, at least outside of specialized apps
+> that are hand tuned for a given hardware platform.
 
+That's a valid point IMO.
 
-Then rename it to powernv_benh_defconfig :) Everything else seems to cope
-well with "m" - just look above.
+It is sort of tempting to expose everything to user space verbatim,
+especially early in the enabling process when the kernel has not yet
+found suitable ways to utilize the given information, but the very act
+of exposing it may affect what can be done with it in the future.
 
+User space interfaces need to stay around and be supported forever, at
+least potentially, so adding every one of them is a serious
+commitment.
 
--- 
-Alexey
+Thanks,
+Rafael
