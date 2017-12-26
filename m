@@ -1,22 +1,21 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
- [IPv6:2a00:1450:400c:c0c::243])
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z5dGy02c0zDrTl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 01:12:41 +1100 (AEDT)
-Received: by mail-wr0-x243.google.com with SMTP id o2so34656923wro.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Dec 2017 06:12:41 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z5dH34wyyzDrW0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 01:12:47 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id n138so35202981wmg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Dec 2017 06:12:47 -0800 (PST)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: 
 Cc: Mathieu Malaterre <malat@debian.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] powerpc: Fix old-style function definition
-Date: Tue, 26 Dec 2017 15:12:33 +0100
-Message-Id: <20171226141233.19444-1-malat@debian.org>
+Subject: [PATCH 2/2] backlight: Fix old-style function definition
+Date: Tue, 26 Dec 2017 15:12:41 +0100
+Message-Id: <20171226141241.19500-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,45 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix warnings such as:
+Fix warning:
 
-arch/powerpc/platforms/powermac/backlight.c: In function ‘pmac_backlight_get_legacy_brightness’:
-arch/powerpc/platforms/powermac/backlight.c:189:5: error: old-style function definition [-Werror=old-style-definition]
- int pmac_backlight_get_legacy_brightness()
-     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/macintosh/via-pmu-backlight.c: In function ‘pmu_backlight_init’:
+drivers/macintosh/via-pmu-backlight.c:140:13: warning: old-style function definition [-Wold-style-definition]
+ void __init pmu_backlight_init()
+             ^~~~~~~~~~~~~~~~~~
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/platforms/powermac/backlight.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/macintosh/via-pmu-backlight.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powermac/backlight.c b/arch/powerpc/platforms/powermac/backlight.c
-index a00096b1c713..6b5dcccae1d3 100644
---- a/arch/powerpc/platforms/powermac/backlight.c
-+++ b/arch/powerpc/platforms/powermac/backlight.c
-@@ -186,7 +186,7 @@ int pmac_backlight_set_legacy_brightness(int brightness)
- 	return __pmac_backlight_set_legacy_brightness(brightness);
+diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
+index 89ed51571b62..50ada02ae75d 100644
+--- a/drivers/macintosh/via-pmu-backlight.c
++++ b/drivers/macintosh/via-pmu-backlight.c
+@@ -137,7 +137,7 @@ void pmu_backlight_set_sleep(int sleep)
  }
+ #endif /* CONFIG_PM */
  
--int pmac_backlight_get_legacy_brightness()
-+int pmac_backlight_get_legacy_brightness(void)
+-void __init pmu_backlight_init()
++void __init pmu_backlight_init(void)
  {
- 	int result = -ENXIO;
- 
-@@ -205,12 +205,12 @@ int pmac_backlight_get_legacy_brightness()
- 	return result;
- }
- 
--void pmac_backlight_disable()
-+void pmac_backlight_disable(void)
- {
- 	atomic_inc(&kernel_backlight_disabled);
- }
- 
--void pmac_backlight_enable()
-+void pmac_backlight_enable(void)
- {
- 	atomic_dec(&kernel_backlight_disabled);
- }
+ 	struct backlight_properties props;
+ 	struct backlight_device *bd;
 -- 
 2.11.0
