@@ -1,12 +1,12 @@
 Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z665t2Dr8zDqhc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 19:51:30 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id y82so38517349wmg.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 00:51:30 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z666009BVzDqgw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 19:51:35 +1100 (AEDT)
+Received: by mail-wm0-x244.google.com with SMTP id 9so38218576wme.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 00:51:35 -0800 (PST)
 From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
@@ -29,9 +29,9 @@ Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
  Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: [PATCH v6 7/8] arm64/kernel: jump_label: use relative references
-Date: Wed, 27 Dec 2017 08:50:32 +0000
-Message-Id: <20171227085033.22389-8-ard.biesheuvel@linaro.org>
+Subject: [PATCH v6 8/8] x86/kernel: jump_table: use relative references
+Date: Wed, 27 Dec 2017 08:50:33 +0000
+Message-Id: <20171227085033.22389-9-ard.biesheuvel@linaro.org>
 In-Reply-To: <20171227085033.22389-1-ard.biesheuvel@linaro.org>
 References: <20171227085033.22389-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,65 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a randomly chosen distro kernel build for arm64, vmlinux.o shows the
-following sections, containing jump label entries, and the associated
-RELA relocation records, respectively:
-
-  ...
-  [38088] __jump_table      PROGBITS         0000000000000000  00e19f30
-       000000000002ea10  0000000000000000  WA       0     0     8
-  [38089] .rela__jump_table RELA             0000000000000000  01fd8bb0
-       000000000008be30  0000000000000018   I      38178   38088     8
-  ...
-
-In other words, we have 190 KB worth of 'struct jump_entry' instances,
-and 573 KB worth of RELA entries to relocate each entry's code, target
-and key members. This means the RELA section occupies 10% of the .init
-segment, and the two sections combined represent 5% of vmlinux's entire
-memory footprint.
-
-So let's switch from 64-bit absolute references to 32-bit relative
-references: this reduces the size of the __jump_table by 50%, and gets
-rid of the RELA section entirely.
-
-Note that this requires some extra care in the sorting routine, given
-that the offsets change when entries are moved around in the jump_entry
-table.
+Similar to the arm64 case, 64-bit x86 can benefit from using 32-bit
+relative references rather than 64-bit absolute ones when emitting
+struct jump_entry instances. Not only does this reduce the memory
+footprint of the entries themselves by 50%, it also removes the need
+for carrying relocation metadata on relocatable builds (i.e., for KASLR)
+which saves a fair chunk of .init space as well (although the savings
+are not as dramatic as on arm64)
 
 Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- arch/arm64/include/asm/jump_label.h | 27 ++++++++++++--------
- arch/arm64/kernel/jump_label.c      | 22 +++++++++++++---
- 2 files changed, 36 insertions(+), 13 deletions(-)
+ arch/x86/include/asm/jump_label.h | 35 +++++++-----
+ arch/x86/kernel/jump_label.c      | 59 ++++++++++++++------
+ tools/objtool/special.c           |  4 +-
+ 3 files changed, 65 insertions(+), 33 deletions(-)
 
-diff --git a/arch/arm64/include/asm/jump_label.h b/arch/arm64/include/asm/jump_label.h
-index 9d6e46355c89..5cec68616125 100644
---- a/arch/arm64/include/asm/jump_label.h
-+++ b/arch/arm64/include/asm/jump_label.h
-@@ -30,8 +30,8 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
- {
- 	asm goto("1: nop\n\t"
- 		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".align 3\n\t"
--		 ".quad 1b, %l[l_yes], %c0\n\t"
-+		 ".align 2\n\t"
-+		 ".long 1b - ., %l[l_yes] - ., %c0 - .\n\t"
- 		 ".popsection\n\t"
- 		 :  :  "i"(&((char *)key)[branch]) :  : l_yes);
+diff --git a/arch/x86/include/asm/jump_label.h b/arch/x86/include/asm/jump_label.h
+index 009ff2699d07..91c01af96907 100644
+--- a/arch/x86/include/asm/jump_label.h
++++ b/arch/x86/include/asm/jump_label.h
+@@ -36,8 +36,8 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
+ 	asm_volatile_goto("1:"
+ 		".byte " __stringify(STATIC_KEY_INIT_NOP) "\n\t"
+ 		".pushsection __jump_table,  \"aw\" \n\t"
+-		_ASM_ALIGN "\n\t"
+-		_ASM_PTR "1b, %l[l_yes], %c0 + %c1 \n\t"
++		".balign 4\n\t"
++		".long 1b - ., %l[l_yes] - ., %c0 + %c1 - .\n\t"
+ 		".popsection \n\t"
+ 		: :  "i" (key), "i" (branch) : : l_yes);
  
-@@ -44,8 +44,8 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- {
- 	asm goto("1: b %l[l_yes]\n\t"
- 		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".align 3\n\t"
--		 ".quad 1b, %l[l_yes], %c0\n\t"
-+		 ".align 2\n\t"
-+		 ".long 1b - ., %l[l_yes] - ., %c0 - .\n\t"
- 		 ".popsection\n\t"
- 		 :  :  "i"(&((char *)key)[branch]) :  : l_yes);
+@@ -52,8 +52,8 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
+ 		".byte 0xe9\n\t .long %l[l_yes] - 2f\n\t"
+ 		"2:\n\t"
+ 		".pushsection __jump_table,  \"aw\" \n\t"
+-		_ASM_ALIGN "\n\t"
+-		_ASM_PTR "1b, %l[l_yes], %c0 + %c1 \n\t"
++		".balign 4\n\t"
++		".long 1b - ., %l[l_yes] - ., %c0 + %c1 - .\n\t"
+ 		".popsection \n\t"
+ 		: :  "i" (key), "i" (branch) : : l_yes);
  
-@@ -57,19 +57,26 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- typedef u64 jump_label_t;
+@@ -69,19 +69,26 @@ typedef u32 jump_label_t;
+ #endif
  
  struct jump_entry {
 -	jump_label_t code;
@@ -132,37 +116,118 @@ index 9d6e46355c89..5cec68616125 100644
  }
  
  static inline bool jump_entry_is_branch(const struct jump_entry *entry)
-@@ -87,7 +94,7 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
+@@ -99,7 +106,7 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
  	entry->code = 0;
  }
  
 -#define jump_label_swap		NULL
 +void jump_label_swap(void *a, void *b, int size);
  
- #endif  /* __ASSEMBLY__ */
- #endif	/* __ASM_JUMP_LABEL_H */
-diff --git a/arch/arm64/kernel/jump_label.c b/arch/arm64/kernel/jump_label.c
-index c2dd1ad3e648..2b8e459e91f7 100644
---- a/arch/arm64/kernel/jump_label.c
-+++ b/arch/arm64/kernel/jump_label.c
-@@ -25,12 +25,12 @@
- void arch_jump_label_transform(struct jump_entry *entry,
- 			       enum jump_label_type type)
- {
--	void *addr = (void *)entry->code;
-+	void *addr = (void *)jump_entry_code(entry);
- 	u32 insn;
+ #else	/* __ASSEMBLY__ */
  
- 	if (type == JUMP_LABEL_JMP) {
--		insn = aarch64_insn_gen_branch_imm(entry->code,
--						   entry->target,
-+		insn = aarch64_insn_gen_branch_imm(jump_entry_code(entry),
-+						   jump_entry_target(entry),
- 						   AARCH64_INSN_BRANCH_NOLINK);
+@@ -114,8 +121,8 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
+ 	.byte		STATIC_KEY_INIT_NOP
+ 	.endif
+ 	.pushsection __jump_table, "aw"
+-	_ASM_ALIGN
+-	_ASM_PTR	.Lstatic_jump_\@, \target, \key
++	.balign		4
++	.long		.Lstatic_jump_\@ - ., \target - ., \key - .
+ 	.popsection
+ .endm
+ 
+@@ -130,8 +137,8 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
+ .Lstatic_jump_after_\@:
+ 	.endif
+ 	.pushsection __jump_table, "aw"
+-	_ASM_ALIGN
+-	_ASM_PTR	.Lstatic_jump_\@, \target, \key + 1
++	.balign		4
++	.long		.Lstatic_jump_\@ - ., \target - ., \key - . + 1
+ 	.popsection
+ .endm
+ 
+diff --git a/arch/x86/kernel/jump_label.c b/arch/x86/kernel/jump_label.c
+index e56c95be2808..cc5034b42335 100644
+--- a/arch/x86/kernel/jump_label.c
++++ b/arch/x86/kernel/jump_label.c
+@@ -52,22 +52,24 @@ static void __jump_label_transform(struct jump_entry *entry,
+ 			 * Jump label is enabled for the first time.
+ 			 * So we expect a default_nop...
+ 			 */
+-			if (unlikely(memcmp((void *)entry->code, default_nop, 5)
+-				     != 0))
+-				bug_at((void *)entry->code, __LINE__);
++			if (unlikely(memcmp((void *)jump_entry_code(entry),
++					    default_nop, 5) != 0))
++				bug_at((void *)jump_entry_code(entry),
++				       __LINE__);
+ 		} else {
+ 			/*
+ 			 * ...otherwise expect an ideal_nop. Otherwise
+ 			 * something went horribly wrong.
+ 			 */
+-			if (unlikely(memcmp((void *)entry->code, ideal_nop, 5)
+-				     != 0))
+-				bug_at((void *)entry->code, __LINE__);
++			if (unlikely(memcmp((void *)jump_entry_code(entry),
++					    ideal_nop, 5) != 0))
++				bug_at((void *)jump_entry_code(entry),
++				       __LINE__);
+ 		}
+ 
+ 		code.jump = 0xe9;
+-		code.offset = entry->target -
+-				(entry->code + JUMP_LABEL_NOP_SIZE);
++		code.offset = jump_entry_target(entry) -
++			      (jump_entry_code(entry) + JUMP_LABEL_NOP_SIZE);
  	} else {
- 		insn = aarch64_insn_gen_nop();
-@@ -50,4 +50,20 @@ void arch_jump_label_transform_static(struct jump_entry *entry,
+ 		/*
+ 		 * We are disabling this jump label. If it is not what
+@@ -76,14 +78,18 @@ static void __jump_label_transform(struct jump_entry *entry,
+ 		 * are converting the default nop to the ideal nop.
+ 		 */
+ 		if (init) {
+-			if (unlikely(memcmp((void *)entry->code, default_nop, 5) != 0))
+-				bug_at((void *)entry->code, __LINE__);
++			if (unlikely(memcmp((void *)jump_entry_code(entry),
++					    default_nop, 5) != 0))
++				bug_at((void *)jump_entry_code(entry),
++				       __LINE__);
+ 		} else {
+ 			code.jump = 0xe9;
+-			code.offset = entry->target -
+-				(entry->code + JUMP_LABEL_NOP_SIZE);
+-			if (unlikely(memcmp((void *)entry->code, &code, 5) != 0))
+-				bug_at((void *)entry->code, __LINE__);
++			code.offset = jump_entry_target(entry) -
++				(jump_entry_code(entry) + JUMP_LABEL_NOP_SIZE);
++			if (unlikely(memcmp((void *)jump_entry_code(entry),
++				     &code, 5) != 0))
++				bug_at((void *)jump_entry_code(entry),
++				       __LINE__);
+ 		}
+ 		memcpy(&code, ideal_nops[NOP_ATOMIC5], JUMP_LABEL_NOP_SIZE);
+ 	}
+@@ -97,10 +103,13 @@ static void __jump_label_transform(struct jump_entry *entry,
+ 	 *
  	 */
+ 	if (poker)
+-		(*poker)((void *)entry->code, &code, JUMP_LABEL_NOP_SIZE);
++		(*poker)((void *)jump_entry_code(entry), &code,
++			 JUMP_LABEL_NOP_SIZE);
+ 	else
+-		text_poke_bp((void *)entry->code, &code, JUMP_LABEL_NOP_SIZE,
+-			     (void *)entry->code + JUMP_LABEL_NOP_SIZE);
++		text_poke_bp((void *)jump_entry_code(entry), &code,
++			     JUMP_LABEL_NOP_SIZE,
++			     (void *)jump_entry_code(entry) +
++			     JUMP_LABEL_NOP_SIZE);
+ }
+ 
+ void arch_jump_label_transform(struct jump_entry *entry,
+@@ -140,4 +149,20 @@ __init_or_module void arch_jump_label_transform_static(struct jump_entry *entry,
+ 		__jump_label_transform(entry, type, text_poke_early, 1);
  }
  
 +void jump_label_swap(void *a, void *b, int size)
@@ -181,6 +246,22 @@ index c2dd1ad3e648..2b8e459e91f7 100644
 +	jeb->key	= tmp.key + delta;
 +}
 +
- #endif	/* HAVE_JUMP_LABEL */
+ #endif
+diff --git a/tools/objtool/special.c b/tools/objtool/special.c
+index 84f001d52322..98ae55b39037 100644
+--- a/tools/objtool/special.c
++++ b/tools/objtool/special.c
+@@ -30,9 +30,9 @@
+ #define EX_ORIG_OFFSET		0
+ #define EX_NEW_OFFSET		4
+ 
+-#define JUMP_ENTRY_SIZE		24
++#define JUMP_ENTRY_SIZE		12
+ #define JUMP_ORIG_OFFSET	0
+-#define JUMP_NEW_OFFSET		8
++#define JUMP_NEW_OFFSET		4
+ 
+ #define ALT_ENTRY_SIZE		13
+ #define ALT_ORIG_OFFSET		0
 -- 
 2.11.0
