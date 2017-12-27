@@ -1,54 +1,45 @@
-Return-Path: <brice.goglin@gmail.com>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z66X23JYfzDqJt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 20:10:41 +1100 (AEDT)
-Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
- Matthew Wilcox <willy@infradead.org>, Dave Hansen <dave.hansen@intel.com>,
- Michal Hocko <mhocko@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>,
- "Box, David E" <david.e.box@intel.com>,
- "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>,
- "Koss, Marcin" <marcin.koss@intel.com>,
- "Koziej, Artur" <artur.koziej@intel.com>,
- "Lahtinen, Joonas" <joonas.lahtinen@intel.com>,
- "Moore, Robert" <robert.moore@intel.com>,
- "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
- "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "Schmauss, Erik" <erik.schmauss@intel.com>,
- "Verma, Vishal L" <vishal.l.verma@intel.com>, "Zheng, Lv"
- <lv.zheng@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
- Balbir Singh <bsingharora@gmail.com>, Jerome Glisse <jglisse@redhat.com>,
- John Hubbard <jhubbard@nvidia.com>, Len Brown <lenb@kernel.org>,
- Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
- Linux ACPI <linux-acpi@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Linux API <linux-api@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
- <20171214130032.GK16951@dhcp22.suse.cz>
- <20171218203547.GA2366@linux.intel.com>
- <20171220181937.GB12236@bombadil.infradead.org>
- <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
- <20171220211649.GA32200@bombadil.infradead.org>
- <20171220212408.GA8308@linux.intel.com>
- <CAPcyv4gTknp=0yQnVrrB5Ui+mJE_x-wdkV86UD4hsYnx3CAjfA@mail.gmail.com>
- <20171220224105.GA27258@linux.intel.com>
- <39cbe02a-d309-443d-54c9-678a0799342d@gmail.com>
- <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
-From: Brice Goglin <brice.goglin@gmail.com>
-Message-ID: <71317994-af66-a1b2-4c7a-86a03253cf62@gmail.com>
-Date: Wed, 27 Dec 2017 10:10:34 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z6NqT4d71zDqTs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2017 06:55:00 +1100 (AEDT)
+Received: by mail-io0-x243.google.com with SMTP id 14so29811779iou.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 11:55:00 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Sender: linus971@gmail.com
+In-Reply-To: <20171227085033.22389-2-ard.biesheuvel@linaro.org>
+References: <20171227085033.22389-1-ard.biesheuvel@linaro.org>
+ <20171227085033.22389-2-ard.biesheuvel@linaro.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 27 Dec 2017 11:54:58 -0800
+Message-ID: <CA+55aFyJg=-PfrVV1kw_bqKKd9Uk+q2FS4pqPp-og_DDbhhaFw@mail.gmail.com>
+Subject: Re: [PATCH v6 1/8] arch: enable relative relocations for arm64,
+ power, x86, s390 and x86
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Kees Cook <keescook@chromium.org>,
+ Will Deacon <will.deacon@arm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Paul Mackerras <paulus@samba.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ "David S. Miller" <davem@davemloft.net>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>, James Morris <james.l.morris@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Nicolas Pitre <nico@linaro.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Jessica Yu <jeyu@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-mips <linux-mips@linux-mips.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ sparclinux@vger.kernel.org, "the arch/x86 maintainers" <x86@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,59 +49,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 22/12/2017 à 23:53, Dan Williams a écrit :
-> On Thu, Dec 21, 2017 at 12:31 PM, Brice Goglin <brice.goglin@gmail.com> wrote:
->> Le 20/12/2017 à 23:41, Ross Zwisler a écrit :
-> [..]
->> Hello
->>
->> I can confirm that HPC runtimes are going to use these patches (at least
->> all runtimes that use hwloc for topology discovery, but that's the vast
->> majority of HPC anyway).
->>
->> We really didn't like KNL exposing a hacky SLIT table [1]. We had to
->> explicitly detect that specific crazy table to find out which NUMA nodes
->> were local to which cores, and to find out which NUMA nodes were
->> HBM/MCDRAM or DDR. And then we had to hide the SLIT values to the
->> application because the reported latencies didn't match reality. Quite
->> annoying.
->>
->> With Ross' patches, we can easily get what we need:
->> * which NUMA nodes are local to which CPUs? /sys/devices/system/node/
->> can only report a single local node per CPU (doesn't work for KNL and
->> upcoming architectures with HBM+DDR+...)
->> * which NUMA nodes are slow/fast (for both bandwidth and latency)
->> And we can still look at SLIT under /sys/devices/system/node if really
->> needed.
->>
->> And of course having this in sysfs is much better than parsing ACPI
->> tables that are only accessible to root :)
-> On this point, it's not clear to me that we should allow these sysfs
-> entries to be world readable. Given /proc/iomem now hides physical
-> address information from non-root we at least need to be careful not
-> to undo that with new sysfs HMAT attributes. Once you need to be root
-> for this info, is parsing binary HMAT vs sysfs a blocker for the HPC
-> use case?
+On Wed, Dec 27, 2017 at 12:50 AM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
+> diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
+> index 7da3e5c366a0..49ae5b43fe2b 100644
+> --- a/arch/arm64/kernel/vmlinux.lds.S
+> +++ b/arch/arm64/kernel/vmlinux.lds.S
+> @@ -156,7 +156,7 @@ SECTIONS
+>                 CON_INITCALL
+>                 SECURITY_INITCALL
+>                 INIT_RAM_FS
+> -               *(.init.rodata.* .init.bss)     /* from the EFI stub */
+> +               *(.init.rodata.* .init.bss .init.discard.*)     /* EFI stub */
+>         }
+>         .exit.data : {
+>                 ARM_EXIT_KEEP(EXIT_DATA)
 
-I don't think it would be a blocker.
+Weren't you supposed to explain this part in the commit message?
 
-> Perhaps we can enlist /proc/iomem or a similar enumeration interface
-> to tell userspace the NUMA node and whether the kernel thinks it has
-> better or worse performance characteristics relative to base
-> system-RAM, i.e. new IORES_DESC_* values. I'm worried that if we start
-> publishing absolute numbers in sysfs userspace will default to looking
-> for specific magic numbers in sysfs vs asking the kernel for memory
-> that has performance characteristics relative to base "System RAM". In
-> other words the absolute performance information that the HMAT
-> publishes is useful to the kernel, but it's not clear that userspace
-> needs that vs a relative indicator for making NUMA node preference
-> decisions.
+It isn't obvious why this is mixed up with the Kconfig changes, and
+somebody already asked about it. The commit message only talks about
+the Kconfig changes, and then suddenly there's that odd vmlinux.lds.S
+change in there...
 
-Some HPC users will benchmark the machine to discovery actual
-performance numbers anyway.
-However, most users won't do this. They will want to know relative
-performance of different nodes. If you normalize HMAT values by dividing
-them with system-RAM values, that's likely OK. If you just say "that
-node is faster than system RAM", it's not precise enough.
-
-Brice
+              Linus
