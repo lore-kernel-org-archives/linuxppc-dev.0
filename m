@@ -1,23 +1,23 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z6P622w9yzDqGw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2017 07:07:38 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id u62so26161534ita.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 12:07:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z6PBL0zn6zDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Dec 2017 07:11:21 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id d16so26652485itj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 12:11:21 -0800 (PST)
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20171227085033.22389-3-ard.biesheuvel@linaro.org>
+In-Reply-To: <CA+55aFxqJqJq_7VUzBVTppgXFPc-8Ou55iLsZjp3fr6B2gRyTQ@mail.gmail.com>
 References: <20171227085033.22389-1-ard.biesheuvel@linaro.org>
  <20171227085033.22389-3-ard.biesheuvel@linaro.org>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 27 Dec 2017 12:07:34 -0800
-Message-ID: <CA+55aFxqJqJq_7VUzBVTppgXFPc-8Ou55iLsZjp3fr6B2gRyTQ@mail.gmail.com>
+ <CA+55aFxqJqJq_7VUzBVTppgXFPc-8Ou55iLsZjp3fr6B2gRyTQ@mail.gmail.com>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Wed, 27 Dec 2017 20:11:19 +0000
+Message-ID: <CAKv+Gu-2NUzsakN2rcM_5fqD0ubr+6ZXSc+5sjZZPbU3wj_Xsg@mail.gmail.com>
 Subject: Re: [PATCH v6 2/8] module: use relative references for __ksymtab
  entries
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  "H. Peter Anvin" <hpa@zytor.com>,
  Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -50,31 +50,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 27, 2017 at 12:50 AM, Ard Biesheuvel
-<ard.biesheuvel@linaro.org> wrote:
-> diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-> index 52e611ab9a6c..fe752d365334 100644
-> --- a/include/linux/compiler.h
-> +++ b/include/linux/compiler.h
-> @@ -327,4 +327,15 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
->         compiletime_assert(__native_word(t),                            \
->                 "Need native word sized stores/loads for atomicity.")
+On 27 December 2017 at 20:07, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Wed, Dec 27, 2017 at 12:50 AM, Ard Biesheuvel
+> <ard.biesheuvel@linaro.org> wrote:
+>> diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+>> index 52e611ab9a6c..fe752d365334 100644
+>> --- a/include/linux/compiler.h
+>> +++ b/include/linux/compiler.h
+>> @@ -327,4 +327,15 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
+>>         compiletime_assert(__native_word(t),                            \
+>>                 "Need native word sized stores/loads for atomicity.")
+>>
+>> +/*
+>> + * Force the compiler to emit 'sym' as a symbol, so that we can reference
+>> + * it from inline assembler. Necessary in case 'sym' could be inlined
+>> + * otherwise, or eliminated entirely due to lack of references that are
+>> + * visibile to the compiler.
+>> + */
+>> +#define __ADDRESSABLE(sym) \
+>> +       static void *__attribute__((section(".discard.text"), used))    \
+>> +               __PASTE(__discard_##sym, __LINE__)(void)                \
+>> +                       { return (void *)&sym; }                        \
+>> +
+>>  #endif /* __LINUX_COMPILER_H */
 >
-> +/*
-> + * Force the compiler to emit 'sym' as a symbol, so that we can reference
-> + * it from inline assembler. Necessary in case 'sym' could be inlined
-> + * otherwise, or eliminated entirely due to lack of references that are
-> + * visibile to the compiler.
-> + */
-> +#define __ADDRESSABLE(sym) \
-> +       static void *__attribute__((section(".discard.text"), used))    \
-> +               __PASTE(__discard_##sym, __LINE__)(void)                \
-> +                       { return (void *)&sym; }                        \
-> +
->  #endif /* __LINUX_COMPILER_H */
+> Isn't this logically the point where you should add the arm64
+> vmlinux.lds.S change, and explain how ".discard.text" turns into
+> ".init.discard.text" for some odd arm64 reason?
+>
 
-Isn't this logically the point where you should add the arm64
-vmlinux.lds.S change, and explain how ".discard.text" turns into
-".init.discard.text" for some odd arm64 reason?
-
-                   Linus
+I tried to keep the generic patches generic, so perhaps I should just
+put the arm64 vmlinux.lds.S change in a patch on its own?
