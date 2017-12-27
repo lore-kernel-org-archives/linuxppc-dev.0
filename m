@@ -1,39 +1,54 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <brice.goglin@gmail.com>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z666009BVzDqgw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 19:51:35 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id 9so38218576wme.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 00:51:35 -0800 (PST)
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Ralf Baechle <ralf@linux-mips.org>,
- Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "David S. Miller" <davem@davemloft.net>, Petr Mladek <pmladek@suse.com>,
- Ingo Molnar <mingo@redhat.com>, James Morris <james.l.morris@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: [PATCH v6 8/8] x86/kernel: jump_table: use relative references
-Date: Wed, 27 Dec 2017 08:50:33 +0000
-Message-Id: <20171227085033.22389-9-ard.biesheuvel@linaro.org>
-In-Reply-To: <20171227085033.22389-1-ard.biesheuvel@linaro.org>
-References: <20171227085033.22389-1-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z66X23JYfzDqJt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Dec 2017 20:10:41 +1100 (AEDT)
+Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
+ Matthew Wilcox <willy@infradead.org>, Dave Hansen <dave.hansen@intel.com>,
+ Michal Hocko <mhocko@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>,
+ "Box, David E" <david.e.box@intel.com>,
+ "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>,
+ "Koss, Marcin" <marcin.koss@intel.com>,
+ "Koziej, Artur" <artur.koziej@intel.com>,
+ "Lahtinen, Joonas" <joonas.lahtinen@intel.com>,
+ "Moore, Robert" <robert.moore@intel.com>,
+ "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
+ "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "Schmauss, Erik" <erik.schmauss@intel.com>,
+ "Verma, Vishal L" <vishal.l.verma@intel.com>, "Zheng, Lv"
+ <lv.zheng@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Balbir Singh <bsingharora@gmail.com>, Jerome Glisse <jglisse@redhat.com>,
+ John Hubbard <jhubbard@nvidia.com>, Len Brown <lenb@kernel.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
+ Linux ACPI <linux-acpi@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20171214021019.13579-1-ross.zwisler@linux.intel.com>
+ <20171214130032.GK16951@dhcp22.suse.cz>
+ <20171218203547.GA2366@linux.intel.com>
+ <20171220181937.GB12236@bombadil.infradead.org>
+ <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
+ <20171220211649.GA32200@bombadil.infradead.org>
+ <20171220212408.GA8308@linux.intel.com>
+ <CAPcyv4gTknp=0yQnVrrB5Ui+mJE_x-wdkV86UD4hsYnx3CAjfA@mail.gmail.com>
+ <20171220224105.GA27258@linux.intel.com>
+ <39cbe02a-d309-443d-54c9-678a0799342d@gmail.com>
+ <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
+From: Brice Goglin <brice.goglin@gmail.com>
+Message-ID: <71317994-af66-a1b2-4c7a-86a03253cf62@gmail.com>
+Date: Wed, 27 Dec 2017 10:10:34 +0100
+MIME-Version: 1.0
+In-Reply-To: <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,225 +58,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to the arm64 case, 64-bit x86 can benefit from using 32-bit
-relative references rather than 64-bit absolute ones when emitting
-struct jump_entry instances. Not only does this reduce the memory
-footprint of the entries themselves by 50%, it also removes the need
-for carrying relocation metadata on relocatable builds (i.e., for KASLR)
-which saves a fair chunk of .init space as well (although the savings
-are not as dramatic as on arm64)
+Le 22/12/2017 à 23:53, Dan Williams a écrit :
+> On Thu, Dec 21, 2017 at 12:31 PM, Brice Goglin <brice.goglin@gmail.com> wrote:
+>> Le 20/12/2017 à 23:41, Ross Zwisler a écrit :
+> [..]
+>> Hello
+>>
+>> I can confirm that HPC runtimes are going to use these patches (at least
+>> all runtimes that use hwloc for topology discovery, but that's the vast
+>> majority of HPC anyway).
+>>
+>> We really didn't like KNL exposing a hacky SLIT table [1]. We had to
+>> explicitly detect that specific crazy table to find out which NUMA nodes
+>> were local to which cores, and to find out which NUMA nodes were
+>> HBM/MCDRAM or DDR. And then we had to hide the SLIT values to the
+>> application because the reported latencies didn't match reality. Quite
+>> annoying.
+>>
+>> With Ross' patches, we can easily get what we need:
+>> * which NUMA nodes are local to which CPUs? /sys/devices/system/node/
+>> can only report a single local node per CPU (doesn't work for KNL and
+>> upcoming architectures with HBM+DDR+...)
+>> * which NUMA nodes are slow/fast (for both bandwidth and latency)
+>> And we can still look at SLIT under /sys/devices/system/node if really
+>> needed.
+>>
+>> And of course having this in sysfs is much better than parsing ACPI
+>> tables that are only accessible to root :)
+> On this point, it's not clear to me that we should allow these sysfs
+> entries to be world readable. Given /proc/iomem now hides physical
+> address information from non-root we at least need to be careful not
+> to undo that with new sysfs HMAT attributes. Once you need to be root
+> for this info, is parsing binary HMAT vs sysfs a blocker for the HPC
+> use case?
 
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
----
- arch/x86/include/asm/jump_label.h | 35 +++++++-----
- arch/x86/kernel/jump_label.c      | 59 ++++++++++++++------
- tools/objtool/special.c           |  4 +-
- 3 files changed, 65 insertions(+), 33 deletions(-)
+I don't think it would be a blocker.
 
-diff --git a/arch/x86/include/asm/jump_label.h b/arch/x86/include/asm/jump_label.h
-index 009ff2699d07..91c01af96907 100644
---- a/arch/x86/include/asm/jump_label.h
-+++ b/arch/x86/include/asm/jump_label.h
-@@ -36,8 +36,8 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
- 	asm_volatile_goto("1:"
- 		".byte " __stringify(STATIC_KEY_INIT_NOP) "\n\t"
- 		".pushsection __jump_table,  \"aw\" \n\t"
--		_ASM_ALIGN "\n\t"
--		_ASM_PTR "1b, %l[l_yes], %c0 + %c1 \n\t"
-+		".balign 4\n\t"
-+		".long 1b - ., %l[l_yes] - ., %c0 + %c1 - .\n\t"
- 		".popsection \n\t"
- 		: :  "i" (key), "i" (branch) : : l_yes);
- 
-@@ -52,8 +52,8 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- 		".byte 0xe9\n\t .long %l[l_yes] - 2f\n\t"
- 		"2:\n\t"
- 		".pushsection __jump_table,  \"aw\" \n\t"
--		_ASM_ALIGN "\n\t"
--		_ASM_PTR "1b, %l[l_yes], %c0 + %c1 \n\t"
-+		".balign 4\n\t"
-+		".long 1b - ., %l[l_yes] - ., %c0 + %c1 - .\n\t"
- 		".popsection \n\t"
- 		: :  "i" (key), "i" (branch) : : l_yes);
- 
-@@ -69,19 +69,26 @@ typedef u32 jump_label_t;
- #endif
- 
- struct jump_entry {
--	jump_label_t code;
--	jump_label_t target;
--	jump_label_t key;
-+	s32 code;
-+	s32 target;
-+	s32 key;
- };
- 
- static inline jump_label_t jump_entry_code(const struct jump_entry *entry)
- {
--	return entry->code;
-+	return (jump_label_t)&entry->code + entry->code;
-+}
-+
-+static inline jump_label_t jump_entry_target(const struct jump_entry *entry)
-+{
-+	return (jump_label_t)&entry->target + entry->target;
- }
- 
- static inline struct static_key *jump_entry_key(const struct jump_entry *entry)
- {
--	return (struct static_key *)((unsigned long)entry->key & ~1UL);
-+	unsigned long key = (unsigned long)&entry->key + entry->key;
-+
-+	return (struct static_key *)(key & ~1UL);
- }
- 
- static inline bool jump_entry_is_branch(const struct jump_entry *entry)
-@@ -99,7 +106,7 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
- 	entry->code = 0;
- }
- 
--#define jump_label_swap		NULL
-+void jump_label_swap(void *a, void *b, int size);
- 
- #else	/* __ASSEMBLY__ */
- 
-@@ -114,8 +121,8 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
- 	.byte		STATIC_KEY_INIT_NOP
- 	.endif
- 	.pushsection __jump_table, "aw"
--	_ASM_ALIGN
--	_ASM_PTR	.Lstatic_jump_\@, \target, \key
-+	.balign		4
-+	.long		.Lstatic_jump_\@ - ., \target - ., \key - .
- 	.popsection
- .endm
- 
-@@ -130,8 +137,8 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
- .Lstatic_jump_after_\@:
- 	.endif
- 	.pushsection __jump_table, "aw"
--	_ASM_ALIGN
--	_ASM_PTR	.Lstatic_jump_\@, \target, \key + 1
-+	.balign		4
-+	.long		.Lstatic_jump_\@ - ., \target - ., \key - . + 1
- 	.popsection
- .endm
- 
-diff --git a/arch/x86/kernel/jump_label.c b/arch/x86/kernel/jump_label.c
-index e56c95be2808..cc5034b42335 100644
---- a/arch/x86/kernel/jump_label.c
-+++ b/arch/x86/kernel/jump_label.c
-@@ -52,22 +52,24 @@ static void __jump_label_transform(struct jump_entry *entry,
- 			 * Jump label is enabled for the first time.
- 			 * So we expect a default_nop...
- 			 */
--			if (unlikely(memcmp((void *)entry->code, default_nop, 5)
--				     != 0))
--				bug_at((void *)entry->code, __LINE__);
-+			if (unlikely(memcmp((void *)jump_entry_code(entry),
-+					    default_nop, 5) != 0))
-+				bug_at((void *)jump_entry_code(entry),
-+				       __LINE__);
- 		} else {
- 			/*
- 			 * ...otherwise expect an ideal_nop. Otherwise
- 			 * something went horribly wrong.
- 			 */
--			if (unlikely(memcmp((void *)entry->code, ideal_nop, 5)
--				     != 0))
--				bug_at((void *)entry->code, __LINE__);
-+			if (unlikely(memcmp((void *)jump_entry_code(entry),
-+					    ideal_nop, 5) != 0))
-+				bug_at((void *)jump_entry_code(entry),
-+				       __LINE__);
- 		}
- 
- 		code.jump = 0xe9;
--		code.offset = entry->target -
--				(entry->code + JUMP_LABEL_NOP_SIZE);
-+		code.offset = jump_entry_target(entry) -
-+			      (jump_entry_code(entry) + JUMP_LABEL_NOP_SIZE);
- 	} else {
- 		/*
- 		 * We are disabling this jump label. If it is not what
-@@ -76,14 +78,18 @@ static void __jump_label_transform(struct jump_entry *entry,
- 		 * are converting the default nop to the ideal nop.
- 		 */
- 		if (init) {
--			if (unlikely(memcmp((void *)entry->code, default_nop, 5) != 0))
--				bug_at((void *)entry->code, __LINE__);
-+			if (unlikely(memcmp((void *)jump_entry_code(entry),
-+					    default_nop, 5) != 0))
-+				bug_at((void *)jump_entry_code(entry),
-+				       __LINE__);
- 		} else {
- 			code.jump = 0xe9;
--			code.offset = entry->target -
--				(entry->code + JUMP_LABEL_NOP_SIZE);
--			if (unlikely(memcmp((void *)entry->code, &code, 5) != 0))
--				bug_at((void *)entry->code, __LINE__);
-+			code.offset = jump_entry_target(entry) -
-+				(jump_entry_code(entry) + JUMP_LABEL_NOP_SIZE);
-+			if (unlikely(memcmp((void *)jump_entry_code(entry),
-+				     &code, 5) != 0))
-+				bug_at((void *)jump_entry_code(entry),
-+				       __LINE__);
- 		}
- 		memcpy(&code, ideal_nops[NOP_ATOMIC5], JUMP_LABEL_NOP_SIZE);
- 	}
-@@ -97,10 +103,13 @@ static void __jump_label_transform(struct jump_entry *entry,
- 	 *
- 	 */
- 	if (poker)
--		(*poker)((void *)entry->code, &code, JUMP_LABEL_NOP_SIZE);
-+		(*poker)((void *)jump_entry_code(entry), &code,
-+			 JUMP_LABEL_NOP_SIZE);
- 	else
--		text_poke_bp((void *)entry->code, &code, JUMP_LABEL_NOP_SIZE,
--			     (void *)entry->code + JUMP_LABEL_NOP_SIZE);
-+		text_poke_bp((void *)jump_entry_code(entry), &code,
-+			     JUMP_LABEL_NOP_SIZE,
-+			     (void *)jump_entry_code(entry) +
-+			     JUMP_LABEL_NOP_SIZE);
- }
- 
- void arch_jump_label_transform(struct jump_entry *entry,
-@@ -140,4 +149,20 @@ __init_or_module void arch_jump_label_transform_static(struct jump_entry *entry,
- 		__jump_label_transform(entry, type, text_poke_early, 1);
- }
- 
-+void jump_label_swap(void *a, void *b, int size)
-+{
-+	long delta = (unsigned long)a - (unsigned long)b;
-+	struct jump_entry *jea = a;
-+	struct jump_entry *jeb = b;
-+	struct jump_entry tmp = *jea;
-+
-+	jea->code	= jeb->code - delta;
-+	jea->target	= jeb->target - delta;
-+	jea->key	= jeb->key - delta;
-+
-+	jeb->code	= tmp.code + delta;
-+	jeb->target	= tmp.target + delta;
-+	jeb->key	= tmp.key + delta;
-+}
-+
- #endif
-diff --git a/tools/objtool/special.c b/tools/objtool/special.c
-index 84f001d52322..98ae55b39037 100644
---- a/tools/objtool/special.c
-+++ b/tools/objtool/special.c
-@@ -30,9 +30,9 @@
- #define EX_ORIG_OFFSET		0
- #define EX_NEW_OFFSET		4
- 
--#define JUMP_ENTRY_SIZE		24
-+#define JUMP_ENTRY_SIZE		12
- #define JUMP_ORIG_OFFSET	0
--#define JUMP_NEW_OFFSET		8
-+#define JUMP_NEW_OFFSET		4
- 
- #define ALT_ENTRY_SIZE		13
- #define ALT_ORIG_OFFSET		0
--- 
-2.11.0
+> Perhaps we can enlist /proc/iomem or a similar enumeration interface
+> to tell userspace the NUMA node and whether the kernel thinks it has
+> better or worse performance characteristics relative to base
+> system-RAM, i.e. new IORES_DESC_* values. I'm worried that if we start
+> publishing absolute numbers in sysfs userspace will default to looking
+> for specific magic numbers in sysfs vs asking the kernel for memory
+> that has performance characteristics relative to base "System RAM". In
+> other words the absolute performance information that the HMAT
+> publishes is useful to the kernel, but it's not clear that userspace
+> needs that vs a relative indicator for making NUMA node preference
+> decisions.
+
+Some HPC users will benchmark the machine to discovery actual
+performance numbers anyway.
+However, most users won't do this. They will want to know relative
+performance of different nodes. If you normalize HMAT values by dividing
+them with system-RAM values, that's likely OK. If you just say "that
+node is faster than system RAM", it's not precise enough.
+
+Brice
