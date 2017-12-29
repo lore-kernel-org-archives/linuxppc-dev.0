@@ -2,8 +2,8 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KNj6NnbzDqZJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:23:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KNp5kvNzDqZh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:23:38 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
@@ -17,9 +17,9 @@ Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 54/67] x86: remove sta2x11_dma_ops
-Date: Fri, 29 Dec 2017 09:18:58 +0100
-Message-Id: <20171229081911.2802-55-hch@lst.de>
+Subject: [PATCH 55/67] ia64: replace ZONE_DMA with ZONE_DMA32
+Date: Fri, 29 Dec 2017 09:18:59 +0100
+Message-Id: <20171229081911.2802-56-hch@lst.de>
 In-Reply-To: <20171229081911.2802-1-hch@lst.de>
 References: <20171229081911.2802-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,115 +31,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both the swiotlb and the dma-direct code already call into phys_to_dma
-to translate the DMA address.  So the sta2x11 into phys_to_dma and
-dma_to_phys are enough to handle this "special" device, and we can use
-the plain old swiotlb ops.
+ia64 uses ZONE_DMA for allocations below 32-bits.  These days we
+name the zone for that ZONE_DMA32, which will allow to use the
+dma-direct and generic swiotlb code as-is, so rename it.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/x86/include/asm/device.h |  3 +++
- arch/x86/pci/sta2x11-fixup.c  | 46 +++++--------------------------------------
- 2 files changed, 8 insertions(+), 41 deletions(-)
+ arch/ia64/Kconfig              | 2 +-
+ arch/ia64/kernel/pci-swiotlb.c | 2 +-
+ arch/ia64/mm/contig.c          | 4 ++--
+ arch/ia64/mm/discontig.c       | 8 ++++----
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/include/asm/device.h b/arch/x86/include/asm/device.h
-index 5e12c63b47aa..812bd6c5d602 100644
---- a/arch/x86/include/asm/device.h
-+++ b/arch/x86/include/asm/device.h
-@@ -6,6 +6,9 @@ struct dev_archdata {
- #if defined(CONFIG_INTEL_IOMMU) || defined(CONFIG_AMD_IOMMU)
- 	void *iommu; /* hook for IOMMU specific extension */
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 4d18fca885ee..888acdb163cb 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -66,7 +66,7 @@ config 64BIT
+ 	select ATA_NONSTANDARD if ATA
+ 	default y
+ 
+-config ZONE_DMA
++config ZONE_DMA32
+ 	def_bool y
+ 	depends on !IA64_SGI_SN2
+ 
+diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+index f1ae873a8c35..4a9a6e58ad6a 100644
+--- a/arch/ia64/kernel/pci-swiotlb.c
++++ b/arch/ia64/kernel/pci-swiotlb.c
+@@ -20,7 +20,7 @@ static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
+ 					 unsigned long attrs)
+ {
+ 	if (dev->coherent_dma_mask != DMA_BIT_MASK(64))
+-		gfp |= GFP_DMA;
++		gfp |= GFP_DMA32;
+ 	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
+ }
+ 
+diff --git a/arch/ia64/mm/contig.c b/arch/ia64/mm/contig.c
+index 52715a71aede..7d64b30913d1 100644
+--- a/arch/ia64/mm/contig.c
++++ b/arch/ia64/mm/contig.c
+@@ -237,9 +237,9 @@ paging_init (void)
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-#ifdef CONFIG_ZONE_DMA
++#ifdef CONFIG_ZONE_DMA32
+ 	max_dma = virt_to_phys((void *) MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+-	max_zone_pfns[ZONE_DMA] = max_dma;
++	max_zone_pfns[ZONE_DMA32] = max_dma;
  #endif
-+#ifdef CONFIG_STA2X11
-+	bool is_sta2x11 : 1;
-+#endif
- };
+ 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
  
- #if defined(CONFIG_X86_DEV_DMA_OPS) && defined(CONFIG_PCI_DOMAINS)
-diff --git a/arch/x86/pci/sta2x11-fixup.c b/arch/x86/pci/sta2x11-fixup.c
-index 15ad3025e439..7a5bafb76d77 100644
---- a/arch/x86/pci/sta2x11-fixup.c
-+++ b/arch/x86/pci/sta2x11-fixup.c
-@@ -159,43 +159,6 @@ static dma_addr_t a2p(dma_addr_t a, struct pci_dev *pdev)
- 	return p;
- }
+diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
+index 9b2d994cddf6..ac46f0d60b66 100644
+--- a/arch/ia64/mm/discontig.c
++++ b/arch/ia64/mm/discontig.c
+@@ -38,7 +38,7 @@ struct early_node_data {
+ 	struct ia64_node_data *node_data;
+ 	unsigned long pernode_addr;
+ 	unsigned long pernode_size;
+-#ifdef CONFIG_ZONE_DMA
++#ifdef CONFIG_ZONE_DMA32
+ 	unsigned long num_dma_physpages;
+ #endif
+ 	unsigned long min_pfn;
+@@ -669,7 +669,7 @@ static __init int count_node_pages(unsigned long start, unsigned long len, int n
+ {
+ 	unsigned long end = start + len;
  
--/**
-- * sta2x11_swiotlb_alloc_coherent - Allocate swiotlb bounce buffers
-- *     returns virtual address. This is the only "special" function here.
-- * @dev: PCI device
-- * @size: Size of the buffer
-- * @dma_handle: DMA address
-- * @flags: memory flags
-- */
--static void *sta2x11_swiotlb_alloc_coherent(struct device *dev,
--					    size_t size,
--					    dma_addr_t *dma_handle,
--					    gfp_t flags,
--					    unsigned long attrs)
--{
--	void *vaddr;
--
--	vaddr = swiotlb_alloc(dev, size, dma_handle, flags, attrs);
--	*dma_handle = p2a(*dma_handle, to_pci_dev(dev));
--	return vaddr;
--}
--
--/* We have our own dma_ops: the same as swiotlb but from alloc (above) */
--static const struct dma_map_ops sta2x11_dma_ops = {
--	.alloc = sta2x11_swiotlb_alloc_coherent,
--	.free = swiotlb_free,
--	.map_page = swiotlb_map_page,
--	.unmap_page = swiotlb_unmap_page,
--	.map_sg = swiotlb_map_sg_attrs,
--	.unmap_sg = swiotlb_unmap_sg_attrs,
--	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
--	.sync_single_for_device = swiotlb_sync_single_for_device,
--	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
--	.sync_sg_for_device = swiotlb_sync_sg_for_device,
--	.mapping_error = swiotlb_dma_mapping_error,
--	.dma_supported = dma_direct_supported,
--};
--
- /* At setup time, we use our own ops if the device is a ConneXt one */
- static void sta2x11_setup_pdev(struct pci_dev *pdev)
- {
-@@ -205,7 +168,8 @@ static void sta2x11_setup_pdev(struct pci_dev *pdev)
- 		return;
- 	pci_set_consistent_dma_mask(pdev, STA2X11_AMBA_SIZE - 1);
- 	pci_set_dma_mask(pdev, STA2X11_AMBA_SIZE - 1);
--	pdev->dev.dma_ops = &sta2x11_dma_ops;
-+	pdev->dev.dma_ops = &swiotlb_dma_ops;
-+	pdev->dev.archdata.is_sta2x11 = true;
+-#ifdef CONFIG_ZONE_DMA
++#ifdef CONFIG_ZONE_DMA32
+ 	if (start <= __pa(MAX_DMA_ADDRESS))
+ 		mem_data[node].num_dma_physpages +=
+ 			(min(end, __pa(MAX_DMA_ADDRESS)) - start) >>PAGE_SHIFT;
+@@ -724,8 +724,8 @@ void __init paging_init(void)
+ 	}
  
- 	/* We must enable all devices as master, for audio DMA to work */
- 	pci_set_master(pdev);
-@@ -225,7 +189,7 @@ bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
- {
- 	struct sta2x11_mapping *map;
- 
--	if (dev->dma_ops != &sta2x11_dma_ops) {
-+	if (!dev->archdata.is_sta2x11) {
- 		if (!dev->dma_mask)
- 			return false;
- 		return addr + size - 1 <= *dev->dma_mask;
-@@ -249,7 +213,7 @@ bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
-  */
- dma_addr_t __phys_to_dma(struct device *dev, phys_addr_t paddr)
- {
--	if (dev->dma_ops != &sta2x11_dma_ops)
-+	if (!dev->archdata.is_sta2x11)
- 		return paddr;
- 	return p2a(paddr, to_pci_dev(dev));
- }
-@@ -261,7 +225,7 @@ dma_addr_t __phys_to_dma(struct device *dev, phys_addr_t paddr)
-  */
- phys_addr_t __dma_to_phys(struct device *dev, dma_addr_t daddr)
- {
--	if (dev->dma_ops != &sta2x11_dma_ops)
-+	if (!dev->archdata.is_sta2x11)
- 		return daddr;
- 	return a2p(daddr, to_pci_dev(dev));
- }
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-#ifdef CONFIG_ZONE_DMA
+-	max_zone_pfns[ZONE_DMA] = max_dma;
++#ifdef CONFIG_ZONE_DMA32
++	max_zone_pfns[ZONE_DMA32] = max_dma;
+ #endif
+ 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
+ 	free_area_init_nodes(max_zone_pfns);
 -- 
 2.14.2
