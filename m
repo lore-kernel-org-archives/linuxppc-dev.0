@@ -2,8 +2,8 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KM946hszDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:22:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KMD4NY6zDq8c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:22:16 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
@@ -17,9 +17,9 @@ Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 35/67] h8300: use dma-direct
-Date: Fri, 29 Dec 2017 09:18:39 +0100
-Message-Id: <20171229081911.2802-36-hch@lst.de>
+Subject: [PATCH 36/67] x86: remove dma_alloc_coherent_mask
+Date: Fri, 29 Dec 2017 09:18:40 +0100
+Message-Id: <20171229081911.2802-37-hch@lst.de>
 In-Reply-To: <20171229081911.2802-1-hch@lst.de>
 References: <20171229081911.2802-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,147 +31,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the bare-bones h8300 direct dma mapping implementation with
-the fully featured generic dma-direct one.
+These days all devices (including the ISA fallback device) have a coherent
+DMA mask set, so remove the workaround.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/h8300/Kconfig                   |  1 +
- arch/h8300/include/asm/Kbuild        |  1 +
- arch/h8300/include/asm/dma-mapping.h | 12 -------
- arch/h8300/kernel/Makefile           |  2 +-
- arch/h8300/kernel/dma.c              | 67 ------------------------------------
- 5 files changed, 3 insertions(+), 80 deletions(-)
- delete mode 100644 arch/h8300/include/asm/dma-mapping.h
- delete mode 100644 arch/h8300/kernel/dma.c
+ arch/x86/include/asm/dma-mapping.h | 18 ++----------------
+ arch/x86/kernel/pci-dma.c          | 10 ++++------
+ arch/x86/mm/mem_encrypt.c          |  4 +---
+ drivers/xen/swiotlb-xen.c          | 16 +---------------
+ 4 files changed, 8 insertions(+), 40 deletions(-)
 
-diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
-index f8d3fde08190..091d6d04b5e5 100644
---- a/arch/h8300/Kconfig
-+++ b/arch/h8300/Kconfig
-@@ -23,6 +23,7 @@ config H8300
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_HASH
- 	select CPU_NO_EFFICIENT_FFS
-+	select DMA_DIRECT_OPS
+diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
+index 6277c83c0eb1..545bf3721bc0 100644
+--- a/arch/x86/include/asm/dma-mapping.h
++++ b/arch/x86/include/asm/dma-mapping.h
+@@ -44,26 +44,12 @@ extern void dma_generic_free_coherent(struct device *dev, size_t size,
+ 				      void *vaddr, dma_addr_t dma_addr,
+ 				      unsigned long attrs);
  
- config CPU_BIG_ENDIAN
- 	def_bool y
-diff --git a/arch/h8300/include/asm/Kbuild b/arch/h8300/include/asm/Kbuild
-index bc077491d299..642752c94306 100644
---- a/arch/h8300/include/asm/Kbuild
-+++ b/arch/h8300/include/asm/Kbuild
-@@ -9,6 +9,7 @@ generic-y += delay.h
- generic-y += device.h
- generic-y += div64.h
- generic-y += dma.h
-+generic-y += dma-mapping.h
- generic-y += emergency-restart.h
- generic-y += exec.h
- generic-y += extable.h
-diff --git a/arch/h8300/include/asm/dma-mapping.h b/arch/h8300/include/asm/dma-mapping.h
-deleted file mode 100644
-index 21bb1fc3a6f1..000000000000
---- a/arch/h8300/include/asm/dma-mapping.h
-+++ /dev/null
-@@ -1,12 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _H8300_DMA_MAPPING_H
--#define _H8300_DMA_MAPPING_H
--
--extern const struct dma_map_ops h8300_dma_map_ops;
--
--static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+-static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
+-						    gfp_t gfp)
 -{
--	return &h8300_dma_map_ops;
+-	unsigned long dma_mask = 0;
+-
+-	dma_mask = dev->coherent_dma_mask;
+-	if (!dma_mask)
+-		dma_mask = (gfp & GFP_DMA) ? DMA_BIT_MASK(24) : DMA_BIT_MASK(32);
+-
+-	return dma_mask;
 -}
 -
+ static inline gfp_t dma_alloc_coherent_gfp_flags(struct device *dev, gfp_t gfp)
+ {
+-	unsigned long dma_mask = dma_alloc_coherent_mask(dev, gfp);
+-
+-	if (dma_mask <= DMA_BIT_MASK(24))
++	if (dev->coherent_dma_mask <= DMA_BIT_MASK(24))
+ 		gfp |= GFP_DMA;
+ #ifdef CONFIG_X86_64
+-	if (dma_mask <= DMA_BIT_MASK(32) && !(gfp & GFP_DMA))
++	if (dev->coherent_dma_mask <= DMA_BIT_MASK(32) && !(gfp & GFP_DMA))
+ 		gfp |= GFP_DMA32;
+ #endif
+        return gfp;
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index df7ab02f959f..b59820872ec7 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -80,13 +80,10 @@ void *dma_generic_alloc_coherent(struct device *dev, size_t size,
+ 				 dma_addr_t *dma_addr, gfp_t flag,
+ 				 unsigned long attrs)
+ {
+-	unsigned long dma_mask;
+ 	struct page *page;
+ 	unsigned int count = PAGE_ALIGN(size) >> PAGE_SHIFT;
+ 	dma_addr_t addr;
+ 
+-	dma_mask = dma_alloc_coherent_mask(dev, flag);
+-
+ again:
+ 	page = NULL;
+ 	/* CMA can be used only in the context which permits sleeping */
+@@ -95,7 +92,7 @@ void *dma_generic_alloc_coherent(struct device *dev, size_t size,
+ 						 flag);
+ 		if (page) {
+ 			addr = phys_to_dma(dev, page_to_phys(page));
+-			if (addr + size > dma_mask) {
++			if (addr + size > dev->coherent_dma_mask) {
+ 				dma_release_from_contiguous(dev, page, count);
+ 				page = NULL;
+ 			}
+@@ -108,10 +105,11 @@ void *dma_generic_alloc_coherent(struct device *dev, size_t size,
+ 		return NULL;
+ 
+ 	addr = phys_to_dma(dev, page_to_phys(page));
+-	if (addr + size > dma_mask) {
++	if (addr + size > dev->coherent_dma_mask) {
+ 		__free_pages(page, get_order(size));
+ 
+-		if (dma_mask < DMA_BIT_MASK(32) && !(flag & GFP_DMA)) {
++		if (dev->coherent_dma_mask < DMA_BIT_MASK(32) &&
++		    !(flag & GFP_DMA)) {
+ 			flag = (flag & ~GFP_DMA32) | GFP_DMA;
+ 			goto again;
+ 		}
+diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+index 764b916ef7da..479586b8ca9b 100644
+--- a/arch/x86/mm/mem_encrypt.c
++++ b/arch/x86/mm/mem_encrypt.c
+@@ -203,12 +203,10 @@ void __init sme_early_init(void)
+ static void *sev_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+ 		       gfp_t gfp, unsigned long attrs)
+ {
+-	unsigned long dma_mask;
+ 	unsigned int order;
+ 	struct page *page;
+ 	void *vaddr = NULL;
+ 
+-	dma_mask = dma_alloc_coherent_mask(dev, gfp);
+ 	order = get_order(size);
+ 
+ 	/*
+@@ -226,7 +224,7 @@ static void *sev_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+ 		 * mask with it already cleared.
+ 		 */
+ 		addr = __sme_clr(phys_to_dma(dev, page_to_phys(page)));
+-		if ((addr + size) > dma_mask) {
++		if ((addr + size) > dev->coherent_dma_mask) {
+ 			__free_pages(page, get_order(size));
+ 		} else {
+ 			vaddr = page_address(page);
+diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
+index 5bb72d3f8337..e1c60899fdbc 100644
+--- a/drivers/xen/swiotlb-xen.c
++++ b/drivers/xen/swiotlb-xen.c
+@@ -53,20 +53,6 @@
+  * API.
+  */
+ 
+-#ifndef CONFIG_X86
+-static unsigned long dma_alloc_coherent_mask(struct device *dev,
+-					    gfp_t gfp)
+-{
+-	unsigned long dma_mask = 0;
+-
+-	dma_mask = dev->coherent_dma_mask;
+-	if (!dma_mask)
+-		dma_mask = (gfp & GFP_DMA) ? DMA_BIT_MASK(24) : DMA_BIT_MASK(32);
+-
+-	return dma_mask;
+-}
 -#endif
-diff --git a/arch/h8300/kernel/Makefile b/arch/h8300/kernel/Makefile
-index b62e830525c6..307aa51576dd 100644
---- a/arch/h8300/kernel/Makefile
-+++ b/arch/h8300/kernel/Makefile
-@@ -7,7 +7,7 @@ extra-y := vmlinux.lds
+-
+ #define XEN_SWIOTLB_ERROR_CODE	(~(dma_addr_t)0x0)
  
- obj-y := process.o traps.o ptrace.o \
- 	 signal.o setup.o syscalls.o \
--	 irq.o entry.o dma.o
-+	 irq.o entry.o
+ static char *xen_io_tlb_start, *xen_io_tlb_end;
+@@ -328,7 +314,7 @@ xen_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		return ret;
  
- obj-$(CONFIG_ROMKERNEL) += head_rom.o
- obj-$(CONFIG_RAMKERNEL) += head_ram.o
-diff --git a/arch/h8300/kernel/dma.c b/arch/h8300/kernel/dma.c
-deleted file mode 100644
-index 4e27b74df973..000000000000
---- a/arch/h8300/kernel/dma.c
-+++ /dev/null
-@@ -1,67 +0,0 @@
--/*
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file COPYING in the main directory of this archive
-- * for more details.
-- */
--
--#include <linux/dma-mapping.h>
--#include <linux/kernel.h>
--#include <linux/scatterlist.h>
--#include <linux/module.h>
--#include <asm/pgalloc.h>
--
--static void *dma_alloc(struct device *dev, size_t size,
--		       dma_addr_t *dma_handle, gfp_t gfp,
--		       unsigned long attrs)
--{
--	void *ret;
--
--	if (dev == NULL || (*dev->dma_mask < 0xffffffff))
--		gfp |= GFP_DMA;
--	ret = (void *)__get_free_pages(gfp, get_order(size));
--
--	if (ret != NULL) {
--		memset(ret, 0, size);
--		*dma_handle = virt_to_phys(ret);
--	}
--	return ret;
--}
--
--static void dma_free(struct device *dev, size_t size,
--		     void *vaddr, dma_addr_t dma_handle,
--		     unsigned long attrs)
--
--{
--	free_pages((unsigned long)vaddr, get_order(size));
--}
--
--static dma_addr_t map_page(struct device *dev, struct page *page,
--				  unsigned long offset, size_t size,
--				  enum dma_data_direction direction,
--				  unsigned long attrs)
--{
--	return page_to_phys(page) + offset;
--}
--
--static int map_sg(struct device *dev, struct scatterlist *sgl,
--		  int nents, enum dma_data_direction direction,
--		  unsigned long attrs)
--{
--	struct scatterlist *sg;
--	int i;
--
--	for_each_sg(sgl, sg, nents, i) {
--		sg->dma_address = sg_phys(sg);
--	}
--
--	return nents;
--}
--
--const struct dma_map_ops h8300_dma_map_ops = {
--	.alloc = dma_alloc,
--	.free = dma_free,
--	.map_page = map_page,
--	.map_sg = map_sg,
--	.is_phys = true,
--};
--EXPORT_SYMBOL(h8300_dma_map_ops);
+ 	if (hwdev && hwdev->coherent_dma_mask)
+-		dma_mask = dma_alloc_coherent_mask(hwdev, flags);
++		dma_mask = hwdev->coherent_dma_mask;
+ 
+ 	/* At this point dma_handle is the physical address, next we are
+ 	 * going to set it to the machine address.
 -- 
 2.14.2
