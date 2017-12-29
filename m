@@ -2,19 +2,24 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7JmN34mgzDqlw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 18:55:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KJ31GxpzDqln
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:19:31 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Logan Gunthorpe <logang@deltatee.com>, Michal Hocko <mhocko@kernel.org>,
- linux-nvdimm@lists.01.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 17/17] memremap: merge find_dev_pagemap into get_dev_pagemap
-Date: Fri, 29 Dec 2017 08:54:06 +0100
-Message-Id: <20171229075406.1936-18-hch@lst.de>
-In-Reply-To: <20171229075406.1936-1-hch@lst.de>
-References: <20171229075406.1936-1-hch@lst.de>
+To: iommu@lists.linux-foundation.org
+Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org,
+ linux-cris-kernel@axis.com, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-metag@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, patches@groups.riscv.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: consolidate direct dma mapping and swiotlb support
+Date: Fri, 29 Dec 2017 09:18:04 +0100
+Message-Id: <20171229081911.2802-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is only one caller of the trivial function find_dev_pagemap left,
-so just merge it into the caller.
+Almost every architecture supports a direct dma mapping implementation,
+where no iommu is used and the device dma address is a 1:1 mapping to
+the physical address or has a simple linear offset.  Currently the
+code for this implementation is most duplicated over the architectures,
+and the duplicated again in the swiotlb code, and then duplicated again
+for special cases like the x86 memory encryption DMA ops.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Dan Williams <dan.j.williams@intel.com>
----
- kernel/memremap.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+This series takes the existing very simple dma-noop dma mapping
+implementation, enhances it with all the x86 features and quirks, and
+creates a common set of architecture hooks for it and the swiotlb code.
 
-diff --git a/kernel/memremap.c b/kernel/memremap.c
-index a9a948cd3d7f..ada31b0d76d4 100644
---- a/kernel/memremap.c
-+++ b/kernel/memremap.c
-@@ -306,14 +306,6 @@ static void devm_memremap_pages_release(void *data)
- 		      "%s: failed to free all reserved pages\n", __func__);
- }
- 
--/* assumes rcu_read_lock() held at entry */
--static struct dev_pagemap *find_dev_pagemap(resource_size_t phys)
--{
--	WARN_ON_ONCE(!rcu_read_lock_held());
--
--	return radix_tree_lookup(&pgmap_radix, PHYS_PFN(phys));
--}
--
- /**
-  * devm_memremap_pages - remap and provide memmap backing for the given resource
-  * @dev: hosting device for @res
-@@ -466,7 +458,7 @@ struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
- 
- 	/* fall back to slow path lookup */
- 	rcu_read_lock();
--	pgmap = find_dev_pagemap(phys);
-+	pgmap = radix_tree_lookup(&pgmap_radix, PHYS_PFN(phys));
- 	if (pgmap && !percpu_ref_tryget_live(pgmap->ref))
- 		pgmap = NULL;
- 	rcu_read_unlock();
--- 
-2.14.2
+It then switches a large number of architectures to this generic
+direct map implement and the new generic swiotlb dma_map ops.
+
+Note that for now this only handles architectures that do cache coherent
+DMA, but a similar consolidation for non-coherent architectures is in the
+work for later merge windows.
