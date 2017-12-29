@@ -2,8 +2,8 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KMp2JXyzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:22:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KMs4CwhzDq8c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:22:49 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
@@ -17,9 +17,9 @@ Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 43/67] ia64: rename swiotlb_dma_ops
-Date: Fri, 29 Dec 2017 09:18:47 +0100
-Message-Id: <20171229081911.2802-44-hch@lst.de>
+Subject: [PATCH 44/67] powerpc: rename swiotlb_dma_ops
+Date: Fri, 29 Dec 2017 09:18:48 +0100
+Message-Id: <20171229081911.2802-45-hch@lst.de>
 In-Reply-To: <20171229081911.2802-1-hch@lst.de>
 References: <20171229081911.2802-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,94 +35,72 @@ We'll need that name for a generic implementation soon.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/ia64/hp/common/hwsw_iommu.c | 4 ++--
- arch/ia64/hp/common/sba_iommu.c  | 6 +++---
- arch/ia64/kernel/pci-swiotlb.c   | 6 +++---
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/swiotlb.h | 2 +-
+ arch/powerpc/kernel/dma-swiotlb.c  | 4 ++--
+ arch/powerpc/kernel/dma.c          | 2 +-
+ arch/powerpc/sysdev/fsl_pci.c      | 2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index 63d8e1d2477f..41279f0442bd 100644
---- a/arch/ia64/hp/common/hwsw_iommu.c
-+++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -19,7 +19,7 @@
- #include <linux/export.h>
- #include <asm/machvec.h>
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index 9341ee804d19..f65ecf57b66c 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -13,7 +13,7 @@
  
--extern const struct dma_map_ops sba_dma_ops, swiotlb_dma_ops;
-+extern const struct dma_map_ops sba_dma_ops, ia64_swiotlb_dma_ops;
- 
- /* swiotlb declarations & definitions: */
- extern int swiotlb_late_init_with_default_size (size_t size);
-@@ -38,7 +38,7 @@ static inline int use_swiotlb(struct device *dev)
- const struct dma_map_ops *hwsw_dma_get_ops(struct device *dev)
- {
- 	if (use_swiotlb(dev))
--		return &swiotlb_dma_ops;
-+		return &ia64_swiotlb_dma_ops;
- 	return &sba_dma_ops;
- }
- EXPORT_SYMBOL(hwsw_dma_get_ops);
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 6f05aba9012f..d68849ad2ee1 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -2093,7 +2093,7 @@ static int __init acpi_sba_ioc_init_acpi(void)
- /* This has to run before acpi_scan_init(). */
- arch_initcall(acpi_sba_ioc_init_acpi);
+ #include <linux/swiotlb.h>
  
 -extern const struct dma_map_ops swiotlb_dma_ops;
-+extern const struct dma_map_ops ia64_swiotlb_dma_ops;
++extern const struct dma_map_ops powerpc_swiotlb_dma_ops;
  
- static int __init
- sba_init(void)
-@@ -2108,7 +2108,7 @@ sba_init(void)
- 	 * a successful kdump kernel boot is to use the swiotlb.
- 	 */
- 	if (is_kdump_kernel()) {
--		dma_ops = &swiotlb_dma_ops;
-+		dma_ops = &ia64_swiotlb_dma_ops;
- 		if (swiotlb_late_init_with_default_size(64 * (1<<20)) != 0)
- 			panic("Unable to initialize software I/O TLB:"
- 				  " Try machvec=dig boot option");
-@@ -2130,7 +2130,7 @@ sba_init(void)
- 		 * If we didn't find something sba_iommu can claim, we
- 		 * need to setup the swiotlb and switch to the dig machvec.
- 		 */
--		dma_ops = &swiotlb_dma_ops;
-+		dma_ops = &ia64_swiotlb_dma_ops;
- 		if (swiotlb_late_init_with_default_size(64 * (1<<20)) != 0)
- 			panic("Unable to find SBA IOMMU or initialize "
- 			      "software I/O TLB: Try machvec=dig boot option");
-diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-index 5e50939aa03e..f1ae873a8c35 100644
---- a/arch/ia64/kernel/pci-swiotlb.c
-+++ b/arch/ia64/kernel/pci-swiotlb.c
-@@ -31,7 +31,7 @@ static void ia64_swiotlb_free_coherent(struct device *dev, size_t size,
- 	swiotlb_free_coherent(dev, size, vaddr, dma_addr);
- }
- 
+ extern unsigned int ppc_swiotlb_enable;
+ int __init swiotlb_setup_bus_notifier(void);
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index f1e99b9cee97..506ac4fafac5 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -46,7 +46,7 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
+  * map_page, and unmap_page on highmem, use normal dma_ops
+  * for everything else.
+  */
 -const struct dma_map_ops swiotlb_dma_ops = {
-+const struct dma_map_ops ia64_swiotlb_dma_ops = {
- 	.alloc = ia64_swiotlb_alloc_coherent,
- 	.free = ia64_swiotlb_free_coherent,
- 	.map_page = swiotlb_map_page,
-@@ -48,7 +48,7 @@ const struct dma_map_ops swiotlb_dma_ops = {
++const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+ 	.alloc = __dma_nommu_alloc_coherent,
+ 	.free = __dma_nommu_free_coherent,
+ 	.mmap = dma_nommu_mmap_coherent,
+@@ -89,7 +89,7 @@ static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
  
- void __init swiotlb_dma_init(void)
- {
--	dma_ops = &swiotlb_dma_ops;
-+	dma_ops = &ia64_swiotlb_dma_ops;
- 	swiotlb_init(1);
+ 	/* May need to bounce if the device can't address all of DRAM */
+ 	if ((dma_get_mask(dev) + 1) < memblock_end_of_DRAM())
+-		set_dma_ops(dev, &swiotlb_dma_ops);
++		set_dma_ops(dev, &powerpc_swiotlb_dma_ops);
+ 
+ 	return NOTIFY_DONE;
  }
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 1723001d5de1..b787692b91ee 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -33,7 +33,7 @@ static u64 __maybe_unused get_pfn_limit(struct device *dev)
+ 	struct dev_archdata __maybe_unused *sd = &dev->archdata;
  
-@@ -60,7 +60,7 @@ void __init pci_swiotlb_init(void)
- 		printk(KERN_INFO "PCI-DMA: Re-initialize machine vector.\n");
- 		machvec_init("dig");
- 		swiotlb_init(1);
--		dma_ops = &swiotlb_dma_ops;
-+		dma_ops = &ia64_swiotlb_dma_ops;
- #else
- 		panic("Unable to find Intel IOMMU");
+ #ifdef CONFIG_SWIOTLB
+-	if (sd->max_direct_dma_addr && dev->dma_ops == &swiotlb_dma_ops)
++	if (sd->max_direct_dma_addr && dev->dma_ops == &powerpc_swiotlb_dma_ops)
+ 		pfn = min_t(u64, pfn, sd->max_direct_dma_addr >> PAGE_SHIFT);
  #endif
+ 
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index e4d0133bbeeb..61e07c78d64f 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -118,7 +118,7 @@ static void setup_swiotlb_ops(struct pci_controller *hose)
+ {
+ 	if (ppc_swiotlb_enable) {
+ 		hose->controller_ops.dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
++		set_pci_dma_ops(&powerpc_swiotlb_dma_ops);
+ 	}
+ }
+ #else
 -- 
 2.14.2
