@@ -2,8 +2,8 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KJv6sMQzDqJC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:20:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KJy63ffzDqmH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:20:18 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
@@ -17,9 +17,9 @@ Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 11/67] riscv: remove the unused dma_capable helper
-Date: Fri, 29 Dec 2017 09:18:15 +0100
-Message-Id: <20171229081911.2802-12-hch@lst.de>
+Subject: [PATCH 12/67] s390: remove the unused dma_capable helper
+Date: Fri, 29 Dec 2017 09:18:16 +0100
+Message-Id: <20171229081911.2802-13-hch@lst.de>
 In-Reply-To: <20171229081911.2802-1-hch@lst.de>
 References: <20171229081911.2802-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,14 +33,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/riscv/include/asm/dma-mapping.h | 8 --------
- 1 file changed, 8 deletions(-)
+ arch/s390/include/asm/dma-mapping.h | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/arch/riscv/include/asm/dma-mapping.h b/arch/riscv/include/asm/dma-mapping.h
-index 3eec1000196d..73849e2cc761 100644
---- a/arch/riscv/include/asm/dma-mapping.h
-+++ b/arch/riscv/include/asm/dma-mapping.h
-@@ -27,12 +27,4 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+diff --git a/arch/s390/include/asm/dma-mapping.h b/arch/s390/include/asm/dma-mapping.h
+index eaf490f9c5bc..2ec7240c1ada 100644
+--- a/arch/s390/include/asm/dma-mapping.h
++++ b/arch/s390/include/asm/dma-mapping.h
+@@ -16,11 +16,4 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
  	return &dma_noop_ops;
  }
  
@@ -48,10 +48,9 @@ index 3eec1000196d..73849e2cc761 100644
 -{
 -	if (!dev->dma_mask)
 -		return false;
--
 -	return addr + size - 1 <= *dev->dma_mask;
 -}
 -
- #endif	/* __ASM_RISCV_DMA_MAPPING_H */
+ #endif /* _ASM_S390_DMA_MAPPING_H */
 -- 
 2.14.2
