@@ -2,7 +2,7 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7JlC30R5zDqlH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7JlC32HzzDqlN
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 18:54:30 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: Dan Williams <dan.j.williams@intel.com>
@@ -10,11 +10,9 @@ Cc: =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
  Logan Gunthorpe <logang@deltatee.com>, Michal Hocko <mhocko@kernel.org>,
  linux-nvdimm@lists.01.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 03/17] mm: don't export __add_pages
-Date: Fri, 29 Dec 2017 08:53:52 +0100
-Message-Id: <20171229075406.1936-4-hch@lst.de>
-In-Reply-To: <20171229075406.1936-1-hch@lst.de>
-References: <20171229075406.1936-1-hch@lst.de>
+Subject: revamp vmem_altmap / dev_pagemap handling V3
+Date: Fri, 29 Dec 2017 08:53:49 +0100
+Message-Id: <20171229075406.1936-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This function isn't used by any modules, and is only to be called
-from core MM code.  This includes the calls for the add_pages wrapper
-that might be inlined.
+Hi all,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Dan Williams <dan.j.williams@intel.com>
----
- mm/memory_hotplug.c | 1 -
- 1 file changed, 1 deletion(-)
+this series started with two patches from Logan that now are in the
+middle of the series to kill the memremap-internal pgmap structure
+and to redo the dev_memreamp_pages interface to be better suitable
+for future PCI P2P uses.  I reviewed them and noticed that there
+isn't really any good reason to keep struct vmem_altmap either,
+and that a lot of these alternative device page map access should
+be better abstracted out instead of being sprinkled all over the
+mm code.  But when we got the RCU warnings in V1 I went for yet
+another approach, and now struct vmem_altmap is kept for now,
+but passed explicitly through the memory hotplug code instead of
+having to do unprotected lookups through the radix tree.  The
+end result is that only the get_user_pages path ever looks up
+struct dev_pagemap, and struct vmem_altmap is now always embedded
+into struct dev_pagemap, and explicitly passed where needed.
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index c52aa05b106c..5c6f96e6b334 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -334,7 +334,6 @@ int __ref __add_pages(int nid, unsigned long phys_start_pfn,
- out:
- 	return err;
- }
--EXPORT_SYMBOL_GPL(__add_pages);
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
- /* find the smallest valid pfn in the range [start_pfn, end_pfn) */
--- 
-2.14.2
+Please review carefully, this has only been tested with my legacy
+e820 NVDIMM system.
+
+Chances since V2:
+ - properly pass altmap from dev_devm_memremap_pages through add_pages
+   (Dan Williams)
+ - small changelog updates
+ - a comment type fix
+ - dropped the patch to just rely on the radix_tree_insert return value
+ - initialize pgmap->type
