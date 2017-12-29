@@ -2,8 +2,8 @@ Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KMS2KHszDqnP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:22:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KMT0JszzDqZd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:22:29 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
@@ -17,10 +17,9 @@ Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 39/67] iommu/amd_iommu: use dma_direct_* helpers for the
- direct mapping case
-Date: Fri, 29 Dec 2017 09:18:43 +0100
-Message-Id: <20171229081911.2802-40-hch@lst.de>
+Subject: [PATCH 38/67] x86/amd_gart: clean up gart_alloc_coherent
+Date: Fri, 29 Dec 2017 09:18:42 +0100
+Message-Id: <20171229081911.2802-39-hch@lst.de>
 In-Reply-To: <20171229081911.2802-1-hch@lst.de>
 References: <20171229081911.2802-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,75 +31,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds support for CMA allocations, but is otherwise identical.
+Don't rely on the gfp mask from dma_alloc_coherent_gfp_flags to make the
+fallback decision, and streamline the code flow a bit.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/iommu/Kconfig     |  1 +
- drivers/iommu/amd_iommu.c | 27 +++++++++------------------
- 2 files changed, 10 insertions(+), 18 deletions(-)
+ arch/x86/kernel/amd_gart_64.c | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-index f3a21343e636..dc7c1914645d 100644
---- a/drivers/iommu/Kconfig
-+++ b/drivers/iommu/Kconfig
-@@ -107,6 +107,7 @@ config IOMMU_PGTABLES_L2
- # AMD IOMMU support
- config AMD_IOMMU
- 	bool "AMD IOMMU support"
-+	select DMA_DIRECT_OPS
- 	select SWIOTLB
- 	select PCI_MSI
- 	select PCI_ATS
-diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
-index ea4734de5357..a2ad149ab0bf 100644
---- a/drivers/iommu/amd_iommu.c
-+++ b/drivers/iommu/amd_iommu.c
-@@ -2592,11 +2592,9 @@ static void *alloc_coherent(struct device *dev, size_t size,
+diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
+index 52e3abcf3e70..92054815023e 100644
+--- a/arch/x86/kernel/amd_gart_64.c
++++ b/arch/x86/kernel/amd_gart_64.c
+@@ -484,26 +484,26 @@ gart_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_addr,
+ 	unsigned long align_mask;
  	struct page *page;
  
- 	domain = get_domain(dev);
--	if (PTR_ERR(domain) == -EINVAL) {
--		page = alloc_pages(flag, get_order(size));
--		*dma_addr = page_to_phys(page);
--		return page_address(page);
--	} else if (IS_ERR(domain))
-+	if (PTR_ERR(domain) == -EINVAL)
-+		return dma_direct_alloc(dev, size, dma_addr, flag, attrs);
-+	else if (IS_ERR(domain))
- 		return NULL;
- 
- 	dma_dom   = to_dma_ops_domain(domain);
-@@ -2642,24 +2640,17 @@ static void free_coherent(struct device *dev, size_t size,
- 			  void *virt_addr, dma_addr_t dma_addr,
- 			  unsigned long attrs)
- {
--	struct protection_domain *domain;
--	struct dma_ops_domain *dma_dom;
--	struct page *page;
-+	struct protection_domain *domain = get_domain(dev);
- 
--	page = virt_to_page(virt_addr);
- 	size = PAGE_ALIGN(size);
- 
--	domain = get_domain(dev);
--	if (IS_ERR(domain))
--		goto free_mem;
+-	if (force_iommu && !(flag & GFP_DMA)) {
+-		flag &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
+-		page = alloc_pages(flag | __GFP_ZERO, get_order(size));
+-		if (!page)
+-			return NULL;
 -
--	dma_dom = to_dma_ops_domain(domain);
-+	if (!IS_ERR(domain)) {
-+		struct dma_ops_domain *dma_dom = to_dma_ops_domain(domain);
- 
--	__unmap_single(dma_dom, dma_addr, size, DMA_BIDIRECTIONAL);
-+		__unmap_single(dma_dom, dma_addr, size, DMA_BIDIRECTIONAL);
-+	}
- 
--free_mem:
--	if (!dma_release_from_contiguous(dev, page, size >> PAGE_SHIFT))
+-		align_mask = (1UL << get_order(size)) - 1;
+-		paddr = dma_map_area(dev, page_to_phys(page), size,
+-				     DMA_BIDIRECTIONAL, align_mask);
+-
+-		flush_gart();
+-		if (paddr != bad_dma_addr) {
+-			*dma_addr = paddr;
+-			return page_address(page);
+-		}
 -		__free_pages(page, get_order(size));
-+	dma_direct_free(dev, size, virt_addr, dma_addr, attrs);
+-	} else
++	if (!force_iommu || dev->coherent_dma_mask <= DMA_BIT_MASK(24))
+ 		return dma_direct_alloc(dev, size, dma_addr, flag, attrs);
+ 
+-	return NULL;
++	flag &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
++	page = alloc_pages(flag | __GFP_ZERO, get_order(size));
++	if (!page)
++		return NULL;
++
++	align_mask = (1UL << get_order(size)) - 1;
++	paddr = dma_map_area(dev, page_to_phys(page), size, DMA_BIDIRECTIONAL,
++			align_mask);
++
++	flush_gart();
++	if (unlikely(paddr == bad_dma_addr)) {
++		__free_pages(page, get_order(size));
++		return NULL;
++	}
++
++	*dma_addr = paddr;
++	return page_address(page);
  }
  
- /*
+ /* free a coherent mapping */
 -- 
 2.14.2
