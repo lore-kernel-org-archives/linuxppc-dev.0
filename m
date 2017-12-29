@@ -1,27 +1,35 @@
-Return-Path: <BATV+bc2f3f92dc59fc4fc549+5241+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7KPx3P60zDqp1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 19:24:37 +1100 (AEDT)
-From: Christoph Hellwig <hch@lst.de>
-To: iommu@lists.linux-foundation.org
-Cc: linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org,
+Return-Path: <julian.calaby@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7MpD3L0dzDqtT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 21:12:20 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id i11so47294276wmf.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 02:12:19 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20171229081911.2802-18-hch@lst.de>
+References: <20171229081911.2802-1-hch@lst.de>
+ <20171229081911.2802-18-hch@lst.de>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Fri, 29 Dec 2017 21:11:56 +1100
+Message-ID: <CAGRGNgW1qwLcCAvU2Jc=3_7b-0Bu016to3cQUgVsc+ca0No_6g@mail.gmail.com>
+Subject: Re: [PATCH 17/67] microblaze: rename dma_direct to dma_microblaze
+To: Christoph Hellwig <hch@lst.de>
+Cc: iommu@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ "Mailing List, Arm" <linux-arm-kernel@lists.infradead.org>,
  adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org,
  linux-cris-kernel@axis.com, linux-hexagon@vger.kernel.org,
  linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
  linux-metag@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@groups.riscv.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 67/67] swiotlb: remove various exports
-Date: Fri, 29 Dec 2017 09:19:11 +0100
-Message-Id: <20171229081911.2802-68-hch@lst.de>
-In-Reply-To: <20171229081911.2802-1-hch@lst.de>
-References: <20171229081911.2802-1-hch@lst.de>
+ linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ patches@groups.riscv.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org, linux-arch@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,120 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All these symbols are only used by arch dma_ops implementations or
-xen-swiotlb.  None of which can be modular.
+Hi Christoph,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- lib/swiotlb.c | 13 -------------
- 1 file changed, 13 deletions(-)
+On Fri, Dec 29, 2017 at 7:18 PM, Christoph Hellwig <hch@lst.de> wrote:
+> This frees the dma_direct_* namespace for a generic implementation.
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 77a40b508db8..823e1055a394 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -591,7 +591,6 @@ phys_addr_t swiotlb_tbl_map_single(struct device *hwdev,
- 
- 	return tlb_addr;
- }
--EXPORT_SYMBOL_GPL(swiotlb_tbl_map_single);
- 
- /*
-  * Allocates bounce buffer and returns its kernel virtual address.
-@@ -661,7 +660,6 @@ void swiotlb_tbl_unmap_single(struct device *hwdev, phys_addr_t tlb_addr,
- 	}
- 	spin_unlock_irqrestore(&io_tlb_lock, flags);
- }
--EXPORT_SYMBOL_GPL(swiotlb_tbl_unmap_single);
- 
- void swiotlb_tbl_sync_single(struct device *hwdev, phys_addr_t tlb_addr,
- 			     size_t size, enum dma_data_direction dir,
-@@ -693,7 +691,6 @@ void swiotlb_tbl_sync_single(struct device *hwdev, phys_addr_t tlb_addr,
- 		BUG();
- 	}
- }
--EXPORT_SYMBOL_GPL(swiotlb_tbl_sync_single);
- 
- static void *
- swiotlb_alloc_buffer(struct device *dev, size_t size, dma_addr_t *dma_handle)
-@@ -827,7 +824,6 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
- 
- 	return __phys_to_dma(dev, io_tlb_overflow_buffer);
- }
--EXPORT_SYMBOL_GPL(swiotlb_map_page);
- 
- /*
-  * Unmap a single streaming mode DMA translation.  The dma_addr and size must
-@@ -868,7 +864,6 @@ void swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
- {
- 	unmap_single(hwdev, dev_addr, size, dir, attrs);
- }
--EXPORT_SYMBOL_GPL(swiotlb_unmap_page);
- 
- /*
-  * Make physical memory consistent for a single streaming mode DMA translation
-@@ -906,7 +901,6 @@ swiotlb_sync_single_for_cpu(struct device *hwdev, dma_addr_t dev_addr,
- {
- 	swiotlb_sync_single(hwdev, dev_addr, size, dir, SYNC_FOR_CPU);
- }
--EXPORT_SYMBOL(swiotlb_sync_single_for_cpu);
- 
- void
- swiotlb_sync_single_for_device(struct device *hwdev, dma_addr_t dev_addr,
-@@ -914,7 +908,6 @@ swiotlb_sync_single_for_device(struct device *hwdev, dma_addr_t dev_addr,
- {
- 	swiotlb_sync_single(hwdev, dev_addr, size, dir, SYNC_FOR_DEVICE);
- }
--EXPORT_SYMBOL(swiotlb_sync_single_for_device);
- 
- /*
-  * Map a set of buffers described by scatterlist in streaming mode for DMA.
-@@ -966,7 +959,6 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
- 	}
- 	return nelems;
- }
--EXPORT_SYMBOL(swiotlb_map_sg_attrs);
- 
- /*
-  * Unmap a set of streaming mode DMA translations.  Again, cpu read rules
-@@ -986,7 +978,6 @@ swiotlb_unmap_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
- 		unmap_single(hwdev, sg->dma_address, sg_dma_len(sg), dir,
- 			     attrs);
- }
--EXPORT_SYMBOL(swiotlb_unmap_sg_attrs);
- 
- /*
-  * Make physical memory consistent for a set of streaming mode DMA translations
-@@ -1014,7 +1005,6 @@ swiotlb_sync_sg_for_cpu(struct device *hwdev, struct scatterlist *sg,
- {
- 	swiotlb_sync_sg(hwdev, sg, nelems, dir, SYNC_FOR_CPU);
- }
--EXPORT_SYMBOL(swiotlb_sync_sg_for_cpu);
- 
- void
- swiotlb_sync_sg_for_device(struct device *hwdev, struct scatterlist *sg,
-@@ -1022,14 +1012,12 @@ swiotlb_sync_sg_for_device(struct device *hwdev, struct scatterlist *sg,
- {
- 	swiotlb_sync_sg(hwdev, sg, nelems, dir, SYNC_FOR_DEVICE);
- }
--EXPORT_SYMBOL(swiotlb_sync_sg_for_device);
- 
- int
- swiotlb_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
- {
- 	return (dma_addr == __phys_to_dma(hwdev, io_tlb_overflow_buffer));
- }
--EXPORT_SYMBOL(swiotlb_dma_mapping_error);
- 
- /*
-  * Return whether the given device DMA address mask can be supported
-@@ -1042,7 +1030,6 @@ swiotlb_dma_supported(struct device *hwdev, u64 mask)
- {
- 	return __phys_to_dma(hwdev, io_tlb_end - 1) <= mask;
- }
--EXPORT_SYMBOL(swiotlb_dma_supported);
- 
- #ifdef CONFIG_DMA_DIRECT_OPS
- void *swiotlb_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+Don't you mean "dma_nommu" not "dma_microblaze" in the subject line?
+
+Thanks,
+
 -- 
-2.14.2
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+Profile: http://www.google.com/profiles/julian.calaby/
