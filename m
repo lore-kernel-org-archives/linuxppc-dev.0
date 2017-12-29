@@ -1,35 +1,28 @@
-Return-Path: <julian.calaby@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7MpD3L0dzDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 21:12:20 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id i11so47294276wmf.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 02:12:19 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20171229081911.2802-18-hch@lst.de>
-References: <20171229081911.2802-1-hch@lst.de>
- <20171229081911.2802-18-hch@lst.de>
-From: Julian Calaby <julian.calaby@gmail.com>
-Date: Fri, 29 Dec 2017 21:11:56 +1100
-Message-ID: <CAGRGNgW1qwLcCAvU2Jc=3_7b-0Bu016to3cQUgVsc+ca0No_6g@mail.gmail.com>
-Subject: Re: [PATCH 17/67] microblaze: rename dma_direct to dma_microblaze
-To: Christoph Hellwig <hch@lst.de>
-Cc: iommu@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
+Return-Path: <vladimir.murzin@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3z7Nhc3WvxzDqqR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Dec 2017 21:52:31 +1100 (AEDT)
+Subject: Re: consolidate direct dma mapping and swiotlb support
+To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, x86@kernel.org,
  linux-snps-arc@lists.infradead.org,
- "Mailing List, Arm" <linux-arm-kernel@lists.infradead.org>,
- adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org,
- linux-cris-kernel@axis.com, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-metag@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
- linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- patches@groups.riscv.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org, linux-arch@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+ patches@groups.riscv.org, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20171229081911.2802-1-hch@lst.de>
+From: Vladimir Murzin <vladimir.murzin@arm.com>
+Message-ID: <23fee3bb-61ce-1735-b264-3acc0109c858@arm.com>
+Date: Fri, 29 Dec 2017 10:52:14 +0000
+MIME-Version: 1.0
+In-Reply-To: <20171229081911.2802-1-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,17 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
+On 29/12/17 08:18, Christoph Hellwig wrote:
+> Almost every architecture supports a direct dma mapping implementation,
+> where no iommu is used and the device dma address is a 1:1 mapping to
+> the physical address or has a simple linear offset.  Currently the
+> code for this implementation is most duplicated over the architectures,
+> and the duplicated again in the swiotlb code, and then duplicated again
+> for special cases like the x86 memory encryption DMA ops.
+> 
+> This series takes the existing very simple dma-noop dma mapping
+> implementation, enhances it with all the x86 features and quirks, and
+> creates a common set of architecture hooks for it and the swiotlb code.
+> 
+> It then switches a large number of architectures to this generic
+> direct map implement and the new generic swiotlb dma_map ops.
+> 
+> Note that for now this only handles architectures that do cache coherent
+> DMA, but a similar consolidation for non-coherent architectures is in the
+> work for later merge windows.
 
-On Fri, Dec 29, 2017 at 7:18 PM, Christoph Hellwig <hch@lst.de> wrote:
-> This frees the dma_direct_* namespace for a generic implementation.
+Is it available in your dma-mapping.git or somewhere else?
 
-Don't you mean "dma_nommu" not "dma_microblaze" in the subject line?
+Cheers
+Vladimir
 
-Thanks,
-
--- 
-Julian Calaby
-
-Email: julian.calaby@gmail.com
-Profile: http://www.google.com/profiles/julian.calaby/
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
