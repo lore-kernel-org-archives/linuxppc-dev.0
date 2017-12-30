@@ -1,23 +1,53 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7V606W12zDr21
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Dec 2017 01:56:24 +1100 (AEDT)
-To: linux-pci@vger.kernel.org, Arvind Yadav <arvind.yadav.cs@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Kees Cook <keescook@chromium.org>,
- Keith Busch <keith.busch@intel.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] pci/hotplug: Delete error messages for a failed memory
- allocation in four functions
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Message-ID: <dc3922b4-50f6-e7fa-482f-18e6ff5d905f@users.sourceforge.net>
-Date: Fri, 29 Dec 2017 15:55:52 +0100
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7vSg17mTzDr29
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Dec 2017 17:58:58 +1100 (AEDT)
+Date: Fri, 29 Dec 2017 22:58:45 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: Brice Goglin <brice.goglin@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+ Ross Zwisler <ross.zwisler@linux.intel.com>,
+ Dave Hansen <dave.hansen@intel.com>, Michal Hocko <mhocko@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>,
+ "Box, David E" <david.e.box@intel.com>,
+ "Kogut, Jaroslaw" <Jaroslaw.Kogut@intel.com>,
+ "Koss, Marcin" <marcin.koss@intel.com>,
+ "Koziej, Artur" <artur.koziej@intel.com>,
+ "Lahtinen, Joonas" <joonas.lahtinen@intel.com>,
+ "Moore, Robert" <robert.moore@intel.com>,
+ "Nachimuthu, Murugasamy" <murugasamy.nachimuthu@intel.com>,
+ "Odzioba, Lukasz" <lukasz.odzioba@intel.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "Schmauss, Erik" <erik.schmauss@intel.com>,
+ "Verma, Vishal L" <vishal.l.verma@intel.com>,
+ "Zheng, Lv" <lv.zheng@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Balbir Singh <bsingharora@gmail.com>, Jerome Glisse <jglisse@redhat.com>,
+ John Hubbard <jhubbard@nvidia.com>, Len Brown <lenb@kernel.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
+ Linux ACPI <linux-acpi@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+Message-ID: <20171230065845.GD27959@bombadil.infradead.org>
+References: <20171218203547.GA2366@linux.intel.com>
+ <20171220181937.GB12236@bombadil.infradead.org>
+ <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
+ <20171220211649.GA32200@bombadil.infradead.org>
+ <20171220212408.GA8308@linux.intel.com>
+ <CAPcyv4gTknp=0yQnVrrB5Ui+mJE_x-wdkV86UD4hsYnx3CAjfA@mail.gmail.com>
+ <20171220224105.GA27258@linux.intel.com>
+ <39cbe02a-d309-443d-54c9-678a0799342d@gmail.com>
+ <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
+ <71317994-af66-a1b2-4c7a-86a03253cf62@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <71317994-af66-a1b2-4c7a-86a03253cf62@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,87 +57,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 29 Dec 2017 15:47:00 +0100
+On Wed, Dec 27, 2017 at 10:10:34AM +0100, Brice Goglin wrote:
+> > Perhaps we can enlist /proc/iomem or a similar enumeration interface
+> > to tell userspace the NUMA node and whether the kernel thinks it has
+> > better or worse performance characteristics relative to base
+> > system-RAM, i.e. new IORES_DESC_* values. I'm worried that if we start
+> > publishing absolute numbers in sysfs userspace will default to looking
+> > for specific magic numbers in sysfs vs asking the kernel for memory
+> > that has performance characteristics relative to base "System RAM". In
+> > other words the absolute performance information that the HMAT
+> > publishes is useful to the kernel, but it's not clear that userspace
+> > needs that vs a relative indicator for making NUMA node preference
+> > decisions.
+> 
+> Some HPC users will benchmark the machine to discovery actual
+> performance numbers anyway.
+> However, most users won't do this. They will want to know relative
+> performance of different nodes. If you normalize HMAT values by dividing
+> them with system-RAM values, that's likely OK. If you just say "that
+> node is faster than system RAM", it's not precise enough.
 
-Omit extra messages for a memory allocation failure in these functions.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/pci/hotplug/pciehp_hpc.c  | 5 ++---
- drivers/pci/hotplug/pnv_php.c     | 8 +-------
- drivers/pci/hotplug/shpchp_core.c | 5 ++---
- 3 files changed, 5 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
-index 7bab0606f1a9..ed27635ec740 100644
---- a/drivers/pci/hotplug/pciehp_hpc.c
-+++ b/drivers/pci/hotplug/pciehp_hpc.c
-@@ -838,10 +838,9 @@ struct controller *pcie_init(struct pcie_device *dev)
- 	struct pci_dev *pdev = dev->port;
- 
- 	ctrl = kzalloc(sizeof(*ctrl), GFP_KERNEL);
--	if (!ctrl) {
--		dev_err(&dev->device, "%s: Out of memory\n", __func__);
-+	if (!ctrl)
- 		goto abort;
--	}
-+
- 	ctrl->pcie = dev;
- 	pcie_capability_read_dword(pdev, PCI_EXP_SLTCAP, &slot_cap);
- 
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 74f6a17e4614..4ab318a0800d 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -266,7 +266,6 @@ static int pnv_php_add_devtree(struct pnv_php_slot *php_slot)
- 	fdt1 = kzalloc(0x10000, GFP_KERNEL);
- 	if (!fdt1) {
- 		ret = -ENOMEM;
--		dev_warn(&php_slot->pdev->dev, "Cannot alloc FDT blob\n");
- 		goto out;
- 	}
- 
-@@ -280,8 +279,6 @@ static int pnv_php_add_devtree(struct pnv_php_slot *php_slot)
- 	fdt = kzalloc(fdt_totalsize(fdt1), GFP_KERNEL);
- 	if (!fdt) {
- 		ret = -ENOMEM;
--		dev_warn(&php_slot->pdev->dev, "Cannot %d bytes memory\n",
--			 fdt_totalsize(fdt1));
- 		goto free_fdt1;
- 	}
- 
-@@ -756,11 +753,8 @@ static irqreturn_t pnv_php_interrupt(int irq, void *data)
- 	 * fine as the PCI devices (PE) aren't functional any more.
- 	 */
- 	event = kzalloc(sizeof(*event), GFP_ATOMIC);
--	if (!event) {
--		dev_warn(&pdev->dev, "PCI slot [%s] missed hotplug event 0x%04x\n",
--			 php_slot->name, sts);
-+	if (!event)
- 		return IRQ_HANDLED;
--	}
- 
- 	dev_info(&pdev->dev, "PCI slot [%s] %s (IRQ: %d)\n",
- 		 php_slot->name, added ? "added" : "removed", irq);
-diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
-index 7bfb87bd2b7e..2f2b87acf179 100644
---- a/drivers/pci/hotplug/shpchp_core.c
-+++ b/drivers/pci/hotplug/shpchp_core.c
-@@ -305,10 +305,9 @@ static int shpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		return -ENODEV;
- 
- 	ctrl = kzalloc(sizeof(*ctrl), GFP_KERNEL);
--	if (!ctrl) {
--		dev_err(&pdev->dev, "%s: Out of memory\n", __func__);
-+	if (!ctrl)
- 		goto err_out_none;
--	}
-+
- 	INIT_LIST_HEAD(&ctrl->slot_list);
- 
- 	rc = shpc_init(ctrl, pdev);
--- 
-2.15.1
+So "this memory has 800% bandwidth of normal" and "this memory has 70%
+bandwidth of normal"?
