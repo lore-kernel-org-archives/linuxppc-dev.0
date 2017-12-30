@@ -1,32 +1,19 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z80kx1Q0pzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Dec 2017 21:56:39 +1100 (AEDT)
-Date: Sat, 30 Dec 2017 11:56:35 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Vladimir Murzin <vladimir.murzin@arm.com>
-Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
- linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- linux-snps-arc@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, patches@groups.riscv.org,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: consolidate direct dma mapping and swiotlb support
-Message-ID: <20171230105635.GA23696@lst.de>
-References: <20171229081911.2802-1-hch@lst.de>
- <23fee3bb-61ce-1735-b264-3acc0109c858@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z8Gpj6TZ4zDqgs
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Dec 2017 08:30:51 +1100 (AEDT)
+To: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Zhao Qiang <qiang.zhao@nxp.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] wan/fsl_ucc_hdlc: Delete an error message for a failed memory
+ allocation in ucc_hdlc_probe()
+Message-ID: <92380576-f944-6240-eba7-ed0e084ba65a@users.sourceforge.net>
+Date: Sat, 30 Dec 2017 22:30:40 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <23fee3bb-61ce-1735-b264-3acc0109c858@arm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,11 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 29, 2017 at 10:52:14AM +0000, Vladimir Murzin wrote:
-> Is it available in your dma-mapping.git or somewhere else?
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 30 Dec 2017 22:25:44 +0100
 
-  git://git.infradead.org/users/hch/misc.git dma-direct
+Omit an extra message for a memory allocation failure in this function.
 
-Gitweb:
+This issue was detected by using the Coccinelle software.
 
-  http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/dma-direct
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/net/wan/fsl_ucc_hdlc.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 33df76405b86..98f8be206bae 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -1082,7 +1082,6 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+ 		utdm = kzalloc(sizeof(*utdm), GFP_KERNEL);
+ 		if (!utdm) {
+ 			ret = -ENOMEM;
+-			dev_err(&pdev->dev, "No mem to alloc ucc tdm data\n");
+ 			goto free_uhdlc_priv;
+ 		}
+ 		uhdlc_priv->utdm = utdm;
+-- 
+2.15.1
