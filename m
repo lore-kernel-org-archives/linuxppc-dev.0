@@ -1,12 +1,12 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z7vSg17mTzDr29
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Dec 2017 17:58:58 +1100 (AEDT)
-Date: Fri, 29 Dec 2017 22:58:45 -0800
-From: Matthew Wilcox <willy@infradead.org>
-To: Brice Goglin <brice.goglin@gmail.com>
+Return-Path: <brice.goglin@gmail.com>
+Received: from mail3-relais-sop.national.inria.fr
+ (mail3-relais-sop.national.inria.fr [192.134.164.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z7yZz2YzCzDr4c
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Dec 2017 20:19:37 +1100 (AEDT)
+Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
+To: Matthew Wilcox <willy@infradead.org>
 Cc: Dan Williams <dan.j.williams@intel.com>,
  Ross Zwisler <ross.zwisler@linux.intel.com>,
  Dave Hansen <dave.hansen@intel.com>, Michal Hocko <mhocko@kernel.org>,
@@ -23,9 +23,8 @@ Cc: Dan Williams <dan.j.williams@intel.com>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  "Schmauss, Erik" <erik.schmauss@intel.com>,
- "Verma, Vishal L" <vishal.l.verma@intel.com>,
- "Zheng, Lv" <lv.zheng@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
+ "Verma, Vishal L" <vishal.l.verma@intel.com>, "Zheng, Lv"
+ <lv.zheng@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
  Balbir Singh <bsingharora@gmail.com>, Jerome Glisse <jglisse@redhat.com>,
  John Hubbard <jhubbard@nvidia.com>, Len Brown <lenb@kernel.org>,
  Tim Chen <tim.c.chen@linux.intel.com>, devel@acpica.org,
@@ -33,8 +32,6 @@ Cc: Dan Williams <dan.j.williams@intel.com>,
  "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
  Linux API <linux-api@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3 0/3] create sysfs representation of ACPI HMAT
-Message-ID: <20171230065845.GD27959@bombadil.infradead.org>
 References: <20171218203547.GA2366@linux.intel.com>
  <20171220181937.GB12236@bombadil.infradead.org>
  <2da89d31-27a3-34ab-2dbb-92403c8215ec@intel.com>
@@ -45,9 +42,13 @@ References: <20171218203547.GA2366@linux.intel.com>
  <39cbe02a-d309-443d-54c9-678a0799342d@gmail.com>
  <CAPcyv4j9shdJFrvADa=qW4L-jPJJ4S_TJc_c=aRoW3EmSCCChQ@mail.gmail.com>
  <71317994-af66-a1b2-4c7a-86a03253cf62@gmail.com>
+ <20171230065845.GD27959@bombadil.infradead.org>
+From: Brice Goglin <brice.goglin@gmail.com>
+Message-ID: <74a585de-c825-b568-ee14-c8799b9d6238@gmail.com>
+Date: Sat, 30 Dec 2017 10:19:29 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <71317994-af66-a1b2-4c7a-86a03253cf62@gmail.com>
+In-Reply-To: <20171230065845.GD27959@bombadil.infradead.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,25 +58,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 27, 2017 at 10:10:34AM +0100, Brice Goglin wrote:
-> > Perhaps we can enlist /proc/iomem or a similar enumeration interface
-> > to tell userspace the NUMA node and whether the kernel thinks it has
-> > better or worse performance characteristics relative to base
-> > system-RAM, i.e. new IORES_DESC_* values. I'm worried that if we start
-> > publishing absolute numbers in sysfs userspace will default to looking
-> > for specific magic numbers in sysfs vs asking the kernel for memory
-> > that has performance characteristics relative to base "System RAM". In
-> > other words the absolute performance information that the HMAT
-> > publishes is useful to the kernel, but it's not clear that userspace
-> > needs that vs a relative indicator for making NUMA node preference
-> > decisions.
-> 
-> Some HPC users will benchmark the machine to discovery actual
-> performance numbers anyway.
-> However, most users won't do this. They will want to know relative
-> performance of different nodes. If you normalize HMAT values by dividing
-> them with system-RAM values, that's likely OK. If you just say "that
-> node is faster than system RAM", it's not precise enough.
 
-So "this memory has 800% bandwidth of normal" and "this memory has 70%
-bandwidth of normal"?
+
+Le 30/12/2017 à 07:58, Matthew Wilcox a écrit :
+> On Wed, Dec 27, 2017 at 10:10:34AM +0100, Brice Goglin wrote:
+>>> Perhaps we can enlist /proc/iomem or a similar enumeration interface
+>>> to tell userspace the NUMA node and whether the kernel thinks it has
+>>> better or worse performance characteristics relative to base
+>>> system-RAM, i.e. new IORES_DESC_* values. I'm worried that if we start
+>>> publishing absolute numbers in sysfs userspace will default to looking
+>>> for specific magic numbers in sysfs vs asking the kernel for memory
+>>> that has performance characteristics relative to base "System RAM". In
+>>> other words the absolute performance information that the HMAT
+>>> publishes is useful to the kernel, but it's not clear that userspace
+>>> needs that vs a relative indicator for making NUMA node preference
+>>> decisions.
+>> Some HPC users will benchmark the machine to discovery actual
+>> performance numbers anyway.
+>> However, most users won't do this. They will want to know relative
+>> performance of different nodes. If you normalize HMAT values by dividing
+>> them with system-RAM values, that's likely OK. If you just say "that
+>> node is faster than system RAM", it's not precise enough.
+> So "this memory has 800% bandwidth of normal" and "this memory has 70%
+> bandwidth of normal"?
+
+I guess that would work.
+Brice
