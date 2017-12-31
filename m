@@ -1,18 +1,29 @@
-Return-Path: <nwhitehorn@freebsd.org>
-Subject: Re: Getting kernel 4.14 to run on PS3
-To: Geoff Levand <geoff@infradead.org>,
- Sascha Schroeder <sascha.schroeder@aethyx.com>
-Cc: Linuxppc-dev@lists.ozlabs.org, petitboot@lists.ozlabs.org
-References: <9621b73a-12e0-1254-932c-2456238b5526@aethyx.com>
- <1dd3a437-a20e-c808-749c-4cdb7b9d3675@infradead.org>
- <4dadeca5-22dc-6ab1-961e-8f989b6f8699@freebsd.org>
- <5c41fd34-5aac-028e-af12-59b6ab576d91@infradead.org>
-From: Nathan Whitehorn <nwhitehorn@freebsd.org>
-Message-ID: <1a034ec1-5345-a2a1-780a-b5adbe0af332@freebsd.org>
-Date: Sun, 31 Dec 2017 14:50:14 -0800
-MIME-Version: 1.0
-In-Reply-To: <5c41fd34-5aac-028e-af12-59b6ab576d91@infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z8xDD1nq1zDqy4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jan 2018 10:21:46 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ vBVNKp7D068792
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Dec 2017 18:21:43 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2f6rphy2x2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Dec 2017 18:21:43 -0500
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Sun, 31 Dec 2017 18:21:42 -0500
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: cyrilbur@gmail.com
+Subject: [PATCH 1/2] powerpc/tm: Fix endianness flip on trap
+Date: Sun, 31 Dec 2017 18:20:45 -0500
+Message-Id: <1514762446-1323-1-git-send-email-gromero@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,36 +33,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently it's possible that a thread on PPC64 LE has its endianness
+flipped inadvertently to Big-Endian resulting in a crash once the process
+is back from the signal handler.
 
+If giveup_all() is called when regs->msr has the bits MSR.FP and MSR.VEC
+disabled (and hence MSR.VSX disabled too) it returns without calling
+check_if_tm_restore_required() which copies regs->msr to ckpt_regs->msr if
+the process caught a signal whilst in transactional mode. Then once in
+setup_tm_sigcontexts() MSR from ckpt_regs.msr is used, but since
+check_if_tm_restore_required() was not called previuosly, gp_regs[PT_MSR]
+gets a copy of invalid MSR bits as MSR in ckpt_regs was not updated from
+regs->msr and so is zeroed. Later when leaving the signal handler once in
+sys_rt_sigreturn() the TS bits of gp_regs[PT_MSR] are checked to determine
+if restore_tm_sigcontexts() must be called to pull in the correct MSR state
+into the user context. Because TS bits are zeroed
+restore_tm_sigcontexts() is never called and MSR restored from the user
+context on returning from the signal handler has the MSR.LE (the endianness
+bit) forced to zero (Big-Endian). That leads, for instance, to 'nop' being
+treated as an illegal instruction in the following sequence:
 
-On 12/12/17 15:05, Geoff Levand wrote:
-> Hi Nathan,
->
-> On 12/08/2017 01:25 PM, Nathan Whitehorn wrote:
->> I submitted patches to libfdt that resolve this particular ABI breakage yesterday. If the patch gets merged, newer kernels should become bootable again.
-> Here's the link:
->
->    https://github.com/dgibson/dtc/pull/12 (Add limited read-only support for older (V2 and V3) device tree to libfdt.)
->
-> I rebased your patch and have it in my ps3-queue
-> branch, but my ps3 with ps3-petitboot-09.11.30 still
-> would not boot with it.  I didn't spend any time yet
-> to look into why.
->
->    https://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git/log/?h=ps3-queue
->
-> -Geoff
->
+	tbegin.
+	beq	1f
+	trap
+	tend.
+1:	nop
 
-I found a bug (and updated the pull request), which might help.
+on PPC64 LE machines and the process dies just after returning from the
+signal handler.
 
-The other potential issue is that the fdt_get_property*() API in libfdt 
-is fundamentally incompatible with the way that V2 device trees align 
-data accesses since it returns a pointer to a packed structure with both 
-the property header and data. However, the data in V2 devtrees may be 
-offset by 4 bytes in a way that depends both on the offset within the 
-tree and the length of the property and so cannot be represented only as 
-the tail of a fixed structure. I don't know if Linux uses those 
-functions; I had to replace two uses in FreeBSD with the equivalent 
-fdt_getprop*() calls to get things to work.
--Nathan
+PPC64 BE is also affected but in a subtle way since forcing Big-Endian on
+a BE machine does not change the endianness.
+
+This commit fixes the issue described above by ensuring that once in
+setup_tm_sigcontexts() the MSR used is from regs->msr instead of from
+ckpt_regs->msr and by ensuring that we pull in only the MSR.FP, MSR.VEC,
+and MSR.VSX bits from ckpt_regs->msr.
+
+The fix was tested both on LE and BE machines and no regression regarding
+the powerpc/tm selftests was observed.
+
+Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/signal_64.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 4b9ca35..b1b9962 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -207,7 +207,7 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 	elf_vrreg_t __user *tm_v_regs = sigcontext_vmx_regs(tm_sc);
+ #endif
+ 	struct pt_regs *regs = tsk->thread.regs;
+-	unsigned long msr = tsk->thread.ckpt_regs.msr;
++	unsigned long msr = tsk->thread.regs->msr;
+ 	long err = 0;
+ 
+ 	BUG_ON(tsk != current);
+@@ -216,6 +216,12 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 
+ 	WARN_ON(tm_suspend_disabled);
+ 
++	/* Restore checkpointed FP, VEC, and VSX bits from ckpt_regs as
++	 * it contains the correct FP, VEC, VSX state after we treclaimed
++	 * the transaction and giveup_all() was called on reclaiming.
++	 */
++	msr |= tsk->thread.ckpt_regs.msr & (MSR_FP | MSR_VEC | MSR_VSX);
++
+ 	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
+ 	 * just indicates to userland that we were doing a transaction, but we
+ 	 * don't want to return in transactional state.  This also ensures
+-- 
+2.7.4
