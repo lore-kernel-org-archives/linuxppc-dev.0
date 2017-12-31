@@ -1,17 +1,17 @@
 Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z8vnM23CSzDr0N
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jan 2018 09:16:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z8vnN2DQJzDr1l
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jan 2018 09:16:55 +1100 (AEDT)
 From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
 CC: Christian Zigotzky <chzigotzky@xenosoft.de>
-Date: Sun, 31 Dec 2017 22:16:41 +0000 (GMT)
-Message-ID: <4b3d22a081a.208ad70e@auth.smtp.1and1.co.uk>
-Subject: [PATCH NEXT 4/4] powerpc/pasemi: Connect Nemo boot code.
+Date: Sun, 31 Dec 2017 22:04:10 +0000 (GMT)
+Message-ID: <4b3d1fd01f9.613e9d05@auth.smtp.1and1.co.uk>
+Subject: [PATCH NEXT 2/4] powerpc/pasemi: Add Nemo board IRQ init routine
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c368940208d079b.fc"
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c3689404196289f.50"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +33,134 @@ mail programs for common platforms:
 General information about MIME can be found at:
 http://en.wikipedia.org/wiki/MIME
 
-----=_BOUNDARY.6c368940208d079b.fc
+----=_BOUNDARY.6c3689404196289f.50
 Content-Type: text/plain
 
-    The previous 3 commits added support code for the Nemo motherbard
-    as used in the Amigaone X1000, now wire them up so the board can
-    be detected and initalised at boot time.
+    Add a IRQ init routine for the Nemo board which also inits and attatches
+    the i8259 found in the SB600.
     
     Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
 
 ---
 
-----=_BOUNDARY.6c368940208d079b.fc
+----=_BOUNDARY.6c3689404196289f.50
 Content-Type: text/plain;
-	name="link.patch"
+	name="irq.patch"
 Content-Disposition: attachment;
-	filename="link.patch";
-	size=1030
+	filename="irq.patch";
+	size=3025
 
 diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 8d3664f..bb3a4d5 100644
+index c4a3e93..c583c17 100644
 --- a/arch/powerpc/platforms/pasemi/setup.c
 +++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -136,7 +136,14 @@ static void __init pas_setup_arch(void)
- 	smp_ops = &pas_smp_ops;
- #endif
- 	/* Lookup PCI hosts */
-+#ifdef CONFIG_PPC_PASEMI_NEMO
-+	if (nemo_board)
-+		nemo_pci_init();
-+	else
-+		pas_pci_init();
-+#else
- 	pas_pci_init();
-+#endif
- 
- #ifdef CONFIG_DUMMY_CONSOLE
- 	conswitchp = &dummy_con;
-@@ -548,6 +555,19 @@ static int __init pas_probe(void)
- 	    !of_machine_is_compatible("pasemi,pwrficient"))
- 		return 0;
+@@ -34,6 +34,7 @@
+ #include <asm/prom.h>
+ #include <asm/iommu.h>
+ #include <asm/machdep.h>
++#include <asm/i8259.h>
+ #include <asm/mpic.h>
+ #include <asm/smp.h>
+ #include <asm/time.h>
+@@ -183,6 +184,99 @@ static int __init pas_setup_mce_regs(void)
+ }
+ machine_device_initcall(pasemi, pas_setup_mce_regs);
  
 +#ifdef CONFIG_PPC_PASEMI_NEMO
-+	/*
-+	 * Check for the Nemo motherboard here, if we are running on one
-+	 * change the machine definition to fit
-+	 */
-+	if (of_machine_is_compatible("pasemi,nemo")) {
-+		pm_power_off		= pas_shutdown;
-+		ppc_md.name		= "A-EON Amigaone X1000";
-+		ppc_md.init_IRQ		= nemo_init_IRQ;
-+		nemo_board = true;
++static void sb600_8259_cascade(struct irq_desc *desc)
++{
++	struct irq_chip *chip = irq_desc_get_chip(desc);
++	unsigned int cascade_irq = i8259_irq();
++
++	if (cascade_irq)
++               generic_handle_irq(cascade_irq);
++
++	chip->irq_eoi(&desc->irq_data);
++}
++
++static __init void nemo_init_IRQ(void)
++{
++	struct device_node *np;
++	struct device_node *root, *mpic_node, *i8259_node;
++	unsigned long openpic_addr;
++	const unsigned int *opprop;
++	int naddr, opplen;
++	int mpic_flags;
++	const unsigned int *nmiprop;
++	struct mpic *mpic;
++	int gpio_virq;
++
++	mpic_node = NULL;
++
++	for_each_node_by_type(np, "interrupt-controller")
++		if (of_device_is_compatible(np, "open-pic")) {
++			mpic_node = np;
++			break;
++		}
++	if (!mpic_node)
++		for_each_node_by_type(np, "open-pic") {
++			mpic_node = np;
++			break;
++		}
++	if (!mpic_node) {
++		printk(KERN_ERR
++			"Failed to locate the MPIC interrupt controller\n");
++		return;
 +	}
++
++	/* Find address list in /platform-open-pic */
++	root = of_find_node_by_path("/");
++	naddr = of_n_addr_cells(root);
++	opprop = of_get_property(root, "platform-open-pic", &opplen);
++	if (!opprop) {
++		printk(KERN_ERR "No platform-open-pic property.\n");
++		of_node_put(root);
++		return;
++	}
++	openpic_addr = of_read_number(opprop, naddr);
++	printk(KERN_DEBUG "OpenPIC addr: %lx\n", openpic_addr);
++
++	mpic_flags = MPIC_LARGE_VECTORS | MPIC_NO_BIAS | MPIC_NO_RESET;
++
++	nmiprop = of_get_property(mpic_node, "nmi-source", NULL);
++	if (nmiprop)
++		mpic_flags |= MPIC_ENABLE_MCK;
++
++	mpic = mpic_alloc(mpic_node, openpic_addr,
++			  mpic_flags, 0, 0, "PASEMI-OPIC");
++	BUG_ON(!mpic);
++
++	mpic_assign_isu(mpic, 0, mpic->paddr + 0x10000);
++	mpic_init(mpic);
++	/* The NMI/MCK source needs to be prio 15 */
++	if (nmiprop) {
++		nmi_virq = irq_create_mapping(NULL, *nmiprop);
++		mpic_irq_set_priority(nmi_virq, 15);
++		irq_set_irq_type(nmi_virq, IRQ_TYPE_EDGE_RISING);
++		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
++	}
++
++
++	/* Connect the SB600's legacy i8259 controller */
++	i8259_node = of_find_node_by_path("/pxp@0,e0000000");
++	i8259_init(i8259_node, 0);
++	of_node_put(i8259_node);
++
++	gpio_virq = irq_create_mapping(NULL, 3);
++	irq_set_irq_type(gpio_virq, IRQ_TYPE_LEVEL_HIGH);
++	irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
++	mpic_unmask_irq(irq_get_irq_data(gpio_virq));
++
++	irq_set_default_host(mpic->irqhost);
++
++	of_node_put(mpic_node);
++	of_node_put(root);
++
++}
 +#endif
 +
- 	iommu_init_early_pasemi();
- 
- 	return 1;
+ static __init void pas_init_IRQ(void)
+ {
+ 	struct device_node *np;
 
-----=_BOUNDARY.6c368940208d079b.fc--
+----=_BOUNDARY.6c3689404196289f.50--
