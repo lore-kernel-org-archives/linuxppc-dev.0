@@ -1,19 +1,17 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z8Gpj6TZ4zDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Dec 2017 08:30:51 +1100 (AEDT)
-To: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Zhao Qiang <qiang.zhao@nxp.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] wan/fsl_ucc_hdlc: Delete an error message for a failed memory
- allocation in ucc_hdlc_probe()
-Message-ID: <92380576-f944-6240-eba7-ed0e084ba65a@users.sourceforge.net>
-Date: Sat, 30 Dec 2017 22:30:40 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z8vnM23CSzDr0N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jan 2018 09:16:51 +1100 (AEDT)
+From: Darren Stevens <darren@stevens-zone.net>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Sun, 31 Dec 2017 22:16:41 +0000 (GMT)
+Message-ID: <4b3d22a081a.208ad70e@auth.smtp.1and1.co.uk>
+Subject: [PATCH NEXT 4/4] powerpc/pasemi: Connect Nemo boot code.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c368940208d079b.fc"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 30 Dec 2017 22:25:44 +0100
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-Omit an extra message for a memory allocation failure in this function.
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-This issue was detected by using the Coccinelle software.
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+----=_BOUNDARY.6c368940208d079b.fc
+Content-Type: text/plain
+
+    The previous 3 commits added support code for the Nemo motherbard
+    as used in the Amigaone X1000, now wire them up so the board can
+    be detected and initalised at boot time.
+    
+    Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
+
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 33df76405b86..98f8be206bae 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -1082,7 +1082,6 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
- 		utdm = kzalloc(sizeof(*utdm), GFP_KERNEL);
- 		if (!utdm) {
- 			ret = -ENOMEM;
--			dev_err(&pdev->dev, "No mem to alloc ucc tdm data\n");
- 			goto free_uhdlc_priv;
- 		}
- 		uhdlc_priv->utdm = utdm;
--- 
-2.15.1
+----=_BOUNDARY.6c368940208d079b.fc
+Content-Type: text/plain;
+	name="link.patch"
+Content-Disposition: attachment;
+	filename="link.patch";
+	size=1030
+
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index 8d3664f..bb3a4d5 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -136,7 +136,14 @@ static void __init pas_setup_arch(void)
+ 	smp_ops = &pas_smp_ops;
+ #endif
+ 	/* Lookup PCI hosts */
++#ifdef CONFIG_PPC_PASEMI_NEMO
++	if (nemo_board)
++		nemo_pci_init();
++	else
++		pas_pci_init();
++#else
+ 	pas_pci_init();
++#endif
+ 
+ #ifdef CONFIG_DUMMY_CONSOLE
+ 	conswitchp = &dummy_con;
+@@ -548,6 +555,19 @@ static int __init pas_probe(void)
+ 	    !of_machine_is_compatible("pasemi,pwrficient"))
+ 		return 0;
+ 
++#ifdef CONFIG_PPC_PASEMI_NEMO
++	/*
++	 * Check for the Nemo motherboard here, if we are running on one
++	 * change the machine definition to fit
++	 */
++	if (of_machine_is_compatible("pasemi,nemo")) {
++		pm_power_off		= pas_shutdown;
++		ppc_md.name		= "A-EON Amigaone X1000";
++		ppc_md.init_IRQ		= nemo_init_IRQ;
++		nemo_board = true;
++	}
++#endif
++
+ 	iommu_init_early_pasemi();
+ 
+ 	return 1;
+
+----=_BOUNDARY.6c368940208d079b.fc--
