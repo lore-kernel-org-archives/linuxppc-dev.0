@@ -2,16 +2,17 @@ Return-Path: <darren@stevens-zone.net>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z8vnN2DQJzDr1l
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z8vnN1MqqzDr1k
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jan 2018 09:16:55 +1100 (AEDT)
 From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>
-Date: Sun, 31 Dec 2017 22:04:10 +0000 (GMT)
-Message-ID: <4b3d1fd01f9.613e9d05@auth.smtp.1and1.co.uk>
-Subject: [PATCH NEXT 2/4] powerpc/pasemi: Add Nemo board IRQ init routine
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+CC: chzigotzky@xenosoft.de
+Date: Sun, 31 Dec 2017 22:00:14 +0000 (GMT)
+Message-ID: <4b3d1ee02c7.3de0aa2c@auth.smtp.1and1.co.uk>
+Subject: [PATCH NEXT 1/4] powerpc/pasemi: Add PCI initialisation for Nemo
+ board.
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c3689404196289f.50"
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c36894036f0cf76.1d"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,134 +34,233 @@ mail programs for common platforms:
 General information about MIME can be found at:
 http://en.wikipedia.org/wiki/MIME
 
-----=_BOUNDARY.6c3689404196289f.50
+----=_BOUNDARY.6c36894036f0cf76.1d
 Content-Type: text/plain
 
-    Add a IRQ init routine for the Nemo board which also inits and attatches
-    the i8259 found in the SB600.
+    The A-Eon Amigaone X1000's Nemo motherboard has an AMD SB600
+    connected to one of the PCI-e root ports on its PaSemi
+    Pwrficient 1628M SoC. Normally the SB600 southbridge would be
+    connected to a hidden PCI-e port on the system's northbridge,
+    and as a result doesn't fully comply with the PCI-e spec.
+    
+    Add code to relax the PCI-e detection in both the root port
+    and the Linux kernel allowing on board devices to be detected.
     
     Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
 
 ---
 
-----=_BOUNDARY.6c3689404196289f.50
+----=_BOUNDARY.6c36894036f0cf76.1d
 Content-Type: text/plain;
-	name="irq.patch"
+	name="pci.patch"
 Content-Disposition: attachment;
-	filename="irq.patch";
-	size=3025
+	filename="pci.patch";
+	size=5035
 
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index c4a3e93..c583c17 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -34,6 +34,7 @@
- #include <asm/prom.h>
- #include <asm/iommu.h>
+diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
+index 329d2a6..8900dee 100644
+--- a/arch/powerpc/platforms/pasemi/pasemi.h
++++ b/arch/powerpc/platforms/pasemi/pasemi.h
+@@ -3,6 +3,9 @@
+ #define _PASEMI_PASEMI_H
+ 
+ extern unsigned long pas_get_boot_time(void);
++#ifdef CONFIG_PPC_PASEMI_NEMO
++extern void nemo_pci_init(void);
++#endif
+ extern void pas_pci_init(void);
+ extern void pas_pci_irq_fixup(struct pci_dev *dev);
+ extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index 5ff6108..cb0ac87 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -27,6 +27,7 @@
+ #include <linux/pci.h>
+ 
+ #include <asm/pci-bridge.h>
++#include <asm/isa-bridge.h>
  #include <asm/machdep.h>
-+#include <asm/i8259.h>
- #include <asm/mpic.h>
- #include <asm/smp.h>
- #include <asm/time.h>
-@@ -183,6 +184,99 @@ static int __init pas_setup_mce_regs(void)
+ 
+ #include <asm/ppc-pci.h>
+@@ -108,6 +109,92 @@ static int workaround_5945(struct pci_bus *bus, unsigned int devfn,
+ 	return 1;
  }
- machine_device_initcall(pasemi, pas_setup_mce_regs);
  
 +#ifdef CONFIG_PPC_PASEMI_NEMO
-+static void sb600_8259_cascade(struct irq_desc *desc)
++static int sb600_bus = 5;
++static void __iomem *iob_mapbase = NULL;
++
++static void sb600_set_flag(int bus)
 +{
-+	struct irq_chip *chip = irq_desc_get_chip(desc);
-+	unsigned int cascade_irq = i8259_irq();
++	struct resource res;
++	struct device_node *dn;
++	int err;
 +
-+	if (cascade_irq)
-+               generic_handle_irq(cascade_irq);
++	if (iob_mapbase == NULL) {
++		dn = of_find_compatible_node(NULL, "isa", "pasemi,1682m-iob");
++		if (!dn) {
++			printk(KERN_CRIT "NEMO SB600 missing iob node\n");
++			return;
++		}
 +
-+	chip->irq_eoi(&desc->irq_data);
++		err = of_address_to_resource(dn, 0, &res);
++		of_node_put(dn);
++
++		if (err) {
++			printk(KERN_CRIT "NEMO SB600 missing resource\n");
++			return;
++		}
++
++		printk(KERN_CRIT "NEMO SB600 IOB base %08lx\n",res.start);
++
++		iob_mapbase = ioremap(res.start + 0x100, 0x94);
++	}
++
++	if (iob_mapbase != NULL) {
++		if (bus == sb600_bus) {
++			/*
++			 * This is the SB600's bus, tell the PCI-e root port
++			 * to allow non-zero devices to enumerate.
++			 */
++			out_le32(iob_mapbase + 4, in_le32(iob_mapbase + 4) | 0x800);
++		} else {
++			/*
++			 * Only scan device 0 on other busses
++			 */
++			out_le32(iob_mapbase + 4, in_le32(iob_mapbase + 4) & ~0x800);
++		}
++	}
 +}
 +
-+static __init void nemo_init_IRQ(void)
++static int nemo_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
++			      int offset, int len, u32 *val)
 +{
-+	struct device_node *np;
-+	struct device_node *root, *mpic_node, *i8259_node;
-+	unsigned long openpic_addr;
-+	const unsigned int *opprop;
-+	int naddr, opplen;
-+	int mpic_flags;
-+	const unsigned int *nmiprop;
-+	struct mpic *mpic;
-+	int gpio_virq;
++	struct pci_controller *hose;
++	void volatile __iomem *addr;
 +
-+	mpic_node = NULL;
++	hose = pci_bus_to_host(bus);
++	if (!hose)
++		return PCIBIOS_DEVICE_NOT_FOUND;
 +
-+	for_each_node_by_type(np, "interrupt-controller")
-+		if (of_device_is_compatible(np, "open-pic")) {
-+			mpic_node = np;
-+			break;
-+		}
-+	if (!mpic_node)
-+		for_each_node_by_type(np, "open-pic") {
-+			mpic_node = np;
-+			break;
-+		}
-+	if (!mpic_node) {
-+		printk(KERN_ERR
-+			"Failed to locate the MPIC interrupt controller\n");
-+		return;
++	if (!pa_pxp_offset_valid(bus->number, devfn, offset))
++		return PCIBIOS_BAD_REGISTER_NUMBER;
++
++	if (workaround_5945(bus, devfn, offset, len, val))
++		return PCIBIOS_SUCCESSFUL;
++
++	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
++
++	sb600_set_flag(bus->number);
++
++	/*
++	 * Note: the caller has already checked that offset is
++	 * suitably aligned and that len is 1, 2 or 4.
++	 */
++	switch (len) {
++	case 1:
++		*val = in_8(addr);
++		break;
++	case 2:
++		*val = in_le16(addr);
++		break;
++	default:
++		*val = in_le32(addr);
++		break;
 +	}
 +
-+	/* Find address list in /platform-open-pic */
-+	root = of_find_node_by_path("/");
-+	naddr = of_n_addr_cells(root);
-+	opprop = of_get_property(root, "platform-open-pic", &opplen);
-+	if (!opprop) {
-+		printk(KERN_ERR "No platform-open-pic property.\n");
-+		of_node_put(root);
-+		return;
-+	}
-+	openpic_addr = of_read_number(opprop, naddr);
-+	printk(KERN_DEBUG "OpenPIC addr: %lx\n", openpic_addr);
-+
-+	mpic_flags = MPIC_LARGE_VECTORS | MPIC_NO_BIAS | MPIC_NO_RESET;
-+
-+	nmiprop = of_get_property(mpic_node, "nmi-source", NULL);
-+	if (nmiprop)
-+		mpic_flags |= MPIC_ENABLE_MCK;
-+
-+	mpic = mpic_alloc(mpic_node, openpic_addr,
-+			  mpic_flags, 0, 0, "PASEMI-OPIC");
-+	BUG_ON(!mpic);
-+
-+	mpic_assign_isu(mpic, 0, mpic->paddr + 0x10000);
-+	mpic_init(mpic);
-+	/* The NMI/MCK source needs to be prio 15 */
-+	if (nmiprop) {
-+		nmi_virq = irq_create_mapping(NULL, *nmiprop);
-+		mpic_irq_set_priority(nmi_virq, 15);
-+		irq_set_irq_type(nmi_virq, IRQ_TYPE_EDGE_RISING);
-+		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
-+	}
-+
-+
-+	/* Connect the SB600's legacy i8259 controller */
-+	i8259_node = of_find_node_by_path("/pxp@0,e0000000");
-+	i8259_init(i8259_node, 0);
-+	of_node_put(i8259_node);
-+
-+	gpio_virq = irq_create_mapping(NULL, 3);
-+	irq_set_irq_type(gpio_virq, IRQ_TYPE_LEVEL_HIGH);
-+	irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
-+	mpic_unmask_irq(irq_get_irq_data(gpio_virq));
-+
-+	irq_set_default_host(mpic->irqhost);
-+
-+	of_node_put(mpic_node);
-+	of_node_put(root);
-+
++	return PCIBIOS_SUCCESSFUL;
 +}
 +#endif
 +
- static __init void pas_init_IRQ(void)
+ static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
+ 			      int offset, int len, u32 *val)
  {
- 	struct device_node *np;
+@@ -178,6 +265,20 @@ static int pa_pxp_write_config(struct pci_bus *bus, unsigned int devfn,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
++#ifdef CONFIG_PPC_PASEMI_NEMO
++static struct pci_ops nemo_pxp_ops = {
++	.read = nemo_pxp_read_config,
++	.write = pa_pxp_write_config,
++};
++
++static void __init setup_nemo_pxp(struct pci_controller *hose)
++{
++	hose->ops = &nemo_pxp_ops;
++	hose->cfg_data = ioremap(0xe0000000, 0x10000000);
++}
++
++#endif
++
+ static struct pci_ops pa_pxp_ops = {
+ 	.read = pa_pxp_read_config,
+ 	.write = pa_pxp_write_config,
+@@ -189,6 +290,35 @@ static void __init setup_pa_pxp(struct pci_controller *hose)
+ 	hose->cfg_data = ioremap(0xe0000000, 0x10000000);
+ }
+ 
++#ifdef CONFIG_PPC_PASEMI_NEMO
++static int __init nemo_add_bridge(struct device_node *dev)
++{
++	struct pci_controller *hose;
++
++	pr_debug("Adding PCI host bridge %pOF\n", dev);
++
++	hose = pcibios_alloc_controller(dev);
++	if (!hose)
++		return -ENOMEM;
++
++	hose->first_busno = 0;
++	hose->last_busno = 0xff;
++	hose->controller_ops = pasemi_pci_controller_ops;
++
++	setup_nemo_pxp(hose);
++
++	printk(KERN_INFO "Found PA-PXP PCI host bridge.\n");
++
++	/* Interpret the "ranges" property */
++	pci_process_bridge_OF_ranges(hose, dev, 1);
++
++	/* Scan for an isa bridge. */
++	isa_bridge_find_early(hose);
++
++	return 0;
++}
++#endif
++
+ static int __init pas_add_bridge(struct device_node *dev)
+ {
+ 	struct pci_controller *hose;
+@@ -213,6 +343,28 @@ static int __init pas_add_bridge(struct device_node *dev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPC_PASEMI_NEMO
++void __init nemo_pci_init(void)
++{
++	struct device_node *np, *root;
++
++	root = of_find_node_by_path("/");
++	if (!root) {
++		printk(KERN_CRIT "pas_pci_init: can't find root "
++			"of device tree\n");
++		return;
++	}
++
++	pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
++
++	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
++		if (np->name && !strcmp(np->name, "pxp") && !nemo_add_bridge(np))
++			of_node_get(np);
++
++	of_node_put(root);
++}
++#endif
++
+ void __init pas_pci_init(void)
+ {
+ 	struct device_node *np, *root;
 
-----=_BOUNDARY.6c3689404196289f.50--
+----=_BOUNDARY.6c36894036f0cf76.1d--
