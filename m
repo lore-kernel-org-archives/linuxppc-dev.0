@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z9Txm3YDRzDqy4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jan 2018 07:56:12 +1100 (AEDT)
-Message-ID: <1514840151.2743.127.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: restore SEGV_ACCERR for segv on mapped region
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Sperbeck <jsperbeck@google.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 02 Jan 2018 07:55:51 +1100
-In-Reply-To: <20180101052458.132027-1-jsperbeck@google.com>
-References: <20180101052458.132027-1-jsperbeck@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z9VhM3VPrzDqvc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jan 2018 08:29:37 +1100 (AEDT)
+Subject: Re: [PATCH v1 03/15] ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
+ arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
+References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
+ <1513702819-42310-4-git-send-email-nicoleotsuka@gmail.com>
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Message-ID: <7509f512-1c7f-2fd2-e127-510106e2d9d5@maciej.szmigiero.name>
+Date: Mon, 1 Jan 2018 22:29:24 +0100
+MIME-Version: 1.0
+In-Reply-To: <1513702819-42310-4-git-send-email-nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,88 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2017-12-31 at 21:24 -0800, John Sperbeck wrote:
-> A recent refactoring of the powerpc page fault handler caused
-> access to protected memory regions to indicate SEGV_MAPERR instead
-> of the traditional SEGV_ACCERR in the si_code field of a user-space
-> signal handler.  This can confuse debug libraries that temporarily
-> change the protection of memory regions, and expect to use
-> SEGV_ACCERR as an indication to restore access to a region.
+On 19.12.2017 18:00, Nicolin Chen wrote:
+> The define of fsl_ssi_disable_val is not so clear as it mixes two
+> steps of calculations together. And those parameter names are also
+> a bit long to read.
 > 
-> This change restores the previous behavior.  The following program
-> exhibits the issue:
-
-Good catch !
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Since it just tries to exclude the shared bits from the regvals of
+> current stream while the opposite stream is active, it's better to
+> use something like ssi_excl_shared_bits.
 > 
->     $ ./repro read  || echo "FAILED"
->     $ ./repro write || echo "FAILED"
->     $ ./repro exec  || echo "FAILED"
+> This patch also bisects fsl_ssi_disable_val into two macros of two
+> corresponding steps and then shortens its parameter names. It also
+> updates callers in the fsl_ssi_config() accordingly.
 > 
->     #include <stdio.h>
->     #include <stdlib.h>
->     #include <string.h>
->     #include <unistd.h>
->     #include <signal.h>
->     #include <sys/mman.h>
->     #include <assert.h>
-> 
->     static void segv_handler(int n, siginfo_t *info, void *arg) {
->             _exit(info->si_code == SEGV_ACCERR ? 0 : 1);
->     }
-> 
->     int main(int argc, char **argv)
->     {
->             void *p = NULL;
->             struct sigaction act = {
->                     .sa_sigaction = segv_handler,
->                     .sa_flags = SA_SIGINFO,
->             };
-> 
->             assert(argc == 2);
->             p = mmap(NULL, getpagesize(),
->                     (strcmp(argv[1], "write") == 0) ? PROT_READ : 0,
->                     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
->             assert(p != MAP_FAILED);
-> 
->             assert(sigaction(SIGSEGV, &act, NULL) == 0);
->             if (strcmp(argv[1], "read") == 0)
->                     printf("%c", *(unsigned char *)p);
->             else if (strcmp(argv[1], "write") == 0)
->                     *(unsigned char *)p = 0;
->             else if (strcmp(argv[1], "exec") == 0)
->                     ((void (*)(void))p)();
->             return 1;  /* failed to generate SEGV */
->     }
-> 
-> Signed-off-by: John Sperbeck <jsperbeck@google.com>
+> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 > ---
->  arch/powerpc/mm/fault.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  sound/soc/fsl/fsl_ssi.c | 54 ++++++++++++++++++++-----------------------------
+>  1 file changed, 22 insertions(+), 32 deletions(-)
 > 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 4797d08581ce..6e1e39035380 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -145,6 +145,11 @@ static noinline int bad_area(struct pt_regs *regs, unsigned long address)
->  	return __bad_area(regs, address, SEGV_MAPERR);
->  }
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+> index f05f78d..6dda2e0 100644
+> --- a/sound/soc/fsl/fsl_ssi.c
+> +++ b/sound/soc/fsl/fsl_ssi.c
+
+> @@ -445,16 +445,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+>  	bool tx = &ssi->regvals[TX] == vals;
+>  	struct regmap *regs = ssi->regs;
+>  	struct fsl_ssi_regvals *avals;
+> -	int nr_active_streams;
+> -	int keep_active;
+> -
+> -	nr_active_streams = !!(ssi->streams & BIT(TX)) +
+> -			    !!(ssi->streams & BIT(RX));
+> +	bool aactive;
 >  
-> +static noinline int bad_access(struct pt_regs *regs, unsigned long address)
-> +{
-> +	return __bad_area(regs, address, SEGV_ACCERR);
-> +}
-> +
->  static int do_sigbus(struct pt_regs *regs, unsigned long address,
->  		     unsigned int fault)
->  {
-> @@ -490,7 +495,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->  
->  good_area:
->  	if (unlikely(access_error(is_write, is_exec, vma)))
-> -		return bad_area(regs, address);
-> +		return bad_access(regs, address);
->  
->  	/*
->  	 * If for any reason at all we couldn't handle the fault,
+> -	if (nr_active_streams - 1 > 0)
+> -		keep_active = 1;
+> -	else
+> -		keep_active = 0;
+> +	/* Check if the opposite stream is active */
+> +	aactive = ssi->streams & BIT(!tx);
+
+I don't think that hardcoding an implicit assumption here that RX == 0,
+TX == 1 is a good thing.
+If in the future, for any reason, somebody changes values of these macros
+this code will silently break.
+
+I would instead change this line into something like
+"aactive = ssi->streams & (tx ? BIT(RX) : BIT(TX));" or similar.
+
+Maciej
