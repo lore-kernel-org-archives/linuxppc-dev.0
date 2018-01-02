@@ -1,30 +1,38 @@
-Return-Path: <srs0=pisz=d5=google.com=jsperbeck@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zB4Fg3wcJzDqy2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 06:41:59 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zB4Ff3Stgz8tlv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 06:41:58 +1100 (AEDT)
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zB4Fb4qZwz9s7G
- for <linuxppc-dev@ozlabs.org>; Wed,  3 Jan 2018 06:41:53 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id i11so62480359wmf.4
- for <linuxppc-dev@ozlabs.org>; Tue, 02 Jan 2018 11:41:53 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20180102110324.31978-1-mpe@ellerman.id.au>
-References: <20180102110324.31978-1-mpe@ellerman.id.au>
-From: John Sperbeck <jsperbeck@google.com>
-Date: Tue, 2 Jan 2018 11:41:47 -0800
-Message-ID: <CAFNjLiWrz_=epy8BE6-EVDsr6hbUO5=ykOL1gV1asc=WMOoFFQ@mail.gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: Add a test of SEGV error behaviour
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zB4nj0346zF0PK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 07:06:15 +1100 (AEDT)
+Received: by mail-wr0-x244.google.com with SMTP id o15so17399993wrf.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 12:06:15 -0800 (PST)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ "David S. Miller" <davem@davemloft.net>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>, James Morris <james.l.morris@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
+Subject: [PATCH v7 00/10] add support for relative references in special
+ sections
+Date: Tue,  2 Jan 2018 20:05:39 +0000
+Message-Id: <20180102200549.22984-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,134 +42,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 2, 2018 at 3:03 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Add a test case of the error code reported when we take a SEGV on a
-> mapped but inaccessible area. We broke this recently.
->
-> Based on a test case from John Sperbeck <jsperbeck@google.com>.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  tools/testing/selftests/powerpc/mm/.gitignore    |  3 +-
->  tools/testing/selftests/powerpc/mm/Makefile      |  2 +-
->  tools/testing/selftests/powerpc/mm/segv_errors.c | 78 ++++++++++++++++++++++++
->  3 files changed, 81 insertions(+), 2 deletions(-)
->  create mode 100644 tools/testing/selftests/powerpc/mm/segv_errors.c
->
-> diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
-> index e715a3f2fbf4..7d7c42ed6de9 100644
-> --- a/tools/testing/selftests/powerpc/mm/.gitignore
-> +++ b/tools/testing/selftests/powerpc/mm/.gitignore
-> @@ -1,4 +1,5 @@
->  hugetlb_vs_thp_test
->  subpage_prot
->  tempfile
-> -prot_sao
-> \ No newline at end of file
-> +prot_sao
-> +segv_errors
-> \ No newline at end of file
-> diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-> index bf315bcbe663..8ebbe96d80a8 100644
-> --- a/tools/testing/selftests/powerpc/mm/Makefile
-> +++ b/tools/testing/selftests/powerpc/mm/Makefile
-> @@ -2,7 +2,7 @@
->  noarg:
->         $(MAKE) -C ../
->
-> -TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao
-> +TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors
->  TEST_GEN_FILES := tempfile
->
->  include ../../lib.mk
-> diff --git a/tools/testing/selftests/powerpc/mm/segv_errors.c b/tools/testing/selftests/powerpc/mm/segv_errors.c
-> new file mode 100644
-> index 000000000000..06ae76ee3ea1
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/mm/segv_errors.c
-> @@ -0,0 +1,78 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +/*
-> + * Copyright 2017 John Sperbeck
-> + *
-> + * Test that an access to a mapped but inaccessible area causes a SEGV and
-> + * reports si_code == SEGV_ACCERR.
-> + */
-> +
-> +#include <stdbool.h>
-> +#include <stdio.h>
-> +#include <stdlib.h>
-> +#include <string.h>
-> +#include <unistd.h>
-> +#include <signal.h>
-> +#include <sys/mman.h>
-> +#include <assert.h>
-> +#include <ucontext.h>
-> +
-> +#include "utils.h"
-> +
-> +static bool faulted;
-> +static int si_code;
-> +
-> +static void segv_handler(int n, siginfo_t *info, void *ctxt_v)
-> +{
-> +       ucontext_t *ctxt = (ucontext_t *)ctxt_v;
-> +       struct pt_regs *regs = ctxt->uc_mcontext.regs;
-> +
-> +       faulted = true;
-> +       si_code = info->si_code;
-> +       regs->nip += 4;
-> +}
-> +
-> +int test_segv_errors(void)
-> +{
-> +       struct sigaction act = {
-> +               .sa_sigaction = segv_handler,
-> +               .sa_flags = SA_SIGINFO,
-> +       };
-> +       char c, *p = NULL;
-> +
-> +       p = mmap(NULL, getpagesize(), 0, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-> +       FAIL_IF(p == MAP_FAILED);
-> +
-> +       FAIL_IF(sigaction(SIGSEGV, &act, NULL) != 0);
-> +
-> +       faulted = false;
-> +       si_code = 0;
-> +
-> +       /*
-> +        * We just need a compiler barrier, but mb() works and has the nice
-> +        * property of being easy to spot in the disassembly.
-> +        */
-> +       mb();
-> +       c = *p;
-> +       mb();
-> +
-> +       FAIL_IF(!faulted);
-> +       FAIL_IF(si_code != SEGV_ACCERR);
-> +
-> +       faulted = false;
-> +       si_code = 0;
-> +
-> +       mb();
-> +       *p = c;
-> +       mb();
-> +
-> +       FAIL_IF(!faulted);
-> +       FAIL_IF(si_code != SEGV_ACCERR);
-> +
-> +       return 0;
-> +}
-> +
-> +int main(void)
-> +{
-> +       return test_harness(test_segv_errors, "segv_errors");
-> +}
-> --
-> 2.14.3
->
+This adds support for emitting special sections such as initcall arrays,
+PCI fixups and tracepoints as relative references rather than absolute
+references. This reduces the size by 50% on 64-bit architectures, but
+more importantly, it removes the need for carrying relocation metadata
+for these sections in relocatables kernels (e.g., for KASLR) that need
+to fix up these absolute references at boot time. On arm64, this reduces
+the vmlinux footprint of such a reference by 8x (8 byte absolute reference
++ 24 byte RELA entry vs 4 byte relative reference)
 
-Looks good to me.
+Patch #3 was sent out before as a single patch. This series supersedes
+the previous submission. This version makes relative ksymtab entries
+dependent on the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS rather
+than trying to infer from kbuild test robot replies for which architectures
+it should be blacklisted.
 
-Acked-by: John Sperbeck <jsperbeck@google.com>
+Patch #1 introduces the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS,
+and sets it for the main architectures that are expected to benefit the
+most from this feature, i.e., 64-bit architectures or ones that use
+runtime relocations.
+
+Patches #4 - #6 implement relative references for initcalls, PCI fixups
+and tracepoints, respectively, all of which produce sections with order
+~1000 entries on an arm64 defconfig kernel with tracing enabled. This
+means we save about 28 KB of vmlinux space for each of these patches.
+
+Patches #7 - #10 have been added in v5, and implement relative references
+in jump tables for arm64 and x86. On arm64, this results in significant
+space savings (650+ KB on a typical distro kernel). On x86, the savings
+are not as impressive, but still worthwhile. (Note that these patches
+do not rely on CONFIG_HAVE_ARCH_PREL32_RELOCATIONS, given that the
+inline asm that is emitted is already per-arch)
+
+For the arm64 kernel, all patches combined reduce the memory footprint of
+vmlinux by about 1.3 MB (using a config copied from Ubuntu that has KASLR
+enabled), of which ~1 MB is the size reduction of the RELA section in .init,
+and the remaining 300 KB is reduction of .text/.data.
+
+Branch:
+git://git.kernel.org/pub/scm/linux/kernel/git/ardb/linux.git relative-special-sections-v7
+
+Changes since v6:
+- drop S390 from patch #1 introducing HAVE_ARCH_PREL32_RELOCATIONS: kbuild
+  robot threw me some s390 curveballs, and given that s390 does not define
+  CONFIG_RELOCATABLE in the first place, it does not benefit as much from
+  relative references as arm64, x86 and power do
+- add patch to allow symbol exports to be disabled at compilation unit
+  granularity (#2)
+- get rid of arm64 vmlinux.lds.S hunk to ensure code generated by __ADDRESSABLE
+  gets discarded from the EFI stub - it is no longer needed after adding #2 (#1)
+- change _ADDRESSABLE() to emit a data reference, not a code reference - this
+  is another simplification made possible by patch #2 (#3)
+- add Steven's ack to #6
+- split x86 jump_label patch into two (#9, #10)
+
+Changes since v5:
+- add missing jump_label prototypes to s390 jump_label.h (#6)
+- fix inverted condition in call to jump_entry_is_module_init() (#6)
+
+Changes since v4:
+- add patches to convert x86 and arm64 to use relative references for jump
+  tables (#6 - #8)
+- rename PCI patch and add Bjorn's ack (#4)
+- rebase onto v4.15-rc5
+
+Changes since v3:
+- fix module unload issue in patch #5 reported by Jessica, by reusing the
+  updated routine for_each_tracepoint_range() for the quiescent check at
+  module unload time; this requires this routine to be moved before
+  tracepoint_module_going() in kernel/tracepoint.c
+- add Jessica's ack to #2
+- rebase onto v4.14-rc1
+
+Changes since v2:
+- Revert my slightly misguided attempt to appease checkpatch, which resulted
+  in needless churn and worse code. This v3 is based on v1 with a few tweaks
+  that were actually reasonable checkpatch warnings: unnecessary braces (as
+  pointed out by Ingo) and other minor whitespace misdemeanors.
+
+Changes since v1:
+- Remove checkpatch errors to the extent feasible: in some cases, this
+  involves moving extern declarations into C files, and switching to
+  struct definitions rather than typedefs. Some errors are impossible
+  to fix: please find the remaining ones after the diffstat.
+- Used 'int' instead if 'signed int' for the various offset fields: there
+  is no ambiguity between architectures regarding its signedness (unlike
+  'char')
+- Refactor the different patches to be more uniform in the way they define
+  the section entry type and accessors in the .h file, and avoid the need to
+  add #ifdefs to the C code.
+
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: James Morris <james.l.morris@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nicolas Pitre <nico@linaro.org>
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jessica Yu <jeyu@kernel.org>
+
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: x86@kernel.org
+
+Ard Biesheuvel (10):
+  arch: enable relative relocations for arm64, power and x86
+  module: allow symbol exports to be disabled
+  module: use relative references for __ksymtab entries
+  init: allow initcall tables to be emitted using relative references
+  PCI: Add support for relative addressing in quirk tables
+  kernel: tracepoints: add support for relative references
+  kernel/jump_label: abstract jump_entry member accessors
+  arm64/kernel: jump_label: use relative references
+  x86: jump_label: switch to jump_entry accessors
+  x86/kernel: jump_table: use relative references
+
+ arch/Kconfig                          | 10 ++++
+ arch/arm/include/asm/jump_label.h     | 27 +++++++++
+ arch/arm64/Kconfig                    |  1 +
+ arch/arm64/include/asm/jump_label.h   | 48 +++++++++++++---
+ arch/arm64/kernel/jump_label.c        | 22 +++++++-
+ arch/mips/include/asm/jump_label.h    | 27 +++++++++
+ arch/powerpc/Kconfig                  |  1 +
+ arch/powerpc/include/asm/jump_label.h | 27 +++++++++
+ arch/s390/include/asm/jump_label.h    | 27 +++++++++
+ arch/sparc/include/asm/jump_label.h   | 27 +++++++++
+ arch/tile/include/asm/jump_label.h    | 27 +++++++++
+ arch/x86/Kconfig                      |  1 +
+ arch/x86/boot/compressed/kaslr.c      |  5 +-
+ arch/x86/include/asm/Kbuild           |  1 +
+ arch/x86/include/asm/export.h         |  5 --
+ arch/x86/include/asm/jump_label.h     | 56 +++++++++++++++----
+ arch/x86/kernel/jump_label.c          | 59 ++++++++++++++------
+ drivers/firmware/efi/libstub/Makefile |  3 +-
+ drivers/pci/quirks.c                  | 13 ++++-
+ include/asm-generic/export.h          | 12 +++-
+ include/linux/compiler.h              | 10 ++++
+ include/linux/export.h                | 55 ++++++++++++++----
+ include/linux/init.h                  | 44 +++++++++++----
+ include/linux/pci.h                   | 20 +++++++
+ include/linux/tracepoint.h            | 19 +++++--
+ init/main.c                           | 32 +++++------
+ kernel/jump_label.c                   | 38 ++++++-------
+ kernel/module.c                       | 33 +++++++++--
+ kernel/printk/printk.c                |  4 +-
+ kernel/tracepoint.c                   | 50 +++++++++--------
+ security/security.c                   |  4 +-
+ tools/objtool/special.c               |  4 +-
+ 32 files changed, 560 insertions(+), 152 deletions(-)
+ delete mode 100644 arch/x86/include/asm/export.h
+
+-- 
+2.11.0
