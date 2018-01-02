@@ -1,39 +1,25 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=nhoa=d5=gmail.com=sjitindarsingh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zB4pt5h3DzF0Ph
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 07:07:18 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id g75so63340670wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 12:07:18 -0800 (PST)
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Ralf Baechle <ralf@linux-mips.org>,
- Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "David S. Miller" <davem@davemloft.net>, Petr Mladek <pmladek@suse.com>,
- Ingo Molnar <mingo@redhat.com>, James Morris <james.l.morris@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: [PATCH v7 10/10] x86/kernel: jump_table: use relative references
-Date: Tue,  2 Jan 2018 20:05:49 +0000
-Message-Id: <20180102200549.22984-11-ard.biesheuvel@linaro.org>
-In-Reply-To: <20180102200549.22984-1-ard.biesheuvel@linaro.org>
-References: <20180102200549.22984-1-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zB9094p9XzF0Q3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 10:15:37 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zB90927tJz8t1b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 10:15:37 +1100 (AEDT)
+Message-ID: <1514934921.2175.2.camel@gmail.com>
+Subject: Re: [RFC PATCH 2/2] KVM: PPC: Book3S HV: Work around transactional
+ memory bugs in POWER9
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Date: Wed, 03 Jan 2018 10:15:21 +1100
+In-Reply-To: <20171208061113.sm2cuug2uypdduw5@rohan>
+References: <20171208060803.relvzabipgl2lub6@rohan>
+ <20171208061113.sm2cuug2uypdduw5@rohan>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,150 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to the arm64 case, 64-bit x86 can benefit from using 32-bit
-relative references rather than 64-bit absolute ones when emitting
-struct jump_entry instances. Not only does this reduce the memory
-footprint of the entries themselves by 50%, it also removes the need
-for carrying relocation metadata on relocatable builds (i.e., for KASLR)
-which saves a fair chunk of .init space as well (although the savings
-are not as dramatic as on arm64)
+On Fri, 2017-12-08 at 17:11 +1100, Paul Mackerras wrote:
+> POWER9 has hardware bugs relating to transactional memory and thread
+> reconfiguration (changes to hardware SMT mode).  Specifically, the
+> core
+> does not have enough storage to store a complete checkpoint of all
+> the
+> architected state for all four threads.  The DD2.2 version of POWER9
+> includes hardware modifications designed to allow hypervisor software
+> to implement workarounds for these problems.  This patch implements
+> those workarounds in KVM code so that KVM guests see a full, working
+> transactional memory implementation.
+> 
+> The problems center around the use of TM suspended state, where the
+> CPU has a checkpointed state but execution is not transactional.  The
+> workaround is to implement a "fake suspend" state, which looks to the
+> guest like suspended state but the CPU does not store a checkpoint.
+> In this state, any instruction that would cause a transition to
+> transactional state (rfid, rfebb, mtmsrd, tresume) or would use the
+> checkpointed state (treclaim) causes a "soft patch" interrupt (vector
+> 0x1500) to the hypervisor so that it can be emulated.  The trechkpt
+> instruction also causes a soft patch interrupt.
+> 
+> On POWER9 DD2.2, we avoid returning to the guest in any state which
+> would require a checkpoint to be present.  The trechkpt in the guest
+> entry path which would normally create that checkpoint is replaced by
+> either a transition to fake suspend state, if the guest is in suspend
+> state, or a rollback to the pre-transactional state if the guest is
+> in
+> transactional state.  Fake suspend state is indicated by a flag in
+> the
+> PACA plus a new bit in the PSSCR.  The new PSSCR bit is write-only
+> and
+> reads back as 0.
+> 
+> On exit from the guest, if the guest is in fake suspend state, we
+> still
+> do the treclaim instruction as we would in real suspend state, in
+> order
+> to get into non-transactional state, but we do not save the resulting
+> register state since there was no checkpoint.
+> 
+> Emulation of the instructions that cause a softpath interrupt is
+> handled
+> in two paths.  If the guest is in real suspend mode, we call
+> kvmhv_p9_tm_emulation_early() to handle the cases where the guest is
+> transitioning to transactional state.  This is called before we do
+> the treclaim in the guest exit path; because we haven't done
+> treclaim,
+> we can get back to the guest with the transaction still active.
+> If the instruction is a case that kvmhv_p9_tm_emulation_early()
+> doesn't
+> handle, or if the guest is in fake suspend state, then we proceed to
+> do the complete guest exit path and subsequently call
+> kvmhv_p9_tm_emulation() in host context with the MMU on.  This
+> handles all the cases including the cases that generate program
+> interrupts (illegal instruction or TM Bad Thing) and facility
+> unavailable interrupts.
+> 
+> The emulation is reasonably straightforward and is mostly concerned
+> with checking for exception conditions and updating the state of
+> registers such as MSR and CR0.  The treclaim emulation takes care to
+> ensure that the TEXASR register gets updated as if it were the guest
+> treclaim instruction that had done failure recording, not the
+> treclaim
+> done in hypervisor state in the guest exit path.
+> 
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> 
 
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
----
- arch/x86/include/asm/jump_label.h | 35 ++++++++++++--------
- arch/x86/kernel/jump_label.c      | 16 +++++++++
- tools/objtool/special.c           |  4 +--
- 3 files changed, 39 insertions(+), 16 deletions(-)
+With the following patch applied on top of the TM emulation code I was
+able to get at least a basic test to run on the guest on real hardware.
 
-diff --git a/arch/x86/include/asm/jump_label.h b/arch/x86/include/asm/jump_label.h
-index 009ff2699d07..35fc2c5ec846 100644
---- a/arch/x86/include/asm/jump_label.h
-+++ b/arch/x86/include/asm/jump_label.h
-@@ -36,8 +36,8 @@ static __always_inline bool arch_static_branch(struct static_key *key, bool bran
- 	asm_volatile_goto("1:"
- 		".byte " __stringify(STATIC_KEY_INIT_NOP) "\n\t"
- 		".pushsection __jump_table,  \"aw\" \n\t"
--		_ASM_ALIGN "\n\t"
--		_ASM_PTR "1b, %l[l_yes], %c0 + %c1 \n\t"
-+		".balign 4\n\t"
-+		".long 1b - ., %l[l_yes] - ., %c0 + %c1 - .\n\t"
- 		".popsection \n\t"
- 		: :  "i" (key), "i" (branch) : : l_yes);
- 
-@@ -52,8 +52,8 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- 		".byte 0xe9\n\t .long %l[l_yes] - 2f\n\t"
- 		"2:\n\t"
- 		".pushsection __jump_table,  \"aw\" \n\t"
--		_ASM_ALIGN "\n\t"
--		_ASM_PTR "1b, %l[l_yes], %c0 + %c1 \n\t"
-+		".balign 4\n\t"
-+		".long 1b - ., %l[l_yes] - ., %c0 + %c1 - .\n\t"
- 		".popsection \n\t"
- 		: :  "i" (key), "i" (branch) : : l_yes);
- 
-@@ -69,19 +69,26 @@ typedef u32 jump_label_t;
+[snip]
+
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index c7fe377ff6bc..adf2da6b2211 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -3049,6 +3049,7 @@ BEGIN_FTR_SECTION
+        li      r0, PSSCR_FAKE_SUSPEND
+        andc    r3, r3, r0
+        mtspr   SPRN_PSSCR, r3
++       ld      r9, HSTATE_KVM_VCPU(r13)
+        b       1f
+ 2:
+ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_EMUL)
+@@ -3273,8 +3274,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_EMUL)
+        b       9b              /* and return */
+ 10:    stdu    r1, -PPC_MIN_STKFRM(r1)
+        /* guest is in transactional state, so simulate rollback */
++       mr      r3, r4
+        bl      kvmhv_emulate_tm_rollback
+        nop
++       ld      r4, HSTATE_KVM_VCPU(r13) /* our vcpu pointer has been
+trashed */
+        addi    r1, r1, PPC_MIN_STKFRM
+        b       9b
  #endif
- 
- struct jump_entry {
--	jump_label_t code;
--	jump_label_t target;
--	jump_label_t key;
-+	s32 code;
-+	s32 target;
-+	s32 key;
- };
- 
- static inline jump_label_t jump_entry_code(const struct jump_entry *entry)
- {
--	return entry->code;
-+	return (unsigned long)&entry->code + entry->code;
-+}
-+
-+static inline jump_label_t jump_entry_target(const struct jump_entry *entry)
-+{
-+	return (unsigned long)&entry->target + entry->target;
- }
- 
- static inline struct static_key *jump_entry_key(const struct jump_entry *entry)
- {
--	return (struct static_key *)((unsigned long)entry->key & ~1UL);
-+	unsigned long key = (unsigned long)&entry->key + entry->key;
-+
-+	return (struct static_key *)(key & ~1UL);
- }
- 
- static inline bool jump_entry_is_branch(const struct jump_entry *entry)
-@@ -99,7 +106,7 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
- 	entry->code = 0;
- }
- 
--#define jump_label_swap		NULL
-+void jump_label_swap(void *a, void *b, int size);
- 
- #else	/* __ASSEMBLY__ */
- 
-@@ -114,8 +121,8 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
- 	.byte		STATIC_KEY_INIT_NOP
- 	.endif
- 	.pushsection __jump_table, "aw"
--	_ASM_ALIGN
--	_ASM_PTR	.Lstatic_jump_\@, \target, \key
-+	.balign		4
-+	.long		.Lstatic_jump_\@ - ., \target - ., \key - .
- 	.popsection
- .endm
- 
-@@ -130,8 +137,8 @@ static inline void jump_entry_set_module_init(struct jump_entry *entry)
- .Lstatic_jump_after_\@:
- 	.endif
- 	.pushsection __jump_table, "aw"
--	_ASM_ALIGN
--	_ASM_PTR	.Lstatic_jump_\@, \target, \key + 1
-+	.balign		4
-+	.long		.Lstatic_jump_\@ - ., \target - ., \key + 1 - .
- 	.popsection
- .endm
- 
-diff --git a/arch/x86/kernel/jump_label.c b/arch/x86/kernel/jump_label.c
-index d64296092ef5..cc5034b42335 100644
---- a/arch/x86/kernel/jump_label.c
-+++ b/arch/x86/kernel/jump_label.c
-@@ -149,4 +149,20 @@ __init_or_module void arch_jump_label_transform_static(struct jump_entry *entry,
- 		__jump_label_transform(entry, type, text_poke_early, 1);
- }
- 
-+void jump_label_swap(void *a, void *b, int size)
-+{
-+	long delta = (unsigned long)a - (unsigned long)b;
-+	struct jump_entry *jea = a;
-+	struct jump_entry *jeb = b;
-+	struct jump_entry tmp = *jea;
-+
-+	jea->code	= jeb->code - delta;
-+	jea->target	= jeb->target - delta;
-+	jea->key	= jeb->key - delta;
-+
-+	jeb->code	= tmp.code + delta;
-+	jeb->target	= tmp.target + delta;
-+	jeb->key	= tmp.key + delta;
-+}
-+
- #endif
-diff --git a/tools/objtool/special.c b/tools/objtool/special.c
-index 84f001d52322..98ae55b39037 100644
---- a/tools/objtool/special.c
-+++ b/tools/objtool/special.c
-@@ -30,9 +30,9 @@
- #define EX_ORIG_OFFSET		0
- #define EX_NEW_OFFSET		4
- 
--#define JUMP_ENTRY_SIZE		24
-+#define JUMP_ENTRY_SIZE		12
- #define JUMP_ORIG_OFFSET	0
--#define JUMP_NEW_OFFSET		8
-+#define JUMP_NEW_OFFSET		4
- 
- #define ALT_ENTRY_SIZE		13
- #define ALT_ORIG_OFFSET		0
--- 
-2.11.0
