@@ -1,22 +1,21 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3z9qzs6YlHzF0PK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jan 2018 21:29:13 +1100 (AEDT)
-Received: by mail-qk0-x241.google.com with SMTP id 143so46195832qki.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 02:29:13 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3z9r7l4TczzF0PL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jan 2018 21:36:03 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id g10so62125777qtj.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 02:36:03 -0800 (PST)
 MIME-Version: 1.0
 Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20171229081911.2802-30-hch@lst.de>
+In-Reply-To: <20171229081911.2802-3-hch@lst.de>
 References: <20171229081911.2802-1-hch@lst.de>
- <20171229081911.2802-30-hch@lst.de>
+ <20171229081911.2802-3-hch@lst.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 2 Jan 2018 11:29:10 +0100
-Message-ID: <CAMuHMdU0_p4RHSKL891YCgej_L2KM5cxmhXDLXVUBXgWoUosVA@mail.gmail.com>
-Subject: Re: [PATCH 29/67] dma-direct: use node local allocations for coherent
- memory
+Date: Tue, 2 Jan 2018 11:36:00 +0100
+Message-ID: <CAMuHMdUXSMuQ=RoZp86CODVk5Ubd3R+jtqOur_Uqnu+7h_m9AA@mail.gmail.com>
+Subject: Re: [PATCH 02/67] alpha: mark jensen as broken
 To: Christoph Hellwig <hch@lst.de>
 Cc: iommu@lists.linux-foundation.org, alpha <linux-alpha@vger.kernel.org>,
  arcml <linux-snps-arc@lists.infradead.org>,
@@ -35,7 +34,8 @@ Cc: iommu@lists.linux-foundation.org, alpha <linux-alpha@vger.kernel.org>,
  sparclinux <sparclinux@vger.kernel.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  "the arch/x86 maintainers" <x86@kernel.org>,
  Linux-Arch <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,20 +46,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Missing patch description explaining why this change is desirable.
+Hi Christoph,
 
 On Fri, Dec 29, 2017 at 9:18 AM, Christoph Hellwig <hch@lst.de> wrote:
-> --- a/lib/dma-direct.c
-> +++ b/lib/dma-direct.c
-> @@ -39,7 +39,7 @@ static void *dma_direct_alloc(struct device *dev, size_t size,
->         if (gfpflags_allow_blocking(gfp))
->                 page = dma_alloc_from_contiguous(dev, count, page_order, gfp);
->         if (!page)
-> -               page = alloc_pages(gfp, page_order);
-> +               page = alloc_pages_node(dev_to_node(dev), gfp, page_order);
->         if (!page)
->                 return NULL;
+> CONFIG_ALPHA_JENSEN has failed to compile since commit aca05038
+> ("alpha/dma: use common noop dma ops"), so mark it as broken.
+
+unknown revision or path not in the working tree.
+Ah, you dropped the leading "6":
+6aca0503847f6329460b15b3ab2b0e30bb752793
+is less than 2 years old, though.
+
 >
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  arch/alpha/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+> index b31b974a03cb..e96adcbcab41 100644
+> --- a/arch/alpha/Kconfig
+> +++ b/arch/alpha/Kconfig
+> @@ -209,6 +209,7 @@ config ALPHA_EIGER
+>
+>  config ALPHA_JENSEN
+>         bool "Jensen"
+> +       depends on BROKEN
+>         help
+>           DEC PC 150 AXP (aka Jensen): This is a very old Digital system - one
+>           of the first-generation Alpha systems. A number of these systems
 
 Gr{oetje,eeting}s,
 
