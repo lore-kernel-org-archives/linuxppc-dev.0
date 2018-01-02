@@ -1,28 +1,43 @@
-Return-Path: <caleb@crome.org>
-Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
- [IPv6:2607:f8b0:400e:c05::22a])
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zB9H75mnZzDqvT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 10:28:34 +1100 (AEDT)
-Received: by mail-pg0-x22a.google.com with SMTP id f18so2703pga.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 15:28:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zB9hn3cr4zDqkt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 10:47:19 +1100 (AEDT)
+Received: by mail-qt0-x242.google.com with SMTP id u42so107838qte.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 15:47:19 -0800 (PST)
+Date: Tue, 2 Jan 2018 18:47:14 -0500 (EST)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ "David S. Miller" <davem@davemloft.net>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>, James Morris <james.l.morris@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org,
+ matt@codeblueprint.co.uk
+Subject: Re: [PATCH v7 02/10] module: allow symbol exports to be disabled
+In-Reply-To: <20180102200549.22984-3-ard.biesheuvel@linaro.org>
+Message-ID: <nycvar.YSQ.7.76.1801021841410.8567@knanqh.ubzr>
+References: <20180102200549.22984-1-ard.biesheuvel@linaro.org>
+ <20180102200549.22984-3-ard.biesheuvel@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
-From: Caleb Crome <caleb@crome.org>
-Date: Tue, 2 Jan 2018 15:28:11 -0800
-Message-ID: <CAG5mAdxBOvrE3U-PAZVKepZfTZc91kKOLrC_UoMnBsoZvJ9hyA@mail.gmail.com>
-Subject: Re: [PATCH v1 00/15] ASoC: fsl_ssi: Clean up - program flow level
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Timur Tabi <timur@tabi.org>, Mark Brown <broonie@kernel.org>,
- linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- Liam Girdwood <lgirdwood@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- mail@maciej.szmigiero.name,
- Arnaud Mouiche <arnaud.mouiche@invoxia.com>, lukma@denx.de,
- Sascha Hauer <kernel@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,68 +47,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 19, 2017 at 9:00 AM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
->
-> ==Background==
-> The fsl_ssi driver was designed for PPC originally and then it has
-> been updated to support different modes for i.MX Series, including
-> SDMA, I2S Master mode, AC97 and older i.MXs with FIQ, by different
-> contributors for different use cases in different coding styles.
->
-> Additionally, in order to fix/work-around hardware bugs and design
-> flaws, the driver made a lot of compromise so now its program flow
-> looks very complicated and it's getting hard to maintain or update.
->
-> So I am going to clean up the driver on both coding style level and
-> program flow level.
->
-> ==Introduction==
-> This series of patches is the second set to clean up fsl_ssi driver
-> in the program flow level. Any patch here may impact a fundamental
-> test case like playback or record.
->
-> ==Verification==
-> This series of patches require fully tested. I have done such tests
-> on i.MX6SoloX with WM8962 using imx_v6_v7_defconfig as:
->  - Playback via I2S Master and Slave mode
->  - Record via I2S Master and Slave mode
->  - Simultaneous playback and record via I2S Master and Slave mode
->  - Background playback with foreground record (starting at different
->    time) via I2S Master and Slave mode
->  - Background record with foreground playback (starting at different
->    time) via I2S Master and Slave mode
->  * All tests above by hacking offline_config to true in imx51.
->
-> Example of uncovered tests: TDM, AC97, PowerPC and FIQ.
->
-> Nicolin Chen (15):
->   ASoC: fsl_ssi: Clean up set_dai_tdm_slot()
->   ASoC: fsl_ssi: Maintain a mask of active streams
->   ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
->   ASoC: fsl_ssi: Clear FIFO directly in fsl_ssi_config()
->   ASoC: fsl_ssi: Clean up helper functions of trigger()
->   ASoC: fsl_ssi: Add DAIFMT define for AC97
->   ASoC: fsl_ssi: Clean up fsl_ssi_setup_regvals()
->   ASoC: fsl_ssi: Set xFEN0 and xFEN1 together
->   ASoC: fsl_ssi: Use snd_soc_init_dma_data instead
->   ASoC: fsl_ssi: Move one-time configurations to dai_probe()
->   ASoC: fsl_ssi: Setup AC97 in dai_probe()
->   ASoC: fsl_ssi: Clean up _fsl_ssi_set_dai_fmt()
->   ASoC: fsl_ssi: Remove cpu_dai_drv from fsl_ssi structure
->   ASoC: fsl_ssi: Move DT related code to a separate probe()
->   ASoC: fsl_ssi: Use ssi->streams instead of reading register
->
->  sound/soc/fsl/fsl_ssi.c | 710 ++++++++++++++++++++++++------------------------
->  1 file changed, 348 insertions(+), 362 deletions(-)
->
-> --
-> 2.7.4
->
+On Tue, 2 Jan 2018, Ard Biesheuvel wrote:
 
-tested this patch set on MX6 SSI against broonie for-next (4.15-rc5),
-no problems.
-Do I send a separate Tested-by for each patch, or just the 00/15 one?
+> To allow existing C code to be incorporated into the decompressor or
+> the UEFI stub, introduce a CPP macro that turns all EXPORT_SYMBOL_xxx
+> declarations into nops, and #define it in places where such exports
+> are undesirable. Note that this gets rid of a rather dodgy redefine
+> of linux/export.h's header guard.
+[...]
+
+> --- a/include/linux/export.h
+> +++ b/include/linux/export.h
+> @@ -83,6 +83,15 @@ extern struct module __this_module;
+>   */
+>  #define __EXPORT_SYMBOL(sym, sec)	=== __KSYM_##sym ===
+>  
+> +#elif defined(__DISABLE_EXPORTS)
+> +
+> +/*
+> + * Allow symbol exports to be disabled completely so that C code may
+> + * be reused in other execution contexts such as the UEFI stub or the
+> + * decompressor.
+> + */
+> +#define __EXPORT_SYMBOL(sym, sec)
+> +
+
+I think you should rather put this first thing in the #if sequence so to 
+override the defined(__KSYM_DEPS__) case too.  No need to create build 
+dependencies for module symbols that you're going to stub out 
+afterwards anyway.
 
 
-
-Tested-by: Caleb Crome <caleb@crome.org>
+Nicolas
