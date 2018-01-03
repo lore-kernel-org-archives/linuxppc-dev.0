@@ -1,23 +1,23 @@
 Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBd0169lJzDqmM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 04:17:05 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w03Gw6ff062285
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 12:17:00 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2f8y004wwa-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBdg63gtmzDqkt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 04:47:30 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ w03HGT5X037020
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 12:16:55 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2f91b9padd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 12:16:58 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 12:16:54 -0500
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Wed, 3 Jan 2018 10:16:57 -0700
+ Wed, 3 Jan 2018 10:16:42 -0700
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -25,11 +25,11 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
  saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v3 7/7] pseries/setup: Add Initialization of VF Bars
-Date: Wed,  3 Jan 2018 11:16:33 -0600
+Subject: [PATCH v3 1/7] platform/pseries: Update VF config space after EEH
+Date: Wed,  3 Jan 2018 11:16:27 -0600
 In-Reply-To: <20180103171633.94499-1-bryantly@linux.vnet.ibm.com>
 References: <20180103171633.94499-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20180103171633.94499-8-bryantly@linux.vnet.ibm.com>
+Message-Id: <20180103171633.94499-2-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,229 +39,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When enabling SR-IOV in pseries platform,
-the VF bar properties for a PF are reported on
-the device node in the device tree.
-
-This patch adds the IOV Bar resources to Linux
-structures from the device tree for later use
-when configuring SR-IOV by PF driver.
+Add EEH platform operations for pseries to update VF
+config space. With this change after EEH, the VF
+will have updated config space for pseries platform.
 
 Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pci.h         |   2 +
- arch/powerpc/kernel/pci_of_scan.c      |   2 +-
- arch/powerpc/platforms/pseries/setup.c | 164 +++++++++++++++++++++++++++++++++
- 3 files changed, 167 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/eeh.h               |  1 +
+ arch/powerpc/kernel/eeh.c                    | 59 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 65 ++--------------------------
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 26 ++++++++++-
+ 4 files changed, 88 insertions(+), 63 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 8dc32eacc97c..d82802ff5088 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -121,6 +121,8 @@ extern int remove_phb_dynamic(struct pci_controller *phb);
- extern struct pci_dev *of_create_pci_dev(struct device_node *node,
- 					struct pci_bus *bus, int devfn);
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 5161c37dd039..82829c65f31a 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -297,6 +297,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option);
+ int eeh_pe_configure(struct eeh_pe *pe);
+ int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+ 		      unsigned long addr, unsigned long mask);
++int eeh_restore_vf_config(struct pci_dn *pdn);
  
-+extern unsigned int pci_parse_of_flags(u32 addr0, int bridge);
-+
- extern void of_scan_pci_bridge(struct pci_dev *dev);
- 
- extern void of_scan_bus(struct device_node *node, struct pci_bus *bus);
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 0d790f8432d2..20ceec4a5f5e 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -38,7 +38,7 @@ static u32 get_int_prop(struct device_node *np, const char *name, u32 def)
-  * @addr0: value of 1st cell of a device tree PCI address.
-  * @bridge: Set this flag if the address is from a bridge 'ranges' property
-  */
--static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
-+unsigned int pci_parse_of_flags(u32 addr0, int bridge)
- {
- 	unsigned int flags = 0;
- 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 5f1beb8367ac..1f8f70ec50d1 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -459,6 +459,162 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
+ /**
+  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index cbca0a667682..cc649809885e 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -740,6 +740,65 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
+ 	return NULL;
  }
  
-+#ifdef CONFIG_PCI_IOV
-+enum rtas_iov_fw_value_map {
-+	NUM_RES_PROPERTY  = 0, /* Number of Resources */
-+	LOW_INT           = 1, /* Lowest 32 bits of Address */
-+	START_OF_ENTRIES  = 2, /* Always start of entry */
-+	APERTURE_PROPERTY = 2, /* Start of entry+ to  Aperture Size */
-+	WDW_SIZE_PROPERTY = 4, /* Start of entry+ to Window Size */
-+	NEXT_ENTRY        = 7  /* Go to next entry on array */
-+};
-+
-+enum get_iov_fw_value_index {
-+	BAR_ADDRS     = 1,    /*  Get Bar Address */
-+	APERTURE_SIZE = 2,    /*  Get Aperture Size */
-+	WDW_SIZE      = 3     /*  Get Window Size */
-+};
-+
-+resource_size_t pseries_get_iov_fw_value(struct pci_dev *dev, int resno,
-+					 enum get_iov_fw_value_index value)
++int eeh_restore_vf_config(struct pci_dn *pdn)
 +{
-+	const int *indexes;
-+	struct device_node *dn = pci_device_to_OF_node(dev);
-+	int i, num_res, ret = 0;
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++	u32 devctl, cmd, cap2, aer_capctl;
++	int old_mps;
 +
-+	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
-+	if (!indexes)
-+		return  0;
++	if (edev->pcie_cap) {
++		/* Restore MPS */
++		old_mps = (ffs(pdn->mps) - 8) << 5;
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				     2, &devctl);
++		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
++		devctl |= old_mps;
++		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				      2, devctl);
++
++		/* Disable Completion Timeout */
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
++				     4, &cap2);
++		if (cap2 & 0x10) {
++			eeh_ops->read_config(pdn,
++					     edev->pcie_cap + PCI_EXP_DEVCTL2,
++					     4, &cap2);
++			cap2 |= 0x10;
++			eeh_ops->write_config(pdn,
++					      edev->pcie_cap + PCI_EXP_DEVCTL2,
++					      4, cap2);
++		}
++	}
++
++	/* Enable SERR and parity checking */
++	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
++	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
++	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
++
++	/* Enable report various errors */
++	if (edev->pcie_cap) {
++		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				     2, &devctl);
++		devctl &= ~PCI_EXP_DEVCTL_CERE;
++		devctl |= (PCI_EXP_DEVCTL_NFERE |
++			   PCI_EXP_DEVCTL_FERE |
++			   PCI_EXP_DEVCTL_URRE);
++		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
++				      2, devctl);
++	}
++
++	/* Enable ECRC generation and check */
++	if (edev->pcie_cap && edev->aer_cap) {
++		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
++				     4, &aer_capctl);
++		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
++		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
++				      4, aer_capctl);
++	}
++
++	return 0;
++}
++
+ /**
+  * pcibios_set_pcie_reset_state - Set PCI-E reset state
+  * @dev: pci device struct
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 961e64115d92..0665b6d03cb3 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -1655,70 +1655,11 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+ 	return ret;
+ }
+ 
+-static int pnv_eeh_restore_vf_config(struct pci_dn *pdn)
+-{
+-	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+-	u32 devctl, cmd, cap2, aer_capctl;
+-	int old_mps;
+-
+-	if (edev->pcie_cap) {
+-		/* Restore MPS */
+-		old_mps = (ffs(pdn->mps) - 8) << 5;
+-		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				     2, &devctl);
+-		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
+-		devctl |= old_mps;
+-		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				      2, devctl);
+-
+-		/* Disable Completion Timeout */
+-		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
+-				     4, &cap2);
+-		if (cap2 & 0x10) {
+-			eeh_ops->read_config(pdn,
+-					     edev->pcie_cap + PCI_EXP_DEVCTL2,
+-					     4, &cap2);
+-			cap2 |= 0x10;
+-			eeh_ops->write_config(pdn,
+-					      edev->pcie_cap + PCI_EXP_DEVCTL2,
+-					      4, cap2);
+-		}
+-	}
+-
+-	/* Enable SERR and parity checking */
+-	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
+-	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+-	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
+-
+-	/* Enable report various errors */
+-	if (edev->pcie_cap) {
+-		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				     2, &devctl);
+-		devctl &= ~PCI_EXP_DEVCTL_CERE;
+-		devctl |= (PCI_EXP_DEVCTL_NFERE |
+-			   PCI_EXP_DEVCTL_FERE |
+-			   PCI_EXP_DEVCTL_URRE);
+-		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				      2, devctl);
+-	}
+-
+-	/* Enable ECRC generation and check */
+-	if (edev->pcie_cap && edev->aer_cap) {
+-		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+-				     4, &aer_capctl);
+-		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+-		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+-				      4, aer_capctl);
+-	}
+-
+-	return 0;
+-}
+-
+ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ {
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+ 	struct pnv_phb *phb;
+-	s64 ret;
++	s64 ret = 0;
+ 	int config_addr = (pdn->busno << 8) | (pdn->devfn);
+ 
+ 	if (!edev)
+@@ -1732,7 +1673,7 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ 	 * to be exported by firmware in extendible way.
+ 	 */
+ 	if (edev->physfn) {
+-		ret = pnv_eeh_restore_vf_config(pdn);
++		ret = eeh_restore_vf_config(pdn);
+ 	} else {
+ 		phb = pdn->phb->private_data;
+ 		ret = opal_pci_reinit(phb->opal_id,
+@@ -1745,7 +1686,7 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ 		return -EIO;
+ 	}
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static struct eeh_ops pnv_eeh_ops = {
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 2295f117e2d3..a671ef4f57f5 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -708,6 +708,30 @@ static int pseries_eeh_write_config(struct pci_dn *pdn, int where, int size, u32
+ 	return rtas_write_config(pdn, where, size, val);
+ }
+ 
++static int pseries_eeh_restore_config(struct pci_dn *pdn)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++	s64 ret = 0;
++
++	if (!edev)
++		return -EEXIST;
 +
 +	/*
-+	 * First element in the array is the number of Bars
-+	 * returned.  Search through the list to find the matching
-+	 * bar
++	 * FIXME: The MPS, error routing rules, timeout setting are worthy
++	 * to be exported by firmware in extendible way.
 +	 */
-+	num_res = of_read_number(&indexes[NUM_RES_PROPERTY], 1);
-+	if (resno >= num_res)
-+		return 0; /* or an errror */
++	if (edev->physfn)
++		ret = eeh_restore_vf_config(pdn);
 +
-+	i = START_OF_ENTRIES + NEXT_ENTRY * resno;
-+	switch (value) {
-+	case BAR_ADDRS:
-+		ret = of_read_number(&indexes[i], 2);
-+		break;
-+	case APERTURE_SIZE:
-+		ret = of_read_number(&indexes[i + APERTURE_PROPERTY], 2);
-+		break;
-+	case WDW_SIZE:
-+		ret = of_read_number(&indexes[i + WDW_SIZE_PROPERTY], 2);
-+		break;
++	if (ret) {
++		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
++			__func__, edev->pe_config_addr, ret);
++		return -EIO;
 +	}
 +
 +	return ret;
 +}
 +
-+void of_pci_set_vf_bar_size(struct pci_dev *dev, const int *indexes)
-+{
-+	struct resource *res;
-+	resource_size_t base, size;
-+	int i, r, num_res;
-+
-+	num_res = of_read_number(&indexes[NUM_RES_PROPERTY], 1);
-+	num_res = min_t(int, num_res, PCI_SRIOV_NUM_BARS);
-+	for (i = START_OF_ENTRIES, r = 0; r < num_res && r < PCI_SRIOV_NUM_BARS;
-+	     i += NEXT_ENTRY, r++) {
-+		res = &dev->resource[r + PCI_IOV_RESOURCES];
-+		base = of_read_number(&indexes[i], 2);
-+		size = of_read_number(&indexes[i + APERTURE_PROPERTY], 2);
-+		res->flags = pci_parse_of_flags(of_read_number
-+						(&indexes[i + LOW_INT], 1), 0);
-+		res->flags |= (IORESOURCE_MEM_64 | IORESOURCE_PCI_FIXED);
-+		res->name = pci_name(dev);
-+		res->start = base;
-+		res->end = base + size - 1;
-+	}
-+}
-+
-+void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
-+{
-+	struct resource *res, *root, *conflict;
-+	resource_size_t base, size;
-+	int i, r, num_res;
-+
-+	/*
-+	 * First element in the array is the number of Bars
-+	 * returned.  Search through the list to find the matching
-+	 * bars assign them from firmware into resources structure.
-+	 */
-+	num_res = of_read_number(&indexes[NUM_RES_PROPERTY], 1);
-+	for (i = START_OF_ENTRIES, r = 0; r < num_res && r < PCI_SRIOV_NUM_BARS;
-+	     i += NEXT_ENTRY, r++) {
-+		res = &dev->resource[r + PCI_IOV_RESOURCES];
-+		base = of_read_number(&indexes[i], 2);
-+		size = of_read_number(&indexes[i + WDW_SIZE_PROPERTY], 2);
-+		res->name = pci_name(dev);
-+		res->start = base;
-+		res->end = base + size - 1;
-+		root = &iomem_resource;
-+		dev_dbg(&dev->dev,
-+			"pSeries IOV BAR %d: trying firmware assignment %pR\n",
-+			 r + PCI_IOV_RESOURCES, res);
-+		conflict = request_resource_conflict(root, res);
-+		if (conflict) {
-+			dev_info(&dev->dev,
-+				 "BAR %d: %pR conflicts with %s %pR\n",
-+				 r + PCI_IOV_RESOURCES, res,
-+				 conflict->name, conflict);
-+			res->flags |= IORESOURCE_UNSET;
-+		}
-+	}
-+}
-+
-+static void pseries_pci_fixup_resources(struct pci_dev *pdev)
-+{
-+	const int *indexes;
-+	struct device_node *dn = pci_device_to_OF_node(pdev);
-+
-+	/*Firmware must support open sriov otherwise dont configure*/
-+	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
-+	if (!indexes)
-+		return;
-+	/* Assign the addresses from device tree*/
-+	of_pci_set_vf_bar_size(pdev, indexes);
-+}
-+
-+static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
-+{
-+	const int *indexes;
-+	struct device_node *dn = pci_device_to_OF_node(pdev);
-+
-+	if (!pdev->is_physfn || pdev->is_added)
-+		return;
-+	/*Firmware must support open sriov otherwise dont configure*/
-+	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
-+	if (!indexes)
-+		return;
-+	/* Assign the addresses from device tree*/
-+	of_pci_parse_iov_addrs(pdev, indexes);
-+}
-+
-+static resource_size_t pseries_pci_iov_resource_alignment(struct pci_dev *pdev,
-+							  int resno)
-+{
-+	const __be32 *reg;
-+	struct device_node *dn = pci_device_to_OF_node(pdev);
-+
-+	/*Firmware must support open sriov otherwise report regular alignment*/
-+	reg = of_get_property(dn, "ibm,is-open-sriov-pf", NULL);
-+	if (!reg)
-+		return pci_iov_resource_size(pdev, resno);
-+
-+	if (!pdev->is_physfn)
-+		return 0;
-+	return pseries_get_iov_fw_value(pdev,
-+					resno - PCI_IOV_RESOURCES,
-+					APERTURE_SIZE);
-+}
-+#endif
-+
- static void __init pSeries_setup_arch(void)
- {
- 	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
-@@ -490,6 +646,14 @@ static void __init pSeries_setup_arch(void)
- 		vpa_init(boot_cpuid);
- 		ppc_md.power_save = pseries_lpar_idle;
- 		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
-+#ifdef CONFIG_PCI_IOV
-+		ppc_md.pcibios_fixup_resources =
-+			pseries_pci_fixup_resources;
-+		ppc_md.pcibios_fixup_sriov =
-+			pseries_pci_fixup_iov_resources;
-+		ppc_md.pcibios_iov_resource_alignment =
-+			pseries_pci_iov_resource_alignment;
-+#endif
- 	} else {
- 		/* No special idle routine */
- 		ppc_md.enable_pmcs = power4_enable_pmcs;
+ static struct eeh_ops pseries_eeh_ops = {
+ 	.name			= "pseries",
+ 	.init			= pseries_eeh_init,
+@@ -723,7 +747,7 @@ static struct eeh_ops pseries_eeh_ops = {
+ 	.read_config		= pseries_eeh_read_config,
+ 	.write_config		= pseries_eeh_write_config,
+ 	.next_error		= NULL,
+-	.restore_config		= NULL
++	.restore_config		= pseries_eeh_restore_config
+ };
+ 
+ /**
 -- 
 2.14.3 (Apple Git-98)
