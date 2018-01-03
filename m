@@ -1,18 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBWfv13PszDqlc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 00:16:55 +1100 (AEDT)
-In-Reply-To: <20180101052458.132027-1-jsperbeck@google.com>
-To: John Sperbeck <jsperbeck@google.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBYXb0dggzDqmC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 01:41:34 +1100 (AEDT)
+To: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: John Sperbeck <jsperbeck@google.com>
-Subject: Re: powerpc/mm: restore SEGV_ACCERR for segv on mapped region
-Message-Id: <3zBWft73J4z9s81@ozlabs.org>
-Date: Thu,  4 Jan 2018 00:16:54 +1100 (AEDT)
+ Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] ps3_gelic_net: Delete an error message for a failed memory
+ allocation in gelic_descr_prepare_rx()
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Message-ID: <9613bfbf-11cc-1e66-484a-84fcda022861@users.sourceforge.net>
+Date: Wed, 3 Jan 2018 15:40:59 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-01-01 at 05:24:58 UTC, John Sperbeck wrote:
-> A recent refactoring of the powerpc page fault handler caused
-> access to protected memory regions to indicate SEGV_MAPERR instead
-> of the traditional SEGV_ACCERR in the si_code field of a user-space
-> signal handler.  This can confuse debug libraries that temporarily
-> change the protection of memory regions, and expect to use
-> SEGV_ACCERR as an indication to restore access to a region.
-> 
-> This change restores the previous behavior.  The following program
-> exhibits the issue:
-> 
->     $ ./repro read  || echo "FAILED"
->     $ ./repro write || echo "FAILED"
->     $ ./repro exec  || echo "FAILED"
-> 
->     #include <stdio.h>
->     #include <stdlib.h>
->     #include <string.h>
->     #include <unistd.h>
->     #include <signal.h>
->     #include <sys/mman.h>
->     #include <assert.h>
-> 
->     static void segv_handler(int n, siginfo_t *info, void *arg) {
->             _exit(info->si_code == SEGV_ACCERR ? 0 : 1);
->     }
-> 
->     int main(int argc, char **argv)
->     {
->             void *p = NULL;
->             struct sigaction act = {
->                     .sa_sigaction = segv_handler,
->                     .sa_flags = SA_SIGINFO,
->             };
-> 
->             assert(argc == 2);
->             p = mmap(NULL, getpagesize(),
->                     (strcmp(argv[1], "write") == 0) ? PROT_READ : 0,
->                     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
->             assert(p != MAP_FAILED);
-> 
->             assert(sigaction(SIGSEGV, &act, NULL) == 0);
->             if (strcmp(argv[1], "read") == 0)
->                     printf("%c", *(unsigned char *)p);
->             else if (strcmp(argv[1], "write") == 0)
->                     *(unsigned char *)p = 0;
->             else if (strcmp(argv[1], "exec") == 0)
->                     ((void (*)(void))p)();
->             return 1;  /* failed to generate SEGV */
->     }
-> 
-> Signed-off-by: John Sperbeck <jsperbeck@google.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 3 Jan 2018 14:50:59 +0100
 
-Applied to powerpc fixes, thanks.
+Omit an extra message for a memory allocation failure in this function.
 
-https://git.kernel.org/powerpc/c/ecb101aed86156ec7cd71e5dca668e
+This issue was detected by using the Coccinelle software.
 
-cheers
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index 88d74aef218a..644b875e324c 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -395,8 +395,6 @@ static int gelic_descr_prepare_rx(struct gelic_card *card,
+ 	descr->skb = dev_alloc_skb(bufsize + GELIC_NET_RXBUF_ALIGN - 1);
+ 	if (!descr->skb) {
+ 		descr->buf_addr = 0; /* tell DMAC don't touch memory */
+-		dev_info(ctodev(card),
+-			 "%s:allocate skb failed !!\n", __func__);
+ 		return -ENOMEM;
+ 	}
+ 	descr->buf_size = cpu_to_be32(bufsize);
+-- 
+2.15.1
