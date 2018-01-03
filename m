@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBczn4gHDzDqmP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 04:16:53 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBczp3YgszDqmy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 04:16:54 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w03HFmWd039537
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 12:16:49 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2f91efws3x-1
+ w03HFB4R024572
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 12:16:50 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2f92vyskux-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 12:16:48 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 12:16:50 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Wed, 3 Jan 2018 10:16:46 -0700
+ Wed, 3 Jan 2018 10:16:48 -0700
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -25,11 +25,11 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
  saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v3 3/7] platforms/pseries: Set eeh_pe of EEH_PE_VF type
-Date: Wed,  3 Jan 2018 11:16:29 -0600
+Subject: [PATCH v3 4/7] powerpc/kernel Add EEH operations to notify resume
+Date: Wed,  3 Jan 2018 11:16:30 -0600
 In-Reply-To: <20180103171633.94499-1-bryantly@linux.vnet.ibm.com>
 References: <20180103171633.94499-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20180103171633.94499-4-bryantly@linux.vnet.ibm.com>
+Message-Id: <20180103171633.94499-5-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,73 +39,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To correctly use EEH code one has to make
-sure that the EEH_PE_VF is set for dynamic created
-VFs. Therefore this patch allocates an eeh_pe of
-eeh type EEH_PE_VF and associates PE with parent.
+When pseries SR-IOV is enabled and after a PF driver
+has resumed from EEH, platform has to be notified
+of the event so the child VFs can be allowed to
+resume their normal recovery path.
+
+This patch makes the EEH operation allow unfreeze
+platform dependent code and adds the call to
+pseries EEH code.
 
 Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h        |  5 ++++-
- arch/powerpc/platforms/pseries/eeh_pseries.c | 14 +++++++++++++-
- 2 files changed, 17 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |  1 +
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  3 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 94 +++++++++++++++++++++++++++-
+ 3 files changed, 96 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 9f66ddebb799..16d70740a76f 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -211,7 +211,10 @@ struct pci_dn {
- 	unsigned int *pe_num_map;	/* PE# for the first VF PE or array */
- 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
- #define IODA_INVALID_M64        (-1)
--	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
-+	union {
-+		int     (*m64_map)[PCI_SRIOV_NUM_BARS]; /*Only used in powernv */
-+		int     last_allow_rc;	/* Only used in pSeries */
-+	};
- #endif /* CONFIG_PCI_IOV */
- 	int	mps;			/* Maximum Payload Size */
- 	struct list_head child_list;
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 82829c65f31a..fd37cc101f4f 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -214,6 +214,7 @@ struct eeh_ops {
+ 	int (*write_config)(struct pci_dn *pdn, int where, int size, u32 val);
+ 	int (*next_error)(struct eeh_pe **pe);
+ 	int (*restore_config)(struct pci_dn *pdn);
++	int (*notify_resume)(struct pci_dn *pdn);
+ };
+ 
+ extern int eeh_subsystem_flags;
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 0665b6d03cb3..33c86c1a1720 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -1704,7 +1704,8 @@ static struct eeh_ops pnv_eeh_ops = {
+ 	.read_config            = pnv_eeh_read_config,
+ 	.write_config           = pnv_eeh_write_config,
+ 	.next_error		= pnv_eeh_next_error,
+-	.restore_config		= pnv_eeh_restore_config
++	.restore_config		= pnv_eeh_restore_config,
++	.notify_resume		= NULL
+ };
+ 
+ #ifdef CONFIG_PCI_IOV
 diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index a671ef4f57f5..686e9c7feab5 100644
+index 686e9c7feab5..bdd7be52b12d 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -58,6 +58,8 @@ static int ibm_configure_pe;
- void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
- {
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
-+	struct pci_dn *physfn_pdn;
-+	struct eeh_dev *edev;
- 
- 	if (!pdev->is_virtfn)
- 		return;
-@@ -65,6 +67,14 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
- 	pdn->device_id  =  pdev->device;
- 	pdn->vendor_id  =  pdev->vendor;
- 	pdn->class_code =  pdev->class;
-+	/* Last allow unfreeze return code used for retrieval
-+	 * by user space in eeh-sysfs to show the last command
-+	 * completion from platform
-+	 */
-+	pdn->last_allow_rc =  0;
-+	physfn_pdn      =  pci_get_pdn(pdev->physfn);
-+	pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
-+	edev = pdn_to_eeh_dev(pdn);
- 
- 	/*
- 	 * The following operations will fail if VF's sysfs files
-@@ -72,8 +82,10 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
- 	 */
- 	eeh_add_device_early(pdn);
- 	eeh_add_device_late(pdev);
-+	edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
-+	eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
-+	eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
- 	eeh_sysfs_add_device(pdev);
--
+@@ -744,6 +744,97 @@ static int pseries_eeh_restore_config(struct pci_dn *pdn)
+ 	return ret;
  }
  
- /*
++#ifdef CONFIG_PCI_IOV
++int pseries_send_allow_unfreeze(struct pci_dn *pdn,
++				u16 *vf_pe_array, int cur_vfs)
++{
++	int rc;
++	int ibm_allow_unfreeze = rtas_token("ibm,open-sriov-allow-unfreeze");
++	unsigned long buid, addr;
++
++	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
++	buid = pdn->phb->buid;
++	spin_lock(&rtas_data_buf_lock);
++	memcpy(rtas_data_buf, vf_pe_array, RTAS_DATA_BUF_SIZE);
++	rc = rtas_call(ibm_allow_unfreeze, 5, 1, NULL,
++		       addr,
++		       BUID_HI(buid),
++		       BUID_LO(buid),
++		       rtas_data_buf, cur_vfs * sizeof(u16));
++	spin_unlock(&rtas_data_buf_lock);
++	if (rc)
++		pr_warn("%s: Failed to allow unfreeze for PHB#%x-PE#%lx, rc=%x\n",
++			__func__,
++			pdn->phb->global_number, addr, rc);
++	return rc;
++}
++
++static int pseries_call_allow_unfreeze(struct eeh_dev *edev)
++{
++	struct pci_dn *pdn, *tmp, *parent, *physfn_pdn;
++	int cur_vfs = 0, rc = 0, vf_index, bus, devfn;
++	u16 *vf_pe_array;
++
++	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
++	if (!vf_pe_array)
++		return -ENOMEM;
++	if (pci_num_vf(edev->physfn ? edev->physfn : edev->pdev)) {
++		if (edev->pdev->is_physfn) {
++			cur_vfs = pci_num_vf(edev->pdev);
++			pdn = eeh_dev_to_pdn(edev);
++			parent = pdn->parent;
++			for (vf_index = 0; vf_index < cur_vfs; vf_index++)
++				vf_pe_array[vf_index] =
++					cpu_to_be16(pdn->pe_num_map[vf_index]);
++			rc = pseries_send_allow_unfreeze(pdn, vf_pe_array,
++							 cur_vfs);
++			pdn->last_allow_rc = rc;
++			for (vf_index = 0; vf_index < cur_vfs; vf_index++) {
++				list_for_each_entry_safe(pdn, tmp,
++							 &parent->child_list,
++							 list) {
++					bus = pci_iov_virtfn_bus(edev->pdev,
++								 vf_index);
++					devfn = pci_iov_virtfn_devfn(edev->pdev,
++								     vf_index);
++					if (pdn->busno != bus ||
++					    pdn->devfn != devfn)
++						continue;
++					pdn->last_allow_rc = rc;
++				}
++			}
++		} else {
++			pdn = pci_get_pdn(edev->pdev);
++			vf_pe_array[0] = cpu_to_be16(pdn->pe_number);
++			physfn_pdn = pci_get_pdn(edev->physfn);
++			rc = pseries_send_allow_unfreeze(physfn_pdn,
++							 vf_pe_array, 1);
++			pdn->last_allow_rc = rc;
++		}
++	}
++
++	kfree(vf_pe_array);
++	return rc;
++}
++
++static int pseries_notify_resume(struct pci_dn *pdn)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++
++	if (!edev)
++		return -EEXIST;
++
++	if (rtas_token("ibm,open-sriov-allow-unfreeze")
++	    == RTAS_UNKNOWN_SERVICE)
++		return -EINVAL;
++
++	if (edev->pdev->is_physfn || edev->pdev->is_virtfn)
++		return pseries_call_allow_unfreeze(edev);
++
++	return 0;
++}
++#endif
++
+ static struct eeh_ops pseries_eeh_ops = {
+ 	.name			= "pseries",
+ 	.init			= pseries_eeh_init,
+@@ -759,7 +850,8 @@ static struct eeh_ops pseries_eeh_ops = {
+ 	.read_config		= pseries_eeh_read_config,
+ 	.write_config		= pseries_eeh_write_config,
+ 	.next_error		= NULL,
+-	.restore_config		= pseries_eeh_restore_config
++	.restore_config		= pseries_eeh_restore_config,
++	.notify_resume		= pseries_notify_resume
+ };
+ 
+ /**
 -- 
 2.14.3 (Apple Git-98)
