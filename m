@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBmTz03YmzDqpN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 09:55:02 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w03MsFTM133329
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 17:55:00 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2f98cd00ye-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBmVD548mzDqpT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 09:55:16 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ w03MsGqp009328
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 17:55:14 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2f9439259f-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 17:55:00 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 17:55:13 -0500
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Wed, 3 Jan 2018 15:54:58 -0700
+ Wed, 3 Jan 2018 15:55:13 -0700
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 4/6] cxlflash: Remove embedded CXL work structures
-Date: Wed,  3 Jan 2018 16:54:50 -0600
+Subject: [PATCH 5/6] cxlflash: Adapter context init can return error
+Date: Wed,  3 Jan 2018 16:55:04 -0600
 In-Reply-To: <1515020002-43551-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1515020002-43551-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1515020090-43721-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1515020104-43758-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,112 +41,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Adapter context creation can return either NULL or an error pointer.
+Updating the check condition to reflect this.
 
-The CXL-specific work structure used to request the number of interrupts
-currently resides as a nested member of both the context information and
-hardware queue structures. It is used to cache values (specifically the
-number of interrupts) required by the CXL layer when starting a context.
-
-To facilitate staging that will ultimately allow the cxlflash core to
-become agnostic of the underlying accelerator transport, remove these
-embedded work structures.
-
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h    |  1 -
- drivers/scsi/cxlflash/main.c      |  4 +---
- drivers/scsi/cxlflash/superpipe.c | 15 +++++++++------
- drivers/scsi/cxlflash/superpipe.h |  1 -
- 4 files changed, 10 insertions(+), 11 deletions(-)
+ drivers/scsi/cxlflash/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index d2a180d..48df89f 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -204,7 +204,6 @@ struct hwq {
- 	 */
- 	struct afu *afu;
- 	void *ctx_cookie;
--	struct cxl_ioctl_start_work work;
- 	struct sisl_host_map __iomem *host_map;		/* MC host map */
- 	struct sisl_ctrl_map __iomem *ctrl_map;		/* MC control map */
- 	ctx_hndl_t ctx_hndl;	/* master's context handle */
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 3880d52..b6cadeb 100644
+index b6cadeb..32014e8 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -1611,9 +1611,7 @@ static int start_context(struct cxlflash_cfg *cfg, u32 index)
- 	struct hwq *hwq = get_hwq(cfg->afu, index);
- 	int rc = 0;
- 
--	rc = cxl_start_context(hwq->ctx_cookie,
--			       hwq->work.work_element_descriptor,
--			       NULL);
-+	rc = cxl_start_context(hwq->ctx_cookie, 0, NULL);
- 
- 	dev_dbg(dev, "%s: returning rc=%d\n", __func__, rc);
- 	return rc;
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index ecfa553..51f67dc 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -1309,7 +1309,7 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
- 	struct afu *afu = cfg->afu;
- 	struct llun_info *lli = sdev->hostdata;
- 	struct glun_info *gli = lli->parent;
--	struct cxl_ioctl_start_work *work;
-+	struct cxl_ioctl_start_work work = { 0 };
- 	struct ctx_info *ctxi = NULL;
- 	struct lun_access *lun_access = NULL;
- 	int rc = 0;
-@@ -1405,11 +1405,10 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
- 		goto err;
+@@ -1992,7 +1992,7 @@ static int init_mc(struct cxlflash_cfg *cfg, u32 index)
+ 		ctx = cxl_get_context(cfg->dev);
+ 	else
+ 		ctx = cxl_dev_context_init(cfg->dev);
+-	if (unlikely(!ctx)) {
++	if (IS_ERR_OR_NULL(ctx)) {
+ 		rc = -ENOMEM;
+ 		goto err1;
  	}
- 
--	work = &ctxi->work;
--	work->num_interrupts = irqs;
--	work->flags = CXL_START_WORK_NUM_IRQS;
-+	work.num_interrupts = irqs;
-+	work.flags = CXL_START_WORK_NUM_IRQS;
- 
--	rc = cxl_start_work(ctx, work);
-+	rc = cxl_start_work(ctx, &work);
- 	if (unlikely(rc)) {
- 		dev_dbg(dev, "%s: Could not start context rc=%d\n",
- 			__func__, rc);
-@@ -1534,6 +1533,7 @@ static int recover_context(struct cxlflash_cfg *cfg,
- 	struct file *file;
- 	void *ctx;
- 	struct afu *afu = cfg->afu;
-+	struct cxl_ioctl_start_work work = { 0 };
- 
- 	ctx = cxl_dev_context_init(cfg->dev);
- 	if (IS_ERR_OR_NULL(ctx)) {
-@@ -1543,7 +1543,10 @@ static int recover_context(struct cxlflash_cfg *cfg,
- 		goto out;
- 	}
- 
--	rc = cxl_start_work(ctx, &ctxi->work);
-+	work.num_interrupts = ctxi->irqs;
-+	work.flags = CXL_START_WORK_NUM_IRQS;
-+
-+	rc = cxl_start_work(ctx, &work);
- 	if (unlikely(rc)) {
- 		dev_dbg(dev, "%s: Could not start context rc=%d\n",
- 			__func__, rc);
-diff --git a/drivers/scsi/cxlflash/superpipe.h b/drivers/scsi/cxlflash/superpipe.h
-index b761293..35c3cbf 100644
---- a/drivers/scsi/cxlflash/superpipe.h
-+++ b/drivers/scsi/cxlflash/superpipe.h
-@@ -96,7 +96,6 @@ struct ctx_info {
- 	struct llun_info **rht_lun;       /* Mapping of RHT entries to LUNs */
- 	u8 *rht_needs_ws;	/* User-desired write-same function per RHTE */
- 
--	struct cxl_ioctl_start_work work;
- 	u64 ctxid;
- 	u64 irqs; /* Number of interrupts requested for context */
- 	pid_t pid;
 -- 
 2.1.0
