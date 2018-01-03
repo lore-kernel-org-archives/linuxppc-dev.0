@@ -1,37 +1,43 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
+ [IPv6:2607:f8b0:400d:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBN140K3mzF0R7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 18:32:07 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w037VVet084648
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 02:32:06 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2f8tc3gygc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 02:32:05 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 3 Jan 2018 07:32:02 -0000
-Subject: Re: [PATCH 04/13] powerpc/powernv: Add platform-specific services for
- opencapi
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
- alastair@au1.ibm.com
-References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
- <daaa7e08af012047baed61a79ed5dc62e5738766.1513608243.git.fbarrat@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 3 Jan 2018 18:31:56 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBNPG6QQbzDqw7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 18:49:38 +1100 (AEDT)
+Received: by mail-qk0-x241.google.com with SMTP id d202so614733qkc.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 23:49:38 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <daaa7e08af012047baed61a79ed5dc62e5738766.1513608243.git.fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <8ac007be-bbb5-ed4f-96b1-01f008252a11@au1.ibm.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <87h8s3cvel.fsf@concordia.ellerman.id.au>
+References: <20171229081911.2802-1-hch@lst.de>
+ <20171229081911.2802-17-hch@lst.de>
+ <878tdgtwzp.fsf@concordia.ellerman.id.au>
+ <CAMuHMdWWus2kNSOzS94k-3678826W1YjKwCWTquu3hBLZ80cvw@mail.gmail.com>
+ <87h8s3cvel.fsf@concordia.ellerman.id.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 3 Jan 2018 08:49:35 +0100
+Message-ID: <CAMuHMdWYDz_jHNxQ-B8944520R-myzHkjkL1rKWUjA38inU7cw@mail.gmail.com>
+Subject: Re: [PATCH 16/67] powerpc: rename dma_direct_ to dma_nommu_
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>, linux-ia64@vger.kernel.org,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Linux-Arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, linux-c6x-dev@linux-c6x.org,
+ "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
+ "the arch/x86 maintainers" <x86@kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>, patches@groups.riscv.org,
+ "open list:METAG ARCHITECTURE" <linux-metag@vger.kernel.org>,
+ linux-arm-kernel@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, Parisc List <linux-parisc@vger.kernel.org>,
+ Cris <linux-cris-kernel@axis.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ alpha <linux-alpha@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,105 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/12/17 02:21, Frederic Barrat wrote:
-> Implement a few platform-specific calls which can be used by drivers:
-> 
-> - provide the Transaction Layer capabilities of the host, so that the
->    driver can find some common ground and configure the device and host
->    appropriately.
-> 
-> - provide the hw interrupt to be used for translation faults raised by
->    the NPU
-> 
-> - map/unmap some NPU mmio registers to get the fault context when the
->    NPU raises an address translation fault
-> 
-> The rest are wrappers around the previously-introduced opal calls.
-> 
-> 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/include/asm/pnv-ocxl.h     |  36 ++++++
->   arch/powerpc/platforms/powernv/Makefile |   1 +
->   arch/powerpc/platforms/powernv/ocxl.c   | 187 ++++++++++++++++++++++++++++++++
->   3 files changed, 224 insertions(+)
->   create mode 100644 arch/powerpc/include/asm/pnv-ocxl.h
->   create mode 100644 arch/powerpc/platforms/powernv/ocxl.c
-> 
-> diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-> new file mode 100644
-> index 000000000000..b9ab3f0a9634
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/pnv-ocxl.h
-> @@ -0,0 +1,36 @@
-> +/*
-> + * Copyright 2017 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#ifndef _ASM_PVN_OCXL_H
-> +#define _ASM_PVN_OCXL_H
+Hi Michael,
 
-I assume you meant "PNV" here.
+On Wed, Jan 3, 2018 at 7:24 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>
+>> On Tue, Jan 2, 2018 at 10:45 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>> Christoph Hellwig <hch@lst.de> writes:
+>>>
+>>>> We want to use the dma_direct_ namespace for a generic implementation,
+>>>> so rename powerpc to the second best choice: dma_nommu_.
+>>>
+>>> I'm not a fan of "nommu". Some of the users of direct ops *are* using an
+>>> IOMMU, they're just setting up a 1:1 mapping once at init time, rather
+>>> than mapping dynamically.
+>>>
+>>> Though I don't have a good idea for a better name, maybe "1to1",
+>>> "linear", "premapped" ?
+>>
+>> "identity"?
+>
+> I think that would be wrong, but thanks for trying to help :)
+>
+> The address on the device side is sometimes (often?) offset from the CPU
+> address. So eg. the device can DMA to RAM address 0x0 using address
+> 0x800000000000000.
+>
+> Identity would imply 0 == 0 etc.
+>
+> I think "bijective" is the correct term, but that's probably a bit
+> esoteric.
 
-> +
-> +#include <linux/pci.h>
-> +
-> +#define PNV_OCXL_TL_MAX_TEMPLATE        63
-> +#define PNV_OCXL_TL_BITS_PER_RATE       4
-> +#define PNV_OCXL_TL_RATE_BUF_SIZE       ((PNV_OCXL_TL_MAX_TEMPLATE+1) * PNV_OCXL_TL_BITS_PER_RATE / 8)
-> +
-> +extern int pnv_ocxl_get_tl_cap(struct pci_dev *dev, long *cap,
-> +			char *rate_buf, int rate_buf_size);
-> +extern int pnv_ocxl_set_tl_conf(struct pci_dev *dev, long cap,
-> +			uint64_t rate_buf_phys, int rate_buf_size);
-> +
-> +extern int pnv_ocxl_get_xsl_irq(struct pci_dev *dev, int *hwirq);
-> +extern void pnv_ocxl_unmap_xsl_regs(void __iomem *dsisr, void __iomem *dar,
-> +				void __iomem *tfc, void __iomem *pe_handle);
-> +extern int pnv_ocxl_map_xsl_regs(struct pci_dev *dev, void __iomem **dsisr,
-> +				void __iomem **dar, void __iomem **tfc,
-> +				void __iomem **pe_handle);
-> +
-> +extern int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
-> +			void **platform_data);
-> +extern void pnv_ocxl_spa_release(void *platform_data);
-> +extern int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle);
-> +
-> +#endif /* _ASM_PVN_OCXL_H */
+OK, didn't know about the offset.
+Then "linear" is what we tend to use, right?
 
-And here
+Gr{oetje,eeting}s,
 
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> index 3732118a0482..6c9d5199a7e2 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -17,3 +17,4 @@ obj-$(CONFIG_PERF_EVENTS) += opal-imc.o
->   obj-$(CONFIG_PPC_MEMTRACE)	+= memtrace.o
->   obj-$(CONFIG_PPC_VAS)	+= vas.o vas-window.o vas-debug.o
->   obj-$(CONFIG_PPC_FTW)	+= nx-ftw.o
-> +obj-$(CONFIG_OCXL_BASE)	+= ocxl.o
-> diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-> new file mode 100644
-> index 000000000000..3378b75cf5e5
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/ocxl.c
-> +int pnv_ocxl_get_xsl_irq(struct pci_dev *dev, int *hwirq)
-> +{
-> +	int rc;
-> +
-> +	rc = of_property_read_u32(dev->dev.of_node, "ibm,opal-xsl-irq", hwirq);
-> +	if (rc) {
-> +		dev_err(&dev->dev,
-> +			"Can't translation xsl interrupt for device\n");
+                        Geert
 
-Can't get?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
