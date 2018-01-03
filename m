@@ -3,35 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBH9D1BHhzF0Py
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 14:53:51 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBKjQ1CpBzF0QN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 16:48:25 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w033rlQd096060
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jan 2018 22:53:49 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2f8p2htjf7-1
+ w035iOfx112002
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jan 2018 00:48:23 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2f8kdca28v-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 22:53:48 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 00:48:22 -0500
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 3 Jan 2018 03:53:44 -0000
-Subject: Re: [PATCH 01/13] powerpc/powernv: Introduce new PHB type for
- opencapi links
+ Wed, 3 Jan 2018 05:48:21 -0000
+Subject: Re: [PATCH 10/13] ocxl: Add Makefile and Kconfig
 To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, gregkh@linuxfoundation.org, mpe@ellerman.id.au,
  alastair@au1.ibm.com
 References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
- <6870a754d346e7d8a47325e5ba4327853aea9226.1513608243.git.fbarrat@linux.vnet.ibm.com>
+ <ddc10e7f73d714bb02bcac4958fc22ab10f7e129.1513608243.git.fbarrat@linux.vnet.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 3 Jan 2018 14:53:38 +1100
+Date: Wed, 3 Jan 2018 16:48:15 +1100
 MIME-Version: 1.0
-In-Reply-To: <6870a754d346e7d8a47325e5ba4327853aea9226.1513608243.git.fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <ddc10e7f73d714bb02bcac4958fc22ab10f7e129.1513608243.git.fbarrat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <c4cfdd4c-6baa-f62f-886a-b548ed6cb243@au1.ibm.com>
+Message-Id: <9cf29972-8995-949f-1435-70f0e11071cf@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,100 +41,114 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 19/12/17 02:21, Frederic Barrat wrote:
-> The NPU was already abstracted by opal as a virtual PHB for nvlink,
-> but it helps to be able to differentiate between a nvlink or opencapi
-> PHB, as it's not completely transparent to linux. In particular, PE
-> assignment differs and we'll also need the information in later
-> patches.
-> 
-> So rename existing PNV_PHB_NPU type to PNV_PHB_NPU_NVLINK and add a
-> new type PNV_PHB_NPU_OCAPI.
+> OCXL_BASE triggers the platform support needed by the driver.
 > 
 > Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 > ---
->   arch/powerpc/platforms/powernv/npu-dma.c  |  2 +-
->   arch/powerpc/platforms/powernv/pci-ioda.c | 46 +++++++++++++++++++++++--------
->   arch/powerpc/platforms/powernv/pci.c      |  4 +++
->   arch/powerpc/platforms/powernv/pci.h      |  8 ++++--
->   4 files changed, 45 insertions(+), 15 deletions(-)
+>   drivers/misc/Kconfig       |  1 +
+>   drivers/misc/Makefile      |  1 +
+>   drivers/misc/ocxl/Kconfig  | 25 +++++++++++++++++++++++++
+>   drivers/misc/ocxl/Makefile | 10 ++++++++++
+>   4 files changed, 37 insertions(+)
+>   create mode 100644 drivers/misc/ocxl/Kconfig
+>   create mode 100644 drivers/misc/ocxl/Makefile
 > 
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index f6cbc1a71472..c5899c107d59 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -277,7 +277,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
->   	int64_t rc = 0;
->   	phys_addr_t top = memblock_end_of_DRAM();
+> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> index f1a5c2357b14..0534f338c84a 100644
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -508,4 +508,5 @@ source "drivers/misc/mic/Kconfig"
+>   source "drivers/misc/genwqe/Kconfig"
+>   source "drivers/misc/echo/Kconfig"
+>   source "drivers/misc/cxl/Kconfig"
+> +source "drivers/misc/ocxl/Kconfig"
+>   endmenu
+> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+> index 5ca5f64df478..73326d54e246 100644
+> --- a/drivers/misc/Makefile
+> +++ b/drivers/misc/Makefile
+> @@ -55,6 +55,7 @@ obj-$(CONFIG_CXL_BASE)		+= cxl/
+>   obj-$(CONFIG_ASPEED_LPC_CTRL)	+= aspeed-lpc-ctrl.o
+>   obj-$(CONFIG_ASPEED_LPC_SNOOP)	+= aspeed-lpc-snoop.o
+>   obj-$(CONFIG_PCI_ENDPOINT_TEST)	+= pci_endpoint_test.o
+> +obj-$(CONFIG_OCXL)		+= ocxl/
 > 
-> -	if (phb->type != PNV_PHB_NPU || !npe->pdev)
-> +	if (phb->type != PNV_PHB_NPU_NVLINK || !npe->pdev)
->   		return -EINVAL;
-> 
->   	rc = pnv_npu_unset_window(npe, 0);
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 749055553064..c37b5d288f9c 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -54,7 +54,8 @@
->   #define POWERNV_IOMMU_DEFAULT_LEVELS	1
->   #define POWERNV_IOMMU_MAX_LEVELS	5
-> 
-> -static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU" };
-> +static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
-> +					      "NPU_OCAPI" };
->   static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
-> 
->   void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
-> @@ -924,7 +925,7 @@ static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
->   	 * Configure PELTV. NPUs don't have a PELTV table so skip
->   	 * configuration on them.
->   	 */
-> -	if (phb->type != PNV_PHB_NPU)
-> +	if (phb->type != PNV_PHB_NPU_NVLINK && phb->type != PNV_PHB_NPU_OCAPI)
->   		pnv_ioda_set_peltv(phb, pe, true);
-> 
->   	/* Setup reverse map */
-> @@ -1260,12 +1261,13 @@ static struct pnv_ioda_pe *pnv_ioda_setup_npu_PE(struct pci_dev *npu_pdev)
->   		return pe;
->   }
-> 
-> -static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus)
-> +static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus,
-> +			    struct pnv_ioda_pe *fn(struct pci_dev *npu_pdev))
->   {
->   	struct pci_dev *pdev;
-> 
->   	list_for_each_entry(pdev, &bus->devices, bus_list)
-> -		pnv_ioda_setup_npu_PE(pdev);
-> +		fn(pdev);
->   }
+>   lkdtm-$(CONFIG_LKDTM)		+= lkdtm_core.o
+>   lkdtm-$(CONFIG_LKDTM)		+= lkdtm_bugs.o
+> diff --git a/drivers/misc/ocxl/Kconfig b/drivers/misc/ocxl/Kconfig
+> new file mode 100644
+> index 000000000000..4496b61f48db
+> --- /dev/null
+> +++ b/drivers/misc/ocxl/Kconfig
+> @@ -0,0 +1,25 @@
+> +#
+> +# Open Coherent Accelerator (OCXL) compatible devices
+> +#
+> +
+> +config OCXL_BASE
+> +	bool
+> +	default n
+> +	select PPC_COPRO_BASE
+> +
+> +config OCXL
+> +	tristate "Support for Open Coherent Accelerators (OCXL)"
+> +	depends on PPC_POWERNV && PCI && EEH
+> +	select OCXL_BASE
+> +	default m
+> +	help
+> +
+> +	  Select this option to enable driver support for Open
+> +	  Coherent Accelerators (OCXL).  OCXL is otherwise known as
+> +	  Open Coherent Accelerator Processor Interface (OCAPI).
+> +	  OCAPI allows accelerators in FPGAs to be coherently attached
+> +	  to a CPU through a Open CAPI link.  This driver enables
+> +	  userspace programs to access these accelerators through
+> +	  devices found in /dev/ocxl/
 
-I think adding a function pointer here is rather ugly, at this point you 
-might as well just do this directly in pnv_pci_ioda_setup_PEs()
+I'd prefer more consistency in how we refer to OpenCAPI. "ocxl" is a 
+driver name that we have purely for historical reasons, it's not really 
+the name of anything else. I know throughout the various specs and code, 
+we use "OCAPI" a lot, but that's not really an abbreviation that should 
+be "user-facing".
 
-> 
->   static void pnv_pci_ioda_setup_PEs(void)
-> @@ -1275,13 +1277,18 @@ static void pnv_pci_ioda_setup_PEs(void)
-> 
->   	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
->   		phb = hose->private_data;
-> -		if (phb->type == PNV_PHB_NPU) {
-> +		if (phb->type == PNV_PHB_NPU_NVLINK) {
->   			/* PE#0 is needed for error reporting */
->   			pnv_ioda_reserve_pe(phb, 0);
-> -			pnv_ioda_setup_npu_PEs(hose->bus);
-> +			pnv_ioda_setup_npu_PEs(hose->bus,
-> +					pnv_ioda_setup_npu_PE);
->   			if (phb->model == PNV_PHB_MODEL_NPU2)
->   				pnv_npu2_init(phb);
->   		}
-> +		if (phb->type == PNV_PHB_NPU_OCAPI) {
-> +			pnv_ioda_setup_npu_PEs(hose->bus,
-> +					pnv_ioda_setup_dev_PE);
-> +		}
->   	}
->   }
+Something like:
+
+config OCXL
+      tristate "OpenCAPI coherent accelerator support"
+      help
+
+        Select this option to enable the ocxl driver for Open Coherent 
+
+        Accelerator Processor Interface (OpenCAPI) devices.
+
+        OpenCAPI allows FPGA and ASIC accelerators to be coherently
+        attached to a CPU over an OpenCAPI link.
+
+        The ocxl driver enables userspace programs to access these
+        accelerators through devices in /dev/ocxl/.
+
+        For more information, see http://opencapi.org.
+
+        If unsure, say N.
+
+> +
+> +	  If unsure, say N.
+> diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
+> new file mode 100644
+> index 000000000000..f75853411cfd
+> --- /dev/null
+> +++ b/drivers/misc/ocxl/Makefile
+> @@ -0,0 +1,10 @@
+> +ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+> +
+> +ocxl-y				+= main.o pci.o config.o file.o pasid.o
+> +ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
+> +obj-$(CONFIG_OCXL)		+= ocxl.o
+> +
+> +# For tracepoints to include our trace.h from tracepoint infrastructure:
+> +CFLAGS_trace.o := -I$(src)
+> +
+> +# ccflags-y += -DDEBUG
 > 
 
 -- 
