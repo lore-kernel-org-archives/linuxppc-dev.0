@@ -1,34 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
- [IPv6:2607:f8b0:400c:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBW1Z1QLTzDqjm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 23:48:01 +1100 (AEDT)
-Received: by mail-vk0-x242.google.com with SMTP id w75so781182vkd.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 04:48:01 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <3110289.BbUpyYVBQa@aspire.rjw.lan>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
- <CAKTCnz=jrvbizrzUx1tDxMg__4coJHoxSXOS+K+zXQVAM=WF-g@mail.gmail.com>
- <20171218083820.GA28881@in.ibm.com> <3110289.BbUpyYVBQa@aspire.rjw.lan>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 3 Jan 2018 23:47:58 +1100
-Message-ID: <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
-Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
- non-continguous pstates
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Abhishek <huntbag@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBWfv13PszDqlc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 00:16:55 +1100 (AEDT)
+In-Reply-To: <20180101052458.132027-1-jsperbeck@google.com>
+To: John Sperbeck <jsperbeck@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: John Sperbeck <jsperbeck@google.com>
+Subject: Re: powerpc/mm: restore SEGV_ACCERR for segv on mapped region
+Message-Id: <3zBWft73J4z9s81@ozlabs.org>
+Date: Thu,  4 Jan 2018 00:16:54 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
->> Hi Balbir,
->>
->> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
->> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
->> > <ego@linux.vnet.ibm.com> wrote:
->> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->> > >
->> > > The code in powernv-cpufreq, makes the following two assumptions which
->> > > are not guaranteed by the device-tree bindings:
->> > >
->> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
->> > >        obtain the reverse map from a pstate to it's corresponding
->> > >        entry into the cpufreq frequency table.
->> > >
->> > >     2) Every Pstate should always lie between the max and the min
->> > >        pstates that are explicitly reported in the device tree: This
->> > >        is used to determine whether a pstate reported by the PMSR is
->> > >        out of bounds.
->> > >
->> > > Both these assumptions are unwarranted and can change on future
->> > > platforms.
->> >
->> > While this is a good thing, I wonder if it is worth the complexity. Pstates
->> > are contiguous because they define transitions in incremental value
->> > of change in frequency and I can't see how this can be broken in the
->> > future?
->>
->> In the future, we can have the OPAL firmware give us a smaller set of
->> pstates instead of expose every one of them. As it stands today, for
->> most of the workloads, we will need at best 20-30 pstates and not
->> beyond that.
->
-> I'm not sure about the status here.
->
-> Is this good to go as is or is it going to be updated?
->
+On Mon, 2018-01-01 at 05:24:58 UTC, John Sperbeck wrote:
+> A recent refactoring of the powerpc page fault handler caused
+> access to protected memory regions to indicate SEGV_MAPERR instead
+> of the traditional SEGV_ACCERR in the si_code field of a user-space
+> signal handler.  This can confuse debug libraries that temporarily
+> change the protection of memory regions, and expect to use
+> SEGV_ACCERR as an indication to restore access to a region.
+> 
+> This change restores the previous behavior.  The following program
+> exhibits the issue:
+> 
+>     $ ./repro read  || echo "FAILED"
+>     $ ./repro write || echo "FAILED"
+>     $ ./repro exec  || echo "FAILED"
+> 
+>     #include <stdio.h>
+>     #include <stdlib.h>
+>     #include <string.h>
+>     #include <unistd.h>
+>     #include <signal.h>
+>     #include <sys/mman.h>
+>     #include <assert.h>
+> 
+>     static void segv_handler(int n, siginfo_t *info, void *arg) {
+>             _exit(info->si_code == SEGV_ACCERR ? 0 : 1);
+>     }
+> 
+>     int main(int argc, char **argv)
+>     {
+>             void *p = NULL;
+>             struct sigaction act = {
+>                     .sa_sigaction = segv_handler,
+>                     .sa_flags = SA_SIGINFO,
+>             };
+> 
+>             assert(argc == 2);
+>             p = mmap(NULL, getpagesize(),
+>                     (strcmp(argv[1], "write") == 0) ? PROT_READ : 0,
+>                     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+>             assert(p != MAP_FAILED);
+> 
+>             assert(sigaction(SIGSEGV, &act, NULL) == 0);
+>             if (strcmp(argv[1], "read") == 0)
+>                     printf("%c", *(unsigned char *)p);
+>             else if (strcmp(argv[1], "write") == 0)
+>                     *(unsigned char *)p = 0;
+>             else if (strcmp(argv[1], "exec") == 0)
+>                     ((void (*)(void))p)();
+>             return 1;  /* failed to generate SEGV */
+>     }
+> 
+> Signed-off-by: John Sperbeck <jsperbeck@google.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I have no major objections, except some of the added complexity, but
-Gautham makes a point that this is refactoring for the future
+Applied to powerpc fixes, thanks.
 
-Balbir Singh.
+https://git.kernel.org/powerpc/c/ecb101aed86156ec7cd71e5dca668e
+
+cheers
