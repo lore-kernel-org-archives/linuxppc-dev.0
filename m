@@ -1,26 +1,27 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
+Return-Path: <julian.calaby@gmail.com>
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBNPG6QQbzDqw7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 18:49:38 +1100 (AEDT)
-Received: by mail-qk0-x241.google.com with SMTP id d202so614733qkc.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jan 2018 23:49:38 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zBP4V3HtmzF0Ps
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jan 2018 19:20:10 +1100 (AEDT)
+Received: by mail-wr0-x242.google.com with SMTP id u19so755669wrc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jan 2018 00:20:10 -0800 (PST)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <87h8s3cvel.fsf@concordia.ellerman.id.au>
+In-Reply-To: <CAMuHMdWYDz_jHNxQ-B8944520R-myzHkjkL1rKWUjA38inU7cw@mail.gmail.com>
 References: <20171229081911.2802-1-hch@lst.de>
  <20171229081911.2802-17-hch@lst.de>
  <878tdgtwzp.fsf@concordia.ellerman.id.au>
  <CAMuHMdWWus2kNSOzS94k-3678826W1YjKwCWTquu3hBLZ80cvw@mail.gmail.com>
  <87h8s3cvel.fsf@concordia.ellerman.id.au>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 3 Jan 2018 08:49:35 +0100
-Message-ID: <CAMuHMdWYDz_jHNxQ-B8944520R-myzHkjkL1rKWUjA38inU7cw@mail.gmail.com>
+ <CAMuHMdWYDz_jHNxQ-B8944520R-myzHkjkL1rKWUjA38inU7cw@mail.gmail.com>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Wed, 3 Jan 2018 19:19:46 +1100
+Message-ID: <CAGRGNgV+DnZAAtiE5oe8rxp4=_JHJrtSQc8F5jrgN0rgYKfwjA@mail.gmail.com>
 Subject: Re: [PATCH 16/67] powerpc: rename dma_direct_ to dma_nommu_
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>,
+ iommu@lists.linux-foundation.org,
  Linux MIPS Mailing List <linux-mips@linux-mips.org>, linux-ia64@vger.kernel.org,
  Linux-sh list <linux-sh@vger.kernel.org>,
  sparclinux <sparclinux@vger.kernel.org>,
@@ -32,9 +33,9 @@ Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
  adi-buildroot-devel@lists.sourceforge.net,
  linux-m68k <linux-m68k@lists.linux-m68k.org>, patches@groups.riscv.org,
  "open list:METAG ARCHITECTURE" <linux-metag@vger.kernel.org>,
- linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, Parisc List <linux-parisc@vger.kernel.org>,
- Cris <linux-cris-kernel@axis.com>,
+ "Mailing List, Arm" <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>,
+ Parisc List <linux-parisc@vger.kernel.org>, Cris <linux-cris-kernel@axis.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  alpha <linux-alpha@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
@@ -47,47 +48,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Hi All,
 
-On Wed, Jan 3, 2018 at 7:24 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+On Wed, Jan 3, 2018 at 6:49 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Michael,
 >
->> On Tue, Jan 2, 2018 at 10:45 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Christoph Hellwig <hch@lst.de> writes:
->>>
->>>> We want to use the dma_direct_ namespace for a generic implementation,
->>>> so rename powerpc to the second best choice: dma_nommu_.
->>>
->>> I'm not a fan of "nommu". Some of the users of direct ops *are* using an
->>> IOMMU, they're just setting up a 1:1 mapping once at init time, rather
->>> than mapping dynamically.
->>>
->>> Though I don't have a good idea for a better name, maybe "1to1",
->>> "linear", "premapped" ?
+> On Wed, Jan 3, 2018 at 7:24 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Geert Uytterhoeven <geert@linux-m68k.org> writes:
 >>
->> "identity"?
+>>> On Tue, Jan 2, 2018 at 10:45 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>>> Christoph Hellwig <hch@lst.de> writes:
+>>>>
+>>>>> We want to use the dma_direct_ namespace for a generic implementation,
+>>>>> so rename powerpc to the second best choice: dma_nommu_.
+>>>>
+>>>> I'm not a fan of "nommu". Some of the users of direct ops *are* using an
+>>>> IOMMU, they're just setting up a 1:1 mapping once at init time, rather
+>>>> than mapping dynamically.
+>>>>
+>>>> Though I don't have a good idea for a better name, maybe "1to1",
+>>>> "linear", "premapped" ?
+>>>
+>>> "identity"?
+>>
+>> I think that would be wrong, but thanks for trying to help :)
+>>
+>> The address on the device side is sometimes (often?) offset from the CPU
+>> address. So eg. the device can DMA to RAM address 0x0 using address
+>> 0x800000000000000.
+>>
+>> Identity would imply 0 == 0 etc.
+>>
+>> I think "bijective" is the correct term, but that's probably a bit
+>> esoteric.
 >
-> I think that would be wrong, but thanks for trying to help :)
->
-> The address on the device side is sometimes (often?) offset from the CPU
-> address. So eg. the device can DMA to RAM address 0x0 using address
-> 0x800000000000000.
->
-> Identity would imply 0 == 0 etc.
->
-> I think "bijective" is the correct term, but that's probably a bit
-> esoteric.
+> OK, didn't know about the offset.
+> Then "linear" is what we tend to use, right?
 
-OK, didn't know about the offset.
-Then "linear" is what we tend to use, right?
+If this is indeed a linear mapping, can we just remove this and
+replace it with the new "generic" mapping being introduced by this
+patchset?
 
-Gr{oetje,eeting}s,
+Thanks,
 
-                        Geert
+-- 
+Julian Calaby
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Email: julian.calaby@gmail.com
+Profile: http://www.google.com/profiles/julian.calaby/
