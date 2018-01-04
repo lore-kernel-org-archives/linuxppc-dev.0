@@ -1,29 +1,22 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pl0-x232.google.com (mail-pl0-x232.google.com
- [IPv6:2607:f8b0:400e:c01::232])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
+ [209.85.218.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCKrz4NXNzDqls
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 07:58:27 +1100 (AEDT)
-Received: by mail-pl0-x232.google.com with SMTP id b12so1738206plm.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 12:58:27 -0800 (PST)
-Date: Thu, 4 Jan 2018 12:58:36 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: Re: [PATCH v1 11/15] ASoC: fsl_ssi: Setup AC97 in dai_probe()
-Message-ID: <20180104205834.GA8729@Asurada-Nvidia>
-References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
- <1513702819-42310-12-git-send-email-nicoleotsuka@gmail.com>
- <b8e41d81-948a-fbac-af75-3e31c3382426@maciej.szmigiero.name>
- <20180104190732.GA27975@Asurada-Nvidia>
- <61acf616-dd63-bccd-2c91-ce244b799f09@maciej.szmigiero.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <61acf616-dd63-bccd-2c91-ce244b799f09@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCL8z6WMtzDqp6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 08:12:19 +1100 (AEDT)
+Received: by mail-oi0-f68.google.com with SMTP id j14so1892942oih.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 13:12:19 -0800 (PST)
+From: Rob Herring <robh@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Frank Rowand <frowand.list@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org
+Subject: [PATCH 0/3] PCI: move DT PCI functions to PCI core
+Date: Thu,  4 Jan 2018 15:12:12 -0600
+Message-Id: <20180104211215.11344-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 04, 2018 at 09:38:52PM +0100, Maciej S. Szmigiero wrote:
+Most subsystem specific functions have been moved into the respective
+subsystems. Only PCI and networking remain. This series moves most of the
+PCI related code to drivers/pci/of.c. Some bus address functions for PCI
+remain in of/address.c because we don't have infrastructure to split up
+the per bus helper functions.
 
-> > Hmm...What's the dependency here? Why is it required like this?
+I expect Bjorn to take this series, so PPC maintainers please ack.
 
-> And a AC'97 CODEC probe needs AC'97 communication to be working,
-> since it has to detect the CODEC model, configure it, etc.
+Rob
 
-Okay. If the CODEC configurations depend on (or are done via)
-the AC link, it has to be in this way then.
+Rob Herring (3):
+  PCI: move OF related PCI functions into PCI core
+  powerpc/pci: use of_irq_parse_and_map_pci helper
+  PCI: make of_irq_parse_pci static
 
-> > I am okay to put everything to a separate fsl_ssi_hw_init() and
-> > move it back to the platform probe() though.
-> 
-> This could be a solution - I assume that by "everything" in the above
-> sentence you mean (at least) enabling the AC'97 communication at the
-> SSI.
+ arch/arm/mach-mvebu/Kconfig      |   1 -
+ arch/powerpc/kernel/pci-common.c |   8 +-
+ drivers/of/Kconfig               |  16 --
+ drivers/of/Makefile              |   2 -
+ drivers/of/address.c             |   8 +-
+ drivers/of/of_pci.c              | 384 -----------------------------
+ drivers/of/of_pci_irq.c          | 131 ----------
+ drivers/pci/of.c                 | 505 +++++++++++++++++++++++++++++++++++++++
+ include/linux/of_pci.h           |   8 +-
+ 9 files changed, 510 insertions(+), 553 deletions(-)
+ delete mode 100644 drivers/of/of_pci.c
+ delete mode 100644 drivers/of/of_pci_irq.c
 
-All register configurations -- I was trying to move them to dai
-probe() so a deferring probe or the platform remove() does not
-need to revert these register configurations.
+--
+2.14.1
