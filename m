@@ -1,24 +1,29 @@
-Return-Path: <geoff@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pl0-x232.google.com (mail-pl0-x232.google.com
+ [IPv6:2607:f8b0:400e:c01::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCKXk6tXqzDqXy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 07:44:22 +1100 (AEDT)
-Subject: Re: [PATCH] ps3_gelic_net: Delete an error message for a failed
- memory allocation in gelic_descr_prepare_rx()
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <9613bfbf-11cc-1e66-484a-84fcda022861@users.sourceforge.net>
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <611a3611-a5ef-9681-7b60-77b83922d6c9@infradead.org>
-Date: Thu, 4 Jan 2018 12:44:00 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCKrz4NXNzDqls
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 07:58:27 +1100 (AEDT)
+Received: by mail-pl0-x232.google.com with SMTP id b12so1738206plm.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 12:58:27 -0800 (PST)
+Date: Thu, 4 Jan 2018 12:58:36 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
+ arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
+Subject: Re: [PATCH v1 11/15] ASoC: fsl_ssi: Setup AC97 in dai_probe()
+Message-ID: <20180104205834.GA8729@Asurada-Nvidia>
+References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
+ <1513702819-42310-12-git-send-email-nicoleotsuka@gmail.com>
+ <b8e41d81-948a-fbac-af75-3e31c3382426@maciej.szmigiero.name>
+ <20180104190732.GA27975@Asurada-Nvidia>
+ <61acf616-dd63-bccd-2c91-ce244b799f09@maciej.szmigiero.name>
 MIME-Version: 1.0
-In-Reply-To: <9613bfbf-11cc-1e66-484a-84fcda022861@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <61acf616-dd63-bccd-2c91-ce244b799f09@maciej.szmigiero.name>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/03/2018 06:40 AM, SF Markus Elfring wrote:
-> Omit an extra message for a memory allocation failure in this function.
+On Thu, Jan 04, 2018 at 09:38:52PM +0100, Maciej S. Szmigiero wrote:
 
-I applied this to my ps3-queue branch.
+> > Hmm...What's the dependency here? Why is it required like this?
 
-As I mentioned to you several times before, please keep
-the commit subject line to less than 50 characters.
-Also, in this case the prefix would be 'net/ps3_gelic_net:"
+> And a AC'97 CODEC probe needs AC'97 communication to be working,
+> since it has to detect the CODEC model, configure it, etc.
 
--Geoff
+Okay. If the CODEC configurations depend on (or are done via)
+the AC link, it has to be in this way then.
+
+> > I am okay to put everything to a separate fsl_ssi_hw_init() and
+> > move it back to the platform probe() though.
+> 
+> This could be a solution - I assume that by "everything" in the above
+> sentence you mean (at least) enabling the AC'97 communication at the
+> SSI.
+
+All register configurations -- I was trying to move them to dai
+probe() so a deferring probe or the platform remove() does not
+need to revert these register configurations.
