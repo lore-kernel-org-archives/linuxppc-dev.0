@@ -1,40 +1,34 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zBygX3PGmzDqpX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 17:33:59 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w046Wda9068307
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jan 2018 01:33:57 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2f9dd9b9ak-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 01:33:56 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 4 Jan 2018 06:33:54 -0000
-Subject: Re: [PATCH 1/6] cxlflash: Reset command ioasc
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-References: <1515020002-43551-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1515020042-43590-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 4 Jan 2018 17:33:48 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zC1bP68JNzDqpX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 19:45:37 +1100 (AEDT)
+Date: Thu, 4 Jan 2018 09:45:33 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Julian Calaby <julian.calaby@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ "Mailing List, Arm" <linux-arm-kernel@lists.infradead.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ patches@groups.riscv.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
+ linux-arch@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 17/67] microblaze: rename dma_direct to dma_microblaze
+Message-ID: <20180104084533.GA3135@lst.de>
+References: <20171229081911.2802-1-hch@lst.de>
+ <20171229081911.2802-18-hch@lst.de>
+ <CAGRGNgW1qwLcCAvU2Jc=3_7b-0Bu016to3cQUgVsc+ca0No_6g@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1515020042-43590-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <be8c1d08-f78a-a7f0-d912-e638646db80e@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAGRGNgW1qwLcCAvU2Jc=3_7b-0Bu016to3cQUgVsc+ca0No_6g@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,42 +38,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/01/18 09:54, Uma Krishnan wrote:
-> In the event of a command failure, cxlflash returns the failure to the
-> upper layers to process. After processing the error, when the command is
-> queued again, the private command structure will not be zeroed and the
-> ioasc could be stale. Per the SISLite specification, the AFU only sets the
-> ioasc in the presence of a failure. Thus, even though the original command
-> succeeds the second time, the command is considered a failure due to stale
-> ioasc. This cycle repeats indefinitely and can cause a hang or IO failure.
+On Fri, Dec 29, 2017 at 09:11:56PM +1100, Julian Calaby wrote:
+> Hi Christoph,
 > 
-> To fix the issue, clear the ioasc before queuing any command.
+> On Fri, Dec 29, 2017 at 7:18 PM, Christoph Hellwig <hch@lst.de> wrote:
+> > This frees the dma_direct_* namespace for a generic implementation.
 > 
-> Fixes: 479ad8e9d48c ("scsi: cxlflash: Remove zeroing of private command
-> data")
-> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+> Don't you mean "dma_nommu" not "dma_microblaze" in the subject line?
 
-Should this go to stable?
-
-
-> ---
->   drivers/scsi/cxlflash/main.c | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-> index 38b3a9c..48d3663 100644
-> --- a/drivers/scsi/cxlflash/main.c
-> +++ b/drivers/scsi/cxlflash/main.c
-> @@ -620,6 +620,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
->   	cmd->parent = afu;
->   	cmd->hwq_index = hwq_index;
-> 
-> +	cmd->sa.ioasc = 0;
->   	cmd->rcb.ctx_id = hwq->ctx_hndl;
->   	cmd->rcb.msi = SISL_MSI_RRQ_UPDATED;
->   	cmd->rcb.port_sel = CHAN2PORTMASK(scp->device->channel);
-> 
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Yes, thanks.
