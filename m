@@ -1,27 +1,28 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
- [IPv6:2607:f8b0:400e:c00::229])
+Received: from mail-pl0-x236.google.com (mail-pl0-x236.google.com
+ [IPv6:2607:f8b0:400e:c01::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCJ8q4K5PzDqvS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 06:42:03 +1100 (AEDT)
-Received: by mail-pf0-x229.google.com with SMTP id u19so1182940pfa.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 11:42:03 -0800 (PST)
-Date: Thu, 4 Jan 2018 11:42:14 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCJBy5pb9zF0QG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 06:43:54 +1100 (AEDT)
+Received: by mail-pl0-x236.google.com with SMTP id g2so1617963pli.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 11:43:54 -0800 (PST)
+Date: Thu, 4 Jan 2018 11:44:06 -0800
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
 Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
  lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
  arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: Re: [PATCH v1 03/15] ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
-Message-ID: <20180104194213.GC27975@Asurada-Nvidia>
+Subject: Re: [PATCH v1 05/15] ASoC: fsl_ssi: Clean up helper functions of
+ trigger()
+Message-ID: <20180104194405.GD27975@Asurada-Nvidia>
 References: <1513702819-42310-1-git-send-email-nicoleotsuka@gmail.com>
- <1513702819-42310-4-git-send-email-nicoleotsuka@gmail.com>
- <7509f512-1c7f-2fd2-e127-510106e2d9d5@maciej.szmigiero.name>
+ <1513702819-42310-6-git-send-email-nicoleotsuka@gmail.com>
+ <59aa58b7-aeda-ef87-e150-9fec9c6229ae@maciej.szmigiero.name>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7509f512-1c7f-2fd2-e127-510106e2d9d5@maciej.szmigiero.name>
+In-Reply-To: <59aa58b7-aeda-ef87-e150-9fec9c6229ae@maciej.szmigiero.name>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 01, 2018 at 10:29:24PM +0100, Maciej S. Szmigiero wrote:
+On Mon, Jan 01, 2018 at 10:59:30PM +0100, Maciej S. Szmigiero wrote:
 
-> > @@ -445,16 +445,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
-> >  	bool tx = &ssi->regvals[TX] == vals;
+> > +static void fsl_ssi_config_enable(struct fsl_ssi *ssi, bool tx)
 
-> > +	/* Check if the opposite stream is active */
-> > +	aactive = ssi->streams & BIT(!tx);
+> > +		srcr = vals[tx].srcr;
+> > +		stcr = vals[tx].stcr;
+> > +		sier = vals[tx].sier;
 > 
-> I don't think that hardcoding an implicit assumption here that RX == 0,
-> TX == 1 is a good thing.
-> If in the future, for any reason, somebody changes values of these macros
-> this code will silently break.
-> 
-> I would instead change this line into something like
-> "aactive = ssi->streams & (tx ? BIT(RX) : BIT(TX));" or similar.
+> Implicit assumption here that RX == 0, TX == 1, as in the 03 patch.
 
-You have a point. I could add a "bool dir" to make it clear. Thanks.
+Could replace it with "bool dir" as well. Thanks for the review.
