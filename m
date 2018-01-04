@@ -1,34 +1,17 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zC1zM0Rz8zDqp0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jan 2018 20:02:55 +1100 (AEDT)
-Date: Thu, 4 Jan 2018 10:02:51 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Vladimir Murzin <vladimir.murzin@arm.com>
-Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
- linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- linux-snps-arc@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, patches@groups.riscv.org,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 30/67] dma-direct: retry allocations using GFP_DMA for
- small masks
-Message-ID: <20180104090251.GE3251@lst.de>
-References: <20171229081911.2802-1-hch@lst.de>
- <20171229081911.2802-31-hch@lst.de>
- <f6139b03-0a4a-a9fe-4818-9b0bccf419e4@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f6139b03-0a4a-a9fe-4818-9b0bccf419e4@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCBhP59m8zDqwx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 02:35:31 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc: restore alphabetic order in Kconfig
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Balbir Singh <bsingharora@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180104153525.A03F56E5E6@localhost.localdomain>
+Date: Thu,  4 Jan 2018 16:35:25 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 02, 2018 at 04:43:15PM +0000, Vladimir Murzin wrote:
-> On 29/12/17 08:18, Christoph Hellwig wrote:
-> > If we got back an allocation that wasn't inside the support coherent mask,
-> > retry the allocation using GFP_DMA.
-> > 
-> > Based on the x86 code.
-> > 
-> > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> > ---
-> >  lib/dma-direct.c | 25 ++++++++++++++++++++++++-
-> >  1 file changed, 24 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/lib/dma-direct.c b/lib/dma-direct.c
-> > index ab81de3ac1d3..f8467cb3d89a 100644
-> > --- a/lib/dma-direct.c
-> > +++ b/lib/dma-direct.c
-> > @@ -28,6 +28,11 @@ check_addr(struct device *dev, dma_addr_t dma_addr, size_t size,
-> >  	return true;
-> >  }
-> >  
-> > +static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
-> > +{
-> > +	return phys_to_dma(dev, phys) + size <= dev->coherent_dma_mask;
-> 
-> Shouldn't it be: phys_to_dma(dev, phys) + size - 1 <= dev->coherent_dma_mask ?
+This patch restores the alphabetic order which was broken by
+commit 1e0fc9d1eb2b0 ("powerpc/Kconfig: Enable STRICT_KERNEL_RWX
+for some configs")
 
-Yes, I think it should.  The existing code was blindly copy and pasted
-from x86.
+Fixes: 1e0fc9d1eb2b0 ("powerpc/Kconfig: Enable STRICT_KERNEL_RWX for some configs")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> > +	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
-> > +		__free_pages(page, page_order);
-> > +		page = NULL;
-> > +
-> > +		if (dev->coherent_dma_mask < DMA_BIT_MASK(32) &&
-> > +		    !(gfp & GFP_DMA)) {
-> > +			gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
-> > +			goto again;
-> 
-> Shouldn't we limit number of attempts?
-
-We only retty once anyway, due to the !GFP_DMA check first and then
-ORing in GFP_DMA.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 00417150185c..80c285f80f7c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -142,6 +142,7 @@ config PPC
+ 	select ARCH_HAS_PMEM_API                if PPC64
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE
+ 	select ARCH_HAS_SG_CHAIN
++	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAS_UACCESS_FLUSHCACHE	if PPC64
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+@@ -149,6 +150,7 @@ config PPC
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
++	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+ 	select ARCH_USE_BUILTIN_BSWAP
+@@ -179,8 +181,6 @@ config PPC
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+-	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
+-	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select HAVE_CBPF_JIT			if !PPC64
+ 	select HAVE_CONTEXT_TRACKING		if PPC64
+ 	select HAVE_DEBUG_KMEMLEAK
+-- 
+2.13.3
