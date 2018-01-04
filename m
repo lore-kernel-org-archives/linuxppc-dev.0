@@ -1,24 +1,20 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
+ [209.85.218.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCN8Z5xRpzDqxy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 09:42:06 +1100 (AEDT)
-Date: Thu, 4 Jan 2018 16:41:56 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, aik@ozlabs.ru, ruscur@russell.cc,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
-Subject: Re: [PATCH v3 2/7] powerpc/kernel: Add uevents in EEH error/resume
-Message-ID: <20180104224156.GJ189897@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180103171633.94499-1-bryantly@linux.vnet.ibm.com>
- <20180103171633.94499-3-bryantly@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180103171633.94499-3-bryantly@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCNDq4zrCzDqxy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 09:45:47 +1100 (AEDT)
+Received: by mail-oi0-f68.google.com with SMTP id g6so2026672oib.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 14:45:47 -0800 (PST)
+From: Rob Herring <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: cell: use irq_of_parse_and_map helper
+Date: Thu,  4 Jan 2018 16:45:41 -0600
+Message-Id: <20180104224542.15333-3-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,140 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 03, 2018 at 11:16:28AM -0600, Bryant G. Ly wrote:
-> Devices can go offline when EEH is reported. This patch adds
-> a change to the kernel object and lets udev know of error.
-> When device resumes a change is also set reporting device as
-> online. Therefore, EEH events are better propagated to user
-> space for devices in powerpc arch.
-> 
-> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+Instead of calling both of_irq_parse_one and irq_create_of_mapping, call
+of_irq_parse_and_map instead which does the same thing. This gets us closer
+to making the former 2 functions static.
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ arch/powerpc/platforms/cell/spu_manage.c | 21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
 
-Please merge this along with the rest of your series.
+diff --git a/arch/powerpc/platforms/cell/spu_manage.c b/arch/powerpc/platforms/cell/spu_manage.c
+index f636ee22b203..2e01ad5df492 100644
+--- a/arch/powerpc/platforms/cell/spu_manage.c
++++ b/arch/powerpc/platforms/cell/spu_manage.c
+@@ -180,35 +180,22 @@ static int __init spu_map_device_old(struct spu *spu)
 
-But also please change the subject and the changelog so it mentions
-AER as well as EEH.  And the last sentence now applies to all arches,
-not just powerpc.
+ static int __init spu_map_interrupts(struct spu *spu, struct device_node *np)
+ {
+-	struct of_phandle_args oirq;
+-	int ret;
+ 	int i;
 
-> ---
->  arch/powerpc/kernel/eeh_driver.c   |  8 ++++++--
->  drivers/pci/pcie/aer/aerdrv_core.c |  3 +++
->  include/linux/pci.h                | 36 ++++++++++++++++++++++++++++++++++++
->  3 files changed, 45 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 3c0fa99c5533..c2945b91b628 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -228,6 +228,7 @@ static void *eeh_report_error(void *data, void *userdata)
->  
->  	edev->in_error = true;
->  	eeh_pcid_put(dev);
-> +	pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
->  	return NULL;
->  }
->  
-> @@ -379,8 +380,11 @@ static void *eeh_report_resume(void *data, void *userdata)
->  	}
->  
->  	driver->err_handler->resume(dev);
-> -
->  	eeh_pcid_put(dev);
-> +	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
-> +#ifdef CONFIG_PCI_IOV
-> +	eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
-> +#endif
->  	return NULL;
->  }
->  
-> @@ -414,8 +418,8 @@ static void *eeh_report_failure(void *data, void *userdata)
->  	}
->  
->  	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
-> -
->  	eeh_pcid_put(dev);
-> +	pci_uevent_ers(dev, PCI_ERS_RESULT_DISCONNECT);
->  	return NULL;
->  }
->  
-> diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
-> index 744805232155..8d7448063fd1 100644
-> --- a/drivers/pci/pcie/aer/aerdrv_core.c
-> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
-> @@ -278,6 +278,7 @@ static int report_error_detected(struct pci_dev *dev, void *data)
->  	} else {
->  		err_handler = dev->driver->err_handler;
->  		vote = err_handler->error_detected(dev, result_data->state);
-> +		pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
->  	}
->  
->  	result_data->result = merge_result(result_data->result, vote);
-> @@ -341,6 +342,7 @@ static int report_resume(struct pci_dev *dev, void *data)
->  
->  	err_handler = dev->driver->err_handler;
->  	err_handler->resume(dev);
-> +	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
->  out:
->  	device_unlock(&dev->dev);
->  	return 0;
-> @@ -541,6 +543,7 @@ static void do_recovery(struct pci_dev *dev, int severity)
->  	return;
->  
->  failed:
-> +	pci_uevent_ers(dev, PCI_ERS_RESULT_DISCONNECT);
->  	/* TODO: Should kernel panic here? */
->  	dev_info(&dev->dev, "AER: Device recovery failed\n");
->  }
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index e3e94467687a..405630441b74 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -2277,6 +2277,42 @@ static inline bool pci_is_thunderbolt_attached(struct pci_dev *pdev)
->  	return false;
->  }
->  
-> +/**
-> + * pci_uevent_ers - emit a uevent during recovery path of pci device
-> + * @pdev: pci device to check
-> + * @err_type: type of error event
-> + *
-> + */
-> +static inline void pci_uevent_ers(struct pci_dev *pdev,
-> +				  enum  pci_ers_result err_type)
-> +{
-> +	int idx = 0;
-> +	char *envp[3];
-> +
-> +	switch (err_type) {
-> +	case PCI_ERS_RESULT_NONE:
-> +	case PCI_ERS_RESULT_CAN_RECOVER:
-> +		envp[idx++] = "ERROR_EVENT=BEGIN_RECOVERY";
-> +		envp[idx++] = "DEVICE_ONLINE=0";
-> +		break;
-> +	case PCI_ERS_RESULT_RECOVERED:
-> +		envp[idx++] = "ERROR_EVENT=SUCCESSFUL_RECOVERY";
-> +		envp[idx++] = "DEVICE_ONLINE=1";
-> +		break;
-> +	case PCI_ERS_RESULT_DISCONNECT:
-> +		envp[idx++] = "ERROR_EVENT=FAILED_RECOVERY";
-> +		envp[idx++] = "DEVICE_ONLINE=0";
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
-> +	if (idx > 0) {
-> +		envp[idx++] = NULL;
-> +		kobject_uevent_env(&pdev->dev.kobj, KOBJ_CHANGE, envp);
-> +	}
-> +}
-> +
->  /* provide the legacy pci_dma_* API */
->  #include <linux/pci-dma-compat.h>
->  
-> -- 
-> 2.14.3 (Apple Git-98)
-> 
+ 	for (i=0; i < 3; i++) {
+-		ret = of_irq_parse_one(np, i, &oirq);
+-		if (ret) {
+-			pr_debug("spu_new: failed to get irq %d\n", i);
+-			goto err;
+-		}
+-		ret = -EINVAL;
+-		pr_debug("  irq %d no 0x%x on %pOF\n", i, oirq.args[0],
+-			 oirq.np);
+-		spu->irqs[i] = irq_create_of_mapping(&oirq);
+-		if (!spu->irqs[i]) {
+-			pr_debug("spu_new: failed to map it !\n");
++		spu->irqs[i] = irq_of_parse_and_map(np, i);
++		if (!spu->irqs[i])
+ 			goto err;
+-		}
+ 	}
+ 	return 0;
+
+ err:
+-	pr_debug("failed to map irq %x for spu %s\n", *oirq.args,
+-		spu->name);
++	pr_debug("failed to map irq %x for spu %s\n", i, spu->name);
+ 	for (; i >= 0; i--) {
+ 		if (spu->irqs[i])
+ 			irq_dispose_mapping(spu->irqs[i]);
+ 	}
+-	return ret;
++	return -EINVAL;
+ }
+
+ static int spu_map_resource(struct spu *spu, int nr,
+--
+2.14.1
