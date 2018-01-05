@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFq0vk9zF0QQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:55 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFp3nlVzDqTs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:54 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w05GiAJR090409
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:53 -0500
+ w05Gkf7h021189
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:48 -0500
 Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2faag2qhwn-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fabw9ub5q-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:52 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:48 -0500
 Received: from localhost
  by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 5 Jan 2018 11:46:51 -0500
+ Fri, 5 Jan 2018 11:46:47 -0500
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -25,11 +25,11 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
  saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v4 6/7] pseries/pci: Associate PEs to VFs in configure SR-IOV
-Date: Fri,  5 Jan 2018 10:45:51 -0600
+Subject: [PATCH v4 3/7] platforms/pseries: Set eeh_pe of EEH_PE_VF type
+Date: Fri,  5 Jan 2018 10:45:48 -0600
 In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
 References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20180105164552.36371-7-bryantly@linux.vnet.ibm.com>
+Message-Id: <20180105164552.36371-4-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,185 +39,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After initial validation of SR-IOV resources, firmware will
-associate PEs to the dynamic VFs created within this call. This
-patch adds the association of PEs to the PF array of PE numbers
-indexed by VF.
+To correctly use EEH code one has to make
+sure that the EEH_PE_VF is set for dynamic created
+VFs. Therefore this patch allocates an eeh_pe of
+eeh type EEH_PE_VF and associates PE with parent.
 
 Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/pci.c | 150 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 148 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h        |  5 ++++-
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 17 +++++++++++++++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 48d3af026f90..eab96637d6cf 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -59,16 +59,162 @@ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
- #endif
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 9f66ddebb799..16d70740a76f 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -211,7 +211,10 @@ struct pci_dn {
+ 	unsigned int *pe_num_map;	/* PE# for the first VF PE or array */
+ 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+ #define IODA_INVALID_M64        (-1)
+-	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
++	union {
++		int     (*m64_map)[PCI_SRIOV_NUM_BARS]; /*Only used in powernv */
++		int     last_allow_rc;	/* Only used in pSeries */
++	};
+ #endif /* CONFIG_PCI_IOV */
+ 	int	mps;			/* Maximum Payload Size */
+ 	struct list_head child_list;
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index a671ef4f57f5..ca6bbfd83701 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -55,9 +55,12 @@ static int ibm_get_config_addr_info;
+ static int ibm_get_config_addr_info2;
+ static int ibm_configure_pe;
  
- #ifdef CONFIG_PCI_IOV
-+#define MAX_VFS_FOR_MAP_PE 256
-+struct pe_map_bar_entry {
-+	__be64     bar;       /* Input:  Virtual Function BAR */
-+	__be16     rid;       /* Input:  Virtual Function Router ID */
-+	__be16     pe_num;    /* Output: Virtual Function PE Number */
-+	__be32     reserved;  /* Reserved Space */
-+};
-+
-+int pseries_send_map_pe(struct pci_dev *pdev,
-+			u16 num_vfs,
-+			struct pe_map_bar_entry *vf_pe_array)
-+{
-+	struct pci_dn *pdn;
-+	int rc;
-+	unsigned long buid, addr;
-+	int ibm_map_pes = rtas_token("ibm,open-sriov-map-pe-number");
-+
-+	if (ibm_map_pes == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	pdn = pci_get_pdn(pdev);
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+	spin_lock(&rtas_data_buf_lock);
-+	memcpy(rtas_data_buf, vf_pe_array,
-+	       RTAS_DATA_BUF_SIZE);
-+	rc = rtas_call(ibm_map_pes, 5, 1, NULL, addr,
-+		       BUID_HI(buid), BUID_LO(buid),
-+		       rtas_data_buf,
-+		       num_vfs * sizeof(struct pe_map_bar_entry));
-+	memcpy(vf_pe_array, rtas_data_buf, RTAS_DATA_BUF_SIZE);
-+	spin_unlock(&rtas_data_buf_lock);
-+
-+	if (rc)
-+		dev_err(&pdev->dev,
-+			"%s: Failed to associate pes PE#%lx, rc=%x\n",
-+			__func__,  addr, rc);
-+
-+	return rc;
-+}
-+
-+void pseries_set_pe_num(struct pci_dev *pdev, u16 vf_index, __be16 pe_num)
-+{
-+	struct pci_dn *pdn;
-+
-+	pdn = pci_get_pdn(pdev);
-+	pdn->pe_num_map[vf_index] = be16_to_cpu(pe_num);
-+	dev_dbg(&pdev->dev, "VF %04x:%02x:%02x.%x associated with PE#%x\n",
-+		pci_domain_nr(pdev->bus),
-+		pdev->bus->number,
-+		PCI_SLOT(pci_iov_virtfn_devfn(pdev, vf_index)),
-+		PCI_FUNC(pci_iov_virtfn_devfn(pdev, vf_index)),
-+		pdn->pe_num_map[vf_index]);
-+}
-+
-+int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
-+{
-+	struct pci_dn *pdn;
-+	int i, rc, vf_index;
-+	struct pe_map_bar_entry *vf_pe_array;
-+	struct resource *res;
-+	u64 size;
-+
-+	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!vf_pe_array)
-+		return -ENOMEM;
-+
-+	pdn = pci_get_pdn(pdev);
-+	/* create firmware structure to associate pes */
-+	for (vf_index = 0; vf_index < num_vfs; vf_index++) {
-+		pdn->pe_num_map[vf_index] = IODA_INVALID_PE;
-+		for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-+			res = &pdev->resource[i + PCI_IOV_RESOURCES];
-+			if (!res->parent)
-+				continue;
-+			size = pcibios_iov_resource_alignment(pdev, i +
-+					PCI_IOV_RESOURCES);
-+			vf_pe_array[vf_index].bar =
-+				cpu_to_be64(res->start + size * vf_index);
-+			vf_pe_array[vf_index].rid =
-+				cpu_to_be16((pci_iov_virtfn_bus(pdev, vf_index)
-+					    << 8) | pci_iov_virtfn_devfn(pdev,
-+					    vf_index));
-+			vf_pe_array[vf_index].pe_num =
-+				cpu_to_be16(IODA_INVALID_PE);
-+		}
-+	}
-+
-+	rc = pseries_send_map_pe(pdev, num_vfs, vf_pe_array);
-+	/* Only zero is success */
-+	if (!rc)
-+		for (vf_index = 0; vf_index < num_vfs; vf_index++)
-+			pseries_set_pe_num(pdev, vf_index,
-+					   vf_pe_array[vf_index].pe_num);
-+
-+	kfree(vf_pe_array);
-+	return rc;
-+}
-+
-+int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-+{
-+	struct pci_dn         *pdn;
-+	int                    rc;
-+	const int *max_vfs;
-+	int max_config_vfs;
-+	struct device_node *dn = pci_device_to_OF_node(pdev);
-+
-+	max_vfs = of_get_property(dn, "ibm,number-of-configurable-vfs", NULL);
-+
-+	if (!max_vfs)
-+		return -EINVAL;
-+
-+	/* First integer stores max config */
-+	max_config_vfs = of_read_number(&max_vfs[0], 1);
-+	if (max_config_vfs < num_vfs && num_vfs > MAX_VFS_FOR_MAP_PE) {
-+		dev_err(&pdev->dev,
-+			"Num VFs %x > %x Configurable VFs\n",
-+			num_vfs, (num_vfs > MAX_VFS_FOR_MAP_PE) ?
-+			MAX_VFS_FOR_MAP_PE : max_config_vfs);
-+		return -EINVAL;
-+	}
-+
-+	pdn = pci_get_pdn(pdev);
-+	pdn->pe_num_map = kmalloc_array(num_vfs,
-+					sizeof(*pdn->pe_num_map),
-+					GFP_KERNEL);
-+	if (!pdn->pe_num_map)
-+		return -ENOMEM;
-+
-+	rc = pseries_associate_pes(pdev, num_vfs);
-+
-+	/* Anything other than zero is failure */
-+	if (rc) {
-+		dev_err(&pdev->dev, "Failure to enable sriov: %x\n", rc);
-+		kfree(pdn->pe_num_map);
-+	} else {
-+		pci_vf_drivers_autoprobe(pdev, false);
-+	}
-+
-+	return rc;
-+}
-+
- int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
++#ifdef CONFIG_PCI_IOV
+ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
  {
- 	/* Allocate PCI data */
- 	add_dev_pci_data(pdev);
--	pci_vf_drivers_autoprobe(pdev, false);
--	return 0;
-+	return pseries_pci_sriov_enable(pdev, num_vfs);
+ 	struct pci_dn *pdn = pci_get_pdn(pdev);
++	struct pci_dn *physfn_pdn;
++	struct eeh_dev *edev;
+ 
+ 	if (!pdev->is_virtfn)
+ 		return;
+@@ -65,6 +68,14 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+ 	pdn->device_id  =  pdev->device;
+ 	pdn->vendor_id  =  pdev->vendor;
+ 	pdn->class_code =  pdev->class;
++	/* Last allow unfreeze return code used for retrieval
++	 * by user space in eeh-sysfs to show the last command
++	 * completion from platform
++	 */
++	pdn->last_allow_rc =  0;
++	physfn_pdn      =  pci_get_pdn(pdev->physfn);
++	pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
++	edev = pdn_to_eeh_dev(pdn);
+ 
+ 	/*
+ 	 * The following operations will fail if VF's sysfs files
+@@ -72,9 +83,13 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+ 	 */
+ 	eeh_add_device_early(pdn);
+ 	eeh_add_device_late(pdev);
++	edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
++	eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
++	eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
+ 	eeh_sysfs_add_device(pdev);
+ 
  }
++#endif
  
- int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
- {
-+	struct pci_dn         *pdn;
-+
-+	pdn = pci_get_pdn(pdev);
-+	/* Releasing pe_num_map */
-+	kfree(pdn->pe_num_map);
- 	/* Release PCI data */
- 	remove_dev_pci_data(pdev);
- 	pci_vf_drivers_autoprobe(pdev, true);
+ /*
+  * Buffer for reporting slot-error-detail rtas calls. Its here
+@@ -141,8 +156,10 @@ static int pseries_eeh_init(void)
+ 	/* Set EEH probe mode */
+ 	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+ 
++#ifdef CONFIG_PCI_IOV
+ 	/* Set EEH machine dependent code */
+ 	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
++#endif
+ 
+ 	return 0;
+ }
 -- 
 2.14.3 (Apple Git-98)
