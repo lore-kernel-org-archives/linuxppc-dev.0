@@ -1,21 +1,33 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrGG3ssqzDqm7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:51 +1100 (AEDT)
-Message-Id: <aed2799c8b369bd2ffba9967ed052e21d33e76f0.1515169256.git.christophe.leroy@c-s.fr>
-In-Reply-To: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
-References: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/3] powerpc/8xx: Increase the number of mm slices
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  5 Jan 2018 17:44:04 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFq0tP6zF0QP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:54 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
+ w05Gi8VV039866
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:45 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fab7nwgu1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:44 -0500
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Fri, 5 Jan 2018 11:46:43 -0500
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, helgaas@kernel.org, aik@ozlabs.ru,
+ ruscur@russell.cc, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
+ saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Subject: [PATCH v4 0/7] SR-IOV Enablement on PowerVM
+Date: Fri,  5 Jan 2018 10:45:45 -0600
+Message-Id: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +37,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the 8xx, we can have as many slices as PMD entries.
-This means we could have 1024 slices in 4k size pages mode
-and 64 slices in 16k size pages.
+This patch series will enable SR-IOV on PowerVM. A specific set of
+lids for PFW/PHYP is required. They are planned to release with
+920 at the moment.
 
-However, due to a stack overflow in slice_get_unmapped_area(),
-we limit to 512 slices.
+For IBM internal testers let me know of a system you want to test on
+and we can put on the lids required or we can provide a system to run
+the tests.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/mmu-8xx.h | 6 +++++-
- arch/powerpc/include/asm/page_32.h | 3 ++-
- 2 files changed, 7 insertions(+), 2 deletions(-)
+This patch depends on the three patches:
+988fc3ba5653278a8c14d6ccf687371775930d2b
+dae7253f9f78a731755ca20c66b2d2c40b86baea
+608c0d8804ef3ca4cda8ec6ad914e47deb283d7b
 
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index d669d0062da4..40aa7b0cd0dc 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -171,7 +171,11 @@ typedef struct {
- 	unsigned long vdso_base;
- #ifdef CONFIG_PPC_MM_SLICES
- 	u16 user_psize;		/* page size index */
--	unsigned char low_slices_psize[8]; /* 16 slices */
-+#if defined(CONFIG_PPC_16K_PAGES)
-+	unsigned char low_slices_psize[32]; /* 64 slices */
-+#else
-+	unsigned char low_slices_psize[256]; /* 512 slices */
-+#endif
- 	unsigned char high_slices_psize[0];
- 	unsigned long slb_addr_limit;
- #endif
-diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-index f7d1bd1183c8..43695ce7ee07 100644
---- a/arch/powerpc/include/asm/page_32.h
-+++ b/arch/powerpc/include/asm/page_32.h
-@@ -62,7 +62,8 @@ extern void copy_page(void *to, void *from);
- 
- #ifdef CONFIG_PPC_MM_SLICES
- 
--#define SLICE_LOW_SHIFT		28
-+/* SLICE_LOW_SHIFT >= 23 to avoid stack overflow in slice_get_unmapped_area() */
-+#define SLICE_LOW_SHIFT		(PMD_SHIFT > 23 ? PMD_SHIFT : 23)
- #define SLICE_HIGH_SHIFT	0
- 
- #define SLICE_LOW_TOP		(0xfffffffful)
+v1 - Initial Patch
+v2 - Addressed Alexey and Russell's comments
+v3 - Unify the call of .error_detected()
+v4 - Fixed subject and change log per Bjorn's comments and
+     fixed Alexey's comments
+
+Bryant G. Ly (7):
+  platform/pseries: Update VF config space after EEH
+  linux/pci: Add uevents in AER and EEH error/resume
+  platforms/pseries: Set eeh_pe of EEH_PE_VF type
+  powerpc/kernel Add EEH operations to notify resume
+  powerpc/kernel: Add EEH notify resume sysfs
+  pseries/pci: Associate PEs to VFs in configure SR-IOV
+  pseries/setup: Add Initialization of VF Bars
+
+ arch/powerpc/include/asm/eeh.h               |   2 +
+ arch/powerpc/include/asm/pci-bridge.h        |   5 +-
+ arch/powerpc/include/asm/pci.h               |   2 +
+ arch/powerpc/kernel/eeh.c                    |  59 ++++++++++
+ arch/powerpc/kernel/eeh_driver.c             |   6 +
+ arch/powerpc/kernel/eeh_sysfs.c              |  45 ++++++++
+ arch/powerpc/kernel/pci_of_scan.c            |   2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  68 +----------
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 137 +++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/pci.c         | 150 +++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/setup.c       | 164 +++++++++++++++++++++++++++
+ drivers/pci/pcie/aer/aerdrv_core.c           |   3 +
+ include/linux/pci.h                          |  36 ++++++
+ 13 files changed, 611 insertions(+), 68 deletions(-)
+
 -- 
-2.13.3
+2.14.3 (Apple Git-98)
