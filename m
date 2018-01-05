@@ -1,35 +1,21 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFp3lKGzDq8c
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:55 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w05Gioxh015136
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:49 -0500
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fabw9ub62-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:48 -0500
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 5 Jan 2018 11:46:47 -0500
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, helgaas@kernel.org, aik@ozlabs.ru,
- ruscur@russell.cc, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v4 4/7] powerpc/kernel Add EEH operations to notify resume
-Date: Fri,  5 Jan 2018 10:45:49 -0600
-In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20180105164552.36371-5-bryantly@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrGC3KGPzDqgs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:51 +1100 (AEDT)
+Message-Id: <eed37907f78d84c973434b90a137a351bc233651.1515169256.git.christophe.leroy@c-s.fr>
+In-Reply-To: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
+References: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 2/3] powerpc/mm: Allow more than 16 low slices
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri,  5 Jan 2018 17:44:02 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,162 +25,391 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When pseries SR-IOV is enabled and after a PF driver
-has resumed from EEH, platform has to be notified
-of the event so the child VFs can be allowed to
-resume their normal recovery path.
+While the implementation of the "slices" address space allows
+a significant amount of high slices, it limits the number of
+low slices to 16 due to the use of a single u64 low_slices element
+in struct slice_mask.
 
-This patch makes the EEH operation allow unfreeze
-platform dependent code and adds the call to
-pseries EEH code.
+In order to override this limitation, this patch switches the
+handling of low_slices to BITMAPs as done already for high_slices.
 
-Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/eeh.h               |  1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c |  3 +-
- arch/powerpc/platforms/pseries/eeh_pseries.c | 96 +++++++++++++++++++++++++++-
- 3 files changed, 98 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h |   2 +-
+ arch/powerpc/include/asm/mmu-8xx.h       |   2 +-
+ arch/powerpc/include/asm/paca.h          |   2 +-
+ arch/powerpc/kernel/paca.c               |   3 +-
+ arch/powerpc/mm/hash_utils_64.c          |  13 ++--
+ arch/powerpc/mm/slb_low.S                |   8 ++-
+ arch/powerpc/mm/slice.c                  | 102 +++++++++++++++++--------------
+ 7 files changed, 73 insertions(+), 59 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 82829c65f31a..fd37cc101f4f 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -214,6 +214,7 @@ struct eeh_ops {
- 	int (*write_config)(struct pci_dn *pdn, int where, int size, u32 val);
- 	int (*next_error)(struct eeh_pe **pe);
- 	int (*restore_config)(struct pci_dn *pdn);
-+	int (*notify_resume)(struct pci_dn *pdn);
- };
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index c9448e19847a..27e7e9732ea1 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -91,7 +91,7 @@ typedef struct {
+ 	struct npu_context *npu_context;
  
- extern int eeh_subsystem_flags;
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 0665b6d03cb3..33c86c1a1720 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1704,7 +1704,8 @@ static struct eeh_ops pnv_eeh_ops = {
- 	.read_config            = pnv_eeh_read_config,
- 	.write_config           = pnv_eeh_write_config,
- 	.next_error		= pnv_eeh_next_error,
--	.restore_config		= pnv_eeh_restore_config
-+	.restore_config		= pnv_eeh_restore_config,
-+	.notify_resume		= NULL
- };
+ #ifdef CONFIG_PPC_MM_SLICES
+-	u64 low_slices_psize;	/* SLB page size encodings */
++	unsigned char low_slices_psize[8]; /* SLB page size encodings */
+ 	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
+ 	unsigned long slb_addr_limit;
+ #else
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index 5f89b6010453..d669d0062da4 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -171,7 +171,7 @@ typedef struct {
+ 	unsigned long vdso_base;
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	u16 user_psize;		/* page size index */
+-	u64 low_slices_psize;	/* page size encodings */
++	unsigned char low_slices_psize[8]; /* 16 slices */
+ 	unsigned char high_slices_psize[0];
+ 	unsigned long slb_addr_limit;
+ #endif
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 3892db93b837..612017054825 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -141,7 +141,7 @@ struct paca_struct {
+ #ifdef CONFIG_PPC_BOOK3S
+ 	mm_context_id_t mm_ctx_id;
+ #ifdef CONFIG_PPC_MM_SLICES
+-	u64 mm_ctx_low_slices_psize;
++	unsigned char mm_ctx_low_slices_psize[8];
+ 	unsigned char mm_ctx_high_slices_psize[SLICE_ARRAY_SIZE];
+ 	unsigned long mm_ctx_slb_addr_limit;
+ #else
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index d6597038931d..8e1566bf82b8 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -264,7 +264,8 @@ void copy_mm_to_paca(struct mm_struct *mm)
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	VM_BUG_ON(!mm->context.slb_addr_limit);
+ 	get_paca()->mm_ctx_slb_addr_limit = mm->context.slb_addr_limit;
+-	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
++	memcpy(&get_paca()->mm_ctx_low_slices_psize,
++	       &context->low_slices_psize, sizeof(context->low_slices_psize));
+ 	memcpy(&get_paca()->mm_ctx_high_slices_psize,
+ 	       &context->high_slices_psize, TASK_SLICE_ARRAY_SZ(mm));
+ #else /* CONFIG_PPC_MM_SLICES */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 3266b3326088..2f0c6b527a83 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1097,19 +1097,18 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+ #ifdef CONFIG_PPC_MM_SLICES
+ static unsigned int get_paca_psize(unsigned long addr)
+ {
+-	u64 lpsizes;
+-	unsigned char *hpsizes;
++	unsigned char *psizes;
+ 	unsigned long index, mask_index;
  
- #ifdef CONFIG_PCI_IOV
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index ca6bbfd83701..898bb055cb19 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -749,6 +749,97 @@ static int pseries_eeh_restore_config(struct pci_dn *pdn)
- 	return ret;
+ 	if (addr <= SLICE_LOW_TOP) {
+-		lpsizes = get_paca()->mm_ctx_low_slices_psize;
++		psizes = get_paca()->mm_ctx_low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-		return (lpsizes >> (index * 4)) & 0xF;
++	} else {
++		psizes = get_paca()->mm_ctx_high_slices_psize;
++		index = GET_HIGH_SLICE_INDEX(addr);
+ 	}
+-	hpsizes = get_paca()->mm_ctx_high_slices_psize;
+-	index = GET_HIGH_SLICE_INDEX(addr);
+ 	mask_index = index & 0x1;
+-	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
++	return (psizes[index >> 1] >> (mask_index * 4)) & 0xF;
  }
  
-+#ifdef CONFIG_PCI_IOV
-+int pseries_send_allow_unfreeze(struct pci_dn *pdn,
-+				u16 *vf_pe_array, int cur_vfs)
-+{
-+	int rc;
-+	int ibm_allow_unfreeze = rtas_token("ibm,open-sriov-allow-unfreeze");
-+	unsigned long buid, addr;
-+
-+	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
-+	buid = pdn->phb->buid;
-+	spin_lock(&rtas_data_buf_lock);
-+	memcpy(rtas_data_buf, vf_pe_array, RTAS_DATA_BUF_SIZE);
-+	rc = rtas_call(ibm_allow_unfreeze, 5, 1, NULL,
-+		       addr,
-+		       BUID_HI(buid),
-+		       BUID_LO(buid),
-+		       rtas_data_buf, cur_vfs * sizeof(u16));
-+	spin_unlock(&rtas_data_buf_lock);
-+	if (rc)
-+		pr_warn("%s: Failed to allow unfreeze for PHB#%x-PE#%lx, rc=%x\n",
-+			__func__,
-+			pdn->phb->global_number, addr, rc);
-+	return rc;
-+}
-+
-+static int pseries_call_allow_unfreeze(struct eeh_dev *edev)
-+{
-+	struct pci_dn *pdn, *tmp, *parent, *physfn_pdn;
-+	int cur_vfs = 0, rc = 0, vf_index, bus, devfn;
-+	u16 *vf_pe_array;
-+
-+	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-+	if (!vf_pe_array)
-+		return -ENOMEM;
-+	if (pci_num_vf(edev->physfn ? edev->physfn : edev->pdev)) {
-+		if (edev->pdev->is_physfn) {
-+			cur_vfs = pci_num_vf(edev->pdev);
-+			pdn = eeh_dev_to_pdn(edev);
-+			parent = pdn->parent;
-+			for (vf_index = 0; vf_index < cur_vfs; vf_index++)
-+				vf_pe_array[vf_index] =
-+					cpu_to_be16(pdn->pe_num_map[vf_index]);
-+			rc = pseries_send_allow_unfreeze(pdn, vf_pe_array,
-+							 cur_vfs);
-+			pdn->last_allow_rc = rc;
-+			for (vf_index = 0; vf_index < cur_vfs; vf_index++) {
-+				list_for_each_entry_safe(pdn, tmp,
-+							 &parent->child_list,
-+							 list) {
-+					bus = pci_iov_virtfn_bus(edev->pdev,
-+								 vf_index);
-+					devfn = pci_iov_virtfn_devfn(edev->pdev,
-+								     vf_index);
-+					if (pdn->busno != bus ||
-+					    pdn->devfn != devfn)
-+						continue;
-+					pdn->last_allow_rc = rc;
-+				}
-+			}
-+		} else {
-+			pdn = pci_get_pdn(edev->pdev);
-+			vf_pe_array[0] = cpu_to_be16(pdn->pe_number);
-+			physfn_pdn = pci_get_pdn(edev->physfn);
-+			rc = pseries_send_allow_unfreeze(physfn_pdn,
-+							 vf_pe_array, 1);
-+			pdn->last_allow_rc = rc;
-+		}
-+	}
-+
-+	kfree(vf_pe_array);
-+	return rc;
-+}
-+
-+static int pseries_notify_resume(struct pci_dn *pdn)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+
-+	if (!edev)
-+		return -EEXIST;
-+
-+	if (rtas_token("ibm,open-sriov-allow-unfreeze")
-+	    == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	if (edev->pdev->is_physfn || edev->pdev->is_virtfn)
-+		return pseries_call_allow_unfreeze(edev);
-+
-+	return 0;
-+}
-+#endif
-+
- static struct eeh_ops pseries_eeh_ops = {
- 	.name			= "pseries",
- 	.init			= pseries_eeh_init,
-@@ -764,7 +855,10 @@ static struct eeh_ops pseries_eeh_ops = {
- 	.read_config		= pseries_eeh_read_config,
- 	.write_config		= pseries_eeh_write_config,
- 	.next_error		= NULL,
--	.restore_config		= pseries_eeh_restore_config
-+	.restore_config		= pseries_eeh_restore_config,
-+#ifdef CONFIG_PCI_IOV
-+	.notify_resume		= pseries_notify_resume
-+#endif
+ #else
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 2cf5ef3fc50d..2c7c717fd2ea 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -200,10 +200,12 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+ 5:
+ 	/*
+ 	 * Handle lpsizes
+-	 * r9 is get_paca()->context.low_slices_psize, r11 is index
++	 * r9 is get_paca()->context.low_slices_psize[index], r11 is mask_index
+ 	 */
+-	ld	r9,PACALOWSLICESPSIZE(r13)
+-	mr	r11,r10
++	srdi    r11,r10,1 /* index */
++	addi	r9,r11,PACALOWSLICESPSIZE
++	lbzx	r9,r13,r9		/* r9 is lpsizes[r11] */
++	rldicl	r11,r10,0,63		/* r11 = r10 & 0x1 */
+ 6:
+ 	sldi	r11,r11,2  /* index * 4 */
+ 	/* Extract the psize and multiply to get an array offset */
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 1a66fafc3e45..e01ea72f21c6 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -43,7 +43,7 @@ static DEFINE_SPINLOCK(slice_convert_lock);
+  * in 1TB size.
+  */
+ struct slice_mask {
+-	u64 low_slices;
++	DECLARE_BITMAP(low_slices, SLICE_NUM_LOW);
+ 	DECLARE_BITMAP(high_slices, SLICE_NUM_HIGH);
  };
  
- /**
+@@ -54,7 +54,8 @@ static void slice_print_mask(const char *label, struct slice_mask mask)
+ {
+ 	if (!_slice_debug)
+ 		return;
+-	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW, &mask.low_slices);
++	pr_devel("%s low_slice: %*pbl\n", label, (int)SLICE_NUM_LOW,
++		 mask.low_slices);
+ 	pr_devel("%s high_slice: %*pbl\n", label, (int)SLICE_NUM_HIGH, mask.high_slices);
+ }
+ 
+@@ -72,15 +73,18 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ {
+ 	unsigned long end = start + len - 1;
+ 
+-	ret->low_slices = 0;
++	bitmap_zero(ret->low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	if (start <= SLICE_LOW_TOP) {
+ 		unsigned long mend = min(end, SLICE_LOW_TOP);
++		unsigned long start_index = GET_LOW_SLICE_INDEX(start);
++		unsigned long align_end = ALIGN(mend, (1UL << SLICE_LOW_SHIFT));
++		unsigned long count = GET_LOW_SLICE_INDEX(align_end) -
++				      start_index;
+ 
+-		ret->low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
+-			- (1u << GET_LOW_SLICE_INDEX(start));
++		bitmap_set(ret->low_slices, start_index, count);
+ 	}
+ 
+ 	if ((start + len) > SLICE_LOW_TOP) {
+@@ -128,13 +132,13 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
+ {
+ 	unsigned long i;
+ 
+-	ret->low_slices = 0;
++	bitmap_zero(ret->low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+ 		if (!slice_low_has_vma(mm, i))
+-			ret->low_slices |= 1u << i;
++			__set_bit(i, ret->low_slices);
+ 
+ 	if (high_limit <= SLICE_LOW_TOP)
+ 		return;
+@@ -147,19 +151,21 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
+ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret,
+ 				unsigned long high_limit)
+ {
+-	unsigned char *hpsizes;
++	unsigned char *hpsizes, *lpsizes;
+ 	int index, mask_index;
+ 	unsigned long i;
+-	u64 lpsizes;
+ 
+-	ret->low_slices = 0;
++	bitmap_zero(ret->low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (((lpsizes >> (i * 4)) & 0xf) == psize)
+-			ret->low_slices |= 1u << i;
++	for (i = 0; i < SLICE_NUM_LOW; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (((lpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
++			__set_bit(i, ret->low_slices);
++	}
+ 
+ 	if (high_limit <= SLICE_LOW_TOP)
+ 		return;
+@@ -176,6 +182,7 @@ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_ma
+ static int slice_check_fit(struct mm_struct *mm,
+ 			   struct slice_mask mask, struct slice_mask available)
+ {
++	DECLARE_BITMAP(result_low, SLICE_NUM_LOW);
+ 	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+ 	/*
+ 	 * Make sure we just do bit compare only to the max
+@@ -183,11 +190,13 @@ static int slice_check_fit(struct mm_struct *mm,
+ 	 */
+ 	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
+ 
++	bitmap_and(result_low, mask.low_slices,
++		   available.low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_and(result, mask.high_slices,
+ 			   available.high_slices, slice_count);
+ 
+-	return (mask.low_slices & available.low_slices) == mask.low_slices &&
++	return bitmap_equal(result_low, mask.low_slices, SLICE_NUM_LOW) &&
+ 		(!slice_count ||
+ 		 bitmap_equal(result, mask.high_slices, slice_count));
+ }
+@@ -213,8 +222,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ {
+ 	int index, mask_index;
+ 	/* Write the new slice psize bits */
+-	unsigned char *hpsizes;
+-	u64 lpsizes;
++	unsigned char *hpsizes, *lpsizes;
+ 	unsigned long i, flags;
+ 
+ 	slice_dbg("slice_convert(mm=%p, psize=%d)\n", mm, psize);
+@@ -226,13 +234,14 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 	spin_lock_irqsave(&slice_convert_lock, flags);
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (mask.low_slices & (1u << i))
+-			lpsizes = (lpsizes & ~(0xful << (i * 4))) |
+-				(((unsigned long)psize) << (i * 4));
+-
+-	/* Assign the value back */
+-	mm->context.low_slices_psize = lpsizes;
++	for (i = 0; i < SLICE_NUM_LOW; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (test_bit(i, mask.low_slices))
++			lpsizes[index] = (lpsizes[index] &
++					  ~(0xf << (mask_index * 4))) |
++				(((unsigned long)psize) << (mask_index * 4));
++	}
+ 
+ 	hpsizes = mm->context.high_slices_psize;
+ 	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++) {
+@@ -269,7 +278,7 @@ static bool slice_scan_available(unsigned long addr,
+ 	if (addr <= SLICE_LOW_TOP) {
+ 		slice = GET_LOW_SLICE_INDEX(addr);
+ 		*boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
+-		return !!(available.low_slices & (1u << slice));
++		return !!test_bit(slice, available.low_slices);
+ 	} else {
+ 		slice = GET_HIGH_SLICE_INDEX(addr);
+ 		*boundary_addr = (slice + end) ?
+@@ -397,7 +406,8 @@ static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
+ {
+ 	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+ 
+-	dst->low_slices |= src->low_slices;
++	bitmap_or(dst->low_slices, dst->low_slices, src->low_slices,
++		  SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH) {
+ 		bitmap_or(result, dst->high_slices, src->high_slices,
+ 			  SLICE_NUM_HIGH);
+@@ -409,7 +419,8 @@ static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *
+ {
+ 	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+ 
+-	dst->low_slices &= ~src->low_slices;
++	bitmap_andnot(dst->low_slices, dst->low_slices, src->low_slices,
++		      SLICE_NUM_LOW);
+ 
+ 	if (SLICE_NUM_HIGH) {
+ 		bitmap_andnot(result, dst->high_slices, src->high_slices,
+@@ -464,16 +475,16 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/*
+ 	 * init different masks
+ 	 */
+-	mask.low_slices = 0;
++	bitmap_zero(mask.low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	/* silence stupid warning */;
+-	potential_mask.low_slices = 0;
++	bitmap_zero(potential_mask.low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
+ 
+-	compat_mask.low_slices = 0;
++	bitmap_zero(compat_mask.low_slices, SLICE_NUM_LOW);
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
+ 
+@@ -613,7 +624,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+  convert:
+ 	slice_andnot_mask(&mask, &good_mask);
+ 	slice_andnot_mask(&mask, &compat_mask);
+-	if (mask.low_slices ||
++	if (!bitmap_empty(mask.low_slices, SLICE_NUM_LOW) ||
+ 	    (SLICE_NUM_HIGH &&
+ 	     !bitmap_empty(mask.high_slices, SLICE_NUM_HIGH))) {
+ 		slice_convert(mm, mask, psize);
+@@ -647,7 +658,7 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+ 
+ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ {
+-	unsigned char *hpsizes;
++	unsigned char *psizes;
+ 	int index, mask_index;
+ 
+ 	/*
+@@ -661,15 +672,14 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ #endif
+ 	}
+ 	if (addr <= SLICE_LOW_TOP) {
+-		u64 lpsizes;
+-		lpsizes = mm->context.low_slices_psize;
++		psizes = mm->context.low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-		return (lpsizes >> (index * 4)) & 0xf;
++	} else {
++		psizes = mm->context.high_slices_psize;
++		index = GET_HIGH_SLICE_INDEX(addr);
+ 	}
+-	hpsizes = mm->context.high_slices_psize;
+-	index = GET_HIGH_SLICE_INDEX(addr);
+ 	mask_index = index & 0x1;
+-	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xf;
++	return (psizes[index >> 1] >> (mask_index * 4)) & 0xf;
+ }
+ EXPORT_SYMBOL_GPL(get_slice_psize);
+ 
+@@ -690,8 +700,8 @@ EXPORT_SYMBOL_GPL(get_slice_psize);
+ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ {
+ 	int index, mask_index;
+-	unsigned char *hpsizes;
+-	unsigned long flags, lpsizes;
++	unsigned char *hpsizes, *lpsizes;
++	unsigned long flags;
+ 	unsigned int old_psize;
+ 	int i;
+ 
+@@ -709,12 +719,14 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ 	wmb();
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (((lpsizes >> (i * 4)) & 0xf) == old_psize)
+-			lpsizes = (lpsizes & ~(0xful << (i * 4))) |
+-				(((unsigned long)psize) << (i * 4));
+-	/* Assign the value back */
+-	mm->context.low_slices_psize = lpsizes;
++	for (i = 0; i < SLICE_NUM_LOW; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (((lpsizes[index] >> (mask_index * 4)) & 0xf) == old_psize)
++			lpsizes[index] = (lpsizes[index] &
++					  ~(0xf << (mask_index * 4))) |
++				(((unsigned long)psize) << (mask_index * 4));
++	}
+ 
+ 	hpsizes = mm->context.high_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_HIGH; i++) {
 -- 
-2.14.3 (Apple Git-98)
+2.13.3
