@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFq0tP6zF0QP
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:54 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFp3lKGzDq8c
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:55 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w05Gi8VV039866
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:45 -0500
+ w05Gioxh015136
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:49 -0500
 Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fab7nwgu1-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fabw9ub62-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:48 -0500
 Received: from localhost
  by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 5 Jan 2018 11:46:43 -0500
+ Fri, 5 Jan 2018 11:46:47 -0500
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -25,9 +25,11 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
  saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v4 0/7] SR-IOV Enablement on PowerVM
-Date: Fri,  5 Jan 2018 10:45:45 -0600
-Message-Id: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
+Subject: [PATCH v4 4/7] powerpc/kernel Add EEH operations to notify resume
+Date: Fri,  5 Jan 2018 10:45:49 -0600
+In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
+References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
+Message-Id: <20180105164552.36371-5-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,48 +39,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series will enable SR-IOV on PowerVM. A specific set of
-lids for PFW/PHYP is required. They are planned to release with
-920 at the moment.
+When pseries SR-IOV is enabled and after a PF driver
+has resumed from EEH, platform has to be notified
+of the event so the child VFs can be allowed to
+resume their normal recovery path.
 
-For IBM internal testers let me know of a system you want to test on
-and we can put on the lids required or we can provide a system to run
-the tests.
+This patch makes the EEH operation allow unfreeze
+platform dependent code and adds the call to
+pseries EEH code.
 
-This patch depends on the three patches:
-988fc3ba5653278a8c14d6ccf687371775930d2b
-dae7253f9f78a731755ca20c66b2d2c40b86baea
-608c0d8804ef3ca4cda8ec6ad914e47deb283d7b
+Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h               |  1 +
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  3 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 96 +++++++++++++++++++++++++++-
+ 3 files changed, 98 insertions(+), 2 deletions(-)
 
-v1 - Initial Patch
-v2 - Addressed Alexey and Russell's comments
-v3 - Unify the call of .error_detected()
-v4 - Fixed subject and change log per Bjorn's comments and
-     fixed Alexey's comments
-
-Bryant G. Ly (7):
-  platform/pseries: Update VF config space after EEH
-  linux/pci: Add uevents in AER and EEH error/resume
-  platforms/pseries: Set eeh_pe of EEH_PE_VF type
-  powerpc/kernel Add EEH operations to notify resume
-  powerpc/kernel: Add EEH notify resume sysfs
-  pseries/pci: Associate PEs to VFs in configure SR-IOV
-  pseries/setup: Add Initialization of VF Bars
-
- arch/powerpc/include/asm/eeh.h               |   2 +
- arch/powerpc/include/asm/pci-bridge.h        |   5 +-
- arch/powerpc/include/asm/pci.h               |   2 +
- arch/powerpc/kernel/eeh.c                    |  59 ++++++++++
- arch/powerpc/kernel/eeh_driver.c             |   6 +
- arch/powerpc/kernel/eeh_sysfs.c              |  45 ++++++++
- arch/powerpc/kernel/pci_of_scan.c            |   2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c |  68 +----------
- arch/powerpc/platforms/pseries/eeh_pseries.c | 137 +++++++++++++++++++++-
- arch/powerpc/platforms/pseries/pci.c         | 150 +++++++++++++++++++++++-
- arch/powerpc/platforms/pseries/setup.c       | 164 +++++++++++++++++++++++++++
- drivers/pci/pcie/aer/aerdrv_core.c           |   3 +
- include/linux/pci.h                          |  36 ++++++
- 13 files changed, 611 insertions(+), 68 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 82829c65f31a..fd37cc101f4f 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -214,6 +214,7 @@ struct eeh_ops {
+ 	int (*write_config)(struct pci_dn *pdn, int where, int size, u32 val);
+ 	int (*next_error)(struct eeh_pe **pe);
+ 	int (*restore_config)(struct pci_dn *pdn);
++	int (*notify_resume)(struct pci_dn *pdn);
+ };
+ 
+ extern int eeh_subsystem_flags;
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 0665b6d03cb3..33c86c1a1720 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -1704,7 +1704,8 @@ static struct eeh_ops pnv_eeh_ops = {
+ 	.read_config            = pnv_eeh_read_config,
+ 	.write_config           = pnv_eeh_write_config,
+ 	.next_error		= pnv_eeh_next_error,
+-	.restore_config		= pnv_eeh_restore_config
++	.restore_config		= pnv_eeh_restore_config,
++	.notify_resume		= NULL
+ };
+ 
+ #ifdef CONFIG_PCI_IOV
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index ca6bbfd83701..898bb055cb19 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -749,6 +749,97 @@ static int pseries_eeh_restore_config(struct pci_dn *pdn)
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_PCI_IOV
++int pseries_send_allow_unfreeze(struct pci_dn *pdn,
++				u16 *vf_pe_array, int cur_vfs)
++{
++	int rc;
++	int ibm_allow_unfreeze = rtas_token("ibm,open-sriov-allow-unfreeze");
++	unsigned long buid, addr;
++
++	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
++	buid = pdn->phb->buid;
++	spin_lock(&rtas_data_buf_lock);
++	memcpy(rtas_data_buf, vf_pe_array, RTAS_DATA_BUF_SIZE);
++	rc = rtas_call(ibm_allow_unfreeze, 5, 1, NULL,
++		       addr,
++		       BUID_HI(buid),
++		       BUID_LO(buid),
++		       rtas_data_buf, cur_vfs * sizeof(u16));
++	spin_unlock(&rtas_data_buf_lock);
++	if (rc)
++		pr_warn("%s: Failed to allow unfreeze for PHB#%x-PE#%lx, rc=%x\n",
++			__func__,
++			pdn->phb->global_number, addr, rc);
++	return rc;
++}
++
++static int pseries_call_allow_unfreeze(struct eeh_dev *edev)
++{
++	struct pci_dn *pdn, *tmp, *parent, *physfn_pdn;
++	int cur_vfs = 0, rc = 0, vf_index, bus, devfn;
++	u16 *vf_pe_array;
++
++	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
++	if (!vf_pe_array)
++		return -ENOMEM;
++	if (pci_num_vf(edev->physfn ? edev->physfn : edev->pdev)) {
++		if (edev->pdev->is_physfn) {
++			cur_vfs = pci_num_vf(edev->pdev);
++			pdn = eeh_dev_to_pdn(edev);
++			parent = pdn->parent;
++			for (vf_index = 0; vf_index < cur_vfs; vf_index++)
++				vf_pe_array[vf_index] =
++					cpu_to_be16(pdn->pe_num_map[vf_index]);
++			rc = pseries_send_allow_unfreeze(pdn, vf_pe_array,
++							 cur_vfs);
++			pdn->last_allow_rc = rc;
++			for (vf_index = 0; vf_index < cur_vfs; vf_index++) {
++				list_for_each_entry_safe(pdn, tmp,
++							 &parent->child_list,
++							 list) {
++					bus = pci_iov_virtfn_bus(edev->pdev,
++								 vf_index);
++					devfn = pci_iov_virtfn_devfn(edev->pdev,
++								     vf_index);
++					if (pdn->busno != bus ||
++					    pdn->devfn != devfn)
++						continue;
++					pdn->last_allow_rc = rc;
++				}
++			}
++		} else {
++			pdn = pci_get_pdn(edev->pdev);
++			vf_pe_array[0] = cpu_to_be16(pdn->pe_number);
++			physfn_pdn = pci_get_pdn(edev->physfn);
++			rc = pseries_send_allow_unfreeze(physfn_pdn,
++							 vf_pe_array, 1);
++			pdn->last_allow_rc = rc;
++		}
++	}
++
++	kfree(vf_pe_array);
++	return rc;
++}
++
++static int pseries_notify_resume(struct pci_dn *pdn)
++{
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++
++	if (!edev)
++		return -EEXIST;
++
++	if (rtas_token("ibm,open-sriov-allow-unfreeze")
++	    == RTAS_UNKNOWN_SERVICE)
++		return -EINVAL;
++
++	if (edev->pdev->is_physfn || edev->pdev->is_virtfn)
++		return pseries_call_allow_unfreeze(edev);
++
++	return 0;
++}
++#endif
++
+ static struct eeh_ops pseries_eeh_ops = {
+ 	.name			= "pseries",
+ 	.init			= pseries_eeh_init,
+@@ -764,7 +855,10 @@ static struct eeh_ops pseries_eeh_ops = {
+ 	.read_config		= pseries_eeh_read_config,
+ 	.write_config		= pseries_eeh_write_config,
+ 	.next_error		= NULL,
+-	.restore_config		= pseries_eeh_restore_config
++	.restore_config		= pseries_eeh_restore_config,
++#ifdef CONFIG_PCI_IOV
++	.notify_resume		= pseries_notify_resume
++#endif
+ };
+ 
+ /**
 -- 
 2.14.3 (Apple Git-98)
