@@ -1,43 +1,23 @@
-Return-Path: <Vineet.Gupta1@synopsys.com>
-Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
- [198.182.60.111])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zD1613dBlzDqvk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 10:27:03 +1100 (AEDT)
-Subject: Re: [PATCH 09/67] arc: remove CONFIG_ARC_PLAT_NEEDS_PHYS_TO_DMA
-To: Christoph Hellwig <hch@lst.de>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>
-CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Guan Xuetao
- <gxt@mprc.pku.edu.cn>, "linux-arch@vger.kernel.org"
- <linux-arch@vger.kernel.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "linux-c6x-dev@linux-c6x.org"
- <linux-c6x-dev@linux-c6x.org>, "linux-hexagon@vger.kernel.org"
- <linux-hexagon@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "patches@groups.riscv.org" <patches@groups.riscv.org>,
- "linux-metag@vger.kernel.org" <linux-metag@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Michal Simek <monstr@monstr.eu>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <20171229081911.2802-1-hch@lst.de>
- <20171229081911.2802-10-hch@lst.de>
-From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-Message-ID: <2c24bfd1-5f54-4b82-444e-833dc53b6efd@synopsys.com>
-Date: Fri, 5 Jan 2018 11:45:16 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zD1753Vz3zDqmC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 10:28:01 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ david@gibson.dropbear.id.au, anton@samba.org,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC FIX v1 1/2] powerpc: Discover radix availability before
+ scanning the memory nodes
+In-Reply-To: <1515150321-24894-2-git-send-email-bharata@linux.vnet.ibm.com>
+References: <1515150321-24894-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <1515150321-24894-2-git-send-email-bharata@linux.vnet.ibm.com>
+Date: Sat, 06 Jan 2018 10:28:00 +1100
+Message-ID: <87shbj3myn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20171229081911.2802-10-hch@lst.de>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,119 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/29/2017 12:25 AM, Christoph Hellwig wrote:
-> We always use the stub definitions, so remove the unused other code.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Bharata B Rao <bharata@linux.vnet.ibm.com> writes:
 
-Acked-by: Vineet Gupta <vgupta@synopsys.com>
+> Currently device tree nodes for memory are scanned before the
+> radix feature is discovered in mmu_early_init_devtree(). Move this
+> routine ahead of scanning memory nodes so that we know if the
+> guest is radix or not when scanning ibm,dynamic-reconfiguration-memory.
 
-FWIW, it was removed and reintroduced as one of the customers wanted it, which is 
-not relevant now !
+Sorry this doesn't work.
 
-Thx,
--Vineet
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index b15bae2..079d893 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -722,6 +722,8 @@ void __init early_init_devtree(void *params)
+>  	 */
+>  	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
+>  
+> +	mmu_early_init_devtree();
+> +
 
-> ---
->   arch/arc/Kconfig                   |  3 ---
->   arch/arc/include/asm/dma-mapping.h |  7 -------
->   arch/arc/mm/dma.c                  | 14 +++++++-------
->   3 files changed, 7 insertions(+), 17 deletions(-)
->
-> diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-> index 9d5fd00d9e91..f3a80cf164cc 100644
-> --- a/arch/arc/Kconfig
-> +++ b/arch/arc/Kconfig
-> @@ -463,9 +463,6 @@ config ARCH_PHYS_ADDR_T_64BIT
->   config ARCH_DMA_ADDR_T_64BIT
->   	bool
->   
-> -config ARC_PLAT_NEEDS_PHYS_TO_DMA
-> -	bool
+You've moved this above parse_early_param(), but
+mmu_early_init_devtree() uses disable_radix, which is an early param. So
+this will break disable_radix handling.
+
+It will probably break other things too because the ordering of this
+init code is very fragile - bootstrapping is hard :)
+
+>  	/* Scan memory nodes and rebuild MEMBLOCKs */
+>  	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+>  	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+> @@ -783,8 +785,6 @@ void __init early_init_devtree(void *params)
+>  	spinning_secondaries = boot_cpu_count - 1;
+>  #endif
+>  
+> -	mmu_early_init_devtree();
 > -
->   config ARC_KVADDR_SIZE
->   	int "Kernel Virtual Address Space size (MB)"
->   	range 0 512
-> diff --git a/arch/arc/include/asm/dma-mapping.h b/arch/arc/include/asm/dma-mapping.h
-> index 94285031c4fb..7a16824bfe98 100644
-> --- a/arch/arc/include/asm/dma-mapping.h
-> +++ b/arch/arc/include/asm/dma-mapping.h
-> @@ -11,13 +11,6 @@
->   #ifndef ASM_ARC_DMA_MAPPING_H
->   #define ASM_ARC_DMA_MAPPING_H
->   
-> -#ifndef CONFIG_ARC_PLAT_NEEDS_PHYS_TO_DMA
-> -#define plat_dma_to_phys(dev, dma_handle) ((phys_addr_t)(dma_handle))
-> -#define plat_phys_to_dma(dev, paddr) ((dma_addr_t)(paddr))
-> -#else
-> -#include <plat/dma.h>
-> -#endif
-> -
->   extern const struct dma_map_ops arc_dma_ops;
->   
->   static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-> diff --git a/arch/arc/mm/dma.c b/arch/arc/mm/dma.c
-> index fad18261ef6a..1d405b86250c 100644
-> --- a/arch/arc/mm/dma.c
-> +++ b/arch/arc/mm/dma.c
-> @@ -60,7 +60,7 @@ static void *arc_dma_alloc(struct device *dev, size_t size,
->   	/* This is linear addr (0x8000_0000 based) */
->   	paddr = page_to_phys(page);
->   
-> -	*dma_handle = plat_phys_to_dma(dev, paddr);
-> +	*dma_handle = paddr;
->   
->   	/* This is kernel Virtual address (0x7000_0000 based) */
->   	if (need_kvaddr) {
-> @@ -92,7 +92,7 @@ static void *arc_dma_alloc(struct device *dev, size_t size,
->   static void arc_dma_free(struct device *dev, size_t size, void *vaddr,
->   		dma_addr_t dma_handle, unsigned long attrs)
->   {
-> -	phys_addr_t paddr = plat_dma_to_phys(dev, dma_handle);
-> +	phys_addr_t paddr = dma_handle;
->   	struct page *page = virt_to_page(paddr);
->   	int is_non_coh = 1;
->   
-> @@ -111,7 +111,7 @@ static int arc_dma_mmap(struct device *dev, struct vm_area_struct *vma,
->   {
->   	unsigned long user_count = vma_pages(vma);
->   	unsigned long count = PAGE_ALIGN(size) >> PAGE_SHIFT;
-> -	unsigned long pfn = __phys_to_pfn(plat_dma_to_phys(dev, dma_addr));
-> +	unsigned long pfn = __phys_to_pfn(dma_addr);
->   	unsigned long off = vma->vm_pgoff;
->   	int ret = -ENXIO;
->   
-> @@ -175,7 +175,7 @@ static dma_addr_t arc_dma_map_page(struct device *dev, struct page *page,
->   	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
->   		_dma_cache_sync(paddr, size, dir);
->   
-> -	return plat_phys_to_dma(dev, paddr);
-> +	return paddr;
->   }
->   
->   /*
-> @@ -190,7 +190,7 @@ static void arc_dma_unmap_page(struct device *dev, dma_addr_t handle,
->   			       size_t size, enum dma_data_direction dir,
->   			       unsigned long attrs)
->   {
-> -	phys_addr_t paddr = plat_dma_to_phys(dev, handle);
-> +	phys_addr_t paddr = handle;
->   
->   	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
->   		_dma_cache_sync(paddr, size, dir);
-> @@ -224,13 +224,13 @@ static void arc_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
->   static void arc_dma_sync_single_for_cpu(struct device *dev,
->   		dma_addr_t dma_handle, size_t size, enum dma_data_direction dir)
->   {
-> -	_dma_cache_sync(plat_dma_to_phys(dev, dma_handle), size, DMA_FROM_DEVICE);
-> +	_dma_cache_sync(dma_handle, size, DMA_FROM_DEVICE);
->   }
->   
->   static void arc_dma_sync_single_for_device(struct device *dev,
->   		dma_addr_t dma_handle, size_t size, enum dma_data_direction dir)
->   {
-> -	_dma_cache_sync(plat_dma_to_phys(dev, dma_handle), size, DMA_TO_DEVICE);
-> +	_dma_cache_sync(dma_handle, size, DMA_TO_DEVICE);
->   }
->   
->   static void arc_dma_sync_sg_for_cpu(struct device *dev,
+>  #ifdef CONFIG_PPC_POWERNV
+>  	/* Scan and build the list of machine check recoverable ranges */
+>  	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
+
+cheers
