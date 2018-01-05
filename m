@@ -1,27 +1,27 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x232.google.com (mail-oi0-x232.google.com
- [IPv6:2607:f8b0:4003:c06::232])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCNP544BxzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 09:52:57 +1100 (AEDT)
-Received: by mail-oi0-x232.google.com with SMTP id g6so2036661oib.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 14:52:57 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCRmB3TPNzDqpQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jan 2018 12:24:40 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id 62so2137044pld.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jan 2018 17:24:40 -0800 (PST)
+Subject: Re: [PATCH v3 3/7] platforms/pseries: Set eeh_pe of EEH_PE_VF type
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, helgaas@kernel.org, ruscur@russell.cc,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bodong@mellanox.com, eli@mellanox.com, saeedm@mellanox.com
+References: <20180103171633.94499-1-bryantly@linux.vnet.ibm.com>
+ <20180103171633.94499-4-bryantly@linux.vnet.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <c468850c-369e-2eca-fcb2-3cb3a7992eae@ozlabs.ru>
+Date: Fri, 5 Jan 2018 12:24:30 +1100
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20180104224542.15333-3-robh@kernel.org>
-References: <20180104224542.15333-3-robh@kernel.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 4 Jan 2018 23:52:54 +0100
-Message-ID: <CAK8P3a2COeOQDRXmu+bqA-a5pH7LWxm7PfKn9UDsBWZ2EJzg4w@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: cell: use irq_of_parse_and_map helper
-To: Rob Herring <robh@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180103171633.94499-4-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +31,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 4, 2018 at 11:45 PM, Rob Herring <robh@kernel.org> wrote:
-> Instead of calling both of_irq_parse_one and irq_create_of_mapping, call
-> of_irq_parse_and_map instead which does the same thing. This gets us closer
-> to making the former 2 functions static.
->
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
+On 04/01/18 04:16, Bryant G. Ly wrote:
+> To correctly use EEH code one has to make
+> sure that the EEH_PE_VF is set for dynamic created
+> VFs. Therefore this patch allocates an eeh_pe of
+> eeh type EEH_PE_VF and associates PE with parent.
+> 
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/pci-bridge.h        |  5 ++++-
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 14 +++++++++++++-
+>  2 files changed, 17 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 9f66ddebb799..16d70740a76f 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -211,7 +211,10 @@ struct pci_dn {
+>  	unsigned int *pe_num_map;	/* PE# for the first VF PE or array */
+>  	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>  #define IODA_INVALID_M64        (-1)
+> -	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+> +	union {
+> +		int     (*m64_map)[PCI_SRIOV_NUM_BARS]; /*Only used in powernv */
+> +		int     last_allow_rc;	/* Only used in pSeries */
+> +	};
+>  #endif /* CONFIG_PCI_IOV */
+>  	int	mps;			/* Maximum Payload Size */
+>  	struct list_head child_list;
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index a671ef4f57f5..686e9c7feab5 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -58,6 +58,8 @@ static int ibm_configure_pe;
+>  void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+>  {
+>  	struct pci_dn *pdn = pci_get_pdn(pdev);
+> +	struct pci_dn *physfn_pdn;
+> +	struct eeh_dev *edev;
+>  
+>  	if (!pdev->is_virtfn)
+>  		return;
+> @@ -65,6 +67,14 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+>  	pdn->device_id  =  pdev->device;
+>  	pdn->vendor_id  =  pdev->vendor;
+>  	pdn->class_code =  pdev->class;
+> +	/* Last allow unfreeze return code used for retrieval
+> +	 * by user space in eeh-sysfs to show the last command
+> +	 * completion from platform
+> +	 */
+> +	pdn->last_allow_rc =  0;
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+
+Fails to compile without CONFIG_IOV:
+
+/home/aik/p/guest-kernel/arch/powerpc/platforms/pseries/eeh_pseries.c: In
+function ‘pseries_pcibios_bus_add_device’:
+/home/aik/p/guest-kernel/arch/powerpc/platforms/pseries/eeh_pseries.c:74:5:
+error: ‘struct pci_dn’ has no member named ‘last_allow_rc’
+  pdn->last_allow_rc =  0;
+     ^
+
+
+There are more actually, you try and see.
+
+
+> +	physfn_pdn      =  pci_get_pdn(pdev->physfn);
+> +	pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
+> +	edev = pdn_to_eeh_dev(pdn);
+>  
+>  	/*
+>  	 * The following operations will fail if VF's sysfs files
+> @@ -72,8 +82,10 @@ void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+>  	 */
+>  	eeh_add_device_early(pdn);
+>  	eeh_add_device_late(pdev);
+> +	edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
+> +	eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
+> +	eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
+>  	eeh_sysfs_add_device(pdev);
+> -
+
+While we are here - unrelated empty line removal here and in other patches
+of this patchset.
+
+>  }
+>  
+>  /*
+> 
+
+
+-- 
+Alexey
