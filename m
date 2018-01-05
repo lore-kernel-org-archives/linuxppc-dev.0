@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFq0s3FzF0QL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFq0vk9zF0QQ
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:55 +1100 (AEDT)
 Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w05GkWmv098094
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:48 -0500
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2faag2qhtb-1
+ w05GiAJR090409
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:53 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2faag2qhwn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:47 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:52 -0500
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 5 Jan 2018 11:46:45 -0500
+ Fri, 5 Jan 2018 11:46:51 -0500
 From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
@@ -25,11 +25,11 @@ Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
  ruscur@russell.cc, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
  saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v4 2/7] linux/pci: Add uevents in AER and EEH error/resume
-Date: Fri,  5 Jan 2018 10:45:47 -0600
+Subject: [PATCH v4 6/7] pseries/pci: Associate PEs to VFs in configure SR-IOV
+Date: Fri,  5 Jan 2018 10:45:51 -0600
 In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
 References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20180105164552.36371-3-bryantly@linux.vnet.ibm.com>
+Message-Id: <20180105164552.36371-7-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,127 +39,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Devices can go offline when erors reported. This
-patch adds a change to the kernel object and lets udev
-know of error. When device resumes, a change is also set
-reporting device as online. Therefore, EEH and AER events
-are better propagated to user space for PCI devices in
-all arches.
+After initial validation of SR-IOV resources, firmware will
+associate PEs to the dynamic VFs created within this call. This
+patch adds the association of PEs to the PF array of PE numbers
+indexed by VF.
 
 Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/kernel/eeh_driver.c   |  6 ++++++
- drivers/pci/pcie/aer/aerdrv_core.c |  3 +++
- include/linux/pci.h                | 36 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 45 insertions(+)
+ arch/powerpc/platforms/pseries/pci.c | 150 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 148 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 3c0fa99c5533..beea2182d754 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -228,6 +228,7 @@ static void *eeh_report_error(void *data, void *userdata)
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 48d3af026f90..eab96637d6cf 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -59,16 +59,162 @@ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
+ #endif
  
- 	edev->in_error = true;
- 	eeh_pcid_put(dev);
-+	pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
- 	return NULL;
- }
- 
-@@ -381,6 +382,10 @@ static void *eeh_report_resume(void *data, void *userdata)
- 	driver->err_handler->resume(dev);
- 
- 	eeh_pcid_put(dev);
-+	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
-+#ifdef CONFIG_PCI_IOV
-+	eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
-+#endif
- 	return NULL;
- }
- 
-@@ -416,6 +421,7 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
- 
- 	eeh_pcid_put(dev);
-+	pci_uevent_ers(dev, PCI_ERS_RESULT_DISCONNECT);
- 	return NULL;
- }
- 
-diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
-index 744805232155..8d7448063fd1 100644
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -278,6 +278,7 @@ static int report_error_detected(struct pci_dev *dev, void *data)
- 	} else {
- 		err_handler = dev->driver->err_handler;
- 		vote = err_handler->error_detected(dev, result_data->state);
-+		pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
- 	}
- 
- 	result_data->result = merge_result(result_data->result, vote);
-@@ -341,6 +342,7 @@ static int report_resume(struct pci_dev *dev, void *data)
- 
- 	err_handler = dev->driver->err_handler;
- 	err_handler->resume(dev);
-+	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
- out:
- 	device_unlock(&dev->dev);
- 	return 0;
-@@ -541,6 +543,7 @@ static void do_recovery(struct pci_dev *dev, int severity)
- 	return;
- 
- failed:
-+	pci_uevent_ers(dev, PCI_ERS_RESULT_DISCONNECT);
- 	/* TODO: Should kernel panic here? */
- 	dev_info(&dev->dev, "AER: Device recovery failed\n");
- }
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index e3e94467687a..405630441b74 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -2277,6 +2277,42 @@ static inline bool pci_is_thunderbolt_attached(struct pci_dev *pdev)
- 	return false;
- }
- 
-+/**
-+ * pci_uevent_ers - emit a uevent during recovery path of pci device
-+ * @pdev: pci device to check
-+ * @err_type: type of error event
-+ *
-+ */
-+static inline void pci_uevent_ers(struct pci_dev *pdev,
-+				  enum  pci_ers_result err_type)
+ #ifdef CONFIG_PCI_IOV
++#define MAX_VFS_FOR_MAP_PE 256
++struct pe_map_bar_entry {
++	__be64     bar;       /* Input:  Virtual Function BAR */
++	__be16     rid;       /* Input:  Virtual Function Router ID */
++	__be16     pe_num;    /* Output: Virtual Function PE Number */
++	__be32     reserved;  /* Reserved Space */
++};
++
++int pseries_send_map_pe(struct pci_dev *pdev,
++			u16 num_vfs,
++			struct pe_map_bar_entry *vf_pe_array)
 +{
-+	int idx = 0;
-+	char *envp[3];
++	struct pci_dn *pdn;
++	int rc;
++	unsigned long buid, addr;
++	int ibm_map_pes = rtas_token("ibm,open-sriov-map-pe-number");
 +
-+	switch (err_type) {
-+	case PCI_ERS_RESULT_NONE:
-+	case PCI_ERS_RESULT_CAN_RECOVER:
-+		envp[idx++] = "ERROR_EVENT=BEGIN_RECOVERY";
-+		envp[idx++] = "DEVICE_ONLINE=0";
-+		break;
-+	case PCI_ERS_RESULT_RECOVERED:
-+		envp[idx++] = "ERROR_EVENT=SUCCESSFUL_RECOVERY";
-+		envp[idx++] = "DEVICE_ONLINE=1";
-+		break;
-+	case PCI_ERS_RESULT_DISCONNECT:
-+		envp[idx++] = "ERROR_EVENT=FAILED_RECOVERY";
-+		envp[idx++] = "DEVICE_ONLINE=0";
-+		break;
-+	default:
-+		break;
-+	}
++	if (ibm_map_pes == RTAS_UNKNOWN_SERVICE)
++		return -EINVAL;
 +
-+	if (idx > 0) {
-+		envp[idx++] = NULL;
-+		kobject_uevent_env(&pdev->dev.kobj, KOBJ_CHANGE, envp);
-+	}
++	pdn = pci_get_pdn(pdev);
++	addr = rtas_config_addr(pdn->busno, pdn->devfn, 0);
++	buid = pdn->phb->buid;
++	spin_lock(&rtas_data_buf_lock);
++	memcpy(rtas_data_buf, vf_pe_array,
++	       RTAS_DATA_BUF_SIZE);
++	rc = rtas_call(ibm_map_pes, 5, 1, NULL, addr,
++		       BUID_HI(buid), BUID_LO(buid),
++		       rtas_data_buf,
++		       num_vfs * sizeof(struct pe_map_bar_entry));
++	memcpy(vf_pe_array, rtas_data_buf, RTAS_DATA_BUF_SIZE);
++	spin_unlock(&rtas_data_buf_lock);
++
++	if (rc)
++		dev_err(&pdev->dev,
++			"%s: Failed to associate pes PE#%lx, rc=%x\n",
++			__func__,  addr, rc);
++
++	return rc;
 +}
 +
- /* provide the legacy pci_dma_* API */
- #include <linux/pci-dma-compat.h>
++void pseries_set_pe_num(struct pci_dev *pdev, u16 vf_index, __be16 pe_num)
++{
++	struct pci_dn *pdn;
++
++	pdn = pci_get_pdn(pdev);
++	pdn->pe_num_map[vf_index] = be16_to_cpu(pe_num);
++	dev_dbg(&pdev->dev, "VF %04x:%02x:%02x.%x associated with PE#%x\n",
++		pci_domain_nr(pdev->bus),
++		pdev->bus->number,
++		PCI_SLOT(pci_iov_virtfn_devfn(pdev, vf_index)),
++		PCI_FUNC(pci_iov_virtfn_devfn(pdev, vf_index)),
++		pdn->pe_num_map[vf_index]);
++}
++
++int pseries_associate_pes(struct pci_dev *pdev, u16 num_vfs)
++{
++	struct pci_dn *pdn;
++	int i, rc, vf_index;
++	struct pe_map_bar_entry *vf_pe_array;
++	struct resource *res;
++	u64 size;
++
++	vf_pe_array = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
++	if (!vf_pe_array)
++		return -ENOMEM;
++
++	pdn = pci_get_pdn(pdev);
++	/* create firmware structure to associate pes */
++	for (vf_index = 0; vf_index < num_vfs; vf_index++) {
++		pdn->pe_num_map[vf_index] = IODA_INVALID_PE;
++		for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
++			res = &pdev->resource[i + PCI_IOV_RESOURCES];
++			if (!res->parent)
++				continue;
++			size = pcibios_iov_resource_alignment(pdev, i +
++					PCI_IOV_RESOURCES);
++			vf_pe_array[vf_index].bar =
++				cpu_to_be64(res->start + size * vf_index);
++			vf_pe_array[vf_index].rid =
++				cpu_to_be16((pci_iov_virtfn_bus(pdev, vf_index)
++					    << 8) | pci_iov_virtfn_devfn(pdev,
++					    vf_index));
++			vf_pe_array[vf_index].pe_num =
++				cpu_to_be16(IODA_INVALID_PE);
++		}
++	}
++
++	rc = pseries_send_map_pe(pdev, num_vfs, vf_pe_array);
++	/* Only zero is success */
++	if (!rc)
++		for (vf_index = 0; vf_index < num_vfs; vf_index++)
++			pseries_set_pe_num(pdev, vf_index,
++					   vf_pe_array[vf_index].pe_num);
++
++	kfree(vf_pe_array);
++	return rc;
++}
++
++int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
++{
++	struct pci_dn         *pdn;
++	int                    rc;
++	const int *max_vfs;
++	int max_config_vfs;
++	struct device_node *dn = pci_device_to_OF_node(pdev);
++
++	max_vfs = of_get_property(dn, "ibm,number-of-configurable-vfs", NULL);
++
++	if (!max_vfs)
++		return -EINVAL;
++
++	/* First integer stores max config */
++	max_config_vfs = of_read_number(&max_vfs[0], 1);
++	if (max_config_vfs < num_vfs && num_vfs > MAX_VFS_FOR_MAP_PE) {
++		dev_err(&pdev->dev,
++			"Num VFs %x > %x Configurable VFs\n",
++			num_vfs, (num_vfs > MAX_VFS_FOR_MAP_PE) ?
++			MAX_VFS_FOR_MAP_PE : max_config_vfs);
++		return -EINVAL;
++	}
++
++	pdn = pci_get_pdn(pdev);
++	pdn->pe_num_map = kmalloc_array(num_vfs,
++					sizeof(*pdn->pe_num_map),
++					GFP_KERNEL);
++	if (!pdn->pe_num_map)
++		return -ENOMEM;
++
++	rc = pseries_associate_pes(pdev, num_vfs);
++
++	/* Anything other than zero is failure */
++	if (rc) {
++		dev_err(&pdev->dev, "Failure to enable sriov: %x\n", rc);
++		kfree(pdn->pe_num_map);
++	} else {
++		pci_vf_drivers_autoprobe(pdev, false);
++	}
++
++	return rc;
++}
++
+ int pseries_pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+ {
+ 	/* Allocate PCI data */
+ 	add_dev_pci_data(pdev);
+-	pci_vf_drivers_autoprobe(pdev, false);
+-	return 0;
++	return pseries_pci_sriov_enable(pdev, num_vfs);
+ }
  
+ int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
+ {
++	struct pci_dn         *pdn;
++
++	pdn = pci_get_pdn(pdev);
++	/* Releasing pe_num_map */
++	kfree(pdn->pe_num_map);
+ 	/* Release PCI data */
+ 	remove_dev_pci_data(pdev);
+ 	pci_vf_drivers_autoprobe(pdev, true);
 -- 
 2.14.3 (Apple Git-98)
