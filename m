@@ -1,35 +1,21 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrFq0pM8zF0QH
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:54 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id
- w05GkUFl097740
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jan 2018 11:46:46 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2faag2qhsh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jan 2018 11:46:46 -0500
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Fri, 5 Jan 2018 11:46:45 -0500
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, helgaas@kernel.org, aik@ozlabs.ru,
- ruscur@russell.cc, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Subject: [PATCH v4 1/7] platform/pseries: Update VF config space after EEH
-Date: Fri,  5 Jan 2018 10:45:46 -0600
-In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-Message-Id: <20180105164552.36371-2-bryantly@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zCrGG3ssqzDqm7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jan 2018 03:47:51 +1100 (AEDT)
+Message-Id: <aed2799c8b369bd2ffba9967ed052e21d33e76f0.1515169256.git.christophe.leroy@c-s.fr>
+In-Reply-To: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
+References: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 3/3] powerpc/8xx: Increase the number of mm slices
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri,  5 Jan 2018 17:44:04 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,238 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add EEH platform operations for pseries to update VF
-config space. With this change after EEH, the VF
-will have updated config space for pseries platform.
+On the 8xx, we can have as many slices as PMD entries.
+This means we could have 1024 slices in 4k size pages mode
+and 64 slices in 16k size pages.
 
-Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+However, due to a stack overflow in slice_get_unmapped_area(),
+we limit to 512 slices.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/eeh.h               |  1 +
- arch/powerpc/kernel/eeh.c                    | 59 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/eeh-powernv.c | 65 ++--------------------------
- arch/powerpc/platforms/pseries/eeh_pseries.c | 26 ++++++++++-
- 4 files changed, 88 insertions(+), 63 deletions(-)
+ arch/powerpc/include/asm/mmu-8xx.h | 6 +++++-
+ arch/powerpc/include/asm/page_32.h | 3 ++-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 5161c37dd039..82829c65f31a 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -297,6 +297,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option);
- int eeh_pe_configure(struct eeh_pe *pe);
- int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
- 		      unsigned long addr, unsigned long mask);
-+int eeh_restore_vf_config(struct pci_dn *pdn);
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index d669d0062da4..40aa7b0cd0dc 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -171,7 +171,11 @@ typedef struct {
+ 	unsigned long vdso_base;
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	u16 user_psize;		/* page size index */
+-	unsigned char low_slices_psize[8]; /* 16 slices */
++#if defined(CONFIG_PPC_16K_PAGES)
++	unsigned char low_slices_psize[32]; /* 64 slices */
++#else
++	unsigned char low_slices_psize[256]; /* 512 slices */
++#endif
+ 	unsigned char high_slices_psize[0];
+ 	unsigned long slb_addr_limit;
+ #endif
+diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
+index f7d1bd1183c8..43695ce7ee07 100644
+--- a/arch/powerpc/include/asm/page_32.h
++++ b/arch/powerpc/include/asm/page_32.h
+@@ -62,7 +62,8 @@ extern void copy_page(void *to, void *from);
  
- /**
-  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index cbca0a667682..cc649809885e 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -740,6 +740,65 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
- 	return NULL;
- }
+ #ifdef CONFIG_PPC_MM_SLICES
  
-+int eeh_restore_vf_config(struct pci_dn *pdn)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	u32 devctl, cmd, cap2, aer_capctl;
-+	int old_mps;
-+
-+	if (edev->pcie_cap) {
-+		/* Restore MPS */
-+		old_mps = (ffs(pdn->mps) - 8) << 5;
-+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				     2, &devctl);
-+		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
-+		devctl |= old_mps;
-+		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				      2, devctl);
-+
-+		/* Disable Completion Timeout */
-+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
-+				     4, &cap2);
-+		if (cap2 & 0x10) {
-+			eeh_ops->read_config(pdn,
-+					     edev->pcie_cap + PCI_EXP_DEVCTL2,
-+					     4, &cap2);
-+			cap2 |= 0x10;
-+			eeh_ops->write_config(pdn,
-+					      edev->pcie_cap + PCI_EXP_DEVCTL2,
-+					      4, cap2);
-+		}
-+	}
-+
-+	/* Enable SERR and parity checking */
-+	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
-+	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
-+	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
-+
-+	/* Enable report various errors */
-+	if (edev->pcie_cap) {
-+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				     2, &devctl);
-+		devctl &= ~PCI_EXP_DEVCTL_CERE;
-+		devctl |= (PCI_EXP_DEVCTL_NFERE |
-+			   PCI_EXP_DEVCTL_FERE |
-+			   PCI_EXP_DEVCTL_URRE);
-+		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				      2, devctl);
-+	}
-+
-+	/* Enable ECRC generation and check */
-+	if (edev->pcie_cap && edev->aer_cap) {
-+		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-+				     4, &aer_capctl);
-+		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
-+		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-+				      4, aer_capctl);
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * pcibios_set_pcie_reset_state - Set PCI-E reset state
-  * @dev: pci device struct
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 961e64115d92..0665b6d03cb3 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1655,70 +1655,11 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
- 	return ret;
- }
+-#define SLICE_LOW_SHIFT		28
++/* SLICE_LOW_SHIFT >= 23 to avoid stack overflow in slice_get_unmapped_area() */
++#define SLICE_LOW_SHIFT		(PMD_SHIFT > 23 ? PMD_SHIFT : 23)
+ #define SLICE_HIGH_SHIFT	0
  
--static int pnv_eeh_restore_vf_config(struct pci_dn *pdn)
--{
--	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
--	u32 devctl, cmd, cap2, aer_capctl;
--	int old_mps;
--
--	if (edev->pcie_cap) {
--		/* Restore MPS */
--		old_mps = (ffs(pdn->mps) - 8) << 5;
--		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
--				     2, &devctl);
--		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
--		devctl |= old_mps;
--		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
--				      2, devctl);
--
--		/* Disable Completion Timeout */
--		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
--				     4, &cap2);
--		if (cap2 & 0x10) {
--			eeh_ops->read_config(pdn,
--					     edev->pcie_cap + PCI_EXP_DEVCTL2,
--					     4, &cap2);
--			cap2 |= 0x10;
--			eeh_ops->write_config(pdn,
--					      edev->pcie_cap + PCI_EXP_DEVCTL2,
--					      4, cap2);
--		}
--	}
--
--	/* Enable SERR and parity checking */
--	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
--	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
--	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
--
--	/* Enable report various errors */
--	if (edev->pcie_cap) {
--		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
--				     2, &devctl);
--		devctl &= ~PCI_EXP_DEVCTL_CERE;
--		devctl |= (PCI_EXP_DEVCTL_NFERE |
--			   PCI_EXP_DEVCTL_FERE |
--			   PCI_EXP_DEVCTL_URRE);
--		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
--				      2, devctl);
--	}
--
--	/* Enable ECRC generation and check */
--	if (edev->pcie_cap && edev->aer_cap) {
--		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
--				     4, &aer_capctl);
--		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
--		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
--				      4, aer_capctl);
--	}
--
--	return 0;
--}
--
- static int pnv_eeh_restore_config(struct pci_dn *pdn)
- {
- 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
- 	struct pnv_phb *phb;
--	s64 ret;
-+	s64 ret = 0;
- 	int config_addr = (pdn->busno << 8) | (pdn->devfn);
- 
- 	if (!edev)
-@@ -1732,7 +1673,7 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
- 	 * to be exported by firmware in extendible way.
- 	 */
- 	if (edev->physfn) {
--		ret = pnv_eeh_restore_vf_config(pdn);
-+		ret = eeh_restore_vf_config(pdn);
- 	} else {
- 		phb = pdn->phb->private_data;
- 		ret = opal_pci_reinit(phb->opal_id,
-@@ -1745,7 +1686,7 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
- 		return -EIO;
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- static struct eeh_ops pnv_eeh_ops = {
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 2295f117e2d3..a671ef4f57f5 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -708,6 +708,30 @@ static int pseries_eeh_write_config(struct pci_dn *pdn, int where, int size, u32
- 	return rtas_write_config(pdn, where, size, val);
- }
- 
-+static int pseries_eeh_restore_config(struct pci_dn *pdn)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	s64 ret = 0;
-+
-+	if (!edev)
-+		return -EEXIST;
-+
-+	/*
-+	 * FIXME: The MPS, error routing rules, timeout setting are worthy
-+	 * to be exported by firmware in extendible way.
-+	 */
-+	if (edev->physfn)
-+		ret = eeh_restore_vf_config(pdn);
-+
-+	if (ret) {
-+		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
-+			__func__, edev->pe_config_addr, ret);
-+		return -EIO;
-+	}
-+
-+	return ret;
-+}
-+
- static struct eeh_ops pseries_eeh_ops = {
- 	.name			= "pseries",
- 	.init			= pseries_eeh_init,
-@@ -723,7 +747,7 @@ static struct eeh_ops pseries_eeh_ops = {
- 	.read_config		= pseries_eeh_read_config,
- 	.write_config		= pseries_eeh_write_config,
- 	.next_error		= NULL,
--	.restore_config		= NULL
-+	.restore_config		= pseries_eeh_restore_config
- };
- 
- /**
+ #define SLICE_LOW_TOP		(0xfffffffful)
 -- 
-2.14.3 (Apple Git-98)
+2.13.3
