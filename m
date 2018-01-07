@@ -1,19 +1,21 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zDtB30J4wzF0RX
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jan 2018 20:18:34 +1100 (AEDT)
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] KVM: PPC: Use seq_puts() in kvmppc_exit_timing_show()
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Message-ID: <6f07cc84-cd86-8e48-5da2-edb86f466243@users.sourceforge.net>
-Date: Sun, 7 Jan 2018 10:18:08 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zDzCG5yG2zF0R6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 00:04:58 +1100 (AEDT)
+Subject: Spectre+Meltdown
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Olof Johansson <olof@lixom.net>
+References: <36E75811-C758-49B1-8E5C-3A2C44FD5DE9@xenosoft.de>
+ <874lnzz5y3.fsf@concordia.ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <86eade29-a56d-2aab-050e-366f4d43ab2f@xenosoft.de>
+Date: Sun, 7 Jan 2018 14:04:40 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <874lnzz5y3.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 7 Jan 2018 10:07:36 +0100
+Hello Michael,
 
-A headline should be quickly put into a sequence. Thus use the
-function "seq_puts" instead of "seq_printf" for this purpose.
+Thanks for your reply. We are using P.A. Semi and Freescale CPUs.
 
-This issue was detected by using the Coccinelle software.
+@Olof
+Do you have some infos for us?
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/kvm/timing.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Thanks,
+Christian
 
-diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
-index e44d2b2ea97e..1c03c978eb18 100644
---- a/arch/powerpc/kvm/timing.c
-+++ b/arch/powerpc/kvm/timing.c
-@@ -143,8 +143,7 @@ static int kvmppc_exit_timing_show(struct seq_file *m, void *private)
- 	int i;
- 	u64 min, max, sum, sum_quad;
- 
--	seq_printf(m, "%s", "type	count	min	max	sum	sum_squared\n");
--
-+	seq_puts(m, "type	count	min	max	sum	sum_squared\n");
- 
- 	for (i = 0; i < __NUMBER_OF_KVM_EXIT_TYPES; i++) {
- 
--- 
-2.15.1
+
+On 06/01/18 10:34, Michael Ellerman wrote:
+> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+>
+>> Hi All,
+>>
+>> Do we have some information regarding Spectre+Meltdown for our users?
+>>
+>> It could be that we have some security issues in our PowerPC CPUs.
+> There's a statement from IBM here:
+>
+>    https://www.ibm.com/blogs/psirt/potential-impact-processors-power-family/
+>
+>
+> I think you're mostly using pasemi CPUs right? I don't have any
+> information on them, and obviously it's going to be hard to find anyone
+> who might know. You might be best finding a proof of concept somewhere
+> and actually testing it.
+>
+> cheers
+>
