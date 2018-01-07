@@ -1,24 +1,24 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0067.outbound.protection.outlook.com [104.47.36.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zF6F67268zF0RD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 05:22:02 +1100 (AEDT)
-Date: Sun, 7 Jan 2018 12:21:42 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zF6W76xczzF0RH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 05:34:11 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "scottwood@freescale.com"
+ <scottwood@freescale.com>, "paulus@samba.org" <paulus@samba.org>,
+ "segher@kernel.crashing.org" <segher@kernel.crashing.org>,
+ "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>
 Subject: Re: Time to get rid of CPU6 ERRATA on powerpc/8xx ?
-Message-ID: <20180107182142.GC21977@gate.crashing.org>
+Date: Sun, 7 Jan 2018 18:34:07 +0000
+Message-ID: <1515350044.32342.37.camel@infinera.com>
 References: <26b73379-141c-a705-a552-6ee2b94f4961@c-s.fr>
- <20180107164304.GA21977@gate.crashing.org>
- <61f2b2bb-bdc0-39f5-81df-dc931494bb4b@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <61f2b2bb-bdc0-39f5-81df-dc931494bb4b@c-s.fr>
+In-Reply-To: <26b73379-141c-a705-a552-6ee2b94f4961@c-s.fr>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 07, 2018 at 06:51:26PM +0100, christophe leroy wrote:
-> Le 07/01/2018 à 17:43, Segher Boessenkool a écrit :
-> >On Sun, Jan 07, 2018 at 05:23:13PM +0100, christophe leroy wrote:
-> >>Today, Linux kernel includes a workaround for CPU6 ERRATA on the 8xx
-> >>powerpc.
-> >>
-> >>This ERRATA exists on the 801, the 823, the 855/860 before revision C.0
-> >>It doesn't concern any modern versions of the 8xx, neither the 860 past
-> >>and including rev C.0, nor the 866 nor the 885
-> >>
-> >>This workaround complicates the TLBmiss and TLBerror handlers and make
-> >>the code more and more unreadable.
-> >>
-> >>Since this workaround addresses very old versions of the 8xx, I'd like
-> >>to get rid of it. Do you see any good reason to keep it today ? If not I
-> >>will come with a cleanup patch in the coming weeks.
-> >
-> >What is "very old"?  It'll help if you give some indication.
-> 
-> CPU6 bug is already announced fixed in rev C.0 in revision 1.4 of the 
-> ERRATA document, issued in August 2000.
-
-And that is the newest chip that had the bug?  Wow, very old indeed then.
-
-> >Removing the workarounds is fine by me, of course...  Maybe make it fail
-> >to boot though, with an error message?  Someone *will* try to run it on
-> >an old system, *especially* if you think no one would.
-> 
-> Ok, will see how we can do that. It means identifying each revision of 
-> the chip.
-
-If it is *that* old you may not have to bother...  Up to the maintainers
-of course.
-
-
-Segher
+T24gU3VuLCAyMDE4LTAxLTA3IGF0IDE3OjIzICswMTAwLCBjaHJpc3RvcGhlIGxlcm95IHdyb3Rl
+Og0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRlIG9mIHRoZSBv
+cmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1lbnRzIHVubGVz
+cyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMgc2FmZS4N
+Cj4gDQo+IA0KPiBUb2RheSwgTGludXgga2VybmVsIGluY2x1ZGVzIGEgd29ya2Fyb3VuZCBmb3Ig
+Q1BVNiBFUlJBVEEgb24gdGhlIDh4eA0KPiBwb3dlcnBjLg0KPiANCj4gVGhpcyBFUlJBVEEgZXhp
+c3RzIG9uIHRoZSA4MDEsIHRoZSA4MjMsIHRoZSA4NTUvODYwIGJlZm9yZSByZXZpc2lvbiBDLjAN
+Cj4gSXQgZG9lc24ndCBjb25jZXJuIGFueSBtb2Rlcm4gdmVyc2lvbnMgb2YgdGhlIDh4eCwgbmVp
+dGhlciB0aGUgODYwIHBhc3QNCj4gYW5kIGluY2x1ZGluZyByZXYgQy4wLCBub3IgdGhlIDg2NiBu
+b3IgdGhlIDg4NQ0KPiANCj4gVGhpcyB3b3JrYXJvdW5kIGNvbXBsaWNhdGVzIHRoZSBUTEJtaXNz
+IGFuZCBUTEJlcnJvciBoYW5kbGVycyBhbmQgbWFrZQ0KPiB0aGUgY29kZSBtb3JlIGFuZCBtb3Jl
+IHVucmVhZGFibGUuDQo+IA0KPiBTaW5jZSB0aGlzIHdvcmthcm91bmQgYWRkcmVzc2VzIHZlcnkg
+b2xkIHZlcnNpb25zIG9mIHRoZSA4eHgsIEknZCBsaWtlDQo+IHRvIGdldCByaWQgb2YgaXQuIERv
+IHlvdSBzZWUgYW55IGdvb2QgcmVhc29uIHRvIGtlZXAgaXQgdG9kYXkgPyBJZiBub3QgSQ0KPiB3
+aWxsIGNvbWUgd2l0aCBhIGNsZWFudXAgcGF0Y2ggaW4gdGhlIGNvbWluZyB3ZWVrcy4NCj4gDQo+
+IEFub3RoZXIgYWx0ZXJuYXRpdmUgd291bGQgYmUgdG8ga2VlcCB0aGF0IHdvcmthcm91bmQgc2Vw
+YXJhdGVkIGZyb20gdGhlDQo+IHJlc3Qgb2YgdGhlIGNvZGUgKGllIHVzaW5nIGRpZmZlcmVudCBy
+ZWdpc3RlcnMgdG8gYXZvaWQvbGltaXQgY29kZQ0KPiBuZXN0aW5nKSwgaXQgd291bGQgYWRkIGEg
+ZmV3IGN5Y2xlcyBidXQgd291bGQgaW5jcmVhc2UgcmVhZGFiaWxpdHkgd2hpbGUNCj4ga2VlcGlu
+ZyB0aGUgRVJSQVRBIGluLCBhbGx0aG91Z2h0IG15IHByZWZlcmVuY2UgZ29lcyB0byBhIGNvbXBs
+ZXRlDQo+IHJlbW92YWwgb2YgdGhlIHdvcmthcm91bmQuDQo+IA0KPiBTbywgdGhhbmtzIHRvIGxl
+dCBtZSBrbm93IHlvdXIgb3BpbmlvbiBvbiB0aGF0Lg0KDQpIYXZpbmcgZG9uZSB3b3JrIG9uIFRM
+QiBNaXNzL0Vycm9yLCBJIGFncmVlIHRoZSBDUFU2IGVycmF0YSBpcyBhIHBhaW4uDQpPbiBhbGwg
+b3VyIDh4eCAoODZ4Lzg1MCkgd2UgbmV2ZXIgaGFkIHRvIHVzZSB0aGlzIGVycmF0YSBzbyBJIGFt
+IGluIGZhdm91ciBmb3INCnJlbW92aW5nIENQVTYgRXJyYXRhIGZyb20gcmVjZW50IGtlcm5lbHMu
+DQoNCiAgSm9ja2UNCg0K
