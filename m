@@ -1,27 +1,45 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <srs0=aphn=ed=linux.vnet.ibm.com=tyreld@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFpqr2CsMzF0bs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 08:51:03 +1100 (AEDT)
-Date: Mon, 8 Jan 2018 22:50:59 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-nvdimm@lists.01.org,
- X86 ML <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: revamp vmem_altmap / dev_pagemap handling V3
-Message-ID: <20180108215059.GB1732@dhcp22.suse.cz>
-References: <20171229075406.1936-1-hch@lst.de> <20180108112646.GA7204@lst.de>
- <CAPcyv4hHipDHP5LZCgym5szqiUSCxG9wQUbRO_qe8T+USaZi9Q@mail.gmail.com>
- <20180108202548.GA1732@dhcp22.suse.cz>
- <CAPcyv4ipGv613NgJZ8HEWTV4DrDxRdrMwD=8odZevvBQaQwuCA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFpzl0jBRzDqvT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 08:57:55 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zFpzk6q3dz8t1b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 08:57:54 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zFpzk2zbMz9s9Y
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2018 08:57:54 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.21) with SMTP id
+ w08LtR58025853
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Jan 2018 16:57:52 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fcgtggdgm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 08 Jan 2018 16:57:51 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 8 Jan 2018 16:57:50 -0500
+Subject: Re: [PATCH 11/11] powerpc/powernv: Check device-tree for RFI flush
+ settings
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: mikey@neuling.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
+ npiggin@gmail.com, oohall@gmail.com, anton@samba.org, paulus@samba.org,
+ tglx@linutronix.de
+References: <20180108165453.26066-1-mpe@ellerman.id.au>
+ <20180108165453.26066-11-mpe@ellerman.id.au>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Mon, 8 Jan 2018 13:57:44 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPcyv4ipGv613NgJZ8HEWTV4DrDxRdrMwD=8odZevvBQaQwuCA@mail.gmail.com>
+In-Reply-To: <20180108165453.26066-11-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6837547b-3ad3-cc08-eaa9-94e595971a77@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +49,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 08-01-18 13:27:13, Dan Williams wrote:
-> On Mon, Jan 8, 2018 at 12:25 PM, Michal Hocko <mhocko@kernel.org> wrote:
-> > On Mon 08-01-18 11:44:02, Dan Williams wrote:
-> >> On Mon, Jan 8, 2018 at 3:26 AM, Christoph Hellwig <hch@lst.de> wrote:
-> >> > Any chance to get this fully reviewed and picked up before the
-> >> > end of the merge window?
-> >>
-> >> I'm fine carrying these through the nvdimm tree, but I'd need an ack
-> >> from the mm folks for all the code touches related to arch_add_memory.
-> >
-> > I am sorry to be slow here but I am out of time right now - yeah having
-> > a lot of fun kaiser time. I didn't get to look at these patches at all
-> > yet but the changelog suggests that you want to remove vmem_altmap.
-> > I've had plans to (ab)use this for self hosted struct pages for memory
-> > hotplug http://lkml.kernel.org/r/20170801124111.28881-1-mhocko@kernel.org
-> > That work is stalled though because it is buggy and I was too busy to
-> > finish that work. Anyway, if you believe that removing vmem_altmap is a
-> > good step in general I will find another way. I wasn't really happy how
-> > the whole thing is grafted to the memory hotplug and (ab)used it only
-> > because it was handy and ready for reuse.
+On 01/08/2018 08:54 AM, Michael Ellerman wrote:
+> From: Oliver O'Halloran <oohall@gmail.com>
 > 
-> You misread, these are keeping vmem_altmap and cleaning up the usage
-> to pass the vmem_altmap pointer through all paths rather than the
-> tricky radix lookup we were doing previously.
-
-Good to hear. I really didn't get further than reading through email
-subjects and for some reason I misread those.
-
-> > Anyway if you need a review of mm parts from me, you will have to wait
-> > some more. If this requires some priority then go ahead and merge
-> > it. Times are just too crazy right now.
+> New device-tree properties are available which tell the hypervisor
+> settings related to the RFI flush. Use them to determine the
+> appropriate flush instruction to use, and whether the flush is
+> required.
 > 
-> Since you were planning on reusing vmem_altmap I think these patches
-> make your job easier. I don't see the risk in merging these, we've
-> squeezed out a few bugs and all the nvdimm unit tests are passing.
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Good, then really do not wait for me if this aims to get merged soon.
-
-> > Sorry about that.
-> 
-> No worries, quite a few of us are in that same boat.
-
-Yeah the boat is quite large I suspect...
-
--- 
-Michal Hocko
-SUSE Labs
+Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
