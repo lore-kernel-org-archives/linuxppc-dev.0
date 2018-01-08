@@ -1,39 +1,26 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hramrach@gmail.com>
+Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
+ [IPv6:2a00:1450:4010:c07::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zF81g1vY0zF0St
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 06:42:15 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.21) with SMTP id
- w07Jd4RD066410
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Jan 2018 14:42:12 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fbc6bdspg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jan 2018 14:42:12 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Sun, 7 Jan 2018 14:42:11 -0500
-Date: Sun, 7 Jan 2018 13:42:06 -0600
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/6] cxlflash: Adapter context init can return error
-References: <1515020002-43551-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1515020104-43758-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFHPR2wF7zF0Pr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 12:14:50 +1100 (AEDT)
+Received: by mail-lf0-x232.google.com with SMTP id w23so312489lfd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jan 2018 17:14:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1515020104-43758-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <20180107194206.GD45065@p8tul1-build.aus.stglabs.ibm.com>
+In-Reply-To: <CAOesGMhGt6arTt9p9rxT8Qreaucae0i=fmQoqkBvUGJOxobhiQ@mail.gmail.com>
+References: <36E75811-C758-49B1-8E5C-3A2C44FD5DE9@xenosoft.de>
+ <874lnzz5y3.fsf@concordia.ellerman.id.au>
+ <86eade29-a56d-2aab-050e-366f4d43ab2f@xenosoft.de>
+ <CAOesGMhGt6arTt9p9rxT8Qreaucae0i=fmQoqkBvUGJOxobhiQ@mail.gmail.com>
+From: Michal Suchanek <hramrach@gmail.com>
+Date: Mon, 8 Jan 2018 02:14:06 +0100
+Message-ID: <CAOMqctS0d9i5F1si3mDq_M1ZZM1MncXRBFKGeZ4y30J4H_1RDg@mail.gmail.com>
+Subject: Re: Spectre+Meltdown
+To: Olof Johansson <olof@lixom.net>
+Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,10 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 03, 2018 at 04:55:04PM -0600, Uma Krishnan wrote:
-> Adapter context creation can return either NULL or an error pointer.
-> Updating the check condition to reflect this.
-> 
-> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+On 7 January 2018 at 19:54, Olof Johansson <olof@lixom.net> wrote:
+> On Sun, Jan 7, 2018 at 5:04 AM, Christian Zigotzky
+> <chzigotzky@xenosoft.de> wrote:
+>> Hello Michael,
+>>
+>> Thanks for your reply. We are using P.A. Semi and Freescale CPUs.
+>>
+>> @Olof
+>> Do you have some infos for us?
+>
+> I'm low on spare time to experiment and explore what might be exposed
+> or not, and I no longer have any proprietary microarchitecture
+> documentation of the core.
+>
+> I suggest reaching out to your supplier of the silicon for commercial
+> support and information, or just going with what I'm sure will be
+> architecturally generic solutions to the problem when IBM has them
+> ready.
 
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+The solution for IBM POWER involves patching the firmware as well as
+Linux. Without knowledge of the architecture specifics it is not
+possible to tell if other cores are affected and if the measures
+implemented by IBM can be used. In fact they probably rely on
+64s-specific instructions and are in part implemented in 64s-specific
+assembly files.
+
+So this will not work without support for the specific core either by
+the vendor or somebody who has knowledge of the architecture details.
+
+Thanks
+
+Michal
