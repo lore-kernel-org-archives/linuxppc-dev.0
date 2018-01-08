@@ -1,22 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFLb41VphzF0RD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 14:38:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: christophe leroy <christophe.leroy@c-s.fr>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Time to get rid of CPU6 ERRATA on powerpc/8xx ?
-In-Reply-To: <26b73379-141c-a705-a552-6ee2b94f4961@c-s.fr>
-References: <26b73379-141c-a705-a552-6ee2b94f4961@c-s.fr>
-Date: Mon, 08 Jan 2018 14:38:23 +1100
-Message-ID: <871sj12f68.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFP3d1xwhzF0QP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 16:29:47 +1100 (AEDT)
+Received: by mail-io0-x241.google.com with SMTP id e20so11661635iof.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jan 2018 21:29:47 -0800 (PST)
+Subject: Re: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under
+ pHyp
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ Alexander Graf <agraf@suse.com>
+References: <20171122034221.647-1-aik@ozlabs.ru>
+To: Paul Mackerras <paulus@samba.org>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <f69fcb75-e96c-7233-1d49-8666583d7d1b@ozlabs.ru>
+Date: Mon, 8 Jan 2018 16:29:38 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20171122034221.647-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +29,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-christophe leroy <christophe.leroy@c-s.fr> writes:
+Paul,
 
-> Today, Linux kernel includes a workaround for CPU6 ERRATA on the 8xx 
-> powerpc.
->
-> This ERRATA exists on the 801, the 823, the 855/860 before revision C.0
-> It doesn't concern any modern versions of the 8xx, neither the 860 past 
-> and including rev C.0, nor the 866 nor the 885
->
-> This workaround complicates the TLBmiss and TLBerror handlers and make 
-> the code more and more unreadable.
->
-> Since this workaround addresses very old versions of the 8xx, I'd like 
-> to get rid of it. Do you see any good reason to keep it today ? If not I 
-> will come with a cleanup patch in the coming weeks.
 
-I'm happy for you to remove it, and if someone notices and complains
-loudly we can always put it back.
+I saw comments about the commit log but did this go to any tree eventually?
 
-cheers
+
+On 22/11/17 14:42, Alexey Kardashevskiy wrote:
+> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
+> bits preserving but it missed 2 special cases:
+> - a magic page in kvmppc_mmu_book3s_64_xlate() and
+> - guest real mode in kvmppc_handle_pagefault().
+> 
+> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
+> stop in the very beginning at NIP=0x100 (due to bd9166ffe
+> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
+> 
+> This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
+> as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
+> kvmppc_mmu_map_page().
+> 
+> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> 
+> This indeed fixes PR KVM + VFIO under pHyp but selection of HPTE_R_M
+> is arguable.
+> 
+> ---
+>  arch/powerpc/kvm/book3s_64_mmu.c | 1 +
+>  arch/powerpc/kvm/book3s_pr.c     | 1 +
+>  2 files changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+> index 29ebe2f..a93d719 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
+> @@ -235,6 +235,7 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+>  		gpte->may_read = true;
+>  		gpte->may_write = true;
+>  		gpte->page_size = MMU_PAGE_4K;
+> +		gpte->wimg = HPTE_R_M;
+>  
+>  		return 0;
+>  	}
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index 69a0944..0152efe 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -557,6 +557,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  		pte.eaddr = eaddr;
+>  		pte.vpage = eaddr >> 12;
+>  		pte.page_size = MMU_PAGE_64K;
+> +		pte.wimg = HPTE_R_M;
+>  	}
+>  
+>  	switch (kvmppc_get_msr(vcpu) & (MSR_DR|MSR_IR)) {
+> 
+
+
+-- 
+Alexey
