@@ -1,21 +1,23 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from EUR03-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr30085.outbound.protection.outlook.com [40.107.3.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFKtN00p9zF0R0
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 14:06:33 +1100 (AEDT)
-From: "Y.b. Lu" <yangbo.lu@nxp.com>
-To: Fabio Estevam <festevam@gmail.com>, Leo Li <leoyang.li@nxp.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Fabio
- Estevam" <fabio.estevam@nxp.com>
-Subject: RE: [PATCH] soc/fsl/guts: Add a NULL check for devm_kasprintf()
-Date: Mon, 8 Jan 2018 03:06:27 +0000
-Message-ID: <DB6PR0401MB2536946B309CD2F95E230CC3F8130@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-References: <1515244954-8374-1-git-send-email-festevam@gmail.com>
-In-Reply-To: <1515244954-8374-1-git-send-email-festevam@gmail.com>
-Content-Type: text/plain; charset="gb2312"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFLK074nPzF0SM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 14:26:12 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux@rasmusvillemoes.dk, michael@concordia.ellerman.id.au, j@w1.fi,
+ netdev@vger.kernel.org, johannes@sipsolutions.net,
+ linuxppc-dev@lists.ozlabs.org, johannes.berg@intel.com
+Subject: Re: [net] Revert "net: core: maybe return -EEXIST in __dev_alloc_name"
+In-Reply-To: <20180102.115008.2038929402603091054.davem@davemloft.net>
+References: <87vah29a1m.fsf@concordia.ellerman.id.au>
+ <87efnpnf8b.fsf@rasmusvillemoes.dk> <87bmirpf29.fsf@concordia.ellerman.id.au>
+ <20180102.115008.2038929402603091054.davem@davemloft.net>
+Date: Mon, 08 Jan 2018 14:26:12 +1100
+Message-ID: <874lnx2fqj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBGYWJpbyBFc3RldmFtIFttYWls
-dG86ZmVzdGV2YW1AZ21haWwuY29tXQ0KPiBTZW50OiAyMDE4xOox1MI2yNUgMjE6MjMNCj4gVG86
-IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPg0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmc7IFkuYi4gTHUgPHlhbmdiby5sdUBueHAuY29tPjsgRmFiaW8NCj4gRXN0ZXZhbSA8
-ZmFiaW8uZXN0ZXZhbUBueHAuY29tPg0KPiBTdWJqZWN0OiBbUEFUQ0hdIHNvYy9mc2wvZ3V0czog
-QWRkIGEgTlVMTCBjaGVjayBmb3IgZGV2bV9rYXNwcmludGYoKQ0KPiANCj4gRnJvbTogRmFiaW8g
-RXN0ZXZhbSA8ZmFiaW8uZXN0ZXZhbUBueHAuY29tPg0KPiANCj4gZGV2bV9rYXNwcmludGYoKSBt
-YXkgZmFpbCwgc28gd2Ugc2hvdWxkIGJldHRlciBhZGQgYSBOVUxMIGNoZWNrIGFuZA0KPiBwcm9w
-YWdhdGUgYW4gZXJyb3Igb24gZmFpbHVyZS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEZhYmlvIEVz
-dGV2YW0gPGZhYmlvLmVzdGV2YW1AbnhwLmNvbT4NCg0KW1kuYi4gTHVdIEl0IG1ha2VzIHNlbnNl
-LiANCkFja2VkLWJ5OiBZYW5nYm8gTHUgPHlhbmdiby5sdUBueHAuY29tPg0KDQo+IC0tLQ0KPiAg
-ZHJpdmVycy9zb2MvZnNsL2d1dHMuYyB8IDYgKysrKysrDQo+ICAxIGZpbGUgY2hhbmdlZCwgNiBp
-bnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zb2MvZnNsL2d1dHMuYyBi
-L2RyaXZlcnMvc29jL2ZzbC9ndXRzLmMgaW5kZXgNCj4gZDg5YTZhOC4uODIyNTFiNCAxMDA2NDQN
-Cj4gLS0tIGEvZHJpdmVycy9zb2MvZnNsL2d1dHMuYw0KPiArKysgYi9kcml2ZXJzL3NvYy9mc2wv
-Z3V0cy5jDQo+IEBAIC0xNjcsMTAgKzE2NywxNiBAQCBzdGF0aWMgaW50IGZzbF9ndXRzX3Byb2Jl
-KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ICAJfSBlbHNlIHsNCj4gIAkJc29j
-X2Rldl9hdHRyLmZhbWlseSA9IGRldm1fa2FzcHJpbnRmKGRldiwgR0ZQX0tFUk5FTCwgIlFvcklR
-Iik7DQo+ICAJfQ0KPiArCWlmICghc29jX2Rldl9hdHRyLmZhbWlseSkNCj4gKwkJcmV0dXJuIC1F
-Tk9NRU07DQo+ICAJc29jX2Rldl9hdHRyLnNvY19pZCA9IGRldm1fa2FzcHJpbnRmKGRldiwgR0ZQ
-X0tFUk5FTCwNCj4gIAkJCQkJICAgICAic3ZyOjB4JTA4eCIsIHN2cik7DQo+ICsJaWYgKCFzb2Nf
-ZGV2X2F0dHIuc29jX2lkKQ0KPiArCQlyZXR1cm4gLUVOT01FTTsNCj4gIAlzb2NfZGV2X2F0dHIu
-cmV2aXNpb24gPSBkZXZtX2thc3ByaW50ZihkZXYsIEdGUF9LRVJORUwsICIlZC4lZCIsDQo+ICAJ
-CQkJCSAgICAgICAoc3ZyID4+ICA0KSAmIDB4Ziwgc3ZyICYgMHhmKTsNCj4gKwlpZiAoIXNvY19k
-ZXZfYXR0ci5yZXZpc2lvbikNCj4gKwkJcmV0dXJuIC1FTk9NRU07DQo+IA0KPiAgCXNvY19kZXYg
-PSBzb2NfZGV2aWNlX3JlZ2lzdGVyKCZzb2NfZGV2X2F0dHIpOw0KPiAgCWlmIChJU19FUlIoc29j
-X2RldikpDQo+IC0tDQo+IDIuNy40DQoNCg==
+David Miller <davem@davemloft.net> writes:
+
+> From: Michael Ellerman <mpe@ellerman.id.au>
+> Date: Fri, 22 Dec 2017 15:22:22 +1100
+>
+>>> On Tue, Dec 19 2017, Michael Ellerman <michael@concordia.ellerman.id.au> wrote:
+>>>> This revert seems to have broken networking on one of my powerpc
+>>>> machines, according to git bisect.
+>>>>
+>>>> The symptom is DHCP fails and I don't get a link, I didn't dig any
+>>>> further than that. I can if it's helpful.
+>>>>
+>>>> I think the problem is that 87c320e51519 ("net: core: dev_get_valid_name
+>>>> is now the same as dev_alloc_name_ns") only makes sense while
+>>>> d6f295e9def0 remains in the tree.
+>>>
+>>> I'm sorry about all of this, I really didn't think there would be such
+>>> consequences of changing an errno return. Indeed, d6f29 was preparation
+>>> for unifying the two functions that do the exact same thing (and how we
+>>> ever got into that situation is somewhat unclear), except for
+>>> their behaviour in the case the requested name already exists. So one of
+>>> the two interfaces had to change its return value, and as I wrote, I
+>>> thought EEXIST was the saner choice when an explicit name (no %d) had
+>>> been requested.
+>> 
+>> No worries.
+>> 
+>>>> ie. before the entire series, dev_get_valid_name() would return EEXIST,
+>>>> and that was retained when 87c320e51519 was merged, but now that
+>>>> d6f295e9def0 has been reverted dev_get_valid_name() is returning ENFILE.
+>>>>
+>>>> I can get the network up again if I also revert 87c320e51519 ("net:
+>>>> core: dev_get_valid_name is now the same as dev_alloc_name_ns"), or with
+>>>> the gross patch below.
+>>>
+>>> I don't think changing -ENFILE to -EEXIST would be right either, since
+>>> dev_get_valid_name() used to be able to return both (-EEXIST in the case
+>>> where there's no %d, -ENFILE in the case where we end up calling
+>>> dev_alloc_name_ns()). If anything, we could do the check for the old
+>>> -EEXIST condition first, and then call dev_alloc_name_ns(). But I'm also
+>>> fine with reverting.
+>> 
+>> Yeah I think a revert would be best, given it's nearly rc5.
+>> 
+>> My userspace is not exotic AFAIK, just debian something, so presumably
+>> this will affect other people too.
+>
+> I've just queued up the following revert, thanks!
+
+Thanks.
+
+I don't see it in rc7, will it get to Linus sometime before the release?
+
+cheers
