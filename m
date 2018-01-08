@@ -1,27 +1,32 @@
-Return-Path: <srs0=u5ow=ed=linutronix.de=tglx@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFhrH2PrdzDqmT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 04:21:03 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zFhrF3q2tz8x0W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 04:21:01 +1100 (AEDT)
-Date: Mon, 8 Jan 2018 18:20:55 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, npiggin@gmail.com,
- Anton Blanchard <anton@samba.org>, mikey@neuling.org, oohall@gmail.com,
- Paul Mackerras <paulus@samba.org>, Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 09/11] powerpc/64s: Allow control of RFI flush via
- sysfs
-In-Reply-To: <20180108165453.26066-9-mpe@ellerman.id.au>
-Message-ID: <alpine.DEB.2.20.1801081818060.1735@nanos>
-References: <20180108165453.26066-1-mpe@ellerman.id.au>
- <20180108165453.26066-9-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFj5C12J0zDr1M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 04:32:14 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.21) with SMTP id
+ w08HTnsG001514
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Jan 2018 12:32:12 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fcbjcvrsd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jan 2018 12:32:12 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 8 Jan 2018 10:32:11 -0700
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH V3 0/3] powerpc/hotplug: Fix affinity assoc for LPAR migration
+Date: Mon, 8 Jan 2018 11:31:41 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Message-Id: <0658ebca-aa3c-9251-9d74-b645633a750a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 9 Jan 2018, Michael Ellerman wrote:
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of memory blocks and CPUs.  The
+patches in this set execute when a system is coming up fresh upon a
+migration target.  They are intended to,
 
-Sorry, I wasn't aware about your efforts and did not cc you. I've just
-queued a more generic sysfs interface for this whole mess:
+* Recognize changes to the associativity of memory and CPUs recorded
+  in internal data structures when compared to the latest copies in
+  the device tree (e.g. ibm,dynamic-memory, ibm,dynamic-memory-v2,
+  cpus),
+* Recognize changes to the associativity mapping (e.g. ibm,
+  associativity-lookup-arrays), locate all assigned memory blocks
+  corresponding to each changed row, and readd all such blocks.
+* Generate calls to other code layers to reset the data structures
+  related to associativity of the CPUs and memory.
+* Re-register the 'changed' entities into the target system.
+  Re-registration of CPUs and memory blocks mostly entails acting as
+  if they have been newly hot-added into the target system.
 
-https://lkml.kernel.org/r/20180107214913.096657732@linutronix.de
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-It should be simple to extend for write and it would be great if all
-affected architectures could share it.
-
-Thanks,
-
-	tglx
+Michael Bringmann (3):
+  hotplug/mobility: Apply assoc lookup updates for Post Migration Topo
+  postmigration/memory: Review assoc lookup array changes
+  postmigration/memory: Associativity & 'ibm,dynamic-memory-v2'
+---
+Changes in V3:
+  -- Rename pseries_update_drconf_cpu to pseries_update_cpu
+  -- Simplify code to update CPU nodes during mobility checks.
+     Remove functions to generate extra HP_ELOG messages in favor
+     of direct function calls to dlpar_cpu_readd_by_index, or
+     dlpar_memory_readd_by_index.
+  -- Move check for "cpu" node type from pseries_update_cpu to
+     pseries_smp_notifier in 'hotplug-cpu.c'
+  -- Remove functions 'pseries_memory_readd_by_index' and
+     'pseries_cpu_readd_by_index' as no longer needed outside of
+     'mobility.c'.
