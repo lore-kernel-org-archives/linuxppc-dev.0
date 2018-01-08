@@ -2,17 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFhH310FgzF0Pp
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFhH36Yf4zF0Pp
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 03:55:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, peterz@infradead.org,
  npiggin@gmail.com, anton@samba.org, mikey@neuling.org, oohall@gmail.com,
  paulus@samba.org
-Subject: [PATCH 01/11] powerpc/pseries: Add H_GET_CPU_CHARACTERISTICS flags &
- wrapper
-Date: Tue,  9 Jan 2018 03:54:43 +1100
-Message-Id: <20180108165453.26066-1-mpe@ellerman.id.au>
+Subject: [PATCH 02/11] powerpc/64: Add macros for annotating the destination
+ of rfid/hrfid
+Date: Tue,  9 Jan 2018 03:54:44 +1100
+Message-Id: <20180108165453.26066-2-mpe@ellerman.id.au>
+In-Reply-To: <20180108165453.26066-1-mpe@ellerman.id.au>
+References: <20180108165453.26066-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,83 +24,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+From: Nicholas Piggin <npiggin@gmail.com>
 
-A new hypervisor call has been defined to communicate various
-characteristics of the CPU to guests. Add definitions for the hcall
-number, flags and a wrapper function.
+The rfid/hrfid ((Hypervisor) Return From Interrupt) instruction is
+used for switching from the kernel to userspace, and from the
+hypervisor to the guest kernel. However it can and is also used for
+other transitions, eg. from real mode kernel code to virtual mode
+kernel code, and it's not always clear from the code what the
+destination context is.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+To make it clearer when reading the code, add macros which encode the
+expected destination context.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/hvcall.h         | 17 +++++++++++++++++
- arch/powerpc/include/asm/plpar_wrappers.h | 14 ++++++++++++++
- 2 files changed, 31 insertions(+)
+ arch/powerpc/include/asm/exception-64e.h |  6 ++++++
+ arch/powerpc/include/asm/exception-64s.h | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index a409177be8bd..f0461618bf7b 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -241,6 +241,7 @@
- #define H_GET_HCA_INFO          0x1B8
- #define H_GET_PERF_COUNT        0x1BC
- #define H_MANAGE_TRACE          0x1C0
-+#define H_GET_CPU_CHARACTERISTICS 0x1C8
- #define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
- #define H_QUERY_INT_STATE       0x1E4
- #define H_POLL_PENDING		0x1D8
-@@ -330,6 +331,17 @@
- #define H_SIGNAL_SYS_RESET_ALL_OTHERS		-2
- /* >= 0 values are CPU number */
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index a703452d67b6..555e22d5e07f 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -209,5 +209,11 @@ exc_##label##_book3e:
+ 	ori	r3,r3,vector_offset@l;		\
+ 	mtspr	SPRN_IVOR##vector_number,r3;
  
-+/* H_GET_CPU_CHARACTERISTICS return values */
-+#define H_CPU_CHAR_SPEC_BAR_ORI31	(1ull << 63) // IBM bit 0
-+#define H_CPU_CHAR_BCCTRL_SERIALISED	(1ull << 62) // IBM bit 1
-+#define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
-+#define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
-+#define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++#define RFI_TO_KERNEL							\
++	rfi
 +
-+#define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
-+#define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
-+#define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
++#define RFI_TO_USER							\
++	rfi
 +
- /* Flag values used in H_REGISTER_PROC_TBL hcall */
- #define PROC_TABLE_OP_MASK	0x18
- #define PROC_TABLE_DEREG	0x10
-@@ -436,6 +448,11 @@ static inline unsigned int get_longbusy_msecs(int longbusy_rc)
- 	}
- }
+ #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
  
-+struct h_cpu_char_result {
-+	u64 character;
-+	u64 behaviour;
-+};
-+
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_HVCALL_H */
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 7f01b22fa6cb..55eddf50d149 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -326,4 +326,18 @@ static inline long plapr_signal_sys_reset(long cpu)
- 	return plpar_hcall_norets(H_SIGNAL_SYS_RESET, cpu);
- }
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index b27205297e1d..1af427a3c74f 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -74,6 +74,35 @@
+  */
+ #define EX_R3		EX_DAR
  
-+static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
++/* Macros for annotating the expected destination of (h)rfid */
 +
-+	rc = plpar_hcall(H_GET_CPU_CHARACTERISTICS, retbuf);
-+	if (rc == H_SUCCESS) {
-+		p->character = retbuf[0];
-+		p->behaviour = retbuf[1];
-+	}
++#define RFI_TO_KERNEL							\
++	rfid
 +
-+	return rc;
-+}
++#define RFI_TO_USER							\
++	rfid
 +
- #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
++#define RFI_TO_USER_OR_KERNEL						\
++	rfid
++
++#define RFI_TO_GUEST							\
++	rfid
++
++#define HRFI_TO_KERNEL							\
++	hrfid
++
++#define HRFI_TO_USER							\
++	hrfid
++
++#define HRFI_TO_USER_OR_KERNEL						\
++	hrfid
++
++#define HRFI_TO_GUEST							\
++	hrfid
++
++#define HRFI_TO_UNKNOWN							\
++	hrfid
++
+ #ifdef CONFIG_RELOCATABLE
+ #define __EXCEPTION_RELON_PROLOG_PSERIES_1(label, h)			\
+ 	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
 -- 
 2.14.3
