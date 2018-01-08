@@ -1,18 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFdFw3k6XzF0Zn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 01:39:32 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/mm: Fix growth direction for hugepages mmaps with
- slice
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180108143920.091256E955@localhost.localdomain>
-Date: Mon,  8 Jan 2018 15:39:19 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFgkZ75NdzF0PS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 03:31:02 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.21) with SMTP id
+ w08GT6e8080909
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Jan 2018 11:31:00 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fc6w3r0c2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jan 2018 11:31:00 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 8 Jan 2018 16:30:58 -0000
+Subject: Re: [PATCH v5 1/2] powerpc/powernv: Enable tunneled operations
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.vnet.ibm.com, benh@au1.ibm.com
+References: <20171222123624.1880-1-felix@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Mon, 8 Jan 2018 17:30:54 +0100
+MIME-Version: 1.0
+In-Reply-To: <20171222123624.1880-1-felix@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <3b0e743c-9b89-43ab-75e0-6629941004d4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,46 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An application running with libhugetlbfs fails to allocate
-additional pages to HEAP due to the hugemap being done
-inconditionally as topdown mapping:
 
-mmap(0x10080000, 1572864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x73e80000
-[...]
-mmap(0x74000000, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d80000
-munmap(0x73d80000, 1048576)             = 0
-[...]
-mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
-munmap(0x73d00000, 1572864)             = 0
-[...]
-mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
-munmap(0x73d00000, 1572864)             = 0
-[...]
 
-As one can see from the above strace log, mmap() allocates further
-pages below the initial one.
+Le 22/12/2017 à 13:36, Philippe Bergheaud a écrit :
+> P9 supports PCI tunneled operations (atomics and as_notify). This
+> patch adds support for tunneled operations on powernv, with a new
+> API, to be called by device drivers:
+> 
+> pnv_pci_get_tunnel_ind()
+>     Tell driver the 16-bit ASN indication used by kernel.
+> 
+> pnv_pci_set_tunnel_bar()
+>     Tell kernel the Tunnel BAR Response address used by driver.
+>     This function uses two new OPAL calls, as the PBCQ Tunnel BAR
+>     register is configured by skiboot.
+> 
+> pnv_pci_get_as_notify_info()
+>     Return the ASN info of the thread to be woken up.
+> 
+> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> ---
 
-This patch fixes it by taking into account MAP_GROWSDOWN flag.
-
-Fixes: d0f13e3c20b6f ("[POWERPC] Introduce address space "slices" ")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/hugetlbpage.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 5c5873259127..76330a976f9e 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -558,7 +558,8 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 		return radix__hugetlb_get_unmapped_area(file, addr, len,
- 						       pgoff, flags);
- #endif
--	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
-+	return slice_get_unmapped_area(addr, len, flags, mmu_psize,
-+				       flags & MAP_GROWSDOWN);
- }
- #endif
- 
--- 
-2.13.3
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
