@@ -1,21 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFLK074nPzF0SM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 14:26:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFLb41VphzF0RD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 14:38:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: David Miller <davem@davemloft.net>
-Cc: linux@rasmusvillemoes.dk, michael@concordia.ellerman.id.au, j@w1.fi,
- netdev@vger.kernel.org, johannes@sipsolutions.net,
- linuxppc-dev@lists.ozlabs.org, johannes.berg@intel.com
-Subject: Re: [net] Revert "net: core: maybe return -EEXIST in __dev_alloc_name"
-In-Reply-To: <20180102.115008.2038929402603091054.davem@davemloft.net>
-References: <87vah29a1m.fsf@concordia.ellerman.id.au>
- <87efnpnf8b.fsf@rasmusvillemoes.dk> <87bmirpf29.fsf@concordia.ellerman.id.au>
- <20180102.115008.2038929402603091054.davem@davemloft.net>
-Date: Mon, 08 Jan 2018 14:26:12 +1100
-Message-ID: <874lnx2fqj.fsf@concordia.ellerman.id.au>
+To: christophe leroy <christophe.leroy@c-s.fr>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
+ Joakim Tjernlund <joakim.tjernlund@transmode.se>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Time to get rid of CPU6 ERRATA on powerpc/8xx ?
+In-Reply-To: <26b73379-141c-a705-a552-6ee2b94f4961@c-s.fr>
+References: <26b73379-141c-a705-a552-6ee2b94f4961@c-s.fr>
+Date: Mon, 08 Jan 2018 14:38:23 +1100
+Message-ID: <871sj12f68.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,57 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Miller <davem@davemloft.net> writes:
+christophe leroy <christophe.leroy@c-s.fr> writes:
 
-> From: Michael Ellerman <mpe@ellerman.id.au>
-> Date: Fri, 22 Dec 2017 15:22:22 +1100
+> Today, Linux kernel includes a workaround for CPU6 ERRATA on the 8xx 
+> powerpc.
 >
->>> On Tue, Dec 19 2017, Michael Ellerman <michael@concordia.ellerman.id.au> wrote:
->>>> This revert seems to have broken networking on one of my powerpc
->>>> machines, according to git bisect.
->>>>
->>>> The symptom is DHCP fails and I don't get a link, I didn't dig any
->>>> further than that. I can if it's helpful.
->>>>
->>>> I think the problem is that 87c320e51519 ("net: core: dev_get_valid_name
->>>> is now the same as dev_alloc_name_ns") only makes sense while
->>>> d6f295e9def0 remains in the tree.
->>>
->>> I'm sorry about all of this, I really didn't think there would be such
->>> consequences of changing an errno return. Indeed, d6f29 was preparation
->>> for unifying the two functions that do the exact same thing (and how we
->>> ever got into that situation is somewhat unclear), except for
->>> their behaviour in the case the requested name already exists. So one of
->>> the two interfaces had to change its return value, and as I wrote, I
->>> thought EEXIST was the saner choice when an explicit name (no %d) had
->>> been requested.
->> 
->> No worries.
->> 
->>>> ie. before the entire series, dev_get_valid_name() would return EEXIST,
->>>> and that was retained when 87c320e51519 was merged, but now that
->>>> d6f295e9def0 has been reverted dev_get_valid_name() is returning ENFILE.
->>>>
->>>> I can get the network up again if I also revert 87c320e51519 ("net:
->>>> core: dev_get_valid_name is now the same as dev_alloc_name_ns"), or with
->>>> the gross patch below.
->>>
->>> I don't think changing -ENFILE to -EEXIST would be right either, since
->>> dev_get_valid_name() used to be able to return both (-EEXIST in the case
->>> where there's no %d, -ENFILE in the case where we end up calling
->>> dev_alloc_name_ns()). If anything, we could do the check for the old
->>> -EEXIST condition first, and then call dev_alloc_name_ns(). But I'm also
->>> fine with reverting.
->> 
->> Yeah I think a revert would be best, given it's nearly rc5.
->> 
->> My userspace is not exotic AFAIK, just debian something, so presumably
->> this will affect other people too.
+> This ERRATA exists on the 801, the 823, the 855/860 before revision C.0
+> It doesn't concern any modern versions of the 8xx, neither the 860 past 
+> and including rev C.0, nor the 866 nor the 885
 >
-> I've just queued up the following revert, thanks!
+> This workaround complicates the TLBmiss and TLBerror handlers and make 
+> the code more and more unreadable.
+>
+> Since this workaround addresses very old versions of the 8xx, I'd like 
+> to get rid of it. Do you see any good reason to keep it today ? If not I 
+> will come with a cleanup patch in the coming weeks.
 
-Thanks.
-
-I don't see it in rc7, will it get to Linus sometime before the release?
+I'm happy for you to remove it, and if someone notices and complains
+loudly we can always put it back.
 
 cheers
