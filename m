@@ -1,25 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFP3d1xwhzF0QP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 16:29:47 +1100 (AEDT)
-Received: by mail-io0-x241.google.com with SMTP id e20so11661635iof.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jan 2018 21:29:47 -0800 (PST)
-Subject: Re: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under
- pHyp
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- Alexander Graf <agraf@suse.com>
-References: <20171122034221.647-1-aik@ozlabs.ru>
-To: Paul Mackerras <paulus@samba.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <f69fcb75-e96c-7233-1d49-8666583d7d1b@ozlabs.ru>
-Date: Mon, 8 Jan 2018 16:29:38 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFSmp5sGgzF0RS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jan 2018 19:17:12 +1100 (AEDT)
+Subject: Spectre+Meltdown
+To: Michal Suchanek <hramrach@gmail.com>, Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <36E75811-C758-49B1-8E5C-3A2C44FD5DE9@xenosoft.de>
+ <874lnzz5y3.fsf@concordia.ellerman.id.au>
+ <86eade29-a56d-2aab-050e-366f4d43ab2f@xenosoft.de>
+ <CAOesGMhGt6arTt9p9rxT8Qreaucae0i=fmQoqkBvUGJOxobhiQ@mail.gmail.com>
+ <CAOMqctS0d9i5F1si3mDq_M1ZZM1MncXRBFKGeZ4y30J4H_1RDg@mail.gmail.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <32e12e24-750d-eb98-0753-f5feca309082@xenosoft.de>
+Date: Mon, 8 Jan 2018 09:17:05 +0100
 MIME-Version: 1.0
-In-Reply-To: <20171122034221.647-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CAOMqctS0d9i5F1si3mDq_M1ZZM1MncXRBFKGeZ4y30J4H_1RDg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,64 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul,
+Hi All,
+
+Thanks a lot for your replies.
+
+@NXP developers: Could you please tell us some information?
+
+Thanks,
+Christian
 
 
-I saw comments about the commit log but did this go to any tree eventually?
-
-
-On 22/11/17 14:42, Alexey Kardashevskiy wrote:
-> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
-> bits preserving but it missed 2 special cases:
-> - a magic page in kvmppc_mmu_book3s_64_xlate() and
-> - guest real mode in kvmppc_handle_pagefault().
-> 
-> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
-> stop in the very beginning at NIP=0x100 (due to bd9166ffe
-> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
-> 
-> This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
-> as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
-> kvmppc_mmu_map_page().
-> 
-> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> 
-> This indeed fixes PR KVM + VFIO under pHyp but selection of HPTE_R_M
-> is arguable.
-> 
-> ---
->  arch/powerpc/kvm/book3s_64_mmu.c | 1 +
->  arch/powerpc/kvm/book3s_pr.c     | 1 +
->  2 files changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-> index 29ebe2f..a93d719 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu.c
-> @@ -235,6 +235,7 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
->  		gpte->may_read = true;
->  		gpte->may_write = true;
->  		gpte->page_size = MMU_PAGE_4K;
-> +		gpte->wimg = HPTE_R_M;
->  
->  		return 0;
->  	}
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 69a0944..0152efe 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -557,6 +557,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  		pte.eaddr = eaddr;
->  		pte.vpage = eaddr >> 12;
->  		pte.page_size = MMU_PAGE_64K;
-> +		pte.wimg = HPTE_R_M;
->  	}
->  
->  	switch (kvmppc_get_msr(vcpu) & (MSR_DR|MSR_IR)) {
-> 
-
-
--- 
-Alexey
+On 08 January 2018 at 02:14AM, Michal Suchanek wrote:
+> On 7 January 2018 at 19:54, Olof Johansson <olof@lixom.net> wrote:
+>> On Sun, Jan 7, 2018 at 5:04 AM, Christian Zigotzky
+>> <chzigotzky@xenosoft.de> wrote:
+>>> Hello Michael,
+>>>
+>>> Thanks for your reply. We are using P.A. Semi and Freescale CPUs.
+>>>
+>>> @Olof
+>>> Do you have some infos for us?
+>> I'm low on spare time to experiment and explore what might be exposed
+>> or not, and I no longer have any proprietary microarchitecture
+>> documentation of the core.
+>>
+>> I suggest reaching out to your supplier of the silicon for commercial
+>> support and information, or just going with what I'm sure will be
+>> architecturally generic solutions to the problem when IBM has them
+>> ready.
+> The solution for IBM POWER involves patching the firmware as well as
+> Linux. Without knowledge of the architecture specifics it is not
+> possible to tell if other cores are affected and if the measures
+> implemented by IBM can be used. In fact they probably rely on
+> 64s-specific instructions and are in part implemented in 64s-specific
+> assembly files.
+>
+> So this will not work without support for the specific core either by
+> the vendor or somebody who has knowledge of the architecture details.
+>
+> Thanks
+>
+> Michal
+>
