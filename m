@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFhHG4YxWzF0Px
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFhHH09v7zF0Q7
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 03:55:54 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, peterz@infradead.org,
  npiggin@gmail.com, anton@samba.org, mikey@neuling.org, oohall@gmail.com,
  paulus@samba.org
-Subject: [PATCH 10/11] powerpc/pseries: Query hypervisor for RFI flush settings
-Date: Tue,  9 Jan 2018 03:54:52 +1100
-Message-Id: <20180108165453.26066-10-mpe@ellerman.id.au>
+Subject: [PATCH 11/11] powerpc/powernv: Check device-tree for RFI flush
+ settings
+Date: Tue,  9 Jan 2018 03:54:53 +1100
+Message-Id: <20180108165453.26066-11-mpe@ellerman.id.au>
 In-Reply-To: <20180108165453.26066-1-mpe@ellerman.id.au>
 References: <20180108165453.26066-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,70 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+From: Oliver O'Halloran <oohall@gmail.com>
 
-A new hypervisor call is available which tells the guest settings
-related to the RFI flush. Use it to query the appropriate flush
-instruction(s), and whether the flush is required.
+New device-tree properties are available which tell the hypervisor
+settings related to the RFI flush. Use them to determine the
+appropriate flush instruction to use, and whether the flush is
+required.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 35 ++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ arch/powerpc/platforms/powernv/setup.c | 49 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 28b286df0e91..db76963e693d 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -459,6 +459,39 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
- }
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 1edfbc1e40f4..4fb21e17504a 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -37,13 +37,62 @@
+ #include <asm/kexec.h>
+ #include <asm/smp.h>
+ #include <asm/tm.h>
++#include <asm/setup.h>
  
-+static void pseries_setup_rfi_flush(void)
+ #include "powernv.h"
+ 
++static void pnv_setup_rfi_flush(void)
 +{
-+	struct h_cpu_char_result result;
-+	enum l1d_flush_type types;
-+	bool enable;
-+	long rc;
++	struct device_node *np, *fw_features;
++	enum l1d_flush_type type;
++	int enable;
 +
-+	/* Enable by default */
-+	enable = true;
++	/* Default to fallback in case fw-features are not available */
++	type = L1D_FLUSH_FALLBACK;
++	enable = 1;
 +
-+	rc = plpar_get_cpu_characteristics(&result);
-+	if (rc == H_SUCCESS) {
-+		types = L1D_FLUSH_NONE;
++	np = of_find_node_by_name(NULL, "ibm,opal");
++	fw_features = of_get_child_by_name(np, "fw-features");
++	of_node_put(np);
 +
-+		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
-+			types |= L1D_FLUSH_MTTRIG;
-+		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
-+			types |= L1D_FLUSH_ORI;
++	if (fw_features) {
++		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
++		if (np && of_property_read_bool(np, "enabled"))
++			type = L1D_FLUSH_MTTRIG;
 +
-+		/* Use fallback if nothing set in hcall */
-+		if (types == L1D_FLUSH_NONE)
-+			types = L1D_FLUSH_FALLBACK;
++		of_node_put(np);
 +
-+		if (!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
-+			enable = false;
-+	} else {
-+		/* Default to fallback if case hcall is not available */
-+		types = L1D_FLUSH_FALLBACK;
++		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
++		if (np && of_property_read_bool(np, "enabled"))
++			type = L1D_FLUSH_ORI;
++
++		of_node_put(np);
++
++		/* Enable unless firmware says NOT to */
++		enable = 2;
++		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
++		if (np && of_property_read_bool(np, "disabled"))
++			enable--;
++
++		of_node_put(np);
++
++		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
++		if (np && of_property_read_bool(np, "disabled"))
++			enable--;
++
++		of_node_put(np);
++		of_node_put(fw_features);
 +	}
 +
-+	setup_rfi_flush(types, enable);
++	setup_rfi_flush(type, enable > 0);
 +}
 +
- static void __init pSeries_setup_arch(void)
+ static void __init pnv_setup_arch(void)
  {
  	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
-@@ -476,6 +509,8 @@ static void __init pSeries_setup_arch(void)
  
- 	fwnmi_init();
- 
-+	pseries_setup_rfi_flush();
++	pnv_setup_rfi_flush();
 +
- 	/* By default, only probe PCI (can be overridden by rtas_pci) */
- 	pci_add_flags(PCI_PROBE_ONLY);
+ 	/* Initialize SMP */
+ 	pnv_smp_init();
  
 -- 
 2.14.3
