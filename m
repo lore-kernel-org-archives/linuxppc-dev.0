@@ -2,20 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFq756LdSzF0cK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 09:04:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zFqFp2lWLzF0bP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 09:10:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, tglx@linutronix.de,
- npiggin@gmail.com, anton@samba.org, mikey@neuling.org, oohall@gmail.com
-Subject: Re: [PATCH 03/11] powerpc/64s: Simple RFI macro conversions
-In-Reply-To: <20180108210123.GA9895@fergus.ozlabs.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, npiggin@gmail.com,
+ Anton Blanchard <anton@samba.org>, mikey@neuling.org, oohall@gmail.com,
+ Paul Mackerras <paulus@samba.org>, Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 09/11] powerpc/64s: Allow control of RFI flush via sysfs
+In-Reply-To: <alpine.DEB.2.20.1801081818060.1735@nanos>
 References: <20180108165453.26066-1-mpe@ellerman.id.au>
- <20180108165453.26066-3-mpe@ellerman.id.au>
- <20180108170951.GB6176@hirez.programming.kicks-ass.net>
- <20180108210123.GA9895@fergus.ozlabs.ibm.com>
-Date: Tue, 09 Jan 2018 09:04:10 +1100
-Message-ID: <871sj09fdx.fsf@concordia.ellerman.id.au>
+ <20180108165453.26066-9-mpe@ellerman.id.au>
+ <alpine.DEB.2.20.1801081818060.1735@nanos>
+Date: Tue, 09 Jan 2018 09:09:59 +1100
+Message-ID: <87y3l880js.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,39 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-> On Mon, Jan 08, 2018 at 06:09:51PM +0100, Peter Zijlstra wrote:
->> On Tue, Jan 09, 2018 at 03:54:45AM +1100, Michael Ellerman wrote:
->> > diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
->> > index 42a4b237df5f..34a5adeff084 100644
->> > --- a/arch/powerpc/kvm/book3s_rmhandlers.S
->> > +++ b/arch/powerpc/kvm/book3s_rmhandlers.S
->> > @@ -46,6 +46,9 @@
->> >  
->> >  #define FUNC(name)		name
->> >  
->> > +#define RFI_TO_KERNEL	RFI
->> > +#define RFI_TO_GUEST	RFI
->> > +
->> >  .macro INTERRUPT_TRAMPOLINE intno
->> >  
->> >  .global kvmppc_trampoline_\intno
->> 
->> Leftovers? The previous patch seems to define all that in common
->> headers, why redefine here again?
+> On Tue, 9 Jan 2018, Michael Ellerman wrote:
 >
-> Not leftovers - this is for the sake of 32-bit compiles.  There is
-> code in this file and in book3s_segment.S which gets used both for
-> 32-bit and 64-bit kernels, and this is supplying a definition on
-> 32-bit platforms.  Without this, 32-bit builds that have PR KVM
-> configured will fail.
+> Sorry, I wasn't aware about your efforts and did not cc you. I've just
+> queued a more generic sysfs interface for this whole mess:
 
-Yep.
+No worries.
 
-I was going to put all the RFI macros in a single header, and we could
-then have the dummy versions in there as would the usual pattern. But at
-this stage it would just complicate life for people doing distro
-backports, so I'll do that as a cleanup once it's all merged.
+> https://lkml.kernel.org/r/20180107214913.096657732@linutronix.de
+>
+> It should be simple to extend for write and it would be great if all
+> affected architectures could share it.
+
+As you say this has all been a bit of a mess, and as a result we already
+have people running kernels with this patch, so we don't want to remove
+the 'rfi_flush' file.
+
+But we will certainly add support on powerpc for the files you have
+created, in addition to 'rfi_flush'.
 
 cheers
