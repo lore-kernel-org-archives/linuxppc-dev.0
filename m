@@ -1,24 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zFqFp2lWLzF0bP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 09:10:06 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, npiggin@gmail.com,
- Anton Blanchard <anton@samba.org>, mikey@neuling.org, oohall@gmail.com,
- Paul Mackerras <paulus@samba.org>, Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 09/11] powerpc/64s: Allow control of RFI flush via sysfs
-In-Reply-To: <alpine.DEB.2.20.1801081818060.1735@nanos>
-References: <20180108165453.26066-1-mpe@ellerman.id.au>
- <20180108165453.26066-9-mpe@ellerman.id.au>
- <alpine.DEB.2.20.1801081818060.1735@nanos>
-Date: Tue, 09 Jan 2018 09:09:59 +1100
-Message-ID: <87y3l880js.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zFvqD3m04zF0bs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 12:35:51 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Oliver O'Halloran <oohall@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Subject: [RFC PATCH kernel] powerpc/mm: Flush "process-scoped translations"
+ when setting MMU type
+Date: Tue,  9 Jan 2018 12:35:41 +1100
+Message-Id: <20180109013541.6229-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+This fixes migration on POWER9 machines, especially when migration
+starts within first 10 seconds after the guest start.
 
-> On Tue, 9 Jan 2018, Michael Ellerman wrote:
->
-> Sorry, I wasn't aware about your efforts and did not cc you. I've just
-> queued a more generic sysfs interface for this whole mess:
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-No worries.
+This is a reminder that the problem exists, a proper patch and
+commit log are still needed. The "(old & PATB_HR)" was tested but
+not the other one, something is wrong with hpt guest on radix host.
+---
+ arch/powerpc/mm/pgtable_64.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-> https://lkml.kernel.org/r/20180107214913.096657732@linutronix.de
->
-> It should be simple to extend for write and it would be great if all
-> affected architectures could share it.
-
-As you say this has all been a bit of a mess, and as a result we already
-have people running kernels with this patch, so we don't want to remove
-the 'rfi_flush' file.
-
-But we will certainly add support on powerpc for the files you have
-created, in addition to 'rfi_flush'.
-
-cheers
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 813ea22..f690f6d 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -483,10 +483,14 @@ void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
+ 	if (old & PATB_HR) {
+ 		asm volatile(PPC_TLBIE_5(%0,%1,2,0,1) : :
+ 			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
++		asm volatile(PPC_TLBIE_5(%0,%1,2,1,1) : :
++				"r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
+ 		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 1);
+ 	} else {
+ 		asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
+ 			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
++		asm volatile(PPC_TLBIE_5(%0,%1,2,1,0) : :
++				"r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
+ 		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 0);
+ 	}
+ 	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+-- 
+2.11.0
