@@ -1,24 +1,35 @@
-Return-Path: <srs0=4pt0=ee=gmail.com=sjitindarsingh@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zG5Cw1WmFzF0Sk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:39:24 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zG5Cv6lBZz8tdQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:39:23 +1100 (AEDT)
-Message-ID: <1515487154.1993.3.camel@gmail.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S: Add capabilities for Meltdown/Spectre
- workarounds
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Date: Tue, 09 Jan 2018 19:39:14 +1100
-In-Reply-To: <20180109044815.GA19326@fergus.ozlabs.ibm.com>
-References: <20180109044815.GA19326@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zG60X09CWzDqqR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 20:14:35 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w099E886105201
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jan 2018 04:14:33 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fcqq47pkp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jan 2018 04:14:32 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Tue, 9 Jan 2018 02:14:31 -0700
+Subject: [linux-next][qla2xxx][85caa95]kernel BUG at lib/list_debug.c:31!
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-next
+ <linux-next@vger.kernel.org>, mpe <mpe@ellerman.id.au>, Stephen Rothwell
+ <sfr@canb.auug.org.au>, Kees Cook <keescook@chromium.org>, sachinp
+ <sachinp@linux.vnet.ibm.com>, sim <sim@linux.vnet.ibm.com>, linux-block
+ <linux-block@vger.kernel.org>
+Date: Tue, 09 Jan 2018 14:44:24 +0530
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Message-Id: <1515489264.3648.18.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,359 +39,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-01-09 at 15:48 +1100, Paul Mackerras wrote:
-> This adds three new capabilities that give userspace information
-> about
-> the underlying machine's level of vulnerability to the Meltdown and
-> Spectre attacks, and what instructions the hardware implements to
-> assist software to work around the vulnerabilities.
-> 
-> Each capability is a tri-state, where 0 indicates that the machine is
-> vulnerable and no workarounds are implement, 1 indicates that the
-> machine is vulnerable but workaround assist instructions are
-> available, and 2 indicates that the machine is not vulnerable.
-> 
-> The capabilities are:
-> 
-> KVM_CAP_PPC_SAFE_CACHE reports the vulnerability of the machine to
-> attacks based on using speculative loads to data in L1 cache which
-> should not be addressable.  The workaround provided by hardware is an
-> instruction to invalidate the entire L1 data cache.
-> 
-> KVM_CAP_PPC_SAFE_BOUNDS_CHECK reports the vulnerability of the
-> machine
-> to attacks based on using speculative loads behind mispredicted
-> bounds
-> checks.  The workaround provided by hardware is an instruction that
-> acts as a speculation barrier.
-> 
-> KVM_CAP_PPC_SAFE_INDIRECT_BRANCH reports the vulnerability of the
-> machine to attacks based on poisoning the indirect branch predictor.
-> No workaround that requires software changes is provided; the current
-> hardware fix is to prevent speculation past indirect branches.
-> 
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> ---
-> Note: This patch depends on the patch "powerpc/pseries: Add
-> H_GET_CPU_CHARACTERISTICS flags & wrapper" by Michael Ellerman,
-> available at http://patchwork.ozlabs.org/patch/856914/ .
-> 
->  Documentation/virtual/kvm/api.txt |  36 +++++++
->  arch/powerpc/kvm/powerpc.c        | 202
-> ++++++++++++++++++++++++++++++++++++++
->  include/uapi/linux/kvm.h          |   3 +
->  3 files changed, 241 insertions(+)
-> 
-> diff --git a/Documentation/virtual/kvm/api.txt
-> b/Documentation/virtual/kvm/api.txt
-> index 57d3ee9..8d76260 100644
-> --- a/Documentation/virtual/kvm/api.txt
-> +++ b/Documentation/virtual/kvm/api.txt
-> @@ -4369,3 +4369,39 @@ Parameters: none
->  This capability indicates if the flic device will be able to get/set
-> the
->  AIS states for migration via the KVM_DEV_FLIC_AISM_ALL attribute and
-> allows
->  to discover this without having to create a flic device.
-> +
-> +8.14 KVM_CAP_PPC_SAFE_CACHE
-> +
-> +Architectures: ppc
-> +
-> +This capability gives information about the underlying machine's
-> +vulnerability or otherwise to the Meltdown attack.  Its value is a
-> +tristate, where 0 indicates the machine is vulnerable, 1 indicates
-> the
-> +hardware is vulnerable but provides assistance to work around the
-> +vulnerability (specifically by providing a fast L1 data cache flush
-> +facility), and 2 indicates that the machine is not vulnerable.
-> +
-> +8.15 KVM_CAP_PPC_SAFE_BOUNDS_CHECK
-> +
-> +Architectures: ppc
-> +
-> +This capability gives information about the underlying machine's
-> +vulnerability or otherwise to the bounds-check variant of the
-> Spectre
-> +attack.  Its value is a tristate, where 0 indicates the machine is
-> +vulnerable, 1 indicates the hardware is vulnerable but provides
-> +assistance to work around the vulnerability (specifically by
-> providing
-> +an instruction that acts as a speculation barrier), and 2 indicates
-> +that the machine is not vulnerable.
-> +
-> +8.16 KVM_CAP_PPC_SAFE_INDIRECT_BRANCH
-> +
-> +Architectures: ppc
-> +
-> +This capability gives information about the underlying machine's
-> +vulnerability or otherwise to the indirect branch variant of the
-> Spectre
-> +attack.  Its value is a tristate, where 0 indicates the machine is
-> +vulnerable and 2 indicates that the machine is not vulnerable.
-> +(1 would indicate the availability of a workaround that software
-> +needs to implement, but there is currently no workaround that needs
-> +software changes.)
-> +
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 1915e86..58e863b 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -39,6 +39,10 @@
->  #include <asm/iommu.h>
->  #include <asm/switch_to.h>
->  #include <asm/xive.h>
-> +#ifdef CONFIG_PPC_PSERIES
-> +#include <asm/hvcall.h>
-> +#include <asm/plpar_wrappers.h>
-> +#endif
->  
->  #include "timing.h"
->  #include "irq.h"
-> @@ -488,6 +492,193 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
->  	module_put(kvm->arch.kvm_ops->owner);
->  }
->  
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +/*
-> + * These functions check whether the underlying hardware is safe
-> + * against the Meltdown/Spectre attacks and whether it supplies
-> + * instructions for use in workarounds.  The information comes from
-> + * firmware, either via the device tree on powernv platforms or
-> + * from an hcall on pseries platforms.
-> + *
-> + * For check_safe_cache() and check_safe_bounds_check(), a return
-> + * value of 0 means vulnerable, 1 means vulnerable but workaround
-> + * instructions are provided, and 2 means not vulnerable (no
-> workaround
-> + * is needed).
-> + * For check_safe_indirect_branch(), 0 means vulnerable and 2 means
-> + * not vulnerable.
-> + */
-> +static inline bool have_fw_feat(struct device_node *fw_features,
-> +				const char *state, const char *name)
-> +{
-> +	struct device_node *np;
-> +	bool r = false;
-> +
-> +	np = of_get_child_by_name(fw_features, name);
-> +	if (np) {
-> +		r = of_property_read_bool(np, state);
-> +		of_node_put(np);
-> +	}
-> +	return r;
-> +}
-> +
-> +#ifdef CONFIG_PPC_PSERIES
-> +static bool check_pseries_safe_cache(int *rp)
-> +{
-> +	struct h_cpu_char_result c;
-> +	unsigned long rc;
-> +	int r = 0;
-> +
-> +	if (!machine_is(pseries))
-> +		return false;
-> +
-> +	rc = plpar_get_cpu_characteristics(&c);
-> +	if (rc == H_SUCCESS) {
-> +		if (!(c.behavior & 
+Greeting's, 
 
-s/behavior/behaviour
+Linux next kernel panics on powerpc when module qla2xxx is load/unload.
 
-> H_GET_CPU_CHAR_BEHAV_L1_FLUSH_LOW_PRIV))
-> +			r = 2;
-> +		else if ((c.character &
-> H_GET_CPU_CHAR_CHAR_L1D_PRIVATE) &&
-> +			 ((c.character &
-> H_GET_CPU_CHAR_CHAR_ORI30_L1_FLUSH) ||
-> +			  (c.character &
-> H_GET_CPU_CHAR_CHAR_MTTRIG2_L1_FLUSH)))
-> +			r = 1;
-> +	}
-> +	*rp = r;
-> +	return true;
-> +}
-> +
-> +static bool check_pseries_safe_bounds_check(int *rp)
-> +{
-> +	struct h_cpu_char_result c;
-> +	unsigned long rc;
-> +	int r = 0;
-> +
-> +	if (!machine_is(pseries))
-> +		return false;
-> +
-> +	rc = plpar_get_cpu_characteristics(&c);
-> +	if (rc == H_SUCCESS) {
-> +		if (!(c.behavior & 
+Machine Type: Power 8 PowerVM LPAR
+Kernel : 4.15.0-rc2-next-20171211
+gcc : version 4.8.5
+Test type: module load/unload few times
 
-s/behavior/behaviour
+Trace messages:
+---------------
+qla2xxx [0000:00:00.0]-0005: : QLogic Fibre Channel HBA Driver: 10.00.00.03-k.
+qla2xxx [0106:a0:00.0]-001a: : MSI-X vector count: 32.
+qla2xxx [0106:a0:00.0]-001d: : Found an ISP2532 irq 505 iobase 0x00000000aeb324e6.
+qla2xxx [0106:a0:00.0]-00c6:1: MSI-X: Failed to enable support with 32 vectors, using 16 vectors.
+qla2xxx [0106:a0:00.0]-00fb:1: QLogic QLE2562 - PCIe 2-port 8Gb FC Adapter.
+qla2xxx [0106:a0:00.0]-00fc:1: ISP2532: PCIe (5.0GT/s x8) @ 0106:a0:00.0 hdma- host#=1 fw=8.06.00 (90d5).
+qla2xxx [0106:a0:00.1]-001a: : MSI-X vector count: 32.
+qla2xxx [0106:a0:00.1]-001d: : Found an ISP2532 irq 506 iobase 0x00000000a46f1774.
+qla2xxx [0106:a0:00.1]-00c6:2: MSI-X: Failed to enable support with 32 vectors, using 16 vectors.
+2xxx
+qla2xxx [0106:a0:00.1]-00fb:2: QLogic QLE2562 - PCIe 2-port 8Gb FC Adapter.
+qla2xxx [0106:a0:00.1]-00fc:2: ISP2532: PCIe (5.0GT/s x8) @ 0106:a0:00.1 hdma- host#=2 fw=8.06.00 (90d5).
+0:00.0]-500a:1: LOOP UP detected (8 Gbps). 
+qla2xxx [0106:a0:00.1]-500a:2: LOOP UP detected (8 Gbps).
+list_add double add: new=000000008d33e594, prev=000000008d33e594, next=00000000adef1df4.
+------------[ cut here ]------------
+kernel BUG at lib/list_debug.c:31! 
+Oops: Exception in kernel mode, sig: 5 [#1]
+LE SMP NR_CPUS=2048 NUMA pSeries 
+Dumping ftrace buffer: 
+   (ftrace buffer empty)
+Modules linked in: qla2xxx(E) tg3(E) ibmveth(E) xt_CHECKSUM(E)
+iptable_mangle(E) ipt_MASQUERADE(E) nf_nat_masquerade_ipv4(E)
+iptable_nat(E) nf_nat_ipv4(E) nf_nat(E) nf_conntrack_ipv4(E)
+nf_defrag_ipv4(E) xt_conntrack(E) nf_conntrack(E) ipt_REJECT(E)
+nf_reject_ipv4(E) tun(E) bridge(E) stp(E) llc(E) kvm_pr(E) kvm(E)
+sctp_diag(E) sctp(E) libcrc32c(E) tcp_diag(E) udp_diag(E)
+ebtable_filter(E) ebtables(E) dccp_diag(E) ip6table_filter(E) dccp(E)
+ip6_tables(E) iptable_filter(E) inet_diag(E) unix_diag(E)
+af_packet_diag(E) netlink_diag(E) xts(E) sg(E) vmx_crypto(E)
+pseries_rng(E) nfsd(E) auth_rpcgss(E) nfs_acl(E) lockd(E) grace(E)
+sunrpc(E) binfmt_misc(E) ip_tables(E) ext4(E) mbcache(E) jbd2(E)
+fscrypto(E) sd_mod(E) ibmvscsi(E) scsi_transport_srp(E) nvme_fc(E)
+nvme_fabrics(E) nvme_core(E) scsi_transport_fc(E)
+ ptp(E) pps_core(E) dm_mirror(E) dm_region_hash(E) dm_log(E) dm_mod(E)
+[last unloaded: qla2xxx]
+CPU: 7 PID: 22230 Comm: qla2xxx_1_dpc Tainted: G            E    4.15.0-rc2-next-20171211-autotest-autotest #1
+NIP:  c000000000511040 LR: c00000000051103c CTR: 0000000000655170        
+REGS: 000000009b7356fa TRAP: 0700   Tainted: G            E     (4.15.0-rc2-next-20171211-autotest-autotest)
+MSR:  800000010282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22000022  XER: 00000009  
+CFAR: c000000000170594 SOFTE: 0 
+GPR00: c00000000051103c c0000000fc293ac0 c0000000010f1d00 0000000000000058 
+GPR04: c00000028fcccdd0 c00000028fce3798 80000000374060b8 ffffffffffffffff 
+GPR08: 0000000000000000 c000000000d435ec 000000028ef90000 0000000000002717 
+GPR12: 0000000000000000 c00000000e734980 c0000000001215d8 c0000002886996c0 
+GPR16: 0000000000000000 0000000000000020 c0000002813d83f8 0000000000000001 
+GPR20: 0000000020000000 0000000000002000 0000000000000002 c0000002813dc808 
+GPR24: 0000000000000003 0000000000000001 c00000027f5a5c20 c0000002813dced0 
+GPR28: c00000027f5a5d90 c00000027f5a5d90 c00000027f5a5c00 c0000002813dc7f8 
+NIP [c000000000511040] __list_add_valid+0x70/0xb0
+LR [c00000000051103c] __list_add_valid+0x6c/0xb0
+Call Trace:
+[c0000000fc293ac0] [c00000000051103c] __list_add_valid+0x6c/0xb0 (unreliable)
+[c0000000fc293b20] [d0000000051f1a08] qla24xx_async_gnl+0x108/0x420 [qla2xxx]
+[c0000000fc293bc0] [d0000000051e762c] qla2x00_do_work+0x18c/0x8c0 [qla2xxx]
+[c0000000fc293ce0] [d0000000051e8180] qla2x00_relogin+0x420/0xff0 [qla2xxx]
+[c0000000fc293dc0] [c00000000012172c] kthread+0x15c/0x1a0
+[c0000000fc293e30] [c00000000000b4e8] ret_from_kernel_thread+0x5c/0x74
+Instruction dump:
+41de0018 38210060 38600001 e8010010 7c0803a6 4e800020 3c62ffae 7d445378 
+38631748 7d254b78 4bc5f51d 60000000 <0fe00000> 3c62ffae 7cc43378 386316f8 
+---[ end trace a41bc8bd434657f1 ]---
 
-> H_GET_CPU_CHAR_BEHAV_SPEC_BAR_BNDS_CHK))
-> +			r = 2;
-> +		else if (c.character &
-> H_GET_CPU_CHAR_CHAR_ORI31_SPEC_BAR)
-> +			r = 1;
-> +	}
-> +	*rp = r;
-> +	return true;
-> +}
-> +
-> +static bool check_pseries_safe_indirect_branch(int *rp)
-> +{
-> +	struct h_cpu_char_result c;
-> +	unsigned long rc;
-> +	int r = 0;
-> +
-> +	if (!machine_is(pseries))
-> +		return false;
-> +
-> +	rc = plpar_get_cpu_characteristics(&c);
-> +	if (rc == H_SUCCESS) {
-> +		if (c.character & H_GET_CPU_CHAR_CHAR_BCCTR_SERIAL)
-> +			r = 2;
-> +	}
-> +	*rp = r;
-> +	return true;
-> +}
-> +
-> +#else
-> +static bool check_pseries_safe_cache(int *rp)
-> +{
-> +	return false;
-> +}
-> +
-> +static bool check_pseries_safe_bounds_check(int *rp)
-> +{
-> +	return false;
-> +}
-> +
-> +static bool check_pseries_safe_indirect_branch(int *rp)
-> +{
-> +	return false;
-> +}
-> +#endif
-> +
-> +static int check_safe_cache(void)
-> +{
-> +	struct device_node *np, *fw_features;
-> +	int r = 0;
-> +
-> +	if (check_pseries_safe_cache(&r))
-> +		return r;
-> +
-> +	np = of_find_node_by_name(NULL, "ibm,opal");
-> +	if (np) {
-> +		fw_features = of_get_child_by_name(np, "fw-
-> features");
-> +		of_node_put(np);
-> +		if (!fw_features)
-> +			return 0;
-> +		if (have_fw_feat(fw_features, "disabled",
-> +				 "needs-l1d-flush-msr-pr-0-to-1"))
-> +			r = 2;
-> +		else if (have_fw_feat(fw_features, "enabled",
-> +				      "fw-l1d-thread-split") &&
-> +			 (have_fw_feat(fw_features, "enabled",
-> +				       "inst-l1d-flush-trig2") ||
-> +			  have_fw_feat(fw_features, "enabled",
-> +				       "inst-l1d-flush-
-> ori30,30,0")))
-> +			r = 1;
-> +		of_node_put(fw_features);
-> +	}
-> +
-> +	return r;
-> +}
-> +
-> +static int check_safe_bounds_check(void)
-> +{
-> +	struct device_node *np, *fw_features;
-> +	int r = 0;
-> +
-> +	if (check_pseries_safe_bounds_check(&r))
-> +		return r;
-> +
-> +	np = of_find_node_by_name(NULL, "ibm,opal");
-> +	if (np) {
-> +		fw_features = of_get_child_by_name(np, "fw-
-> features");
-> +		of_node_put(np);
-> +		if (!fw_features)
-> +			return 0;
-> +		if (have_fw_feat(fw_features, "disabled",
-> +				 "needs-spec-barrier-for-bound-
-> checks"))
-> +			r = 2;
-> +		else if (have_fw_feat(fw_features, "enabled",
-> +				      "inst-spec-barrier-
-> ori31,31,0"))
-> +			r = 1;
-> +		of_node_put(fw_features);
-> +	}
-> +
-> +	return r;
-> +}
-> +
-> +static int check_safe_indirect_branch(void)
-> +{
-> +	struct device_node *np, *fw_features;
-> +	int r = 0;
-> +
-> +	if (check_pseries_safe_indirect_branch(&r))
-> +		return r;
-> +
-> +	np = of_find_node_by_name(NULL, "ibm,opal");
-> +	if (np) {
-> +		fw_features = of_get_child_by_name(np, "fw-
-> features");
-> +		of_node_put(np);
-> +		if (!fw_features)
-> +			return 0;
-> +		if (have_fw_feat(fw_features, "enabled",
-> +				 "fw-bcctrl-serialized"))
-> +			r = 2;
-> +		of_node_put(fw_features);
-> +	}
-> +
-> +	return r;
-> +}
-> +#endif
-> +
->  int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  {
->  	int r;
-> @@ -646,6 +837,17 @@ int kvm_vm_ioctl_check_extension(struct kvm
-> *kvm, long ext)
->  		r = hv_enabled &&
->  		    (cur_cpu_spec->cpu_user_features2 &
-> PPC_FEATURE2_HTM_COMP);
->  		break;
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +	case KVM_CAP_PPC_SAFE_CACHE:
-> +		r = check_safe_cache();
-> +		break;
-> +	case KVM_CAP_PPC_SAFE_BOUNDS_CHECK:
-> +		r = check_safe_bounds_check();
-> +		break;
-> +	case KVM_CAP_PPC_SAFE_INDIRECT_BRANCH:
-> +		r = check_safe_indirect_branch();
-> +		break;
-> +#endif
->  	default:
->  		r = 0;
->  		break;
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 496e59a..0a480e9 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -932,6 +932,9 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_HYPERV_SYNIC2 148
->  #define KVM_CAP_HYPERV_VP_INDEX 149
->  #define KVM_CAP_S390_AIS_MIGRATION 150
-> +#define KVM_CAP_PPC_SAFE_CACHE 151
-> +#define KVM_CAP_PPC_SAFE_BOUNDS_CHECK 152
-> +#define KVM_CAP_PPC_SAFE_INDIRECT_BRANCH 153
->  
->  #ifdef KVM_CAP_IRQ_ROUTING
->  
+Kernel panic - not syncing: Fatal exception
+Dumping ftrace buffer: 
+   (ftrace buffer empty)
+Rebooting in 10 seconds..
+
+This trace back to the below code path:
+
+# gdb -batch vmlinux -ex 'list *(0xc000000000511040)'
+0xc000000000511040 is in __list_add_valid (lib/list_debug.c:29).
+24				"list_add corruption. next->prev should be prev (%p), but was %p. (next=%p).\n",
+25				prev, next->prev, next) ||
+26		    CHECK_DATA_CORRUPTION(prev->next != next,
+27				"list_add corruption. prev->next should be next (%p), but was %p. (prev=%p).\n",
+28				next, prev->next, prev) ||
+29		    CHECK_DATA_CORRUPTION(new == prev || new == next,
+30				"list_add double add: new=%p, prev=%p, next=%p.\n",
+31				new, prev, next))
+32			return false;
+33	
+
+
+-- 
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
