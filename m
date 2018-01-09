@@ -1,20 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <srs0=xg37=ee=kroah.com=greg@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zG4060bftzF0dn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 18:44:05 +1100 (AEDT)
-Message-ID: <1515483825.541.40.camel@kernel.crashing.org>
-Subject: Re: Sleep in preempt_disable on powernv with 'cat /proc/cpuinfo' on
- v4.15
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Sperbeck <jsperbeck@google.com>, Shriya <shriyak@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 09 Jan 2018 18:43:45 +1100
-In-Reply-To: <CAFNjLiW4Dc9J_Q6L0zOT1f+AyNYOLWFPk1iXb7JNTPaqpozkCQ@mail.gmail.com>
-References: <CAFNjLiW4Dc9J_Q6L0zOT1f+AyNYOLWFPk1iXb7JNTPaqpozkCQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zG4VP4Vy6zF0dK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:06:53 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zG4VN7507z8syC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:06:52 +1100 (AEDT)
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zG4VN0DBfz9sNr
+ for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2018 19:06:50 +1100 (AEDT)
+Date: Tue, 9 Jan 2018 09:03:10 +0100
+From: Greg KH <greg@kroah.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ tglx@linutronix.de, peterz@infradead.org, npiggin@gmail.com,
+ anton@samba.org, mikey@neuling.org, oohall@gmail.com, paulus@samba.org
+Subject: Re: [PATCH 09/11] powerpc/64s: Allow control of RFI flush via sysfs
+Message-ID: <20180109080310.GA9100@kroah.com>
+References: <20180108165453.26066-1-mpe@ellerman.id.au>
+ <20180108165453.26066-9-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180108165453.26066-9-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-01-08 at 21:30 -0800, John Sperbeck wrote:
-> The pnv_get_proc_freq() function was recently changed to call
-> cpufreq_get(), instead of cpufreq_quick_get(), in order to fetch
-> a more up-to-date value for the CPU frequency:
+On Tue, Jan 09, 2018 at 03:54:51AM +1100, Michael Ellerman wrote:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
->    cd77b5ce208c153260ed7882d8910f2395bfaabd
->    powerpc/powernv/cpufreq: Fix the frequency read by /proc/cpuinfo
+> Expose the state of the RFI flush (enabled/disabled) via sysfs, and
+> allow it to be enabled/dissabled at runtime.
 > 
-> Unfortunately, this function is called from show_cpuinfo() in
-> arch/powerpc/kernel/setup-common.c with preemption disabled.  The
-> cpufreq_get() function might do a down_read(), which can sleep.
-> 
-> With CONFIG_DEBUG_KERNEL and CONFIG_DEBUG_ATOMIC_SLEEP set, a warning
-> like the following is generated when running 'cat /proc/cpuinfo':
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/setup.h |  2 ++
+>  arch/powerpc/kernel/sysfs.c | 41 +++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 43 insertions(+)
 
-We could just either remove the preempt_disable completely like
-x86 and keep it racy, or stick a cpus_read_lock around it. I dont think
-we need that preempt_disable, it's definitely overkill.
+You forgot a Documentation/ABI/ update for a new sysfs file :(
 
-Michael, what do you think ? I'm keen on sync'ing with x86 here...
+> diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
+> index 21c18071d9d5..493b03b0a966 100644
+> --- a/arch/powerpc/kernel/setup.h
+> +++ b/arch/powerpc/kernel/setup.h
+> @@ -61,4 +61,6 @@ void kvm_cma_reserve(void);
+>  static inline void kvm_cma_reserve(void) { };
+>  #endif
+>  
+> +extern bool rfi_flush;
+> +
+>  #endif /* __ARCH_POWERPC_KERNEL_SETUP_H */
+> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> index b8d4a1dac39f..8c19d014cffc 100644
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -20,6 +20,7 @@
+>  #include <asm/firmware.h>
+>  
+>  #include "cacheinfo.h"
+> +#include "setup.h"
+>  
+>  #ifdef CONFIG_PPC64
+>  #include <asm/paca.h>
+> @@ -496,6 +497,43 @@ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+>  static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+>  static DEVICE_ATTR(pir, 0400, show_pir, NULL);
+>  
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +static ssize_t show_rfi_flush(struct device *dev,
+> +		struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%d\n", rfi_flush ? 1 : 0);
+> +}
+> +
+> +static ssize_t __used store_rfi_flush(struct device *dev,
+> +		struct device_attribute *attr, const char *buf,
+> +		size_t count)
+> +{
+> +	int val;
+> +	int ret = 0;
+> +
+> +	ret = sscanf(buf, "%d", &val);
+> +	if (ret != 1)
+> +		return -EINVAL;
+> +
+> +	if (val == 1)
+> +		rfi_flush_enable(true);
+> +	else if (val == 0)
+> +		rfi_flush_enable(false);
+> +	else
+> +		return -EINVAL;
+> +
+> +	return count;
+> +}
+> +
+> +static DEVICE_ATTR(rfi_flush, 0600,
+> +		show_rfi_flush, store_rfi_flush);
 
-Cheers,
-Ben.
+DEVICE_ATTR_RW()?  And why 0600?  That's odd.
 
->     BUG: sleeping function called from invalid context at kernel/locking/rwsem.c:23
->     in_atomic(): 1, irqs_disabled(): 0, pid: 16939, name: cat
->     CPU: 33 PID: 16939 Comm: cat Tainted: G        W        4.15.0-smp-DEV #1
->     Call Trace:
->     [c000000fef07bab0] [c000000000a32c30] dump_stack+0xb0/0xf0 (unreliable)
->     [c000000fef07baf0] [c0000000001343a8] ___might_sleep+0x178/0x1b0
->     [c000000fef07bb70] [c000000000a50f58] down_read+0x38/0x90
->     [c000000fef07bba0] [c0000000008287d0] cpufreq_get+0x50/0xc0
->     [c000000fef07bbf0] [c000000000097a08] pnv_get_proc_freq+0x28/0x60
->     [c000000fef07bc20] [c00000000002c554] show_cpuinfo+0x194/0x450
->     [c000000fef07bcb0] [c00000000039c848] seq_read+0x1f8/0x590
->     [c000000fef07bd40] [c00000000040d1d4] proc_reg_read+0xb4/0x180
->     [c000000fef07bd90] [c00000000035d6a0] vfs_read+0x100/0x220
->     [c000000fef07bde0] [c00000000035dc6c] SyS_read+0x6c/0x110
->     [c000000fef07be30] [c00000000000b220] system_call+0x58/0x6c
-> 
+> +
+> +static void sysfs_create_rfi_flush(void)
+> +{
+> +	device_create_file(cpu_subsys.dev_root, &dev_attr_rfi_flush);
+
+No error checking?
+
+And as Thomas said, why not just use the generic infrastructure he
+created instead?  That way there is some form of unity here for the same
+exact issue.
+
+At least he documented the api :)
+
+thanks,
+
+greg k-h
