@@ -1,23 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGF8S4B1rzF0bM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 01:36:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGGMd4RX9zF0cn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 02:31:41 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Kurz <groug@kaod.org>, Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] KVM: PPC: Book3S: Add capabilities for Meltdown/Spectre
- workarounds
-In-Reply-To: <20180109135453.28b36153@bahia.lan>
-References: <20180109044815.GA19326@fergus.ozlabs.ibm.com>
- <1515487154.1993.3.camel@gmail.com>
- <2b9c6453-c56f-ac4d-daa9-16d9ffa6cebe@ozlabs.ru>
- <20180109135453.28b36153@bahia.lan>
-Date: Wed, 10 Jan 2018 01:36:55 +1100
-Message-ID: <87lgh7ksjc.fsf@concordia.ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ John Sperbeck <jsperbeck@google.com>, Shriya <shriyak@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: Sleep in preempt_disable on powernv with 'cat /proc/cpuinfo' on
+ v4.15
+In-Reply-To: <1515483825.541.40.camel@kernel.crashing.org>
+References: <CAFNjLiW4Dc9J_Q6L0zOT1f+AyNYOLWFPk1iXb7JNTPaqpozkCQ@mail.gmail.com>
+ <1515483825.541.40.camel@kernel.crashing.org>
+Date: Wed, 10 Jan 2018 02:31:40 +1100
+Message-ID: <87incbkq03.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,25 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg Kurz <groug@kaod.org> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> On Tue, 9 Jan 2018 23:44:56 +1100
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->
->> On 09/01/18 19:39, Suraj Jitindar Singh wrote:
-> [...]
->> >> +	rc = plpar_get_cpu_characteristics(&c);
->> >> +	if (rc == H_SUCCESS) {
->> >> +		if (!(c.behavior &   
->> > 
->> > s/behavior/behaviour  
+> On Mon, 2018-01-08 at 21:30 -0800, John Sperbeck wrote:
+>> The pnv_get_proc_freq() function was recently changed to call
+>> cpufreq_get(), instead of cpufreq_quick_get(), in order to fetch
+>> a more up-to-date value for the CPU frequency:
 >> 
->> Why?
->> https://dictionary.cambridge.org/dictionary/english/behavior
+>>    cd77b5ce208c153260ed7882d8910f2395bfaabd
+>>    powerpc/powernv/cpufreq: Fix the frequency read by /proc/cpuinfo
 >> 
->
-> Behavior is US English while behaviour is UK (and US)... Matter of taste ? :)
+>> Unfortunately, this function is called from show_cpuinfo() in
+>> arch/powerpc/kernel/setup-common.c with preemption disabled.  The
+>> cpufreq_get() function might do a down_read(), which can sleep.
+>> 
+>> With CONFIG_DEBUG_KERNEL and CONFIG_DEBUG_ATOMIC_SLEEP set, a warning
+>> like the following is generated when running 'cat /proc/cpuinfo':
 
-Straya mate!
+This was reported by Nick back in November just a few days after the
+patch went in, so it's a little disappointing that it's still broken.
+
+> We could just either remove the preempt_disable completely like
+> x86 and keep it racy, or stick a cpus_read_lock around it. I dont think
+> we need that preempt_disable, it's definitely overkill.
+>
+> Michael, what do you think ? I'm keen on sync'ing with x86 here...
+
+Yeah I think we can drop it. The cpufreq seems to have some locking that
+looks like it'll probably work - famous last words.
+
+Who's writing the patch?
 
 cheers
