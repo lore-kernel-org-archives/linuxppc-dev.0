@@ -1,22 +1,33 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGGMd4RX9zF0cn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 02:31:41 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- John Sperbeck <jsperbeck@google.com>, Shriya <shriyak@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Sleep in preempt_disable on powernv with 'cat /proc/cpuinfo' on
- v4.15
-In-Reply-To: <1515483825.541.40.camel@kernel.crashing.org>
-References: <CAFNjLiW4Dc9J_Q6L0zOT1f+AyNYOLWFPk1iXb7JNTPaqpozkCQ@mail.gmail.com>
- <1515483825.541.40.camel@kernel.crashing.org>
-Date: Wed, 10 Jan 2018 02:31:40 +1100
-Message-ID: <87incbkq03.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGGWW0QWszF0RY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 02:38:30 +1100 (AEDT)
+Date: Tue, 9 Jan 2018 16:38:26 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
+ linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, x86@kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-m68k@lists.linux-m68k.org, patches@groups.riscv.org,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 16/67] powerpc: rename dma_direct_ to dma_nommu_
+Message-ID: <20180109153826.GA10086@lst.de>
+References: <20171229081911.2802-1-hch@lst.de>
+ <20171229081911.2802-17-hch@lst.de> <878tdgtwzp.fsf@concordia.ellerman.id.au>
+ <20180104084930.GB3251@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180104084930.GB3251@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Thu, Jan 04, 2018 at 09:49:30AM +0100, Christoph Hellwig wrote:
+> On Tue, Jan 02, 2018 at 08:45:30PM +1100, Michael Ellerman wrote:
+> > Christoph Hellwig <hch@lst.de> writes:
+> > 
+> > > We want to use the dma_direct_ namespace for a generic implementation,
+> > > so rename powerpc to the second best choice: dma_nommu_.
+> > 
+> > I'm not a fan of "nommu". Some of the users of direct ops *are* using an
+> > IOMMU, they're just setting up a 1:1 mapping once at init time, rather
+> > than mapping dynamically.
+> > 
+> > Though I don't have a good idea for a better name, maybe "1to1",
+> > "linear", "premapped" ?
+> 
+> It seems like a nice counter part to the dma_iommu_ops used just about
+> anywhere else in ppc.
+> 
+> But I'll happily take any maintainer bike shed decision for the next
+> series.  Remember that in a merge window or two it will hopefully
+> go away in favor of the new generic dma_direct ops.
 
-> On Mon, 2018-01-08 at 21:30 -0800, John Sperbeck wrote:
->> The pnv_get_proc_freq() function was recently changed to call
->> cpufreq_get(), instead of cpufreq_quick_get(), in order to fetch
->> a more up-to-date value for the CPU frequency:
->> 
->>    cd77b5ce208c153260ed7882d8910f2395bfaabd
->>    powerpc/powernv/cpufreq: Fix the frequency read by /proc/cpuinfo
->> 
->> Unfortunately, this function is called from show_cpuinfo() in
->> arch/powerpc/kernel/setup-common.c with preemption disabled.  The
->> cpufreq_get() function might do a down_read(), which can sleep.
->> 
->> With CONFIG_DEBUG_KERNEL and CONFIG_DEBUG_ATOMIC_SLEEP set, a warning
->> like the following is generated when running 'cat /proc/cpuinfo':
-
-This was reported by Nick back in November just a few days after the
-patch went in, so it's a little disappointing that it's still broken.
-
-> We could just either remove the preempt_disable completely like
-> x86 and keep it racy, or stick a cpus_read_lock around it. I dont think
-> we need that preempt_disable, it's definitely overkill.
->
-> Michael, what do you think ? I'm keen on sync'ing with x86 here...
-
-Yeah I think we can drop it. The cpufreq seems to have some locking that
-looks like it'll probably work - famous last words.
-
-Who's writing the patch?
-
-cheers
+Michael, please suggest what name you want for the next iteration,
+I don't want to hold up the series on a naming bikeshed.
