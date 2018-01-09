@@ -1,14 +1,16 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zG1MD1kvBzF0bP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 16:45:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zG1Wk3JqMzF0RJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 16:52:49 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: [PATCH kernel] powerpc/init: Do not advertise radix during
- client-architecture-support
-Date: Tue,  9 Jan 2018 16:45:20 +1100
-Message-Id: <20180109054520.31704-1-aik@ozlabs.ru>
+Subject: [PATCH kernel] powerpc/lpar/debug: Initialize flags before printing
+ debug message
+Date: Tue,  9 Jan 2018 16:52:14 +1100
+Message-Id: <20180109055214.32199-1-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,31 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the pseries kernel advertises radix MMU support even if
-the actual support is disabled via the CONFIG_PPC_RADIX_MMU option.
+With enabled DEBUG, there is a compile error:
+"error: ‘flags’ is used uninitialized in this function".
 
-This adds a check for CONFIG_PPC_RADIX_MMU to avoid advertising radix
-to the hypervisor.
+This moves pr_devel() little further where @flags are initialized.
 
-Suggested-by: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kernel/prom_init.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 02190e9..65879df 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1109,7 +1109,8 @@ static void __init prom_check_platform_support(void)
- 		}
- 	}
+/home/aik/p/guest-kernel/arch/powerpc/platforms/pseries/lpar.c: In function ‘pSeries_lpar_hpte_updatepp’:
+/home/aik/p/guest-kernel/include/linux/printk.h:320:2: error: ‘flags’ is used uninitialized in this function [-Werror=un
+initialized]
+  printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+  ^
+/home/aik/p/guest-kernel/arch/powerpc/platforms/pseries/lpar.c:304:16: note: ‘flags’ was declared here
+  unsigned long flags;
+                ^
+---
+ arch/powerpc/platforms/pseries/lpar.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 0ee4a46..1365424 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -306,14 +306,14 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
  
--	if (supported.radix_mmu && supported.radix_gtse) {
-+	if (supported.radix_mmu && supported.radix_gtse &&
-+	    IS_ENABLED(CONFIG_PPC_RADIX_MMU)) {
- 		/* Radix preferred - but we require GTSE for now */
- 		prom_debug("Asking for radix with GTSE\n");
- 		ibm_architecture_vec.vec5.mmu = OV5_FEAT(OV5_MMU_RADIX);
+ 	want_v = hpte_encode_avpn(vpn, psize, ssize);
+ 
++	flags = (newpp & 7) | H_AVPN;
++	if (mmu_has_feature(MMU_FTR_KERNEL_RO))
++		/* Move pp0 into bit 8 (IBM 55) */
++		flags |= (newpp & HPTE_R_PP0) >> 55;
++
+ 	pr_devel("    update: avpnv=%016lx, hash=%016lx, f=%lx, psize: %d ...",
+ 		 want_v, slot, flags, psize);
+ 
+-	flags = (newpp & 7) | H_AVPN;
+-	if (mmu_has_feature(MMU_FTR_KERNEL_RO))
+-		/* Move pp0 into bit 8 (IBM 55) */
+-		flags |= (newpp & HPTE_R_PP0) >> 55;
+-
+ 	lpar_rc = plpar_pte_protect(flags, slot, want_v);
+ 
+ 	if (lpar_rc == H_NOT_FOUND) {
 -- 
 2.11.0
