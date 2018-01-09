@@ -1,20 +1,20 @@
 Return-Path: <srs0=4pt0=ee=gmail.com=sjitindarsingh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zG4zc68whzF0bx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:28:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zG5Cw1WmFzF0Sk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:39:24 +1100 (AEDT)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zG4zc4Gfzz8tF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:28:44 +1100 (AEDT)
-Message-ID: <1515486515.1993.2.camel@gmail.com>
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zG5Cv6lBZz8tdQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jan 2018 19:39:23 +1100 (AEDT)
+Message-ID: <1515487154.1993.3.camel@gmail.com>
 Subject: Re: [PATCH] KVM: PPC: Book3S: Add capabilities for Meltdown/Spectre
  workarounds
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Date: Tue, 09 Jan 2018 19:28:35 +1100
+Date: Tue, 09 Jan 2018 19:39:14 +1100
 In-Reply-To: <20180109044815.GA19326@fergus.ozlabs.ibm.com>
 References: <20180109044815.GA19326@fergus.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -183,29 +183,18 @@ On Tue, 2018-01-09 at 15:48 +1100, Paul Mackerras wrote:
 > +
 > +	rc = plpar_get_cpu_characteristics(&c);
 > +	if (rc == H_SUCCESS) {
-> +		if (!(c.behavior &
+> +		if (!(c.behavior & 
+
+s/behavior/behaviour
+
 > H_GET_CPU_CHAR_BEHAV_L1_FLUSH_LOW_PRIV))
-
-s/H_GET_CPU_CHAR_BEHAV_L1_FLUSH_LOW_PRIV/H_CPU_BEHAV_L1D_FLUSH_PR
-
 > +			r = 2;
 > +		else if ((c.character &
 > H_GET_CPU_CHAR_CHAR_L1D_PRIVATE) &&
-
-s/H_GET_CPU_CHAR_CHAR_L1D_PRIVATE/H_CPU_CHAR_L1D_THREAD_PRIV
-
 > +			 ((c.character &
 > H_GET_CPU_CHAR_CHAR_ORI30_L1_FLUSH) ||
-
-s/H_GET_CPU_CHAR_CHAR_ORI30_L1_FLUSH/H_CPU_CHAR_L1D_FLUSH_ORI30
-
 > +			  (c.character &
 > H_GET_CPU_CHAR_CHAR_MTTRIG2_L1_FLUSH)))
-
-s/H_GET_CPU_CHAR_CHAR_MTTRIG2_L1_FLUSH/H_CPU_CHAR_L1D_FLUSH_TRIG2
-
-etc.
-
 > +			r = 1;
 > +	}
 > +	*rp = r;
@@ -223,7 +212,10 @@ etc.
 > +
 > +	rc = plpar_get_cpu_characteristics(&c);
 > +	if (rc == H_SUCCESS) {
-> +		if (!(c.behavior &
+> +		if (!(c.behavior & 
+
+s/behavior/behaviour
+
 > H_GET_CPU_CHAR_BEHAV_SPEC_BAR_BNDS_CHK))
 > +			r = 2;
 > +		else if (c.character &
