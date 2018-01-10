@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhLL6nvbzF0gQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:02:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhLP0x8bzF0gV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:02:05 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,9 +17,10 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 25/33] dma-direct: add dma address sanity checks
-Date: Wed, 10 Jan 2018 09:00:19 +0100
-Message-Id: <20180110080027.13879-26-hch@lst.de>
+Subject: [PATCH 27/33] dma-direct: use node local allocations for coherent
+ memory
+Date: Wed, 10 Jan 2018 09:00:21 +0100
+Message-Id: <20180110080027.13879-28-hch@lst.de>
 In-Reply-To: <20180110080027.13879-1-hch@lst.de>
 References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,78 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roughly based on the x86 pci-nommu implementation.
+To preserve the x86 behavior.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- lib/dma-direct.c | 31 ++++++++++++++++++++++++++++++-
- 1 file changed, 30 insertions(+), 1 deletion(-)
+ lib/dma-direct.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/dma-direct.c b/lib/dma-direct.c
-index 12ea9653781b..32fd4d9e4c47 100644
+index a9ae98be7af3..f04a424f91fa 100644
 --- a/lib/dma-direct.c
 +++ b/lib/dma-direct.c
-@@ -9,6 +9,23 @@
- #include <linux/scatterlist.h>
- #include <linux/pfn.h>
+@@ -38,7 +38,7 @@ static void *dma_direct_alloc(struct device *dev, size_t size,
+ 	if (gfpflags_allow_blocking(gfp))
+ 		page = dma_alloc_from_contiguous(dev, count, page_order, gfp);
+ 	if (!page)
+-		page = alloc_pages(gfp, page_order);
++		page = alloc_pages_node(dev_to_node(dev), gfp, page_order);
+ 	if (!page)
+ 		return NULL;
  
-+#define DIRECT_MAPPING_ERROR		0
-+
-+static bool
-+check_addr(struct device *dev, dma_addr_t dma_addr, size_t size,
-+		const char *caller)
-+{
-+	if (unlikely(dev && !dma_capable(dev, dma_addr, size))) {
-+		if (*dev->dma_mask >= DMA_BIT_MASK(32)) {
-+			dev_err(dev,
-+				"%s: overflow %pad+%zu of device mask %llx\n",
-+				caller, &dma_addr, size, *dev->dma_mask);
-+		}
-+		return false;
-+	}
-+	return true;
-+}
-+
- static void *dma_direct_alloc(struct device *dev, size_t size,
- 		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
- {
-@@ -31,7 +48,11 @@ static dma_addr_t dma_direct_map_page(struct device *dev, struct page *page,
- 		unsigned long offset, size_t size, enum dma_data_direction dir,
- 		unsigned long attrs)
- {
--	return phys_to_dma(dev, page_to_phys(page)) + offset;
-+	dma_addr_t dma_addr = phys_to_dma(dev, page_to_phys(page)) + offset;
-+
-+	if (!check_addr(dev, dma_addr, size, __func__))
-+		return DIRECT_MAPPING_ERROR;
-+	return dma_addr;
- }
- 
- static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
-@@ -44,16 +65,24 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
- 		BUG_ON(!sg_page(sg));
- 
- 		sg_dma_address(sg) = phys_to_dma(dev, sg_phys(sg));
-+		if (!check_addr(dev, sg_dma_address(sg), sg->length, __func__))
-+			return 0;
- 		sg_dma_len(sg) = sg->length;
- 	}
- 
- 	return nents;
- }
- 
-+static int dma_direct_mapping_error(struct device *dev, dma_addr_t dma_addr)
-+{
-+	return dma_addr == DIRECT_MAPPING_ERROR;
-+}
-+
- const struct dma_map_ops dma_direct_ops = {
- 	.alloc			= dma_direct_alloc,
- 	.free			= dma_direct_free,
- 	.map_page		= dma_direct_map_page,
- 	.map_sg			= dma_direct_map_sg,
-+	.mapping_error		= dma_direct_mapping_error,
- };
- EXPORT_SYMBOL(dma_direct_ops);
 -- 
 2.14.2
