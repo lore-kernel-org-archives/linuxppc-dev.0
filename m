@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhJx5FSHzF0ft
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhK93vc4zF0ft
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:01:01 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 02/33] hexagon: remove unused flush_write_buffers definition
-Date: Wed, 10 Jan 2018 08:59:56 +0100
-Message-Id: <20180110080027.13879-3-hch@lst.de>
+Subject: [PATCH 06/33] m32r: remove the unused dma_capable helper
+Date: Wed, 10 Jan 2018 09:00:00 +0100
+Message-Id: <20180110080027.13879-7-hch@lst.de>
 In-Reply-To: <20180110080027.13879-1-hch@lst.de>
 References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,21 +33,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/hexagon/include/asm/io.h | 2 --
- 1 file changed, 2 deletions(-)
+ arch/m32r/include/asm/dma-mapping.h | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/arch/hexagon/include/asm/io.h b/arch/hexagon/include/asm/io.h
-index 66f5e9a61efc..9e8621d94ee9 100644
---- a/arch/hexagon/include/asm/io.h
-+++ b/arch/hexagon/include/asm/io.h
-@@ -330,8 +330,6 @@ static inline void outsl(unsigned long port, const void *buffer, int count)
- 	}
+diff --git a/arch/m32r/include/asm/dma-mapping.h b/arch/m32r/include/asm/dma-mapping.h
+index 336ffe60814b..8967fb659691 100644
+--- a/arch/m32r/include/asm/dma-mapping.h
++++ b/arch/m32r/include/asm/dma-mapping.h
+@@ -14,11 +14,4 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+ 	return &dma_noop_ops;
  }
  
--#define flush_write_buffers() do { } while (0)
+-static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+-{
+-	if (!dev->dma_mask)
+-		return false;
+-	return addr + size - 1 <= *dev->dma_mask;
+-}
 -
- #endif /* __KERNEL__ */
- 
- #endif
+ #endif /* _ASM_M32R_DMA_MAPPING_H */
 -- 
 2.14.2
