@@ -1,14 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGdtF56kqzF0fm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 17:11:01 +1100 (AEDT)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] powerpc: Don't preempt_disable() in show_cpuinfo()
-Date: Wed, 10 Jan 2018 17:10:12 +1100
-Message-Id: <20180110061014.29181-1-benh@kernel.crashing.org>
+Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhJx12nvzF0TF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:48 +1100 (AEDT)
+From: Christoph Hellwig <hch@lst.de>
+To: iommu@lists.linux-foundation.org
+Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ patches@groups.riscv.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 01/33] alpha: mark jensen as broken
+Date: Wed, 10 Jan 2018 08:59:55 +0100
+Message-Id: <20180110080027.13879-2-hch@lst.de>
+In-Reply-To: <20180110080027.13879-1-hch@lst.de>
+References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,44 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This causes warnings from cpufreq mutex code. This is also
-rather unnecessary and ineffective. If we really want to
-prevent concurrent unplug, we could take the unplug read
-lock but I don't see this being critical.
+CONFIG_ALPHA_JENSEN has failed to compile since commit 6aca0503
+("alpha/dma: use common noop dma ops"), so mark it as broken.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/setup-common.c | 11 -----------
- 1 file changed, 11 deletions(-)
+ arch/alpha/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 9d213542a48b..8fd3a70047f1 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -242,14 +242,6 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	unsigned short maj;
- 	unsigned short min;
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index b31b974a03cb..e96adcbcab41 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -209,6 +209,7 @@ config ALPHA_EIGER
  
--	/* We only show online cpus: disable preempt (overzealous, I
--	 * knew) to prevent cpu going down. */
--	preempt_disable();
--	if (!cpu_online(cpu_id)) {
--		preempt_enable();
--		return 0;
--	}
--
- #ifdef CONFIG_SMP
- 	pvr = per_cpu(cpu_pvr, cpu_id);
- #else
-@@ -358,9 +350,6 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- #ifdef CONFIG_SMP
- 	seq_printf(m, "\n");
- #endif
--
--	preempt_enable();
--
- 	/* If this is the last cpu, print the summary */
- 	if (cpumask_next(cpu_id, cpu_online_mask) >= nr_cpu_ids)
- 		show_cpuinfo_summary(m);
+ config ALPHA_JENSEN
+ 	bool "Jensen"
++	depends on BROKEN
+ 	help
+ 	  DEC PC 150 AXP (aka Jensen): This is a very old Digital system - one
+ 	  of the first-generation Alpha systems. A number of these systems
 -- 
-2.14.3
+2.14.2
