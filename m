@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhXL1dsZzDqsT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:10:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhXN0wP4zDqJt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:10:44 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, Michal Simek <monstr@monstr.eu>,
@@ -12,9 +12,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, Michal Simek <monstr@monstr.eu>,
  linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 19/22] mips/netlogic: remove swiotlb support
-Date: Wed, 10 Jan 2018 09:09:29 +0100
-Message-Id: <20180110080932.14157-20-hch@lst.de>
+Subject: [PATCH 20/22] mips: use swiotlb_{alloc,free}
+Date: Wed, 10 Jan 2018 09:09:30 +0100
+Message-Id: <20180110080932.14157-21-hch@lst.de>
 In-Reply-To: <20180110080932.14157-1-hch@lst.de>
 References: <20180110080932.14157-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,157 +26,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-nlm_swiotlb_dma_ops is unused code, so the whole swiotlb support is dead.
-If it gets resurrected at some point it should use the generic
-swiotlb_dma_ops instead.
+These already include the GFP_DMA/GFP_DMA32 usage, and will use CMA
+memory if enabled, thus avoiding the GFP_NORETRY hack.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/mips/include/asm/netlogic/common.h |  3 --
- arch/mips/netlogic/Kconfig              |  5 --
- arch/mips/netlogic/common/Makefile      |  1 -
- arch/mips/netlogic/common/nlm-dma.c     | 94 ---------------------------------
- 4 files changed, 103 deletions(-)
- delete mode 100644 arch/mips/netlogic/common/nlm-dma.c
+ arch/mips/cavium-octeon/Kconfig           |  1 +
+ arch/mips/cavium-octeon/dma-octeon.c      | 26 +++-----------------------
+ arch/mips/loongson64/Kconfig              |  1 +
+ arch/mips/loongson64/common/dma-swiotlb.c | 21 ++-------------------
+ 4 files changed, 7 insertions(+), 42 deletions(-)
 
-diff --git a/arch/mips/include/asm/netlogic/common.h b/arch/mips/include/asm/netlogic/common.h
-index a6e6cbebe046..57616649b4f3 100644
---- a/arch/mips/include/asm/netlogic/common.h
-+++ b/arch/mips/include/asm/netlogic/common.h
-@@ -87,9 +87,6 @@ unsigned int nlm_get_cpu_frequency(void);
- extern const struct plat_smp_ops nlm_smp_ops;
- extern char nlm_reset_entry[], nlm_reset_entry_end[];
+diff --git a/arch/mips/cavium-octeon/Kconfig b/arch/mips/cavium-octeon/Kconfig
+index 204a1670fd9b..b5eee1a57d6c 100644
+--- a/arch/mips/cavium-octeon/Kconfig
++++ b/arch/mips/cavium-octeon/Kconfig
+@@ -75,6 +75,7 @@ config NEED_SG_DMA_LENGTH
  
--/* SWIOTLB */
--extern const struct dma_map_ops nlm_swiotlb_dma_ops;
--
- extern unsigned int nlm_threads_per_core;
- extern cpumask_t nlm_cpumask;
+ config SWIOTLB
+ 	def_bool y
++	select DMA_DIRECT_OPS
+ 	select IOMMU_HELPER
+ 	select NEED_SG_DMA_LENGTH
  
-diff --git a/arch/mips/netlogic/Kconfig b/arch/mips/netlogic/Kconfig
-index 8296b13affd2..7fcfc7fe9f14 100644
---- a/arch/mips/netlogic/Kconfig
-+++ b/arch/mips/netlogic/Kconfig
-@@ -89,9 +89,4 @@ config IOMMU_HELPER
- config NEED_SG_DMA_LENGTH
- 	bool
- 
--config SWIOTLB
--	def_bool y
--	select NEED_SG_DMA_LENGTH
--	select IOMMU_HELPER
+diff --git a/arch/mips/cavium-octeon/dma-octeon.c b/arch/mips/cavium-octeon/dma-octeon.c
+index 5baf79fce643..c7bb8a407041 100644
+--- a/arch/mips/cavium-octeon/dma-octeon.c
++++ b/arch/mips/cavium-octeon/dma-octeon.c
+@@ -159,33 +159,13 @@ static void octeon_dma_sync_sg_for_device(struct device *dev,
+ static void *octeon_dma_alloc_coherent(struct device *dev, size_t size,
+ 	dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+ {
+-	void *ret;
 -
- endif
-diff --git a/arch/mips/netlogic/common/Makefile b/arch/mips/netlogic/common/Makefile
-index 60d00b5d748e..89f6e3f39fed 100644
---- a/arch/mips/netlogic/common/Makefile
-+++ b/arch/mips/netlogic/common/Makefile
-@@ -1,6 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
- obj-y				+= irq.o time.o
--obj-y				+= nlm-dma.o
- obj-y				+= reset.o
- obj-$(CONFIG_SMP)		+= smp.o smpboot.o
- obj-$(CONFIG_EARLY_PRINTK)	+= earlycons.o
-diff --git a/arch/mips/netlogic/common/nlm-dma.c b/arch/mips/netlogic/common/nlm-dma.c
-deleted file mode 100644
-index 49c975b6aa28..000000000000
---- a/arch/mips/netlogic/common/nlm-dma.c
-+++ /dev/null
-@@ -1,94 +0,0 @@
--/*
--*  Copyright (C) 2003-2013 Broadcom Corporation
--*  All Rights Reserved
-- *
-- * This software is available to you under a choice of one of two
-- * licenses.  You may choose to be licensed under the terms of the GNU
-- * General Public License (GPL) Version 2, available from the file
-- * COPYING in the main directory of this source tree, or the Broadcom
-- * license below:
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that the following conditions
-- * are met:
-- *
-- * 1. Redistributions of source code must retain the above copyright
-- *    notice, this list of conditions and the following disclaimer.
-- * 2. Redistributions in binary form must reproduce the above copyright
-- *    notice, this list of conditions and the following disclaimer in
-- *    the documentation and/or other materials provided with the
-- *    distribution.
-- *
-- * THIS SOFTWARE IS PROVIDED BY BROADCOM ``AS IS'' AND ANY EXPRESS OR
-- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-- * ARE DISCLAIMED. IN NO EVENT SHALL BROADCOM OR CONTRIBUTORS BE LIABLE
-- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
-- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- */
--#include <linux/dma-mapping.h>
--#include <linux/scatterlist.h>
--#include <linux/bootmem.h>
--#include <linux/export.h>
--#include <linux/swiotlb.h>
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/mm.h>
--
--#include <asm/bootinfo.h>
--
--static char *nlm_swiotlb;
--
--static void *nlm_dma_alloc_coherent(struct device *dev, size_t size,
--	dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
--{
--#ifdef CONFIG_ZONE_DMA32
--	if (dev->coherent_dma_mask <= DMA_BIT_MASK(32))
+-	if (IS_ENABLED(CONFIG_ZONE_DMA) && dev == NULL)
+-		gfp |= __GFP_DMA;
+-	else if (IS_ENABLED(CONFIG_ZONE_DMA) &&
+-		 dev->coherent_dma_mask <= DMA_BIT_MASK(24))
+-		gfp |= __GFP_DMA;
+-	else if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
+-		 dev->coherent_dma_mask <= DMA_BIT_MASK(32))
 -		gfp |= __GFP_DMA32;
--#endif
 -
 -	/* Don't invoke OOM killer */
 -	gfp |= __GFP_NORETRY;
 -
--	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
--}
--
--static void nlm_dma_free_coherent(struct device *dev, size_t size,
+-	ret = swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
++	void *ret = swiotlb_alloc(dev, size, dma_handle, gfp, attrs);
+ 
+ 	mb();
+ 
+ 	return ret;
+ }
+ 
+-static void octeon_dma_free_coherent(struct device *dev, size_t size,
 -	void *vaddr, dma_addr_t dma_handle, unsigned long attrs)
 -{
 -	swiotlb_free_coherent(dev, size, vaddr, dma_handle);
 -}
 -
--const struct dma_map_ops nlm_swiotlb_dma_ops = {
--	.alloc = nlm_dma_alloc_coherent,
--	.free = nlm_dma_free_coherent,
--	.map_page = swiotlb_map_page,
--	.unmap_page = swiotlb_unmap_page,
--	.map_sg = swiotlb_map_sg_attrs,
--	.unmap_sg = swiotlb_unmap_sg_attrs,
--	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
--	.sync_single_for_device = swiotlb_sync_single_for_device,
--	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
--	.sync_sg_for_device = swiotlb_sync_sg_for_device,
--	.mapping_error = swiotlb_dma_mapping_error,
--	.dma_supported = swiotlb_dma_supported
--};
+ static dma_addr_t octeon_unity_phys_to_dma(struct device *dev, phys_addr_t paddr)
+ {
+ 	return paddr;
+@@ -225,7 +205,7 @@ EXPORT_SYMBOL(dma_to_phys);
+ static struct octeon_dma_map_ops octeon_linear_dma_map_ops = {
+ 	.dma_map_ops = {
+ 		.alloc = octeon_dma_alloc_coherent,
+-		.free = octeon_dma_free_coherent,
++		.free = swiotlb_free,
+ 		.map_page = octeon_dma_map_page,
+ 		.unmap_page = swiotlb_unmap_page,
+ 		.map_sg = octeon_dma_map_sg,
+@@ -311,7 +291,7 @@ void __init plat_swiotlb_setup(void)
+ static struct octeon_dma_map_ops _octeon_pci_dma_map_ops = {
+ 	.dma_map_ops = {
+ 		.alloc = octeon_dma_alloc_coherent,
+-		.free = octeon_dma_free_coherent,
++		.free = swiotlb_free,
+ 		.map_page = octeon_dma_map_page,
+ 		.unmap_page = swiotlb_unmap_page,
+ 		.map_sg = octeon_dma_map_sg,
+diff --git a/arch/mips/loongson64/Kconfig b/arch/mips/loongson64/Kconfig
+index 0d249fc3cfe9..6f109bb54cdb 100644
+--- a/arch/mips/loongson64/Kconfig
++++ b/arch/mips/loongson64/Kconfig
+@@ -136,6 +136,7 @@ config SWIOTLB
+ 	bool "Soft IOMMU Support for All-Memory DMA"
+ 	default y
+ 	depends on CPU_LOONGSON3
++	select DMA_DIRECT_OPS
+ 	select IOMMU_HELPER
+ 	select NEED_SG_DMA_LENGTH
+ 	select NEED_DMA_MAP_STATE
+diff --git a/arch/mips/loongson64/common/dma-swiotlb.c b/arch/mips/loongson64/common/dma-swiotlb.c
+index 15388c24a504..7bbcf89475f3 100644
+--- a/arch/mips/loongson64/common/dma-swiotlb.c
++++ b/arch/mips/loongson64/common/dma-swiotlb.c
+@@ -13,29 +13,12 @@
+ static void *loongson_dma_alloc_coherent(struct device *dev, size_t size,
+ 		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+ {
+-	void *ret;
++	void *ret = swiotlb_alloc(dev, size, dma_handle, gfp, attrs);
+ 
+-	if ((IS_ENABLED(CONFIG_ISA) && dev == NULL) ||
+-	    (IS_ENABLED(CONFIG_ZONE_DMA) &&
+-	     dev->coherent_dma_mask < DMA_BIT_MASK(32)))
+-		gfp |= __GFP_DMA;
+-	else if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
+-		 dev->coherent_dma_mask < DMA_BIT_MASK(40))
+-		gfp |= __GFP_DMA32;
 -
--void __init plat_swiotlb_setup(void)
+-	gfp |= __GFP_NORETRY;
+-
+-	ret = swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
+ 	mb();
+ 	return ret;
+ }
+ 
+-static void loongson_dma_free_coherent(struct device *dev, size_t size,
+-		void *vaddr, dma_addr_t dma_handle, unsigned long attrs)
 -{
--	size_t swiotlbsize;
--	unsigned long swiotlb_nslabs;
--
--	swiotlbsize = 1 << 20; /* 1 MB for now */
--	swiotlb_nslabs = swiotlbsize >> IO_TLB_SHIFT;
--	swiotlb_nslabs = ALIGN(swiotlb_nslabs, IO_TLB_SEGSIZE);
--	swiotlbsize = swiotlb_nslabs << IO_TLB_SHIFT;
--
--	nlm_swiotlb = alloc_bootmem_low_pages(swiotlbsize);
--	swiotlb_init_with_tbl(nlm_swiotlb, swiotlb_nslabs, 1);
+-	swiotlb_free_coherent(dev, size, vaddr, dma_handle);
 -}
+-
+ static dma_addr_t loongson_dma_map_page(struct device *dev, struct page *page,
+ 				unsigned long offset, size_t size,
+ 				enum dma_data_direction dir,
+@@ -106,7 +89,7 @@ phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+ 
+ static const struct dma_map_ops loongson_dma_map_ops = {
+ 	.alloc = loongson_dma_alloc_coherent,
+-	.free = loongson_dma_free_coherent,
++	.free = swiotlb_free,
+ 	.map_page = loongson_dma_map_page,
+ 	.unmap_page = swiotlb_unmap_page,
+ 	.map_sg = loongson_dma_map_sg,
 -- 
 2.14.2
