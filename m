@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhK10vZ6zF0TF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhK35PnSzF0TF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:55 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 03/33] m32r: remove unused flush_write_buffers definition
-Date: Wed, 10 Jan 2018 08:59:57 +0100
-Message-Id: <20180110080027.13879-4-hch@lst.de>
+Subject: [PATCH 04/33] powerpc: remove unused flush_write_buffers definition
+Date: Wed, 10 Jan 2018 08:59:58 +0100
+Message-Id: <20180110080027.13879-5-hch@lst.de>
 In-Reply-To: <20180110080027.13879-1-hch@lst.de>
 References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,21 +33,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/m32r/include/asm/io.h | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/m32r/include/asm/io.h b/arch/m32r/include/asm/io.h
-index 1b653bb16f9a..a4272d8f0d9c 100644
---- a/arch/m32r/include/asm/io.h
-+++ b/arch/m32r/include/asm/io.h
-@@ -191,8 +191,6 @@ static inline void _writel(unsigned long l, unsigned long addr)
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 5a6cbe11db6f..592c7f418aa0 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -107,9 +107,6 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ 		dev->archdata.dma_offset = off;
+ }
  
- #define mmiowb()
- 
--#define flush_write_buffers() do { } while (0)  /* M32R_FIXME */
+-/* this will be removed soon */
+-#define flush_write_buffers()
 -
- static inline void
- memset_io(volatile void __iomem *addr, unsigned char val, int count)
- {
+ #define HAVE_ARCH_DMA_SET_MASK 1
+ extern int dma_set_mask(struct device *dev, u64 dma_mask);
+ 
 -- 
 2.14.2
