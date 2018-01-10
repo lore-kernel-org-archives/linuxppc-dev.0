@@ -2,7 +2,7 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhJx12nvzF0TF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhJw71TqzF0fT
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:48 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
@@ -17,11 +17,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 01/33] alpha: mark jensen as broken
-Date: Wed, 10 Jan 2018 08:59:55 +0100
-Message-Id: <20180110080027.13879-2-hch@lst.de>
-In-Reply-To: <20180110080027.13879-1-hch@lst.de>
-References: <20180110080027.13879-1-hch@lst.de>
+Subject: consolidate direct dma mapping V3
+Date: Wed, 10 Jan 2018 08:59:54 +0100
+Message-Id: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_ALPHA_JENSEN has failed to compile since commit 6aca0503
-("alpha/dma: use common noop dma ops"), so mark it as broken.
+Almost every architecture supports a direct dma mapping implementation,
+where no iommu is used and the device dma address is a 1:1 mapping to
+the physical address or has a simple linear offset.  Currently the
+code for this implementation is most duplicated over the architectures,
+and the duplicated again in the swiotlb code, and then duplicated again
+for special cases like the x86 memory encryption DMA ops.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/alpha/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+This series takes the existing very simple dma-noop dma mapping
+implementation, enhances it with all the x86 features and quirks, and
+creates a common set of architecture hooks for it and the swiotlb code.
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index b31b974a03cb..e96adcbcab41 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -209,6 +209,7 @@ config ALPHA_EIGER
- 
- config ALPHA_JENSEN
- 	bool "Jensen"
-+	depends on BROKEN
- 	help
- 	  DEC PC 150 AXP (aka Jensen): This is a very old Digital system - one
- 	  of the first-generation Alpha systems. A number of these systems
--- 
-2.14.2
+It then switches a number of architectures to this generic
+direct map implemention.
+
+Note that for now this only handles architectures that do cache coherent
+DMA, but a similar consolidation for non-coherent architectures is in the
+work for later merge windows.
+
+A git tree is also available:
+
+   git://git.infradead.org/users/hch/misc.git dma-direct.3
+
+Gitweb:
+
+   http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/dma-direct.3
+
+Changes since V1:
+ - fixed a few patch description typos
+ - fixed a few printk formats
+ - fixed an off by one in dma_coherent_ok
+ - add a few Reviewed-by/Acked-by tags.
+ - moved the swiotlb consolidation to a new series
+ - dropped a few patches for now to not overwhelem the x86
+   maintainers.  They will be resubmitted in the next merge window
