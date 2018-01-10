@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhK836gCzF0fT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:01:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhJx5FSHzF0ft
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:49 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/33] arc: remove CONFIG_ARC_PLAT_NEEDS_PHYS_TO_DMA
-Date: Wed, 10 Jan 2018 08:59:59 +0100
-Message-Id: <20180110080027.13879-6-hch@lst.de>
+Subject: [PATCH 02/33] hexagon: remove unused flush_write_buffers definition
+Date: Wed, 10 Jan 2018 08:59:56 +0100
+Message-Id: <20180110080027.13879-3-hch@lst.de>
 In-Reply-To: <20180110080027.13879-1-hch@lst.de>
 References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,112 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We always use the stub definitions, so remove the unused other code.
-
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Vineet Gupta <vgupta@synopsys.com>
 ---
- arch/arc/Kconfig                   |  3 ---
- arch/arc/include/asm/dma-mapping.h |  7 -------
- arch/arc/mm/dma.c                  | 14 +++++++-------
- 3 files changed, 7 insertions(+), 17 deletions(-)
+ arch/hexagon/include/asm/io.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-index 9d5fd00d9e91..f3a80cf164cc 100644
---- a/arch/arc/Kconfig
-+++ b/arch/arc/Kconfig
-@@ -463,9 +463,6 @@ config ARCH_PHYS_ADDR_T_64BIT
- config ARCH_DMA_ADDR_T_64BIT
- 	bool
+diff --git a/arch/hexagon/include/asm/io.h b/arch/hexagon/include/asm/io.h
+index 66f5e9a61efc..9e8621d94ee9 100644
+--- a/arch/hexagon/include/asm/io.h
++++ b/arch/hexagon/include/asm/io.h
+@@ -330,8 +330,6 @@ static inline void outsl(unsigned long port, const void *buffer, int count)
+ 	}
+ }
  
--config ARC_PLAT_NEEDS_PHYS_TO_DMA
--	bool
+-#define flush_write_buffers() do { } while (0)
 -
- config ARC_KVADDR_SIZE
- 	int "Kernel Virtual Address Space size (MB)"
- 	range 0 512
-diff --git a/arch/arc/include/asm/dma-mapping.h b/arch/arc/include/asm/dma-mapping.h
-index 94285031c4fb..7a16824bfe98 100644
---- a/arch/arc/include/asm/dma-mapping.h
-+++ b/arch/arc/include/asm/dma-mapping.h
-@@ -11,13 +11,6 @@
- #ifndef ASM_ARC_DMA_MAPPING_H
- #define ASM_ARC_DMA_MAPPING_H
+ #endif /* __KERNEL__ */
  
--#ifndef CONFIG_ARC_PLAT_NEEDS_PHYS_TO_DMA
--#define plat_dma_to_phys(dev, dma_handle) ((phys_addr_t)(dma_handle))
--#define plat_phys_to_dma(dev, paddr) ((dma_addr_t)(paddr))
--#else
--#include <plat/dma.h>
--#endif
--
- extern const struct dma_map_ops arc_dma_ops;
- 
- static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-diff --git a/arch/arc/mm/dma.c b/arch/arc/mm/dma.c
-index e9d93604ad0f..1dcc404b5aec 100644
---- a/arch/arc/mm/dma.c
-+++ b/arch/arc/mm/dma.c
-@@ -60,7 +60,7 @@ static void *arc_dma_alloc(struct device *dev, size_t size,
- 	/* This is linear addr (0x8000_0000 based) */
- 	paddr = page_to_phys(page);
- 
--	*dma_handle = plat_phys_to_dma(dev, paddr);
-+	*dma_handle = paddr;
- 
- 	/* This is kernel Virtual address (0x7000_0000 based) */
- 	if (need_kvaddr) {
-@@ -92,7 +92,7 @@ static void *arc_dma_alloc(struct device *dev, size_t size,
- static void arc_dma_free(struct device *dev, size_t size, void *vaddr,
- 		dma_addr_t dma_handle, unsigned long attrs)
- {
--	phys_addr_t paddr = plat_dma_to_phys(dev, dma_handle);
-+	phys_addr_t paddr = dma_handle;
- 	struct page *page = virt_to_page(paddr);
- 	int is_non_coh = 1;
- 
-@@ -111,7 +111,7 @@ static int arc_dma_mmap(struct device *dev, struct vm_area_struct *vma,
- {
- 	unsigned long user_count = vma_pages(vma);
- 	unsigned long count = PAGE_ALIGN(size) >> PAGE_SHIFT;
--	unsigned long pfn = __phys_to_pfn(plat_dma_to_phys(dev, dma_addr));
-+	unsigned long pfn = __phys_to_pfn(dma_addr);
- 	unsigned long off = vma->vm_pgoff;
- 	int ret = -ENXIO;
- 
-@@ -175,7 +175,7 @@ static dma_addr_t arc_dma_map_page(struct device *dev, struct page *page,
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		_dma_cache_sync(paddr, size, dir);
- 
--	return plat_phys_to_dma(dev, paddr);
-+	return paddr;
- }
- 
- /*
-@@ -190,7 +190,7 @@ static void arc_dma_unmap_page(struct device *dev, dma_addr_t handle,
- 			       size_t size, enum dma_data_direction dir,
- 			       unsigned long attrs)
- {
--	phys_addr_t paddr = plat_dma_to_phys(dev, handle);
-+	phys_addr_t paddr = handle;
- 
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		_dma_cache_sync(paddr, size, dir);
-@@ -224,13 +224,13 @@ static void arc_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
- static void arc_dma_sync_single_for_cpu(struct device *dev,
- 		dma_addr_t dma_handle, size_t size, enum dma_data_direction dir)
- {
--	_dma_cache_sync(plat_dma_to_phys(dev, dma_handle), size, DMA_FROM_DEVICE);
-+	_dma_cache_sync(dma_handle, size, DMA_FROM_DEVICE);
- }
- 
- static void arc_dma_sync_single_for_device(struct device *dev,
- 		dma_addr_t dma_handle, size_t size, enum dma_data_direction dir)
- {
--	_dma_cache_sync(plat_dma_to_phys(dev, dma_handle), size, DMA_TO_DEVICE);
-+	_dma_cache_sync(dma_handle, size, DMA_TO_DEVICE);
- }
- 
- static void arc_dma_sync_sg_for_cpu(struct device *dev,
+ #endif
 -- 
 2.14.2
