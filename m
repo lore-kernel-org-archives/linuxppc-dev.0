@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhK93vc4zF0ft
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:01:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhKD2Pm9zF0fT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:01:04 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,9 +17,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 06/33] m32r: remove the unused dma_capable helper
-Date: Wed, 10 Jan 2018 09:00:00 +0100
-Message-Id: <20180110080027.13879-7-hch@lst.de>
+Subject: [PATCH 07/33] riscv: remove the unused dma_capable helper
+Date: Wed, 10 Jan 2018 09:00:01 +0100
+Message-Id: <20180110080027.13879-8-hch@lst.de>
 In-Reply-To: <20180110080027.13879-1-hch@lst.de>
 References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,14 +33,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/m32r/include/asm/dma-mapping.h | 7 -------
- 1 file changed, 7 deletions(-)
+ arch/riscv/include/asm/dma-mapping.h | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/arch/m32r/include/asm/dma-mapping.h b/arch/m32r/include/asm/dma-mapping.h
-index 336ffe60814b..8967fb659691 100644
---- a/arch/m32r/include/asm/dma-mapping.h
-+++ b/arch/m32r/include/asm/dma-mapping.h
-@@ -14,11 +14,4 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+diff --git a/arch/riscv/include/asm/dma-mapping.h b/arch/riscv/include/asm/dma-mapping.h
+index 3eec1000196d..73849e2cc761 100644
+--- a/arch/riscv/include/asm/dma-mapping.h
++++ b/arch/riscv/include/asm/dma-mapping.h
+@@ -27,12 +27,4 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
  	return &dma_noop_ops;
  }
  
@@ -48,9 +48,10 @@ index 336ffe60814b..8967fb659691 100644
 -{
 -	if (!dev->dma_mask)
 -		return false;
+-
 -	return addr + size - 1 <= *dev->dma_mask;
 -}
 -
- #endif /* _ASM_M32R_DMA_MAPPING_H */
+ #endif	/* __ASM_RISCV_DMA_MAPPING_H */
 -- 
 2.14.2
