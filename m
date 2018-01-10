@@ -1,30 +1,31 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zGncS533SzF0g8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:59:36 +1100 (AEDT)
-Subject: Re: [PATCH 20/33] dma-mapping: clear harmful GFP_* flags in common
- code
-To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- Konrad Rzeszutek Wilk <konrad@darnok.org>,
- linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- patches@groups.riscv.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20180110080027.13879-1-hch@lst.de>
- <20180110080027.13879-21-hch@lst.de>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <27b90341-f9d0-356f-0194-1c7203a3f93e@arm.com>
-Date: Wed, 10 Jan 2018 11:59:30 +0000
+Return-Path: <rjw@rjwysocki.net>
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
+ [79.96.170.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGnfg2Tr9zF0hV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 23:01:29 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: ego@linux.vnet.ibm.com
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Abhishek <huntbag@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
+ non-continguous pstates
+Date: Wed, 10 Jan 2018 13:00:10 +0100
+Message-ID: <8482639.QyQtvhC9hx@aspire.rjw.lan>
+In-Reply-To: <20180110085545.GA13666@in.ibm.com>
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
+ <20180110085545.GA13666@in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180110080027.13879-21-hch@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,32 +35,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/01/18 08:00, Christoph Hellwig wrote:
-[...]
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index 9f28b2fa329e..88bcb1a8211d 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -518,6 +518,13 @@ static inline void *dma_alloc_attrs(struct device *dev, size_t size,
->   	if (dma_alloc_from_dev_coherent(dev, size, dma_handle, &cpu_addr))
->   		return cpu_addr;
->   
-> +	/*
-> +	 * Let the implementation decide on the zone to allocate from, and
-> +	 * decide on the way of zeroing the memory given that the memory
-> +	 * returned should always be zeroed.
-> +	 */
-
-Just a note that if we're all happy to enshrine the "allocations are 
-always zeroed" behaviour in the API (I am too, for the record), we 
-should remember to follow up once the dust settles to update the docs 
-and I guess just #define dma_zalloc_coherent dma_alloc_coherent.
-
-Robin.
-
-> +	flag &= ~(__GFP_DMA | __GFP_DMA32 | __GFP_HIGHMEM | __GFP_ZERO);
-> +
->   	if (!arch_dma_alloc_attrs(&dev, &flag))
->   		return NULL;
->   	if (!ops->alloc)
+On Wednesday, January 10, 2018 9:55:45 AM CET Gautham R Shenoy wrote:
+> Hi Rafael,
 > 
+> On Wed, Jan 03, 2018 at 11:47:58PM +1100, Balbir Singh wrote:
+> > On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
+> > >> Hi Balbir,
+> > >>
+> > >> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
+> > >> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
+> > >> > <ego@linux.vnet.ibm.com> wrote:
+> > >> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > >> > >
+> > >> > > The code in powernv-cpufreq, makes the following two assumptions which
+> > >> > > are not guaranteed by the device-tree bindings:
+> > >> > >
+> > >> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
+> > >> > >        obtain the reverse map from a pstate to it's corresponding
+> > >> > >        entry into the cpufreq frequency table.
+> > >> > >
+> > >> > >     2) Every Pstate should always lie between the max and the min
+> > >> > >        pstates that are explicitly reported in the device tree: This
+> > >> > >        is used to determine whether a pstate reported by the PMSR is
+> > >> > >        out of bounds.
+> > >> > >
+> > >> > > Both these assumptions are unwarranted and can change on future
+> > >> > > platforms.
+> > >> >
+> > >> > While this is a good thing, I wonder if it is worth the complexity. Pstates
+> > >> > are contiguous because they define transitions in incremental value
+> > >> > of change in frequency and I can't see how this can be broken in the
+> > >> > future?
+> > >>
+> > >> In the future, we can have the OPAL firmware give us a smaller set of
+> > >> pstates instead of expose every one of them. As it stands today, for
+> > >> most of the workloads, we will need at best 20-30 pstates and not
+> > >> beyond that.
+> > >
+> > > I'm not sure about the status here.
+> > >
+> > > Is this good to go as is or is it going to be updated?
+> > >
+> > 
+> > I have no major objections, except some of the added complexity, but
+> > Gautham makes a point that this is refactoring for the future
+> 
+> I have tested this across POWER8 and POWER9. The additional complexity
+> introduced by the second patch is required for the future when we are
+> going to reduce the number of pstates.
+
+I have applied the series, thanks!
