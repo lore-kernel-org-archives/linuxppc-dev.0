@@ -1,30 +1,27 @@
-Return-Path: <vladimir.murzin@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zGkLb4ssmzDqHs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 20:32:23 +1100 (AEDT)
-Subject: Re: [PATCH 29/33] dma-direct: retry allocations using GFP_DMA for
- small masks
-To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- Konrad Rzeszutek Wilk <konrad@darnok.org>,
- linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- patches@groups.riscv.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20180110080027.13879-1-hch@lst.de>
- <20180110080027.13879-30-hch@lst.de>
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Message-ID: <93966313-cc79-8173-48e6-157caa443322@arm.com>
-Date: Wed, 10 Jan 2018 09:32:16 +0000
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGkbZ5mHvzF0dv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 20:43:38 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id d21so6968678pll.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 01:43:38 -0800 (PST)
+Date: Wed, 10 Jan 2018 15:13:30 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net,
+ huntbag@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v3 PATCH 0/3] powernv-cpufreq: Multiple pstate related fixes.
+Message-ID: <20180110094330.GC3626@vireshk-i7>
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180110080027.13879-30-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,69 +31,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/01/18 08:00, Christoph Hellwig wrote:
-> If an attempt to allocate memory succeeded, but isn't inside the
-> supported DMA mask, retry the allocation with GFP_DMA set as a
-> last resort.
+On 13-12-17, 12:27, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> Based on the x86 code, but an off by one error in what is now
-> dma_coherent_ok has been fixed vs the x86 code.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  lib/dma-direct.c | 25 ++++++++++++++++++++++++-
->  1 file changed, 24 insertions(+), 1 deletion(-)
-> 
-> diff --git a/lib/dma-direct.c b/lib/dma-direct.c
-> index 8f76032ebc3c..4e43c2bb7f5f 100644
-> --- a/lib/dma-direct.c
-> +++ b/lib/dma-direct.c
-> @@ -35,6 +35,11 @@ check_addr(struct device *dev, dma_addr_t dma_addr, size_t size,
->  	return true;
->  }
->  
-> +static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
-> +{
-> +	return phys_to_dma(dev, phys) + size - 1 <= dev->coherent_dma_mask;
-> +}
-> +
->  static void *dma_direct_alloc(struct device *dev, size_t size,
->  		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
->  {
-> @@ -48,11 +53,29 @@ static void *dma_direct_alloc(struct device *dev, size_t size,
->  	if (dev->coherent_dma_mask <= DMA_BIT_MASK(32) && !(gfp & GFP_DMA))
->  		gfp |= GFP_DMA32;
->  
-> +again:
->  	/* CMA can be used only in the context which permits sleeping */
-> -	if (gfpflags_allow_blocking(gfp))
-> +	if (gfpflags_allow_blocking(gfp)) {
->  		page = dma_alloc_from_contiguous(dev, count, page_order, gfp);
-> +		if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
-> +			dma_release_from_contiguous(dev, page, count);
-> +			page = NULL;
-> +		}
-> +	}
->  	if (!page)
->  		page = alloc_pages_node(dev_to_node(dev), gfp, page_order);
-> +
-> +	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
-> +		__free_pages(page, page_order);
-> +		page = NULL;
-> +
-> +		if (dev->coherent_dma_mask < DMA_BIT_MASK(32) &&
-> +		    !(gfp & GFP_DMA)) {
-> +			gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
-> +			goto again;
-> +		}
-> +	}
-> +
->  	if (!page)
->  		return NULL;
->  
-> 
+>  This is a third version of the patch to fix pstate related issues in
+>  the powernv-cpufreq driver.
 
-Reviewed-by: Vladimir Murzin <vladimir.murzin@arm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Cheers
-Vladimir
+-- 
+viresh
