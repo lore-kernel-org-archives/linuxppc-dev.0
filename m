@@ -1,21 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-io0-f196.google.com (mail-io0-f196.google.com
+ [209.85.223.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zH3ly2HldzF0hF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 09:37:02 +1100 (AEDT)
-Date: Thu, 11 Jan 2018 09:36:58 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH RESEND 1/1] KVM: PPC: Book3S: Add MMIO emulation for VMX
- instructions
-Message-ID: <20180110223658.GB24294@fergus.ozlabs.ibm.com>
-References: <20180108182931.355-1-joserz@linux.vnet.ibm.com>
- <20180108182931.355-2-joserz@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zH4123mh7zDqpX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 09:48:21 +1100 (AEDT)
+Received: by mail-io0-f196.google.com with SMTP id f6so1179345ioh.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 14:48:21 -0800 (PST)
+Received: from mail-io0-f181.google.com (mail-io0-f181.google.com.
+ [209.85.223.181])
+ by smtp.gmail.com with ESMTPSA id g143sm10309159iog.34.2018.01.10.14.48.19
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 10 Jan 2018 14:48:19 -0800 (PST)
+Received: by mail-io0-f181.google.com with SMTP id n14so1190875iob.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 14:48:19 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180108182931.355-2-joserz@linux.vnet.ibm.com>
+In-Reply-To: <DB6PR0401MB2536946B309CD2F95E230CC3F8130@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <1515244954-8374-1-git-send-email-festevam@gmail.com>
+ <DB6PR0401MB2536946B309CD2F95E230CC3F8130@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Wed, 10 Jan 2018 16:48:18 -0600
+Message-ID: <CADRPPNRu6mAYorsZ5BZ9r1=pxgHDF-SJrboV_RfLaP6fgHOk2A@mail.gmail.com>
+Subject: Re: [PATCH] soc/fsl/guts: Add a NULL check for devm_kasprintf()
+To: "Y.b. Lu" <yangbo.lu@nxp.com>
+Cc: Fabio Estevam <festevam@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,157 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 08, 2018 at 04:29:31PM -0200, Jose Ricardo Ziviani wrote:
-> This patch provides the MMIO load/store vector indexed
-> X-Form emulation.
-> 
-> Instructions implemented: lvx, stvx
-> 
-> Signed-off-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+On Sun, Jan 7, 2018 at 9:06 PM, Y.b. Lu <yangbo.lu@nxp.com> wrote:
+>> -----Original Message-----
+>> From: Fabio Estevam [mailto:festevam@gmail.com]
+>> Sent: 2018=E5=B9=B41=E6=9C=886=E6=97=A5 21:23
+>> To: Leo Li <leoyang.li@nxp.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org; Y.b. Lu <yangbo.lu@nxp.com>; Fabio
+>> Estevam <fabio.estevam@nxp.com>
+>> Subject: [PATCH] soc/fsl/guts: Add a NULL check for devm_kasprintf()
+>>
+>> From: Fabio Estevam <fabio.estevam@nxp.com>
+>>
+>> devm_kasprintf() may fail, so we should better add a NULL check and
+>> propagate an error on failure.
+>>
+>> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+>
+> [Y.b. Lu] It makes sense.
+> Acked-by: Yangbo Lu <yangbo.lu@nxp.com>
 
-What testing has been done of this patch?  In particular, what
-combinations of endianness of host and guest have been tested?  For a
-cross-endian situation (endianness of guest different from host) you
-would need to load the two halves of the VMX register image in
-reversed order (note that lvx/stvx are different from lxvd2x/stxvd2x
-and lxvw4x/stxvw4x in this respect), and I don't see that being done.
+Merged.  Thanks.
 
-Also, lvx/stvx mask off the bottom 4 bits of the EA, and I don't see
-that being done.
-
-[snip]
-
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 1915e86cef6f..7d0f60359ee0 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -832,23 +832,7 @@ void kvm_arch_irq_bypass_del_producer(struct irq_bypass_consumer *cons,
->  		kvm->arch.kvm_ops->irq_bypass_del_producer(cons, prod);
->  }
->  
-> -#ifdef CONFIG_VSX
-> -static inline int kvmppc_get_vsr_dword_offset(int index)
-> -{
-> -	int offset;
-> -
-> -	if ((index != 0) && (index != 1))
-> -		return -1;
-> -
-> -#ifdef __BIG_ENDIAN
-> -	offset =  index;
-> -#else
-> -	offset = 1 - index;
-> -#endif
-> -
-> -	return offset;
-> -}
-> -
-
-Why does this function need to be moved down in the file?
-
-> +#ifdef CONFIG_ALTIVEC
->  static inline int kvmppc_get_vsr_word_offset(int index)
->  {
->  	int offset;
-> @@ -864,6 +848,40 @@ static inline int kvmppc_get_vsr_word_offset(int index)
->  	return offset;
->  }
->  
-> +static inline void kvmppc_set_vmx_dword(struct kvm_vcpu *vcpu,
-> +		u64 gpr)
-> +{
-> +	int index = vcpu->arch.io_gpr & KVM_MMIO_REG_MASK;
-> +	u64 hi = gpr >> 32;
-> +	u64 lo = gpr & 0xffffffff;
-> +
-> +	if (vcpu->arch.mmio_vmx_copy_nums == 1) {
-> +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(2)] = hi;
-> +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(3)] = lo;
-> +	} else if (vcpu->arch.mmio_vmx_copy_nums == 2) {
-> +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(0)] = hi;
-> +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(1)] = lo;
-> +	}
-
-This splitting of the value into hi/lo words looks to me like you're
-assuming a big-endian byte ordering.  It looks like it will end up
-swapping the words in each half of the register on a little-endian
-host (regardless of the endianness of the guest).
-
-> +}
-> +#endif /* CONFIG_ALTIVEC */
-> +
-> +#ifdef CONFIG_VSX
-> +static inline int kvmppc_get_vsr_dword_offset(int index)
-> +{
-> +	int offset;
-> +
-> +	if ((index != 0) && (index != 1))
-> +		return -1;
-> +
-> +#ifdef __BIG_ENDIAN
-> +	offset =  index;
-> +#else
-> +	offset = 1 - index;
-> +#endif
-> +
-> +	return offset;
-> +}
-> +
->  static inline void kvmppc_set_vsr_dword(struct kvm_vcpu *vcpu,
->  	u64 gpr)
->  {
-> @@ -1027,6 +1045,11 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
->  				KVMPPC_VSX_COPY_DWORD_LOAD_DUMP)
->  			kvmppc_set_vsr_dword_dump(vcpu, gpr);
->  		break;
-> +#endif
-> +#ifdef CONFIG_ALTIVEC
-> +	case KVM_MMIO_REG_VMX:
-> +		kvmppc_set_vmx_dword(vcpu, gpr);
-> +		break;
->  #endif
->  	default:
->  		BUG();
-> @@ -1307,6 +1330,99 @@ static int kvmppc_emulate_mmio_vsx_loadstore(struct kvm_vcpu *vcpu,
->  }
->  #endif /* CONFIG_VSX */
->  
-> +#ifdef CONFIG_ALTIVEC
-> +/* handle quadword load access in two halves */
-> +int kvmppc_handle_load128_by2x64(struct kvm_run *run, struct kvm_vcpu *vcpu,
-> +		unsigned int rt, int is_default_endian)
-> +{
-> +	enum emulation_result emulated = EMULATE_DONE;
-> +
-> +	while (vcpu->arch.mmio_vmx_copy_nums) {
-> +		emulated = __kvmppc_handle_load(run, vcpu, rt, 8,
-> +				is_default_endian, 0);
-> +		if (emulated != EMULATE_DONE)
-> +			break;
-> +
-> +		vcpu->arch.mmio_vmx_copy_nums--;
-> +	}
-> +	return emulated;
-> +}
-> +
-> +static inline int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
-> +{
-> +
-> +	if (vcpu->arch.mmio_vmx_copy_nums == 1) {
-> +		*val = VCPU_VSX_VR(vcpu, rs).u[kvmppc_get_vsr_word_offset(2)];
-> +		*val = (*val << 32) | VCPU_VSX_VR(vcpu, rs).
-> +			u[kvmppc_get_vsr_word_offset(3)];
-> +		return 0;
-> +	} else if (vcpu->arch.mmio_vmx_copy_nums == 2) {
-> +		*val = VCPU_VSX_VR(vcpu, rs).u[kvmppc_get_vsr_word_offset(0)];
-> +		*val = (*val << 32) | VCPU_VSX_VR(vcpu, rs).
-> +			u[kvmppc_get_vsr_word_offset(1)];
-> +		return 0;
-> +	}
-> +	return -1;
-> +}
-
-Once again, the way this puts two word values together to get a
-doubleword looks wrong for a little-endian host.
-
-Paul.
+>
+>> ---
+>>  drivers/soc/fsl/guts.c | 6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c index
+>> d89a6a8..82251b4 100644
+>> --- a/drivers/soc/fsl/guts.c
+>> +++ b/drivers/soc/fsl/guts.c
+>> @@ -167,10 +167,16 @@ static int fsl_guts_probe(struct platform_device
+>> *pdev)
+>>       } else {
+>>               soc_dev_attr.family =3D devm_kasprintf(dev, GFP_KERNEL, "Q=
+orIQ");
+>>       }
+>> +     if (!soc_dev_attr.family)
+>> +             return -ENOMEM;
+>>       soc_dev_attr.soc_id =3D devm_kasprintf(dev, GFP_KERNEL,
+>>                                            "svr:0x%08x", svr);
+>> +     if (!soc_dev_attr.soc_id)
+>> +             return -ENOMEM;
+>>       soc_dev_attr.revision =3D devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
+>>                                              (svr >>  4) & 0xf, svr & 0x=
+f);
+>> +     if (!soc_dev_attr.revision)
+>> +             return -ENOMEM;
+>>
+>>       soc_dev =3D soc_device_register(&soc_dev_attr);
+>>       if (IS_ERR(soc_dev))
+>> --
+>> 2.7.4
+>
