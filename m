@@ -2,9 +2,9 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGtH03krDzDqHT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:29:48 +1100 (AEDT)
-Date: Wed, 10 Jan 2018 16:29:45 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGtHc6Nk3zF0hx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:30:20 +1100 (AEDT)
+Date: Wed, 10 Jan 2018 16:30:17 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Robin Murphy <robin.murphy@arm.com>
 Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
@@ -20,15 +20,15 @@ Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
  Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
  linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
  linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 20/33] dma-mapping: clear harmful GFP_* flags in common
- code
-Message-ID: <20180110152945.GC17790@lst.de>
+Subject: Re: [PATCH 27/33] dma-direct: use node local allocations for
+ coherent memory
+Message-ID: <20180110153017.GD17790@lst.de>
 References: <20180110080027.13879-1-hch@lst.de>
- <20180110080027.13879-21-hch@lst.de>
- <27b90341-f9d0-356f-0194-1c7203a3f93e@arm.com>
+ <20180110080027.13879-28-hch@lst.de>
+ <3672aa56-b85c-5d2c-0c0e-709031b0c0a0@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <27b90341-f9d0-356f-0194-1c7203a3f93e@arm.com>
+In-Reply-To: <3672aa56-b85c-5d2c-0c0e-709031b0c0a0@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,10 +38,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 10, 2018 at 11:59:30AM +0000, Robin Murphy wrote:
-> Just a note that if we're all happy to enshrine the "allocations are always 
-> zeroed" behaviour in the API (I am too, for the record), we should remember 
-> to follow up once the dust settles to update the docs and I guess just 
-> #define dma_zalloc_coherent dma_alloc_coherent.
+On Wed, Jan 10, 2018 at 12:06:22PM +0000, Robin Murphy wrote:
+> On 10/01/18 08:00, Christoph Hellwig wrote:
+>> To preserve the x86 behavior.
+>
+> And combined with patch 10/22 of the SWIOTLB refactoring, this means 
+> SWIOTLB allocations will also end up NUMA-aware, right? Great, that's what 
+> we want on arm64 too :)
 
-And then just remove it.  But yes, another item for the todo list..
+Well, only for swiotlb allocations that can be satisfied by
+dma_direct_alloc.  If we actually have to fall back to the swiotlb
+buffers there is not node affinity yet.
