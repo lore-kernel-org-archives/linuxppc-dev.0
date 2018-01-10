@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhXD3JKPzDqmT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:10:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhXF0ZWbzDqnt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:10:37 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, Michal Simek <monstr@monstr.eu>,
@@ -12,9 +12,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, Michal Simek <monstr@monstr.eu>,
  linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 17/22] tile: replace ZONE_DMA with ZONE_DMA32
-Date: Wed, 10 Jan 2018 09:09:27 +0100
-Message-Id: <20180110080932.14157-18-hch@lst.de>
+Subject: [PATCH 18/22] tile: use generic swiotlb_ops
+Date: Wed, 10 Jan 2018 09:09:28 +0100
+Message-Id: <20180110080932.14157-19-hch@lst.de>
 In-Reply-To: <20180110080932.14157-1-hch@lst.de>
 References: <20180110080932.14157-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,79 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tile uses ZONE_DMA for allocations below 32-bits.  These days we
-name the zone for that ZONE_DMA32, which will allow to use the
-dma-direct and generic swiotlb code as-is, so rename it.
+These are identical to the tile ops, and would also support CMA
+if enabled on tile.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/tile/Kconfig          | 2 +-
- arch/tile/kernel/pci-dma.c | 4 ++--
- arch/tile/kernel/setup.c   | 8 ++++----
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ arch/tile/Kconfig          |  1 +
+ arch/tile/kernel/pci-dma.c | 36 +++---------------------------------
+ 2 files changed, 4 insertions(+), 33 deletions(-)
 
 diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
-index 02f269cfa538..30c586686f29 100644
+index 30c586686f29..ef9d403cbbe4 100644
 --- a/arch/tile/Kconfig
 +++ b/arch/tile/Kconfig
-@@ -249,7 +249,7 @@ config HIGHMEM
- 
- 	  If unsure, say "true".
- 
--config ZONE_DMA
-+config ZONE_DMA32
- 	def_bool y
- 
- config IOMMU_HELPER
+@@ -261,6 +261,7 @@ config NEED_SG_DMA_LENGTH
+ config SWIOTLB
+ 	bool
+ 	default TILEGX
++	select DMA_DIRECT_OPS
+ 	select IOMMU_HELPER
+ 	select NEED_SG_DMA_LENGTH
+ 	select ARCH_HAS_DMA_SET_COHERENT_MASK
 diff --git a/arch/tile/kernel/pci-dma.c b/arch/tile/kernel/pci-dma.c
-index f2abedc8a080..a267fa740048 100644
+index a267fa740048..6a1efe5543fa 100644
 --- a/arch/tile/kernel/pci-dma.c
 +++ b/arch/tile/kernel/pci-dma.c
-@@ -54,7 +54,7 @@ static void *tile_dma_alloc_coherent(struct device *dev, size_t size,
- 	 * which case we will return NULL.  But such devices are uncommon.
- 	 */
- 	if (dma_mask <= DMA_BIT_MASK(32)) {
--		gfp |= GFP_DMA;
-+		gfp |= GFP_DMA32;
- 		node = 0;
- 	}
+@@ -509,39 +509,9 @@ EXPORT_SYMBOL(gx_pci_dma_map_ops);
+ /* PCI DMA mapping functions for legacy PCI devices */
  
-@@ -513,7 +513,7 @@ static void *tile_swiotlb_alloc_coherent(struct device *dev, size_t size,
- 					 dma_addr_t *dma_handle, gfp_t gfp,
- 					 unsigned long attrs)
- {
--	gfp |= GFP_DMA;
-+	gfp |= GFP_DMA32;
- 	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
- }
+ #ifdef CONFIG_SWIOTLB
+-static void *tile_swiotlb_alloc_coherent(struct device *dev, size_t size,
+-					 dma_addr_t *dma_handle, gfp_t gfp,
+-					 unsigned long attrs)
+-{
+-	gfp |= GFP_DMA32;
+-	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
+-}
+-
+-static void tile_swiotlb_free_coherent(struct device *dev, size_t size,
+-				       void *vaddr, dma_addr_t dma_addr,
+-				       unsigned long attrs)
+-{
+-	swiotlb_free_coherent(dev, size, vaddr, dma_addr);
+-}
+-
+-static const struct dma_map_ops pci_swiotlb_dma_ops = {
+-	.alloc = tile_swiotlb_alloc_coherent,
+-	.free = tile_swiotlb_free_coherent,
+-	.map_page = swiotlb_map_page,
+-	.unmap_page = swiotlb_unmap_page,
+-	.map_sg = swiotlb_map_sg_attrs,
+-	.unmap_sg = swiotlb_unmap_sg_attrs,
+-	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
+-	.sync_single_for_device = swiotlb_sync_single_for_device,
+-	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
+-	.sync_sg_for_device = swiotlb_sync_sg_for_device,
+-	.dma_supported = swiotlb_dma_supported,
+-	.mapping_error = swiotlb_dma_mapping_error,
+-};
+-
+ static const struct dma_map_ops pci_hybrid_dma_ops = {
+-	.alloc = tile_swiotlb_alloc_coherent,
+-	.free = tile_swiotlb_free_coherent,
++	.alloc = swiotlb_alloc,
++	.free = swiotlb_free,
+ 	.map_page = tile_pci_dma_map_page,
+ 	.unmap_page = tile_pci_dma_unmap_page,
+ 	.map_sg = tile_pci_dma_map_sg,
+@@ -552,7 +522,7 @@ static const struct dma_map_ops pci_hybrid_dma_ops = {
+ 	.sync_sg_for_device = tile_pci_dma_sync_sg_for_device,
+ };
  
-diff --git a/arch/tile/kernel/setup.c b/arch/tile/kernel/setup.c
-index ad83c1e66dbd..eb4e198f6f93 100644
---- a/arch/tile/kernel/setup.c
-+++ b/arch/tile/kernel/setup.c
-@@ -814,11 +814,11 @@ static void __init zone_sizes_init(void)
- #endif
- 
- 		if (start < dma_end) {
--			zones_size[ZONE_DMA] = min(zones_size[ZONE_NORMAL],
-+			zones_size[ZONE_DMA32] = min(zones_size[ZONE_NORMAL],
- 						   dma_end - start);
--			zones_size[ZONE_NORMAL] -= zones_size[ZONE_DMA];
-+			zones_size[ZONE_NORMAL] -= zones_size[ZONE_DMA32];
- 		} else {
--			zones_size[ZONE_DMA] = 0;
-+			zones_size[ZONE_DMA32] = 0;
- 		}
- 
- 		/* Take zone metadata from controller 0 if we're isolnode. */
-@@ -830,7 +830,7 @@ static void __init zone_sizes_init(void)
- 		       PFN_UP(node_percpu[i]));
- 
- 		/* Track the type of memory on each node */
--		if (zones_size[ZONE_NORMAL] || zones_size[ZONE_DMA])
-+		if (zones_size[ZONE_NORMAL] || zones_size[ZONE_DMA32])
- 			node_set_state(i, N_NORMAL_MEMORY);
- #ifdef CONFIG_HIGHMEM
- 		if (end != start)
+-const struct dma_map_ops *gx_legacy_pci_dma_map_ops = &pci_swiotlb_dma_ops;
++const struct dma_map_ops *gx_legacy_pci_dma_map_ops = &swiotlb_dma_ops;
+ const struct dma_map_ops *gx_hybrid_pci_dma_map_ops = &pci_hybrid_dma_ops;
+ #else
+ const struct dma_map_ops *gx_legacy_pci_dma_map_ops;
 -- 
 2.14.2
