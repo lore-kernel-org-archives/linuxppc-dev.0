@@ -2,8 +2,8 @@ Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhJw71TqzF0fT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhK10vZ6zF0TF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:00:53 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,9 +17,11 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: consolidate direct dma mapping V3
-Date: Wed, 10 Jan 2018 08:59:54 +0100
-Message-Id: <20180110080027.13879-1-hch@lst.de>
+Subject: [PATCH 03/33] m32r: remove unused flush_write_buffers definition
+Date: Wed, 10 Jan 2018 08:59:57 +0100
+Message-Id: <20180110080027.13879-4-hch@lst.de>
+In-Reply-To: <20180110080027.13879-1-hch@lst.de>
+References: <20180110080027.13879-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Almost every architecture supports a direct dma mapping implementation,
-where no iommu is used and the device dma address is a 1:1 mapping to
-the physical address or has a simple linear offset.  Currently the
-code for this implementation is most duplicated over the architectures,
-and the duplicated again in the swiotlb code, and then duplicated again
-for special cases like the x86 memory encryption DMA ops.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/m32r/include/asm/io.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-This series takes the existing very simple dma-noop dma mapping
-implementation, enhances it with all the x86 features and quirks, and
-creates a common set of architecture hooks for it and the swiotlb code.
-
-It then switches a number of architectures to this generic
-direct map implemention.
-
-Note that for now this only handles architectures that do cache coherent
-DMA, but a similar consolidation for non-coherent architectures is in the
-work for later merge windows.
-
-A git tree is also available:
-
-   git://git.infradead.org/users/hch/misc.git dma-direct.3
-
-Gitweb:
-
-   http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/dma-direct.3
-
-Changes since V1:
- - fixed a few patch description typos
- - fixed a few printk formats
- - fixed an off by one in dma_coherent_ok
- - add a few Reviewed-by/Acked-by tags.
- - moved the swiotlb consolidation to a new series
- - dropped a few patches for now to not overwhelem the x86
-   maintainers.  They will be resubmitted in the next merge window
+diff --git a/arch/m32r/include/asm/io.h b/arch/m32r/include/asm/io.h
+index 1b653bb16f9a..a4272d8f0d9c 100644
+--- a/arch/m32r/include/asm/io.h
++++ b/arch/m32r/include/asm/io.h
+@@ -191,8 +191,6 @@ static inline void _writel(unsigned long l, unsigned long addr)
+ 
+ #define mmiowb()
+ 
+-#define flush_write_buffers() do { } while (0)  /* M32R_FIXME */
+-
+ static inline void
+ memset_io(volatile void __iomem *addr, unsigned char val, int count)
+ {
+-- 
+2.14.2
