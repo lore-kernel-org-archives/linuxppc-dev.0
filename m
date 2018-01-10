@@ -1,22 +1,50 @@
-Return-Path: <BATV+ddff6d03254b98e050e8+5253+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhXZ4TfxzDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:10:54 +1100 (AEDT)
-From: Christoph Hellwig <hch@lst.de>
-To: iommu@lists.linux-foundation.org
-Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, Michal Simek <monstr@monstr.eu>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>,
- =?UTF-8?q?Christian=20K=C3=B6nig?= <ckoenig.leichtzumerken@gmail.com>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 22/22] arm64: use swiotlb_alloc and swiotlb_free
-Date: Wed, 10 Jan 2018 09:09:32 +0100
-Message-Id: <20180110080932.14157-23-hch@lst.de>
-In-Reply-To: <20180110080932.14157-1-hch@lst.de>
-References: <20180110080932.14157-1-hch@lst.de>
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zGjXY1d8szF0gQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:55:56 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0A8tMU9056920
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 03:55:54 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fddf9we3g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 03:55:54 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 10 Jan 2018 01:55:53 -0700
+Date: Wed, 10 Jan 2018 14:25:45 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Abhishek <huntbag@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linux-pm@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
+ non-continguous pstates
+Reply-To: ego@linux.vnet.ibm.com
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKTCnz=jrvbizrzUx1tDxMg__4coJHoxSXOS+K+zXQVAM=WF-g@mail.gmail.com>
+ <20171218083820.GA28881@in.ibm.com>
+ <3110289.BbUpyYVBQa@aspire.rjw.lan>
+ <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
+Message-Id: <20180110085545.GA13666@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,105 +54,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic swiotlb_alloc and swiotlb_free routines already take care
-of CMA allocations and adding GFP_DMA32 where needed, so use them
-instead of the arm specific helpers.
+Hi Rafael,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/arm64/Kconfig          |  1 +
- arch/arm64/mm/dma-mapping.c | 46 +++------------------------------------------
- 2 files changed, 4 insertions(+), 43 deletions(-)
+On Wed, Jan 03, 2018 at 11:47:58PM +1100, Balbir Singh wrote:
+> On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
+> >> Hi Balbir,
+> >>
+> >> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
+> >> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
+> >> > <ego@linux.vnet.ibm.com> wrote:
+> >> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >> > >
+> >> > > The code in powernv-cpufreq, makes the following two assumptions which
+> >> > > are not guaranteed by the device-tree bindings:
+> >> > >
+> >> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
+> >> > >        obtain the reverse map from a pstate to it's corresponding
+> >> > >        entry into the cpufreq frequency table.
+> >> > >
+> >> > >     2) Every Pstate should always lie between the max and the min
+> >> > >        pstates that are explicitly reported in the device tree: This
+> >> > >        is used to determine whether a pstate reported by the PMSR is
+> >> > >        out of bounds.
+> >> > >
+> >> > > Both these assumptions are unwarranted and can change on future
+> >> > > platforms.
+> >> >
+> >> > While this is a good thing, I wonder if it is worth the complexity. Pstates
+> >> > are contiguous because they define transitions in incremental value
+> >> > of change in frequency and I can't see how this can be broken in the
+> >> > future?
+> >>
+> >> In the future, we can have the OPAL firmware give us a smaller set of
+> >> pstates instead of expose every one of them. As it stands today, for
+> >> most of the workloads, we will need at best 20-30 pstates and not
+> >> beyond that.
+> >
+> > I'm not sure about the status here.
+> >
+> > Is this good to go as is or is it going to be updated?
+> >
+> 
+> I have no major objections, except some of the added complexity, but
+> Gautham makes a point that this is refactoring for the future
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 6b6985f15d02..53205c02b18a 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -59,6 +59,7 @@ config ARM64
- 	select COMMON_CLK
- 	select CPU_PM if (SUSPEND || CPU_IDLE)
- 	select DCACHE_WORD_ACCESS
-+	select DMA_DIRECT_OPS
- 	select EDAC_SUPPORT
- 	select FRAME_POINTER
- 	select GENERIC_ALLOCATOR
-diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
-index 0d641875b20e..a96ec0181818 100644
---- a/arch/arm64/mm/dma-mapping.c
-+++ b/arch/arm64/mm/dma-mapping.c
-@@ -91,46 +91,6 @@ static int __free_from_pool(void *start, size_t size)
- 	return 1;
- }
- 
--static void *__dma_alloc_coherent(struct device *dev, size_t size,
--				  dma_addr_t *dma_handle, gfp_t flags,
--				  unsigned long attrs)
--{
--	if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
--	    dev->coherent_dma_mask <= DMA_BIT_MASK(32))
--		flags |= GFP_DMA32;
--	if (dev_get_cma_area(dev) && gfpflags_allow_blocking(flags)) {
--		struct page *page;
--		void *addr;
--
--		page = dma_alloc_from_contiguous(dev, size >> PAGE_SHIFT,
--						 get_order(size), flags);
--		if (!page)
--			return NULL;
--
--		*dma_handle = phys_to_dma(dev, page_to_phys(page));
--		addr = page_address(page);
--		memset(addr, 0, size);
--		return addr;
--	} else {
--		return swiotlb_alloc_coherent(dev, size, dma_handle, flags);
--	}
--}
--
--static void __dma_free_coherent(struct device *dev, size_t size,
--				void *vaddr, dma_addr_t dma_handle,
--				unsigned long attrs)
--{
--	bool freed;
--	phys_addr_t paddr = dma_to_phys(dev, dma_handle);
--
--
--	freed = dma_release_from_contiguous(dev,
--					phys_to_page(paddr),
--					size >> PAGE_SHIFT);
--	if (!freed)
--		swiotlb_free_coherent(dev, size, vaddr, dma_handle);
--}
--
- static void *__dma_alloc(struct device *dev, size_t size,
- 			 dma_addr_t *dma_handle, gfp_t flags,
- 			 unsigned long attrs)
-@@ -152,7 +112,7 @@ static void *__dma_alloc(struct device *dev, size_t size,
- 		return addr;
- 	}
- 
--	ptr = __dma_alloc_coherent(dev, size, dma_handle, flags, attrs);
-+	ptr = swiotlb_alloc(dev, size, dma_handle, flags, attrs);
- 	if (!ptr)
- 		goto no_mem;
- 
-@@ -173,7 +133,7 @@ static void *__dma_alloc(struct device *dev, size_t size,
- 	return coherent_ptr;
- 
- no_map:
--	__dma_free_coherent(dev, size, ptr, *dma_handle, attrs);
-+	swiotlb_free(dev, size, ptr, *dma_handle, attrs);
- no_mem:
- 	return NULL;
- }
-@@ -191,7 +151,7 @@ static void __dma_free(struct device *dev, size_t size,
- 			return;
- 		vunmap(vaddr);
- 	}
--	__dma_free_coherent(dev, size, swiotlb_addr, dma_handle, attrs);
-+	swiotlb_free(dev, size, swiotlb_addr, dma_handle, attrs);
- }
- 
- static dma_addr_t __swiotlb_map_page(struct device *dev, struct page *page,
--- 
-2.14.2
+I have tested this across POWER8 and POWER9. The additional complexity
+introduced by the second patch is required for the future when we are
+going to reduce the number of pstates.
+
+
+> 
+> Balbir Singh.
+> 
+--
+Thanks and Regards
+gautham.
