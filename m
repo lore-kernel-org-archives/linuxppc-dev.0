@@ -1,26 +1,23 @@
-Return-Path: <ckoenig.leichtzumerken@gmail.com>
-Received: from mail-wm0-x232.google.com (mail-wm0-x232.google.com
- [IPv6:2a00:1450:400c:c09::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGhpn1c1XzF0gR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 19:23:12 +1100 (AEDT)
-Received: by mail-wm0-x232.google.com with SMTP id 141so8455506wme.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 00:23:12 -0800 (PST)
-Reply-To: christian.koenig@amd.com
-Subject: Re: consolidate swiotlb dma_map implementations
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zGpwF0hd9zF0jc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 23:58:20 +1100 (AEDT)
+Subject: Re: [PATCH 21/22] arm64: replace ZONE_DMA with ZONE_DMA32
 To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
-Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, Michal Simek
- <monstr@monstr.eu>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ Michal Simek <monstr@monstr.eu>, linux-ia64@vger.kernel.org,
+ =?UTF-8?Q?Christian_K=c3=b6nig?= <ckoenig.leichtzumerken@gmail.com>,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ Konrad Rzeszutek Wilk <konrad@darnok.org>, Guan Xuetao
+ <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 References: <20180110080932.14157-1-hch@lst.de>
-From: =?UTF-8?Q?Christian_K=c3=b6nig?= <ckoenig.leichtzumerken@gmail.com>
-Message-ID: <5ef96935-f781-96e1-37cc-528d399f0150@gmail.com>
-Date: Wed, 10 Jan 2018 09:23:08 +0100
+ <20180110080932.14157-22-hch@lst.de>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <0371cef8-d980-96da-9cb5-3609c39be18a@arm.com>
+Date: Wed, 10 Jan 2018 12:58:14 +0000
 MIME-Version: 1.0
-In-Reply-To: <20180110080932.14157-1-hch@lst.de>
+In-Reply-To: <20180110080932.14157-22-hch@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,32 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Christian König <christian.koenig@amd.com> for the whole series.
+On 10/01/18 08:09, Christoph Hellwig wrote:
+> arm64 uses ZONE_DMA for allocations below 32-bits.  These days we
+> name the zone for that ZONE_DMA32, which will allow to use the
+> dma-direct and generic swiotlb code as-is, so rename it.
 
-Regards,
-Christian.
+I do wonder if we could also "upgrade" GFP_DMA to GFP_DMA32 somehow when 
+!ZONE_DMA - there are almost certainly arm64 drivers out there using a 
+combination of GFP_DMA and streaming mappings which will no longer get 
+the guaranteed 32-bit addresses they expect after this. I'm not sure 
+quite how feasible that is, though :/
 
-Am 10.01.2018 um 09:09 schrieb Christoph Hellwig:
-> A lot of architectures have essentially identical dma_map_ops
-> implementations to use swiotlb.  This series adds new generic
-> swiotlb_alloc/free helpers that take the attrs argument exposed
-> in dma_map_ops, and which do an enhanced direct allocation
-> modelled after x86 and reused from the dma-direct code, and
-> then switches most architectures over to it.  The only exceptions
-> are mips, which requires additional cache flushing which will
-> need a new abstraction, and x86 itself which will be handled in
-> a later series with other x86 dma mapping changes.
->
-> To support the generic code a few architectures that currently
-> use ZONE_DMA/GFP_DMA for <= 32-bit allocations are switched to
-> implement ZONE_DMA32 instead.
->
-> This series is based on the previously sent series to consolidate
-> the direct dma mapping implementation.  A git tree with this
-> series as well as the prerequisites is available here:
->
->     git://git.infradead.org/users/hch/misc.git swiotlb
->
-> Gitweb:
->
->     http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/swiotlb
+That said, I do agree that this is an appropriate change (the legacy of 
+GFP_DMA is obviously horrible), so, provided we get plenty of time to 
+find and fix the fallout when it lands:
+
+Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+
+Robin.
+
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   arch/arm64/Kconfig          |  2 +-
+>   arch/arm64/mm/dma-mapping.c |  6 +++---
+>   arch/arm64/mm/init.c        | 16 ++++++++--------
+>   3 files changed, 12 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index c9a7e9e1414f..6b6985f15d02 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -227,7 +227,7 @@ config GENERIC_CSUM
+>   config GENERIC_CALIBRATE_DELAY
+>   	def_bool y
+>   
+> -config ZONE_DMA
+> +config ZONE_DMA32
+>   	def_bool y
+>   
+>   config HAVE_GENERIC_GUP
+> diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
+> index 6840426bbe77..0d641875b20e 100644
+> --- a/arch/arm64/mm/dma-mapping.c
+> +++ b/arch/arm64/mm/dma-mapping.c
+> @@ -95,9 +95,9 @@ static void *__dma_alloc_coherent(struct device *dev, size_t size,
+>   				  dma_addr_t *dma_handle, gfp_t flags,
+>   				  unsigned long attrs)
+>   {
+> -	if (IS_ENABLED(CONFIG_ZONE_DMA) &&
+> +	if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
+>   	    dev->coherent_dma_mask <= DMA_BIT_MASK(32))
+> -		flags |= GFP_DMA;
+> +		flags |= GFP_DMA32;
+>   	if (dev_get_cma_area(dev) && gfpflags_allow_blocking(flags)) {
+>   		struct page *page;
+>   		void *addr;
+> @@ -397,7 +397,7 @@ static int __init atomic_pool_init(void)
+>   		page = dma_alloc_from_contiguous(NULL, nr_pages,
+>   						 pool_size_order, GFP_KERNEL);
+>   	else
+> -		page = alloc_pages(GFP_DMA, pool_size_order);
+> +		page = alloc_pages(GFP_DMA32, pool_size_order);
+>   
+>   	if (page) {
+>   		int ret;
+> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+> index 00e7b900ca41..8f03276443c9 100644
+> --- a/arch/arm64/mm/init.c
+> +++ b/arch/arm64/mm/init.c
+> @@ -217,7 +217,7 @@ static void __init reserve_elfcorehdr(void)
+>   }
+>   #endif /* CONFIG_CRASH_DUMP */
+>   /*
+> - * Return the maximum physical address for ZONE_DMA (DMA_BIT_MASK(32)). It
+> + * Return the maximum physical address for ZONE_DMA32 (DMA_BIT_MASK(32)). It
+>    * currently assumes that for memory starting above 4G, 32-bit devices will
+>    * use a DMA offset.
+>    */
+> @@ -233,8 +233,8 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+>   {
+>   	unsigned long max_zone_pfns[MAX_NR_ZONES]  = {0};
+>   
+> -	if (IS_ENABLED(CONFIG_ZONE_DMA))
+> -		max_zone_pfns[ZONE_DMA] = PFN_DOWN(max_zone_dma_phys());
+> +	if (IS_ENABLED(CONFIG_ZONE_DMA32))
+> +		max_zone_pfns[ZONE_DMA32] = PFN_DOWN(max_zone_dma_phys());
+>   	max_zone_pfns[ZONE_NORMAL] = max;
+>   
+>   	free_area_init_nodes(max_zone_pfns);
+> @@ -251,9 +251,9 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+>   	memset(zone_size, 0, sizeof(zone_size));
+>   
+>   	/* 4GB maximum for 32-bit only capable devices */
+> -#ifdef CONFIG_ZONE_DMA
+> +#ifdef CONFIG_ZONE_DMA32
+>   	max_dma = PFN_DOWN(arm64_dma_phys_limit);
+> -	zone_size[ZONE_DMA] = max_dma - min;
+> +	zone_size[ZONE_DMA32] = max_dma - min;
+>   #endif
+>   	zone_size[ZONE_NORMAL] = max - max_dma;
+>   
+> @@ -266,10 +266,10 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
+>   		if (start >= max)
+>   			continue;
+>   
+> -#ifdef CONFIG_ZONE_DMA
+> +#ifdef CONFIG_ZONE_DMA32
+>   		if (start < max_dma) {
+>   			unsigned long dma_end = min(end, max_dma);
+> -			zhole_size[ZONE_DMA] -= dma_end - start;
+> +			zhole_size[ZONE_DMA32] -= dma_end - start;
+>   		}
+>   #endif
+>   		if (end > max_dma) {
+> @@ -467,7 +467,7 @@ void __init arm64_memblock_init(void)
+>   	early_init_fdt_scan_reserved_mem();
+>   
+>   	/* 4GB maximum for 32-bit only capable devices */
+> -	if (IS_ENABLED(CONFIG_ZONE_DMA))
+> +	if (IS_ENABLED(CONFIG_ZONE_DMA32))
+>   		arm64_dma_phys_limit = max_zone_dma_phys();
+>   	else
+>   		arm64_dma_phys_limit = PHYS_MASK + 1;
+> 
