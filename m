@@ -1,31 +1,30 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
- [79.96.170.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zGnfg2Tr9zF0hV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 23:01:29 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: ego@linux.vnet.ibm.com
-Cc: Balbir Singh <bsingharora@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Abhishek <huntbag@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
- non-continguous pstates
-Date: Wed, 10 Jan 2018 13:00:10 +0100
-Message-ID: <8482639.QyQtvhC9hx@aspire.rjw.lan>
-In-Reply-To: <20180110085545.GA13666@in.ibm.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
- <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
- <20180110085545.GA13666@in.ibm.com>
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zGnmQ6Y3nzDqJw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 23:06:29 +1100 (AEDT)
+Subject: Re: [PATCH 27/33] dma-direct: use node local allocations for coherent
+ memory
+To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, x86@kernel.org,
+ Konrad Rzeszutek Wilk <konrad@darnok.org>,
+ linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ patches@groups.riscv.org, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180110080027.13879-1-hch@lst.de>
+ <20180110080027.13879-28-hch@lst.de>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <3672aa56-b85c-5d2c-0c0e-709031b0c0a0@arm.com>
+Date: Wed, 10 Jan 2018 12:06:22 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20180110080027.13879-28-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,54 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, January 10, 2018 9:55:45 AM CET Gautham R Shenoy wrote:
-> Hi Rafael,
-> 
-> On Wed, Jan 03, 2018 at 11:47:58PM +1100, Balbir Singh wrote:
-> > On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
-> > >> Hi Balbir,
-> > >>
-> > >> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
-> > >> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
-> > >> > <ego@linux.vnet.ibm.com> wrote:
-> > >> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > >> > >
-> > >> > > The code in powernv-cpufreq, makes the following two assumptions which
-> > >> > > are not guaranteed by the device-tree bindings:
-> > >> > >
-> > >> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
-> > >> > >        obtain the reverse map from a pstate to it's corresponding
-> > >> > >        entry into the cpufreq frequency table.
-> > >> > >
-> > >> > >     2) Every Pstate should always lie between the max and the min
-> > >> > >        pstates that are explicitly reported in the device tree: This
-> > >> > >        is used to determine whether a pstate reported by the PMSR is
-> > >> > >        out of bounds.
-> > >> > >
-> > >> > > Both these assumptions are unwarranted and can change on future
-> > >> > > platforms.
-> > >> >
-> > >> > While this is a good thing, I wonder if it is worth the complexity. Pstates
-> > >> > are contiguous because they define transitions in incremental value
-> > >> > of change in frequency and I can't see how this can be broken in the
-> > >> > future?
-> > >>
-> > >> In the future, we can have the OPAL firmware give us a smaller set of
-> > >> pstates instead of expose every one of them. As it stands today, for
-> > >> most of the workloads, we will need at best 20-30 pstates and not
-> > >> beyond that.
-> > >
-> > > I'm not sure about the status here.
-> > >
-> > > Is this good to go as is or is it going to be updated?
-> > >
-> > 
-> > I have no major objections, except some of the added complexity, but
-> > Gautham makes a point that this is refactoring for the future
-> 
-> I have tested this across POWER8 and POWER9. The additional complexity
-> introduced by the second patch is required for the future when we are
-> going to reduce the number of pstates.
+On 10/01/18 08:00, Christoph Hellwig wrote:
+> To preserve the x86 behavior.
 
-I have applied the series, thanks!
+And combined with patch 10/22 of the SWIOTLB refactoring, this means 
+SWIOTLB allocations will also end up NUMA-aware, right? Great, that's 
+what we want on arm64 too :)
+
+Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   lib/dma-direct.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/lib/dma-direct.c b/lib/dma-direct.c
+> index a9ae98be7af3..f04a424f91fa 100644
+> --- a/lib/dma-direct.c
+> +++ b/lib/dma-direct.c
+> @@ -38,7 +38,7 @@ static void *dma_direct_alloc(struct device *dev, size_t size,
+>   	if (gfpflags_allow_blocking(gfp))
+>   		page = dma_alloc_from_contiguous(dev, count, page_order, gfp);
+>   	if (!page)
+> -		page = alloc_pages(gfp, page_order);
+> +		page = alloc_pages_node(dev_to_node(dev), gfp, page_order);
+>   	if (!page)
+>   		return NULL;
+>   
+> 
