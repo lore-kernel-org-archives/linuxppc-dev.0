@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ84NQ3zF0XQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:16 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id e11so870486pff.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:16 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ9561MzF0XR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:17 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id y89so869419pfk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:17 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org,
@@ -15,9 +15,10 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  kernel@pengutronix.de
-Subject: [PATCH v2 10/16] ASoC: fsl_ssi: Use snd_soc_init_dma_data instead
-Date: Wed, 10 Jan 2018 22:43:09 -0800
-Message-Id: <1515652995-15996-11-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v2 11/16] ASoC: fsl_ssi: Move one-time configurations to
+ probe()
+Date: Wed, 10 Jan 2018 22:43:10 -0800
+Message-Id: <1515652995-15996-12-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,31 +30,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since there is a helper function, use it to help readability.
+The probe() could handle some one-time configurations since
+they will not be changed once being configured.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 39 ++++++++++++++++++++++++++-------------
+ 1 file changed, 26 insertions(+), 13 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index e75b57d..2c179a7 100644
+index 2c179a7..36e370e 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -1105,10 +1105,9 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
+@@ -860,7 +860,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
  {
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+ 	struct regmap *regs = ssi->regs;
+ 	u32 strcr = 0, stcr, srcr, scr, mask;
+-	u8 wm;
  
--	if (ssi->soc->imx && ssi->use_dma) {
--		dai->playback_dma_data = &ssi->dma_params_tx;
--		dai->capture_dma_data = &ssi->dma_params_rx;
--	}
-+	if (ssi->soc->imx && ssi->use_dma)
-+		snd_soc_dai_init_dma_data(dai, &ssi->dma_params_tx,
-+					  &ssi->dma_params_rx);
+ 	ssi->dai_fmt = fmt;
  
- 	return 0;
- }
+@@ -869,8 +868,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		return -EINVAL;
+ 	}
+ 
+-	fsl_ssi_setup_regvals(ssi);
+-
+ 	regmap_read(regs, REG_SSI_SCR, &scr);
+ 	scr &= ~(SSI_SCR_SYN | SSI_SCR_I2S_MODE_MASK);
+ 	/* Synchronize frame sync clock for TE to avoid data slipping */
+@@ -985,16 +982,6 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	regmap_write(regs, REG_SSI_SRCR, srcr);
+ 	regmap_write(regs, REG_SSI_SCR, scr);
+ 
+-	wm = ssi->fifo_watermark;
+-
+-	regmap_write(regs, REG_SSI_SFCSR,
+-		     SSI_SFCSR_TFWM0(wm) | SSI_SFCSR_RFWM0(wm) |
+-		     SSI_SFCSR_TFWM1(wm) | SSI_SFCSR_RFWM1(wm));
+-
+-	if (ssi->use_dual_fifo)
+-		regmap_update_bits(regs, REG_SSI_SCR,
+-				   SSI_SCR_TCH_EN, SSI_SCR_TCH_EN);
+-
+ 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_AC97)
+ 		fsl_ssi_setup_ac97(ssi);
+ 
+@@ -1244,6 +1231,29 @@ static struct snd_ac97_bus_ops fsl_ssi_ac97_ops = {
+ };
+ 
+ /**
++ * Initialize SSI registers
++ */
++static int fsl_ssi_hw_init(struct fsl_ssi *ssi)
++{
++	u32 wm = ssi->fifo_watermark;
++
++	/* Initialize regvals */
++	fsl_ssi_setup_regvals(ssi);
++
++	/* Set watermarks */
++	regmap_write(ssi->regs, REG_SSI_SFCSR,
++		     SSI_SFCSR_TFWM0(wm) | SSI_SFCSR_RFWM0(wm) |
++		     SSI_SFCSR_TFWM1(wm) | SSI_SFCSR_RFWM1(wm));
++
++	/* Enable Dual FIFO mode */
++	if (ssi->use_dual_fifo)
++		regmap_update_bits(ssi->regs, REG_SSI_SCR,
++				   SSI_SCR_TCH_EN, SSI_SCR_TCH_EN);
++
++	return 0;
++}
++
++/**
+  * Make every character in a string lower-case
+  */
+ static void make_lowercase(char *s)
+@@ -1528,6 +1538,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	if (ssi->dai_fmt)
+ 		_fsl_ssi_set_dai_fmt(dev, ssi, ssi->dai_fmt);
+ 
++	/* Initially configures SSI registers */
++	fsl_ssi_hw_init(ssi);
++
+ 	if (fsl_ssi_is_ac97(ssi)) {
+ 		u32 ssi_idx;
+ 
 -- 
 2.7.4
