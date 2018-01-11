@@ -1,22 +1,34 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMCT6L3tzF0T7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:13:25 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id z20so1859388pgv.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:13:25 -0800 (PST)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH 26/26] KVM: PPC: Book3S PR: enable HTM for PR KVM for
- KVM_CHECK_EXTENSION ioctl
-Date: Thu, 11 Jan 2018 18:11:39 +0800
-Message-Id: <1515665499-31710-27-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHS9Z5TrnzF0bk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 00:57:06 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0BDsGY3029155
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 08:57:03 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fe94y0cmj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 08:57:03 -0500
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Thu, 11 Jan 2018 08:57:02 -0500
+Subject: Re: [PATCH 00/26] KVM: PPC: Book3S PR: Transaction memory support on
+ PR KVM
+To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Date: Thu, 11 Jan 2018 11:56:59 -0200
+MIME-Version: 1.0
+In-Reply-To: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <5A576D2B.6060900@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +38,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+Hi Simon,
 
-With current patch set, PR KVM now supports HTM. So this patch turns it
-on for PR KVM.
+On 01/11/2018 08:11 AM, wei.guo.simon@gmail.com wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
+> 
+> In current days, many OS distributions have utilized transaction
+> memory functionality. In PowerPC, HV KVM supports TM. But PR KVM
+> does not.
+> 
+> The drive for the transaction memory support of PR KVM is the
+> openstack Continuous Integration testing - They runs a HV(hypervisor)
+> KVM(as level 1) and then run PR KVM(as level 2) on top of that.
+> 
+> This patch set add transaction memory support on PR KVM.
 
-Tested with:
-https://github.com/justdoitqd/publicFiles/blob/master/test_kvm_htm_cap.c
+Is this correct to assume that this emulation mode will just kick in on P9
+with kernel TM workarounds and HV KVM will continue to be used on POWER8
+since HV KVM is supported on POWER8 hosts?
 
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- arch/powerpc/kvm/powerpc.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 1915e86..0b431aa 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -643,8 +643,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		break;
- #endif
- 	case KVM_CAP_PPC_HTM:
--		r = hv_enabled &&
--		    (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_HTM_COMP);
-+		r = (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_HTM_COMP);
- 		break;
- 	default:
- 		r = 0;
--- 
-1.8.3.1
+Regards,
+Gustavo
+
+> Test cases performed:
+> linux/tools/testing/selftests/powerpc/tm/tm-syscall
+> linux/tools/testing/selftests/powerpc/tm/tm-fork
+> linux/tools/testing/selftests/powerpc/tm/tm-vmx-unavail
+> linux/tools/testing/selftests/powerpc/tm/tm-tmspr
+> linux/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv
+> linux/tools/testing/selftests/powerpc/math/vsx_preempt
+> linux/tools/testing/selftests/powerpc/math/fpu_signal
+> linux/tools/testing/selftests/powerpc/math/vmx_preempt
+> linux/tools/testing/selftests/powerpc/math/fpu_syscall
+> linux/tools/testing/selftests/powerpc/math/vmx_syscall
+> linux/tools/testing/selftests/powerpc/math/fpu_preempt
+> linux/tools/testing/selftests/powerpc/math/vmx_signal
+> linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr
+> linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr
+> linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx
+> linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr
+> linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx
+> https://github.com/justdoitqd/publicFiles/blob/master/test_tbegin_pr.c
+> https://github.com/justdoitqd/publicFiles/blob/master/test_tabort.c
+> https://github.com/justdoitqd/publicFiles/blob/master/test_kvm_htm_cap.c
+> 
+> Simon Guo (25):
+>   KVM: PPC: Book3S PR: Move kvmppc_save_tm/kvmppc_restore_tm to separate
+>     file
+>   KVM: PPC: Book3S PR: add new parameter (guest MSR) for
+>     kvmppc_save_tm()/kvmppc_restore_tm()
+>   KVM: PPC: Book3S PR: turn on FP/VSX/VMX MSR bits in kvmppc_save_tm()
+>   KVM: PPC: Book3S PR: add C function wrapper for
+>     _kvmppc_save/restore_tm()
+>   KVM: PPC: Book3S PR: In PR KVM suspends Transactional state when
+>     inject an interrupt.
+>   KVM: PPC: Book3S PR: PR KVM pass through MSR TM/TS bits to shadow_msr.
+>   KVM: PPC: Book3S PR: add TEXASR related macros
+>   KVM: PPC: Book3S PR: Sync TM bits to shadow msr for problem state
+>     guest
+>   KVM: PPC: Book3S PR: implement RFID TM behavior to suppress change
+>     from S0 to N0
+>   KVM: PPC: Book3S PR: set MSR HV bit accordingly for PPC970 and others.
+>   KVM: PPC: Book3S PR: prevent TS bits change in kvmppc_interrupt_pr()
+>   powerpc: export symbol msr_check_and_set().
+>   KVM: PPC: Book3S PR: adds new
+>     kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm API for PR KVM.
+>   KVM: PPC: Book3S PR: export tm_enable()/tm_disable/tm_abort() APIs
+>   KVM: PPC: Book3S PR: add kvmppc_save/restore_tm_sprs() APIs
+>   KVM: PPC: Book3S PR: add transaction memory save/restore skeleton for
+>     PR KVM
+>   KVM: PPC: Book3S PR: add math support for PR KVM HTM
+>   KVM: PPC: Book3S PR: make mtspr/mfspr emulation behavior based on
+>     active TM SPRs
+>   KVM: PPC: Book3S PR: always fail transaction in guest privilege state
+>   KVM: PPC: Book3S PR: enable NV reg restore for reading TM SPR at guest
+>     privilege state
+>   KVM: PPC: Book3S PR: adds emulation for treclaim.
+>   KVM: PPC: Book3S PR: add emulation for trechkpt in PR KVM.
+>   KVM: PPC: Book3S PR: add emulation for tabort. for privilege guest
+>   KVM: PPC: Book3S PR: add guard code to prevent returning to guest with
+>     PR=0 and Transactional state
+>   KVM: PPC: Book3S PR: enable HTM for PR KVM for KVM_CHECK_EXTENSION
+>     ioctl
+> 
+>  arch/powerpc/include/asm/asm-prototypes.h   |  10 +
+>  arch/powerpc/include/asm/kvm_book3s.h       |   8 +
+>  arch/powerpc/include/asm/kvm_host.h         |   3 +
+>  arch/powerpc/include/asm/reg.h              |  25 +-
+>  arch/powerpc/include/asm/tm.h               |   2 -
+>  arch/powerpc/include/uapi/asm/tm.h          |   2 +-
+>  arch/powerpc/kernel/process.c               |   1 +
+>  arch/powerpc/kernel/tm.S                    |  12 +
+>  arch/powerpc/kvm/Makefile                   |   3 +
+>  arch/powerpc/kvm/book3s.h                   |   1 +
+>  arch/powerpc/kvm/book3s_64_mmu.c            |  11 +-
+>  arch/powerpc/kvm/book3s_emulate.c           | 279 +++++++++++++++++++-
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S     | 259 ++-----------------
+>  arch/powerpc/kvm/book3s_pr.c                | 256 +++++++++++++++++--
+>  arch/powerpc/kvm/book3s_segment.S           |  13 +
+>  arch/powerpc/kvm/powerpc.c                  |   3 +-
+>  arch/powerpc/kvm/tm.S                       | 379 ++++++++++++++++++++++++++++
+>  arch/powerpc/mm/hash_utils_64.c             |   1 +
+>  arch/powerpc/platforms/powernv/copy-paste.h |   3 +-
+>  19 files changed, 982 insertions(+), 289 deletions(-)
+>  create mode 100644 arch/powerpc/kvm/tm.S
+> 
