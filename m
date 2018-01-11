@@ -3,18 +3,17 @@ Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
  [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBR3RsVzF0Xq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:31 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id t12so1306417pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBW2ljgzF0Xq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:35 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id p1so1309136pfh.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:35 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH 11/26] KVM: PPC: Book3S PR: prevent TS bits change in
- kvmppc_interrupt_pr()
-Date: Thu, 11 Jan 2018 18:11:24 +0800
-Message-Id: <1515665499-31710-12-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH 12/26] powerpc: export symbol msr_check_and_set().
+Date: Thu, 11 Jan 2018 18:11:25 +0800
+Message-Id: <1515665499-31710-13-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,47 +27,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-PR KVM host usually equipped with enabled TM in its host MSR value, and
-with non-transactional TS value.
-
-When a guest with TM active traps into PR KVM host, the rfid at the
-tail of kvmppc_interrupt_pr() will try to switch TS bits from
-S0 (Suspended & TM disabled) to N1 (Non-transactional & TM enabled).
-
-That will leads to TM Bad Thing interrupt.
-
-This patch manually sets target TS bits unchanged to avoid this
-exception.
+PR KVM will need to reuse msr_check_and_set().
+This patch exports this API for reuse.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_segment.S | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/powerpc/kernel/process.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-index 2a2b96d..675e9a2 100644
---- a/arch/powerpc/kvm/book3s_segment.S
-+++ b/arch/powerpc/kvm/book3s_segment.S
-@@ -383,6 +383,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	 */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 72be0c3..8f430e6 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -152,6 +152,7 @@ unsigned long msr_check_and_set(unsigned long bits)
  
- 	PPC_LL	r6, HSTATE_HOST_MSR(r13)
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/*
-+	 * We don't want to change MSR[TS] bits via rfi here.
-+	 * The actual TM handling logic will be in host with
-+	 * recovered DR/IR bits after HSTATE_VMHANDLER.
-+	 * And MSR_TM can be enabled in HOST_MSR so rfid may
-+	 * not suppress this change and can lead to exception.
-+	 * Manually set MSR to prevent TS state change here.
-+	 */
-+	mfmsr   r7
-+	rldicl  r7, r7, 64 - MSR_TS_S_LG, 62
-+	rldimi  r6, r7, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+#endif
- 	PPC_LL	r8, HSTATE_VMHANDLER(r13)
+ 	return newmsr;
+ }
++EXPORT_SYMBOL_GPL(msr_check_and_set);
  
- #ifdef CONFIG_PPC64
+ void __msr_check_and_clear(unsigned long bits)
+ {
 -- 
 1.8.3.1
