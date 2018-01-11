@@ -1,18 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zH8qq4vqNzDqlG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zH8qq7410zDqpF
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 13:25:43 +1100 (AEDT)
-In-Reply-To: <20180108165453.26066-1-mpe@ellerman.id.au>
+In-Reply-To: <20180111022135.19532-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
- npiggin@gmail.com, oohall@gmail.com, anton@samba.org, paulus@samba.org,
- tglx@linutronix.de
-Subject: Re: [01/11] powerpc/pseries: Add H_GET_CPU_CHARACTERISTICS flags &
- wrapper
-Message-Id: <3zH8qq3QlLz9t32@ozlabs.org>
+Subject: Re: powerpc/kernel: Print actual address of regs when oopsing
+Message-Id: <3zH8qq552bz9t3C@ozlabs.org>
 Date: Thu, 11 Jan 2018 13:25:43 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,18 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-01-08 at 16:54:43 UTC, Michael Ellerman wrote:
-> From: Michael Neuling <mikey@neuling.org>
+On Thu, 2018-01-11 at 02:21:35 UTC, Michael Ellerman wrote:
+> When we oops or otherwise call show_regs() we print the address of the
+> regs structure. Being able to see the address is fairly useful,
+> firstly to verify that the regs pointer is not completely bogus, and
+> secondly it allows you to dump the regs and surrounding memory with a
+> debugger if you have one.
 > 
-> A new hypervisor call has been defined to communicate various
-> characteristics of the CPU to guests. Add definitions for the hcall
-> number, flags and a wrapper function.
+> In the normal case the regs will be located somewhere on the stack, so
+> printing their location discloses no further information than printing
+> the stack pointer does already.
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> So switch to %px and print the actual address, not the hashed value.
+> 
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc fixes.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/191eccb1580939fb0d47deb405b82a
+https://git.kernel.org/powerpc/c/182dc9c7f217146d69d9c0b75c150c
 
 cheers
