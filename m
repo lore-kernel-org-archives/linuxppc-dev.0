@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ42SB8zF0XJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:12 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id d23so874004pfe.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ62pd7zF0XJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:14 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id i66so868806pfd.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:14 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org,
@@ -15,9 +15,9 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  kernel@pengutronix.de
-Subject: [PATCH v2 06/16] ASoC: fsl_ssi: Clean up helper functions of trigger()
-Date: Wed, 10 Jan 2018 22:43:05 -0800
-Message-Id: <1515652995-15996-7-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v2 08/16] ASoC: fsl_ssi: Clean up fsl_ssi_setup_regvals()
+Date: Wed, 10 Jan 2018 22:43:07 -0800
+Message-Id: <1515652995-15996-9-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,360 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The trigger() calls fsl_ssi_tx_config() and fsl_ssi_rx_config(),
-and both of them jump to fsl_ssi_config(). And fsl_ssi_config()
-later calls another fsl_ssi_rxtx_config().
-
-However, the whole routine, especially fsl_ssi_config() function,
-is too complicated because of the folowing reasons:
-1) It has to handle the concern of the opposite stream.
-2) It has to handle cases of offline configurations support.
-3) It has to handle enable and disable operations while they're
-   mostly different.
-
-Since the enable and disable routines have more differences than
-TX and RX rountines, this patch simplifies these helper functions
-with the following changes:
-- Changing to two helper functions of enable and disable instead
-  of TX and RX.
-- Removing fsl_ssi_rxtx_config() by separately integrating it to
-  two newly introduced enable & disable functions.
+This patch cleans fsl_ssi_setup_regvals() by following changes:
+1) Moving DBG bits to the first lines.
+2) Setting SSIE, RE/TE as default and cleaning it for AC97
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 256 +++++++++++++++++++++++-------------------------
- 1 file changed, 122 insertions(+), 134 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 263c067..09a571a 100644
+index b449b8b..4399a22 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -378,31 +378,83 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
- }
- 
- /**
-- * Enable or disable all rx/tx config flags at once
-+ * Set SCR, SIER, STCR and SRCR registers with cached values in regvals
-+ *
-+ * Notes:
-+ * 1) For offline_config SoCs, enable all necessary bits of both streams
-+ *    when 1st stream starts, even if the opposite stream will not start
-+ * 2) It also clears FIFO before setting regvals; SOR is safe to set online
-  */
--static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
-+static void fsl_ssi_config_enable(struct fsl_ssi *ssi, bool tx)
+@@ -575,18 +575,16 @@ static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
  {
--	struct regmap *regs = ssi->regs;
  	struct fsl_ssi_regvals *vals = ssi->regvals;
-+	bool dir = tx ? TX : RX;
-+	u32 sier, srcr, stcr;
  
--	if (enable) {
--		regmap_update_bits(regs, REG_SSI_SIER,
--				   vals[RX].sier | vals[TX].sier,
--				   vals[RX].sier | vals[TX].sier);
--		regmap_update_bits(regs, REG_SSI_SRCR,
--				   vals[RX].srcr | vals[TX].srcr,
--				   vals[RX].srcr | vals[TX].srcr);
--		regmap_update_bits(regs, REG_SSI_STCR,
--				   vals[RX].stcr | vals[TX].stcr,
--				   vals[RX].stcr | vals[TX].stcr);
-+	/* Clear dirty data in the FIFO; It also prevents channel slipping */
-+	regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
-+
-+	/*
-+	 * On offline_config SoCs, SxCR and SIER are already configured when
-+	 * the previous stream started. So skip all SxCR and SIER settings
-+	 * to prevent online reconfigurations, then jump to set SCR directly
-+	 */
-+	if (ssi->soc->offline_config && ssi->streams)
-+		goto enable_scr;
-+
-+	if (ssi->soc->offline_config) {
-+		/*
-+		 * Online reconfiguration not supported, so enable all bits for
-+		 * both streams at once to avoid necessity of reconfigurations
-+		 */
-+		srcr = vals[RX].srcr | vals[TX].srcr;
-+		stcr = vals[RX].stcr | vals[TX].stcr;
-+		sier = vals[RX].sier | vals[TX].sier;
- 	} else {
--		regmap_update_bits(regs, REG_SSI_SRCR,
--				   vals[RX].srcr | vals[TX].srcr, 0);
--		regmap_update_bits(regs, REG_SSI_STCR,
--				   vals[RX].stcr | vals[TX].stcr, 0);
--		regmap_update_bits(regs, REG_SSI_SIER,
--				   vals[RX].sier | vals[TX].sier, 0);
-+		/* Otherwise, only set bits for the current stream */
-+		srcr = vals[dir].srcr;
-+		stcr = vals[dir].stcr;
-+		sier = vals[dir].sier;
+-	vals[RX].sier = SSI_SIER_RFF0_EN;
++	vals[RX].sier = SSI_SIER_RFF0_EN | FSLSSI_SIER_DBG_RX_FLAGS;
+ 	vals[RX].srcr = SSI_SRCR_RFEN0;
+-	vals[RX].scr = 0;
+-	vals[TX].sier = SSI_SIER_TFE0_EN;
++	vals[RX].scr = SSI_SCR_SSIEN | SSI_SCR_RE;
++	vals[TX].sier = SSI_SIER_TFE0_EN | FSLSSI_SIER_DBG_TX_FLAGS;
+ 	vals[TX].stcr = SSI_STCR_TFEN0;
+-	vals[TX].scr = 0;
++	vals[TX].scr = SSI_SCR_SSIEN | SSI_SCR_TE;
+ 
+ 	/* AC97 has already enabled SSIEN, RE and TE, so ignore them */
+-	if (!fsl_ssi_is_ac97(ssi)) {
+-		vals[RX].scr = SSI_SCR_SSIEN | SSI_SCR_RE;
+-		vals[TX].scr = SSI_SCR_SSIEN | SSI_SCR_TE;
+-	}
++	if (fsl_ssi_is_ac97(ssi))
++		vals[RX].scr = vals[TX].scr = 0;
+ 
+ 	if (ssi->use_dma) {
+ 		vals[RX].sier |= SSI_SIER_RDMAE;
+@@ -595,9 +593,6 @@ static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
+ 		vals[RX].sier |= SSI_SIER_RIE;
+ 		vals[TX].sier |= SSI_SIER_TIE;
  	}
-+
-+	/* Configure SRCR, STCR and SIER at once */
-+	regmap_update_bits(ssi->regs, REG_SSI_SRCR, srcr, srcr);
-+	regmap_update_bits(ssi->regs, REG_SSI_STCR, stcr, stcr);
-+	regmap_update_bits(ssi->regs, REG_SSI_SIER, sier, sier);
-+
-+enable_scr:
-+	/*
-+	 * Start DMA before setting TE to avoid FIFO underrun
-+	 * which may cause a channel slip or a channel swap
-+	 *
-+	 * TODO: FIQ cases might also need this upon testing
-+	 */
-+	if (ssi->use_dma && tx) {
-+		int try = 100;
-+		u32 sfcsr;
-+
-+		/* Enable SSI first to send TX DMA request */
-+		regmap_update_bits(ssi->regs, REG_SSI_SCR,
-+				   SSI_SCR_SSIEN, SSI_SCR_SSIEN);
-+
-+		/* Busy wait until TX FIFO not empty -- DMA working */
-+		do {
-+			regmap_read(ssi->regs, REG_SSI_SFCSR, &sfcsr);
-+			if (SSI_SFCSR_TFCNT0(sfcsr))
-+				break;
-+		} while (--try);
-+
-+		/* FIFO still empty -- something might be wrong */
-+		if (!SSI_SFCSR_TFCNT0(sfcsr))
-+			dev_warn(ssi->dev, "Timeout waiting TX FIFO filling\n");
-+	}
-+	/* Enable all remaining bits in SCR */
-+	regmap_update_bits(ssi->regs, REG_SSI_SCR,
-+			   vals[dir].scr, vals[dir].scr);
-+
-+	/* Log the enabled stream to the mask */
-+	ssi->streams |= BIT(dir);
+-
+-	vals[RX].sier |= FSLSSI_SIER_DBG_RX_FLAGS;
+-	vals[TX].sier |= FSLSSI_SIER_DBG_TX_FLAGS;
  }
  
- /**
-@@ -426,66 +478,53 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
- 	((vals) & _ssi_xor_shared_bits(vals, avals, aactive))
- 
- /**
-- * Enable or disable SSI configuration.
-+ * Unset SCR, SIER, STCR and SRCR registers with cached values in regvals
-+ *
-+ * Notes:
-+ * 1) For offline_config SoCs, to avoid online reconfigurations, disable all
-+ *    bits of both streams at once when the last stream is abort to end
-+ * 2) It also clears FIFO after unsetting regvals; SOR is safe to set online
-  */
--static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
--			   struct fsl_ssi_regvals *vals)
-+static void fsl_ssi_config_disable(struct fsl_ssi *ssi, bool tx)
- {
--	bool tx = &ssi->regvals[TX] == vals;
-+	struct fsl_ssi_regvals *vals, *avals;
-+	u32 sier, srcr, stcr, scr;
- 	bool dir = tx ? TX : RX;
--	struct regmap *regs = ssi->regs;
--	struct fsl_ssi_regvals *avals;
- 	bool aactive;
- 
- 	/* Check if the opposite stream is active */
- 	aactive = ssi->streams & BIT(!dir);
- 
--	/* Get the opposite direction to keep its values untouched */
--	if (&ssi->regvals[RX] == vals)
--		avals = &ssi->regvals[TX];
--	else
--		avals = &ssi->regvals[RX];
-+	vals = &ssi->regvals[dir];
- 
--	if (!enable) {
--		/*
--		 * To keep the other stream safe, exclude shared bits between
--		 * both streams, and get safe bits to disable current stream
--		 */
--		u32 scr = ssi_excl_shared_bits(vals->scr, avals->scr, aactive);
--		/* Safely disable SCR register for the stream */
--		regmap_update_bits(regs, REG_SSI_SCR, scr, 0);
--
--		/* Log the disabled stream to the mask */
--		ssi->streams &= ~BIT(dir);
--	}
-+	/* Get regvals of the opposite stream to keep opposite stream safe */
-+	avals = &ssi->regvals[!dir];
- 
- 	/*
--	 * For cases where online configuration is not supported,
--	 * 1) Enable all necessary bits of both streams when 1st stream starts
--	 *    even if the opposite stream will not start
--	 * 2) Disable all remaining bits of both streams when last stream ends
-+	 * To keep the other stream safe, exclude shared bits between
-+	 * both streams, and get safe bits to disable current stream
- 	 */
--	if (ssi->soc->offline_config) {
--		if ((enable && !ssi->streams) || (!enable && !aactive))
--			fsl_ssi_rxtx_config(ssi, enable);
-+	scr = ssi_excl_shared_bits(vals->scr, avals->scr, aactive);
- 
--		goto config_done;
--	}
-+	/* Disable safe bits of SCR register for the current stream */
-+	regmap_update_bits(ssi->regs, REG_SSI_SCR, scr, 0);
- 
--	/* Online configure single direction while SSI is running */
--	if (enable) {
--		/* Clear FIFO to prevent dirty data or channel slipping */
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
-+	/* Log the disabled stream to the mask */
-+	ssi->streams &= ~BIT(dir);
- 
--		regmap_update_bits(regs, REG_SSI_SRCR, vals->srcr, vals->srcr);
--		regmap_update_bits(regs, REG_SSI_STCR, vals->stcr, vals->stcr);
--		regmap_update_bits(regs, REG_SSI_SIER, vals->sier, vals->sier);
--	} else {
--		u32 sier;
--		u32 srcr;
--		u32 stcr;
-+	/*
-+	 * On offline_config SoCs, if the other stream is active, skip
-+	 * SxCR and SIER settings to prevent online reconfigurations
-+	 */
-+	if (ssi->soc->offline_config && aactive)
-+		goto fifo_clear;
- 
-+	if (ssi->soc->offline_config) {
-+		/* Now there is only current stream active, disable all bits */
-+		srcr = vals->srcr | avals->srcr;
-+		stcr = vals->stcr | avals->stcr;
-+		sier = vals->sier | avals->sier;
-+	} else {
- 		/*
- 		 * To keep the other stream safe, exclude shared bits between
- 		 * both streams, and get safe bits to disable current stream
-@@ -493,57 +532,17 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		sier = ssi_excl_shared_bits(vals->sier, avals->sier, aactive);
- 		srcr = ssi_excl_shared_bits(vals->srcr, avals->srcr, aactive);
- 		stcr = ssi_excl_shared_bits(vals->stcr, avals->stcr, aactive);
--
--		/* Safely disable other control registers for the stream */
--		regmap_update_bits(regs, REG_SSI_SRCR, srcr, 0);
--		regmap_update_bits(regs, REG_SSI_STCR, stcr, 0);
--		regmap_update_bits(regs, REG_SSI_SIER, sier, 0);
--
--		/* Clear FIFO to prevent dirty data or channel slipping */
--		regmap_update_bits(ssi->regs, REG_SSI_SOR,
--				   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
- 	}
- 
--config_done:
--	/* Enabling of subunits is done after configuration */
--	if (enable) {
--		/*
--		 * Start DMA before setting TE to avoid FIFO underrun
--		 * which may cause a channel slip or a channel swap
--		 *
--		 * TODO: FIQ cases might also need this upon testing
--		 */
--		if (ssi->use_dma && (vals->scr & SSI_SCR_TE)) {
--			int i;
--			int max_loop = 100;
--
--			/* Enable SSI first to send TX DMA request */
--			regmap_update_bits(regs, REG_SSI_SCR,
--					   SSI_SCR_SSIEN, SSI_SCR_SSIEN);
--
--			/* Busy wait until TX FIFO not empty -- DMA working */
--			for (i = 0; i < max_loop; i++) {
--				u32 sfcsr;
--				regmap_read(regs, REG_SSI_SFCSR, &sfcsr);
--				if (SSI_SFCSR_TFCNT0(sfcsr))
--					break;
--			}
--			if (i == max_loop) {
--				dev_err(ssi->dev,
--					"Timeout waiting TX FIFO filling\n");
--			}
--		}
--		/* Enable all remaining bits */
--		regmap_update_bits(regs, REG_SSI_SCR, vals->scr, vals->scr);
--
--		/* Log the enabled stream to the mask */
--		ssi->streams |= BIT(dir);
--	}
--}
-+	/* Clear configurations of SRCR, STCR and SIER at once */
-+	regmap_update_bits(ssi->regs, REG_SSI_SRCR, srcr, 0);
-+	regmap_update_bits(ssi->regs, REG_SSI_STCR, stcr, 0);
-+	regmap_update_bits(ssi->regs, REG_SSI_SIER, sier, 0);
- 
--static void fsl_ssi_rx_config(struct fsl_ssi *ssi, bool enable)
--{
--	fsl_ssi_config(ssi, enable, &ssi->regvals[RX]);
-+fifo_clear:
-+	/* Clear remaining data in the FIFO */
-+	regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
- }
- 
- static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
-@@ -559,21 +558,6 @@ static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
- 	}
- }
- 
--static void fsl_ssi_tx_config(struct fsl_ssi *ssi, bool enable)
--{
--	/*
--	 * SACCST might be modified via AC Link by a CODEC if it sends
--	 * extra bits in their SLOTREQ requests, which'll accidentally
--	 * send valid data to slots other than normal playback slots.
--	 *
--	 * To be safe, configure SACCST right before TX starts.
--	 */
--	if (enable && fsl_ssi_is_ac97(ssi))
--		fsl_ssi_tx_ac97_saccst_setup(ssi);
--
--	fsl_ssi_config(ssi, enable, &ssi->regvals[TX]);
--}
--
- /**
-  * Cache critical bits of SIER, SRCR, STCR and SCR to later set them safely
-  */
-@@ -1082,24 +1066,28 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- {
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(rtd->cpu_dai);
-+	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
- 	case SNDRV_PCM_TRIGGER_RESUME:
- 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
--		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
--			fsl_ssi_tx_config(ssi, true);
--		else
--			fsl_ssi_rx_config(ssi, true);
-+		/*
-+		 * SACCST might be modified via AC Link by a CODEC if it sends
-+		 * extra bits in their SLOTREQ requests, which'll accidentally
-+		 * send valid data to slots other than normal playback slots.
-+		 *
-+		 * To be safe, configure SACCST right before TX starts.
-+		 */
-+		if (tx && fsl_ssi_is_ac97(ssi))
-+			fsl_ssi_tx_ac97_saccst_setup(ssi);
-+		fsl_ssi_config_enable(ssi, tx);
- 		break;
- 
- 	case SNDRV_PCM_TRIGGER_STOP:
- 	case SNDRV_PCM_TRIGGER_SUSPEND:
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
--		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
--			fsl_ssi_tx_config(ssi, false);
--		else
--			fsl_ssi_rx_config(ssi, false);
-+		fsl_ssi_config_disable(ssi, tx);
- 		break;
- 
- 	default:
+ static void fsl_ssi_setup_ac97(struct fsl_ssi *ssi)
 -- 
 2.7.4
