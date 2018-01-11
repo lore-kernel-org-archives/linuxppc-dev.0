@@ -2,21 +2,19 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHLy95rtpzF0XH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHLy934lBzF0WY
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:01:53 +1100 (AEDT)
-Date: Thu, 11 Jan 2018 20:56:14 +1100
+Date: Thu, 11 Jan 2018 21:01:48 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alexander Graf <agraf@suse.com>
-Subject: Re: [RFC PATCH kernel] KVM: PPC: Book3S PR: Fix WIMG handling under
- pHyp
-Message-ID: <20180111095614.GH24294@fergus.ozlabs.ibm.com>
-References: <20171122034221.647-1-aik@ozlabs.ru>
+To: Alexander Graf <agraf@suse.de>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Remove vcpu->arch.dec usage
+Message-ID: <20180111100148.GJ24294@fergus.ozlabs.ibm.com>
+References: <20171219145624.46724-1-agraf@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20171122034221.647-1-aik@ozlabs.ru>
+In-Reply-To: <20171219145624.46724-1-agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 22, 2017 at 02:42:21PM +1100, Alexey Kardashevskiy wrote:
-> 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits" added WIMG
-> bits preserving but it missed 2 special cases:
-> - a magic page in kvmppc_mmu_book3s_64_xlate() and
-> - guest real mode in kvmppc_handle_pagefault().
+On Tue, Dec 19, 2017 at 03:56:24PM +0100, Alexander Graf wrote:
+> On Book3S in HV mode, we don't use the vcpu->arch.dec field at all.
+> Instead, all logic is built around vcpu->arch.dec_expires.
 > 
-> For these ptes WIMG were 0 and pHyp failed on these causing a guest to
-> stop in the very beginning at NIP=0x100 (due to bd9166ffe
-> "KVM: PPC: Book3S PR: Exit KVM on failed mapping").
+> So let's remove the one remaining piece of code that was setting it.
 > 
-> This initializes WIMG to non-zero value HPTE_R_M. The value is chosen
-> as (0x192 & HPTE_R_WIMG); 0x192 is a magic value from
-> kvmppc_mmu_map_page().
-> 
-> Fixes: 96df226 "KVM: PPC: Book3S PR: Preserve storage control bits"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Alexander Graf <agraf@suse.de>
 
-Thanks, applied to my kvm-ppc-fixes branch, with an updated commit
-message, fixes: tag, and cc:stable@vger.kernel.org.
+Thanks, applied to my kvm-ppc-next branch.
+
+> Looking through the DEC logic, I fail to see any code that allows
+> save or restore of DEC. Do we maybe miss out on that register for
+> (live) migration?
+
+Yes, it looks like we do.  I'm amazed no-one has noticed before.  I'll
+fix it.
 
 Paul.
