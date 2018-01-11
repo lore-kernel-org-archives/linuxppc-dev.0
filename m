@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ11fxVzF0XJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:08 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id y89so868981pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGYz2ZhMzF0XJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:06 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i66so868465pfd.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:06 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org,
@@ -15,9 +15,9 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  kernel@pengutronix.de
-Subject: [PATCH v2 03/16] ASoC: fsl_ssi: Maintain a mask of active streams
-Date: Wed, 10 Jan 2018 22:43:02 -0800
-Message-Id: <1515652995-15996-4-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v2 01/16] ASoC: fsl_ssi: Keep ssi->i2s_net updated
+Date: Wed, 10 Jan 2018 22:43:00 -0800
+Message-Id: <1515652995-15996-2-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,81 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Checking TE and RE bits in SCR register doesn't work for AC97 mode
-which enables SSIEN, TE and RE in the fsl_ssi_setup_ac97() that's
-called during probe().
+The hw_params() overwrites i2s_net settings for special cases like
+mono-channel support, however, it doesn't update ssi->i2s_net as
+set_dai_fmt() does.
 
-So when running into the trigger(), it will always get the result
-of both TE and RE being enabled already, even if actually there is
-no active stream.
-
-This patch fixes this issue by adding a variable to log the active
-streams manually.
+This patch removes the local i2s_net variable and directly updates
+ssi->i2s_net in the hw_params() so that the driver can simply look
+up the ssi->i2s_net instead of reading the register.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 491b660..aa14a5d 100644
+index aecd00f..c8bd353 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -201,6 +201,7 @@ struct fsl_ssi_soc_data {
-  * @cpu_dai_drv: CPU DAI driver for this device
-  *
-  * @dai_fmt: DAI configuration this device is currently used with
-+ * @streams: Mask of current active streams: BIT(TX) and BIT(RX)
-  * @i2s_net: I2S and Network mode configurations of SCR register
-  * @use_dma: DMA is used or FIQ with stream filter
-  * @use_dual_fifo: DMA with support for dual FIFO mode
-@@ -245,6 +246,7 @@ struct fsl_ssi {
- 	struct snd_soc_dai_driver cpu_dai_drv;
- 
- 	unsigned int dai_fmt;
-+	u8 streams;
- 	u8 i2s_net;
- 	bool use_dma;
- 	bool use_dual_fifo;
-@@ -440,15 +442,14 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
- static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 			   struct fsl_ssi_regvals *vals)
- {
-+	bool dir = (&ssi->regvals[TX] == vals) ? TX : RX;
- 	struct regmap *regs = ssi->regs;
- 	struct fsl_ssi_regvals *avals;
- 	int nr_active_streams;
--	u32 scr;
- 	int keep_active;
- 
--	regmap_read(regs, REG_SSI_SCR, &scr);
--
--	nr_active_streams = !!(scr & SSI_SCR_TE) + !!(scr & SSI_SCR_RE);
-+	nr_active_streams = !!(ssi->streams & BIT(TX)) +
-+			    !!(ssi->streams & BIT(RX));
- 
- 	if (nr_active_streams - 1 > 0)
- 		keep_active = 1;
-@@ -470,6 +471,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 					      keep_active);
- 		/* Safely disable SCR register for the stream */
- 		regmap_update_bits(regs, REG_SSI_SCR, scr, 0);
-+
-+		/* Log the disabled stream to the mask */
-+		ssi->streams &= ~BIT(dir);
+@@ -834,16 +834,16 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
  	}
  
- 	/*
-@@ -545,6 +549,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		}
- 		/* Enable all remaining bits */
- 		regmap_update_bits(regs, REG_SSI_SCR, vals->scr, vals->scr);
+ 	if (!fsl_ssi_is_ac97(ssi)) {
+-		u8 i2s_net;
+ 		/* Normal + Network mode to send 16-bit data in 32-bit frames */
+ 		if (fsl_ssi_is_i2s_cbm_cfs(ssi) && sample_size == 16)
+-			i2s_net = SSI_SCR_I2S_MODE_NORMAL | SSI_SCR_NET;
+-		else
+-			i2s_net = ssi->i2s_net;
++			ssi->i2s_net = SSI_SCR_I2S_MODE_NORMAL | SSI_SCR_NET;
 +
-+		/* Log the enabled stream to the mask */
-+		ssi->streams |= BIT(dir);
- 	}
- }
++		/* Use Normal mode to send mono data at 1st slot of 2 slots */
++		if (channels == 1)
++			ssi->i2s_net = SSI_SCR_I2S_MODE_NORMAL;
  
+ 		regmap_update_bits(regs, REG_SSI_SCR,
+-				   SSI_SCR_I2S_NET_MASK,
+-				   channels == 1 ? 0 : i2s_net);
++				   SSI_SCR_I2S_NET_MASK, ssi->i2s_net);
+ 	}
+ 
+ 	/* In synchronous mode, the SSI uses STCCR for capture */
 -- 
 2.7.4
