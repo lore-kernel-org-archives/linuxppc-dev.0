@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBJ54SxzF0Y9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:24 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id y89so1305447pfk.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBN16HfzF0W9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:28 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id 23so1305981pfp.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:28 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH 09/26] KVM: PPC: Book3S PR: implement RFID TM behavior to
- suppress change from S0 to N0
-Date: Thu, 11 Jan 2018 18:11:22 +0800
-Message-Id: <1515665499-31710-10-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH 10/26] KVM: PPC: Book3S PR: set MSR HV bit accordingly for
+ PPC970 and others.
+Date: Thu, 11 Jan 2018 18:11:23 +0800
+Message-Id: <1515665499-31710-11-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,52 +28,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Accordingly to ISA specification for RFID, in MSR TM disabled and TS
-suspended state(S0), if the target MSR is TM disabled and TS state is
-inactive(N0), rfid should suppress this update.
+Apple G5 machines(PPC970/FX/GX/MP) have supervisor mode disabled and
+MSR HV bit is forced into 1. We should follow this in PR KVM guest.
 
-This patch make RFID emulation of PR KVM to be consistent with this.
+This patch set MSR HV=1 for G5 machines and HV=0 for others on PR
+KVM guest.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+Suggested-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_emulate.c | 21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_pr.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 68d6898..2eb457b 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -117,11 +117,28 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	case 19:
- 		switch (get_xop(inst)) {
- 		case OP_19_XOP_RFID:
--		case OP_19_XOP_RFI:
-+		case OP_19_XOP_RFI: {
-+			unsigned long srr1 = kvmppc_get_srr1(vcpu);
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+			unsigned long cur_msr = kvmppc_get_msr(vcpu);
-+
-+			/*
-+			 * add rules to fit in ISA specification regarding TM
-+			 * state transistion in TM disable/Suspended state,
-+			 * and target TM state is TM inactive(00) state. (the
-+			 * change should be suppressed).
-+			 */
-+			if (((cur_msr & MSR_TM) == 0) &&
-+				((srr1 & MSR_TM) == 0) &&
-+				MSR_TM_SUSPENDED(cur_msr) &&
-+				!MSR_TM_ACTIVE(srr1))
-+				srr1 |= MSR_TS_S;
-+#endif
- 			kvmppc_set_pc(vcpu, kvmppc_get_srr0(vcpu));
--			kvmppc_set_msr(vcpu, kvmppc_get_srr1(vcpu));
-+			kvmppc_set_msr(vcpu, srr1);
- 			*advance = 0;
- 			break;
-+		}
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 7ec866a..b2f7566 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -320,6 +320,7 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
+ {
+ 	ulong guest_msr = kvmppc_get_msr(vcpu);
+ 	ulong smsr = guest_msr;
++	u32 guest_pvr = vcpu->arch.pvr;
  
- 		default:
- 			emulated = EMULATE_FAIL;
+ 	/* Guest MSR values */
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+@@ -334,7 +335,16 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
+ 	smsr |= (guest_msr & vcpu->arch.guest_owned_ext);
+ 	/* 64-bit Process MSR values */
+ #ifdef CONFIG_PPC_BOOK3S_64
+-	smsr |= MSR_ISF | MSR_HV;
++	smsr |= MSR_ISF;
++
++	/* for PPC970 chip, its HV bit is hard-wired to 1. For others,
++	 * we should clear HV bit.
++	 */
++	if ((PVR_VER(guest_pvr) == PVR_970) ||
++	    (PVR_VER(guest_pvr) == PVR_970FX) ||
++	    (PVR_VER(guest_pvr) == PVR_970MP) ||
++	    (PVR_VER(guest_pvr) == PVR_970GX))
++		smsr |= MSR_HV;
+ #endif
+ 	vcpu->arch.shadow_msr = smsr;
+ }
 -- 
 1.8.3.1
