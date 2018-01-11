@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGYz2X7LzF0XG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:05 +1100 (AEDT)
-Received: by mail-pf0-x234.google.com with SMTP id j3so872471pfh.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ169qbzF0XG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:09 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id e76so873425pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:09 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org,
@@ -15,9 +15,11 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  kernel@pengutronix.de
-Subject: [PATCH v2 00/16] ASoC: fsl_ssi: Clean up - program flow level
-Date: Wed, 10 Jan 2018 22:42:59 -0800
-Message-Id: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v2 04/16] ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
+Date: Wed, 10 Jan 2018 22:43:03 -0800
+Message-Id: <1515652995-15996-5-git-send-email-nicoleotsuka@gmail.com>
+In-Reply-To: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
+References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +29,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-==Change log==
-v2
- * Reworked the series by taking suggestions from Maciej
-  + Added PATCH-01 to keep all ssi->i2s_net updated
-  + Replaced bool tx with bool dir in PATCH-03 and PATCH-06
-  + Moved all initial register configurations from dai probe() to
-    platform probe() so as to let AC97 CODEC successfully probe.
- * Added Tested-by from Caleb for TDM test cases.
+The define of fsl_ssi_disable_val is not so clear as it mixes two
+steps of calculations together. And those parameter names are also
+a bit long to read.
 
-==Background==
-The fsl_ssi driver was designed for PPC originally and then it has
-been updated to support different modes for i.MX Series, including
-SDMA, I2S Master mode, AC97 and older i.MXs with FIQ, by different
-contributors for different use cases in different coding styles.
+Since it just tries to exclude the shared bits from the regvals of
+current stream while the opposite stream is active, it's better to
+use something like ssi_excl_shared_bits.
 
-Additionally, in order to fix/work-around hardware bugs and design
-flaws, the driver made a lot of compromise so now its program flow
-looks very complicated and it's getting hard to maintain or update.
+This patch also bisects fsl_ssi_disable_val into two macros of two
+corresponding steps and then shortens its parameter names. It also
+updates callers in the fsl_ssi_config() accordingly.
 
-So I am going to clean up the driver on both coding style level and
-program flow level.
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Tested-by: Caleb Crome <caleb@crome.org>
+---
+ sound/soc/fsl/fsl_ssi.c | 54 ++++++++++++++++++++-----------------------------
+ 1 file changed, 22 insertions(+), 32 deletions(-)
 
-==Introduction==
-This series of patches is the second set to clean up fsl_ssi driver
-in the program flow level. Any patch here may impact a fundamental
-test case like playback or record.
-
-==Verification==
-This series of patches require fully tested. I have done such tests
-on i.MX6SoloX with WM8962 using imx_v6_v7_defconfig as:
- - Playback via I2S Master and Slave mode
- - Record via I2S Master and Slave mode
- - Simultaneous playback and record via I2S Master and Slave mode
- - Background playback with foreground record (starting at different
-   time) via I2S Master and Slave mode
- - Background record with foreground playback (starting at different
-   time) via I2S Master and Slave mode
- * All tests above by hacking offline_config to true in imx51.
-
-Caleb has tested v1 with TDM lookback tests on i.MX6.
-
-Example of uncovered tests: AC97, PowerPC and FIQ.
-
-Nicolin Chen (16):
-  ASoC: fsl_ssi: Keep ssi->i2s_net updated
-  ASoC: fsl_ssi: Clean up set_dai_tdm_slot()
-  ASoC: fsl_ssi: Maintain a mask of active streams
-  ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
-  ASoC: fsl_ssi: Clear FIFO directly in fsl_ssi_config()
-  ASoC: fsl_ssi: Clean up helper functions of trigger()
-  ASoC: fsl_ssi: Add DAIFMT define for AC97
-  ASoC: fsl_ssi: Clean up fsl_ssi_setup_regvals()
-  ASoC: fsl_ssi: Set xFEN0 and xFEN1 together
-  ASoC: fsl_ssi: Use snd_soc_init_dma_data instead
-  ASoC: fsl_ssi: Move one-time configurations to probe()
-  ASoC: fsl_ssi: Setup AC97 in fsl_ssi_hw_init()
-  ASoC: fsl_ssi: Clean up _fsl_ssi_set_dai_fmt()
-  ASoC: fsl_ssi: Remove cpu_dai_drv from fsl_ssi structure
-  ASoC: fsl_ssi: Move DT related code to a separate probe()
-  ASoC: fsl_ssi: Use ssi->streams instead of reading register
-
- sound/soc/fsl/fsl_ssi.c | 740 ++++++++++++++++++++++++------------------------
- 1 file changed, 369 insertions(+), 371 deletions(-)
-
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index aa14a5d..f026386 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -417,24 +417,24 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
+ }
+ 
+ /**
+- * Calculate the bits that have to be disabled for the current stream that is
+- * getting disabled. This keeps the bits enabled that are necessary for the
+- * second stream to work if 'stream_active' is true.
++ * Exclude bits that are used by the opposite stream
+  *
+- * Detailed calculation:
+- * These are the values that need to be active after disabling. For non-active
+- * second stream, this is 0:
+- *	vals_stream * !!stream_active
++ * When both streams are active, disabling some bits for the current stream
++ * might break the other stream if these bits are used by it.
+  *
+- * The following computes the overall differences between the setup for the
+- * to-disable stream and the active stream, a simple XOR:
+- *	vals_disable ^ (vals_stream * !!(stream_active))
++ * @vals : regvals of the current stream
++ * @avals: regvals of the opposite stream
++ * @aactive: active state of the opposite stream
+  *
+- * The full expression adds a mask on all values we care about
++ *  1) XOR vals and avals to get the differences if the other stream is active;
++ *     Otherwise, return current vals if the other stream is not active
++ *  2) AND the result of 1) with the current vals
+  */
+-#define fsl_ssi_disable_val(vals_disable, vals_stream, stream_active) \
+-	((vals_disable) & \
+-	 ((vals_disable) ^ ((vals_stream) * (u32)!!(stream_active))))
++#define _ssi_xor_shared_bits(vals, avals, aactive) \
++	((vals) ^ ((avals) * (aactive)))
++
++#define ssi_excl_shared_bits(vals, avals, aactive) \
++	((vals) & _ssi_xor_shared_bits(vals, avals, aactive))
+ 
+ /**
+  * Enable or disable SSI configuration.
+@@ -445,16 +445,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 	bool dir = (&ssi->regvals[TX] == vals) ? TX : RX;
+ 	struct regmap *regs = ssi->regs;
+ 	struct fsl_ssi_regvals *avals;
+-	int nr_active_streams;
+-	int keep_active;
+-
+-	nr_active_streams = !!(ssi->streams & BIT(TX)) +
+-			    !!(ssi->streams & BIT(RX));
++	bool aactive;
+ 
+-	if (nr_active_streams - 1 > 0)
+-		keep_active = 1;
+-	else
+-		keep_active = 0;
++	/* Check if the opposite stream is active */
++	aactive = ssi->streams & BIT(!dir);
+ 
+ 	/* Get the opposite direction to keep its values untouched */
+ 	if (&ssi->regvals[RX] == vals)
+@@ -467,8 +461,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 		 * To keep the other stream safe, exclude shared bits between
+ 		 * both streams, and get safe bits to disable current stream
+ 		 */
+-		u32 scr = fsl_ssi_disable_val(vals->scr, avals->scr,
+-					      keep_active);
++		u32 scr = ssi_excl_shared_bits(vals->scr, avals->scr, aactive);
+ 		/* Safely disable SCR register for the stream */
+ 		regmap_update_bits(regs, REG_SSI_SCR, scr, 0);
+ 
+@@ -483,7 +476,7 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 	 * 2) Disable all remaining bits of both streams when last stream ends
+ 	 */
+ 	if (ssi->soc->offline_config) {
+-		if ((enable && !nr_active_streams) || (!enable && !keep_active))
++		if ((enable && !ssi->streams) || (!enable && !aactive))
+ 			fsl_ssi_rxtx_config(ssi, enable);
+ 
+ 		goto config_done;
+@@ -505,12 +498,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
+ 		 * To keep the other stream safe, exclude shared bits between
+ 		 * both streams, and get safe bits to disable current stream
+ 		 */
+-		sier = fsl_ssi_disable_val(vals->sier, avals->sier,
+-					   keep_active);
+-		srcr = fsl_ssi_disable_val(vals->srcr, avals->srcr,
+-					   keep_active);
+-		stcr = fsl_ssi_disable_val(vals->stcr, avals->stcr,
+-					   keep_active);
++		sier = ssi_excl_shared_bits(vals->sier, avals->sier, aactive);
++		srcr = ssi_excl_shared_bits(vals->srcr, avals->srcr, aactive);
++		stcr = ssi_excl_shared_bits(vals->stcr, avals->stcr, aactive);
+ 
+ 		/* Safely disable other control registers for the stream */
+ 		regmap_update_bits(regs, REG_SSI_SRCR, srcr, 0);
 -- 
 2.7.4
