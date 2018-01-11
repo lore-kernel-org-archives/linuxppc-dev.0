@@ -1,36 +1,36 @@
-Return-Path: <joserz@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-io0-f177.google.com (mail-io0-f177.google.com
+ [209.85.223.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zH4jf5PgjzF0cH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 10:20:06 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0ANJZqk095971
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 18:20:04 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fdsut68qg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 18:20:03 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
- Wed, 10 Jan 2018 18:20:02 -0500
-Date: Wed, 10 Jan 2018 21:19:56 -0200
-From: joserz@linux.vnet.ibm.com
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH RESEND 1/1] KVM: PPC: Book3S: Add MMIO emulation for VMX
- instructions
-References: <20180108182931.355-1-joserz@linux.vnet.ibm.com>
- <20180108182931.355-2-joserz@linux.vnet.ibm.com>
- <20180110223658.GB24294@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zH5q14t0lzF0VX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 11:09:49 +1100 (AEDT)
+Received: by mail-io0-f177.google.com with SMTP id 25so1348426ioj.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 16:09:49 -0800 (PST)
+Received: from mail-io0-f169.google.com (mail-io0-f169.google.com.
+ [209.85.223.169])
+ by smtp.gmail.com with ESMTPSA id 103sm10723151ioj.74.2018.01.10.16.09.46
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 10 Jan 2018 16:09:46 -0800 (PST)
+Received: by mail-io0-f169.google.com with SMTP id z130so1341785ioe.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 16:09:46 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20180110223658.GB24294@fergus.ozlabs.ibm.com>
-Message-Id: <20180110231956.fxplmhfsy5dga5vt@pacoca>
+In-Reply-To: <32e12e24-750d-eb98-0753-f5feca309082@xenosoft.de>
+References: <36E75811-C758-49B1-8E5C-3A2C44FD5DE9@xenosoft.de>
+ <874lnzz5y3.fsf@concordia.ellerman.id.au>
+ <86eade29-a56d-2aab-050e-366f4d43ab2f@xenosoft.de>
+ <CAOesGMhGt6arTt9p9rxT8Qreaucae0i=fmQoqkBvUGJOxobhiQ@mail.gmail.com>
+ <CAOMqctS0d9i5F1si3mDq_M1ZZM1MncXRBFKGeZ4y30J4H_1RDg@mail.gmail.com>
+ <32e12e24-750d-eb98-0753-f5feca309082@xenosoft.de>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Wed, 10 Jan 2018 18:09:45 -0600
+Message-ID: <CADRPPNRtexannDrv8WtD2f3sQr9nwkN2PPgvh6m2r4d6BvqitQ@mail.gmail.com>
+Subject: Re: Spectre+Meltdown
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Michal Suchanek <hramrach@gmail.com>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,189 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 11, 2018 at 09:36:58AM +1100, Paul Mackerras wrote:
-> On Mon, Jan 08, 2018 at 04:29:31PM -0200, Jose Ricardo Ziviani wrote:
-> > This patch provides the MMIO load/store vector indexed
-> > X-Form emulation.
-> > 
-> > Instructions implemented: lvx, stvx
-> > 
-> > Signed-off-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
-> 
-> What testing has been done of this patch?  In particular, what
-> combinations of endianness of host and guest have been tested?  For a
-> cross-endian situation (endianness of guest different from host) you
-> would need to load the two halves of the VMX register image in
-> reversed order (note that lvx/stvx are different from lxvd2x/stxvd2x
-> and lxvw4x/stxvw4x in this respect), and I don't see that being done.
+On Mon, Jan 8, 2018 at 2:17 AM, Christian Zigotzky
+<chzigotzky@xenosoft.de> wrote:
+> Hi All,
+>
+> Thanks a lot for your replies.
+>
+> @NXP developers: Could you please tell us some information?
 
-Hello! Thank you for reviewing it.
+We have done some investigation but it is not ready to be published
+yet.  You can get more information from your support channel right
+now.
 
-Yes, I tested it with both in little endian mode. You're absolutely
-right, I'll review the cross-endian scenario that's not covered indeed.
-
-> 
-> Also, lvx/stvx mask off the bottom 4 bits of the EA, and I don't see
-> that being done.
-> 
-> [snip]
-> 
-> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > index 1915e86cef6f..7d0f60359ee0 100644
-> > --- a/arch/powerpc/kvm/powerpc.c
-> > +++ b/arch/powerpc/kvm/powerpc.c
-> > @@ -832,23 +832,7 @@ void kvm_arch_irq_bypass_del_producer(struct irq_bypass_consumer *cons,
-> >  		kvm->arch.kvm_ops->irq_bypass_del_producer(cons, prod);
-> >  }
-> >  
-> > -#ifdef CONFIG_VSX
-> > -static inline int kvmppc_get_vsr_dword_offset(int index)
-> > -{
-> > -	int offset;
-> > -
-> > -	if ((index != 0) && (index != 1))
-> > -		return -1;
-> > -
-> > -#ifdef __BIG_ENDIAN
-> > -	offset =  index;
-> > -#else
-> > -	offset = 1 - index;
-> > -#endif
-> > -
-> > -	return offset;
-> > -}
-> > -
-> 
-> Why does this function need to be moved down in the file?
-
-The main reason is that I need it too but I need it available with
-ALTIVEC(1) support, so I changed the guard to ALTIVEC and moved it down
-closer to other related functions under the same guard. But I can move
-it back if you prefer.
-
-(1)AFAIK it's possible to have ALTIVEC enabled but VSX disabled, not the
-other way around.
-
-> 
-> > +#ifdef CONFIG_ALTIVEC
-> >  static inline int kvmppc_get_vsr_word_offset(int index)
-> >  {
-> >  	int offset;
-> > @@ -864,6 +848,40 @@ static inline int kvmppc_get_vsr_word_offset(int index)
-> >  	return offset;
-> >  }
-> >  
-> > +static inline void kvmppc_set_vmx_dword(struct kvm_vcpu *vcpu,
-> > +		u64 gpr)
-> > +{
-> > +	int index = vcpu->arch.io_gpr & KVM_MMIO_REG_MASK;
-> > +	u64 hi = gpr >> 32;
-> > +	u64 lo = gpr & 0xffffffff;
-> > +
-> > +	if (vcpu->arch.mmio_vmx_copy_nums == 1) {
-> > +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(2)] = hi;
-> > +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(3)] = lo;
-> > +	} else if (vcpu->arch.mmio_vmx_copy_nums == 2) {
-> > +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(0)] = hi;
-> > +		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(1)] = lo;
-> > +	}
-> 
-> This splitting of the value into hi/lo words looks to me like you're
-> assuming a big-endian byte ordering.  It looks like it will end up
-> swapping the words in each half of the register on a little-endian
-> host (regardless of the endianness of the guest).
-
-Yep! I focused on VCPU_VSX_VR code to fill the vector correctly but
-missed the 64-bit value splitting. I'll fix it and improve the testing,
-considering other endian scenario.
-
-> 
-> > +}
-> > +#endif /* CONFIG_ALTIVEC */
-> > +
-> > +#ifdef CONFIG_VSX
-> > +static inline int kvmppc_get_vsr_dword_offset(int index)
-> > +{
-> > +	int offset;
-> > +
-> > +	if ((index != 0) && (index != 1))
-> > +		return -1;
-> > +
-> > +#ifdef __BIG_ENDIAN
-> > +	offset =  index;
-> > +#else
-> > +	offset = 1 - index;
-> > +#endif
-> > +
-> > +	return offset;
-> > +}
-> > +
-> >  static inline void kvmppc_set_vsr_dword(struct kvm_vcpu *vcpu,
-> >  	u64 gpr)
-> >  {
-> > @@ -1027,6 +1045,11 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
-> >  				KVMPPC_VSX_COPY_DWORD_LOAD_DUMP)
-> >  			kvmppc_set_vsr_dword_dump(vcpu, gpr);
-> >  		break;
-> > +#endif
-> > +#ifdef CONFIG_ALTIVEC
-> > +	case KVM_MMIO_REG_VMX:
-> > +		kvmppc_set_vmx_dword(vcpu, gpr);
-> > +		break;
-> >  #endif
-> >  	default:
-> >  		BUG();
-> > @@ -1307,6 +1330,99 @@ static int kvmppc_emulate_mmio_vsx_loadstore(struct kvm_vcpu *vcpu,
-> >  }
-> >  #endif /* CONFIG_VSX */
-> >  
-> > +#ifdef CONFIG_ALTIVEC
-> > +/* handle quadword load access in two halves */
-> > +int kvmppc_handle_load128_by2x64(struct kvm_run *run, struct kvm_vcpu *vcpu,
-> > +		unsigned int rt, int is_default_endian)
-> > +{
-> > +	enum emulation_result emulated = EMULATE_DONE;
-> > +
-> > +	while (vcpu->arch.mmio_vmx_copy_nums) {
-> > +		emulated = __kvmppc_handle_load(run, vcpu, rt, 8,
-> > +				is_default_endian, 0);
-> > +		if (emulated != EMULATE_DONE)
-> > +			break;
-> > +
-> > +		vcpu->arch.mmio_vmx_copy_nums--;
-> > +	}
-> > +	return emulated;
-> > +}
-> > +
-> > +static inline int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
-> > +{
-> > +
-> > +	if (vcpu->arch.mmio_vmx_copy_nums == 1) {
-> > +		*val = VCPU_VSX_VR(vcpu, rs).u[kvmppc_get_vsr_word_offset(2)];
-> > +		*val = (*val << 32) | VCPU_VSX_VR(vcpu, rs).
-> > +			u[kvmppc_get_vsr_word_offset(3)];
-> > +		return 0;
-> > +	} else if (vcpu->arch.mmio_vmx_copy_nums == 2) {
-> > +		*val = VCPU_VSX_VR(vcpu, rs).u[kvmppc_get_vsr_word_offset(0)];
-> > +		*val = (*val << 32) | VCPU_VSX_VR(vcpu, rs).
-> > +			u[kvmppc_get_vsr_word_offset(1)];
-> > +		return 0;
-> > +	}
-> > +	return -1;
-> > +}
-> 
-> Once again, the way this puts two word values together to get a
-> doubleword looks wrong for a little-endian host.
-
-Got it. It's clear the mixed-endianess confusion. I'll fix it, improve
-the test cases and send a V2.
-
-Thank you Paul!
-
-> 
-> Paul.
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>
+> Thanks,
+> Christian
+>
+>
+>
+> On 08 January 2018 at 02:14AM, Michal Suchanek wrote:
+>>
+>> On 7 January 2018 at 19:54, Olof Johansson <olof@lixom.net> wrote:
+>>>
+>>> On Sun, Jan 7, 2018 at 5:04 AM, Christian Zigotzky
+>>> <chzigotzky@xenosoft.de> wrote:
+>>>>
+>>>> Hello Michael,
+>>>>
+>>>> Thanks for your reply. We are using P.A. Semi and Freescale CPUs.
+>>>>
+>>>> @Olof
+>>>> Do you have some infos for us?
+>>>
+>>> I'm low on spare time to experiment and explore what might be exposed
+>>> or not, and I no longer have any proprietary microarchitecture
+>>> documentation of the core.
+>>>
+>>> I suggest reaching out to your supplier of the silicon for commercial
+>>> support and information, or just going with what I'm sure will be
+>>> architecturally generic solutions to the problem when IBM has them
+>>> ready.
+>>
+>> The solution for IBM POWER involves patching the firmware as well as
+>> Linux. Without knowledge of the architecture specifics it is not
+>> possible to tell if other cores are affected and if the measures
+>> implemented by IBM can be used. In fact they probably rely on
+>> 64s-specific instructions and are in part implemented in 64s-specific
+>> assembly files.
+>>
+>> So this will not work without support for the specific core either by
+>> the vendor or somebody who has knowledge of the architecture details.
+>>
+>> Thanks
+>>
+>> Michal
+>>
+>
