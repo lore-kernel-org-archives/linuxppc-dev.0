@@ -1,19 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMB91xM0zF0Yg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:17 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id j2so1876469pgv.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:17 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBD0vzLzF0Yp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:20 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id e3so1306371pfi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:20 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH 07/26] KVM: PPC: Book3S PR: add TEXASR related macros
-Date: Thu, 11 Jan 2018 18:11:20 +0800
-Message-Id: <1515665499-31710-8-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH 08/26] KVM: PPC: Book3S PR: Sync TM bits to shadow msr for
+ problem state guest
+Date: Thu, 11 Jan 2018 18:11:21 +0800
+Message-Id: <1515665499-31710-9-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,69 +28,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patches add some macros for CR0/TEXASR bits so that PR KVM TM
-logic(tbegin./treclaim./tabort.) can make use of them later.
+MSR TS bits can be modified with non-privileged instruction like
+tbegin./tend.  That means guest can change MSR value "silently" without
+notifying host.
+
+It is necessary to sync the TM bits to host so that host can calculate
+shadow msr correctly.
+
+note privilege guest will always fail transactions so we only take
+care of problem state guest.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/reg.h              | 21 ++++++++++++++++++++-
- arch/powerpc/platforms/powernv/copy-paste.h |  3 +--
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ arch/powerpc/kvm/book3s_pr.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index b779f3c..6c293bc 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -146,6 +146,12 @@
- #define MSR_64BIT	0
- #endif
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 4e9acdd..7ec866a 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -977,6 +977,9 @@ int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ {
+ 	int r = RESUME_HOST;
+ 	int s;
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	ulong old_msr = kvmppc_get_msr(vcpu);
++#endif
  
-+/* Condition Register related */
-+#define CR0_SHIFT	28
-+#define CR0_MASK	0xF
-+#define CR0_TBEGIN_FAILURE	(0x2 << 28) /* 0b0010 */
-+
-+
- /* Power Management - Processor Stop Status and Control Register Fields */
- #define PSSCR_RL_MASK		0x0000000F /* Requested Level */
- #define PSSCR_MTL_MASK		0x000000F0 /* Maximum Transition Level */
-@@ -237,8 +243,21 @@
- #define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
- #define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
- #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
--#define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
-+#define TEXASR_FC_LG	(63 - 7)	/* Failure Code */
-+#define TEXASR_HV_LG	(63 - 34)	/* Hypervisor state*/
-+#define TEXASR_PR_LG	(63 - 35)	/* Privilege level */
-+#define TEXASR_FS_LG	(63 - 36)	/* failure summary */
-+#define TEXASR_EX_LG	(63 - 37)	/* TFIAR exact bit */
-+#define TEXASR_ROT_LG	(63 - 38)	/* ROT bit */
-+#define TEXASR_FC	(ASM_CONST(0xFF) << TEXASR_FC_LG)
-+#define TEXASR_HV	__MASK(TEXASR_HV_LG)
-+#define TEXASR_PR	__MASK(TEXASR_PR_LG)
-+#define TEXASR_FS	__MASK(TEXASR_FS_LG)
-+#define TEXASR_EX	__MASK(TEXASR_EX_LG)
-+#define TEXASR_ROT	__MASK(TEXASR_ROT_LG)
-+
- #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
-+
- #define SPRN_TIDR	144	/* Thread ID register */
- #define SPRN_CTRLF	0x088
- #define SPRN_CTRLT	0x098
-diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
-index c9a5036..3fa62de 100644
---- a/arch/powerpc/platforms/powernv/copy-paste.h
-+++ b/arch/powerpc/platforms/powernv/copy-paste.h
-@@ -7,9 +7,8 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- #include <asm/ppc-opcode.h>
-+#include <asm/reg.h>
+ 	vcpu->stat.sum_exits++;
  
--#define CR0_SHIFT	28
--#define CR0_MASK	0xF
- /*
-  * Copy/paste instructions:
-  *
+@@ -988,6 +991,28 @@ int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	trace_kvm_exit(exit_nr, vcpu);
+ 	guest_exit();
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	/*
++	 * Unlike other MSR bits, MSR[TS]bits can be changed at guest without
++	 * notifying host:
++	 *  modified by unprivileged instructions like "tbegin"/"tend"/
++	 * "tresume"/"tsuspend" in PR KVM guest.
++	 *
++	 * It is necessary to sync here to calculate a correct shadow_msr.
++	 *
++	 * privileged guest's tbegin will be failed at present. So we
++	 * only take care of problem state guest.
++	 */
++	if (unlikely((old_msr & MSR_PR) &&
++		(vcpu->arch.shadow_srr1 & (MSR_TS_MASK)) !=
++				(old_msr & (MSR_TS_MASK)))) {
++		old_msr &= ~(MSR_TS_MASK);
++		old_msr |= (vcpu->arch.shadow_srr1 & (MSR_TS_MASK));
++		kvmppc_set_msr_fast(vcpu, old_msr);
++		kvmppc_recalc_shadow_msr(vcpu);
++	}
++#endif
++
+ 	switch (exit_nr) {
+ 	case BOOK3S_INTERRUPT_INST_STORAGE:
+ 	{
 -- 
 1.8.3.1
