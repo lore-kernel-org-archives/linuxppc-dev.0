@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBN16HfzF0W9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:28 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id 23so1305981pfp.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHMBR3RsVzF0Xq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 21:12:31 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id t12so1306417pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 02:12:31 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH 10/26] KVM: PPC: Book3S PR: set MSR HV bit accordingly for
- PPC970 and others.
-Date: Thu, 11 Jan 2018 18:11:23 +0800
-Message-Id: <1515665499-31710-11-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH 11/26] KVM: PPC: Book3S PR: prevent TS bits change in
+ kvmppc_interrupt_pr()
+Date: Thu, 11 Jan 2018 18:11:24 +0800
+Message-Id: <1515665499-31710-12-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,47 +28,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Apple G5 machines(PPC970/FX/GX/MP) have supervisor mode disabled and
-MSR HV bit is forced into 1. We should follow this in PR KVM guest.
+PR KVM host usually equipped with enabled TM in its host MSR value, and
+with non-transactional TS value.
 
-This patch set MSR HV=1 for G5 machines and HV=0 for others on PR
-KVM guest.
+When a guest with TM active traps into PR KVM host, the rfid at the
+tail of kvmppc_interrupt_pr() will try to switch TS bits from
+S0 (Suspended & TM disabled) to N1 (Non-transactional & TM enabled).
+
+That will leads to TM Bad Thing interrupt.
+
+This patch manually sets target TS bits unchanged to avoid this
+exception.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-Suggested-by: Paul Mackerras <paulus@ozlabs.org>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_pr.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_segment.S | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 7ec866a..b2f7566 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -320,6 +320,7 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
- {
- 	ulong guest_msr = kvmppc_get_msr(vcpu);
- 	ulong smsr = guest_msr;
-+	u32 guest_pvr = vcpu->arch.pvr;
+diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+index 2a2b96d..675e9a2 100644
+--- a/arch/powerpc/kvm/book3s_segment.S
++++ b/arch/powerpc/kvm/book3s_segment.S
+@@ -383,6 +383,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	 */
  
- 	/* Guest MSR values */
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -334,7 +335,16 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
- 	smsr |= (guest_msr & vcpu->arch.guest_owned_ext);
- 	/* 64-bit Process MSR values */
- #ifdef CONFIG_PPC_BOOK3S_64
--	smsr |= MSR_ISF | MSR_HV;
-+	smsr |= MSR_ISF;
-+
-+	/* for PPC970 chip, its HV bit is hard-wired to 1. For others,
-+	 * we should clear HV bit.
+ 	PPC_LL	r6, HSTATE_HOST_MSR(r13)
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	/*
++	 * We don't want to change MSR[TS] bits via rfi here.
++	 * The actual TM handling logic will be in host with
++	 * recovered DR/IR bits after HSTATE_VMHANDLER.
++	 * And MSR_TM can be enabled in HOST_MSR so rfid may
++	 * not suppress this change and can lead to exception.
++	 * Manually set MSR to prevent TS state change here.
 +	 */
-+	if ((PVR_VER(guest_pvr) == PVR_970) ||
-+	    (PVR_VER(guest_pvr) == PVR_970FX) ||
-+	    (PVR_VER(guest_pvr) == PVR_970MP) ||
-+	    (PVR_VER(guest_pvr) == PVR_970GX))
-+		smsr |= MSR_HV;
- #endif
- 	vcpu->arch.shadow_msr = smsr;
- }
++	mfmsr   r7
++	rldicl  r7, r7, 64 - MSR_TS_S_LG, 62
++	rldimi  r6, r7, MSR_TS_S_LG, 63 - MSR_TS_T_LG
++#endif
+ 	PPC_LL	r8, HSTATE_VMHANDLER(r13)
+ 
+ #ifdef CONFIG_PPC64
 -- 
 1.8.3.1
