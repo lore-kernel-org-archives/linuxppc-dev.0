@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ32tSXzF0XG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:11 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id e3so870774pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:11 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHGZ52gkHzF0XG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 17:44:13 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id e76so873608pfk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jan 2018 22:44:13 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org,
@@ -15,10 +15,9 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  kernel@pengutronix.de
-Subject: [PATCH v2 05/16] ASoC: fsl_ssi: Clear FIFO directly in
- fsl_ssi_config()
-Date: Wed, 10 Jan 2018 22:43:04 -0800
-Message-Id: <1515652995-15996-6-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v2 07/16] ASoC: fsl_ssi: Add DAIFMT define for AC97
+Date: Wed, 10 Jan 2018 22:43:06 -0800
+Message-Id: <1515652995-15996-8-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,98 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The FIFO clear helper function is just one line of code now.
-So it could be cleaned up by removing it and calling regmap
-directly.
+The _fsl_ssi_set_dai_fmt() bypasses an undefined format for AC97
+mode. However, it's not really necessary if AC97 has its complete
+format defined.
 
-Meanwhile, FIFO clear could be applied to all use cases, not
-confined to AC97. So this patch also moves FIFO clear in the
-trigger() to fsl_ssi_config() and removes the AC97 check.
-
-Note that SOR register is safe from offline_config HW limit.
+So this patch adds a DAIFMT macro of complete format including a
+clock direction and polarity.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 31 +++++++++----------------------
- 1 file changed, 9 insertions(+), 22 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index f026386..263c067 100644
+index 09a571a..b449b8b 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -406,17 +406,6 @@ static void fsl_ssi_rxtx_config(struct fsl_ssi *ssi, bool enable)
- }
+@@ -86,6 +86,16 @@
+ 	 SNDRV_PCM_FMTBIT_S24_LE)
+ #endif
  
- /**
-- * Clear remaining data in the FIFO to avoid dirty data or channel slipping
-- */
--static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
--{
--	bool tx = !is_rx;
--
--	regmap_update_bits(ssi->regs, REG_SSI_SOR,
--			   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
--}
--
--/**
-  * Exclude bits that are used by the opposite stream
-  *
-  * When both streams are active, disabling some bits for the current stream
-@@ -442,7 +431,8 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
- static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 			   struct fsl_ssi_regvals *vals)
- {
--	bool dir = (&ssi->regvals[TX] == vals) ? TX : RX;
-+	bool tx = &ssi->regvals[TX] == vals;
-+	bool dir = tx ? TX : RX;
- 	struct regmap *regs = ssi->regs;
- 	struct fsl_ssi_regvals *avals;
- 	bool aactive;
-@@ -484,7 +474,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 
- 	/* Online configure single direction while SSI is running */
- 	if (enable) {
--		fsl_ssi_fifo_clear(ssi, vals->scr & SSI_SCR_RE);
-+		/* Clear FIFO to prevent dirty data or channel slipping */
-+		regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+				   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
- 
- 		regmap_update_bits(regs, REG_SSI_SRCR, vals->srcr, vals->srcr);
- 		regmap_update_bits(regs, REG_SSI_STCR, vals->stcr, vals->stcr);
-@@ -506,6 +498,10 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		regmap_update_bits(regs, REG_SSI_SRCR, srcr, 0);
- 		regmap_update_bits(regs, REG_SSI_STCR, stcr, 0);
- 		regmap_update_bits(regs, REG_SSI_SIER, sier, 0);
++/*
++ * In AC97 mode, TXDIR bit is forced to 0 and TFDIR bit is forced to 1:
++ *  - SSI inputs external bit clock and outputs frame sync clock -- CBM_CFS
++ *  - Also have NB_NF to mark these two clocks will not be inverted
++ */
++#define FSLSSI_AC97_DAIFMT \
++	(SND_SOC_DAIFMT_AC97 | \
++	 SND_SOC_DAIFMT_CBM_CFS | \
++	 SND_SOC_DAIFMT_NB_NF)
 +
-+		/* Clear FIFO to prevent dirty data or channel slipping */
-+		regmap_update_bits(ssi->regs, REG_SSI_SOR,
-+				   SSI_SOR_xX_CLR(tx), SSI_SOR_xX_CLR(tx));
+ #define FSLSSI_SIER_DBG_RX_FLAGS \
+ 	(SSI_SIER_RFF0_EN | \
+ 	 SSI_SIER_RLS_EN | \
+@@ -959,8 +969,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		scr &= ~SSI_SCR_SYS_CLK_EN;
+ 		break;
+ 	default:
+-		if (!fsl_ssi_is_ac97(ssi))
+-			return -EINVAL;
++		return -EINVAL;
  	}
  
- config_done:
-@@ -1086,7 +1082,6 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- {
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(rtd->cpu_dai);
--	struct regmap *regs = ssi->regs;
- 
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
-@@ -1111,14 +1106,6 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
- 		return -EINVAL;
+ 	stcr |= strcr;
+@@ -1367,7 +1376,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	sprop = of_get_property(np, "fsl,mode", NULL);
+ 	if (sprop) {
+ 		if (!strcmp(sprop, "ac97-slave"))
+-			ssi->dai_fmt = SND_SOC_DAIFMT_AC97;
++			ssi->dai_fmt = FSLSSI_AC97_DAIFMT;
  	}
  
--	/* Clear corresponding FIFO */
--	if (fsl_ssi_is_ac97(ssi)) {
--		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
--			regmap_write(regs, REG_SSI_SOR, SSI_SOR_TX_CLR);
--		else
--			regmap_write(regs, REG_SSI_SOR, SSI_SOR_RX_CLR);
--	}
--
- 	return 0;
- }
- 
+ 	/* Select DMA or FIQ */
 -- 
 2.7.4
