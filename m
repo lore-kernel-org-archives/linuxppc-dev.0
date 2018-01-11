@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zH8qq2HngzDqlG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zH8qq4vqNzDqlG
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 13:25:43 +1100 (AEDT)
-In-Reply-To: <20180103211252.24615-2-joserz@linux.vnet.ibm.com>
-To: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20180108165453.26066-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: benh@au1.ibm.com, david@gibson.dropbear.id.au
-Subject: Re: [v3,
- 1/1] powerpc/pseries: Make RAS IRQ explicitly dependent on DLPAR WQ
-Message-Id: <3zH8qq1SWkz9sRW@ozlabs.org>
+Cc: mikey@neuling.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
+ npiggin@gmail.com, oohall@gmail.com, anton@samba.org, paulus@samba.org,
+ tglx@linutronix.de
+Subject: Re: [01/11] powerpc/pseries: Add H_GET_CPU_CHARACTERISTICS flags &
+ wrapper
+Message-Id: <3zH8qq3QlLz9t32@ozlabs.org>
 Date: Thu, 11 Jan 2018 13:25:43 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,24 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-01-03 at 21:12:52 UTC, Jose Ricardo Ziviani wrote:
-> The hotplug engine uses its own workqueue to handle IRQ requests, the
-> problem is that such workqueue is initialized after init_ras_IRQ, which
-> will cause a kernel panic if any hotplug interruption is issued in that
-> period of time.
+On Mon, 2018-01-08 at 16:54:43 UTC, Michael Ellerman wrote:
+> From: Michael Neuling <mikey@neuling.org>
 > 
-> This patch makes RAS IRQ registration explicitly dependent on DLPAR
-> workqueue and adds a check to make sure that the workqueue is not
-> initialized more than once.
+> A new hypervisor call has been defined to communicate various
+> characteristics of the CPU to guests. Add definitions for the hcall
+> number, flags and a wrapper function.
 > 
-> Reported-by: Min Deng <mdeng@redhat.com>
-> Reported-by: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>
-> Tested-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Applied to powerpc fixes, thanks.
+Series applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/e2d5915293ffdff977ddcfc12b817b
+https://git.kernel.org/powerpc/c/191eccb1580939fb0d47deb405b82a
 
 cheers
