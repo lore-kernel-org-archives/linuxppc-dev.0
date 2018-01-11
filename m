@@ -2,13 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zH8l64mkWzF0TZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 13:21:38 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/kernel: Print actual address of regs when oopsing
-Date: Thu, 11 Jan 2018 13:21:35 +1100
-Message-Id: <20180111022135.19532-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zH8qq2HngzDqlG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 13:25:43 +1100 (AEDT)
+In-Reply-To: <20180103211252.24615-2-joserz@linux.vnet.ibm.com>
+To: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: benh@au1.ibm.com, david@gibson.dropbear.id.au
+Subject: Re: [v3,
+ 1/1] powerpc/pseries: Make RAS IRQ explicitly dependent on DLPAR WQ
+Message-Id: <3zH8qq1SWkz9sRW@ozlabs.org>
+Date: Thu, 11 Jan 2018 13:25:43 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,35 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we oops or otherwise call show_regs() we print the address of the
-regs structure. Being able to see the address is fairly useful,
-firstly to verify that the regs pointer is not completely bogus, and
-secondly it allows you to dump the regs and surrounding memory with a
-debugger if you have one.
+On Wed, 2018-01-03 at 21:12:52 UTC, Jose Ricardo Ziviani wrote:
+> The hotplug engine uses its own workqueue to handle IRQ requests, the
+> problem is that such workqueue is initialized after init_ras_IRQ, which
+> will cause a kernel panic if any hotplug interruption is issued in that
+> period of time.
+> 
+> This patch makes RAS IRQ registration explicitly dependent on DLPAR
+> workqueue and adds a check to make sure that the workqueue is not
+> initialized more than once.
+> 
+> Reported-by: Min Deng <mdeng@redhat.com>
+> Reported-by: Daniel Henrique Barboza <danielhb@linux.vnet.ibm.com>
+> Tested-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-In the normal case the regs will be located somewhere on the stack, so
-printing their location discloses no further information than printing
-the stack pointer does already.
+Applied to powerpc fixes, thanks.
 
-So switch to %px and print the actual address, not the hashed value.
+https://git.kernel.org/powerpc/c/e2d5915293ffdff977ddcfc12b817b
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/process.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 5acb5a176dbe..72be0c32e902 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1403,7 +1403,7 @@ void show_regs(struct pt_regs * regs)
- 
- 	printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
- 	       regs->nip, regs->link, regs->ctr);
--	printk("REGS: %p TRAP: %04lx   %s  (%s)\n",
-+	printk("REGS: %px TRAP: %04lx   %s  (%s)\n",
- 	       regs, regs->trap, print_tainted(), init_utsname()->release);
- 	printk("MSR:  "REG" ", regs->msr);
- 	print_msr_bits(regs->msr);
--- 
-2.14.3
+cheers
