@@ -1,23 +1,17 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHmt72nWjzF0h9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:29:50 +1100 (AEDT)
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: linux-kernel@vger.kernel.org
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Oleg Nesterov <oleg@redhat.com>,
- linux-arch@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
- Paul Mackerras <paulus@samba.org>, Kumar Gala <kumar.gala@freescale.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Date: Thu, 11 Jan 2018 18:59:35 -0600
-Message-Id: <20180112005940.23279-6-ebiederm@xmission.com>
-In-Reply-To: <87373b6ghs.fsf@xmission.com>
-References: <87373b6ghs.fsf@xmission.com>
-Subject: [PATCH 06/11] signal/powerpc: Document conflicts with SI_USER and
- SIGFPE and SIGTRAP
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHmxN3vzlzF0cZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:32:40 +1100 (AEDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 5/5] powerpc: Use the TRAP macro whenever comparing a trap
+ number
+Date: Fri, 12 Jan 2018 13:28:49 +1100
+Message-Id: <20180112022849.30899-5-benh@kernel.crashing.org>
+In-Reply-To: <20180112022849.30899-1-benh@kernel.crashing.org>
+References: <20180112022849.30899-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,111 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Setting si_code to 0 results in a userspace seeing an si_code of 0.
-This is the same si_code as SI_USER.  Posix and common sense requires
-that SI_USER not be a signal specific si_code.  As such this use of 0
-for the si_code is a pretty horribly broken ABI.
+Trap numbers can have extra bits at the bottom that need to
+be filtered out. There are a few cases where we don't do that.
 
-Further use of si_code == 0 guaranteed that copy_siginfo_to_user saw a
-value of __SI_KILL and now sees a value of SIL_KILL with the result
-that uid and pid fields are copied and which might copying the si_addr
-field by accident but certainly not by design.  Making this a very
-flakey implementation.
+It's possible that we got lucky but better safe than sorry.
 
-Utilizing FPE_FIXME and TRAP_FIXME, siginfo_layout() will now return
-SIL_FAULT and the appropriate fields will be reliably copied.
-
-Possible ABI fixes includee:
-- Send the signal without siginfo
-- Don't generate a signal
-- Possibly assign and use an appropriate si_code
-- Don't handle cases which can't happen
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Kumar Gala <kumar.gala@freescale.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc:  linuxppc-dev@lists.ozlabs.org
-Ref: 9bad068c24d7 ("[PATCH] ppc32: support for e500 and 85xx")
-Ref: 0ed70f6105ef ("PPC32: Provide proper siginfo information on various exceptions.")
-History Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/uapi/asm/siginfo.h | 15 +++++++++++++++
- arch/powerpc/kernel/traps.c             | 10 +++++-----
- 2 files changed, 20 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/process.c | 2 +-
+ arch/powerpc/kernel/traps.c   | 2 +-
+ arch/powerpc/mm/fault.c       | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/uapi/asm/siginfo.h b/arch/powerpc/include/uapi/asm/siginfo.h
-index 1a691141e49f..444ca6c9989a 100644
---- a/arch/powerpc/include/uapi/asm/siginfo.h
-+++ b/arch/powerpc/include/uapi/asm/siginfo.h
-@@ -18,4 +18,19 @@
- #undef NSIGTRAP
- #define NSIGTRAP	4
- 
-+/*
-+ * SIGFPE si_codes
-+ */
-+#ifdef __KERNEL__
-+#define FPE_FIXME	0	/* Broken dup of SI_USER */
-+#endif /* __KERNEL__ */
-+
-+/*
-+ * SIGTRAP si_codes
-+ */
-+#ifdef __KERNEL__
-+#define TRAP_FIXME	0	/* Broken dup of SI_USER */
-+#endif /* __KERNEL__ */
-+
-+
- #endif	/* _ASM_POWERPC_SIGINFO_H */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 72be0c32e902..397d6e64e3df 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1409,7 +1409,7 @@ void show_regs(struct pt_regs * regs)
+ 	print_msr_bits(regs->msr);
+ 	pr_cont("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
+ 	trap = TRAP(regs);
+-	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
++	if ((TRAP(regs) != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
+ 		pr_cont("CFAR: "REG" ", regs->orig_gpr3);
+ 	if (trap == 0x200 || trap == 0x300 || trap == 0x600)
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index f3eb61be0d30..f2e6e1838952 100644
+index f3eb61be0d30..d61989be28e1 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -917,7 +917,7 @@ void unknown_exception(struct pt_regs *regs)
- 	printk("Bad trap at PC: %lx, SR: %lx, vector=%lx\n",
- 	       regs->nip, regs->msr, regs->trap);
+@@ -1564,7 +1564,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 	u8 status;
+ 	bool hv;
  
--	_exception(SIGTRAP, regs, 0, 0);
-+	_exception(SIGTRAP, regs, TRAP_FIXME, 0);
+-	hv = (regs->trap == 0xf80);
++	hv = (TRAP(regs) == 0xf80);
+ 	if (hv)
+ 		value = mfspr(SPRN_HFSCR);
+ 	else
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 6e1e39035380..7b15fe2ac986 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -576,7 +576,7 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
  
- 	exception_exit(prev_state);
- }
-@@ -939,7 +939,7 @@ void instruction_breakpoint_exception(struct pt_regs *regs)
+ 	/* kernel has accessed a bad area */
  
- void RunModeException(struct pt_regs *regs)
- {
--	_exception(SIGTRAP, regs, 0, 0);
-+	_exception(SIGTRAP, regs, TRAP_FIXME, 0);
- }
- 
- void single_step_exception(struct pt_regs *regs)
-@@ -978,7 +978,7 @@ static void emulate_single_step(struct pt_regs *regs)
- 
- static inline int __parse_fpscr(unsigned long fpscr)
- {
--	int ret = 0;
-+	int ret = FPE_FIXME;
- 
- 	/* Invalid operation */
- 	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX))
-@@ -1929,7 +1929,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
- 	extern int do_spe_mathemu(struct pt_regs *regs);
- 	unsigned long spefscr;
- 	int fpexc_mode;
--	int code = 0;
-+	int code = FPE_FIXME;
- 	int err;
- 
- 	flush_spe_to_thread(current);
-@@ -1998,7 +1998,7 @@ void SPEFloatingPointRoundException(struct pt_regs *regs)
- 		printk(KERN_ERR "unrecognized spe instruction "
- 		       "in %s at %lx\n", current->comm, regs->nip);
- 	} else {
--		_exception(SIGFPE, regs, 0, regs->nip);
-+		_exception(SIGFPE, regs, FPE_FIXME, regs->nip);
- 		return;
- 	}
- }
+-	switch (regs->trap) {
++	switch (TRAP(regs)) {
+ 	case 0x300:
+ 	case 0x380:
+ 		printk(KERN_ALERT "Unable to handle kernel paging request for "
 -- 
-2.14.1
+2.14.3
