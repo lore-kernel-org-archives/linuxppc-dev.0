@@ -2,8 +2,8 @@ Return-Path: <BATV+b628242e4f103a69f336+5255+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHxBH1mRnzF0RR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 19:44:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHxBK2HxWzF0Qt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 19:44:25 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
 Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
@@ -17,10 +17,10 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 28/34] dma-direct: use node local allocations for coherent
- memory
-Date: Fri, 12 Jan 2018 09:42:26 +0100
-Message-Id: <20180112084232.2857-29-hch@lst.de>
+Subject: [PATCH 29/34] dma-direct: add support for allocation from ZONE_DMA
+ and ZONE_DMA32
+Date: Fri, 12 Jan 2018 09:42:27 +0100
+Message-Id: <20180112084232.2857-30-hch@lst.de>
 In-Reply-To: <20180112084232.2857-1-hch@lst.de>
 References: <20180112084232.2857-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,26 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To preserve the x86 behavior.
+This allows to dip into zones for lower memory if they are available.
+If one of the zones is not available the corresponding GFP_* flag
+will evaluate to 0 so they won't change anything.  We provide an
+arch tunable for those architectures that do not use GFP_DMA for
+the lowest 24-bits, given that there are a few.
+
+Roughly based on the x86 code.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
 ---
- lib/dma-direct.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ lib/dma-direct.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 diff --git a/lib/dma-direct.c b/lib/dma-direct.c
-index a9ae98be7af3..f04a424f91fa 100644
+index f04a424f91fa..8f76032ebc3c 100644
 --- a/lib/dma-direct.c
 +++ b/lib/dma-direct.c
-@@ -38,7 +38,7 @@ static void *dma_direct_alloc(struct device *dev, size_t size,
+@@ -12,6 +12,14 @@
+ 
+ #define DIRECT_MAPPING_ERROR		0
+ 
++/*
++ * Most architectures use ZONE_DMA for the first 16 Megabytes, but
++ * some use it for entirely different regions:
++ */
++#ifndef ARCH_ZONE_DMA_BITS
++#define ARCH_ZONE_DMA_BITS 24
++#endif
++
+ static bool
+ check_addr(struct device *dev, dma_addr_t dma_addr, size_t size,
+ 		const char *caller)
+@@ -34,6 +42,12 @@ static void *dma_direct_alloc(struct device *dev, size_t size,
+ 	int page_order = get_order(size);
+ 	struct page *page = NULL;
+ 
++	/* GFP_DMA32 and GFP_DMA are no ops without the corresponding zones: */
++	if (dev->coherent_dma_mask <= DMA_BIT_MASK(ARCH_ZONE_DMA_BITS))
++		gfp |= GFP_DMA;
++	if (dev->coherent_dma_mask <= DMA_BIT_MASK(32) && !(gfp & GFP_DMA))
++		gfp |= GFP_DMA32;
++
+ 	/* CMA can be used only in the context which permits sleeping */
  	if (gfpflags_allow_blocking(gfp))
  		page = dma_alloc_from_contiguous(dev, count, page_order, gfp);
- 	if (!page)
--		page = alloc_pages(gfp, page_order);
-+		page = alloc_pages_node(dev_to_node(dev), gfp, page_order);
- 	if (!page)
- 		return NULL;
- 
 -- 
 2.14.2
