@@ -1,44 +1,28 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <caleb@crome.org>
+Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c00::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJ8p90ZDczF0lS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 04:27:44 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0CHORpL095009
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 12:27:42 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ff17p0njq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 12:27:42 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Fri, 12 Jan 2018 17:27:38 -0000
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: [PATCH v6 24/24] powerpc/mm: Add speculative page fault
-Date: Fri, 12 Jan 2018 18:26:08 +0100
-In-Reply-To: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1515777968-867-25-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJ8zM54R4zF0V3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 04:35:42 +1100 (AEDT)
+Received: by mail-pf0-x22f.google.com with SMTP id k19so4887933pfj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 09:35:42 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
+References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
+From: Caleb Crome <caleb@crome.org>
+Date: Fri, 12 Jan 2018 09:35:20 -0800
+Message-ID: <CAG5mAdzcpHmQbFopgryhFt5j6FpGU1G5_JFQboX4iU7tsMhY_g@mail.gmail.com>
+Subject: Re: [PATCH v2 00/16] ASoC: fsl_ssi: Clean up - program flow level
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Timur Tabi <timur@tabi.org>, Mark Brown <broonie@kernel.org>,
+ mail@maciej.szmigiero.name,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>,
+ Arnaud Mouiche <arnaud.mouiche@invoxia.com>, lukma@denx.de,
+ Sascha Hauer <kernel@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,85 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enable the speculative page fault on the PowerPC
-architecture.
+On Wed, Jan 10, 2018 at 10:42 PM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
+>
+> ==Change log==
+> v2
+>  * Reworked the series by taking suggestions from Maciej
+>   + Added PATCH-01 to keep all ssi->i2s_net updated
+>   + Replaced bool tx with bool dir in PATCH-03 and PATCH-06
+>   + Moved all initial register configurations from dai probe() to
+>     platform probe() so as to let AC97 CODEC successfully probe.
+>  * Added Tested-by from Caleb for TDM test cases.
+>
+> ==Background==
+> The fsl_ssi driver was designed for PPC originally and then it has
+> been updated to support different modes for i.MX Series, including
+> SDMA, I2S Master mode, AC97 and older i.MXs with FIQ, by different
+> contributors for different use cases in different coding styles.
+>
+> Additionally, in order to fix/work-around hardware bugs and design
+> flaws, the driver made a lot of compromise so now its program flow
+> looks very complicated and it's getting hard to maintain or update.
+>
+> So I am going to clean up the driver on both coding style level and
+> program flow level.
+>
+> ==Introduction==
+> This series of patches is the second set to clean up fsl_ssi driver
+> in the program flow level. Any patch here may impact a fundamental
+> test case like playback or record.
+>
+> ==Verification==
+> This series of patches require fully tested. I have done such tests
+> on i.MX6SoloX with WM8962 using imx_v6_v7_defconfig as:
+>  - Playback via I2S Master and Slave mode
+>  - Record via I2S Master and Slave mode
+>  - Simultaneous playback and record via I2S Master and Slave mode
+>  - Background playback with foreground record (starting at different
+>    time) via I2S Master and Slave mode
+>  - Background record with foreground playback (starting at different
+>    time) via I2S Master and Slave mode
+>  * All tests above by hacking offline_config to true in imx51.
+>
+> Caleb has tested v1 with TDM lookback tests on i.MX6.
+>
+> Example of uncovered tests: AC97, PowerPC and FIQ.
+>
+> Nicolin Chen (16):
+>   ASoC: fsl_ssi: Keep ssi->i2s_net updated
+>   ASoC: fsl_ssi: Clean up set_dai_tdm_slot()
+>   ASoC: fsl_ssi: Maintain a mask of active streams
+>   ASoC: fsl_ssi: Rename fsl_ssi_disable_val macro
+>   ASoC: fsl_ssi: Clear FIFO directly in fsl_ssi_config()
+>   ASoC: fsl_ssi: Clean up helper functions of trigger()
+>   ASoC: fsl_ssi: Add DAIFMT define for AC97
+>   ASoC: fsl_ssi: Clean up fsl_ssi_setup_regvals()
+>   ASoC: fsl_ssi: Set xFEN0 and xFEN1 together
+>   ASoC: fsl_ssi: Use snd_soc_init_dma_data instead
+>   ASoC: fsl_ssi: Move one-time configurations to probe()
+>   ASoC: fsl_ssi: Setup AC97 in fsl_ssi_hw_init()
+>   ASoC: fsl_ssi: Clean up _fsl_ssi_set_dai_fmt()
+>   ASoC: fsl_ssi: Remove cpu_dai_drv from fsl_ssi structure
+>   ASoC: fsl_ssi: Move DT related code to a separate probe()
+>   ASoC: fsl_ssi: Use ssi->streams instead of reading register
+>
+>  sound/soc/fsl/fsl_ssi.c | 740 ++++++++++++++++++++++++------------------------
+>  1 file changed, 369 insertions(+), 371 deletions(-)
+>
+> --
+> 2.7.4
+>
+Tested again, just to be sure...  All looks good.
 
-This will try a speculative page fault without holding the mmap_sem,
-if it returns with VM_FAULT_RETRY, the mmap_sem is acquired and the
-traditional page fault processing is done.
 
-The speculative path is only tried for multithreaded process as there is no
-risk of contention on the mmap_sem otherwise.
-
-Build on if CONFIG_SPF is defined (currently for BOOK3S_64 && SMP).
-
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/powerpc/mm/fault.c | 31 ++++++++++++++++++++++++++++++-
- 1 file changed, 30 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 6e1e39035380..67b4c6aa7975 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -384,6 +384,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 			   unsigned long error_code)
- {
- 	struct vm_area_struct * vma;
-+#ifdef CONFIG_SPF
-+	struct vm_area_struct *spf_vma = NULL;
-+#endif
- 	struct mm_struct *mm = current->mm;
- 	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
-  	int is_exec = TRAP(regs) == 0x400;
-@@ -447,6 +450,20 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	if (is_exec)
- 		flags |= FAULT_FLAG_INSTRUCTION;
- 
-+#ifdef CONFIG_SPF
-+	if (is_user && (atomic_read(&mm->mm_users) > 1)) {
-+		/* let's try a speculative page fault without grabbing the
-+		 * mmap_sem.
-+		 */
-+		fault = handle_speculative_fault(mm, address, flags, &spf_vma);
-+		if (!(fault & VM_FAULT_RETRY)) {
-+			perf_sw_event(PERF_COUNT_SW_SPF, 1,
-+				      regs, address);
-+			goto done;
-+		}
-+	}
-+#endif /* CONFIG_SPF */
-+
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -477,7 +494,16 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 		might_sleep();
- 	}
- 
--	vma = find_vma(mm, address);
-+#ifdef CONFIG_SPF
-+	if (spf_vma) {
-+		if (can_reuse_spf_vma(spf_vma, address))
-+			vma = spf_vma;
-+		else
-+			vma =  find_vma(mm, address);
-+		spf_vma = NULL;
-+	} else
-+#endif
-+		vma = find_vma(mm, address);
- 	if (unlikely(!vma))
- 		return bad_area(regs, address);
- 	if (likely(vma->vm_start <= address))
-@@ -531,6 +557,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 
- 	up_read(&current->mm->mmap_sem);
- 
-+#ifdef CONFIG_SPF
-+done:
-+#endif
- 	if (unlikely(fault & VM_FAULT_ERROR))
- 		return mm_fault_error(regs, address, fault);
- 
--- 
-2.7.4
+Tested-by: Caleb Crome <caleb@crome.org>
