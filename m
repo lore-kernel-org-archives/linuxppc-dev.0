@@ -2,14 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHn7C1SdnzF0Tp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:41:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHn7D6fm6zDr53
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:41:12 +1100 (AEDT)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: [PATCH v4 2/6] powerpc/kvm/xive: Enable use of the new "single
- escalation" feature
-Date: Fri, 12 Jan 2018 13:37:12 +1100
-Message-Id: <20180112023716.9963-2-benh@kernel.crashing.org>
+Subject: [PATCH v4 5/6] powerpc/kvm/xive: Make xive_pushed a byte, not a word
+Date: Fri, 12 Jan 2018 13:37:15 +1100
+Message-Id: <20180112023716.9963-5-benh@kernel.crashing.org>
 In-Reply-To: <20180112023716.9963-1-benh@kernel.crashing.org>
 References: <20180112023716.9963-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,269 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-That feature, provided by Power9 DDD2.0 and later, when supported
-by newer OPAL versions, allows to sacrifice a queue (priority 7)
-in favor of merging all the escalation interrupts of the queues
-of a single VP into a single interrupt.
-
-This reduces the number of host interrupts used up by KVM guests
-especially when those guests use multiple priorities.
-
-It will also enable a future change to control the masking of the
-escalation interrupts more precisely to avoid spurrious ones.
-
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/opal-api.h |  1 +
- arch/powerpc/include/asm/xive.h     |  3 ++-
- arch/powerpc/kvm/book3s_xive.c      | 48 ++++++++++++++++++++++++-------------
- arch/powerpc/kvm/book3s_xive.h      | 15 +++++-------
- arch/powerpc/sysdev/xive/native.c   | 18 ++++++++++++--
- 5 files changed, 57 insertions(+), 28 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h     | 2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 233c7504b1f2..fc926743647e 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -1073,6 +1073,7 @@ enum {
- /* Flags for OPAL_XIVE_GET/SET_VP_INFO */
- enum {
- 	OPAL_XIVE_VP_ENABLED		= 0x00000001,
-+	OPAL_XIVE_VP_SINGLE_ESCALATION	= 0x00000002,
- };
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index bfe51356af5e..0c44fa67608d 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -739,7 +739,7 @@ struct kvm_vcpu_arch {
+ 	struct kvmppc_icp *icp; /* XICS presentation controller */
+ 	struct kvmppc_xive_vcpu *xive_vcpu; /* XIVE virtual CPU data */
+ 	__be32 xive_cam_word;    /* Cooked W2 in proper endian with valid bit */
+-	u32 xive_pushed;	 /* Is the VP pushed on the physical CPU ? */
++	u8 xive_pushed;		 /* Is the VP pushed on the physical CPU ? */
+ 	union xive_tma_w01 xive_saved_state; /* W0..1 of XIVE thread state */
+ #endif
  
- /* "Any chip" replacement for chip ID for allocation functions */
-diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-index b619a5585cd6..e602903c3029 100644
---- a/arch/powerpc/include/asm/xive.h
-+++ b/arch/powerpc/include/asm/xive.h
-@@ -111,9 +111,10 @@ extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 506a1c775370..46dc250d072a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1031,7 +1031,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ 	li	r9, TM_QW1_OS + TM_WORD2
+ 	stwcix	r11,r9,r10
+ 	li	r9, 1
+-	stw	r9, VCPU_XIVE_PUSHED(r4)
++	stb	r9, VCPU_XIVE_PUSHED(r4)
+ 	eieio
  
- extern void xive_native_sync_source(u32 hw_irq);
- extern bool is_xive_irq(struct irq_chip *chip);
--extern int xive_native_enable_vp(u32 vp_id);
-+extern int xive_native_enable_vp(u32 vp_id, bool single_escalation);
- extern int xive_native_disable_vp(u32 vp_id);
- extern int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_chip_id);
-+extern bool xive_native_has_single_escalation(void);
- 
- #else
- 
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index cd21c891be9e..87f814e81e7d 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -112,19 +112,21 @@ static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
- 		return -EIO;
- 	}
- 
--	/*
--	 * Future improvement: start with them disabled
--	 * and handle DD2 and later scheme of merged escalation
--	 * interrupts
--	 */
--	name = kasprintf(GFP_KERNEL, "kvm-%d-%d-%d",
--			 vcpu->kvm->arch.lpid, xc->server_num, prio);
-+	if (xc->xive->single_escalation)
-+		name = kasprintf(GFP_KERNEL, "kvm-%d-%d",
-+				 vcpu->kvm->arch.lpid, xc->server_num);
-+	else
-+		name = kasprintf(GFP_KERNEL, "kvm-%d-%d-%d",
-+				 vcpu->kvm->arch.lpid, xc->server_num, prio);
- 	if (!name) {
- 		pr_err("Failed to allocate escalation irq name for queue %d of VCPU %d\n",
- 		       prio, xc->server_num);
- 		rc = -ENOMEM;
- 		goto error;
- 	}
-+
-+	pr_devel("Escalation %s irq %d (prio %d)\n", name, xc->esc_virq[prio], prio);
-+
- 	rc = request_irq(xc->esc_virq[prio], xive_esc_irq,
- 			 IRQF_NO_THREAD, name, vcpu);
- 	if (rc) {
-@@ -191,12 +193,12 @@ static int xive_check_provisioning(struct kvm *kvm, u8 prio)
- 
- 	pr_devel("Provisioning prio... %d\n", prio);
- 
--	/* Provision each VCPU and enable escalations */
-+	/* Provision each VCPU and enable escalations if needed */
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		if (!vcpu->arch.xive_vcpu)
- 			continue;
- 		rc = xive_provision_queue(vcpu, prio);
--		if (rc == 0)
-+		if (rc == 0 && !xive->single_escalation)
- 			xive_attach_escalation(vcpu, prio);
- 		if (rc)
- 			return rc;
-@@ -1082,6 +1084,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	/* Allocate IPI */
- 	xc->vp_ipi = xive_native_alloc_irq();
- 	if (!xc->vp_ipi) {
-+		pr_err("Failed to allocate xive irq for VCPU IPI\n");
- 		r = -EIO;
- 		goto bail;
- 	}
-@@ -1091,19 +1094,34 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	if (r)
- 		goto bail;
- 
-+	/*
-+	 * Enable the VP first as the single escalation mode will
-+	 * affect escalation interrupts numbering
-+	 */
-+	r = xive_native_enable_vp(xc->vp_id, xive->single_escalation);
-+	if (r) {
-+		pr_err("Failed to enable VP in OPAL, err %d\n", r);
-+		goto bail;
-+	}
-+
  	/*
- 	 * Initialize queues. Initially we set them all for no queueing
- 	 * and we enable escalation for queue 0 only which we'll use for
- 	 * our mfrr change notifications. If the VCPU is hot-plugged, we
--	 * do handle provisioning however.
-+	 * do handle provisioning however based on the existing "map"
-+	 * of enabled queues.
- 	 */
- 	for (i = 0; i < KVMPPC_XIVE_Q_COUNT; i++) {
- 		struct xive_q *q = &xc->queues[i];
- 
-+		/* Single escalation, no queue 7 */
-+		if (i == 7 && xive->single_escalation)
-+			break;
-+
- 		/* Is queue already enabled ? Provision it */
- 		if (xive->qmap & (1 << i)) {
- 			r = xive_provision_queue(vcpu, i);
--			if (r == 0)
-+			if (r == 0 && !xive->single_escalation)
- 				xive_attach_escalation(vcpu, i);
- 			if (r)
- 				goto bail;
-@@ -1123,11 +1141,6 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	if (r)
- 		goto bail;
- 
--	/* Enable the VP */
--	r = xive_native_enable_vp(xc->vp_id);
--	if (r)
--		goto bail;
--
- 	/* Route the IPI */
- 	r = xive_native_configure_irq(xc->vp_ipi, xc->vp_id, 0, XICS_IPI);
- 	if (!r)
-@@ -1474,6 +1487,7 @@ static int xive_set_source(struct kvmppc_xive *xive, long irq, u64 addr)
- 
- 	pr_devel("  val=0x016%llx (server=0x%x, guest_prio=%d)\n",
- 		 val, server, guest_prio);
-+
- 	/*
- 	 * If the source doesn't already have an IPI, allocate
- 	 * one and get the corresponding data
-@@ -1762,6 +1776,8 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
- 	if (xive->vp_base == XIVE_INVALID_VP)
- 		ret = -ENOMEM;
- 
-+	xive->single_escalation = xive_native_has_single_escalation();
-+
- 	if (ret) {
- 		kfree(xive);
- 		return ret;
-diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xive.h
-index 6ba63f8e8a61..a08ae6fd4c51 100644
---- a/arch/powerpc/kvm/book3s_xive.h
-+++ b/arch/powerpc/kvm/book3s_xive.h
-@@ -120,6 +120,8 @@ struct kvmppc_xive {
- 	u32	q_order;
- 	u32	q_page_order;
- 
-+	/* Flags */
-+	u8	single_escalation;
- };
- 
- #define KVMPPC_XIVE_Q_COUNT	8
-@@ -201,25 +203,20 @@ static inline struct kvmppc_xive_src_block *kvmppc_xive_find_source(struct kvmpp
-  * is as follow.
-  *
-  * Guest request for 0...6 are honored. Guest request for anything
-- * higher results in a priority of 7 being applied.
-- *
-- * However, when XIRR is returned via H_XIRR, 7 is translated to 0xb
-- * in order to match AIX expectations
-+ * higher results in a priority of 6 being applied.
-  *
-  * Similar mapping is done for CPPR values
-  */
- static inline u8 xive_prio_from_guest(u8 prio)
- {
--	if (prio == 0xff || prio < 8)
-+	if (prio == 0xff || prio < 6)
- 		return prio;
--	return 7;
-+	return 6;
- }
- 
- static inline u8 xive_prio_to_guest(u8 prio)
- {
--	if (prio == 0xff || prio < 7)
--		return prio;
--	return 0xb;
-+	return prio;
- }
- 
- static inline u32 __xive_read_eq(__be32 *qpage, u32 msk, u32 *idx, u32 *toggle)
-diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index ebc244b08d67..d22aeb0b69e1 100644
---- a/arch/powerpc/sysdev/xive/native.c
-+++ b/arch/powerpc/sysdev/xive/native.c
-@@ -42,6 +42,7 @@ static u32 xive_provision_chip_count;
- static u32 xive_queue_shift;
- static u32 xive_pool_vps = XIVE_INVALID_VP;
- static struct kmem_cache *xive_provision_cache;
-+static bool xive_has_single_esc;
- 
- int xive_native_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
- {
-@@ -571,6 +572,10 @@ bool __init xive_native_init(void)
- 			break;
- 	}
- 
-+	/* Do we support single escalation */
-+	if (of_get_property(np, "single-escalation-support", NULL) != NULL)
-+		xive_has_single_esc = true;
-+
- 	/* Configure Thread Management areas for KVM */
- 	for_each_possible_cpu(cpu)
- 		kvmppc_set_xive_tima(cpu, r.start, tima);
-@@ -667,12 +672,15 @@ void xive_native_free_vp_block(u32 vp_base)
- }
- EXPORT_SYMBOL_GPL(xive_native_free_vp_block);
- 
--int xive_native_enable_vp(u32 vp_id)
-+int xive_native_enable_vp(u32 vp_id, bool single_escalation)
- {
- 	s64 rc;
-+	u64 flags = OPAL_XIVE_VP_ENABLED;
- 
-+	if (single_escalation)
-+		flags |= OPAL_XIVE_VP_SINGLE_ESCALATION;
- 	for (;;) {
--		rc = opal_xive_set_vp_info(vp_id, OPAL_XIVE_VP_ENABLED, 0);
-+		rc = opal_xive_set_vp_info(vp_id, flags, 0);
- 		if (rc != OPAL_BUSY)
- 			break;
- 		msleep(1);
-@@ -710,3 +718,9 @@ int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_chip_id)
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(xive_native_get_vp_info);
-+
-+bool xive_native_has_single_escalation(void)
-+{
-+	return xive_has_single_esc;
-+}
-+EXPORT_SYMBOL_GPL(xive_native_has_single_escalation);
+@@ -1436,7 +1436,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
+ #ifdef CONFIG_KVM_XICS
+ 	/* We are exiting, pull the VP from the XIVE */
+-	lwz	r0, VCPU_XIVE_PUSHED(r9)
++	lbz	r0, VCPU_XIVE_PUSHED(r9)
+ 	cmpwi	cr0, r0, 0
+ 	beq	1f
+ 	li	r7, TM_SPC_PULL_OS_CTX
+@@ -1465,7 +1465,7 @@ guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
+ 	/* Fixup some of the state for the next load */
+ 	li	r10, 0
+ 	li	r0, 0xff
+-	stw	r10, VCPU_XIVE_PUSHED(r9)
++	stb	r10, VCPU_XIVE_PUSHED(r9)
+ 	stb	r10, (VCPU_XIVE_SAVED_STATE+3)(r9)
+ 	stb	r0, (VCPU_XIVE_SAVED_STATE+4)(r9)
+ 	eieio
 -- 
 2.14.3
