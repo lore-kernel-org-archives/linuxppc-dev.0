@@ -1,16 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHn7D6fm6zDr53
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:41:12 +1100 (AEDT)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: [PATCH v4 5/6] powerpc/kvm/xive: Make xive_pushed a byte, not a word
-Date: Fri, 12 Jan 2018 13:37:15 +1100
-Message-Id: <20180112023716.9963-5-benh@kernel.crashing.org>
-In-Reply-To: <20180112023716.9963-1-benh@kernel.crashing.org>
-References: <20180112023716.9963-1-benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHn7b2hpBzDr53
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:41:30 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i66so3320340pfd.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jan 2018 18:41:30 -0800 (PST)
+Date: Fri, 12 Jan 2018 10:41:23 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH 00/26] KVM: PPC: Book3S PR: Transaction memory support on
+ PR KVM
+Message-ID: <20180112024123.GA2609@simonLocalRHEL7.x64>
+References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
+ <5A576D2B.6060900@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5A576D2B.6060900@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,55 +28,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/kvm_host.h     | 2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Hi Gustavo,
+On Thu, Jan 11, 2018 at 11:56:59AM -0200, Gustavo Romero wrote:
+> Hi Simon,
+> 
+> On 01/11/2018 08:11 AM, wei.guo.simon@gmail.com wrote:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
+> > 
+> > In current days, many OS distributions have utilized transaction
+> > memory functionality. In PowerPC, HV KVM supports TM. But PR KVM
+> > does not.
+> > 
+> > The drive for the transaction memory support of PR KVM is the
+> > openstack Continuous Integration testing - They runs a HV(hypervisor)
+> > KVM(as level 1) and then run PR KVM(as level 2) on top of that.
+> > 
+> > This patch set add transaction memory support on PR KVM.
+> 
+> Is this correct to assume that this emulation mode will just kick in on P9
+> with kernel TM workarounds and HV KVM will continue to be used on POWER8
+> since HV KVM is supported on POWER8 hosts?
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index bfe51356af5e..0c44fa67608d 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -739,7 +739,7 @@ struct kvm_vcpu_arch {
- 	struct kvmppc_icp *icp; /* XICS presentation controller */
- 	struct kvmppc_xive_vcpu *xive_vcpu; /* XIVE virtual CPU data */
- 	__be32 xive_cam_word;    /* Cooked W2 in proper endian with valid bit */
--	u32 xive_pushed;	 /* Is the VP pushed on the physical CPU ? */
-+	u8 xive_pushed;		 /* Is the VP pushed on the physical CPU ? */
- 	union xive_tma_w01 xive_saved_state; /* W0..1 of XIVE thread state */
- #endif
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 506a1c775370..46dc250d072a 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1031,7 +1031,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 	li	r9, TM_QW1_OS + TM_WORD2
- 	stwcix	r11,r9,r10
- 	li	r9, 1
--	stw	r9, VCPU_XIVE_PUSHED(r4)
-+	stb	r9, VCPU_XIVE_PUSHED(r4)
- 	eieio
- 
- 	/*
-@@ -1436,7 +1436,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
- #ifdef CONFIG_KVM_XICS
- 	/* We are exiting, pull the VP from the XIVE */
--	lwz	r0, VCPU_XIVE_PUSHED(r9)
-+	lbz	r0, VCPU_XIVE_PUSHED(r9)
- 	cmpwi	cr0, r0, 0
- 	beq	1f
- 	li	r7, TM_SPC_PULL_OS_CTX
-@@ -1465,7 +1465,7 @@ guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
- 	/* Fixup some of the state for the next load */
- 	li	r10, 0
- 	li	r0, 0xff
--	stw	r10, VCPU_XIVE_PUSHED(r9)
-+	stb	r10, VCPU_XIVE_PUSHED(r9)
- 	stb	r10, (VCPU_XIVE_SAVED_STATE+3)(r9)
- 	stb	r0, (VCPU_XIVE_SAVED_STATE+4)(r9)
- 	eieio
--- 
-2.14.3
+As Ben mentioned, this patch set aims to enhancement PR KVM on Power8
+to support transaction memory.
+
+Thanks,
+- Simon
+
+> 
+> 
+> Regards,
+> Gustavo
+> 
+> > Test cases performed:
+> > linux/tools/testing/selftests/powerpc/tm/tm-syscall
+> > linux/tools/testing/selftests/powerpc/tm/tm-fork
+> > linux/tools/testing/selftests/powerpc/tm/tm-vmx-unavail
+> > linux/tools/testing/selftests/powerpc/tm/tm-tmspr
+> > linux/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv
+> > linux/tools/testing/selftests/powerpc/math/vsx_preempt
+> > linux/tools/testing/selftests/powerpc/math/fpu_signal
+> > linux/tools/testing/selftests/powerpc/math/vmx_preempt
+> > linux/tools/testing/selftests/powerpc/math/fpu_syscall
+> > linux/tools/testing/selftests/powerpc/math/vmx_syscall
+> > linux/tools/testing/selftests/powerpc/math/fpu_preempt
+> > linux/tools/testing/selftests/powerpc/math/vmx_signal
+> > linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr
+> > linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr
+> > linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx
+> > linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr
+> > linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx
+> > https://github.com/justdoitqd/publicFiles/blob/master/test_tbegin_pr.c
+> > https://github.com/justdoitqd/publicFiles/blob/master/test_tabort.c
+> > https://github.com/justdoitqd/publicFiles/blob/master/test_kvm_htm_cap.c
+> > 
+> > Simon Guo (25):
+> >   KVM: PPC: Book3S PR: Move kvmppc_save_tm/kvmppc_restore_tm to separate
+> >     file
+> >   KVM: PPC: Book3S PR: add new parameter (guest MSR) for
+> >     kvmppc_save_tm()/kvmppc_restore_tm()
+> >   KVM: PPC: Book3S PR: turn on FP/VSX/VMX MSR bits in kvmppc_save_tm()
+> >   KVM: PPC: Book3S PR: add C function wrapper for
+> >     _kvmppc_save/restore_tm()
+> >   KVM: PPC: Book3S PR: In PR KVM suspends Transactional state when
+> >     inject an interrupt.
+> >   KVM: PPC: Book3S PR: PR KVM pass through MSR TM/TS bits to shadow_msr.
+> >   KVM: PPC: Book3S PR: add TEXASR related macros
+> >   KVM: PPC: Book3S PR: Sync TM bits to shadow msr for problem state
+> >     guest
+> >   KVM: PPC: Book3S PR: implement RFID TM behavior to suppress change
+> >     from S0 to N0
+> >   KVM: PPC: Book3S PR: set MSR HV bit accordingly for PPC970 and others.
+> >   KVM: PPC: Book3S PR: prevent TS bits change in kvmppc_interrupt_pr()
+> >   powerpc: export symbol msr_check_and_set().
+> >   KVM: PPC: Book3S PR: adds new
+> >     kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm API for PR KVM.
+> >   KVM: PPC: Book3S PR: export tm_enable()/tm_disable/tm_abort() APIs
+> >   KVM: PPC: Book3S PR: add kvmppc_save/restore_tm_sprs() APIs
+> >   KVM: PPC: Book3S PR: add transaction memory save/restore skeleton for
+> >     PR KVM
+> >   KVM: PPC: Book3S PR: add math support for PR KVM HTM
+> >   KVM: PPC: Book3S PR: make mtspr/mfspr emulation behavior based on
+> >     active TM SPRs
+> >   KVM: PPC: Book3S PR: always fail transaction in guest privilege state
+> >   KVM: PPC: Book3S PR: enable NV reg restore for reading TM SPR at guest
+> >     privilege state
+> >   KVM: PPC: Book3S PR: adds emulation for treclaim.
+> >   KVM: PPC: Book3S PR: add emulation for trechkpt in PR KVM.
+> >   KVM: PPC: Book3S PR: add emulation for tabort. for privilege guest
+> >   KVM: PPC: Book3S PR: add guard code to prevent returning to guest with
+> >     PR=0 and Transactional state
+> >   KVM: PPC: Book3S PR: enable HTM for PR KVM for KVM_CHECK_EXTENSION
+> >     ioctl
+> > 
+> >  arch/powerpc/include/asm/asm-prototypes.h   |  10 +
+> >  arch/powerpc/include/asm/kvm_book3s.h       |   8 +
+> >  arch/powerpc/include/asm/kvm_host.h         |   3 +
+> >  arch/powerpc/include/asm/reg.h              |  25 +-
+> >  arch/powerpc/include/asm/tm.h               |   2 -
+> >  arch/powerpc/include/uapi/asm/tm.h          |   2 +-
+> >  arch/powerpc/kernel/process.c               |   1 +
+> >  arch/powerpc/kernel/tm.S                    |  12 +
+> >  arch/powerpc/kvm/Makefile                   |   3 +
+> >  arch/powerpc/kvm/book3s.h                   |   1 +
+> >  arch/powerpc/kvm/book3s_64_mmu.c            |  11 +-
+> >  arch/powerpc/kvm/book3s_emulate.c           | 279 +++++++++++++++++++-
+> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S     | 259 ++-----------------
+> >  arch/powerpc/kvm/book3s_pr.c                | 256 +++++++++++++++++--
+> >  arch/powerpc/kvm/book3s_segment.S           |  13 +
+> >  arch/powerpc/kvm/powerpc.c                  |   3 +-
+> >  arch/powerpc/kvm/tm.S                       | 379 ++++++++++++++++++++++++++++
+> >  arch/powerpc/mm/hash_utils_64.c             |   1 +
+> >  arch/powerpc/platforms/powernv/copy-paste.h |   3 +-
+> >  19 files changed, 982 insertions(+), 289 deletions(-)
+> >  create mode 100644 arch/powerpc/kvm/tm.S
+> > 
+> 
