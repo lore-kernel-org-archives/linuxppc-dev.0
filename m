@@ -1,16 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHnFY3H0FzF0Xv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:46:41 +1100 (AEDT)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/xive: Add interrupt flag to disable automatic EOI
-Date: Fri, 12 Jan 2018 13:39:28 +1100
-Message-Id: <20180112023928.10926-2-benh@kernel.crashing.org>
-In-Reply-To: <20180112023928.10926-1-benh@kernel.crashing.org>
-References: <20180112023928.10926-1-benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHvBJ32NTzF0cr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 18:14:15 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0C7Dqsi140034
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 02:14:13 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fendt7838-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 02:14:13 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Fri, 12 Jan 2018 07:14:11 -0000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
+ akshay.adiga@linux.vnet.ibm.com, huntbag@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Dont assume distinct pstate values for
+ nominal and pmin
+Date: Fri, 12 Jan 2018 12:43:53 +0530
+Message-Id: <1515741233-1442-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,43 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will be used by KVM in order to keep escalation interrupts
-in the non-EOI (masked) state after they fire. They will be
-re-enabled directly in HW by KVM when needed.
+Some OpenPOWER boxes can have same pstate values for nominal and
+pmin pstates. In these boxes the current code will not initialize
+'powernv_pstate_info.min' variable and result in erroneous CPU
+frequency reporting. This patch fixes this problem.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
+Reported-by: Alvin Wang <wangat@tw.ibm.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/xive.h   | 3 +++
- arch/powerpc/sysdev/xive/common.c | 3 ++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/cpufreq/powernv-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-index 0e77005cf021..b619a5585cd6 100644
---- a/arch/powerpc/include/asm/xive.h
-+++ b/arch/powerpc/include/asm/xive.h
-@@ -58,6 +58,9 @@ struct xive_irq_data {
- #define XIVE_IRQ_FLAG_EOI_FW	0x10
- #define XIVE_IRQ_FLAG_H_INT_ESB	0x20
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..da7fdb4 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -288,9 +288,9 @@ static int init_powernv_pstates(void)
  
-+/* Special flag set by KVM for excalation interrupts */
-+#define XIVE_IRQ_NO_EOI		0x80
-+
- #define XIVE_INVALID_CHIP_ID	-1
+ 		if (id == pstate_max)
+ 			powernv_pstate_info.max = i;
+-		else if (id == pstate_nominal)
++		if (id == pstate_nominal)
+ 			powernv_pstate_info.nominal = i;
+-		else if (id == pstate_min)
++		if (id == pstate_min)
+ 			powernv_pstate_info.min = i;
  
- /* A queue tracking structure in a CPU */
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 838ebdbfe4c5..40c06110821c 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -367,7 +367,8 @@ static void xive_irq_eoi(struct irq_data *d)
- 	 * EOI the source if it hasn't been disabled and hasn't
- 	 * been passed-through to a KVM guest
- 	 */
--	if (!irqd_irq_disabled(d) && !irqd_is_forwarded_to_vcpu(d))
-+	if (!irqd_irq_disabled(d) && !irqd_is_forwarded_to_vcpu(d) &&
-+	    !(xd->flags & XIVE_IRQ_NO_EOI))
- 		xive_do_source_eoi(irqd_to_hwirq(d), xd);
- 
- 	/*
+ 		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
 -- 
-2.14.3
+1.8.3.1
