@@ -1,27 +1,34 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <konrad.r.wilk@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJF6k1XhqzF0w3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 07:42:21 +1100 (AEDT)
-Date: Fri, 12 Jan 2018 14:41:55 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
- <linux-crypto@vger.kernel.org>,
- kbuild test robot <fengguang.wu@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, kbuild-all@01.org
-Subject: Re: [cryptodev:master 130/134] aes_generic.c:undefined reference to
- `_restgpr_31_x'
-Message-ID: <20180112204154.GM21977@gate.crashing.org>
-References: <201801122249.RHvvGQJ6%fengguang.wu@intel.com>
- <CAK8P3a0Rfbo=wJgEAm3vVFY1MpPWLE3HMGcUdoOXxqOVm8jRyw@mail.gmail.com>
- <20180112163946.GE21977@gate.crashing.org>
- <CAK8P3a39=PVpwiSk_3CjRnYBawhXqMatHKSsHCd2KHCgR+Zmyg@mail.gmail.com>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJ3Dm5zfGzDqpn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 00:16:56 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id g10so5936809qtj.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 05:16:56 -0800 (PST)
+Sender: Konrad Rzeszutek Wilk <konrad.r.wilk@gmail.com>
+Date: Fri, 12 Jan 2018 08:16:48 -0500
+From: Konrad Rzeszutek Wilk <konrad@darnok.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: iommu@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ linux-cris-kernel@axis.com, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-metag@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, patches@groups.riscv.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 19/33] dma-mapping: warn when there is no coherent_dma_mask
+Message-ID: <20180112131646.GA26900@localhost.localdomain>
+References: <20180110080027.13879-1-hch@lst.de>
+ <20180110080027.13879-20-hch@lst.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a39=PVpwiSk_3CjRnYBawhXqMatHKSsHCd2KHCgR+Zmyg@mail.gmail.com>
+In-Reply-To: <20180110080027.13879-20-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2018 at 08:43:21PM +0100, Arnd Bergmann wrote:
-> On Fri, Jan 12, 2018 at 5:39 PM, Segher Boessenkool
-> <segher@kernel.crashing.org> wrote:
+On Wed, Jan 10, 2018 at 09:00:13AM +0100, Christoph Hellwig wrote:
+> These days all devices should have a DMA coherent mask, and most dma_ops
+> implementations rely on that fact.  But just to be sure add an assert to
+> ring the warning bell if that is not the case.
 > 
-> >> or why the aes_generic implementation needs this on
-> >> powerpc when built with 'gcc -Os'. FWIW, the -Os change was needed
-> >> to work around a possible kernel stack overflow that can happen with
-> >> gcc-7.2, see https://patchwork.kernel.org/patch/10143607/ and
-> >> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
-> >
-> > The _x versions are smaller but slower; that's why they are used with -Os.
-> > Apparently nothing else was built with -Os (and the other needed flags)
-> > before.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Reviewed-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+> ---
+>  include/linux/dma-mapping.h | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Ah, that explains it, the definition is in arch/powerpc/lib/crtsavres.S,
-> but inside of #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE.
-
-Ah ok.  Right.
-
-> We could theoretically work around it by turning that into
-> "#if defined(CONFIG_CC_OPTIMIZE_FOR_SIZE) ||
-> defined(CONFIG_CRYPTO_AES)", but that seems rather ugly.
+> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> index d84951865be7..9f28b2fa329e 100644
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -513,6 +513,7 @@ static inline void *dma_alloc_attrs(struct device *dev, size_t size,
+>  	void *cpu_addr;
+>  
+>  	BUG_ON(!ops);
+> +	WARN_ON_ONCE(!dev->coherent_dma_mask);
+>  
+>  	if (dma_alloc_from_dev_coherent(dev, size, dma_handle, &cpu_addr))
+>  		return cpu_addr;
+> -- 
+> 2.14.2
 > 
-> My earlier patch already tried to be more specific, turning very
-> specific optimizations off rather than moving from -O2 to -Os,
-> but that turned out to lead to significantly worse performance,
-> where -Os improved performance slightly. Is there a way
-> to ask powerpc compilers to use mostly -Os but not the
-> specific thing that makes it link to _restgpr_31_x?
-
-There is no such thing, sorry.  Would be very hard to implement, and
-older compilers will never get it, so it won't help you anyway :-(
-
-Maybe for now just enable it in crtsavres.S always, with a comment?
-That -Os workaround is hopefully not going to live long either...
-
-
-Segher
