@@ -1,26 +1,35 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHxj007CJzF0Ry
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 20:07:31 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id f14so4173469pga.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 01:07:31 -0800 (PST)
-Date: Fri, 12 Jan 2018 14:37:27 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, huntbag@linux.vnet.ibm.com
-Subject: Re: [PATCH] cpufreq: powernv: Dont assume distinct pstate values for
- nominal and pmin
-Message-ID: <20180112090727.GN3626@vireshk-i7>
-References: <1515741233-1442-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHz9y66XtzF0Zq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 21:14:14 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0CADxEg093316
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 05:14:12 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fepuma8m0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 05:14:11 -0500
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Fri, 12 Jan 2018 10:14:10 -0000
+Subject: Re: [PATCH v6 2/2] cxl: read PHB indications from the device tree
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.vnet.ibm.com
+References: <20180111150103.3137-1-felix@linux.vnet.ibm.com>
+ <20180111150103.3137-2-felix@linux.vnet.ibm.com>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Fri, 12 Jan 2018 11:14:07 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1515741233-1442-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <20180111150103.3137-2-felix@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <c14eaf00-da24-1c6e-1403-f8670082d1be@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12-01-18, 12:43, Shilpasri G Bhat wrote:
-> Some OpenPOWER boxes can have same pstate values for nominal and
-> pmin pstates. In these boxes the current code will not initialize
-> 'powernv_pstate_info.min' variable and result in erroneous CPU
-> frequency reporting. This patch fixes this problem.
+Le 11/01/2018 à 16:01, Philippe Bergheaud a écrit :
+> Configure the P9 XSL_DSNCTL register with PHB indications found
+> in the device tree, or else use legacy hard-coded values.
 > 
-> Fixes: 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
-> Reported-by: Alvin Wang <wangat@tw.ibm.com>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Changelog:
 > 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..da7fdb4 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -288,9 +288,9 @@ static int init_powernv_pstates(void)
->  
->  		if (id == pstate_max)
->  			powernv_pstate_info.max = i;
-> -		else if (id == pstate_nominal)
-> +		if (id == pstate_nominal)
->  			powernv_pstate_info.nominal = i;
-> -		else if (id == pstate_min)
-> +		if (id == pstate_min)
->  			powernv_pstate_info.min = i;
->  
->  		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
+> v2: New patch. Use the new device tree property "ibm,phb-indications".
+> 
+> v3: No change.
+> 
+> v4: No functional change.
+>      Drop cosmetic fix in comment.
+> 
+> v5: get_phb_indications():
+>        - make static variables local to function.
+>        - return static variable values by arguments.
+> 
+> v6: get_phb_indications():
+>        - acquire a mutex before setting the phb indications.
+> 
+> This patch depends on the following skiboot patch:
+>    https://patchwork.ozlabs.org/patch/858324/
+> ---
+>   drivers/misc/cxl/cxl.h    |  2 +-
+>   drivers/misc/cxl/cxllib.c |  2 +-
+>   drivers/misc/cxl/pci.c    | 50 ++++++++++++++++++++++++++++++++++++++++++-----
+>   3 files changed, 47 insertions(+), 7 deletions(-)
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+Acked-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
