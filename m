@@ -2,7 +2,7 @@ Return-Path: <BATV+b628242e4f103a69f336+5255+infradead.org+hch@bombadil.srs.infr
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zHx8d1KmdzF0bx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zHx8d1HFVzF0bv
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 19:42:53 +1100 (AEDT)
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
@@ -17,9 +17,9 @@ Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
  linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 02/34] hexagon: remove unused flush_write_buffers definition
-Date: Fri, 12 Jan 2018 09:42:00 +0100
-Message-Id: <20180112084232.2857-3-hch@lst.de>
+Subject: [PATCH 01/34] alpha: mark jensen as broken
+Date: Fri, 12 Jan 2018 09:41:59 +0100
+Message-Id: <20180112084232.2857-2-hch@lst.de>
 In-Reply-To: <20180112084232.2857-1-hch@lst.de>
 References: <20180112084232.2857-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,23 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+CONFIG_ALPHA_JENSEN has failed to compile since commit 6aca0503
+("alpha/dma: use common noop dma ops"), so mark it as broken.
+
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/hexagon/include/asm/io.h | 2 --
- 1 file changed, 2 deletions(-)
+ arch/alpha/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/hexagon/include/asm/io.h b/arch/hexagon/include/asm/io.h
-index 66f5e9a61efc..9e8621d94ee9 100644
---- a/arch/hexagon/include/asm/io.h
-+++ b/arch/hexagon/include/asm/io.h
-@@ -330,8 +330,6 @@ static inline void outsl(unsigned long port, const void *buffer, int count)
- 	}
- }
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index b31b974a03cb..e96adcbcab41 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -209,6 +209,7 @@ config ALPHA_EIGER
  
--#define flush_write_buffers() do { } while (0)
--
- #endif /* __KERNEL__ */
- 
- #endif
+ config ALPHA_JENSEN
+ 	bool "Jensen"
++	depends on BROKEN
+ 	help
+ 	  DEC PC 150 AXP (aka Jensen): This is a very old Digital system - one
+ 	  of the first-generation Alpha systems. A number of these systems
 -- 
 2.14.2
