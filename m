@@ -1,21 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
+ [IPv6:2607:f8b0:4003:c0f::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJCbk3NgjzF0mf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 06:33:53 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/mm: Simplify _PAGE_RO handling in page table dump
-From: christophe leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20170509141626.F30E767954@pc13941vm.idsi0.si.c-s.fr>
-Message-ID: <8401f7ff-3bff-443e-3b87-42fa67a01cbd@c-s.fr>
-Date: Fri, 12 Jan 2018 20:33:46 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJCpg6DwPzF0WC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 06:43:23 +1100 (AEDT)
+Received: by mail-ot0-x244.google.com with SMTP id g59so5958483otg.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 11:43:23 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20170509141626.F30E767954@pc13941vm.idsi0.si.c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180112163946.GE21977@gate.crashing.org>
+References: <201801122249.RHvvGQJ6%fengguang.wu@intel.com>
+ <CAK8P3a0Rfbo=wJgEAm3vVFY1MpPWLE3HMGcUdoOXxqOVm8jRyw@mail.gmail.com>
+ <20180112163946.GE21977@gate.crashing.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 12 Jan 2018 20:43:21 +0100
+Message-ID: <CAK8P3a39=PVpwiSk_3CjRnYBawhXqMatHKSsHCd2KHCgR+Zmyg@mail.gmail.com>
+Subject: Re: [cryptodev:master 130/134] aes_generic.c:undefined reference to
+ `_restgpr_31_x'
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>,
+ kbuild test robot <fengguang.wu@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, kbuild-all@01.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jan 12, 2018 at 5:39 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
 
-Le 09/05/2017 à 16:16, Christophe Leroy a écrit :
-> Commit fd893fe56a130 ("powerpc/mm: Fix missing page attributes in
-> page table dump") added support of _PAGE_RO attribute.
-> 
-> This patch makes it more simple
+>> or why the aes_generic implementation needs this on
+>> powerpc when built with 'gcc -Os'. FWIW, the -Os change was needed
+>> to work around a possible kernel stack overflow that can happen with
+>> gcc-7.2, see https://patchwork.kernel.org/patch/10143607/ and
+>> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
+>
+> The _x versions are smaller but slower; that's why they are used with -Os.
+> Apparently nothing else was built with -Os (and the other needed flags)
+> before.
 
-Superseeded by https://patchwork.ozlabs.org/patch/859896/
+Ah, that explains it, the definition is in arch/powerpc/lib/crtsavres.S,
+but inside of #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE.
 
-Christophe
+We could theoretically work around it by turning that into
+"#if defined(CONFIG_CC_OPTIMIZE_FOR_SIZE) ||
+defined(CONFIG_CRYPTO_AES)", but that seems rather ugly.
 
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->   arch/powerpc/mm/dump_linuxpagetables.c | 7 +------
->   1 file changed, 1 insertion(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-> index d659345a98d6..eeef51107cff 100644
-> --- a/arch/powerpc/mm/dump_linuxpagetables.c
-> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
-> @@ -121,13 +121,8 @@ static const struct flag_info flag_array[] = {
->   		.set	= "user",
->   		.clear	= "    ",
->   	}, {
-> -#if _PAGE_RO == 0
-> -		.mask	= _PAGE_RW,
-> +		.mask	= _PAGE_RW | _PAGE_RO,
->   		.val	= _PAGE_RW,
-> -#else
-> -		.mask	= _PAGE_RO,
-> -		.val	= 0,
-> -#endif
->   		.set	= "rw",
->   		.clear	= "ro",
->   	}, {
-> 
+My earlier patch already tried to be more specific, turning very
+specific optimizations off rather than moving from -O2 to -Os,
+but that turned out to lead to significantly worse performance,
+where -Os improved performance slightly. Is there a way
+to ask powerpc compilers to use mostly -Os but not the
+specific thing that makes it link to _restgpr_31_x?
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+       Arnd
