@@ -1,29 +1,32 @@
-Return-Path: <konrad.r.wilk@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
+ [IPv6:2607:f8b0:4003:c0f::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJ3l762D9zF0cw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 00:39:47 +1100 (AEDT)
-Received: by mail-qt0-x243.google.com with SMTP id m59so6026731qte.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 05:39:47 -0800 (PST)
-Sender: Konrad Rzeszutek Wilk <konrad.r.wilk@gmail.com>
-Date: Fri, 12 Jan 2018 08:39:41 -0500
-From: Konrad Rzeszutek Wilk <konrad@darnok.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: iommu@lists.linux-foundation.org, Michal Simek <monstr@monstr.eu>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Christian =?iso-8859-1?Q?K=F6nig?= <ckoenig.leichtzumerken@gmail.com>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/22] swiotlb: rename swiotlb_free to swiotlb_exit
-Message-ID: <20180112133939.GF26900@localhost.localdomain>
-References: <20180110080932.14157-1-hch@lst.de>
- <20180110080932.14157-7-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJG8d52gQzF0nB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 08:29:05 +1100 (AEDT)
+Received: by mail-ot0-x244.google.com with SMTP id d10so6194875oti.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jan 2018 13:29:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180110080932.14157-7-hch@lst.de>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180112204154.GM21977@gate.crashing.org>
+References: <201801122249.RHvvGQJ6%fengguang.wu@intel.com>
+ <CAK8P3a0Rfbo=wJgEAm3vVFY1MpPWLE3HMGcUdoOXxqOVm8jRyw@mail.gmail.com>
+ <20180112163946.GE21977@gate.crashing.org>
+ <CAK8P3a39=PVpwiSk_3CjRnYBawhXqMatHKSsHCd2KHCgR+Zmyg@mail.gmail.com>
+ <20180112204154.GM21977@gate.crashing.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 12 Jan 2018 22:29:01 +0100
+Message-ID: <CAK8P3a2YVVseBFNoDbwOtqR3-JHFuZ-WZD6-PzztNTO_X_soaw@mail.gmail.com>
+Subject: Re: [cryptodev:master 130/134] aes_generic.c:undefined reference to
+ `_restgpr_31_x'
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>,
+ kbuild test robot <fengguang.wu@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, kbuild-all@01.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,75 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 10, 2018 at 09:09:16AM +0100, Christoph Hellwig wrote:
+On Fri, Jan 12, 2018 at 9:41 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> On Fri, Jan 12, 2018 at 08:43:21PM +0100, Arnd Bergmann wrote:
+>> On Fri, Jan 12, 2018 at 5:39 PM, Segher Boessenkool
 
-OK?
+>> We could theoretically work around it by turning that into
+>> "#if defined(CONFIG_CC_OPTIMIZE_FOR_SIZE) ||
+>> defined(CONFIG_CRYPTO_AES)", but that seems rather ugly.
+>>
+>> My earlier patch already tried to be more specific, turning very
+>> specific optimizations off rather than moving from -O2 to -Os,
+>> but that turned out to lead to significantly worse performance,
+>> where -Os improved performance slightly. Is there a way
+>> to ask powerpc compilers to use mostly -Os but not the
+>> specific thing that makes it link to _restgpr_31_x?
+>
+> There is no such thing, sorry.  Would be very hard to implement, and
+> older compilers will never get it, so it won't help you anyway :-(
 
-Reviewed-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/powerpc/kernel/dma-swiotlb.c | 2 +-
->  arch/x86/kernel/pci-swiotlb.c     | 2 +-
->  include/linux/swiotlb.h           | 4 ++--
->  lib/swiotlb.c                     | 2 +-
->  4 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-> index 506ac4fafac5..88f3963ca30f 100644
-> --- a/arch/powerpc/kernel/dma-swiotlb.c
-> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> @@ -121,7 +121,7 @@ static int __init check_swiotlb_enabled(void)
->  	if (ppc_swiotlb_enable)
->  		swiotlb_print_info();
->  	else
-> -		swiotlb_free();
-> +		swiotlb_exit();
->  
->  	return 0;
->  }
-> diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-> index 0d77603c2f50..0ee0f8f34251 100644
-> --- a/arch/x86/kernel/pci-swiotlb.c
-> +++ b/arch/x86/kernel/pci-swiotlb.c
-> @@ -120,7 +120,7 @@ void __init pci_swiotlb_late_init(void)
->  {
->  	/* An IOMMU turned us off. */
->  	if (!swiotlb)
-> -		swiotlb_free();
-> +		swiotlb_exit();
->  	else {
->  		printk(KERN_INFO "PCI-DMA: "
->  		       "Using software bounce buffering for IO (SWIOTLB)\n");
-> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-> index 24ed817082ee..606375e35d87 100644
-> --- a/include/linux/swiotlb.h
-> +++ b/include/linux/swiotlb.h
-> @@ -115,10 +115,10 @@ extern int
->  swiotlb_dma_supported(struct device *hwdev, u64 mask);
->  
->  #ifdef CONFIG_SWIOTLB
-> -extern void __init swiotlb_free(void);
-> +extern void __init swiotlb_exit(void);
->  unsigned int swiotlb_max_segment(void);
->  #else
-> -static inline void swiotlb_free(void) { }
-> +static inline void swiotlb_exit(void) { }
->  static inline unsigned int swiotlb_max_segment(void) { return 0; }
->  #endif
->  
-> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> index 125c1062119f..cf5311908fa9 100644
-> --- a/lib/swiotlb.c
-> +++ b/lib/swiotlb.c
-> @@ -417,7 +417,7 @@ swiotlb_late_init_with_tbl(char *tlb, unsigned long nslabs)
->  	return -ENOMEM;
->  }
->  
-> -void __init swiotlb_free(void)
-> +void __init swiotlb_exit(void)
->  {
->  	if (!io_tlb_orig_addr)
->  		return;
-> -- 
-> 2.14.2
-> 
+We use -Os only for gcc-7.1 and higher, where it produces faster
+code for AES and avoids running into
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
+
+> Maybe for now just enable it in crtsavres.S always, with a comment?
+> That -Os workaround is hopefully not going to live long either...
+
+It depends on whether or how soon someone comes up with a
+better fix for PR83356.
+gcc-8.0.0 is currently not affected by it, so we could limit the
+workaround (and the hack in crtsavres.S) to gcc-7-only.
+
+     Arnd
