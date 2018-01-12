@@ -1,35 +1,21 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJBwJ02n9zF0Qm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 06:03:12 +1100 (AEDT)
-Date: Fri, 12 Jan 2018 11:02:51 -0800
-From: Matthew Wilcox <willy@infradead.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v6 22/24] mm: Speculative page fault handler return VMA
-Message-ID: <20180112190251.GC7590@bombadil.infradead.org>
-References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1515777968-867-23-git-send-email-ldufour@linux.vnet.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJCbk3NgjzF0mf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 06:33:53 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/mm: Simplify _PAGE_RO handling in page table dump
+From: christophe leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20170509141626.F30E767954@pc13941vm.idsi0.si.c-s.fr>
+Message-ID: <8401f7ff-3bff-443e-3b87-42fa67a01cbd@c-s.fr>
+Date: Fri, 12 Jan 2018 20:33:46 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1515777968-867-23-git-send-email-ldufour@linux.vnet.ibm.com>
+In-Reply-To: <20170509141626.F30E767954@pc13941vm.idsi0.si.c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,15 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2018 at 06:26:06PM +0100, Laurent Dufour wrote:
-> @@ -1354,7 +1354,10 @@ extern int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
->  		unsigned int flags);
->  #ifdef CONFIG_SPF
->  extern int handle_speculative_fault(struct mm_struct *mm,
-> +				    unsigned long address, unsigned int flags,
-> +				    struct vm_area_struct **vma);
 
-I think this shows that we need to create 'struct vm_fault' on the stack
-in the arch code and then pass it to handle_speculative_fault(), followed
-by handle_mm_fault().  That should be quite a nice cleanup actually.
-I know that's only 30+ architectures to change ;-)
+Le 09/05/2017 à 16:16, Christophe Leroy a écrit :
+> Commit fd893fe56a130 ("powerpc/mm: Fix missing page attributes in
+> page table dump") added support of _PAGE_RO attribute.
+> 
+> This patch makes it more simple
+
+Superseeded by https://patchwork.ozlabs.org/patch/859896/
+
+Christophe
+
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>   arch/powerpc/mm/dump_linuxpagetables.c | 7 +------
+>   1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+> index d659345a98d6..eeef51107cff 100644
+> --- a/arch/powerpc/mm/dump_linuxpagetables.c
+> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
+> @@ -121,13 +121,8 @@ static const struct flag_info flag_array[] = {
+>   		.set	= "user",
+>   		.clear	= "    ",
+>   	}, {
+> -#if _PAGE_RO == 0
+> -		.mask	= _PAGE_RW,
+> +		.mask	= _PAGE_RW | _PAGE_RO,
+>   		.val	= _PAGE_RW,
+> -#else
+> -		.mask	= _PAGE_RO,
+> -		.val	= 0,
+> -#endif
+>   		.set	= "rw",
+>   		.clear	= "ro",
+>   	}, {
+> 
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
