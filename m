@@ -2,9 +2,9 @@ Return-Path: <willy@infradead.org>
 Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJ9xS51bLzF0jx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 05:19:08 +1100 (AEDT)
-Date: Fri, 12 Jan 2018 10:18:40 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJBbZ2lClzF0bY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 05:48:42 +1100 (AEDT)
+Date: Fri, 12 Jan 2018 10:48:21 -0800
 From: Matthew Wilcox <willy@infradead.org>
 To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
@@ -23,13 +23,13 @@ Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v6 18/24] mm: Try spin lock in speculative path
-Message-ID: <20180112181840.GA7590@bombadil.infradead.org>
+Subject: Re: [PATCH v6 16/24] mm: Protect mm_rb tree with a rwlock
+Message-ID: <20180112184821.GB7590@bombadil.infradead.org>
 References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1515777968-867-19-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1515777968-867-17-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1515777968-867-19-git-send-email-ldufour@linux.vnet.ibm.com>
+In-Reply-To: <1515777968-867-17-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2018 at 06:26:02PM +0100, Laurent Dufour wrote:
-> There is a deadlock when a CPU is doing a speculative page fault and
-> another one is calling do_unmap().
-> 
-> The deadlock occurred because the speculative path try to spinlock the
-> pte while the interrupt are disabled. When the other CPU in the
-> unmap's path has locked the pte then is waiting for all the CPU to
-> invalidate the TLB. As the CPU doing the speculative fault have the
-> interrupt disable it can't invalidate the TLB, and can't get the lock.
-> 
-> Since we are in a speculative path, we can race with other mm action.
-> So let assume that the lock may not get acquired and fail the
-> speculative page fault.
+On Fri, Jan 12, 2018 at 06:26:00PM +0100, Laurent Dufour wrote:
+> -static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
+> +static void __vma_rb_erase(struct vm_area_struct *vma, struct mm_struct *mm)
+>  {
+> +	struct rb_root *root = &mm->mm_rb;
+>  	/*
+>  	 * Note rb_erase_augmented is a fairly large inline function,
+>  	 * so make sure we instantiate it only once with our desired
+>  	 * augmented rbtree callbacks.
+>  	 */
+> +#ifdef CONFIG_SPF
+> +	write_lock(&mm->mm_rb_lock);
+> +#endif
+>  	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+> +#ifdef CONFIG_SPF
+> +	write_unlock(&mm->mm_rb_lock); /* wmb */
+> +#endif
 
-It seems like you introduced this bug in the previous patch, and now
-you're fixing it in this patch?  Why not merge the two?
+I can't say I love this.  Have you considered:
+
+#ifdef CONFIG_SPF
+#define vma_rb_write_lock(mm)	write_lock(&mm->mm_rb_lock)
+#define vma_rb_write_unlock(mm)	write_unlock(&mm->mm_rb_lock)
+#else
+#define vma_rb_write_lock(mm)	do { } while (0)
+#define vma_rb_write_unlock(mm)	do { } while (0)
+#endif
+
+Also, SPF is kind of uninformative.  CONFIG_MM_SPF might be better?
+Or perhaps even CONFIG_SPECULATIVE_PAGE_FAULT, just to make it really
+painful to do these one-liner ifdefs that make the code so hard to read.
