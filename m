@@ -1,21 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJNvz24r0zDqTr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 13:33:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2] powerpc/kernel: Add 'ibm,
- thread-groups' property for CPU allocation
-In-Reply-To: <d7825e1c-ca1f-3bbe-be41-897b3e98e928@linux.vnet.ibm.com>
-References: <aeffc542-db28-7d1f-3263-52919b2d07c2@linux.vnet.ibm.com>
- <d7825e1c-ca1f-3bbe-be41-897b3e98e928@linux.vnet.ibm.com>
-Date: Sat, 13 Jan 2018 13:33:33 +1100
-Message-ID: <87tvvqbi82.fsf@concordia.ellerman.id.au>
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJRMx2v8dzF0fw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 15:24:29 +1100 (AEDT)
+Date: Fri, 12 Jan 2018 20:23:54 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v6 22/24] mm: Speculative page fault handler return VMA
+Message-ID: <20180113042354.GA24241@bombadil.infradead.org>
+References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1515777968-867-23-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180112190251.GC7590@bombadil.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180112190251.GC7590@bombadil.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +40,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+On Fri, Jan 12, 2018 at 11:02:51AM -0800, Matthew Wilcox wrote:
+> On Fri, Jan 12, 2018 at 06:26:06PM +0100, Laurent Dufour wrote:
+> > @@ -1354,7 +1354,10 @@ extern int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+> >  		unsigned int flags);
+> >  #ifdef CONFIG_SPF
+> >  extern int handle_speculative_fault(struct mm_struct *mm,
+> > +				    unsigned long address, unsigned int flags,
+> > +				    struct vm_area_struct **vma);
+> 
+> I think this shows that we need to create 'struct vm_fault' on the stack
+> in the arch code and then pass it to handle_speculative_fault(), followed
+> by handle_mm_fault().  That should be quite a nice cleanup actually.
+> I know that's only 30+ architectures to change ;-)
 
-> On 01/08/2018 11:19 AM, Michael Bringmann wrote:
->> Add code to parse the new property 'ibm,thread-groups" when it is
->> present.  The content of this property explicitly defines the number
->> of threads per core as well as the PowerPC 'threads_core_mask'.
->> The design provides a common device-tree for both P9 normal core and
->> P9 fused core systems.  The new property has been observed to be
->> available on P9 pHyp systems, but it is not always present on
->> OpenPower BMC systems.
->> 
->> The property updates the kernel to know which CPUs/threads of each
->> core are actually present, and then use the map when adding cores
->> to the system at boot, or during hotplug operations.
->> 
->> * Previously, the information about the number of threads per core
->>   was inferred solely from the "ibm,ppc-interrupt-server#s" property
->>   in the system device tree.
->> * Also previous to this property, The mask of threads per CPU was
->>   inferred to be a strict linear series from 0..(nthreads-1).
->> * After reading the "ibm,thread-group" property, we can determine
->>   the number of threads per core to be the 'bitmask weight' of the
->>   CPU thread mask.
->> * Also after reading the property, we can determine which of the
->>   possible threads we are allowed to online for each CPU.  It is no
->>   longer a simple linear sequence, but may be discontinuous e.g.
->>   activate threads 1,2,3,5,6,7 on a core instead of 0-5 sequentially.
->> 
->> Implementation of the "ibm,thread-groups" property is spread across
->> a few files in the powerpc specific code:
->> 
->> * prom.c: Parse the property and create 'ppc_thread_group_mask'.
->>           Use the mask in operation of early_init_dt_scan_cpus().
->> * setup-common.c: Import 'ppc_thread_group_mask' and use the value
->>           in the operation of cpu_init_thread_core_maps(), and
->>           smp_setup_cpu_maps.
->> * hotplug-cpu.c: Use 'ppc_thread_group_mask' in several locations
->>           where the code previously expected to iterate over a
->>           linear series of active threads (0..nthreads-1).
->> 
->> Note that the "ibm,thread-groups" property also includes semantics
->> of 'thread-group' i.e. define one or more subgroups of the available
->> threads, each group of threads to be used for a specific class of
->> task.  Translating thread group semantics into Linux kernel features
->> is TBD.
->
-> One thing I don't see addressed in the comments or in the code is
-> migration support. I think we need to update the thread group mask
-> post-migration to reflect the threads per core on the new system.
+Of course, we don't need to change them all.  Try this:
 
-Normally I'd agree with you, but I don't see any prospect of the kernel
-surviving if the threads per core changes across a migration. We'll have
-data structures allocated based on the old value and things will
-definitely crash if the value increases. If it shrinks maybe we'd get
-away with it, but either way is dicey.
+Subject: [PATCH] Add vm_handle_fault
 
-If there's an expectation that we'll be able to migrate between systems
-with different settings then we have a much bigger problem.
+For the speculative fault handler, we want to create the struct vm_fault
+on the stack in the arch code and pass it into the generic mm code.
+To avoid changing 30+ architectures, leave handle_mm_fault with its
+current function signature and move its guts into the new vm_handle_fault
+function.  Even this saves a nice 172 bytes on the random x86-64 .config
+I happen to have around.
 
-cheers
+Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 5eb3d2524bdc..403934297a3d 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3977,36 +3977,28 @@ static int handle_pte_fault(struct vm_fault *vmf)
+  * The mmap_sem may have been released depending on flags and our
+  * return value.  See filemap_fault() and __lock_page_or_retry().
+  */
+-static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+-		unsigned int flags)
++static int __handle_mm_fault(struct vm_fault *vmf)
+ {
+-	struct vm_fault vmf = {
+-		.vma = vma,
+-		.address = address & PAGE_MASK,
+-		.flags = flags,
+-		.pgoff = linear_page_index(vma, address),
+-		.gfp_mask = __get_fault_gfp_mask(vma),
+-	};
+-	unsigned int dirty = flags & FAULT_FLAG_WRITE;
+-	struct mm_struct *mm = vma->vm_mm;
++	unsigned int dirty = vmf->flags & FAULT_FLAG_WRITE;
++	struct mm_struct *mm = vmf->vma->vm_mm;
+ 	pgd_t *pgd;
+ 	p4d_t *p4d;
+ 	int ret;
+ 
+-	pgd = pgd_offset(mm, address);
+-	p4d = p4d_alloc(mm, pgd, address);
++	pgd = pgd_offset(mm, vmf->address);
++	p4d = p4d_alloc(mm, pgd, vmf->address);
+ 	if (!p4d)
+ 		return VM_FAULT_OOM;
+ 
+-	vmf.pud = pud_alloc(mm, p4d, address);
+-	if (!vmf.pud)
++	vmf->pud = pud_alloc(mm, p4d, vmf->address);
++	if (!vmf->pud)
+ 		return VM_FAULT_OOM;
+-	if (pud_none(*vmf.pud) && transparent_hugepage_enabled(vma)) {
+-		ret = create_huge_pud(&vmf);
++	if (pud_none(*vmf->pud) && transparent_hugepage_enabled(vmf->vma)) {
++		ret = create_huge_pud(vmf);
+ 		if (!(ret & VM_FAULT_FALLBACK))
+ 			return ret;
+ 	} else {
+-		pud_t orig_pud = *vmf.pud;
++		pud_t orig_pud = *vmf->pud;
+ 
+ 		barrier();
+ 		if (pud_trans_huge(orig_pud) || pud_devmap(orig_pud)) {
+@@ -4014,50 +4006,51 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+ 			/* NUMA case for anonymous PUDs would go here */
+ 
+ 			if (dirty && !pud_access_permitted(orig_pud, WRITE)) {
+-				ret = wp_huge_pud(&vmf, orig_pud);
++				ret = wp_huge_pud(vmf, orig_pud);
+ 				if (!(ret & VM_FAULT_FALLBACK))
+ 					return ret;
+ 			} else {
+-				huge_pud_set_accessed(&vmf, orig_pud);
++				huge_pud_set_accessed(vmf, orig_pud);
+ 				return 0;
+ 			}
+ 		}
+ 	}
+ 
+-	vmf.pmd = pmd_alloc(mm, vmf.pud, address);
+-	if (!vmf.pmd)
++	vmf->pmd = pmd_alloc(mm, vmf->pud, vmf->address);
++	if (!vmf->pmd)
+ 		return VM_FAULT_OOM;
+-	if (pmd_none(*vmf.pmd) && transparent_hugepage_enabled(vma)) {
+-		ret = create_huge_pmd(&vmf);
++	if (pmd_none(*vmf->pmd) && transparent_hugepage_enabled(vmf->vma)) {
++		ret = create_huge_pmd(vmf);
+ 		if (!(ret & VM_FAULT_FALLBACK))
+ 			return ret;
+ 	} else {
+-		pmd_t orig_pmd = *vmf.pmd;
++		pmd_t orig_pmd = *vmf->pmd;
+ 
+ 		barrier();
+ 		if (unlikely(is_swap_pmd(orig_pmd))) {
+ 			VM_BUG_ON(thp_migration_supported() &&
+ 					  !is_pmd_migration_entry(orig_pmd));
+ 			if (is_pmd_migration_entry(orig_pmd))
+-				pmd_migration_entry_wait(mm, vmf.pmd);
++				pmd_migration_entry_wait(mm, vmf->pmd);
+ 			return 0;
+ 		}
+ 		if (pmd_trans_huge(orig_pmd) || pmd_devmap(orig_pmd)) {
+-			if (pmd_protnone(orig_pmd) && vma_is_accessible(vma))
+-				return do_huge_pmd_numa_page(&vmf, orig_pmd);
++			if (pmd_protnone(orig_pmd) &&
++						vma_is_accessible(vmf->vma))
++				return do_huge_pmd_numa_page(vmf, orig_pmd);
+ 
+ 			if (dirty && !pmd_access_permitted(orig_pmd, WRITE)) {
+-				ret = wp_huge_pmd(&vmf, orig_pmd);
++				ret = wp_huge_pmd(vmf, orig_pmd);
+ 				if (!(ret & VM_FAULT_FALLBACK))
+ 					return ret;
+ 			} else {
+-				huge_pmd_set_accessed(&vmf, orig_pmd);
++				huge_pmd_set_accessed(vmf, orig_pmd);
+ 				return 0;
+ 			}
+ 		}
+ 	}
+ 
+-	return handle_pte_fault(&vmf);
++	return handle_pte_fault(vmf);
+ }
+ 
+ /*
+@@ -4066,9 +4059,10 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+  * The mmap_sem may have been released depending on flags and our
+  * return value.  See filemap_fault() and __lock_page_or_retry().
+  */
+-int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+-		unsigned int flags)
++int vm_handle_fault(struct vm_fault *vmf)
+ {
++	unsigned int flags = vmf->flags;
++	struct vm_area_struct *vma = vmf->vma;
+ 	int ret;
+ 
+ 	__set_current_state(TASK_RUNNING);
+@@ -4092,9 +4086,9 @@ int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+ 		mem_cgroup_oom_enable();
+ 
+ 	if (unlikely(is_vm_hugetlb_page(vma)))
+-		ret = hugetlb_fault(vma->vm_mm, vma, address, flags);
++		ret = hugetlb_fault(vma->vm_mm, vma, vmf->address, flags);
+ 	else
+-		ret = __handle_mm_fault(vma, address, flags);
++		ret = __handle_mm_fault(vmf);
+ 
+ 	if (flags & FAULT_FLAG_USER) {
+ 		mem_cgroup_oom_disable();
+@@ -4110,6 +4104,26 @@ int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+ 
+ 	return ret;
+ }
++
++/*
++ * By the time we get here, we already hold the mm semaphore
++ *
++ * The mmap_sem may have been released depending on flags and our
++ * return value.  See filemap_fault() and __lock_page_or_retry().
++ */
++int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
++		unsigned int flags)
++{
++	struct vm_fault vmf = {
++		.vma = vma,
++		.address = address & PAGE_MASK,
++		.flags = flags,
++		.pgoff = linear_page_index(vma, address),
++		.gfp_mask = __get_fault_gfp_mask(vma),
++	};
++
++	return vm_handle_fault(&vmf);
++}
+ EXPORT_SYMBOL_GPL(handle_mm_fault);
+ 
+ #ifndef __PAGETABLE_P4D_FOLDED
