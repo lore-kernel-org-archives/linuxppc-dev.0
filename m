@@ -1,31 +1,21 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zJH594snGzF0j6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 09:11:09 +1100 (AEDT)
-Date: Fri, 12 Jan 2018 16:10:50 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
- <linux-crypto@vger.kernel.org>,
- kbuild test robot <fengguang.wu@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [cryptodev:master 130/134] aes_generic.c:undefined reference to
- `_restgpr_31_x'
-Message-ID: <20180112221050.GR21977@gate.crashing.org>
-References: <201801122249.RHvvGQJ6%fengguang.wu@intel.com>
- <CAK8P3a0Rfbo=wJgEAm3vVFY1MpPWLE3HMGcUdoOXxqOVm8jRyw@mail.gmail.com>
- <20180112163946.GE21977@gate.crashing.org>
- <CAK8P3a39=PVpwiSk_3CjRnYBawhXqMatHKSsHCd2KHCgR+Zmyg@mail.gmail.com>
- <20180112204154.GM21977@gate.crashing.org>
- <CAK8P3a2YVVseBFNoDbwOtqR3-JHFuZ-WZD6-PzztNTO_X_soaw@mail.gmail.com>
- <20180112214111.GQ21977@gate.crashing.org>
- <CAK8P3a3XKwrVpXH9=8n1=qAKtqHE+1sh6OhaJ_39GZcWSP-j=Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a3XKwrVpXH9=8n1=qAKtqHE+1sh6OhaJ_39GZcWSP-j=Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zJNvz24r0zDqTr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jan 2018 13:33:35 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2] powerpc/kernel: Add 'ibm,
+ thread-groups' property for CPU allocation
+In-Reply-To: <d7825e1c-ca1f-3bbe-be41-897b3e98e928@linux.vnet.ibm.com>
+References: <aeffc542-db28-7d1f-3263-52919b2d07c2@linux.vnet.ibm.com>
+ <d7825e1c-ca1f-3bbe-be41-897b3e98e928@linux.vnet.ibm.com>
+Date: Sat, 13 Jan 2018 13:33:33 +1100
+Message-ID: <87tvvqbi82.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2018 at 10:45:31PM +0100, Arnd Bergmann wrote:
-> > I guess you could enable the _x routines whenever you use ubsan?  Ubsan
-> > will cause much bigger code growth than the handful of insns in those
-> > routines?
-> 
-> Right, that could work, too. My patch that Herbert merged intentionally
-> used -Os also for non-UBSAN builds because it turned out to
-> be much faster (see gcc PR83651),
+Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
 
-"Much"?
+> On 01/08/2018 11:19 AM, Michael Bringmann wrote:
+>> Add code to parse the new property 'ibm,thread-groups" when it is
+>> present.  The content of this property explicitly defines the number
+>> of threads per core as well as the PowerPC 'threads_core_mask'.
+>> The design provides a common device-tree for both P9 normal core and
+>> P9 fused core systems.  The new property has been observed to be
+>> available on P9 pHyp systems, but it is not always present on
+>> OpenPower BMC systems.
+>> 
+>> The property updates the kernel to know which CPUs/threads of each
+>> core are actually present, and then use the map when adding cores
+>> to the system at boot, or during hotplug operations.
+>> 
+>> * Previously, the information about the number of threads per core
+>>   was inferred solely from the "ibm,ppc-interrupt-server#s" property
+>>   in the system device tree.
+>> * Also previous to this property, The mask of threads per CPU was
+>>   inferred to be a strict linear series from 0..(nthreads-1).
+>> * After reading the "ibm,thread-group" property, we can determine
+>>   the number of threads per core to be the 'bitmask weight' of the
+>>   CPU thread mask.
+>> * Also after reading the property, we can determine which of the
+>>   possible threads we are allowed to online for each CPU.  It is no
+>>   longer a simple linear sequence, but may be discontinuous e.g.
+>>   activate threads 1,2,3,5,6,7 on a core instead of 0-5 sequentially.
+>> 
+>> Implementation of the "ibm,thread-groups" property is spread across
+>> a few files in the powerpc specific code:
+>> 
+>> * prom.c: Parse the property and create 'ppc_thread_group_mask'.
+>>           Use the mask in operation of early_init_dt_scan_cpus().
+>> * setup-common.c: Import 'ppc_thread_group_mask' and use the value
+>>           in the operation of cpu_init_thread_core_maps(), and
+>>           smp_setup_cpu_maps.
+>> * hotplug-cpu.c: Use 'ppc_thread_group_mask' in several locations
+>>           where the code previously expected to iterate over a
+>>           linear series of active threads (0..nthreads-1).
+>> 
+>> Note that the "ibm,thread-groups" property also includes semantics
+>> of 'thread-group' i.e. define one or more subgroups of the available
+>> threads, each group of threads to be used for a specific class of
+>> task.  Translating thread group semantics into Linux kernel features
+>> is TBD.
+>
+> One thing I don't see addressed in the comments or in the code is
+> migration support. I think we need to update the thread group mask
+> post-migration to reflect the threads per core on the new system.
 
--Os is *slower* with 8.0, 5% faster with 7.2, 4% faster with 7.1,
-slower with 7.0 and 6.3.  Your numbers, #c1.
+Normally I'd agree with you, but I don't see any prospect of the kernel
+surviving if the threads per core changes across a migration. We'll have
+data structures allocated based on the old value and things will
+definitely crash if the value increases. If it shrinks maybe we'd get
+away with it, but either way is dicey.
 
-Anf this is the generic code of course, which is slow anyway (not to
-mention insecure).
+If there's an expectation that we'll be able to migrate between systems
+with different settings then we have a much bigger problem.
 
-> but we could revert that back
-> to the default and only use the -Os for UBSAN, essentially
-> addressing only PR83356 but not PR83651.
-
-
-Segher
+cheers
