@@ -1,36 +1,21 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0043.outbound.protection.outlook.com [104.47.2.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKxQp4hYWzF0ZT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 02:02:10 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0FF0OGj082489
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 10:02:07 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fgscfxefv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 10:02:07 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 15 Jan 2018 10:02:06 -0500
-Subject: Re: [PATCH V2] powerpc/kernel: Add 'ibm, thread-groups' property for
- CPU allocation
-To: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <aeffc542-db28-7d1f-3263-52919b2d07c2@linux.vnet.ibm.com>
- <d7825e1c-ca1f-3bbe-be41-897b3e98e928@linux.vnet.ibm.com>
- <87tvvqbi82.fsf@concordia.ellerman.id.au>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-In-Reply-To: <87tvvqbi82.fsf@concordia.ellerman.id.au>
-Date: Mon, 15 Jan 2018 09:01:31 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKzYz3g0mzF0Yv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 03:38:28 +1100 (AEDT)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: mad skateman <madskateman@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+Date: Mon, 15 Jan 2018 16:38:23 +0000
+Message-ID: <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+In-Reply-To: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <95dc3b09-63f1-e79e-9fc9-56c4b7b1bcdd@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 01/12/2018 08:33 PM, Michael Ellerman wrote:
-> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
-...
->>
->> One thing I don't see addressed in the comments or in the code is
->> migration support. I think we need to update the thread group mask
->> post-migration to reflect the threads per core on the new system.
-> 
-> Normally I'd agree with you, but I don't see any prospect of the kernel
-> surviving if the threads per core changes across a migration. We'll have
-> data structures allocated based on the old value and things will
-> definitely crash if the value increases. If it shrinks maybe we'd get
-> away with it, but either way is dicey.
-> 
-> If there's an expectation that we'll be able to migrate between systems
-> with different settings then we have a much bigger problem.
-> 
-> cheers
-> 
-> 
-
->From what I recall of my tests a few months ago, the device-tree is read in
-and flattened before the kernel starts processing the migration state.
-I am trying to get access to a couple of P9 systems on which I may test
-migration to verify the ordering of events between initializing the kernel
-and post-migration processing.
-
-Regards,
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0
+bzpsaW51eHBwYy1kZXYtDQo+IGJvdW5jZXMrbWFkYWxpbi5idWN1cj1ueHAuY29tQGxpc3RzLm96
+bGFicy5vcmddIE9uIEJlaGFsZiBPZiBtYWQgc2thdGVtYW4NCj4gU2VudDogV2VkbmVzZGF5LCBK
+YW51YXJ5IDEwLCAyMDE4IDEwOjM5IFBNDQo+IFRvOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZw0KPiBTdWJqZWN0OiBEUEFBIEV0aGVybmV0IHRyYWZmaWNlIHRyb3VibGVzIHdpdGggTGlu
+dXgga2VybmVsDQo+IA0KPiBIaSBsaW51eCBkZXZzLA0KPiANCj4gTGlrZSBtZW50aW9uZWQgaW4g
+dGhpcyB0aHJlYWQNCj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL3BpcGVybWFpbC9saW51eHBw
+Yy1kZXYvMjAxOC1KYW51YXJ5LzE2NzYzMC5odG1sDQo+IGkgYWxzbyBleHBlcmllbmNlIHRoZSBl
+eGFjdCBzYW1lIGlzc3Vlcy4NCj4gSSBhbSBhbHNvIHRyeWluZyB0byBmaW5kIG91dCB3aHkgdGhl
+IG5ldHdvcmsgdHJhZmZpYyBpcyBub3QgZmxvd2luZw0KPiB0aGUgd2F5IGl0IHNob3VsZCAob3V0
+IGZvciBleGFtcGxlICkuDQo+IA0KPiBNeSBsaW51eCBrbm93bGVkZ2UgaXMgdmVyeSBiYXNpYyBi
+dXQgaSBob3BlIGkgY2FuIGNvbnRyaWJ1dGUgYW55d2F5Lg0KPiANCj4gSSBhbSB1c2luZyB0aGUg
+QW1pZ2FPbmUgWDUwMDAgd2l0aCBhIFA1MDIwDQo+IE1vc3QgZGV0YWlsZWQgdGVjaG5pY2FsIGlu
+Zm9ybWF0aW9uIHJlZ2FyZGluZyB0aGlzIGlzc3VlIGNhbiBiZSBmb3VuZA0KPiBpbiB0aGUgVGhy
+ZWFkIGJ5IEphbWllIEtydWVnZXIgbWVudGlvbmVkIGFib3ZlLg0KPiANCj4gSW4gdGhpcyBzY3Jl
+ZW5zaG90LCB0aGUgRVRIMCBhbmQgRVRIMSBzZWVtIHVwIGFuZCBydW5uaW5nIChwcm9iZWQpIC4u
+DQo+IGV2ZW4gZHVlIHRvIHRoZSBGU0xfRFBBQV9NQUMgZXJyb3IgbWVzc2FnZXMgdGhhdCBETUVT
+RyBzaG93cy4NCj4gaHR0cDovL3d3dy5za2F0ZW1hbi5ubC93cC1jb250ZW50L3VwbG9hZHMvMjAx
+OC8wMS9TY3JlZW5zaG90LWF0LTIwMTgtMDEtMDgtMjFfMjJfMDZfRVRIX05JQ19FUlJPUi5wbmcN
+Cj4gDQo+IGh0dHA6Ly93d3cuc2thdGVtYW4ubmwvd3AtY29udGVudC91cGxvYWRzLzIwMTgvMDEv
+U2NyZWVuc2hvdC1hdC0yMDE4LTAxLTA4LTIyXzE2XzI4LnBuZw0KPiANCj4gSSB3YXMgYWJsZSB0
+byB1c2Ugc29tZSB0b29saW5nIGxpa2UgRVRIVE9PTCB0byBhZGp1c3Qgc29tZSBzZXR0aW5ncw0K
+PiBhbmQgY2hlY2sgaWYgdGhlIGludGVyZmFjZSByZXNwb25kZWQuIFRoaXMgYWxsIHNlZW1zIGZp
+bmUuDQo+IA0KPiBIb3BlIHRoYXQgc29tZW9uZSBjYW4gZmluZCBhIGZpeCwgc28gdGhlIEV0aGVy
+bmV0IGFkYXB0ZXIgY2FuIGJlIHVzZWQuDQo+IA0KPiBUaGFua3MhIQ0KDQpIaSwNCg0KUGxlYXNl
+IHVzZSB0ZXh0IGxvZ3MgaW5zdGVhZCBvZiBwaWN0dXJlcyBuZXh0IHRpbWUsIGl0J3MgZWFzaWVy
+IHRvIHJlYWQuDQpUaGUgZXJyb3JzIHlvdSBzZWUgYXJlIHJlbGF0ZWQgdG8gbWlzc2luZyBNQUMg
+YWRkcmVzc2VzIGZvciB0aGUgdW51c2VkDQppbnRlcmZhY2VzLCB5b3UgY2FuIGlnbm9yZSB0aGVz
+ZSBhcmUgdGhleSBhcmUgbm90IHJlbGV2YW50IGZvciB0aGUgaXNzdWUNCnlvdSBlbmNvdW50ZXIu
+IE5vcm1hbGx5IHRoZSB1bnVzZWQgaW50ZXJmYWNlcyBzaG91bGQgaGF2ZSBzdGF0dXMgZGlzYWJs
+ZWQNCmluIHRoZSBkZXZpY2UgdHJlZSBidXQgdGhlcmUgaXMgbm90IGEgYmlnIGRlYWwgaWYgdGhl
+eSBmYWlsIGxpa2UgdGhhdC4NCkFzIEkndmUgYWR2aXNlZCBKYW1pZSBvbiB0aGUgb3RoZXIgdGhy
+ZWFkLCBwbGVhc2UgdHJ5IHRvIGNvbm5lY3QgdGhlIGRldmljZQ0KYmFjayAyIGJhY2sgdG8gYSBr
+bm93biBnb29kIG1hY2hpbmUgYW5kIGRldGVybWluZSB3aGF0IGlzIGJyb2tlbiAtIFJ4L1R4Pw0K
+SXMgdGhlcmUgYW5vdGhlciBzb2Z0d2FyZSB2ZXJzaW9uIHRoYXQgZG9lcyB3b3JrIG9uIHRoZXNl
+IG1hY2hpbmVzPw0KDQpNYWRhbGluDQo=
