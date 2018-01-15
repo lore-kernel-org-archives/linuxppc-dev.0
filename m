@@ -1,28 +1,33 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKYj34CcDzF0W9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 11:13:11 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id y5so7264675pff.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jan 2018 16:13:11 -0800 (PST)
-Date: Sun, 14 Jan 2018 16:13:06 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: Re: [PATCH v2 14/16] ASoC: fsl_ssi: Remove cpu_dai_drv from fsl_ssi
- structure
-Message-ID: <20180115001305.GD2925@Asurada-CZ80>
-References: <1515652995-15996-1-git-send-email-nicoleotsuka@gmail.com>
- <1515652995-15996-15-git-send-email-nicoleotsuka@gmail.com>
- <4626cd37-c84c-6187-51ae-73fa419b801e@maciej.szmigiero.name>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKYv370YhzF0Tj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 11:21:51 +1100 (AEDT)
+Date: Sun, 14 Jan 2018 18:21:09 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>,
+ kbuild test robot <fengguang.wu@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [cryptodev:master 130/134] aes_generic.c:undefined reference to
+ `_restgpr_31_x'
+Message-ID: <20180115002109.GX21977@gate.crashing.org>
+References: <201801122249.RHvvGQJ6%fengguang.wu@intel.com>
+ <CAK8P3a0Rfbo=wJgEAm3vVFY1MpPWLE3HMGcUdoOXxqOVm8jRyw@mail.gmail.com>
+ <20180112163946.GE21977@gate.crashing.org>
+ <CAK8P3a39=PVpwiSk_3CjRnYBawhXqMatHKSsHCd2KHCgR+Zmyg@mail.gmail.com>
+ <20180112204154.GM21977@gate.crashing.org>
+ <CAK8P3a2YVVseBFNoDbwOtqR3-JHFuZ-WZD6-PzztNTO_X_soaw@mail.gmail.com>
+ <20180112214111.GQ21977@gate.crashing.org>
+ <CAK8P3a3XKwrVpXH9=8n1=qAKtqHE+1sh6OhaJ_39GZcWSP-j=Q@mail.gmail.com>
+ <20180112221050.GR21977@gate.crashing.org>
+ <CAK8P3a30k-JjMJ0M9KWXqUMT3eHmuuFvAe1KuKdqNoAiSZrgog@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4626cd37-c84c-6187-51ae-73fa419b801e@maciej.szmigiero.name>
+In-Reply-To: <CAK8P3a30k-JjMJ0M9KWXqUMT3eHmuuFvAe1KuKdqNoAiSZrgog@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,14 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 14, 2018 at 11:42:59PM +0100, Maciej S. Szmigiero wrote:
-> On 11.01.2018 07:43, Nicolin Chen wrote:
-> > The cpu_dai_drv is only used for symmetric_rates. So this patch replaces
-> > it with a synchronous boolean flag.
-> 
-> You make cpu_dai_drv common to all SSI instances instead of per-instance.
-> 
-> What if you have multiple SSIs in the system with different
-> symmetric_{rates,samplebits,channels} settings?
+On Sun, Jan 14, 2018 at 10:40:36PM +0100, Arnd Bergmann wrote:
+> Right. I've done some more investigation anyway, starting over with the
+> analysis of the gcc options that change it. I've found now that turning
+> off '-fcode-hoisting' but leaving on the other options I had suspected
+> earlier (-O2 instead of -Os, -ftree-sra, -ftree-pre) also fixes the
+> stack problem, and appears to result in the best performance so
+> far.
 
-Good catch...it should maintain each cpu_dai_drv separately. Thanks!
+Oh nice!
+
+> I need to rerun the whole test matrix, but that seems rather
+> promising, and the result may also help debug what's really happening.
+
+-fcode-hoisting moves all expression evaluation to as early as possible;
+for this AES code that means it will increase register pressure a lot,
+causing a lot of spilling (well, that is my guess).  If that is so, then
+we need to dial down -fcode-hoisting a bit, maybe make it aware of
+register pressure.
+
+Glad you found a smoking gun,
+
+
+Segher
