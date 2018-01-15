@@ -1,30 +1,30 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL0tF382VzF0Y0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 04:37:41 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0FHTgqd115578
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 12:37:38 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fh0ca9hcg-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zL0zm5BzXzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 04:42:28 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0FHgO8H045113
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 12:42:24 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fgwn6hj86-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 12:37:38 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 12:42:24 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 15 Jan 2018 17:37:36 -0000
-Subject: Re: [PATCH v6 01/24] x86/mm: Define CONFIG_SPF
-To: Thomas Gleixner <tglx@linutronix.de>
+ Mon, 15 Jan 2018 17:42:21 -0000
+Subject: Re: [PATCH v6 16/24] mm: Protect mm_rb tree with a rwlock
+To: Matthew Wilcox <willy@infradead.org>
 Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
  mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Andrea Arcangeli <aarcange@redhat.com>,
@@ -35,14 +35,14 @@ Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
 References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1515777968-867-2-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1801121955150.2371@nanos>
+ <1515777968-867-17-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180112184821.GB7590@bombadil.infradead.org>
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 15 Jan 2018 18:37:25 +0100
+Date: Mon, 15 Jan 2018 18:42:11 +0100
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1801121955150.2371@nanos>
+In-Reply-To: <20180112184821.GB7590@bombadil.infradead.org>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <753d7b28-3d7e-0c01-0386-8dad161f88ea@linux.vnet.ibm.com>
+Message-Id: <9c21cf88-84bd-c951-59eb-c0a5b31dadb3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,49 +52,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Thomas,
+Hi Matthew,
 
 Thanks for reviewing this series.
 
-On 12/01/2018 19:57, Thomas Gleixner wrote:
-> On Fri, 12 Jan 2018, Laurent Dufour wrote:
+On 12/01/2018 19:48, Matthew Wilcox wrote:
+> On Fri, Jan 12, 2018 at 06:26:00PM +0100, Laurent Dufour wrote:
+>> -static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
+>> +static void __vma_rb_erase(struct vm_area_struct *vma, struct mm_struct *mm)
+>>  {
+>> +	struct rb_root *root = &mm->mm_rb;
+>>  	/*
+>>  	 * Note rb_erase_augmented is a fairly large inline function,
+>>  	 * so make sure we instantiate it only once with our desired
+>>  	 * augmented rbtree callbacks.
+>>  	 */
+>> +#ifdef CONFIG_SPF
+>> +	write_lock(&mm->mm_rb_lock);
+>> +#endif
+>>  	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+>> +#ifdef CONFIG_SPF
+>> +	write_unlock(&mm->mm_rb_lock); /* wmb */
+>> +#endif
 > 
->> Introduce CONFIG_SPF which turns on the Speculative Page Fault handler when
->> building for 64bits with SMP.
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  arch/x86/Kconfig | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->> index a317d5594b6a..d74353b85aaf 100644
->> --- a/arch/x86/Kconfig
->> +++ b/arch/x86/Kconfig
->> @@ -2882,6 +2882,10 @@ config X86_DMA_REMAP
->>  config HAVE_GENERIC_GUP
->>  	def_bool y
->>  
->> +config SPF
->> +	def_bool y
->> +	depends on X86_64 && SMP
+> I can't say I love this.  Have you considered:
 > 
-> Can you please put that into a generic place as
-> 
->     config SPF
->     	   bool
-> 
-> and let the architectures select it.
+> #ifdef CONFIG_SPF
+> #define vma_rb_write_lock(mm)	write_lock(&mm->mm_rb_lock)
+> #define vma_rb_write_unlock(mm)	write_unlock(&mm->mm_rb_lock)
+> #else
+> #define vma_rb_write_lock(mm)	do { } while (0)
+> #define vma_rb_write_unlock(mm)	do { } while (0)
+> #endif
 
-I'll change that to let the architectures (x86 and ppc64 currently)
-selecting it, but the definition will remain in the arch/xxx/Kconfig file
-since it depends on the architecture support in the page fault handler.
+I haven't consider this, but this sounds to be smarter. I'll do that.
 
-> Also SPF could be bit more elaborate and self explaining for the causual
-> reader. 3 letter acronyms are reserved for non existing agencies.
+> Also, SPF is kind of uninformative.  CONFIG_MM_SPF might be better?
+> Or perhaps even CONFIG_SPECULATIVE_PAGE_FAULT, just to make it really
+> painful to do these one-liner ifdefs that make the code so hard to read.
 
-That's true 3 letter acronyms are already reserved...
-I'll change it to CONFIG_SPECULATIVE_PAGE_FAULT as suggested by Matthew Wilcox.
+Thomas also complained about that, and I agree, SPF is quite cryptic. This
+being said, I don't think that CONFIG_MM_SPF will be far better, so I'll
+change this define to CONFIG_SPECULATIVE_PAGE_FAULT, even if it's longer,
+it should not be too much present in the code.
 
 Thanks,
 Laurent.
