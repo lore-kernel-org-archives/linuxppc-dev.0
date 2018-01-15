@@ -1,31 +1,27 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 10.mo177.mail-out.ovh.net (10.mo177.mail-out.ovh.net
+ [46.105.73.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKncZ3pMqzF0bG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 20:10:06 +1100 (AEDT)
-Date: Mon, 15 Jan 2018 10:10:02 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-arch@vger.kernel.org,
- linux-mips@linux-mips.org, Michal Simek <monstr@monstr.eu>,
- linux-ia64@vger.kernel.org,
- Christian =?iso-8859-1?Q?K=F6nig?= <ckoenig.leichtzumerken@gmail.com>,
- x86@kernel.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org,
- Konrad Rzeszutek Wilk <konrad@darnok.org>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 10/22] swiotlb: refactor coherent buffer allocation
-Message-ID: <20180115091002.GA398@lst.de>
-References: <20180110080932.14157-1-hch@lst.de>
- <20180110080932.14157-11-hch@lst.de>
- <cecc98cf-2e6a-a7bc-7390-d6dcced038c4@arm.com>
- <20180110154649.GA18529@lst.de>
- <03c25dda-30da-9169-a8a1-1720ec741b9d@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKpvh6d1KzF0TY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 21:08:13 +1100 (AEDT)
+Received: from player714.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id 42EED96211
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 10:51:14 +0100 (CET)
+Subject: Re: [PATCH] powerpc/xive: Properly use static keyword for inline
+ function
+To: Mathieu Malaterre <malat@debian.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20171226130020.23626-1-malat@debian.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <24525a62-208e-b30e-6a53-0f97a2a8fae7@kaod.org>
+Date: Mon, 15 Jan 2018 10:51:07 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <03c25dda-30da-9169-a8a1-1720ec741b9d@arm.com>
+In-Reply-To: <20171226130020.23626-1-malat@debian.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,16 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 10, 2018 at 05:02:30PM +0000, Robin Murphy wrote:
->>>
->>> Aren't we leaking the pages here?
->>
->> Yes, that free_pages got lost somewhere in the rebases, I've added
->> it back.
->
-> Cool.
+On 12/26/2017 02:00 PM, Mathieu Malaterre wrote:
+> Fix fatal warning during compilation:
+> 
+> In file included from arch/powerpc/xmon/xmon.c:54:0:
+> ./arch/powerpc/include/asm/xive.h:157:20: error: no previous prototype for ‘xive_smp_prepare_cpu’ [-Werror=missing-prototypes]
+>  extern inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+>                     ^
+> 
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
 
-FYI, here is the fixed version, I don't want to re-send the whole
-series for this fix:
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-http://git.infradead.org/users/hch/misc.git/commitdiff/0176adb004065d6815a8e67946752df4cd947c5b
+Thanks,
+
+C. 
+
+> ---
+>  arch/powerpc/include/asm/xive.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> index 371fbebf1ec9..83dc2cc320a3 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -154,7 +154,7 @@ static inline bool xive_enabled(void) { return false; }
+>  static inline bool xive_spapr_init(void) { return false; }
+>  static inline bool xive_native_init(void) { return false; }
+>  static inline void xive_smp_probe(void) { }
+> -extern inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+> +static inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+>  static inline void xive_smp_setup_cpu(void) { }
+>  static inline void xive_smp_disable_cpu(void) { }
+>  static inline void xive_kexec_teardown_cpu(int secondary) { }
+> 
