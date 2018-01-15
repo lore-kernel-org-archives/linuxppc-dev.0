@@ -2,24 +2,30 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKnCV0v1KzF0cQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 19:51:48 +1100 (AEDT)
-Date: Mon, 15 Jan 2018 09:51:44 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKncZ3pMqzF0bG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 20:10:06 +1100 (AEDT)
+Date: Mon, 15 Jan 2018 10:10:02 +0100
 From: Christoph Hellwig <hch@lst.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-nvdimm@lists.01.org,
- X86 ML <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Michal Hocko <mhocko@kernel.org>, Linux MM <linux-mm@kvack.org>,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: revamp vmem_altmap / dev_pagemap handling V3
-Message-ID: <20180115085144.GA32532@lst.de>
-References: <20171229075406.1936-1-hch@lst.de> <20180108112646.GA7204@lst.de>
- <CAPcyv4hHipDHP5LZCgym5szqiUSCxG9wQUbRO_qe8T+USaZi9Q@mail.gmail.com>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-arch@vger.kernel.org,
+ linux-mips@linux-mips.org, Michal Simek <monstr@monstr.eu>,
+ linux-ia64@vger.kernel.org,
+ Christian =?iso-8859-1?Q?K=F6nig?= <ckoenig.leichtzumerken@gmail.com>,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org,
+ Konrad Rzeszutek Wilk <konrad@darnok.org>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 10/22] swiotlb: refactor coherent buffer allocation
+Message-ID: <20180115091002.GA398@lst.de>
+References: <20180110080932.14157-1-hch@lst.de>
+ <20180110080932.14157-11-hch@lst.de>
+ <cecc98cf-2e6a-a7bc-7390-d6dcced038c4@arm.com>
+ <20180110154649.GA18529@lst.de>
+ <03c25dda-30da-9169-a8a1-1720ec741b9d@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPcyv4hHipDHP5LZCgym5szqiUSCxG9wQUbRO_qe8T+USaZi9Q@mail.gmail.com>
+In-Reply-To: <03c25dda-30da-9169-a8a1-1720ec741b9d@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 08, 2018 at 11:44:02AM -0800, Dan Williams wrote:
-> On Mon, Jan 8, 2018 at 3:26 AM, Christoph Hellwig <hch@lst.de> wrote:
-> > Any chance to get this fully reviewed and picked up before the
-> > end of the merge window?
-> 
-> I'm fine carrying these through the nvdimm tree, but I'd need an ack
-> from the mm folks for all the code touches related to arch_add_memory.
+On Wed, Jan 10, 2018 at 05:02:30PM +0000, Robin Murphy wrote:
+>>>
+>>> Aren't we leaking the pages here?
+>>
+>> Yes, that free_pages got lost somewhere in the rebases, I've added
+>> it back.
+>
+> Cool.
 
-Looks like we got some semi ACKs, so I'd really like to see this go
-in now as we have both nvdimm and p2p patches depending on it.
+FYI, here is the fixed version, I don't want to re-send the whole
+series for this fix:
+
+http://git.infradead.org/users/hch/misc.git/commitdiff/0176adb004065d6815a8e67946752df4cd947c5b
