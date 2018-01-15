@@ -1,27 +1,28 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x22e.google.com (mail-pg0-x22e.google.com
- [IPv6:2607:f8b0:400e:c05::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL6GP1ysxzF0Xw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 08:40:28 +1100 (AEDT)
-Received: by mail-pg0-x22e.google.com with SMTP id c194so8490477pga.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 13:40:28 -0800 (PST)
-Date: Mon, 15 Jan 2018 13:40:21 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: timur@tabi.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: Re: [PATCH v3 14/17] ASoC: fsl_ssi: Clean up _fsl_ssi_set_dai_fmt()
-Message-ID: <20180115214021.GB10868@Asurada>
-References: <1515990087-11598-1-git-send-email-nicoleotsuka@gmail.com>
- <1515990087-11598-15-git-send-email-nicoleotsuka@gmail.com>
- <88551d87-1b76-9a30-6781-1d0b6479b317@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zL7PZ00NXzF0bW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 09:31:46 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ Borislav Petkov <bp@alien8.de>
+Cc: "mchehab\@kernel.org" <mchehab@kernel.org>,
+ "linux-edac\@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "kernel-janitors\@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] EDAC, mv64x60: Remove some code duplication
+In-Reply-To: <68939e8b999644b89080ed049970c9fe@svr-chch-ex1.atlnz.lc>
+References: <20180113072821.8100-1-christophe.jaillet@wanadoo.fr>
+ <20180113142212.fuuvq2x2bey7qv4s@pd.tnic>
+ <49db37d7-3d54-3ae5-9cb9-702ef14f1f43@wanadoo.fr>
+ <68939e8b999644b89080ed049970c9fe@svr-chch-ex1.atlnz.lc>
+Date: Tue, 16 Jan 2018 09:31:45 +1100
+Message-ID: <87bmhubvou.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <88551d87-1b76-9a30-6781-1d0b6479b317@maciej.szmigiero.name>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,12 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 15, 2018 at 10:16:28PM +0100, Maciej S. Szmigiero wrote:
+Chris Packham <Chris.Packham@alliedtelesis.co.nz> writes:
+> On 14/01/18 06:17, Christophe JAILLET wrote:
+>> Le 13/01/2018 =C3=A0 15:22, Borislav Petkov a =C3=A9crit=C2=A0:
+>>> + Chris Packham who's been fixing some stuff in here too.
+>>>
+>>> On Sat, Jan 13, 2018 at 08:28:21AM +0100, Christophe JAILLET wrote:
+>>>> Reorder the error handling code in order to release the resources in
+>>>> reverse order than allocation.
+>>>>
+>>>> Introduce a new 'release_group' label in the error handling path and u=
+se
+>>>> it to void some code duplication.
+>>>>
+>>>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+>>>> ---
+>>>>    drivers/edac/mv64x60_edac.c | 7 ++++---
+>>>>    1 file changed, 4 insertions(+), 3 deletions(-)
+...
+>>>>=20=20=20=20
+>>>> --=20
+>>> Thanks, looks good. But looking at this driver, mv64x60_mc_err_probe()
+>>> and mv64x60_sram_err_probe() have the same problem too. Can you address=
+ them
+>>> with your patch too pls?
+>> Will do. mv64x60_pci_err_probe() also needs some tweaks.
+>>=20
+>>> Also, if you feel like fixing more stuff in this driver, it doesn't use
+>>> the edac_printk() infrastructure but naked printk() calls. It could be
+>>> converted to it.
+>> I will only propose to remove a useless message and improve another one,
+>> but won't convert the whole driver, sorry.
+>>=20
+>
+> I take this you mean you have a system with a mv64x60 SoC? You might=20
+> want to make yourself known to the linuxppc-dev list. A while back the=20
+> prospects of dropping CONFIG_MV64X60 was raised[1]. I don't see anyone=20
+> actually following through on this yet but I'm not really following=20
+> linuxppc that closely.
 
-> > * Removing TXBIT0 configurations since this bit is set to 1 as its
-> >   reset value and there is no use case so far to unset it. And it
-> >   is safe to remove since regmap_update_bits() won't touch it.
-> 
-> I didn't get any response to a comment I've written about the point
+That's just because I haven't had time to do it and no one else took the
+hint :)
 
-I neglected the comments in the middle. Sorry. Will add it back then.
+So yes, Christophe if you have a machine that uses this driver please
+speak up, otherwise it will probably be removed.
+
+cheers
