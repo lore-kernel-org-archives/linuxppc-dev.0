@@ -1,25 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKvFd1TRfzF0Y2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 00:24:04 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id 66so3729714plc.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 05:24:04 -0800 (PST)
-Date: Mon, 15 Jan 2018 23:23:41 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v10 13/17] powerpc/64s: Add support to mask perf
- interrupts and replay them
-Message-ID: <20180115232341.02e862e4@roar.ozlabs.ibm.com>
-In-Reply-To: <1513742157-28768-14-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1513742157-28768-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1513742157-28768-14-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKvNv2KLPzF0YW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 00:30:22 +1100 (AEDT)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.de>, "Tobin C. Harding" <me@tobin.cc>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/pseries: include linux/types.h in asm/hvcall.h
+Date: Mon, 15 Jan 2018 14:30:03 +0100
+Message-Id: <20180115133003.3447-1-msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 20 Dec 2017 09:25:53 +0530
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+Commit 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush
+settings") uses u64 in asm/hvcall.h without including linux/types.h
 
-> Two new bit mask field "IRQ_DISABLE_MASK_PMU" is introduced to support
-> the masking of PMI and "IRQ_DISABLE_MASK_ALL" to aid interrupt masking
-> checking.
-> 
-> Couple of new irq #defs "PACA_IRQ_PMI" and "SOFTEN_VALUE_0xf0*" added
-> to use in the exception code to check for PMI interrupts.
-> 
-> In the masked_interrupt handler, for PMIs we reset the MSR[EE] and
-> return. In the __check_irq_replay(), replay the PMI interrupt by
-> calling performance_monitor_common handler.
+This breaks hvcall.h users that do not include the header themselves.
 
-I think we need to add all interrupt types which clear MSR[EE] in their
-masked handler to the test in may_hard_irq_disable(), otherwise EE can
-be enabled before all such pending interrupts are replayed.
+Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush
+    settings")
 
-We should define all such interrupts in a mask and use that in
-may_hard_irq_disable() and corresponding place in masked_##_H##interrupt:
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/include/asm/hvcall.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-Nick
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index f0461618bf7b..eca3f9c68907 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -353,6 +353,7 @@
+ #define PROC_TABLE_GTSE		0x01
+ 
+ #ifndef __ASSEMBLY__
++#include <linux/types.h>
+ 
+ /**
+  * plpar_hcall_norets: - Make a pseries hypervisor call with no return arguments
+-- 
+2.13.6
