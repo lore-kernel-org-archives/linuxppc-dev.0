@@ -1,34 +1,36 @@
-Return-Path: <felix@linux.vnet.ibm.com>
+Return-Path: <mwb@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKvc30ThxzF0Tr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 00:40:02 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKxQp4hYWzF0ZT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 02:02:10 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0FDdgZH017418
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 08:40:00 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fgt9rrhe9-1
+ w0FF0OGj082489
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 10:02:07 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fgscfxefv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 08:39:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 10:02:07 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Mon, 15 Jan 2018 13:39:57 -0000
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: fbarrat@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com, benh@au1.ibm.com,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [PATCH v7 2/2] cxl: read PHB indications from the device tree
-Date: Mon, 15 Jan 2018 14:39:37 +0100
-In-Reply-To: <20180115133937.13063-1-felix@linux.vnet.ibm.com>
-References: <20180115133937.13063-1-felix@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 15 Jan 2018 10:02:06 -0500
+Subject: Re: [PATCH V2] powerpc/kernel: Add 'ibm, thread-groups' property for
+ CPU allocation
+To: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <aeffc542-db28-7d1f-3263-52919b2d07c2@linux.vnet.ibm.com>
+ <d7825e1c-ca1f-3bbe-be41-897b3e98e928@linux.vnet.ibm.com>
+ <87tvvqbi82.fsf@concordia.ellerman.id.au>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+In-Reply-To: <87tvvqbi82.fsf@concordia.ellerman.id.au>
+Date: Mon, 15 Jan 2018 09:01:31 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <20180115133937.13063-2-felix@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <95dc3b09-63f1-e79e-9fc9-56c4b7b1bcdd@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,158 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Configure the P9 XSL_DSNCTL register with PHB indications found
-in the device tree, or else use legacy hard-coded values.
 
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
----
-Changelog:
 
-v2: New patch. Use the new device tree property "ibm,phb-indications".
+On 01/12/2018 08:33 PM, Michael Ellerman wrote:
+> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+...
+>>
+>> One thing I don't see addressed in the comments or in the code is
+>> migration support. I think we need to update the thread group mask
+>> post-migration to reflect the threads per core on the new system.
+> 
+> Normally I'd agree with you, but I don't see any prospect of the kernel
+> surviving if the threads per core changes across a migration. We'll have
+> data structures allocated based on the old value and things will
+> definitely crash if the value increases. If it shrinks maybe we'd get
+> away with it, but either way is dicey.
+> 
+> If there's an expectation that we'll be able to migrate between systems
+> with different settings then we have a much bigger problem.
+> 
+> cheers
+> 
+> 
 
-v3: No change.
+>From what I recall of my tests a few months ago, the device-tree is read in
+and flattened before the kernel starts processing the migration state.
+I am trying to get access to a couple of P9 systems on which I may test
+migration to verify the ordering of events between initializing the kernel
+and post-migration processing.
 
-v4: No functional change.
-    Drop cosmetic fix in comment.
+Regards,
 
-v5: get_phb_indications():
-      - make static variables local to function.
-      - return static variable values by arguments.
-
-v6: get_phb_indications():
-      - acquire a mutex before setting the phb indications.
-
-v7: get_phb_indications():
-    cxl_get_xsl9_dsnctl():
-      - return -ENODEV instead of -1.
-
-This patch depends on the following skiboot patch:
-  https://patchwork.ozlabs.org/patch/858324/
----
- drivers/misc/cxl/cxl.h    |  2 +-
- drivers/misc/cxl/cxllib.c |  2 +-
- drivers/misc/cxl/pci.c    | 50 ++++++++++++++++++++++++++++++++++++++++++-----
- 3 files changed, 47 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index e46a4062904a..5a6e9a921c2b 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -1062,7 +1062,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
- int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
- 			  u32 *phb_index, u64 *capp_unit_id);
- int cxl_slot_is_switched(struct pci_dev *dev);
--int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
-+int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
- u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
- 
- void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index dc9bc1807fdf..61f80d586279 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
- 	if (rc)
- 		return rc;
- 
--	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
-+	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
- 	if (rc)
- 		return rc;
- 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 19969ee86d6f..89840181fc03 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -409,21 +409,61 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
- 	return 0;
- }
- 
--int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
-+static DEFINE_MUTEX(indications_mutex);
-+
-+static int get_phb_indications(struct pci_dev *dev, u64* capiind, u64 *asnind,
-+			       u64 *nbwind)
-+{
-+	static u64 nbw, asn, capi = 0;
-+	struct device_node *np;
-+	const __be32 *prop;
-+
-+	if (!capi) {
-+		mutex_lock(&indications_mutex);
-+		if (!capi) {
-+			if (!(np = pnv_pci_get_phb_node(dev))) {
-+				mutex_unlock(&indications_mutex);
-+				return -ENODEV;
-+			}
-+
-+			prop = of_get_property(np, "ibm,phb-indications", NULL);
-+			if (!prop) {
-+				nbw = 0x0300UL; /* legacy values */
-+				asn = 0x0400UL;
-+				capi = 0x0200UL;
-+			} else {
-+				nbw = (u64)be32_to_cpu(prop[2]);
-+				asn = (u64)be32_to_cpu(prop[1]);
-+				capi = (u64)be32_to_cpu(prop[0]);
-+			}
-+			of_node_put(np);
-+		}
-+		mutex_unlock(&indications_mutex);
-+	}
-+	*capiind = capi;
-+	*asnind = asn;
-+	*nbwind = nbw;
-+	return 0;
-+}
-+
-+int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
- {
- 	u64 xsl_dsnctl;
-+	u64 capiind, asnind, nbwind;
- 
- 	/*
- 	 * CAPI Identifier bits [0:7]
- 	 * bit 61:60 MSI bits --> 0
- 	 * bit 59 TVT selector --> 0
- 	 */
-+	if (get_phb_indications(dev, &capiind, &asnind, &nbwind))
-+		return -ENODEV;
- 
- 	/*
- 	 * Tell XSL where to route data to.
- 	 * The field chipid should match the PHB CAPI_CMPM register
- 	 */
--	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
-+	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
- 	xsl_dsnctl |= (capp_unit_id << (63-15));
- 
- 	/* nMMU_ID Defaults to: b’000001001’*/
-@@ -437,14 +477,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
- 		 * nbwind=0x03, bits [57:58], must include capi indicator.
- 		 * Not supported on P9 DD1.
- 		 */
--		xsl_dsnctl |= ((u64)0x03 << (63-47));
-+		xsl_dsnctl |= (nbwind << (63-55));
- 
- 		/*
- 		 * Upper 16b address bits of ASB_Notify messages sent to the
- 		 * system. Need to match the PHB’s ASN Compare/Mask Register.
- 		 * Not supported on P9 DD1.
- 		 */
--		xsl_dsnctl |= ((u64)0x04 << (63-55));
-+		xsl_dsnctl |= asnind;
- 	}
- 
- 	*reg = xsl_dsnctl;
-@@ -464,7 +504,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	if (rc)
- 		return rc;
- 
--	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
-+	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
- 	if (rc)
- 		return rc;
- 
 -- 
-2.15.1
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
