@@ -2,19 +2,19 @@ Return-Path: <j.neuschaefer@gmx.net>
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKdkf0KpvzF0bv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 14:14:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKdrf25s1zF0bm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 14:20:01 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
  devicetree@vger.kernel.org,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 5/6] powerpc: wii.dts: Add ngpios property
-Date: Mon, 15 Jan 2018 04:14:00 +0100
-Message-Id: <20180115031401.19577-6-j.neuschaefer@gmx.net>
+Subject: [PATCH 2/6] powerpc: wii: Explicitly configure GPIO owner for
+ poweroff pin
+Date: Mon, 15 Jan 2018 04:13:57 +0100
+Message-Id: <20180115031401.19577-3-j.neuschaefer@gmx.net>
 In-Reply-To: <20180115031401.19577-1-j.neuschaefer@gmx.net>
 References: <20180115031401.19577-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -28,25 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Hollywood GPIO controller supports 32 GPIOs, but on the Wii, only 24
-are used.
+The Hollywood chipset's GPIO controller has two sets of registers: One
+for access by the PowerPC CPU, and one for access by the ARM coprocessor
+(but both are accessible from the PPC because the memory firewall
+(AHBPROT) is usually disabled when booting Linux, today).
+
+The wii_power_off function currently assumes that the poweroff GPIO pin
+is configured for use via the ARM side, but the upcoming GPIO driver
+configures all pins for use via the PPC side, breaking poweroff.
+
+Configure the owner register explicitly in wii_power_off to make
+wii_power_off work with and without the new GPIO driver.
+
+I think the Wii can be switched to the generic gpio-poweroff driver,
+after the GPIO driver is merged.
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
- arch/powerpc/boot/dts/wii.dts | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/embedded6xx/wii.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
-index 40b324b6391e..7235e375919c 100644
---- a/arch/powerpc/boot/dts/wii.dts
-+++ b/arch/powerpc/boot/dts/wii.dts
-@@ -176,6 +176,7 @@
- 			compatible = "nintendo,hollywood-gpio";
- 			reg = <0x0d8000c0 0x40>;
- 			gpio-controller;
-+			ngpios = <24>;
+diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
+index 79a1fe54ebc9..6e6db1e16d71 100644
+--- a/arch/powerpc/platforms/embedded6xx/wii.c
++++ b/arch/powerpc/platforms/embedded6xx/wii.c
+@@ -45,6 +45,7 @@
+ #define HW_GPIO_BASE(idx)	(idx * 0x20)
+ #define HW_GPIO_OUT(idx)	(HW_GPIO_BASE(idx) + 0)
+ #define HW_GPIO_DIR(idx)	(HW_GPIO_BASE(idx) + 4)
++#define HW_GPIO_OWNER		(HW_GPIO_BASE(1) + 0x1c)
  
- 			/*
- 			 * This is commented out while a standard binding
+ #define HW_GPIO_SHUTDOWN	(1<<1)
+ #define HW_GPIO_SLOT_LED	(1<<5)
+@@ -177,6 +178,12 @@ static void wii_power_off(void)
+ 	local_irq_disable();
+ 
+ 	if (hw_gpio) {
++		/*
++		 * set the owner of the shutdown pin to ARM, because it is
++		 * accessed through the registers for the ARM, below
++		 */
++		clrbits32(hw_gpio + HW_GPIO_OWNER, HW_GPIO_SHUTDOWN);
++
+ 		/* make sure that the poweroff GPIO is configured as output */
+ 		setbits32(hw_gpio + HW_GPIO_DIR(1), HW_GPIO_SHUTDOWN);
+ 
 -- 
 2.15.1
