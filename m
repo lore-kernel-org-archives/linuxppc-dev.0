@@ -1,12 +1,12 @@
 Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL8QQ13BDzF0Z7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zL8QQ69b2zF0b8
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 10:17:34 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id y5so8745738pff.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 15:17:33 -0800 (PST)
+Received: by mail-pl0-x244.google.com with SMTP id q3so4724055plr.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 15:17:34 -0800 (PST)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: timur@tabi.org,
 	broonie@kernel.org,
@@ -15,9 +15,9 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
  caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
  kernel@pengutronix.de
-Subject: [PATCH v4 09/17] ASoC: fsl_ssi: Clean up fsl_ssi_setup_regvals()
-Date: Mon, 15 Jan 2018 15:16:24 -0800
-Message-Id: <1516058192-65519-10-git-send-email-nicoleotsuka@gmail.com>
+Subject: [PATCH v4 10/17] ASoC: fsl_ssi: Set xFEN0 and xFEN1 together
+Date: Mon, 15 Jan 2018 15:16:25 -0800
+Message-Id: <1516058192-65519-11-git-send-email-nicoleotsuka@gmail.com>
 In-Reply-To: <1516058192-65519-1-git-send-email-nicoleotsuka@gmail.com>
 References: <1516058192-65519-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,54 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch cleans fsl_ssi_setup_regvals() by following changes:
-1) Moving DBG bits to the first lines.
-2) Setting SSIE, RE/TE as default and cleaning it for AC97
+It'd be safer to enable both FIFOs for TX or RX at the same time.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index b76a517..e5efee2 100644
+index e5efee2..ba06e94 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -580,18 +580,16 @@ static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
- {
- 	struct fsl_ssi_regvals *vals = ssi->regvals;
+@@ -591,6 +591,11 @@ static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
+ 	if (fsl_ssi_is_ac97(ssi))
+ 		vals[RX].scr = vals[TX].scr = 0;
  
--	vals[RX].sier = SSI_SIER_RFF0_EN;
-+	vals[RX].sier = SSI_SIER_RFF0_EN | FSLSSI_SIER_DBG_RX_FLAGS;
- 	vals[RX].srcr = SSI_SRCR_RFEN0;
--	vals[RX].scr = 0;
--	vals[TX].sier = SSI_SIER_TFE0_EN;
-+	vals[RX].scr = SSI_SCR_SSIEN | SSI_SCR_RE;
-+	vals[TX].sier = SSI_SIER_TFE0_EN | FSLSSI_SIER_DBG_TX_FLAGS;
- 	vals[TX].stcr = SSI_STCR_TFEN0;
--	vals[TX].scr = 0;
-+	vals[TX].scr = SSI_SCR_SSIEN | SSI_SCR_TE;
- 
- 	/* AC97 has already enabled SSIEN, RE and TE, so ignore them */
--	if (!fsl_ssi_is_ac97(ssi)) {
--		vals[RX].scr = SSI_SCR_SSIEN | SSI_SCR_RE;
--		vals[TX].scr = SSI_SCR_SSIEN | SSI_SCR_TE;
--	}
-+	if (fsl_ssi_is_ac97(ssi))
-+		vals[RX].scr = vals[TX].scr = 0;
- 
++	if (ssi->use_dual_fifo) {
++		vals[RX].srcr |= SSI_SRCR_RFEN1;
++		vals[TX].stcr |= SSI_STCR_TFEN1;
++	}
++
  	if (ssi->use_dma) {
  		vals[RX].sier |= SSI_SIER_RDMAE;
-@@ -600,9 +598,6 @@ static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
- 		vals[RX].sier |= SSI_SIER_RIE;
- 		vals[TX].sier |= SSI_SIER_TIE;
- 	}
--
--	vals[RX].sier |= FSLSSI_SIER_DBG_RX_FLAGS;
--	vals[TX].sier |= FSLSSI_SIER_DBG_TX_FLAGS;
- }
+ 		vals[TX].sier |= SSI_SIER_TDMAE;
+@@ -991,14 +996,9 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		     SSI_SFCSR_TFWM0(wm) | SSI_SFCSR_RFWM0(wm) |
+ 		     SSI_SFCSR_TFWM1(wm) | SSI_SFCSR_RFWM1(wm));
  
- static void fsl_ssi_setup_ac97(struct fsl_ssi *ssi)
+-	if (ssi->use_dual_fifo) {
+-		regmap_update_bits(regs, REG_SSI_SRCR,
+-				   SSI_SRCR_RFEN1, SSI_SRCR_RFEN1);
+-		regmap_update_bits(regs, REG_SSI_STCR,
+-				   SSI_STCR_TFEN1, SSI_STCR_TFEN1);
++	if (ssi->use_dual_fifo)
+ 		regmap_update_bits(regs, REG_SSI_SCR,
+ 				   SSI_SCR_TCH_EN, SSI_SCR_TCH_EN);
+-	}
+ 
+ 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_AC97)
+ 		fsl_ssi_setup_ac97(ssi);
 -- 
 2.7.4
