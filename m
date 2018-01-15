@@ -1,23 +1,48 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0069.outbound.protection.outlook.com [104.47.33.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL0246gCPzF0Wx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 03:59:24 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>, "madskateman@gmail.com"
- <madskateman@gmail.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
-Date: Mon, 15 Jan 2018 16:59:19 +0000
-Message-ID: <1516035556.18795.71.camel@infinera.com>
-References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
- <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-In-Reply-To: <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zL0tF382VzF0Y0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 04:37:41 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0FHTgqd115578
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 12:37:38 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fh0ca9hcg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 12:37:38 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 15 Jan 2018 17:37:36 -0000
+Subject: Re: [PATCH v6 01/24] x86/mm: Define CONFIG_SPF
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1515777968-867-2-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1801121955150.2371@nanos>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 15 Jan 2018 18:37:25 +0100
 MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.20.1801121955150.2371@nanos>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <753d7b28-3d7e-0c01-0386-8dad161f88ea@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +52,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBNYWRhbGluLWNyaXN0aWFuIEJ1Y3Vy
-IHdyb3RlOg0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRlIG9m
-IHRoZSBvcmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1lbnRz
-IHVubGVzcyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMg
-c2FmZS4NCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTog
-TGludXhwcGMtZGV2IFttYWlsdG86bGludXhwcGMtZGV2LQ0KPiA+IGJvdW5jZXMrbWFkYWxpbi5i
-dWN1cj1ueHAuY29tQGxpc3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBtYWQgc2thdGVtYW4N
-Cj4gPiBTZW50OiBXZWRuZXNkYXksIEphbnVhcnkgMTAsIDIwMTggMTA6MzkgUE0NCj4gPiBUbzog
-bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiBTdWJqZWN0OiBEUEFBIEV0aGVybmV0
-IHRyYWZmaWNlIHRyb3VibGVzIHdpdGggTGludXgga2VybmVsDQo+ID4gDQo+ID4gSGkgbGludXgg
-ZGV2cywNCj4gPiANCj4gPiBMaWtlIG1lbnRpb25lZCBpbiB0aGlzIHRocmVhZA0KPiA+IGh0dHBz
-Oi8vbGlzdHMub3psYWJzLm9yZy9waXBlcm1haWwvbGludXhwcGMtZGV2LzIwMTgtSmFudWFyeS8x
-Njc2MzAuaHRtbA0KPiA+IGkgYWxzbyBleHBlcmllbmNlIHRoZSBleGFjdCBzYW1lIGlzc3Vlcy4N
-Cj4gPiBJIGFtIGFsc28gdHJ5aW5nIHRvIGZpbmQgb3V0IHdoeSB0aGUgbmV0d29yayB0cmFmZmlj
-IGlzIG5vdCBmbG93aW5nDQo+ID4gdGhlIHdheSBpdCBzaG91bGQgKG91dCBmb3IgZXhhbXBsZSAp
-Lg0KPiA+IA0KPiA+IE15IGxpbnV4IGtub3dsZWRnZSBpcyB2ZXJ5IGJhc2ljIGJ1dCBpIGhvcGUg
-aSBjYW4gY29udHJpYnV0ZSBhbnl3YXkuDQo+ID4gDQo+ID4gSSBhbSB1c2luZyB0aGUgQW1pZ2FP
-bmUgWDUwMDAgd2l0aCBhIFA1MDIwDQo+ID4gTW9zdCBkZXRhaWxlZCB0ZWNobmljYWwgaW5mb3Jt
-YXRpb24gcmVnYXJkaW5nIHRoaXMgaXNzdWUgY2FuIGJlIGZvdW5kDQo+ID4gaW4gdGhlIFRocmVh
-ZCBieSBKYW1pZSBLcnVlZ2VyIG1lbnRpb25lZCBhYm92ZS4NCj4gPiANCj4gPiBJbiB0aGlzIHNj
-cmVlbnNob3QsIHRoZSBFVEgwIGFuZCBFVEgxIHNlZW0gdXAgYW5kIHJ1bm5pbmcgKHByb2JlZCkg
-Li4NCj4gPiBldmVuIGR1ZSB0byB0aGUgRlNMX0RQQUFfTUFDIGVycm9yIG1lc3NhZ2VzIHRoYXQg
-RE1FU0cgc2hvd3MuDQo+ID4gaHR0cDovL3d3dy5za2F0ZW1hbi5ubC93cC1jb250ZW50L3VwbG9h
-ZHMvMjAxOC8wMS9TY3JlZW5zaG90LWF0LTIwMTgtMDEtMDgtMjFfMjJfMDZfRVRIX05JQ19FUlJP
-Ui5wbmcNCj4gPiANCj4gPiBodHRwOi8vd3d3LnNrYXRlbWFuLm5sL3dwLWNvbnRlbnQvdXBsb2Fk
-cy8yMDE4LzAxL1NjcmVlbnNob3QtYXQtMjAxOC0wMS0wOC0yMl8xNl8yOC5wbmcNCj4gPiANCj4g
-PiBJIHdhcyBhYmxlIHRvIHVzZSBzb21lIHRvb2xpbmcgbGlrZSBFVEhUT09MIHRvIGFkanVzdCBz
-b21lIHNldHRpbmdzDQo+ID4gYW5kIGNoZWNrIGlmIHRoZSBpbnRlcmZhY2UgcmVzcG9uZGVkLiBU
-aGlzIGFsbCBzZWVtcyBmaW5lLg0KPiA+IA0KPiA+IEhvcGUgdGhhdCBzb21lb25lIGNhbiBmaW5k
-IGEgZml4LCBzbyB0aGUgRXRoZXJuZXQgYWRhcHRlciBjYW4gYmUgdXNlZC4NCj4gPiANCj4gPiBU
-aGFua3MhIQ0KPiANCj4gSGksDQo+IA0KPiBQbGVhc2UgdXNlIHRleHQgbG9ncyBpbnN0ZWFkIG9m
-IHBpY3R1cmVzIG5leHQgdGltZSwgaXQncyBlYXNpZXIgdG8gcmVhZC4NCj4gVGhlIGVycm9ycyB5
-b3Ugc2VlIGFyZSByZWxhdGVkIHRvIG1pc3NpbmcgTUFDIGFkZHJlc3NlcyBmb3IgdGhlIHVudXNl
-ZA0KPiBpbnRlcmZhY2VzLCB5b3UgY2FuIGlnbm9yZSB0aGVzZSBhcmUgdGhleSBhcmUgbm90IHJl
-bGV2YW50IGZvciB0aGUgaXNzdWUNCj4geW91IGVuY291bnRlci4gTm9ybWFsbHkgdGhlIHVudXNl
-ZCBpbnRlcmZhY2VzIHNob3VsZCBoYXZlIHN0YXR1cyBkaXNhYmxlZA0KPiBpbiB0aGUgZGV2aWNl
-IHRyZWUgYnV0IHRoZXJlIGlzIG5vdCBhIGJpZyBkZWFsIGlmIHRoZXkgZmFpbCBsaWtlIHRoYXQu
-DQo+IEFzIEkndmUgYWR2aXNlZCBKYW1pZSBvbiB0aGUgb3RoZXIgdGhyZWFkLCBwbGVhc2UgdHJ5
-IHRvIGNvbm5lY3QgdGhlIGRldmljZQ0KPiBiYWNrIDIgYmFjayB0byBhIGtub3duIGdvb2QgbWFj
-aGluZSBhbmQgZGV0ZXJtaW5lIHdoYXQgaXMgYnJva2VuIC0gUngvVHg/DQo+IElzIHRoZXJlIGFu
-b3RoZXIgc29mdHdhcmUgdmVyc2lvbiB0aGF0IGRvZXMgd29yayBvbiB0aGVzZSBtYWNoaW5lcz8N
-Cg0KSGksIGp1c3Qgc2F3IHRoaXMgYW5kIHRob3VnaHQgb2YgYSBzbWFsbCBwYXRjaCBJIGp1c3Qg
-d3JvdGUgZm9yIG1kaW8gYnVzLCBvIGlkZWENCmlmIGl0IGlzIHJlbGV2YW50IGJ1dCBoZXJlIGdv
-ZXM6DQoNCkZyb20gZmUwYjk4ZDU0YTc5Nzc5NDgyNzAwNjc2MzMxYjRkMTBhMGYzY2FkYSBNb24g
-U2VwIDE3IDAwOjAwOjAwIDIwMDENCkZyb206IEpvYWtpbSBUamVybmx1bmQgPGpvYWtpbS50amVy
-bmx1bmRAaW5maW5lcmEuY29tPg0KRGF0ZTogU3VuLCAxNCBKYW4gMjAxOCAyMToyNzoyMCArMDEw
-MA0KU3ViamVjdDogW1BBVENIXSBvZl9tZGlvYnVzX3JlZ2lzdGVyOiBDb250aW51ZSBhZnRlciBl
-cnJvcg0KDQpvZl9tZGlvYnVzX3JlZ2lzdGVyIHVucmVnaXN0ZXIgaXRzZWxmIGlmIG9uZSBwaHkg
-ZmFpbHMgdG8gcmVnaXN0ZXINCndoaWNoIGlzIGJhZCBmb3Igc3lzdGVtIGhhdmluZyBhbGwgaXRz
-IFBIWXMgb24gdGhlIHNhbWUgTURJTyBidXMuDQpKdXN0IGxvZyB0aGUgZXJyb3IgYW5kIGNvbnRp
-bnVlIHdpdGggdGhlIHJlbWFpbmluZyBQSFlzIGluc3RlYWQuDQoNClNpZ25lZC1vZmYtYnk6IEpv
-YWtpbSBUamVybmx1bmQgPGpvYWtpbS50amVybmx1bmRAaW5maW5lcmEuY29tPg0KLS0tDQogZHJp
-dmVycy9vZi9vZl9tZGlvLmMgfCA2ICsrKystLQ0KIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlv
-bnMoKyksIDIgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL29mL29mX21kaW8u
-YyBiL2RyaXZlcnMvb2Yvb2ZfbWRpby5jDQppbmRleCA5ODI1ODU4M2FiYjAuLjc2ZmYyOGE0MWRh
-ZCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvb2Yvb2ZfbWRpby5jDQorKysgYi9kcml2ZXJzL29mL29m
-X21kaW8uYw0KQEAgLTIyOSw3ICsyMjksOCBAQCBpbnQgb2ZfbWRpb2J1c19yZWdpc3RlcihzdHJ1
-Y3QgbWlpX2J1cyAqbWRpbywgc3RydWN0IGRldmljZV9ub2RlICpucCkNCiAJCWVsc2UNCiAJCQly
-YyA9IG9mX21kaW9idXNfcmVnaXN0ZXJfZGV2aWNlKG1kaW8sIGNoaWxkLCBhZGRyKTsNCiAJCWlm
-IChyYykNCi0JCQlnb3RvIHVucmVnaXN0ZXI7DQorCQkJcHJfd2FybihGV19XQVJODQorCQkJCSIl
-cE9GOiBGYWlsZWQgdG8gcmVnaXN0ZXIgTURJTyBkZXZpY2UuXG4iLCBjaGlsZCk7DQogCX0NCiAN
-CiAJaWYgKCFzY2FucGh5cykNCkBAIC0yNTMsNyArMjU0LDggQEAgaW50IG9mX21kaW9idXNfcmVn
-aXN0ZXIoc3RydWN0IG1paV9idXMgKm1kaW8sIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnApDQogCQkJ
-aWYgKG9mX21kaW9idXNfY2hpbGRfaXNfcGh5KGNoaWxkKSkgew0KIAkJCQlyYyA9IG9mX21kaW9i
-dXNfcmVnaXN0ZXJfcGh5KG1kaW8sIGNoaWxkLCBhZGRyKTsNCiAJCQkJaWYgKHJjKQ0KLQkJCQkJ
-Z290byB1bnJlZ2lzdGVyOw0KKwkJCQkJcHJfd2FybihGV19XQVJODQorCQkJCQkJIiVwT0Y6IEZh
-aWxlZCB0byByZWdpc3RlciBNRElPIFBIWS5cbiIsIGNoaWxkKTsNCiAJCQl9DQogCQl9DQogCX0N
-Ci0tIA0KMi4xMy42
+Hi Thomas,
+
+Thanks for reviewing this series.
+
+On 12/01/2018 19:57, Thomas Gleixner wrote:
+> On Fri, 12 Jan 2018, Laurent Dufour wrote:
+> 
+>> Introduce CONFIG_SPF which turns on the Speculative Page Fault handler when
+>> building for 64bits with SMP.
+>>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/x86/Kconfig | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>> index a317d5594b6a..d74353b85aaf 100644
+>> --- a/arch/x86/Kconfig
+>> +++ b/arch/x86/Kconfig
+>> @@ -2882,6 +2882,10 @@ config X86_DMA_REMAP
+>>  config HAVE_GENERIC_GUP
+>>  	def_bool y
+>>  
+>> +config SPF
+>> +	def_bool y
+>> +	depends on X86_64 && SMP
+> 
+> Can you please put that into a generic place as
+> 
+>     config SPF
+>     	   bool
+> 
+> and let the architectures select it.
+
+I'll change that to let the architectures (x86 and ppc64 currently)
+selecting it, but the definition will remain in the arch/xxx/Kconfig file
+since it depends on the architecture support in the page fault handler.
+
+> Also SPF could be bit more elaborate and self explaining for the causual
+> reader. 3 letter acronyms are reserved for non existing agencies.
+
+That's true 3 letter acronyms are already reserved...
+I'll change it to CONFIG_SPECULATIVE_PAGE_FAULT as suggested by Matthew Wilcox.
+
+Thanks,
+Laurent.
