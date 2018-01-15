@@ -1,24 +1,29 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madskateman@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL5l42D3TzF0bY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 08:16:48 +1100 (AEDT)
-Subject: Re: [PATCH v3 16/17] ASoC: fsl_ssi: Move DT related code to a
- separate probe()
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-References: <1515990087-11598-1-git-send-email-nicoleotsuka@gmail.com>
- <1515990087-11598-17-git-send-email-nicoleotsuka@gmail.com>
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Message-ID: <0be4b57d-cb28-896a-3d97-f36316a351c5@maciej.szmigiero.name>
-Date: Mon, 15 Jan 2018 22:16:39 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zL64z0qJ8zF0Xw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 08:32:18 +1100 (AEDT)
+Received: by mail-qk0-x242.google.com with SMTP id l29so8933799qkj.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 13:32:18 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1515990087-11598-17-git-send-email-nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <32f11c91-9529-180a-a8cf-9f380f853b99@xenosoft.de>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com>
+ <346361be-ce30-6a13-c154-5192d2668723@xenosoft.de>
+ <32f11c91-9529-180a-a8cf-9f380f853b99@xenosoft.de>
+From: mad skateman <madskateman@gmail.com>
+Date: Mon, 15 Jan 2018 22:32:14 +0100
+Message-ID: <CAHkrCmFwMRh7+9ijRhgpqm_dQmE7uH8pv8ZQvLY1rxk1hjhfzw@mail.gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,114 +33,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15.01.2018 05:21, Nicolin Chen wrote:
-> This patch cleans up probe() function by moving all Device Tree
-> related code into a separate function. It allows the probe() to
-> be Device Tree independent. This will be very useful for future
-> integration of imx-ssi driver which has similar functionalities
-> while exists only because it supports non-DT cases.
-> 
-> This patch also moves symmetric_channels of AC97 from the probe
-> to the structure snd_soc_dai_driver for simplification.
-> 
-> Additionally, since PowerPC and AC97 use the same pdev pointer
-> to register a platform device, this patch also unifies related
-> code.
-> 
-> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> Tested-by: Caleb Crome <caleb@crome.org>
-> ---
->  sound/soc/fsl/fsl_ssi.c | 202 +++++++++++++++++++++++++-----------------------
->  1 file changed, 107 insertions(+), 95 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index 20889d8..d2072de 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -1366,41 +1365,102 @@ static void fsl_ssi_imx_clean(struct platform_device *pdev, struct fsl_ssi *ssi)
->  		clk_disable_unprepare(ssi->clk);
->  }
->  
-> -static int fsl_ssi_probe(struct platform_device *pdev)
-> +static int fsl_ssi_probe_from_dt(struct fsl_ssi *ssi)
->  {
-> -	struct fsl_ssi *ssi;
-> -	int ret = 0;
-> -	struct device_node *np = pdev->dev.of_node;
-> -	struct device *dev = &pdev->dev;
-> +	struct device *dev = ssi->dev;
-> +	struct device_node *np = dev->of_node;
->  	const struct of_device_id *of_id;
->  	const char *p, *sprop;
->  	const uint32_t *iprop;
-> -	struct resource *res;
-> -	void __iomem *iomem;
-> -	char name[64];
-> -	struct regmap_config regconfig = fsl_ssi_regconfig;
-> +	u32 dmas[4];
-> +	int ret;
->  
->  	of_id = of_match_device(fsl_ssi_ids, dev);
->  	if (!of_id || !of_id->data)
->  		return -EINVAL;
->  
-> -	ssi = devm_kzalloc(dev, sizeof(*ssi), GFP_KERNEL);
-> -	if (!ssi)
-> -		return -ENOMEM;
-> -
->  	ssi->soc = of_id->data;
-> -	ssi->dev = dev;
-> +
-> +	ret = of_property_match_string(np, "clock-names", "ipg");
-> +	/* Get error code if not found */
-> +	ssi->has_ipg_clk_name = ret >= 0;
->  
->  	/* Check if being used in AC97 mode */
->  	sprop = of_get_property(np, "fsl,mode", NULL);
-> -	if (sprop) {
-> -		if (!strcmp(sprop, "ac97-slave"))
-> -			ssi->dai_fmt = FSLSSI_AC97_DAIFMT;
-> +	if (sprop && !strcmp(sprop, "ac97-slave")) {
-> +		ssi->dai_fmt = FSLSSI_AC97_DAIFMT;
-> +
-> +		ret = of_property_read_u32(np, "cell-index", &ssi->card_idx);
-> +		if (ret) {
-> +			dev_err(dev, "failed to get SSI index property\n");
-> +			return -EINVAL;
-> +		}
-> +		strcpy(ssi->card_name, "ac97-codec");
->  	}
->  
->  	/* Select DMA or FIQ */
->  	ssi->use_dma = !of_property_read_bool(np, "fsl,fiq-stream-filter");
->  
-> +	/* In synchronous mode, STCK and STFS ports are used by RX as well */
-> +	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL))
-> +		ssi->synchronous = true;
+Some extra info:
 
-You are setting ssi->synchronous in the AC'97 mode here, the old code
-didn't do that (see the next patch hunk below).
+When Ubuntu boots, Eth0 (192.168.22.44) is not brought up automaticly..
 
-Since in the previous patch you have replaced cpu_dai_drv.symmetric_rates
-with ssi->synchronous this will likely break asymmetric rate support in
-the AC'97 mode, since the driver will use STCCR for programming of both
-playback and capture.
+When i bring up eth0 by hand, its still not active..
 
-The next patch in this series (17) also looks affected by this change.
+root@X5000LNX:/home/skateman# ifconfig eth0 up
+root@X5000LNX:/home/skateman# ping 192.168.22.44
+connect: Network is unreachable
 
-> @@ -1444,24 +1500,13 @@ static int fsl_ssi_probe(struct platform_device *pdev)
->  		return ssi->irq;
->  	}
->  
-> -	/* Set software limitations for synchronous mode */
-> -	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
-> -		if (!fsl_ssi_is_ac97(ssi)) {
-> -			ssi->cpu_dai_drv.symmetric_rates = 1;
-> -			ssi->cpu_dai_drv.symmetric_samplebits = 1;
-> -			ssi->synchronous = true;
-> -		}
+When i use mii-tool too Kick the tranceiver... it comes alive.. i can
+ping the eth0 itself
 
-You can see it here that the old code didn't set ssi->synchronous in the
-AC'97 mode.
+root@X5000LNX:/home/skateman# mii-tool -R eth0
+resetting the transceiver...
+root@X5000LNX:/home/skateman# ping 192.168.22.44
+PING 192.168.22.44 (192.168.22.44) 56(84) bytes of data.
+64 bytes from 192.168.22.44: icmp_seq=3D1 ttl=3D64 time=3D0.045 ms
+64 bytes from 192.168.22.44: icmp_seq=3D2 ttl=3D64 time=3D0.046 ms
+64 bytes from 192.168.22.44: icmp_seq=3D3 ttl=3D64 time=3D0.047 ms
+64 bytes from 192.168.22.44: icmp_seq=3D4 ttl=3D64 time=3D0.048 ms
 
-Maciej
+eth0      Link encap:Ethernet  HWaddr 00:04:9f:01:02:03
+          inet addr:192.168.22.44  Bcast:192.168.22.255  Mask:255.255.255.0
+          inet6 addr: fe80::c84b:9f6b:f2f6:8933/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:48 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 B)  TX bytes:7600 (7.6 KB)
+          Memory:fe4e6000-fe4e6fff
+
+Not realy sure why the Tranceiver is not brought up directly when linux sta=
+rts..
+
+
+
+On 1/15/18, Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
+> Sorry, I have forgotten the download link. Please test it with the DPAA
+> Ethernet.
+>> Hi All,
+>>
+>> I compiled the RC8 of kernel 4.15 with Joakim's patch for the AmigaOne
+>> X5000 today. Many thanks to Joakim for the mdio patch.
+>>
+>> Download: http://www.xenosoft.de/uImage-4.15-rc8_with_mdio_patch.tar.gz
+>>
+>> Please test it on your X5000.
+>>
+>> Thanks,
+>> Christian
+>>
+>>
+>> On 15 January 2018 at 5:59PM, Joakim Tjernlund wrote:
+>>>>
+>>>> Hi,
+>>>>
+>>>> Please use text logs instead of pictures next time, it's easier to
+>>>> read.
+>>>> The errors you see are related to missing MAC addresses for the unused
+>>>> interfaces, you can ignore these are they are not relevant for the
+>>>> issue
+>>>> you encounter. Normally the unused interfaces should have status
+>>>> disabled
+>>>> in the device tree but there is not a big deal if they fail like that.
+>>>> As I've advised Jamie on the other thread, please try to connect the
+>>>> device
+>>>> back 2 back to a known good machine and determine what is broken -
+>>>> Rx/Tx?
+>>>> Is there another software version that does work on these machines?
+>>> Hi, just saw this and thought of a small patch I just wrote for mdio
+>>> bus, o idea
+>>> if it is relevant but here goes:
+>>>
+>>> =C2=A0From fe0b98d54a79779482700676331b4d10a0f3cada Mon Sep 17 00:00:00=
+ 2001
+>>> From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+>>> Date: Sun, 14 Jan 2018 21:27:20 +0100
+>>> Subject: [PATCH] of_mdiobus_register: Continue after error
+>>>
+>>> of_mdiobus_register unregister itself if one phy fails to register
+>>> which is bad for system having all its PHYs on the same MDIO bus.
+>>> Just log the error and continue with the remaining PHYs instead.
+>>>
+>>> Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+>>> ---
+>>> =C2=A0 drivers/of/of_mdio.c | 6 ++++--
+>>> =C2=A0 1 file changed, 4 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+>>> index 98258583abb0..76ff28a41dad 100644
+>>> --- a/drivers/of/of_mdio.c
+>>> +++ b/drivers/of/of_mdio.c
+>>> @@ -229,7 +229,8 @@ int of_mdiobus_register(struct mii_bus *mdio,
+>>> struct device_node *np)
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 else
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 rc =3D of_mdiobus_register_device(mdio, child, addr);
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (rc)
+>>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 got=
+o unregister;
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pr_=
+warn(FW_WARN
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 "%pOF: Failed to register MDIO device.\n", child);
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
+>>> =C2=A0 =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (!scanphys)
+>>> @@ -253,7 +254,8 @@ int of_mdiobus_register(struct mii_bus *mdio,
+>>> struct device_node *np)
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 if (of_mdiobus_child_is_phy(child)) {
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rc =3D of_mdiobus_register_phy(mdio, chil=
+d, addr);
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (rc)
+>>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 goto unregister;
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pr_warn(FW_WARN
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 "%pOF=
+: Failed to register MDIO PHY.\n", child);
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 }
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
+>>
+>>
+>
+>
