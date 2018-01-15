@@ -1,26 +1,34 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKgDq5W0fzF0X9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 15:22:35 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id j2so7416246pgv.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jan 2018 20:22:35 -0800 (PST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: timur@tabi.org,
-	broonie@kernel.org,
-	mail@maciej.szmigiero.name
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
- caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
- kernel@pengutronix.de
-Subject: [PATCH v3 17/17] ASoC: fsl_ssi: Use ssi->streams instead of reading
- register
-Date: Sun, 14 Jan 2018 20:21:27 -0800
-Message-Id: <1515990087-11598-18-git-send-email-nicoleotsuka@gmail.com>
-In-Reply-To: <1515990087-11598-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1515990087-11598-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKjjr0XvHzF0dY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 17:14:23 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0F6EJ3n048278
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 01:14:21 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fgkqmnv3p-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 01:14:20 -0500
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 15 Jan 2018 06:13:54 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC] powerpc/mm: Enable TLB flush during
+ native_register_proc_table()
+In-Reply-To: <20180110045333.10550-1-khandual@linux.vnet.ibm.com>
+References: <20180110045333.10550-1-khandual@linux.vnet.ibm.com>
+Date: Mon, 15 Jan 2018 11:43:49 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87r2qrejj6.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since ssi->streams is being updated along with SCR register and
-its SSIEN bit, it's simpler to use it instead.
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Tested-by: Caleb Crome <caleb@crome.org>
----
- sound/soc/fsl/fsl_ssi.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+> From: Anshuman Khandual <Khandual@linux.vnet.ibm.com>
+>
+> Any changes to the partition table must be followed by appropriate TLB
+> flush which is not happening at present in native_register_proc_table()
+> path. Fix this by calling mmu_partition_table_set_entry() which does
+> take care of TLB flushing after the partition table update.
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> - From code inspection
+> - Compile, boot tested without CONFIG_PPC_RADIX_MMU
+> - Though it seems to be not getting called from any where
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index d2072de..2768def 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -803,11 +803,6 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	unsigned int sample_size = params_width(hw_params);
- 	u32 wl = SSI_SxCCR_WL(sample_size);
- 	int ret;
--	u32 scr;
--	int enabled;
--
--	regmap_read(regs, REG_SSI_SCR, &scr);
--	enabled = scr & SSI_SCR_SSIEN;
- 
- 	/*
- 	 * SSI is properly configured if it is enabled and running in
-@@ -815,7 +810,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	 * that should set separate configurations for STCCR and SRCCR
- 	 * despite running in the synchronous mode.
- 	 */
--	if (enabled && ssi->synchronous)
-+	if (ssi->streams && ssi->synchronous)
- 		return 0;
- 
- 	if (fsl_ssi_is_i2s_master(ssi)) {
--- 
-2.7.4
+
+For hash the patb1 is zero and hence it is not called. This is left over
+from the segment table implementation. I guess we can remove
+native_register_proc_table.
+
+
+
+>
+>  arch/powerpc/mm/hash_native_64.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+> index 640cf56..89be5a6 100644
+> --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -758,12 +758,14 @@ static void native_flush_hash_range(unsigned long number, int local)
+>  static int native_register_proc_table(unsigned long base, unsigned long page_size,
+>  				      unsigned long table_size)
+>  {
+> -	unsigned long patb1 = base << 25; /* VSID */
+> +	unsigned long patb0, patb1;
+>  
+> +	patb1 = base << 25;	    /* VSID */
+>  	patb1 |= (page_size << 5);  /* sllp */
+>  	patb1 |= table_size;
+>  
+> -	partition_tb->patb1 = cpu_to_be64(patb1);
+> +	patb0 = be64_to_cpu(partition_tb[0].patb0);
+> +	mmu_partition_table_set_entry(0, patb0, patb1);
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.8.3.1
