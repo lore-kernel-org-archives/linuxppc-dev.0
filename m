@@ -2,7 +2,7 @@ Return-Path: <j.neuschaefer@gmx.net>
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zKdkf08RbzF0bg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zKdkf0KpvzF0bv
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 14:14:49 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linux-kernel@vger.kernel.org
@@ -12,9 +12,9 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 6/6] powerpc: wii.dts: Add GPIO line names
-Date: Mon, 15 Jan 2018 04:14:01 +0100
-Message-Id: <20180115031401.19577-7-j.neuschaefer@gmx.net>
+Subject: [PATCH 5/6] powerpc: wii.dts: Add ngpios property
+Date: Mon, 15 Jan 2018 04:14:00 +0100
+Message-Id: <20180115031401.19577-6-j.neuschaefer@gmx.net>
 In-Reply-To: <20180115031401.19577-1-j.neuschaefer@gmx.net>
 References: <20180115031401.19577-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -28,32 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are the GPIO line names on a Nintendo Wii, as documented in:
-https://wiibrew.org/wiki/Hardware/Hollywood_GPIOs
+The Hollywood GPIO controller supports 32 GPIOs, but on the Wii, only 24
+are used.
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
- arch/powerpc/boot/dts/wii.dts | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/boot/dts/wii.dts | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
-index 7235e375919c..07d5e84e98b1 100644
+index 40b324b6391e..7235e375919c 100644
 --- a/arch/powerpc/boot/dts/wii.dts
 +++ b/arch/powerpc/boot/dts/wii.dts
-@@ -178,6 +178,14 @@
+@@ -176,6 +176,7 @@
+ 			compatible = "nintendo,hollywood-gpio";
+ 			reg = <0x0d8000c0 0x40>;
  			gpio-controller;
- 			ngpios = <24>;
++			ngpios = <24>;
  
-+			gpio-line-names =
-+				"POWER", "SHUTDOWN", "FAN", "DC_DC",
-+				"DI_SPIN", "SLOT_LED", "EJECT_BTN", "SLOT_IN",
-+				"SENSOR_BAR", "DO_EJECT", "EEP_CS", "EEP_CLK",
-+				"EEP_MOSI", "EEP_MISO", "AVE_SCL", "AVE_SDA",
-+				"DEBUG0", "DEBUG1", "DEBUG2", "DEBUG3",
-+				"DEBUG4", "DEBUG5", "DEBUG6", "DEBUG7";
-+
  			/*
  			 * This is commented out while a standard binding
- 			 * for i2c over gpio is defined.
 -- 
 2.15.1
