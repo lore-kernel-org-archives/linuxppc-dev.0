@@ -1,50 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL2Ch4F6pzF0YW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 05:37:52 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0FIZQbu045606
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 13:37:50 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fgwn6kk9a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 13:37:49 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 15 Jan 2018 18:37:47 -0000
-Subject: Re: [PATCH v6 01/24] x86/mm: Define CONFIG_SPF
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1515777968-867-2-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1801121955150.2371@nanos>
- <753d7b28-3d7e-0c01-0386-8dad161f88ea@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1801151846110.2143@nanos>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 15 Jan 2018 19:37:37 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zL2np3KDpzF0YP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 06:03:55 +1100 (AEDT)
+Subject: DPAA Ethernet traffice troubles with Linux kernel
+To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
+ "madskateman@gmail.com" <madskateman@gmail.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <346361be-ce30-6a13-c154-5192d2668723@xenosoft.de>
+Date: Mon, 15 Jan 2018 20:03:45 +0100
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1801151846110.2143@nanos>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <603205fb-21e5-859c-605c-fbd7b44438c0@linux.vnet.ibm.com>
+In-Reply-To: <1516035556.18795.71.camel@infinera.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,58 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/01/2018 18:49, Thomas Gleixner wrote:
-> On Mon, 15 Jan 2018, Laurent Dufour wrote:
->> On 12/01/2018 19:57, Thomas Gleixner wrote:
->>> On Fri, 12 Jan 2018, Laurent Dufour wrote:
->>>
->>>> Introduce CONFIG_SPF which turns on the Speculative Page Fault handler when
->>>> building for 64bits with SMP.
->>>>
->>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->>>> ---
->>>>  arch/x86/Kconfig | 4 ++++
->>>>  1 file changed, 4 insertions(+)
->>>>
->>>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->>>> index a317d5594b6a..d74353b85aaf 100644
->>>> --- a/arch/x86/Kconfig
->>>> +++ b/arch/x86/Kconfig
->>>> @@ -2882,6 +2882,10 @@ config X86_DMA_REMAP
->>>>  config HAVE_GENERIC_GUP
->>>>  	def_bool y
->>>>  
->>>> +config SPF
->>>> +	def_bool y
->>>> +	depends on X86_64 && SMP
->>>
->>> Can you please put that into a generic place as
->>>
->>>     config SPF
->>>     	   bool
->>>
->>> and let the architectures select it.
+Hi All,
+
+I compiled the RC8 of kernel 4.15 with Joakim's patch for the AmigaOne 
+X5000 today. Many thanks to Joakim for the mdio patch.
+
+Please test it on your X5000.
+
+Thanks,
+Christian
+
+
+On 15 January 2018 at 5:59PM, Joakim Tjernlund wrote:
 >>
->> I'll change that to let the architectures (x86 and ppc64 currently)
->> selecting it, but the definition will remain in the arch/xxx/Kconfig file
->> since it depends on the architecture support in the page fault handler.
-> 
-> Errm. No.
-> 
-> 	config SPECULATIVE_PAGE_FAULT
->       		bool
-> 
-> goes into a generic config file, e.g. mm/Kconfig
-> 
-> Each architecture which implements support does:
-> 
-> 	select SPECULATIVE_PAGE_FAULT
-> 
-> in arch/xxx/Kconfig
-
-Oh ok, I think I got it this time ;)
-
-Will do this way, this will be smarter.
-
-Thanks a lot,
-Laurent.
+>> Hi,
+>>
+>> Please use text logs instead of pictures next time, it's easier to read.
+>> The errors you see are related to missing MAC addresses for the unused
+>> interfaces, you can ignore these are they are not relevant for the issue
+>> you encounter. Normally the unused interfaces should have status disabled
+>> in the device tree but there is not a big deal if they fail like that.
+>> As I've advised Jamie on the other thread, please try to connect the device
+>> back 2 back to a known good machine and determine what is broken - Rx/Tx?
+>> Is there another software version that does work on these machines?
+> Hi, just saw this and thought of a small patch I just wrote for mdio bus, o idea
+> if it is relevant but here goes:
+>
+>  From fe0b98d54a79779482700676331b4d10a0f3cada Mon Sep 17 00:00:00 2001
+> From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+> Date: Sun, 14 Jan 2018 21:27:20 +0100
+> Subject: [PATCH] of_mdiobus_register: Continue after error
+>
+> of_mdiobus_register unregister itself if one phy fails to register
+> which is bad for system having all its PHYs on the same MDIO bus.
+> Just log the error and continue with the remaining PHYs instead.
+>
+> Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+> ---
+>   drivers/of/of_mdio.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+> index 98258583abb0..76ff28a41dad 100644
+> --- a/drivers/of/of_mdio.c
+> +++ b/drivers/of/of_mdio.c
+> @@ -229,7 +229,8 @@ int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
+>   		else
+>   			rc = of_mdiobus_register_device(mdio, child, addr);
+>   		if (rc)
+> -			goto unregister;
+> +			pr_warn(FW_WARN
+> +				"%pOF: Failed to register MDIO device.\n", child);
+>   	}
+>   
+>   	if (!scanphys)
+> @@ -253,7 +254,8 @@ int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
+>   			if (of_mdiobus_child_is_phy(child)) {
+>   				rc = of_mdiobus_register_phy(mdio, child, addr);
+>   				if (rc)
+> -					goto unregister;
+> +					pr_warn(FW_WARN
+> +						"%pOF: Failed to register MDIO PHY.\n", child);
+>   			}
+>   		}
+>   	}
