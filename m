@@ -1,26 +1,34 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zL8QZ3BzMzF0Z7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 10:17:42 +1100 (AEDT)
-Received: by mail-pl0-x243.google.com with SMTP id f8so2708013plk.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 15:17:42 -0800 (PST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: timur@tabi.org,
-	broonie@kernel.org,
-	mail@maciej.szmigiero.name
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com, fabio.estevam@nxp.com,
- caleb@crome.org, arnaud.mouiche@invoxia.com, lukma@denx.de,
- kernel@pengutronix.de
-Subject: [PATCH v4 17/17] ASoC: fsl_ssi: Use ssi->streams instead of reading
- register
-Date: Mon, 15 Jan 2018 15:16:32 -0800
-Message-Id: <1516058192-65519-18-git-send-email-nicoleotsuka@gmail.com>
-In-Reply-To: <1516058192-65519-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1516058192-65519-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLBhz5YxDzF0d0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 12:00:19 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0G10Hka053792
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 20:00:17 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fh6rus5fp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jan 2018 19:59:58 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Mon, 15 Jan 2018 17:59:57 -0700
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 3/5] powerpc: Reduce log level of "OPAL detected !" message
+In-Reply-To: <20180112022849.30899-3-benh@kernel.crashing.org>
+References: <20180112022849.30899-1-benh@kernel.crashing.org>
+ <20180112022849.30899-3-benh@kernel.crashing.org>
+Date: Tue, 16 Jan 2018 11:59:49 +1100
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87r2qq39fe.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since ssi->streams is being updated along with SCR register and
-its SSIEN bit, it's simpler to use it instead.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> This message isn't terribly useful.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Tested-by: Caleb Crome <caleb@crome.org>
----
- sound/soc/fsl/fsl_ssi.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 07ec47d..0d06a51 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -803,11 +803,6 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	unsigned int sample_size = params_width(hw_params);
- 	u32 wl = SSI_SxCCR_WL(sample_size);
- 	int ret;
--	u32 scr;
--	int enabled;
--
--	regmap_read(regs, REG_SSI_SCR, &scr);
--	enabled = scr & SSI_SCR_SSIEN;
- 
- 	/*
- 	 * SSI is properly configured if it is enabled and running in
-@@ -815,7 +810,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	 * that should set separate configurations for STCCR and SRCCR
- 	 * despite running in the synchronous mode.
- 	 */
--	if (enabled && ssi->synchronous)
-+	if (ssi->streams && ssi->synchronous)
- 		return 0;
- 
- 	if (fsl_ssi_is_i2s_master(ssi)) {
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -127,7 +127,7 @@ int __init early_init_dt_scan_opal(unsigned long node,
+>
+>  	if (of_flat_dt_is_compatible(node, "ibm,opal-v3")) {
+>  		powerpc_firmware_features |= FW_FEATURE_OPAL;
+> -		pr_info("OPAL detected !\n");
+> +		pr_debug("OPAL detected !\n");
+
+I've been meaning to add in a thing to grab the version from the device
+tree and print that too.
+
 -- 
-2.7.4
+Stewart Smith
+OPAL Architect, IBM.
