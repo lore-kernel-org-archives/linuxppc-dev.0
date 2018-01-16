@@ -1,19 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20062.outbound.protection.outlook.com [40.107.2.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLc8j3l2BzF0Tf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 04:07:17 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] [RESEND] spufs: use timespec64 for timestamps
-Date: Tue, 16 Jan 2018 18:00:35 +0100
-Message-Id: <20180116170053.2557047-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLc9X5sCZzF0V5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 04:07:59 +1100 (AEDT)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: Andrew Lunn <andrew@lunn.ch>, mad skateman <madskateman@gmail.com>
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>, Joakim Tjernlund
+ <Joakim.Tjernlund@infinera.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+Date: Tue, 16 Jan 2018 17:07:53 +0000
+Message-ID: <DB3PR0402MB38499A06FE30E2A2D67D9569ECEA0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com>
+ <346361be-ce30-6a13-c154-5192d2668723@xenosoft.de>
+ <32f11c91-9529-180a-a8cf-9f380f853b99@xenosoft.de>
+ <CAHkrCmFwMRh7+9ijRhgpqm_dQmE7uH8pv8ZQvLY1rxk1hjhfzw@mail.gmail.com>
+ <20180116150411.GG22903@lunn.ch>
+In-Reply-To: <20180116150411.GG22903@lunn.ch>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The switch log prints the tv_sec portion of timespec as a 32-bit
-number, while overflows in 2106. It also uses the timespec type,
-which is safe on 64-bit architectures, but deprecated because
-it causes overflows in 2038 elsewhere.
+> -----Original Message-----
+> From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
+> On Behalf Of Andrew Lunn
+> Sent: Tuesday, January 16, 2018 5:04 PM
+> To: mad skateman <madskateman@gmail.com>
+> Cc: Christian Zigotzky <chzigotzky@xenosoft.de>; Joakim Tjernlund
+> <Joakim.Tjernlund@infinera.com>; linuxppc-dev@lists.ozlabs.org; Madalin-
+> cristian Bucur <madalin.bucur@nxp.com>; netdev@vger.kernel.org
+> Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+>=20
+> > When i use mii-tool too Kick the tranceiver... it comes alive.. i can
+> > ping the eth0 itself
+> >
+> > root@X5000LNX:/home/skateman# mii-tool -R eth0
+> > resetting the transceiver...
+> > root@X5000LNX:/home/skateman# ping 192.168.22.44
+> > PING 192.168.22.44 (192.168.22.44) 56(84) bytes of data.
+> > 64 bytes from 192.168.22.44: icmp_seq=3D1 ttl=3D64 time=3D0.045 ms
+> > 64 bytes from 192.168.22.44: icmp_seq=3D2 ttl=3D64 time=3D0.046 ms
+> > 64 bytes from 192.168.22.44: icmp_seq=3D3 ttl=3D64 time=3D0.047 ms
+> > 64 bytes from 192.168.22.44: icmp_seq=3D4 ttl=3D64 time=3D0.048 ms
+>=20
+> What PHY driver are you using?
+>=20
+> This smells a bit like an RGMII-ID problem.
+>=20
+>      Andrew
 
-This changes it to timespec64 and printing a 64-bit number for
-consistency.
+Hi Andrew,
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-Submitted in November 2017, no reply, resending. Please apply.
----
- arch/powerpc/platforms/cell/spufs/file.c  | 6 +++---
- arch/powerpc/platforms/cell/spufs/spufs.h | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+>From another thread[1] on the same topic:
 
-diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-index fc7772c3d068..c1be486da899 100644
---- a/arch/powerpc/platforms/cell/spufs/file.c
-+++ b/arch/powerpc/platforms/cell/spufs/file.c
-@@ -2375,8 +2375,8 @@ static int switch_log_sprint(struct spu_context *ctx, char *tbuf, int n)
- 
- 	p = ctx->switch_log->log + ctx->switch_log->tail % SWITCH_LOG_BUFSIZE;
- 
--	return snprintf(tbuf, n, "%u.%09u %d %u %u %llu\n",
--			(unsigned int) p->tstamp.tv_sec,
-+	return snprintf(tbuf, n, "%llu.%09u %d %u %u %llu\n",
-+			(unsigned long long) p->tstamp.tv_sec,
- 			(unsigned int) p->tstamp.tv_nsec,
- 			p->spu_id,
- 			(unsigned int) p->type,
-@@ -2499,7 +2499,7 @@ void spu_switch_log_notify(struct spu *spu, struct spu_context *ctx,
- 		struct switch_log_entry *p;
- 
- 		p = ctx->switch_log->log + ctx->switch_log->head;
--		ktime_get_ts(&p->tstamp);
-+		ktime_get_ts64(&p->tstamp);
- 		p->timebase = get_tb();
- 		p->spu_id = spu ? spu->number : -1;
- 		p->type = type;
-diff --git a/arch/powerpc/platforms/cell/spufs/spufs.h b/arch/powerpc/platforms/cell/spufs/spufs.h
-index 2d0479ad3af4..b5fc1b3fe538 100644
---- a/arch/powerpc/platforms/cell/spufs/spufs.h
-+++ b/arch/powerpc/platforms/cell/spufs/spufs.h
-@@ -69,7 +69,7 @@ struct switch_log {
- 	unsigned long		head;
- 	unsigned long		tail;
- 	struct switch_log_entry {
--		struct timespec	tstamp;
-+		struct timespec64 tstamp;
- 		s32		spu_id;
- 		u32		type;
- 		u32		val;
--- 
-2.9.0
+> I am not sure what PHY hardware/configuration you are using on the
+> DS and RDB platforms, but I can confirm that AmigaONE X5000/20
+> (Cyrus Motherboard with p5020 SoC), has dTSEC 4 and dTSEC 5
+> wired to two Micrel KSZ9021RN Gigabit Ethernet PHYs, using the
+> RGMII protocol.
+
+[1] https://www.spinics.net/lists/netdev/msg478062.html
