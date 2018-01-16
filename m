@@ -1,15 +1,48 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLSYH49BmzF0Wf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 22:24:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/64s: Allow control of RFI flush via debugfs
-Date: Tue, 16 Jan 2018 22:24:31 +1100
-Message-Id: <20180116112431.1737-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLWKv0llKzF0Xv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 00:29:54 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0GDTVRw037820
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 08:29:52 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fhhh1jdpd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 08:29:51 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 16 Jan 2018 13:24:49 -0000
+Subject: Re: [PATCH v6 18/24] mm: Try spin lock in speculative path
+To: Matthew Wilcox <willy@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1515777968-867-19-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180112181840.GA7590@bombadil.infradead.org>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 16 Jan 2018 14:24:39 +0100
+MIME-Version: 1.0
+In-Reply-To: <20180112181840.GA7590@bombadil.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <fd55ce33-2d7d-2613-7483-b6e2764e8865@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,67 +52,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Expose the state of the RFI flush (enabled/disabled) via debugfs, and
-allow it to be enabled/disabled at runtime.
+On 12/01/2018 19:18, Matthew Wilcox wrote:
+> On Fri, Jan 12, 2018 at 06:26:02PM +0100, Laurent Dufour wrote:
+>> There is a deadlock when a CPU is doing a speculative page fault and
+>> another one is calling do_unmap().
+>>
+>> The deadlock occurred because the speculative path try to spinlock the
+>> pte while the interrupt are disabled. When the other CPU in the
+>> unmap's path has locked the pte then is waiting for all the CPU to
+>> invalidate the TLB. As the CPU doing the speculative fault have the
+>> interrupt disable it can't invalidate the TLB, and can't get the lock.
+>>
+>> Since we are in a speculative path, we can race with other mm action.
+>> So let assume that the lock may not get acquired and fail the
+>> speculative page fault.
+> 
+> It seems like you introduced this bug in the previous patch, and now
+> you're fixing it in this patch?  Why not merge the two?
 
-eg: $ cat /sys/kernel/debug/powerpc/rfi_flush
-    1
-    $ echo 0 > /sys/kernel/debug/powerpc/rfi_flush
-    $ cat /sys/kernel/debug/powerpc/rfi_flush
-    0
+You're right this is a fix from the previous patch. Initially my idea was
+to keep the original Peter's patch as is, but sounds that this is not a
+good idea.
+I'll merge it in the previous one.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/setup_64.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 624d2a62d05d..e67413f4a8f0 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -38,6 +38,7 @@
- #include <linux/memory.h>
- #include <linux/nmi.h>
- 
-+#include <asm/debugfs.h>
- #include <asm/io.h>
- #include <asm/kdump.h>
- #include <asm/prom.h>
-@@ -902,6 +903,35 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
- 		rfi_flush_enable(enable);
- }
- 
-+#ifdef CONFIG_DEBUG_FS
-+static int rfi_flush_set(void *data, u64 val)
-+{
-+	if (val == 1)
-+		rfi_flush_enable(true);
-+	else if (val == 0)
-+		rfi_flush_enable(false);
-+	else
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int rfi_flush_get(void *data, u64 *val)
-+{
-+	*val = rfi_flush ? 1 : 0;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
-+
-+static __init int rfi_flush_debugfs_init(void)
-+{
-+	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
-+	return 0;
-+}
-+device_initcall(rfi_flush_debugfs_init);
-+#endif
-+
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	if (rfi_flush)
--- 
-2.14.3
+Thanks,
+Laurent.
