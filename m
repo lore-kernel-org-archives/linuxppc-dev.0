@@ -1,28 +1,30 @@
-Return-Path: <Christian.Koenig@amd.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0051.outbound.protection.outlook.com [104.47.41.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-it0-x22f.google.com (mail-it0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c0b::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLPBC00XJzF0Xq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 19:52:48 +1100 (AEDT)
-Subject: Re: consolidate swiotlb dma_map implementations
-To: Christoph Hellwig <hch@lst.de>
-Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>,
- Christoph Hellwig <hch@infradead.org>, iommu@lists.linux-foundation.org,
- linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- Michal Simek <monstr@monstr.eu>, linux-ia64@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-References: <20180110080932.14157-1-hch@lst.de>
- <20180116075338.GB12693@infradead.org>
- <76e47666-3de1-68cc-07ad-003491d26ef9@gmail.com>
- <20180116082827.GA9211@lst.de>
-From: =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>
-Message-ID: <485e6f8b-ef22-0792-1acc-3fefe203040c@amd.com>
-Date: Tue, 16 Jan 2018 09:52:28 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLPzh5M66zDqpP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 20:28:47 +1100 (AEDT)
+Received: by mail-it0-x22f.google.com with SMTP id c16so4114376itc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 01:28:47 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20180116082827.GA9211@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20180115031401.19577-5-j.neuschaefer@gmx.net>
+References: <20180115031401.19577-1-j.neuschaefer@gmx.net>
+ <20180115031401.19577-5-j.neuschaefer@gmx.net>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 16 Jan 2018 10:28:45 +0100
+Message-ID: <CACRpkda1RJxUMdp_Ac+E0EZ1g+Dw5oGouPMJjT43KrieDFmpAQ@mail.gmail.com>
+Subject: Re: [PATCH 4/6] dt-bindings: gpio: Add binding for Wii GPIO controller
+To: =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-gpio@vger.kernel.org,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 16.01.2018 um 09:28 schrieb Christoph Hellwig:
-> On Tue, Jan 16, 2018 at 09:22:52AM +0100, Christian König wrote:
->> Hi Konrad,
->>
->> can you send the first patch to Linus for inclusion in 4.15 if you haven't
->> already done so?
-> It's in the 4.16 queue with a cc to stable.  I guess we're ok with
-> a duplicate commit if we have to.
+On Mon, Jan 15, 2018 at 4:13 AM, Jonathan Neusch=C3=A4fer
+<j.neuschaefer@gmx.net> wrote:
 
-Yeah, while it's only a false positive warning it would be really nice 
-to have in 4.15.
+maybe some small blurb here?
 
-It affects all drivers using TTM in the system and not just the two I'm 
-the maintainer of.
+> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
 
-Regards,
-Christian.
+It looks good, very standard bindings.
+
+Yours,
+Linus Walleij
