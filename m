@@ -1,29 +1,18 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-ot0-x234.google.com (mail-ot0-x234.google.com
- [IPv6:2607:f8b0:4003:c0f::234])
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.11])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLgyb1QRKzF0VN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 06:58:46 +1100 (AEDT)
-Received: by mail-ot0-x234.google.com with SMTP id t35so8057364otd.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 11:58:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLhs93GtXzF0d4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 07:39:07 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH 0/2] macintosh/rack-meter: Adjustments for rackmeter_probe()
+Message-ID: <c11e0a90-a7b2-dddd-7751-7dac3e62215b@users.sourceforge.net>
+Date: Tue, 16 Jan 2018 21:38:55 +0100
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <1dc0e4ce-2190-eb83-166f-b8ba7cdacede@ozlabs.org>
-References: <20180116170053.2557047-1-arnd@arndb.de>
- <1dc0e4ce-2190-eb83-166f-b8ba7cdacede@ozlabs.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 Jan 2018 20:58:44 +0100
-Message-ID: <CAK8P3a1kLQdaYog9oqFGVs6GoLp0D+4nnAf2M-nzr-7U12_cjw@mail.gmail.com>
-Subject: Re: [PATCH] [RESEND] spufs: use timespec64 for timestamps
-To: Jeremy Kerr <jk@ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Al Viro <viro@zeniv.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,20 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 16, 2018 at 8:07 PM, Jeremy Kerr <jk@ozlabs.org> wrote:
-> Hi Arnd,
->
->> The switch log prints the tv_sec portion of timespec as a 32-bit
->> number, while overflows in 2106. It also uses the timespec type,
->> which is safe on 64-bit architectures, but deprecated because
->> it causes overflows in 2038 elsewhere.
->>
->> This changes it to timespec64 and printing a 64-bit number for
->> consistency.
->
-> If we still have spufs in the tree in 2038 I'd be worried :)
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Tue, 16 Jan 2018 21:36:56 +0100
 
-Agreed. My hope is to get rid of 'timespec' in 2018 though, this is just
-one of many parts of the puzzle.
+Two update suggestions were taken into account
+from static source code analysis.
 
-         Arnd
+Markus Elfring (2):
+  Delete an error message for a failed memory allocation
+  Improve a size determination
+
+ drivers/macintosh/rack-meter.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+-- 
+2.15.1
