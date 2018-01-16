@@ -1,12 +1,12 @@
 Return-Path: <madskateman@gmail.com>
-Received: from mail-qk0-x22d.google.com (mail-qk0-x22d.google.com
- [IPv6:2607:f8b0:400d:c09::22d])
+Received: from mail-qt0-x231.google.com (mail-qt0-x231.google.com
+ [IPv6:2607:f8b0:400d:c0d::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLf9V5t5FzF0Wm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 05:38:06 +1100 (AEDT)
-Received: by mail-qk0-x22d.google.com with SMTP id a5so19270975qkg.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 10:38:06 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLfBz1y1TzF0Y6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 05:39:23 +1100 (AEDT)
+Received: by mail-qt0-x231.google.com with SMTP id o35so9331832qtj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 10:39:22 -0800 (PST)
 MIME-Version: 1.0
 In-Reply-To: <1516125454.18795.87.camel@infinera.com>
 References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
@@ -14,15 +14,15 @@ References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
  <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
  <1516125454.18795.87.camel@infinera.com>
 From: mad skateman <madskateman@gmail.com>
-Date: Tue, 16 Jan 2018 19:38:02 +0100
-Message-ID: <CAHkrCmEm9wFwA6aeJD+XObqAcLovZf57JMgLCHFoAf9aZxsPGw@mail.gmail.com>
+Date: Tue, 16 Jan 2018 19:39:20 +0100
+Message-ID: <CAHkrCmFd8F8Bpm8vUete_QHjGosyXH0JZVEJ6gwvBMMUtBivLQ@mail.gmail.com>
 Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
 To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
 Cc: "andrew@lunn.ch" <andrew@lunn.ch>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>
-Content-Type: multipart/alternative; boundary="001a1149a140e098310562e907aa"
+Content-Type: multipart/alternative; boundary="94eb2c0e610e8602e10562e90ca7"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,7 +32,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a1149a140e098310562e907aa
+--94eb2c0e610e8602e10562e90ca7
 Content-Type: text/plain; charset="UTF-8"
 
 Hi,
@@ -72,8 +72,6 @@ In the link below some similair Logs and problems regarding DHCP for
 example.
 
 Dave
-
-https://www.microchip.com/forums/m/tm.aspx?m=956881&fp=1&p=2
 
 On Tue, Jan 16, 2018 at 6:57 PM, Joakim Tjernlund <
 Joakim.Tjernlund@infinera.com> wrote:
@@ -148,7 +146,7 @@ Joakim.Tjernlund@infinera.com> wrote:
 > >     Andrew
 >
 
---001a1149a140e098310562e907aa
+--94eb2c0e610e8602e10562e90ca7
 Content-Type: text/html; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -181,17 +179,16 @@ Address: Microchi_8f:c6:a8 (d8:80:39:8f:c6:a8)</div><div style=3D"font-size=
 .... .... =3D IG bit: Individual address (unicast)</div><div style=3D"font-=
 size:12.8px">Type: IP (0x0800)</div><div style=3D"font-size:12.8px">Interne=
 t Protocol Version 4, Src: 0.0.0.0 (0.0.0.0), Dst: 255.255.255.255 (255.255=
-.255.255)</div></div><div><br></div><div>In the link below some similair Lo=
-gs and problems regarding DHCP for example.</div><div><br></div><div>Dave</=
-div><div><br></div><div><a href=3D"https://www.microchip.com/forums/m/tm.as=
-px?m=3D956881&amp;fp=3D1&amp;p=3D2" target=3D"_blank">https://www.microchip=
-.com/<wbr>forums/m/tm.aspx?m=3D956881&amp;fp=3D<wbr>1&amp;p=3D2</a><br></di=
-v><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">On Tue, Jan 16,=
- 2018 at 6:57 PM, Joakim Tjernlund <span dir=3D"ltr">&lt;<a href=3D"mailto:=
-Joakim.Tjernlund@infinera.com" target=3D"_blank">Joakim.Tjernlund@infinera.=
-com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"mar=
-gin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">On Thu, 1970-01=
--01 at 00:00 +0000, Andrew Lunn wrote:<br>
+.255.255)</div></div><div style=3D"font-size:12.8px"><br></div><div style=
+=3D"font-size:12.8px">In the link below some similair Logs and problems reg=
+arding DHCP for example.</div><div style=3D"font-size:12.8px"><br></div><di=
+v style=3D"font-size:12.8px">Dave</div></div><div class=3D"gmail_extra"><br=
+><div class=3D"gmail_quote">On Tue, Jan 16, 2018 at 6:57 PM, Joakim Tjernlu=
+nd <span dir=3D"ltr">&lt;<a href=3D"mailto:Joakim.Tjernlund@infinera.com" t=
+arget=3D"_blank">Joakim.Tjernlund@infinera.com</a>&gt;</span> wrote:<br><bl=
+ockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #=
+ccc solid;padding-left:1ex">On Thu, 1970-01-01 at 00:00 +0000, Andrew Lunn =
+wrote:<br>
 &gt; CAUTION: This email originated from outside of the organization. Do no=
 t click links or open attachments unless you recognize the sender and know =
 the content is safe.<br>
@@ -274,6 +271,6 @@ o:davem@davemloft.net">davem@davemloft.net</a>&gt;<br>
 &gt;<br>
 &gt;<br>
 &gt;=C2=A0 =C2=A0 =C2=A0Andrew<br>
-</blockquote></div><br></div></div>
+</blockquote></div><br></div>
 
---001a1149a140e098310562e907aa--
+--94eb2c0e610e8602e10562e90ca7--
