@@ -1,28 +1,14 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLQJ201N8zF0Z7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 20:42:56 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id k18so16141797ioc.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 01:42:56 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20180115031401.19577-4-j.neuschaefer@gmx.net>
-References: <20180115031401.19577-1-j.neuschaefer@gmx.net>
- <20180115031401.19577-4-j.neuschaefer@gmx.net>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 16 Jan 2018 10:42:54 +0100
-Message-ID: <CACRpkdb11jn4HFdoKLuNVmXeTBntpTAjkVctvH1=R-p6989eTg@mail.gmail.com>
-Subject: Re: [PATCH 3/6] gpio: Add GPIO driver for Nintendo Wii
-To: =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- linux-gpio@vger.kernel.org,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Albert Herranz <albert_herranz@yahoo.es>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLSXv4g17zF0WF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 22:24:15 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/64s: Wire up cpu_show_meltdown()
+Date: Tue, 16 Jan 2018 22:24:01 +1100
+Message-Id: <20180116112401.942-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,85 +18,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 15, 2018 at 4:13 AM, Jonathan Neusch=C3=A4fer
-<j.neuschaefer@gmx.net> wrote:
+The recent commit 87590ce6e373 ("sysfs/cpu: Add vulnerability folder")
+added a generic folder and set of files for reporting information on
+CPU vulnerabilities. One of those was for meltdown:
 
-> This patch is based on code developed by Albert Herranz and the GameCube
-> Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
-> available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
-> has grown quite dissimilar.
+  /sys/devices/system/cpu/vulnerabilities/meltdown
 
-I'm impressed by this effort. As with all reverse engineering.
+This commit wires up that file for 64-bit Book3S powerpc.
 
-> This driver currently uses __raw_readl and __raw_writel to access the
-> GPIO controller's MMIO registers. I wonder if readl/writel plus explicit
-> byte-swapping would be more correct, because it could be independent of
-> the CPU's endianness. That said, this hardware only exists in two
-> big-endian machines (Wii and Wii U).
+For now we default to "Vulnerable" unless the RFI flush is enabled.
+That may not actually be true on all hardware, further patches will
+refine the reporting based on the CPU/platform etc. But for now we
+default to being pessimists.
 
-I don't know about PPC but I think you're supposed to use
-ioread32be() and iowrite32be() to do explicit BE access.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Kconfig           | 1 +
+ arch/powerpc/kernel/setup_64.c | 8 ++++++++
+ 2 files changed, 9 insertions(+)
 
-But when I look at it, I think you can just use the gpio-mmio library
-for this driver and cut down code cosiderably.
-
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
-Can't you just save a pointer to struct device *dev in the
-state container and use dev_info(state->dev, ...) etc instead
-of this?
-
-> +#include <linux/of_gpio.h>
-
-This include should not be needed.
-
-> +/*
-> + * Update the bit with the given bit offset in the given register to a g=
-iven
-> + * value
-> + */
-> +static void hlwd_gpio_update_bit(struct gpio_chip *gc, unsigned int reg,
-> +               int offset, int value)
-> +{
-> +       struct hlwd_gpio *hlwd =3D gpiochip_get_data(gc);
-> +       unsigned long flags;
-> +       u32 bit =3D 1UL << offset;
-
-#include <linux/bitops.h>
-
-u32 bit =3D BIT(offset);
-
-> +       u32 tmp;
-> +
-> +       spin_lock_irqsave(&hlwd->lock, flags);
-> +       tmp =3D __raw_readl(hlwd->regs + reg);
-> +       if (value)
-> +               __raw_writel(tmp | bit, hlwd->regs + reg);
-> +       else
-> +               __raw_writel(tmp & ~bit, hlwd->regs + reg);
-> +       spin_unlock_irqrestore(&hlwd->lock, flags);
-> +}
-
-This looks very much like it is reimplementing the stuff we already
-have in drivers/gpio/gpio-mmio.h.
-
-There is even a big endian access flag for the library.
-And you get so much for free with gpio-mmio.
-
-select GPIO_GENERIC
-in Kconfig
-
-the helpers come in from <linux/gpio/driver.h>
-
-Look at other drivers for inspiration:
-git grep bgpio_init
-
-If you need IRQ support you should probably have your own file
-for this driver, but it will be just a few lines of wrapper using
-bgpio_init() and BGPIOF_BIG_ENDIAN and/or possibly
-BGPIOF_BIG_ENDIAN_BYTE_ORDER.
-
-See the other drivers.
-
-Yours,
-Linus Walleij
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c51e6ce42e7a..2ed525a44734 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -166,6 +166,7 @@ config PPC
+ 	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
+ 	select GENERIC_CMOS_UPDATE
+ 	select GENERIC_CPU_AUTOPROBE
++	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+ 	select GENERIC_SMP_IDLE_THREAD
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 491be4179ddd..624d2a62d05d 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -901,4 +901,12 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ 	if (!no_rfi_flush)
+ 		rfi_flush_enable(enable);
+ }
++
++ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	if (rfi_flush)
++		return sprintf(buf, "Mitigation: RFI Flush\n");
++
++	return sprintf(buf, "Vulnerable\n");
++}
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+-- 
+2.14.3
