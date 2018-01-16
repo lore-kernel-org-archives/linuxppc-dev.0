@@ -1,24 +1,54 @@
-Return-Path: <andrew@lunn.ch>
-Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLYjC4BYnzDqrx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 02:16:47 +1100 (AEDT)
-Date: Tue, 16 Jan 2018 15:38:36 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
- "madskateman@gmail.com" <madskateman@gmail.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
-Message-ID: <20180116143836.GC22903@lunn.ch>
-References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
- <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516035556.18795.71.camel@infinera.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLYlN2yRBzF0S7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 02:18:40 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id t16so10809619oif.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 07:18:40 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1516035556.18795.71.camel@infinera.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180116021818.24791-1-deepa.kernel@gmail.com>
+References: <20180116021818.24791-1-deepa.kernel@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 16 Jan 2018 16:18:37 +0100
+Message-ID: <CAK8P3a2NjS2tTS0Jzrv2HoAg5Xz=DbOJD=0-JZi65_uGmKa8sA@mail.gmail.com>
+Subject: Re: [PATCH v3 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
+ conversion
+To: Deepa Dinamani <deepa.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
+ David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
+ devel@driverdev.osuosl.org,
+ gerald.schaefer@de.ibm.com, gregkh <gregkh@linuxfoundation.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, Linux API <linux-api@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, oberpar@linux.vnet.ibm.com,
+ oprofile-list@lists.sf.net,
+ Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Robert Richter <rric@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ sebott@linux.vnet.ibm.com, sparclinux <sparclinux@vger.kernel.org>,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
+ "the arch/x86 maintainers" <x86@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +58,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Hi, just saw this and thought of a small patch I just wrote for mdio bus, o idea
-> if it is relevant but here goes:
-> 
-> From fe0b98d54a79779482700676331b4d10a0f3cada Mon Sep 17 00:00:00 2001
-> From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
-> Date: Sun, 14 Jan 2018 21:27:20 +0100
-> Subject: [PATCH] of_mdiobus_register: Continue after error
-> 
-> of_mdiobus_register unregister itself if one phy fails to register
-> which is bad for system having all its PHYs on the same MDIO bus.
-> Just log the error and continue with the remaining PHYs instead.
-> 
-> Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+On Tue, Jan 16, 2018 at 3:18 AM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
+> The series is a preparation series for individual architectures
+> to use 64 bit time_t syscalls in compat and 32 bit emulation modes.
+>
+> This is a follow up to the series Arnd Bergmann posted:
+> https://sourceware.org/ml/libc-alpha/2015-05/msg00070.html [1]
+>
+> Big picture is as per the lwn article:
+> https://lwn.net/Articles/643234/ [2]
+>
+> The series is directed at converting posix clock syscalls:
+> clock_gettime, clock_settime, clock_getres and clock_nanosleep
+> to use a new data structure __kernel_timespec at syscall boundaries.
+> __kernel_timespec maintains 64 bit time_t across all execution modes.
+>
+> vdso will be handled as part of each architecture when they enable
+> support for 64 bit time_t.
+>
+> The compat syscalls are repurposed to provide backward compatibility
+> by using them as native syscalls as well for 32 bit architectures.
+> They will continue to use timespec at syscall boundaries.
+>
+> CONFIG_64_BIT_TIME controls whether the syscalls use __kernel_timespec
+> or timespec at syscall boundaries.
+>
+> The series does the following:
+> 1. Enable compat syscalls on 32 bit architectures.
+> 2. Add a new __kernel_timespec type to be used as the data structure
+>    for all the new syscalls.
+> 3. Add new config CONFIG_64BIT_TIME(intead of the CONFIG_COMPAT_TIME in
+>    [1] and [2] to switch to new definition of __kernel_timespec. It is
+>    the same as struct timespec otherwise.
+> 4. Add new CONFIG_32BIT_TIME to conditionally compile compat syscalls.
 
-Hi Joakim
+This looks all good to me. I think we should have this included in linux-next as
+soon as possible, but this probably means after -rc1 at the current point, since
+it's a bit late for 4.16.
 
-You appear to be using an old kernel. Take a look at:
+I'll pick up the series into my randconfig build tree again to find
+possible build
+time regressions. Otherwise the way I'd stage it out is to put it into my y2038
+branch after -rc1 and then send a pull request to Thomas for the tip tree
+a week later. It seems unlikely that any major problems come up, so we could
+plan to address additional requests for changes by adding commits on top
+once it's in linux-next.
 
-commit 95f566de0269a0c59fd6a737a147731302136429
-Author: Madalin Bucur <madalin.bucur@nxp.com>
-Date:   Tue Jan 9 14:43:34 2018 +0200
-
-    of_mdio: avoid MDIO bus removal when a PHY is missing
-    
-    If one of the child devices is missing the of_mdiobus_register_phy()
-    call will return -ENODEV. When a missing device is encountered the
-    registration of the remaining PHYs is stopped and the MDIO bus will
-    fail to register. Propagate all errors except ENODEV to avoid it.
-    
-    Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
-    Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-
-    Andrew
+       Arnd
