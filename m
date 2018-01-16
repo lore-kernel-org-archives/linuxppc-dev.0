@@ -1,21 +1,28 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLhvR1mRlzF0g2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 07:41:06 +1100 (AEDT)
-Subject: [PATCH 2/2] macintosh/rack-meter: Improve a size determination in
- rackmeter_probe()
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <c11e0a90-a7b2-dddd-7751-7dac3e62215b@users.sourceforge.net>
-Message-ID: <862e3609-1010-95d8-0d64-0493f5759f78@users.sourceforge.net>
-Date: Tue, 16 Jan 2018 21:40:57 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLhxj0ZW2zF0fK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 07:43:03 +1100 (AEDT)
+Subject: Re: DPAA Ethernet problems with mainstream Linux kernels
+To: Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ Darren Stevens <darren@stevens-zone.net>,
+ Jamie Krueger <jamie@bitbybitsoftwaregroup.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+References: <ccafbcca-172b-11ae-7916-8bcd4bfa419c@bitbybitsoftwaregroup.com>
+ <DB3PR0402MB3849C70D5760C3F21F881074EC170@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <d7478110-68ae-34b3-51c5-487bb3e12527@bitbybitsoftwaregroup.com>
+ <DB3PR0402MB3849C1D81C867CF2D5A65D0EECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <4b50ee845f3.281d6f13@auth.smtp.1and1.co.uk>
+ <DB3PR0402MB38496B4FB62904321A97186AECEA0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <2ca2be11-7e64-3055-0d06-7090d5dcc096@xenosoft.de>
+Date: Tue, 16 Jan 2018 21:42:47 +0100
 MIME-Version: 1.0
-In-Reply-To: <c11e0a90-a7b2-dddd-7751-7dac3e62215b@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <DB3PR0402MB38496B4FB62904321A97186AECEA0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 16 Jan 2018 21:26:52 +0100
+Hi All,
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
+I compiled the RC8 of kernel 4.15 for the X5000 without PAMU support today.
 
-This issue was detected by using the Coccinelle software.
+Download: http://www.xenosoft.de/uImage_without_pamu.tar.gz
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/macintosh/rack-meter.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Please test it on your AmigaOne X5000.
 
-diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
-index 0796b74174d4..800fc6822ad8 100644
---- a/drivers/macintosh/rack-meter.c
-+++ b/drivers/macintosh/rack-meter.c
-@@ -397,7 +397,7 @@ static int rackmeter_probe(struct macio_dev* mdev,
- 	}
- 
- 	/* Create and initialize our instance data */
--	rm = kzalloc(sizeof(struct rackmeter), GFP_KERNEL);
-+	rm = kzalloc(sizeof(*rm), GFP_KERNEL);
- 	if (rm == NULL) {
- 		rc = -ENOMEM;
- 		goto bail_release;
--- 
-2.15.1
+Thanks,
+Christian
+
+
+On 16 January 2018 at 6:33PM, Madalin-cristian Bucur wrote:
+>> The PAMU related errors may be relevant to the issue, if you have incorrect
+>> settings you may have no traffic passing through. The PAMU configuration
+>> should be made by the bootloader. Can you try to disable CONFIG_FSL_PAMU?
+>>
+>> Madalin
+>>
+>>
