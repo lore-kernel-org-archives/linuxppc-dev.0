@@ -1,40 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLbdh58NQzDr53
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 03:43:52 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0GGhZAq041277
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 11:43:50 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fhkxamhpf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 11:43:50 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 16 Jan 2018 09:43:49 -0700
-Subject: Re: [PATCH 1/3] powerpc/32: Fix hugepage allocation on 8xx at hint
- address
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLbl344v8zF0Sq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 03:48:31 +1100 (AEDT)
+Subject: Re: [PATCH v2] powerpc/mm: Fix growth direction for hugepages mmaps
+ with slice
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
- <876081by7g.fsf@linux.vnet.ibm.com>
- <b5e34a5b-94b8-9405-929d-d35dde3fcb3b@c-s.fr>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 16 Jan 2018 22:13:39 +0530
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20180109101810.2471D6C6CF@localhost.localdomain>
+ <87wp0haizf.fsf@linux.vnet.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <d5f6060f-3061-dc3c-66f7-3cec05d50169@c-s.fr>
+Date: Tue, 16 Jan 2018 17:48:23 +0100
 MIME-Version: 1.0
-In-Reply-To: <b5e34a5b-94b8-9405-929d-d35dde3fcb3b@c-s.fr>
+In-Reply-To: <87wp0haizf.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <cc2106e9-6ba1-e937-3e19-99572fa014d2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,37 +30,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 01/16/2018 10:01 PM, Christophe LEROY wrote:
+Le 16/01/2018 à 17:03, Aneesh Kumar K.V a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
 > 
-> 
-> Le 16/01/2018 à 16:49, Aneesh Kumar K.V a écrit :
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> An application running with libhugetlbfs fails to allocate
+>> additional pages to HEAP due to the hugemap being done
+>> inconditionally as topdown mapping:
 >>
->>> When an app has some regular pages allocated (e.g. see below) and tries
->>> to mmap() a huge page at a hint address covered by the same PMD entry,
->>> the kernel accepts the hint allthough the 8xx cannot handle different
->>> page sizes in the same PMD entry.
+>> mmap(0x10080000, 1572864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x73e80000
+>> [...]
+>> mmap(0x74000000, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d80000
+>> munmap(0x73d80000, 1048576)             = 0
+>> [...]
+>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
+>> munmap(0x73d00000, 1572864)             = 0
+>> [...]
+>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
+>> munmap(0x73d00000, 1572864)             = 0
+>> [...]
 >>
+> 
+> Can you explain the failure details above. I am not sure I understand
+> what to read from the above output.
+
+libhugetlbfs first requests an area of size 1.5Mbytes, at address 0x10080000
+mmap() returns an area at address 0x73e80000
+
+Then libhugetlbfs requests an additional area on top of that, ie at 
+address 0x74000000, to expand the heap.
+But mmap() returns an area at address 0x73d80000, ie under the previous 
+area.
+
+This is not the behaviour when using the generic (ie without mm_slices) 
+hugepages code, and this is not what libhugetlbfs expects for expending 
+the heap.
+
+> 
+>> As one can see from the above strace log, mmap() allocates further
+>> pages below the initial one.
 >>
->> So that is a bug in get_unmapped_area function that you are using and
->> you want to fix that by using the slice code. Can you describe here what
->> the allocation restrictions are w.r.t 8xx? Do they have segments and
->> base page size like hash64?
+>> This patch fixes it by taking into account MAP_GROWSDOWN flag.
 > 
-> I don't think it is a bug in get_unmapped_area() that is used by 
-> default. It is that some HW do support mixing any page size in the same 
-> page table (eg BOOK3E ?), but the 8xx doesn't.
-> In the 8xx, the page size is defined in the PGD entry, then all pages 
-> defined in a given page table pointed by a PGD entry have the same size.
+> Rest of the kernel don't depend on that flag to select a topdown search
+> or not. So what is special with hugetlb? IF we select legacy mmap that
+> is when we select a bottomup search. Hugetlb on ppc64 always did a
+> topdown search.
+
+The generic hugepage code does a bottomup search. First page is 
+allocated at address 0x30000000 and following pages are allocated at 
+requested addresses when requested, then libhugetlbfs has no issue 
+expanding the heap when required.
+
 > 
-> So it is similar to segments if you consider each PGD entry as a kind of 
-> segment
-> 
-
-so IIUC, hugepd format encodes the page size details and that require us 
-to ensure that all the address range mapped at that hupge_pd entry is of 
-same page size? Hence we want to avoid mmap handing over an address in 
-that range when we already have a hugetlb mapping in that range?
-
-
--aneesh
+>>
+>> Fixes: d0f13e3c20b6f ("[POWERPC] Introduce address space "slices" ")
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   v2: Added missing include
+>>
+>>   arch/powerpc/mm/hugetlbpage.c | 4 +++-
+>>   1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>> index 79e1378ee303..0eadf9f199de 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>> @@ -19,6 +19,7 @@
+>>   #include <linux/moduleparam.h>
+>>   #include <linux/swap.h>
+>>   #include <linux/swapops.h>
+>> +#include <linux/mman.h>
+>>   #include <asm/pgtable.h>
+>>   #include <asm/pgalloc.h>
+>>   #include <asm/tlb.h>
+>> @@ -558,7 +559,8 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+>>   		return radix__hugetlb_get_unmapped_area(file, addr, len,
+>>   						       pgoff, flags);
+>>   #endif
+>> -	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
+>> +	return slice_get_unmapped_area(addr, len, flags, mmu_psize,
+>> +				       flags & MAP_GROWSDOWN);
+>>   }
+>>   #endif
+>>   
+>> -- 
+>> 2.13.3
