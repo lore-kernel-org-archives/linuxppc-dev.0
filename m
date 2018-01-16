@@ -1,17 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLMLW5KVWzF0Vk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 18:29:54 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: do not select CONFIG_PPC_LIB_RHEAP
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180116072950.0B8F86EEC2@localhost.localdomain>
-Date: Tue, 16 Jan 2018 08:29:49 +0100 (CET)
+Return-Path: <BATV+a44557d646e720d5a26d+5259+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLMs90Xk3zF0by
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 18:52:58 +1100 (AEDT)
+Date: Mon, 15 Jan 2018 23:52:43 -0800
+From: Christoph Hellwig <hch@infradead.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: iommu@lists.linux-foundation.org, linux-mips@linux-mips.org,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ x86@kernel.org, Konrad Rzeszutek Wilk <konrad@darnok.org>,
+ linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ patches@groups.riscv.org, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: consolidate direct dma mapping V4
+Message-ID: <20180116075243.GA12693@infradead.org>
+References: <20180112084232.2857-1-hch@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180112084232.2857-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +34,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE
-muram"), rheap is not used anymore.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/platforms/Kconfig.cputype | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 8944b24d2218..5a8b1bf1e819 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -33,7 +33,6 @@ config PPC_85xx
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
--	select PPC_LIB_RHEAP
- 	select SYS_SUPPORTS_HUGETLBFS
- 
- config 40x
--- 
-2.13.3
+I've pulled this into the dma-mapping for-next branch so that we get
+a few days exposure before then end of the merge window.  If there is
+anything important (e.g. the powerpc naming issue) please send
+incremental patches.
