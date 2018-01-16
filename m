@@ -1,35 +1,17 @@
-Return-Path: <catalin.marinas@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zLQ1s6W3szF0YY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 20:30:41 +1100 (AEDT)
-Date: Tue, 16 Jan 2018 09:30:29 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Deepa Dinamani <deepa.kernel@gmail.com>
-Cc: tglx@linutronix.de, john.stultz@linaro.org,
- linux-kernel@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
- acme@kernel.org, benh@kernel.crashing.org, borntraeger@de.ibm.com,
- cmetcalf@mellanox.com, cohuck@redhat.com, davem@davemloft.net,
- deller@gmx.de, devel@driverdev.osuosl.org,
- gerald.schaefer@de.ibm.com, gregkh@linuxfoundation.org,
- heiko.carstens@de.ibm.com, hoeppner@linux.vnet.ibm.com,
- hpa@zytor.com, jejb@parisc-linux.org, jwi@linux.vnet.ibm.com,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- mark.rutland@arm.com, mingo@redhat.com, mpe@ellerman.id.au,
- oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
- paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
- rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
- sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
- sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com,
- will.deacon@arm.com, x86@kernel.org
-Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
- compat_time.h
-Message-ID: <20180116093029.gzse6xs4sjx43znp@armageddon.cambridge.arm.com>
-References: <20180116021818.24791-1-deepa.kernel@gmail.com>
- <20180116021818.24791-3-deepa.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180116021818.24791-3-deepa.kernel@gmail.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLQ4k2DlxzF0TG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 20:33:10 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] net: fs_enet: do not call phy_stop() in interrupts
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Message-Id: <20180116093305.A04A26EEC5@localhost.localdomain>
+Date: Tue, 16 Jan 2018 10:33:05 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +21,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 15, 2018 at 06:18:10PM -0800, Deepa Dinamani wrote:
-> All the current architecture specific defines for these
-> are the same. Refactor these common defines to a common
-> header file.
-> 
-> The new common linux/compat_time.h is also useful as it
-> will eventually be used to hold all the defines that
-> are needed for compat time types that support non y2038
-> safe types. New architectures need not have to define these
-> new types as they will only use new y2038 safe syscalls.
-> This file can be deleted after y2038 when we stop supporting
-> non y2038 safe syscalls.
+In case of TX timeout, fs_timeout() calls phy_stop(), which
+triggers the following BUG_ON() as we are in interrupt.
 
-For arm64:
+[92708.199889] kernel BUG at drivers/net/phy/mdio_bus.c:482!
+[92708.204985] Oops: Exception in kernel mode, sig: 5 [#1]
+[92708.210119] PREEMPT
+[92708.212107] CMPC885
+[92708.214216] CPU: 0 PID: 3 Comm: ksoftirqd/0 Tainted: G        W       4.9.61 #39
+[92708.223227] task: c60f0a40 task.stack: c6104000
+[92708.227697] NIP: c02a84bc LR: c02a947c CTR: c02a93d8
+[92708.232614] REGS: c6105c70 TRAP: 0700   Tainted: G        W        (4.9.61)
+[92708.241193] MSR: 00021032 <ME,IR,DR,RI>[92708.244818]   CR: 24000822  XER: 20000000
+[92708.248767]
+GPR00: c02a947c c6105d20 c60f0a40 c62b4c00 00000005 0000001f c069aad8 0001a688
+GPR08: 00000007 00000100 c02a93d8 00000000 000005fc 00000000 c6213240 c06338e4
+GPR16: 00000001 c06330d4 c0633094 00000000 c0680000 c6104000 c6104000 00000000
+GPR24: 00000200 00000000 ffffffff 00000004 00000078 00009032 00000000 c62b4c00
+NIP [c02a84bc] mdiobus_read+0x20/0x74
+[92708.281517] LR [c02a947c] kszphy_config_intr+0xa4/0xc4
+[92708.286547] Call Trace:
+[92708.288980] [c6105d20] [c6104000] 0xc6104000 (unreliable)
+[92708.294339] [c6105d40] [c02a947c] kszphy_config_intr+0xa4/0xc4
+[92708.300098] [c6105d50] [c02a5330] phy_stop+0x60/0x9c
+[92708.305007] [c6105d60] [c02c84d0] fs_timeout+0xdc/0x110
+[92708.310197] [c6105d80] [c035cd48] dev_watchdog+0x268/0x2a0
+[92708.315593] [c6105db0] [c0060288] call_timer_fn+0x34/0x17c
+[92708.321014] [c6105dd0] [c00605f0] run_timer_softirq+0x21c/0x2e4
+[92708.326887] [c6105e50] [c001e19c] __do_softirq+0xf4/0x2f4
+[92708.332207] [c6105eb0] [c001e3c8] run_ksoftirqd+0x2c/0x40
+[92708.337560] [c6105ec0] [c003b420] smpboot_thread_fn+0x1f0/0x258
+[92708.343405] [c6105ef0] [c003745c] kthread+0xbc/0xd0
+[92708.348217] [c6105f40] [c000c400] ret_from_kernel_thread+0x5c/0x64
+[92708.354275] Instruction dump:
+[92708.357207] 7c0803a6 bbc10018 38210020 4e800020 7c0802a6 9421ffe0 54290024 bfc10018
+[92708.364865] 90010024 7c7f1b78 81290008 552902ee <0f090000> 3bc3002c 7fc3f378 90810008
+[92708.372711] ---[ end trace 42b05441616fafd7 ]---
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+This patch moves fs_timeout() actions into an async worker.
+
+Fixes: commit 48257c4f168e5 ("Add fs_enet ethernet network driver, for several embedded platforms")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 16 +++++++++++++---
+ drivers/net/ethernet/freescale/fs_enet/fs_enet.h      |  1 +
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index 7892f2f0c6b5..2c2976a2dda6 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -613,9 +613,11 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	return NETDEV_TX_OK;
+ }
+ 
+-static void fs_timeout(struct net_device *dev)
++static void fs_timeout_work(struct work_struct *work)
+ {
+-	struct fs_enet_private *fep = netdev_priv(dev);
++	struct fs_enet_private *fep = container_of(work, struct fs_enet_private,
++						   timeout_work);
++	struct net_device *dev = fep->ndev;
+ 	unsigned long flags;
+ 	int wake = 0;
+ 
+@@ -627,7 +629,6 @@ static void fs_timeout(struct net_device *dev)
+ 		phy_stop(dev->phydev);
+ 		(*fep->ops->stop)(dev);
+ 		(*fep->ops->restart)(dev);
+-		phy_start(dev->phydev);
+ 	}
+ 
+ 	phy_start(dev->phydev);
+@@ -639,6 +640,13 @@ static void fs_timeout(struct net_device *dev)
+ 		netif_wake_queue(dev);
+ }
+ 
++static void fs_timeout(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	schedule_work(&fep->timeout_work);
++}
++
+ /*-----------------------------------------------------------------------------
+  *  generic link-change handler - should be sufficient for most cases
+  *-----------------------------------------------------------------------------*/
+@@ -759,6 +767,7 @@ static int fs_enet_close(struct net_device *dev)
+ 	netif_stop_queue(dev);
+ 	netif_carrier_off(dev);
+ 	napi_disable(&fep->napi);
++	cancel_work_sync(&fep->timeout_work);
+ 	phy_stop(dev->phydev);
+ 
+ 	spin_lock_irqsave(&fep->lock, flags);
+@@ -1019,6 +1028,7 @@ static int fs_enet_probe(struct platform_device *ofdev)
+ 
+ 	ndev->netdev_ops = &fs_enet_netdev_ops;
+ 	ndev->watchdog_timeo = 2 * HZ;
++	INIT_WORK(&fep->timeout_work, fs_timeout_work);
+ 	netif_napi_add(ndev, &fep->napi, fs_enet_napi, fpi->napi_weight);
+ 
+ 	ndev->ethtool_ops = &fs_ethtool_ops;
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+index 92e06b37a199..195fae6aec4a 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+@@ -125,6 +125,7 @@ struct fs_enet_private {
+ 	spinlock_t lock;	/* during all ops except TX pckt processing */
+ 	spinlock_t tx_lock;	/* during fs_start_xmit and fs_tx         */
+ 	struct fs_platform_info *fpi;
++	struct work_struct timeout_work;
+ 	const struct fs_ops *ops;
+ 	int rx_ring, tx_ring;
+ 	dma_addr_t ring_mem_addr;
+-- 
+2.13.3
