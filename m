@@ -1,30 +1,49 @@
-Return-Path: <srs0=b5tj=el=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLXwb2p58zF0YV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 01:41:35 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zLXwb1ttGz8t6d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 01:41:35 +1100 (AEDT)
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zLXwZ4z1lz9s7n
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 01:41:34 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id y26so2219431pfi.10
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2018 06:41:34 -0800 (PST)
-Date: Wed, 17 Jan 2018 00:41:11 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/64s: Allow control of RFI flush via debugfs
-Message-ID: <20180117004111.56fd9c4c@roar.ozlabs.ibm.com>
-In-Reply-To: <20180116112431.1737-1-mpe@ellerman.id.au>
-References: <20180116112431.1737-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLY4k4X09zDqHT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 01:48:38 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0GEjdhP051467
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 09:48:36 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fhh59fgnv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jan 2018 09:48:33 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 16 Jan 2018 14:47:58 -0000
+Subject: Re: [PATCH v6 22/24] mm: Speculative page fault handler return VMA
+To: Matthew Wilcox <willy@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1515777968-867-23-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180112190251.GC7590@bombadil.infradead.org>
+ <20180113042354.GA24241@bombadil.infradead.org>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 16 Jan 2018 15:47:51 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180113042354.GA24241@bombadil.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6d958348-bece-2c21-e8dc-4e5a65e82f9b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,71 +53,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 Jan 2018 22:24:31 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Expose the state of the RFI flush (enabled/disabled) via debugfs, and
-> allow it to be enabled/disabled at runtime.
+On 13/01/2018 05:23, Matthew Wilcox wrote:
+> On Fri, Jan 12, 2018 at 11:02:51AM -0800, Matthew Wilcox wrote:
+>> On Fri, Jan 12, 2018 at 06:26:06PM +0100, Laurent Dufour wrote:
+>>> @@ -1354,7 +1354,10 @@ extern int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>>>  		unsigned int flags);
+>>>  #ifdef CONFIG_SPF
+>>>  extern int handle_speculative_fault(struct mm_struct *mm,
+>>> +				    unsigned long address, unsigned int flags,
+>>> +				    struct vm_area_struct **vma);
+>>
+>> I think this shows that we need to create 'struct vm_fault' on the stack
+>> in the arch code and then pass it to handle_speculative_fault(), followed
+>> by handle_mm_fault().  That should be quite a nice cleanup actually.
+>> I know that's only 30+ architectures to change ;-)
 > 
-> eg: $ cat /sys/kernel/debug/powerpc/rfi_flush
->     1
->     $ echo 0 > /sys/kernel/debug/powerpc/rfi_flush
->     $ cat /sys/kernel/debug/powerpc/rfi_flush
->     0
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Of course, we don't need to change them all.  Try this:
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+That would be good candidate for a clean up but I'm not sure this should be
+part of this already too long series.
 
-> ---
->  arch/powerpc/kernel/setup_64.c | 30 ++++++++++++++++++++++++++++++
->  1 file changed, 30 insertions(+)
+If you don't mind, unless a global agreement is stated on that, I'd prefer
+to postpone such a change once the initial series is accepted.
+
+Cheers,
+Laurent.
+
+> Subject: [PATCH] Add vm_handle_fault
 > 
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 624d2a62d05d..e67413f4a8f0 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -38,6 +38,7 @@
->  #include <linux/memory.h>
->  #include <linux/nmi.h>
->  
-> +#include <asm/debugfs.h>
->  #include <asm/io.h>
->  #include <asm/kdump.h>
->  #include <asm/prom.h>
-> @@ -902,6 +903,35 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
->  		rfi_flush_enable(enable);
->  }
->  
-> +#ifdef CONFIG_DEBUG_FS
-> +static int rfi_flush_set(void *data, u64 val)
-> +{
-> +	if (val == 1)
-> +		rfi_flush_enable(true);
-> +	else if (val == 0)
-> +		rfi_flush_enable(false);
-> +	else
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +
-> +static int rfi_flush_get(void *data, u64 *val)
-> +{
-> +	*val = rfi_flush ? 1 : 0;
-> +	return 0;
-> +}
-> +
-> +DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
-> +
-> +static __init int rfi_flush_debugfs_init(void)
-> +{
-> +	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
-> +	return 0;
-> +}
-> +device_initcall(rfi_flush_debugfs_init);
-> +#endif
-> +
->  ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+> For the speculative fault handler, we want to create the struct vm_fault
+> on the stack in the arch code and pass it into the generic mm code.
+> To avoid changing 30+ architectures, leave handle_mm_fault with its
+> current function signature and move its guts into the new vm_handle_fault
+> function.  Even this saves a nice 172 bytes on the random x86-64 .config
+> I happen to have around.
+> 
+> Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
+> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 5eb3d2524bdc..403934297a3d 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -3977,36 +3977,28 @@ static int handle_pte_fault(struct vm_fault *vmf)
+>   * The mmap_sem may have been released depending on flags and our
+>   * return value.  See filemap_fault() and __lock_page_or_retry().
+>   */
+> -static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+> -		unsigned int flags)
+> +static int __handle_mm_fault(struct vm_fault *vmf)
 >  {
->  	if (rfi_flush)
+> -	struct vm_fault vmf = {
+> -		.vma = vma,
+> -		.address = address & PAGE_MASK,
+> -		.flags = flags,
+> -		.pgoff = linear_page_index(vma, address),
+> -		.gfp_mask = __get_fault_gfp_mask(vma),
+> -	};
+> -	unsigned int dirty = flags & FAULT_FLAG_WRITE;
+> -	struct mm_struct *mm = vma->vm_mm;
+> +	unsigned int dirty = vmf->flags & FAULT_FLAG_WRITE;
+> +	struct mm_struct *mm = vmf->vma->vm_mm;
+>  	pgd_t *pgd;
+>  	p4d_t *p4d;
+>  	int ret;
+> 
+> -	pgd = pgd_offset(mm, address);
+> -	p4d = p4d_alloc(mm, pgd, address);
+> +	pgd = pgd_offset(mm, vmf->address);
+> +	p4d = p4d_alloc(mm, pgd, vmf->address);
+>  	if (!p4d)
+>  		return VM_FAULT_OOM;
+> 
+> -	vmf.pud = pud_alloc(mm, p4d, address);
+> -	if (!vmf.pud)
+> +	vmf->pud = pud_alloc(mm, p4d, vmf->address);
+> +	if (!vmf->pud)
+>  		return VM_FAULT_OOM;
+> -	if (pud_none(*vmf.pud) && transparent_hugepage_enabled(vma)) {
+> -		ret = create_huge_pud(&vmf);
+> +	if (pud_none(*vmf->pud) && transparent_hugepage_enabled(vmf->vma)) {
+> +		ret = create_huge_pud(vmf);
+>  		if (!(ret & VM_FAULT_FALLBACK))
+>  			return ret;
+>  	} else {
+> -		pud_t orig_pud = *vmf.pud;
+> +		pud_t orig_pud = *vmf->pud;
+> 
+>  		barrier();
+>  		if (pud_trans_huge(orig_pud) || pud_devmap(orig_pud)) {
+> @@ -4014,50 +4006,51 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>  			/* NUMA case for anonymous PUDs would go here */
+> 
+>  			if (dirty && !pud_access_permitted(orig_pud, WRITE)) {
+> -				ret = wp_huge_pud(&vmf, orig_pud);
+> +				ret = wp_huge_pud(vmf, orig_pud);
+>  				if (!(ret & VM_FAULT_FALLBACK))
+>  					return ret;
+>  			} else {
+> -				huge_pud_set_accessed(&vmf, orig_pud);
+> +				huge_pud_set_accessed(vmf, orig_pud);
+>  				return 0;
+>  			}
+>  		}
+>  	}
+> 
+> -	vmf.pmd = pmd_alloc(mm, vmf.pud, address);
+> -	if (!vmf.pmd)
+> +	vmf->pmd = pmd_alloc(mm, vmf->pud, vmf->address);
+> +	if (!vmf->pmd)
+>  		return VM_FAULT_OOM;
+> -	if (pmd_none(*vmf.pmd) && transparent_hugepage_enabled(vma)) {
+> -		ret = create_huge_pmd(&vmf);
+> +	if (pmd_none(*vmf->pmd) && transparent_hugepage_enabled(vmf->vma)) {
+> +		ret = create_huge_pmd(vmf);
+>  		if (!(ret & VM_FAULT_FALLBACK))
+>  			return ret;
+>  	} else {
+> -		pmd_t orig_pmd = *vmf.pmd;
+> +		pmd_t orig_pmd = *vmf->pmd;
+> 
+>  		barrier();
+>  		if (unlikely(is_swap_pmd(orig_pmd))) {
+>  			VM_BUG_ON(thp_migration_supported() &&
+>  					  !is_pmd_migration_entry(orig_pmd));
+>  			if (is_pmd_migration_entry(orig_pmd))
+> -				pmd_migration_entry_wait(mm, vmf.pmd);
+> +				pmd_migration_entry_wait(mm, vmf->pmd);
+>  			return 0;
+>  		}
+>  		if (pmd_trans_huge(orig_pmd) || pmd_devmap(orig_pmd)) {
+> -			if (pmd_protnone(orig_pmd) && vma_is_accessible(vma))
+> -				return do_huge_pmd_numa_page(&vmf, orig_pmd);
+> +			if (pmd_protnone(orig_pmd) &&
+> +						vma_is_accessible(vmf->vma))
+> +				return do_huge_pmd_numa_page(vmf, orig_pmd);
+> 
+>  			if (dirty && !pmd_access_permitted(orig_pmd, WRITE)) {
+> -				ret = wp_huge_pmd(&vmf, orig_pmd);
+> +				ret = wp_huge_pmd(vmf, orig_pmd);
+>  				if (!(ret & VM_FAULT_FALLBACK))
+>  					return ret;
+>  			} else {
+> -				huge_pmd_set_accessed(&vmf, orig_pmd);
+> +				huge_pmd_set_accessed(vmf, orig_pmd);
+>  				return 0;
+>  			}
+>  		}
+>  	}
+> 
+> -	return handle_pte_fault(&vmf);
+> +	return handle_pte_fault(vmf);
+>  }
+> 
+>  /*
+> @@ -4066,9 +4059,10 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>   * The mmap_sem may have been released depending on flags and our
+>   * return value.  See filemap_fault() and __lock_page_or_retry().
+>   */
+> -int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+> -		unsigned int flags)
+> +int vm_handle_fault(struct vm_fault *vmf)
+>  {
+> +	unsigned int flags = vmf->flags;
+> +	struct vm_area_struct *vma = vmf->vma;
+>  	int ret;
+> 
+>  	__set_current_state(TASK_RUNNING);
+> @@ -4092,9 +4086,9 @@ int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>  		mem_cgroup_oom_enable();
+> 
+>  	if (unlikely(is_vm_hugetlb_page(vma)))
+> -		ret = hugetlb_fault(vma->vm_mm, vma, address, flags);
+> +		ret = hugetlb_fault(vma->vm_mm, vma, vmf->address, flags);
+>  	else
+> -		ret = __handle_mm_fault(vma, address, flags);
+> +		ret = __handle_mm_fault(vmf);
+> 
+>  	if (flags & FAULT_FLAG_USER) {
+>  		mem_cgroup_oom_disable();
+> @@ -4110,6 +4104,26 @@ int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+> 
+>  	return ret;
+>  }
+> +
+> +/*
+> + * By the time we get here, we already hold the mm semaphore
+> + *
+> + * The mmap_sem may have been released depending on flags and our
+> + * return value.  See filemap_fault() and __lock_page_or_retry().
+> + */
+> +int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+> +		unsigned int flags)
+> +{
+> +	struct vm_fault vmf = {
+> +		.vma = vma,
+> +		.address = address & PAGE_MASK,
+> +		.flags = flags,
+> +		.pgoff = linear_page_index(vma, address),
+> +		.gfp_mask = __get_fault_gfp_mask(vma),
+> +	};
+> +
+> +	return vm_handle_fault(&vmf);
+> +}
+>  EXPORT_SYMBOL_GPL(handle_mm_fault);
+> 
+>  #ifndef __PAGETABLE_P4D_FOLDED
+> 
