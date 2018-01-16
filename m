@@ -1,28 +1,26 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew@lunn.ch>
+Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLhxj0ZW2zF0fK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 07:43:03 +1100 (AEDT)
-Subject: Re: DPAA Ethernet problems with mainstream Linux kernels
-To: Madalin-cristian Bucur <madalin.bucur@nxp.com>,
- Darren Stevens <darren@stevens-zone.net>,
- Jamie Krueger <jamie@bitbybitsoftwaregroup.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <ccafbcca-172b-11ae-7916-8bcd4bfa419c@bitbybitsoftwaregroup.com>
- <DB3PR0402MB3849C70D5760C3F21F881074EC170@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <d7478110-68ae-34b3-51c5-487bb3e12527@bitbybitsoftwaregroup.com>
- <DB3PR0402MB3849C1D81C867CF2D5A65D0EECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <4b50ee845f3.281d6f13@auth.smtp.1and1.co.uk>
- <DB3PR0402MB38496B4FB62904321A97186AECEA0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <2ca2be11-7e64-3055-0d06-7090d5dcc096@xenosoft.de>
-Date: Tue, 16 Jan 2018 21:42:47 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLjB32X2MzF0Tf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 07:53:47 +1100 (AEDT)
+Date: Tue, 16 Jan 2018 21:53:42 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
+ "madskateman@gmail.com" <madskateman@gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+Message-ID: <20180116205342.GA29888@lunn.ch>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com>
+ <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com>
 MIME-Version: 1.0
-In-Reply-To: <DB3PR0402MB38496B4FB62904321A97186AECEA0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1516125454.18795.87.camel@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+> > You appear to be using an old kernel. Take a look at:
+> 
+> Not really, I am using 4.14.x and I don't think that is old.
 
-I compiled the RC8 of kernel 4.15 for the X5000 without PAMU support today.
+Development for 4.14 stopped somewhere around the beginning of
+September. So there has been over 4 months of work since then.  We are
+clearly interested in fixing bugs in that kernel, since it is the
+current stable version. But when reporting bugs, please let is know if
+the latest version of the network kernel,
+it://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git has
+the issue.
 
-Download: http://www.xenosoft.de/uImage_without_pamu.tar.gz
+> Seems like this patch hasn't been sent to 4.14.x.
 
-Please test it on your AmigaOne X5000.
+If it fixes a bug for you, please request the fix is added to stable.
 
-Thanks,
-Christian
-
-
-On 16 January 2018 at 6:33PM, Madalin-cristian Bucur wrote:
->> The PAMU related errors may be relevant to the issue, if you have incorrect
->> settings you may have no traffic passing through. The PAMU configuration
->> should be made by the bootloader. Can you try to disable CONFIG_FSL_PAMU?
->>
->> Madalin
->>
->>
+   Andrew
