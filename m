@@ -2,18 +2,15 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM2RK0QNKzF0RZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 20:51:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM2RJ454RzF0Pw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 20:51:24 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/6] KVM: PPC: Book3S HV: Make sure we don't re-enter guest
- without XIVE loaded
-Date: Wed, 17 Jan 2018 20:51:10 +1100
-Message-Id: <1516182675-25331-2-git-send-email-paulus@ozlabs.org>
-In-Reply-To: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
-References: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 0/6] KVM: PPC: Book3S HV: Changes for POWER9 v2.2 support
+Date: Wed, 17 Jan 2018 20:51:09 +1100
+Message-Id: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,80 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a bug where it is possible to enter a guest on a POWER9
-system without having the XIVE (interrupt controller) context loaded.
-This can happen because we unload the XIVE context from the CPU
-before doing the real-mode handling for machine checks.  After the
-real-mode handler runs, it is possible that we re-enter the guest
-via a fast path which does not load the XIVE context.
+The POWER9 "Nimbus" v2.2 (referred to as DD2.2) chip has some hardware
+bugs fixed that were present in earlier versions, and contains new
+workarounds for other hardware bugs.
 
-To fix this, we move the unloading of the XIVE context to come after
-the real-mode machine check handler is called.
+POWER9 DD2.2 can run with some threads of a core in hashed page table
+(HPT) MMU mode while other threads are in radix MMU mode.
+Patches 2 and 3 of this series adjust the guest entry/exit code
+so that we don't do the (expensive) inter-thread synchronization
+introduced in commit c01015091a77 ("KVM: PPC: Book3S HV: Run HPT
+guests on POWER9 radix hosts", 2017-10-19) when running a HPT
+guest on a radix host, and we don't require the host to be in
+SMT1 mode with indep_threads_mode=N.  This means that guests can be
+run in the normal fashion without any special host configuration
+regardless of whether they will want to use the HPT or radix MMU mode.
 
-Fixes: 5af50993850a ("KVM: PPC: Book3S HV: Native usage of the XIVE interrupt controller")
-Cc: stable@vger.kernel.org # v4.11+
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 40 ++++++++++++++++-----------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+POWER9 DD2.2 contains features which are intended to allow
+hypervisor software to work around deficiencies in the handling
+of transactional memory suspended mode which are present in DD2.2 and
+all previous versions.  This involves generating softpatch interrupts
+and hypervisor maintenance interrupts on execution of certain
+TM-related instructions, so that the hypervisor can store the
+checkpointed CPU state in memory and emulate some of the TM state
+transitions.  With this, we can allow guests to use transactional
+memory facilities even if the host kernel does not allow host
+userspace programs to use TM.  This makes it possible to migrate
+guests from a POWER8 system to a POWER9.  Since KVM on POWER8 makes TM
+available to guests, any guest on a POWER8 may be using TM, and
+therefore to be able to migrate such a guest to POWER9 we have to be
+able to provide TM facilities to it.
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index c8ffd69..76332a3 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1423,6 +1423,26 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	blt	deliver_guest_interrupt
- 
- guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
-+	/* Save more register state  */
-+	mfdar	r6
-+	mfdsisr	r7
-+	std	r6, VCPU_DAR(r9)
-+	stw	r7, VCPU_DSISR(r9)
-+	/* don't overwrite fault_dar/fault_dsisr if HDSI */
-+	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
-+	beq	mc_cont
-+	std	r6, VCPU_FAULT_DAR(r9)
-+	stw	r7, VCPU_FAULT_DSISR(r9)
-+
-+	/* See if it is a machine check */
-+	cmpwi	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
-+	beq	machine_check_realmode
-+mc_cont:
-+#ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
-+	addi	r3, r9, VCPU_TB_RMEXIT
-+	mr	r4, r9
-+	bl	kvmhv_accumulate_time
-+#endif
- #ifdef CONFIG_KVM_XICS
- 	/* We are exiting, pull the VP from the XIVE */
- 	lwz	r0, VCPU_XIVE_PUSHED(r9)
-@@ -1460,26 +1480,6 @@ guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
- 	eieio
- 1:
- #endif /* CONFIG_KVM_XICS */
--	/* Save more register state  */
--	mfdar	r6
--	mfdsisr	r7
--	std	r6, VCPU_DAR(r9)
--	stw	r7, VCPU_DSISR(r9)
--	/* don't overwrite fault_dar/fault_dsisr if HDSI */
--	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
--	beq	mc_cont
--	std	r6, VCPU_FAULT_DAR(r9)
--	stw	r7, VCPU_FAULT_DSISR(r9)
--
--	/* See if it is a machine check */
--	cmpwi	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
--	beq	machine_check_realmode
--mc_cont:
--#ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
--	addi	r3, r9, VCPU_TB_RMEXIT
--	mr	r4, r9
--	bl	kvmhv_accumulate_time
--#endif
- 
- 	mr 	r3, r12
- 	/* Increment exit count, poke other threads to exit */
--- 
-2.7.4
+Patch 1 is a bug-fix, relevant on POWER9 systems, to make sure we
+don't enter the guest without the XIVE context loaded.
+
+Paul.
