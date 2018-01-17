@@ -2,15 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7JL4gtnzF0Pn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:42 +1100 (AEDT)
-In-Reply-To: <20180112022849.30899-5-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7JQ5XF3zF0TT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:46 +1100 (AEDT)
+In-Reply-To: <20180116072950.0B8F86EEC2@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [5/5] powerpc: Use the TRAP macro whenever comparing a trap number
-Message-Id: <3zM7JK2hB8z9sRm@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:30:33 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/8xx: do not select CONFIG_PPC_LIB_RHEAP
+Message-Id: <3zM7JQ597kz9s7h@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:30:38 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-01-12 at 02:28:49 UTC, Benjamin Herrenschmidt wrote:
-> Trap numbers can have extra bits at the bottom that need to
-> be filtered out. There are a few cases where we don't do that.
+On Tue, 2018-01-16 at 07:29:49 UTC, Christophe Leroy wrote:
+> Since commit 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE
+> muram"), rheap is not used anymore.
 > 
-> It's possible that we got lucky but better safe than sorry.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2271db20e4b362405bacc0e4095df4
+https://git.kernel.org/powerpc/c/9a3b849bfe5cba18492acf5add6ba5
 
 cheers
