@@ -2,9 +2,9 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMNhW261lzF0YT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 10:34:03 +1100 (AEDT)
-Date: Wed, 17 Jan 2018 17:33:57 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMP9r0ktGzF0cx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 10:56:00 +1100 (AEDT)
+Date: Wed, 17 Jan 2018 17:55:55 -0600
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: Rob Herring <robh@kernel.org>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, devicetree@vger.kernel.org,
@@ -14,7 +14,7 @@ Cc: Bjorn Helgaas <bhelgaas@google.com>, devicetree@vger.kernel.org,
  Frank Rowand <frowand.list@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
 Subject: Re: [PATCH 0/3] PCI: move DT PCI functions to PCI core
-Message-ID: <20180117233357.GB53542@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <20180117235555.GC53542@bhelgaas-glaptop.roam.corp.google.com>
 References: <20180104211215.11344-1-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,10 +36,9 @@ On Thu, Jan 04, 2018 at 03:12:12PM -0600, Rob Herring wrote:
 > the per bus helper functions.
 > 
 > I expect Bjorn to take this series, so PPC maintainers please ack.
-
-I plan to merge this for v4.16, so PPC maintainers, this is your
-chance to speak up :)
-
+> 
+> Rob
+> 
 > Rob Herring (3):
 >   PCI: move OF related PCI functions into PCI core
 >   powerpc/pci: use of_irq_parse_and_map_pci helper
@@ -57,6 +56,7 @@ chance to speak up :)
 >  9 files changed, 510 insertions(+), 553 deletions(-)
 >  delete mode 100644 drivers/of/of_pci.c
 >  delete mode 100644 drivers/of/of_pci_irq.c
-> 
-> --
-> 2.14.1
+
+Applied to pci/dt-resources for v4.16, thanks!
+
+I'll update this if necessary if PPC maintainers comment.
