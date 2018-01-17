@@ -2,14 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Hf3h2NzF0bc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:06 +1100 (AEDT)
-In-Reply-To: <151214687950.64022.15779582389677722807.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Hj29stzF0XK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:09 +1100 (AEDT)
+In-Reply-To: <20171204021912.25974-1-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [V3,9/9] powerpc: Enable support of ibm,dynamic-memory-v2
-Message-Id: <3zM7Hd3Jgcz9sRV@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:30:05 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [1/3] arch/powerpc/hugetlb: Use pte_access_permitted for hugetlb
+ access check
+Message-Id: <3zM7Hh0596z9sNx@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:30:06 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,14 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-12-01 at 16:48:03 UTC, Nathan Fontenot wrote:
-> Add required bits to the architecture vector to enable support
-> of the ibm,dynamic-memory-v2 device tree property.
+On Mon, 2017-12-04 at 02:19:10 UTC, "Aneesh Kumar K.V" wrote:
+> No functional change in this patch. This update gup_hugepte to use the
+> helper. This will help later when we add memory keys.
 > 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0c38ed6f6f0b78a404fe46767d2150
+https://git.kernel.org/powerpc/c/5fa5b16be5b319184378870467352e
 
 cheers
