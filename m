@@ -1,25 +1,26 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-ve1eur01on0075.outbound.protection.outlook.com [104.47.1.75])
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50049.outbound.protection.outlook.com [40.107.5.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM8Cm3cVJzDqhc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 01:11:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM8Jd591PzDr53
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 01:15:57 +1100 (AEDT)
 From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>, "andrew@lunn.ch"
- <andrew@lunn.ch>
+To: Andrew Lunn <andrew@lunn.ch>, Joakim Tjernlund
+ <Joakim.Tjernlund@infinera.com>
 CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
- <madskateman@gmail.com>
+ <madskateman@gmail.com>, "David S . Miller" <davem@davemloft.net>
 Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
-Date: Wed, 17 Jan 2018 14:11:36 +0000
-Message-ID: <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+Date: Wed, 17 Jan 2018 14:15:51 +0000
+Message-ID: <DB3PR0402MB3849850266808EC52F88A783ECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
 References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
  <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
  <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
- <1516125454.18795.87.camel@infinera.com>
-In-Reply-To: <1516125454.18795.87.camel@infinera.com>
-Content-Type: text/plain; charset="utf-8"
+ <1516125454.18795.87.camel@infinera.com> <20180116205342.GA29888@lunn.ch>
+ <1516189651.18795.99.camel@infinera.com> <20180117134339.GC32299@lunn.ch>
+In-Reply-To: <20180117134339.GC32299@lunn.ch>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,43 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKb2FraW0gVGplcm5sdW5kIFtt
-YWlsdG86Sm9ha2ltLlRqZXJubHVuZEBpbmZpbmVyYS5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEph
-bnVhcnkgMTYsIDIwMTggNzo1OCBQTQ0KPiBUbzogYW5kcmV3QGx1bm4uY2gNCj4gU3ViamVjdDog
-UmU6IERQQUEgRXRoZXJuZXQgdHJhZmZpY2UgdHJvdWJsZXMgd2l0aCBMaW51eCBrZXJuZWwNCj4g
-DQo+IE9uIFRodSwgMTk3MC0wMS0wMSBhdCAwMDowMCArMDAwMCwgQW5kcmV3IEx1bm4gd3JvdGU6
-DQo+ID4NCj4gPiBIaSBKb2FraW0NCj4gPg0KPiA+IFlvdSBhcHBlYXIgdG8gYmUgdXNpbmcgYW4g
-b2xkIGtlcm5lbC4gVGFrZSBhIGxvb2sgYXQ6DQo+IA0KPiBOb3QgcmVhbGx5LCBJIGFtIHVzaW5n
-IDQuMTQueCBhbmQgSSBkb24ndCB0aGluayB0aGF0IGlzIG9sZC4gU2VlbXMgbGlrZQ0KPiB0aGlz
-DQo+IHBhdGNoIGhhc24ndCBiZWVuIHNlbnQgdG8gNC4xNC54Lg0KPiANCj4gSSB3b25kZXIgaWYg
-SSBtaWdodCBiZSBtaXNzaW5nIHNvbWV0aGluZyBlbHNlLCB3ZSBqdXN0IG1vdmVkIHRvIDQuMTQg
-YW5kDQo+IG5vdGljIHRoYXQgYWxsDQo+IG91ciBmaXhlZCBQSFlzIGFyZSBub24gZnVuY3Rpb25p
-bmc6DQo+IGZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+IGZzbF9tYWMg
-ZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMA0K
-PiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMDogX19kZXZtX3JlcXVlc3RfbWVtX3JlZ2lvbihtYWMp
-IGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjAgZmFpbGVkIHdpdGgg
-ZXJyb3IgLTE2DQo+IGZzbF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+IGZz
-bF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjow
-NjoyMQ0KPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMTogX19kZXZtX3JlcXVlc3RfbWVtX3JlZ2lv
-bihtYWMpIGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjEgZmFpbGVk
-IHdpdGggZXJyb3IgLTE2DQo+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFD
-DQo+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5
-YzowYjowNjoyMg0KPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMjogX19kZXZtX3JlcXVlc3RfbWVt
-X3JlZ2lvbihtYWMpIGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjIg
-ZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFu
-IE1FTUFDDQo+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAw
-MDowNjo5YzowYjowNjoyMw0KPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMzogX19kZXZtX3JlcXVl
-c3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVy
-bmV0LjMgZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+IA0KPiBGZWVscyBsaWtlIEZNQU4gc3RpbGwg
-dGhpbmsgdGhlcmUgYXJlIHJlYWwgUEhZcyB0aGVyZSA/DQoNCkhpIEpvYWtpbSwNCg0KVGhlc2Ug
-ZXJyb3JzIGFyZSBpc3N1ZWQgd2hlbiB0cnlpbmcgdG8gcHJvYmUgdGhlIHNlY29uZCB0aW1lIHRo
-ZSBzYW1lDQpNQUMgbm9kZS4gVGhlIGlzc3VlIHdhcyBpbnRyb2R1Y2VkIGJ5IHRoaXMgY29tbWl0
-Og0KDQpjb21taXQgNGQ4ZWUxOTM1YmNkNjY2MzYwMzExZGZkYWRlZWUyMzVkNjgyZDY5YQ0KQXV0
-aG9yOiBGbG9yaWFuIEZhaW5lbGxpIDxmLmZhaW5lbGxpQGdtYWlsLmNvbT4NCkRhdGU6IFR1ZSBB
-dWcgMjIgMTU6MjQ6NDcgMjAxNyAtMDcwMA0KZnNsL21hbjogSW5oZXJpdCBwYXJlbnQgZGV2aWNl
-IGFuZCBvZl9ub2RlDQoNCmFuZCB3YXMgbGF0ZXIgYWRkcmVzc2VkIGJ5IHRoaXMgcGF0Y2ggc2V0
-Og0KDQpodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVjdC9uZXRkZXYvbGlzdC8/c2Vy
-aWVzPTg0NjImc3RhdGU9Kg0KDQpFdmVuIHdpdGggdGhlc2UgZXJyb3JzIHByaW50ZWQsIGFsbCBp
-cyB3b3JraW5nIGZpbmUsIGl0J3MganVzdCB0aGUNCnNlY29uZCBwcm9iaW5nIHRoYXQgZmFpbHMu
-IEFkZGluZyB0aGUgbGF0dGVyIHBhdGNoZXMgb3IgcmV2ZXJ0aW5nDQp0aGUgb25lIGFib3ZlIG1h
-a2VzIHRoZSBlcnJvcnMgcHJpbnRzIGRpc3NhcGVhci4NCg0KTWFkYWxpbg0K
+> -----Original Message-----
+> From: Andrew Lunn [mailto:andrew@lunn.ch]
+> Sent: Wednesday, January 17, 2018 3:44 PM
+> To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+> Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+>=20
+> > That doesn't work really, having users to hit the bug, debug it, fix it
+> and then
+> > find it fixed already in upstream, then specifically request it to be
+> backported to stable.
+> > I don't need this fix to be backported, already got it. Someone else
+> might though.
+>=20
+> The "someone else might though" is a big point of asking for it to
+> added to stable. The other reason is it means one less patch you need
+> to maintain in your build.
+
+I've sent that patch [1] for net but I guess the timing was wrong and
+it was merged to net-next.
+
+> > I would be interested in bug fixes upstream which fixes:
+>=20
+> Did you try upstream? Does it give the same errors?
+>=20
+>     Andrew
+
+[1] https://patchwork.kernel.org/patch/10146119/
+
+Madalin
