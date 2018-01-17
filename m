@@ -1,23 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Bv12VJzF0Zv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:25:59 +1100 (AEDT)
-In-Reply-To: <20180115133003.3447-1-msuchanek@suse.de>
-To: Michal Suchanek <msuchanek@suse.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Philippe Ombredanne <pombredanne@nexb.com>,
- =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.de>, "Tobin C. Harding" <me@tobin.cc>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Bw2CD5zF0Zv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:26:00 +1100 (AEDT)
+In-Reply-To: <20180116112401.942-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/pseries: include linux/types.h in asm/hvcall.h
-Message-Id: <3zM7Bt5g6Zz9sP1@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:25:58 +1100 (AEDT)
+Subject: Re: powerpc/64s: Wire up cpu_show_meltdown()
+Message-Id: <3zM7Bv43zdz9sQm@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:25:59 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-01-15 at 13:30:03 UTC, Michal Suchanek wrote:
-> Commit 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush
-> settings") uses u64 in asm/hvcall.h without including linux/types.h
+On Tue, 2018-01-16 at 11:24:01 UTC, Michael Ellerman wrote:
+> The recent commit 87590ce6e373 ("sysfs/cpu: Add vulnerability folder")
+> added a generic folder and set of files for reporting information on
+> CPU vulnerabilities. One of those was for meltdown:
 > 
-> This breaks hvcall.h users that do not include the header themselves.
+>   /sys/devices/system/cpu/vulnerabilities/meltdown
 > 
-> Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush
->     settings")
+> This commit wires up that file for 64-bit Book3S powerpc.
 > 
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> For now we default to "Vulnerable" unless the RFI flush is enabled.
+> That may not actually be true on all hardware, further patches will
+> refine the reporting based on the CPU/platform etc. But for now we
+> default to being pessimists.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/1b689a95ce7427075f9ac9fb4aea1a
+https://git.kernel.org/powerpc/c/fd6e440f20b1a4304553775fc55938
 
 cheers
