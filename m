@@ -1,24 +1,22 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0083.outbound.protection.outlook.com [104.47.37.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyongjun1@huawei.com>
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM51V0CvfzF0fh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 22:47:41 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "andrew@lunn.ch" <andrew@lunn.ch>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madalin.bucur@nxp.com"
- <madalin.bucur@nxp.com>, "madskateman@gmail.com" <madskateman@gmail.com>
-Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
-Date: Wed, 17 Jan 2018 11:47:33 +0000
-Message-ID: <1516189651.18795.99.camel@infinera.com>
-References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
- <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
- <1516125454.18795.87.camel@infinera.com> <20180116205342.GA29888@lunn.ch>
-In-Reply-To: <20180116205342.GA29888@lunn.ch>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM4l11yzszF0RC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 22:35:07 +1100 (AEDT)
+From: Wei Yongjun <weiyongjun1@huawei.com>
+To: Corey Minyard <minyard@acm.org>, Arnd Bergmann <arnd@arndb.de>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>
+CC: Wei Yongjun <weiyongjun1@huawei.com>,
+ <openipmi-developer@lists.sourceforge.net>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+Subject: [PATCH -next] ipmi/powernv: Fix error return code in
+ ipmi_powernv_probe()
+Date: Wed, 17 Jan 2018 11:25:11 +0000
+Message-ID: <1516188311-144227-1-git-send-email-weiyongjun1@huawei.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,53 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBBbmRyZXcgTHVubiB3cm90ZToNCj4g
-Q0FVVElPTjogVGhpcyBlbWFpbCBvcmlnaW5hdGVkIGZyb20gb3V0c2lkZSBvZiB0aGUgb3JnYW5p
-emF0aW9uLiBEbyBub3QgY2xpY2sgbGlua3Mgb3Igb3BlbiBhdHRhY2htZW50cyB1bmxlc3MgeW91
-IHJlY29nbml6ZSB0aGUgc2VuZGVyIGFuZCBrbm93IHRoZSBjb250ZW50IGlzIHNhZmUuDQo+IA0K
-PiANCj4gPiA+IFlvdSBhcHBlYXIgdG8gYmUgdXNpbmcgYW4gb2xkIGtlcm5lbC4gVGFrZSBhIGxv
-b2sgYXQ6DQo+ID4gDQo+ID4gTm90IHJlYWxseSwgSSBhbSB1c2luZyA0LjE0LnggYW5kIEkgZG9u
-J3QgdGhpbmsgdGhhdCBpcyBvbGQuDQo+IA0KPiBEZXZlbG9wbWVudCBmb3IgNC4xNCBzdG9wcGVk
-IHNvbWV3aGVyZSBhcm91bmQgdGhlIGJlZ2lubmluZyBvZg0KPiBTZXB0ZW1iZXIuIFNvIHRoZXJl
-IGhhcyBiZWVuIG92ZXIgNCBtb250aHMgb2Ygd29yayBzaW5jZSB0aGVuLiAgV2UgYXJlDQo+IGNs
-ZWFybHkgaW50ZXJlc3RlZCBpbiBmaXhpbmcgYnVncyBpbiB0aGF0IGtlcm5lbCwgc2luY2UgaXQg
-aXMgdGhlDQo+IGN1cnJlbnQgc3RhYmxlIHZlcnNpb24uIEJ1dCB3aGVuIHJlcG9ydGluZyBidWdz
-LCBwbGVhc2UgbGV0IGlzIGtub3cgaWYNCj4gdGhlIGxhdGVzdCB2ZXJzaW9uIG9mIHRoZSBuZXR3
-b3JrIGtlcm5lbCwNCj4gaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9n
-aXQvZGF2ZW0vbmV0LW5leHQuZ2l0IGhhcw0KPiB0aGUgaXNzdWUuDQo+IA0KPiA+IFNlZW1zIGxp
-a2UgdGhpcyBwYXRjaCBoYXNuJ3QgYmVlbiBzZW50IHRvIDQuMTQueC4NCj4gDQo+IElmIGl0IGZp
-eGVzIGEgYnVnIGZvciB5b3UsIHBsZWFzZSByZXF1ZXN0IHRoZSBmaXggaXMgYWRkZWQgdG8gc3Rh
-YmxlLg0KDQpUaGF0IGRvZXNuJ3Qgd29yayByZWFsbHksIGhhdmluZyB1c2VycyB0byBoaXQgdGhl
-IGJ1ZywgZGVidWcgaXQsIGZpeCBpdCBhbmQgdGhlbg0KZmluZCBpdCBmaXhlZCBhbHJlYWR5IGlu
-IHVwc3RyZWFtLCB0aGVuIHNwZWNpZmljYWxseSByZXF1ZXN0IGl0IHRvIGJlIGJhY2twb3J0ZWQg
-dG8gc3RhYmxlLiANCkkgZG9uJ3QgbmVlZCB0aGlzIGZpeCB0byBiZSBiYWNrcG9ydGVkLCBhbHJl
-YWR5IGdvdCBpdC4gU29tZW9uZSBlbHNlIG1pZ2h0IHRob3VnaC4NCg0KSSB3b3VsZCBiZSBpbnRl
-cmVzdGVkIGluIGJ1ZyBmaXhlcyB1cHN0cmVhbSB3aGljaCBmaXhlczoNCg0KbGlicGh5OiBGcmVl
-c2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KaW9tbXU6IEFkZGluZyBkZXZpY2UgZmZlNDg4
-MDAwLnBvcnQgdG8gZ3JvdXAgMTANCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBw
-cm9iZWQNCm1kaW9fYnVzIGZmZTRlMTAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBh
-dCAzLjMNCmlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4OTAwMC5wb3J0IHRvIGdyb3VwIDIyDQps
-aWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBmZmU0ZTMw
-MDA6IEVycm9yIHdoaWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQppb21tdTogQWRkaW5nIGRl
-dmljZSBmZmU0OGEwMDAucG9ydCB0byBncm91cCAyMw0KbGlicGh5OiBGcmVlc2NhbGUgWEdNQUMg
-TURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGU1MDAwOiBFcnJvciB3aGlsZSByZWFkaW5n
-IFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6IEFkZGluZyBkZXZpY2UgZmZlNDhiMDAwLnBvcnQgdG8g
-Z3JvdXAgMjQNCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQNCm1kaW9f
-YnVzIGZmZTRlNzAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCmlvbW11
-OiBBZGRpbmcgZGV2aWNlIGZmZTQ4YzAwMC5wb3J0IHRvIGdyb3VwIDI1DQpsaWJwaHk6IEZyZWVz
-Y2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBmZmU0ZTkwMDA6IEVycm9yIHdo
-aWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQpmc2xfbWFjIGZmZTRlMjAwMC5ldGhlcm5ldDog
-Rk1hbiBNRU1BQw0KZnNsX21hYyBmZmU0ZTIwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6
-IDAwOjA2OjljOjBiOjA2OjIwDQpmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMDogX19kZXZtX3JlcXVl
-c3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KZnNsX21hYzogcHJvYmUgb2YgZHBhYS1ldGhlcm5l
-dC4wIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0KZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZN
-YW4gTUVNQUMNCmZzbF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAw
-MDowNjo5YzowYjowNjoyMQ0KZnNsX21hYyBkcGFhLWV0aGVybmV0LjE6IF9fZGV2bV9yZXF1ZXN0
-X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCmZzbF9tYWM6IHByb2JlIG9mIGRwYWEtZXRoZXJuZXQu
-MSBmYWlsZWQgd2l0aCBlcnJvciAtMTYNCmZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFu
-IE1FTUFDDQpmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6
-MDY6OWM6MGI6MDY6MjINCmZzbF9tYWMgZHBhYS1ldGhlcm5ldC4yOiBfX2Rldm1fcmVxdWVzdF9t
-ZW1fcmVnaW9uKG1hYykgZmFpbGVkDQoNCkV2ZXJ5IEZNQU4gZXRoIEkvRiB3aXRoIGEgZml4ZWQg
-bGluayBmYWlscyBteXN0ZXJpb3VzbHkuDQpDdXN0b20gYm9hcmQgYmFzZWQgb24gdDEwNDByZGIs
-IGJlZW4gb3ZlciB0aGUgZGV2aWNlIHRyZWUgYW5kIEkgY2Fubm90IGZpbmQgYW55IHNpZ25pZmlj
-YW50DQpjaGFuZ2VzLg0KDQogSm9ja2U=
+Fix to return a negative error code from the request_irq() error
+handling case instead of 0, as done elsewhere in this function.
+
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/char/ipmi/ipmi_powernv.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+index c687c8d..bcf493d 100644
+--- a/drivers/char/ipmi/ipmi_powernv.c
++++ b/drivers/char/ipmi/ipmi_powernv.c
+@@ -250,8 +250,9 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
+ 		ipmi->irq = opal_event_request(prop);
+ 	}
+ 
+-	if (request_irq(ipmi->irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,
+-				"opal-ipmi", ipmi)) {
++	rc = request_irq(ipmi->irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,
++			 "opal-ipmi", ipmi);
++	if (rc) {
+ 		dev_warn(dev, "Unable to request irq\n");
+ 		goto err_dispose;
+ 	}
