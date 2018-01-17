@@ -1,24 +1,38 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
+Return-Path: <srs0=4i2n=em=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLqmc5gM5zF0bc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 12:50:40 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zLqmc4qcSz8tF4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 12:50:40 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLnZL2MLZzF0Xb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 11:11:37 +1100 (AEDT)
-Subject: Re: [PATCH v4 00/17] ASoC: fsl_ssi: Clean up - program flow level
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-References: <1516058192-65519-1-git-send-email-nicoleotsuka@gmail.com>
- <56fb5b43-383f-c0f2-360c-eef0e4d0844f@maciej.szmigiero.name>
- <20180116235258.GA6849@Asurada-Nvidia>
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Message-ID: <301c4cb1-d0ad-4fe8-0388-059d355b4c2e@maciej.szmigiero.name>
-Date: Wed, 17 Jan 2018 01:11:29 +0100
-MIME-Version: 1.0
-In-Reply-To: <20180116235258.GA6849@Asurada-Nvidia>
-Content-Type: text/plain; charset=utf-8
+ by ozlabs.org (Postfix) with ESMTPS id 3zLqmc1QXHz9s7n
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 12:50:40 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0H1mroi113139
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2018 20:50:38 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fhsvjxxaf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2018 20:50:37 -0500
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 16 Jan 2018 20:50:36 -0500
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] powerpc: export thread-tidr interfaces
+Date: Tue, 16 Jan 2018 17:50:31 -0800
+Message-Id: <1516153832-9282-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +42,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17.01.2018 00:52, Nicolin Chen wrote:
-> On Wed, Jan 17, 2018 at 12:38:09AM +0100, Maciej S. Szmigiero wrote:
-> 
->>> Example of uncovered tests: AC97, PowerPC and FIQ.
->>
->> I've tested the whole series in the AC'97 mode on an i.MX6 UDOO board
->> and everything seems to work fine as long as few small changes are made
->> to patches 13 and 16.
-> 
-> Thanks for the review and testing. Really appreciate that. I'll
-> take care of those issues in the next version.
-Thanks for these cleanups Nicolin!
+Export set_thread_tidr() and clear_thread_tidr() interfaces so they
+can be used by external modules.
 
-> And I believe those issues are confined to AC97. So Caleb should
-> be able to skip his test if only these two places get updated.
-> (Thanks for keeping testing on each version.)
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/process.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Yes, these required changes only affect the AC'97 mode, there
-shouldn't be any functionality change in the I2S mode.
-
-Maciej
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 2010e4c..f20c1ad 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1560,6 +1560,7 @@ void clear_thread_tidr(struct task_struct *t)
+ 	free_thread_tidr(t->thread.tidr);
+ 	t->thread.tidr = 0;
+ }
++EXPORT_SYMBOL_GPL(clear_thread_tidr);
+ 
+ void arch_release_task_struct(struct task_struct *t)
+ {
+@@ -1592,6 +1593,7 @@ int set_thread_tidr(struct task_struct *t)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(set_thread_tidr);
+ 
+ #endif /* CONFIG_PPC64 */
+ 
+-- 
+2.7.4
