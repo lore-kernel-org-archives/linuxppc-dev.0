@@ -1,27 +1,47 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0069.outbound.protection.outlook.com [104.47.37.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM9Hf3RWSzF0Vn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 02:00:12 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>, "andrew@lunn.ch"
- <andrew@lunn.ch>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
- <madskateman@gmail.com>
-Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
-Date: Wed, 17 Jan 2018 15:00:06 +0000
-Message-ID: <1516201204.18795.105.camel@infinera.com>
-References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
- <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
- <1516125454.18795.87.camel@infinera.com>
- <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-In-Reply-To: <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM9dS631FzDqD6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 02:15:40 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0HFC53X147390
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 10:15:36 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fj5ektq3b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 10:15:36 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 17 Jan 2018 15:15:33 -0000
+Subject: Re: [PATCH v6 00/24] Speculative page faults
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180116151145.74odvlj6mjuwq3rr@node.shutemov.name>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 17 Jan 2018 16:15:23 +0100
 MIME-Version: 1.0
+In-Reply-To: <20180116151145.74odvlj6mjuwq3rr@node.shutemov.name>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8dd74917-2f61-cf49-a350-73e4d54c72c1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,88 +51,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBNYWRhbGluLWNyaXN0aWFuIEJ1Y3Vy
-IHdyb3RlOg0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRlIG9m
-IHRoZSBvcmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1lbnRz
-IHVubGVzcyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMg
-c2FmZS4NCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTog
-Sm9ha2ltIFRqZXJubHVuZCBbbWFpbHRvOkpvYWtpbS5UamVybmx1bmRAaW5maW5lcmEuY29tXQ0K
-PiA+IFNlbnQ6IFR1ZXNkYXksIEphbnVhcnkgMTYsIDIwMTggNzo1OCBQTQ0KPiA+IFRvOiBhbmRy
-ZXdAbHVubi5jaA0KPiA+IFN1YmplY3Q6IFJlOiBEUEFBIEV0aGVybmV0IHRyYWZmaWNlIHRyb3Vi
-bGVzIHdpdGggTGludXgga2VybmVsDQo+ID4gDQo+ID4gT24gVGh1LCAxOTcwLTAxLTAxIGF0IDAw
-OjAwICswMDAwLCBBbmRyZXcgTHVubiB3cm90ZToNCj4gPiA+IA0KPiA+ID4gSGkgSm9ha2ltDQo+
-ID4gPiANCj4gPiA+IFlvdSBhcHBlYXIgdG8gYmUgdXNpbmcgYW4gb2xkIGtlcm5lbC4gVGFrZSBh
-IGxvb2sgYXQ6DQo+ID4gDQo+ID4gTm90IHJlYWxseSwgSSBhbSB1c2luZyA0LjE0LnggYW5kIEkg
-ZG9uJ3QgdGhpbmsgdGhhdCBpcyBvbGQuIFNlZW1zIGxpa2UNCj4gPiB0aGlzDQo+ID4gcGF0Y2gg
-aGFzbid0IGJlZW4gc2VudCB0byA0LjE0LnguDQo+ID4gDQo+ID4gSSB3b25kZXIgaWYgSSBtaWdo
-dCBiZSBtaXNzaW5nIHNvbWV0aGluZyBlbHNlLCB3ZSBqdXN0IG1vdmVkIHRvIDQuMTQgYW5kDQo+
-ID4gbm90aWMgdGhhdCBhbGwNCj4gPiBvdXIgZml4ZWQgUEhZcyBhcmUgbm9uIGZ1bmN0aW9uaW5n
-Og0KPiA+IGZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gZnNsX21h
-YyBmZmU0ZTIwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIw
-DQo+ID4gZnNsX21hYyBkcGFhLWV0aGVybmV0LjA6IF9fZGV2bV9yZXF1ZXN0X21lbV9yZWdpb24o
-bWFjKSBmYWlsZWQNCj4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjAgZmFpbGVk
-IHdpdGggZXJyb3IgLTE2DQo+ID4gZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZNYW4gTUVN
-QUMNCj4gPiBmc2xfbWFjIGZmZTRlNDAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6
-MDY6OWM6MGI6MDY6MjENCj4gPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMTogX19kZXZtX3JlcXVl
-c3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiA+IGZzbF9tYWM6IHByb2JlIG9mIGRwYWEtZXRo
-ZXJuZXQuMSBmYWlsZWQgd2l0aCBlcnJvciAtMTYNCj4gPiBmc2xfbWFjIGZmZTRlNjAwMC5ldGhl
-cm5ldDogRk1hbiBNRU1BQw0KPiA+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFuIE1B
-QyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMg0KPiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4y
-OiBfX2Rldm1fcmVxdWVzdF9tZW1fcmVnaW9uKG1hYykgZmFpbGVkDQo+ID4gZnNsX21hYzogcHJv
-YmUgb2YgZHBhYS1ldGhlcm5ldC4yIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0KPiA+IGZzbF9tYWMg
-ZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gZnNsX21hYyBmZmU0ZTgwMDAuZXRo
-ZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIzDQo+ID4gZnNsX21hYyBk
-cGFhLWV0aGVybmV0LjM6IF9fZGV2bV9yZXF1ZXN0X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCj4g
-PiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjMgZmFpbGVkIHdpdGggZXJyb3IgLTE2
-DQo+ID4gDQo+ID4gRmVlbHMgbGlrZSBGTUFOIHN0aWxsIHRoaW5rIHRoZXJlIGFyZSByZWFsIFBI
-WXMgdGhlcmUgPw0KPiANCj4gSGkgSm9ha2ltLA0KPiANCj4gVGhlc2UgZXJyb3JzIGFyZSBpc3N1
-ZWQgd2hlbiB0cnlpbmcgdG8gcHJvYmUgdGhlIHNlY29uZCB0aW1lIHRoZSBzYW1lDQo+IE1BQyBu
-b2RlLiBUaGUgaXNzdWUgd2FzIGludHJvZHVjZWQgYnkgdGhpcyBjb21taXQ6DQo+IA0KPiBjb21t
-aXQgNGQ4ZWUxOTM1YmNkNjY2MzYwMzExZGZkYWRlZWUyMzVkNjgyZDY5YQ0KPiBBdXRob3I6IEZs
-b3JpYW4gRmFpbmVsbGkgPGYuZmFpbmVsbGlAZ21haWwuY29tPg0KPiBEYXRlOiBUdWUgQXVnIDIy
-IDE1OjI0OjQ3IDIwMTcgLTA3MDANCj4gZnNsL21hbjogSW5oZXJpdCBwYXJlbnQgZGV2aWNlIGFu
-ZCBvZl9ub2RlDQo+IA0KPiBhbmQgd2FzIGxhdGVyIGFkZHJlc3NlZCBieSB0aGlzIHBhdGNoIHNl
-dDoNCj4gDQo+IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wcm9qZWN0L25ldGRldi9saXN0
-Lz9zZXJpZXM9ODQ2MiZzdGF0ZT0qDQo+IA0KPiBFdmVuIHdpdGggdGhlc2UgZXJyb3JzIHByaW50
-ZWQsIGFsbCBpcyB3b3JraW5nIGZpbmUsIGl0J3MganVzdCB0aGUNCj4gc2Vjb25kIHByb2Jpbmcg
-dGhhdCBmYWlscy4gQWRkaW5nIHRoZSBsYXR0ZXIgcGF0Y2hlcyBvciByZXZlcnRpbmcNCj4gdGhl
-IG9uZSBhYm92ZSBtYWtlcyB0aGUgZXJyb3JzIHByaW50cyBkaXNzYXBlYXIuDQo+IA0KPiBNYWRh
-bGluDQoNCkFoaCwgbm93IGl0IHN0YXJ0cyB0byBsb29rIGJldHRlciwgcmV2ZXJ0aW5nICJmc2wv
-bWFuOiBJbmhlcml0IHBhcmVudCBkZXZpY2UgYW5kIG9mX25vZGUiIG9uIDQuMTQgZ2l2ZXM6DQps
-aWJwaHk6IEZpeGVkIE1ESU8gQnVzOiBwcm9iZWQNCnR1bjogVW5pdmVyc2FsIFRVTi9UQVAgZGV2
-aWNlIGRyaXZlciwgMS42DQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVk
-DQppb21tdTogQWRkaW5nIGRldmljZSBmZmU0ODgwMDAucG9ydCB0byBncm91cCAxMA0KbGlicGh5
-OiBGcmVlc2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGUxMDAwOiBF
-cnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6IEFkZGluZyBkZXZpY2Ug
-ZmZlNDg5MDAwLnBvcnQgdG8gZ3JvdXAgMjINCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8g
-QnVzOiBwcm9iZWQNCm1kaW9fYnVzIGZmZTRlMzAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkw
-IHJlZyBhdCAzLjMNCmlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4YTAwMC5wb3J0IHRvIGdyb3Vw
-IDIzDQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBm
-ZmU0ZTUwMDA6IEVycm9yIHdoaWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQppb21tdTogQWRk
-aW5nIGRldmljZSBmZmU0OGIwMDAucG9ydCB0byBncm91cCAyNA0KbGlicGh5OiBGcmVlc2NhbGUg
-WEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGU3MDAwOiBFcnJvciB3aGlsZSBy
-ZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6IEFkZGluZyBkZXZpY2UgZmZlNDhjMDAwLnBv
-cnQgdG8gZ3JvdXAgMjUNCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQN
-Cm1kaW9fYnVzIGZmZTRlOTAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMN
-CmZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlMjAw
-MC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjANCmZzbF9tYWMg
-ZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlNDAwMC5ldGhlcm5l
-dDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjENCmZzbF9tYWMgZmZlNGU2MDAw
-LmV0aGVybmV0OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDogRk1hbiBN
-QUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjINCmZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0
-OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlODAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVz
-czogMDA6MDY6OWM6MGI6MDY6MjMNCmZzbF9tYWMgZmZlNGUwMDAwLmV0aGVybmV0OiBGTWFuIE1F
-TUFDDQpmc2xfbWFjIGZmZTRlMDAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6
-OWM6MGI6MDY6MWYNCmZzbF9kcGEgZHBhYS1ldGhlcm5ldC4wIGV0aDA6IFByb2JlZCBpbnRlcmZh
-Y2UgZXRoMA0KZnNsX2RwYSBkcGFhLWV0aGVybmV0LjEgZXRoMTogUHJvYmVkIGludGVyZmFjZSBl
-dGgxDQpmc2xfZHBhIGRwYWEtZXRoZXJuZXQuMiBldGgyOiBQcm9iZWQgaW50ZXJmYWNlIGV0aDIN
-CmZzbF9kcGEgZHBhYS1ldGhlcm5ldC4zIGV0aDM6IFByb2JlZCBpbnRlcmZhY2UgZXRoMw0KZnNs
-X2RwYSBkcGFhLWV0aGVybmV0LjQgZXRoNDogUHJvYmVkIGludGVyZmFjZSBldGg0DQoNClN0aWxs
-IHNvbWUgbWlub3IgZXJyb3JzOiBtZGlvX2J1cyBmZmU0ZTcwMDA6IEVycm9yIHdoaWxlIHJlYWRp
-bmcgUEhZMCByZWcgYXQgMy4zDQpidXQgdGhpcyBpcyBnb2luZyB0aGUgcmlnaHQgd2F5KEkgaGF2
-ZSBub3QgaGFkIGEgY2hhbmNlIHRvIHRyeSBpZiB0aGV5IHdvcmsgZHVlDQp0byBleHRlcm5hbCBt
-b2R1bGVzIG5vdCBwb3J0ZWQvcmVhZHkgeWV0KQ0KDQpUaGUgb3RoZXIgcGF0Y2ggc2VyaWVzIGlz
-IHN0aWxsIHRvIGJlIHRlc3RlZCB0aG91Z2ggYnV0IEkgYWxyZWFkeSBub3cgd2FudGVkIA0KdG8g
-c3RyZXNzIHRoZSBpbXBvcnRhbmNlIG9mIGdldHRpbmcgYWxsIHVwc3RyZWFtIGZpeGVzIGludG8g
-c3RhYmxlLCBBU0FQLg0KWW91IG5vdyB3aGF0IHRoZXkgYXJlLCBJIGhhdmUgbm8gaWRlYS4NCg0K
-VGhhbmtzIA0KICAgICAgIEpvY2tl
+Hi Kirill,
+
+Thanks for reviewing this series.
+
+On 16/01/2018 16:11, Kirill A. Shutemov wrote:
+> On Fri, Jan 12, 2018 at 06:25:44PM +0100, Laurent Dufour wrote:
+>> ------------------
+>> Benchmarks results
+>>
+>> Base kernel is 4.15-rc6-mmotm-2018-01-04-16-19
+>> SPF is BASE + this series
+> 
+> Do you have THP=always here? Lack of THP support worries me.
+
+Yes my kernel is built with THP=always.
+
+For the record, I wrote all the code to support THP, but when I was about
+to plug it into the speculative page fault handler, I was wondering about
+the pmd_none() check and this raises the issue with khugepaged and the way
+it is invalidating the pmd before collapsing the underlying pages.
+Currently, there is no easy way to detect when such a collapsing operation
+is occurring.
+
+> What is performance in the worst case scenario? Like when we go far enough into
+> speculative code path on every page fault and then fallback to normal page
+> fault?
+
+I did further tests focusing on the THP with a patched ebizzy (to use
+posix_memalign() and MADV_HUGEPAGE) to force the use of the transparent
+huge pages. I double checked that use through /proc/#/smaps.
+
+Here is the result I got on a 16 CPUs x86 VM (higher the best):
+	BASE	SPF
+mean	276.83	276.93	record/s
+max	280	280	record/s
+
+The run was done 100 times using a large enough size records (128 MB).
+
+Here is also the event I recorded when running ebizzy during 60s:
+
+275 records/s
+ Performance counter stats for './ebizzy -HT -s 134217728':
+
+           182,470      faults
+
+             5,085      spf
+
+           176,634      pagefault:spf_vma_notsup
+
+
+      10.518504612 seconds time elapsed
+
+Most of the speculative page fault events were aborted because the VMA was
+not supported, which is matching the huge pages (pagefault:spf_vma_notsup).
+Only 5,000 were managed fully without holding the mmap_sem, I guess for
+other part of the memory's process.
+
+Running the same command on the Base kernel gave:
+
+293 records/s
+ Performance counter stats for './ebizzy -HT -s 134217728':
+
+           183,170      faults
+
+
+      10.660787623 seconds time elapsed
+
+So I'd say that aborting the speculative page fault handler when a THP is
+detected, has no visible impact.
+
+Cheers,
+Laurent.
