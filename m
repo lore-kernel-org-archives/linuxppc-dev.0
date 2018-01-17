@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Hp6VM8zF0VR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:14 +1100 (AEDT)
-In-Reply-To: <1513734660.2743.14.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Hy1td9zF0Pn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:22 +1100 (AEDT)
+In-Reply-To: <20180110061014.29181-3-benh@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: Add aacraid and nvme to powernv_defconfig
-Message-Id: <3zM7Hk17wKz9t20@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:30:09 +1100 (AEDT)
+Subject: Re: [3/3] powerpc: Cosmetic cleanup of cpuinfo_op
+Message-Id: <3zM7Hq1d2Gz9t32@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:30:15 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,14 +20,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-12-20 at 01:51:00 UTC, Benjamin Herrenschmidt wrote:
-> These adapters can be found in a number of our systems, so let's
-> enable the corresponding drivers by default.
-> 
+On Wed, 2018-01-10 at 06:10:14 UTC, Benjamin Herrenschmidt wrote:
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bba9bc89b9e72bcf26632877b4823a
+https://git.kernel.org/powerpc/c/fbadeb6bb1685f7a53869e240284ff
 
 cheers
