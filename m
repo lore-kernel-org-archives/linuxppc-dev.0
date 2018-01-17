@@ -1,19 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM2RL5XMqzF0Pw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 20:51:26 +1100 (AEDT)
-From: Paul Mackerras <paulus@ozlabs.org>
-To: kvm@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 6/6] KVM: PPC: Book3S HV: Work around transactional memory
- bugs in POWER9
-Date: Wed, 17 Jan 2018 20:51:15 +1100
-Message-Id: <1516182675-25331-7-git-send-email-paulus@ozlabs.org>
-In-Reply-To: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
-References: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM4Cf13ZCzF0bw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 22:11:25 +1100 (AEDT)
+Subject: Re: [PATCH v2] powerpc/mm: Fix growth direction for hugepages mmaps
+ with slice
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20180109101810.2471D6C6CF@localhost.localdomain>
+ <87wp0haizf.fsf@linux.vnet.ibm.com>
+ <d5f6060f-3061-dc3c-66f7-3cec05d50169@c-s.fr>
+ <f5f2af23-f535-8fca-4edf-a0ec4107a7df@linux.vnet.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <dd2e281e-0dea-8acf-30dc-b85d0d438cf3@c-s.fr>
+Date: Wed, 17 Jan 2018 12:11:16 +0100
+MIME-Version: 1.0
+In-Reply-To: <f5f2af23-f535-8fca-4edf-a0ec4107a7df@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,943 +30,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 has hardware bugs relating to transactional memory and thread
-reconfiguration (changes to hardware SMT mode).  Specifically, the core
-does not have enough storage to store a complete checkpoint of all the
-architected state for all four threads.  The DD2.2 version of POWER9
-includes hardware modifications designed to allow hypervisor software
-to implement workarounds for these problems.  This patch implements
-those workarounds in KVM code so that KVM guests see a full, working
-transactional memory implementation.
 
-The problems center around the use of TM suspended state, where the
-CPU has a checkpointed state but execution is not transactional.  The
-workaround is to implement a "fake suspend" state, which looks to the
-guest like suspended state but the CPU does not store a checkpoint.
-In this state, any instruction that would cause a transition to
-transactional state (rfid, rfebb, mtmsrd, tresume) or would use the
-checkpointed state (treclaim) causes a "soft patch" interrupt (vector
-0x1500) to the hypervisor so that it can be emulated.  The trechkpt
-instruction also causes a soft patch interrupt.
 
-On POWER9 DD2.2, we avoid returning to the guest in any state which
-would require a checkpoint to be present.  The trechkpt in the guest
-entry path which would normally create that checkpoint is replaced by
-either a transition to fake suspend state, if the guest is in suspend
-state, or a rollback to the pre-transactional state if the guest is in
-transactional state.  Fake suspend state is indicated by a flag in the
-PACA plus a new bit in the PSSCR.  The new PSSCR bit is write-only and
-reads back as 0.
+Le 17/01/2018 à 04:19, Aneesh Kumar K.V a écrit :
+> 
+> 
+> On 01/16/2018 10:18 PM, Christophe LEROY wrote:
+>>
+>>
+>> Le 16/01/2018 à 17:03, Aneesh Kumar K.V a écrit :
+>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>
+>>>> An application running with libhugetlbfs fails to allocate
+>>>> additional pages to HEAP due to the hugemap being done
+>>>> inconditionally as topdown mapping:
+>>>>
+>>>> mmap(0x10080000, 1572864, PROT_READ|PROT_WRITE, 
+>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x73e80000
+>>>> [...]
+>>>> mmap(0x74000000, 1048576, PROT_READ|PROT_WRITE, 
+>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d80000
+>>>> munmap(0x73d80000, 1048576)             = 0
+>>>> [...]
+>>>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE, 
+>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
+>>>> munmap(0x73d00000, 1572864)             = 0
+>>>> [...]
+>>>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE, 
+>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
+>>>> munmap(0x73d00000, 1572864)             = 0
+>>>> [...]
+>>>>
+>>>
+>>> Can you explain the failure details above. I am not sure I understand
+>>> what to read from the above output.
+>>
+>> libhugetlbfs first requests an area of size 1.5Mbytes, at address 
+>> 0x10080000
+>> mmap() returns an area at address 0x73e80000
+>>
+>> Then libhugetlbfs requests an additional area on top of that, ie at 
+>> address 0x74000000, to expand the heap.
+>> But mmap() returns an area at address 0x73d80000, ie under the 
+>> previous area.
+>>
+> 
+> 
+> Can you share the test details?. Why does it not fail on book3s64? We 
+> use topdown search with book3s64.
 
-On exit from the guest, if the guest is in fake suspend state, we still
-do the treclaim instruction as we would in real suspend state, in order
-to get into non-transactional state, but we do not save the resulting
-register state since there was no checkpoint.
+I don't know about book3s64, I only have 8xx.
 
-Emulation of the instructions that cause a softpatch interrupt is
-handled in two paths.  If the guest is in real suspend mode, we call
-kvmhv_p9_tm_emulation_early() to handle the cases where the guest is
-transitioning to transactional state.  This is called before we do the
-treclaim in the guest exit path; because we haven't done treclaim, we
-can get back to the guest with the transaction still active.  If the
-instruction is a case that kvmhv_p9_tm_emulation_early() doesn't
-handle, or if the guest is in fake suspend state, then we proceed to
-do the complete guest exit path and subsequently call
-kvmhv_p9_tm_emulation() in host context with the MMU on.  This handles
-all the cases including the cases that generate program interrupts
-(illegal instruction or TM Bad Thing) and facility unavailable
-interrupts.
+Here is my test app:
 
-The emulation is reasonably straightforward and is mostly concerned
-with checking for exception conditions and updating the state of
-registers such as MSR and CR0.  The treclaim emulation takes care to
-ensure that the TEXASR register gets updated as if it were the guest
-treclaim instruction that had done failure recording, not the treclaim
-done in hypervisor state in the guest exit path.
 
-With this, the KVM_CAP_PPC_HTM capability returns true (1) even if
-transactional memory is not available to host userspace.
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/kvm_asm.h        |   2 +
- arch/powerpc/include/asm/kvm_book3s.h     |   4 +
- arch/powerpc/include/asm/kvm_book3s_64.h  |  43 ++++++
- arch/powerpc/include/asm/kvm_book3s_asm.h |   1 +
- arch/powerpc/include/asm/kvm_host.h       |   1 +
- arch/powerpc/include/asm/ppc-opcode.h     |   4 +
- arch/powerpc/include/asm/reg.h            |   6 +
- arch/powerpc/kernel/asm-offsets.c         |   2 +
- arch/powerpc/kernel/exceptions-64s.S      |   4 +-
- arch/powerpc/kvm/Makefile                 |   7 +
- arch/powerpc/kvm/book3s_hv.c              |  18 ++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 131 +++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_tm.c           | 216 ++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_tm_builtin.c   | 109 +++++++++++++++
- arch/powerpc/kvm/powerpc.c                |   5 +-
- 15 files changed, 544 insertions(+), 9 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_hv_tm.c
- create mode 100644 arch/powerpc/kvm/book3s_hv_tm_builtin.c
+int main()
+{
+	char *p;
+	char buf[16384];
+	char filename[32];
+	int fd, r;
+	
+	sprintf(filename, "/proc/%d/maps", getpid());
 
-diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
-index 09a802b..a790d5c 100644
---- a/arch/powerpc/include/asm/kvm_asm.h
-+++ b/arch/powerpc/include/asm/kvm_asm.h
-@@ -108,6 +108,8 @@
- 
- /* book3s_hv */
- 
-+#define BOOK3S_INTERRUPT_HV_SOFTPATCH	0x1500
-+
- /*
-  * Special trap used to indicate to host that this is a
-  * passthrough interrupt that could not be handled
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 9a66700..b3889a9 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -241,6 +241,10 @@ extern void kvmppc_update_lpcr(struct kvm *kvm, unsigned long lpcr,
- 			unsigned long mask);
- extern void kvmppc_set_fscr(struct kvm_vcpu *vcpu, u64 fscr);
- 
-+extern int kvmhv_p9_tm_emulation_early(struct kvm_vcpu *vcpu);
-+extern int kvmhv_p9_tm_emulation(struct kvm_vcpu *vcpu);
-+extern void kvmhv_emulate_tm_rollback(struct kvm_vcpu *vcpu);
-+
- extern void kvmppc_entry_trampoline(void);
- extern void kvmppc_hv_entry_trampoline(void);
- extern u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst);
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 998f7b7..c424e44 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -472,6 +472,49 @@ static inline void set_dirty_bits_atomic(unsigned long *map, unsigned long i,
- 			set_bit_le(i, map);
- }
- 
-+static inline u64 sanitize_msr(u64 msr)
-+{
-+	msr &= ~MSR_HV;
-+	msr |= MSR_ME;
-+	return msr;
-+}
-+
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+static inline void copy_from_checkpoint(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->arch.cr  = vcpu->arch.cr_tm;
-+	vcpu->arch.xer = vcpu->arch.xer_tm;
-+	vcpu->arch.lr  = vcpu->arch.lr_tm;
-+	vcpu->arch.ctr = vcpu->arch.ctr_tm;
-+	vcpu->arch.amr = vcpu->arch.amr_tm;
-+	vcpu->arch.ppr = vcpu->arch.ppr_tm;
-+	vcpu->arch.dscr = vcpu->arch.dscr_tm;
-+	vcpu->arch.tar = vcpu->arch.tar_tm;
-+	memcpy(vcpu->arch.gpr, vcpu->arch.gpr_tm,
-+	       sizeof(vcpu->arch.gpr));
-+	vcpu->arch.fp  = vcpu->arch.fp_tm;
-+	vcpu->arch.vr  = vcpu->arch.vr_tm;
-+	vcpu->arch.vrsave = vcpu->arch.vrsave_tm;
-+}
-+
-+static inline void copy_to_checkpoint(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->arch.cr_tm  = vcpu->arch.cr;
-+	vcpu->arch.xer_tm = vcpu->arch.xer;
-+	vcpu->arch.lr_tm  = vcpu->arch.lr;
-+	vcpu->arch.ctr_tm = vcpu->arch.ctr;
-+	vcpu->arch.amr_tm = vcpu->arch.amr;
-+	vcpu->arch.ppr_tm = vcpu->arch.ppr;
-+	vcpu->arch.dscr_tm = vcpu->arch.dscr;
-+	vcpu->arch.tar_tm = vcpu->arch.tar;
-+	memcpy(vcpu->arch.gpr_tm, vcpu->arch.gpr,
-+	       sizeof(vcpu->arch.gpr));
-+	vcpu->arch.fp_tm  = vcpu->arch.fp;
-+	vcpu->arch.vr_tm  = vcpu->arch.vr;
-+	vcpu->arch.vrsave_tm = vcpu->arch.vrsave;
-+}
-+#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
- 
- #endif /* __ASM_KVM_BOOK3S_64_H__ */
-diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-index ab386af..d978fdf 100644
---- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-@@ -119,6 +119,7 @@ struct kvmppc_host_state {
- 	u8 host_ipi;
- 	u8 ptid;		/* thread number within subcore when split */
- 	u8 tid;			/* thread number within whole core */
-+	u8 fake_suspend;
- 	struct kvm_vcpu *kvm_vcpu;
- 	struct kvmppc_vcore *kvm_vcore;
- 	void __iomem *xics_phys;
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 3aa5b57..6e4cbc0 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -610,6 +610,7 @@ struct kvm_vcpu_arch {
- 	u64 tfhar;
- 	u64 texasr;
- 	u64 tfiar;
-+	u64 orig_texasr;
- 
- 	u32 cr_tm;
- 	u64 xer_tm;
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index ce0930d..15d4fde 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -226,6 +226,7 @@
- #define PPC_INST_MSGSYNC		0x7c0006ec
- #define PPC_INST_MSGSNDP		0x7c00011c
- #define PPC_INST_MSGCLRP		0x7c00015c
-+#define PPC_INST_MTMSRD			0x7c000164
- #define PPC_INST_MTTMR			0x7c0003dc
- #define PPC_INST_NOP			0x60000000
- #define PPC_INST_PASTE			0x7c20070d
-@@ -233,8 +234,10 @@
- #define PPC_INST_POPCNTB_MASK		0xfc0007fe
- #define PPC_INST_POPCNTD		0x7c0003f4
- #define PPC_INST_POPCNTW		0x7c0002f4
-+#define PPC_INST_RFEBB			0x4c000124
- #define PPC_INST_RFCI			0x4c000066
- #define PPC_INST_RFDI			0x4c00004e
-+#define PPC_INST_RFID			0x4c000024
- #define PPC_INST_RFMCI			0x4c00004c
- #define PPC_INST_MFSPR_DSCR		0x7c1102a6
- #define PPC_INST_MFSPR_DSCR_MASK	0xfc1ffffe
-@@ -270,6 +273,7 @@
- #define PPC_INST_TRECHKPT		0x7c0007dd
- #define PPC_INST_TRECLAIM		0x7c00075d
- #define PPC_INST_TABORT			0x7c00071d
-+#define PPC_INST_TSR			0x7c0005dd
- 
- #define PPC_INST_NAP			0x4c000364
- #define PPC_INST_SLEEP			0x4c0003a4
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 14e41b8..da76a45 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -156,6 +156,7 @@
- #define PSSCR_SD		0x00400000 /* Status Disable */
- #define PSSCR_PLS	0xf000000000000000 /* Power-saving Level Status */
- #define PSSCR_GUEST_VIS	0xf0000000000003ff /* Guest-visible PSSCR fields */
-+#define PSSCR_FAKE_SUSPEND	0x00000400 /* Fake-suspend bit (P9 DD2.2) */
- 
- /* Floating Point Status and Control Register (FPSCR) Fields */
- #define FPSCR_FX	0x80000000	/* FPU exception summary */
-@@ -237,7 +238,12 @@
- #define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
- #define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
- #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
-+#define   TEXASR_ABORT	__MASK(63-31) /* terminated by tabort or treclaim */
-+#define   TEXASR_SUSP	__MASK(63-32) /* tx failed in suspended state */
-+#define   TEXASR_HV	__MASK(63-34) /* MSR[HV] when failure occurred */
-+#define   TEXASR_PR	__MASK(63-35) /* MSR[PR] when failure occurred */
- #define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
-+#define   TEXASR_EXACT	__MASK(63-37) /* TFIAR value is exact */
- #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
- #define SPRN_TIDR	144	/* Thread ID register */
- #define SPRN_CTRLF	0x088
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 6b95841..10c5351 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -561,6 +561,7 @@ int main(void)
- 	OFFSET(VCPU_TFHAR, kvm_vcpu, arch.tfhar);
- 	OFFSET(VCPU_TFIAR, kvm_vcpu, arch.tfiar);
- 	OFFSET(VCPU_TEXASR, kvm_vcpu, arch.texasr);
-+	OFFSET(VCPU_ORIG_TEXASR, kvm_vcpu, arch.orig_texasr);
- 	OFFSET(VCPU_GPR_TM, kvm_vcpu, arch.gpr_tm);
- 	OFFSET(VCPU_FPRS_TM, kvm_vcpu, arch.fp_tm.fpr);
- 	OFFSET(VCPU_VRS_TM, kvm_vcpu, arch.vr_tm.vr);
-@@ -643,6 +644,7 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_HOST_IPI, host_ipi);
- 	HSTATE_FIELD(HSTATE_PTID, ptid);
- 	HSTATE_FIELD(HSTATE_TID, tid);
-+	HSTATE_FIELD(HSTATE_FAKE_SUSPEND, fake_suspend);
- 	HSTATE_FIELD(HSTATE_MMCR0, host_mmcr[0]);
- 	HSTATE_FIELD(HSTATE_MMCR1, host_mmcr[1]);
- 	HSTATE_FIELD(HSTATE_MMCRA, host_mmcr[2]);
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index e441b46..aefc945 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1240,7 +1240,7 @@ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x100)
- 	bne+	denorm_assist
- #endif
- 
--	KVMTEST_PR(0x1500)
-+	KVMTEST_HV(0x1500)
- 	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
- EXC_REAL_END(denorm_exception_hv, 0x1500, 0x100)
- 
-@@ -1252,7 +1252,7 @@ EXC_VIRT_END(denorm_exception, 0x5500, 0x100)
- EXC_VIRT_NONE(0x5500, 0x100)
- #endif
- 
--TRAMP_KVM_SKIP(PACA_EXGEN, 0x1500)
-+TRAMP_KVM_HV(PACA_EXGEN, 0x1500)
- 
- #ifdef CONFIG_PPC_DENORMALISATION
- TRAMP_REAL_BEGIN(denorm_assist)
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 85ba80d..4b19da8 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -74,9 +74,15 @@ kvm-hv-y += \
- 	book3s_64_mmu_hv.o \
- 	book3s_64_mmu_radix.o
- 
-+kvm-hv-$(CONFIG_PPC_TRANSACTIONAL_MEM) += \
-+	book3s_hv_tm.o
-+
- kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) := \
- 	book3s_hv_rm_xics.o book3s_hv_rm_xive.o
- 
-+kvm-book3s_64-builtin-tm-objs-$(CONFIG_PPC_TRANSACTIONAL_MEM) += \
-+	book3s_hv_tm_builtin.o
-+
- ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
- 	book3s_hv_hmi.o \
-@@ -84,6 +90,7 @@ kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
- 	book3s_hv_rm_mmu.o \
- 	book3s_hv_ras.o \
- 	book3s_hv_builtin.o \
-+	$(kvm-book3s_64-builtin-tm-objs-y) \
- 	$(kvm-book3s_64-builtin-xics-objs-y)
- endif
- 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 99ed374..3d4aca9 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1201,6 +1201,19 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			r = RESUME_GUEST;
- 		}
- 		break;
-+
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	case BOOK3S_INTERRUPT_HV_SOFTPATCH:
-+		/*
-+		 * This occurs for various TM-related instructions that
-+		 * we need to emulate on POWER9 DD2.2.  We have already
-+		 * handled the cases where the guest was in real-suspend
-+		 * mode and was transitioning to transactional state.
-+		 */
-+		r = kvmhv_p9_tm_emulation(vcpu);
-+		break;
-+#endif
-+
- 	case BOOK3S_INTERRUPT_HV_RM_HARD:
- 		r = RESUME_PASSTHROUGH;
- 		break;
-@@ -1973,7 +1986,9 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
- 	 * turn off the HFSCR bit, which causes those instructions to trap.
- 	 */
- 	vcpu->arch.hfscr = mfspr(SPRN_HFSCR);
--	if (!cpu_has_feature(CPU_FTR_TM))
-+	if (cpu_has_feature(CPU_FTR_P9_TM_EMUL))
-+		vcpu->arch.hfscr |= HFSCR_TM;
-+	else if (!cpu_has_feature(CPU_FTR_TM_COMP))
- 		vcpu->arch.hfscr &= ~HFSCR_TM;
- 	if (cpu_has_feature(CPU_FTR_ARCH_300))
- 		vcpu->arch.hfscr &= ~HFSCR_MSGP;
-@@ -2237,6 +2252,7 @@ static void kvmppc_start_thread(struct kvm_vcpu *vcpu, struct kvmppc_vcore *vc)
- 	tpaca = &paca[cpu];
- 	tpaca->kvm_hstate.kvm_vcpu = vcpu;
- 	tpaca->kvm_hstate.ptid = cpu - vc->pcpu;
-+	tpaca->kvm_hstate.fake_suspend = 0;
- 	/* Order stores to hstate.kvm_vcpu etc. before store to kvm_vcore */
- 	smp_wmb();
- 	tpaca->kvm_hstate.kvm_vcore = vc;
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 7daf21b..3b3a01a 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -786,12 +786,15 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/* Branch around the call if both CPU_FTR_TM and CPU_FTR_P9_TM_EMUL are off */
- BEGIN_FTR_SECTION
-+	b	91f
-+END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_EMUL, 0)
- 	/*
- 	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
- 	 */
- 	bl	kvmppc_restore_tm
--END_FTR_SECTION_IFSET(CPU_FTR_TM)
-+91:
- #endif
- 
- 	/* Load guest PMU registers */
-@@ -1325,6 +1328,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	std	r3, VCPU_CTR(r9)
- 	std	r4, VCPU_XER(r9)
- 
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/* For softpatch interrupt, go off and do TM instruction emulation */
-+	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
-+	beq	kvmppc_tm_emul
-+#endif
-+
- 	/* If this is a page table miss then see if it's theirs or ours */
- 	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
- 	beq	kvmppc_hdsi
-@@ -1684,12 +1693,15 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	bl	kvmppc_save_fp
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/* Branch around the call if both CPU_FTR_TM and CPU_FTR_P9_TM_EMUL are off */
- BEGIN_FTR_SECTION
-+	b	91f
-+END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_EMUL, 0)
- 	/*
- 	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
- 	 */
- 	bl	kvmppc_save_tm
--END_FTR_SECTION_IFSET(CPU_FTR_TM)
-+91:
- #endif
- 
- 	/* Increment yield count if they have a VPA */
-@@ -2009,6 +2021,42 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
- 	mtlr	r0
- 	blr
- 
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/*
-+ * Softpatch interrupt for transactional memory emulation cases
-+ * on POWER9 DD2.2.  This is early in the guest exit path - we
-+ * haven't saved registers or done a treclaim yet.
-+ */
-+kvmppc_tm_emul:
-+	/* Save instruction image in HEIR */
-+	mfspr	r3, SPRN_HEIR
-+	stw	r3, VCPU_HEIR(r9)
-+
-+	/*
-+	 * The cases we want to handle here are those where the guest
-+	 * is in real suspend mode and is trying to transition to
-+	 * transactional mode.
-+	 */
-+	lbz	r0, HSTATE_FAKE_SUSPEND(r13)
-+	cmpwi	r0, 0		/* keep exiting guest if in fake suspend */
-+	bne	guest_exit_cont
-+	rldicl	r3, r11, 64 - MSR_TS_S_LG, 62
-+	cmpwi	r3, 1		/* or if not in suspend state */
-+	bne	guest_exit_cont
-+
-+	/* Call C code to do the emulation */
-+	mr	r3, r9
-+	bl	kvmhv_p9_tm_emulation_early
-+	nop
-+	ld	r9, HSTATE_KVM_VCPU(r13)
-+	li	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
-+	cmpwi	r3, 0
-+	beq	guest_exit_cont		/* continue exiting if not handled */
-+	ld	r10, VCPU_PC(r9)
-+	ld	r11, VCPU_MSR(r9)
-+	b	fast_interrupt_c_return	/* go back to guest if handled */
-+#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+
- /*
-  * Check whether an HDSI is an HPTE not found fault or something else.
-  * If it is an HPTE not found fault that is due to the guest accessing
-@@ -2542,13 +2590,16 @@ _GLOBAL(kvmppc_h_cede)		/* r3 = vcpu pointer, r11 = msr, r13 = paca */
- 	bl	kvmppc_save_fp
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/* Branch around the call if both CPU_FTR_TM and CPU_FTR_P9_TM_EMUL are off */
- BEGIN_FTR_SECTION
-+	b	91f
-+END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_EMUL, 0)
- 	/*
- 	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
- 	 */
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- 	bl	kvmppc_save_tm
--END_FTR_SECTION_IFSET(CPU_FTR_TM)
-+91:
- #endif
- 
- 	/*
-@@ -2655,12 +2706,15 @@ kvm_end_cede:
- #endif
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/* Branch around the call if both CPU_FTR_TM and CPU_FTR_P9_TM_EMUL are off */
- BEGIN_FTR_SECTION
-+	b	91f
-+END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_EMUL, 0)
- 	/*
- 	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
- 	 */
- 	bl	kvmppc_restore_tm
--END_FTR_SECTION_IFSET(CPU_FTR_TM)
-+91:
- #endif
- 
- 	/* load up FP state */
-@@ -2976,6 +3030,15 @@ kvmppc_save_tm:
- 	std	r1, HSTATE_HOST_R1(r13)
- 	li	r3, TM_CAUSE_KVM_RESCHED
- 
-+BEGIN_FTR_SECTION
-+	/* Emulation of the treclaim instruction needs TEXASR before treclaim */
-+	mfspr	r6, SPRN_TEXASR
-+	std	r6, VCPU_ORIG_TEXASR(r9)
-+
-+	rldicl. r8, r8, 64 - MSR_TS_S_LG, 62
-+	beq	3f
-+END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_EMUL)
-+
- 	/* Clear the MSR RI since r1, r13 are all going to be foobar. */
- 	li	r5, 0
- 	mtmsrd	r5, 1
-@@ -2987,6 +3050,38 @@ kvmppc_save_tm:
- 	SET_SCRATCH0(r13)
- 	GET_PACA(r13)
- 	std	r9, PACATMSCRATCH(r13)
-+
-+	/* If doing TM emulation on POWER9 DD2.2, check for fake suspend mode */
-+BEGIN_FTR_SECTION
-+3:
-+	lbz	r9, HSTATE_FAKE_SUSPEND(r13)
-+	cmpwi	r9, 0
-+	beq	2f
-+	/*
-+	 * We were in fake suspend, so we are not going to save the
-+	 * register state as the guest checkpointed state (since
-+	 * we already have it), therefore we can now use any volatile GPR.
-+	 */
-+	/* Reload stack pointer and TOC. */
-+	ld	r1, HSTATE_HOST_R1(r13)
-+	ld	r2, PACATOC(r13)
-+	li	r5, MSR_RI
-+	mtmsrd	r5, 1
-+	HMT_MEDIUM
-+	ld	r6, HSTATE_DSCR(r13)
-+	mtspr	SPRN_DSCR, r6
-+	li	r0, 0
-+	stb	r0, HSTATE_FAKE_SUSPEND(r13)
-+	mfspr	r3, SPRN_PSSCR
-+	/* PSSCR_FAKE_SUSPEND is a write-only bit, but clear it anyway */
-+	li	r0, PSSCR_FAKE_SUSPEND
-+	andc	r3, r3, r0
-+	mtspr	SPRN_PSSCR, r3
-+	ld	r9, HSTATE_KVM_VCPU(r13)
-+	b	1f
-+2:
-+END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_EMUL)
-+
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- 
- 	/* Get a few more GPRs free. */
-@@ -3112,6 +3207,15 @@ kvmppc_restore_tm:
- 	mtspr	SPRN_TEXASR, r7
- 
- 	/*
-+	 * If we are doing TM emulation for the guest on a POWER9 DD2,
-+	 * then we don't actually do a trechkpt -- we either set up
-+	 * fake-suspend mode, or emulate a TM rollback.
-+	 */
-+BEGIN_FTR_SECTION
-+	b	.Ldo_tm_fake_load
-+END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_EMUL)
-+
-+	/*
- 	 * We need to load up the checkpointed state for the guest.
- 	 * We need to do this early as it will blow away any GPRs, VSRs and
- 	 * some SPRs.
-@@ -3183,10 +3287,27 @@ kvmppc_restore_tm:
- 	/* Set the MSR RI since we have our registers back. */
- 	li	r5, MSR_RI
- 	mtmsrd	r5, 1
--
-+9:
- 	ld	r0, PPC_LR_STKOFF(r1)
- 	mtlr	r0
- 	blr
-+
-+.Ldo_tm_fake_load:
-+	cmpwi	r5, 1		/* check for suspended state */
-+	bgt	10f
-+	stb	r5, HSTATE_FAKE_SUSPEND(r13)
-+	mfspr	r6, SPRN_PSSCR
-+	ori	r6, r6, PSSCR_FAKE_SUSPEND
-+	mtspr	SPRN_PSSCR, r6	/* set it in HW too */
-+	b	9b		/* and return */
-+10:	stdu	r1, -PPC_MIN_STKFRM(r1)
-+	/* guest is in transactional state, so simulate rollback */
-+	mr	r3, r4
-+	bl	kvmhv_emulate_tm_rollback
-+	nop
-+	ld      r4, HSTATE_KVM_VCPU(r13) /* our vcpu pointer has been trashed */
-+	addi	r1, r1, PPC_MIN_STKFRM
-+	b	9b
- #endif
- 
- /*
-diff --git a/arch/powerpc/kvm/book3s_hv_tm.c b/arch/powerpc/kvm/book3s_hv_tm.c
-new file mode 100644
-index 0000000..bf710ad
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_hv_tm.c
-@@ -0,0 +1,216 @@
-+/*
-+ * Copyright 2017 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kvm_host.h>
-+
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/kvm_book3s_64.h>
-+#include <asm/reg.h>
-+#include <asm/ppc-opcode.h>
-+
-+static void emulate_tx_failure(struct kvm_vcpu *vcpu, u64 failure_cause)
-+{
-+	u64 texasr, tfiar;
-+	u64 msr = vcpu->arch.shregs.msr;
-+
-+	tfiar = vcpu->arch.pc & ~0x3ull;
-+	texasr = (failure_cause << 56) | TEXASR_ABORT | TEXASR_FS | TEXASR_EXACT;
-+	if (MSR_TM_SUSPENDED(vcpu->arch.shregs.msr))
-+		texasr |= TEXASR_SUSP;
-+	if (msr & MSR_PR) {
-+		texasr |= TEXASR_PR;
-+		tfiar |= 1;
-+	}
-+	vcpu->arch.tfiar = tfiar;
-+	/* Preserve ROT and TL fields of existing TEXASR */
-+	vcpu->arch.texasr = (vcpu->arch.texasr & 0x3ffffff) | texasr;
-+}
-+
-+/*
-+ * This gets called on a softpatch interrupt on POWER9 DD2.2 processors.
-+ * We expect to find a TM-related instruction to be emulated.  The
-+ * instruction image is in vcpu->arch.emul_inst.  If the guest was in
-+ * TM suspended or transactional state, the checkpointed state has been
-+ * reclaimed and is in the vcpu struct.  The CPU is in virtual mode in
-+ * host context.
-+ */
-+int kvmhv_p9_tm_emulation(struct kvm_vcpu *vcpu)
-+{
-+	u32 instr = vcpu->arch.emul_inst;
-+	u64 msr = vcpu->arch.shregs.msr;
-+	u64 newmsr, bescr;
-+	int ra, rs;
-+
-+	switch (instr & 0xfc0007ff) {
-+	case PPC_INST_RFID:
-+		/* XXX do we need to check for PR=0 here? */
-+		newmsr = vcpu->arch.shregs.srr1;
-+		/* should only get here for Sx -> T1 transition */
-+		WARN_ON_ONCE(!(MSR_TM_SUSPENDED(msr) &&
-+			       MSR_TM_TRANSACTIONAL(newmsr) &&
-+			       (newmsr & MSR_TM)));
-+		newmsr = sanitize_msr(newmsr);
-+		vcpu->arch.shregs.msr = newmsr;
-+		vcpu->arch.cfar = vcpu->arch.pc - 4;
-+		vcpu->arch.pc = vcpu->arch.shregs.srr0;
-+		return RESUME_GUEST;
-+
-+	case PPC_INST_RFEBB:
-+		if ((msr & MSR_PR) && (vcpu->arch.vcore->pcr & PCR_ARCH_206)) {
-+			/* generate an illegal instruction interrupt */
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			return RESUME_GUEST;
-+		}
-+		/* check EBB facility is available */
-+		if (!(vcpu->arch.hfscr & HFSCR_EBB)) {
-+			/* generate an illegal instruction interrupt */
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			return RESUME_GUEST;
-+		}
-+		if ((msr & MSR_PR) && !(vcpu->arch.fscr & FSCR_EBB)) {
-+			/* generate a facility unavailable interrupt */
-+			vcpu->arch.fscr = (vcpu->arch.fscr & ~(0xffull << 56)) |
-+				((u64)FSCR_EBB_LG << 56);
-+			kvmppc_book3s_queue_irqprio(vcpu, BOOK3S_INTERRUPT_FAC_UNAVAIL);
-+			return RESUME_GUEST;
-+		}
-+		bescr = vcpu->arch.bescr;
-+		/* expect to see a S->T transition requested */
-+		WARN_ON_ONCE(!(MSR_TM_SUSPENDED(msr) &&
-+			       ((bescr >> 30) & 3) == 2));
-+		bescr &= ~BESCR_GE;
-+		if (instr & (1 << 11))
-+			bescr |= BESCR_GE;
-+		vcpu->arch.bescr = bescr;
-+		msr = (msr & ~MSR_TS_MASK) | MSR_TS_T;
-+		vcpu->arch.shregs.msr = msr;
-+		vcpu->arch.cfar = vcpu->arch.pc - 4;
-+		vcpu->arch.pc = vcpu->arch.ebbrr;
-+		return RESUME_GUEST;
-+
-+	case PPC_INST_MTMSRD:
-+		/* XXX do we need to check for PR=0 here? */
-+		rs = (instr >> 21) & 0x1f;
-+		newmsr = kvmppc_get_gpr(vcpu, rs);
-+		/* check this is a Sx -> T1 transition */
-+		WARN_ON_ONCE(!(MSR_TM_SUSPENDED(msr) &&
-+			       MSR_TM_TRANSACTIONAL(newmsr) &&
-+			       (newmsr & MSR_TM)));
-+		/* mtmsrd doesn't change LE */
-+		newmsr = (newmsr & ~MSR_LE) | (msr & MSR_LE);
-+		newmsr = sanitize_msr(newmsr);
-+		vcpu->arch.shregs.msr = newmsr;
-+		return RESUME_GUEST;
-+
-+	case PPC_INST_TSR:
-+		/* check for PR=1 and arch 2.06 bit set in PCR */
-+		if ((msr & MSR_PR) && (vcpu->arch.vcore->pcr & PCR_ARCH_206)) {
-+			/* generate an illegal instruction interrupt */
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			return RESUME_GUEST;
-+		}
-+		/* check for TM disabled in the HFSCR or MSR */
-+		if (!(vcpu->arch.hfscr & HFSCR_TM)) {
-+			/* generate an illegal instruction interrupt */
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			return RESUME_GUEST;
-+		}
-+		if (!(msr & MSR_TM)) {
-+			/* generate a facility unavailable interrupt */
-+			vcpu->arch.fscr = (vcpu->arch.fscr & ~(0xffull << 56)) |
-+				((u64)FSCR_TM_LG << 56);
-+			kvmppc_book3s_queue_irqprio(vcpu,
-+						BOOK3S_INTERRUPT_FAC_UNAVAIL);
-+			return RESUME_GUEST;
-+		}
-+		/* Set CR0 to indicate previous transactional state */
-+		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) |
-+			(((msr & MSR_TS_MASK) >> MSR_TS_S_LG) << 28);
-+		/* L=1 => tresume, L=0 => tsuspend */
-+		if (instr & (1 << 21)) {
-+			if (MSR_TM_SUSPENDED(msr))
-+				msr = (msr & ~MSR_TS_MASK) | MSR_TS_T;
-+		} else {
-+			if (MSR_TM_TRANSACTIONAL(msr))
-+				msr = (msr & ~MSR_TS_MASK) | MSR_TS_S;
-+		}
-+		vcpu->arch.shregs.msr = msr;
-+		return RESUME_GUEST;
-+
-+	case PPC_INST_TRECLAIM:
-+		/* check for TM disabled in the HFSCR or MSR */
-+		if (!(vcpu->arch.hfscr & HFSCR_TM)) {
-+			/* generate an illegal instruction interrupt */
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			return RESUME_GUEST;
-+		}
-+		if (!(msr & MSR_TM)) {
-+			/* generate a facility unavailable interrupt */
-+			vcpu->arch.fscr = (vcpu->arch.fscr & ~(0xffull << 56)) |
-+				((u64)FSCR_TM_LG << 56);
-+			kvmppc_book3s_queue_irqprio(vcpu,
-+						BOOK3S_INTERRUPT_FAC_UNAVAIL);
-+			return RESUME_GUEST;
-+		}
-+		/* If no transaction active, generate TM bad thing */
-+		if (!MSR_TM_ACTIVE(msr)) {
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGTM);
-+			return RESUME_GUEST;
-+		}
-+		/* If failure was not previously recorded, recompute TEXASR */
-+		if (!(vcpu->arch.orig_texasr & TEXASR_FS)) {
-+			ra = (instr >> 16) & 0x1f;
-+			if (ra)
-+				ra = kvmppc_get_gpr(vcpu, ra) & 0xff;
-+			emulate_tx_failure(vcpu, ra);
-+		}
-+
-+		copy_from_checkpoint(vcpu);
-+
-+		/* Set CR0 to indicate previous transactional state */
-+		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) |
-+			(((msr & MSR_TS_MASK) >> MSR_TS_S_LG) << 28);
-+		vcpu->arch.shregs.msr &= ~MSR_TS_MASK;
-+		return RESUME_GUEST;
-+
-+	case PPC_INST_TRECHKPT:
-+		/* XXX do we need to check for PR=0 here? */
-+		/* check for TM disabled in the HFSCR or MSR */
-+		if (!(vcpu->arch.hfscr & HFSCR_TM)) {
-+			/* generate an illegal instruction interrupt */
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-+			return RESUME_GUEST;
-+		}
-+		if (!(msr & MSR_TM)) {
-+			/* generate a facility unavailable interrupt */
-+			vcpu->arch.fscr = (vcpu->arch.fscr & ~(0xffull << 56)) |
-+				((u64)FSCR_TM_LG << 56);
-+			kvmppc_book3s_queue_irqprio(vcpu,
-+						BOOK3S_INTERRUPT_FAC_UNAVAIL);
-+			return RESUME_GUEST;
-+		}
-+		/* If transaction active or TEXASR[FS] = 0, bad thing */
-+		if (MSR_TM_ACTIVE(msr) || !(vcpu->arch.texasr & TEXASR_FS)) {
-+			kvmppc_core_queue_program(vcpu, SRR1_PROGTM);
-+			return RESUME_GUEST;
-+		}
-+
-+		copy_to_checkpoint(vcpu);
-+
-+		/* Set CR0 to indicate previous transactional state */
-+		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) |
-+			(((msr & MSR_TS_MASK) >> MSR_TS_S_LG) << 28);
-+		vcpu->arch.shregs.msr = msr | MSR_TS_S;
-+		return RESUME_GUEST;
-+	}
-+
-+	/* What should we do here? We didn't recognize the instruction */
-+	WARN_ON_ONCE(1);
-+	return RESUME_GUEST;
-+}
-diff --git a/arch/powerpc/kvm/book3s_hv_tm_builtin.c b/arch/powerpc/kvm/book3s_hv_tm_builtin.c
-new file mode 100644
-index 0000000..d98ccfd
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_hv_tm_builtin.c
-@@ -0,0 +1,109 @@
-+/*
-+ * Copyright 2017 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kvm_host.h>
-+
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/kvm_book3s_64.h>
-+#include <asm/reg.h>
-+#include <asm/ppc-opcode.h>
-+
-+/*
-+ * This handles the cases where the guest is in real suspend mode
-+ * and we want to get back to the guest without dooming the transaction.
-+ * The caller has checked that the guest is in real-suspend mode
-+ * (MSR[TS] = S and the fake-suspend flag is not set).
-+ */
-+int kvmhv_p9_tm_emulation_early(struct kvm_vcpu *vcpu)
-+{
-+	u32 instr = vcpu->arch.emul_inst;
-+	u64 newmsr, msr, bescr;
-+	int rs;
-+
-+	switch (instr & 0xfc0007ff) {
-+	case PPC_INST_RFID:
-+		/* XXX do we need to check for PR=0 here? */
-+		newmsr = vcpu->arch.shregs.srr1;
-+		/* should only get here for Sx -> T1 transition */
-+		if (!(MSR_TM_TRANSACTIONAL(newmsr) && (newmsr & MSR_TM)))
-+			return 0;
-+		newmsr = sanitize_msr(newmsr);
-+		vcpu->arch.shregs.msr = newmsr;
-+		vcpu->arch.cfar = vcpu->arch.pc - 4;
-+		vcpu->arch.pc = vcpu->arch.shregs.srr0;
-+		return 1;
-+
-+	case PPC_INST_RFEBB:
-+		/* check for PR=1 and arch 2.06 bit set in PCR */
-+		msr = vcpu->arch.shregs.msr;
-+		if ((msr & MSR_PR) && (vcpu->arch.vcore->pcr & PCR_ARCH_206))
-+			return 0;
-+		/* check EBB facility is available */
-+		if (!(vcpu->arch.hfscr & HFSCR_EBB) ||
-+		    ((msr & MSR_PR) && !(mfspr(SPRN_FSCR) & FSCR_EBB)))
-+			return 0;
-+		bescr = mfspr(SPRN_BESCR);
-+		/* expect to see a S->T transition requested */
-+		if (((bescr >> 30) & 3) != 2)
-+			return 0;
-+		bescr &= ~BESCR_GE;
-+		if (instr & (1 << 11))
-+			bescr |= BESCR_GE;
-+		mtspr(SPRN_BESCR, bescr);
-+		msr = (msr & ~MSR_TS_MASK) | MSR_TS_T;
-+		vcpu->arch.shregs.msr = msr;
-+		vcpu->arch.cfar = vcpu->arch.pc - 4;
-+		vcpu->arch.pc = mfspr(SPRN_EBBRR);
-+		return 1;
-+
-+	case PPC_INST_MTMSRD:
-+		/* XXX do we need to check for PR=0 here? */
-+		rs = (instr >> 21) & 0x1f;
-+		newmsr = kvmppc_get_gpr(vcpu, rs);
-+		msr = vcpu->arch.shregs.msr;
-+		/* check this is a Sx -> T1 transition */
-+		if (!(MSR_TM_TRANSACTIONAL(newmsr) && (newmsr & MSR_TM)))
-+			return 0;
-+		/* mtmsrd doesn't change LE */
-+		newmsr = (newmsr & ~MSR_LE) | (msr & MSR_LE);
-+		newmsr = sanitize_msr(newmsr);
-+		vcpu->arch.shregs.msr = newmsr;
-+		return 1;
-+
-+	case PPC_INST_TSR:
-+		/* we know the MSR has the TS field = S (0b01) here */
-+		msr = vcpu->arch.shregs.msr;
-+		/* check for PR=1 and arch 2.06 bit set in PCR */
-+		if ((msr & MSR_PR) && (vcpu->arch.vcore->pcr & PCR_ARCH_206))
-+			return 0;
-+		/* check for TM disabled in the HFSCR or MSR */
-+		if (!(vcpu->arch.hfscr & HFSCR_TM) || !(msr & MSR_TM))
-+			return 0;
-+		/* L=1 => tresume => set TS to T (0b10) */
-+		if (instr & (1 << 21))
-+			vcpu->arch.shregs.msr = (msr & ~MSR_TS_MASK) | MSR_TS_T;
-+		/* Set CR0 to 0b0010 */
-+		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) | 0x20000000;
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * This is called when we are returning to a guest in TM transactional
-+ * state.  We roll the guest state back to the checkpointed state.
-+ */
-+void kvmhv_emulate_tm_rollback(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->arch.shregs.msr &= ~MSR_TS_MASK;	/* go to N state */
-+	vcpu->arch.pc = vcpu->arch.tfhar;
-+	copy_from_checkpoint(vcpu);
-+	vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) | 0xa0000000;
-+}
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 7c9e45f..b1985a5 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -642,10 +642,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = hv_enabled;
- 		break;
- #endif
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	case KVM_CAP_PPC_HTM:
- 		r = hv_enabled &&
--		    (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_HTM_COMP);
-+		    (!!(cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_HTM) ||
-+		     cpu_has_feature(CPU_FTR_P9_TM_EMUL));
- 		break;
-+#endif
- 	default:
- 		r = 0;
- 		break;
--- 
-2.7.4
+	fd = open(filename, O_RDONLY);
+	r = read(fd, buf, sizeof(buf));
+	close(fd);
+	buf[r] = 0;
+	fputs(buf, stderr);
+	fputc('\n', stderr);
+	
+	p = malloc(1024*1024);
+	fprintf(stderr, "\nAllocated 1Mbytes at %p\n\n", p);
+
+	p = malloc(1024*1024);
+	fprintf(stderr, "\nAllocated 1Mbytes at %p\n\n", p);
+
+	p = malloc(1024*1024);
+	fprintf(stderr, "\nAllocated 1Mbytes at %p\n\n", p);
+
+	fd = open(filename, O_RDONLY);
+	r = read(fd, buf, sizeof(buf));
+	close(fd);
+	buf[r] = 0;
+	fputs(buf, stderr);
+	fputc('\n', stderr);
+
+	exit(0);
+}
+
+It is linked with -lhugetlbfs (version 2.20)
+My 8xx board is configured with 64 huge pages, default size 512k:
+
+root@vgoip:~# cat /proc/meminfo
+MemTotal:         123664 kB
+MemFree:           58464 kB
+MemAvailable:      67904 kB
+Buffers:               0 kB
+Cached:            14480 kB
+SwapCached:            0 kB
+Active:            11616 kB
+Inactive:           7872 kB
+Active(anon):       7584 kB
+Inactive(anon):      240 kB
+Active(file):       4032 kB
+Inactive(file):     7632 kB
+Unevictable:        2560 kB
+Mlocked:            2560 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:                 0 kB
+Writeback:             0 kB
+AnonPages:          7568 kB
+Mapped:             7456 kB
+Shmem:               736 kB
+Slab:               7456 kB
+SReclaimable:       3120 kB
+SUnreclaim:         4336 kB
+KernelStack:         568 kB
+PageTables:         1024 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:       45440 kB
+Committed_AS:      38880 kB
+VmallocTotal:     866304 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+HugePages_Total:      64
+HugePages_Free:       64
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:        512 kB
+
+
+Without the patch, my test app gives the following results: as you can 
+see, second and third malloc returns address which is not in a hugepage. 
+strace shows that libhugetlbfs fallsback on regular mmap because 
+hugepage has not been allocated at the requested address.
+
+root@vgoip:~# HUGETLB_MORECORE=yes ./huge_malloc_test
+00100000-00108000 r-xp 00000000 00:00 0          [vdso]
+0fde4000-0fde8000 r-xp 00000000 00:0f 168        /lib/libdl-2.23.so
+0fde8000-0fe00000 ---p 00004000 00:0f 168        /lib/libdl-2.23.so
+0fe00000-0fe04000 r--p 0000c000 00:0f 168        /lib/libdl-2.23.so
+0fe04000-0fe08000 rwxp 00010000 00:0f 168        /lib/libdl-2.23.so
+0fe18000-0ff88000 r-xp 00000000 00:0f 191        /lib/libc-2.23.so
+0ff88000-0ffa4000 ---p 00170000 00:0f 191        /lib/libc-2.23.so
+0ffa4000-0ffa8000 r--p 0017c000 00:0f 191        /lib/libc-2.23.so
+0ffa8000-0ffac000 rwxp 00180000 00:0f 191        /lib/libc-2.23.so
+0ffac000-0ffb0000 rwxp 00000000 00:00 0
+0ffc0000-0ffd4000 r-xp 00000000 00:0f 90         /lib/libhugetlbfs.so
+0ffd4000-0ffe0000 ---p 00014000 00:0f 90         /lib/libhugetlbfs.so
+0ffe0000-0ffe4000 rwxp 00010000 00:0f 90         /lib/libhugetlbfs.so
+0ffe4000-0fff0000 rwxp 00000000 00:00 0
+10000000-10004000 r-xp 00000000 00:0f 3076       /root/huge_malloc_test
+10010000-10014000 rwxp 00000000 00:0f 3076       /root/huge_malloc_test
+77940000-77964000 r-xp 00000000 00:0f 171        /lib/ld-2.23.so
+7797c000-77980000 r--p 0002c000 00:0f 171        /lib/ld-2.23.so
+77980000-77984000 rwxp 00030000 00:0f 171        /lib/ld-2.23.so
+7fa58000-7fa7c000 rw-p 00000000 00:00 0          [stack]
+
+libhugetlbfs: WARNING: Heap originates at 0x73e80000 instead of 0x10080000
+
+Allocated 1Mbytes at 0x73e80008
+
+libhugetlbfs: WARNING: New heap segment mapped at 0x73d80000 instead of 
+0x74000000
+
+Allocated 1Mbytes at 0x777fc008
+
+libhugetlbfs: WARNING: New heap segment mapped at 0x73d00000 instead of 
+0x74000000
+
+Allocated 1Mbytes at 0x776b8008
+
+00100000-00108000 r-xp 00000000 00:00 0          [vdso]
+0fde4000-0fde8000 r-xp 00000000 00:0f 168        /lib/libdl-2.23.so
+0fde8000-0fe00000 ---p 00004000 00:0f 168        /lib/libdl-2.23.so
+0fe00000-0fe04000 r--p 0000c000 00:0f 168        /lib/libdl-2.23.so
+0fe04000-0fe08000 rwxp 00010000 00:0f 168        /lib/libdl-2.23.so
+0fe18000-0ff88000 r-xp 00000000 00:0f 191        /lib/libc-2.23.so
+0ff88000-0ffa4000 ---p 00170000 00:0f 191        /lib/libc-2.23.so
+0ffa4000-0ffa8000 r--p 0017c000 00:0f 191        /lib/libc-2.23.so
+0ffa8000-0ffac000 rwxp 00180000 00:0f 191        /lib/libc-2.23.so
+0ffac000-0ffb0000 rwxp 00000000 00:00 0
+0ffc0000-0ffd4000 r-xp 00000000 00:0f 90         /lib/libhugetlbfs.so
+0ffd4000-0ffe0000 ---p 00014000 00:0f 90         /lib/libhugetlbfs.so
+0ffe0000-0ffe4000 rwxp 00010000 00:0f 90         /lib/libhugetlbfs.so
+0ffe4000-0fff0000 rwxp 00000000 00:00 0
+10000000-10004000 r-xp 00000000 00:0f 3076       /root/huge_malloc_test
+10010000-10014000 rwxp 00000000 00:0f 3076       /root/huge_malloc_test
+73e80000-74000000 rw-p 00000000 00:0b 98386      /anon_hugepage (deleted)
+776b8000-77940000 rw-p 00000000 00:00 0
+77940000-77964000 r-xp 00000000 00:0f 171        /lib/ld-2.23.so
+7797c000-77980000 r--p 0002c000 00:0f 171        /lib/ld-2.23.so
+77980000-77984000 rwxp 00030000 00:0f 171        /lib/ld-2.23.so
+7fa58000-7fa7c000 rw-p 00000000 00:00 0          [stack]
+
+
+With the patch applied, it works properly, each malloc get an address 
+within the hugepage space.
+
+root@vgoip:~# HUGETLB_MORECORE=yes ./huge_malloc_test
+00100000-00108000 r-xp 00000000 00:00 0          [vdso]
+0fde4000-0fde8000 r-xp 00000000 00:0f 168        /lib/libdl-2.23.so
+0fde8000-0fe00000 ---p 00004000 00:0f 168        /lib/libdl-2.23.so
+0fe00000-0fe04000 r--p 0000c000 00:0f 168        /lib/libdl-2.23.so
+0fe04000-0fe08000 rwxp 00010000 00:0f 168        /lib/libdl-2.23.so
+0fe18000-0ff88000 r-xp 00000000 00:0f 191        /lib/libc-2.23.so
+0ff88000-0ffa4000 ---p 00170000 00:0f 191        /lib/libc-2.23.so
+0ffa4000-0ffa8000 r--p 0017c000 00:0f 191        /lib/libc-2.23.so
+0ffa8000-0ffac000 rwxp 00180000 00:0f 191        /lib/libc-2.23.so
+0ffac000-0ffb0000 rwxp 00000000 00:00 0
+0ffc0000-0ffd4000 r-xp 00000000 00:0f 90         /lib/libhugetlbfs.so
+0ffd4000-0ffe0000 ---p 00014000 00:0f 90         /lib/libhugetlbfs.so
+0ffe0000-0ffe4000 rwxp 00010000 00:0f 90         /lib/libhugetlbfs.so
+0ffe4000-0fff0000 rwxp 00000000 00:00 0
+10000000-10004000 r-xp 00000000 00:0f 3076       /root/huge_malloc_test
+10010000-10014000 rwxp 00000000 00:0f 3076       /root/huge_malloc_test
+77884000-778a8000 r-xp 00000000 00:0f 171        /lib/ld-2.23.so
+778c0000-778c4000 r--p 0002c000 00:0f 171        /lib/ld-2.23.so
+778c4000-778c8000 rwxp 00030000 00:0f 171        /lib/ld-2.23.so
+7ff98000-7ffbc000 rw-p 00000000 00:00 0          [stack]
+
+libhugetlbfs: WARNING: Heap originates at 0x30000000 instead of 0x10080000
+
+Allocated 1Mbytes at 0x30000008
+
+
+Allocated 1Mbytes at 0x30100010
+
+
+Allocated 1Mbytes at 0x30200018
+
+00100000-00108000 r-xp 00000000 00:00 0          [vdso]
+0fde4000-0fde8000 r-xp 00000000 00:0f 168        /lib/libdl-2.23.so
+0fde8000-0fe00000 ---p 00004000 00:0f 168        /lib/libdl-2.23.so
+0fe00000-0fe04000 r--p 0000c000 00:0f 168        /lib/libdl-2.23.so
+0fe04000-0fe08000 rwxp 00010000 00:0f 168        /lib/libdl-2.23.so
+0fe18000-0ff88000 r-xp 00000000 00:0f 191        /lib/libc-2.23.so
+0ff88000-0ffa4000 ---p 00170000 00:0f 191        /lib/libc-2.23.so
+0ffa4000-0ffa8000 r--p 0017c000 00:0f 191        /lib/libc-2.23.so
+0ffa8000-0ffac000 rwxp 00180000 00:0f 191        /lib/libc-2.23.so
+0ffac000-0ffb0000 rwxp 00000000 00:00 0
+0ffc0000-0ffd4000 r-xp 00000000 00:0f 90         /lib/libhugetlbfs.so
+0ffd4000-0ffe0000 ---p 00014000 00:0f 90         /lib/libhugetlbfs.so
+0ffe0000-0ffe4000 rwxp 00010000 00:0f 90         /lib/libhugetlbfs.so
+0ffe4000-0fff0000 rwxp 00000000 00:00 0
+10000000-10004000 r-xp 00000000 00:0f 3076       /root/huge_malloc_test
+10010000-10014000 rwxp 00000000 00:0f 3076       /root/huge_malloc_test
+30000000-30180000 rw-p 00000000 00:0b 7321       /anon_hugepage (deleted)
+30180000-30280000 rw-p 00180000 00:0b 7322       /anon_hugepage (deleted)
+30280000-30380000 rw-p 00280000 00:0b 7323       /anon_hugepage (deleted)
+77884000-778a8000 r-xp 00000000 00:0f 171        /lib/ld-2.23.so
+778c0000-778c4000 r--p 0002c000 00:0f 171        /lib/ld-2.23.so
+778c4000-778c8000 rwxp 00030000 00:0f 171        /lib/ld-2.23.so
+7ff98000-7ffbc000 rw-p 00000000 00:00 0          [stack]
+
+
+
+Christophe
