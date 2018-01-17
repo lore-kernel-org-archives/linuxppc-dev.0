@@ -1,45 +1,25 @@
-Return-Path: <srs0=s74q=em=au1.ibm.com=benh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0083.outbound.protection.outlook.com [104.47.37.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM4Hj5zk7zDqsT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 22:14:57 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zM4Hj55jkz8tF7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 22:14:57 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zM4Hj1Ymyz9sDB
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 22:14:57 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0HBE824101920
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 06:14:55 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fj3gqwdpe-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 06:14:54 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 17 Jan 2018 11:14:52 -0000
-Subject: Re: [PATCH 3/6] KVM: PPC: Book3S HV: Allow HPT and radix on the
- same core for POWER9 v2.2
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Cc: kvm-ppc@vger.kernel.org
-Date: Wed, 17 Jan 2018 22:14:45 +1100
-In-Reply-To: <1516182675-25331-4-git-send-email-paulus@ozlabs.org>
-References: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
- <1516182675-25331-4-git-send-email-paulus@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1516187685.31850.190.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM51V0CvfzF0fh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 22:47:41 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "andrew@lunn.ch" <andrew@lunn.ch>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madalin.bucur@nxp.com"
+ <madalin.bucur@nxp.com>, "madskateman@gmail.com" <madskateman@gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+Date: Wed, 17 Jan 2018 11:47:33 +0000
+Message-ID: <1516189651.18795.99.camel@infinera.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com> <20180116205342.GA29888@lunn.ch>
+In-Reply-To: <20180116205342.GA29888@lunn.ch>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,24 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-01-17 at 20:51 +1100, Paul Mackerras wrote:
-> +
-> +       /*
-> +        * POWER9 chips before version 2.02 can't have some threads in
-> +        * HPT mode and some in radix mode on the same core.
-> +        */
-> +       if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +               unsigned int pvr = mfspr(SPRN_PVR);
-> +               if ((pvr >> 16) == PVR_POWER9 && (pvr & 0xfff) < 0x202)
-> +                       no_mixing_hpt_and_radix = true;
-> +       }
-> +
->         return r;
->  }
-
-You need to check that it's a Nimbus using the top nimble of the bottom
-16 bits of PVR. For Cumulus, the fixes are either in 1.0 or 1.1 (to
-check).
-
-Cheers,
-Ben.
+T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBBbmRyZXcgTHVubiB3cm90ZToNCj4g
+Q0FVVElPTjogVGhpcyBlbWFpbCBvcmlnaW5hdGVkIGZyb20gb3V0c2lkZSBvZiB0aGUgb3JnYW5p
+emF0aW9uLiBEbyBub3QgY2xpY2sgbGlua3Mgb3Igb3BlbiBhdHRhY2htZW50cyB1bmxlc3MgeW91
+IHJlY29nbml6ZSB0aGUgc2VuZGVyIGFuZCBrbm93IHRoZSBjb250ZW50IGlzIHNhZmUuDQo+IA0K
+PiANCj4gPiA+IFlvdSBhcHBlYXIgdG8gYmUgdXNpbmcgYW4gb2xkIGtlcm5lbC4gVGFrZSBhIGxv
+b2sgYXQ6DQo+ID4gDQo+ID4gTm90IHJlYWxseSwgSSBhbSB1c2luZyA0LjE0LnggYW5kIEkgZG9u
+J3QgdGhpbmsgdGhhdCBpcyBvbGQuDQo+IA0KPiBEZXZlbG9wbWVudCBmb3IgNC4xNCBzdG9wcGVk
+IHNvbWV3aGVyZSBhcm91bmQgdGhlIGJlZ2lubmluZyBvZg0KPiBTZXB0ZW1iZXIuIFNvIHRoZXJl
+IGhhcyBiZWVuIG92ZXIgNCBtb250aHMgb2Ygd29yayBzaW5jZSB0aGVuLiAgV2UgYXJlDQo+IGNs
+ZWFybHkgaW50ZXJlc3RlZCBpbiBmaXhpbmcgYnVncyBpbiB0aGF0IGtlcm5lbCwgc2luY2UgaXQg
+aXMgdGhlDQo+IGN1cnJlbnQgc3RhYmxlIHZlcnNpb24uIEJ1dCB3aGVuIHJlcG9ydGluZyBidWdz
+LCBwbGVhc2UgbGV0IGlzIGtub3cgaWYNCj4gdGhlIGxhdGVzdCB2ZXJzaW9uIG9mIHRoZSBuZXR3
+b3JrIGtlcm5lbCwNCj4gaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9n
+aXQvZGF2ZW0vbmV0LW5leHQuZ2l0IGhhcw0KPiB0aGUgaXNzdWUuDQo+IA0KPiA+IFNlZW1zIGxp
+a2UgdGhpcyBwYXRjaCBoYXNuJ3QgYmVlbiBzZW50IHRvIDQuMTQueC4NCj4gDQo+IElmIGl0IGZp
+eGVzIGEgYnVnIGZvciB5b3UsIHBsZWFzZSByZXF1ZXN0IHRoZSBmaXggaXMgYWRkZWQgdG8gc3Rh
+YmxlLg0KDQpUaGF0IGRvZXNuJ3Qgd29yayByZWFsbHksIGhhdmluZyB1c2VycyB0byBoaXQgdGhl
+IGJ1ZywgZGVidWcgaXQsIGZpeCBpdCBhbmQgdGhlbg0KZmluZCBpdCBmaXhlZCBhbHJlYWR5IGlu
+IHVwc3RyZWFtLCB0aGVuIHNwZWNpZmljYWxseSByZXF1ZXN0IGl0IHRvIGJlIGJhY2twb3J0ZWQg
+dG8gc3RhYmxlLiANCkkgZG9uJ3QgbmVlZCB0aGlzIGZpeCB0byBiZSBiYWNrcG9ydGVkLCBhbHJl
+YWR5IGdvdCBpdC4gU29tZW9uZSBlbHNlIG1pZ2h0IHRob3VnaC4NCg0KSSB3b3VsZCBiZSBpbnRl
+cmVzdGVkIGluIGJ1ZyBmaXhlcyB1cHN0cmVhbSB3aGljaCBmaXhlczoNCg0KbGlicGh5OiBGcmVl
+c2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KaW9tbXU6IEFkZGluZyBkZXZpY2UgZmZlNDg4
+MDAwLnBvcnQgdG8gZ3JvdXAgMTANCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBw
+cm9iZWQNCm1kaW9fYnVzIGZmZTRlMTAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBh
+dCAzLjMNCmlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4OTAwMC5wb3J0IHRvIGdyb3VwIDIyDQps
+aWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBmZmU0ZTMw
+MDA6IEVycm9yIHdoaWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQppb21tdTogQWRkaW5nIGRl
+dmljZSBmZmU0OGEwMDAucG9ydCB0byBncm91cCAyMw0KbGlicGh5OiBGcmVlc2NhbGUgWEdNQUMg
+TURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGU1MDAwOiBFcnJvciB3aGlsZSByZWFkaW5n
+IFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6IEFkZGluZyBkZXZpY2UgZmZlNDhiMDAwLnBvcnQgdG8g
+Z3JvdXAgMjQNCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQNCm1kaW9f
+YnVzIGZmZTRlNzAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCmlvbW11
+OiBBZGRpbmcgZGV2aWNlIGZmZTQ4YzAwMC5wb3J0IHRvIGdyb3VwIDI1DQpsaWJwaHk6IEZyZWVz
+Y2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBmZmU0ZTkwMDA6IEVycm9yIHdo
+aWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQpmc2xfbWFjIGZmZTRlMjAwMC5ldGhlcm5ldDog
+Rk1hbiBNRU1BQw0KZnNsX21hYyBmZmU0ZTIwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6
+IDAwOjA2OjljOjBiOjA2OjIwDQpmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMDogX19kZXZtX3JlcXVl
+c3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KZnNsX21hYzogcHJvYmUgb2YgZHBhYS1ldGhlcm5l
+dC4wIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0KZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZN
+YW4gTUVNQUMNCmZzbF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAw
+MDowNjo5YzowYjowNjoyMQ0KZnNsX21hYyBkcGFhLWV0aGVybmV0LjE6IF9fZGV2bV9yZXF1ZXN0
+X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCmZzbF9tYWM6IHByb2JlIG9mIGRwYWEtZXRoZXJuZXQu
+MSBmYWlsZWQgd2l0aCBlcnJvciAtMTYNCmZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFu
+IE1FTUFDDQpmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6
+MDY6OWM6MGI6MDY6MjINCmZzbF9tYWMgZHBhYS1ldGhlcm5ldC4yOiBfX2Rldm1fcmVxdWVzdF9t
+ZW1fcmVnaW9uKG1hYykgZmFpbGVkDQoNCkV2ZXJ5IEZNQU4gZXRoIEkvRiB3aXRoIGEgZml4ZWQg
+bGluayBmYWlscyBteXN0ZXJpb3VzbHkuDQpDdXN0b20gYm9hcmQgYmFzZWQgb24gdDEwNDByZGIs
+IGJlZW4gb3ZlciB0aGUgZGV2aWNlIHRyZWUgYW5kIEkgY2Fubm90IGZpbmQgYW55IHNpZ25pZmlj
+YW50DQpjaGFuZ2VzLg0KDQogSm9ja2U=
