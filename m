@@ -1,37 +1,25 @@
-Return-Path: <bryantly@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=dxb3=em=infradead.org=rdunlap@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMDcc3G4lzF0h9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 04:30:08 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0HHNrpQ052125
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 12:30:05 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fjahw1gas-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 12:30:04 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
- Wed, 17 Jan 2018 10:30:04 -0700
-Subject: Re: [PATCH v4 0/7] SR-IOV Enablement on PowerVM
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
- alex.williamson@redhat.com, helgaas@kernel.org, aik@ozlabs.ru,
- ruscur@russell.cc, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
- saeedm@mellanox.com
-References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Wed, 17 Jan 2018 11:29:57 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMFph6zDtzF0RN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 05:23:56 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zMFph5QQvz8tPJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 05:23:56 +1100 (AEDT)
+Subject: Re: [PATCH 2/5] powerpc/ftw: Define FTW_SETUP ioctl API
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <1516157443-17716-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1516157443-17716-3-git-send-email-sukadev@linux.vnet.ibm.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <2eb418ec-afaf-3f03-40a2-ff9220e3d91f@infradead.org>
+Date: Wed, 17 Jan 2018 10:23:50 -0800
 MIME-Version: 1.0
-In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
+In-Reply-To: <1516157443-17716-3-git-send-email-sukadev@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <8ad656e5-7c5d-be5b-c218-7e1a1edfea1b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,54 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mike Ellerman/Ben, 
+On 01/16/18 18:50, Sukadev Bhattiprolu wrote:
+> Define the FTW_SETUP ioctl interface for fast thread wakeup (FTW). A
+> follow-on patch will implement the FTW driver and ioctl.
+> 
+> Thanks to input from Ben Herrenschmidt, Michael Neuling, Michael Ellerman.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+> Changelog[v2]
+> 	- [Michael Neuling] Use a single VAS_FTW_SETUP ioctl and simplify
+> 	  the interface.
+> ---
+>  include/uapi/misc/ftw.h | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 include/uapi/misc/ftw.h
+> 
+> diff --git a/include/uapi/misc/ftw.h b/include/uapi/misc/ftw.h
+> new file mode 100644
+> index 0000000..f233f51
+> --- /dev/null
+> +++ b/include/uapi/misc/ftw.h
+> @@ -0,0 +1,31 @@
+> +/*
+> + * Copyright 2018 IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#ifndef _UAPI_MISC_FTW_H
+> +#define _UAPI_MISC_FTW_H
+> +
+> +#include <linux/types.h>
+> +#include <linux/ioctl.h>
+> +
+> +#define FTW_FLAGS_PIN_WINDOW	0x1
+> +
+> +#define FTW_SETUP		_IOW('v', 1, struct ftw_setup_attr)
 
-Do you know if we can make 4.16 with this? 
+ioctls should be documented in Documentation/ioctl/ioctl-number.txt.
+Please update that file.
 
--Bryant
+> +
+> +struct ftw_setup_attr {
+> +	__s16	version;
+> +	__s16	vas_id;		/* specific instance of vas or -1 for default */
+> +	__u32	reserved;
+> +
+> +	__u64	reserved1;
+> +
+> +	__u64	flags;
+> +	__u64	reserved2;
+> +};
+> +
+> +#endif /* _UAPI_MISC_FTW_H */
+> 
 
-On 1/5/18 10:45 AM, Bryant G. Ly wrote:
 
-> This patch series will enable SR-IOV on PowerVM. A specific set of
-> lids for PFW/PHYP is required. They are planned to release with
-> 920 at the moment.
->
-> For IBM internal testers let me know of a system you want to test on
-> and we can put on the lids required or we can provide a system to run
-> the tests.
->
-> This patch depends on the three patches:
-> 988fc3ba5653278a8c14d6ccf687371775930d2b
-> dae7253f9f78a731755ca20c66b2d2c40b86baea
-> 608c0d8804ef3ca4cda8ec6ad914e47deb283d7b
->
-> v1 - Initial Patch
-> v2 - Addressed Alexey and Russell's comments
-> v3 - Unify the call of .error_detected()
-> v4 - Fixed subject and change log per Bjorn's comments and
->      fixed Alexey's comments
->
-> Bryant G. Ly (7):
->   platform/pseries: Update VF config space after EEH
->   linux/pci: Add uevents in AER and EEH error/resume
->   platforms/pseries: Set eeh_pe of EEH_PE_VF type
->   powerpc/kernel Add EEH operations to notify resume
->   powerpc/kernel: Add EEH notify resume sysfs
->   pseries/pci: Associate PEs to VFs in configure SR-IOV
->   pseries/setup: Add Initialization of VF Bars
->
->  arch/powerpc/include/asm/eeh.h               |   2 +
->  arch/powerpc/include/asm/pci-bridge.h        |   5 +-
->  arch/powerpc/include/asm/pci.h               |   2 +
->  arch/powerpc/kernel/eeh.c                    |  59 ++++++++++
->  arch/powerpc/kernel/eeh_driver.c             |   6 +
->  arch/powerpc/kernel/eeh_sysfs.c              |  45 ++++++++
->  arch/powerpc/kernel/pci_of_scan.c            |   2 +-
->  arch/powerpc/platforms/powernv/eeh-powernv.c |  68 +----------
->  arch/powerpc/platforms/pseries/eeh_pseries.c | 137 +++++++++++++++++++++-
->  arch/powerpc/platforms/pseries/pci.c         | 150 +++++++++++++++++++++++-
->  arch/powerpc/platforms/pseries/setup.c       | 164 +++++++++++++++++++++++++++
->  drivers/pci/pcie/aer/aerdrv_core.c           |   3 +
->  include/linux/pci.h                          |  36 ++++++
->  13 files changed, 611 insertions(+), 68 deletions(-)
->
+-- 
+~Randy
