@@ -2,23 +2,23 @@ Return-Path: <srs0=dxb3=em=infradead.org=rdunlap@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMFph6zDtzF0RN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 05:23:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMFyV4Z1yzF0Tn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 05:30:42 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zMFph5QQvz8tPJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 05:23:56 +1100 (AEDT)
-Subject: Re: [PATCH 2/5] powerpc/ftw: Define FTW_SETUP ioctl API
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zMFyV3bHdz8tCp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 05:30:42 +1100 (AEDT)
+Subject: Re: [PATCH 3/5] powerpc/ftw: Implement a simple FTW driver
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
  hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 References: <1516157443-17716-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1516157443-17716-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1516157443-17716-4-git-send-email-sukadev@linux.vnet.ibm.com>
 From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <2eb418ec-afaf-3f03-40a2-ff9220e3d91f@infradead.org>
-Date: Wed, 17 Jan 2018 10:23:50 -0800
+Message-ID: <e2d57c8c-9667-3b56-8d11-40d5430c9f05@infradead.org>
+Date: Wed, 17 Jan 2018 10:30:37 -0800
 MIME-Version: 1.0
-In-Reply-To: <1516157443-17716-3-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1516157443-17716-4-git-send-email-sukadev@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,64 +30,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/16/18 18:50, Sukadev Bhattiprolu wrote:
-> Define the FTW_SETUP ioctl interface for fast thread wakeup (FTW). A
-> follow-on patch will implement the FTW driver and ioctl.
+> The Fast Thread Wake-up (FTW) driver provides user space applications an
+> interface to the low latency Core-to-Core wakeup functionality in POWER9.
 > 
-> Thanks to input from Ben Herrenschmidt, Michael Neuling, Michael Ellerman.
+> This mechanism allows a thread on one core to efficiently send a message
+> to a "waiting thread" on another core on the same chip, using the Virtual
+> Accelrator Switchboard (VAS) subsystem.
+> 
+> This initial FTW driver implements the ioctl and mmap operations on an
+> FTW device node. Using these operations, a pair of application threads
+> can establish a "communication channel" and use the COPY, PASTE and WAIT
+> instructions to wait/wake up.
+> 
+> PATCH 5/5 documents the API and includes an example of the usage.
 > 
 > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 > ---
 > Changelog[v2]
-> 	- [Michael Neuling] Use a single VAS_FTW_SETUP ioctl and simplify
-> 	  the interface.
+> 	- [Michael Neuling] Rename from drop "nx" from name "nx-ftw".
+> 	- [Michael Neuling] Use a single VAS_FTW_SETUP ioctl to simplify
+> 	  interface.
+> 	- [Michael Ellerman] To work with paste emulation patch, mark
+> 	  PTE dirty in ->mmap() to ensure there is no fault on paste
+> 	  (the emulation patch must disable pagefaults when updating
+> 	  thread reconfig registers).
+> 	- Check return value from set_thread_tidr().
+> 	- Move driver drivers/misc/ftw.
+> 
 > ---
->  include/uapi/misc/ftw.h | 31 +++++++++++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
->  create mode 100644 include/uapi/misc/ftw.h
-> 
-> diff --git a/include/uapi/misc/ftw.h b/include/uapi/misc/ftw.h
-> new file mode 100644
-> index 0000000..f233f51
-> --- /dev/null
-> +++ b/include/uapi/misc/ftw.h
-> @@ -0,0 +1,31 @@
-> +/*
-> + * Copyright 2018 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#ifndef _UAPI_MISC_FTW_H
-> +#define _UAPI_MISC_FTW_H
-> +
-> +#include <linux/types.h>
-> +#include <linux/ioctl.h>
-> +
-> +#define FTW_FLAGS_PIN_WINDOW	0x1
-> +
-> +#define FTW_SETUP		_IOW('v', 1, struct ftw_setup_attr)
+>  drivers/misc/Kconfig      |   1 +
+>  drivers/misc/Makefile     |   1 +
+>  drivers/misc/ftw/Kconfig  |  16 +++
+>  drivers/misc/ftw/Makefile |   4 +
+>  drivers/misc/ftw/ftw.c    | 346 ++++++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 368 insertions(+)
+>  create mode 100644 drivers/misc/ftw/Kconfig
+>  create mode 100644 drivers/misc/ftw/Makefile
+>  create mode 100644 drivers/misc/ftw/ftw.c
 
-ioctls should be documented in Documentation/ioctl/ioctl-number.txt.
-Please update that file.
+> +static long ftw_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+> +{
+> +	switch (cmd) {
+> +
+> +	case FTW_SETUP:
+> +		return ftw_ioc_ftw_setup(fp, arg);
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
 
-> +
-> +struct ftw_setup_attr {
-> +	__s16	version;
-> +	__s16	vas_id;		/* specific instance of vas or -1 for default */
-> +	__u32	reserved;
-> +
-> +	__u64	reserved1;
-> +
-> +	__u64	flags;
-> +	__u64	reserved2;
-> +};
-> +
-> +#endif /* _UAPI_MISC_FTW_H */
-> 
+Nit:  some versions of gcc (or maybe clang) complain about a typed function
+not always having a return value in code like above, so it is often done as:
 
+> +static long ftw_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+> +{
+> +	switch (cmd) {
+> +
+> +	case FTW_SETUP:
+> +		return ftw_ioc_ftw_setup(fp, arg);
+> +
+> +	default:
+> +		break;
+> +	}
+
+	return -EINVAL;
+> +}
+
+Do you expect to implement more ioctls?  If not, just change the switch to
+an if ().
 
 -- 
 ~Randy
