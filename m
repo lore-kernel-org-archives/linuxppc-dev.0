@@ -1,31 +1,22 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vps-vb.mhejs.net [37.28.154.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMGhl64tYzF0YQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 06:03:51 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0HIxtXe108108
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 14:03:49 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fj9mtyy2h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 14:03:48 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 17 Jan 2018 19:03:47 -0000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/kernel: Fix L1D_SIZE to a non-zero value on missing
- cache nodes
-Date: Thu, 18 Jan 2018 00:33:36 +0530
-Message-Id: <1516215816-14710-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMHTK5cN5zF0gs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 06:38:59 +1100 (AEDT)
+Subject: Re: [PATCH v5 00/17] ASoC: fsl_ssi: Clean up - program flow level
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: timur@tabi.org, broonie@kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com, caleb@crome.org,
+ arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
+References: <1516171902-32669-1-git-send-email-nicoleotsuka@gmail.com>
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Message-ID: <a6621849-2621-79ee-c8a4-09e23beea2c5@maciej.szmigiero.name>
+Date: Wed, 17 Jan 2018 20:38:48 +0100
+MIME-Version: 1.0
+In-Reply-To: <1516171902-32669-1-git-send-email-nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,61 +26,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-parse_cache_info() parse device tree to detect various [i/d] cache properties.
-But if no cache nodes found in device tree, these properties are set to zero
-as default in init_cache_info().
+On 17.01.2018 07:51, Nicolin Chen wrote:
+> [ Maciej, could you please send your Tested-by/Reviewed-by for AC97
+>   once you confirm this series?
+>   
+>   And Caleb, this version does not need a test for non-AC97 cases.
+> 
+>   Thanks both! ]
+> 
+> ==Change log==
+> v5
+>  * Reworked the series by taking suggestions from Maciej for AC97
+>   + Fixed SSI lockup issue by changing cleanup sequence in PATCH-13
+>   + Moved fsl_ssi_hw_clean() after unregistering the CODEC device
+>     in PATCH-13
+>   + Set NULL as the parent of CODEC platform device to fix a NULL
+>     pointer dereference bug in PATCH-16
+>  * Updated comments of three variables/pointers in struct fsl_ssi
+>    to describe them more accurately in PATCH-16
+> v4
+>  * Reworked the series by taking suggestions from Maciej
+>   + Added TXBIT0 bit back to play safe in PATCH-14
+>   + Made bool synchronous exclusive with AC97 mode in PATCH-16
+> v3
+>  * Reworked the series by taking suggestions from Maciej
+>   + Added PATCH-01 to make RX and TX more clearly defined
+>   + Replaced "bool dir" with "int dir" in PATCH-04
+>   + Replaced "!dir" with "int adir" in PATCH-05
+>   + Put CBM_CFS behind the baudclk check to keep the same
+>     program flow in PATCH-14
+>   + Removed all cpu_dai_drv changes in PATCH-15
+> v2
+>  * Reworked the series by taking suggestions from Maciej
+>   + Added PATCH-01 to keep all ssi->i2s_net updated
+>   + Replaced bool tx with bool dir in PATCH-03 and PATCH-06
+>   + Moved all initial register configurations from dai probe() to
+>     platform probe() so as to let AC97 CODEC successfully probe.
+>  * Added Tested-by from Caleb for TDM test cases.
+> 
+> ==Background==
+> The fsl_ssi driver was designed for PPC originally and then it has
+> been updated to support different modes for i.MX Series, including
+> SDMA, I2S Master mode, AC97 and older i.MXs with FIQ, by different
+> contributors for different use cases in different coding styles.
+> 
+> Additionally, in order to fix/work-around hardware bugs and design
+> flaws, the driver made a lot of compromise so now its program flow
+> looks very complicated and it's getting hard to maintain or update.
+> 
+> So I am going to clean up the driver on both coding style level and
+> program flow level.
+> 
+> ==Introduction==
+> This series of patches is the second set to clean up fsl_ssi driver
+> in the program flow level. Any patch here may impact a fundamental
+> test case like playback or record.
+> 
+> ==Verification==
+> This series of patches require fully tested. I have done such tests
+> on i.MX6SoloX with WM8962 using imx_v6_v7_defconfig as:
+>  - Playback via I2S Master and Slave mode
+>  - Record via I2S Master and Slave mode
+>  - Simultaneous playback and record via I2S Master and Slave mode
+>  - Background playback with foreground record (starting at different
+>    time) via I2S Master and Slave mode
+>  - Background record with foreground playback (starting at different
+>    time) via I2S Master and Slave mode
+>  * All tests above by hacking offline_config to true in imx51.
+> 
+> Caleb has tested v1-v4 with TDM lookback tests on i.MX6.
+> 
+> Example of uncovered tests: AC97, PowerPC and FIQ.
 
-Having a zero value could cause a infinite loop in rfi_flush_callback() since
-l1d_size is used to determine the lid_flush_set parameter which is used as
-the upper bounce in L1D cache flush loop. So default the l1d_size to 64K if
-it is zero.
+For the whole series:
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 
-Fixes: aa8a5e0062ac9 ('powerpc/64s: Add support for RFI flush of L1-D cache')
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/setup.h |  2 ++
- arch/powerpc/kernel/setup_64.c   | 16 ++++++++++++++++
- 2 files changed, 18 insertions(+)
+However, I have a small nitpick regarding a comment newly added in
+this version of patch 16:
++		/*
++		 * Do not set SSI dev as the parent of AC97 CODEC device since
++		 * it does not have a DT node. Otherwise ASoC core will assume
++		 * CODEC has the same DT node as the SSI, so it may return a
++		 * NULL pointer of CODEC when asked for SSI via the DT node
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 469b7fdc9be4..12954bf2d3fe 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -41,6 +41,8 @@ static inline void pseries_little_endian_exceptions(void) {}
- 
- void rfi_flush_enable(bool enable);
- 
-+#define DEFAULT_L1D_SIZE	(1024 * 64)
-+
- /* These are bit flags */
- enum l1d_flush_type {
- 	L1D_FLUSH_NONE		= 0x1,
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 491be4179ddd..7a3077a2cd5c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -856,6 +856,22 @@ static void init_fallback_flush(void)
- 	int cpu;
- 
- 	l1d_size = ppc64_caches.l1d.size;
-+
-+	/*
-+	 * If there is no cache node in cpus/ device tree,
-+	 * l1d_size could be zero. This in turn make l1d_flush_sets as
-+	 * zero, which will be an issue in RFI_FLUSH_CALLBACK.
-+	 *
-+	 * RFI_FLUSH_CALLBACK use the l1d_flush_sets value as upper bounce
-+	 * (loaded in CTR) and loop with a `bdnz` instruction. If the CTR
-+	 * happen to zero, instruction (as per definition) will decrement
-+	 * CTR first and then compare. So we end up in a really big
-+	 * loop (becos of negative value in CTR). Avoid this by defaulting
-+	 * to a sane value (64kb).
-+	 */
-+	if (!l1d_size)
-+		l1d_size = DEFAULT_L1D_SIZE;
-+
- 	limit = min(safe_stack_limit(), ppc64_rma_size);
- 
- 	/*
--- 
-2.7.4
+The second part of the last sentence isn't really true, the ASoC core
+will return a (valid, non-NULL) CODEC object pointer when asked for
+the SSI one if we set the SSI as the parent device of a AC'97 CODEC
+platform device.
+
+The NULL pointer dereference when starting a playback that I wrote
+about in my previous message happens because in this situation the SSI
+DAI probe callback won't ever get called and so won't setup DMA data
+pointers (they will remain NULL).
+And this in turn will cause the ASoC DMA code to dereference these
+NULL pointers when starting a playback (the same will probably happen
+also when starting a capture).
+
+Sorry if I wasn't 100% clear about these details in my previous
+message describing this issue.
+
+Maciej
