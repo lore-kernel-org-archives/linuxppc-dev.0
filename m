@@ -1,18 +1,26 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0075.outbound.protection.outlook.com [104.47.1.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7wR3RYNzDqjm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:58:30 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id d6so11320034pgv.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 05:58:30 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64s: Improve RFI L1-D cache flush fallback
-Date: Wed, 17 Jan 2018 23:58:18 +1000
-Message-Id: <20180117135818.10241-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM8Cm3cVJzDqhc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 01:11:43 +1100 (AEDT)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>, "andrew@lunn.ch"
+ <andrew@lunn.ch>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
+ <madskateman@gmail.com>
+Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+Date: Wed, 17 Jan 2018 14:11:36 +0000
+Message-ID: <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com>
+In-Reply-To: <1516125454.18795.87.camel@infinera.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,206 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The fallback RFI flush is used when firmware does not provide a way
-to flush the cache. It's a "displacement flush" that evicts useful
-data by displacing it with an uninteresting buffer.
-
-The flush has to take care to work with implementation specific cache
-replacment policies, so the recipe has been in flux. The initial
-slow but conservative approach is to touch all lines of a congruence
-class, with dependencies between each load. It has since been
-determined that a linear pattern of loads without dependencies is
-sufficient, and is significantly faster.
-
-Measuring the speed of a null syscall with RFI fallback flush enabled
-gives the relative improvement:
-
-P8 - 1.83x
-P9 - 1.75x
-
-The flush also becomes simpler and more adaptable to different cache
-geometries.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/paca.h      |  3 +-
- arch/powerpc/kernel/asm-offsets.c    |  3 +-
- arch/powerpc/kernel/exceptions-64s.S | 76 +++++++++++++++++-------------------
- arch/powerpc/kernel/setup_64.c       | 13 +-----
- 4 files changed, 39 insertions(+), 56 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 23ac7fc0af23..0ec7b1e383ef 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -239,8 +239,7 @@ struct paca_struct {
- 	 */
- 	u64 exrfi[EX_SIZE] __aligned(0x80);
- 	void *rfi_flush_fallback_area;
--	u64 l1d_flush_congruence;
--	u64 l1d_flush_sets;
-+	u64 l1d_flush_size;
- #endif
- };
- 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index f390d57cf2e1..fd99a9c6ea63 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -239,8 +239,7 @@ int main(void)
- 	OFFSET(PACA_IN_NMI, paca_struct, in_nmi);
- 	OFFSET(PACA_RFI_FLUSH_FALLBACK_AREA, paca_struct, rfi_flush_fallback_area);
- 	OFFSET(PACA_EXRFI, paca_struct, exrfi);
--	OFFSET(PACA_L1D_FLUSH_CONGRUENCE, paca_struct, l1d_flush_congruence);
--	OFFSET(PACA_L1D_FLUSH_SETS, paca_struct, l1d_flush_sets);
-+	OFFSET(PACA_L1D_FLUSH_SIZE, paca_struct, l1d_flush_size);
- 
- #endif
- 	OFFSET(PACAHWCPUID, paca_struct, hw_cpu_id);
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 2dc10bf646b8..939445b16d58 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1455,39 +1455,37 @@ TRAMP_REAL_BEGIN(rfi_flush_fallback)
- 	std	r9,PACA_EXRFI+EX_R9(r13)
- 	std	r10,PACA_EXRFI+EX_R10(r13)
- 	std	r11,PACA_EXRFI+EX_R11(r13)
--	std	r12,PACA_EXRFI+EX_R12(r13)
--	std	r8,PACA_EXRFI+EX_R13(r13)
- 	mfctr	r9
- 	ld	r10,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
--	ld	r11,PACA_L1D_FLUSH_SETS(r13)
--	ld	r12,PACA_L1D_FLUSH_CONGRUENCE(r13)
--	/*
--	 * The load adresses are at staggered offsets within cachelines,
--	 * which suits some pipelines better (on others it should not
--	 * hurt).
--	 */
--	addi	r12,r12,8
-+	ld	r11,PACA_L1D_FLUSH_SIZE(r13)
-+	srdi	r11,r11,(7 + 3) /* 128 byte lines, unrolled 8x */
- 	mtctr	r11
- 	DCBT_STOP_ALL_STREAM_IDS(r11) /* Stop prefetch streams */
- 
- 	/* order ld/st prior to dcbt stop all streams with flushing */
- 	sync
--1:	li	r8,0
--	.rept	8 /* 8-way set associative */
--	ldx	r11,r10,r8
--	add	r8,r8,r12
--	xor	r11,r11,r11	// Ensure r11 is 0 even if fallback area is not
--	add	r8,r8,r11	// Add 0, this creates a dependency on the ldx
--	.endr
--	addi	r10,r10,128 /* 128 byte cache line */
-+
-+	/*
-+	 * The load adresses are at staggered offsets within cachelines,
-+	 * which suits some pipelines better (on others it should not
-+	 * hurt).
-+	 */
-+1:
-+	ld	r11,(0x80 + 8)*0(r10)
-+	ld	r11,(0x80 + 8)*1(r10)
-+	ld	r11,(0x80 + 8)*2(r10)
-+	ld	r11,(0x80 + 8)*3(r10)
-+	ld	r11,(0x80 + 8)*4(r10)
-+	ld	r11,(0x80 + 8)*5(r10)
-+	ld	r11,(0x80 + 8)*6(r10)
-+	ld	r11,(0x80 + 8)*7(r10)
-+	addi	r10,r10,0x80*8
- 	bdnz	1b
- 
- 	mtctr	r9
- 	ld	r9,PACA_EXRFI+EX_R9(r13)
- 	ld	r10,PACA_EXRFI+EX_R10(r13)
- 	ld	r11,PACA_EXRFI+EX_R11(r13)
--	ld	r12,PACA_EXRFI+EX_R12(r13)
--	ld	r8,PACA_EXRFI+EX_R13(r13)
- 	GET_SCRATCH0(r13);
- 	rfid
- 
-@@ -1497,39 +1495,37 @@ TRAMP_REAL_BEGIN(hrfi_flush_fallback)
- 	std	r9,PACA_EXRFI+EX_R9(r13)
- 	std	r10,PACA_EXRFI+EX_R10(r13)
- 	std	r11,PACA_EXRFI+EX_R11(r13)
--	std	r12,PACA_EXRFI+EX_R12(r13)
--	std	r8,PACA_EXRFI+EX_R13(r13)
- 	mfctr	r9
- 	ld	r10,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
--	ld	r11,PACA_L1D_FLUSH_SETS(r13)
--	ld	r12,PACA_L1D_FLUSH_CONGRUENCE(r13)
--	/*
--	 * The load adresses are at staggered offsets within cachelines,
--	 * which suits some pipelines better (on others it should not
--	 * hurt).
--	 */
--	addi	r12,r12,8
-+	ld	r11,PACA_L1D_FLUSH_SIZE(r13)
-+	srdi	r11,r11,(7 + 3) /* 128 byte lines, unrolled 8x */
- 	mtctr	r11
- 	DCBT_STOP_ALL_STREAM_IDS(r11) /* Stop prefetch streams */
- 
- 	/* order ld/st prior to dcbt stop all streams with flushing */
- 	sync
--1:	li	r8,0
--	.rept	8 /* 8-way set associative */
--	ldx	r11,r10,r8
--	add	r8,r8,r12
--	xor	r11,r11,r11	// Ensure r11 is 0 even if fallback area is not
--	add	r8,r8,r11	// Add 0, this creates a dependency on the ldx
--	.endr
--	addi	r10,r10,128 /* 128 byte cache line */
-+
-+	/*
-+	 * The load adresses are at staggered offsets within cachelines,
-+	 * which suits some pipelines better (on others it should not
-+	 * hurt).
-+	 */
-+1:
-+	ld	r11,(0x80 + 8)*0(r10)
-+	ld	r11,(0x80 + 8)*1(r10)
-+	ld	r11,(0x80 + 8)*2(r10)
-+	ld	r11,(0x80 + 8)*3(r10)
-+	ld	r11,(0x80 + 8)*4(r10)
-+	ld	r11,(0x80 + 8)*5(r10)
-+	ld	r11,(0x80 + 8)*6(r10)
-+	ld	r11,(0x80 + 8)*7(r10)
-+	addi	r10,r10,0x80*8
- 	bdnz	1b
- 
- 	mtctr	r9
- 	ld	r9,PACA_EXRFI+EX_R9(r13)
- 	ld	r10,PACA_EXRFI+EX_R10(r13)
- 	ld	r11,PACA_EXRFI+EX_R11(r13)
--	ld	r12,PACA_EXRFI+EX_R12(r13)
--	ld	r8,PACA_EXRFI+EX_R13(r13)
- 	GET_SCRATCH0(r13);
- 	hrfid
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 491be4179ddd..cc7ab8bf462c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -867,19 +867,8 @@ static void init_fallback_flush(void)
- 	memset(l1d_flush_fallback_area, 0, l1d_size * 2);
- 
- 	for_each_possible_cpu(cpu) {
--		/*
--		 * The fallback flush is currently coded for 8-way
--		 * associativity. Different associativity is possible, but it
--		 * will be treated as 8-way and may not evict the lines as
--		 * effectively.
--		 *
--		 * 128 byte lines are mandatory.
--		 */
--		u64 c = l1d_size / 8;
--
- 		paca[cpu].rfi_flush_fallback_area = l1d_flush_fallback_area;
--		paca[cpu].l1d_flush_congruence = c;
--		paca[cpu].l1d_flush_sets = c / 128;
-+		paca[cpu].l1d_flush_size = l1d_size;
- 	}
- }
- 
--- 
-2.15.1
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKb2FraW0gVGplcm5sdW5kIFtt
+YWlsdG86Sm9ha2ltLlRqZXJubHVuZEBpbmZpbmVyYS5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEph
+bnVhcnkgMTYsIDIwMTggNzo1OCBQTQ0KPiBUbzogYW5kcmV3QGx1bm4uY2gNCj4gU3ViamVjdDog
+UmU6IERQQUEgRXRoZXJuZXQgdHJhZmZpY2UgdHJvdWJsZXMgd2l0aCBMaW51eCBrZXJuZWwNCj4g
+DQo+IE9uIFRodSwgMTk3MC0wMS0wMSBhdCAwMDowMCArMDAwMCwgQW5kcmV3IEx1bm4gd3JvdGU6
+DQo+ID4NCj4gPiBIaSBKb2FraW0NCj4gPg0KPiA+IFlvdSBhcHBlYXIgdG8gYmUgdXNpbmcgYW4g
+b2xkIGtlcm5lbC4gVGFrZSBhIGxvb2sgYXQ6DQo+IA0KPiBOb3QgcmVhbGx5LCBJIGFtIHVzaW5n
+IDQuMTQueCBhbmQgSSBkb24ndCB0aGluayB0aGF0IGlzIG9sZC4gU2VlbXMgbGlrZQ0KPiB0aGlz
+DQo+IHBhdGNoIGhhc24ndCBiZWVuIHNlbnQgdG8gNC4xNC54Lg0KPiANCj4gSSB3b25kZXIgaWYg
+SSBtaWdodCBiZSBtaXNzaW5nIHNvbWV0aGluZyBlbHNlLCB3ZSBqdXN0IG1vdmVkIHRvIDQuMTQg
+YW5kDQo+IG5vdGljIHRoYXQgYWxsDQo+IG91ciBmaXhlZCBQSFlzIGFyZSBub24gZnVuY3Rpb25p
+bmc6DQo+IGZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+IGZzbF9tYWMg
+ZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMA0K
+PiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMDogX19kZXZtX3JlcXVlc3RfbWVtX3JlZ2lvbihtYWMp
+IGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjAgZmFpbGVkIHdpdGgg
+ZXJyb3IgLTE2DQo+IGZzbF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+IGZz
+bF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjow
+NjoyMQ0KPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMTogX19kZXZtX3JlcXVlc3RfbWVtX3JlZ2lv
+bihtYWMpIGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjEgZmFpbGVk
+IHdpdGggZXJyb3IgLTE2DQo+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFD
+DQo+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5
+YzowYjowNjoyMg0KPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMjogX19kZXZtX3JlcXVlc3RfbWVt
+X3JlZ2lvbihtYWMpIGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjIg
+ZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFu
+IE1FTUFDDQo+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAw
+MDowNjo5YzowYjowNjoyMw0KPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMzogX19kZXZtX3JlcXVl
+c3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVy
+bmV0LjMgZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+IA0KPiBGZWVscyBsaWtlIEZNQU4gc3RpbGwg
+dGhpbmsgdGhlcmUgYXJlIHJlYWwgUEhZcyB0aGVyZSA/DQoNCkhpIEpvYWtpbSwNCg0KVGhlc2Ug
+ZXJyb3JzIGFyZSBpc3N1ZWQgd2hlbiB0cnlpbmcgdG8gcHJvYmUgdGhlIHNlY29uZCB0aW1lIHRo
+ZSBzYW1lDQpNQUMgbm9kZS4gVGhlIGlzc3VlIHdhcyBpbnRyb2R1Y2VkIGJ5IHRoaXMgY29tbWl0
+Og0KDQpjb21taXQgNGQ4ZWUxOTM1YmNkNjY2MzYwMzExZGZkYWRlZWUyMzVkNjgyZDY5YQ0KQXV0
+aG9yOiBGbG9yaWFuIEZhaW5lbGxpIDxmLmZhaW5lbGxpQGdtYWlsLmNvbT4NCkRhdGU6IFR1ZSBB
+dWcgMjIgMTU6MjQ6NDcgMjAxNyAtMDcwMA0KZnNsL21hbjogSW5oZXJpdCBwYXJlbnQgZGV2aWNl
+IGFuZCBvZl9ub2RlDQoNCmFuZCB3YXMgbGF0ZXIgYWRkcmVzc2VkIGJ5IHRoaXMgcGF0Y2ggc2V0
+Og0KDQpodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVjdC9uZXRkZXYvbGlzdC8/c2Vy
+aWVzPTg0NjImc3RhdGU9Kg0KDQpFdmVuIHdpdGggdGhlc2UgZXJyb3JzIHByaW50ZWQsIGFsbCBp
+cyB3b3JraW5nIGZpbmUsIGl0J3MganVzdCB0aGUNCnNlY29uZCBwcm9iaW5nIHRoYXQgZmFpbHMu
+IEFkZGluZyB0aGUgbGF0dGVyIHBhdGNoZXMgb3IgcmV2ZXJ0aW5nDQp0aGUgb25lIGFib3ZlIG1h
+a2VzIHRoZSBlcnJvcnMgcHJpbnRzIGRpc3NhcGVhci4NCg0KTWFkYWxpbg0K
