@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM2RK4ZHmzF0PQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM2RK14K7zF0SM
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 20:51:25 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 3/6] KVM: PPC: Book3S HV: Allow HPT and radix on the same core
- for POWER9 v2.2
-Date: Wed, 17 Jan 2018 20:51:12 +1100
-Message-Id: <1516182675-25331-4-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 2/6] KVM: PPC: Book3S HV: Do SLB load/unload with guest LPCR
+ value loaded
+Date: Wed, 17 Jan 2018 20:51:11 +1100
+Message-Id: <1516182675-25331-3-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
 References: <1516182675-25331-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,92 +23,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 chip versions starting with v2.2 can support running with some
-threads of a core in HPT mode and others in radix mode.  This means
-that we don't have to prohibit independent-threads mode when running
-a HPT guest on a radix host, and we don't have to do any of the
-synchronization between threads that was introduced in commit
-c01015091a77 ("KVM: PPC: Book3S HV: Run HPT guests on POWER9 radix
-hosts", 2017-10-19).
+This moves the code that loads and unloads the guest SLB values so that
+it is done while the guest LPCR value is loaded in the LPCR register.
+The reason for doing this is that on POWER9, the behaviour of the
+slbmte instruction depends on the LPCR[UPRT] bit.  If UPRT is 1, as
+it is for a radix host (or guest), the SLB index is truncated to
+2 bits.  This means that for a HPT guest on a radix host, the SLB
+was not being loaded correctly, causing the guest to crash.
 
-Rather than using up another CPU feature bit, we just do an
-explicit test on the PVR (processor version register) at module
-startup time to determine whether we have to take steps to avoid
-having some threads in HPT mode and some in radix mode (so-called
-"mixed mode").
+The SLB is now loaded much later in the guest entry path, after the
+LPCR is loaded, which for a secondary thread is after it sees that
+the primary thread has switched the MMU to the guest.  The loop that
+waits for the primary thread has a branch out to the exit code that
+is taken if it sees that other threads have commenced exiting the
+guest.  Since we have now not loaded the SLB at this point, we make
+this path branch to a new label 'guest_bypass' and we move the SLB
+unload code to before this label.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv.c | 28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 109 ++++++++++++++++----------------
+ 1 file changed, 55 insertions(+), 54 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index b2d448c..99ed374 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -118,6 +118,9 @@ module_param_cb(h_ipi_redirect, &module_param_ops, &h_ipi_redirect,
- MODULE_PARM_DESC(h_ipi_redirect, "Redirect H_IPI wakeup to a free host core");
- #endif
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 76332a3..30ece4c 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -617,13 +617,6 @@ kvmppc_hv_entry:
+ 	lbz	r0, KVM_RADIX(r9)
+ 	cmpwi	cr7, r0, 0
  
-+/* If set, the threads on each CPU core have to be in the same MMU mode */
-+static bool no_mixing_hpt_and_radix;
-+
- static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
- static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
- 
-@@ -2386,8 +2389,8 @@ static void init_core_info(struct core_info *cip, struct kvmppc_vcore *vc)
- static bool subcore_config_ok(int n_subcores, int n_threads)
- {
+-	/* Clear out SLB if hash */
+-	bne	cr7, 2f
+-	li	r6,0
+-	slbmte	r6,r6
+-	slbia
+-	ptesync
+-2:
  	/*
--	 * POWER9 "SMT4" cores are permanently in what is effectively a 4-way split-core
--	 * mode, with one thread per subcore.
-+	 * POWER9 "SMT4" cores are permanently in what is effectively a 4-way
-+	 * split-core mode, with one thread per subcore.
- 	 */
- 	if (cpu_has_feature(CPU_FTR_ARCH_300))
- 		return n_subcores <= 4 && n_threads == 1;
-@@ -2423,8 +2426,8 @@ static bool can_dynamic_split(struct kvmppc_vcore *vc, struct core_info *cip)
- 	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
- 		return false;
+ 	 * POWER7/POWER8 host -> guest partition switch code.
+ 	 * We don't have to lock against concurrent tlbies,
+@@ -738,19 +731,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 10:	cmpdi	r4, 0
+ 	beq	kvmppc_primary_no_guest
+ kvmppc_got_guest:
+-
+-	/* Load up guest SLB entries (N.B. slb_max will be 0 for radix) */
+-	lwz	r5,VCPU_SLB_MAX(r4)
+-	cmpwi	r5,0
+-	beq	9f
+-	mtctr	r5
+-	addi	r6,r4,VCPU_SLB
+-1:	ld	r8,VCPU_SLB_E(r6)
+-	ld	r9,VCPU_SLB_V(r6)
+-	slbmte	r9,r8
+-	addi	r6,r6,VCPU_SLB_SIZE
+-	bdnz	1b
+-9:
+ 	/* Increment yield count if they have a VPA */
+ 	ld	r3, VCPU_VPA(r4)
+ 	cmpdi	r3, 0
+@@ -1017,6 +997,29 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ 	cmpdi	r3, 512		/* 1 microsecond */
+ 	blt	hdec_soon
  
--	/* POWER9 currently requires all threads to be in the same MMU mode */
--	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	/* Some POWER9 chips require all threads to be in the same MMU mode */
-+	if (no_mixing_hpt_and_radix &&
- 	    kvm_is_radix(vc->kvm) != kvm_is_radix(cip->vc[0]->kvm))
- 		return false;
- 
-@@ -2687,9 +2690,11 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 	 * threads are offline.  Also check if the number of threads in this
- 	 * guest are greater than the current system threads per guest.
- 	 * On POWER9, we need to be not in independent-threads mode if
--	 * this is a HPT guest on a radix host.
-+	 * this is a HPT guest on a radix host machine where the
-+	 * CPU threads may not be in different MMU modes.
- 	 */
--	hpt_on_radix = radix_enabled() && !kvm_is_radix(vc->kvm);
-+	hpt_on_radix = no_mixing_hpt_and_radix && radix_enabled() &&
-+		!kvm_is_radix(vc->kvm);
- 	if (((controlled_threads > 1) &&
- 	     ((vc->num_threads > threads_per_subcore) || !on_primary_thread())) ||
- 	    (hpt_on_radix && vc->kvm->arch.threads_indep)) {
-@@ -4446,6 +4451,17 @@ static int kvmppc_book3s_init_hv(void)
- 
- 	if (kvmppc_radix_possible())
- 		r = kvmppc_radix_init();
++	/* For hash guest, clear out and reload the SLB */
++	ld	r6, VCPU_KVM(r4)
++	lbz	r0, KVM_RADIX(r6)
++	cmpwi	r0, 0
++	bne	9f
++	li	r6, 0
++	slbmte	r6, r6
++	slbia
++	ptesync
 +
-+	/*
-+	 * POWER9 chips before version 2.02 can't have some threads in
-+	 * HPT mode and some in radix mode on the same core.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		unsigned int pvr = mfspr(SPRN_PVR);
-+		if ((pvr >> 16) == PVR_POWER9 && (pvr & 0xfff) < 0x202)
-+			no_mixing_hpt_and_radix = true;
-+	}
++	/* Load up guest SLB entries (N.B. slb_max will be 0 for radix) */
++	lwz	r5,VCPU_SLB_MAX(r4)
++	cmpwi	r5,0
++	beq	9f
++	mtctr	r5
++	addi	r6,r4,VCPU_SLB
++1:	ld	r8,VCPU_SLB_E(r6)
++	ld	r9,VCPU_SLB_V(r6)
++	slbmte	r9,r8
++	addi	r6,r6,VCPU_SLB_SIZE
++	bdnz	1b
++9:
 +
- 	return r;
- }
+ #ifdef CONFIG_KVM_XICS
+ 	/* We are entering the guest on that thread, push VCPU to XIVE */
+ 	ld	r10, HSTATE_XIVE_TIMA_PHYS(r13)
+@@ -1193,7 +1196,7 @@ hdec_soon:
+ 	addi	r3, r4, VCPU_TB_RMEXIT
+ 	bl	kvmhv_accumulate_time
+ #endif
+-	b	guest_exit_cont
++	b	guest_bypass
  
+ /******************************************************************************
+  *                                                                            *
+@@ -1481,34 +1484,12 @@ mc_cont:
+ 1:
+ #endif /* CONFIG_KVM_XICS */
+ 
+-	mr 	r3, r12
+-	/* Increment exit count, poke other threads to exit */
+-	bl	kvmhv_commence_exit
+-	nop
+-	ld	r9, HSTATE_KVM_VCPU(r13)
+-	lwz	r12, VCPU_TRAP(r9)
+-
+-	/* Stop others sending VCPU interrupts to this physical CPU */
+-	li	r0, -1
+-	stw	r0, VCPU_CPU(r9)
+-	stw	r0, VCPU_THREAD_CPU(r9)
+-
+-	/* Save guest CTRL register, set runlatch to 1 */
+-	mfspr	r6,SPRN_CTRLF
+-	stw	r6,VCPU_CTRL(r9)
+-	andi.	r0,r6,1
+-	bne	4f
+-	ori	r6,r6,1
+-	mtspr	SPRN_CTRLT,r6
+-4:
+-	/* Check if we are running hash or radix and store it in cr2 */
++	/* For hash guest, read the guest SLB and save it away */
+ 	ld	r5, VCPU_KVM(r9)
+ 	lbz	r0, KVM_RADIX(r5)
+-	cmpwi	cr2,r0,0
+-
+-	/* Read the guest SLB and save it away */
+ 	li	r5, 0
+-	bne	cr2, 3f			/* for radix, save 0 entries */
++	cmpwi	r0, 0
++	bne	3f			/* for radix, save 0 entries */
+ 	lwz	r0,VCPU_SLB_NR(r9)	/* number of entries in SLB */
+ 	mtctr	r0
+ 	li	r6,0
+@@ -1524,8 +1505,34 @@ mc_cont:
+ 	addi	r5,r5,1
+ 2:	addi	r6,r6,1
+ 	bdnz	1b
++	/* Finally clear out the SLB */
++	li	r0,0
++	slbmte	r0,r0
++	slbia
++	ptesync
+ 3:	stw	r5,VCPU_SLB_MAX(r9)
+ 
++guest_bypass:
++	mr 	r3, r12
++	/* Increment exit count, poke other threads to exit */
++	bl	kvmhv_commence_exit
++	nop
++	ld	r9, HSTATE_KVM_VCPU(r13)
++	lwz	r12, VCPU_TRAP(r9)
++
++	/* Stop others sending VCPU interrupts to this physical CPU */
++	li	r0, -1
++	stw	r0, VCPU_CPU(r9)
++	stw	r0, VCPU_THREAD_CPU(r9)
++
++	/* Save guest CTRL register, set runlatch to 1 */
++	mfspr	r6,SPRN_CTRLF
++	stw	r6,VCPU_CTRL(r9)
++	andi.	r0,r6,1
++	bne	4f
++	ori	r6,r6,1
++	mtspr	SPRN_CTRLT,r6
++4:
+ 	/*
+ 	 * Save the guest PURR/SPURR
+ 	 */
+@@ -1803,7 +1810,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	ld	r5, VCPU_KVM(r9)
+ 	lbz	r0, KVM_RADIX(r5)
+ 	cmpwi	cr2, r0, 0
+-	beq	cr2, 3f
++	beq	cr2, 4f
+ 
+ 	/* Radix: Handle the case where the guest used an illegal PID */
+ 	LOAD_REG_ADDR(r4, mmu_base_pid)
+@@ -1839,15 +1846,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ BEGIN_FTR_SECTION
+ 	PPC_INVALIDATE_ERAT
+ END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1)
+-	b	4f
++4:
+ #endif /* CONFIG_PPC_RADIX_MMU */
+ 
+-	/* Hash: clear out SLB */
+-3:	li	r5,0
+-	slbmte	r5,r5
+-	slbia
+-	ptesync
+-4:
+ 	/*
+ 	 * POWER7/POWER8 guest -> host partition switch code.
+ 	 * We don't have to lock against tlbies but we do
 -- 
 2.7.4
