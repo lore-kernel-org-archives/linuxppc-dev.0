@@ -1,15 +1,23 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Bt11DpzF0bN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:25:58 +1100 (AEDT)
-In-Reply-To: <20180110141946.20127-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Bv12VJzF0Zv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:25:59 +1100 (AEDT)
+In-Reply-To: <20180115133003.3447-1-msuchanek@suse.de>
+To: Michal Suchanek <msuchanek@suse.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Philippe Ombredanne <pombredanne@nexb.com>,
+ =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.de>, "Tobin C. Harding" <me@tobin.cc>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/xmon: Don't print hashed pointers in paca dump
-Message-Id: <3zM7Bs3Lbgz9s7h@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:25:57 +1100 (AEDT)
+Subject: Re: powerpc/pseries: include linux/types.h in asm/hvcall.h
+Message-Id: <3zM7Bt5g6Zz9sP1@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:25:58 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,18 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-01-10 at 14:19:46 UTC, Michael Ellerman wrote:
-> Remember when the biggest problem we had to worry about was hashed
-> pointers, those were the days.
+On Mon, 2018-01-15 at 13:30:03 UTC, Michal Suchanek wrote:
+> Commit 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush
+> settings") uses u64 in asm/hvcall.h without including linux/types.h
 > 
-> These were missed in my earlier patch because they don't match "%p",
-> but the macro is hiding a "%p", so these all end up being hashed,
-> which is not what we want in xmon. Convert them to "%px".
+> This breaks hvcall.h users that do not include the header themselves.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush
+>     settings")
+> 
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/2248fade965a5f1ba2a8e6e63f84df
+https://git.kernel.org/powerpc/c/1b689a95ce7427075f9ac9fb4aea1a
 
 cheers
