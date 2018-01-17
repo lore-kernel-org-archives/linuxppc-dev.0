@@ -1,45 +1,37 @@
-Return-Path: <srs0=4i2n=em=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMD6Y07pvzF0gH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 04:07:33 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zMD6X350Vz8tKg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 04:07:32 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zMD6W6NBRz9s7v
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2018 04:07:31 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0HH5bYl140543
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 12:07:30 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fj7yxgmrc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMDcc3G4lzF0h9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 04:30:08 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0HHNrpQ052125
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 12:30:05 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fjahw1gas-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2018 12:07:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 12:30:04 -0500
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 17 Jan 2018 10:07:28 -0700
-Date: Wed, 17 Jan 2018 09:07:24 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc: export thread-tidr interfaces
-References: <1516153832-9282-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <eff03efa-0637-c63a-a7ee-320c490cff9d@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Wed, 17 Jan 2018 10:30:04 -0700
+Subject: Re: [PATCH v4 0/7] SR-IOV Enablement on PowerVM
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: seroyer@linux.vnet.ibm.com, jjalvare@linux.vnet.ibm.com,
+ alex.williamson@redhat.com, helgaas@kernel.org, aik@ozlabs.ru,
+ ruscur@russell.cc, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bodong@mellanox.com, eli@mellanox.com,
+ saeedm@mellanox.com
+References: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Date: Wed, 17 Jan 2018 11:29:57 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <eff03efa-0637-c63a-a7ee-320c490cff9d@linux.vnet.ibm.com>
-Message-Id: <20180117170724.GA5314@us.ibm.com>
+In-Reply-To: <20180105164552.36371-1-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8ad656e5-7c5d-be5b-c218-7e1a1edfea1b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,60 +41,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat [fbarrat@linux.vnet.ibm.com] wrote:
-> Hi,
-> 
-> 
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> > index 2010e4c..f20c1ad 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -1560,6 +1560,7 @@ void clear_thread_tidr(struct task_struct *t)
-> >   	free_thread_tidr(t->thread.tidr);
-> >   	t->thread.tidr = 0;
-> >   }
-> > +EXPORT_SYMBOL_GPL(clear_thread_tidr);
-> 
-> Isn't it dangerous to export clear_thread_tidr()? Other modules may also
-> have assigned the TIDR by calling set_thread_tidr(), so clearing it could
-> potentially break those other modules. My understanding is that once the
-> TIDR is assigned, there's no safe way to reclaim it other than the thread
-> exiting. Or we would need some kind of reference counter.
+Mike Ellerman/Ben, 
 
-Yes the FTW driver avoids calling clear_thread_tidr() for the same reasons.
-I don't have a strong case for exporting clear_thread_tidr(). Here is the
-updated patch, exporting just the set_thread_tidr().
+Do you know if we can make 4.16 with this? 
 
-Thanks,
+-Bryant
 
-Sukadev
----
->From 204ee3c918f8dad46c1e40d2d3730b07c10a87a3 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Mon, 15 Jan 2018 13:43:18 -0600
-Subject: [PATCH 1/2] powerpc: export set_thread_tidr()
+On 1/5/18 10:45 AM, Bryant G. Ly wrote:
 
-Export set_thread_tidr() so it can be used by external modules.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog  [Frederic Barrat] Don't export clear_thread_tidr()
-
----
- arch/powerpc/kernel/process.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 2010e4c..20df2cb2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1592,6 +1592,7 @@ int set_thread_tidr(struct task_struct *t)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(set_thread_tidr);
- 
- #endif /* CONFIG_PPC64 */
- 
--- 
-1.8.3.1
+> This patch series will enable SR-IOV on PowerVM. A specific set of
+> lids for PFW/PHYP is required. They are planned to release with
+> 920 at the moment.
+>
+> For IBM internal testers let me know of a system you want to test on
+> and we can put on the lids required or we can provide a system to run
+> the tests.
+>
+> This patch depends on the three patches:
+> 988fc3ba5653278a8c14d6ccf687371775930d2b
+> dae7253f9f78a731755ca20c66b2d2c40b86baea
+> 608c0d8804ef3ca4cda8ec6ad914e47deb283d7b
+>
+> v1 - Initial Patch
+> v2 - Addressed Alexey and Russell's comments
+> v3 - Unify the call of .error_detected()
+> v4 - Fixed subject and change log per Bjorn's comments and
+>      fixed Alexey's comments
+>
+> Bryant G. Ly (7):
+>   platform/pseries: Update VF config space after EEH
+>   linux/pci: Add uevents in AER and EEH error/resume
+>   platforms/pseries: Set eeh_pe of EEH_PE_VF type
+>   powerpc/kernel Add EEH operations to notify resume
+>   powerpc/kernel: Add EEH notify resume sysfs
+>   pseries/pci: Associate PEs to VFs in configure SR-IOV
+>   pseries/setup: Add Initialization of VF Bars
+>
+>  arch/powerpc/include/asm/eeh.h               |   2 +
+>  arch/powerpc/include/asm/pci-bridge.h        |   5 +-
+>  arch/powerpc/include/asm/pci.h               |   2 +
+>  arch/powerpc/kernel/eeh.c                    |  59 ++++++++++
+>  arch/powerpc/kernel/eeh_driver.c             |   6 +
+>  arch/powerpc/kernel/eeh_sysfs.c              |  45 ++++++++
+>  arch/powerpc/kernel/pci_of_scan.c            |   2 +-
+>  arch/powerpc/platforms/powernv/eeh-powernv.c |  68 +----------
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 137 +++++++++++++++++++++-
+>  arch/powerpc/platforms/pseries/pci.c         | 150 +++++++++++++++++++++++-
+>  arch/powerpc/platforms/pseries/setup.c       | 164 +++++++++++++++++++++++++++
+>  drivers/pci/pcie/aer/aerdrv_core.c           |   3 +
+>  include/linux/pci.h                          |  36 ++++++
+>  13 files changed, 611 insertions(+), 68 deletions(-)
+>
