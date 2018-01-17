@@ -1,29 +1,26 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0072.outbound.protection.outlook.com [104.47.0.72])
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0069.outbound.protection.outlook.com [104.47.37.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM8wC6FtpzF0QG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 01:43:19 +1100 (AEDT)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: "David S . Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM9Hf3RWSzF0Vn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 02:00:12 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>, "andrew@lunn.ch"
+ <andrew@lunn.ch>
 CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
- <madskateman@gmail.com>, Madalin-cristian Bucur <madalin.bucur@nxp.com>,
- Andrew Lunn <andrew@lunn.ch>, Joakim Tjernlund
- <Joakim.Tjernlund@infinera.com>
-Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
-Date: Wed, 17 Jan 2018 14:43:11 +0000
-Message-ID: <DB3PR0402MB38494AC5EE923A10053745DDECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <madskateman@gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+Date: Wed, 17 Jan 2018 15:00:06 +0000
+Message-ID: <1516201204.18795.105.camel@infinera.com>
 References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
  <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
  <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
- <1516125454.18795.87.camel@infinera.com> <20180116205342.GA29888@lunn.ch>
- <1516189651.18795.99.camel@infinera.com> <20180117134339.GC32299@lunn.ch>
- <DB3PR0402MB3849850266808EC52F88A783ECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <DB3PR0402MB3849865056493075A4F4317CECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-In-Reply-To: <DB3PR0402MB3849865056493075A4F4317CECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="us-ascii"
+ <1516125454.18795.87.camel@infinera.com>
+ <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+In-Reply-To: <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,73 +31,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Madalin-cristian Bucur
-> Sent: Wednesday, January 17, 2018 4:25 PM
-> To: David S . Miller <davem@davemloft.net>
-> Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org;
-> madskateman@gmail.com; 'Madalin-cristian Bucur' <madalin.bucur@nxp.com>;
-> Andrew Lunn <andrew@lunn.ch>; Joakim Tjernlund
-> <Joakim.Tjernlund@infinera.com>
-> Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
->=20
-> > -----Original Message-----
-> > From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org=
-]
-> > On Behalf Of Madalin-cristian Bucur
-> > Sent: Wednesday, January 17, 2018 4:16 PM
-> > To: Andrew Lunn <andrew@lunn.ch>; Joakim Tjernlund
-> > <Joakim.Tjernlund@infinera.com>
-> > Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org;
-> > madskateman@gmail.com; David S . Miller <davem@davemloft.net>
-> > Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
-> >
-> > > -----Original Message-----
-> > > From: Andrew Lunn [mailto:andrew@lunn.ch]
-> > > Sent: Wednesday, January 17, 2018 3:44 PM
-> > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-> > > Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
-> > >
-> > > > That doesn't work really, having users to hit the bug, debug it, fi=
-x
-> > it
-> > > and then
-> > > > find it fixed already in upstream, then specifically request it to
-> be
-> > > backported to stable.
-> > > > I don't need this fix to be backported, already got it. Someone els=
-e
-> > > might though.
-> > >
-> > > The "someone else might though" is a big point of asking for it to
-> > > added to stable. The other reason is it means one less patch you need
-> > > to maintain in your build.
-> >
-> > I've sent that patch [1] for net but I guess the timing was wrong and
-> > it was merged to net-next.
-> >
-> > > > I would be interested in bug fixes upstream which fixes:
-> > >
-> > > Did you try upstream? Does it give the same errors?
-> > >
-> > >     Andrew
-> >
-> > [1] https://patchwork.kernel.org/patch/10146119/
-> >
-> > Madalin
->=20
-> Hi Dave,
->=20
-> Can you please add the fix [1] to stable?
->=20
-> Thank you,
-> Madalin
-
-Sorry,
-
-I've provided the wrong link towards the patch (v1 instead of v3),
-here's the correct one:
-
-https://patchwork.kernel.org/patch/10151969/
-
-Madalin
+T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBNYWRhbGluLWNyaXN0aWFuIEJ1Y3Vy
+IHdyb3RlOg0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRlIG9m
+IHRoZSBvcmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1lbnRz
+IHVubGVzcyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMg
+c2FmZS4NCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTog
+Sm9ha2ltIFRqZXJubHVuZCBbbWFpbHRvOkpvYWtpbS5UamVybmx1bmRAaW5maW5lcmEuY29tXQ0K
+PiA+IFNlbnQ6IFR1ZXNkYXksIEphbnVhcnkgMTYsIDIwMTggNzo1OCBQTQ0KPiA+IFRvOiBhbmRy
+ZXdAbHVubi5jaA0KPiA+IFN1YmplY3Q6IFJlOiBEUEFBIEV0aGVybmV0IHRyYWZmaWNlIHRyb3Vi
+bGVzIHdpdGggTGludXgga2VybmVsDQo+ID4gDQo+ID4gT24gVGh1LCAxOTcwLTAxLTAxIGF0IDAw
+OjAwICswMDAwLCBBbmRyZXcgTHVubiB3cm90ZToNCj4gPiA+IA0KPiA+ID4gSGkgSm9ha2ltDQo+
+ID4gPiANCj4gPiA+IFlvdSBhcHBlYXIgdG8gYmUgdXNpbmcgYW4gb2xkIGtlcm5lbC4gVGFrZSBh
+IGxvb2sgYXQ6DQo+ID4gDQo+ID4gTm90IHJlYWxseSwgSSBhbSB1c2luZyA0LjE0LnggYW5kIEkg
+ZG9uJ3QgdGhpbmsgdGhhdCBpcyBvbGQuIFNlZW1zIGxpa2UNCj4gPiB0aGlzDQo+ID4gcGF0Y2gg
+aGFzbid0IGJlZW4gc2VudCB0byA0LjE0LnguDQo+ID4gDQo+ID4gSSB3b25kZXIgaWYgSSBtaWdo
+dCBiZSBtaXNzaW5nIHNvbWV0aGluZyBlbHNlLCB3ZSBqdXN0IG1vdmVkIHRvIDQuMTQgYW5kDQo+
+ID4gbm90aWMgdGhhdCBhbGwNCj4gPiBvdXIgZml4ZWQgUEhZcyBhcmUgbm9uIGZ1bmN0aW9uaW5n
+Og0KPiA+IGZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gZnNsX21h
+YyBmZmU0ZTIwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIw
+DQo+ID4gZnNsX21hYyBkcGFhLWV0aGVybmV0LjA6IF9fZGV2bV9yZXF1ZXN0X21lbV9yZWdpb24o
+bWFjKSBmYWlsZWQNCj4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjAgZmFpbGVk
+IHdpdGggZXJyb3IgLTE2DQo+ID4gZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZNYW4gTUVN
+QUMNCj4gPiBmc2xfbWFjIGZmZTRlNDAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6
+MDY6OWM6MGI6MDY6MjENCj4gPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMTogX19kZXZtX3JlcXVl
+c3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiA+IGZzbF9tYWM6IHByb2JlIG9mIGRwYWEtZXRo
+ZXJuZXQuMSBmYWlsZWQgd2l0aCBlcnJvciAtMTYNCj4gPiBmc2xfbWFjIGZmZTRlNjAwMC5ldGhl
+cm5ldDogRk1hbiBNRU1BQw0KPiA+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVybmV0OiBGTWFuIE1B
+QyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMg0KPiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4y
+OiBfX2Rldm1fcmVxdWVzdF9tZW1fcmVnaW9uKG1hYykgZmFpbGVkDQo+ID4gZnNsX21hYzogcHJv
+YmUgb2YgZHBhYS1ldGhlcm5ldC4yIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0KPiA+IGZzbF9tYWMg
+ZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gZnNsX21hYyBmZmU0ZTgwMDAuZXRo
+ZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIzDQo+ID4gZnNsX21hYyBk
+cGFhLWV0aGVybmV0LjM6IF9fZGV2bV9yZXF1ZXN0X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCj4g
+PiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjMgZmFpbGVkIHdpdGggZXJyb3IgLTE2
+DQo+ID4gDQo+ID4gRmVlbHMgbGlrZSBGTUFOIHN0aWxsIHRoaW5rIHRoZXJlIGFyZSByZWFsIFBI
+WXMgdGhlcmUgPw0KPiANCj4gSGkgSm9ha2ltLA0KPiANCj4gVGhlc2UgZXJyb3JzIGFyZSBpc3N1
+ZWQgd2hlbiB0cnlpbmcgdG8gcHJvYmUgdGhlIHNlY29uZCB0aW1lIHRoZSBzYW1lDQo+IE1BQyBu
+b2RlLiBUaGUgaXNzdWUgd2FzIGludHJvZHVjZWQgYnkgdGhpcyBjb21taXQ6DQo+IA0KPiBjb21t
+aXQgNGQ4ZWUxOTM1YmNkNjY2MzYwMzExZGZkYWRlZWUyMzVkNjgyZDY5YQ0KPiBBdXRob3I6IEZs
+b3JpYW4gRmFpbmVsbGkgPGYuZmFpbmVsbGlAZ21haWwuY29tPg0KPiBEYXRlOiBUdWUgQXVnIDIy
+IDE1OjI0OjQ3IDIwMTcgLTA3MDANCj4gZnNsL21hbjogSW5oZXJpdCBwYXJlbnQgZGV2aWNlIGFu
+ZCBvZl9ub2RlDQo+IA0KPiBhbmQgd2FzIGxhdGVyIGFkZHJlc3NlZCBieSB0aGlzIHBhdGNoIHNl
+dDoNCj4gDQo+IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wcm9qZWN0L25ldGRldi9saXN0
+Lz9zZXJpZXM9ODQ2MiZzdGF0ZT0qDQo+IA0KPiBFdmVuIHdpdGggdGhlc2UgZXJyb3JzIHByaW50
+ZWQsIGFsbCBpcyB3b3JraW5nIGZpbmUsIGl0J3MganVzdCB0aGUNCj4gc2Vjb25kIHByb2Jpbmcg
+dGhhdCBmYWlscy4gQWRkaW5nIHRoZSBsYXR0ZXIgcGF0Y2hlcyBvciByZXZlcnRpbmcNCj4gdGhl
+IG9uZSBhYm92ZSBtYWtlcyB0aGUgZXJyb3JzIHByaW50cyBkaXNzYXBlYXIuDQo+IA0KPiBNYWRh
+bGluDQoNCkFoaCwgbm93IGl0IHN0YXJ0cyB0byBsb29rIGJldHRlciwgcmV2ZXJ0aW5nICJmc2wv
+bWFuOiBJbmhlcml0IHBhcmVudCBkZXZpY2UgYW5kIG9mX25vZGUiIG9uIDQuMTQgZ2l2ZXM6DQps
+aWJwaHk6IEZpeGVkIE1ESU8gQnVzOiBwcm9iZWQNCnR1bjogVW5pdmVyc2FsIFRVTi9UQVAgZGV2
+aWNlIGRyaXZlciwgMS42DQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVk
+DQppb21tdTogQWRkaW5nIGRldmljZSBmZmU0ODgwMDAucG9ydCB0byBncm91cCAxMA0KbGlicGh5
+OiBGcmVlc2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGUxMDAwOiBF
+cnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6IEFkZGluZyBkZXZpY2Ug
+ZmZlNDg5MDAwLnBvcnQgdG8gZ3JvdXAgMjINCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8g
+QnVzOiBwcm9iZWQNCm1kaW9fYnVzIGZmZTRlMzAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkw
+IHJlZyBhdCAzLjMNCmlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4YTAwMC5wb3J0IHRvIGdyb3Vw
+IDIzDQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBm
+ZmU0ZTUwMDA6IEVycm9yIHdoaWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQppb21tdTogQWRk
+aW5nIGRldmljZSBmZmU0OGIwMDAucG9ydCB0byBncm91cCAyNA0KbGlicGh5OiBGcmVlc2NhbGUg
+WEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGU3MDAwOiBFcnJvciB3aGlsZSBy
+ZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6IEFkZGluZyBkZXZpY2UgZmZlNDhjMDAwLnBv
+cnQgdG8gZ3JvdXAgMjUNCmxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQN
+Cm1kaW9fYnVzIGZmZTRlOTAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMN
+CmZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlMjAw
+MC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjANCmZzbF9tYWMg
+ZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlNDAwMC5ldGhlcm5l
+dDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjENCmZzbF9tYWMgZmZlNGU2MDAw
+LmV0aGVybmV0OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDogRk1hbiBN
+QUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjINCmZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0
+OiBGTWFuIE1FTUFDDQpmc2xfbWFjIGZmZTRlODAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVz
+czogMDA6MDY6OWM6MGI6MDY6MjMNCmZzbF9tYWMgZmZlNGUwMDAwLmV0aGVybmV0OiBGTWFuIE1F
+TUFDDQpmc2xfbWFjIGZmZTRlMDAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6
+OWM6MGI6MDY6MWYNCmZzbF9kcGEgZHBhYS1ldGhlcm5ldC4wIGV0aDA6IFByb2JlZCBpbnRlcmZh
+Y2UgZXRoMA0KZnNsX2RwYSBkcGFhLWV0aGVybmV0LjEgZXRoMTogUHJvYmVkIGludGVyZmFjZSBl
+dGgxDQpmc2xfZHBhIGRwYWEtZXRoZXJuZXQuMiBldGgyOiBQcm9iZWQgaW50ZXJmYWNlIGV0aDIN
+CmZzbF9kcGEgZHBhYS1ldGhlcm5ldC4zIGV0aDM6IFByb2JlZCBpbnRlcmZhY2UgZXRoMw0KZnNs
+X2RwYSBkcGFhLWV0aGVybmV0LjQgZXRoNDogUHJvYmVkIGludGVyZmFjZSBldGg0DQoNClN0aWxs
+IHNvbWUgbWlub3IgZXJyb3JzOiBtZGlvX2J1cyBmZmU0ZTcwMDA6IEVycm9yIHdoaWxlIHJlYWRp
+bmcgUEhZMCByZWcgYXQgMy4zDQpidXQgdGhpcyBpcyBnb2luZyB0aGUgcmlnaHQgd2F5KEkgaGF2
+ZSBub3QgaGFkIGEgY2hhbmNlIHRvIHRyeSBpZiB0aGV5IHdvcmsgZHVlDQp0byBleHRlcm5hbCBt
+b2R1bGVzIG5vdCBwb3J0ZWQvcmVhZHkgeWV0KQ0KDQpUaGUgb3RoZXIgcGF0Y2ggc2VyaWVzIGlz
+IHN0aWxsIHRvIGJlIHRlc3RlZCB0aG91Z2ggYnV0IEkgYWxyZWFkeSBub3cgd2FudGVkIA0KdG8g
+c3RyZXNzIHRoZSBpbXBvcnRhbmNlIG9mIGdldHRpbmcgYWxsIHVwc3RyZWFtIGZpeGVzIGludG8g
+c3RhYmxlLCBBU0FQLg0KWW91IG5vdyB3aGF0IHRoZXkgYXJlLCBJIGhhdmUgbm8gaWRlYS4NCg0K
+VGhhbmtzIA0KICAgICAgIEpvY2tl
