@@ -1,49 +1,17 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM1F55sqmzF0j9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 19:57:29 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0H8snRW099865
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 03:57:27 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fhvt6px67-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 03:57:27 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 17 Jan 2018 08:57:24 -0000
-Subject: Re: [PATCH v6 03/24] mm: Dont assume page-table invariance during
- faults
-To: Andi Kleen <ak@linux.intel.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1515777968-867-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1515777968-867-4-git-send-email-ldufour@linux.vnet.ibm.com>
- <87d129tccz.fsf@linux.intel.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 17 Jan 2018 09:57:14 +0100
-MIME-Version: 1.0
-In-Reply-To: <87d129tccz.fsf@linux.intel.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <476660c5-771c-0125-7d04-0e5a8d8bf65d@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM1pJ5lfszF0Wk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 20:22:46 +1100 (AEDT)
+Message-Id: <49148d07955d3e5f963cedf9adcfcc37c3e03ef4.1516179904.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 1/5] powerpc/mm: Enhance 'slice' for supporting PPC32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 17 Jan 2018 10:22:40 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,66 +21,321 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/01/2018 04:04, Andi Kleen wrote:
-> Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
-> 
->> From: Peter Zijlstra <peterz@infradead.org>
->>
->> One of the side effects of speculating on faults (without holding
->> mmap_sem) is that we can race with free_pgtables() and therefore we
->> cannot assume the page-tables will stick around.
->>
->> Remove the reliance on the pte pointer.
-> 
-> This needs a lot more explanation. So why is this code not needed with
-> SPF only?
+In preparation for the following patch which will fix an issue on
+the 8xx by re-using the 'slices', this patch enhances the
+'slices' implementation to support 32 bits CPUs.
 
-Hi Andi,
+On PPC32, the address space is limited to 4Gbytes, hence only the low
+slices will be used. As of today, the code uses
+SLICE_LOW_TOP (0x100000000ul) and compares it with addr to determine
+if addr refers to low or high space.
+On PPC32, such a (addr < SLICE_LOW_TOP) test is always false because
+0x100000000ul degrades to 0. Therefore, the patch modifies
+SLICE_LOW_TOP to (0xfffffffful) and modifies the tests to
+(addr <= SLICE_LOW_TOP) which will then always be true on PPC32
+as addr has type 'unsigned long' while not modifying the PPC64
+behaviour.
 
-This is a good question, and I should detail that more in the commit's log.
+This patch moves "slices" functions prototypes from page64.h to page.h
 
-Here is my response to Balbir when he asked for:
+The high slices use bitmaps. As bitmap functions are not prepared to
+handling bitmaps of size 0, the bitmap_xxx() calls are wrapped into
+slice_bitmap_xxx() macros which will take care of the 0 nbits case.
 
-On 10/07/2017 19:48, Laurent Dufour wrote:
-> On 07/07/2017 09:07, Balbir Singh wrote:
->> On Fri, 2017-06-16 at 19:52 +0200, Laurent Dufour wrote:
->>> From: Peter Zijlstra <peterz@infradead.org>
->>>
->>> One of the side effects of speculating on faults (without holding
->>> mmap_sem) is that we can race with free_pgtables() and therefore we
->>> cannot assume the page-tables will stick around.
->>>
->>> Remove the relyance on the pte pointer.
->>              ^^ reliance
->>
->> Looking at the changelog and the code the impact is not clear.
->> It looks like after this patch we always assume the pte is not
->> the same. What is the impact of this patch?
-> 
-> Hi Balbir,
-> 
-> In most of the case pte_unmap_same() was returning 1, which meaning that
-> do_swap_page() should do its processing.
-> 
-> So in most of the case there will be no impact.
-> 
-> Now regarding the case where pte_unmap_safe() was returning 0, and thus
-> do_swap_page return 0 too, this happens when the page has already been
-> swapped back. This may happen before do_swap_page() get called or while in
-> the call to do_swap_page(). In that later case, the check done when
-> swapin_readahead() returns will detect that case.
-> 
-> The worst case would be that a page fault is occuring on 2 threads at the
-> same time on the same swapped out page. In that case one thread will take
-> much time looping in __read_swap_cache_async(). But in the regular page
-> fault path, this is even worse since the thread would wait for semaphore to
-> be released before starting anything.
-> 
-> Cheers,
-> Laurent.
-> 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: First patch of v1 serie split in two parts ; added slice_bitmap_xxx() macros.
 
-I'll add that to the commit's log.
+ arch/powerpc/include/asm/page.h      | 14 +++++++++
+ arch/powerpc/include/asm/page_32.h   | 19 ++++++++++++
+ arch/powerpc/include/asm/page_64.h   | 21 ++-----------
+ arch/powerpc/mm/hash_utils_64.c      |  2 +-
+ arch/powerpc/mm/mmu_context_nohash.c |  7 +++++
+ arch/powerpc/mm/slice.c              | 60 ++++++++++++++++++++++++------------
+ 6 files changed, 83 insertions(+), 40 deletions(-)
 
-Thanks,
-Laurent.
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 8da5d4c1cab2..d0384f9db9eb 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -342,6 +342,20 @@ typedef struct page *pgtable_t;
+ #endif
+ #endif
+ 
++#ifdef CONFIG_PPC_MM_SLICES
++struct mm_struct;
++
++unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
++				      unsigned long flags, unsigned int psize,
++				      int topdown);
++
++unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
++
++void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
++void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
++			   unsigned long len, unsigned int psize);
++#endif
++
+ #include <asm-generic/memory_model.h>
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
+index 5c378e9b78c8..f7d1bd1183c8 100644
+--- a/arch/powerpc/include/asm/page_32.h
++++ b/arch/powerpc/include/asm/page_32.h
+@@ -60,4 +60,23 @@ extern void copy_page(void *to, void *from);
+ 
+ #endif /* __ASSEMBLY__ */
+ 
++#ifdef CONFIG_PPC_MM_SLICES
++
++#define SLICE_LOW_SHIFT		28
++#define SLICE_HIGH_SHIFT	0
++
++#define SLICE_LOW_TOP		(0xfffffffful)
++#define SLICE_NUM_LOW		((SLICE_LOW_TOP >> SLICE_LOW_SHIFT) + 1)
++#define SLICE_NUM_HIGH		0ul
++
++#define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
++#define GET_HIGH_SLICE_INDEX(addr)	(addr & 0)
++
++#ifdef CONFIG_HUGETLB_PAGE
++#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
++#endif
++#define HAVE_ARCH_UNMAPPED_AREA
++#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
++
++#endif
+ #endif /* _ASM_POWERPC_PAGE_32_H */
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index 56234c6fcd61..a7baef5bbe5f 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -91,30 +91,13 @@ extern u64 ppc64_pft_size;
+ #define SLICE_LOW_SHIFT		28
+ #define SLICE_HIGH_SHIFT	40
+ 
+-#define SLICE_LOW_TOP		(0x100000000ul)
+-#define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
++#define SLICE_LOW_TOP		(0xfffffffful)
++#define SLICE_NUM_LOW		((SLICE_LOW_TOP >> SLICE_LOW_SHIFT) + 1)
+ #define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
+ 
+ #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+ 
+-#ifndef __ASSEMBLY__
+-struct mm_struct;
+-
+-extern unsigned long slice_get_unmapped_area(unsigned long addr,
+-					     unsigned long len,
+-					     unsigned long flags,
+-					     unsigned int psize,
+-					     int topdown);
+-
+-extern unsigned int get_slice_psize(struct mm_struct *mm,
+-				    unsigned long addr);
+-
+-extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+-extern void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+-				  unsigned long len, unsigned int psize);
+-
+-#endif /* __ASSEMBLY__ */
+ #else
+ #define slice_init()
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 655a5a9a183d..3266b3326088 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1101,7 +1101,7 @@ static unsigned int get_paca_psize(unsigned long addr)
+ 	unsigned char *hpsizes;
+ 	unsigned long index, mask_index;
+ 
+-	if (addr < SLICE_LOW_TOP) {
++	if (addr <= SLICE_LOW_TOP) {
+ 		lpsizes = get_paca()->mm_ctx_low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+ 		return (lpsizes >> (index * 4)) & 0xF;
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 4554d6527682..42e02f5b6660 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -331,6 +331,13 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
+ {
+ 	pr_hard("initing context for mm @%p\n", mm);
+ 
++#ifdef CONFIG_PPC_MM_SLICES
++	if (!mm->context.slb_addr_limit)
++		mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
++	if (!mm->context.id)
++		slice_set_user_psize(mm, mmu_virtual_psize);
++#endif
++
+ 	mm->context.id = MMU_NO_CONTEXT;
+ 	mm->context.active = 0;
+ 	return 0;
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 23ec2c5e3b78..3f35a93afe13 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -67,16 +67,33 @@ static void slice_print_mask(const char *label, struct slice_mask mask) {}
+ 
+ #endif
+ 
++#define slice_bitmap_zero(dst, nbits) \
++	do { if (nbits) bitmap_zero(dst, nbits); } while (0)
++#define slice_bitmap_set(dst, pos, nbits) \
++	do { if (nbits) bitmap_set(dst, pos, nbits); } while (0)
++#define slice_bitmap_copy(dst, src, nbits) \
++	do { if (nbits) bitmap_copy(dst, src, nbits); } while (0)
++#define slice_bitmap_and(dst, src1, src2, nbits) \
++	({ (nbits) ? bitmap_and(dst, src1, src2, nbits) : 0; })
++#define slice_bitmap_or(dst, src1, src2, nbits) \
++	do { if (nbits) bitmap_or(dst, src1, src2, nbits); } while (0)
++#define slice_bitmap_andnot(dst, src1, src2, nbits) \
++	({ (nbits) ? bitmap_andnot(dst, src1, src2, nbits) : 0; })
++#define slice_bitmap_equal(src1, src2, nbits) \
++	({ (nbits) ? bitmap_equal(src1, src2, nbits) : 1; })
++#define slice_bitmap_empty(src, nbits) \
++	({ (nbits) ? bitmap_empty(src, nbits) : 1; })
++
+ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ 				struct slice_mask *ret)
+ {
+ 	unsigned long end = start + len - 1;
+ 
+ 	ret->low_slices = 0;
+-	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
++	slice_bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+-	if (start < SLICE_LOW_TOP) {
+-		unsigned long mend = min(end, (SLICE_LOW_TOP - 1));
++	if (start <= SLICE_LOW_TOP) {
++		unsigned long mend = min(end, SLICE_LOW_TOP);
+ 
+ 		ret->low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
+ 			- (1u << GET_LOW_SLICE_INDEX(start));
+@@ -87,7 +104,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ 		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+ 		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+ 
+-		bitmap_set(ret->high_slices, start_index, count);
++		slice_bitmap_set(ret->high_slices, start_index, count);
+ 	}
+ }
+ 
+@@ -117,7 +134,7 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
+ 	 * of the high or low area bitmaps, the first high area starts
+ 	 * at 4GB, not 0 */
+ 	if (start == 0)
+-		start = SLICE_LOW_TOP;
++		start = SLICE_LOW_TOP + 1;
+ 
+ 	return !slice_area_is_free(mm, start, end - start);
+ }
+@@ -128,7 +145,7 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
+ 	unsigned long i;
+ 
+ 	ret->low_slices = 0;
+-	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
++	slice_bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+ 		if (!slice_low_has_vma(mm, i))
+@@ -151,7 +168,7 @@ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_ma
+ 	u64 lpsizes;
+ 
+ 	ret->low_slices = 0;
+-	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
++	slice_bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+@@ -180,11 +197,11 @@ static int slice_check_fit(struct mm_struct *mm,
+ 	 */
+ 	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
+ 
+-	bitmap_and(result, mask.high_slices,
+-		   available.high_slices, slice_count);
++	slice_bitmap_and(result, mask.high_slices,
++			 available.high_slices, slice_count);
+ 
+ 	return (mask.low_slices & available.low_slices) == mask.low_slices &&
+-		bitmap_equal(result, mask.high_slices, slice_count);
++		slice_bitmap_equal(result, mask.high_slices, slice_count));
+ }
+ 
+ static void slice_flush_segments(void *parm)
+@@ -259,7 +276,7 @@ static bool slice_scan_available(unsigned long addr,
+ 				 unsigned long *boundary_addr)
+ {
+ 	unsigned long slice;
+-	if (addr < SLICE_LOW_TOP) {
++	if (addr <= SLICE_LOW_TOP) {
+ 		slice = GET_LOW_SLICE_INDEX(addr);
+ 		*boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
+ 		return !!(available.low_slices & (1u << slice));
+@@ -391,8 +408,9 @@ static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
+ 	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+ 
+ 	dst->low_slices |= src->low_slices;
+-	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+-	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++	slice_bitmap_or(result, dst->high_slices, src->high_slices,
++			SLICE_NUM_HIGH);
++	slice_bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
+ }
+ 
+ static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
+@@ -401,8 +419,9 @@ static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *
+ 
+ 	dst->low_slices &= ~src->low_slices;
+ 
+-	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+-	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++	slice_bitmap_andnot(result, dst->high_slices, src->high_slices,
++			    SLICE_NUM_HIGH);
++	slice_bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
+ }
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+@@ -450,14 +469,14 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	 * init different masks
+ 	 */
+ 	mask.low_slices = 0;
+-	bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
++	slice_bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	/* silence stupid warning */;
+ 	potential_mask.low_slices = 0;
+-	bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
++	slice_bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	compat_mask.low_slices = 0;
+-	bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
++	slice_bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	/* Sanity checks */
+ 	BUG_ON(mm->task_size == 0);
+@@ -595,7 +614,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+  convert:
+ 	slice_andnot_mask(&mask, &good_mask);
+ 	slice_andnot_mask(&mask, &compat_mask);
+-	if (mask.low_slices || !bitmap_empty(mask.high_slices, SLICE_NUM_HIGH)) {
++	if (mask.low_slices ||
++	    !slice_bitmap_empty(mask.high_slices, SLICE_NUM_HIGH)) {
+ 		slice_convert(mm, mask, psize);
+ 		if (psize > MMU_PAGE_BASE)
+ 			on_each_cpu(slice_flush_segments, mm, 1);
+@@ -640,7 +660,7 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ 		return MMU_PAGE_4K;
+ #endif
+ 	}
+-	if (addr < SLICE_LOW_TOP) {
++	if (addr <= SLICE_LOW_TOP) {
+ 		u64 lpsizes;
+ 		lpsizes = mm->context.low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-- 
+2.13.3
