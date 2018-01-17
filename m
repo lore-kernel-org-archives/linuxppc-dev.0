@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Bs0j8bzF0Zv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:25:56 +1100 (AEDT)
-In-Reply-To: <20180110061014.29181-1-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7Bt11DpzF0bN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:25:58 +1100 (AEDT)
+In-Reply-To: <20180110141946.20127-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc: Don't preempt_disable() in show_cpuinfo()
-Message-Id: <3zM7Br34rqz9s82@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:25:56 +1100 (AEDT)
+Subject: Re: powerpc/xmon: Don't print hashed pointers in paca dump
+Message-Id: <3zM7Bs3Lbgz9s7h@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:25:57 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-01-10 at 06:10:12 UTC, Benjamin Herrenschmidt wrote:
-> This causes warnings from cpufreq mutex code. This is also
-> rather unnecessary and ineffective. If we really want to
-> prevent concurrent unplug, we could take the unplug read
-> lock but I don't see this being critical.
+On Wed, 2018-01-10 at 14:19:46 UTC, Michael Ellerman wrote:
+> Remember when the biggest problem we had to worry about was hashed
+> pointers, those were the days.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> These were missed in my earlier patch because they don't match "%p",
+> but the macro is hiding a "%p", so these all end up being hashed,
+> which is not what we want in xmon. Convert them to "%px".
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/349524bc0da698ec77f2057cf4a494
+https://git.kernel.org/powerpc/c/2248fade965a5f1ba2a8e6e63f84df
 
 cheers
