@@ -1,42 +1,29 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zLwVl47GKzF0cP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 16:23:58 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0H5NsqU064806
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 00:23:56 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fhs4g76pu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 00:23:56 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 17 Jan 2018 05:23:48 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] powerpc/32: Fix hugepage allocation on 8xx at hint
- address
-In-Reply-To: <7341aef1-f2ac-6e9b-8279-93b0f0649b81@c-s.fr>
-References: <9a5dadc10f88e2fc0ac9fb5d18c5424df33f3f4c.1515169256.git.christophe.leroy@c-s.fr>
- <876081by7g.fsf@linux.vnet.ibm.com>
- <b5e34a5b-94b8-9405-929d-d35dde3fcb3b@c-s.fr>
- <945affcd-b25c-bc6e-68e5-8bbbcd31c0fd@linux.vnet.ibm.com>
- <7341aef1-f2ac-6e9b-8279-93b0f0649b81@c-s.fr>
-Date: Wed, 17 Jan 2018 10:53:41 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <87y3kxrrc2.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zLxBK6k8gzF0Xn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jan 2018 16:54:48 +1100 (AEDT)
+Content-Type: multipart/alternative;
+ boundary=Apple-Mail-453CD8A2-AA07-434D-8C45-5D5229033B29
+Mime-Version: 1.0 (1.0)
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <CAHkrCmFd8F8Bpm8vUete_QHjGosyXH0JZVEJ6gwvBMMUtBivLQ@mail.gmail.com>
+Date: Wed, 17 Jan 2018 06:54:34 +0100
+Cc: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
+ "andrew@lunn.ch" <andrew@lunn.ch>,
+ "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Message-Id: <98ECD3EA-F121-417E-A004-DE4889D06B11@xenosoft.de>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com>
+ <CAHkrCmFd8F8Bpm8vUete_QHjGosyXH0JZVEJ6gwvBMMUtBivLQ@mail.gmail.com>
+To: mad skateman <madskateman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +33,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
->>
->>> How should I split in separate patches ? Something like ?
->>> 1/ Slice support for PPC32 > 2/ Activate slice for 8xx
+--Apple-Mail-453CD8A2-AA07-434D-8C45-5D5229033B29
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+FYI
+
+Sent from my iPhone
+
+> On 17. Jan 2018, at 06:50, Christian Zigotzky <chzigotzky@xenosoft.de> wro=
+te:
+>=20
+> Hi Skateman,
+>=20
+> Fantastic! Many thanks for testing the RC8 of kernel 4.15 without PAMU sup=
+port.
+>=20
+> @All
+> Further information: http://forum.hyperion-entertainment.biz/viewtopic.php=
+?f=3D58&p=3D43706#p43706
+>=20
+> Cheers,
+> Christian
+>=20
+> Sent from my iPhone
+>=20
+>> On 16. Jan 2018, at 23:05, mad skateman <madskateman@gmail.com> wrote:
 >>=20
->> Yes something like that. Will you=C2=A0 be able to avoid that
->>  =C2=A0if (SLICE_NUM_HIGH) from the code? That makes the code ugly. Righ=
-t now=20
->> i don't have definite suggestion on what we could do though.
+>> Fantastic Christian..=20
 >>=20
->
-> Could use #ifdefs instead, but in my mind it would be even more ugly.
->
-> I would have liked just doing nothing, but the issue is that at the=20
-> moment bitmap_xxx() functions are not prepared to handle bitmaps of size=
-=20
-> zero. Should we try to change that ? Any chance to succeed ?
->
+>> Your latest kernel makes the NIC work!!!
+>>=20
+>> Few tweaks to be done... like the buffer space=20
+>>=20
+>> Brilliant!
+>=20
+>=20
+>=20
+>> On 16. Jan 2018, at 21:46, Christian Zigotzky <chzigotzky@xenosoft.de> wr=
+ote:
+>>=20
+>> FYI
+>>=20
+>>> On 16 January 2018 at 9:42PM, Christian Zigotzky wrote:
+>>> Hi All,
+>>>=20
+>>> I compiled the RC8 of kernel 4.15 for the X5000 without PAMU support tod=
+ay.
+>>>=20
+>>> Download: http://www.xenosoft.de/uImage_without_pamu.tar.gz
+>>>=20
+>>> Please test it on your AmigaOne X5000.
+>>>=20
+>>> Thanks,
+>>> Christian
+>>>=20
+>>>=20
+>>> On 16 January 2018 at 6:33PM, Madalin-cristian Bucur wrote:
+>>>>> The PAMU related errors may be relevant to the issue, if you have inco=
+rrect
+>>>>> settings you may have no traffic passing through. The PAMU configurati=
+on
+>>>>> should be made by the bootloader. Can you try to disable CONFIG_FSL_PA=
+MU?
+>>>>>=20
+>>>>> Madalin
+>>>>>=20
+>>>>>=20
+>>>=20
 
-How much code duplication it is to do slice_32.c?
+--Apple-Mail-453CD8A2-AA07-434D-8C45-5D5229033B29
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Michael,
+<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
+utf-8"></head><body dir=3D"auto"><span style=3D"background-color: rgba(255, 2=
+55, 255, 0);">FYI<br><br></span><div><span style=3D"background-color: rgba(2=
+55, 255, 255, 0);">Sent from my iPhone</span></div><div><span style=3D"backg=
+round-color: rgba(255, 255, 255, 0);"><br></span><font color=3D"#000000"><sp=
+an style=3D"background-color: rgba(255, 255, 255, 0);">On 17. Jan 2018, at 0=
+6:50, Christian Zigotzky &lt;<a href=3D"mailto:chzigotzky@xenosoft.de">chzig=
+otzky@xenosoft.de</a>&gt; wrote:<br><br></span></font></div><blockquote type=
+=3D"cite"><font color=3D"#000000"><span style=3D"background-color: rgba(255,=
+ 255, 255, 0);">Hi Skateman,<br><br>Fantastic! Many thanks for testing the R=
+C8 of kernel 4.15 without PAMU support.</span></font><div><font color=3D"#00=
+0000"><span style=3D"background-color: rgba(255, 255, 255, 0);"><br></span><=
+/font></div><div><font color=3D"#000000"><span style=3D"background-color: rg=
+ba(255, 255, 255, 0);">@All</span></font></div><div><font color=3D"#000000">=
+<span style=3D"background-color: rgba(255, 255, 255, 0);">Further informatio=
+n:&nbsp;<a href=3D"http://forum.hyperion-entertainment.biz/viewtopic.php?f=3D=
+58&amp;p=3D43706#p43706">http://forum.hyperion-entertainment.biz/viewtopic.p=
+hp?f=3D58&amp;p=3D43706#p43706</a><br><br>Cheers,<br>Christian<br><br>Sent f=
+rom my iPhone<br><br></span></font><blockquote type=3D"cite"><font color=3D"=
+#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);">On 16. Ja=
+n 2018, at 23:05, mad skateman &lt;<a href=3D"mailto:madskateman@gmail.com" d=
+ir=3D"ltr" x-apple-data-detectors=3D"true" x-apple-data-detectors-type=3D"li=
+nk" x-apple-data-detectors-result=3D"1">madskateman@gmail.com</a>&gt; wrote:=
+<br></span></font></blockquote><blockquote type=3D"cite"><font color=3D"#000=
+000"><span style=3D"background-color: rgba(255, 255, 255, 0);"><br></span></=
+font></blockquote><blockquote type=3D"cite"><font color=3D"#000000"><span st=
+yle=3D"background-color: rgba(255, 255, 255, 0);">Fantastic Christian..&nbsp=
+;<br></span></font></blockquote><blockquote type=3D"cite"><font color=3D"#00=
+0000"><span style=3D"background-color: rgba(255, 255, 255, 0);"><br></span><=
+/font></blockquote><blockquote type=3D"cite"><font color=3D"#000000"><span s=
+tyle=3D"background-color: rgba(255, 255, 255, 0);">Your latest kernel makes t=
+he NIC work!!!<br></span></font></blockquote><blockquote type=3D"cite"><font=
+ color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);"=
+><br></span></font></blockquote><blockquote type=3D"cite"><font color=3D"#00=
+0000"><span style=3D"background-color: rgba(255, 255, 255, 0);">Few tweaks t=
+o be done... like the buffer space&nbsp;<br></span></font></blockquote><bloc=
+kquote type=3D"cite"><font color=3D"#000000"><span style=3D"background-color=
+: rgba(255, 255, 255, 0);"><br></span></font></blockquote><blockquote type=3D=
+"cite"><font color=3D"#000000"><span style=3D"background-color: rgba(255, 25=
+5, 255, 0);">Brilliant!</span></font></blockquote><font color=3D"#000000"><s=
+pan style=3D"background-color: rgba(255, 255, 255, 0);"><br></span></font><d=
+iv><font color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 2=
+55, 0);"><br></span></font></div><div><font color=3D"#000000"><span style=3D=
+"background-color: rgba(255, 255, 255, 0);"><br></span></font><font color=3D=
+"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);">On 16. J=
+an 2018, at 21:46, Christian Zigotzky &lt;<a href=3D"mailto:chzigotzky@xenos=
+oft.de">chzigotzky@xenosoft.de</a>&gt; wrote:<br><br></span></font></div><bl=
+ockquote type=3D"cite"><font color=3D"#000000"><span style=3D"background-col=
+or: rgba(255, 255, 255, 0);">FYI<br><br></span></font><font color=3D"#000000=
+"><span style=3D"background-color: rgba(255, 255, 255, 0);">On 16 January 20=
+18 at 9:42PM, Christian Zigotzky wrote:<br></span></font><blockquote type=3D=
+"cite"><font color=3D"#000000"><span style=3D"background-color: rgba(255, 25=
+5, 255, 0);">Hi All,<br></span></font></blockquote><blockquote type=3D"cite"=
+><font color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 255=
+, 0);"><br></span></font></blockquote><blockquote type=3D"cite"><font color=3D=
+"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);">I compil=
+ed the RC8 of kernel 4.15 for the X5000 without PAMU support today.<br></spa=
+n></font></blockquote><blockquote type=3D"cite"><font color=3D"#000000"><spa=
+n style=3D"background-color: rgba(255, 255, 255, 0);"><br></span></font></bl=
+ockquote><blockquote type=3D"cite"><font color=3D"#000000"><span style=3D"ba=
+ckground-color: rgba(255, 255, 255, 0);">Download:&nbsp;<a href=3D"http://ww=
+w.xenosoft.de/uImage_without_pamu.tar.gz">http://www.xenosoft.de/uImage_with=
+out_pamu.tar.gz</a><br></span></font></blockquote><blockquote type=3D"cite">=
+<font color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 255,=
+ 0);"><br></span></font></blockquote><blockquote type=3D"cite"><font color=3D=
+"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);">Please t=
+est it on your AmigaOne X5000.<br></span></font></blockquote><blockquote typ=
+e=3D"cite"><font color=3D"#000000"><span style=3D"background-color: rgba(255=
+, 255, 255, 0);"><br></span></font></blockquote><blockquote type=3D"cite"><f=
+ont color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0=
+);">Thanks,<br></span></font></blockquote><blockquote type=3D"cite"><font co=
+lor=3D"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);">Ch=
+ristian<br></span></font></blockquote><blockquote type=3D"cite"><font color=3D=
+"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);"><br></sp=
+an></font></blockquote><blockquote type=3D"cite"><font color=3D"#000000"><sp=
+an style=3D"background-color: rgba(255, 255, 255, 0);"><br></span></font></b=
+lockquote><blockquote type=3D"cite"><font color=3D"#000000"><span style=3D"b=
+ackground-color: rgba(255, 255, 255, 0);">On 16 January 2018 at 6:33PM, Mada=
+lin-cristian Bucur wrote:<br></span></font></blockquote><blockquote type=3D"=
+cite"><blockquote type=3D"cite"><blockquote type=3D"cite"><font color=3D"#00=
+0000"><span style=3D"background-color: rgba(255, 255, 255, 0);">The PAMU rel=
+ated errors may be relevant to the issue, if you have incorrect<br></span></=
+font></blockquote></blockquote></blockquote><blockquote type=3D"cite"><block=
+quote type=3D"cite"><blockquote type=3D"cite"><font color=3D"#000000"><span s=
+tyle=3D"background-color: rgba(255, 255, 255, 0);">settings you may have no t=
+raffic passing through. The PAMU configuration<br></span></font></blockquote=
+></blockquote></blockquote><blockquote type=3D"cite"><blockquote type=3D"cit=
+e"><blockquote type=3D"cite"><font color=3D"#000000"><span style=3D"backgrou=
+nd-color: rgba(255, 255, 255, 0);">should be made by the bootloader. Can you=
+ try to disable CONFIG_FSL_PAMU?<br></span></font></blockquote></blockquote>=
+</blockquote><blockquote type=3D"cite"><blockquote type=3D"cite"><blockquote=
+ type=3D"cite"><font color=3D"#000000"><span style=3D"background-color: rgba=
+(255, 255, 255, 0);"><br></span></font></blockquote></blockquote></blockquot=
+e><blockquote type=3D"cite"><blockquote type=3D"cite"><blockquote type=3D"ci=
+te"><font color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 2=
+55, 0);">Madalin<br></span></font></blockquote></blockquote></blockquote><bl=
+ockquote type=3D"cite"><blockquote type=3D"cite"><blockquote type=3D"cite"><=
+font color=3D"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0=
+);"><br></span></font></blockquote></blockquote></blockquote><blockquote typ=
+e=3D"cite"><blockquote type=3D"cite"><blockquote type=3D"cite"><font color=3D=
+"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);"><br></sp=
+an></font></blockquote></blockquote></blockquote><blockquote type=3D"cite"><=
+br></blockquote></blockquote></div></blockquote></body></html>=
 
-What do you suggest here?
-
--aneesh
+--Apple-Mail-453CD8A2-AA07-434D-8C45-5D5229033B29--
