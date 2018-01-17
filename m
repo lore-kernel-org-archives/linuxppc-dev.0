@@ -1,20 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7HX6lXbzF0XK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:00 +1100 (AEDT)
-In-Reply-To: <20170201015438.18826-2-dmitry.torokhov@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zM7JH5RsqzF0XV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 00:30:39 +1100 (AEDT)
+In-Reply-To: <bb30d80cc985d7307fa1286c9e6824230698919b.1515759812.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [2/2] powerpc: make use of for_each_node_by_type() instead of
- open-coding it
-Message-Id: <3zM7HX2lB3z9sPk@ozlabs.org>
-Date: Thu, 18 Jan 2018 00:29:59 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [1/8] powerpc/8xx: Remove CPU6 ERRATA Workaround
+Message-Id: <3zM7JF6vWyz9sRW@ozlabs.org>
+Date: Thu, 18 Jan 2018 00:30:35 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-01 at 01:54:38 UTC, Dmitry Torokhov wrote:
-> Instead of manually coding the loop with of_find_node_by_type(), let's
-> switch to the standard macro for iterating over nodes with given type.
+On Fri, 2018-01-12 at 12:45:19 UTC, Christophe Leroy wrote:
+> CPU6 ERRATA affects only MPC860 revisions prior to C.0. Manufacturing
+> of those revisiosn was stopped in 1999-2000.
+> Therefore, it has been almost 20 years since this ERRATA has been
+> fixed in the silicon.
 > 
-> Also fixed a couple of refcount leaks in the aforementioned loops.
+> This patch removes the workaround for that ERRATA.
 > 
-> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9625e69a3818cc00fd85632719b4c6
+https://git.kernel.org/powerpc/c/2a45addd21de25f41c8f21a6f08f09
 
 cheers
