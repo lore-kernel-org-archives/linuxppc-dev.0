@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMlLB1NC2zF0lJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 00:34:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMlL912bRzF0lM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 00:34:25 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org
 Cc: greg@kroah.com,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.14 backport 04/10] powerpc/64: Convert the syscall exit
- path to use RFI_TO_USER/KERNEL
-Date: Fri, 19 Jan 2018 00:34:04 +1100
-Message-Id: <20180118133410.18716-4-mpe@ellerman.id.au>
+Subject: [PATCH v4.14 backport 02/10] powerpc/64: Add macros for annotating
+ the destination of rfid/hrfid
+Date: Fri, 19 Jan 2018 00:34:02 +1100
+Message-Id: <20180118133410.18716-2-mpe@ellerman.id.au>
 In-Reply-To: <20180118133410.18716-1-mpe@ellerman.id.au>
 References: <20180118133410.18716-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,47 +25,80 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-commit b8e90cb7bc04a509e821e82ab6ed7a8ef11ba333 upstream.
+commit 50e51c13b3822d14ff6df4279423e4b7b2269bc3 upstream.
 
-In the syscall exit path we may be returning to user or kernel
-context. We already have a test for that, because we conditionally
-restore r13. So use that existing test and branch, and bifurcate the
-return based on that.
+The rfid/hrfid ((Hypervisor) Return From Interrupt) instruction is
+used for switching from the kernel to userspace, and from the
+hypervisor to the guest kernel. However it can and is also used for
+other transitions, eg. from real mode kernel code to virtual mode
+kernel code, and it's not always clear from the code what the
+destination context is.
+
+To make it clearer when reading the code, add macros which encode the
+expected destination context.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_64.S | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/exception-64e.h |  6 ++++++
+ arch/powerpc/include/asm/exception-64s.h | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 5ae0a435417d..150c402728d1 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -267,13 +267,23 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index a703452d67b6..555e22d5e07f 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -209,5 +209,11 @@ exc_##label##_book3e:
+ 	ori	r3,r3,vector_offset@l;		\
+ 	mtspr	SPRN_IVOR##vector_number,r3;
  
- 	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
-+	ld	r2,GPR2(r1)
-+	ld	r1,GPR1(r1)
-+	mtlr	r4
-+	mtcr	r5
-+	mtspr	SPRN_SRR0,r7
-+	mtspr	SPRN_SRR1,r8
-+	RFI_TO_USER
-+	b	.	/* prevent speculative execution */
++#define RFI_TO_KERNEL							\
++	rfi
 +
-+	/* exit to kernel */
- 1:	ld	r2,GPR2(r1)
- 	ld	r1,GPR1(r1)
- 	mtlr	r4
- 	mtcr	r5
- 	mtspr	SPRN_SRR0,r7
- 	mtspr	SPRN_SRR1,r8
--	RFI
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
++#define RFI_TO_USER							\
++	rfi
++
+ #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
  
- .Lsyscall_error:
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 9a318973af05..6d65a561b0ee 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -69,6 +69,35 @@
+  */
+ #define EX_R3		EX_DAR
+ 
++/* Macros for annotating the expected destination of (h)rfid */
++
++#define RFI_TO_KERNEL							\
++	rfid
++
++#define RFI_TO_USER							\
++	rfid
++
++#define RFI_TO_USER_OR_KERNEL						\
++	rfid
++
++#define RFI_TO_GUEST							\
++	rfid
++
++#define HRFI_TO_KERNEL							\
++	hrfid
++
++#define HRFI_TO_USER							\
++	hrfid
++
++#define HRFI_TO_USER_OR_KERNEL						\
++	hrfid
++
++#define HRFI_TO_GUEST							\
++	hrfid
++
++#define HRFI_TO_UNKNOWN							\
++	hrfid
++
+ #ifdef CONFIG_RELOCATABLE
+ #define __EXCEPTION_RELON_PROLOG_PSERIES_1(label, h)			\
+ 	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
 -- 
 2.14.3
