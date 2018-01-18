@@ -1,28 +1,16 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0056.outbound.protection.outlook.com [104.47.37.56])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMdLY3RwdzF0kG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 20:04:20 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>, "andrew@lunn.ch"
- <andrew@lunn.ch>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
- <madskateman@gmail.com>
-Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
-Date: Thu, 18 Jan 2018 09:04:02 +0000
-Message-ID: <1516266239.22353.6.camel@infinera.com>
-References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
- <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
- <1516125454.18795.87.camel@infinera.com>
- <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516201204.18795.105.camel@infinera.com>
-In-Reply-To: <1516201204.18795.105.camel@infinera.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMh9G2YM8zF0lM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 22:11:29 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] watchdog: core: make sure the watchdog_worker is not deferred
+To: Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-watchdog@vger.kernel.org
+Message-Id: <20180118111121.4542E65A3A@localhost.localdomain>
+Date: Thu, 18 Jan 2018 12:11:21 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,110 +20,228 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBKb2FraW0gVGplcm5sdW5kIHdyb3Rl
-Og0KPiBPbiBUaHUsIDE5NzAtMDEtMDEgYXQgMDA6MDAgKzAwMDAsIE1hZGFsaW4tY3Jpc3RpYW4g
-QnVjdXIgd3JvdGU6DQo+ID4gQ0FVVElPTjogVGhpcyBlbWFpbCBvcmlnaW5hdGVkIGZyb20gb3V0
-c2lkZSBvZiB0aGUgb3JnYW5pemF0aW9uLiBEbyBub3QgY2xpY2sgbGlua3Mgb3Igb3BlbiBhdHRh
-Y2htZW50cyB1bmxlc3MgeW91IHJlY29nbml6ZSB0aGUgc2VuZGVyIGFuZCBrbm93IHRoZSBjb250
-ZW50IGlzIHNhZmUuDQo+ID4gDQo+ID4gDQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQ0KPiA+ID4gRnJvbTogSm9ha2ltIFRqZXJubHVuZCBbbWFpbHRvOkpvYWtpbS5UamVybmx1bmRA
-aW5maW5lcmEuY29tXQ0KPiA+ID4gU2VudDogVHVlc2RheSwgSmFudWFyeSAxNiwgMjAxOCA3OjU4
-IFBNDQo+ID4gPiBUbzogYW5kcmV3QGx1bm4uY2gNCj4gPiA+IFN1YmplY3Q6IFJlOiBEUEFBIEV0
-aGVybmV0IHRyYWZmaWNlIHRyb3VibGVzIHdpdGggTGludXgga2VybmVsDQo+ID4gPiANCj4gPiA+
-IE9uIFRodSwgMTk3MC0wMS0wMSBhdCAwMDowMCArMDAwMCwgQW5kcmV3IEx1bm4gd3JvdGU6DQo+
-ID4gPiA+IA0KPiA+ID4gPiBIaSBKb2FraW0NCj4gPiA+ID4gDQo+ID4gPiA+IFlvdSBhcHBlYXIg
-dG8gYmUgdXNpbmcgYW4gb2xkIGtlcm5lbC4gVGFrZSBhIGxvb2sgYXQ6DQo+ID4gPiANCj4gPiA+
-IE5vdCByZWFsbHksIEkgYW0gdXNpbmcgNC4xNC54IGFuZCBJIGRvbid0IHRoaW5rIHRoYXQgaXMg
-b2xkLiBTZWVtcyBsaWtlDQo+ID4gPiB0aGlzDQo+ID4gPiBwYXRjaCBoYXNuJ3QgYmVlbiBzZW50
-IHRvIDQuMTQueC4NCj4gPiA+IA0KPiA+ID4gSSB3b25kZXIgaWYgSSBtaWdodCBiZSBtaXNzaW5n
-IHNvbWV0aGluZyBlbHNlLCB3ZSBqdXN0IG1vdmVkIHRvIDQuMTQgYW5kDQo+ID4gPiBub3RpYyB0
-aGF0IGFsbA0KPiA+ID4gb3VyIGZpeGVkIFBIWXMgYXJlIG5vbiBmdW5jdGlvbmluZzoNCj4gPiA+
-IGZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gPiBmc2xfbWFjIGZm
-ZTRlMjAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjANCj4g
-PiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4wOiBfX2Rldm1fcmVxdWVzdF9tZW1fcmVnaW9uKG1h
-YykgZmFpbGVkDQo+ID4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjAgZmFpbGVk
-IHdpdGggZXJyb3IgLTE2DQo+ID4gPiBmc2xfbWFjIGZmZTRlNDAwMC5ldGhlcm5ldDogRk1hbiBN
-RU1BQw0KPiA+ID4gZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6
-IDAwOjA2OjljOjBiOjA2OjIxDQo+ID4gPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMTogX19kZXZt
-X3JlcXVlc3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiA+ID4gZnNsX21hYzogcHJvYmUgb2Yg
-ZHBhYS1ldGhlcm5ldC4xIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0KPiA+ID4gZnNsX21hYyBmZmU0
-ZTYwMDAuZXRoZXJuZXQ6IEZNYW4gTUVNQUMNCj4gPiA+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVy
-bmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMg0KPiA+ID4gZnNsX21hYyBk
-cGFhLWV0aGVybmV0LjI6IF9fZGV2bV9yZXF1ZXN0X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCj4g
-PiA+IGZzbF9tYWM6IHByb2JlIG9mIGRwYWEtZXRoZXJuZXQuMiBmYWlsZWQgd2l0aCBlcnJvciAt
-MTYNCj4gPiA+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gPiBm
-c2xfbWFjIGZmZTRlODAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6
-MDY6MjMNCj4gPiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4zOiBfX2Rldm1fcmVxdWVzdF9tZW1f
-cmVnaW9uKG1hYykgZmFpbGVkDQo+ID4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0
-LjMgZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+ID4gPiANCj4gPiA+IEZlZWxzIGxpa2UgRk1BTiBz
-dGlsbCB0aGluayB0aGVyZSBhcmUgcmVhbCBQSFlzIHRoZXJlID8NCj4gPiANCj4gPiBIaSBKb2Fr
-aW0sDQo+ID4gDQo+ID4gVGhlc2UgZXJyb3JzIGFyZSBpc3N1ZWQgd2hlbiB0cnlpbmcgdG8gcHJv
-YmUgdGhlIHNlY29uZCB0aW1lIHRoZSBzYW1lDQo+ID4gTUFDIG5vZGUuIFRoZSBpc3N1ZSB3YXMg
-aW50cm9kdWNlZCBieSB0aGlzIGNvbW1pdDoNCj4gPiANCj4gPiBjb21taXQgNGQ4ZWUxOTM1YmNk
-NjY2MzYwMzExZGZkYWRlZWUyMzVkNjgyZDY5YQ0KPiA+IEF1dGhvcjogRmxvcmlhbiBGYWluZWxs
-aSA8Zi5mYWluZWxsaUBnbWFpbC5jb20+DQo+ID4gRGF0ZTogVHVlIEF1ZyAyMiAxNToyNDo0NyAy
-MDE3IC0wNzAwDQo+ID4gZnNsL21hbjogSW5oZXJpdCBwYXJlbnQgZGV2aWNlIGFuZCBvZl9ub2Rl
-DQo+ID4gDQo+ID4gYW5kIHdhcyBsYXRlciBhZGRyZXNzZWQgYnkgdGhpcyBwYXRjaCBzZXQ6DQo+
-ID4gDQo+ID4gaHR0cDovL3BhdGNod29yay5vemxhYnMub3JnL3Byb2plY3QvbmV0ZGV2L2xpc3Qv
-P3Nlcmllcz04NDYyJnN0YXRlPSoNCj4gPiANCj4gPiBFdmVuIHdpdGggdGhlc2UgZXJyb3JzIHBy
-aW50ZWQsIGFsbCBpcyB3b3JraW5nIGZpbmUsIGl0J3MganVzdCB0aGUNCj4gPiBzZWNvbmQgcHJv
-YmluZyB0aGF0IGZhaWxzLiBBZGRpbmcgdGhlIGxhdHRlciBwYXRjaGVzIG9yIHJldmVydGluZw0K
-PiA+IHRoZSBvbmUgYWJvdmUgbWFrZXMgdGhlIGVycm9ycyBwcmludHMgZGlzc2FwZWFyLg0KPiA+
-IA0KPiA+IE1hZGFsaW4NCj4gDQo+IEFoaCwgbm93IGl0IHN0YXJ0cyB0byBsb29rIGJldHRlciwg
-cmV2ZXJ0aW5nICJmc2wvbWFuOiBJbmhlcml0IHBhcmVudCBkZXZpY2UgYW5kIG9mX25vZGUiIG9u
-IDQuMTQgZ2l2ZXM6DQo+IGxpYnBoeTogRml4ZWQgTURJTyBCdXM6IHByb2JlZA0KPiB0dW46IFVu
-aXZlcnNhbCBUVU4vVEFQIGRldmljZSBkcml2ZXIsIDEuNg0KPiBsaWJwaHk6IEZyZWVzY2FsZSBY
-R01BQyBNRElPIEJ1czogcHJvYmVkDQo+IGlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4ODAwMC5w
-b3J0IHRvIGdyb3VwIDEwDQo+IGxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9i
-ZWQNCj4gbWRpb19idXMgZmZlNGUxMDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0
-IDMuMw0KPiBpb21tdTogQWRkaW5nIGRldmljZSBmZmU0ODkwMDAucG9ydCB0byBncm91cCAyMg0K
-PiBsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQo+IG1kaW9fYnVzIGZm
-ZTRlMzAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCj4gaW9tbXU6IEFk
-ZGluZyBkZXZpY2UgZmZlNDhhMDAwLnBvcnQgdG8gZ3JvdXAgMjMNCj4gbGlicGh5OiBGcmVlc2Nh
-bGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KPiBtZGlvX2J1cyBmZmU0ZTUwMDA6IEVycm9yIHdo
-aWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQo+IGlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4
-YjAwMC5wb3J0IHRvIGdyb3VwIDI0DQo+IGxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVz
-OiBwcm9iZWQNCj4gbWRpb19idXMgZmZlNGU3MDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAg
-cmVnIGF0IDMuMw0KPiBpb21tdTogQWRkaW5nIGRldmljZSBmZmU0OGMwMDAucG9ydCB0byBncm91
-cCAyNQ0KPiBsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQo+IG1kaW9f
-YnVzIGZmZTRlOTAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCj4gZnNs
-X21hYyBmZmU0ZTIwMDAuZXRoZXJuZXQ6IEZNYW4gTUVNQUMNCj4gZnNsX21hYyBmZmU0ZTIwMDAu
-ZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIwDQo+IGZzbF9tYWMg
-ZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+IGZzbF9tYWMgZmZlNGU0MDAwLmV0aGVy
-bmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMQ0KPiBmc2xfbWFjIGZmZTRl
-NjAwMC5ldGhlcm5ldDogRk1hbiBNRU1BQw0KPiBmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDog
-Rk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjINCj4gZnNsX21hYyBmZmU0ZTgwMDAu
-ZXRoZXJuZXQ6IEZNYW4gTUVNQUMNCj4gZnNsX21hYyBmZmU0ZTgwMDAuZXRoZXJuZXQ6IEZNYW4g
-TUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIzDQo+IGZzbF9tYWMgZmZlNGUwMDAwLmV0aGVy
-bmV0OiBGTWFuIE1FTUFDDQo+IGZzbF9tYWMgZmZlNGUwMDAwLmV0aGVybmV0OiBGTWFuIE1BQyBh
-ZGRyZXNzOiAwMDowNjo5YzowYjowNjoxZg0KPiBmc2xfZHBhIGRwYWEtZXRoZXJuZXQuMCBldGgw
-OiBQcm9iZWQgaW50ZXJmYWNlIGV0aDANCj4gZnNsX2RwYSBkcGFhLWV0aGVybmV0LjEgZXRoMTog
-UHJvYmVkIGludGVyZmFjZSBldGgxDQo+IGZzbF9kcGEgZHBhYS1ldGhlcm5ldC4yIGV0aDI6IFBy
-b2JlZCBpbnRlcmZhY2UgZXRoMg0KPiBmc2xfZHBhIGRwYWEtZXRoZXJuZXQuMyBldGgzOiBQcm9i
-ZWQgaW50ZXJmYWNlIGV0aDMNCj4gZnNsX2RwYSBkcGFhLWV0aGVybmV0LjQgZXRoNDogUHJvYmVk
-IGludGVyZmFjZSBldGg0DQo+IA0KPiBTdGlsbCBzb21lIG1pbm9yIGVycm9yczogbWRpb19idXMg
-ZmZlNGU3MDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KPiBidXQgdGhp
-cyBpcyBnb2luZyB0aGUgcmlnaHQgd2F5KEkgaGF2ZSBub3QgaGFkIGEgY2hhbmNlIHRvIHRyeSBp
-ZiB0aGV5IHdvcmsgZHVlDQo+IHRvIGV4dGVybmFsIG1vZHVsZXMgbm90IHBvcnRlZC9yZWFkeSB5
-ZXQpDQo+IA0KPiBUaGUgb3RoZXIgcGF0Y2ggc2VyaWVzIGlzIHN0aWxsIHRvIGJlIHRlc3RlZCB0
-aG91Z2ggYnV0IEkgYWxyZWFkeSBub3cgd2FudGVkIA0KPiB0byBzdHJlc3MgdGhlIGltcG9ydGFu
-Y2Ugb2YgZ2V0dGluZyBhbGwgdXBzdHJlYW0gZml4ZXMgaW50byBzdGFibGUsIEFTQVAuDQo+IFlv
-dSBub3cgd2hhdCB0aGV5IGFyZSwgSSBoYXZlIG5vIGlkZWEuDQoNCkZZSSwgYXBwbGllZCBodHRw
-Oi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVjdC9uZXRkZXYvbGlzdC8/c2VyaWVzPTg0NjIm
-c3RhdGU9KiBvbiA0LjE0LngNCmFuZCBJIHN0aWxsIHNlZToNCmxpYnBoeTogRml4ZWQgTURJTyBC
-dXM6IHByb2JlZA0KdHVuOiBVbml2ZXJzYWwgVFVOL1RBUCBkZXZpY2UgZHJpdmVyLCAxLjYNCmxp
-YnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQNCmlvbW11OiBBZGRpbmcgZGV2
-aWNlIGZmZTQ4ODAwMC5wb3J0IHRvIGdyb3VwIDEwDQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBN
-RElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBmZmU0ZTEwMDA6IEVycm9yIHdoaWxlIHJlYWRpbmcg
-UEhZMCByZWcgYXQgMy4zDQppb21tdTogQWRkaW5nIGRldmljZSBmZmU0ODkwMDAucG9ydCB0byBn
-cm91cCAyMg0KbGlicGh5OiBGcmVlc2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19i
-dXMgZmZlNGUzMDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6
-IEFkZGluZyBkZXZpY2UgZmZlNDhhMDAwLnBvcnQgdG8gZ3JvdXAgMjMNCmxpYnBoeTogRnJlZXNj
-YWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQNCm1kaW9fYnVzIGZmZTRlNTAwMDogRXJyb3Igd2hp
-bGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCmlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4YjAw
-MC5wb3J0IHRvIGdyb3VwIDI0DQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJv
-YmVkDQptZGlvX2J1cyBmZmU0ZTcwMDA6IEVycm9yIHdoaWxlIHJlYWRpbmcgUEhZMCByZWcgYXQg
-My4zDQppb21tdTogQWRkaW5nIGRldmljZSBmZmU0OGMwMDAucG9ydCB0byBncm91cCAyNQ0KbGli
-cGh5OiBGcmVlc2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGU5MDAw
-OiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KDQpPdGhlciB0aGFuIHRoYXQs
-IEZNQU4gYXBwZWFycyB0byBiZSB3b3JraW5nLg0KDQogSm9ja2U=
+commit 4cd13c21b207e ("softirq: Let ksoftirqd do its job") has the
+effect of deferring timer handling in case of high CPU load, hence
+delaying the delayed work allthought the worker is running which
+high realtime priority.
+
+As hrtimers are not managed by softirqs, this patch replaces the
+delayed work by a plain work and uses an hrtimer to schedule that work.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/watchdog/watchdog_dev.c | 86 +++++++++++++++++++++++++----------------
+ 1 file changed, 52 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
+index 68bc29e6e79e..ffbdc4642ea5 100644
+--- a/drivers/watchdog/watchdog_dev.c
++++ b/drivers/watchdog/watchdog_dev.c
+@@ -36,10 +36,10 @@
+ #include <linux/errno.h>	/* For the -ENODEV/... values */
+ #include <linux/fs.h>		/* For file operations */
+ #include <linux/init.h>		/* For __init/__exit/... */
+-#include <linux/jiffies.h>	/* For timeout functions */
++#include <linux/hrtimer.h>	/* For hrtimers */
+ #include <linux/kernel.h>	/* For printk/panic/... */
+ #include <linux/kref.h>		/* For data references */
+-#include <linux/kthread.h>	/* For kthread_delayed_work */
++#include <linux/kthread.h>	/* For kthread_work */
+ #include <linux/miscdevice.h>	/* For handling misc devices */
+ #include <linux/module.h>	/* For module stuff/... */
+ #include <linux/mutex.h>	/* For mutexes */
+@@ -67,9 +67,10 @@ struct watchdog_core_data {
+ 	struct cdev cdev;
+ 	struct watchdog_device *wdd;
+ 	struct mutex lock;
+-	unsigned long last_keepalive;
+-	unsigned long last_hw_keepalive;
+-	struct kthread_delayed_work work;
++	ktime_t last_keepalive;
++	ktime_t last_hw_keepalive;
++	struct hrtimer timer;
++	struct kthread_work work;
+ 	unsigned long status;		/* Internal status bits */
+ #define _WDOG_DEV_OPEN		0	/* Opened ? */
+ #define _WDOG_ALLOW_RELEASE	1	/* Did we receive the magic char ? */
+@@ -109,18 +110,19 @@ static inline bool watchdog_need_worker(struct watchdog_device *wdd)
+ 		(t && !watchdog_active(wdd) && watchdog_hw_running(wdd));
+ }
+ 
+-static long watchdog_next_keepalive(struct watchdog_device *wdd)
++static ktime_t watchdog_next_keepalive(struct watchdog_device *wdd)
+ {
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+ 	unsigned int timeout_ms = wdd->timeout * 1000;
+-	unsigned long keepalive_interval;
+-	unsigned long last_heartbeat;
+-	unsigned long virt_timeout;
++	ktime_t keepalive_interval;
++	ktime_t last_heartbeat, latest_heartbeat;
++	ktime_t virt_timeout;
+ 	unsigned int hw_heartbeat_ms;
+ 
+-	virt_timeout = wd_data->last_keepalive + msecs_to_jiffies(timeout_ms);
++	virt_timeout = ktime_add(wd_data->last_keepalive,
++				 ms_to_ktime(timeout_ms));
+ 	hw_heartbeat_ms = min_not_zero(timeout_ms, wdd->max_hw_heartbeat_ms);
+-	keepalive_interval = msecs_to_jiffies(hw_heartbeat_ms / 2);
++	keepalive_interval = ms_to_ktime(hw_heartbeat_ms / 2);
+ 
+ 	if (!watchdog_active(wdd))
+ 		return keepalive_interval;
+@@ -130,8 +132,11 @@ static long watchdog_next_keepalive(struct watchdog_device *wdd)
+ 	 * after the most recent ping from userspace, the last
+ 	 * worker ping has to come in hw_heartbeat_ms before this timeout.
+ 	 */
+-	last_heartbeat = virt_timeout - msecs_to_jiffies(hw_heartbeat_ms);
+-	return min_t(long, last_heartbeat - jiffies, keepalive_interval);
++	last_heartbeat = ktime_sub(virt_timeout, ms_to_ktime(hw_heartbeat_ms));
++	latest_heartbeat = ktime_sub(last_heartbeat, ktime_get());
++	if (ktime_before(latest_heartbeat, keepalive_interval))
++		return latest_heartbeat;
++	return keepalive_interval;
+ }
+ 
+ static inline void watchdog_update_worker(struct watchdog_device *wdd)
+@@ -139,30 +144,33 @@ static inline void watchdog_update_worker(struct watchdog_device *wdd)
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+ 
+ 	if (watchdog_need_worker(wdd)) {
+-		long t = watchdog_next_keepalive(wdd);
++		ktime_t t = watchdog_next_keepalive(wdd);
+ 
+ 		if (t > 0)
+-			kthread_mod_delayed_work(watchdog_kworker,
+-						 &wd_data->work, t);
++			hrtimer_start(&wd_data->timer, t, HRTIMER_MODE_REL);
+ 	} else {
+-		kthread_cancel_delayed_work_sync(&wd_data->work);
++		hrtimer_cancel(&wd_data->timer);
+ 	}
+ }
+ 
+ static int __watchdog_ping(struct watchdog_device *wdd)
+ {
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+-	unsigned long earliest_keepalive = wd_data->last_hw_keepalive +
+-				msecs_to_jiffies(wdd->min_hw_heartbeat_ms);
++	ktime_t earliest_keepalive, now;
+ 	int err;
+ 
+-	if (time_is_after_jiffies(earliest_keepalive)) {
+-		kthread_mod_delayed_work(watchdog_kworker, &wd_data->work,
+-					 earliest_keepalive - jiffies);
++	earliest_keepalive = ktime_add(wd_data->last_hw_keepalive,
++				       ms_to_ktime(wdd->min_hw_heartbeat_ms));
++	now = ktime_get();
++
++	if (ktime_after(earliest_keepalive, now)) {
++		hrtimer_start(&wd_data->timer,
++			      ktime_sub(earliest_keepalive, now),
++			      HRTIMER_MODE_REL);
+ 		return 0;
+ 	}
+ 
+-	wd_data->last_hw_keepalive = jiffies;
++	wd_data->last_hw_keepalive = now;
+ 
+ 	if (wdd->ops->ping)
+ 		err = wdd->ops->ping(wdd);  /* ping the watchdog */
+@@ -195,7 +203,7 @@ static int watchdog_ping(struct watchdog_device *wdd)
+ 
+ 	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
+ 
+-	wd_data->last_keepalive = jiffies;
++	wd_data->last_keepalive = ktime_get();
+ 	return __watchdog_ping(wdd);
+ }
+ 
+@@ -210,9 +218,7 @@ static void watchdog_ping_work(struct kthread_work *work)
+ {
+ 	struct watchdog_core_data *wd_data;
+ 
+-	wd_data = container_of(container_of(work, struct kthread_delayed_work,
+-					    work),
+-			       struct watchdog_core_data, work);
++	wd_data = container_of(work, struct watchdog_core_data, work);
+ 
+ 	mutex_lock(&wd_data->lock);
+ 	if (watchdog_worker_should_ping(wd_data))
+@@ -220,6 +226,16 @@ static void watchdog_ping_work(struct kthread_work *work)
+ 	mutex_unlock(&wd_data->lock);
+ }
+ 
++static enum hrtimer_restart watchdog_timer_expired(struct hrtimer *timer)
++{
++	struct watchdog_core_data *wd_data;
++
++	wd_data = container_of(timer, struct watchdog_core_data, timer);
++
++	kthread_queue_work(watchdog_kworker, &wd_data->work);
++	return HRTIMER_NORESTART;
++}
++
+ /*
+  *	watchdog_start: wrapper to start the watchdog.
+  *	@wdd: the watchdog device to start
+@@ -234,7 +250,7 @@ static void watchdog_ping_work(struct kthread_work *work)
+ static int watchdog_start(struct watchdog_device *wdd)
+ {
+ 	struct watchdog_core_data *wd_data = wdd->wd_data;
+-	unsigned long started_at;
++	ktime_t started_at;
+ 	int err;
+ 
+ 	if (watchdog_active(wdd))
+@@ -242,7 +258,7 @@ static int watchdog_start(struct watchdog_device *wdd)
+ 
+ 	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
+ 
+-	started_at = jiffies;
++	started_at = ktime_get();
+ 	if (watchdog_hw_running(wdd) && wdd->ops->ping)
+ 		err = wdd->ops->ping(wdd);
+ 	else
+@@ -928,7 +944,9 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+ 	if (IS_ERR_OR_NULL(watchdog_kworker))
+ 		return -ENODEV;
+ 
+-	kthread_init_delayed_work(&wd_data->work, watchdog_ping_work);
++	kthread_init_work(&wd_data->work, watchdog_ping_work);
++	hrtimer_init(&wd_data->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	wd_data->timer.function = watchdog_timer_expired;
+ 
+ 	if (wdd->id == 0) {
+ 		old_wd_data = wd_data;
+@@ -964,7 +982,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+ 	}
+ 
+ 	/* Record time of most recent heartbeat as 'just before now'. */
+-	wd_data->last_hw_keepalive = jiffies - 1;
++	wd_data->last_hw_keepalive = ktime_sub(ktime_get(), 1);
+ 
+ 	/*
+ 	 * If the watchdog is running, prevent its driver from being unloaded,
+@@ -974,8 +992,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+ 		__module_get(wdd->ops->owner);
+ 		kref_get(&wd_data->kref);
+ 		if (handle_boot_enabled)
+-			kthread_queue_delayed_work(watchdog_kworker,
+-						   &wd_data->work, 0);
++			hrtimer_start(&wd_data->timer, 0, HRTIMER_MODE_REL);
+ 		else
+ 			pr_info("watchdog%d running and kernel based pre-userspace handler disabled\n",
+ 				wdd->id);
+@@ -1012,7 +1029,8 @@ static void watchdog_cdev_unregister(struct watchdog_device *wdd)
+ 		watchdog_stop(wdd);
+ 	}
+ 
+-	kthread_cancel_delayed_work_sync(&wd_data->work);
++	hrtimer_cancel(&wd_data->timer);
++	kthread_cancel_work_sync(&wd_data->work);
+ 
+ 	kref_put(&wd_data->kref, watchdog_core_data_release);
+ }
+-- 
+2.13.3
