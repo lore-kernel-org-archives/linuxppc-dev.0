@@ -1,30 +1,28 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0056.outbound.protection.outlook.com [104.47.37.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMbln3Xc6zF0hF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 18:52:34 +1100 (AEDT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (1.0)
-Subject: Re: DPAA Ethernet problems with mainstream Linux kernels
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <ae31b47c-b72b-a1b5-7d5f-54f77db8e282@bitbybitsoftwaregroup.com>
-Date: Thu, 18 Jan 2018 08:52:14 +0100
-Cc: Madalin-cristian Bucur <madalin.bucur@nxp.com>,
- Darren Stevens <darren@stevens-zone.net>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Message-Id: <C6E81382-51A7-43F0-AC74-F3842F646620@xenosoft.de>
-References: <ccafbcca-172b-11ae-7916-8bcd4bfa419c@bitbybitsoftwaregroup.com>
- <DB3PR0402MB3849C70D5760C3F21F881074EC170@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <d7478110-68ae-34b3-51c5-487bb3e12527@bitbybitsoftwaregroup.com>
- <DB3PR0402MB3849C1D81C867CF2D5A65D0EECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <4b50ee845f3.281d6f13@auth.smtp.1and1.co.uk>
- <DB3PR0402MB38496B4FB62904321A97186AECEA0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <ae31b47c-b72b-a1b5-7d5f-54f77db8e282@bitbybitsoftwaregroup.com>
-To: Jamie Krueger <jamie@bitbybitsoftwaregroup.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMdLY3RwdzF0kG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jan 2018 20:04:20 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>, "andrew@lunn.ch"
+ <andrew@lunn.ch>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
+ <madskateman@gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+Date: Thu, 18 Jan 2018 09:04:02 +0000
+Message-ID: <1516266239.22353.6.camel@infinera.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com>
+ <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516201204.18795.105.camel@infinera.com>
+In-Reply-To: <1516201204.18795.105.camel@infinera.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,67 +32,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jamie,
-
-Many thanks for your effort. If you need a new kernel for testing please let=
- me know.
-
-Cheers,
-Christian
-
-Sent from my iPhone
-
-> On 18. Jan 2018, at 02:59, Jamie Krueger <jamie@bitbybitsoftwaregroup.com>=
- wrote:
->=20
-> Hi Madalin,
->=20
-> On 01/16/2018 11:33 AM, Madalin-cristian Bucur wrote:
->=20
-> Here are some results from testing on the X5000/20 with 4.15.0-rc8
-> (w/CONFIG_FSL_PAMU disabled):
->=20
-> In my tests I can now get the interface to obtain an IP Address via DHCP,
-> at least *part* of the time that is.
->=20
-> Here is a link to a screenshot of a Wireshark capture which shows
-> a successful DHCP request/response for the X5000/20, followed by some
-> failed ping attempts.
->=20
-> (This traffic was captured on an external machine on the same subnet, and n=
-ot from the X5000/20 itself)
-> http://bitbybitsoftwaregroup.com/share/X5000-DHCP-Answered-Wireshark.png
->=20
-> Additionally, here is a link to the export of the packet data shown in the=
- above image:
-> http://bitbybitsoftwaregroup.com/share/Wireshark-X5000-DHCP-Success.html
->=20
-> As you can see by this example, even when the interface does obtain an IP a=
-ddress via
-> DHCP (about half the time), subsequent traffic still fails to receive resp=
-onses.
->=20
-> In this example, I attempt to ping the gateway (192.168.1.1), and one or t=
-wo other
-> local addresses, and nothing pings back (even when trying Skateman's sugge=
-stion
-> of expanding the buffers for the interface -
->=20
-> "A workaround to keep the nic alive a bit longer.... is the following comm=
-and
-> ip link set eth0 qlen 10000"
->=20
-> For reference:
->=20
-> I have attached the Kernel config that the version I tested was built with=
-.
-> Also, I have attached the dmesg output I am currently seeing.
->=20
-> --=20
-> Best Regards,
->=20
-> Jamie Krueger
-> BITbyBIT Software Group LLC
->=20
-> <proc_config-4.15.0-rc8-NO_PAMU.txt>
-> <fsl_dmesg_output.txt>
+T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBKb2FraW0gVGplcm5sdW5kIHdyb3Rl
+Og0KPiBPbiBUaHUsIDE5NzAtMDEtMDEgYXQgMDA6MDAgKzAwMDAsIE1hZGFsaW4tY3Jpc3RpYW4g
+QnVjdXIgd3JvdGU6DQo+ID4gQ0FVVElPTjogVGhpcyBlbWFpbCBvcmlnaW5hdGVkIGZyb20gb3V0
+c2lkZSBvZiB0aGUgb3JnYW5pemF0aW9uLiBEbyBub3QgY2xpY2sgbGlua3Mgb3Igb3BlbiBhdHRh
+Y2htZW50cyB1bmxlc3MgeW91IHJlY29nbml6ZSB0aGUgc2VuZGVyIGFuZCBrbm93IHRoZSBjb250
+ZW50IGlzIHNhZmUuDQo+ID4gDQo+ID4gDQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KPiA+ID4gRnJvbTogSm9ha2ltIFRqZXJubHVuZCBbbWFpbHRvOkpvYWtpbS5UamVybmx1bmRA
+aW5maW5lcmEuY29tXQ0KPiA+ID4gU2VudDogVHVlc2RheSwgSmFudWFyeSAxNiwgMjAxOCA3OjU4
+IFBNDQo+ID4gPiBUbzogYW5kcmV3QGx1bm4uY2gNCj4gPiA+IFN1YmplY3Q6IFJlOiBEUEFBIEV0
+aGVybmV0IHRyYWZmaWNlIHRyb3VibGVzIHdpdGggTGludXgga2VybmVsDQo+ID4gPiANCj4gPiA+
+IE9uIFRodSwgMTk3MC0wMS0wMSBhdCAwMDowMCArMDAwMCwgQW5kcmV3IEx1bm4gd3JvdGU6DQo+
+ID4gPiA+IA0KPiA+ID4gPiBIaSBKb2FraW0NCj4gPiA+ID4gDQo+ID4gPiA+IFlvdSBhcHBlYXIg
+dG8gYmUgdXNpbmcgYW4gb2xkIGtlcm5lbC4gVGFrZSBhIGxvb2sgYXQ6DQo+ID4gPiANCj4gPiA+
+IE5vdCByZWFsbHksIEkgYW0gdXNpbmcgNC4xNC54IGFuZCBJIGRvbid0IHRoaW5rIHRoYXQgaXMg
+b2xkLiBTZWVtcyBsaWtlDQo+ID4gPiB0aGlzDQo+ID4gPiBwYXRjaCBoYXNuJ3QgYmVlbiBzZW50
+IHRvIDQuMTQueC4NCj4gPiA+IA0KPiA+ID4gSSB3b25kZXIgaWYgSSBtaWdodCBiZSBtaXNzaW5n
+IHNvbWV0aGluZyBlbHNlLCB3ZSBqdXN0IG1vdmVkIHRvIDQuMTQgYW5kDQo+ID4gPiBub3RpYyB0
+aGF0IGFsbA0KPiA+ID4gb3VyIGZpeGVkIFBIWXMgYXJlIG5vbiBmdW5jdGlvbmluZzoNCj4gPiA+
+IGZzbF9tYWMgZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gPiBmc2xfbWFjIGZm
+ZTRlMjAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjANCj4g
+PiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4wOiBfX2Rldm1fcmVxdWVzdF9tZW1fcmVnaW9uKG1h
+YykgZmFpbGVkDQo+ID4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0LjAgZmFpbGVk
+IHdpdGggZXJyb3IgLTE2DQo+ID4gPiBmc2xfbWFjIGZmZTRlNDAwMC5ldGhlcm5ldDogRk1hbiBN
+RU1BQw0KPiA+ID4gZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6
+IDAwOjA2OjljOjBiOjA2OjIxDQo+ID4gPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMTogX19kZXZt
+X3JlcXVlc3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiA+ID4gZnNsX21hYzogcHJvYmUgb2Yg
+ZHBhYS1ldGhlcm5ldC4xIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0KPiA+ID4gZnNsX21hYyBmZmU0
+ZTYwMDAuZXRoZXJuZXQ6IEZNYW4gTUVNQUMNCj4gPiA+IGZzbF9tYWMgZmZlNGU2MDAwLmV0aGVy
+bmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMg0KPiA+ID4gZnNsX21hYyBk
+cGFhLWV0aGVybmV0LjI6IF9fZGV2bV9yZXF1ZXN0X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCj4g
+PiA+IGZzbF9tYWM6IHByb2JlIG9mIGRwYWEtZXRoZXJuZXQuMiBmYWlsZWQgd2l0aCBlcnJvciAt
+MTYNCj4gPiA+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+ID4gPiBm
+c2xfbWFjIGZmZTRlODAwMC5ldGhlcm5ldDogRk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6
+MDY6MjMNCj4gPiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4zOiBfX2Rldm1fcmVxdWVzdF9tZW1f
+cmVnaW9uKG1hYykgZmFpbGVkDQo+ID4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVybmV0
+LjMgZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+ID4gPiANCj4gPiA+IEZlZWxzIGxpa2UgRk1BTiBz
+dGlsbCB0aGluayB0aGVyZSBhcmUgcmVhbCBQSFlzIHRoZXJlID8NCj4gPiANCj4gPiBIaSBKb2Fr
+aW0sDQo+ID4gDQo+ID4gVGhlc2UgZXJyb3JzIGFyZSBpc3N1ZWQgd2hlbiB0cnlpbmcgdG8gcHJv
+YmUgdGhlIHNlY29uZCB0aW1lIHRoZSBzYW1lDQo+ID4gTUFDIG5vZGUuIFRoZSBpc3N1ZSB3YXMg
+aW50cm9kdWNlZCBieSB0aGlzIGNvbW1pdDoNCj4gPiANCj4gPiBjb21taXQgNGQ4ZWUxOTM1YmNk
+NjY2MzYwMzExZGZkYWRlZWUyMzVkNjgyZDY5YQ0KPiA+IEF1dGhvcjogRmxvcmlhbiBGYWluZWxs
+aSA8Zi5mYWluZWxsaUBnbWFpbC5jb20+DQo+ID4gRGF0ZTogVHVlIEF1ZyAyMiAxNToyNDo0NyAy
+MDE3IC0wNzAwDQo+ID4gZnNsL21hbjogSW5oZXJpdCBwYXJlbnQgZGV2aWNlIGFuZCBvZl9ub2Rl
+DQo+ID4gDQo+ID4gYW5kIHdhcyBsYXRlciBhZGRyZXNzZWQgYnkgdGhpcyBwYXRjaCBzZXQ6DQo+
+ID4gDQo+ID4gaHR0cDovL3BhdGNod29yay5vemxhYnMub3JnL3Byb2plY3QvbmV0ZGV2L2xpc3Qv
+P3Nlcmllcz04NDYyJnN0YXRlPSoNCj4gPiANCj4gPiBFdmVuIHdpdGggdGhlc2UgZXJyb3JzIHBy
+aW50ZWQsIGFsbCBpcyB3b3JraW5nIGZpbmUsIGl0J3MganVzdCB0aGUNCj4gPiBzZWNvbmQgcHJv
+YmluZyB0aGF0IGZhaWxzLiBBZGRpbmcgdGhlIGxhdHRlciBwYXRjaGVzIG9yIHJldmVydGluZw0K
+PiA+IHRoZSBvbmUgYWJvdmUgbWFrZXMgdGhlIGVycm9ycyBwcmludHMgZGlzc2FwZWFyLg0KPiA+
+IA0KPiA+IE1hZGFsaW4NCj4gDQo+IEFoaCwgbm93IGl0IHN0YXJ0cyB0byBsb29rIGJldHRlciwg
+cmV2ZXJ0aW5nICJmc2wvbWFuOiBJbmhlcml0IHBhcmVudCBkZXZpY2UgYW5kIG9mX25vZGUiIG9u
+IDQuMTQgZ2l2ZXM6DQo+IGxpYnBoeTogRml4ZWQgTURJTyBCdXM6IHByb2JlZA0KPiB0dW46IFVu
+aXZlcnNhbCBUVU4vVEFQIGRldmljZSBkcml2ZXIsIDEuNg0KPiBsaWJwaHk6IEZyZWVzY2FsZSBY
+R01BQyBNRElPIEJ1czogcHJvYmVkDQo+IGlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4ODAwMC5w
+b3J0IHRvIGdyb3VwIDEwDQo+IGxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9i
+ZWQNCj4gbWRpb19idXMgZmZlNGUxMDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0
+IDMuMw0KPiBpb21tdTogQWRkaW5nIGRldmljZSBmZmU0ODkwMDAucG9ydCB0byBncm91cCAyMg0K
+PiBsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQo+IG1kaW9fYnVzIGZm
+ZTRlMzAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCj4gaW9tbXU6IEFk
+ZGluZyBkZXZpY2UgZmZlNDhhMDAwLnBvcnQgdG8gZ3JvdXAgMjMNCj4gbGlicGh5OiBGcmVlc2Nh
+bGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KPiBtZGlvX2J1cyBmZmU0ZTUwMDA6IEVycm9yIHdo
+aWxlIHJlYWRpbmcgUEhZMCByZWcgYXQgMy4zDQo+IGlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4
+YjAwMC5wb3J0IHRvIGdyb3VwIDI0DQo+IGxpYnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVz
+OiBwcm9iZWQNCj4gbWRpb19idXMgZmZlNGU3MDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAg
+cmVnIGF0IDMuMw0KPiBpb21tdTogQWRkaW5nIGRldmljZSBmZmU0OGMwMDAucG9ydCB0byBncm91
+cCAyNQ0KPiBsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJvYmVkDQo+IG1kaW9f
+YnVzIGZmZTRlOTAwMDogRXJyb3Igd2hpbGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCj4gZnNs
+X21hYyBmZmU0ZTIwMDAuZXRoZXJuZXQ6IEZNYW4gTUVNQUMNCj4gZnNsX21hYyBmZmU0ZTIwMDAu
+ZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIwDQo+IGZzbF9tYWMg
+ZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFDDQo+IGZzbF9tYWMgZmZlNGU0MDAwLmV0aGVy
+bmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMQ0KPiBmc2xfbWFjIGZmZTRl
+NjAwMC5ldGhlcm5ldDogRk1hbiBNRU1BQw0KPiBmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDog
+Rk1hbiBNQUMgYWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjINCj4gZnNsX21hYyBmZmU0ZTgwMDAu
+ZXRoZXJuZXQ6IEZNYW4gTUVNQUMNCj4gZnNsX21hYyBmZmU0ZTgwMDAuZXRoZXJuZXQ6IEZNYW4g
+TUFDIGFkZHJlc3M6IDAwOjA2OjljOjBiOjA2OjIzDQo+IGZzbF9tYWMgZmZlNGUwMDAwLmV0aGVy
+bmV0OiBGTWFuIE1FTUFDDQo+IGZzbF9tYWMgZmZlNGUwMDAwLmV0aGVybmV0OiBGTWFuIE1BQyBh
+ZGRyZXNzOiAwMDowNjo5YzowYjowNjoxZg0KPiBmc2xfZHBhIGRwYWEtZXRoZXJuZXQuMCBldGgw
+OiBQcm9iZWQgaW50ZXJmYWNlIGV0aDANCj4gZnNsX2RwYSBkcGFhLWV0aGVybmV0LjEgZXRoMTog
+UHJvYmVkIGludGVyZmFjZSBldGgxDQo+IGZzbF9kcGEgZHBhYS1ldGhlcm5ldC4yIGV0aDI6IFBy
+b2JlZCBpbnRlcmZhY2UgZXRoMg0KPiBmc2xfZHBhIGRwYWEtZXRoZXJuZXQuMyBldGgzOiBQcm9i
+ZWQgaW50ZXJmYWNlIGV0aDMNCj4gZnNsX2RwYSBkcGFhLWV0aGVybmV0LjQgZXRoNDogUHJvYmVk
+IGludGVyZmFjZSBldGg0DQo+IA0KPiBTdGlsbCBzb21lIG1pbm9yIGVycm9yczogbWRpb19idXMg
+ZmZlNGU3MDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KPiBidXQgdGhp
+cyBpcyBnb2luZyB0aGUgcmlnaHQgd2F5KEkgaGF2ZSBub3QgaGFkIGEgY2hhbmNlIHRvIHRyeSBp
+ZiB0aGV5IHdvcmsgZHVlDQo+IHRvIGV4dGVybmFsIG1vZHVsZXMgbm90IHBvcnRlZC9yZWFkeSB5
+ZXQpDQo+IA0KPiBUaGUgb3RoZXIgcGF0Y2ggc2VyaWVzIGlzIHN0aWxsIHRvIGJlIHRlc3RlZCB0
+aG91Z2ggYnV0IEkgYWxyZWFkeSBub3cgd2FudGVkIA0KPiB0byBzdHJlc3MgdGhlIGltcG9ydGFu
+Y2Ugb2YgZ2V0dGluZyBhbGwgdXBzdHJlYW0gZml4ZXMgaW50byBzdGFibGUsIEFTQVAuDQo+IFlv
+dSBub3cgd2hhdCB0aGV5IGFyZSwgSSBoYXZlIG5vIGlkZWEuDQoNCkZZSSwgYXBwbGllZCBodHRw
+Oi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVjdC9uZXRkZXYvbGlzdC8/c2VyaWVzPTg0NjIm
+c3RhdGU9KiBvbiA0LjE0LngNCmFuZCBJIHN0aWxsIHNlZToNCmxpYnBoeTogRml4ZWQgTURJTyBC
+dXM6IHByb2JlZA0KdHVuOiBVbml2ZXJzYWwgVFVOL1RBUCBkZXZpY2UgZHJpdmVyLCAxLjYNCmxp
+YnBoeTogRnJlZXNjYWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQNCmlvbW11OiBBZGRpbmcgZGV2
+aWNlIGZmZTQ4ODAwMC5wb3J0IHRvIGdyb3VwIDEwDQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBN
+RElPIEJ1czogcHJvYmVkDQptZGlvX2J1cyBmZmU0ZTEwMDA6IEVycm9yIHdoaWxlIHJlYWRpbmcg
+UEhZMCByZWcgYXQgMy4zDQppb21tdTogQWRkaW5nIGRldmljZSBmZmU0ODkwMDAucG9ydCB0byBn
+cm91cCAyMg0KbGlicGh5OiBGcmVlc2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19i
+dXMgZmZlNGUzMDAwOiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KaW9tbXU6
+IEFkZGluZyBkZXZpY2UgZmZlNDhhMDAwLnBvcnQgdG8gZ3JvdXAgMjMNCmxpYnBoeTogRnJlZXNj
+YWxlIFhHTUFDIE1ESU8gQnVzOiBwcm9iZWQNCm1kaW9fYnVzIGZmZTRlNTAwMDogRXJyb3Igd2hp
+bGUgcmVhZGluZyBQSFkwIHJlZyBhdCAzLjMNCmlvbW11OiBBZGRpbmcgZGV2aWNlIGZmZTQ4YjAw
+MC5wb3J0IHRvIGdyb3VwIDI0DQpsaWJwaHk6IEZyZWVzY2FsZSBYR01BQyBNRElPIEJ1czogcHJv
+YmVkDQptZGlvX2J1cyBmZmU0ZTcwMDA6IEVycm9yIHdoaWxlIHJlYWRpbmcgUEhZMCByZWcgYXQg
+My4zDQppb21tdTogQWRkaW5nIGRldmljZSBmZmU0OGMwMDAucG9ydCB0byBncm91cCAyNQ0KbGli
+cGh5OiBGcmVlc2NhbGUgWEdNQUMgTURJTyBCdXM6IHByb2JlZA0KbWRpb19idXMgZmZlNGU5MDAw
+OiBFcnJvciB3aGlsZSByZWFkaW5nIFBIWTAgcmVnIGF0IDMuMw0KDQpPdGhlciB0aGFuIHRoYXQs
+IEZNQU4gYXBwZWFycyB0byBiZSB3b3JraW5nLg0KDQogSm9ja2U=
