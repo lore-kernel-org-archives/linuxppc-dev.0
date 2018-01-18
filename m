@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMlL90vGpzF0lJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMlL95Wg3zF0lJ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 00:34:25 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org
 Cc: greg@kroah.com,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.14 backport 01/10] powerpc/pseries: Add
- H_GET_CPU_CHARACTERISTICS flags & wrapper
-Date: Fri, 19 Jan 2018 00:34:01 +1100
-Message-Id: <20180118133410.18716-1-mpe@ellerman.id.au>
+Subject: [PATCH v4.14 backport 03/10] powerpc/64s: Simple RFI macro conversions
+Date: Fri, 19 Jan 2018 00:34:03 +1100
+Message-Id: <20180118133410.18716-3-mpe@ellerman.id.au>
+In-Reply-To: <20180118133410.18716-1-mpe@ellerman.id.au>
+References: <20180118133410.18716-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,85 +22,287 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+From: Nicholas Piggin <npiggin@gmail.com>
 
-commit 191eccb1580939fb0d47deb405b82a85b0379070 upstream.
+commit 222f20f140623ef6033491d0103ee0875fe87d35 upstream.
 
-A new hypervisor call has been defined to communicate various
-characteristics of the CPU to guests. Add definitions for the hcall
-number, flags and a wrapper function.
+This commit does simple conversions of rfi/rfid to the new macros that
+include the expected destination context. By simple we mean cases
+where there is a single well known destination context, and it's
+simply a matter of substituting the instruction for the appropriate
+macro.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/hvcall.h         | 17 +++++++++++++++++
- arch/powerpc/include/asm/plpar_wrappers.h | 14 ++++++++++++++
- 2 files changed, 31 insertions(+)
+ arch/powerpc/include/asm/exception-64s.h |  4 ++--
+ arch/powerpc/kernel/entry_64.S           | 14 +++++++++-----
+ arch/powerpc/kernel/exceptions-64s.S     | 22 +++++++++++-----------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |  7 +++----
+ arch/powerpc/kvm/book3s_rmhandlers.S     |  7 +++++--
+ arch/powerpc/kvm/book3s_segment.S        |  4 ++--
+ 6 files changed, 32 insertions(+), 26 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index a409177be8bd..f0461618bf7b 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -241,6 +241,7 @@
- #define H_GET_HCA_INFO          0x1B8
- #define H_GET_PERF_COUNT        0x1BC
- #define H_MANAGE_TRACE          0x1C0
-+#define H_GET_CPU_CHARACTERISTICS 0x1C8
- #define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
- #define H_QUERY_INT_STATE       0x1E4
- #define H_POLL_PENDING		0x1D8
-@@ -330,6 +331,17 @@
- #define H_SIGNAL_SYS_RESET_ALL_OTHERS		-2
- /* >= 0 values are CPU number */
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 6d65a561b0ee..0c8863ff65f7 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -242,7 +242,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	mtspr	SPRN_##h##SRR0,r12;					\
+ 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
+ 	mtspr	SPRN_##h##SRR1,r10;					\
+-	h##rfid;							\
++	h##RFI_TO_KERNEL;						\
+ 	b	.	/* prevent speculative execution */
+ #define EXCEPTION_PROLOG_PSERIES_1(label, h)				\
+ 	__EXCEPTION_PROLOG_PSERIES_1(label, h)
+@@ -256,7 +256,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	mtspr	SPRN_##h##SRR0,r12;					\
+ 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
+ 	mtspr	SPRN_##h##SRR1,r10;					\
+-	h##rfid;							\
++	h##RFI_TO_KERNEL;						\
+ 	b	.	/* prevent speculative execution */
  
-+/* H_GET_CPU_CHARACTERISTICS return values */
-+#define H_CPU_CHAR_SPEC_BAR_ORI31	(1ull << 63) // IBM bit 0
-+#define H_CPU_CHAR_BCCTRL_SERIALISED	(1ull << 62) // IBM bit 1
-+#define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
-+#define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
-+#define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
-+
-+#define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
-+#define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
-+#define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
-+
- /* Flag values used in H_REGISTER_PROC_TBL hcall */
- #define PROC_TABLE_OP_MASK	0x18
- #define PROC_TABLE_DEREG	0x10
-@@ -436,6 +448,11 @@ static inline unsigned int get_longbusy_msecs(int longbusy_rc)
- 	}
- }
+ #define EXCEPTION_PROLOG_PSERIES_1_NORI(label, h)			\
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 4a0fd4f40245..5ae0a435417d 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -37,6 +37,11 @@
+ #include <asm/tm.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/export.h>
++#ifdef CONFIG_PPC_BOOK3S
++#include <asm/exception-64s.h>
++#else
++#include <asm/exception-64e.h>
++#endif
  
-+struct h_cpu_char_result {
-+	u64 character;
-+	u64 behaviour;
-+};
-+
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_HVCALL_H */
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 7f01b22fa6cb..55eddf50d149 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -326,4 +326,18 @@ static inline long plapr_signal_sys_reset(long cpu)
- 	return plpar_hcall_norets(H_SIGNAL_SYS_RESET, cpu);
- }
+ /*
+  * System calls.
+@@ -397,8 +402,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	mtmsrd	r10, 1
+ 	mtspr	SPRN_SRR0, r11
+ 	mtspr	SPRN_SRR1, r12
+-
+-	rfid
++	RFI_TO_USER
+ 	b	.	/* prevent speculative execution */
+ #endif
+ _ASM_NOKPROBE_SYMBOL(system_call_common);
+@@ -1073,7 +1077,7 @@ __enter_rtas:
+ 	
+ 	mtspr	SPRN_SRR0,r5
+ 	mtspr	SPRN_SRR1,r6
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.	/* prevent speculative execution */
  
-+static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
+ rtas_return_loc:
+@@ -1098,7 +1102,7 @@ rtas_return_loc:
+ 
+ 	mtspr	SPRN_SRR0,r3
+ 	mtspr	SPRN_SRR1,r4
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.	/* prevent speculative execution */
+ _ASM_NOKPROBE_SYMBOL(__enter_rtas)
+ _ASM_NOKPROBE_SYMBOL(rtas_return_loc)
+@@ -1171,7 +1175,7 @@ _GLOBAL(enter_prom)
+ 	LOAD_REG_IMMEDIATE(r12, MSR_SF | MSR_ISF | MSR_LE)
+ 	andc	r11,r11,r12
+ 	mtsrr1	r11
+-	rfid
++	RFI_TO_KERNEL
+ #endif /* CONFIG_PPC_BOOK3E */
+ 
+ 1:	/* Return from OF */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 06598142d755..85795d41f6ca 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -254,7 +254,7 @@ BEGIN_FTR_SECTION
+ 	LOAD_HANDLER(r12, machine_check_handle_early)
+ 1:	mtspr	SPRN_SRR0,r12
+ 	mtspr	SPRN_SRR1,r11
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.	/* prevent speculative execution */
+ 2:
+ 	/* Stack overflow. Stay on emergency stack and panic.
+@@ -443,7 +443,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+ 	li	r3,MSR_ME
+ 	andc	r10,r10,r3		/* Turn off MSR_ME */
+ 	mtspr	SPRN_SRR1,r10
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.
+ 2:
+ 	/*
+@@ -461,7 +461,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+ 	 */
+ 	bl	machine_check_queue_event
+ 	MACHINE_CHECK_HANDLER_WINDUP
+-	rfid
++	RFI_TO_USER_OR_KERNEL
+ 9:
+ 	/* Deliver the machine check to host kernel in V mode. */
+ 	MACHINE_CHECK_HANDLER_WINDUP
+@@ -649,7 +649,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	mtspr	SPRN_SRR0,r10
+ 	ld	r10,PACAKMSR(r13)
+ 	mtspr	SPRN_SRR1,r10
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.
+ 
+ 8:	std     r3,PACA_EXSLB+EX_DAR(r13)
+@@ -660,7 +660,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	mtspr	SPRN_SRR0,r10
+ 	ld	r10,PACAKMSR(r13)
+ 	mtspr	SPRN_SRR1,r10
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.
+ 
+ EXC_COMMON_BEGIN(unrecov_slb)
+@@ -905,7 +905,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	mtspr	SPRN_SRR0,r10 ; 				\
+ 	ld	r10,PACAKMSR(r13) ;				\
+ 	mtspr	SPRN_SRR1,r10 ; 				\
+-	rfid ; 							\
++	RFI_TO_KERNEL ;						\
+ 	b	. ;	/* prevent speculative execution */
+ 
+ #define SYSCALL_FASTENDIAN					\
+@@ -914,7 +914,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	xori	r12,r12,MSR_LE ;				\
+ 	mtspr	SPRN_SRR1,r12 ;					\
+ 	mr	r13,r9 ;					\
+-	rfid ;		/* return to userspace */		\
++	RFI_TO_USER ;	/* return to userspace */		\
+ 	b	. ;	/* prevent speculative execution */
+ 
+ #if defined(CONFIG_RELOCATABLE)
+@@ -1299,7 +1299,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	ld	r11,PACA_EXGEN+EX_R11(r13)
+ 	ld	r12,PACA_EXGEN+EX_R12(r13)
+ 	ld	r13,PACA_EXGEN+EX_R13(r13)
+-	HRFID
++	HRFI_TO_UNKNOWN
+ 	b	.
+ #endif
+ 
+@@ -1403,7 +1403,7 @@ masked_##_H##interrupt:					\
+ 	ld	r10,PACA_EXGEN+EX_R10(r13);		\
+ 	ld	r11,PACA_EXGEN+EX_R11(r13);		\
+ 	/* returns to kernel where r13 must be set up, so don't restore it */ \
+-	##_H##rfid;					\
++	##_H##RFI_TO_KERNEL;				\
+ 	b	.;					\
+ 	MASKED_DEC_HANDLER(_H)
+ 
+@@ -1426,7 +1426,7 @@ TRAMP_REAL_BEGIN(kvmppc_skip_interrupt)
+ 	addi	r13, r13, 4
+ 	mtspr	SPRN_SRR0, r13
+ 	GET_SCRATCH0(r13)
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.
+ 
+ TRAMP_REAL_BEGIN(kvmppc_skip_Hinterrupt)
+@@ -1438,7 +1438,7 @@ TRAMP_REAL_BEGIN(kvmppc_skip_Hinterrupt)
+ 	addi	r13, r13, 4
+ 	mtspr	SPRN_HSRR0, r13
+ 	GET_SCRATCH0(r13)
+-	hrfid
++	HRFI_TO_KERNEL
+ 	b	.
+ #endif
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 42639fba89e8..c85ac5c83bd4 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -78,7 +78,7 @@ _GLOBAL_TOC(kvmppc_hv_entry_trampoline)
+ 	mtmsrd	r0,1		/* clear RI in MSR */
+ 	mtsrr0	r5
+ 	mtsrr1	r6
+-	RFI
++	RFI_TO_KERNEL
+ 
+ kvmppc_call_hv_entry:
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+@@ -187,7 +187,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	mtmsrd	r6, 1			/* Clear RI in MSR */
+ 	mtsrr0	r8
+ 	mtsrr1	r7
+-	RFI
++	RFI_TO_KERNEL
+ 
+ 	/* Virtual-mode return */
+ .Lvirt_return:
+@@ -1131,8 +1131,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 
+ 	ld	r0, VCPU_GPR(R0)(r4)
+ 	ld	r4, VCPU_GPR(R4)(r4)
+-
+-	hrfid
++	HRFI_TO_GUEST
+ 	b	.
+ 
+ secondary_too_late:
+diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
+index 42a4b237df5f..34a5adeff084 100644
+--- a/arch/powerpc/kvm/book3s_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_rmhandlers.S
+@@ -46,6 +46,9 @@
+ 
+ #define FUNC(name)		name
+ 
++#define RFI_TO_KERNEL	RFI
++#define RFI_TO_GUEST	RFI
 +
-+	rc = plpar_hcall(H_GET_CPU_CHARACTERISTICS, retbuf);
-+	if (rc == H_SUCCESS) {
-+		p->character = retbuf[0];
-+		p->behaviour = retbuf[1];
-+	}
-+
-+	return rc;
-+}
-+
- #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
+ .macro INTERRUPT_TRAMPOLINE intno
+ 
+ .global kvmppc_trampoline_\intno
+@@ -141,7 +144,7 @@ kvmppc_handler_skip_ins:
+ 	GET_SCRATCH0(r13)
+ 
+ 	/* And get back into the code */
+-	RFI
++	RFI_TO_KERNEL
+ #endif
+ 
+ /*
+@@ -164,6 +167,6 @@ _GLOBAL_TOC(kvmppc_entry_trampoline)
+ 	ori	r5, r5, MSR_EE
+ 	mtsrr0	r7
+ 	mtsrr1	r6
+-	RFI
++	RFI_TO_KERNEL
+ 
+ #include "book3s_segment.S"
+diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+index 2a2b96d53999..93a180ceefad 100644
+--- a/arch/powerpc/kvm/book3s_segment.S
++++ b/arch/powerpc/kvm/book3s_segment.S
+@@ -156,7 +156,7 @@ no_dcbz32_on:
+ 	PPC_LL	r9, SVCPU_R9(r3)
+ 	PPC_LL	r3, (SVCPU_R3)(r3)
+ 
+-	RFI
++	RFI_TO_GUEST
+ kvmppc_handler_trampoline_enter_end:
+ 
+ 
+@@ -407,5 +407,5 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 	cmpwi	r12, BOOK3S_INTERRUPT_DOORBELL
+ 	beqa	BOOK3S_INTERRUPT_DOORBELL
+ 
+-	RFI
++	RFI_TO_KERNEL
+ kvmppc_handler_trampoline_exit_end:
 -- 
 2.14.3
