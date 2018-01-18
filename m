@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zMlLB5TJdzF0lJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 00:34:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zMlLC2sCKzF0lJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 00:34:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org
 Cc: greg@kroah.com,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.14 backport 05/10] powerpc/64: Convert
- fast_exception_return to use RFI_TO_USER/KERNEL
-Date: Fri, 19 Jan 2018 00:34:05 +1100
-Message-Id: <20180118133410.18716-5-mpe@ellerman.id.au>
+Subject: [PATCH v4.14 backport 06/10] powerpc/64s: Convert slb_miss_common to
+ use RFI_TO_USER/KERNEL
+Date: Fri, 19 Jan 2018 00:34:06 +1100
+Message-Id: <20180118133410.18716-6-mpe@ellerman.id.au>
 In-Reply-To: <20180118133410.18716-1-mpe@ellerman.id.au>
 References: <20180118133410.18716-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,55 +25,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-commit a08f828cf47e6c605af21d2cdec68f84e799c318 upstream.
+commit c7305645eb0c1621351cfc104038831ae87c0053 upstream.
 
-Similar to the syscall return path, in fast_exception_return we may be
-returning to user or kernel context. We already have a test for that,
-because we conditionally restore r13. So use that existing test and
-branch, and bifurcate the return based on that.
+In the SLB miss handler we may be returning to user or kernel. We need
+to add a check early on and save the result in the cr4 register, and
+then we bifurcate the return path based on that.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_64.S | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 150c402728d1..8a8a6d7ddcc6 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -892,7 +892,7 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ACCOUNT_CPU_USER_EXIT(r13, r2, r4)
- 	REST_GPR(13, r1)
--1:
-+
- 	mtspr	SPRN_SRR1,r3
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 85795d41f6ca..845291357f0b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -596,6 +596,9 @@ EXC_COMMON_BEGIN(slb_miss_common)
+ 	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+ 	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
  
- 	ld	r2,_CCR(r1)
-@@ -905,8 +905,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ld	r3,GPR3(r1)
- 	ld	r4,GPR4(r1)
- 	ld	r1,GPR1(r1)
++	andi.	r9,r11,MSR_PR	// Check for exception from userspace
++	cmpdi	cr4,r9,MSR_PR	// And save the result in CR4 for later
++
+ 	/*
+ 	 * Test MSR_RI before calling slb_allocate_realmode, because the
+ 	 * MSR in r11 gets clobbered. However we still want to allocate
+@@ -622,9 +625,32 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 
+ 	/* All done -- return from exception. */
+ 
++	bne	cr4,1f		/* returning to kernel */
++
++.machine	push
++.machine	"power4"
++	mtcrf	0x80,r9
++	mtcrf	0x08,r9		/* MSR[PR] indication is in cr4 */
++	mtcrf	0x04,r9		/* MSR[RI] indication is in cr5 */
++	mtcrf	0x02,r9		/* I/D indication is in cr6 */
++	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
++.machine	pop
++
++	RESTORE_CTR(r9, PACA_EXSLB)
++	RESTORE_PPR_PACA(PACA_EXSLB, r9)
++	mr	r3,r12
++	ld	r9,PACA_EXSLB+EX_R9(r13)
++	ld	r10,PACA_EXSLB+EX_R10(r13)
++	ld	r11,PACA_EXSLB+EX_R11(r13)
++	ld	r12,PACA_EXSLB+EX_R12(r13)
++	ld	r13,PACA_EXSLB+EX_R13(r13)
 +	RFI_TO_USER
 +	b	.	/* prevent speculative execution */
-+
-+1:	mtspr	SPRN_SRR1,r3
-+
-+	ld	r2,_CCR(r1)
-+	mtcrf	0xFF,r2
-+	ld	r2,_NIP(r1)
-+	mtspr	SPRN_SRR0,r2
- 
++1:
+ .machine	push
+ .machine	"power4"
+ 	mtcrf	0x80,r9
++	mtcrf	0x08,r9		/* MSR[PR] indication is in cr4 */
+ 	mtcrf	0x04,r9		/* MSR[RI] indication is in cr5 */
+ 	mtcrf	0x02,r9		/* I/D indication is in cr6 */
+ 	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
+@@ -638,9 +664,10 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	ld	r11,PACA_EXSLB+EX_R11(r13)
+ 	ld	r12,PACA_EXSLB+EX_R12(r13)
+ 	ld	r13,PACA_EXSLB+EX_R13(r13)
 -	rfid
-+	ld	r0,GPR0(r1)
-+	ld	r2,GPR2(r1)
-+	ld	r3,GPR3(r1)
-+	ld	r4,GPR4(r1)
-+	ld	r1,GPR1(r1)
 +	RFI_TO_KERNEL
  	b	.	/* prevent speculative execution */
  
- #endif /* CONFIG_PPC_BOOK3E */
++
+ 2:	std     r3,PACA_EXSLB+EX_DAR(r13)
+ 	mr	r3,r12
+ 	mfspr	r11,SPRN_SRR0
 -- 
 2.14.3
