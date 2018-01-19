@@ -1,20 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0056.outbound.protection.outlook.com [104.47.42.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zN93h5xffzF0yr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 16:53:20 +1100 (AEDT)
-Date: Fri, 19 Jan 2018 16:53:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, Nicholas Piggin
- <npiggin@gmail.com>
-Subject: linux-next: build failure after merge of the powerpc tree
-Message-ID: <20180119165319.524cf2ff@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zNCv025tWzF0yC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 19:00:58 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>, "andrew@lunn.ch"
+ <andrew@lunn.ch>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "madskateman@gmail.com"
+ <madskateman@gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+Date: Fri, 19 Jan 2018 08:00:53 +0000
+Message-ID: <1516348851.4730.15.camel@infinera.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com>
+ <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+In-Reply-To: <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-
-After merging the powerpc tree, today's linux-next build (powerpc64
-allnoconfig) failed like this:
-
-arch/powerpc/kernel/mce_power.o: In function `.mce_handle_error':
-mce_power.c:(.text+0x5a8): undefined reference to `.hash__tlbiel_all'
-mce_power.c:(.text+0x6b8): undefined reference to `.hash__tlbiel_all'
-arch/powerpc/mm/hash_utils_64.o: In function `.hash__early_init_mmu':
-hash_utils_64.c:(.init.text+0x9d0): undefined reference to `.hash__tlbiel_all'
-
-Caused by commit
-
-  d4748276ae14 ("powerpc/64s: Improve local TLB flush for boot and MCE on POWER9")
-
-The definition of hash__tlbiel_all() is in
-arch/powerpc/mm/hash_native_64.c which is only built if CONFIG_PPC_NATIVE
-is set, which it is not for this build.
-
-I applied a supplied fix patch.
-
--- 
-Cheers,
-Stephen Rothwell
+T24gVGh1LCAxOTcwLTAxLTAxIGF0IDAwOjAwICswMDAwLCBNYWRhbGluLWNyaXN0aWFuIEJ1Y3Vy
+IHdyb3RlOg0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IEpv
+YWtpbSBUamVybmx1bmQgW21haWx0bzpKb2FraW0uVGplcm5sdW5kQGluZmluZXJhLmNvbV0NCj4g
+PiBTZW50OiBUdWVzZGF5LCBKYW51YXJ5IDE2LCAyMDE4IDc6NTggUE0NCj4gPiBUbzogYW5kcmV3
+QGx1bm4uY2gNCj4gPiBTdWJqZWN0OiBSZTogRFBBQSBFdGhlcm5ldCB0cmFmZmljZSB0cm91Ymxl
+cyB3aXRoIExpbnV4IGtlcm5lbA0KPiA+IA0KPiA+IE9uIFRodSwgMTk3MC0wMS0wMSBhdCAwMDow
+MCArMDAwMCwgQW5kcmV3IEx1bm4gd3JvdGU6DQo+ID4gPiANCj4gPiA+IEhpIEpvYWtpbQ0KPiA+
+ID4gDQo+ID4gPiBZb3UgYXBwZWFyIHRvIGJlIHVzaW5nIGFuIG9sZCBrZXJuZWwuIFRha2UgYSBs
+b29rIGF0Og0KPiA+IA0KPiA+IE5vdCByZWFsbHksIEkgYW0gdXNpbmcgNC4xNC54IGFuZCBJIGRv
+bid0IHRoaW5rIHRoYXQgaXMgb2xkLiBTZWVtcyBsaWtlDQo+ID4gdGhpcw0KPiA+IHBhdGNoIGhh
+c24ndCBiZWVuIHNlbnQgdG8gNC4xNC54Lg0KPiA+IA0KPiA+IEkgd29uZGVyIGlmIEkgbWlnaHQg
+YmUgbWlzc2luZyBzb21ldGhpbmcgZWxzZSwgd2UganVzdCBtb3ZlZCB0byA0LjE0IGFuZA0KPiA+
+IG5vdGljIHRoYXQgYWxsDQo+ID4gb3VyIGZpeGVkIFBIWXMgYXJlIG5vbiBmdW5jdGlvbmluZzoN
+Cj4gPiBmc2xfbWFjIGZmZTRlMjAwMC5ldGhlcm5ldDogRk1hbiBNRU1BQw0KPiA+IGZzbF9tYWMg
+ZmZlNGUyMDAwLmV0aGVybmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMA0K
+PiA+IGZzbF9tYWMgZHBhYS1ldGhlcm5ldC4wOiBfX2Rldm1fcmVxdWVzdF9tZW1fcmVnaW9uKG1h
+YykgZmFpbGVkDQo+ID4gZnNsX21hYzogcHJvYmUgb2YgZHBhYS1ldGhlcm5ldC4wIGZhaWxlZCB3
+aXRoIGVycm9yIC0xNg0KPiA+IGZzbF9tYWMgZmZlNGU0MDAwLmV0aGVybmV0OiBGTWFuIE1FTUFD
+DQo+ID4gZnNsX21hYyBmZmU0ZTQwMDAuZXRoZXJuZXQ6IEZNYW4gTUFDIGFkZHJlc3M6IDAwOjA2
+OjljOjBiOjA2OjIxDQo+ID4gZnNsX21hYyBkcGFhLWV0aGVybmV0LjE6IF9fZGV2bV9yZXF1ZXN0
+X21lbV9yZWdpb24obWFjKSBmYWlsZWQNCj4gPiBmc2xfbWFjOiBwcm9iZSBvZiBkcGFhLWV0aGVy
+bmV0LjEgZmFpbGVkIHdpdGggZXJyb3IgLTE2DQo+ID4gZnNsX21hYyBmZmU0ZTYwMDAuZXRoZXJu
+ZXQ6IEZNYW4gTUVNQUMNCj4gPiBmc2xfbWFjIGZmZTRlNjAwMC5ldGhlcm5ldDogRk1hbiBNQUMg
+YWRkcmVzczogMDA6MDY6OWM6MGI6MDY6MjINCj4gPiBmc2xfbWFjIGRwYWEtZXRoZXJuZXQuMjog
+X19kZXZtX3JlcXVlc3RfbWVtX3JlZ2lvbihtYWMpIGZhaWxlZA0KPiA+IGZzbF9tYWM6IHByb2Jl
+IG9mIGRwYWEtZXRoZXJuZXQuMiBmYWlsZWQgd2l0aCBlcnJvciAtMTYNCj4gPiBmc2xfbWFjIGZm
+ZTRlODAwMC5ldGhlcm5ldDogRk1hbiBNRU1BQw0KPiA+IGZzbF9tYWMgZmZlNGU4MDAwLmV0aGVy
+bmV0OiBGTWFuIE1BQyBhZGRyZXNzOiAwMDowNjo5YzowYjowNjoyMw0KPiA+IGZzbF9tYWMgZHBh
+YS1ldGhlcm5ldC4zOiBfX2Rldm1fcmVxdWVzdF9tZW1fcmVnaW9uKG1hYykgZmFpbGVkDQo+ID4g
+ZnNsX21hYzogcHJvYmUgb2YgZHBhYS1ldGhlcm5ldC4zIGZhaWxlZCB3aXRoIGVycm9yIC0xNg0K
+PiA+IA0KPiA+IEZlZWxzIGxpa2UgRk1BTiBzdGlsbCB0aGluayB0aGVyZSBhcmUgcmVhbCBQSFlz
+IHRoZXJlID8NCj4gDQo+IEhpIEpvYWtpbSwNCj4gDQo+IFRoZXNlIGVycm9ycyBhcmUgaXNzdWVk
+IHdoZW4gdHJ5aW5nIHRvIHByb2JlIHRoZSBzZWNvbmQgdGltZSB0aGUgc2FtZQ0KPiBNQUMgbm9k
+ZS4gVGhlIGlzc3VlIHdhcyBpbnRyb2R1Y2VkIGJ5IHRoaXMgY29tbWl0Og0KPiANCj4gY29tbWl0
+IDRkOGVlMTkzNWJjZDY2NjM2MDMxMWRmZGFkZWVlMjM1ZDY4MmQ2OWENCj4gQXV0aG9yOiBGbG9y
+aWFuIEZhaW5lbGxpIDxmLmZhaW5lbGxpQGdtYWlsLmNvbT4NCj4gRGF0ZTogVHVlIEF1ZyAyMiAx
+NToyNDo0NyAyMDE3IC0wNzAwDQo+IGZzbC9tYW46IEluaGVyaXQgcGFyZW50IGRldmljZSBhbmQg
+b2Zfbm9kZQ0KPiANCj4gYW5kIHdhcyBsYXRlciBhZGRyZXNzZWQgYnkgdGhpcyBwYXRjaCBzZXQ6
+DQo+IA0KPiBodHRwOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVjdC9uZXRkZXYvbGlzdC8/
+c2VyaWVzPTg0NjImc3RhdGU9Kg0KPiANCj4gRXZlbiB3aXRoIHRoZXNlIGVycm9ycyBwcmludGVk
+LCBhbGwgaXMgd29ya2luZyBmaW5lLCBpdCdzIGp1c3QgdGhlDQo+IHNlY29uZCBwcm9iaW5nIHRo
+YXQgZmFpbHMuIEFkZGluZyB0aGUgbGF0dGVyIHBhdGNoZXMgb3IgcmV2ZXJ0aW5nDQo+IHRoZSBv
+bmUgYWJvdmUgbWFrZXMgdGhlIGVycm9ycyBwcmludHMgZGlzc2FwZWFyLg0KDQpMb29raW5nIGF0
+IHRoZSBhYm92ZSBwYXRjaCBzZXJpZXJzIEkgc2VlIGl0IGlzIGluIHN0YXRlIEFjY2VwdGVkIGFu
+ZCBoYXMgYmVlbiB0aGVyZQ0Kc2luY2UgMjAxNy0xMC0xNg0KVGhhdCBzZWVtcyBsaWtlIGEgYXdm
+dWwgbG9uZyB0byB3YWl0IGluIGJlZm9yZSBnZXR0aW5nIGludG8gTGludXgsIGlzIHRoZXJlIHNv
+bWV0aGluZw0KaG9sZGluZyB0aGVzZSBwYXRjaGVzIGJhY2sgPw0KDQogSm9ja2Ug
