@@ -1,22 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zNJFF3n7RzF0nC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 22:17:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zNJGY3DZSzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 22:18:13 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>, Rob Herring <robh@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org,
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 0/3] PCI: move DT PCI functions to PCI core
-In-Reply-To: <20180117235555.GC53542@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180104211215.11344-1-robh@kernel.org>
- <20180117235555.GC53542@bhelgaas-glaptop.roam.corp.google.com>
-Date: Fri, 19 Jan 2018 22:16:59 +1100
-Message-ID: <87h8riayj8.fsf@concordia.ellerman.id.au>
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, "Linux Kernel
+ Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the powerpc tree with the
+ powerpc-fixes tree
+In-Reply-To: <20180118092112.0e46a25c@canb.auug.org.au>
+References: <20180118092112.0e46a25c@canb.auug.org.au>
+Date: Fri, 19 Jan 2018 22:18:11 +1100
+Message-ID: <87efmmayh8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,41 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-> On Thu, Jan 04, 2018 at 03:12:12PM -0600, Rob Herring wrote:
->> Most subsystem specific functions have been moved into the respective
->> subsystems. Only PCI and networking remain. This series moves most of the
->> PCI related code to drivers/pci/of.c. Some bus address functions for PCI
->> remain in of/address.c because we don't have infrastructure to split up
->> the per bus helper functions.
->> 
->> I expect Bjorn to take this series, so PPC maintainers please ack.
->> 
->> Rob
->> 
->> Rob Herring (3):
->>   PCI: move OF related PCI functions into PCI core
->>   powerpc/pci: use of_irq_parse_and_map_pci helper
->>   PCI: make of_irq_parse_pci static
->> 
->>  arch/arm/mach-mvebu/Kconfig      |   1 -
->>  arch/powerpc/kernel/pci-common.c |   8 +-
->>  drivers/of/Kconfig               |  16 --
->>  drivers/of/Makefile              |   2 -
->>  drivers/of/address.c             |   8 +-
->>  drivers/of/of_pci.c              | 384 -----------------------------
->>  drivers/of/of_pci_irq.c          | 131 ----------
->>  drivers/pci/of.c                 | 505 +++++++++++++++++++++++++++++++++++++++
->>  include/linux/of_pci.h           |   8 +-
->>  9 files changed, 510 insertions(+), 553 deletions(-)
->>  delete mode 100644 drivers/of/of_pci.c
->>  delete mode 100644 drivers/of/of_pci_irq.c
+> Hi all,
 >
-> Applied to pci/dt-resources for v4.16, thanks!
+> Today's linux-next merge of the powerpc tree got a conflict in:
 >
-> I'll update this if necessary if PPC maintainers comment.
+>   arch/powerpc/kernel/setup-common.c
+>
+> between commit:
+>
+>   349524bc0da6 ("powerpc: Don't preempt_disable() in show_cpuinfo()")
+>
+> from the powerpc-fixes tree and commit:
+>
+>   f5f563012a70 ("powerpc: Make newline in cpuinfo unconditional")
+>
+> from the powerpc tree.
+>
+> I fixed it up (see below) and can carry the fix as necessary. This
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
 
-Thanks. Seems fine, fingers crossed :)
+Nah that guy is a jerk.
+
+Thanks for the report.
 
 cheers
