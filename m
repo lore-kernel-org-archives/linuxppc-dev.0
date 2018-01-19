@@ -1,27 +1,38 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zNGCl70qSzF0xd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 20:45:39 +1100 (AEDT)
-Subject: Re: [PATCH v2 1/5] powerpc/mm: Enhance 'slice' for supporting PPC32
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <49148d07955d3e5f963cedf9adcfcc37c3e03ef4.1516179904.git.christophe.leroy@c-s.fr>
- <87vafyz265.fsf@linux.vnet.ibm.com>
- <84dc1df4-db2f-be11-c1f3-5dddd1e44983@c-s.fr>
- <b4d8f01b-9ee1-ec34-aa0d-5a353064438c@linux.vnet.ibm.com>
- <28c3ba39-ef31-5ff3-7672-3e9d1942be94@c-s.fr>
- <c9ab9a1b-4c77-fdfc-50d1-974388cc3b10@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <e2f36c99-1b5d-acf5-12c8-b2b48701011a@c-s.fr>
-Date: Fri, 19 Jan 2018 10:45:35 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zNGff5J4WzF0xw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 21:05:30 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0JA4Rds049909
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 05:05:28 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fkcm6dfht-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 05:05:27 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 19 Jan 2018 10:05:25 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc/mm: Fix growth direction for hugepages mmaps
+ with slice
+In-Reply-To: <87y3kuz559.fsf@linux.vnet.ibm.com>
+References: <20180109101810.2471D6C6CF@localhost.localdomain>
+ <87wp0haizf.fsf@linux.vnet.ibm.com>
+ <d5f6060f-3061-dc3c-66f7-3cec05d50169@c-s.fr>
+ <f5f2af23-f535-8fca-4edf-a0ec4107a7df@linux.vnet.ibm.com>
+ <dd2e281e-0dea-8acf-30dc-b85d0d438cf3@c-s.fr>
+ <87y3kuz559.fsf@linux.vnet.ibm.com>
+Date: Fri, 19 Jan 2018 15:35:21 +0530
 MIME-Version: 1.0
-In-Reply-To: <c9ab9a1b-4c77-fdfc-50d1-974388cc3b10@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Message-Id: <87mv1ayxi6.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,139 +43,154 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+Did a reply instead of reply-all.
 
-Le 19/01/2018 à 10:13, Aneesh Kumar K.V a écrit :
-> 
-> 
-> On 01/19/2018 02:37 PM, Christophe LEROY wrote:
->>
->>
->> Le 19/01/2018 à 10:02, Aneesh Kumar K.V a écrit :
->>>
->>>
->>> On 01/19/2018 02:14 PM, Christophe LEROY wrote:
+Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> writes:
+
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>
+>> Le 17/01/2018 =C3=A0 04:19, Aneesh Kumar K.V a =C3=A9crit=C2=A0:
+>>>=20
+>>>=20
+>>> On 01/16/2018 10:18 PM, Christophe LEROY wrote:
 >>>>
 >>>>
->>>> Le 19/01/2018 à 09:24, Aneesh Kumar K.V a écrit :
+>>>> Le 16/01/2018 =C3=A0 17:03, Aneesh Kumar K.V a =C3=A9crit=C2=A0:
 >>>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
 >>>>>
->>>>>> In preparation for the following patch which will fix an issue on
->>>>>> the 8xx by re-using the 'slices', this patch enhances the
->>>>>> 'slices' implementation to support 32 bits CPUs.
+>>>>>> An application running with libhugetlbfs fails to allocate
+>>>>>> additional pages to HEAP due to the hugemap being done
+>>>>>> inconditionally as topdown mapping:
 >>>>>>
->>>>>> On PPC32, the address space is limited to 4Gbytes, hence only the low
->>>>>> slices will be used. As of today, the code uses
->>>>>> SLICE_LOW_TOP (0x100000000ul) and compares it with addr to determine
->>>>>> if addr refers to low or high space.
->>>>>> On PPC32, such a (addr < SLICE_LOW_TOP) test is always false because
->>>>>> 0x100000000ul degrades to 0. Therefore, the patch modifies
->>>>>> SLICE_LOW_TOP to (0xfffffffful) and modifies the tests to
->>>>>> (addr <= SLICE_LOW_TOP) which will then always be true on PPC32
->>>>>> as addr has type 'unsigned long' while not modifying the PPC64
->>>>>> behaviour.
+>>>>>> mmap(0x10080000, 1572864, PROT_READ|PROT_WRITE,=20
+>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) =3D 0x73e80000
+>>>>>> [...]
+>>>>>> mmap(0x74000000, 1048576, PROT_READ|PROT_WRITE,=20
+>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) =3D 0x73d80000
+>>>>>> munmap(0x73d80000, 1048576)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D 0
+>>>>>> [...]
+>>>>>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE,=20
+>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) =3D 0x73d00000
+>>>>>> munmap(0x73d00000, 1572864)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D 0
+>>>>>> [...]
+>>>>>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE,=20
+>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) =3D 0x73d00000
+>>>>>> munmap(0x73d00000, 1572864)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D 0
+>>>>>> [...]
 >>>>>>
->>>>>> This patch moves "slices" functions prototypes from page64.h to 
->>>>>> page.h
->>>>>>
->>>>>> The high slices use bitmaps. As bitmap functions are not prepared to
->>>>>> handling bitmaps of size 0, the bitmap_xxx() calls are wrapped into
->>>>>> slice_bitmap_xxx() macros which will take care of the 0 nbits case.
->>>>>>
->>>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>>>> ---
->>>>>>   v2: First patch of v1 serie split in two parts ; added 
->>>>>> slice_bitmap_xxx() macros.
->>>>>>
->>>>>>   arch/powerpc/include/asm/page.h      | 14 +++++++++
->>>>>>   arch/powerpc/include/asm/page_32.h   | 19 ++++++++++++
->>>>>>   arch/powerpc/include/asm/page_64.h   | 21 ++-----------
->>>>>>   arch/powerpc/mm/hash_utils_64.c      |  2 +-
->>>>>>   arch/powerpc/mm/mmu_context_nohash.c |  7 +++++
->>>>>>   arch/powerpc/mm/slice.c              | 60 
->>>>>> ++++++++++++++++++++++++------------
->>>>>>   6 files changed, 83 insertions(+), 40 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/include/asm/page.h 
->>>>>> b/arch/powerpc/include/asm/page.h
->>>>>> index 8da5d4c1cab2..d0384f9db9eb 100644
->>>>>> --- a/arch/powerpc/include/asm/page.h
->>>>>> +++ b/arch/powerpc/include/asm/page.h
->>>>>> @@ -342,6 +342,20 @@ typedef struct page *pgtable_t;
->>>>>>   #endif
->>>>>>   #endif
->>>>>> +#ifdef CONFIG_PPC_MM_SLICES
->>>>>> +struct mm_struct;
->>>>>> +
->>>>>> +unsigned long slice_get_unmapped_area(unsigned long addr, 
->>>>>> unsigned long len,
->>>>>> +                      unsigned long flags, unsigned int psize,
->>>>>> +                      int topdown);
->>>>>> +
->>>>>> +unsigned int get_slice_psize(struct mm_struct *mm, unsigned long 
->>>>>> addr);
->>>>>> +
->>>>>> +void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
->>>>>> +void slice_set_range_psize(struct mm_struct *mm, unsigned long 
->>>>>> start,
->>>>>> +               unsigned long len, unsigned int psize);
->>>>>> +#endif
->>>>>> +
 >>>>>
->>>>> Should we do a slice.h ? the way we have other files? and then do
+>>>>> Can you explain the failure details above. I am not sure I understand
+>>>>> what to read from the above output.
 >>>>
->>>> Yes we could add a slice.h instead of using page.h for that, good idea.
+>>>> libhugetlbfs first requests an area of size 1.5Mbytes, at address=20
+>>>> 0x10080000
+>>>> mmap() returns an area at address 0x73e80000
 >>>>
->>>>>
->>>>> arch/powerpc/include/asm/book3s/64/slice.h that will carry
->>>>> #define slice_bitmap_zero(dst, nbits) \
->>>>>     do { if (nbits) bitmap_zero(dst, nbits); } while (0)
->>>>> #define slice_bitmap_set(dst, pos, nbits) \
->>>>> do { if (nbits) bitmap_set(dst, pos, nbits); } while (0)
->>>>> #define slice_bitmap_copy(dst, src, nbits) \
->>>>> do { if (nbits) bitmap_copy(dst, src, nbits); } while (0)
->>>>> #define slice_bitmap_and(dst, src1, src2, nbits) \
->>>>>     ({ (nbits) ? bitmap_and(dst, src1, src2, nbits) : 0; })
->>>>> #define slice_bitmap_or(dst, src1, src2, nbits) \
->>>>>     do { if (nbits) bitmap_or(dst, src1, src2, nbits); } while (0)
->>>>> #define slice_bitmap_andnot(dst, src1, src2, nbits) \
->>>>>     ({ (nbits) ? bitmap_andnot(dst, src1, src2, nbits) : 0; })
->>>>> #define slice_bitmap_equal(src1, src2, nbits) \
->>>>>     ({ (nbits) ? bitmap_equal(src1, src2, nbits) : 1; })
->>>>> #define slice_bitmap_empty(src, nbits) \
->>>>>     ({ (nbits) ? bitmap_empty(src, nbits) : 1; })
->>>>>
->>>>> This without that if(nbits) check and a proper static inline so 
->>>>> that we
->>>>> can do type checking.
+>>>> Then libhugetlbfs requests an additional area on top of that, ie at=20
+>>>> address 0x74000000, to expand the heap.
+>>>> But mmap() returns an area at address 0x73d80000, ie under the=20
+>>>> previous area.
 >>>>
->>>> Is it really worth duplicating that just for eliminating the 'if 
->>>> (nbits)' in one case ?
->>>>
->>>> Only in book3s/64 we will be able to eliminate that, for nohash/32 
->>>> we need to keep the test due to the difference between low and high 
->>>> slices.
->>>
->>> the other advantage is we move the SLICE_LOW_SHIFT to the right 
->>> location. IMHO mm subystem is really complex with these really 
->>> overloaded headers. If we can keep it  seperate we should with 
->>> minimal code duplication?
+>>>=20
+>>>=20
+>>> Can you share the test details?. Why does it not fail on book3s64? We=20
+>>> use topdown search with book3s64.
 >>
->> For the constants I fully agree with your proposal and I will do it. I 
->> was only questionning the benefit of moving the slice_bitmap_xxxx() 
->> stuff, taking into account that the 'if (nbits)' test is already 
->> eliminated by the compiler.
+>> I don't know about book3s64, I only have 8xx.
 >>
-> 
-> That is compiler dependent as you are finding with the other patch where 
-> if (0) didn't get compiled out
-
-I don't think so. When I had the missing prototype, the compilation goes 
-ok, including the final link. Which means at the end the code is not 
-included since radix_enabled() evaluates to 0.
-
-Many many parts of the kernel are based on this assumption.
-
-Christophe
-
-> 
+>> Here is my test app:
+>>
+>
+> The test ran fine on ppc64.
+>
+> kvaneesh@ltctulc6a-p1:[~]$ HUGETLB_MORECORE=3Dyes ./a.out=20
+> 10000000-10010000 r-xp 00000000 fc:00 9044312                            =
+/home/kvaneesh/a.out
+> 10010000-10020000 r--p 00000000 fc:00 9044312                            =
+/home/kvaneesh/a.out
+> 10020000-10030000 rw-p 00010000 fc:00 9044312                            =
+/home/kvaneesh/a.out
+> 7ffff7d60000-7ffff7f10000 r-xp 00000000 fc:00 9250090                    =
+/lib/powerpc64le-linux-gnu/libc-2.23.so
+> 7ffff7f10000-7ffff7f20000 r--p 001a0000 fc:00 9250090                    =
+/lib/powerpc64le-linux-gnu/libc-2.23.so
+> 7ffff7f20000-7ffff7f30000 rw-p 001b0000 fc:00 9250090                    =
+/lib/powerpc64le-linux-gnu/libc-2.23.so
+> 7ffff7f40000-7ffff7f60000 r-xp 00000000 fc:00 10754812                   =
+/usr/lib/libhugetlbfs.so.0
+> 7ffff7f60000-7ffff7f70000 r--p 00010000 fc:00 10754812                   =
+/usr/lib/libhugetlbfs.so.0
+> 7ffff7f70000-7ffff7f80000 rw-p 00020000 fc:00 10754812                   =
+/usr/lib/libhugetlbfs.so.0
+> 7ffff7f80000-7ffff7fa0000 r-xp 00000000 00:00 0                          =
+[vdso]
+> 7ffff7fa0000-7ffff7fe0000 r-xp 00000000 fc:00 9250107                    =
+/lib/powerpc64le-linux-gnu/ld-2.23.so
+> 7ffff7fe0000-7ffff7ff0000 r--p 00030000 fc:00 9250107                    =
+/lib/powerpc64le-linux-gnu/ld-2.23.so
+> 7ffff7ff0000-7ffff8000000 rw-p 00040000 fc:00 9250107                    =
+/lib/powerpc64le-linux-gnu/ld-2.23.so
+> 7ffffffd0000-800000000000 rw-p 00000000 00:00 0                          =
+[stack]
+>
+>
+> Allocated 1Mbytes at 0x10000000010
+>
+>
+> Allocated 1Mbytes at 0x10002000020
+>
+>
+> Allocated 1Mbytes at 0x10004000030
+>
+> 10000000-10010000 r-xp 00000000 fc:00 9044312                            =
+/home/kvaneesh/a.out
+> 10010000-10020000 r--p 00000000 fc:00 9044312                            =
+/home/kvaneesh/a.out
+> 10020000-10030000 rw-p 00010000 fc:00 9044312                            =
+/home/kvaneesh/a.out
+> 10000000000-10003000000 rw-p 00000000 00:0d 1041435                      =
+/anon_hugepage (deleted)
+> 10003000000-10005000000 rw-p 03000000 00:0d 1041436                      =
+/anon_hugepage (deleted)
+> 10005000000-10007000000 rw-p 05000000 00:0d 1041437                      =
+/anon_hugepage (deleted)
+> 7ffff7d60000-7ffff7f10000 r-xp 00000000 fc:00 9250090                    =
+/lib/powerpc64le-linux-gnu/libc-2.23.so
+> 7ffff7f10000-7ffff7f20000 r--p 001a0000 fc:00 9250090                    =
+/lib/powerpc64le-linux-gnu/libc-2.23.so
+> 7ffff7f20000-7ffff7f30000 rw-p 001b0000 fc:00 9250090                    =
+/lib/powerpc64le-linux-gnu/libc-2.23.so
+> 7ffff7f40000-7ffff7f60000 r-xp 00000000 fc:00 10754812                   =
+/usr/lib/libhugetlbfs.so.0
+> 7ffff7f60000-7ffff7f70000 r--p 00010000 fc:00 10754812                   =
+/usr/lib/libhugetlbfs.so.0
+> 7ffff7f70000-7ffff7f80000 rw-p 00020000 fc:00 10754812                   =
+/usr/lib/libhugetlbfs.so.0
+> 7ffff7f80000-7ffff7fa0000 r-xp 00000000 00:00 0                          =
+[vdso]
+> 7ffff7fa0000-7ffff7fe0000 r-xp 00000000 fc:00 9250107                    =
+/lib/powerpc64le-linux-gnu/ld-2.23.so
+> 7ffff7fe0000-7ffff7ff0000 r--p 00030000 fc:00 9250107                    =
+/lib/powerpc64le-linux-gnu/ld-2.23.so
+> 7ffff7ff0000-7ffff8000000 rw-p 00040000 fc:00 9250107                    =
+/lib/powerpc64le-linux-gnu/ld-2.23.so
+> 7ffffffd0000-800000000000 rw-p 00000000 00:00 0                          =
+[stack]
+>
+>
+>
+> So i am definitely missing something. I understand that generic hugetlb
+> get unmapped area always search bottom up and 8xx used to depend on that
+> callback. But on ppc64 slice based get unmapped area always did topdown
+> and I am not sure whether we should change that. More over I don't think
+> MAP_GROWSDOWN is the right flag for selecting topdown/bottom up search.
+>
+>
+> Is it that libhugetlbfs does something specific for 32 bit? Other option
+> is to add huget_get_unmapped_area for 8xx that does bottom up search?
+>
+> If you are on ppc64 irc on freenode we can discuss this there.
 > -aneesh
