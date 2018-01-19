@@ -1,39 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zNFLf4mPLzDqqN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 20:06:34 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0J961OJ072597
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 04:06:32 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fkd0t1txc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 04:06:31 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 19 Jan 2018 02:06:30 -0700
-Subject: Re: [PATCH v2 3/5] powerpc/mm: Allow more than 16 low slices
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zNFMM47XLzF0YR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 20:07:11 +1100 (AEDT)
+Subject: Re: [PATCH v2 1/5] powerpc/mm: Enhance 'slice' for supporting PPC32
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <49148d07955d3e5f963cedf9adcfcc37c3e03ef4.1516179904.git.christophe.leroy@c-s.fr>
- <1c9752ac98fd3278ef448e2553053c287af42b3f.1516179904.git.christophe.leroy@c-s.fr>
- <87po66z1w2.fsf@linux.vnet.ibm.com>
- <baf3a2db-3522-8419-0eda-ef62ad13d76e@c-s.fr>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 19 Jan 2018 14:36:22 +0530
+ <87vafyz265.fsf@linux.vnet.ibm.com>
+ <84dc1df4-db2f-be11-c1f3-5dddd1e44983@c-s.fr>
+ <b4d8f01b-9ee1-ec34-aa0d-5a353064438c@linux.vnet.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <28c3ba39-ef31-5ff3-7672-3e9d1942be94@c-s.fr>
+Date: Fri, 19 Jan 2018 10:07:05 +0100
 MIME-Version: 1.0
-In-Reply-To: <baf3a2db-3522-8419-0eda-ef62ad13d76e@c-s.fr>
+In-Reply-To: <b4d8f01b-9ee1-ec34-aa0d-5a353064438c@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <26a6d845-cf38-d8c6-5f54-a57ddb2a5a77@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,68 +31,121 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 01/19/2018 02:29 PM, Christophe LEROY wrote:
+Le 19/01/2018 à 10:02, Aneesh Kumar K.V a écrit :
 > 
 > 
-> Le 19/01/2018 à 09:30, Aneesh Kumar K.V a écrit :
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> On 01/19/2018 02:14 PM, Christophe LEROY wrote:
 >>
->>> While the implementation of the "slices" address space allows
->>> a significant amount of high slices, it limits the number of
->>> low slices to 16 due to the use of a single u64 low_slices_psize
->>> element in struct mm_context_t
->>>
->>> On the 8xx, the minimum slice size is the size of the area
->>> covered by a single PMD entry, ie 4M in 4K pages mode and 64M in
->>> 16K pages mode. This means we could have resp. up to 1024 and 64
->>> slices.
->>>
->>> In order to override this limitation, this patch switches the
->>> handling of low_slices to BITMAPs as done already for high_slices.
 >>
->> Does it have a performance impact. When we switched high_slices
->> that was one of the question asked. Now with a topdown search we should
->> mostly be using the high_slices. But it will good to get numbers for
->> ppc64 for this change.
+>> Le 19/01/2018 à 09:24, Aneesh Kumar K.V a écrit :
+>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>
+>>>> In preparation for the following patch which will fix an issue on
+>>>> the 8xx by re-using the 'slices', this patch enhances the
+>>>> 'slices' implementation to support 32 bits CPUs.
+>>>>
+>>>> On PPC32, the address space is limited to 4Gbytes, hence only the low
+>>>> slices will be used. As of today, the code uses
+>>>> SLICE_LOW_TOP (0x100000000ul) and compares it with addr to determine
+>>>> if addr refers to low or high space.
+>>>> On PPC32, such a (addr < SLICE_LOW_TOP) test is always false because
+>>>> 0x100000000ul degrades to 0. Therefore, the patch modifies
+>>>> SLICE_LOW_TOP to (0xfffffffful) and modifies the tests to
+>>>> (addr <= SLICE_LOW_TOP) which will then always be true on PPC32
+>>>> as addr has type 'unsigned long' while not modifying the PPC64
+>>>> behaviour.
+>>>>
+>>>> This patch moves "slices" functions prototypes from page64.h to page.h
+>>>>
+>>>> The high slices use bitmaps. As bitmap functions are not prepared to
+>>>> handling bitmaps of size 0, the bitmap_xxx() calls are wrapped into
+>>>> slice_bitmap_xxx() macros which will take care of the 0 nbits case.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> ---
+>>>>   v2: First patch of v1 serie split in two parts ; added 
+>>>> slice_bitmap_xxx() macros.
+>>>>
+>>>>   arch/powerpc/include/asm/page.h      | 14 +++++++++
+>>>>   arch/powerpc/include/asm/page_32.h   | 19 ++++++++++++
+>>>>   arch/powerpc/include/asm/page_64.h   | 21 ++-----------
+>>>>   arch/powerpc/mm/hash_utils_64.c      |  2 +-
+>>>>   arch/powerpc/mm/mmu_context_nohash.c |  7 +++++
+>>>>   arch/powerpc/mm/slice.c              | 60 
+>>>> ++++++++++++++++++++++++------------
+>>>>   6 files changed, 83 insertions(+), 40 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/page.h 
+>>>> b/arch/powerpc/include/asm/page.h
+>>>> index 8da5d4c1cab2..d0384f9db9eb 100644
+>>>> --- a/arch/powerpc/include/asm/page.h
+>>>> +++ b/arch/powerpc/include/asm/page.h
+>>>> @@ -342,6 +342,20 @@ typedef struct page *pgtable_t;
+>>>>   #endif
+>>>>   #endif
+>>>> +#ifdef CONFIG_PPC_MM_SLICES
+>>>> +struct mm_struct;
+>>>> +
+>>>> +unsigned long slice_get_unmapped_area(unsigned long addr, unsigned 
+>>>> long len,
+>>>> +                      unsigned long flags, unsigned int psize,
+>>>> +                      int topdown);
+>>>> +
+>>>> +unsigned int get_slice_psize(struct mm_struct *mm, unsigned long 
+>>>> addr);
+>>>> +
+>>>> +void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+>>>> +void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+>>>> +               unsigned long len, unsigned int psize);
+>>>> +#endif
+>>>> +
+>>>
+>>> Should we do a slice.h ? the way we have other files? and then do
+>>
+>> Yes we could add a slice.h instead of using page.h for that, good idea.
+>>
+>>>
+>>> arch/powerpc/include/asm/book3s/64/slice.h that will carry
+>>> #define slice_bitmap_zero(dst, nbits) \
+>>>     do { if (nbits) bitmap_zero(dst, nbits); } while (0)
+>>> #define slice_bitmap_set(dst, pos, nbits) \
+>>> do { if (nbits) bitmap_set(dst, pos, nbits); } while (0)
+>>> #define slice_bitmap_copy(dst, src, nbits) \
+>>> do { if (nbits) bitmap_copy(dst, src, nbits); } while (0)
+>>> #define slice_bitmap_and(dst, src1, src2, nbits) \
+>>>     ({ (nbits) ? bitmap_and(dst, src1, src2, nbits) : 0; })
+>>> #define slice_bitmap_or(dst, src1, src2, nbits) \
+>>>     do { if (nbits) bitmap_or(dst, src1, src2, nbits); } while (0)
+>>> #define slice_bitmap_andnot(dst, src1, src2, nbits) \
+>>>     ({ (nbits) ? bitmap_andnot(dst, src1, src2, nbits) : 0; })
+>>> #define slice_bitmap_equal(src1, src2, nbits) \
+>>>     ({ (nbits) ? bitmap_equal(src1, src2, nbits) : 1; })
+>>> #define slice_bitmap_empty(src, nbits) \
+>>>     ({ (nbits) ? bitmap_empty(src, nbits) : 1; })
+>>>
+>>> This without that if(nbits) check and a proper static inline so that we
+>>> can do type checking.
+>>
+>> Is it really worth duplicating that just for eliminating the 'if 
+>> (nbits)' in one case ?
+>>
+>> Only in book3s/64 we will be able to eliminate that, for nohash/32 we 
+>> need to keep the test due to the difference between low and high slices.
 > 
-> It should have almost no performance impact at all, because all bitmap 
-> functions used a simplified way when the number of bits is small and 
-> constant:
-> 
-> -    ret->low_slices = 0;
-> +    slice_bitmap_zero(ret->low_slices, SLICE_NUM_LOW);
-> 
-> 
-> static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
-> {
->      if (small_const_nbits(nbits))
->          *dst = 0UL;
->      else {
->          unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
->          memset(dst, 0, len);
->      }
-> }
-> 
-> 
-> 
-> -    dst->low_slices |= src->low_slices;
-> +    slice_bitmap_or(dst->low_slices, dst->low_slices, src->low_slices,
-> +            SLICE_NUM_LOW);
-> 
-> 
-> static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,
->              const unsigned long *src2, unsigned int nbits)
-> {
->      if (small_const_nbits(nbits))
->          *dst = *src1 | *src2;
->      else
->          __bitmap_or(dst, src1, src2, nbits);
-> }
-> 
-> 
->
+> the other advantage is we move the SLICE_LOW_SHIFT to the right 
+> location. IMHO mm subystem is really complex with these really 
+> overloaded headers. If we can keep it  seperate we should with minimal 
+> code duplication?
 
-may be capture that in commit message saying since we are 64 bit on 
-ppc64 there is no impact there?
+For the constants I fully agree with your proposal and I will do it. I 
+was only questionning the benefit of moving the slice_bitmap_xxxx() 
+stuff, taking into account that the 'if (nbits)' test is already 
+eliminated by the compiler.
 
--aneesh
+Christophe
+
+>>
+>> In any case, as the nbits we use in slice.c is a constant, the test is 
+>> eliminated at compilation, so I can't see the benefit of making 
+> 
+> -aneesh
