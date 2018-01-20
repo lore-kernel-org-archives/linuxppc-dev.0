@@ -1,25 +1,28 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zNj803MfDzF0mb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jan 2018 13:58:56 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id 136so2799885pgd.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 18:58:55 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Subject: Re: [PATCH] watchdog: core: make sure the watchdog_worker is not
- deferred
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Wim Van Sebroeck <wim@iguana.be>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-watchdog@vger.kernel.org
-References: <20180118111121.4542E65A3A@localhost.localdomain>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <0be82211-af7c-d630-42a8-b2df70533e28@roeck-us.net>
-Date: Fri, 19 Jan 2018 18:58:50 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zNrL918VWzF0jr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jan 2018 19:23:11 +1100 (AEDT)
+Subject: Re: [PATCH v2 1/5] powerpc/mm: Enhance 'slice' for supporting PPC32
+From: christophe leroy <christophe.leroy@c-s.fr>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <49148d07955d3e5f963cedf9adcfcc37c3e03ef4.1516179904.git.christophe.leroy@c-s.fr>
+ <87vafyz265.fsf@linux.vnet.ibm.com>
+ <84dc1df4-db2f-be11-c1f3-5dddd1e44983@c-s.fr>
+ <b4d8f01b-9ee1-ec34-aa0d-5a353064438c@linux.vnet.ibm.com>
+ <28c3ba39-ef31-5ff3-7672-3e9d1942be94@c-s.fr>
+ <c9ab9a1b-4c77-fdfc-50d1-974388cc3b10@linux.vnet.ibm.com>
+ <e2f36c99-1b5d-acf5-12c8-b2b48701011a@c-s.fr>
+Message-ID: <36e8d873-4021-4266-bf5f-287f396ba9e1@c-s.fr>
+Date: Sat, 20 Jan 2018 09:22:50 +0100
 MIME-Version: 1.0
-In-Reply-To: <20180118111121.4542E65A3A@localhost.localdomain>
+In-Reply-To: <e2f36c99-1b5d-acf5-12c8-b2b48701011a@c-s.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,231 +33,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/18/2018 03:11 AM, Christophe Leroy wrote:
-> commit 4cd13c21b207e ("softirq: Let ksoftirqd do its job") has the
-> effect of deferring timer handling in case of high CPU load, hence
-> delaying the delayed work allthought the worker is running which
-> high realtime priority.
-> 
-> As hrtimers are not managed by softirqs, this patch replaces the
-> delayed work by a plain work and uses an hrtimer to schedule that work.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Hi Segher,
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Le 19/01/2018 à 10:45, Christophe LEROY a écrit :
+> 
+> 
+> Le 19/01/2018 à 10:13, Aneesh Kumar K.V a écrit :
+>>
+>>
+>> On 01/19/2018 02:37 PM, Christophe LEROY wrote:
+>>>
+>>>
+>>> Le 19/01/2018 à 10:02, Aneesh Kumar K.V a écrit :
+>>>>
+>>>>
+>>>> On 01/19/2018 02:14 PM, Christophe LEROY wrote:
+>>>>>
+>>>>>
+>>>>> Le 19/01/2018 à 09:24, Aneesh Kumar K.V a écrit :
+>>>>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>>>>
+>>>>>>> In preparation for the following patch which will fix an issue on
+>>>>>>> the 8xx by re-using the 'slices', this patch enhances the
+>>>>>>> 'slices' implementation to support 32 bits CPUs.
+>>>>>>>
+>>>>>>> On PPC32, the address space is limited to 4Gbytes, hence only the 
+>>>>>>> low
+>>>>>>> slices will be used. As of today, the code uses
+>>>>>>> SLICE_LOW_TOP (0x100000000ul) and compares it with addr to determine
+>>>>>>> if addr refers to low or high space.
+>>>>>>> On PPC32, such a (addr < SLICE_LOW_TOP) test is always false because
+>>>>>>> 0x100000000ul degrades to 0. Therefore, the patch modifies
+>>>>>>> SLICE_LOW_TOP to (0xfffffffful) and modifies the tests to
+>>>>>>> (addr <= SLICE_LOW_TOP) which will then always be true on PPC32
+>>>>>>> as addr has type 'unsigned long' while not modifying the PPC64
+>>>>>>> behaviour.
+>>>>>>>
+>>>>>>> This patch moves "slices" functions prototypes from page64.h to 
+>>>>>>> page.h
+>>>>>>>
+>>>>>>> The high slices use bitmaps. As bitmap functions are not prepared to
+>>>>>>> handling bitmaps of size 0, the bitmap_xxx() calls are wrapped into
+>>>>>>> slice_bitmap_xxx() macros which will take care of the 0 nbits case.
+>>>>>>>
+>>>>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>>>>> ---
+>>>>>>>   v2: First patch of v1 serie split in two parts ; added 
+>>>>>>> slice_bitmap_xxx() macros.
+>>>>>>>
+>>>>>>>   arch/powerpc/include/asm/page.h      | 14 +++++++++
+>>>>>>>   arch/powerpc/include/asm/page_32.h   | 19 ++++++++++++
+>>>>>>>   arch/powerpc/include/asm/page_64.h   | 21 ++-----------
+>>>>>>>   arch/powerpc/mm/hash_utils_64.c      |  2 +-
+>>>>>>>   arch/powerpc/mm/mmu_context_nohash.c |  7 +++++
+>>>>>>>   arch/powerpc/mm/slice.c              | 60 
+>>>>>>> ++++++++++++++++++++++++------------
+>>>>>>>   6 files changed, 83 insertions(+), 40 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/arch/powerpc/include/asm/page.h 
+>>>>>>> b/arch/powerpc/include/asm/page.h
+>>>>>>> index 8da5d4c1cab2..d0384f9db9eb 100644
+>>>>>>> --- a/arch/powerpc/include/asm/page.h
+>>>>>>> +++ b/arch/powerpc/include/asm/page.h
+>>>>>>> @@ -342,6 +342,20 @@ typedef struct page *pgtable_t;
+>>>>>>>   #endif
+>>>>>>>   #endif
+>>>>>>> +#ifdef CONFIG_PPC_MM_SLICES
+>>>>>>> +struct mm_struct;
+>>>>>>> +
+>>>>>>> +unsigned long slice_get_unmapped_area(unsigned long addr, 
+>>>>>>> unsigned long len,
+>>>>>>> +                      unsigned long flags, unsigned int psize,
+>>>>>>> +                      int topdown);
+>>>>>>> +
+>>>>>>> +unsigned int get_slice_psize(struct mm_struct *mm, unsigned long 
+>>>>>>> addr);
+>>>>>>> +
+>>>>>>> +void slice_set_user_psize(struct mm_struct *mm, unsigned int 
+>>>>>>> psize);
+>>>>>>> +void slice_set_range_psize(struct mm_struct *mm, unsigned long 
+>>>>>>> start,
+>>>>>>> +               unsigned long len, unsigned int psize);
+>>>>>>> +#endif
+>>>>>>> +
+>>>>>>
+>>>>>> Should we do a slice.h ? the way we have other files? and then do
+>>>>>
+>>>>> Yes we could add a slice.h instead of using page.h for that, good 
+>>>>> idea.
+>>>>>
+>>>>>>
+>>>>>> arch/powerpc/include/asm/book3s/64/slice.h that will carry
+>>>>>> #define slice_bitmap_zero(dst, nbits) \
+>>>>>>     do { if (nbits) bitmap_zero(dst, nbits); } while (0)
+>>>>>> #define slice_bitmap_set(dst, pos, nbits) \
+>>>>>> do { if (nbits) bitmap_set(dst, pos, nbits); } while (0)
+>>>>>> #define slice_bitmap_copy(dst, src, nbits) \
+>>>>>> do { if (nbits) bitmap_copy(dst, src, nbits); } while (0)
+>>>>>> #define slice_bitmap_and(dst, src1, src2, nbits) \
+>>>>>>     ({ (nbits) ? bitmap_and(dst, src1, src2, nbits) : 0; })
+>>>>>> #define slice_bitmap_or(dst, src1, src2, nbits) \
+>>>>>>     do { if (nbits) bitmap_or(dst, src1, src2, nbits); } while (0)
+>>>>>> #define slice_bitmap_andnot(dst, src1, src2, nbits) \
+>>>>>>     ({ (nbits) ? bitmap_andnot(dst, src1, src2, nbits) : 0; })
+>>>>>> #define slice_bitmap_equal(src1, src2, nbits) \
+>>>>>>     ({ (nbits) ? bitmap_equal(src1, src2, nbits) : 1; })
+>>>>>> #define slice_bitmap_empty(src, nbits) \
+>>>>>>     ({ (nbits) ? bitmap_empty(src, nbits) : 1; })
+>>>>>>
+>>>>>> This without that if(nbits) check and a proper static inline so 
+>>>>>> that we
+>>>>>> can do type checking.
+>>>>>
+>>>>> Is it really worth duplicating that just for eliminating the 'if 
+>>>>> (nbits)' in one case ?
+>>>>>
+>>>>> Only in book3s/64 we will be able to eliminate that, for nohash/32 
+>>>>> we need to keep the test due to the difference between low and high 
+>>>>> slices.
+>>>>
+>>>> the other advantage is we move the SLICE_LOW_SHIFT to the right 
+>>>> location. IMHO mm subystem is really complex with these really 
+>>>> overloaded headers. If we can keep it  seperate we should with 
+>>>> minimal code duplication?
+>>>
+>>> For the constants I fully agree with your proposal and I will do it. 
+>>> I was only questionning the benefit of moving the slice_bitmap_xxxx() 
+>>> stuff, taking into account that the 'if (nbits)' test is already 
+>>> eliminated by the compiler.
+>>>
+>>
+>> That is compiler dependent as you are finding with the other patch 
+>> where if (0) didn't get compiled out
+> 
+> I don't think so. When I had the missing prototype, the compilation goes 
+> ok, including the final link. Which means at the end the code is not 
+> included since radix_enabled() evaluates to 0.
+> 
+> Many many parts of the kernel are based on this assumption.
+> 
 
-> ---
->   drivers/watchdog/watchdog_dev.c | 86 +++++++++++++++++++++++++----------------
->   1 file changed, 52 insertions(+), 34 deletions(-)
-> 
-> diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
-> index 68bc29e6e79e..ffbdc4642ea5 100644
-> --- a/drivers/watchdog/watchdog_dev.c
-> +++ b/drivers/watchdog/watchdog_dev.c
-> @@ -36,10 +36,10 @@
->   #include <linux/errno.h>	/* For the -ENODEV/... values */
->   #include <linux/fs.h>		/* For file operations */
->   #include <linux/init.h>		/* For __init/__exit/... */
-> -#include <linux/jiffies.h>	/* For timeout functions */
-> +#include <linux/hrtimer.h>	/* For hrtimers */
->   #include <linux/kernel.h>	/* For printk/panic/... */
->   #include <linux/kref.h>		/* For data references */
-> -#include <linux/kthread.h>	/* For kthread_delayed_work */
-> +#include <linux/kthread.h>	/* For kthread_work */
->   #include <linux/miscdevice.h>	/* For handling misc devices */
->   #include <linux/module.h>	/* For module stuff/... */
->   #include <linux/mutex.h>	/* For mutexes */
-> @@ -67,9 +67,10 @@ struct watchdog_core_data {
->   	struct cdev cdev;
->   	struct watchdog_device *wdd;
->   	struct mutex lock;
-> -	unsigned long last_keepalive;
-> -	unsigned long last_hw_keepalive;
-> -	struct kthread_delayed_work work;
-> +	ktime_t last_keepalive;
-> +	ktime_t last_hw_keepalive;
-> +	struct hrtimer timer;
-> +	struct kthread_work work;
->   	unsigned long status;		/* Internal status bits */
->   #define _WDOG_DEV_OPEN		0	/* Opened ? */
->   #define _WDOG_ALLOW_RELEASE	1	/* Did we receive the magic char ? */
-> @@ -109,18 +110,19 @@ static inline bool watchdog_need_worker(struct watchdog_device *wdd)
->   		(t && !watchdog_active(wdd) && watchdog_hw_running(wdd));
->   }
->   
-> -static long watchdog_next_keepalive(struct watchdog_device *wdd)
-> +static ktime_t watchdog_next_keepalive(struct watchdog_device *wdd)
->   {
->   	struct watchdog_core_data *wd_data = wdd->wd_data;
->   	unsigned int timeout_ms = wdd->timeout * 1000;
-> -	unsigned long keepalive_interval;
-> -	unsigned long last_heartbeat;
-> -	unsigned long virt_timeout;
-> +	ktime_t keepalive_interval;
-> +	ktime_t last_heartbeat, latest_heartbeat;
-> +	ktime_t virt_timeout;
->   	unsigned int hw_heartbeat_ms;
->   
-> -	virt_timeout = wd_data->last_keepalive + msecs_to_jiffies(timeout_ms);
-> +	virt_timeout = ktime_add(wd_data->last_keepalive,
-> +				 ms_to_ktime(timeout_ms));
->   	hw_heartbeat_ms = min_not_zero(timeout_ms, wdd->max_hw_heartbeat_ms);
-> -	keepalive_interval = msecs_to_jiffies(hw_heartbeat_ms / 2);
-> +	keepalive_interval = ms_to_ktime(hw_heartbeat_ms / 2);
->   
->   	if (!watchdog_active(wdd))
->   		return keepalive_interval;
-> @@ -130,8 +132,11 @@ static long watchdog_next_keepalive(struct watchdog_device *wdd)
->   	 * after the most recent ping from userspace, the last
->   	 * worker ping has to come in hw_heartbeat_ms before this timeout.
->   	 */
-> -	last_heartbeat = virt_timeout - msecs_to_jiffies(hw_heartbeat_ms);
-> -	return min_t(long, last_heartbeat - jiffies, keepalive_interval);
-> +	last_heartbeat = ktime_sub(virt_timeout, ms_to_ktime(hw_heartbeat_ms));
-> +	latest_heartbeat = ktime_sub(last_heartbeat, ktime_get());
-> +	if (ktime_before(latest_heartbeat, keepalive_interval))
-> +		return latest_heartbeat;
-> +	return keepalive_interval;
->   }
->   
->   static inline void watchdog_update_worker(struct watchdog_device *wdd)
-> @@ -139,30 +144,33 @@ static inline void watchdog_update_worker(struct watchdog_device *wdd)
->   	struct watchdog_core_data *wd_data = wdd->wd_data;
->   
->   	if (watchdog_need_worker(wdd)) {
-> -		long t = watchdog_next_keepalive(wdd);
-> +		ktime_t t = watchdog_next_keepalive(wdd);
->   
->   		if (t > 0)
-> -			kthread_mod_delayed_work(watchdog_kworker,
-> -						 &wd_data->work, t);
-> +			hrtimer_start(&wd_data->timer, t, HRTIMER_MODE_REL);
->   	} else {
-> -		kthread_cancel_delayed_work_sync(&wd_data->work);
-> +		hrtimer_cancel(&wd_data->timer);
->   	}
->   }
->   
->   static int __watchdog_ping(struct watchdog_device *wdd)
->   {
->   	struct watchdog_core_data *wd_data = wdd->wd_data;
-> -	unsigned long earliest_keepalive = wd_data->last_hw_keepalive +
-> -				msecs_to_jiffies(wdd->min_hw_heartbeat_ms);
-> +	ktime_t earliest_keepalive, now;
->   	int err;
->   
-> -	if (time_is_after_jiffies(earliest_keepalive)) {
-> -		kthread_mod_delayed_work(watchdog_kworker, &wd_data->work,
-> -					 earliest_keepalive - jiffies);
-> +	earliest_keepalive = ktime_add(wd_data->last_hw_keepalive,
-> +				       ms_to_ktime(wdd->min_hw_heartbeat_ms));
-> +	now = ktime_get();
-> +
-> +	if (ktime_after(earliest_keepalive, now)) {
-> +		hrtimer_start(&wd_data->timer,
-> +			      ktime_sub(earliest_keepalive, now),
-> +			      HRTIMER_MODE_REL);
->   		return 0;
->   	}
->   
-> -	wd_data->last_hw_keepalive = jiffies;
-> +	wd_data->last_hw_keepalive = now;
->   
->   	if (wdd->ops->ping)
->   		err = wdd->ops->ping(wdd);  /* ping the watchdog */
-> @@ -195,7 +203,7 @@ static int watchdog_ping(struct watchdog_device *wdd)
->   
->   	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
->   
-> -	wd_data->last_keepalive = jiffies;
-> +	wd_data->last_keepalive = ktime_get();
->   	return __watchdog_ping(wdd);
->   }
->   
-> @@ -210,9 +218,7 @@ static void watchdog_ping_work(struct kthread_work *work)
->   {
->   	struct watchdog_core_data *wd_data;
->   
-> -	wd_data = container_of(container_of(work, struct kthread_delayed_work,
-> -					    work),
-> -			       struct watchdog_core_data, work);
-> +	wd_data = container_of(work, struct watchdog_core_data, work);
->   
->   	mutex_lock(&wd_data->lock);
->   	if (watchdog_worker_should_ping(wd_data))
-> @@ -220,6 +226,16 @@ static void watchdog_ping_work(struct kthread_work *work)
->   	mutex_unlock(&wd_data->lock);
->   }
->   
-> +static enum hrtimer_restart watchdog_timer_expired(struct hrtimer *timer)
-> +{
-> +	struct watchdog_core_data *wd_data;
-> +
-> +	wd_data = container_of(timer, struct watchdog_core_data, timer);
-> +
-> +	kthread_queue_work(watchdog_kworker, &wd_data->work);
-> +	return HRTIMER_NORESTART;
-> +}
-> +
->   /*
->    *	watchdog_start: wrapper to start the watchdog.
->    *	@wdd: the watchdog device to start
-> @@ -234,7 +250,7 @@ static void watchdog_ping_work(struct kthread_work *work)
->   static int watchdog_start(struct watchdog_device *wdd)
->   {
->   	struct watchdog_core_data *wd_data = wdd->wd_data;
-> -	unsigned long started_at;
-> +	ktime_t started_at;
->   	int err;
->   
->   	if (watchdog_active(wdd))
-> @@ -242,7 +258,7 @@ static int watchdog_start(struct watchdog_device *wdd)
->   
->   	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
->   
-> -	started_at = jiffies;
-> +	started_at = ktime_get();
->   	if (watchdog_hw_running(wdd) && wdd->ops->ping)
->   		err = wdd->ops->ping(wdd);
->   	else
-> @@ -928,7 +944,9 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
->   	if (IS_ERR_OR_NULL(watchdog_kworker))
->   		return -ENODEV;
->   
-> -	kthread_init_delayed_work(&wd_data->work, watchdog_ping_work);
-> +	kthread_init_work(&wd_data->work, watchdog_ping_work);
-> +	hrtimer_init(&wd_data->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +	wd_data->timer.function = watchdog_timer_expired;
->   
->   	if (wdd->id == 0) {
->   		old_wd_data = wd_data;
-> @@ -964,7 +982,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
->   	}
->   
->   	/* Record time of most recent heartbeat as 'just before now'. */
-> -	wd_data->last_hw_keepalive = jiffies - 1;
-> +	wd_data->last_hw_keepalive = ktime_sub(ktime_get(), 1);
->   
->   	/*
->   	 * If the watchdog is running, prevent its driver from being unloaded,
-> @@ -974,8 +992,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
->   		__module_get(wdd->ops->owner);
->   		kref_get(&wd_data->kref);
->   		if (handle_boot_enabled)
-> -			kthread_queue_delayed_work(watchdog_kworker,
-> -						   &wd_data->work, 0);
-> +			hrtimer_start(&wd_data->timer, 0, HRTIMER_MODE_REL);
->   		else
->   			pr_info("watchdog%d running and kernel based pre-userspace handler disabled\n",
->   				wdd->id);
-> @@ -1012,7 +1029,8 @@ static void watchdog_cdev_unregister(struct watchdog_device *wdd)
->   		watchdog_stop(wdd);
->   	}
->   
-> -	kthread_cancel_delayed_work_sync(&wd_data->work);
-> +	hrtimer_cancel(&wd_data->timer);
-> +	kthread_cancel_work_sync(&wd_data->work);
->   
->   	kref_put(&wd_data->kref, watchdog_core_data_release);
->   }
-> 
+
+Segher, what is your opinion on the above ? Can we consider that a ' if 
+(nbits)' will always be compiled out when nbits is a #define constant, 
+or should we duplicate the macros as suggested in order to avoid 
+unneccessary 'if' test on platforms where 'nbits' is always not null by 
+definition ?
+
+Patch is at https://patchwork.ozlabs.org/patch/862117/
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
