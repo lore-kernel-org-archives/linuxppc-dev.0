@@ -1,28 +1,26 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zNgcl65HvzF0yY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jan 2018 12:50:15 +1100 (AEDT)
-Date: Sat, 20 Jan 2018 02:47:47 +0100
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: Rob Herring <robh@kernel.org>
-Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
- Linus Walleij <linus.walleij@linaro.org>,
- Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 4/6] dt-bindings: gpio: Add binding for Wii GPIO controller
-Message-ID: <20180120014747.w46g5ag7xl3vnwok@latitude>
-References: <20180115031401.19577-1-j.neuschaefer@gmx.net>
- <20180115031401.19577-5-j.neuschaefer@gmx.net>
- <20180119230521.st5uon74fpi4jghc@rob-hp-laptop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zNj803MfDzF0mb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jan 2018 13:58:56 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 136so2799885pgd.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jan 2018 18:58:55 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH] watchdog: core: make sure the watchdog_worker is not
+ deferred
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-watchdog@vger.kernel.org
+References: <20180118111121.4542E65A3A@localhost.localdomain>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <0be82211-af7c-d630-42a8-b2df70533e28@roeck-us.net>
+Date: Fri, 19 Jan 2018 18:58:50 -0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="xwdbwosl34erxkmp"
-In-Reply-To: <20180119230521.st5uon74fpi4jghc@rob-hp-laptop>
+In-Reply-To: <20180118111121.4542E65A3A@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +30,231 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 01/18/2018 03:11 AM, Christophe Leroy wrote:
+> commit 4cd13c21b207e ("softirq: Let ksoftirqd do its job") has the
+> effect of deferring timer handling in case of high CPU load, hence
+> delaying the delayed work allthought the worker is running which
+> high realtime priority.
+> 
+> As hrtimers are not managed by softirqs, this patch replaces the
+> delayed work by a plain work and uses an hrtimer to schedule that work.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
---xwdbwosl34erxkmp
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-On Fri, Jan 19, 2018 at 05:05:21PM -0600, Rob Herring wrote:
-> On Mon, Jan 15, 2018 at 04:13:59AM +0100, Jonathan Neusch=C3=A4fer wrote:
-> > Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> > ---
-> >  .../bindings/gpio/nintendo,hollywood-gpio.txt      | 27 ++++++++++++++=
-++++++++
-> >  .../devicetree/bindings/powerpc/nintendo/wii.txt   |  9 +-------
-> >  2 files changed, 28 insertions(+), 8 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/gpio/nintendo,hol=
-lywood-gpio.txt
-[...]
-> > +Example:
-> > +
-> > +	GPIO: gpio@0d8000c0 {
->=20
-> Drop the leading 0.
-
-Ok, will do.
-
-> With that,
->=20
-> Reviewed-by: Rob Herring <robh@kernel.org>
-
-Thanks.
-
-
-Jonathan Neusch=C3=A4fer
-
---xwdbwosl34erxkmp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJaYp+8AAoJEAgwRJqO81/bWRMQALyvBEdjaHfv08RV+mib1xch
-tvlUSQWhnr28/fecv61CEv5QT5ICRUcukbuMhOAmgkN207I1ubRxa2ZrISmjWWsO
-0wofCqZaT3nuAhP9y3E98t2bxz/qPV6p5A1IyGeRBAqVrUVRGxwWgkxyhLUKA3NH
-uRnR9QzIRka0JHT+INGA5RlI5k3Wv759y7fF50XA8ZhH0uk0dAquf4AiCpS8vLjL
-F266UrxSUtMpLEcSdPTuXB5mn23R2HpJFPcExM2gHabPw9srfrIYczUD9JEoMRzp
-ITBj3IsAy0sH0aLCnW23hJ2L4NzIWNzD2RNirYXneEPe73Qt9CDOgUtQN5E6962S
-WjBor4Ryzqph9OwCRcTzlgscNQbtKsMqqhEInmIA5Pp0fwPUdt95XMwxTRK0UsyN
-E4iSX3QZ9KcQcQqK1tmx+5n+776ujZAMFS0S8AlY1u4/e7bBB2nvCbUvnIc4eIKS
-MtTPkk7f+FJQ7V5YlrthYL2E397HyqoQ6dJzVdKQz07WVNgflSMF9nya1VWQN4ZK
-QjaVRpXfbHFdPV4J5EoYtj5dOQCydD6v13mke8vfmE9H4S8wcau05eKKf0gCxMoO
-505N0wHc3tLdFiOEEJ9rff/xLT6oKYjRNK476nAZRMXTQ7yHqdf/37zJoJLcNkuJ
-NUIHk22hGHW/dh6tPqZt
-=xC1+
------END PGP SIGNATURE-----
-
---xwdbwosl34erxkmp--
+> ---
+>   drivers/watchdog/watchdog_dev.c | 86 +++++++++++++++++++++++++----------------
+>   1 file changed, 52 insertions(+), 34 deletions(-)
+> 
+> diff --git a/drivers/watchdog/watchdog_dev.c b/drivers/watchdog/watchdog_dev.c
+> index 68bc29e6e79e..ffbdc4642ea5 100644
+> --- a/drivers/watchdog/watchdog_dev.c
+> +++ b/drivers/watchdog/watchdog_dev.c
+> @@ -36,10 +36,10 @@
+>   #include <linux/errno.h>	/* For the -ENODEV/... values */
+>   #include <linux/fs.h>		/* For file operations */
+>   #include <linux/init.h>		/* For __init/__exit/... */
+> -#include <linux/jiffies.h>	/* For timeout functions */
+> +#include <linux/hrtimer.h>	/* For hrtimers */
+>   #include <linux/kernel.h>	/* For printk/panic/... */
+>   #include <linux/kref.h>		/* For data references */
+> -#include <linux/kthread.h>	/* For kthread_delayed_work */
+> +#include <linux/kthread.h>	/* For kthread_work */
+>   #include <linux/miscdevice.h>	/* For handling misc devices */
+>   #include <linux/module.h>	/* For module stuff/... */
+>   #include <linux/mutex.h>	/* For mutexes */
+> @@ -67,9 +67,10 @@ struct watchdog_core_data {
+>   	struct cdev cdev;
+>   	struct watchdog_device *wdd;
+>   	struct mutex lock;
+> -	unsigned long last_keepalive;
+> -	unsigned long last_hw_keepalive;
+> -	struct kthread_delayed_work work;
+> +	ktime_t last_keepalive;
+> +	ktime_t last_hw_keepalive;
+> +	struct hrtimer timer;
+> +	struct kthread_work work;
+>   	unsigned long status;		/* Internal status bits */
+>   #define _WDOG_DEV_OPEN		0	/* Opened ? */
+>   #define _WDOG_ALLOW_RELEASE	1	/* Did we receive the magic char ? */
+> @@ -109,18 +110,19 @@ static inline bool watchdog_need_worker(struct watchdog_device *wdd)
+>   		(t && !watchdog_active(wdd) && watchdog_hw_running(wdd));
+>   }
+>   
+> -static long watchdog_next_keepalive(struct watchdog_device *wdd)
+> +static ktime_t watchdog_next_keepalive(struct watchdog_device *wdd)
+>   {
+>   	struct watchdog_core_data *wd_data = wdd->wd_data;
+>   	unsigned int timeout_ms = wdd->timeout * 1000;
+> -	unsigned long keepalive_interval;
+> -	unsigned long last_heartbeat;
+> -	unsigned long virt_timeout;
+> +	ktime_t keepalive_interval;
+> +	ktime_t last_heartbeat, latest_heartbeat;
+> +	ktime_t virt_timeout;
+>   	unsigned int hw_heartbeat_ms;
+>   
+> -	virt_timeout = wd_data->last_keepalive + msecs_to_jiffies(timeout_ms);
+> +	virt_timeout = ktime_add(wd_data->last_keepalive,
+> +				 ms_to_ktime(timeout_ms));
+>   	hw_heartbeat_ms = min_not_zero(timeout_ms, wdd->max_hw_heartbeat_ms);
+> -	keepalive_interval = msecs_to_jiffies(hw_heartbeat_ms / 2);
+> +	keepalive_interval = ms_to_ktime(hw_heartbeat_ms / 2);
+>   
+>   	if (!watchdog_active(wdd))
+>   		return keepalive_interval;
+> @@ -130,8 +132,11 @@ static long watchdog_next_keepalive(struct watchdog_device *wdd)
+>   	 * after the most recent ping from userspace, the last
+>   	 * worker ping has to come in hw_heartbeat_ms before this timeout.
+>   	 */
+> -	last_heartbeat = virt_timeout - msecs_to_jiffies(hw_heartbeat_ms);
+> -	return min_t(long, last_heartbeat - jiffies, keepalive_interval);
+> +	last_heartbeat = ktime_sub(virt_timeout, ms_to_ktime(hw_heartbeat_ms));
+> +	latest_heartbeat = ktime_sub(last_heartbeat, ktime_get());
+> +	if (ktime_before(latest_heartbeat, keepalive_interval))
+> +		return latest_heartbeat;
+> +	return keepalive_interval;
+>   }
+>   
+>   static inline void watchdog_update_worker(struct watchdog_device *wdd)
+> @@ -139,30 +144,33 @@ static inline void watchdog_update_worker(struct watchdog_device *wdd)
+>   	struct watchdog_core_data *wd_data = wdd->wd_data;
+>   
+>   	if (watchdog_need_worker(wdd)) {
+> -		long t = watchdog_next_keepalive(wdd);
+> +		ktime_t t = watchdog_next_keepalive(wdd);
+>   
+>   		if (t > 0)
+> -			kthread_mod_delayed_work(watchdog_kworker,
+> -						 &wd_data->work, t);
+> +			hrtimer_start(&wd_data->timer, t, HRTIMER_MODE_REL);
+>   	} else {
+> -		kthread_cancel_delayed_work_sync(&wd_data->work);
+> +		hrtimer_cancel(&wd_data->timer);
+>   	}
+>   }
+>   
+>   static int __watchdog_ping(struct watchdog_device *wdd)
+>   {
+>   	struct watchdog_core_data *wd_data = wdd->wd_data;
+> -	unsigned long earliest_keepalive = wd_data->last_hw_keepalive +
+> -				msecs_to_jiffies(wdd->min_hw_heartbeat_ms);
+> +	ktime_t earliest_keepalive, now;
+>   	int err;
+>   
+> -	if (time_is_after_jiffies(earliest_keepalive)) {
+> -		kthread_mod_delayed_work(watchdog_kworker, &wd_data->work,
+> -					 earliest_keepalive - jiffies);
+> +	earliest_keepalive = ktime_add(wd_data->last_hw_keepalive,
+> +				       ms_to_ktime(wdd->min_hw_heartbeat_ms));
+> +	now = ktime_get();
+> +
+> +	if (ktime_after(earliest_keepalive, now)) {
+> +		hrtimer_start(&wd_data->timer,
+> +			      ktime_sub(earliest_keepalive, now),
+> +			      HRTIMER_MODE_REL);
+>   		return 0;
+>   	}
+>   
+> -	wd_data->last_hw_keepalive = jiffies;
+> +	wd_data->last_hw_keepalive = now;
+>   
+>   	if (wdd->ops->ping)
+>   		err = wdd->ops->ping(wdd);  /* ping the watchdog */
+> @@ -195,7 +203,7 @@ static int watchdog_ping(struct watchdog_device *wdd)
+>   
+>   	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
+>   
+> -	wd_data->last_keepalive = jiffies;
+> +	wd_data->last_keepalive = ktime_get();
+>   	return __watchdog_ping(wdd);
+>   }
+>   
+> @@ -210,9 +218,7 @@ static void watchdog_ping_work(struct kthread_work *work)
+>   {
+>   	struct watchdog_core_data *wd_data;
+>   
+> -	wd_data = container_of(container_of(work, struct kthread_delayed_work,
+> -					    work),
+> -			       struct watchdog_core_data, work);
+> +	wd_data = container_of(work, struct watchdog_core_data, work);
+>   
+>   	mutex_lock(&wd_data->lock);
+>   	if (watchdog_worker_should_ping(wd_data))
+> @@ -220,6 +226,16 @@ static void watchdog_ping_work(struct kthread_work *work)
+>   	mutex_unlock(&wd_data->lock);
+>   }
+>   
+> +static enum hrtimer_restart watchdog_timer_expired(struct hrtimer *timer)
+> +{
+> +	struct watchdog_core_data *wd_data;
+> +
+> +	wd_data = container_of(timer, struct watchdog_core_data, timer);
+> +
+> +	kthread_queue_work(watchdog_kworker, &wd_data->work);
+> +	return HRTIMER_NORESTART;
+> +}
+> +
+>   /*
+>    *	watchdog_start: wrapper to start the watchdog.
+>    *	@wdd: the watchdog device to start
+> @@ -234,7 +250,7 @@ static void watchdog_ping_work(struct kthread_work *work)
+>   static int watchdog_start(struct watchdog_device *wdd)
+>   {
+>   	struct watchdog_core_data *wd_data = wdd->wd_data;
+> -	unsigned long started_at;
+> +	ktime_t started_at;
+>   	int err;
+>   
+>   	if (watchdog_active(wdd))
+> @@ -242,7 +258,7 @@ static int watchdog_start(struct watchdog_device *wdd)
+>   
+>   	set_bit(_WDOG_KEEPALIVE, &wd_data->status);
+>   
+> -	started_at = jiffies;
+> +	started_at = ktime_get();
+>   	if (watchdog_hw_running(wdd) && wdd->ops->ping)
+>   		err = wdd->ops->ping(wdd);
+>   	else
+> @@ -928,7 +944,9 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+>   	if (IS_ERR_OR_NULL(watchdog_kworker))
+>   		return -ENODEV;
+>   
+> -	kthread_init_delayed_work(&wd_data->work, watchdog_ping_work);
+> +	kthread_init_work(&wd_data->work, watchdog_ping_work);
+> +	hrtimer_init(&wd_data->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> +	wd_data->timer.function = watchdog_timer_expired;
+>   
+>   	if (wdd->id == 0) {
+>   		old_wd_data = wd_data;
+> @@ -964,7 +982,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+>   	}
+>   
+>   	/* Record time of most recent heartbeat as 'just before now'. */
+> -	wd_data->last_hw_keepalive = jiffies - 1;
+> +	wd_data->last_hw_keepalive = ktime_sub(ktime_get(), 1);
+>   
+>   	/*
+>   	 * If the watchdog is running, prevent its driver from being unloaded,
+> @@ -974,8 +992,7 @@ static int watchdog_cdev_register(struct watchdog_device *wdd, dev_t devno)
+>   		__module_get(wdd->ops->owner);
+>   		kref_get(&wd_data->kref);
+>   		if (handle_boot_enabled)
+> -			kthread_queue_delayed_work(watchdog_kworker,
+> -						   &wd_data->work, 0);
+> +			hrtimer_start(&wd_data->timer, 0, HRTIMER_MODE_REL);
+>   		else
+>   			pr_info("watchdog%d running and kernel based pre-userspace handler disabled\n",
+>   				wdd->id);
+> @@ -1012,7 +1029,8 @@ static void watchdog_cdev_unregister(struct watchdog_device *wdd)
+>   		watchdog_stop(wdd);
+>   	}
+>   
+> -	kthread_cancel_delayed_work_sync(&wd_data->work);
+> +	hrtimer_cancel(&wd_data->timer);
+> +	kthread_cancel_work_sync(&wd_data->work);
+>   
+>   	kref_put(&wd_data->kref, watchdog_core_data_release);
+>   }
+> 
