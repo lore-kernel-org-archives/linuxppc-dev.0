@@ -1,31 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <huntbag@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQ3ZP5MFdzF0Wb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 18:53:00 +1100 (AEDT)
-Subject: Re: [PATCH v2 1/5] powerpc/mm: Enhance 'slice' for supporting PPC32
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <49148d07955d3e5f963cedf9adcfcc37c3e03ef4.1516179904.git.christophe.leroy@c-s.fr>
- <87vafyz265.fsf@linux.vnet.ibm.com>
- <84dc1df4-db2f-be11-c1f3-5dddd1e44983@c-s.fr>
- <b4d8f01b-9ee1-ec34-aa0d-5a353064438c@linux.vnet.ibm.com>
- <28c3ba39-ef31-5ff3-7672-3e9d1942be94@c-s.fr>
- <c9ab9a1b-4c77-fdfc-50d1-974388cc3b10@linux.vnet.ibm.com>
- <e2f36c99-1b5d-acf5-12c8-b2b48701011a@c-s.fr>
- <36e8d873-4021-4266-bf5f-287f396ba9e1@c-s.fr>
- <20180120175655.GY21977@gate.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <52c000dd-1625-a205-8ad1-04376beed2ab@c-s.fr>
-Date: Mon, 22 Jan 2018 08:52:53 +0100
-MIME-Version: 1.0
-In-Reply-To: <20180120175655.GY21977@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQ47102tGzF0Z0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 19:17:48 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0M8EkAj094676
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 03:17:46 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fn7qgs5tn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 03:17:45 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
+ Mon, 22 Jan 2018 08:17:42 -0000
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org,
+ rjw@rjwysocki.net, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v3] cpufreq: powernv: Add support of frequency domain
+Date: Mon, 22 Jan 2018 13:47:34 +0530
+Message-Id: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,120 +35,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Frequency-domain indicates group of CPUs that would share same frequency.
+It is detected using device-tree node "frequency-domain-indicator".
+frequency-domain-indicator is a bitmask which will have different value
+depending upon the generation of the processor.
 
+CPUs of the same chip for which the result of a bitwise AND between
+their PIR and the frequency-domain-indicator is the same share the same
+frequency.
 
-Le 20/01/2018 à 18:56, Segher Boessenkool a écrit :
-> Hi!
-> 
-> On Sat, Jan 20, 2018 at 09:22:50AM +0100, christophe leroy wrote:
->>>>>>>>> On PPC32, the address space is limited to 4Gbytes, hence only the
->>>>>>>>> low
->>>>>>>>> slices will be used. As of today, the code uses
->>>>>>>>> SLICE_LOW_TOP (0x100000000ul) and compares it with addr to determine
->>>>>>>>> if addr refers to low or high space.
->>>>>>>>> On PPC32, such a (addr < SLICE_LOW_TOP) test is always false because
->>>>>>>>> 0x100000000ul degrades to 0. Therefore, the patch modifies
->>>>>>>>> SLICE_LOW_TOP to (0xfffffffful) and modifies the tests to
->>>>>>>>> (addr <= SLICE_LOW_TOP) which will then always be true on PPC32
->>>>>>>>> as addr has type 'unsigned long' while not modifying the PPC64
->>>>>>>>> behaviour.
-> 
-> It should work to define SLICE_LOW_TOP as 0x100000000ull and keep
-> everything else the same, no?
+In this patch, we define hash-table indexed by the aforementioned
+bitwise ANDed value to store the cpumask of the CPUs sharing the same
+frequency domain. Further, the cpufreq policy will be created per
+frequency-domain
 
-great, yes it works indeed.
+So for POWER9, a cpufreq policy is created per quad while for POWER8 it
+is created per core. Governor decides frequency for each policy but
+multiple cores may come under same policy. In such case frequency needs
+to be set on each core sharing that policy.
 
-> 
->>> I don't think so. When I had the missing prototype, the compilation goes
->>> ok, including the final link. Which means at the end the code is not
->>> included since radix_enabled() evaluates to 0.
->>>
->>> Many many parts of the kernel are based on this assumption.
->>
->> Segher, what is your opinion on the above ? Can we consider that a ' if
->> (nbits)' will always be compiled out when nbits is a #define constant,
->> or should we duplicate the macros as suggested in order to avoid
->> unneccessary 'if' test on platforms where 'nbits' is always not null by
->> definition ?
-> 
-> Doing things like
-> 
-> 	if (nbits)
-> 		some_undeclared_function();
-> 
-> will likely work in practice if the condition evaluates to false at
-> compile time, but a) it will warn; b) it is just yuck; and c) it will
-> not always work (for example, you get the wrong prototype in this case,
-> not lethal here with most ABIs, but ugh).
-> 
-> Just make sure to declare all functions, or define it to some empty
-> thing, or #ifdeffery if you have to.  There are many options, it is
-> not hard, and if it means you have to pull code further apart that is
-> not so bad: you get cleaner, clearer code.
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+---
 
-Ok, if I understand well, your comment applies to the following indeed, 
-so you confirm the #ifdef is necessary.
+Skiboot patch required for the corresponding device-tree changes have been
+posted here : http://patchwork.ozlabs.org/patch/862256/
 
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -553,9 +553,11 @@ unsigned long hugetlb_get_unmapped_area(struct file 
-*file, unsigned long addr,
-  	struct hstate *hstate = hstate_file(file);
-  	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
+ drivers/cpufreq/powernv-cpufreq.c | 104 ++++++++++++++++++++++++++++++++++----
+ 1 file changed, 95 insertions(+), 9 deletions(-)
 
-+#ifdef CONFIG_PPC_RADIX_MMU
-  	if (radix_enabled())
-  		return radix__hugetlb_get_unmapped_area(file, addr, len,
-  						       pgoff, flags);
-+#endif
-  	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
-  }
-  #endif
-
-
-However, my question was related to another part of the current 
-patchset, where the functions are always refined:
-
-
-On PPC32 we set:
-
-+#define SLICE_LOW_SHIFT		28
-+#define SLICE_HIGH_SHIFT	0
-
-On PPC64 we set:
-
-  #define SLICE_LOW_SHIFT		28
-  #define SLICE_HIGH_SHIFT	40
-
-We define:
-
-+#define slice_bitmap_zero(dst, nbits) \
-+	do { if (nbits) bitmap_zero(dst, nbits); } while (0)
-
-
-We have a function with:
-{
-	slice_bitmap_zero(ret->low_slices, SLICE_NUM_LOW);
-  	slice_bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
-}
-
-So the question is to find the better approach. Is the above approach 
-correct, including performance wise ?
-Or should we define two sets of the macro slice_bitmap_zero(), one for 
-CONFIG_PPC32 with the 'if (nbits)' test and one for CONFIG_PPC64 without 
-the unnecessary test ?
-
-Or should we avoid this macro entirely and instead do something like:
-
-{
-	bitmap_zero(ret->low_slices, SLICE_NUM_LOW);
-#if SLICE_NUM_HIGH != 0
-  	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
-#endif
-}
-
-And if we say the 'macro' approach is OK, should it be better the use a 
-static inline function instead ?
-
-Thanks,
-Christophe
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..aab23a4 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -37,6 +37,7 @@
+ #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+ #include <asm/opal.h>
+ #include <linux/timer.h>
++#include <linux/hashtable.h>
+ 
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+@@ -130,6 +131,9 @@ enum throttle_reason_type {
+ static int nr_chips;
+ static DEFINE_PER_CPU(struct chip *, chip_info);
+ 
++static u32 freq_domain_indicator;
++static bool p9_occ_quirk;
++
+ /*
+  * Note:
+  * The set of pstates consists of contiguous integers.
+@@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+ 	gpstates->last_gpstate_idx = 0;
+ }
+ 
++#define SIZE NR_CPUS
++#define ORDER_FREQ_MAP ilog2(SIZE)
++
++static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
++
++struct hashmap {
++	cpumask_t mask;
++	int chip_id;
++	u32 pir_key;
++	struct hlist_node hash_node;
++};
++
++static void insert(u32 key, int cpu)
++{
++	struct hashmap *data;
++
++	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
++		if (data->chip_id == cpu_to_chip_id(cpu) &&
++			data->pir_key == key) {
++			cpumask_set_cpu(cpu, &data->mask);
++			return;
++		}
++	}
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
++	cpumask_set_cpu(cpu, &data->mask);
++	data->chip_id = cpu_to_chip_id(cpu);
++	data->pir_key = key;
++
++}
++
+ /*
+  * Initialize the freq table based on data obtained
+  * from the firmware passed via device-tree
+@@ -206,6 +242,7 @@ static int init_powernv_pstates(void)
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
+ 	u32 pstate_turbo, pstate_ultra_turbo;
++	u32 key;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -246,9 +283,18 @@ static int init_powernv_pstates(void)
+ 	else
+ 		powernv_pstate_info.wof_enabled = true;
+ 
++	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
++		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
++				&freq_domain_indicator))
++		pr_warn("ibm,freq-domain-indicator not found\n");
++
++        if (of_device_is_compatible(power_mgt, "p9-occ-quirk"))
++		p9_occ_quirk = true;
++
+ next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
++	pr_info("frequency domain indicator %d", freq_domain_indicator);
+ 	pr_info("Workload Optimized Frequency is %s in the platform\n",
+ 		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
+ 
+@@ -276,6 +322,15 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
+ 	}
+ 
++	if (freq_domain_indicator) {
++		hash_init(freq_domain_map);
++		for_each_possible_cpu(i) {
++			key = ((u32) get_hard_smp_processor_id(i) &
++				freq_domain_indicator);
++			insert(key, i);
++		}
++	}
++
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
+ 	for (i = 0; i < nr_pstates; i++) {
+@@ -760,25 +815,56 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 
+ 	spin_unlock(&gpstates->gpstate_lock);
+ 
+-	/*
+-	 * Use smp_call_function to send IPI and execute the
+-	 * mtspr on target CPU.  We could do that without IPI
+-	 * if current CPU is within policy->cpus (core)
++	/* The current DVFS implementation in firmware requires that to set a
++	 * frequency in a quad, all cores of the quad need to set frequency in
++	 * their respective PMCR's. Ideally setting frequency on any of the
++	 * core of that quad should change frequency for the quad.
+ 	 */
+-	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++	if (p9_occ_quirk) {
++		cpumask_t temp;
++		u32 cpu;
++
++		cpumask_copy(&temp, policy->cpus);
++		while (!cpumask_empty(&temp)) {
++			cpu = cpumask_first(&temp);
++			smp_call_function_any(cpu_sibling_mask(cpu),
++					set_pstate, &freq_data, 1);
++			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
++		}
++	} else {
++		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++	}
++
+ 	return 0;
+ }
+ 
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i, ret;
++	int ret;
+ 	struct kernfs_node *kn;
+ 	struct global_pstate_info *gpstates;
+ 
+-	base = cpu_first_thread_sibling(policy->cpu);
++	if (!freq_domain_indicator) {
++		int base, i;
+ 
+-	for (i = 0; i < threads_per_core; i++)
+-		cpumask_set_cpu(base + i, policy->cpus);
++		base = cpu_first_thread_sibling(policy->cpu);
++		for (i = 0; i < threads_per_core; i++)
++			cpumask_set_cpu(base + i, policy->cpus);
++	} else {
++		u32 key;
++		struct hashmap *data;
++
++		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
++				freq_domain_indicator);
++		hash_for_each_possible(freq_domain_map, data, hash_node,
++								 key%SIZE) {
++			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
++				data->pir_key == key) {
++				cpumask_copy(policy->cpus, &data->mask);
++				break;
++			}
++		}
++	}
+ 
+ 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+ 	if (!kn) {
+-- 
+1.8.3.1
