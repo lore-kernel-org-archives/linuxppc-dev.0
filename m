@@ -1,38 +1,19 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zPzvN1qxkzF0XV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 16:07:28 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0M53iXB074085
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 00:07:25 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fn8dc1ygf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 00:07:25 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 22 Jan 2018 05:07:22 -0000
-Subject: Re: [PATCH 02/13] powerpc/powernv: Set correct configuration space
- size for opencapi devices
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, gregkh@linuxfoundation.org, alastair@au1.ibm.com
-References: <cover.1513608243.git.fbarrat@linux.vnet.ibm.com>
- <386af9b4afde2a0f9cd699d79b0fdf3e4fc0e2d7.1513608243.git.fbarrat@linux.vnet.ibm.com>
- <87607wc0wy.fsf@concordia.ellerman.id.au>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Mon, 22 Jan 2018 16:07:17 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zPzxy36ZqzF0Xc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 16:09:41 +1100 (AEDT)
+From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
+ devicetree@vger.kernel.org,
+ =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Subject: [PATCH v2 0/6] Nintendo Wii GPIO driver
+Date: Mon, 22 Jan 2018 06:04:05 +0100
+Message-Id: <20180122050411.32460-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
-In-Reply-To: <87607wc0wy.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <4d2596cc-0487-ed28-9795-a42122f9ea29@au1.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,12 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/01/18 20:52, Michael Ellerman wrote:> On my Power8 PowerVM LPAR:
+This series adds a driver for the GPIO controller used in the Nintendo
+Wii game console.
 
-<snip>
+The driver itself, and the related devicetree work should be pretty
+uncontroversial, but due to the system architecture of the Wii, I also
+had to extend an old resource allocation hack to kernel/resource.c: On
+the Wii, there are two separate RAM ranges, with MMIO right in the
+middle, but AFAIK, Linux on PPC32 doesn't support discontiguous memory
+properly. So the hack is to allocate one big RAM range with a hole
+(marked as reserved memory) for MMIO in the middle.
 
-Will fix...
+Because this series touches different subsystems (GPIO, DT, core
+resource management), I guess it should be picked up patch-by-patch by
+the different maintainers.
+
+The main difference between v2 and the previous version is that I
+rewrote the driver on top of the GPIO_GENERIC library, saving 60 lines
+of code.
+
+Jonathan Neuschäfer (6):
+  resource: Extend the PPC32 reserved memory hack
+  powerpc: wii: Explicitly configure GPIO owner for poweroff pin
+  gpio: Add GPIO driver for Nintendo Wii
+  dt-bindings: gpio: Add binding for Wii GPIO controller
+  powerpc: wii.dts: Add ngpios property
+  powerpc: wii.dts: Add GPIO line names
+
+ .../bindings/gpio/nintendo,hollywood-gpio.txt      |  27 +++++
+ .../devicetree/bindings/powerpc/nintendo/wii.txt   |   9 +-
+ arch/powerpc/boot/dts/wii.dts                      |   9 ++
+ arch/powerpc/platforms/embedded6xx/wii.c           |   7 ++
+ drivers/gpio/Kconfig                               |   9 ++
+ drivers/gpio/Makefile                              |   1 +
+ drivers/gpio/gpio-hlwd.c                           | 123 +++++++++++++++++++++
+ kernel/resource.c                                  |  21 +++-
+ 8 files changed, 197 insertions(+), 9 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/gpio/nintendo,hollywood-gpio.txt
+ create mode 100644 drivers/gpio/gpio-hlwd.c
 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.15.1
