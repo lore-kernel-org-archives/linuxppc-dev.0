@@ -1,25 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <huntbag@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQ4DG17mNzF0ZW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 19:22:20 +1100 (AEDT)
-Subject: Re: [PATCH v2] powerpc/mm: Fix growth direction for hugepages mmaps
- with slice
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20180109101810.2471D6C6CF@localhost.localdomain>
- <87wp0haizf.fsf@linux.vnet.ibm.com>
- <d5f6060f-3061-dc3c-66f7-3cec05d50169@c-s.fr>
- <f5f2af23-f535-8fca-4edf-a0ec4107a7df@linux.vnet.ibm.com>
- <dd2e281e-0dea-8acf-30dc-b85d0d438cf3@c-s.fr>
- <87y3kuz559.fsf@linux.vnet.ibm.com> <87mv1ayxi6.fsf@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <9ac743f8-a3ac-4e54-af75-8af8d56f00b6@c-s.fr>
-Date: Mon, 22 Jan 2018 09:22:15 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQ4Pv3SClzF0ZM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 19:30:43 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0M8TeYL106109
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 03:30:41 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fnc9g0qum-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 03:30:40 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
+ Mon, 22 Jan 2018 08:30:38 -0000
+Subject: Re: [PATCH v2] cpufreq: powernv: Add support of frequency domain
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20171220064214.9057-1-huntbag@linux.vnet.ibm.com>
+ <20171220065028.GW19815@vireshk-i7>
+From: Abhishek <huntbag@linux.vnet.ibm.com>
+Date: Mon, 22 Jan 2018 14:00:32 +0530
 MIME-Version: 1.0
-In-Reply-To: <87mv1ayxi6.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20171220065028.GW19815@vireshk-i7>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <4f4552c9-c43d-1fbd-4ef5-6bed46a7a512@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,197 +42,221 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 19/01/2018 à 11:05, Aneesh Kumar K.V a écrit :
-> 
-> Did a reply instead of reply-all.
-> 
-> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> writes:
-> 
->> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->>
->>> Le 17/01/2018 à 04:19, Aneesh Kumar K.V a écrit :
->>>>
->>>>
->>>> On 01/16/2018 10:18 PM, Christophe LEROY wrote:
->>>>>
->>>>>
->>>>> Le 16/01/2018 à 17:03, Aneesh Kumar K.V a écrit :
->>>>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>>>>
->>>>>>> An application running with libhugetlbfs fails to allocate
->>>>>>> additional pages to HEAP due to the hugemap being done
->>>>>>> inconditionally as topdown mapping:
->>>>>>>
->>>>>>> mmap(0x10080000, 1572864, PROT_READ|PROT_WRITE,
->>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x73e80000
->>>>>>> [...]
->>>>>>> mmap(0x74000000, 1048576, PROT_READ|PROT_WRITE,
->>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d80000
->>>>>>> munmap(0x73d80000, 1048576)             = 0
->>>>>>> [...]
->>>>>>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE,
->>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
->>>>>>> munmap(0x73d00000, 1572864)             = 0
->>>>>>> [...]
->>>>>>> mmap(0x74000000, 1572864, PROT_READ|PROT_WRITE,
->>>>>>> MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0x180000) = 0x73d00000
->>>>>>> munmap(0x73d00000, 1572864)             = 0
->>>>>>> [...]
->>>>>>>
->>>>>>
->>>>>> Can you explain the failure details above. I am not sure I understand
->>>>>> what to read from the above output.
->>>>>
->>>>> libhugetlbfs first requests an area of size 1.5Mbytes, at address
->>>>> 0x10080000
->>>>> mmap() returns an area at address 0x73e80000
->>>>>
->>>>> Then libhugetlbfs requests an additional area on top of that, ie at
->>>>> address 0x74000000, to expand the heap.
->>>>> But mmap() returns an area at address 0x73d80000, ie under the
->>>>> previous area.
->>>>>
->>>>
->>>>
->>>> Can you share the test details?. Why does it not fail on book3s64? We
->>>> use topdown search with book3s64.
->>>
->>> I don't know about book3s64, I only have 8xx.
->>>
->>> Here is my test app:
->>>
->>
->> The test ran fine on ppc64.
->>
->> kvaneesh@ltctulc6a-p1:[~]$ HUGETLB_MORECORE=yes ./a.out
->> 10000000-10010000 r-xp 00000000 fc:00 9044312                            /home/kvaneesh/a.out
->> 10010000-10020000 r--p 00000000 fc:00 9044312                            /home/kvaneesh/a.out
->> 10020000-10030000 rw-p 00010000 fc:00 9044312                            /home/kvaneesh/a.out
->> 7ffff7d60000-7ffff7f10000 r-xp 00000000 fc:00 9250090                    /lib/powerpc64le-linux-gnu/libc-2.23.so
->> 7ffff7f10000-7ffff7f20000 r--p 001a0000 fc:00 9250090                    /lib/powerpc64le-linux-gnu/libc-2.23.so
->> 7ffff7f20000-7ffff7f30000 rw-p 001b0000 fc:00 9250090                    /lib/powerpc64le-linux-gnu/libc-2.23.so
->> 7ffff7f40000-7ffff7f60000 r-xp 00000000 fc:00 10754812                   /usr/lib/libhugetlbfs.so.0
->> 7ffff7f60000-7ffff7f70000 r--p 00010000 fc:00 10754812                   /usr/lib/libhugetlbfs.so.0
->> 7ffff7f70000-7ffff7f80000 rw-p 00020000 fc:00 10754812                   /usr/lib/libhugetlbfs.so.0
->> 7ffff7f80000-7ffff7fa0000 r-xp 00000000 00:00 0                          [vdso]
->> 7ffff7fa0000-7ffff7fe0000 r-xp 00000000 fc:00 9250107                    /lib/powerpc64le-linux-gnu/ld-2.23.so
->> 7ffff7fe0000-7ffff7ff0000 r--p 00030000 fc:00 9250107                    /lib/powerpc64le-linux-gnu/ld-2.23.so
->> 7ffff7ff0000-7ffff8000000 rw-p 00040000 fc:00 9250107                    /lib/powerpc64le-linux-gnu/ld-2.23.so
->> 7ffffffd0000-800000000000 rw-p 00000000 00:00 0                          [stack]
->>
->>
->> Allocated 1Mbytes at 0x10000000010
->>
->>
->> Allocated 1Mbytes at 0x10002000020
->>
->>
->> Allocated 1Mbytes at 0x10004000030
->>
->> 10000000-10010000 r-xp 00000000 fc:00 9044312                            /home/kvaneesh/a.out
->> 10010000-10020000 r--p 00000000 fc:00 9044312                            /home/kvaneesh/a.out
->> 10020000-10030000 rw-p 00010000 fc:00 9044312                            /home/kvaneesh/a.out
->> 10000000000-10003000000 rw-p 00000000 00:0d 1041435                      /anon_hugepage (deleted)
->> 10003000000-10005000000 rw-p 03000000 00:0d 1041436                      /anon_hugepage (deleted)
->> 10005000000-10007000000 rw-p 05000000 00:0d 1041437                      /anon_hugepage (deleted)
->> 7ffff7d60000-7ffff7f10000 r-xp 00000000 fc:00 9250090                    /lib/powerpc64le-linux-gnu/libc-2.23.so
->> 7ffff7f10000-7ffff7f20000 r--p 001a0000 fc:00 9250090                    /lib/powerpc64le-linux-gnu/libc-2.23.so
->> 7ffff7f20000-7ffff7f30000 rw-p 001b0000 fc:00 9250090                    /lib/powerpc64le-linux-gnu/libc-2.23.so
->> 7ffff7f40000-7ffff7f60000 r-xp 00000000 fc:00 10754812                   /usr/lib/libhugetlbfs.so.0
->> 7ffff7f60000-7ffff7f70000 r--p 00010000 fc:00 10754812                   /usr/lib/libhugetlbfs.so.0
->> 7ffff7f70000-7ffff7f80000 rw-p 00020000 fc:00 10754812                   /usr/lib/libhugetlbfs.so.0
->> 7ffff7f80000-7ffff7fa0000 r-xp 00000000 00:00 0                          [vdso]
->> 7ffff7fa0000-7ffff7fe0000 r-xp 00000000 fc:00 9250107                    /lib/powerpc64le-linux-gnu/ld-2.23.so
->> 7ffff7fe0000-7ffff7ff0000 r--p 00030000 fc:00 9250107                    /lib/powerpc64le-linux-gnu/ld-2.23.so
->> 7ffff7ff0000-7ffff8000000 rw-p 00040000 fc:00 9250107                    /lib/powerpc64le-linux-gnu/ld-2.23.so
->> 7ffffffd0000-800000000000 rw-p 00000000 00:00 0                          [stack]
->>
->>
->>
->> So i am definitely missing something. I understand that generic hugetlb
->> get unmapped area always search bottom up and 8xx used to depend on that
->> callback. But on ppc64 slice based get unmapped area always did topdown
->> and I am not sure whether we should change that. More over I don't think
->> MAP_GROWSDOWN is the right flag for selecting topdown/bottom up search.
->>
->>
->> Is it that libhugetlbfs does something specific for 32 bit? Other option
->> is to add huget_get_unmapped_area for 8xx that does bottom up search?
+On 12/20/2017 12:20 PM, Viresh Kumar wrote:
+> On 20-12-17, 12:12, Abhishek Goel wrote:
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index b6d7c4c..fd642bc 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -37,6 +37,7 @@
+>>   #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+>>   #include <asm/opal.h>
+>>   #include <linux/timer.h>
+>> +#include <linux/hashtable.h>
+>>   
+>>   #define POWERNV_MAX_PSTATES	256
+>>   #define PMSR_PSAFE_ENABLE	(1UL << 30)
+>> @@ -130,6 +131,9 @@ static struct chip {
+>>   static int nr_chips;
+>>   static DEFINE_PER_CPU(struct chip *, chip_info);
+>>   
+>> +static u32 freq_domain_indicator;
+>> +static u32 flag;
+> I wouldn't name it as flag, its unreadable. Maybe its better to name
+> it based on the quirk you are trying to workaround with ?
+>
+>> +
+>>   /*
+>>    * Note:
+>>    * The set of pstates consists of contiguous integers.
+>> @@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+>>   	gpstates->last_gpstate_idx = 0;
+>>   }
+>>   
+>> +#define SIZE NR_CPUS
+>> +#define ORDER_FREQ_MAP ilog2(SIZE)
+>> +
+>> +static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
+>> +
+>> +struct hashmap {
+>> +	cpumask_t mask;
+>> +	int chip_id;
+>> +	u32 pir_key;
+>> +	struct hlist_node hash_node;
+>> +};
+>> +
+>> +static void insert(u32 key, int cpu)
+>> +{
+>> +	struct hashmap *data;
+>> +
+>> +	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
+>> +		if (data->chip_id == cpu_to_chip_id(cpu) &&
+>> +			data->pir_key == key) {
+>> +			cpumask_set_cpu(cpu, &data->mask);
+>> +			return;
+>> +		}
+>> +	}
+>> +
+>> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
+>> +	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
+>> +	cpumask_set_cpu(cpu, &data->mask);
+>> +	data->chip_id = cpu_to_chip_id(cpu);
+>> +	data->pir_key = key;
+>> +
+>> +}
+>> +
+>>   /*
+>>    * Initialize the freq table based on data obtained
+>>    * from the firmware passed via device-tree
+>> @@ -206,7 +242,9 @@ static int init_powernv_pstates(void)
+>>   	u32 len_ids, len_freqs;
+>>   	u32 pstate_min, pstate_max, pstate_nominal;
+>>   	u32 pstate_turbo, pstate_ultra_turbo;
+>> +	u32 key;
+>>   
+>> +	flag = 0;
+> Isn't flag already 0 (global-uninitialized) ?
+>
+>>   	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+>>   	if (!power_mgt) {
+>>   		pr_warn("power-mgt node not found\n");
+>> @@ -229,6 +267,17 @@ static int init_powernv_pstates(void)
+>>   		return -ENODEV;
+>>   	}
+>>   
+>> +	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
+>> +		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
+>> +				 &freq_domain_indicator)) {
+>> +		pr_warn("ibm,freq-domain-indicator not found\n");
+>> +		freq_domain_indicator = 0;
+> You shouldn't be required to set it to 0 here.
+>
+>> +	}
+>> +
+>> +	if (of_device_is_compatible(power_mgt, "P9-occ-quirk")) {
+>> +		flag = 1;
+>> +	}
+> Remove {} and a better name like p9_occ_quirk would be good for flag.
+> Also making it a bool may be better ?
+>
+>> +
+>>   	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
+>>   				 &pstate_ultra_turbo)) {
+>>   		powernv_pstate_info.wof_enabled = false;
+>> @@ -249,6 +298,7 @@ static int init_powernv_pstates(void)
+>>   next:
+>>   	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+>>   		pstate_nominal, pstate_max);
+>> +	pr_info("frequency domain indicator %d", freq_domain_indicator);
+>>   	pr_info("Workload Optimized Frequency is %s in the platform\n",
+>>   		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
+>>   
+>> @@ -276,6 +326,15 @@ static int init_powernv_pstates(void)
+>>   		return -ENODEV;
+>>   	}
+>>   
+>> +	if (freq_domain_indicator) {
+>> +		hash_init(freq_domain_map);
+>> +		for_each_possible_cpu(i) {
+>> +			key = ((u32) get_hard_smp_processor_id(i) &
+>> +				freq_domain_indicator);
+> Maybe break it like:
+>
+> 			key = (u32) get_hard_smp_processor_id(i);
+>                          key &= freq_domain_indicator;
+>
+> to make it easily readable ?
+>
+>> +			insert(key, i);
+>> +		}
+>> +	}
+>> +
+>>   	powernv_pstate_info.nr_pstates = nr_pstates;
+>>   	pr_debug("NR PStates %d\n", nr_pstates);
+>>   	for (i = 0; i < nr_pstates; i++) {
+>> @@ -693,6 +752,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>   {
+>>   	struct powernv_smp_call_data freq_data;
+>>   	unsigned int cur_msec, gpstate_idx;
+>> +
+> :(
+>
+>>   	struct global_pstate_info *gpstates = policy->driver_data;
+>>   
+>>   	if (unlikely(rebooting) && new_index != get_nominal_index())
+>> @@ -760,25 +820,55 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>   
+>>   	spin_unlock(&gpstates->gpstate_lock);
+>>   
+>> -	/*
+>> -	 * Use smp_call_function to send IPI and execute the
+>> -	 * mtspr on target CPU.  We could do that without IPI
+>> -	 * if current CPU is within policy->cpus (core)
+>> -	 */
+>> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>> +	if (flag) {
+> Maybe add a comment over this on why you need to do things differently
+> here, as it isn't obvious.
+>
+>> +		cpumask_t temp;
+>> +		u32 cpu;
+>> +
+>> +	       /*
+>> +		* Use smp_call_function to send IPI and execute the mtspr
+>> +		* on CPU. This needs to be done on every core of the policy.
+>> +		*/
+>> +		cpumask_copy(&temp, policy->cpus);
+>> +		while (!cpumask_empty(&temp)) {
+>> +			cpu = cpumask_first(&temp);
+>> +			smp_call_function_any(cpu_sibling_mask(cpu),
+>> +					set_pstate, &freq_data, 1);
+>> +			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
+>> +		}
+>> +	} else {
+>> +		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>> +	}
+>> +
+>>   	return 0;
+>>   }
+>>   
+>>   static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>   {
+>> -	int base, i, ret;
+>> +	int ret;
+>>   	struct kernfs_node *kn;
+>>   	struct global_pstate_info *gpstates;
+>>   
+>> -	base = cpu_first_thread_sibling(policy->cpu);
+>> +	if (!freq_domain_indicator) {
+>> +		int base, i;
+>>   
+>> -	for (i = 0; i < threads_per_core; i++)
+>> -		cpumask_set_cpu(base + i, policy->cpus);
+>> +		base = cpu_first_thread_sibling(policy->cpu);
+>> +		for (i = 0; i < threads_per_core; i++)
+>> +			cpumask_set_cpu(base + i, policy->cpus);
+>> +	} else {
+>> +		u32 key;
+>> +		struct hashmap *data;
+>> +
+>> +		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
+>> +				freq_domain_indicator);
+>> +		hash_for_each_possible(freq_domain_map, data, hash_node,
+>> +								 key%SIZE) {
+>> +			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
+>> +				data->pir_key == key) {
+>> +				cpumask_copy(policy->cpus, &data->mask);
+>> +				break;
+>> +			}
+>> +		}
+>> +	}
+>>   
+>>   	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+>>   	if (!kn) {
+>> -- 
+>> 2.9.3
+Have posted the next version with the changes made as suggested. Also 
+the skiboot patch required for the device tree changes made is posted 
+here : http://patchwork.ozlabs.org/patch/862256/
 
-I think I identified the difference. In my run you have the following 
-warning:
-
-libhugetlbfs: WARNING: Heap originates at 0x73e80000 instead of 0x10080000
-
-In your run, there is no such warning.
-
-I tried running the test with HUGETLB_MORECORE_HEAPBASE=0x30000000, and 
-it works without the patch:
-
-root@vgoip:~# HUGETLB_MORECORE=yes HUGETLB_MORECORE_HEAPBASE=0x30000000 
-./huge_m
-alloc_test
-00100000-00108000 r-xp 00000000 00:00 0          [vdso]
-0fde4000-0fde8000 r-xp 00000000 00:0f 168        /lib/libdl-2.23.so
-0fde8000-0fe00000 ---p 00004000 00:0f 168        /lib/libdl-2.23.so
-0fe00000-0fe04000 r--p 0000c000 00:0f 168        /lib/libdl-2.23.so
-0fe04000-0fe08000 rwxp 00010000 00:0f 168        /lib/libdl-2.23.so
-0fe18000-0ff88000 r-xp 00000000 00:0f 191        /lib/libc-2.23.so
-0ff88000-0ffa4000 ---p 00170000 00:0f 191        /lib/libc-2.23.so
-0ffa4000-0ffa8000 r--p 0017c000 00:0f 191        /lib/libc-2.23.so
-0ffa8000-0ffac000 rwxp 00180000 00:0f 191        /lib/libc-2.23.so
-0ffac000-0ffb0000 rwxp 00000000 00:00 0
-0ffc0000-0ffd4000 r-xp 00000000 00:0f 90         /lib/libhugetlbfs.so
-0ffd4000-0ffe0000 ---p 00014000 00:0f 90         /lib/libhugetlbfs.so
-0ffe0000-0ffe4000 rwxp 00010000 00:0f 90         /lib/libhugetlbfs.so
-0ffe4000-0fff0000 rwxp 00000000 00:00 0
-10000000-10004000 r-xp 00000000 00:0f 3076       /root/huge_malloc_test
-10010000-10014000 rwxp 00000000 00:0f 3076       /root/huge_malloc_test
-77ee0000-77f04000 r-xp 00000000 00:0f 171        /lib/ld-2.23.so
-77f1c000-77f20000 r--p 0002c000 00:0f 171        /lib/ld-2.23.so
-77f20000-77f24000 rwxp 00030000 00:0f 171        /lib/ld-2.23.so
-7f830000-7f854000 rw-p 00000000 00:00 0          [stack]
-
-
-Allocated 1Mbytes at 0x30000008
-
-
-Allocated 1Mbytes at 0x30100010
-
-
-Allocated 1Mbytes at 0x30200018
-
-00100000-00108000 r-xp 00000000 00:00 0          [vdso]
-0fde4000-0fde8000 r-xp 00000000 00:0f 168        /lib/libdl-2.23.so
-0fde8000-0fe00000 ---p 00004000 00:0f 168        /lib/libdl-2.23.so
-0fe00000-0fe04000 r--p 0000c000 00:0f 168        /lib/libdl-2.23.so
-0fe04000-0fe08000 rwxp 00010000 00:0f 168        /lib/libdl-2.23.so
-0fe18000-0ff88000 r-xp 00000000 00:0f 191        /lib/libc-2.23.so
-0ff88000-0ffa4000 ---p 00170000 00:0f 191        /lib/libc-2.23.so
-0ffa4000-0ffa8000 r--p 0017c000 00:0f 191        /lib/libc-2.23.so
-0ffa8000-0ffac000 rwxp 00180000 00:0f 191        /lib/libc-2.23.so
-0ffac000-0ffb0000 rwxp 00000000 00:00 0
-0ffc0000-0ffd4000 r-xp 00000000 00:0f 90         /lib/libhugetlbfs.so
-0ffd4000-0ffe0000 ---p 00014000 00:0f 90         /lib/libhugetlbfs.so
-0ffe0000-0ffe4000 rwxp 00010000 00:0f 90         /lib/libhugetlbfs.so
-0ffe4000-0fff0000 rwxp 00000000 00:00 0
-10000000-10004000 r-xp 00000000 00:0f 3076       /root/huge_malloc_test
-10010000-10014000 rwxp 00000000 00:0f 3076       /root/huge_malloc_test
-30000000-30180000 rw-p 00000000 00:0b 7682       /anon_hugepage (deleted)
-30180000-30280000 rw-p 00180000 00:0b 7683       /anon_hugepage (deleted)
-30280000-30380000 rw-p 00280000 00:0b 7684       /anon_hugepage (deleted)
-77ee0000-77f04000 r-xp 00000000 00:0f 171        /lib/ld-2.23.so
-77f1c000-77f20000 r--p 0002c000 00:0f 171        /lib/ld-2.23.so
-77f20000-77f24000 rwxp 00030000 00:0f 171        /lib/ld-2.23.so
-7f830000-7f854000 rw-p 00000000 00:00 0          [stack]
-
-
-On your side, could you try and see with 
-HUGETLB_MORECORE_HEAPBASE=0x11000000 ?
-
-Christophe
-
-
->>
->> If you are on ppc64 irc on freenode we can discuss this there.
->> -aneesh
+-Abhishek
