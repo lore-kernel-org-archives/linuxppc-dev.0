@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqt2G7HzF0X1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:18 +1100 (AEDT)
-In-Reply-To: <1513742157-28768-3-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqw5nZwzF0XT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:20 +1100 (AEDT)
+In-Reply-To: <20171223151550.30612-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, npiggin@gmail.com,
- paulus@samba.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v10, 02/17] powerpc/64: Add #defines for paca->soft_enabled flags
-Message-Id: <3zPxqs262zz9sCZ@ozlabs.org>
-Date: Mon, 22 Jan 2018 14:34:17 +1100 (AEDT)
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v3] powerpc/64s: Improve local TLB flush for boot and MCE on
+ POWER9
+Message-Id: <3zPxqv0lG7z9sBW@ozlabs.org>
+Date: Mon, 22 Jan 2018 14:34:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-12-20 at 03:55:42 UTC, Madhavan Srinivasan wrote:
-> Two #defines, IRQ_ENABLED and IRQ_DISABLED, are added to be used when
-> updating paca->soft_enabled. Replace the hardcoded values used when
-> updating paca->soft_enabled with IRQ_[EN/DIS]ABLED. No logic change.
+On Sat, 2017-12-23 at 15:15:50 UTC, Nicholas Piggin wrote:
+> There are several cases outside the normal address space management
+> where a CPU's entire local TLB is to be flushed:
 > 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>   1. Booting the kernel, in case something has left stale entries in
+>      the TLB (e.g., kexec).
+> 
+>   2. Machine check, to clean corrupted TLB entries.
+...
+> 
+> The TLB flush is no longer called when restoring from deep idle states.
+> This was not be done as a separate step because booting secondaries
+> uses the same cpu_restore as idle restore, which needs the TLB flush.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Patchs 2-17 applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c2e480ba822718190e58849b79a76d
+https://git.kernel.org/powerpc/c/d4748276ae14ce951a3254852dddc3
 
 cheers
