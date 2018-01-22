@@ -2,21 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxrD68N2zF0Vy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxrD68PTzF0X6
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:36 +1100 (AEDT)
-In-Reply-To: <1516326648-22775-4-git-send-email-linuxram@us.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>, mingo@redhat.com, akpm@linux-foundation.org,
- corbet@lwn.net, arnd@arndb.de
+In-Reply-To: <20180119085531.7708-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-arch@vger.kernel.org, ebiederm@xmission.com,
- linux-doc@vger.kernel.org, x86@kernel.org, dave.hansen@intel.com,
- linux-kernel@vger.kernel.org, linuxram@us.ibm.com, mhocko@kernel.org,
- linux-mm@kvack.org, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- linux-kselftest@vger.kernel.org, bauerman@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com
-Subject: Re: [v10,03/27] powerpc: initial pkey plumbing
-Message-Id: <3zPxrB60pxz9sNx@ozlabs.org>
-Date: Mon, 22 Jan 2018 14:34:33 +1100 (AEDT)
+Cc: sfr@canb.auug.org.au, npiggin@gmail.com
+Subject: Re: powerpc/64s: Fix ps3 build error due to tlbiel_all()
+Message-Id: <3zPxrC66FWz9sDB@ozlabs.org>
+Date: Mon, 22 Jan 2018 14:34:35 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,15 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-01-19 at 01:50:24 UTC, Ram Pai wrote:
-> Basic  plumbing  to   initialize  the   pkey  system.
-> Nothing is enabled yet. A later patch will enable it
-> once all the infrastructure is in place.
+On Fri, 2018-01-19 at 08:55:31 UTC, Michael Ellerman wrote:
+> The recent changes to TLB handling broke the PS3 build:
 > 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+>   arch/powerpc/include/asm/book3s/64/tlbflush.h:30: undefined reference to `.hash__tlbiel_all'
+> 
+> Fix it by adding an fallback version of tlbiel_all() for non-native
+> builds. It should never be called, due to checks in callers so it
+> calls BUG(). We should probably clean it up further but this will
+> suffice for now.
+> 
+> Fixes: d4748276ae14 ("powerpc/64s: Improve local TLB flush for boot and MCE on POWER9")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Patches 3-27 applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/92e3da3cf193fd27996909956c12a2
+https://git.kernel.org/powerpc/c/7a074fc08389f43b448ebef74bf56b
 
 cheers
