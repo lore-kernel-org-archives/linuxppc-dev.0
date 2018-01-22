@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqt2G70zF0Wd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqt2G7HzF0X1
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:18 +1100 (AEDT)
-In-Reply-To: <20171222111716.13101-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1513742157-28768-3-git-send-email-maddy@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [1/9] powerpc/powernv: Remove real mode access limit for early
- allocations
-Message-Id: <3zPxqt03Kkz9sBZ@ozlabs.org>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, npiggin@gmail.com,
+ paulus@samba.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v10, 02/17] powerpc/64: Add #defines for paca->soft_enabled flags
+Message-Id: <3zPxqs262zz9sCZ@ozlabs.org>
 Date: Mon, 22 Jan 2018 14:34:17 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,16 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-12-22 at 11:17:08 UTC, Nicholas Piggin wrote:
-> This removes the RMA limit on powernv platform, which constrains
-> early allocations such as PACAs and stacks. There are still other
-> restrictions that must be followed, such as bolted SLB limits, but
-> real mode addressing has no constraints.
+On Wed, 2017-12-20 at 03:55:42 UTC, Madhavan Srinivasan wrote:
+> Two #defines, IRQ_ENABLED and IRQ_DISABLED, are added to be used when
+> updating paca->soft_enabled. Replace the hardcoded values used when
+> updating paca->soft_enabled with IRQ_[EN/DIS]ABLED. No logic change.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Patches 1-6 applied to powerpc next, thanks.
+Patchs 2-17 applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1513c33d7174e87a079cfa2666cb9a
+https://git.kernel.org/powerpc/c/c2e480ba822718190e58849b79a76d
 
 cheers
