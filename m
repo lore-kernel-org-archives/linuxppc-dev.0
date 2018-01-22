@@ -2,17 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqq0kLCzF0XB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:15 +1100 (AEDT)
-In-Reply-To: <20171204054922.16075-1-khandual@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqd3PwfzF0Vy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:05 +1100 (AEDT)
+In-Reply-To: <20170112035413.26544-1-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [V2] powerpc/mm: Invalidate subpage_prot() system call on radix
- platforms
-Message-Id: <3zPxqp4p3Gz9sP1@ozlabs.org>
-Date: Mon, 22 Jan 2018 14:34:14 +1100 (AEDT)
+Subject: Re: powerpc: Use octal numbers for file permissions
+Message-Id: <3zPxqd27Y9z9sBW@ozlabs.org>
+Date: Mon, 22 Jan 2018 14:34:05 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-12-04 at 05:49:22 UTC, Anshuman Khandual wrote:
-> Radix enabled platforms don't support subpage_prot() system calls. But
-> at present the system call goes through without an error and fails
-> later on while validating expected subpage accesses. Lets not allow
-> the system call on powerpc radix platforms to begin with to prevent
-> this confusion in user space.
+On Thu, 2017-01-12 at 03:54:13 UTC, Russell Currey wrote:
+> Symbolic macros are unintuitive and hard to read, whereas octal constants
+> are much easier to interpret.  Replace macros for the basic permission
+> flags (user/group/other read/write/execute) with numeric constants
+> instead, across the whole powerpc tree.
 > 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Introducing a significant number of changes across the tree for no runtime
+> benefit isn't exactly desirable, but so long as these macros are still
+> used in the tree people will keep sending patches that add them.  Not only
+> are they hard to parse at a glance, there are multiple ways of coming to
+> the same value (as you can see with 0444 and 0644 in this patch) which
+> hurts readability.
+> 
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5b2b80714796073ec9e196c7aeec59
+https://git.kernel.org/powerpc/c/57ad583f2086d55ada284c54bfc440
 
 cheers
