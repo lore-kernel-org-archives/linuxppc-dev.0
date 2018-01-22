@@ -2,17 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqw5q2QzF0XV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:20 +1100 (AEDT)
-In-Reply-To: <20171223164923.10587-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zPxqx69t1zF0XT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jan 2018 14:34:21 +1100 (AEDT)
+In-Reply-To: <20171226130020.23626-1-malat@debian.org>
+To: Mathieu Malaterre <malat@debian.org>, 
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [1/2] powerpc: System reset avoid interleaving oops using die
- synchronisation
-Message-Id: <3zPxqv4M00z9sNx@ozlabs.org>
-Date: Mon, 22 Jan 2018 14:34:19 +1100 (AEDT)
+Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/xive: Properly use static keyword for inline function
+Message-Id: <3zPxqw3lxgz9sNc@ozlabs.org>
+Date: Mon, 22 Jan 2018 14:34:20 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,25 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-12-23 at 16:49:22 UTC, Nicholas Piggin wrote:
-> The die() oops path contains a serializing lock to prevent oops
-> messages from being interleaved. In the case of a system reset
-> initiated oops (e.g., qemu nmi command), __die was being called
-> which lacks that synchronisation and oops reports could be
-> interleaved across CPUs.
+On Tue, 2017-12-26 at 13:00:17 UTC, Mathieu Malaterre wrote:
+> Fix fatal warning during compilation:
 > 
-> A recent patch 4388c9b3a6ee7 ("powerpc: Do not send system reset
-> request through the oops path") changed this to __die to avoid
-> the debugger() call, but there is no real harm to calling it twice
-> if the first time fell through. So go back to using die() here.
-> This was observed to fix the problem.
+> In file included from arch/powerpc/xmon/xmon.c:54:0:
+> ./arch/powerpc/include/asm/xive.h:157:20: error: no previous prototype for ‘xive_smp_prepare_cpu’ [-Werror=missing-prototypes]
+>  extern inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+>                     ^
 > 
-> Fixes: 4388c9b3a6ee7 ("powerpc: Do not send system reset request through the oops path")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4552d128c26e0f0f27a5bd2fadc240
+https://git.kernel.org/powerpc/c/38833faa112c10dd6e3d888f8b53de
 
 cheers
