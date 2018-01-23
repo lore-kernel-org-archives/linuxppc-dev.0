@@ -1,26 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQpHz4hcMzDrCf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:58:07 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- linux-kernel@vger.kernel.org
-Cc: Tom Lendacky <thomas.lendacky@amd.com>, Brijesh Singh
- <brijesh.singh@amd.com>, devicetree@vger.kernel.org, Albert Herranz
- <albert_herranz@yahoo.es>, Jonathan =?utf-8?Q?Neusch=C3=A4fer?=
- <j.neuschaefer@gmx.net>, linux-gpio@vger.kernel.org, Thomas Gleixner
- <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/6] resource: Extend the PPC32 reserved memory hack
-In-Reply-To: <20180122050411.32460-2-j.neuschaefer@gmx.net>
-References: <20180122050411.32460-1-j.neuschaefer@gmx.net>
- <20180122050411.32460-2-j.neuschaefer@gmx.net>
-Date: Tue, 23 Jan 2018 23:58:06 +1100
-Message-ID: <871sigwx41.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQprj5hKqzDrH3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jan 2018 00:22:58 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/mm/nohash: do not flush the entire mm when range is a
+ single page
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180123132250.4A2BD6EF69@localhost.localdomain>
+Date: Tue, 23 Jan 2018 14:22:50 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net> writes:
+Most of the time, flush_tlb_range() is called on single pages.
+At the time being, flush_tlb_range() inconditionnaly calls
+flush_tlb_mm() which flushes at least the entire PID pages and on
+older CPUs like 4xx or 8xx it flushes the entire TLB table.
 
-> On the Nintendo Wii, there are two ranges of physical memory, and MMIO
-> in between, but Linux on ppc32 doesn't support discontiguous memory.
-> Therefore a hack was introduced in commit c5df7f775148 ("powerpc: allow
-> ioremap within reserved memory regions") and commit de32400dd26e ("wii:
-> use both mem1 and mem2 as ram"):
->
->  - Treat the area from the start of the first memory area (MEM1) to the
->    end of the second (MEM2) as one big memory area, but mark the part
->    that doesn't belong to MEM1 or MEM2 as reserved.
->  - Only on the Wii, allow ioremap to be used on reserved memory.
->
-> This hack, however, doesn't account for the "resource"-based API in
-> kernel/resource.c, because __request_region performs its own checks.
->
-> Extend the hack to kernel/resource.c, to allow more drivers to allocate
-> their MMIO regions on the Wii.
+This patch calls flush_tlb_page() instead of flush_tlb_mm() when
+the range is a single page.
 
-Hi Jonathan,
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/tlb_nohash.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Sorry but I can't merge a hack like this in generic code.
-
-Has anyone looked at adding proper discontig mem support to PPC32?
-
-Or can we punch a hole in the resource in the right place? Maybe from
-add_system_ram_resources() ?
-
-cheers
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index bfc4a0869609..15fe5f0c8665 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -388,7 +388,10 @@ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 		     unsigned long end)
+ 
+ {
+-	flush_tlb_mm(vma->vm_mm);
++	if (end - start == PAGE_SIZE && !(start & ~PAGE_MASK))
++		flush_tlb_page(vma, start);
++	else
++		flush_tlb_mm(vma->vm_mm);
+ }
+ EXPORT_SYMBOL(flush_tlb_range);
+ 
+-- 
+2.13.3
