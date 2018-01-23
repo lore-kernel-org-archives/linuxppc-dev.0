@@ -1,35 +1,25 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQnFK21jkzDr3x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:10:45 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0NCAMfR102543
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 07:10:42 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fp3n02yph-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 07:10:34 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 23 Jan 2018 12:10:14 -0000
-Subject: Re: [PATCH v8 2/2] cxl: read PHB indications from the device tree
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.vnet.ibm.com, benh@au1.ibm.com
-References: <20180122133339.2802-1-felix@linux.vnet.ibm.com>
- <20180122133339.2802-2-felix@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Tue, 23 Jan 2018 13:10:11 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQnG050JZzDrLN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:11:20 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, linux-renesas-soc@vger.kernel.org,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
+In-Reply-To: <20180122114948.mm5mg6zqw3hmjj4o@katana>
+References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
+ <ac4f02e1-6d49-158a-4fb6-56ac0d474a44@gmail.com>
+ <20180122114948.mm5mg6zqw3hmjj4o@katana>
+Date: Tue, 23 Jan 2018 23:11:18 +1100
+Message-ID: <874lncwza1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180122133339.2802-2-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <ed054af2-ab3b-c920-c99e-1234247cb827@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,165 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Wolfram Sang <wsa@the-dreams.de> writes:
 
+> Hi Frank,
+>
+>> Please go back and read the thread for version 1.  Simply resubmitting a
+>> forward port is ignoring that whole conversation.
+>> 
+>> There is a lot of good info in that thread.  I certainly learned stuff in it.
+>
+> Yes, I did that and learned stuff, too. My summary of the discussion was:
+>
+> - you mentioned some drawbacks you saw (like the mixture of trace output
+>   and printk output)
+> - most of them look like addressed to me? (e.g. Steven showed a way to redirect
+>   printk to trace)
+> - you posted your version (which was, however, marked as "not user friendly"
+>   even by yourself)
+> - The discussion stalled over having two approaches
+>
+> So, I thought reposting would be a good way of finding out if your
+> concerns were addressed in the discussion or not. If I overlooked
+> something, I am sorry for that. Still, my intention is to continue the
+> discussion, not to ignore it. Because as it stands, we don't have such a
+> debugging mechanism in place currently, and with people working with DT
+> overlays, I'd think it would be nice to have.
 
-Le 22/01/2018 à 14:33, Philippe Bergheaud a écrit :
-> Configure the P9 XSL_DSNCTL register with PHB indications found
-> in the device tree, or else use legacy hard-coded values.
-> 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
+Yeah I agree with all of that, I didn't think there were really any
+concerns left outstanding. These trace points are very useful, I've
+twice added them to a kernel to debug something, so it would be great
+for them to be in mainline.
 
-simpler, safer
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-> Changelog:
-> 
-> v2: New patch. Use the new device tree property "ibm,phb-indications".
-> 
-> v3: No change.
-> 
-> v4: No functional change.
->      Drop cosmetic fix in comment.
-> 
-> v5: get_phb_indications():
->        - make static variables local to function.
->        - return static variable values by arguments.
-> 
-> v6: get_phb_indications():
->        - acquire a mutex before setting the phb indications.
-> 
-> v7: get_phb_indications():
->      cxl_get_xsl9_dsnctl():
->        - return -ENODEV instead of -1.
-> 
-> v8: get_phb_indications():
->        - stay on the safe side: acquire the mutex unconditionally
-> 
-> This patch depends on the following skiboot patch:
->    https://patchwork.ozlabs.org/patch/858324/
-> ---
->   drivers/misc/cxl/cxl.h    |  2 +-
->   drivers/misc/cxl/cxllib.c |  2 +-
->   drivers/misc/cxl/pci.c    | 48 ++++++++++++++++++++++++++++++++++++++++++-----
->   3 files changed, 45 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index e46a4062904a..5a6e9a921c2b 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -1062,7 +1062,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
->   int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
->   			  u32 *phb_index, u64 *capp_unit_id);
->   int cxl_slot_is_switched(struct pci_dev *dev);
-> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
-> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
->   u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
-> 
->   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
-> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-> index dc9bc1807fdf..61f80d586279 100644
-> --- a/drivers/misc/cxl/cxllib.c
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
->   	if (rc)
->   		return rc;
-> 
-> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
-> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
->   	if (rc)
->   		return rc;
->   	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 19969ee86d6f..12e5cae6d452 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -409,21 +409,59 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
->   	return 0;
->   }
-> 
-> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
-> +static DEFINE_MUTEX(indications_mutex);
-> +
-> +static int get_phb_indications(struct pci_dev *dev, u64* capiind, u64 *asnind,
-> +			       u64 *nbwind)
-> +{
-> +	static u64 nbw, asn, capi = 0;
-> +	struct device_node *np;
-> +	const __be32 *prop;
-> +
-> +	mutex_lock(&indications_mutex);
-> +	if (!capi) {
-> +		if (!(np = pnv_pci_get_phb_node(dev))) {
-> +			mutex_unlock(&indications_mutex);
-> +			return -ENODEV;
-> +		}
-> +
-> +		prop = of_get_property(np, "ibm,phb-indications", NULL);
-> +		if (!prop) {
-> +			nbw = 0x0300UL; /* legacy values */
-> +			asn = 0x0400UL;
-> +			capi = 0x0200UL;
-> +		} else {
-> +			nbw = (u64)be32_to_cpu(prop[2]);
-> +			asn = (u64)be32_to_cpu(prop[1]);
-> +			capi = (u64)be32_to_cpu(prop[0]);
-> +		}
-> +		of_node_put(np);
-> +	}
-> +	*capiind = capi;
-> +	*asnind = asn;
-> +	*nbwind = nbw;
-> +	mutex_unlock(&indications_mutex);
-> +	return 0;
-> +}
-> +
-> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
->   {
->   	u64 xsl_dsnctl;
-> +	u64 capiind, asnind, nbwind;
-> 
->   	/*
->   	 * CAPI Identifier bits [0:7]
->   	 * bit 61:60 MSI bits --> 0
->   	 * bit 59 TVT selector --> 0
->   	 */
-> +	if (get_phb_indications(dev, &capiind, &asnind, &nbwind))
-> +		return -ENODEV;
-> 
->   	/*
->   	 * Tell XSL where to route data to.
->   	 * The field chipid should match the PHB CAPI_CMPM register
->   	 */
-> -	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
-> +	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
->   	xsl_dsnctl |= (capp_unit_id << (63-15));
-> 
->   	/* nMMU_ID Defaults to: b’000001001’*/
-> @@ -437,14 +475,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
->   		 * nbwind=0x03, bits [57:58], must include capi indicator.
->   		 * Not supported on P9 DD1.
->   		 */
-> -		xsl_dsnctl |= ((u64)0x03 << (63-47));
-> +		xsl_dsnctl |= (nbwind << (63-55));
-> 
->   		/*
->   		 * Upper 16b address bits of ASB_Notify messages sent to the
->   		 * system. Need to match the PHB’s ASN Compare/Mask Register.
->   		 * Not supported on P9 DD1.
->   		 */
-> -		xsl_dsnctl |= ((u64)0x04 << (63-55));
-> +		xsl_dsnctl |= asnind;
->   	}
-> 
->   	*reg = xsl_dsnctl;
-> @@ -464,7 +502,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
->   	if (rc)
->   		return rc;
-> 
-> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
-> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
->   	if (rc)
->   		return rc;
-> 
+cheers
