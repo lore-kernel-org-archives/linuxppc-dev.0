@@ -1,19 +1,16 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQfCT1x48zDr0b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 17:53:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQfGb1tbJzDqh5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 17:56:23 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: pseries: use irq_of_parse_and_map helper
-In-Reply-To: <20180104224542.15333-4-robh@kernel.org>
-References: <20180104224542.15333-4-robh@kernel.org>
-Date: Tue, 23 Jan 2018 17:53:37 +1100
-Message-ID: <878tcpoyku.fsf@concordia.ellerman.id.au>
+To: Yang Li <pku.leo@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Anyone working on the KPTI support for powerpc?
+In-Reply-To: <CADRPPNRVb_CGBesSD6zQcPmrATxqSHhSmywAEfTT7jqpioNaGg@mail.gmail.com>
+References: <CADRPPNRVb_CGBesSD6zQcPmrATxqSHhSmywAEfTT7jqpioNaGg@mail.gmail.com>
+Date: Tue, 23 Jan 2018 17:56:22 +1100
+Message-ID: <87607toyg9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,129 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Herring <robh@kernel.org> writes:
+Yang Li <pku.leo@gmail.com> writes:
 
-> Instead of calling both of_irq_parse_one and irq_create_of_mapping, call
-> of_irq_parse_and_map instead which does the same thing. This gets us closer
-> to making the former 2 functions static.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  arch/powerpc/platforms/pseries/event_sources.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
+> I assume some of the powerpc platforms would be impacted by the newly
+> announced meltdown/spetre vulnerabilities.  It will be good if we have
+> an aligned implementation of the KPTI.
 
-Sorry NAK, this doesn't boot.
+Hi Leo,
 
-> diff --git a/arch/powerpc/platforms/pseries/event_sources.c b/arch/powerpc/platforms/pseries/event_sources.c
-> index 6eeb0d4bab61..b0d8c146fe7b 100644
-> --- a/arch/powerpc/platforms/pseries/event_sources.c
-> +++ b/arch/powerpc/platforms/pseries/event_sources.c
-> @@ -16,7 +16,8 @@
->   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
->   */
->
-> -#include <asm/prom.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/of_irq.h>
->
->  #include "pseries.h"
->
-> @@ -25,15 +26,11 @@ void request_event_sources_irqs(struct device_node *np,
->  				const char *name)
->  {
->  	int i, index, count = 0;
-> -	struct of_phandle_args oirq;
->  	unsigned int virqs[16];
->
->  	/* First try to do a proper OF tree parsing */
-> -	for (index = 0; of_irq_parse_one(np, index, &oirq) == 0;
-> -	     index++) {
-> -		if (count > 15)
-> -			break;
-> -		virqs[count] = irq_create_of_mapping(&oirq);
-> +	for (index = 0; count < 16; index++) {
-> +		virqs[count] = irq_of_parse_and_map(np, index);
->  		if (!virqs[count]) {
->  			pr_err("event-sources: Unable to allocate "
->  			       "interrupt number for %pOF\n",
+We aren't working on KPTI at the moment, but we did recently merge some
+related changes:
 
-                               np);
-                        WARN_ON(1);
-                } else {
-                        count++;
-                }
-        }
-
-
-Which is an infinite loop if we have less than 16 irqs, and spews the
-warning continuously.
-
-Are you trying to remove the low-level routines or is this just a
-cleanup?
-
-The patch below works, it loses the error handling if the interrupts
-property is corrupt/empty, but that's probably overly paranoid anyway.
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6bb821193b6e8b9cc40714f700da27b4688cbc22
 
 cheers
-
-diff --git a/arch/powerpc/platforms/pseries/event_sources.c b/arch/powerpc/platforms/pseries/event_sources.c
-index 6eeb0d4bab61..25c38077c894 100644
---- a/arch/powerpc/platforms/pseries/event_sources.c
-+++ b/arch/powerpc/platforms/pseries/event_sources.c
-@@ -16,7 +16,8 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
- 
--#include <asm/prom.h>
-+#include <linux/interrupt.h>
-+#include <linux/of_irq.h>
- 
- #include "pseries.h"
- 
-@@ -24,34 +25,16 @@ void request_event_sources_irqs(struct device_node *np,
- 				irq_handler_t handler,
- 				const char *name)
- {
--	int i, index, count = 0;
--	struct of_phandle_args oirq;
--	unsigned int virqs[16];
-+	unsigned int virq;
-+	int i, rc;
- 
--	/* First try to do a proper OF tree parsing */
--	for (index = 0; of_irq_parse_one(np, index, &oirq) == 0;
--	     index++) {
--		if (count > 15)
-+	for (i = 0; i < 16; i++) {
-+		virq = irq_of_parse_and_map(np, i);
-+		if (!virq)
- 			break;
--		virqs[count] = irq_create_of_mapping(&oirq);
--		if (!virqs[count]) {
--			pr_err("event-sources: Unable to allocate "
--			       "interrupt number for %pOF\n",
--			       np);
--			WARN_ON(1);
--		} else {
--			count++;
--		}
--	}
- 
--	/* Now request them */
--	for (i = 0; i < count; i++) {
--		if (request_irq(virqs[i], handler, 0, name, NULL)) {
--			pr_err("event-sources: Unable to request interrupt "
--			       "%d for %pOF\n", virqs[i], np);
--			WARN_ON(1);
--			return;
--		}
-+		rc = request_irq(virq, handler, 0, name, NULL);
-+		WARN(rc, "event-sources: Unable to request interrupt %d for %pOF\n",
-+		     virq, np);
- 	}
- }
--
