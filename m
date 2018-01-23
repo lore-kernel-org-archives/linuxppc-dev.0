@@ -1,25 +1,26 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQnG050JZzDrLN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:11:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQpHz4hcMzDrCf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:58:07 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, linux-renesas-soc@vger.kernel.org,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
-In-Reply-To: <20180122114948.mm5mg6zqw3hmjj4o@katana>
-References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
- <ac4f02e1-6d49-158a-4fb6-56ac0d474a44@gmail.com>
- <20180122114948.mm5mg6zqw3hmjj4o@katana>
-Date: Tue, 23 Jan 2018 23:11:18 +1100
-Message-ID: <874lncwza1.fsf@concordia.ellerman.id.au>
+To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linux-kernel@vger.kernel.org
+Cc: Tom Lendacky <thomas.lendacky@amd.com>, Brijesh Singh
+ <brijesh.singh@amd.com>, devicetree@vger.kernel.org, Albert Herranz
+ <albert_herranz@yahoo.es>, Jonathan =?utf-8?Q?Neusch=C3=A4fer?=
+ <j.neuschaefer@gmx.net>, linux-gpio@vger.kernel.org, Thomas Gleixner
+ <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/6] resource: Extend the PPC32 reserved memory hack
+In-Reply-To: <20180122050411.32460-2-j.neuschaefer@gmx.net>
+References: <20180122050411.32460-1-j.neuschaefer@gmx.net>
+ <20180122050411.32460-2-j.neuschaefer@gmx.net>
+Date: Tue, 23 Jan 2018 23:58:06 +1100
+Message-ID: <871sigwx41.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfram Sang <wsa@the-dreams.de> writes:
+Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net> writes:
 
-> Hi Frank,
+> On the Nintendo Wii, there are two ranges of physical memory, and MMIO
+> in between, but Linux on ppc32 doesn't support discontiguous memory.
+> Therefore a hack was introduced in commit c5df7f775148 ("powerpc: allow
+> ioremap within reserved memory regions") and commit de32400dd26e ("wii:
+> use both mem1 and mem2 as ram"):
 >
->> Please go back and read the thread for version 1.  Simply resubmitting a
->> forward port is ignoring that whole conversation.
->> 
->> There is a lot of good info in that thread.  I certainly learned stuff in it.
+>  - Treat the area from the start of the first memory area (MEM1) to the
+>    end of the second (MEM2) as one big memory area, but mark the part
+>    that doesn't belong to MEM1 or MEM2 as reserved.
+>  - Only on the Wii, allow ioremap to be used on reserved memory.
 >
-> Yes, I did that and learned stuff, too. My summary of the discussion was:
+> This hack, however, doesn't account for the "resource"-based API in
+> kernel/resource.c, because __request_region performs its own checks.
 >
-> - you mentioned some drawbacks you saw (like the mixture of trace output
->   and printk output)
-> - most of them look like addressed to me? (e.g. Steven showed a way to redirect
->   printk to trace)
-> - you posted your version (which was, however, marked as "not user friendly"
->   even by yourself)
-> - The discussion stalled over having two approaches
->
-> So, I thought reposting would be a good way of finding out if your
-> concerns were addressed in the discussion or not. If I overlooked
-> something, I am sorry for that. Still, my intention is to continue the
-> discussion, not to ignore it. Because as it stands, we don't have such a
-> debugging mechanism in place currently, and with people working with DT
-> overlays, I'd think it would be nice to have.
+> Extend the hack to kernel/resource.c, to allow more drivers to allocate
+> their MMIO regions on the Wii.
 
-Yeah I agree with all of that, I didn't think there were really any
-concerns left outstanding. These trace points are very useful, I've
-twice added them to a kernel to debug something, so it would be great
-for them to be in mainline.
+Hi Jonathan,
+
+Sorry but I can't merge a hack like this in generic code.
+
+Has anyone looked at adding proper discontig mem support to PPC32?
+
+Or can we punch a hole in the resource in the right place? Maybe from
+add_system_ram_resources() ?
 
 cheers
