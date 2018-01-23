@@ -3,32 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zQnDn4bSwzDqFr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:10:17 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zQnFK21jkzDr3x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 23:10:45 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0NCA9Hi138588
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 07:10:15 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fp1g78cc5-1
+ w0NCAMfR102543
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 07:10:42 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fp3n02yph-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 07:10:14 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 07:10:34 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 23 Jan 2018 12:09:50 -0000
-Subject: Re: [PATCH v8 1/2] powerpc/powernv: Enable tunneled operations
+ Tue, 23 Jan 2018 12:10:14 -0000
+Subject: Re: [PATCH v8 2/2] cxl: read PHB indications from the device tree
 To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
 Cc: clombard@linux.vnet.ibm.com, benh@au1.ibm.com
 References: <20180122133339.2802-1-felix@linux.vnet.ibm.com>
+ <20180122133339.2802-2-felix@linux.vnet.ibm.com>
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Tue, 23 Jan 2018 13:09:46 +0100
+Date: Tue, 23 Jan 2018 13:10:11 +0100
 MIME-Version: 1.0
-In-Reply-To: <20180122133339.2802-1-felix@linux.vnet.ibm.com>
+In-Reply-To: <20180122133339.2802-2-felix@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <22484a82-685b-a939-a503-061276629153@linux.vnet.ibm.com>
+Message-Id: <ed054af2-ab3b-c920-c99e-1234247cb827@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,270 +42,162 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 Le 22/01/2018 à 14:33, Philippe Bergheaud a écrit :
-> P9 supports PCI tunneled operations (atomics and as_notify). This
-> patch adds support for tunneled operations on powernv, with a new
-> API, to be called by device drivers:
-> 
-> pnv_pci_get_tunnel_ind()
->     Tell driver the 16-bit ASN indication used by kernel.
-> 
-> pnv_pci_set_tunnel_bar()
->     Tell kernel the Tunnel BAR Response address used by driver.
->     This function uses two new OPAL calls, as the PBCQ Tunnel BAR
->     register is configured by skiboot.
-> 
-> pnv_pci_get_as_notify_info()
->     Return the ASN info of the thread to be woken up.
+> Configure the P9 XSL_DSNCTL register with PHB indications found
+> in the device tree, or else use legacy hard-coded values.
 > 
 > Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 > ---
 
-still
+simpler, safer
 Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 
 > Changelog:
 > 
-> v2: Do not set the ASN indication. Get it from the device tree.
+> v2: New patch. Use the new device tree property "ibm,phb-indications".
 > 
-> v3: Make pnv_pci_get_phb_node() available when compiling without cxl.
+> v3: No change.
 > 
-> v4: Add pnv_pci_get_as_notify_info().
->      Rebase opal call numbers on skiboot 5.9.6.
+> v4: No functional change.
+>      Drop cosmetic fix in comment.
 > 
-> v5: pnv_pci_get_tunnel_ind():
->        - fix node reference count
->      pnv_pci_get_as_notify_info():
->        - fail if task == NULL
->        - read pid from mm->context.id
->        - explain that thread.tidr require CONFIG_PPC64
+> v5: get_phb_indications():
+>        - make static variables local to function.
+>        - return static variable values by arguments.
 > 
-> v6: pnv_pci_get_tunnel_ind():
->        - check if radix is enabled, or else return an error
->      pnv_pci_get_as_notify_info():
->        - remove a capi-specific comment, irrelevant for pci
+> v6: get_phb_indications():
+>        - acquire a mutex before setting the phb indications.
 > 
-> v7: pnv_pci_set_tunnel_bar():
->        - setting the tunnel bar more than once with the same value
->          is not an error
+> v7: get_phb_indications():
+>      cxl_get_xsl9_dsnctl():
+>        - return -ENODEV instead of -1.
 > 
-> v8: No change
+> v8: get_phb_indications():
+>        - stay on the safe side: acquire the mutex unconditionally
 > 
-> This patch depends on the following skiboot patches:
+> This patch depends on the following skiboot patch:
 >    https://patchwork.ozlabs.org/patch/858324/
->    https://patchwork.ozlabs.org/patch/858325/
 > ---
->   arch/powerpc/include/asm/opal-api.h            |   4 +-
->   arch/powerpc/include/asm/opal.h                |   2 +
->   arch/powerpc/include/asm/pnv-pci.h             |   5 ++
->   arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
->   arch/powerpc/platforms/powernv/pci-cxl.c       |   8 --
->   arch/powerpc/platforms/powernv/pci.c           | 107 +++++++++++++++++++++++++
->   6 files changed, 119 insertions(+), 9 deletions(-)
+>   drivers/misc/cxl/cxl.h    |  2 +-
+>   drivers/misc/cxl/cxllib.c |  2 +-
+>   drivers/misc/cxl/pci.c    | 48 ++++++++++++++++++++++++++++++++++++++++++-----
+>   3 files changed, 45 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 233c7504b1f2..b901f4d9f009 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -201,7 +201,9 @@
->   #define OPAL_SET_POWER_SHIFT_RATIO		155
->   #define OPAL_SENSOR_GROUP_CLEAR			156
->   #define OPAL_PCI_SET_P2P			157
-> -#define OPAL_LAST				157
-> +#define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		159
-> +#define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		160
-> +#define OPAL_LAST				160
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index e46a4062904a..5a6e9a921c2b 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -1062,7 +1062,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
+>   int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>   			  u32 *phb_index, u64 *capp_unit_id);
+>   int cxl_slot_is_switched(struct pci_dev *dev);
+> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
+> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
+>   u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
 > 
->   /* Device tree flags */
+>   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+> index dc9bc1807fdf..61f80d586279 100644
+> --- a/drivers/misc/cxl/cxllib.c
+> +++ b/drivers/misc/cxl/cxllib.c
+> @@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
+>   	if (rc)
+>   		return rc;
 > 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 0c545f7fc77b..8705e422b893 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -198,6 +198,8 @@ int64_t opal_unregister_dump_region(uint32_t id);
->   int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
->   int64_t opal_config_cpu_idle_state(uint64_t state, uint64_t flag);
->   int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
-> +int64_t opal_pci_get_pbcq_tunnel_bar(uint64_t phb_id, uint64_t *addr);
-> +int64_t opal_pci_set_pbcq_tunnel_bar(uint64_t phb_id, uint64_t addr);
->   int64_t opal_ipmi_send(uint64_t interface, struct opal_ipmi_msg *msg,
->   		uint64_t msg_len);
->   int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
-> diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-> index 3e5cf251ad9a..c69de3276b5e 100644
-> --- a/arch/powerpc/include/asm/pnv-pci.h
-> +++ b/arch/powerpc/include/asm/pnv-pci.h
-> @@ -29,6 +29,11 @@ extern int pnv_pci_set_power_state(uint64_t id, uint8_t state,
->   extern int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target,
->   			   u64 desc);
-> 
-> +extern int pnv_pci_get_tunnel_ind(struct pci_dev *dev, uint64_t *ind);
-> +extern int pnv_pci_set_tunnel_bar(struct pci_dev *dev, uint64_t addr,
-> +				  int enable);
-> +extern int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid,
-> +				      u32 *pid, u32 *tid);
->   int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
->   int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
->   			   unsigned int virq);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index 6f4b00a2ac46..5da790fb7fef 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -320,3 +320,5 @@ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
->   OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
->   OPAL_CALL(opal_set_power_shift_ratio,		OPAL_SET_POWER_SHIFT_RATIO);
->   OPAL_CALL(opal_sensor_group_clear,		OPAL_SENSOR_GROUP_CLEAR);
-> +OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
-> +OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
-> diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
-> index 94498a04558b..cee003de63af 100644
-> --- a/arch/powerpc/platforms/powernv/pci-cxl.c
-> +++ b/arch/powerpc/platforms/powernv/pci-cxl.c
-> @@ -16,14 +16,6 @@
-> 
->   #include "pci.h"
-> 
-> -struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
-> -{
-> -	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> -
-> -	return of_node_get(hose->dn);
-> -}
-> -EXPORT_SYMBOL(pnv_pci_get_phb_node);
-> -
->   int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
->   {
->   	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 5422f4a6317c..ac454c6ef08c 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -18,6 +18,7 @@
->   #include <linux/io.h>
->   #include <linux/msi.h>
->   #include <linux/iommu.h>
-> +#include <linux/sched/mm.h>
-> 
->   #include <asm/sections.h>
->   #include <asm/io.h>
-> @@ -38,6 +39,7 @@
->   #include "pci.h"
-> 
->   static DEFINE_MUTEX(p2p_mutex);
-> +static DEFINE_MUTEX(tunnel_mutex);
-> 
->   int pnv_pci_get_slot_id(struct device_node *np, uint64_t *id)
->   {
-> @@ -1092,6 +1094,111 @@ int pnv_pci_set_p2p(struct pci_dev *initiator, struct pci_dev *target, u64 desc)
+> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
+> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
+>   	if (rc)
+>   		return rc;
+>   	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 19969ee86d6f..12e5cae6d452 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -409,21 +409,59 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+>   	return 0;
 >   }
->   EXPORT_SYMBOL_GPL(pnv_pci_set_p2p);
 > 
-> +struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+> +static DEFINE_MUTEX(indications_mutex);
 > +
-> +	return of_node_get(hose->dn);
-> +}
-> +EXPORT_SYMBOL(pnv_pci_get_phb_node);
-> +
-> +int pnv_pci_get_tunnel_ind(struct pci_dev *dev, u64 *asnind)
+> +static int get_phb_indications(struct pci_dev *dev, u64* capiind, u64 *asnind,
+> +			       u64 *nbwind)
 > +{
+> +	static u64 nbw, asn, capi = 0;
 > +	struct device_node *np;
 > +	const __be32 *prop;
 > +
-> +	if (!radix_enabled())
-> +		return -ENXIO;
+> +	mutex_lock(&indications_mutex);
+> +	if (!capi) {
+> +		if (!(np = pnv_pci_get_phb_node(dev))) {
+> +			mutex_unlock(&indications_mutex);
+> +			return -ENODEV;
+> +		}
 > +
-> +	if (!(np = pnv_pci_get_phb_node(dev)))
-> +		return -ENXIO;
-> +
-> +	prop = of_get_property(np, "ibm,phb-indications", NULL);
-> +	of_node_put(np);
-> +
-> +	if (!prop || !prop[1])
-> +		return -ENXIO;
-> +
-> +	*asnind = (u64)be32_to_cpu(prop[1]);
+> +		prop = of_get_property(np, "ibm,phb-indications", NULL);
+> +		if (!prop) {
+> +			nbw = 0x0300UL; /* legacy values */
+> +			asn = 0x0400UL;
+> +			capi = 0x0200UL;
+> +		} else {
+> +			nbw = (u64)be32_to_cpu(prop[2]);
+> +			asn = (u64)be32_to_cpu(prop[1]);
+> +			capi = (u64)be32_to_cpu(prop[0]);
+> +		}
+> +		of_node_put(np);
+> +	}
+> +	*capiind = capi;
+> +	*asnind = asn;
+> +	*nbwind = nbw;
+> +	mutex_unlock(&indications_mutex);
 > +	return 0;
 > +}
-> +EXPORT_SYMBOL_GPL(pnv_pci_get_tunnel_ind);
 > +
-> +int pnv_pci_set_tunnel_bar(struct pci_dev *dev, u64 addr, int enable)
-> +{
-> +	__be64 val;
-> +	struct pci_controller *hose;
-> +	struct pnv_phb *phb;
-> +	u64 tunnel_bar;
-> +	int rc;
-> +
-> +	if (!opal_check_token(OPAL_PCI_GET_PBCQ_TUNNEL_BAR))
-> +		return -ENXIO;
-> +	if (!opal_check_token(OPAL_PCI_SET_PBCQ_TUNNEL_BAR))
-> +		return -ENXIO;
-> +
-> +	hose = pci_bus_to_host(dev->bus);
-> +	phb = hose->private_data;
-> +
-> +	mutex_lock(&tunnel_mutex);
-> +	rc = opal_pci_get_pbcq_tunnel_bar(phb->opal_id, &val);
-> +	if (rc != OPAL_SUCCESS) {
-> +		rc = -EIO;
-> +		goto out;
-> +	}
-> +	tunnel_bar = be64_to_cpu(val);
-> +	if (enable) {
-> +		/*
-> +		* Only one device per PHB can use atomics.
-> +		* Our policy is first-come, first-served.
-> +		*/
-> +		if (tunnel_bar) {
-> +			if (tunnel_bar != addr)
-> +				rc = -EBUSY;
-> +			goto out;
-> +		}
-> +	} else {
-> +		/*
-> +		* The device that owns atomics and wants to release
-> +		* them must pass the same address with enable == 0.
-> +		*/
-> +		if (tunnel_bar != addr) {
-> +			rc = -EPERM;
-> +			goto out;
-> +		}
-> +		addr = 0x0ULL;
-> +	}
-> +	rc = opal_pci_set_pbcq_tunnel_bar(phb->opal_id, addr);
-> +	rc = opal_error_code(rc);
-> +out:
-> +	mutex_unlock(&tunnel_mutex);
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL_GPL(pnv_pci_set_tunnel_bar);
-> +
-> +#ifdef CONFIG_PPC64	/* for thread.tidr */
-> +int pnv_pci_get_as_notify_info(struct task_struct *task, u32 *lpid, u32 *pid,
-> +			       u32 *tid)
-> +{
-> +	struct mm_struct *mm = NULL;
-> +
-> +	if (task == NULL)
-> +		return -EINVAL;
-> +
-> +	mm = get_task_mm(task);
-> +	if (mm == NULL)
-> +		return -EINVAL;
-> +
-> +	*pid = mm->context.id;
-> +	mmput(mm);
-> +
-> +	*tid = task->thread.tidr;
-> +	*lpid = mfspr(SPRN_LPID);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pnv_pci_get_as_notify_info);
-> +#endif
-> +
->   void pnv_pci_shutdown(void)
+> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
 >   {
->   	struct pci_controller *hose;
+>   	u64 xsl_dsnctl;
+> +	u64 capiind, asnind, nbwind;
+> 
+>   	/*
+>   	 * CAPI Identifier bits [0:7]
+>   	 * bit 61:60 MSI bits --> 0
+>   	 * bit 59 TVT selector --> 0
+>   	 */
+> +	if (get_phb_indications(dev, &capiind, &asnind, &nbwind))
+> +		return -ENODEV;
+> 
+>   	/*
+>   	 * Tell XSL where to route data to.
+>   	 * The field chipid should match the PHB CAPI_CMPM register
+>   	 */
+> -	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
+> +	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
+>   	xsl_dsnctl |= (capp_unit_id << (63-15));
+> 
+>   	/* nMMU_ID Defaults to: b’000001001’*/
+> @@ -437,14 +475,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+>   		 * nbwind=0x03, bits [57:58], must include capi indicator.
+>   		 * Not supported on P9 DD1.
+>   		 */
+> -		xsl_dsnctl |= ((u64)0x03 << (63-47));
+> +		xsl_dsnctl |= (nbwind << (63-55));
+> 
+>   		/*
+>   		 * Upper 16b address bits of ASB_Notify messages sent to the
+>   		 * system. Need to match the PHB’s ASN Compare/Mask Register.
+>   		 * Not supported on P9 DD1.
+>   		 */
+> -		xsl_dsnctl |= ((u64)0x04 << (63-55));
+> +		xsl_dsnctl |= asnind;
+>   	}
+> 
+>   	*reg = xsl_dsnctl;
+> @@ -464,7 +502,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+>   	if (rc)
+>   		return rc;
+> 
+> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
+> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
+>   	if (rc)
+>   		return rc;
 > 
