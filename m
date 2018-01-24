@@ -1,37 +1,17 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zR9jr5z40zDr07
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jan 2018 14:33:20 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0O3So3G007198
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 22:33:18 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fpcsuj9r7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jan 2018 22:33:18 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 23 Jan 2018 22:33:17 -0500
-Subject: Re: [PATCH-next] powerpc/fsl_pci: Use PTR_ERR_OR_ZERO
-To: =?UTF-8?Q?Christopher_D=c3=adaz_Riveros?= <chrisadr@gentoo.org>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- joe@perches.com, christian.koenig@amd.com, tyreld@linux.vnet.ibm.com,
- konrad.wilk@oracle.com, robh@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-References: <20180123203752.15057-1-chrisadr@gentoo.org>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Tue, 23 Jan 2018 19:33:10 -0800
-MIME-Version: 1.0
-In-Reply-To: <20180123203752.15057-1-chrisadr@gentoo.org>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <dff06bae-9624-b688-2865-99aca16b9214@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zRK1h1C3JzDqrP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jan 2018 20:02:29 +1100 (AEDT)
+Message-Id: <6920f6efe2dcdabf59350b2d31ee6bd4bdef57f4.1516783089.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 1/5] powerpc/mm: Remove intermediate bitmap copy in 'slices'
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 24 Jan 2018 10:02:26 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,33 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/23/2018 12:37 PM, Christopher Díaz Riveros wrote:
-> Use PTR_ERR_OR_ZERO rather than if(IS_ERR(...)) + PTR_ERR
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Christopher Díaz Riveros <chrisadr@gentoo.org>
-> ---
+bitmap_or() and bitmap_andnot() can work properly with dst identical
+to src1 or src2. There is no need of an intermediate result bitmap
+that is copied back to dst in a second step.
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: New in v2
+ v3: patch moved up front of the serie to avoid ephemeral slice_bitmap_copy() function in following patch
 
->  arch/powerpc/sysdev/fsl_pci.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index cc20d2255d7f..142184635c81 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -1304,10 +1304,7 @@ static int add_err_dev(struct platform_device *pdev)
->  						   pdev->resource,
->  						   pdev->num_resources,
->  						   &pd, sizeof(pd));
-> -	if (IS_ERR(errdev))
-> -		return PTR_ERR(errdev);
-> -
-> -	return 0;
-> +	return PTR_ERR_OR_ZERO(errdev);
->  }
->  
->  static int fsl_pci_probe(struct platform_device *pdev)
-> 
+ arch/powerpc/mm/slice.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 23ec2c5e3b78..98b53d48968f 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -388,21 +388,17 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
+ 
+ static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
+ {
+-	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+-
+ 	dst->low_slices |= src->low_slices;
+-	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+-	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++	bitmap_or(dst->high_slices, dst->high_slices, src->high_slices,
++		  SLICE_NUM_HIGH);
+ }
+ 
+ static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
+ {
+-	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+-
+ 	dst->low_slices &= ~src->low_slices;
+ 
+-	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+-	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++	bitmap_andnot(dst->high_slices, dst->high_slices, src->high_slices,
++		      SLICE_NUM_HIGH);
+ }
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+-- 
+2.13.3
