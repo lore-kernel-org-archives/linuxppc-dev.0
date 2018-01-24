@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zRK1k12sdzDqrP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jan 2018 20:02:33 +1100 (AEDT)
-Message-Id: <694f279df08f8faa40bd0b03682bf2705cbe06c0.1516783089.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zRK1m3ztdzDqrP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jan 2018 20:02:36 +1100 (AEDT)
+Message-Id: <5dfafb3f0e2438e43f44917ffcf70e3daa4f37ee.1516783089.git.christophe.leroy@c-s.fr>
 In-Reply-To: <6920f6efe2dcdabf59350b2d31ee6bd4bdef57f4.1516783089.git.christophe.leroy@c-s.fr>
 References: <6920f6efe2dcdabf59350b2d31ee6bd4bdef57f4.1516783089.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 3/5] powerpc/32: Fix hugepage allocation on 8xx at hint
- address
+Subject: [PATCH v3 4/5] powerpc/mm: Allow up to 64 low slices
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 24 Jan 2018 10:02:30 +0100 (CET)
+Date: Wed, 24 Jan 2018 10:02:32 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,190 +23,311 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the 8xx, the page size is set in the PMD entry and applies to
-all pages of the page table pointed by the said PMD entry.
+While the implementation of the "slices" address space allows
+a significant amount of high slices, it limits the number of
+low slices to 16 due to the use of a single u64 low_slices_psize
+element in struct mm_context_t
 
-When an app has some regular pages allocated (e.g. see below) and tries
-to mmap() a huge page at a hint address covered by the same PMD entry,
-the kernel accepts the hint allthough the 8xx cannot handle different
-page sizes in the same PMD entry.
+On the 8xx, the minimum slice size is the size of the area
+covered by a single PMD entry, ie 4M in 4K pages mode and 64M in
+16K pages mode. This means we could have at least 64 slices.
 
-10000000-10001000 r-xp 00000000 00:0f 2597 /root/malloc
-10010000-10011000 rwxp 00000000 00:0f 2597 /root/malloc
+In order to override this limitation, this patch switches the
+handling of low_slices_psize to char array as done already for
+high_slices_psize. This allows to increase the number of low
+slices to 64 on the 8xx.
 
-mmap(0x10080000, 524288, PROT_READ|PROT_WRITE,
-     MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x10080000
-
-This results the app remaining forever in do_page_fault()/hugetlb_fault()
-and when interrupting that app, we get the following warning:
-
-[162980.035629] WARNING: CPU: 0 PID: 2777 at arch/powerpc/mm/hugetlbpage.c:354 hugetlb_free_pgd_range+0xc8/0x1e4
-[162980.035699] CPU: 0 PID: 2777 Comm: malloc Tainted: G W       4.14.6 #85
-[162980.035744] task: c67e2c00 task.stack: c668e000
-[162980.035783] NIP:  c000fe18 LR: c00e1eec CTR: c00f90c0
-[162980.035830] REGS: c668fc20 TRAP: 0700   Tainted: G W        (4.14.6)
-[162980.035854] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24044224 XER: 20000000
-[162980.036003]
-[162980.036003] GPR00: c00e1eec c668fcd0 c67e2c00 00000010 c6869410 10080000 00000000 77fb4000
-[162980.036003] GPR08: ffff0001 0683c001 00000000 ffffff80 44028228 10018a34 00004008 418004fc
-[162980.036003] GPR16: c668e000 00040100 c668e000 c06c0000 c668fe78 c668e000 c6835ba0 c668fd48
-[162980.036003] GPR24: 00000000 73ffffff 74000000 00000001 77fb4000 100fffff 10100000 10100000
-[162980.036743] NIP [c000fe18] hugetlb_free_pgd_range+0xc8/0x1e4
-[162980.036839] LR [c00e1eec] free_pgtables+0x12c/0x150
-[162980.036861] Call Trace:
-[162980.036939] [c668fcd0] [c00f0774] unlink_anon_vmas+0x1c4/0x214 (unreliable)
-[162980.037040] [c668fd10] [c00e1eec] free_pgtables+0x12c/0x150
-[162980.037118] [c668fd40] [c00eabac] exit_mmap+0xe8/0x1b4
-[162980.037210] [c668fda0] [c0019710] mmput.part.9+0x20/0xd8
-[162980.037301] [c668fdb0] [c001ecb0] do_exit+0x1f0/0x93c
-[162980.037386] [c668fe00] [c001f478] do_group_exit+0x40/0xcc
-[162980.037479] [c668fe10] [c002a76c] get_signal+0x47c/0x614
-[162980.037570] [c668fe70] [c0007840] do_signal+0x54/0x244
-[162980.037654] [c668ff30] [c0007ae8] do_notify_resume+0x34/0x88
-[162980.037744] [c668ff40] [c000dae8] do_user_signal+0x74/0xc4
-[162980.037781] Instruction dump:
-[162980.037821] 7fdff378 81370000 54a3463a 80890020 7d24182e 7c841a14 712a0004 4082ff94
-[162980.038014] 2f890000 419e0010 712a0ff0 408200e0 <0fe00000> 54a9000a 7f984840 419d0094
-[162980.038216] ---[ end trace c0ceeca8e7a5800a ]---
-[162980.038754] BUG: non-zero nr_ptes on freeing mm: 1
-[162985.363322] BUG: non-zero nr_ptes on freeing mm: -1
-
-In order to fix this, this patch uses the address space "slices"
-implemented for BOOK3S/64 and enhanced to support PPC32 by the
-preceding patch.
-
-This patch modifies the context.id on the 8xx to be in the range
-[1:16] instead of [0:15] in order to identify context.id == 0 as
-not initialised contexts as done on BOOK3S
-
-This patch activates CONFIG_PPC_MM_SLICES when CONFIG_HUGETLB_PAGE is
-selected for the 8xx
-
-Alltough we could in theory have as many slices as PMD entries, the
-current slices implementation limits the number of low slices to 16.
-This limitation is not preventing us to fix the initial issue allthough
-it is suboptimal. It will be cured in a subsequent patch.
-
-Fixes: 4b91428699477 ("powerpc/8xx: Implement support of hugepages")
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v2: First patch of v1 serie split in two parts
- v3: No changes
+ v2: Usign slice_bitmap_xxx() macros instead of bitmap_xxx() functions.
+ v3: keep low_slices as a u64, this allows 64 slices which is enough.
+ 
+ arch/powerpc/include/asm/book3s/64/mmu.h |  3 +-
+ arch/powerpc/include/asm/mmu-8xx.h       |  7 +++-
+ arch/powerpc/include/asm/paca.h          |  2 +-
+ arch/powerpc/include/asm/slice.h         |  1 -
+ arch/powerpc/include/asm/slice_32.h      |  2 ++
+ arch/powerpc/include/asm/slice_64.h      |  2 ++
+ arch/powerpc/kernel/paca.c               |  3 +-
+ arch/powerpc/mm/hash_utils_64.c          | 13 ++++----
+ arch/powerpc/mm/slb_low.S                |  8 +++--
+ arch/powerpc/mm/slice.c                  | 57 +++++++++++++++++---------------
+ 10 files changed, 56 insertions(+), 42 deletions(-)
 
- arch/powerpc/include/asm/mmu-8xx.h     |  6 ++++++
- arch/powerpc/kernel/setup-common.c     |  2 ++
- arch/powerpc/mm/8xx_mmu.c              |  2 +-
- arch/powerpc/mm/hugetlbpage.c          |  2 ++
- arch/powerpc/mm/mmu_context_nohash.c   | 18 ++++++++++++++++--
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 6 files changed, 28 insertions(+), 3 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index c9448e19847a..b076a2d74c69 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -91,7 +91,8 @@ typedef struct {
+ 	struct npu_context *npu_context;
+ 
+ #ifdef CONFIG_PPC_MM_SLICES
+-	u64 low_slices_psize;	/* SLB page size encodings */
++	 /* SLB page size encodings*/
++	unsigned char low_slices_psize[BITS_PER_LONG / BITS_PER_BYTE];
+ 	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
+ 	unsigned long slb_addr_limit;
+ #else
 diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index 5bb3dbede41a..5f89b6010453 100644
+index 5f89b6010453..5f37ba06b56c 100644
 --- a/arch/powerpc/include/asm/mmu-8xx.h
 +++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -169,6 +169,12 @@ typedef struct {
- 	unsigned int id;
- 	unsigned int active;
- 	unsigned long vdso_base;
+@@ -164,6 +164,11 @@
+  */
+ #define SPRN_M_TW	799
+ 
 +#ifdef CONFIG_PPC_MM_SLICES
-+	u16 user_psize;		/* page size index */
-+	u64 low_slices_psize;	/* page size encodings */
-+	unsigned char high_slices_psize[0];
-+	unsigned long slb_addr_limit;
++#include <asm/slice_32.h>
++#define SLICE_ARRAY_SIZE	(1 << (32 - SLICE_LOW_SHIFT - 1))
 +#endif
- } mm_context_t;
- 
- #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 8fd3a70047f1..edf98ea92035 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -916,6 +916,8 @@ void __init setup_arch(char **cmdline_p)
- #ifdef CONFIG_PPC64
- 	if (!radix_enabled())
- 		init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
-+#elif defined(CONFIG_PPC_8xx)
-+	init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW;
- #else
- #error	"context.addr_limit not initialized."
- #endif
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index f29212e40f40..0be77709446c 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -192,7 +192,7 @@ void set_context(unsigned long id, pgd_t *pgd)
- 	mtspr(SPRN_M_TW, __pa(pgd) - offset);
- 
- 	/* Update context */
--	mtspr(SPRN_M_CASID, id);
-+	mtspr(SPRN_M_CASID, id - 1);
- 	/* sync */
- 	mb();
- }
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index a9b9083c5e49..79e1378ee303 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -553,9 +553,11 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	struct hstate *hstate = hstate_file(file);
- 	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
- 
-+#ifdef CONFIG_PPC_RADIX_MMU
- 	if (radix_enabled())
- 		return radix__hugetlb_get_unmapped_area(file, addr, len,
- 						       pgoff, flags);
-+#endif
- 	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
- }
- #endif
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index 4554d6527682..d98f7e5c141b 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -331,6 +331,20 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- {
- 	pr_hard("initing context for mm @%p\n", mm);
- 
-+#ifdef	CONFIG_PPC_MM_SLICES
-+	if (!mm->context.slb_addr_limit)
-+		mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
 +
-+	/*
-+	 * We have MMU_NO_CONTEXT set to be ~0. Hence check
-+	 * explicitly against context.id == 0. This ensures that we properly
-+	 * initialize context slice details for newly allocated mm's (which will
-+	 * have id == 0) and don't alter context slice inherited via fork (which
-+	 * will have id != 0).
-+	 */
-+	if (mm->context.id == 0)
-+		slice_set_user_psize(mm, mmu_virtual_psize);
-+#endif
- 	mm->context.id = MMU_NO_CONTEXT;
- 	mm->context.active = 0;
- 	return 0;
-@@ -428,8 +442,8 @@ void __init mmu_context_init(void)
- 	 *      -- BenH
- 	 */
- 	if (mmu_has_feature(MMU_FTR_TYPE_8xx)) {
--		first_context = 0;
--		last_context = 15;
-+		first_context = 1;
-+		last_context = 16;
- 		no_selective_tlbil = true;
- 	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
- 		first_context = 1;
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index ae07470fde3c..73a7ea333e9e 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -334,6 +334,7 @@ config PPC_BOOK3E_MMU
- config PPC_MM_SLICES
- 	bool
- 	default y if PPC_BOOK3S_64
-+	default y if PPC_8xx && HUGETLB_PAGE
- 	default n
+ #ifndef __ASSEMBLY__
+ typedef struct {
+ 	unsigned int id;
+@@ -171,7 +176,7 @@ typedef struct {
+ 	unsigned long vdso_base;
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	u16 user_psize;		/* page size index */
+-	u64 low_slices_psize;	/* page size encodings */
++	unsigned char low_slices_psize[SLICE_ARRAY_SIZE];
+ 	unsigned char high_slices_psize[0];
+ 	unsigned long slb_addr_limit;
+ #endif
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 23ac7fc0af23..a3e531fe9ac7 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -141,7 +141,7 @@ struct paca_struct {
+ #ifdef CONFIG_PPC_BOOK3S
+ 	mm_context_id_t mm_ctx_id;
+ #ifdef CONFIG_PPC_MM_SLICES
+-	u64 mm_ctx_low_slices_psize;
++	unsigned char mm_ctx_low_slices_psize[BITS_PER_LONG / BITS_PER_BYTE];
+ 	unsigned char mm_ctx_high_slices_psize[SLICE_ARRAY_SIZE];
+ 	unsigned long mm_ctx_slb_addr_limit;
+ #else
+diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
+index 2b4b70de7e71..b67ba8faa507 100644
+--- a/arch/powerpc/include/asm/slice.h
++++ b/arch/powerpc/include/asm/slice.h
+@@ -16,7 +16,6 @@
+ #define HAVE_ARCH_UNMAPPED_AREA
+ #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
  
- config PPC_HAVE_PMU_SUPPORT
+-#define SLICE_LOW_SHIFT		28
+ #define SLICE_LOW_TOP		(0x100000000ull)
+ #define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
+ #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+diff --git a/arch/powerpc/include/asm/slice_32.h b/arch/powerpc/include/asm/slice_32.h
+index 7e27c0dfb913..349187c20100 100644
+--- a/arch/powerpc/include/asm/slice_32.h
++++ b/arch/powerpc/include/asm/slice_32.h
+@@ -2,6 +2,8 @@
+ #ifndef _ASM_POWERPC_SLICE_32_H
+ #define _ASM_POWERPC_SLICE_32_H
+ 
++#define SLICE_LOW_SHIFT		26	/* 64 slices */
++
+ #define SLICE_HIGH_SHIFT	0
+ #define SLICE_NUM_HIGH		0ul
+ #define GET_HIGH_SLICE_INDEX(addr)	(addr & 0)
+diff --git a/arch/powerpc/include/asm/slice_64.h b/arch/powerpc/include/asm/slice_64.h
+index 9d1c97b83010..0959475239c6 100644
+--- a/arch/powerpc/include/asm/slice_64.h
++++ b/arch/powerpc/include/asm/slice_64.h
+@@ -2,6 +2,8 @@
+ #ifndef _ASM_POWERPC_SLICE_64_H
+ #define _ASM_POWERPC_SLICE_64_H
+ 
++#define SLICE_LOW_SHIFT		28
++
+ #define SLICE_HIGH_SHIFT	40
+ #define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index d6597038931d..8e1566bf82b8 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -264,7 +264,8 @@ void copy_mm_to_paca(struct mm_struct *mm)
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	VM_BUG_ON(!mm->context.slb_addr_limit);
+ 	get_paca()->mm_ctx_slb_addr_limit = mm->context.slb_addr_limit;
+-	get_paca()->mm_ctx_low_slices_psize = context->low_slices_psize;
++	memcpy(&get_paca()->mm_ctx_low_slices_psize,
++	       &context->low_slices_psize, sizeof(context->low_slices_psize));
+ 	memcpy(&get_paca()->mm_ctx_high_slices_psize,
+ 	       &context->high_slices_psize, TASK_SLICE_ARRAY_SZ(mm));
+ #else /* CONFIG_PPC_MM_SLICES */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 655a5a9a183d..da696565b969 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1097,19 +1097,18 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+ #ifdef CONFIG_PPC_MM_SLICES
+ static unsigned int get_paca_psize(unsigned long addr)
+ {
+-	u64 lpsizes;
+-	unsigned char *hpsizes;
++	unsigned char *psizes;
+ 	unsigned long index, mask_index;
+ 
+ 	if (addr < SLICE_LOW_TOP) {
+-		lpsizes = get_paca()->mm_ctx_low_slices_psize;
++		psizes = get_paca()->mm_ctx_low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-		return (lpsizes >> (index * 4)) & 0xF;
++	} else {
++		psizes = get_paca()->mm_ctx_high_slices_psize;
++		index = GET_HIGH_SLICE_INDEX(addr);
+ 	}
+-	hpsizes = get_paca()->mm_ctx_high_slices_psize;
+-	index = GET_HIGH_SLICE_INDEX(addr);
+ 	mask_index = index & 0x1;
+-	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
++	return (psizes[index >> 1] >> (mask_index * 4)) & 0xF;
+ }
+ 
+ #else
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 2cf5ef3fc50d..2c7c717fd2ea 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -200,10 +200,12 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+ 5:
+ 	/*
+ 	 * Handle lpsizes
+-	 * r9 is get_paca()->context.low_slices_psize, r11 is index
++	 * r9 is get_paca()->context.low_slices_psize[index], r11 is mask_index
+ 	 */
+-	ld	r9,PACALOWSLICESPSIZE(r13)
+-	mr	r11,r10
++	srdi    r11,r10,1 /* index */
++	addi	r9,r11,PACALOWSLICESPSIZE
++	lbzx	r9,r13,r9		/* r9 is lpsizes[r11] */
++	rldicl	r11,r10,0,63		/* r11 = r10 & 0x1 */
+ 6:
+ 	sldi	r11,r11,2  /* index * 4 */
+ 	/* Extract the psize and multiply to get an array offset */
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 549704dfa777..3d573a038d42 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -148,18 +148,20 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
+ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_mask *ret,
+ 				unsigned long high_limit)
+ {
+-	unsigned char *hpsizes;
++	unsigned char *hpsizes, *lpsizes;
+ 	int index, mask_index;
+ 	unsigned long i;
+-	u64 lpsizes;
+ 
+ 	ret->low_slices = 0;
+ 	slice_bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (((lpsizes >> (i * 4)) & 0xf) == psize)
++	for (i = 0; i < SLICE_NUM_LOW; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (((lpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
+ 			ret->low_slices |= 1u << i;
++	}
+ 
+ 	if (high_limit <= SLICE_LOW_TOP)
+ 		return;
+@@ -211,8 +213,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ {
+ 	int index, mask_index;
+ 	/* Write the new slice psize bits */
+-	unsigned char *hpsizes;
+-	u64 lpsizes;
++	unsigned char *hpsizes, *lpsizes;
+ 	unsigned long i, flags;
+ 
+ 	slice_dbg("slice_convert(mm=%p, psize=%d)\n", mm, psize);
+@@ -225,12 +226,13 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (mask.low_slices & (1u << i))
+-			lpsizes = (lpsizes & ~(0xful << (i * 4))) |
+-				(((unsigned long)psize) << (i * 4));
+-
+-	/* Assign the value back */
+-	mm->context.low_slices_psize = lpsizes;
++		if (mask.low_slices & (1u << i)) {
++			mask_index = i & 0x1;
++			index = i >> 1;
++			lpsizes[index] = (lpsizes[index] &
++					  ~(0xf << (mask_index * 4))) |
++				(((unsigned long)psize) << (mask_index * 4));
++		}
+ 
+ 	hpsizes = mm->context.high_slices_psize;
+ 	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++) {
+@@ -629,7 +631,7 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+ 
+ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ {
+-	unsigned char *hpsizes;
++	unsigned char *psizes;
+ 	int index, mask_index;
+ 
+ 	/*
+@@ -643,15 +645,14 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ #endif
+ 	}
+ 	if (addr < SLICE_LOW_TOP) {
+-		u64 lpsizes;
+-		lpsizes = mm->context.low_slices_psize;
++		psizes = mm->context.low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-		return (lpsizes >> (index * 4)) & 0xf;
++	} else {
++		psizes = mm->context.high_slices_psize;
++		index = GET_HIGH_SLICE_INDEX(addr);
+ 	}
+-	hpsizes = mm->context.high_slices_psize;
+-	index = GET_HIGH_SLICE_INDEX(addr);
+ 	mask_index = index & 0x1;
+-	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xf;
++	return (psizes[index >> 1] >> (mask_index * 4)) & 0xf;
+ }
+ EXPORT_SYMBOL_GPL(get_slice_psize);
+ 
+@@ -672,8 +673,8 @@ EXPORT_SYMBOL_GPL(get_slice_psize);
+ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ {
+ 	int index, mask_index;
+-	unsigned char *hpsizes;
+-	unsigned long flags, lpsizes;
++	unsigned char *hpsizes, *lpsizes;
++	unsigned long flags;
+ 	unsigned int old_psize;
+ 	int i;
+ 
+@@ -691,12 +692,14 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ 	wmb();
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (((lpsizes >> (i * 4)) & 0xf) == old_psize)
+-			lpsizes = (lpsizes & ~(0xful << (i * 4))) |
+-				(((unsigned long)psize) << (i * 4));
+-	/* Assign the value back */
+-	mm->context.low_slices_psize = lpsizes;
++	for (i = 0; i < SLICE_NUM_LOW; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (((lpsizes[index] >> (mask_index * 4)) & 0xf) == old_psize)
++			lpsizes[index] = (lpsizes[index] &
++					  ~(0xf << (mask_index * 4))) |
++				(((unsigned long)psize) << (mask_index * 4));
++	}
+ 
+ 	hpsizes = mm->context.high_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_HIGH; i++) {
 -- 
 2.13.3
