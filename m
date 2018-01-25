@@ -1,24 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zRs6Y2bM1zDqsn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 17:08:37 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh@kernel.org>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc: pseries: use irq_of_parse_and_map helper
-In-Reply-To: <CAL_JsqLS_7TiQDwAxrDnP=v+63ge0+2SaomDgXQDSfOvwh7XiQ@mail.gmail.com>
-References: <20180104224542.15333-4-robh@kernel.org>
- <878tcpoyku.fsf@concordia.ellerman.id.au>
- <CAL_JsqLS_7TiQDwAxrDnP=v+63ge0+2SaomDgXQDSfOvwh7XiQ@mail.gmail.com>
-Date: Thu, 25 Jan 2018 17:08:33 +1100
-Message-ID: <87inbqv5b2.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zRt0035jBzDqvh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 17:48:00 +1100 (AEDT)
+Received: by mail-io0-x242.google.com with SMTP id 25so7523539ioj.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jan 2018 22:48:00 -0800 (PST)
+Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ devicetree@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-renesas-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Rob Herring <robh+dt@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-kernel@vger.kernel.org
+References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
+ <ac4f02e1-6d49-158a-4fb6-56ac0d474a44@gmail.com>
+ <20180122114948.mm5mg6zqw3hmjj4o@katana>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <11cf8fac-d2fe-ecdb-546f-de3c3b42a637@gmail.com>
+Date: Wed, 24 Jan 2018 22:47:55 -0800
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180122114948.mm5mg6zqw3hmjj4o@katana>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +33,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Herring <robh@kernel.org> writes:
-
-> On Tue, Jan 23, 2018 at 12:53 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Rob Herring <robh@kernel.org> writes:
+On 01/22/18 03:49, Wolfram Sang wrote:
+> Hi Frank,
+> 
+>> Please go back and read the thread for version 1.  Simply resubmitting a
+>> forward port is ignoring that whole conversation.
 >>
->>> Instead of calling both of_irq_parse_one and irq_create_of_mapping, call
->>> of_irq_parse_and_map instead which does the same thing. This gets us closer
->>> to making the former 2 functions static.
-...
->> Are you trying to remove the low-level routines or is this just a
->> cleanup?
->
-> The former, but I'm not sure that will happen. There's a handful of
-> others left, but they aren't simply a call to of_irq_parse_one and
-> then irq_create_of_mapping.
->
->> The patch below works, it loses the error handling if the interrupts
->> property is corrupt/empty, but that's probably overly paranoid anyway.
->
-> Not quite. Previously, it was silent if parsing failed. Only the
-> mapping would give an error which would mean the interrupt parent had
-> some error.
->
-> Actually, we could use of_irq_get here to preserve the error handling.
-> It will return error codes from parsing, 0 on mapping failure, or the
-> Linux irq number. It adds an irq_find_host call for deferred probe,
-> but that should be harmless. I'll respin it.
+>> There is a lot of good info in that thread.  I certainly learned stuff in it.
+> 
+> Yes, I did that and learned stuff, too. My summary of the discussion was:
+> 
+> - you mentioned some drawbacks you saw (like the mixture of trace output
+>   and printk output)> - most of them look like addressed to me? (e.g. Steven showed a way to redirect
+>   printk to trace
+> - you posted your version (which was, however, marked as "not user friendly"
+>   even by yourself)
 
-OK thanks.
+Not exactly a fair quoting.  There were two things I said:
 
-cheers
+  "Here is a patch that I have used.  It is not as user friendly in terms
+  of human readable stack traces (though a very small user space program
+  should be able to fix that)."
+
+     So easy to fix using existing userspace programs to convert kernel
+     addresses to symbols.
+
+  "FIXME: Currently using pr_err() so I don't need to set loglevel on boot.
+
+          So obviously not a user friendly tool!!!
+          The process is:
+             - apply patch
+             - configure, build, boot kernel
+             - analyze data
+             - remove patch"
+
+     So not friendly because it uses pr_err() instead of pr_debug().  In
+     a reply I said if I submitted my patches I would change it to use
+     pr_debug() instead.  So not an issue.
+
+     And not user friendly because it requires patching the kernel.
+     Again a NOP if I submitted my patch, because the patch would
+     already be in the kernel.
+
+But whatever, let's ignore that - a poor quoting is not a reason to
+reject this version of the patch.
+
+
+> - The discussion stalled over having two approaches
+
+Then you should have stated such when you resubmitted.
+
+
+> So, I thought reposting would be a good way of finding out if your
+> concerns were addressed in the discussion or not. If I overlooked
+
+Then you should have stated that there were concerns raised in the
+discussion and asked me if my concerns were addressed.
+
+
+> something, I am sorry for that. Still, my intention is to continue the
+> discussion, not to ignore it. Because as it stands, we don't have such a
+> debugging mechanism in place currently, and with people working with DT
+> overlays, I'd think it would be nice to have.
+> 
+> Kind regards,
+> 
+>    Wolfram
+> 
+
+
+Rob suggested:
+
+     >
+     > @@ -25,8 +28,10 @@
+     >   */
+     >  struct device_node *of_node_get(struct device_node *node)
+     >  {
+     > -       if (node)
+     > +       if (node) {
+     >                 kobject_get(&node->kobj);
+     > +               trace_of_node_get(refcount_read(&node->kobj.kref.refcount), node->full_name);
+
+     Seems like there should be a kobj wrapper to read the refcount.
+
+As far as I noticed, that was never addressed.  I don't know the answer, but
+the question was asked.  And if there is no such function, then there is at
+least kref_read(), which would improve the code a little bit.
+
+I'll reply to the patch 0/1 and patch 1/1 emails with review comments.
+
+-Frank
