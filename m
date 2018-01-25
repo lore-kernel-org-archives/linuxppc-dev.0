@@ -1,34 +1,23 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zS1v23DMtzDqtP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 23:44:14 +1100 (AEDT)
-Date: Thu, 25 Jan 2018 13:44:03 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
-Message-ID: <20180125124403.GE2228@hirez.programming.kicks-ass.net>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
- <20180125090444.GB2339@hirez.programming.kicks-ass.net>
- <20180125102414.wu5od5ye5nmx2ckl@pathway.suse.cz>
- <20180125103855.GC2228@hirez.programming.kicks-ass.net>
- <20180125121321.6rzrl5rsrvewxn7j@pathway.suse.cz>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zS2PR2SpHzDqs7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 00:07:06 +1100 (AEDT)
+Date: Thu, 25 Jan 2018 14:07:03 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ arnd@arndb.de, mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com,
+ alastair@au1.ibm.com
+Subject: Re: [PATCH v2 07/13] ocxl: Add AFU interrupt support
+Message-ID: <20180125130703.GA8576@kroah.com>
+References: <20180123113148.6024-1-fbarrat@linux.vnet.ibm.com>
+ <20180123113148.6024-8-fbarrat@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180125121321.6rzrl5rsrvewxn7j@pathway.suse.cz>
+In-Reply-To: <20180123113148.6024-8-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 25, 2018 at 01:13:21PM +0100, Petr Mladek wrote:
-> > What I was getting at, the klp stuff is the very first thing we run when
-> > we schedule the idle task, but its placed at the very end of the
-> > function. This is confusing.
-> 
-> I see.
-> 
-> 
-> > The above still doesn't help with solving that. Do you want to run
-> > something before we go idle, or before we leave idle, in neither cases
-> > would I place it where it is.
-> 
-> In fact, both ways are fine. We require going the idle task
-> through the entire cycle anyway. It is because both situations,
-> too long idling or non-idling, would block finishing the patch
-> transition.
-> 
-> Feel free to move it right before schedule_idle() or
-> __current_set_polling().
+On Tue, Jan 23, 2018 at 12:31:42PM +0100, Frederic Barrat wrote:
+> --- /dev/null
+> +++ b/drivers/misc/ocxl/afu_irq.c
+> @@ -0,0 +1,197 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +// Copyright 2017 IBM Corp.
 
-OK, I'll move it. Thanks!
+What year is it again?
+
+:)
