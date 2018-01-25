@@ -1,33 +1,24 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <SRS0=lhnB=EU=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zRz6k2rwZzDqxs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 21:39:10 +1100 (AEDT)
-Date: Thu, 25 Jan 2018 11:38:55 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
-Message-ID: <20180125103855.GC2228@hirez.programming.kicks-ass.net>
-References: <cover.1487036215.git.jpoimboe@redhat.com>
- <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
- <20180125090444.GB2339@hirez.programming.kicks-ass.net>
- <20180125102414.wu5od5ye5nmx2ckl@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zRzg12P0wzDqxT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 22:03:41 +1100 (AEDT)
+Date: Thu, 25 Jan 2018 06:03:30 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ devicetree@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-renesas-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Rob
+ Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
+Message-ID: <20180125060330.781667e9@vmware.local.home>
+In-Reply-To: <00fc90ee-de26-f819-9c81-27d06918564d@gmail.com>
+References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
+ <00fc90ee-de26-f819-9c81-27d06918564d@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180125102414.wu5od5ye5nmx2ckl@pathway.suse.cz>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,53 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 25, 2018 at 11:24:14AM +0100, Petr Mladek wrote:
-> On Thu 2018-01-25 10:04:44, Peter Zijlstra wrote:
-> > On Mon, Feb 13, 2017 at 07:42:40PM -0600, Josh Poimboeuf wrote:
-> > > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> > > index 6a4bae0..a8b3f1a 100644
-> > > --- a/kernel/sched/idle.c
-> > > +++ b/kernel/sched/idle.c
-> > > @@ -9,6 +9,7 @@
-> > >  #include <linux/mm.h>
-> > >  #include <linux/stackprotector.h>
-> > >  #include <linux/suspend.h>
-> > > +#include <linux/livepatch.h>
-> > >  
-> > >  #include <asm/tlb.h>
-> > >  
-> > > @@ -264,6 +265,9 @@ static void do_idle(void)
-> > >  
-> > >  	sched_ttwu_pending();
-> > >  	schedule_preempt_disabled();
-> > > +
-> > > +	if (unlikely(klp_patch_pending(current)))
-> > > +		klp_update_patch_state(current);
-> > >  }
-> > 
-> > Can someone explain this one? This is a very weird place to add things.
-> > What was the expectation?
-> 
-> AFAIK, it was the least ugly and minimalist solution that we came with.
-> 
-> The tasks are migrated to the new patch when neither of the patched
-> functions is on the stack. The stack can be checked safely only when
-> the task is not running. It might be very hard to catch the idle
-> task on a such a place if we patch something that is used there.
-> 
-> If the idle task is scheduled, you would need to create some fake
-> load on the system, try to migrate the idle task, stop the fake load
-> on the CPU.
-> 
-> The above code makes the idle task to migrate itself on a sane place.
-> You just need to schedule some minimalist job on the CPU. The idle
-> task will do one loop, gets migrated, and might be scheduled again
-> immediately.
+On Wed, 24 Jan 2018 22:55:13 -0800
+Frank Rowand <frowand.list@gmail.com> wrote:
 
-What I was getting at, the klp stuff is the very first thing we run when
-we schedule the idle task, but its placed at the very end of the
-function. This is confusing.
+> Hi Steve,
 
-The above still doesn't help with solving that. Do you want to run
-something before we go idle, or before we leave idle, in neither cases
-would I place it where it is.
+> 
+> Off the top of your head, can you tell me know early in the boot
+> process a trace_event can be called and successfully provide the
+> data to someone trying to debug early boot issues?
+
+The trace events are enabled by early_initcall().
+
+> 
+> Also, way back when version 1 of this patch was being discussed,
+> a question about stacktrace triggers:
+> 
+>      >>> # echo stacktrace > /sys/kernel/debug/tracing/trace_options
+>      >>> # cat trace | grep -A6 "/pci@800000020000018"    
+>      >>
+>      >> Just to let you know that there is now stacktrace event triggers, where
+>      >> you don't need to stacktrace all events, you can pick and choose. And
+>      >> even filter the stack trace on specific fields of the event.    
+>      >
+>      > This is great, and I did figure that out this afternoon. One thing I was
+>      > still trying to determine though was whether its possible to set these
+>      > triggers at boot? As far as I could tell I'm still limited to
+>      > "trace_options=stacktrace" as a kernel boot parameter to get the stack
+>      > for event tracepoints.  
+> 
+>      No not yet. But I'll add that to the todo list.
+> 
+>      Thanks,
+> 
+>      -- Steve
+> 
+> Is this still on your todo list, or is it now available?
+
+Still on the todo list. As someone once said, there really is no todo
+list, but just work on the stuff that people are yelling the loudest
+about. Yell louder, and it will get done quicker ;-)
+
+-- Steve
