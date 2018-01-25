@@ -1,31 +1,31 @@
-Return-Path: <srs0=9pr5=eu=xenosoft.de=chzigotzky@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zRxHD0PPSzDqy5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 20:16:24 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zRxHC6XLnz8sxQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 20:16:23 +1100 (AEDT)
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zRxH93bxQz9s1h
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2018 20:16:20 +1100 (AEDT)
-Subject: [PATCH 07/11] powerpc/64s: Add support for RFI flush of L1-D cache
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
- npiggin@gmail.com, oohall@gmail.com, anton@samba.org, paulus@samba.org,
- tglx@linutronix.de
-References: <20180108165453.26066-1-mpe@ellerman.id.au>
- <20180108165453.26066-7-mpe@ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <d73cc972-420d-4106-cc08-0d0683435afa@xenosoft.de>
-Date: Thu, 25 Jan 2018 10:10:07 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zRync5Jd1zDqxs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 21:24:19 +1100 (AEDT)
+Date: Thu, 25 Jan 2018 11:24:14 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
+ linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v5 13/15] livepatch: change to a per-task consistency model
+Message-ID: <20180125102414.wu5od5ye5nmx2ckl@pathway.suse.cz>
+References: <cover.1487036215.git.jpoimboe@redhat.com>
+ <a999d965d598b23564355c24db0ed6799f105fa6.1487036215.git.jpoimboe@redhat.com>
+ <20180125090444.GB2339@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <20180108165453.26066-7-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180125090444.GB2339@hirez.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,23 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FYI:
+On Thu 2018-01-25 10:04:44, Peter Zijlstra wrote:
+> On Mon, Feb 13, 2017 at 07:42:40PM -0600, Josh Poimboeuf wrote:
+> > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> > index 6a4bae0..a8b3f1a 100644
+> > --- a/kernel/sched/idle.c
+> > +++ b/kernel/sched/idle.c
+> > @@ -9,6 +9,7 @@
+> >  #include <linux/mm.h>
+> >  #include <linux/stackprotector.h>
+> >  #include <linux/suspend.h>
+> > +#include <linux/livepatch.h>
+> >  
+> >  #include <asm/tlb.h>
+> >  
+> > @@ -264,6 +265,9 @@ static void do_idle(void)
+> >  
+> >  	sched_ttwu_pending();
+> >  	schedule_preempt_disabled();
+> > +
+> > +	if (unlikely(klp_patch_pending(current)))
+> > +		klp_update_patch_state(current);
+> >  }
+> 
+> Can someone explain this one? This is a very weird place to add things.
+> What was the expectation?
 
-A-EON AmigaOne X1000 (CPU P.A. Semi PWRficient PA6T-1682M with two PA6T 
-cores):
+AFAIK, it was the least ugly and minimalist solution that we came with.
 
-/sys/devices/system/cpu/vulnerabilities/
+The tasks are migrated to the new patch when neither of the patched
+functions is on the stack. The stack can be checked safely only when
+the task is not running. It might be very hard to catch the idle
+task on a such a place if we patch something that is used there.
 
--r--r--r-- 1 root root 4096 Jan 25 09:38 meltdown
--r--r--r-- 1 root root 4096 Jan 25 09:38 spectre_v1
--r--r--r-- 1 root root 4096 Jan 25 09:38 spectre_v2
+If the idle task is scheduled, you would need to create some fake
+load on the system, try to migrate the idle task, stop the fake load
+on the CPU.
 
-meltdown Vulnerable
-spectre_v1 Not affected
-spectre_v2 Not affected
+The above code makes the idle task to migrate itself on a sane place.
+You just need to schedule some minimalist job on the CPU. The idle
+task will do one loop, gets migrated, and might be scheduled again
+immediately.
 
-
-On 08 January 2018 at 5:54PM, Michael Ellerman wrote:
-> At this time we do not know the status of the vulnerability on other CPUs
-> such as the 970 (Apple G5), pasemi CPUs (AmigaOne X1000) or Freescale
-> CPUs.
+Best Regards,
+Petr
