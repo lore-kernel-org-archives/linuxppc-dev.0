@@ -1,23 +1,28 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zS2dp6tbXzDr6h
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 00:17:50 +1100 (AEDT)
-Date: Thu, 25 Jan 2018 14:17:48 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- arnd@arndb.de, mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com,
- alastair@au1.ibm.com
-Subject: Re: [PATCH v2 12/13] ocxl: Documentation
-Message-ID: <20180125131748.GB8576@kroah.com>
-References: <20180123113148.6024-1-fbarrat@linux.vnet.ibm.com>
- <20180123113148.6024-13-fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zSFzk3lG2zDqlB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 08:49:06 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id s9so5910691pgq.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 13:49:06 -0800 (PST)
+Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, devicetree@vger.kernel.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-renesas-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org
+References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
+ <00fc90ee-de26-f819-9c81-27d06918564d@gmail.com>
+ <20180125060330.781667e9@vmware.local.home>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <a30d4cd3-0068-8cca-cc2f-ca207d0d278b@gmail.com>
+Date: Thu, 25 Jan 2018 13:49:01 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180123113148.6024-13-fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <20180125060330.781667e9@vmware.local.home>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 23, 2018 at 12:31:47PM +0100, Frederic Barrat wrote:
-> ocxl.rst gives a quick, high-level view of opencapi.
-> 
-> Update ioctl-number.txt to reflect ioctl numbers being used by the
-> ocxl driver
-> 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
->  Documentation/ABI/testing/sysfs-class-ocxl |  35 +++++++
->  Documentation/accelerators/ocxl.rst        | 160 +++++++++++++++++++++++++++++
->  Documentation/ioctl/ioctl-number.txt       |   1 +
->  3 files changed, 196 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-class-ocxl
->  create mode 100644 Documentation/accelerators/ocxl.rst
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-class-ocxl b/Documentation/ABI/testing/sysfs-class-ocxl
-> new file mode 100644
-> index 000000000000..ac11deb71235
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-class-ocxl
-> @@ -0,0 +1,35 @@
-> +What:           /sys/class/ocxl/<afu name>/afu_version
-> +Date:           January 2018
-> +Contact:        linuxppc-dev@lists.ozlabs.org
-> +Description:    read only
-> +                Version of the AFU, in the format <major>:<minor>
-> +		Reflects what is read in the configuration space of the AFU
+Hi Wolfram,
 
-Odd mix of tabs and spaces in this file, please just use tabs.
+On 01/25/18 03:03, Steven Rostedt wrote:
+> On Wed, 24 Jan 2018 22:55:13 -0800
+> Frank Rowand <frowand.list@gmail.com> wrote:
+> 
+>> Hi Steve,
+> 
+>>
+>> Off the top of your head, can you tell me know early in the boot
+>> process a trace_event can be called and successfully provide the
+>> data to someone trying to debug early boot issues?
+> 
+> The trace events are enabled by early_initcall().
 
-thanks,
+< snip >
 
-greg k-h
+This means that ftrace can not be used for the of_node_get(),
+of_node_put(), and of_node_release() debug info, because
+these functions are called before early_initcall().  Please
+use pr_debug() for these functions.
+
+As far as I know, the of_reconfig_notify() could remain an
+ftrace instrumented function.  But now that the only thing
+that would be ftrace instrumented is of_reconfig_notify(),
+I don't see a strong justification for changing the existing
+pr_debug() calls to an ftrace alternative.  Though I suspect
+the original author of the patch still might desire to have
+the "#ifdef DEBUG" surrounding the pr_debug() calls removed
+since one of his issues was having to recompile his kernel
+to do his debugging.
+
+-Frank
