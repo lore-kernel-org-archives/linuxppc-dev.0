@@ -1,40 +1,31 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pg0-x229.google.com (mail-pg0-x229.google.com
+ [IPv6:2607:f8b0:400e:c05::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zSJm60msxzF0Q6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 10:54:13 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0PNsAsw037760
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 18:54:11 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fqr5wa7un-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 18:54:10 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 25 Jan 2018 16:54:05 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zSKrJ6JDLzF0Qn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 11:42:56 +1100 (AEDT)
+Received: by mail-pg0-x229.google.com with SMTP id w17so6169859pgv.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jan 2018 16:42:56 -0800 (PST)
 Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
-To: Frank Rowand <frowand.list@gmail.com>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>,
- linux-renesas-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ devicetree@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-renesas-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Rob Herring <robh+dt@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-kernel@vger.kernel.org
 References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
- <00fc90ee-de26-f819-9c81-27d06918564d@gmail.com>
- <20180125060330.781667e9@vmware.local.home>
- <a30d4cd3-0068-8cca-cc2f-ca207d0d278b@gmail.com>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Thu, 25 Jan 2018 15:53:58 -0800
+ <ac4f02e1-6d49-158a-4fb6-56ac0d474a44@gmail.com>
+ <20180122114948.mm5mg6zqw3hmjj4o@katana>
+ <11cf8fac-d2fe-ecdb-546f-de3c3b42a637@gmail.com>
+ <20180125231219.mkgai2yurkj3f7ph@ninjato>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <b4396070-accc-1fe2-21a6-cefaddeeb06c@gmail.com>
+Date: Thu, 25 Jan 2018 16:42:51 -0800
 MIME-Version: 1.0
-In-Reply-To: <a30d4cd3-0068-8cca-cc2f-ca207d0d278b@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <c20ffeb2-f17a-ddab-7327-b8854b301d18@linux.vnet.ibm.com>
+In-Reply-To: <20180125231219.mkgai2yurkj3f7ph@ninjato>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,45 +35,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/25/2018 01:49 PM, Frank Rowand wrote:
-> Hi Wolfram,
+On 01/25/18 15:12, Wolfram Sang wrote:
+> Frank,
 > 
-> On 01/25/18 03:03, Steven Rostedt wrote:
->> On Wed, 24 Jan 2018 22:55:13 -0800
->> Frank Rowand <frowand.list@gmail.com> wrote:
->>
->>> Hi Steve,
->>
->>>
->>> Off the top of your head, can you tell me know early in the boot
->>> process a trace_event can be called and successfully provide the
->>> data to someone trying to debug early boot issues?
->>
->> The trace events are enabled by early_initcall().
+> here seems to be a misunderstanding going on. I don't want to push this
+> patch upstream against all odds. I merely wanted to find out what the
+> status of this patch is. Because one possibility was that it had just
+> been forgotten...
 > 
-> < snip >
-> 
-> This means that ftrace can not be used for the of_node_get(),
-> of_node_put(), and of_node_release() debug info, because
-> these functions are called before early_initcall().  Please
-> use pr_debug() for these functions.
+>>> So, I thought reposting would be a good way of finding out if your
+>>> concerns were addressed in the discussion or not. If I overlooked
 
-I would argue that early boot debugging doesn't completely negate the usefulness of this tracing infrastructure. I get that no information is available in the trace up until ftrace is setup by its early_initcall, but I still found issues  after early boot using this patch and I would hope that it would be somewhat obvious if references are out of whack once the ftrace data becomes available. In the dynamic case on Power we often do reconfig well after boot on live systems which produces a lot of reference put/gets. This patch made it easy to identify several reference leaks and underflows in our attach and detach logic with the added aid of being able to turn on the stacktrace for each call in the ftrace data.
+Marking a patch as RFC (as you mention just below here) is very different
+than explicitly stating something like: Frank, you had concerns with
+version 1, were your concerns addressed in the thread about version 1?
 
-Another thought is it would be nice if we could have the best of both worlds such that the tracepoints were pr_debugs up until the ftrace early_initcall. Or, I suppose we could ifdef it and make the ftrace tracepoints a configuration option, such that if it wasn't configured we implement the tracepoint functions as pr_debugs. This makes early boot an option. Just spit balling ideas.
+You mention below that adding RFC to the title was providing the
+information that I needed.  I am saying that the communication was
+not clear, was implied at best, and should have be more explicit.
 
--Tyrel
+I actually didn't even notice that the patch title had changed from
+not an RFC, to being an RFC, so the subtle clue went right over my
+head.  I just treated it as I would any RFC patch.
+
+
+>> Then you should have stated that there were concerns raised in the
+>> discussion and asked me if my concerns were addressed.
+> 
+> From my perspective, I have done that:
+> 
+> I marked the patch as RFC. I put you on the CC list. I asked about the
+> possibility of applying it. It was not very elaborate, but hey, this is
+> just a simple debugging patch :)
+
+After reading through the original patch thread, I did not think that
+the issues raised had been fully addressed.  You read the thread and
+thought they had.  No big deal on coming to different conclusions.
+
+I think you and I are talking past each other a little bit.  My
+comments in the email you are responding to are because I don't
+think that the previous emails have been as clear as you think.
+I could read between the lines and see how you think that you
+were being clear.  But from my perspective, I'm asking for more
+explicit statements and less implied statements.
+
+My first real response (the response that pointed out that Rob had
+made an observation / suggestion that was not responded to) was coming
+from the perspective that the issues in the first thread had not been
+fully addressed.
+
+As I was writing that response, I felt that I might as well do a review,
+even though I thought the previous thread was dangling.  Which led to a
+lot of issues and a few more emails pointing them out.
+
+
+> I totally would have accepted a high level "No, that won't fly
+> because...". Or a high level "This and that would need a change". Or
+> something like that. I intentionally sent this out as RFC because I know
+> there is some testing missing. I wanted to know if it is worth taking
+> further steps with this patch.
+> 
+> So, I simply wanted to know if you (still) have fundamental issues with
+> the patch?
+
+It would have been good if you had simply stated so in exactly those
+words.  I did not read the original email as saying that.  I read
+the original email as saying (my paraphrase) "please apply it".  You
+did _not_ use the words that I paraphrased, you actually said
+"So what about applying it?".  I misunderstood what you were trying
+to say.  I apologize for that.
+
+
+> That needs to be discussed first before we go into coding
+> details. I think it is fine to not apply it if there are reasons. I'd
+> like to know them, however, for a better understanding.
+
+Too late now. :-)  I've already done the reviewing and provided all
+of the reasons that are show stoppers for the patch and how to fix.
+
+One thing that I did not mention in this thread  is that I have an
+aversion to using ftrace for what is purely debugging data (which
+this is) because there is a danger that trace points become user
+space ABI.  That is a whole long discussion that we do not have to
+have because I am not subjecting this patch to that objection.
+
+
+> For me, this is a super-super-side project, so if it causes too much
+> hazzle, I just leave it here and know interested people can find it
+> easier now. But if it could be applied with a sane amount of effort, I
+> was offering that.
+> 
+> Was that understandable?
+
+I think so.  And in return?  We can always talk more at the next
+conference if you want.
+
+-Frank
 
 > 
-> As far as I know, the of_reconfig_notify() could remain an
-> ftrace instrumented function.  But now that the only thing
-> that would be ftrace instrumented is of_reconfig_notify(),
-> I don't see a strong justification for changing the existing
-> pr_debug() calls to an ftrace alternative.  Though I suspect
-> the original author of the patch still might desire to have
-> the "#ifdef DEBUG" surrounding the pr_debug() calls removed
-> since one of his issues was having to recompile his kernel
-> to do his debugging.
+> Kind regards,
 > 
-> -Frank
+>    Wolfram
 > 
