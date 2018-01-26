@@ -1,36 +1,17 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zSj571XN5zF0Qs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jan 2018 02:10:19 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0QF9tY8127620
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 10:10:16 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fr4thd0mw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 10:10:15 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 26 Jan 2018 15:10:13 -0000
-Subject: Re: [PATCH v2 12/13] ocxl: Documentation
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
- mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com, alastair@au1.ibm.com
-References: <20180123113148.6024-1-fbarrat@linux.vnet.ibm.com>
- <20180123113148.6024-13-fbarrat@linux.vnet.ibm.com>
- <20180125131748.GB8576@kroah.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 26 Jan 2018 16:10:08 +0100
-MIME-Version: 1.0
-In-Reply-To: <20180125131748.GB8576@kroah.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <f457e877-11f8-d89c-dce1-34642c1c9318@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zSkQ61TkHzDr62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jan 2018 03:10:05 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] crypto: talitos: fix Kernel Oops on hashing an empty file
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180126160959.BEA466EFCA@localhost.localdomain>
+Date: Fri, 26 Jan 2018 17:09:59 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Performing the hash of an empty file leads to a kernel Oops
 
+[   44.504600] Unable to handle kernel paging request for data at address 0x0000000c
+[   44.512819] Faulting instruction address: 0xc02d2be8
+[   44.524088] Oops: Kernel access of bad area, sig: 11 [#1]
+[   44.529171] BE PREEMPT CMPC885
+[   44.532232] CPU: 0 PID: 491 Comm: md5sum Not tainted 4.15.0-rc8-00211-g3a968610b6ea #81
+[   44.540814] NIP:  c02d2be8 LR: c02d2984 CTR: 00000000
+[   44.545812] REGS: c6813c90 TRAP: 0300   Not tainted  (4.15.0-rc8-00211-g3a968610b6ea)
+[   44.554223] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 48222822  XER: 20000000
+[   44.560855] DAR: 0000000c DSISR: c0000000
+[   44.560855] GPR00: c02d28fc c6813d40 c6828000 c646fa40 00000001 00000001 00000001 00000000
+[   44.560855] GPR08: 0000004c 00000000 c000bfcc 00000000 28222822 100280d4 00000000 10020008
+[   44.560855] GPR16: 00000000 00000020 00000000 00000000 10024008 00000000 c646f9f0 c6179a10
+[   44.560855] GPR24: 00000000 00000001 c62f0018 c6179a10 00000000 c6367a30 c62f0000 c646f9c0
+[   44.598542] NIP [c02d2be8] ahash_process_req+0x448/0x700
+[   44.603751] LR [c02d2984] ahash_process_req+0x1e4/0x700
+[   44.608868] Call Trace:
+[   44.611329] [c6813d40] [c02d28fc] ahash_process_req+0x15c/0x700 (unreliable)
+[   44.618302] [c6813d90] [c02060c4] hash_recvmsg+0x11c/0x210
+[   44.623716] [c6813db0] [c0331354] ___sys_recvmsg+0x98/0x138
+[   44.629226] [c6813eb0] [c03332c0] __sys_recvmsg+0x40/0x84
+[   44.634562] [c6813f10] [c03336c0] SyS_socketcall+0xb8/0x1d4
+[   44.640073] [c6813f40] [c000d1ac] ret_from_syscall+0x0/0x38
+[   44.645530] Instruction dump:
+[   44.648465] 38c00001 7f63db78 4e800421 7c791b78 54690ffe 0f090000 80ff0190 2f870000
+[   44.656122] 40befe50 2f990001 409e0210 813f01bc <8129000c> b39e003a 7d29c214 913e003c
 
-Le 25/01/2018 à 14:17, Greg KH a écrit :
-> On Tue, Jan 23, 2018 at 12:31:47PM +0100, Frederic Barrat wrote:
->> ocxl.rst gives a quick, high-level view of opencapi.
->>
->> Update ioctl-number.txt to reflect ioctl numbers being used by the
->> ocxl driver
->>
->> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->> ---
->>   Documentation/ABI/testing/sysfs-class-ocxl |  35 +++++++
->>   Documentation/accelerators/ocxl.rst        | 160 +++++++++++++++++++++++++++++
->>   Documentation/ioctl/ioctl-number.txt       |   1 +
->>   3 files changed, 196 insertions(+)
->>   create mode 100644 Documentation/ABI/testing/sysfs-class-ocxl
->>   create mode 100644 Documentation/accelerators/ocxl.rst
->>
->> diff --git a/Documentation/ABI/testing/sysfs-class-ocxl b/Documentation/ABI/testing/sysfs-class-ocxl
->> new file mode 100644
->> index 000000000000..ac11deb71235
->> --- /dev/null
->> +++ b/Documentation/ABI/testing/sysfs-class-ocxl
->> @@ -0,0 +1,35 @@
->> +What:           /sys/class/ocxl/<afu name>/afu_version
->> +Date:           January 2018
->> +Contact:        linuxppc-dev@lists.ozlabs.org
->> +Description:    read only
->> +                Version of the AFU, in the format <major>:<minor>
->> +		Reflects what is read in the configuration space of the AFU
-> 
-> Odd mix of tabs and spaces in this file, please just use tabs.
+This patch fixes that Oops by checking if src is NULL.
 
-Oops! Will fix.
+Fixes: 6a1e8d14156d4 ("crypto: talitos - making mapping helpers more generic")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-   Fred
-
-
-> thanks,
-> 
-> greg k-h
-> 
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 9c80e0cb1664..6882fa2f8bad 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -1138,6 +1138,10 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
+ 	struct talitos_private *priv = dev_get_drvdata(dev);
+ 	bool is_sec1 = has_ftr_sec1(priv);
+ 
++	if (!src) {
++		to_talitos_ptr(ptr, 0, 0, is_sec1);
++		return 1;
++	}
+ 	if (sg_count == 1) {
+ 		to_talitos_ptr(ptr, sg_dma_address(src) + offset, len, is_sec1);
+ 		return sg_count;
+-- 
+2.13.3
