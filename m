@@ -1,17 +1,42 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zSkQ61TkHzDr62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jan 2018 03:10:05 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] crypto: talitos: fix Kernel Oops on hashing an empty file
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180126160959.BEA466EFCA@localhost.localdomain>
-Date: Fri, 26 Jan 2018 17:09:59 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zSqTl6dfBzF0QD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jan 2018 06:58:35 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0QJsf0x072729
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 14:58:33 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fr5cw54rr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 14:58:32 -0500
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Fri, 26 Jan 2018 14:58:32 -0500
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w0QJwU8o43122806
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 19:58:30 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA85B2804A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 14:57:54 -0500 (EST)
+Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id AB4DB2803D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jan 2018 14:57:54 -0500 (EST)
+Subject: [PATCH RESEND V2 ] powerpc/numa: Invalidate numa_cpu_lookup_table
+ on cpu remove
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 26 Jan 2018 13:41:59 -0600
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <151699561194.20320.12952014708209986173.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,57 +46,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Performing the hash of an empty file leads to a kernel Oops
+When DLPAR removing a CPU, the unmapping of the cpu from a node in
+unmap_cpu_from_node() should also invalidate the CPUs entry in the
+numa_cpu_lookup_table. There is not a guarantee that on a subsequent
+DLPAR add of the CPU the associativity will be the same and thus
+could be in a different node. Invalidating the entry in the
+numa_cpu_lookup_table causes the associativity to be read from the
+device tree at the time of the add.
 
-[   44.504600] Unable to handle kernel paging request for data at address 0x0000000c
-[   44.512819] Faulting instruction address: 0xc02d2be8
-[   44.524088] Oops: Kernel access of bad area, sig: 11 [#1]
-[   44.529171] BE PREEMPT CMPC885
-[   44.532232] CPU: 0 PID: 491 Comm: md5sum Not tainted 4.15.0-rc8-00211-g3a968610b6ea #81
-[   44.540814] NIP:  c02d2be8 LR: c02d2984 CTR: 00000000
-[   44.545812] REGS: c6813c90 TRAP: 0300   Not tainted  (4.15.0-rc8-00211-g3a968610b6ea)
-[   44.554223] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 48222822  XER: 20000000
-[   44.560855] DAR: 0000000c DSISR: c0000000
-[   44.560855] GPR00: c02d28fc c6813d40 c6828000 c646fa40 00000001 00000001 00000001 00000000
-[   44.560855] GPR08: 0000004c 00000000 c000bfcc 00000000 28222822 100280d4 00000000 10020008
-[   44.560855] GPR16: 00000000 00000020 00000000 00000000 10024008 00000000 c646f9f0 c6179a10
-[   44.560855] GPR24: 00000000 00000001 c62f0018 c6179a10 00000000 c6367a30 c62f0000 c646f9c0
-[   44.598542] NIP [c02d2be8] ahash_process_req+0x448/0x700
-[   44.603751] LR [c02d2984] ahash_process_req+0x1e4/0x700
-[   44.608868] Call Trace:
-[   44.611329] [c6813d40] [c02d28fc] ahash_process_req+0x15c/0x700 (unreliable)
-[   44.618302] [c6813d90] [c02060c4] hash_recvmsg+0x11c/0x210
-[   44.623716] [c6813db0] [c0331354] ___sys_recvmsg+0x98/0x138
-[   44.629226] [c6813eb0] [c03332c0] __sys_recvmsg+0x40/0x84
-[   44.634562] [c6813f10] [c03336c0] SyS_socketcall+0xb8/0x1d4
-[   44.640073] [c6813f40] [c000d1ac] ret_from_syscall+0x0/0x38
-[   44.645530] Instruction dump:
-[   44.648465] 38c00001 7f63db78 4e800421 7c791b78 54690ffe 0f090000 80ff0190 2f870000
-[   44.656122] 40befe50 2f990001 409e0210 813f01bc <8129000c> b39e003a 7d29c214 913e003c
+The current behavior of not invalidating the CPUs entry in the
+numa_cpu_lookup_table can result in scenarios where the the topology
+layout of CPUs in the partition does not match the device tree
+or the topology reported by the HMC.
 
-This patch fixes that Oops by checking if src is NULL.
-
-Fixes: 6a1e8d14156d4 ("crypto: talitos - making mapping helpers more generic")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
- drivers/crypto/talitos.c | 4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 9c80e0cb1664..6882fa2f8bad 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -1138,6 +1138,10 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
- 	struct talitos_private *priv = dev_get_drvdata(dev);
- 	bool is_sec1 = has_ftr_sec1(priv);
+Originally sent Dec. 5 2017, no reply, resending.
+
+Updates for V2: Move the invalidation from unmap_cpu_from_node to
+pseries_remove_processor, the former routine is also called during cpu
+offline and we do not want to invalidate during cpu offline.
+
+ arch/powerpc/include/asm/topology.h          |    5 +++++
+ arch/powerpc/mm/numa.c                       |    5 -----
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 88187c285c70..1c02e6900f78 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -44,6 +44,11 @@ extern int sysfs_add_device_to_node(struct device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct device *dev, int nid);
+ extern int numa_update_cpu_topology(bool cpus_locked);
  
-+	if (!src) {
-+		to_talitos_ptr(ptr, 0, 0, is_sec1);
-+		return 1;
-+	}
- 	if (sg_count == 1) {
- 		to_talitos_ptr(ptr, sg_dma_address(src) + offset, len, is_sec1);
- 		return sg_count;
--- 
-2.13.3
++static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
++{
++	numa_cpu_lookup_table[cpu] = node;
++}
++
+ static inline int early_cpu_to_node(int cpu)
+ {
+ 	int nid;
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 268c7a2d9a5b..7ec3a0d787d3 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -143,11 +143,6 @@ static void reset_numa_cpu_lookup_table(void)
+ 		numa_cpu_lookup_table[cpu] = -1;
+ }
+ 
+-static void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+-{
+-	numa_cpu_lookup_table[cpu] = node;
+-}
+-
+ static void map_cpu_to_node(int cpu, int node)
+ {
+ 	update_numa_cpu_lookup_table(cpu, node);
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index a7d14aa7bb7c..09083ad82f7a 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -36,6 +36,7 @@
+ #include <asm/xics.h>
+ #include <asm/xive.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/topology.h>
+ 
+ #include "pseries.h"
+ #include "offline_states.h"
+@@ -331,6 +332,7 @@ static void pseries_remove_processor(struct device_node *np)
+ 			BUG_ON(cpu_online(cpu));
+ 			set_cpu_present(cpu, false);
+ 			set_hard_smp_processor_id(cpu, -1);
++			update_numa_cpu_lookup_table(cpu, -1);
+ 			break;
+ 		}
+ 		if (cpu >= nr_cpu_ids)
