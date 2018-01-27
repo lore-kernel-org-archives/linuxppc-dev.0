@@ -1,24 +1,16 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x234.google.com (mail-pl0-x234.google.com
- [IPv6:2607:f8b0:400e:c01::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zTGNB6ZW0zF0TV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jan 2018 00:10:18 +1100 (AEDT)
-Received: by mail-pl0-x234.google.com with SMTP id o13so668470pli.6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jan 2018 05:10:18 -0800 (PST)
-Date: Sat, 27 Jan 2018 21:10:12 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 00/26] KVM: PPC: Book3S PR: Transaction memory support on
- PR KVM
-Message-ID: <20180127131011.GA2521@simonLocalRHEL7.x64>
-References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
- <20180123053832.GA3924@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180123053832.GA3924@fergus.ozlabs.ibm.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zTXlL5vy6zDqry
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jan 2018 10:57:50 +1100 (AEDT)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH] macintosh/via-pmu68k: Initialize PMU driver with setup_arch
+ and arch_initcall
+Message-Id: <20180127235140.EA71C296D4@kvm5.telegraphics.com.au>
+Date: Sat, 27 Jan 2018 18:51:40 -0500 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +20,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul,
-On Tue, Jan 23, 2018 at 04:38:32PM +1100, Paul Mackerras wrote:
-> On Thu, Jan 11, 2018 at 06:11:13PM +0800, wei.guo.simon@gmail.com wrote:
-> > From: Simon Guo <wei.guo.simon@gmail.com>
-> > 
-> > In current days, many OS distributions have utilized transaction
-> > memory functionality. In PowerPC, HV KVM supports TM. But PR KVM
-> > does not.
-> > 
-> > The drive for the transaction memory support of PR KVM is the
-> > openstack Continuous Integration testing - They runs a HV(hypervisor)
-> > KVM(as level 1) and then run PR KVM(as level 2) on top of that.
-> > 
-> > This patch set add transaction memory support on PR KVM.
-> 
-> Thanks for the patch set.  It mostly looks good, though I have some
-> comments on the individual patches.
-> 
-> I don't see where you are implementing support for userspace accessing
-> the TM checkpointed register values using the GET_ONE_REG/SET_ONE_REG
-> API.  This would mean that you couldn't migrate a guest that was in
-> the middle of a transaction.  We will need to have the one_reg API
-> access to the TM checkpoint implemented, though there will be a
-> difficulty in that kvmppc_get_one_reg() and kvmppc_set_one_reg() are
-> called with the vcpu context loaded.  With your scheme of having the
-> TM checkpoint stored in the CPU while the vcpu context is loaded, the
-> values you want to access in kvmppc_get/set_one_reg are inaccessible
-> since they're stored in the CPU.  You would have to arrange for
-> kvmppc_get/set_one_reg to be called without the vcpu context loaded
-> (recent patches in the kvm next branch probably make that easier) or
-> else explicitly unload and reload the vcpu context in those functions.
-> (This is easier in HV KVM since the checkpoint is not in the CPU at
-> the point of doing kvmppc_get/set_one_reg.)
-Thanks for point it out. I didn't think about it before and will 
-investigate. 
+The PMU watchdog will power down the system if the kernel is slow
+to start up, e.g. due to unpacking a large initrd. The powerpc
+version of this driver (via-pmu.c) has a solution for the same
+problem. It uses this call sequence:
 
-I plan to work out this PR KVM HTM kvmppc_get/set_one_reg() 
-(and the KVM_SET_REGS you mentioned in another mail) with seperate 
-patch/patch set, so that the reworked V2 of current patches can be 
-sent out in parallel. In case it is not appropriate for you, please 
-let me know.
+setup_arch
+	find_via_pmu
+		init_pmu
+...
+arch_initcall
+	via_pmu_start
 
-> 
-> There is also complexity added because it's possible for the guest to
-> have TM, FP, VEC and VSX all enabled from its point of view but to
-> have FP/VEC/VSX not actually enabled in the hardware when the guest is
-> running.  As you note in your patch descriptions, this means that the
-> guest can do tbegin and create a checkpoint with bogus values for the
-> FP/VEC/VSX registers.  Rather than trying to detect and fix up this
-> situation after the fact, I would suggest that if the guest has TM
-> enabled then we make sure that the real FP/VEC/VSX bits in the MSR
-> match what the guest thinks it has.  That way we would avoid the bogus
-> checkpoint problem.  (There is still the possibility of getting bogus
-> checkpointed FP/VEC/VSX registers if the guest does tbegin with the
-> FP/VEC/VSX bits clear in the MSR, but that is the guest's problem to
-> deal with.)
-Good idea. I will look into kvmppc_set_msr_pr() / kvmppc_giveup_ext()
-to simplify the solution.
+Bring via-pmu68k.c into line with via-pmu.c to fix this issue.
 
-Thanks for your review and time.
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+---
+ arch/m68k/mac/config.c         |  4 ++
+ drivers/macintosh/via-pmu68k.c | 89 +++++++++++++++++++++++++++++-------------
+ 2 files changed, 65 insertions(+), 28 deletions(-)
 
-BR,
-- Simon
+diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
+index 95d548d8cc8a..17d9380aa7e6 100644
+--- a/arch/m68k/mac/config.c
++++ b/arch/m68k/mac/config.c
+@@ -26,6 +26,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
++#include <linux/pmu.h>
+ #include <linux/rtc.h>
+ 
+ #include <asm/setup.h>
+@@ -906,6 +907,9 @@ static void __init mac_identify(void)
+ #ifdef CONFIG_ADB_CUDA
+ 	find_via_cuda();
+ #endif
++#ifdef CONFIG_ADB_PMU68K
++	find_via_pmu();
++#endif
+ }
+ 
+ static void __init mac_report_hardware(void)
+diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
+index 25465fb91ec9..7d9c4baf8c11 100644
+--- a/drivers/macintosh/via-pmu68k.c
++++ b/drivers/macintosh/via-pmu68k.c
+@@ -109,6 +109,7 @@ static int pmu_autopoll(int devs);
+ void pmu_poll(void);
+ static int pmu_reset_bus(void);
+ 
++static int init_pmu(void);
+ static void pmu_start(void);
+ static void send_byte(int x);
+ static void recv_byte(void);
+@@ -171,23 +172,76 @@ static s8 pmu_data_len[256][2] = {
+ /*f8*/	{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
+ };
+ 
+-int pmu_probe(void)
++int __init find_via_pmu(void)
+ {
+-	if (macintosh_config->adb_type == MAC_ADB_PB1) {
++	switch (macintosh_config->adb_type) {
++	case MAC_ADB_PB1:
+ 		pmu_kind = PMU_68K_V1;
+-	} else if (macintosh_config->adb_type == MAC_ADB_PB2) {
++		break;
++	case MAC_ADB_PB2:
+ 		pmu_kind = PMU_68K_V2;
+-	} else {
++		break;
++	default:
++		pmu_kind = PMU_UNKNOWN;
+ 		return -ENODEV;
+ 	}
+ 
+ 	pmu_state = idle;
+ 
++	if (!init_pmu())
++		goto fail_init;
++
++	pr_info("adb: PMU 68K driver v0.5 for Unified ADB\n");
++
++	return 1;
++
++fail_init:
++	pmu_kind = PMU_UNKNOWN;
+ 	return 0;
+ }
+ 
+-static int 
+-pmu_init(void)
++static int pmu_probe(void)
++{
++	if (pmu_kind == PMU_UNKNOWN)
++		return -ENODEV;
++	return 0;
++}
++
++static int pmu_init(void)
++{
++	if (pmu_kind == PMU_UNKNOWN)
++		return -ENODEV;
++	return 0;
++}
++
++static int __init via_pmu_start(void)
++{
++	if (pmu_kind == PMU_UNKNOWN)
++		return -ENODEV;
++
++	if (request_irq(IRQ_MAC_ADB_SR, pmu_interrupt, 0, "PMU_SR",
++			pmu_interrupt)) {
++		pr_err("%s: can't get SR irq\n", __func__);
++		return -ENODEV;
++	}
++	if (request_irq(IRQ_MAC_ADB_CL, pmu_interrupt, 0, "PMU_CL",
++			pmu_interrupt)) {
++		pr_err("%s: can't get CL irq\n", __func__);
++		free_irq(IRQ_MAC_ADB_SR, pmu_interrupt);
++		return -ENODEV;
++	}
++
++	pmu_fully_inited = 1;
++
++	/* Enable backlight */
++	pmu_enable_backlight(1);
++
++	return 0;
++}
++
++arch_initcall(via_pmu_start);
++
++static int __init init_pmu(void)
+ {
+ 	int timeout;
+ 	volatile struct adb_request req;
+@@ -238,28 +292,7 @@ pmu_init(void)
+ 	bright_req_2.complete = 1;
+ 	bright_req_3.complete = 1;
+ 
+-	if (request_irq(IRQ_MAC_ADB_SR, pmu_interrupt, 0, "pmu-shift",
+-			pmu_interrupt)) {
+-		printk(KERN_ERR "pmu_init: can't get irq %d\n",
+-			IRQ_MAC_ADB_SR);
+-		return -EAGAIN;
+-	}
+-	if (request_irq(IRQ_MAC_ADB_CL, pmu_interrupt, 0, "pmu-clock",
+-			pmu_interrupt)) {
+-		printk(KERN_ERR "pmu_init: can't get irq %d\n",
+-			IRQ_MAC_ADB_CL);
+-		free_irq(IRQ_MAC_ADB_SR, pmu_interrupt);
+-		return -EAGAIN;
+-	}
+-
+-	pmu_fully_inited = 1;
+-	
+-	/* Enable backlight */
+-	pmu_enable_backlight(1);
+-
+-	printk("adb: PMU 68K driver v0.5 for Unified ADB.\n");
+-
+-	return 0;
++	return 1;
+ }
+ 
+ int
+-- 
+2.13.6
