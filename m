@@ -1,18 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGN95tJLzDqlb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 15:13:45 +1100 (AEDT)
-In-Reply-To: <2142489eb41f758b5d04919a8efbb16794f16b0f.1490135047.git.julia@ni.com>
-To: Julia Cartwright <julia@ni.com>, Anatolij Gustschin <agust@denx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGNC13HfzDqmV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 15:13:47 +1100 (AEDT)
+In-Reply-To: <1507783474-28210-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-rt-users@vger.kernel.org
-Subject: Re: [v2,3/9] powerpc: mpc52xx_gpt: make use of raw_spinlock variants
-Message-Id: <3zVGN94KNbz9sP9@ozlabs.org>
+Cc: npiggin@gmail.com
+Subject: Re: [1/3] powerpc/watchdog: Tweak watchdog printks
+Message-Id: <3zVGN96V9nz9s7n@ozlabs.org>
 Date: Mon, 29 Jan 2018 15:13:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,20 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-03-21 at 22:43:03 UTC, Julia Cartwright wrote:
-> The mpc52xx_gpt code currently implements an irq_chip for handling
-> interrupts; due to how irq_chip handling is done, it's necessary for the
-> irq_chip methods to be invoked from hardirq context, even on a a
-> real-time kernel.  Because the spinlock_t type becomes a "sleeping"
-> spinlock w/ RT kernels, it is not suitable to be used with irq_chips.
+On Thu, 2017-10-12 at 04:44:32 UTC, Michael Ellerman wrote:
+> Use pr_fmt() in the watchdog code, so we don't have to say "Watchdog"
+> so many times.
 > 
-> A quick audit of the operations under the lock reveal that they do only
-> minimal, bounded work, and are therefore safe to do under a raw spinlock.
+> Rather than "CPU:%d" just spell it "CPU %d", "Hard" doesn't need a
+> capital in the middle of a sentence, and "LOCKUP other CPUS" should be
+> "LOCKUP on other CPUS".
 > 
-> Signed-off-by: Julia Cartwright <julia@ni.com>
+> Also make it clear when a CPU self detects a lockup by spelling it
+> out.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/77720c82915a8b7797e0041af95707
+https://git.kernel.org/powerpc/c/d8fa82e0e2b1ad9c66aa76810615ad
 
 cheers
