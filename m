@@ -1,19 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGNG5RpBzDqlb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 15:13:50 +1100 (AEDT)
-In-Reply-To: <20180123113148.6024-2-fbarrat@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGNH4TTNzDqnd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 15:13:51 +1100 (AEDT)
+In-Reply-To: <20180124014228.GA26899@embeddedgus>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+ Colin Leroy <colin@colino.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: gregkh@linuxfoundation.org, alastair@au1.ibm.com,
- andrew.donnellan@au1.ibm.com, arnd@arndb.de
-Subject: Re: [v2,
- 01/13] powerpc/powernv: Introduce new PHB type for opencapi links
-Message-Id: <3zVGNG2fp8z9s7n@ozlabs.org>
-Date: Mon, 29 Jan 2018 15:13:49 +1100 (AEDT)
+Cc: "Gustavo A. R. Silva" <garsilva@embeddedor.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: macintosh: change some data types from int to bool
+Message-Id: <3zVGNG6B8Hz9t5Y@ozlabs.org>
+Date: Mon, 29 Jan 2018 15:13:50 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-01-23 at 11:31:36 UTC, Frederic Barrat wrote:
-> The NPU was already abstracted by opal as a virtual PHB for nvlink,
-> but it helps to be able to differentiate between a nvlink or opencapi
-> PHB, as it's not completely transparent to linux. In particular, PE
-> assignment differs and we'll also need the information in later
-> patches.
+On Wed, 2018-01-24 at 01:42:28 UTC, "Gustavo A. R. Silva" wrote:
+> Change the data type of the following variables from int to bool
+> across all macintosh drivers:
 > 
-> So rename existing PNV_PHB_NPU type to PNV_PHB_NPU_NVLINK and add a
-> new type PNV_PHB_NPU_OCAPI.
+> started
+> slots_started
+> pm121_started
+> wf_smu_started
 > 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Some of these issues were detected with the help of Coccinelle.
+> 
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7f2c39e91f61fcd2abed3b39c14e70
+https://git.kernel.org/powerpc/c/4f256d561447c6e1bf8b70e19daae0
 
 cheers
