@@ -1,26 +1,21 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-ot0-x229.google.com (mail-ot0-x229.google.com
- [IPv6:2607:f8b0:4003:c0f::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paubert@iram.es>
+Received: from cica-lavadora-l1mail3.puc.rediris.es
+ (ci-l1mail3-out03a.puc.rediris.es [IPv6:2001:720:418:ca02::29])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVl8C2rZXzF0Pn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 09:49:55 +1100 (AEDT)
-Received: by mail-ot0-x229.google.com with SMTP id r4so8134455oti.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 14:49:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVlPH4832zDqgQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 10:01:21 +1100 (AEDT)
+Date: Mon, 29 Jan 2018 23:49:39 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] macintosh: Add module license to ans-lcd
+Message-ID: <20180129224939.eyhko7bnr4ooxr4g@lt-gp.iram.es>
+References: <20180129193308.25373-1-Larry.Finger@lwfinger.net>
 MIME-Version: 1.0
-In-Reply-To: <20180129170445.0e3cc514@canb.auug.org.au>
-References: <20180129170445.0e3cc514@canb.auug.org.au>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Mon, 29 Jan 2018 14:49:52 -0800
-Message-ID: <CAPcyv4g2pfoe8bpVaKDyrVKJZwSN=+J4U=SvKrsa_mLyT_7pfg@mail.gmail.com>
-Subject: Re: linux-next: manual merge of the nvdimm tree with the powerpc tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180129193308.25373-1-Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 28, 2018 at 10:04 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Dan,
->
-> Today's linux-next merge of the nvdimm tree got a conflict in:
->
->   arch/powerpc/sysdev/axonram.c
->
-> between commit:
->
->   1d65b1c886be ("powerpc/cell: Remove axonram driver")
->
-> from the powerpc tree and commit:
->
->   785a3fab4adb ("mm, dax: introduce pfn_t_special()")
->
-> from the nvdimm tree.
->
-> I fixed it up (I just removed the file) and can carry the fix as
-> necessary. This is now fixed as far as linux-next is concerned, but any
-> non trivial conflicts should be mentioned to your upstream maintainer
-> when your tree is submitted for merging.  You may also want to consider
-> cooperating with the maintainer of the conflicting tree to minimise any
-> particularly complex conflicts.
+On Mon, Jan 29, 2018 at 01:33:08PM -0600, Larry Finger wrote:
+> In kernel 4.15, the modprobe step on my PowerBook G5 started complaining that
+    
+PowerBook G5? Really, could you send a pic! :-)
 
-Thanks Stephen, resolution looks good to me.
+> there was no module license for ans-lcd.
+> 
+> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+> ---
+>  drivers/macintosh/ans-lcd.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
+> index 1de81d922d8a..c8e078b911c7 100644
+> --- a/drivers/macintosh/ans-lcd.c
+> +++ b/drivers/macintosh/ans-lcd.c
+> @@ -201,3 +201,4 @@ anslcd_exit(void)
+>  
+>  module_init(anslcd_init);
+>  module_exit(anslcd_exit);
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 2.16.1
+> 
