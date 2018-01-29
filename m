@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGND4l1FzDqlb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGND4nldzDqmV
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 15:13:48 +1100 (AEDT)
-In-Reply-To: <20171201213140.GA2776@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+In-Reply-To: <20171223164923.10587-3-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: felix@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
- clombard@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- vaibhav@linux.vnet.ibm.com
-Subject: Re: [1/1] : powerpc: block interrupts when updating TIDR
-Message-Id: <3zVGNC5s53z9t34@ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [2/2] powerpc/pseries,
+ ps3: panic flush kernel messages before halting system
+Message-Id: <3zVGNC6x0Hz9t3H@ozlabs.org>
 Date: Mon, 29 Jan 2018 15:13:47 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,20 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-12-01 at 21:31:40 UTC, Sukadev Bhattiprolu wrote:
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Tue, 28 Nov 2017 13:39:43 -0600
-> Subject: [PATCH 1/1]: powerpc: block interrupts when updating TIDR
+On Sat, 2017-12-23 at 16:49:23 UTC, Nicholas Piggin wrote:
+> Platforms with a panic handler that halts the system can have problems
+> getting kernel messages out, because the panic notifiers are called
+> before kernel/panic.c does its flushing of printk buffers an console
+> etc.
 > 
-> clear_thread_tidr() is called in interrupt context as a part of delayed
-> put of the task structure (i.e as a part of timer interrupt). To prevent
-> a deadlock, block interrupts when holding vas_thread_id_lock to set/
-> clear TIDR for a task.
+> This was attempted to be solved with commit a3b2cb30f252 ("powerpc: Do
+> not call ppc_md.panic in fadump panic notifier"), but that wasn't the
+> right approach and caused other problems, and was reverted by commit
+> ab9dbf771ff9.
 > 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Instead, the powernv shutdown paths have already had a similar
+> problem, fixed by taking the message flushing sequence from
+> kernel/panic.c. That's a little bit ugly, but while we have the code
+> duplicated, it will work for this case as well. So have ppc panic
+> handlers do the same flushing before they terminate.
+> 
+> Without this patch, a qemu pseries_le_defconfig guest stops silently
+> when issued the nmi command when xmon is off and no crash dumpers
+> enabled. Afterwards, an oops is printed by each CPU as expected.
+> 
+> Fixes: ab9dbf771ff9 ("Revert "powerpc: Do not call ppc_md.panic in fadump panic notifier"")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/384dfd627f1ee67d028e6f14c6e9bf
+https://git.kernel.org/powerpc/c/35adacd6fc48d658419522f192a3c8
 
 cheers
