@@ -1,21 +1,22 @@
-Return-Path: <paubert@iram.es>
-Received: from cica-lavadora-l1mail3.puc.rediris.es
- (ci-l1mail3-out03a.puc.rediris.es [IPv6:2001:720:418:ca02::29])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVlPH4832zDqgQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 10:01:21 +1100 (AEDT)
-Date: Mon, 29 Jan 2018 23:49:39 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] macintosh: Add module license to ans-lcd
-Message-ID: <20180129224939.eyhko7bnr4ooxr4g@lt-gp.iram.es>
-References: <20180129193308.25373-1-Larry.Finger@lwfinger.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVln36KkDzDqs9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 10:18:31 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Colin Leroy <colin@colino.net>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Subject: Re: macintosh: change some data types from int to bool
+In-Reply-To: <20180129050920.Horde.QLe9K1M-r7blMvmzflyFRGC@gator4166.hostgator.com>
+References: <20180124014228.GA26899@embeddedgus> <3zVGNG6B8Hz9t5Y@ozlabs.org>
+ <20180129050920.Horde.QLe9K1M-r7blMvmzflyFRGC@gator4166.hostgator.com>
+Date: Tue, 30 Jan 2018 10:18:28 +1100
+Message-ID: <87shao8da3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180129193308.25373-1-Larry.Finger@lwfinger.net>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 29, 2018 at 01:33:08PM -0600, Larry Finger wrote:
-> In kernel 4.15, the modprobe step on my PowerBook G5 started complaining that
-    
-PowerBook G5? Really, could you send a pic! :-)
+"Gustavo A. R. Silva" <garsilva@embeddedor.com> writes:
 
-> there was no module license for ans-lcd.
-> 
-> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-> ---
->  drivers/macintosh/ans-lcd.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-> index 1de81d922d8a..c8e078b911c7 100644
-> --- a/drivers/macintosh/ans-lcd.c
-> +++ b/drivers/macintosh/ans-lcd.c
-> @@ -201,3 +201,4 @@ anslcd_exit(void)
->  
->  module_init(anslcd_init);
->  module_exit(anslcd_exit);
-> +MODULE_LICENSE("GPL v2");
-> -- 
-> 2.16.1
-> 
+> Hi Michael,
+>
+> Quoting Michael Ellerman <patch-notifications@ellerman.id.au>:
+>
+>> On Wed, 2018-01-24 at 01:42:28 UTC, "Gustavo A. R. Silva" wrote:
+>>> Change the data type of the following variables from int to bool
+>>> across all macintosh drivers:
+>>>
+>>> started
+>>> slots_started
+>>> pm121_started
+>>> wf_smu_started
+>>>
+>>> Some of these issues were detected with the help of Coccinelle.
+>>>
+>>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+>>
+>> Applied to powerpc next, thanks.
+>>
+>> https://git.kernel.org/powerpc/c/4f256d561447c6e1bf8b70e19daae0
+>>
+>> cheers
+>
+> Awesome.
+>
+> If I can help out with anything else, please let me know.
+
+Sure thing.
+
+We have a TODO list of sorts on github, some of them are easy, some are
+not, feel free to ask here or on an individual issue for help:
+
+  https://github.com/linuxppc/linux/issues
+
+cheers
