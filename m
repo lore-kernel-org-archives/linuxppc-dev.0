@@ -1,19 +1,20 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVGNH4jkYzDqnq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 15:13:51 +1100 (AEDT)
-In-Reply-To: <20180124014846.GA27664@embeddedgus>
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
- Michael Hanselmann <linux-kernel@hansmi.ch>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Gustavo A. R. Silva" <garsilva@embeddedor.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: macintosh/ams-input: Use true and false for boolean values
-Message-Id: <3zVGNH1NCkz9t4B@ozlabs.org>
-Date: Mon, 29 Jan 2018 15:13:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVJmz3ltpzDqvh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 17:01:55 +1100 (AEDT)
+Date: Mon, 29 Jan 2018 17:01:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dan Williams <dan.j.williams@intel.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>
+Subject: linux-next: manual merge of the nvdimm tree with the powerpc tree
+Message-ID: <20180129170154.4c1e6c8c@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-01-24 at 01:48:46 UTC, "Gustavo A. R. Silva" wrote:
-> Assign true or false to boolean variables instead of an integer value.
-> 
-> This issue was detected with the help of Coccinelle
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> Reviewed-by: Michael Hanselmann <public@hansmi.ch>
+Hi Dan,
 
-Applied to powerpc next, thanks.
+Today's linux-next merge of the nvdimm tree got a conflict in:
 
-https://git.kernel.org/powerpc/c/516c32f64f144721ca05b881737e44
+  arch/powerpc/platforms/Kconfig
 
-cheers
+between commit:
+
+  1d65b1c886be ("powerpc/cell: Remove axonram driver")
+
+from the powerpc tree and commit:
+
+  569d0365f571 ("dax: require 'struct page' by default for filesystem dax")
+
+from the nvdimm tree.
+
+I fixed it up (I just used the former version) and can carry the fix as
+necessary. This is now fixed as far as linux-next is concerned, but any
+non trivial conflicts should be mentioned to your upstream maintainer
+when your tree is submitted for merging.  You may also want to consider
+cooperating with the maintainer of the conflicting tree to minimise any
+particularly complex conflicts.
+
+-- 
+Cheers,
+Stephen Rothwell
