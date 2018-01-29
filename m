@@ -1,23 +1,25 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <garsilva@embeddedor.com>
+Received: from gateway36.websitewelcome.com (gateway36.websitewelcome.com
+ [192.185.201.2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVQpF4gdgzDqvf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 21:33:25 +1100 (AEDT)
-Date: Mon, 29 Jan 2018 11:33:20 +0100
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: alexander.shishkin@linux.intel.com, jolsa@redhat.com,
- namhyung@kernel.org, linux-kernel@vger.kernel.org,
- brueckner@linux.vnet.ibm.com, tmricht@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 3/3] perf trace powerpc: Use generated syscall table
-Message-ID: <20180129103320.GA9986@kernel.org>
-References: <20180129083417.31240-1-ravi.bangoria@linux.vnet.ibm.com>
- <20180129083417.31240-4-ravi.bangoria@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVS6T4qHGzDqjD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 22:32:33 +1100 (AEDT)
+Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
+ by gateway36.websitewelcome.com (Postfix) with ESMTP id B57DA400EE319
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 05:09:20 -0600 (CST)
+Date: Mon, 29 Jan 2018 05:09:20 -0600
+Message-ID: <20180129050920.Horde.QLe9K1M-r7blMvmzflyFRGC@gator4166.hostgator.com>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Colin Leroy
+ <colin@colino.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: macintosh: change some data types from int to bool
+References: <20180124014228.GA26899@embeddedgus> <3zVGNG6B8Hz9t5Y@ozlabs.org>
+In-Reply-To: <3zVGNG6B8Hz9t5Y@ozlabs.org>
+Content-Type: text/plain; charset=utf-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180129083417.31240-4-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Mon, Jan 29, 2018 at 02:04:17PM +0530, Ravi Bangoria escreveu:
-> +++ b/tools/perf/util/syscalltbl.c
-> @@ -30,6 +30,10 @@
->  #include <asm/syscalls_64.c>
->  const int syscalltbl_native_max_id = SYSCALLTBL_S390_64_MAX_ID;
->  static const char **syscalltbl_native = syscalltbl_s390_64;
-> +#elif defined(__powerpc64__)
-> +#include <asm/syscalls_64.c>
-> +const int syscalltbl_native_max_id = SYSCALLTBL_POWERPC_64_MAX_ID;
-> +static const char **syscalltbl_native = syscalltbl_powerpc_64;
->  #endif
+Hi Michael,
 
-This is so cool! Thanks!
+Quoting Michael Ellerman <patch-notifications@ellerman.id.au>:
 
-At some point we'll remove these #elif, have all of then linked, so that
-we can do cross-platform interpreting of perf.data files generated with
-'perf trace record', i.e. 'perf trace -i perf.data.recorded.on.s390' on
-a powerpc64 or x86 machine.
+> On Wed, 2018-01-24 at 01:42:28 UTC, "Gustavo A. R. Silva" wrote:
+>> Change the data type of the following variables from int to bool
+>> across all macintosh drivers:
+>>
+>> started
+>> slots_started
+>> pm121_started
+>> wf_smu_started
+>>
+>> Some of these issues were detected with the help of Coccinelle.
+>>
+>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+>
+> Applied to powerpc next, thanks.
+>
+> https://git.kernel.org/powerpc/c/4f256d561447c6e1bf8b70e19daae0
+>
+> cheers
 
-We're paving the way to that with patches like yours and those for
-s/390, thanks again!
+Awesome.
 
-- Arnaldo
+If I can help out with anything else, please let me know.
+
+Thank you
+--
+Gustavo
