@@ -1,22 +1,45 @@
-Return-Path: <colin.king@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zW8x21fGXzDqtT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 02:11:50 +1100 (AEDT)
-From: Colin King <colin.king@canonical.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ocxl: fix signed comparison with less than zero
-Date: Tue, 30 Jan 2018 15:11:44 +0000
-Message-Id: <20180130151144.32544-1-colin.king@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zWBdz33QnzDqpw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 03:28:55 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w0UGQRpU065630
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 11:28:52 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fttvc4h14-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 11:28:52 -0500
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 30 Jan 2018 16:28:48 -0000
+Date: Tue, 30 Jan 2018 08:28:34 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ corbet@lwn.net, arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-arch@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dave.hansen@intel.com,
+ benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com
+Subject: Re: [PATCH v10 27/27] mm: display pkey in smaps if
+ arch_pkeys_enabled() is true
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1516326648-22775-1-git-send-email-linuxram@us.ibm.com>
+ <1516326648-22775-28-git-send-email-linuxram@us.ibm.com>
+ <20180130121611.GC26445@dhcp22.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180130121611.GC26445@dhcp22.suse.cz>
+Message-Id: <20180130162834.GB5411@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +49,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Colin Ian King <colin.king@canonical.com>
+On Tue, Jan 30, 2018 at 01:16:11PM +0100, Michal Hocko wrote:
+> On Thu 18-01-18 17:50:48, Ram Pai wrote:
+> [...]
+> > @@ -851,9 +848,13 @@ static int show_smap(struct seq_file *m, void *v, int is_pid)
+> >  			   (unsigned long)(mss->pss >> (10 + PSS_SHIFT)));
+> >  
+> >  	if (!rollup_mode) {
+> > -		arch_show_smap(m, vma);
+> > +#ifdef CONFIG_ARCH_HAS_PKEYS
+> > +		if (arch_pkeys_enabled())
+> > +			seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+> > +#endif
+> >  		show_smap_vma_flags(m, vma);
+> >  	}
+> > +
+> 
+> Why do you need to add ifdef here? The previous patch should make
+> arch_pkeys_enabled == F when CONFIG_ARCH_HAS_PKEYS=n.
 
-Currently the comparison of used < 0 is always false because
-uses is a size_t. Fix this by making used a ssize_t type.
+You are right. it need not be wrapped in CONFIG_ARCH_HAS_PKEYS.  I had to do it
+because vma_pkey(vma)  is not defined in some architectures.
 
-Detected by Coccinelle:
-drivers/misc/ocxl/file.c:320:6-10: WARNING: Unsigned expression
-compared with zero: used < 0
+I will provide a generic vma_pkey() definition for architectures that do 
+not support PKEYS.
 
-Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/misc/ocxl/file.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-index c90c1a578d2f..1287e4430e6b 100644
---- a/drivers/misc/ocxl/file.c
-+++ b/drivers/misc/ocxl/file.c
-@@ -277,7 +277,7 @@ static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
- 	struct ocxl_context *ctx = file->private_data;
- 	struct ocxl_kernel_event_header header;
- 	ssize_t rc;
--	size_t used = 0;
-+	ssize_t used = 0;
- 	DEFINE_WAIT(event_wait);
- 
- 	memset(&header, 0, sizeof(header));
--- 
-2.15.1
+
+> Btw. could you
+> merge those two patches into one. It is usually much easier to review a
+> new helper function if it is added along with a user.
+
+
+ok.
+
+Thanks,
+RP
