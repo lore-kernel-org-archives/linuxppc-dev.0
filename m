@@ -1,24 +1,29 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVw1V0w3TzF0R1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 16:29:48 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 17so6311531pfw.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 21:29:48 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Larry Finger <Larry.Finger@lwfinger.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH] macintosh: Add module license to ans-lcd
-In-Reply-To: <20180129193308.25373-1-Larry.Finger@lwfinger.net>
-References: <20180129193308.25373-1-Larry.Finger@lwfinger.net>
-Date: Tue, 30 Jan 2018 16:29:41 +1100
-Message-ID: <878tcfsym2.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zW52S5tlqzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 23:16:15 +1100 (AEDT)
+Date: Tue, 30 Jan 2018 13:16:11 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ corbet@lwn.net, arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-arch@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dave.hansen@intel.com,
+ benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com
+Subject: Re: [PATCH v10 27/27] mm: display pkey in smaps if
+ arch_pkeys_enabled() is true
+Message-ID: <20180130121611.GC26445@dhcp22.suse.cz>
+References: <1516326648-22775-1-git-send-email-linuxram@us.ibm.com>
+ <1516326648-22775-28-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1516326648-22775-28-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-That matches the SPDX identifier from the top of the file, so:
-
-Reviewed-by: Daniel Axtens <dja@axtens.net>
-
-Regards,
-Daniel
-
-Larry Finger <Larry.Finger@lwfinger.net> writes:
-
-> In kernel 4.15, the modprobe step on my PowerBook G5 started complaining that
-> there was no module license for ans-lcd.
->
-> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-> ---
->  drivers/macintosh/ans-lcd.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-> index 1de81d922d8a..c8e078b911c7 100644
-> --- a/drivers/macintosh/ans-lcd.c
-> +++ b/drivers/macintosh/ans-lcd.c
-> @@ -201,3 +201,4 @@ anslcd_exit(void)
+On Thu 18-01-18 17:50:48, Ram Pai wrote:
+[...]
+> @@ -851,9 +848,13 @@ static int show_smap(struct seq_file *m, void *v, int is_pid)
+>  			   (unsigned long)(mss->pss >> (10 + PSS_SHIFT)));
 >  
->  module_init(anslcd_init);
->  module_exit(anslcd_exit);
-> +MODULE_LICENSE("GPL v2");
+>  	if (!rollup_mode) {
+> -		arch_show_smap(m, vma);
+> +#ifdef CONFIG_ARCH_HAS_PKEYS
+> +		if (arch_pkeys_enabled())
+> +			seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
+> +#endif
+>  		show_smap_vma_flags(m, vma);
+>  	}
+> +
+
+Why do you need to add ifdef here? The previous patch should make
+arch_pkeys_enabled == F when CONFIG_ARCH_HAS_PKEYS=n. Btw. could you
+merge those two patches into one. It is usually much easier to review a
+new helper function if it is added along with a user.
+
+>  	m_cache_vma(m, vma);
+>  	return ret;
+>  }
 > -- 
-> 2.16.1
+> 1.7.1
+
+-- 
+Michal Hocko
+SUSE Labs
