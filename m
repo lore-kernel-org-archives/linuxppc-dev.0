@@ -1,25 +1,25 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c00::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVsF53hd3zDr6n
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 14:24:41 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id k19so7429887pfj.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 19:24:40 -0800 (PST)
-Date: Tue, 30 Jan 2018 11:24:36 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVsHL3fQnzDqlH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 14:26:38 +1100 (AEDT)
+Received: by mail-pf0-x22f.google.com with SMTP id c6so7437627pfi.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 19:26:38 -0800 (PST)
+Date: Tue, 30 Jan 2018 11:26:33 +0800
 From: Simon Guo <wei.guo.simon@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 23/26] KVM: PPC: Book3S PR: add emulation for tabort. for
- privilege guest
-Message-ID: <20180130032436.GJ3261@simonLocalRHEL7.x64>
+Subject: Re: [PATCH 25/26] KVM: PPC: Book3S PR: Support TAR handling for PR
+ KVM HTM.
+Message-ID: <20180130032633.GK3261@simonLocalRHEL7.x64>
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
- <1515665499-31710-24-git-send-email-wei.guo.simon@gmail.com>
- <20180123094416.GO3924@fergus.ozlabs.ibm.com>
+ <1515665499-31710-26-git-send-email-wei.guo.simon@gmail.com>
+ <20180124040257.GA32139@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180123094416.GO3924@fergus.ozlabs.ibm.com>
+In-Reply-To: <20180124040257.GA32139@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +30,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Hi Paul,
-On Tue, Jan 23, 2018 at 08:44:16PM +1100, Paul Mackerras wrote:
-> On Thu, Jan 11, 2018 at 06:11:36PM +0800, wei.guo.simon@gmail.com wrote:
+On Wed, Jan 24, 2018 at 03:02:58PM +1100, Paul Mackerras wrote:
+> On Thu, Jan 11, 2018 at 06:11:38PM +0800, wei.guo.simon@gmail.com wrote:
 > > From: Simon Guo <wei.guo.simon@gmail.com>
 > > 
-> > Currently privilege guest will be run with TM disabled.
+> > Currently guest kernel doesn't handle TAR fac unavailable and it always
+> > runs with TAR bit on. PR KVM will lazily enable TAR. TAR is not a
+> > frequent-use reg and it is not included in SVCPU struct.
 > > 
-> > Although the privilege guest cannot initiate a new transaction,
-> > it can use tabort to terminate its problem state's transaction.
-> > So it is still necessary to emulate tabort. for privilege guest.
+> > To make it work for transaction memory at PR KVM:
+> > 1). Flush/giveup TAR at kvmppc_save_tm_pr().
+> > 2) If we are receiving a TAR fac unavail exception inside a transaction,
+> > the checkpointed TAR might be a TAR value from another process. So we need
+> > treclaim the transaction, then load the desired TAR value into reg, and
+> > perform trecheckpoint.
+> > 3) Load TAR facility at kvmppc_restore_tm_pr() when TM active.
+> > The reason we always loads TAR when restoring TM is that:
+> > If we don't do this way, when there is a TAR fac unavailable exception
+> > during TM active:
+> > case 1: it is the 1st TAR fac unavail exception after tbegin.
+> > vcpu->arch.tar should be reloaded as checkpoint tar val.
+> > case 2: it is the 2nd or later TAR fac unavail exception after tbegin.
+> > vcpu->arch.tar_tm should be reloaded as checkpoint tar val.
+> > There will be unnecessary difficulty to handle the above 2 cases.
 > > 
-> > This patch adds emulation for tabort. of privilege guest.
-> > 
-> > Tested with:
-> > https://github.com/justdoitqd/publicFiles/blob/master/test_tabort.c
-> > 
-> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/kvm_book3s.h |  1 +
-> >  arch/powerpc/kvm/book3s_emulate.c     | 31 +++++++++++++++++++++++++++++++
-> >  arch/powerpc/kvm/book3s_pr.c          |  2 +-
-> >  3 files changed, 33 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> > index 524cd82..8bd454c 100644
-> > --- a/arch/powerpc/include/asm/kvm_book3s.h
-> > +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> > @@ -258,6 +258,7 @@ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
-> >  void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
-> >  void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
-> >  void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu);
-> > +void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu);
+> > at the end of emulating treclaim., the correct TAR val need to be loaded
+> > into reg if FSCR_TAR bit is on.
+> > at the beginning of emulating trechkpt., TAR needs to be flushed so that
+> > the right tar val can be copy into tar_tm.
 > 
-> Why do you add this declaration, and change it from "static inline" to
-> "inline" below, when this patch doesn't use it?  Also, making it
-> "inline" is pointless if it has a caller outside the source file where
-> it's defined (if gcc wants to inline uses of it inside the same source
-> file, it will do so anyway even without the "inline" keyword.)
+> Would it be simpler always to load up TAR when guest_MSR[TM] is 1?
 > 
 > Paul.
-It is a leave over of my previous rework. Sorry and I will remove
-them.
+Sure. it will have a similar solution with math regs.
+Thanks for the suggestion,
 
-Thanks,
+BR
 - Simon
