@@ -1,20 +1,22 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <colin.king@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zW7sq0sBMzF0Tl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 01:23:58 +1100 (AEDT)
-Received: by mail-ot0-x241.google.com with SMTP id a7so7203973otk.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 06:23:58 -0800 (PST)
-Sender: Larry Finger <larry.finger@gmail.com>
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Larry Finger <Larry.Finger@lwfinger.net>
-Subject: [PATCH v2] macintosh: Add module license to ans-lcd
-Date: Tue, 30 Jan 2018 08:23:51 -0600
-Message-Id: <20180130142351.23511-1-Larry.Finger@lwfinger.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zW8x21fGXzDqtT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 02:11:50 +1100 (AEDT)
+From: Colin King <colin.king@canonical.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ocxl: fix signed comparison with less than zero
+Date: Tue, 30 Jan 2018 15:11:44 +0000
+Message-Id: <20180130151144.32544-1-colin.king@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In kernel 4.15, the modprobe step on my PowerBook G4 started complaining that
-there was no module license for ans-lcd.
+From: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
-v2 - fixed typo in commit message
----
- drivers/macintosh/ans-lcd.c | 1 +
- 1 file changed, 1 insertion(+)
+Currently the comparison of used < 0 is always false because
+uses is a size_t. Fix this by making used a ssize_t type.
 
-diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-index 1de81d922d8a..c8e078b911c7 100644
---- a/drivers/macintosh/ans-lcd.c
-+++ b/drivers/macintosh/ans-lcd.c
-@@ -201,3 +201,4 @@ anslcd_exit(void)
+Detected by Coccinelle:
+drivers/misc/ocxl/file.c:320:6-10: WARNING: Unsigned expression
+compared with zero: used < 0
+
+Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/misc/ocxl/file.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+index c90c1a578d2f..1287e4430e6b 100644
+--- a/drivers/misc/ocxl/file.c
++++ b/drivers/misc/ocxl/file.c
+@@ -277,7 +277,7 @@ static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 	struct ocxl_context *ctx = file->private_data;
+ 	struct ocxl_kernel_event_header header;
+ 	ssize_t rc;
+-	size_t used = 0;
++	ssize_t used = 0;
+ 	DEFINE_WAIT(event_wait);
  
- module_init(anslcd_init);
- module_exit(anslcd_exit);
-+MODULE_LICENSE("GPL v2");
+ 	memset(&header, 0, sizeof(header));
 -- 
-2.16.1
+2.15.1
