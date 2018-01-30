@@ -1,24 +1,25 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
- [IPv6:2607:f8b0:400e:c00::22e])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zVrhn3NpdzF0Tx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 14:00:09 +1100 (AEDT)
-Received: by mail-pf0-x22e.google.com with SMTP id e11so7367325pff.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 19:00:09 -0800 (PST)
-Date: Tue, 30 Jan 2018 11:00:04 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zVrm46kNnzF0Pg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 14:03:00 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id p1so7382789pfh.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jan 2018 19:03:00 -0800 (PST)
+Date: Tue, 30 Jan 2018 11:02:56 +0800
 From: Simon Guo <wei.guo.simon@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 17/26] KVM: PPC: Book3S PR: add math support for PR KVM HTM
-Message-ID: <20180130030004.GE3261@simonLocalRHEL7.x64>
+Subject: Re: [PATCH 18/26] KVM: PPC: Book3S PR: make mtspr/mfspr emulation
+ behavior based on active TM SPRs
+Message-ID: <20180130030256.GF3261@simonLocalRHEL7.x64>
 References: <1515665499-31710-1-git-send-email-wei.guo.simon@gmail.com>
- <1515665499-31710-18-git-send-email-wei.guo.simon@gmail.com>
- <20180123072927.GI3924@fergus.ozlabs.ibm.com>
+ <1515665499-31710-19-git-send-email-wei.guo.simon@gmail.com>
+ <20180123081745.GJ3924@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180123072927.GI3924@fergus.ozlabs.ibm.com>
+In-Reply-To: <20180123081745.GJ3924@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +30,106 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Hi Paul,
-On Tue, Jan 23, 2018 at 06:29:27PM +1100, Paul Mackerras wrote:
-> On Thu, Jan 11, 2018 at 06:11:30PM +0800, wei.guo.simon@gmail.com wrote:
-> > ines: 219
-> > 
+On Tue, Jan 23, 2018 at 07:17:45PM +1100, Paul Mackerras wrote:
+> On Thu, Jan 11, 2018 at 06:11:31PM +0800, wei.guo.simon@gmail.com wrote:
 > > From: Simon Guo <wei.guo.simon@gmail.com>
 > > 
-> > The math registers will be saved into vcpu->arch.fp/vr and corresponding
-> > vcpu->arch.fp_tm/vr_tm area.
+> > The mfspr/mtspr on TM SPRs(TEXASR/TFIAR/TFHAR) are non-privileged
+> > instructions and can be executed at PR KVM guest without trapping
+> > into host in problem state. We only emulate mtspr/mfspr
+> > texasr/tfiar/tfhar at guest PR=0 state.
 > > 
-> > We flush or giveup the math regs into vcpu->arch.fp/vr before saving
-> > transaction. After transaction is restored, the math regs will be loaded
-> > back into regs.
+> > When we are emulating mtspr tm sprs at guest PR=0 state, the emulation
+> > result need to be visible to guest PR=1 state. That is, the actual TM
+> > SPR val should be loaded into actual registers.
+> > 
+> > We already flush TM SPRs into vcpu when switching out of CPU, and load
+> > TM SPRs when switching back.
+> > 
+> > This patch corrects mfspr()/mtspr() emulation for TM SPRs to make the
+> > actual source/dest based on actual TM SPRs.
+> > 
+> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> > ---
+> >  arch/powerpc/kvm/book3s_emulate.c | 35 +++++++++++++++++++++++++++--------
+> >  1 file changed, 27 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+> > index e096d01..c2836330 100644
+> > --- a/arch/powerpc/kvm/book3s_emulate.c
+> > +++ b/arch/powerpc/kvm/book3s_emulate.c
+> > @@ -521,13 +521,26 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+> >  		break;
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  	case SPRN_TFHAR:
+> > -		vcpu->arch.tfhar = spr_val;
+> > -		break;
+> >  	case SPRN_TEXASR:
+> > -		vcpu->arch.texasr = spr_val;
+> > -		break;
+> >  	case SPRN_TFIAR:
+> > -		vcpu->arch.tfiar = spr_val;
+> > +		if (MSR_TM_ACTIVE(kvmppc_get_msr(vcpu))) {
+> > +			/* it is illegal to mtspr() TM regs in
+> > +			 * other than non-transactional state.
+> > +			 */
+> > +			kvmppc_core_queue_program(vcpu, SRR1_PROGTM);
+> > +			emulated = EMULATE_AGAIN;
+> > +			break;
+> > +		}
 > 
-> It looks to me that you are loading up the math regs on every vcpu
-> load, not just those with an active transaction.  That seems like
-> overkill.
+> We also need to check that the guest has TM enabled in the guest MSR,
+> and give them a facility unavailable interrupt if not.
 > 
-> > If there is a FP/VEC/VSX unavailable exception during transaction active
-> > state, the math checkpoint content might be incorrect and we need to do
-> > treclaim./load the correct checkpoint val/trechkpt. sequence to retry the
-> > transaction.
+> > +
+> > +		tm_enable();
+> > +		if (sprn == SPRN_TFHAR)
+> > +			mtspr(SPRN_TFHAR, spr_val);
+> > +		else if (sprn == SPRN_TEXASR)
+> > +			mtspr(SPRN_TEXASR, spr_val);
+> > +		else
+> > +			mtspr(SPRN_TFIAR, spr_val);
+> > +		tm_disable();
 > 
-> I would prefer a simpler approach where just before entering the
-> guest, we check if the guest MSR TM bit is set, and if so we make sure
-> that whichever math regs are enabled in the guest MSR are actually
-> loaded on the CPU, that is, that guest_owned_ext has the same bits set
-> as the guest MSR.  Then we never have to handle a FP/VEC/VSX
-> unavailable interrupt with a transaction active (other than by simply
-> passing it on to the guest).
+> I haven't seen any checks that we are on a CPU that has TM.  What
+> happens if a guest does a mtmsrd with TM=1 and then a mtspr to TEXASR
+> when running on a POWER7 (assuming the host kernel was compiled with
+> CONFIG_PPC_TRANSACTIONAL_MEM=y)?
+> 
+> Ideally, if the host CPU does not have TM functionality, these mtsprs
+> would be treated as no-ops and attempts to set the TM or TS fields in
+> the guest MSR would be ignored.
+> 
+> > +
+> >  		break;
+> >  #endif
+> >  #endif
+> > @@ -674,13 +687,19 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+> >  		break;
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  	case SPRN_TFHAR:
+> > -		*spr_val = vcpu->arch.tfhar;
+> > +		tm_enable();
+> > +		*spr_val = mfspr(SPRN_TFHAR);
+> > +		tm_disable();
+> >  		break;
+> >  	case SPRN_TEXASR:
+> > -		*spr_val = vcpu->arch.texasr;
+> > +		tm_enable();
+> > +		*spr_val = mfspr(SPRN_TEXASR);
+> > +		tm_disable();
+> >  		break;
+> >  	case SPRN_TFIAR:
+> > -		*spr_val = vcpu->arch.tfiar;
+> > +		tm_enable();
+> > +		*spr_val = mfspr(SPRN_TFIAR);
+> > +		tm_disable();
+> >  		break;
+> 
+> These need to check MSR_TM in the guest MSR, and become no-ops on
+> machines without TM capability.
 
-Good idea. I will rework as this way.
+Thanks for the above catches. I will rework later.
 
-Thanks,
+BR,
 - Simon
