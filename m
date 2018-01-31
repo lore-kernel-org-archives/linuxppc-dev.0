@@ -1,21 +1,17 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paubert@iram.es>
+Received: from cica-lavadora-l1mail2.puc.rediris.es
+ (ci-l1mail2-out04a.puc.rediris.es [IPv6:2001:720:418:ca02::22])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zWdG11PQbzDqp6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 20:28:08 +1100 (AEDT)
-Subject: Re: [PATCH] KVM: PPC: Book3S PR: close a race window when SVCPU
- pointer is hold before kvmppc_copy_from_svcpu()
-To: wei.guo.simon@gmail.com, kvm-ppc@vger.kernel.org
-Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@ozlabs.org>
-References: <1517372604-21405-1-git-send-email-wei.guo.simon@gmail.com>
-From: Alexander Graf <agraf@suse.de>
-Message-ID: <02181006-3013-5ed0-66cb-b5ec685ac466@suse.de>
-Date: Wed, 31 Jan 2018 10:28:05 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zWdTV73jrzDqk3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 20:38:04 +1100 (AEDT)
+Date: Wed, 31 Jan 2018 10:37:30 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: linuxppc-dev@lists.ozlabs.org, James Hogan <jhogan@kernel.org>
+Subject: Wifi (B43) broken on G4 PowerBooks with kernel v4.15
+Message-ID: <20180131093730.ikmoawgh3mh2pxoy@lt-gp.iram.es>
 MIME-Version: 1.0
-In-Reply-To: <1517372604-21405-1-git-send-email-wei.guo.simon@gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+	Hi,
 
+yesterday I recompiled the kernel on my late 2005 G4 PowerBook, and the
+Wifi stopped working. After comparing the configuration is turns out
+that a change to a Kconfig condition disabled SSB support which is
+necessary for these chips.
 
-On 31.01.18 05:23, wei.guo.simon@gmail.com wrote:
-> From: Simon Guo <wei.guo.simon@gmail.com>
-> 
-> commit 40fdd8c88c4a ("KVM: PPC: Book3S: PR: Make svcpu -> vcpu store
-> preempt savvy") and commit 3d3319b45eea ("KVM: PPC: Book3S: PR: Enable
-> interrupts earlier") is trying to turns on preemption early when
-> return into highmem guest exit handler.
-> 
-> However there is a race window in following example at
-> arch/powerpc/kvm/book3s_interrupts.S:
-> 
-> highmem guest exit handler:
-> ...
-> 195         GET_SHADOW_VCPU(r4)
-> 196         bl      FUNC(kvmppc_copy_from_svcpu)
-> ...
-> 239         bl      FUNC(kvmppc_handle_exit_pr)
-> 
-> If there comes a preemption between line 195 and 196, line 196
-> may hold an invalid SVCPU reference with following sequence:
-> 1) Qemu task T1 runs at GET_SHADOW_VCPU(r4) at line 195, on CPU A.
-> 2) T1 is preempted and switch out CPU A. As a result, it checks
-> CPU A's svcpu->in_use (=1 at present) and flush cpu A's svcpu to
-> T1's vcpu.
-> 3) Another task T2 switches into CPU A and it may update CPU A's
-> svcpu->in_use into 1.
-> 4) T1 is scheduled into CPU B. But it still holds CPU A's svcpu
-> reference as R4. Then it executes kvmppc_copy_from_svcpu() with
-> R4 and it will corrupt T1's VCPU with T2's content. T2's VCPU
-> will also be impacted.
-> 
-> This patch moves the svcpu->in_use into VCPU so that the vcpus
-> sharing the same svcpu can work properly and fix the above case.
-> 
-> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+The graph of configuration options is quite messy, and I'm not sure that
+I fully understand it.
 
-Sorry, the previous version would only compile on 32bit PPC ;). Please
-find the fixed one which just uses svcpu_get() and _put() here:
+Nevertheless the following patch fixes the regression, but there might
+be a better way to solve the problem.
 
+If you pick up this trivial patch as is, you may add:
 
-https://github.com/agraf/linux-2.6/commit/f9e3ca44c9a9d4930d6dccaacb518734746059c3
+Signed-off-by: Gabriel Paubert <paubert@iram.es>
 
-
-Alex
+diff --git a/drivers/ssb/Kconfig b/drivers/ssb/Kconfig
+index 71c7376..d189db6 100644
+--- a/drivers/ssb/Kconfig
++++ b/drivers/ssb/Kconfig
+@@ -32,7 +32,7 @@ config SSB_BLOCKIO
+ 
+ config SSB_PCIHOST_POSSIBLE
+ 	bool
+-	depends on SSB && (PCI = y || PCI = SSB) && PCI_DRIVERS_LEGACY
++	depends on SSB && (PCI = y || PCI = SSB) && (PCI_DRIVERS_LEGACY || B43_SSB)
+ 	default y
+ 
+ config SSB_PCIHOST
