@@ -1,15 +1,17 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zWlZz4hCczDqsP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 01:13:15 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/mm/radix: Fix build error when RADIX_MMU=n
-Date: Thu,  1 Feb 2018 01:13:10 +1100
-Message-Id: <20180131141310.4938-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zWndl0KJszF0RY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 02:45:46 +1100 (AEDT)
+Date: Wed, 31 Jan 2018 18:45:21 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] powerpc/mm/radix: Add tlbflush routines
+Message-ID: <20180131154521.GA21698@mwanda>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,35 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent TLB flush rework broke the build when the Radix MMU is
-disabled at build time, eg:
+Hello Aneesh Kumar K.V,
 
-  (.text+0x264): undefined reference to `.radix__tlbiel_all'
+The patch 1a472c9dba6b: "powerpc/mm/radix: Add tlbflush routines"
+from Apr 29, 2016, leads to the following static checker warning:
 
-We could add an empty version, but if we ever called it by accident
-that would indicate a bad bug, so add a stub that just WARNs if we do.
+	arch/powerpc/mm/tlb_nohash.c:218 __local_flush_tlb_page()
+	warn: always true condition '(pid != ~0) => (0-u32max != u64max)'
 
-Fixes: d4748276ae14 ("powerpc/64s: Improve local TLB flush for boot and MCE on POWER9")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/book3s/64/tlbflush-radix.h | 4 ++++
- 1 file changed, 4 insertions(+)
+arch/powerpc/mm/tlb_nohash.c
+   211  void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+   212                              int tsize, int ind)
+   213  {
+   214          unsigned int pid;
+   215  
+   216          preempt_disable();
+   217          pid = mm ? mm->context.id : 0;
+   218          if (pid != MMU_NO_CONTEXT)
+                    ^^^^^^^^^^^^^^^^^^^^^
+   219                  _tlbil_va(vmaddr, pid, tsize, ind);
+   220          preempt_enable();
+   221  }
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index b8f9ad587087..8eea90f80e45 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -11,7 +11,11 @@ static inline int mmu_get_ap(int psize)
- 	return mmu_psize_defs[psize].ap;
- }
- 
-+#ifdef CONFIG_PPC_RADIX_MMU
- extern void radix__tlbiel_all(unsigned int action);
-+#else
-+static inline void radix__tlbiel_all(unsigned int action) { WARN_ON(1); };
-+#endif
- 
- extern void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma,
- 					   unsigned long start, unsigned long end);
--- 
-2.14.1
+I don't know very much about PowerPC.  The static checker is guessing
+which headers to pull in instead of relying on the build system so there
+are a lot of false positives.  It's apparently using the
+arch/powerpc/include/asm/book3s/64/tlbflush.h header which does:
+
+#define MMU_NO_CONTEXT ~0UL
+
+so it's UINT_MAX vs U64_MAX which is making the checker complain.
+
+regards,
+dan carpenter
