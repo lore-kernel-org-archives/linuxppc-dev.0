@@ -1,16 +1,17 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zWx9D5H9yzDqrL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 08:25:03 +1100 (AEDT)
-From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@ozlabs.org>, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH] KVM: PPC: Fix svcpu copying with preemption enabled
-Date: Wed, 31 Jan 2018 22:24:58 +0100
-Message-Id: <20180131212458.46749-1-agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zX1Cc0vgtzDqms
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 11:27:23 +1100 (AEDT)
+Date: Wed, 31 Jan 2018 18:25:28 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] powerpc/perf: Add nest IMC PMU support
+Message-ID: <20180131152527.GA19851@mwanda>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,117 +21,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When copying between the vcpu and svcpu, we may get scheduled away onto
-a different host CPU which in turn means our svcpu pointer may change.
+Hello Anju T Sudhakar,
 
-That means we need to atomically copy to and from the svcpu with preemption
-disabled, so that all code around it always sees a coherent state.
+The patch 885dcd709ba9: "powerpc/perf: Add nest IMC PMU support" from
+Jul 19, 2017, leads to the following static checker warning:
 
-Reported-by: Simon Guo <wei.guo.simon@gmail.com>
-Fixes: 3d3319b45eea ("KVM: PPC: Book3S: PR: Enable interrupts earlier")
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/include/asm/kvm_book3s.h |  6 ++----
- arch/powerpc/kvm/book3s_interrupts.S  |  4 +---
- arch/powerpc/kvm/book3s_pr.c          | 20 +++++++++-----------
- 3 files changed, 12 insertions(+), 18 deletions(-)
+	arch/powerpc/perf/imc-pmu.c:1393 init_imc_pmu()
+	warn: 'pmu_ptr' was already freed.
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 9a667007bff8..376ae803b69c 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -249,10 +249,8 @@ extern int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long cmd);
- extern void kvmppc_pr_init_default_hcalls(struct kvm *kvm);
- extern int kvmppc_hcall_impl_pr(unsigned long cmd);
- extern int kvmppc_hcall_impl_hv_realmode(unsigned long cmd);
--extern void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
--				 struct kvm_vcpu *vcpu);
--extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
--				   struct kvmppc_book3s_shadow_vcpu *svcpu);
-+extern void kvmppc_copy_to_svcpu(struct kvm_vcpu *vcpu);
-+extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu);
- extern int kvm_irq_bypass;
- 
- static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/book3s_interrupts.S b/arch/powerpc/kvm/book3s_interrupts.S
-index 901e6fe00c39..c18e845019ec 100644
---- a/arch/powerpc/kvm/book3s_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_interrupts.S
-@@ -96,7 +96,7 @@ kvm_start_entry:
- 
- kvm_start_lightweight:
- 	/* Copy registers into shadow vcpu so we can access them in real mode */
--	GET_SHADOW_VCPU(r3)
-+	mr	r3, r4
- 	bl	FUNC(kvmppc_copy_to_svcpu)
- 	nop
- 	REST_GPR(4, r1)
-@@ -165,9 +165,7 @@ after_sprg3_load:
- 	stw	r12, VCPU_TRAP(r3)
- 
- 	/* Transfer reg values from shadow vcpu back to vcpu struct */
--	/* On 64-bit, interrupts are still off at this point */
- 
--	GET_SHADOW_VCPU(r4)
- 	bl	FUNC(kvmppc_copy_from_svcpu)
- 	nop
- 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 7deaeeb14b93..3ae752314b34 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -121,7 +121,7 @@ static void kvmppc_core_vcpu_put_pr(struct kvm_vcpu *vcpu)
- #ifdef CONFIG_PPC_BOOK3S_64
- 	struct kvmppc_book3s_shadow_vcpu *svcpu = svcpu_get(vcpu);
- 	if (svcpu->in_use) {
--		kvmppc_copy_from_svcpu(vcpu, svcpu);
-+		kvmppc_copy_from_svcpu(vcpu);
- 	}
- 	memcpy(to_book3s(vcpu)->slb_shadow, svcpu->slb, sizeof(svcpu->slb));
- 	to_book3s(vcpu)->slb_shadow_max = svcpu->slb_max;
-@@ -143,9 +143,10 @@ static void kvmppc_core_vcpu_put_pr(struct kvm_vcpu *vcpu)
- }
- 
- /* Copy data needed by real-mode code from vcpu to shadow vcpu */
--void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
--			  struct kvm_vcpu *vcpu)
-+void kvmppc_copy_to_svcpu(struct kvm_vcpu *vcpu)
- {
-+	struct kvmppc_book3s_shadow_vcpu *svcpu = svcpu_get(vcpu);
-+
- 	svcpu->gpr[0] = vcpu->arch.gpr[0];
- 	svcpu->gpr[1] = vcpu->arch.gpr[1];
- 	svcpu->gpr[2] = vcpu->arch.gpr[2];
-@@ -177,17 +178,14 @@ void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		vcpu->arch.entry_ic = mfspr(SPRN_IC);
- 	svcpu->in_use = true;
-+
-+	svcpu_put(svcpu);
- }
- 
- /* Copy data touched by real-mode code from shadow vcpu back to vcpu */
--void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
--			    struct kvmppc_book3s_shadow_vcpu *svcpu)
-+void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu)
- {
--	/*
--	 * vcpu_put would just call us again because in_use hasn't
--	 * been updated yet.
--	 */
--	preempt_disable();
-+	struct kvmppc_book3s_shadow_vcpu *svcpu = svcpu_get(vcpu);
- 
- 	/*
- 	 * Maybe we were already preempted and synced the svcpu from
-@@ -233,7 +231,7 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- 	svcpu->in_use = false;
- 
- out:
--	preempt_enable();
-+	svcpu_put(svcpu);
- }
- 
- static int kvmppc_core_check_requests_pr(struct kvm_vcpu *vcpu)
--- 
-2.12.3
+arch/powerpc/perf/imc-pmu.c
+  1317  int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_idx)
+  1318  {
+  1319          int ret;
+  1320  
+  1321          ret = imc_mem_init(pmu_ptr, parent, pmu_idx);
+  1322          if (ret) {
+  1323                  imc_common_mem_free(pmu_ptr);
+  1324                  return ret;
+  1325          }
+
+Change this to:
+
+		if (ret)
+			goto err_free_mpu_ptr;
+
+Or something instead of a direct return.  That's more normal kernel
+style.
+
+  1326  
+  1327          switch (pmu_ptr->domain) {
+  1328          case IMC_DOMAIN_NEST:
+  1329                  /*
+  1330                  * Nest imc pmu need only one cpu per chip, we initialize the
+  1331                  * cpumask for the first nest imc pmu and use the same for the
+  1332                  * rest. To handle the cpuhotplug callback unregister, we track
+  1333                  * the number of nest pmus in "nest_pmus".
+  1334                  */
+  1335                  mutex_lock(&nest_init_lock);
+  1336                  if (nest_pmus == 0) {
+  1337                          ret = init_nest_pmu_ref();
+  1338                          if (ret) {
+  1339                                  mutex_unlock(&nest_init_lock);
+  1340                                  goto err_free;
+  1341                          }
+  1342                          /* Register for cpu hotplug notification. */
+  1343                          ret = nest_pmu_cpumask_init();
+  1344                          if (ret) {
+  1345                                  mutex_unlock(&nest_init_lock);
+  1346                                  kfree(nest_imc_refc);
+  1347                                  kfree(per_nest_pmu_arr);
+  1348                                  goto err_free;
+  1349                          }
+  1350                  }
+  1351                  nest_pmus++;
+  1352                  mutex_unlock(&nest_init_lock);
+  1353                  break;
+  1354          case IMC_DOMAIN_CORE:
+  1355                  ret = core_imc_pmu_cpumask_init();
+  1356                  if (ret) {
+  1357                          cleanup_all_core_imc_memory();
+  1358                          return ret;
+
+These direct returns don't look correct...
+
+  1359                  }
+  1360  
+  1361                  break;
+  1362          case IMC_DOMAIN_THREAD:
+  1363                  ret = thread_imc_cpu_init();
+  1364                  if (ret) {
+  1365                          cleanup_all_thread_imc_memory();
+  1366                          return ret;
+  1367                  }
+  1368  
+  1369                  break;
+  1370          default:
+  1371                  return  -1;     /* Unknown domain */
+
+This one certainly looks like a memory leak.  Plus -1 is -EPERM which is
+probably not the correct error code.
+
+
+  1372          }
+  1373  
+  1374          ret = update_events_in_group(parent, pmu_ptr);
+  1375          if (ret)
+  1376                  goto err_free;
+  1377  
+  1378          ret = update_pmu_ops(pmu_ptr);
+  1379          if (ret)
+  1380                  goto err_free;
+  1381  
+  1382          ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
+  1383          if (ret)
+  1384                  goto err_free;
+  1385  
+  1386          pr_info("%s performance monitor hardware support registered\n",
+  1387                                                          pmu_ptr->pmu.name);
+  1388  
+  1389          return 0;
+  1390  
+  1391  err_free:
+  1392          imc_common_mem_free(pmu_ptr);
+  1393          imc_common_cpuhp_mem_free(pmu_ptr);
+                                          ^^^^^^^
+This is a use after free, it should be in the reverse order.
+
+err_free_cpuhp:
+	imc_common_cpuhp_mem_free(pmu_ptr);
+err_free_pmu_ptr:
+	imc_common_mem_free(pmu_ptr);
+
+  1394          return ret;
+  1395  }
+
+regards,
+dan carpenter
