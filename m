@@ -1,26 +1,30 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zWbBc4FGKzDrHc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 18:55:04 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id t74so6097686wme.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jan 2018 23:55:04 -0800 (PST)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Seth Forshee <seth.forshee@canonical.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/epapr: Move register keyword at the beginning of
- declaration
-Date: Wed, 31 Jan 2018 08:54:43 +0100
-Message-Id: <20180131075445.9292-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zWc7f0hg4zDqnq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 19:37:32 +1100 (AEDT)
+Date: Wed, 31 Jan 2018 09:37:17 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ devicetree <devicetree@vger.kernel.org>,
+ Albert Herranz <albert_herranz@yahoo.es>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v2 3/6] gpio: Add GPIO driver for Nintendo Wii
+Message-ID: <20180131083717.xhwaepwd6qxeqncv@latitude>
+References: <20180122050411.32460-1-j.neuschaefer@gmx.net>
+ <20180122050411.32460-4-j.neuschaefer@gmx.net>
+ <CAHp75VcWshngZFuUp4hzYdD43HF7TZ1sRE3Dh+HckB5do1=gGw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="4afc2a2wktuivren"
+In-Reply-To: <CAHp75VcWshngZFuUp4hzYdD43HF7TZ1sRE3Dh+HckB5do1=gGw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +34,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix warning for all register unsigned long (0,3-12) that appear during W=1
-compilation:
 
-./arch/powerpc/include/asm/epapr_hcalls.h:479:2: warning: ‘register’ is not at beginning of declaration [-Wold-style-declaration]
-  unsigned long register r[\d] asm("r[\d]");
+--4afc2a2wktuivren
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
- arch/powerpc/include/asm/epapr_hcalls.h | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+Hi,
 
-diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index 90863245df53..d3a7e36f1402 100644
---- a/arch/powerpc/include/asm/epapr_hcalls.h
-+++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -466,17 +466,17 @@ static inline unsigned long epapr_hypercall(unsigned long *in,
- 			    unsigned long *out,
- 			    unsigned long nr)
- {
--	unsigned long register r0 asm("r0");
--	unsigned long register r3 asm("r3") = in[0];
--	unsigned long register r4 asm("r4") = in[1];
--	unsigned long register r5 asm("r5") = in[2];
--	unsigned long register r6 asm("r6") = in[3];
--	unsigned long register r7 asm("r7") = in[4];
--	unsigned long register r8 asm("r8") = in[5];
--	unsigned long register r9 asm("r9") = in[6];
--	unsigned long register r10 asm("r10") = in[7];
--	unsigned long register r11 asm("r11") = nr;
--	unsigned long register r12 asm("r12");
-+	register unsigned long r0 asm("r0");
-+	register unsigned long r3 asm("r3") = in[0];
-+	register unsigned long r4 asm("r4") = in[1];
-+	register unsigned long r5 asm("r5") = in[2];
-+	register unsigned long r6 asm("r6") = in[3];
-+	register unsigned long r7 asm("r7") = in[4];
-+	register unsigned long r8 asm("r8") = in[5];
-+	register unsigned long r9 asm("r9") = in[6];
-+	register unsigned long r10 asm("r10") = in[7];
-+	register unsigned long r11 asm("r11") = nr;
-+	register unsigned long r12 asm("r12");
- 
- 	asm volatile("bl	epapr_hypercall_start"
- 		     : "=r"(r0), "=r"(r3), "=r"(r4), "=r"(r5), "=r"(r6),
--- 
-2.11.0
+On Sun, Jan 28, 2018 at 07:31:58PM +0200, Andy Shevchenko wrote:
+> On Mon, Jan 22, 2018 at 7:04 AM, Jonathan Neusch=C3=A4fer
+> <j.neuschaefer@gmx.net> wrote:
+>=20
+> Style issues below.
+>=20
+> > +#define HW_GPIO_OWNER          0x3c
+> > +
+> > +
+> > +struct hlwd_gpio {
+>=20
+> No need extra empty line in between.
+
+Ok.
+
+> > +       struct gpio_chip gpioc;
+> > +       void __iomem *regs;
+> > +       struct device *dev;
+> > +};
+> > +
+> > +static int hlwd_gpio_probe(struct platform_device *pdev)
+> > +{
+> > +       struct hlwd_gpio *hlwd;
+> > +       struct resource *regs_resource;
+> > +       u32 ngpios;
+> > +       int res;
+> > +
+> > +       hlwd =3D devm_kzalloc(&pdev->dev, sizeof(*hlwd), GFP_KERNEL);
+> > +       if (!hlwd)
+> > +               return -ENOMEM;
+> > +
+>=20
+> > +       /* Save the struct device pointer so dev_info, etc. can be used=
+=2E */
+>=20
+> Useless.
+
+Ok
+
+> > +       hlwd->dev =3D &pdev->dev;
+> > +
+>=20
+> > +       regs_resource =3D platform_get_resource(pdev, IORESOURCE_MEM, 0=
+);
+>=20
+> > +       if (IS_ERR(regs_resource))
+> > +               return PTR_ERR(regs_resource);
+> > +
+>=20
+> This is redundant. Below does it for ya.
+
+devm_ioremap_resource does not check if the resource argument is a
+negative error (which is what I'm trying to catch in the above code).
+But it seems that platform_get_resource can't return a negative error,
+so you're right. Thanks.
+
+>=20
+> > +       hlwd->regs =3D devm_ioremap_resource(&pdev->dev, regs_resource);
+> > +       if (IS_ERR(hlwd->regs))
+> > +               return PTR_ERR(hlwd->regs);
+>=20
+>=20
+> > +       res =3D bgpio_init(&hlwd->gpioc, &pdev->dev, 4,
+> > +                       hlwd->regs + HW_GPIOB_IN, hlwd->regs + HW_GPIOB=
+_OUT,
+> > +                       NULL, hlwd->regs + HW_GPIOB_DIR, NULL,
+> > +                       BGPIOF_BIG_ENDIAN_BYTE_ORDER);
+>=20
+> > +
+>=20
+> Remove this extra line.
+
+Ok.
+
+>=20
+> > +       if (res < 0) {
+> > +               dev_warn(hlwd->dev, "bgpio_init failed: %d\n", res);
+> > +               return res;
+> > +       }
+>=20
+> > +       if (of_property_read_u32(pdev->dev.of_node, "ngpios", &ngpios))
+> > +               ngpios =3D 32;
+>=20
+> A nit: I would rather go with
+> res =3D of_property_read(...);
+> if (res)
+>   ngpios =3D 32;
+
+Ok, I have no strong opinion on this, so I'll do what you suggest.
+
+
+Thanks,
+Jonathan Neusch=C3=A4fer
+
+--4afc2a2wktuivren
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJacYAtAAoJEAgwRJqO81/bVJgQAL1/2rgESM4tkvX4NJOLl1yv
+g01sSRRpfTSazmyCfLillW1n+cYVx2PVG0RWtwWUIqFUjqhQvkLETQGAhL2OUaWW
+1K3UmpGnlJy2Yp/lqunk5VVKUt8N5CAxl3uABoiq9voryacDoA5qC7YoOwaGvpAl
+6xGdL9HtHsRgziuSJrSl+bszeZnI2Q1k740t9TSwl14xGwUre3xjSDiXERlRupOM
+yQq6WvS/RsWkpW+AaYqMGacSuozT0dR3zIVGOGTc/onCNkDKLSasbzyY2/qmyx79
+zWINWza/AJnqWTuIZcUJPiODvYzBy9pg3l9hFJxrYwTpknbSC1vwFF9s3lh2Q9LI
+isyl5u/UKu1nuuSetNF7FHBMKooVakWKPyS1fJ4LDSv3qgSxWkqTC6PbYKsdgy4B
+oR7wy59l2hZLoShrpuF0ftTYeZ20Y7iBHG4o/Zu9PYBrKCS/sSLPBASV5ClfTyyd
+WrRmw84ovfMMLuYjoyumAaLCUzBurpt5VHjkKtIpkrNtc8TEoZvMqW5mjLeRD8Rg
+LMWfXi9jY8CAPsGfMU87jrd2Pdf1+QEOsROiFWIC7XpGs5wASEWySCI1+nylJkBE
+GKg3NVdIbHU1XdPH6LKXAwjpr/yUtqYCHF8dmzDtHCenf6VXETaZ5qq7HpdAzyGT
+21yVh2djBZ2XNXaucN+I
+=K7YI
+-----END PGP SIGNATURE-----
+
+--4afc2a2wktuivren--
