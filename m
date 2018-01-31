@@ -1,37 +1,21 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <James.Hogan@mips.com>
+Received: from 9pmail.ess.barracuda.com (9pmail.ess.barracuda.com
+ [64.235.150.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zWjvr4tM3zDqwS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 23:57:44 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w0VCsojt078609
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 07:57:42 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fucnj4mj1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 07:57:42 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 31 Jan 2018 12:57:39 -0000
-Subject: Re: [PATCH] ocxl: fix signed comparison with less than zero
-To: Colin King <colin.king@canonical.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20180130151144.32544-1-colin.king@canonical.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 31 Jan 2018 13:57:34 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zWfNz1rmMzDrHM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 21:19:14 +1100 (AEDT)
+Date: Wed, 31 Jan 2018 10:03:46 +0000
+From: James Hogan <james.hogan@mips.com>
+To: Gabriel Paubert <paubert@iram.es>
+CC: <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Wifi (B43) broken on G4 PowerBooks with kernel v4.15
+Message-ID: <20180131100345.GD21356@jhogan-linux.mipstec.com>
+References: <20180131093730.ikmoawgh3mh2pxoy@lt-gp.iram.es>
 MIME-Version: 1.0
-In-Reply-To: <20180130151144.32544-1-colin.king@canonical.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <af638e7d-0bdd-1c2a-571f-cb30085e408a@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="XWOWbaMNXpFDWE00"
+In-Reply-To: <20180131093730.ikmoawgh3mh2pxoy@lt-gp.iram.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,39 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--XWOWbaMNXpFDWE00
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Jan 31, 2018 at 10:37:30AM +0100, Gabriel Paubert wrote:
+> 	Hi,
+>=20
+> yesterday I recompiled the kernel on my late 2005 G4 PowerBook, and the
+> Wifi stopped working. After comparing the configuration is turns out
+> that a change to a Kconfig condition disabled SSB support which is
+> necessary for these chips.
+>=20
+> The graph of configuration options is quite messy, and I'm not sure that
+> I fully understand it.
+>=20
+> Nevertheless the following patch fixes the regression, but there might
+> be a better way to solve the problem.
+>=20
+> If you pick up this trivial patch as is, you may add:
+>=20
+> Signed-off-by: Gabriel Paubert <paubert@iram.es>
+>=20
+> diff --git a/drivers/ssb/Kconfig b/drivers/ssb/Kconfig
+> index 71c7376..d189db6 100644
+> --- a/drivers/ssb/Kconfig
+> +++ b/drivers/ssb/Kconfig
+> @@ -32,7 +32,7 @@ config SSB_BLOCKIO
+> =20
+>  config SSB_PCIHOST_POSSIBLE
+>  	bool
+> -	depends on SSB && (PCI =3D y || PCI =3D SSB) && PCI_DRIVERS_LEGACY
+> +	depends on SSB && (PCI =3D y || PCI =3D SSB) && (PCI_DRIVERS_LEGACY || =
+B43_SSB)
+>  	default y
+> =20
+>  config SSB_PCIHOST
+>=20
 
-Le 30/01/2018 à 16:11, Colin King a écrit :
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Currently the comparison of used < 0 is always false because
-> uses is a size_t. Fix this by making used a ssize_t type.
-> 
-> Detected by Coccinelle:
-> drivers/misc/ocxl/file.c:320:6-10: WARNING: Unsigned expression
-> compared with zero: used < 0
-> 
-> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
+Yes, really sorry about that. There is a patch here:
+https://patchwork.kernel.org/patch/10185397/
 
-Thanks!
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+which is applied to linux-next as commit
+a9e6d44ddeccd3522670e641f1ed9b068e746ff7.
 
->   drivers/misc/ocxl/file.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-> index c90c1a578d2f..1287e4430e6b 100644
-> --- a/drivers/misc/ocxl/file.c
-> +++ b/drivers/misc/ocxl/file.c
-> @@ -277,7 +277,7 @@ static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
->   	struct ocxl_context *ctx = file->private_data;
->   	struct ocxl_kernel_event_header header;
->   	ssize_t rc;
-> -	size_t used = 0;
-> +	ssize_t used = 0;
->   	DEFINE_WAIT(event_wait);
-> 
->   	memset(&header, 0, sizeof(header));
-> 
+Cheers
+James
+
+--XWOWbaMNXpFDWE00
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAlpxlHMACgkQbAtpk944
+dnr7rg/+L+TcymiaLhyMO+WhmnjBPBKiRj6tkrHBQOcFJOZcxuJluHeFvlyqDcUO
+elTC0ahfpJA1vOutRKEW1UfYE/PYLd510ECLpRYgtg+to7gzEETMxNUlq3akYfH9
+StHGvci/patcPZ3+Dirpjpsj8foAXpvIwmEwNZAckhuI7uCyZb1N6+Oy4jXTbuo/
+1FKSydVNvK5MMoTuGUfLsu3guDB1LZm/3UpAGTKdorKAgEGvBb9iRiJ8V+rwzhTT
+LAgEKraSjlnlpvhx1xWCqvzH5EBfUdUZy5uz/v/EHQrCl9AK8MQ3K5v8UbhKjZgW
+OniM7tOAL2mjsn8dy4gINCuWBNj15wWnmLITS+r857auV4kYb6QXdMyV7ClhNEEG
+Nla+BH8JhpoJoaDJnd7S+jOxXIMNHg95QzARapzLBu8ZrIEioUPDijQjPu7eAyZi
+o2XQ2mJsf9RDgayXeXPV77Jtlm+caq+9ukJR6OCnA5iLaWj37WUaycYiiN60FEso
+u6210RIGAK5w5mMvpxje1BcHrBdxJ2DLePdndXTrsplnmm9ySRqT1vIAAVKbU/dj
+rBCHofkjpdv1kqhdrMLPYWsIisDCwIPshZrLoDEGxTsJszHJqJbvYINv8rdooN+5
+AzoCUQlFRYCe8jg0V17zip+ul98443Y4SjzlJNbjkexc0xRGzJY=
+=ss8/
+-----END PGP SIGNATURE-----
+
+--XWOWbaMNXpFDWE00--
