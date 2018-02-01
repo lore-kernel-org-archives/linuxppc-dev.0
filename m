@@ -1,29 +1,29 @@
-Return-Path: <SRS0=M4tJ=E3=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXRSr1kNvzF0TR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 04:10:20 +1100 (AEDT)
-Date: Thu, 1 Feb 2018 12:10:15 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Frank Rowand <frowand.list@gmail.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, devicetree@vger.kernel.org, Tyrel
- Datwyler <tyreld@linux.vnet.ibm.com>, Geert Uytterhoeven
- <geert@linux-m68k.org>, linux-renesas-soc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>,
- linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
-Message-ID: <20180201121015.72fd242c@gandalf.local.home>
-In-Reply-To: <4b373579-7a86-6883-2624-12a5408bb49b@gmail.com>
-References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
- <00fc90ee-de26-f819-9c81-27d06918564d@gmail.com>
- <20180125060330.781667e9@vmware.local.home>
- <a30d4cd3-0068-8cca-cc2f-ca207d0d278b@gmail.com>
- <20180125231443.44yy65ztr6exaam7@ninjato>
- <4b373579-7a86-6883-2624-12a5408bb49b@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXS0f14N1zF0PY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 04:34:25 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w11HWpkj136176
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Feb 2018 12:34:23 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fv3wcbnbv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 12:34:20 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Thu, 1 Feb 2018 10:34:20 -0700
+From: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, paulus@ozlabs.org, lvivier@redhat.com
+Subject: [PATCH v4 0/1] Implements MMIO emulation for lvx/stvx instructions
+Date: Thu,  1 Feb 2018 15:34:09 -0200
+Message-Id: <20180201173410.4625-1-joserz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,16 +33,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 25 Jan 2018 16:46:06 -0800
-Frank Rowand <frowand.list@gmail.com> wrote:
+v4:
+  - Changed KVM_MMIO_REG_VMX to 0xc0 because there are 64 VSX registers
 
-> The point is that using ftrace means there are use cases for the
-> debug information where the information will not be available.
+v3:
+  - Added Reported-by in the commit message
 
-Note, this email came out when I was traveling. I'm now looking at the
-code and trace events are enabled right after rcu_init() in init/main.c.
+v2:
+  - kvmppc_get_vsr_word_offset() moved back to its original place
+  - EA AND ~0xF, following ISA.
+  - fixed BE/LE cases
 
-The early_initcall() enables syscall events(), as they are not
-available earlier.
+TESTS:
 
--- Steve
+For testing purposes I wrote a small program that performs stvx/lvx using the
+program's virtual memory and using MMIO. Load/Store into virtual memory is the
+model I use to check if MMIO results are correct (because only MMIO is emulated
+by KVM).
+
+Results:
+
+HOST LE - GUEST BE
+address: 0x10034850010
+0x21436587bbbbaaaa4444555578563412
+io_address: 0x3fff89a20000
+0x21436587bbbbaaaa4444555578563412
+
+HOST LE - GUEST LE
+address: 0x10033a20010
+0x1234567855554444aaaabbbb87654321
+io_address: 0x3fffb5380000
+0x1234567855554444aaaabbbb87654321
+
+HOST BE - GUEST BE
+address: 0x1002c4a0010
+0x21436587bbbbaaaa4444555578563412
+io_address: 0x3ffface40000
+0x21436587bbbbaaaa4444555578563412
+
+HOST BR - GUEST LE
+address: 0x100225e0010
+0x1234567855554444aaaabbbb87654321
+io_address: 0x3fff7fcb0000
+0x1234567855554444aaaabbbb87654321
+
+This patch implements MMIO emulation for two instructions: lvx and stvx.
+
+Jose Ricardo Ziviani (1):
+  KVM: PPC: Book3S: Add MMIO emulation for VMX instructions
+
+ arch/powerpc/include/asm/kvm_host.h   |   2 +
+ arch/powerpc/include/asm/kvm_ppc.h    |   4 +
+ arch/powerpc/include/asm/ppc-opcode.h |   6 ++
+ arch/powerpc/kvm/emulate_loadstore.c  |  34 ++++++++
+ arch/powerpc/kvm/powerpc.c            | 153 +++++++++++++++++++++++++++++++++-
+ 5 files changed, 198 insertions(+), 1 deletion(-)
+
+-- 
+2.14.3
