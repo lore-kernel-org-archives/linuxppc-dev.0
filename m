@@ -1,18 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zX6yx0hsDzDqmw
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 15:46:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zX7Dq6zXczDrHM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 15:58:51 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: gromero@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/tm: Remove struct thread_info param from
- tm_reclaim_thread()
-In-Reply-To: <20180201010746.413-1-cyrilbur@gmail.com>
-References: <20180201010746.413-1-cyrilbur@gmail.com>
-Date: Thu, 01 Feb 2018 15:46:39 +1100
-Message-ID: <87inbhe2q8.fsf@concordia.ellerman.id.au>
+To: Dan Carpenter <dan.carpenter@oracle.com>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [bug report] powerpc/mm/radix: Add tlbflush routines
+In-Reply-To: <20180131154521.GA21698@mwanda>
+References: <20180131154521.GA21698@mwanda>
+Date: Thu, 01 Feb 2018 15:58:50 +1100
+Message-ID: <87fu6le25x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,52 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cyril Bur <cyrilbur@gmail.com> writes:
+Dan Carpenter <dan.carpenter@oracle.com> writes:
 
-> tm_reclaim_thread() doesn't use the parameter anymore, both callers have
-> to bother getting it as they have no need for a struct thread_info
-> either.
+> Hello Aneesh Kumar K.V,
+>
+> The patch 1a472c9dba6b: "powerpc/mm/radix: Add tlbflush routines"
+> from Apr 29, 2016, leads to the following static checker warning:
+>
+> 	arch/powerpc/mm/tlb_nohash.c:218 __local_flush_tlb_page()
+> 	warn: always true condition '(pid != ~0) => (0-u32max != u64max)'
+>
+> arch/powerpc/mm/tlb_nohash.c
+>    211  void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+>    212                              int tsize, int ind)
+>    213  {
+>    214          unsigned int pid;
+>    215  
+>    216          preempt_disable();
+>    217          pid = mm ? mm->context.id : 0;
+>    218          if (pid != MMU_NO_CONTEXT)
+>                     ^^^^^^^^^^^^^^^^^^^^^
+>    219                  _tlbil_va(vmaddr, pid, tsize, ind);
+>    220          preempt_enable();
+>    221  }
+>
+> I don't know very much about PowerPC.  The static checker is guessing
+> which headers to pull in instead of relying on the build system so there
+> are a lot of false positives.
 
-In future please tell me why the parameter is unused and when it became
-unused.
+O_o 
 
-In this case it was previously used but the last usage was removed in:
+That's a bit nuts ... :)
 
-dc3106690b20 ("powerpc: tm: Always use fp_state and vr_state to store live registers")
+> It's apparently using the arch/powerpc/include/asm/book3s/64/tlbflush.h header which does:
+>
+> #define MMU_NO_CONTEXT ~0UL
+>
+> so it's UINT_MAX vs U64_MAX which is making the checker complain.
+
+That's the wrong header for that file.
+
+It should be arch/powerpc/include/asm/tlbflush.h, which does one of:
+
+  #define MMU_NO_CONTEXT      ((unsigned int)-1)
+  #define MMU_NO_CONTEXT      (0)
+
+
+So I think the code is OK in this case.
+
+The clue is that the code is in tlb_nohash.c, but the header is
+book3s/64, and Book3S doesn't use the nohash style MMUs.
+
+Thanks for trying, powerpc has the unfortunate feature of supporting
+feature of supporting about 5 different MMUs, which means this area of
+the code is pretty gross.
 
 cheers
-
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index bfdd783e3916..a47498da6562 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -853,8 +853,7 @@ static inline bool tm_enabled(struct task_struct *tsk)
->  	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
->  }
->  
-> -static void tm_reclaim_thread(struct thread_struct *thr,
-> -			      struct thread_info *ti, uint8_t cause)
-> +static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cause)
->  {
->  	/*
->  	 * Use the current MSR TM suspended bit to track if we have
-> @@ -901,7 +900,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
->  void tm_reclaim_current(uint8_t cause)
->  {
->  	tm_enable();
-> -	tm_reclaim_thread(&current->thread, current_thread_info(), cause);
-> +	tm_reclaim_thread(&current->thread, cause);
->  }
->  
->  static inline void tm_reclaim_task(struct task_struct *tsk)
-> @@ -932,7 +931,7 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
->  		 thr->regs->ccr, thr->regs->msr,
->  		 thr->regs->trap);
->  
-> -	tm_reclaim_thread(thr, task_thread_info(tsk), TM_CAUSE_RESCHED);
-> +	tm_reclaim_thread(thr, TM_CAUSE_RESCHED);
->  
->  	TM_DEBUG("--- tm_reclaim on pid %d complete\n",
->  		 tsk->pid);
-> -- 
-> 2.16.1
