@@ -1,22 +1,32 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ot0-f194.google.com (mail-ot0-f194.google.com
- [74.125.82.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <desnesn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXSYV3XCFzF0Wx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 04:59:26 +1100 (AEDT)
-Received: by mail-ot0-f194.google.com with SMTP id q12so403605otg.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 09:59:26 -0800 (PST)
-From: Rob Herring <robh@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] powerpc: pseries: use of_irq_get helper in
- request_event_sources_irqs
-Date: Thu,  1 Feb 2018 11:59:22 -0600
-Message-Id: <20180201175922.18930-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXShd6LYbzDqJ4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 05:05:37 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w11I0CbM130553
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Feb 2018 13:05:35 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fv7nc8k3d-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 13:05:35 -0500
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
+ Thu, 1 Feb 2018 13:05:34 -0500
+From: Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, tlfalcon@linux.vnet.ibm.com,
+ jallen@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
+Subject: [PATCH,
+ net] ibmvnic: fix firmware version when no firmware level has been
+ provided by the VIOS server
+Date: Thu,  1 Feb 2018 16:04:30 -0200
+Message-Id: <20180201180430.16950-1-desnesn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,89 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of calling both of_irq_parse_one and irq_create_of_mapping, call
-of_irq_get instead which does essentially the same thing. of_irq_get
-also calls irq_find_host for deferred probe support, but this should be
-fine as irq_create_of_mapping also calls that internally. This gets us
-closer to making the former 2 functions static.
+Older versions of VIOS servers do not send the firmware level in the VPD
+buffer for the ibmvnic driver. Thus, not only the current message is mis-
+leading but the firmware version in the ethtool will be NULL. Therefore,
+this patch fixes the firmware string and its warning.
 
-In the process of simplifying request_event_sources_irqs, combine the
-the pr_err and WARN_ON calls to just a WARN().
+Fixes: 4e6759be28e4 ("ibmvnic: Feature implementation of VPD for the ibmvnic driver")
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
 ---
-v2:
-- Fix infinite loop
-- Use of_irq_get instead to irq_of_parse_and_map to preserve handling of 
-  errors
-- Combine pr_err and WARN_ON calls to single WARN
+ drivers/net/ethernet/ibm/ibmvnic.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
- arch/powerpc/platforms/pseries/event_sources.c | 40 +++++++++-----------------
- 1 file changed, 13 insertions(+), 27 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/event_sources.c b/arch/powerpc/platforms/pseries/event_sources.c
-index 6eeb0d4bab61..446ef104fb3a 100644
---- a/arch/powerpc/platforms/pseries/event_sources.c
-+++ b/arch/powerpc/platforms/pseries/event_sources.c
-@@ -16,7 +16,8 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
- 
--#include <asm/prom.h>
-+#include <linux/interrupt.h>
-+#include <linux/of_irq.h>
- 
- #include "pseries.h"
- 
-@@ -24,34 +25,19 @@ void request_event_sources_irqs(struct device_node *np,
- 				irq_handler_t handler,
- 				const char *name)
- {
--	int i, index, count = 0;
--	struct of_phandle_args oirq;
--	unsigned int virqs[16];
-+	int i, virq, rc;
- 
--	/* First try to do a proper OF tree parsing */
--	for (index = 0; of_irq_parse_one(np, index, &oirq) == 0;
--	     index++) {
--		if (count > 15)
--			break;
--		virqs[count] = irq_create_of_mapping(&oirq);
--		if (!virqs[count]) {
--			pr_err("event-sources: Unable to allocate "
--			       "interrupt number for %pOF\n",
--			       np);
--			WARN_ON(1);
--		} else {
--			count++;
--		}
--	}
-+	for (i = 0; i < 16; i++) {
-+		virq = of_irq_get(np, i);
-+		if (virq < 0)
-+			return;
-+		if (WARN(!virq, "event-sources: Unable to allocate "
-+			        "interrupt number for %pOF\n", np))
-+			continue;
- 
--	/* Now request them */
--	for (i = 0; i < count; i++) {
--		if (request_irq(virqs[i], handler, 0, name, NULL)) {
--			pr_err("event-sources: Unable to request interrupt "
--			       "%d for %pOF\n", virqs[i], np);
--			WARN_ON(1);
-+		rc = request_irq(virq, handler, 0, name, NULL);
-+		if (WARN(rc, "event-sources: Unable to request interrupt %d for %pOF\n",
-+		    virq, np))
- 			return;
--		}
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index b65f5f3ac034..2b3e71b63a7a 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -3290,7 +3290,11 @@ static void handle_vpd_rsp(union ibmvnic_crq *crq,
+ 	 */
+ 	substr = strnstr(adapter->vpd->buff, "RM", adapter->vpd->len);
+ 	if (!substr) {
+-		dev_info(dev, "No FW level provided by VPD\n");
++		dev_info(dev, "Warning - No FW level has been provided in the VPD buffer by the VIOS Server\n");
++		ptr = strncpy((char *)adapter->fw_version, "N/A",
++			      3 * sizeof(char));
++		if (!ptr)
++			dev_err(dev, "Failed to inform that firmware version is unavailable to the adapter\n");
+ 		goto complete;
  	}
- }
--
+ 
 -- 
-2.14.1
+2.14.3
