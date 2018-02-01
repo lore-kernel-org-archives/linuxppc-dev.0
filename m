@@ -1,19 +1,13 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zX7Dq6zXczDrHM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 15:58:51 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Carpenter <dan.carpenter@oracle.com>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [bug report] powerpc/mm/radix: Add tlbflush routines
-In-Reply-To: <20180131154521.GA21698@mwanda>
-References: <20180131154521.GA21698@mwanda>
-Date: Thu, 01 Feb 2018 15:58:50 +1100
-Message-ID: <87fu6le25x.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zX7RN3lvLzDqb3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 16:08:00 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH kernel] powerpc/mm: Fix typo in comments
+Date: Thu,  1 Feb 2018 16:07:25 +1100
+Message-Id: <20180201050725.30247-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +17,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan Carpenter <dan.carpenter@oracle.com> writes:
+Fixes: 912cc87a6 "powerpc/mm/radix: Add LPID based tlb flush helpers"
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/mm/tlb-radix.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-> Hello Aneesh Kumar K.V,
->
-> The patch 1a472c9dba6b: "powerpc/mm/radix: Add tlbflush routines"
-> from Apr 29, 2016, leads to the following static checker warning:
->
-> 	arch/powerpc/mm/tlb_nohash.c:218 __local_flush_tlb_page()
-> 	warn: always true condition '(pid != ~0) => (0-u32max != u64max)'
->
-> arch/powerpc/mm/tlb_nohash.c
->    211  void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
->    212                              int tsize, int ind)
->    213  {
->    214          unsigned int pid;
->    215  
->    216          preempt_disable();
->    217          pid = mm ? mm->context.id : 0;
->    218          if (pid != MMU_NO_CONTEXT)
->                     ^^^^^^^^^^^^^^^^^^^^^
->    219                  _tlbil_va(vmaddr, pid, tsize, ind);
->    220          preempt_enable();
->    221  }
->
-> I don't know very much about PowerPC.  The static checker is guessing
-> which headers to pull in instead of relying on the build system so there
-> are a lot of false positives.
-
-O_o 
-
-That's a bit nuts ... :)
-
-> It's apparently using the arch/powerpc/include/asm/book3s/64/tlbflush.h header which does:
->
-> #define MMU_NO_CONTEXT ~0UL
->
-> so it's UINT_MAX vs U64_MAX which is making the checker complain.
-
-That's the wrong header for that file.
-
-It should be arch/powerpc/include/asm/tlbflush.h, which does one of:
-
-  #define MMU_NO_CONTEXT      ((unsigned int)-1)
-  #define MMU_NO_CONTEXT      (0)
-
-
-So I think the code is OK in this case.
-
-The clue is that the code is in tlb_nohash.c, but the header is
-book3s/64, and Book3S doesn't use the nohash style MMUs.
-
-Thanks for trying, powerpc has the unfortunate feature of supporting
-feature of supporting about 5 different MMUs, which means this area of
-the code is pretty gross.
-
-cheers
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 71d1b19..001c1f6 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -98,7 +98,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
+ 	rb |= set << PPC_BITLSHIFT(51);
+ 	rs = ((unsigned long)pid) << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+@@ -112,7 +112,7 @@ static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
+ 	rb = PPC_BIT(53); /* IS = 1 */
+ 	rs = pid << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+@@ -164,7 +164,7 @@ static inline void __tlbiel_va(unsigned long va, unsigned long pid,
+ 	rb |= ap << PPC_BITLSHIFT(58);
+ 	rs = pid << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+@@ -212,7 +212,7 @@ static inline void __tlbie_va(unsigned long va, unsigned long pid,
+ 	rb |= ap << PPC_BITLSHIFT(58);
+ 	rs = pid << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+@@ -615,7 +615,7 @@ void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+ 	rb |= ap << PPC_BITLSHIFT(58);
+ 	rs = lpid & ((1UL << 32) - 1);
+ 	prs = 0; /* process scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+@@ -633,7 +633,7 @@ void radix__flush_tlb_lpid(unsigned long lpid)
+ 	rb = 0x2 << PPC_BITLSHIFT(53); /* IS = 2 */
+ 	rs = lpid & ((1UL << 32) - 1);
+ 	prs = 0; /* partition scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+@@ -657,7 +657,7 @@ void radix__flush_tlb_all(void)
+ 
+ 	rb = 0x3 << PPC_BITLSHIFT(53); /* IS = 3 */
+ 	prs = 0; /* partition scoped */
+-	r = 1;   /* raidx format */
++	r = 1;   /* radix format */
+ 	rs = 1 & ((1UL << 32) - 1); /* any LPID value to flush guest mappings */
+ 
+ 	asm volatile("ptesync": : :"memory");
+-- 
+2.11.0
