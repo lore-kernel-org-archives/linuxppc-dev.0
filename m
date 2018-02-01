@@ -1,16 +1,20 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zX7V31MM3zDqj2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 16:10:19 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH kernel v2] powerpc/mm: Flush radix process translations when
- setting MMU type
-Date: Thu,  1 Feb 2018 16:09:44 +1100
-Message-Id: <20180201050944.30332-1-aik@ozlabs.ru>
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0049.outbound.protection.outlook.com [104.47.1.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zX9Lc6Z3hzF0SX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 17:33:58 +1100 (AEDT)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [bug report] fsl/qe: setup clock source for TDM mode
+Date: Thu, 1 Feb 2018 06:33:52 +0000
+Message-ID: <AM3PR04MB11853CC089DBBA769C8E9F7691FA0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <20180131152933.GA20827@mwanda>
+In-Reply-To: <20180131152933.GA20827@mwanda>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,44 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Radix guests do normally invalidate process-scoped translations when
-a new pid is allocated but migrated guests do not invalidate these so
-migrated guests crash sometime, especially easy to reproduce with
-migration happening within first 10 seconds after the guest boot start on
-the same machine.
-
-This adds the "Invalidate process-scoped translations" flush to fix
-radix guests migration.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v2:
-* removed PPC_TLBIE_5() from the !(old&PATH_HR) case as it is pointless
-on hash
-
----
-
-
-Not so sure that "process-scoped translations" only require flushing
-at pid allocation and migration.
-
----
- arch/powerpc/mm/pgtable_64.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index c9a623c..d75dd52 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -471,6 +471,8 @@ void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
- 	if (old & PATB_HR) {
- 		asm volatile(PPC_TLBIE_5(%0,%1,2,0,1) : :
- 			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
-+		asm volatile(PPC_TLBIE_5(%0,%1,2,1,1) : :
-+			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
- 		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 1);
- 	} else {
- 		asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
--- 
-2.11.0
+T24gMjAxOC8xLzMxIDIzOjMwLCBEYW4gQ2FycGVudGVyIDxkYW4uY2FycGVudGVyQG9yYWNsZS5j
+b20+IHdyb3RlDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBEYW4gQ2FycGVu
+dGVyIFttYWlsdG86ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29tXSANClNlbnQ6IDIwMTjE6jHUwjMx
+yNUgMjM6MzANClRvOiBRaWFuZyBaaGFvIDxxaWFuZy56aGFvQG54cC5jb20+DQpDYzogbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNClN1YmplY3Q6IFtidWcgcmVwb3J0XSBmc2wvcWU6IHNl
+dHVwIGNsb2NrIHNvdXJjZSBmb3IgVERNIG1vZGUNCg0KSGVsbG8gWmhhbyBRaWFuZywNCg0KVGhl
+IHBhdGNoIGJiOGIyMDYyYWZmMzogImZzbC9xZTogc2V0dXAgY2xvY2sgc291cmNlIGZvciBURE0g
+bW9kZSINCmZyb20gSnVuIDYsIDIwMTYsIGxlYWRzIHRvIHRoZSBmb2xsb3dpbmcgc3RhdGljIGNo
+ZWNrZXIgd2FybmluZzoNCg0KCWRyaXZlcnMvc29jL2ZzbC9xZS91Y2MuYzo2MjkgdWNjX2dldF90
+ZG1fc3luY19zaGlmdCgpDQoJd2FybjogYm90aCBzaWRlcyBvZiB0ZXJuYXJ5IHRoZSBzYW1lOiAn
+MzAnIFJYX1NZTkNfU0hJRlRfQkFTRSBSWF9TWU5DX1NISUZUX0JBU0UNCg0KZHJpdmVycy9zb2Mv
+ZnNsL3FlL3VjYy5jDQogICA2MjUgIHN0YXRpYyB1MzIgdWNjX2dldF90ZG1fc3luY19zaGlmdChl
+bnVtIGNvbW1fZGlyIG1vZGUsIHUzMiB0ZG1fbnVtKQ0KICAgNjI2ICB7DQogICA2MjcgICAgICAg
+ICAgdTMyIHNoaWZ0Ow0KICAgNjI4ICANCiAgIDYyOSAgICAgICAgICBzaGlmdCA9IChtb2RlID09
+IENPTU1fRElSX1JYKSA/IFJYX1NZTkNfU0hJRlRfQkFTRSA6IFJYX1NZTkNfU0hJRlRfQkFTRTsN
+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIF5eXl5eXl5eXl5eXl5eXl5eXg0KDQpNYXliZSB0aGlzIG9uZSBzaG91bGQg
+aGF2ZSBiZWVuIFRYXz8NCg0KVGhhbmsgeW91IHZlcnkgbXVjaCwgaXQgaXMgYSB0eXBvLCBJIHdp
+bGwgc2VuZCBhIHBhdGNoIHRvIGZpeCBpdC4NCg0KQlINClFpYW5nIFpoYW8NCg==
