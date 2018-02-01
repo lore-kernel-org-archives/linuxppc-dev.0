@@ -1,17 +1,44 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
+Return-Path: <cyrilbur@gmail.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zX1Cc0vgtzDqms
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 11:27:23 +1100 (AEDT)
-Date: Wed, 31 Jan 2018 18:25:28 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] powerpc/perf: Add nest IMC PMU support
-Message-ID: <20180131152527.GA19851@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zX27B3v5lzDqs9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 12:08:37 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1114m32073787
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 20:08:35 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fup355qcd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 20:08:34 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Thu, 1 Feb 2018 01:08:32 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w1118TOc66322644
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Feb 2018 01:08:29 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1C0EDAE053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 00:59:53 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BD307AE04D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 00:59:52 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 00:59:52 +0000 (GMT)
+From: Cyril Bur <cyrilbur@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: gromero@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/tm: Remove struct thread_info param from
+ tm_reclaim_thread()
+Date: Thu,  1 Feb 2018 12:07:46 +1100
+Message-Id: <20180201010746.413-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,119 +48,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Anju T Sudhakar,
+tm_reclaim_thread() doesn't use the parameter anymore, both callers have
+to bother getting it as they have no need for a struct thread_info
+either.
 
-The patch 885dcd709ba9: "powerpc/perf: Add nest IMC PMU support" from
-Jul 19, 2017, leads to the following static checker warning:
+Just remove it and adjust the callers.
 
-	arch/powerpc/perf/imc-pmu.c:1393 init_imc_pmu()
-	warn: 'pmu_ptr' was already freed.
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+---
+ arch/powerpc/kernel/process.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-arch/powerpc/perf/imc-pmu.c
-  1317  int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_idx)
-  1318  {
-  1319          int ret;
-  1320  
-  1321          ret = imc_mem_init(pmu_ptr, parent, pmu_idx);
-  1322          if (ret) {
-  1323                  imc_common_mem_free(pmu_ptr);
-  1324                  return ret;
-  1325          }
-
-Change this to:
-
-		if (ret)
-			goto err_free_mpu_ptr;
-
-Or something instead of a direct return.  That's more normal kernel
-style.
-
-  1326  
-  1327          switch (pmu_ptr->domain) {
-  1328          case IMC_DOMAIN_NEST:
-  1329                  /*
-  1330                  * Nest imc pmu need only one cpu per chip, we initialize the
-  1331                  * cpumask for the first nest imc pmu and use the same for the
-  1332                  * rest. To handle the cpuhotplug callback unregister, we track
-  1333                  * the number of nest pmus in "nest_pmus".
-  1334                  */
-  1335                  mutex_lock(&nest_init_lock);
-  1336                  if (nest_pmus == 0) {
-  1337                          ret = init_nest_pmu_ref();
-  1338                          if (ret) {
-  1339                                  mutex_unlock(&nest_init_lock);
-  1340                                  goto err_free;
-  1341                          }
-  1342                          /* Register for cpu hotplug notification. */
-  1343                          ret = nest_pmu_cpumask_init();
-  1344                          if (ret) {
-  1345                                  mutex_unlock(&nest_init_lock);
-  1346                                  kfree(nest_imc_refc);
-  1347                                  kfree(per_nest_pmu_arr);
-  1348                                  goto err_free;
-  1349                          }
-  1350                  }
-  1351                  nest_pmus++;
-  1352                  mutex_unlock(&nest_init_lock);
-  1353                  break;
-  1354          case IMC_DOMAIN_CORE:
-  1355                  ret = core_imc_pmu_cpumask_init();
-  1356                  if (ret) {
-  1357                          cleanup_all_core_imc_memory();
-  1358                          return ret;
-
-These direct returns don't look correct...
-
-  1359                  }
-  1360  
-  1361                  break;
-  1362          case IMC_DOMAIN_THREAD:
-  1363                  ret = thread_imc_cpu_init();
-  1364                  if (ret) {
-  1365                          cleanup_all_thread_imc_memory();
-  1366                          return ret;
-  1367                  }
-  1368  
-  1369                  break;
-  1370          default:
-  1371                  return  -1;     /* Unknown domain */
-
-This one certainly looks like a memory leak.  Plus -1 is -EPERM which is
-probably not the correct error code.
-
-
-  1372          }
-  1373  
-  1374          ret = update_events_in_group(parent, pmu_ptr);
-  1375          if (ret)
-  1376                  goto err_free;
-  1377  
-  1378          ret = update_pmu_ops(pmu_ptr);
-  1379          if (ret)
-  1380                  goto err_free;
-  1381  
-  1382          ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
-  1383          if (ret)
-  1384                  goto err_free;
-  1385  
-  1386          pr_info("%s performance monitor hardware support registered\n",
-  1387                                                          pmu_ptr->pmu.name);
-  1388  
-  1389          return 0;
-  1390  
-  1391  err_free:
-  1392          imc_common_mem_free(pmu_ptr);
-  1393          imc_common_cpuhp_mem_free(pmu_ptr);
-                                          ^^^^^^^
-This is a use after free, it should be in the reverse order.
-
-err_free_cpuhp:
-	imc_common_cpuhp_mem_free(pmu_ptr);
-err_free_pmu_ptr:
-	imc_common_mem_free(pmu_ptr);
-
-  1394          return ret;
-  1395  }
-
-regards,
-dan carpenter
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index bfdd783e3916..a47498da6562 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -853,8 +853,7 @@ static inline bool tm_enabled(struct task_struct *tsk)
+ 	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
+ }
+ 
+-static void tm_reclaim_thread(struct thread_struct *thr,
+-			      struct thread_info *ti, uint8_t cause)
++static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cause)
+ {
+ 	/*
+ 	 * Use the current MSR TM suspended bit to track if we have
+@@ -901,7 +900,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ void tm_reclaim_current(uint8_t cause)
+ {
+ 	tm_enable();
+-	tm_reclaim_thread(&current->thread, current_thread_info(), cause);
++	tm_reclaim_thread(&current->thread, cause);
+ }
+ 
+ static inline void tm_reclaim_task(struct task_struct *tsk)
+@@ -932,7 +931,7 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
+ 		 thr->regs->ccr, thr->regs->msr,
+ 		 thr->regs->trap);
+ 
+-	tm_reclaim_thread(thr, task_thread_info(tsk), TM_CAUSE_RESCHED);
++	tm_reclaim_thread(thr, TM_CAUSE_RESCHED);
+ 
+ 	TM_DEBUG("--- tm_reclaim on pid %d complete\n",
+ 		 tsk->pid);
+-- 
+2.16.1
