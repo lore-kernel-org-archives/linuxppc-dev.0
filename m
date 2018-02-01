@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXYmk2hp5zF0YS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 08:54:29 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w11LjvXg136830
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Feb 2018 16:54:27 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fv8sp5w6v-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXYtl0nhdzDqT0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 08:59:42 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w11LsuiL022882
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Feb 2018 16:59:40 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fv9tmkfk0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 16:54:26 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 16:59:40 -0500
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 1 Feb 2018 16:54:25 -0500
+ Thu, 1 Feb 2018 16:59:39 -0500
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>, nfont@linux.vnet.ibm.com
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/hotplug/drcinfo: Fix bugs parsing ibm,drc-info structs
-Date: Thu, 1 Feb 2018 15:53:50 -0600
+Subject: [PATCH] powerpc/hotplug/drcinfo: Fixes bug with hot-add of CPUs
+Date: Thu, 1 Feb 2018 15:59:02 -0600
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <7b116493-a63f-12ce-232b-c6d1747df5e5@linux.vnet.ibm.com>
+Message-Id: <bd7f8d6d-3a60-9833-87f9-e7acccbf9354@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,65 +35,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes a memory parsing bug when using of_prop_next_u32
-calls at the start of a structure.  Depending upon the value of
-"cur" memory pointer argument to of_prop_next_u32, it will or it
-won't advance the value of the returned memory pointer by the
-size of one u32.  This patch corrects the code to deal with that
-indexing feature when parsing the ibm,drc-info structs for CPUs.
+This patch fixes a bug matching drc-indexes of CPUs that are
+being hot-added to a system either individually or by count.
+This patch inserts a couple of missing checks and parsing code
+for the new representation of device-tree information provided
+by the property "ibm,drc-info".
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmware feature" -- end of patch series applied to powerpc next)
+Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmwar
+e feature" -- end of patch series applied to powerpc next)
 ---
- arch/powerpc/platforms/pseries/of_helpers.c     |    4 +---
- arch/powerpc/platforms/pseries/pseries_energy.c |    2 ++
- drivers/pci/hotplug/rpaphp_core.c               |    1 +
- 3 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |  117 +++++++++++++++++++++-----
+ 1 file changed, 96 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-index 6df192f..17b5938 100644
---- a/arch/powerpc/platforms/pseries/of_helpers.c
-+++ b/arch/powerpc/platforms/pseries/of_helpers.c
-@@ -65,9 +65,7 @@ int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index a7d14aa7..4cc6b70 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -413,19 +413,52 @@ static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
+ 	bool found = false;
+ 	int rc, index;
  
- 	/* Get drc-index-start:encode-int */
- 	p2 = (const __be32 *)p;
--	p2 = of_prop_next_u32(*prop, p2, &data->drc_index_start);
--	if (!p2)
--		return -EINVAL;
-+	data->drc_index_start = of_read_number(p2, 1);
- 
- 	/* Get drc-name-suffix-start:encode-int */
- 	p2 = of_prop_next_u32(*prop, p2, &data->drc_name_suffix_start);
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-index 6ed2212..c7d84aa 100644
---- a/arch/powerpc/platforms/pseries/pseries_energy.c
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -64,6 +64,7 @@ static u32 cpu_to_drc_index(int cpu)
- 		value = of_prop_next_u32(info, NULL, &num_set_entries);
- 		if (!value)
- 			goto err_of_node_put;
+-	index = 0;
+-	while (!found) {
+-		u32 drc;
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		struct property *info = NULL;
++		struct of_drc_info drc;
++		int j;
++		u32 num_set_entries;
++		const __be32 *value;
++
++		info = of_find_property(parent, "ibm,drc-info", NULL);
++		if (info == NULL)
++			goto end_out;
++
++		value = of_prop_next_u32(info, NULL, &num_set_entries);
++		if (!value)
++			goto end_out;
 +		value++;
++
++		for (j = 0; j < num_set_entries; j++) {
++
++			of_read_drc_info_cell(&info, &value, &drc);
++			if (strncmp(drc.drc_type, "CPU", 3))
++				goto end_out;
++
++			if ((drc.drc_index_start <= drc_index) &&
++				(drc_index <= drc.last_drc_index)) {
++				found = true;
++				break;
++			}
++		}
  
- 		for (j = 0; j < num_set_entries; j++) {
+-		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
++	} else {
++		index = 0;
++		while (!found) {
++			u32 drc;
++
++			rc = of_property_read_u32_index(parent,
++						"ibm,drc-indexes",
+ 						index++, &drc);
+-		if (rc)
+-			break;
++			if (rc)
++				break;
  
-@@ -126,6 +127,7 @@ static int drc_index_to_cpu(u32 drc_index)
- 		value = of_prop_next_u32(info, NULL, &num_set_entries);
- 		if (!value)
- 			goto err_of_node_put;
+-		if (drc == drc_index)
+-			found = true;
++			if (drc == drc_index)
++				found = true;
++		}
+ 	}
+ 
++end_out:
+ 	return found;
+ }
+ 
+@@ -731,26 +764,68 @@ static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
+ 		return -1;
+ 	}
+ 
+-	/* Search the ibm,drc-indexes array for possible CPU drcs to
+-	 * add. Note that the format of the ibm,drc-indexes array is
+-	 * the number of entries in the array followed by the array
+-	 * of drc values so we start looking at index = 1.
++	/* Search the ibm,drc-indexes or ibm,drc-info array for
++	 * possible CPU drcs to add. Note that the format of the
++	 * ibm,drc-indexes array is the number of entries in the
++	 * array followed by the array of drc values so we start
++	 * looking at index = 1.  The ibm,drc-info array is a more
++	 * compact format for large numbers of CPUs, and the format
++	 * is correspondingly more complex.
+ 	 */
+-	index = 1;
+-	while (cpus_found < cpus_to_add) {
+-		u32 drc;
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		struct property *info = NULL;
++		struct of_drc_info drc;
++		int j;
++		u32 num_set_entries;
++		const __be32 *value;
++
++		info = of_find_property(parent, "ibm,drc-info", NULL);
++		if (info == NULL)
++			goto err_out;
++
++		value = of_prop_next_u32(info, NULL, &num_set_entries);
++		if (!value)
++			goto err_out;
 +		value++;
++
++		for (j = 0; j < num_set_entries; j++) {
++			int k;
++
++			of_read_drc_info_cell(&info, &value, &drc);
++			if (strncmp(drc.drc_type, "CPU", 3))
++				goto err_out;
++
++			for (k = 0; (k < drc.num_sequential_elems) &&
++					(cpus_found < cpus_to_add); k++) {
++				u32 idrc = drc.drc_index_start +
++					(k * drc.sequential_inc);
++
++				if (dlpar_cpu_exists(parent, idrc))
++					continue;
++
++				cpu_drcs[cpus_found++] = idrc;
++			}
++		}
++
++	} else {
++		index = 1;
++		while (cpus_found < cpus_to_add) {
++			u32 drc;
  
- 		for (j = 0; j < num_set_entries; j++) {
+-		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
++			rc = of_property_read_u32_index(parent,
++						"ibm,drc-indexes",
+ 						index++, &drc);
+-		if (rc)
+-			break;
++			if (rc)
++				break;
  
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 53902c7..477a21c 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -253,6 +253,7 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
- 	value = of_prop_next_u32(info, NULL, &entries);
- 	if (!value)
- 		return -EINVAL;
-+	value++;
+-		if (dlpar_cpu_exists(parent, drc))
+-			continue;
++			if (dlpar_cpu_exists(parent, drc))
++				continue;
  
- 	for (j = 0; j < entries; j++) {
- 		of_read_drc_info_cell(&info, &value, &drc);
+-		cpu_drcs[cpus_found++] = drc;
++			cpu_drcs[cpus_found++] = drc;
++		}
+ 	}
+ 
++err_out:
+ 	of_node_put(parent);
+ 	return cpus_found;
+ }
