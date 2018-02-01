@@ -1,32 +1,19 @@
-Return-Path: <joserz@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXSwy16ZzzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 05:16:17 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w11IFxRA080681
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Feb 2018 13:16:15 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fv77ma7ss-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 13:16:15 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
- Thu, 1 Feb 2018 11:16:14 -0700
-From: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXSzZ5V6TzF0Yd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 05:18:34 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id ay8so4144278plb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 10:18:34 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, paulus@ozlabs.org, lvivier@redhat.com
-Subject: [PATCH v5 1/1] KVM: PPC: Book3S: Add MMIO emulation for VMX
- instructions
-Date: Thu,  1 Feb 2018 16:15:39 -0200
-In-Reply-To: <20180201181539.9650-1-joserz@linux.vnet.ibm.com>
-References: <20180201181539.9650-1-joserz@linux.vnet.ibm.com>
-Message-Id: <20180201181539.9650-2-joserz@linux.vnet.ibm.com>
+Cc: david@gibson.dropbear.id.au, aneesh.kumar@linux.vnet.ibm.com,
+ mpe@ellerman.id.au, Balbir Singh <bsingharora@gmail.com>
+Subject: [RFC] powerpc/mm/pgtable: Split mappings on hot-unplug
+Date: Thu,  1 Feb 2018 23:48:19 +0530
+Message-Id: <20180201181819.5723-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,337 +23,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch provides the MMIO load/store vector indexed
-X-Form emulation.
+This patch splits the a linear mapping if the hot-unplug range
+is smaller than the mapping size. The code detects if the mapping
+needs to be split into a smaller size and if so, uses the stop
+machine infrastructure to map the current linear mapping with
+a smaller size mapping. Then the requested area is unmapped.
 
-Instructions implemented:
-lvx: the quadword in storage addressed by the result of EA &
-0xffff_ffff_ffff_fff0 is loaded into VRT.
+A new API to do a local TLB flush is introduced and exported.
+This API is used in stop mapping after clearing the larger
+mapping and before creating the smaller mapping. There is also
+a check to ensure that we don't overlap with kernel text
+(the region that is being split) as it could cause the executing
+text to fault.
 
-stvx: the contents of VRS are stored into the quadword in storage
-addressed by the result of EA & 0xffff_ffff_ffff_fff0.
+There are some caveats with this approach, as the unmapping can
+cause reserved memory area to be freed up (memblock reserved
+mappings and allocations as well), that can be a problem. There
+could be a case where radix__map_kernel_page() may fault if the
+area selected to unmap contains the process page table, this is
+not a new problem created by the patch, but something to watch
+out for while testing. The right approach to solving the hot-unplug
+issue is to make the node/DIMM to be marked hotpluggable so that
+all the memory in that is movable. Currently there is no method
+of enforcing the hotpluggable property via libvirt or qemu.
 
-Reported-by: Gopesh Kumar Chaudhary <gopchaud@in.ibm.com>
-Reported-by: Balamuruhan S <bala24@linux.vnet.ibm.com>
-Signed-off-by: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+I've tested these changes under a kvm guest with 2 vcpus, from
+a split mapping point of view, some of the caveats mentioned
+above applied to the testing I did.
+
+TODOs
+
+1. In addition of checking overlapping text, we should check for
+reserved memory allocations in the unmapped region
+2. The code has duplication across several remove_*pgtable
+(pgd/pud/pmd), we could create helper functions to simplify
+the functionality.
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/include/asm/kvm_host.h   |   2 +
- arch/powerpc/include/asm/kvm_ppc.h    |   4 +
- arch/powerpc/include/asm/ppc-opcode.h |   6 ++
- arch/powerpc/kvm/emulate_loadstore.c  |  34 ++++++++
- arch/powerpc/kvm/powerpc.c            | 153 +++++++++++++++++++++++++++++++++-
- 5 files changed, 198 insertions(+), 1 deletion(-)
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |   1 +
+ arch/powerpc/mm/pgtable-radix.c                    | 130 +++++++++++++++++----
+ arch/powerpc/mm/tlb-radix.c                        |   6 +
+ 3 files changed, 116 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 3aa5b577cd60..045acc843e98 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -690,6 +690,7 @@ struct kvm_vcpu_arch {
- 	u8 mmio_vsx_offset;
- 	u8 mmio_vsx_copy_type;
- 	u8 mmio_vsx_tx_sx_enabled;
-+	u8 mmio_vmx_copy_nums;
- 	u8 osi_needed;
- 	u8 osi_enabled;
- 	u8 papr_enabled;
-@@ -800,6 +801,7 @@ struct kvm_vcpu_arch {
- #define KVM_MMIO_REG_QPR	0x0040
- #define KVM_MMIO_REG_FQPR	0x0060
- #define KVM_MMIO_REG_VSX	0x0080
-+#define KVM_MMIO_REG_VMX	0x00c0
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index 6a9e68003387..d1d4104e676d 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -20,6 +20,7 @@ extern void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
+ extern void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 			    unsigned long end);
+ extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
++extern void radix__flush_tlb_local_kernel_range(unsigned long start, unsigned long end);
  
- #define __KVM_HAVE_ARCH_WQP
- #define __KVM_HAVE_CREATE_DEVICE
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 9db18287b5f4..7765a800ddae 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -81,6 +81,10 @@ extern int kvmppc_handle_loads(struct kvm_run *run, struct kvm_vcpu *vcpu,
- extern int kvmppc_handle_vsx_load(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 				unsigned int rt, unsigned int bytes,
- 			int is_default_endian, int mmio_sign_extend);
-+extern int kvmppc_handle_load128_by2x64(struct kvm_run *run,
-+		struct kvm_vcpu *vcpu, unsigned int rt, int is_default_endian);
-+extern int kvmppc_handle_store128_by2x64(struct kvm_run *run,
-+		struct kvm_vcpu *vcpu, unsigned int rs, int is_default_endian);
- extern int kvmppc_handle_store(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			       u64 val, unsigned int bytes,
- 			       int is_default_endian);
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index ab5c1588b487..f1083bcf449c 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -156,6 +156,12 @@
- #define OP_31_XOP_LFDX          599
- #define OP_31_XOP_LFDUX		631
+ extern void radix__local_flush_tlb_mm(struct mm_struct *mm);
+ extern void radix__local_flush_all_mm(struct mm_struct *mm);
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index cfbbee941a76..10b6a1c433ff 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -17,6 +17,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/mm.h>
+ #include <linux/string_helpers.h>
++#include <linux/stop_machine.h>
  
-+/* VMX Vector Load Instructions */
-+#define OP_31_XOP_LVX           103
-+
-+/* VMX Vector Store Instructions */
-+#define OP_31_XOP_STVX          231
-+
- #define OP_LWZ  32
- #define OP_STFS 52
- #define OP_STFSU 53
-diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-index af833531af31..332b82eafd48 100644
---- a/arch/powerpc/kvm/emulate_loadstore.c
-+++ b/arch/powerpc/kvm/emulate_loadstore.c
-@@ -58,6 +58,18 @@ static bool kvmppc_check_vsx_disabled(struct kvm_vcpu *vcpu)
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -671,6 +672,35 @@ static void free_pmd_table(pmd_t *pmd_start, pud_t *pud)
+ 	pud_clear(pud);
  }
- #endif /* CONFIG_VSX */
  
-+#ifdef CONFIG_ALTIVEC
-+static bool kvmppc_check_altivec_disabled(struct kvm_vcpu *vcpu)
++struct change_mapping_params {
++	pte_t *pte;
++	unsigned long start;
++	unsigned long end;
++	unsigned long size;
++	unsigned long aligned_start;
++	unsigned long aligned_end;
++};
++
++static int stop_machine_change_mapping(void *data)
 +{
-+	if (!(kvmppc_get_msr(vcpu) & MSR_VEC)) {
-+		kvmppc_core_queue_vec_unavail(vcpu);
-+		return true;
-+	}
++	struct change_mapping_params *params =
++			(struct change_mapping_params *)data;
++	unsigned long addr;
 +
-+	return false;
++	if (!data)
++		return -1;
++
++	spin_unlock(&init_mm.page_table_lock);
++	pte_clear(&init_mm, params->aligned_start, params->pte);
++	radix__flush_tlb_local_kernel_range(params->aligned_start,
++						params->aligned_end);
++	for (addr = params->aligned_start; addr < params->aligned_end;
++			addr += params->size)
++		create_physical_mapping(addr, addr + params->size);
++	spin_lock(&init_mm.page_table_lock);
++	return 0;
 +}
-+#endif /* CONFIG_ALTIVEC */
 +
- /*
-  * XXX to do:
-  * lfiwax, lfiwzx
-@@ -98,6 +110,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 	vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_NONE;
- 	vcpu->arch.mmio_sp64_extend = 0;
- 	vcpu->arch.mmio_sign_extend = 0;
-+	vcpu->arch.mmio_vmx_copy_nums = 0;
- 
- 	switch (get_op(inst)) {
- 	case 31:
-@@ -459,6 +472,27 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 							 rs, 4, 1);
- 			break;
- #endif /* CONFIG_VSX */
-+
-+#ifdef CONFIG_ALTIVEC
-+		case OP_31_XOP_LVX:
-+			if (kvmppc_check_altivec_disabled(vcpu))
-+				return EMULATE_DONE;
-+			vcpu->arch.vaddr_accessed &= ~0xFULL;
-+			vcpu->arch.mmio_vmx_copy_nums = 2;
-+			emulated = kvmppc_handle_load128_by2x64(run, vcpu,
-+					KVM_MMIO_REG_VMX|rt, 1);
-+			break;
-+
-+		case OP_31_XOP_STVX:
-+			if (kvmppc_check_altivec_disabled(vcpu))
-+				return EMULATE_DONE;
-+			vcpu->arch.vaddr_accessed &= ~0xFULL;
-+			vcpu->arch.mmio_vmx_copy_nums = 2;
-+			emulated = kvmppc_handle_store128_by2x64(run, vcpu,
-+					rs, 1);
-+			break;
-+#endif /* CONFIG_ALTIVEC */
-+
- 		default:
- 			emulated = EMULATE_FAIL;
- 			break;
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 1915e86cef6f..a19f42120b38 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -832,7 +832,7 @@ void kvm_arch_irq_bypass_del_producer(struct irq_bypass_consumer *cons,
- 		kvm->arch.kvm_ops->irq_bypass_del_producer(cons, prod);
- }
- 
--#ifdef CONFIG_VSX
-+#ifdef CONFIG_ALTIVEC
- static inline int kvmppc_get_vsr_dword_offset(int index)
+ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+ 			     unsigned long end)
  {
- 	int offset;
-@@ -848,7 +848,9 @@ static inline int kvmppc_get_vsr_dword_offset(int index)
- 
- 	return offset;
+@@ -699,12 +729,65 @@ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+ 	}
  }
-+#endif /* CONFIG_ALTIVEC */
  
-+#ifdef CONFIG_VSX
- static inline int kvmppc_get_vsr_word_offset(int index)
- {
- 	int offset;
-@@ -925,6 +927,31 @@ static inline void kvmppc_set_vsr_word(struct kvm_vcpu *vcpu,
- }
- #endif /* CONFIG_VSX */
- 
-+#ifdef CONFIG_ALTIVEC
-+static inline void kvmppc_set_vmx_dword(struct kvm_vcpu *vcpu,
-+		u64 gpr)
++/*
++ * clear the pte and potentially split the mapping helper
++ * Return values are as follows
++ *
++ * 0: pte cleared, no changes required
++ * 1: pte cleared and mapping split
++ * -1: We can't clear this pte range
++ */
++static int clear_and_maybe_split_kernel_mapping(unsigned long addr,
++		unsigned long end, unsigned long size, unsigned long prev_size,
++		pte_t *pte)
 +{
-+	int index = vcpu->arch.io_gpr & KVM_MMIO_REG_MASK;
-+	u32 hi, lo;
++	unsigned long mask = ~(size - 1);
++	unsigned long aligned_start = addr & mask;
++	unsigned long aligned_end = addr + size;
++	struct change_mapping_params params;
++	bool split_region = false;
 +
-+#ifdef __BIG_ENDIAN
-+	hi = gpr >> 32;
-+	lo = gpr & 0xffffffff;
-+#else
-+	lo = gpr >> 32;
-+	hi = gpr & 0xffffffff;
-+#endif
-+
-+	if (vcpu->arch.mmio_vmx_copy_nums == 1) {
-+		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(2)] = lo;
-+		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(3)] = hi;
-+	} else if (vcpu->arch.mmio_vmx_copy_nums == 2) {
-+		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(0)] = lo;
-+		VCPU_VSX_VR(vcpu, index).u[kvmppc_get_vsr_word_offset(1)] = hi;
-+	}
-+}
-+#endif /* CONFIG_ALTIVEC */
-+
- #ifdef CONFIG_PPC_FPU
- static inline u64 sp_to_dp(u32 fprs)
- {
-@@ -1027,6 +1054,11 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
- 				KVMPPC_VSX_COPY_DWORD_LOAD_DUMP)
- 			kvmppc_set_vsr_dword_dump(vcpu, gpr);
- 		break;
-+#endif
-+#ifdef CONFIG_ALTIVEC
-+	case KVM_MMIO_REG_VMX:
-+		kvmppc_set_vmx_dword(vcpu, gpr);
-+		break;
- #endif
- 	default:
- 		BUG();
-@@ -1307,6 +1339,113 @@ static int kvmppc_emulate_mmio_vsx_loadstore(struct kvm_vcpu *vcpu,
- }
- #endif /* CONFIG_VSX */
- 
-+#ifdef CONFIG_ALTIVEC
-+/* handle quadword load access in two halves */
-+int kvmppc_handle_load128_by2x64(struct kvm_run *run, struct kvm_vcpu *vcpu,
-+		unsigned int rt, int is_default_endian)
-+{
-+	enum emulation_result emulated;
-+
-+	while (vcpu->arch.mmio_vmx_copy_nums) {
-+		emulated = __kvmppc_handle_load(run, vcpu, rt, 8,
-+				is_default_endian, 0);
-+
-+		if (emulated != EMULATE_DONE)
-+			break;
-+
-+		vcpu->arch.paddr_accessed += run->mmio.len;
-+		vcpu->arch.mmio_vmx_copy_nums--;
-+	}
-+
-+	return emulated;
-+}
-+
-+static inline int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
-+{
-+	vector128 vrs = VCPU_VSX_VR(vcpu, rs);
-+
-+	if (vcpu->arch.mmio_vmx_copy_nums == 1) {
-+#ifdef __BIG_ENDIAN
-+		*val = vrs.u[kvmppc_get_vsr_word_offset(3)];
-+		*val = (*val << 32) | vrs.u[kvmppc_get_vsr_word_offset(2)];
-+#else
-+		*val = vrs.u[kvmppc_get_vsr_word_offset(2)];
-+		*val = (*val << 32) | vrs.u[kvmppc_get_vsr_word_offset(3)];
-+#endif
-+		return 0;
-+	} else if (vcpu->arch.mmio_vmx_copy_nums == 2) {
-+#ifdef __BIG_ENDIAN
-+		*val = vrs.u[kvmppc_get_vsr_word_offset(1)];
-+		*val = (*val << 32) | vrs.u[kvmppc_get_vsr_word_offset(0)];
-+#else
-+		*val = vrs.u[kvmppc_get_vsr_word_offset(0)];
-+		*val = (*val << 32) | vrs.u[kvmppc_get_vsr_word_offset(1)];
-+#endif
-+		return 0;
-+	}
-+	return -1;
-+}
-+
-+/* handle quadword store in two halves */
-+int kvmppc_handle_store128_by2x64(struct kvm_run *run, struct kvm_vcpu *vcpu,
-+		unsigned int rs, int is_default_endian)
-+{
-+	u64 val = 0;
-+	enum emulation_result emulated = EMULATE_DONE;
-+
-+	vcpu->arch.io_gpr = rs;
-+
-+	while (vcpu->arch.mmio_vmx_copy_nums) {
-+		if (kvmppc_get_vmx_data(vcpu, rs, &val) == -1)
-+			return EMULATE_FAIL;
-+
-+		emulated = kvmppc_handle_store(run, vcpu, val, 8,
-+				is_default_endian);
-+		if (emulated != EMULATE_DONE)
-+			break;
-+
-+		vcpu->arch.paddr_accessed += run->mmio.len;
-+		vcpu->arch.mmio_vmx_copy_nums--;
-+	}
-+
-+	return emulated;
-+}
-+
-+static int kvmppc_emulate_mmio_vmx_loadstore(struct kvm_vcpu *vcpu,
-+		struct kvm_run *run)
-+{
-+	enum emulation_result emulated = EMULATE_FAIL;
-+	int r;
-+
-+	vcpu->arch.paddr_accessed += run->mmio.len;
-+
-+	if (!vcpu->mmio_is_write) {
-+		emulated = kvmppc_handle_load128_by2x64(run, vcpu,
-+				vcpu->arch.io_gpr, 1);
-+	} else {
-+		emulated = kvmppc_handle_store128_by2x64(run, vcpu,
-+				vcpu->arch.io_gpr, 1);
-+	}
-+
-+	switch (emulated) {
-+	case EMULATE_DO_MMIO:
-+		run->exit_reason = KVM_EXIT_MMIO;
-+		r = RESUME_HOST;
-+		break;
-+	case EMULATE_FAIL:
-+		pr_info("KVM: MMIO emulation failed (VMX repeat)\n");
-+		run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-+		run->internal.suberror = KVM_INTERNAL_ERROR_EMULATION;
-+		r = RESUME_HOST;
-+		break;
-+	default:
-+		r = RESUME_GUEST;
-+		break;
-+	}
-+	return r;
-+}
-+#endif /* CONFIG_ALTIVEC */
-+
- int kvm_vcpu_ioctl_get_one_reg(struct kvm_vcpu *vcpu, struct kvm_one_reg *reg)
- {
- 	int r = 0;
-@@ -1425,6 +1564,18 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
- 				return r;
- 			}
- 		}
-+#endif
-+#ifdef CONFIG_ALTIVEC
-+		if (vcpu->arch.mmio_vmx_copy_nums > 0)
-+			vcpu->arch.mmio_vmx_copy_nums--;
-+
-+		if (vcpu->arch.mmio_vmx_copy_nums > 0) {
-+			r = kvmppc_emulate_mmio_vmx_loadstore(vcpu, run);
-+			if (r == RESUME_HOST) {
-+				vcpu->mmio_needed = 1;
-+				return r;
-+			}
++	if ((end - addr) < size) {
++		/*
++		 * We're going to clear the PTE, but not flushed
++		 * the mapping, time to remap and flush. The
++		 * effects if visible outside the processor or
++		 * if we are running in code close to the
++		 * mapping we cleared, we are in trouble.
++		 */
++		if (overlaps_kernel_text(aligned_start, addr) ||
++			overlaps_kernel_text(end, aligned_end)) {
++			/*
++			 * Hack, just return, don't pte_clear
++			 */
++			return -1;
 +		}
- #endif
- 	} else if (vcpu->arch.osi_needed) {
- 		u64 *gprs = run->osi.gprs;
++		split_region = true;
++	}
++
++	if (split_region) {
++		params.pte = pte;
++		params.start = addr;
++		params.end = end;
++		params.size = prev_size;
++		params.aligned_end = aligned_end;
++		params.aligned_end = min_t(unsigned long, aligned_end,
++				(unsigned long)__va(memblock_end_of_DRAM()));
++		stop_machine(stop_machine_change_mapping, &params, NULL);
++		return 1;
++	}
++
++	pte_clear(&init_mm, addr, pte);
++	return 0;
++}
++
+ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
+ 			     unsigned long end)
+ {
+ 	unsigned long next;
+ 	pte_t *pte_base;
+ 	pmd_t *pmd;
++	int rc = 0;
+ 
+ 	pmd = pmd_start + pmd_index(addr);
+ 	for (; addr < end; addr = next, pmd++) {
+@@ -714,14 +797,15 @@ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
+ 			continue;
+ 
+ 		if (pmd_huge(*pmd)) {
+-			if (!IS_ALIGNED(addr, PMD_SIZE) ||
+-			    !IS_ALIGNED(next, PMD_SIZE)) {
+-				WARN_ONCE(1, "%s: unaligned range\n", __func__);
++			rc = clear_and_maybe_split_kernel_mapping(addr, end,
++				PMD_SIZE, PAGE_SIZE, (pte_t *)pmd);
++			if (rc == 0)
+ 				continue;
+-			}
+-
+-			pte_clear(&init_mm, addr, (pte_t *)pmd);
+-			continue;
++			if (rc == 1) {
++				pte_base = (pte_t *)pmd_page_vaddr(*pmd);
++				remove_pte_table(pte_base, addr, end);
++			} else
++				return;
+ 		}
+ 
+ 		pte_base = (pte_t *)pmd_page_vaddr(*pmd);
+@@ -736,6 +820,7 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
+ 	unsigned long next;
+ 	pmd_t *pmd_base;
+ 	pud_t *pud;
++	int rc = 0;
+ 
+ 	pud = pud_start + pud_index(addr);
+ 	for (; addr < end; addr = next, pud++) {
+@@ -745,14 +830,15 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
+ 			continue;
+ 
+ 		if (pud_huge(*pud)) {
+-			if (!IS_ALIGNED(addr, PUD_SIZE) ||
+-			    !IS_ALIGNED(next, PUD_SIZE)) {
+-				WARN_ONCE(1, "%s: unaligned range\n", __func__);
++			rc = clear_and_maybe_split_kernel_mapping(addr, end,
++				PUD_SIZE, PMD_SIZE, (pte_t *)pud);
++			if (rc == 0)
+ 				continue;
+-			}
+-
+-			pte_clear(&init_mm, addr, (pte_t *)pud);
+-			continue;
++			if (rc == 1) {
++				pmd_base = (pmd_t *)pud_page_vaddr(*pud);
++				remove_pmd_table(pmd_base, addr, end);
++			} else
++				return;
+ 		}
+ 
+ 		pmd_base = (pmd_t *)pud_page_vaddr(*pud);
+@@ -766,6 +852,7 @@ static void remove_pagetable(unsigned long start, unsigned long end)
+ 	unsigned long addr, next;
+ 	pud_t *pud_base;
+ 	pgd_t *pgd;
++	int rc = 0;
+ 
+ 	spin_lock(&init_mm.page_table_lock);
+ 
+@@ -777,14 +864,15 @@ static void remove_pagetable(unsigned long start, unsigned long end)
+ 			continue;
+ 
+ 		if (pgd_huge(*pgd)) {
+-			if (!IS_ALIGNED(addr, PGDIR_SIZE) ||
+-			    !IS_ALIGNED(next, PGDIR_SIZE)) {
+-				WARN_ONCE(1, "%s: unaligned range\n", __func__);
++			rc = clear_and_maybe_split_kernel_mapping(addr, end,
++				PGD_SIZE, PUD_SIZE, (pte_t *)pgd);
++			if (rc == 0)
+ 				continue;
+-			}
+-
+-			pte_clear(&init_mm, addr, (pte_t *)pgd);
+-			continue;
++			if (rc == 1) {
++				pud_base = (pud_t *)pgd_page_vaddr(*pgd);
++				remove_pud_table(pud_base, addr, end);
++			} else
++				return;
+ 		}
+ 
+ 		pud_base = (pud_t *)pgd_page_vaddr(*pgd);
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 884f4b705b57..9bbeaef1ee9b 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -323,6 +323,12 @@ void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_kernel_range);
+ 
++void radix__flush_tlb_local_kernel_range(unsigned long start, unsigned long end)
++{
++	_tlbie_pid(0, RIC_FLUSH_ALL);
++}
++EXPORT_SYMBOL(radix__flush_tlb_local_kernel_range);
++
+ #define TLB_FLUSH_ALL -1UL
+ 
+ /*
 -- 
-2.14.3
+2.13.6
