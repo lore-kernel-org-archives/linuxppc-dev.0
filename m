@@ -1,16 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <SRS0=M4tJ=E3=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXLHv22h4zDqpQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 00:17:15 +1100 (AEDT)
-In-Reply-To: <20180131141310.4938-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: npiggin@gmail.com
-Subject: Re: powerpc/mm/radix: Fix build error when RADIX_MMU=n
-Message-Id: <3zXLHt6ZYWz9sR8@ozlabs.org>
-Date: Fri,  2 Feb 2018 00:17:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXRSr1kNvzF0TR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 04:10:20 +1100 (AEDT)
+Date: Thu, 1 Feb 2018 12:10:15 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, devicetree@vger.kernel.org, Tyrel
+ Datwyler <tyreld@linux.vnet.ibm.com>, Geert Uytterhoeven
+ <geert@linux-m68k.org>, linux-renesas-soc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>,
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH v2 0/1] of: easier debugging for node life cycle issues
+Message-ID: <20180201121015.72fd242c@gandalf.local.home>
+In-Reply-To: <4b373579-7a86-6883-2624-12a5408bb49b@gmail.com>
+References: <20180121143117.19805-1-wsa+renesas@sang-engineering.com>
+ <00fc90ee-de26-f819-9c81-27d06918564d@gmail.com>
+ <20180125060330.781667e9@vmware.local.home>
+ <a30d4cd3-0068-8cca-cc2f-ca207d0d278b@gmail.com>
+ <20180125231443.44yy65ztr6exaam7@ninjato>
+ <4b373579-7a86-6883-2624-12a5408bb49b@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +33,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-01-31 at 14:13:10 UTC, Michael Ellerman wrote:
-> The recent TLB flush rework broke the build when the Radix MMU is
-> disabled at build time, eg:
-> 
->   (.text+0x264): undefined reference to `.radix__tlbiel_all'
-> 
-> We could add an empty version, but if we ever called it by accident
-> that would indicate a bad bug, so add a stub that just WARNs if we do.
-> 
-> Fixes: d4748276ae14 ("powerpc/64s: Improve local TLB flush for boot and MCE on POWER9")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Thu, 25 Jan 2018 16:46:06 -0800
+Frank Rowand <frowand.list@gmail.com> wrote:
 
-Applied to powerpc next.
+> The point is that using ftrace means there are use cases for the
+> debug information where the information will not be available.
 
-https://git.kernel.org/powerpc/c/015eb1b89e959c9349f0a01803fb8e
+Note, this email came out when I was traveling. I'm now looking at the
+code and trace events are enabled right after rcu_init() in init/main.c.
 
-cheers
+The early_initcall() enables syscall events(), as they are not
+available earlier.
+
+-- Steve
