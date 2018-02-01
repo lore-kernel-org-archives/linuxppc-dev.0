@@ -1,27 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zX4VL1gZCzDr2Q
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 13:55:22 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ingo Molnar <mingo@kernel.org>, Ram Pai <linuxram@us.ibm.com>
-Cc: mingo@redhat.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, x86@kernel.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, dave.hansen@intel.com, benh@kernel.crashing.org,
- paulus@samba.org, khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, corbet@lwn.net,
- arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com
-Subject: Re: [PATCH v11 0/3] mm, x86,
- powerpc: Enhancements to Memory Protection Keys.
-In-Reply-To: <20180131070711.pad45qmnougnh4vf@gmail.com>
-References: <1517341452-11924-1-git-send-email-linuxram@us.ibm.com>
- <20180131070711.pad45qmnougnh4vf@gmail.com>
-Date: Thu, 01 Feb 2018 13:55:21 +1100
-Message-ID: <87lggde7vq.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zX5Jf31bwzDqms
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Feb 2018 14:32:02 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w113T64x059303
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 22:32:00 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fups181wu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jan 2018 22:31:59 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 31 Jan 2018 22:31:59 -0500
+Subject: Re: [bug report] powerpc/mm/radix: Add tlbflush routines
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Dan Carpenter <dan.carpenter@oracle.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180131154521.GA21698@mwanda>
+ <8ada45aa-9b29-408c-ba6f-c0938dce047b@c-s.fr>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 1 Feb 2018 09:01:48 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <8ada45aa-9b29-408c-ba6f-c0938dce047b@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <4e6d70bd-a4c6-53af-9ca0-59ecb669c4ce@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +39,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ingo Molnar <mingo@kernel.org> writes:
 
-> * Ram Pai <linuxram@us.ibm.com> wrote:
->
->> This patch series provides arch-neutral enhancements to
->> enable memory-keys on new architecutes, and the corresponding
->> changes in x86 and powerpc specific code to support that.
->> 
->> a) Provides ability to support upto 32 keys.  PowerPC
->> 	can handle 32 keys and hence needs this.
->> 
->> b) Arch-neutral code; and not the arch-specific code,
->>    determines the format of the string, that displays the key
->>    for each vma in smaps.
->> 
->> PowerPC implementation of memory-keys is now in powerpc/next tree.
->> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=92e3da3cf193fd27996909956c12a23c0333da44
->
-> All three patches look sane to me. If you would like to carry these generic bits 
-> in the PowerPC tree as well then:
->
->   Reviewed-by: Ingo Molnar <mingo@kernel.org>
 
-Thanks.
+On 01/31/2018 09:31 PM, Christophe LEROY wrote:
+> 
+> 
+> Le 31/01/2018 à 16:45, Dan Carpenter a écrit :
+>> Hello Aneesh Kumar K.V,
+>>
+>> The patch 1a472c9dba6b: "powerpc/mm/radix: Add tlbflush routines"
+>> from Apr 29, 2016, leads to the following static checker warning:
+>>
+>>     arch/powerpc/mm/tlb_nohash.c:218 __local_flush_tlb_page()
+>>     warn: always true condition '(pid != ~0) => (0-u32max != u64max)'
+>>
+>> arch/powerpc/mm/tlb_nohash.c
+>>     211  void __local_flush_tlb_page(struct mm_struct *mm, unsigned 
+>> long vmaddr,
+>>     212                              int tsize, int ind)
+>>     213  {
+>>     214          unsigned int pid;
+>>     215
+>>     216          preempt_disable();
+>>     217          pid = mm ? mm->context.id : 0;
+>>     218          if (pid != MMU_NO_CONTEXT)
+>>                      ^^^^^^^^^^^^^^^^^^^^^
+>>     219                  _tlbil_va(vmaddr, pid, tsize, ind);
+>>     220          preempt_enable();
+>>     221  }
+>>
+>> I don't know very much about PowerPC.  The static checker is guessing
+>> which headers to pull in instead of relying on the build system so there
+>> are a lot of false positives.  It's apparently using the
+>> arch/powerpc/include/asm/book3s/64/tlbflush.h header which does:
+>>
+>> #define MMU_NO_CONTEXT ~0UL
+>>
+>> so it's UINT_MAX vs U64_MAX which is making the checker complain.
+> 
+> As far as I can see from arch/powerpc/include/asm/mmu-hash64.h, 
+> mm->context.id is an unsigned long, so pid should also be an unsigned 
+> long, not an unsigned int ?
+> 
+> Christophe
+> 
 
-I'll put them in powerpc next and probably send to Linus next week in a
-2nd pull request for 4.16.
+yes.
 
-cheers
+We did similar fixup for book3s radix
+in 9690c15742688e9cb5ee4aa0b08e458551ceea13 (powerpc/mm/radix: Fix 
+always false comparison against MMU_NO_CONTEXT
+)
+
+-aneesh
