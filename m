@@ -1,12 +1,13 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
+Return-Path: <steven.sistare@oracle.com>
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zY0YZ0YYrzF0Z2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2018 02:01:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zY2Tm1M76zF0YM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2018 03:28:11 +1100 (AEDT)
 Subject: Re: [PATCH v11 00/10] Application Data Integrity feature introduced
  by SPARC M7
-To: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+ Khalid Aziz <khalid.aziz@oracle.com>
 Cc: davem@davemloft.net, dave.hansen@linux.intel.com, aarcange@redhat.com,
  akpm@linux-foundation.org, allen.pais@oracle.com,
  anthony.yznaga@oracle.com, arnd@arndb.de, babu.moger@oracle.com,
@@ -32,19 +33,18 @@ Cc: davem@davemloft.net, dave.hansen@linux.intel.com, aarcange@redhat.com,
  pasha.tatashin@oracle.com, paulus@samba.org, pombredanne@nexb.com,
  punit.agrawal@arm.com, rob.gardner@oracle.com,
  ross.zwisler@linux.intel.com, shannon.nelson@oracle.com, shli@fb.com,
- sparclinux@vger.kernel.org, steven.sistare@oracle.com,
- tglx@linutronix.de, thomas.tai@oracle.com, tklauser@distanz.ch,
- tom.hromatka@oracle.com, vegard.nossum@oracle.com,
+ sparclinux@vger.kernel.org, tglx@linutronix.de, thomas.tai@oracle.com,
+ tklauser@distanz.ch, tom.hromatka@oracle.com, vegard.nossum@oracle.com,
  vijay.ac.kumar@oracle.com, willy@infradead.org, x86@kernel.org,
  zi.yan@cs.rutgers.edu
 References: <cover.1517497017.git.khalid.aziz@oracle.com>
  <87wozwi0p1.fsf@xmission.com>
-From: Khalid Aziz <khalid.aziz@oracle.com>
-Message-ID: <0f1bdb63-60d5-467c-a6a4-c06ba62b1f6e@oracle.com>
-Date: Fri, 2 Feb 2018 07:59:25 -0700
+From: Steven Sistare <steven.sistare@oracle.com>
+Message-ID: <59fb3a0c-0163-0ec2-9757-cc5969601fa7@oracle.com>
+Date: Fri, 2 Feb 2018 09:13:08 -0500
 MIME-Version: 1.0
 In-Reply-To: <87wozwi0p1.fsf@xmission.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,7 +54,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/01/2018 07:29 PM, ebiederm@xmission.com wrote:
+On 2/1/2018 9:29 PM, ebiederm@xmission.com wrote:
 > Khalid Aziz <khalid.aziz@oracle.com> writes:
 > 
 >> V11 changes:
@@ -68,13 +68,6 @@ On 02/01/2018 07:29 PM, ebiederm@xmission.com wrote:
 > 
 > I am a bit mystified why you don't store the tag in a vma
 > instead of inventing a new way to store data on page out.
-
-Hello Eric,
-
-As Steven pointed out, sparc sets tags per cacheline unlike pkey. This 
-results in much finer granularity for tags that pkey and hence requires 
-larger tag storage than what we can do in a vma.
-
 > 
 > Can you please use force_sig_fault to send these signals instead
 > of force_sig_info.  Emperically I have found that it is very
@@ -84,12 +77,21 @@ larger tag storage than what we can do in a vma.
 > all correct.  AKA the unused bits all need to be set to zero before
 > struct siginfo is copied to userspace.
 > 
+> Eric
 
-What you say makes sense. I followed the same code as other fault 
-handlers for sparc. I could change just the fault handlers for ADI 
-related faults. Would it make more sense to change all the fault 
-handlers in a separate patch and keep the code in 
-arch/sparc/kernel/traps_64.c consistent? Dave M, do you have a preference?
+The ADI tag can be set at a cacheline (64B) granularity, as opposed
+to the per-page granularity of pkeys.  This allows an object allocator
+to color each object differently within a page (rounding to 64B boundaries),
+such that a pointer overrun bug from one object to the next will cause a
+fault.  When pages are paged out, the tags must be saved, hence the
+new scheme for storing them.  One tag per vma is too coarse.
 
-Thanks,
-Khalid
+The combination of fine granularity and pageability makes for a powerful
+memory-reference error-detection framework.
+
+This was discussed in more detail when earlier patches were submitted,
+but it's been a while, and the distribution was probably narrower.
+
+Khalid can respond to the sig_fault comment.
+
+- Steve
