@@ -1,27 +1,44 @@
-Return-Path: <bharata.rao@gmail.com>
-Received: from mail-ot0-x242.google.com (mail-ot0-x242.google.com
- [IPv6:2607:f8b0:4003:c0f::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXmQk1zm0zDq8c
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 16:54:37 +1100 (AEDT)
-Received: by mail-ot0-x242.google.com with SMTP id a2so7883878otf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Feb 2018 21:54:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXpMV4vDjzF0b1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Feb 2018 18:21:58 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w127Jt5Y029629
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Feb 2018 02:21:56 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fvju2smtp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Feb 2018 02:21:55 -0500
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 2 Feb 2018 07:21:53 -0000
+Date: Thu, 1 Feb 2018 23:21:39 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, mpe@ellerman.id.au, mingo@redhat.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dave.hansen@intel.com,
+ benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, corbet@lwn.net,
+ arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com
+Subject: Re: [PATCH v11 3/3] mm, x86: display pkey in smaps only if arch
+ supports pkeys
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1517341452-11924-4-git-send-email-linuxram@us.ibm.com>
+ <201802021225.JPjLbdCs%fengguang.wu@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnz=gRT8xBjW6XMkdWDu79jkQ=-1qBxJgxrqMyKw=MCAu_A@mail.gmail.com>
-References: <20180201181819.5723-1-bsingharora@gmail.com>
- <CAKTCnz=gRT8xBjW6XMkdWDu79jkQ=-1qBxJgxrqMyKw=MCAu_A@mail.gmail.com>
-From: Bharata B Rao <bharata.rao@gmail.com>
-Date: Fri, 2 Feb 2018 11:24:35 +0530
-Message-ID: <CAGZKiBrN0PdCobR_cZz5t+gLQarE5i79CjMtXHomRPwxtNSAuQ@mail.gmail.com>
-Subject: Re: [RFC] powerpc/mm/pgtable: Split mappings on hot-unplug
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: multipart/alternative; boundary="001a113d140cdce6cd05643458cc"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201802021225.JPjLbdCs%fengguang.wu@intel.com>
+Message-Id: <20180202072139.GD5411@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,90 +48,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a113d140cdce6cd05643458cc
-Content-Type: text/plain; charset="UTF-8"
+On Fri, Feb 02, 2018 at 12:27:27PM +0800, kbuild test robot wrote:
+> Hi Ram,
+> 
+> Thank you for the patch! Yet something to improve:
+> 
+> [auto build test ERROR on linus/master]
+> [also build test ERROR on v4.15 next-20180201]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> 
+> url:    https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_0day-2Dci_linux_commits_Ram-2DPai_mm-2Dx86-2Dpowerpc-2DEnhancements-2Dto-2DMemory-2DProtection-2DKeys_20180202-2D120004&d=DwIBAg&c=jf_iaSHvJObTbx-siA1ZOg&r=m-UrKChQVkZtnPpjbF6YY99NbT8FBByQ-E-ygV8luxw&m=Fv3tEHet1bTUrDjOnzEhXvGM_4tGlkYhJHPBnWNWgVA&s=Z1W6CV2tfPmLYU8lVv1oDRl2cAyQA76KE2P064A2CQY&e=
+> config: x86_64-randconfig-x005-201804 (attached as .config)
+> compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=x86_64 
+> 
+> All error/warnings (new ones prefixed by >>):
+> 
+>    In file included from arch/x86/include/asm/mmu_context.h:8:0,
+>                     from arch/x86/events/core.c:36:
+> >> include/linux/pkeys.h:16:23: error: expected identifier or '(' before numeric constant
+>     #define vma_pkey(vma) 0
+>                           ^
+> >> arch/x86/include/asm/mmu_context.h:298:19: note: in expansion of macro 'vma_pkey'
+>     static inline int vma_pkey(struct vm_area_struct *vma)
+>                       ^~~~~~~~
+> 
+> vim +16 include/linux/pkeys.h
+> 
+>      7	
+>      8	#ifdef CONFIG_ARCH_HAS_PKEYS
+>      9	#include <asm/pkeys.h>
+>     10	#else /* ! CONFIG_ARCH_HAS_PKEYS */
+>     11	#define arch_max_pkey() (1)
+>     12	#define execute_only_pkey(mm) (0)
+>     13	#define arch_override_mprotect_pkey(vma, prot, pkey) (0)
+>     14	#define PKEY_DEDICATED_EXECUTE_ONLY 0
+>     15	#define ARCH_VM_PKEY_FLAGS 0
+>   > 16	#define vma_pkey(vma) 0
 
-On Fri, Feb 2, 2018 at 8:38 AM, Balbir Singh <bsingharora@gmail.com> wrote:
+Oops. Thanks for catching the issue. The following fix will resolve the error.
 
-> On Thu, Feb 1, 2018 at 11:48 PM, Balbir Singh <bsingharora@gmail.com>
-> wrote:
-> > This patch splits the a linear mapping if the hot-unplug range
-> > is smaller than the mapping size. The code detects if the mapping
-> > needs to be split into a smaller size and if so, uses the stop
-> > machine infrastructure to map the current linear mapping with
-> > a smaller size mapping. Then the requested area is unmapped.
-> >
-> > A new API to do a local TLB flush is introduced and exported.
-> > This API is used in stop mapping after clearing the larger
-> > mapping and before creating the smaller mapping. There is also
-> > a check to ensure that we don't overlap with kernel text
-> > (the region that is being split) as it could cause the executing
-> > text to fault.
-> >
-> > There are some caveats with this approach, as the unmapping can
-> > cause reserved memory area to be freed up (memblock reserved
-> > mappings and allocations as well), that can be a problem. There
-> > could be a case where radix__map_kernel_page() may fault if the
-> > area selected to unmap contains the process page table, this is
-> > not a new problem created by the patch, but something to watch
-> > out for while testing. The right approach to solving the hot-unplug
-> > issue is to make the node/DIMM to be marked hotpluggable so that
-> > all the memory in that is movable. Currently there is no method
-> > of enforcing the hotpluggable property via libvirt or qemu.
->
+diff --git a/arch/x86/include/asm/mmu_context.h
+b/arch/x86/include/asm/mmu_context.h
+index 6d16d15..c1aeb19 100644
+--- a/arch/x86/include/asm/mmu_context.h
++++ b/arch/x86/include/asm/mmu_context.h
+@@ -238,11 +238,6 @@ static inline int vma_pkey(struct vm_area_struct
+		*vma)
+ 
+        return (vma->vm_flags & vma_pkey_mask) >> VM_PKEY_SHIFT;
+}
+-#else
+-static inline int vma_pkey(struct vm_area_struct *vma)
+-{
+-       return 0;
+-}
+ #endif
 
-In fact QEMU presents all the hotpluggable memory to the guest via
-ibm,dynamic-reconfiguration-memory DT node. So guest kernel can easily mark
-them as hotpluggable and that is what I tried in my earlier attempts.
-However that won't fly with PowerVM for the reason described in
-https://patchwork.ozlabs.org/patch/856015/
-
-Regards,
-Bharata.
-
---001a113d140cdce6cd05643458cc
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">=
-On Fri, Feb 2, 2018 at 8:38 AM, Balbir Singh <span dir=3D"ltr">&lt;<a href=
-=3D"mailto:bsingharora@gmail.com" target=3D"_blank">bsingharora@gmail.com</=
-a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0=
-px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"><=
-div class=3D"gmail-HOEnZb"><div class=3D"gmail-h5">On Thu, Feb 1, 2018 at 1=
-1:48 PM, Balbir Singh &lt;<a href=3D"mailto:bsingharora@gmail.com">bsinghar=
-ora@gmail.com</a>&gt; wrote:<br>
-&gt; This patch splits the a linear mapping if the hot-unplug range<br>
-&gt; is smaller than the mapping size. The code detects if the mapping<br>
-&gt; needs to be split into a smaller size and if so, uses the stop<br>
-&gt; machine infrastructure to map the current linear mapping with<br>
-&gt; a smaller size mapping. Then the requested area is unmapped.<br>
-&gt;<br>
-&gt; A new API to do a local TLB flush is introduced and exported.<br>
-&gt; This API is used in stop mapping after clearing the larger<br>
-&gt; mapping and before creating the smaller mapping. There is also<br>
-&gt; a check to ensure that we don&#39;t overlap with kernel text<br>
-&gt; (the region that is being split) as it could cause the executing<br>
-&gt; text to fault.<br>
-&gt;<br>
-&gt; There are some caveats with this approach, as the unmapping can<br>
-&gt; cause reserved memory area to be freed up (memblock reserved<br>
-&gt; mappings and allocations as well), that can be a problem. There<br>
-&gt; could be a case where radix__map_kernel_page() may fault if the<br>
-&gt; area selected to unmap contains the process page table, this is<br>
-&gt; not a new problem created by the patch, but something to watch<br>
-&gt; out for while testing. The right approach to solving the hot-unplug<br=
->
-&gt; issue is to make the node/DIMM to be marked hotpluggable so that<br>
-&gt; all the memory in that is movable. Currently there is no method<br>
-&gt; of enforcing the hotpluggable property via libvirt or qemu.</div></div=
-></blockquote></div><br></div><div class=3D"gmail_extra">In fact QEMU prese=
-nts all the hotpluggable memory to the guest via ibm,dynamic-reconfiguratio=
-n-memory DT node. So guest kernel can easily mark them as hotpluggable and =
-that is what I tried in my earlier attempts. However that won&#39;t fly wit=
-h PowerVM for the reason described in <a href=3D"https://patchwork.ozlabs.o=
-rg/patch/856015/">https://patchwork.ozlabs.org/patch/856015/</a><br><br></d=
-iv><div class=3D"gmail_extra">Regards,<br></div><div class=3D"gmail_extra">=
-Bharata.<br></div></div>
-
---001a113d140cdce6cd05643458cc--
+RP
