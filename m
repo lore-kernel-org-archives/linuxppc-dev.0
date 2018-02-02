@@ -1,31 +1,38 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zY4Fg6bqTzF0cN
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2018 04:47:48 +1100 (AEDT)
-Subject: Re: [PATCH 22/34] dma-mapping: add an arch_dma_supported hook
-To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
-Cc: Konrad Rzeszutek Wilk <konrad@darnok.org>, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- patches@groups.riscv.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20180112084232.2857-1-hch@lst.de>
- <20180112084232.2857-23-hch@lst.de>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <5d7dfb29-eeef-2280-13c9-5260e9104f67@infradead.org>
-Date: Fri, 2 Feb 2018 09:47:23 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zY4R22wZPzF0TX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2018 04:55:57 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w12HsMAu004463
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Feb 2018 12:55:56 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fvvsng2w1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Feb 2018 12:55:55 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 2 Feb 2018 10:55:55 -0700
+Subject: Re: [PATCH, net] ibmvnic: fix firmware version when no firmware level
+ has been provided by the VIOS server
+To: =?UTF-8?Q?Desnes_Augusto_Nunes_do_Ros=c3=a1rio?=
+ <desnesn@linux.vnet.ibm.com>, netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, jallen@linux.vnet.ibm.com,
+ tlfalcon@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
+References: <20180201180430.16950-1-desnesn@linux.vnet.ibm.com>
+ <e82c4a78-37b3-afc5-6250-8ce8bb2ec5ce@linux.vnet.ibm.com>
+ <8528e0fe-30d8-9ce9-b791-62a76179666d@linux.vnet.ibm.com>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Fri, 2 Feb 2018 09:55:51 -0800
 MIME-Version: 1.0
-In-Reply-To: <20180112084232.2857-23-hch@lst.de>
+In-Reply-To: <8528e0fe-30d8-9ce9-b791-62a76179666d@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
+Message-Id: <1fea045a-20bd-8903-98fb-63b970d2e93d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/2018 12:42 AM, Christoph Hellwig wrote:
-> To implement the x86 forbid_dac and iommu_sac_force we want an arch hook
-> so that it can apply the global options across all dma_map_ops
-> implementations.
+On 02/02/2018 06:37 AM, Desnes Augusto Nunes do Rosário wrote:
+> Hello Tyrel,
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/x86/include/asm/dma-mapping.h |  3 +++
->  arch/x86/kernel/pci-dma.c          | 19 ++++++++++++-------
->  include/linux/dma-mapping.h        | 11 +++++++++++
->  3 files changed, 26 insertions(+), 7 deletions(-)
+> I concur with your observations, but since this patch has already been merged, I'll address them in another patch.
 
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index 88bcb1a8211d..d67742dad904 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -576,6 +576,14 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
->  	return 0;
->  }
->  
-> +/*
-> + * This is a hack for the legacy x86 forbid_dac and iommu_sac_force. Please
-> + * don't use this is new code.
+Fair enough. I didn't realize David had already merged it till after I sent my review.
 
-                     in new code.
+-Tyrel
 
-> + */
-> +#ifndef arch_dma_supported
-> +#define arch_dma_supported(dev, mask)	(1)
-> +#endif
-
-
--- 
-~Randy
+> 
+> Thank you for your review,
+> 
+> On 02/01/2018 07:02 PM, Tyrel Datwyler wrote:
+>> On 02/01/2018 10:04 AM, Desnes Augusto Nunes do Rosario wrote:
+>>> Older versions of VIOS servers do not send the firmware level in the VPD
+>>> buffer for the ibmvnic driver. Thus, not only the current message is mis-
+>>> leading but the firmware version in the ethtool will be NULL. Therefore,
+>>> this patch fixes the firmware string and its warning.
+>>>
+>>> Fixes: 4e6759be28e4 ("ibmvnic: Feature implementation of VPD for the ibmvnic driver")
+>>>
+>>> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+>>> ---
+>>>   drivers/net/ethernet/ibm/ibmvnic.c | 6 +++++-
+>>>   1 file changed, 5 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+>>> index b65f5f3ac034..2b3e71b63a7a 100644
+>>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>>> @@ -3290,7 +3290,11 @@ static void handle_vpd_rsp(union ibmvnic_crq *crq,
+>>>        */
+>>>       substr = strnstr(adapter->vpd->buff, "RM", adapter->vpd->len);
+>>>       if (!substr) {
+>>> -        dev_info(dev, "No FW level provided by VPD\n");
+>>> +        dev_info(dev, "Warning - No FW level has been provided in the VPD buffer by the VIOS Server\n");
+>>> +        ptr = strncpy((char *)adapter->fw_version, "N/A",
+>>
+>> Is "N/A" the right thing to report? Would something like "Unknown" or "Unreported" be better?
+>>
+>>> +                  3 * sizeof(char));
+>>> +        if (!ptr)
+>>> +            dev_err(dev, "Failed to inform that firmware version is unavailable to the adapter\n");
+>>
+>> The sentence structure here seems awkward. I would probably just get rid of this error and this one later in the function.
+>>
+>>     dev_err(dev, "Failed to isolate FW level string\n");
+>>
+>> Instead just check and report if adapter->fw_version == NULL in the complete: label section.
+>>
+>> -Tyrel
+>>
+>>>           goto complete;
+>>>       }
+>>>
+>>
+> 
