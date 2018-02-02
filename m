@@ -1,22 +1,38 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-vk0-x22f.google.com (mail-vk0-x22f.google.com
- [IPv6:2607:f8b0:400c:c05::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <desnesn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zXy7J5J7dzF0W9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2018 00:11:56 +1100 (AEDT)
-Received: by mail-vk0-x22f.google.com with SMTP id w201so13439223vkw.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Feb 2018 05:11:56 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zXzyf54dgzDqgY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Feb 2018 01:34:34 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w12ETXmt121864
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Feb 2018 09:34:31 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fvrwbb0mk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Feb 2018 09:34:31 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
+ Fri, 2 Feb 2018 07:34:30 -0700
+Subject: Re: [PATCH, net] ibmvnic: fix firmware version when no firmware level
+ has been provided by the VIOS server
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ tlfalcon@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com
+References: <20180201180430.16950-1-desnesn@linux.vnet.ibm.com>
+ <20180201.145935.1511421104143236233.davem@davemloft.net>
+From: =?UTF-8?Q?Desnes_Augusto_Nunes_do_Ros=c3=a1rio?=
+ <desnesn@linux.vnet.ibm.com>
+Date: Fri, 2 Feb 2018 12:34:25 -0200
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 2 Feb 2018 14:11:33 +0100
-Message-ID: <CA+7wUsybeT=pdkX7AkiC=JsG2ShDMZF+Z_anxryeJ=UJFHkSYQ@mail.gmail.com>
-Subject: [ppc32] WARNING: CPU: 0 PID: 1 at ./include/linux/dma-mapping.h:516
- dmam_alloc_coherent+0xd8/0x118
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180201.145935.1511421104143236233.davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <afddeb9a-c4c7-97b4-b38e-f2ffc8d64a5c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi there,
+Hello David,
 
-What is this warning all about (system is Mac Mini G4) ? Thanks
+Thank you for your review and the heads up about protocol.
 
-[    3.265537] pata-macio 0.00020000:ata-3: Activating pata-macio
-chipset KeyLargo ATA-3, Apple bus ID 0
-[    3.272686] WARNING: CPU: 0 PID: 1 at
-./include/linux/dma-mapping.h:516 dmam_alloc_coherent+0xd8/0x118
-[    3.280031] Modules linked in:
-[    3.283660] CPU: 0 PID: 1 Comm: swapper Not tainted 4.15.0+ #333
-[    3.287314] NIP:  c0643f5c LR: c0643ec8 CTR: 00000000
-[    3.290920] REGS: df4f1c00 TRAP: 0700   Not tainted  (4.15.0+)
-[    3.294499] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 28228428  XER: 20000000
-[    3.298056]
-               GPR00: c0643ec8 df4f1cb0 df4ee940 de15de50 00000000
-00000000 de15de5c 00000000
-               GPR08: 00000000 00000000 c08e4d88 00000000 24228484
-00000000 c0004cc8 00000000
-               GPR16: 00000000 00000000 00000000 00000000 00000000
-00000000 00000000 c0c90000
-               GPR24: c0b4fdd0 c0c3d6e0 00000000 de00beec 00001020
-014000c0 de15de50 de017c18
-[    3.315308] NIP [c0643f5c] dmam_alloc_coherent+0xd8/0x118
-[    3.318724] LR [c0643ec8] dmam_alloc_coherent+0x44/0x118
-[    3.322073] Call Trace:
-[    3.325399] [df4f1cb0] [c0643ec8] dmam_alloc_coherent+0x44/0x118 (unreliable)
-[    3.328858] [df4f1cd0] [c06a5f4c] pata_macio_port_start+0x48/0x98
-[    3.332294] [df4f1cf0] [c068b25c] ata_host_start.part.9+0x108/0x220
-[    3.335706] [df4f1d10] [c06912d8] ata_host_activate+0x70/0x15c
-[    3.339084] [df4f1d30] [c06a6a8c] pata_macio_common_init+0x300/0x568
-[    3.342459] [df4f1d90] [c06a6ef4] pata_macio_attach+0xe4/0x18c
-[    3.345862] [df4f1db0] [c06582bc] macio_device_probe+0x64/0xf8
-[    3.349218] [df4f1dd0] [c062c5e8] driver_probe_device+0x334/0x4b4
-[    3.352537] [df4f1e00] [c062c884] __driver_attach+0x11c/0x120
-[    3.355822] [df4f1e20] [c0629a14] bus_for_each_dev+0x70/0xc0
-[    3.359074] [df4f1e50] [c062b338] bus_add_driver+0x180/0x2dc
-[    3.362277] [df4f1e70] [c062d620] driver_register+0x94/0x13c
-[    3.365415] [df4f1e80] [c0b937f8] pata_macio_init+0x68/0x90
-[    3.368474] [df4f1ea0] [c0004af4] do_one_initcall+0x4c/0x178
-[    3.371471] [df4f1f00] [c0b50774] kernel_init_freeable+0x138/0x1d0
-[    3.374421] [df4f1f30] [c0004cec] kernel_init+0x24/0x118
-[    3.377337] [df4f1f40] [c0018304] ret_from_kernel_thread+0x5c/0x64
-[    3.380249] --- interrupt: 0 at   (null)
-                   LR =   (null)
-[    3.385965] Instruction dump:
-[    3.388713] 7fc4f378 7fe3fb78 93be0004 913e0008 939e0000 4bfecd79
-7fa3eb78 80010024
-[    3.391513] bb61000c 38210020 7c0803a6 4e800020 <0fe00000> 812a0000
-2f890000 409eff98
-[    3.394280] ---[ end trace a4431b67b2b33261 ]---
-[    3.397425] scsi host1: pata_macio
+On 02/01/2018 05:59 PM, David Miller wrote:
+> From: Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+> Date: Thu,  1 Feb 2018 16:04:30 -0200
+> 
+>> Older versions of VIOS servers do not send the firmware level in the VPD
+>> buffer for the ibmvnic driver. Thus, not only the current message is mis-
+>> leading but the firmware version in the ethtool will be NULL. Therefore,
+>> this patch fixes the firmware string and its warning.
+>>
+>> Fixes: 4e6759be28e4 ("ibmvnic: Feature implementation of VPD for the ibmvnic driver")
+>>
+>> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
+> 
+> Applied.
+> 
+> Please do not put empty lines between Fixes: and Signed-off-by: and other
+> tags, all tags are equal and are placed together in an uninterrupted
+> sequences of consequetive lines.
+> 
+> Thank you.
+> 
+
+-- 
+Desnes Augusto Nunes do Rosário
+------------------------------------------
+
+Linux Developer - IBM / Brazil
+M.Sc. in Electrical and Computer Engineering - UFRN
