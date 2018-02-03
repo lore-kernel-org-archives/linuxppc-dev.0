@@ -1,15 +1,29 @@
-Return-Path: <segher@gate.crashing.org>
-Date: Sat, 3 Feb 2018 09:36:20 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH (skiboot)] dt: add /cpus/ibm,
- powerpc-cpu-features device tree bindings
-Message-ID: <20180203153620.GP21977@gate.crashing.org>
-References: <20180203042732.27980-1-npiggin@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180203042732.27980-1-npiggin@gmail.com>
+Return-Path: <joserz@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYlh72NHbzDrDS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 07:24:38 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w13KO3d9112490
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Feb 2018 15:24:36 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fw89vjc76-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Feb 2018 15:24:36 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <joserz@linux.vnet.ibm.com>;
+ Sat, 3 Feb 2018 15:24:35 -0500
+From: Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, paulus@ozlabs.org, lvivier@redhat.com
+Subject: [PATCH v6 0/1] Implements MMIO emulation for lvx/stvx instructions
+Date: Sat,  3 Feb 2018 18:24:25 -0200
+Message-Id: <20180203202426.5782-1-joserz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,47 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!  Some remarks:
+v6:
+  - Applied Paul's code suggestion to fix endianess
+  - Moved kvmppc_get_vsr_dword_offset() back to #ifdef CONFIG_VSX
 
-On Sat, Feb 03, 2018 at 02:27:32PM +1000, Nicholas Piggin wrote:
-> +	/*
-> +	 * ISAv3.0B deliver a random number instruction (darn)
-> +	 */
-> +	{ "random-number-generator",
+v5:
+  - Fixed the mask off of the effective address
 
-That's not such a great name...  "darn-instruction" maybe?  Just "wait"
-as a name is a bit too short too I guess (and there is "wait-v3", so
-that could be "wait-v2" or so?  Or "wait-instruction").
+v4:
+  - Changed KVM_MMIO_REG_VMX to 0xc0 because there are 64 VSX registers
 
-> +	/*
-> +	 * ISAv3.0B branch instruction and register additions
-> +	 * CA32, OV32, mcrxrx, setb
-> +	 */
-> +	{ "branch-v3",
+v3:
+  - Added Reported-by in the commit message
 
-Those aren't branch instructions, they are integer instructions.  Some
-of which use the XER, some of which use CR fields.
+v2:
+  - kvmppc_get_vsr_word_offset() moved back to its original place
+  - EA AND ~0xF, following ISA.
+  - fixed BE/LE cases
 
-> +- isa
-> +  Usage: required
-> +  Value type: <u32>
-> +  Definition:
-> +
-> +  isa that the CPU is currently running in. This provides instruction set
-> +  compatibility, less the individual feature nodes. For example, an ISA v3.0
-> +  implementation that lacks the "transactional-memory" cpufeature node
-> +  should not use transactional memory facilities.
-> +
-> +  Value corresponds to the "Power ISA Version" multiplied by 1000.
-> +  For example, <3000> corresponds to Version 3.0, <2070> to Version 2.07.
-> +  The minor digit is available for revisions.
+TESTS:
 
-So the 2.07B, 3.0B (in the code above) should really be 2071 and 3001
-(instead of 2070 and 3000)?  Or you could make it hex and have 0x207B :-)
+For testing purposes I wrote a small program that performs stvx/lvx using the
+program's virtual memory and using MMIO. Load/Store into virtual memory is the
+model I use to check if MMIO results are correct (because only MMIO is emulated
+by KVM).
 
-> +The policy for seleting and configuring which features to advertise and use
+Results:
 
-Typo ("selecting").
+HOST LE - GUEST BE
+address: 0x10034850010
+0x21436587bbbbaaaa4444555578563412
+io_address: 0x3fff89a20000
+0x21436587bbbbaaaa4444555578563412
 
+HOST LE - GUEST LE
+address: 0x10033a20010
+0x1234567855554444aaaabbbb87654321
+io_address: 0x3fffb5380000
+0x1234567855554444aaaabbbb87654321
 
-Segher
+HOST BE - GUEST BE
+address: 0x1002c4a0010
+0x21436587bbbbaaaa4444555578563412
+io_address: 0x3ffface40000
+0x21436587bbbbaaaa4444555578563412
+
+HOST BR - GUEST LE
+address: 0x100225e0010
+0x1234567855554444aaaabbbb87654321
+io_address: 0x3fff7fcb0000
+0x1234567855554444aaaabbbb87654321
+
+This patch implements MMIO emulation for two instructions: lvx and stvx.
+
+Jose Ricardo Ziviani (1):
+  KVM: PPC: Book3S: Add MMIO emulation for VMX instructions
+
+ arch/powerpc/include/asm/kvm_host.h   |   2 +
+ arch/powerpc/include/asm/kvm_ppc.h    |   4 +
+ arch/powerpc/include/asm/ppc-opcode.h |   6 ++
+ arch/powerpc/kvm/emulate_loadstore.c  |  34 ++++++++
+ arch/powerpc/kvm/powerpc.c            | 150 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 196 insertions(+)
+
+-- 
+2.14.3
