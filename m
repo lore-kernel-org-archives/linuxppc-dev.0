@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz7w61YQzDqkY
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz804mLGzDqhr
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:04 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 03/16] powerpc: Fix VSX enabling/flushing to
- also test MSR_FP and MSR_VEC
-Date: Sun,  4 Feb 2018 15:59:57 +1100
-Message-Id: <20180204050010.13669-4-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 04/16] powerpc: Simplify module TOC handling
+Date: Sun,  4 Feb 2018 15:59:58 +1100
+Message-Id: <20180204050010.13669-5-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,51 +22,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alan Modra <amodra@gmail.com>
 
-commit 5a69aec945d27e78abac9fd032533d3aaebf7c1e upstream.
+commit c153693d7eb9eeb28478aa2deaaf0b4e7b5ff5e9 upstream.
 
-VSX uses a combination of the old vector registers, the old FP
-registers and new "second halves" of the FP registers.
+PowerPC64 uses the symbol .TOC. much as other targets use
+_GLOBAL_OFFSET_TABLE_. It identifies the value of the GOT pointer (or in
+powerpc parlance, the TOC pointer). Global offset tables are generally
+local to an executable or shared library, or in the kernel, module. Thus
+it does not make sense for a module to resolve a relocation against
+.TOC. to the kernel's .TOC. value. A module has its own .TOC., and
+indeed the powerpc64 module relocation processing ignores the kernel
+value of .TOC. and instead calculates a module-local value.
 
-Thus when we need to see the VSX state in the thread struct
-(flush_vsx_to_thread()) or when we'll use the VSX in the kernel
-(enable_kernel_vsx()) we need to ensure they are all flushed into
-the thread struct if either of them is individually enabled.
+This patch removes code involved in exporting the kernel .TOC., tweaks
+modpost to ignore an undefined .TOC., and the module loader to twiddle
+the section symbol so that .TOC. isn't seen as undefined.
 
-Unfortunately we only tested if the whole VSX was enabled, not if they
-were individually enabled.
+Note that if the kernel was compiled with -msingle-pic-base then ELFv2
+would not have function global entry code setting up r2. In that case
+the module call stubs would need to be modified to set up r2 using the
+kernel .TOC. value, requiring some of this code to be reinstated.
 
-Fixes: 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx() routine available")
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-[mpe: Backported due to changed context]
+mpe: Furthermore a change in binutils master (not yet released) causes
+the current way we handle the TOC to no longer work when building with
+MODVERSIONS=y and RELOCATABLE=n. The symptom is that modules can not be
+loaded due to there being no version found for TOC.
+
+Cc: stable@vger.kernel.org # 3.16+
+Signed-off-by: Alan Modra <amodra@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/process.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/misc_64.S   | 28 ----------------------------
+ arch/powerpc/kernel/module_64.c | 12 +++++++++---
+ scripts/mod/modpost.c           |  3 ++-
+ 3 files changed, 11 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index cf788d7d7e56..a9b10812cbfd 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -209,7 +209,8 @@ void enable_kernel_vsx(void)
- 	WARN_ON(preemptible());
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 415e58565745..107588295b39 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -701,31 +701,3 @@ _GLOBAL(kexec_sequence)
+ 	li	r5,0
+ 	blr	/* image->start(physid, image->start, 0); */
+ #endif /* CONFIG_KEXEC */
+-
+-#ifdef CONFIG_MODULES
+-#if defined(_CALL_ELF) && _CALL_ELF == 2
+-
+-#ifdef CONFIG_MODVERSIONS
+-.weak __crc_TOC.
+-.section "___kcrctab+TOC.","a"
+-.globl __kcrctab_TOC.
+-__kcrctab_TOC.:
+-	.llong	__crc_TOC.
+-#endif
+-
+-/*
+- * Export a fake .TOC. since both modpost and depmod will complain otherwise.
+- * Both modpost and depmod strip the leading . so we do the same here.
+- */
+-.section "__ksymtab_strings","a"
+-__kstrtab_TOC.:
+-	.asciz "TOC."
+-
+-.section "___ksymtab+TOC.","a"
+-/* This symbol name is important: it's used by modpost to find exported syms */
+-.globl __ksymtab_TOC.
+-__ksymtab_TOC.:
+-	.llong 0 /* .value */
+-	.llong __kstrtab_TOC.
+-#endif /* ELFv2 */
+-#endif /* MODULES */
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index e4f7d4eed20c..08b7a40de5f8 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -326,7 +326,10 @@ static void dedotify_versions(struct modversion_info *vers,
+ 		}
+ }
  
- #ifdef CONFIG_SMP
--	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX))
-+	if (current->thread.regs &&
-+	    (current->thread.regs->msr & (MSR_VSX|MSR_VEC|MSR_FP)))
- 		giveup_vsx(current);
- 	else
- 		giveup_vsx(NULL);	/* just enable vsx for kernel - force */
-@@ -231,7 +232,7 @@ void flush_vsx_to_thread(struct task_struct *tsk)
+-/* Undefined symbols which refer to .funcname, hack to funcname (or .TOC.) */
++/*
++ * Undefined symbols which refer to .funcname, hack to funcname. Make .TOC.
++ * seem to be defined (value set later).
++ */
+ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
  {
- 	if (tsk->thread.regs) {
- 		preempt_disable();
--		if (tsk->thread.regs->msr & MSR_VSX) {
-+		if (tsk->thread.regs->msr & (MSR_VSX|MSR_VEC|MSR_FP)) {
- #ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
- #endif
+ 	unsigned int i;
+@@ -334,8 +337,11 @@ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
+ 	for (i = 1; i < numsyms; i++) {
+ 		if (syms[i].st_shndx == SHN_UNDEF) {
+ 			char *name = strtab + syms[i].st_name;
+-			if (name[0] == '.')
++			if (name[0] == '.') {
++				if (strcmp(name+1, "TOC.") == 0)
++					syms[i].st_shndx = SHN_ABS;
+ 				syms[i].st_name++;
++			}
+ 		}
+ 	}
+ }
+@@ -351,7 +357,7 @@ static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
+ 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf64_Sym);
+ 
+ 	for (i = 1; i < numsyms; i++) {
+-		if (syms[i].st_shndx == SHN_UNDEF
++		if (syms[i].st_shndx == SHN_ABS
+ 		    && strcmp(strtab + syms[i].st_name, "TOC.") == 0)
+ 			return &syms[i];
+ 	}
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index e080746e1a6b..48958d3cec9e 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -594,7 +594,8 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
+ 		if (strncmp(symname, "_restgpr0_", sizeof("_restgpr0_") - 1) == 0 ||
+ 		    strncmp(symname, "_savegpr0_", sizeof("_savegpr0_") - 1) == 0 ||
+ 		    strncmp(symname, "_restvr_", sizeof("_restvr_") - 1) == 0 ||
+-		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0)
++		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0 ||
++		    strcmp(symname, ".TOC.") == 0)
+ 			return 1;
+ 	/* Do not ignore this symbol */
+ 	return 0;
 -- 
 2.14.1
