@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz804mLGzDqhr
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz821KJ9zDqs4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 04/16] powerpc: Simplify module TOC handling
-Date: Sun,  4 Feb 2018 15:59:58 +1100
-Message-Id: <20180204050010.13669-5-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 05/16] powerpc/pseries: Add
+ H_GET_CPU_CHARACTERISTICS flags & wrapper
+Date: Sun,  4 Feb 2018 15:59:59 +1100
+Message-Id: <20180204050010.13669-6-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,129 +23,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alan Modra <amodra@gmail.com>
+From: Michael Neuling <mikey@neuling.org>
 
-commit c153693d7eb9eeb28478aa2deaaf0b4e7b5ff5e9 upstream.
+commit 191eccb1580939fb0d47deb405b82a85b0379070 upstream.
 
-PowerPC64 uses the symbol .TOC. much as other targets use
-_GLOBAL_OFFSET_TABLE_. It identifies the value of the GOT pointer (or in
-powerpc parlance, the TOC pointer). Global offset tables are generally
-local to an executable or shared library, or in the kernel, module. Thus
-it does not make sense for a module to resolve a relocation against
-.TOC. to the kernel's .TOC. value. A module has its own .TOC., and
-indeed the powerpc64 module relocation processing ignores the kernel
-value of .TOC. and instead calculates a module-local value.
+A new hypervisor call has been defined to communicate various
+characteristics of the CPU to guests. Add definitions for the hcall
+number, flags and a wrapper function.
 
-This patch removes code involved in exporting the kernel .TOC., tweaks
-modpost to ignore an undefined .TOC., and the module loader to twiddle
-the section symbol so that .TOC. isn't seen as undefined.
-
-Note that if the kernel was compiled with -msingle-pic-base then ELFv2
-would not have function global entry code setting up r2. In that case
-the module call stubs would need to be modified to set up r2 using the
-kernel .TOC. value, requiring some of this code to be reinstated.
-
-mpe: Furthermore a change in binutils master (not yet released) causes
-the current way we handle the TOC to no longer work when building with
-MODVERSIONS=y and RELOCATABLE=n. The symptom is that modules can not be
-loaded due to there being no version found for TOC.
-
-Cc: stable@vger.kernel.org # 3.16+
-Signed-off-by: Alan Modra <amodra@gmail.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+[Balbir fixed conflicts in backport]
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/kernel/misc_64.S   | 28 ----------------------------
- arch/powerpc/kernel/module_64.c | 12 +++++++++---
- scripts/mod/modpost.c           |  3 ++-
- 3 files changed, 11 insertions(+), 32 deletions(-)
+ arch/powerpc/include/asm/hvcall.h         | 17 +++++++++++++++++
+ arch/powerpc/include/asm/plpar_wrappers.h | 14 ++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 415e58565745..107588295b39 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -701,31 +701,3 @@ _GLOBAL(kexec_sequence)
- 	li	r5,0
- 	blr	/* image->start(physid, image->start, 0); */
- #endif /* CONFIG_KEXEC */
--
--#ifdef CONFIG_MODULES
--#if defined(_CALL_ELF) && _CALL_ELF == 2
--
--#ifdef CONFIG_MODVERSIONS
--.weak __crc_TOC.
--.section "___kcrctab+TOC.","a"
--.globl __kcrctab_TOC.
--__kcrctab_TOC.:
--	.llong	__crc_TOC.
--#endif
--
--/*
-- * Export a fake .TOC. since both modpost and depmod will complain otherwise.
-- * Both modpost and depmod strip the leading . so we do the same here.
-- */
--.section "__ksymtab_strings","a"
--__kstrtab_TOC.:
--	.asciz "TOC."
--
--.section "___ksymtab+TOC.","a"
--/* This symbol name is important: it's used by modpost to find exported syms */
--.globl __ksymtab_TOC.
--__ksymtab_TOC.:
--	.llong 0 /* .value */
--	.llong __kstrtab_TOC.
--#endif /* ELFv2 */
--#endif /* MODULES */
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index e4f7d4eed20c..08b7a40de5f8 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -326,7 +326,10 @@ static void dedotify_versions(struct modversion_info *vers,
- 		}
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 85bc8c0d257b..51adbde09845 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -239,6 +239,7 @@
+ #define H_GET_HCA_INFO          0x1B8
+ #define H_GET_PERF_COUNT        0x1BC
+ #define H_MANAGE_TRACE          0x1C0
++#define H_GET_CPU_CHARACTERISTICS 0x1C8
+ #define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
+ #define H_QUERY_INT_STATE       0x1E4
+ #define H_POLL_PENDING		0x1D8
+@@ -285,6 +286,17 @@
+ #define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE	3
+ #define H_SET_MODE_RESOURCE_LE			4
+ 
++/* H_GET_CPU_CHARACTERISTICS return values */
++#define H_CPU_CHAR_SPEC_BAR_ORI31	(1ull << 63) // IBM bit 0
++#define H_CPU_CHAR_BCCTRL_SERIALISED	(1ull << 62) // IBM bit 1
++#define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
++#define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
++#define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++
++#define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
++#define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
++#define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
++
+ #ifndef __ASSEMBLY__
+ 
+ /**
+@@ -423,6 +435,11 @@ extern long pseries_big_endian_exceptions(void);
+ 
+ #endif /* CONFIG_PPC_PSERIES */
+ 
++struct h_cpu_char_result {
++	u64 character;
++	u64 behaviour;
++};
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_HVCALL_H */
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 67859edbf8fd..6e05cb397a5c 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -323,4 +323,18 @@ static inline long plapr_set_watchpoint0(unsigned long dawr0, unsigned long dawr
+ 	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
  }
  
--/* Undefined symbols which refer to .funcname, hack to funcname (or .TOC.) */
-+/*
-+ * Undefined symbols which refer to .funcname, hack to funcname. Make .TOC.
-+ * seem to be defined (value set later).
-+ */
- static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
- {
- 	unsigned int i;
-@@ -334,8 +337,11 @@ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
- 	for (i = 1; i < numsyms; i++) {
- 		if (syms[i].st_shndx == SHN_UNDEF) {
- 			char *name = strtab + syms[i].st_name;
--			if (name[0] == '.')
-+			if (name[0] == '.') {
-+				if (strcmp(name+1, "TOC.") == 0)
-+					syms[i].st_shndx = SHN_ABS;
- 				syms[i].st_name++;
-+			}
- 		}
- 	}
- }
-@@ -351,7 +357,7 @@ static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
- 	numsyms = sechdrs[symindex].sh_size / sizeof(Elf64_Sym);
- 
- 	for (i = 1; i < numsyms; i++) {
--		if (syms[i].st_shndx == SHN_UNDEF
-+		if (syms[i].st_shndx == SHN_ABS
- 		    && strcmp(strtab + syms[i].st_name, "TOC.") == 0)
- 			return &syms[i];
- 	}
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index e080746e1a6b..48958d3cec9e 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -594,7 +594,8 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
- 		if (strncmp(symname, "_restgpr0_", sizeof("_restgpr0_") - 1) == 0 ||
- 		    strncmp(symname, "_savegpr0_", sizeof("_savegpr0_") - 1) == 0 ||
- 		    strncmp(symname, "_restvr_", sizeof("_restvr_") - 1) == 0 ||
--		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0)
-+		    strncmp(symname, "_savevr_", sizeof("_savevr_") - 1) == 0 ||
-+		    strcmp(symname, ".TOC.") == 0)
- 			return 1;
- 	/* Do not ignore this symbol */
- 	return 0;
++static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
++{
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	long rc;
++
++	rc = plpar_hcall(H_GET_CPU_CHARACTERISTICS, retbuf);
++	if (rc == H_SUCCESS) {
++		p->character = retbuf[0];
++		p->behaviour = retbuf[1];
++	}
++
++	return rc;
++}
++
+ #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
 -- 
 2.14.1
