@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz821KJ9zDqs4
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz830L3ZzDqZ1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:07 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 05/16] powerpc/pseries: Add
- H_GET_CPU_CHARACTERISTICS flags & wrapper
-Date: Sun,  4 Feb 2018 15:59:59 +1100
-Message-Id: <20180204050010.13669-6-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 06/16] powerpc/64: Add macros for annotating the
+ destination of rfid/hrfid
+Date: Sun,  4 Feb 2018 16:00:00 +1100
+Message-Id: <20180204050010.13669-7-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,87 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+From: Nicholas Piggin <npiggin@gmail.com>
 
-commit 191eccb1580939fb0d47deb405b82a85b0379070 upstream.
+commit 50e51c13b3822d14ff6df4279423e4b7b2269bc3 upstream.
 
-A new hypervisor call has been defined to communicate various
-characteristics of the CPU to guests. Add definitions for the hcall
-number, flags and a wrapper function.
+The rfid/hrfid ((Hypervisor) Return From Interrupt) instruction is
+used for switching from the kernel to userspace, and from the
+hypervisor to the guest kernel. However it can and is also used for
+other transitions, eg. from real mode kernel code to virtual mode
+kernel code, and it's not always clear from the code what the
+destination context is.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+To make it clearer when reading the code, add macros which encode the
+expected destination context.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-[Balbir fixed conflicts in backport]
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/include/asm/hvcall.h         | 17 +++++++++++++++++
- arch/powerpc/include/asm/plpar_wrappers.h | 14 ++++++++++++++
- 2 files changed, 31 insertions(+)
+ arch/powerpc/include/asm/exception-64e.h |  6 ++++++
+ arch/powerpc/include/asm/exception-64s.h | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 85bc8c0d257b..51adbde09845 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -239,6 +239,7 @@
- #define H_GET_HCA_INFO          0x1B8
- #define H_GET_PERF_COUNT        0x1BC
- #define H_MANAGE_TRACE          0x1C0
-+#define H_GET_CPU_CHARACTERISTICS 0x1C8
- #define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
- #define H_QUERY_INT_STATE       0x1E4
- #define H_POLL_PENDING		0x1D8
-@@ -285,6 +286,17 @@
- #define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE	3
- #define H_SET_MODE_RESOURCE_LE			4
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index a703452d67b6..555e22d5e07f 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -209,5 +209,11 @@ exc_##label##_book3e:
+ 	ori	r3,r3,vector_offset@l;		\
+ 	mtspr	SPRN_IVOR##vector_number,r3;
  
-+/* H_GET_CPU_CHARACTERISTICS return values */
-+#define H_CPU_CHAR_SPEC_BAR_ORI31	(1ull << 63) // IBM bit 0
-+#define H_CPU_CHAR_BCCTRL_SERIALISED	(1ull << 62) // IBM bit 1
-+#define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
-+#define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
-+#define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++#define RFI_TO_KERNEL							\
++	rfi
 +
-+#define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
-+#define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
-+#define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
++#define RFI_TO_USER							\
++	rfi
 +
- #ifndef __ASSEMBLY__
+ #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
  
- /**
-@@ -423,6 +435,11 @@ extern long pseries_big_endian_exceptions(void);
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 77f52b26dad6..c8c8a81e3976 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -50,6 +50,35 @@
+ #define EX_PPR		88	/* SMT thread status register (priority) */
+ #define EX_CTR		96
  
- #endif /* CONFIG_PPC_PSERIES */
- 
-+struct h_cpu_char_result {
-+	u64 character;
-+	u64 behaviour;
-+};
++/* Macros for annotating the expected destination of (h)rfid */
 +
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_HVCALL_H */
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 67859edbf8fd..6e05cb397a5c 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -323,4 +323,18 @@ static inline long plapr_set_watchpoint0(unsigned long dawr0, unsigned long dawr
- 	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
- }
- 
-+static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	long rc;
++#define RFI_TO_KERNEL							\
++	rfid
 +
-+	rc = plpar_hcall(H_GET_CPU_CHARACTERISTICS, retbuf);
-+	if (rc == H_SUCCESS) {
-+		p->character = retbuf[0];
-+		p->behaviour = retbuf[1];
-+	}
++#define RFI_TO_USER							\
++	rfid
 +
-+	return rc;
-+}
++#define RFI_TO_USER_OR_KERNEL						\
++	rfid
 +
- #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
++#define RFI_TO_GUEST							\
++	rfid
++
++#define HRFI_TO_KERNEL							\
++	hrfid
++
++#define HRFI_TO_USER							\
++	hrfid
++
++#define HRFI_TO_USER_OR_KERNEL						\
++	hrfid
++
++#define HRFI_TO_GUEST							\
++	hrfid
++
++#define HRFI_TO_UNKNOWN							\
++	hrfid
++
+ #ifdef CONFIG_RELOCATABLE
+ #define __EXCEPTION_RELON_PROLOG_PSERIES_1(label, h)			\
+ 	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
 -- 
 2.14.1
