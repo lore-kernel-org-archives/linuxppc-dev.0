@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz8H1PkWzDqYw
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz8P1qwyzF0T4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:25 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 09/16] powerpc/64: Convert the syscall exit path
- to use RFI_TO_USER/KERNEL
-Date: Sun,  4 Feb 2018 16:00:03 +1100
-Message-Id: <20180204050010.13669-10-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 10/16] powerpc/64s: Convert slb_miss_common to
+ use RFI_TO_USER/KERNEL
+Date: Sun,  4 Feb 2018 16:00:04 +1100
+Message-Id: <20180204050010.13669-11-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,47 +25,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-commit b8e90cb7bc04a509e821e82ab6ed7a8ef11ba333 upstream.
+commit c7305645eb0c1621351cfc104038831ae87c0053 upstream.
 
-In the syscall exit path we may be returning to user or kernel
-context. We already have a test for that, because we conditionally
-restore r13. So use that existing test and branch, and bifurcate the
-return based on that.
+In the SLB miss handler we may be returning to user or kernel. We need
+to add a check early on and save the result in the cr4 register, and
+then we bifurcate the return path based on that.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+[mpe: Backport to 4.4 based on patch from Balbir]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_64.S | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 8efd8c402cf7..2837232bbffb 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -230,13 +230,23 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	ACCOUNT_CPU_USER_EXIT(r11, r12)
- 	HMT_MEDIUM_LOW_HAS_PPR
- 	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
-+	ld	r2,GPR2(r1)
-+	ld	r1,GPR1(r1)
-+	mtlr	r4
-+	mtcr	r5
-+	mtspr	SPRN_SRR0,r7
-+	mtspr	SPRN_SRR1,r8
-+	RFI_TO_USER
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e3a3b81df363..2c6494351604 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1503,6 +1503,8 @@ slb_miss_realmode:
+ 
+ 	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+ 	beq-	2f
++	andi.	r10,r12,MSR_PR	/* check for user mode (PR != 0) */
++	bne	1f
+ 
+ .machine	push
+ .machine	"power4"
+@@ -1516,7 +1518,23 @@ slb_miss_realmode:
+ 	ld	r11,PACA_EXSLB+EX_R11(r13)
+ 	ld	r12,PACA_EXSLB+EX_R12(r13)
+ 	ld	r13,PACA_EXSLB+EX_R13(r13)
+-	rfid
++	RFI_TO_KERNEL
 +	b	.	/* prevent speculative execution */
 +
-+	/* exit to kernel */
- 1:	ld	r2,GPR2(r1)
- 	ld	r1,GPR1(r1)
- 	mtlr	r4
- 	mtcr	r5
- 	mtspr	SPRN_SRR0,r7
- 	mtspr	SPRN_SRR1,r8
--	RFI
-+	RFI_TO_KERNEL
++1:
++.machine	push
++.machine	"power4"
++	mtcrf	0x80,r9
++	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
++.machine	pop
++
++	RESTORE_PPR_PACA(PACA_EXSLB, r9)
++	ld	r9,PACA_EXSLB+EX_R9(r13)
++	ld	r10,PACA_EXSLB+EX_R10(r13)
++	ld	r11,PACA_EXSLB+EX_R11(r13)
++	ld	r12,PACA_EXSLB+EX_R12(r13)
++	ld	r13,PACA_EXSLB+EX_R13(r13)
++	RFI_TO_USER
  	b	.	/* prevent speculative execution */
  
- syscall_error:	
+ 2:	mfspr	r11,SPRN_SRR0
+@@ -1525,7 +1543,7 @@ slb_miss_realmode:
+ 	mtspr	SPRN_SRR0,r10
+ 	ld	r10,PACAKMSR(r13)
+ 	mtspr	SPRN_SRR1,r10
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.
+ 
+ unrecov_slb:
 -- 
 2.14.1
