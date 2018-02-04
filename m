@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz7p0wjxzDr6n
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:00:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz7w61YQzDqkY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:00 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 02/16] powerpc/64: Fix flush_(d|i)cache_range()
- called from modules
-Date: Sun,  4 Feb 2018 15:59:56 +1100
-Message-Id: <20180204050010.13669-3-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 03/16] powerpc: Fix VSX enabling/flushing to
+ also test MSR_FP and MSR_VEC
+Date: Sun,  4 Feb 2018 15:59:57 +1100
+Message-Id: <20180204050010.13669-4-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,87 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Oliver O'Halloran <oohall@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-commit 8f5f525d5b83f7d76a6baf9c4e94d4bf312ea7f6 upstream.
+commit 5a69aec945d27e78abac9fd032533d3aaebf7c1e upstream.
 
-When the kernel is compiled to use 64bit ABIv2 the _GLOBAL() macro does
-not include a global entry point. A function's global entry point is
-used when the function is called from a different TOC context and in the
-kernel this typically means a call from a module into the vmlinux (or
-vice-versa).
+VSX uses a combination of the old vector registers, the old FP
+registers and new "second halves" of the FP registers.
 
-There are a few exported asm functions declared with _GLOBAL() and
-calling them from a module will likely crash the kernel since any TOC
-relative load will yield garbage.
+Thus when we need to see the VSX state in the thread struct
+(flush_vsx_to_thread()) or when we'll use the VSX in the kernel
+(enable_kernel_vsx()) we need to ensure they are all flushed into
+the thread struct if either of them is individually enabled.
 
-flush_icache_range() and flush_dcache_range() are both exported to
-modules, and use the TOC, so must use _GLOBAL_TOC().
+Unfortunately we only tested if the whole VSX was enabled, not if they
+were individually enabled.
 
-[mpe: We can't use _GLOBAL_TOC() in 4.4 for flush_icache_range() because
- the function needs to be in the .kprobes.text section, which is done by the
- _KPROBE() macro. So we have to add a _KPROBE_TOC() macro, which does the TOC
- setup and also puts the function in the .kprobes.text section]
-
-Fixes: 721aeaa9fdf3 ("powerpc: Build little endian ppc64 kernel with ABIv2")
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Fixes: 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx() routine available")
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+[mpe: Backported due to changed context]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/ppc_asm.h | 12 ++++++++++++
- arch/powerpc/kernel/misc_64.S      |  4 ++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/process.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index dd0fc18d8103..160bb2311bbb 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -224,6 +224,16 @@ name: \
- 	.globl name; \
- name:
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index cf788d7d7e56..a9b10812cbfd 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -209,7 +209,8 @@ void enable_kernel_vsx(void)
+ 	WARN_ON(preemptible());
  
-+#define _KPROBE_TOC(name)			\
-+	.section ".kprobes.text","a";		\
-+	.align 2 ;				\
-+	.type name,@function;			\
-+	.globl name;				\
-+name:						\
-+0:	addis r2,r12,(.TOC.-0b)@ha;		\
-+	addi r2,r2,(.TOC.-0b)@l;		\
-+	.localentry name,.-name
-+
- #define DOTSYM(a)	a
- 
- #else
-@@ -261,6 +271,8 @@ name: \
- 	.type GLUE(.,name),@function; \
- GLUE(.,name):
- 
-+#define _KPROBE_TOC(n)	_KPROBE(n)
-+
- #define DOTSYM(a)	GLUE(.,a)
- 
+ #ifdef CONFIG_SMP
+-	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX))
++	if (current->thread.regs &&
++	    (current->thread.regs->msr & (MSR_VSX|MSR_VEC|MSR_FP)))
+ 		giveup_vsx(current);
+ 	else
+ 		giveup_vsx(NULL);	/* just enable vsx for kernel - force */
+@@ -231,7 +232,7 @@ void flush_vsx_to_thread(struct task_struct *tsk)
+ {
+ 	if (tsk->thread.regs) {
+ 		preempt_disable();
+-		if (tsk->thread.regs->msr & MSR_VSX) {
++		if (tsk->thread.regs->msr & (MSR_VSX|MSR_VEC|MSR_FP)) {
+ #ifdef CONFIG_SMP
+ 			BUG_ON(tsk != current);
  #endif
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index db475d41b57a..415e58565745 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -66,7 +66,7 @@ PPC64_CACHES:
-  *   flush all bytes from start through stop-1 inclusive
-  */
- 
--_KPROBE(flush_icache_range)
-+_KPROBE_TOC(flush_icache_range)
- BEGIN_FTR_SECTION
- 	PURGE_PREFETCHED_INS
- 	blr
-@@ -117,7 +117,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-  *
-  *    flush all bytes from start to stop-1 inclusive
-  */
--_GLOBAL(flush_dcache_range)
-+_GLOBAL_TOC(flush_dcache_range)
- 
- /*
-  * Flush the data cache to memory 
 -- 
 2.14.1
