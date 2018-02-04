@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz8j718JzDqD6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz8k57brzDqYx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:42 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 14/16] powerpc/powernv: Check device-tree for
- RFI flush settings
-Date: Sun,  4 Feb 2018 16:00:08 +1100
-Message-Id: <20180204050010.13669-15-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 15/16] powerpc/64s: Wire up cpu_show_meltdown()
+Date: Sun,  4 Feb 2018 16:00:09 +1100
+Message-Id: <20180204050010.13669-16-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,88 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Oliver O'Halloran <oohall@gmail.com>
+commit fd6e440f20b1a4304553775fc55938848ff617c9 upstream.
 
-commit 6e032b350cd1fdb830f18f8320ef0e13b4e24094 upstream.
+The recent commit 87590ce6e373 ("sysfs/cpu: Add vulnerability folder")
+added a generic folder and set of files for reporting information on
+CPU vulnerabilities. One of those was for meltdown:
 
-New device-tree properties are available which tell the hypervisor
-settings related to the RFI flush. Use them to determine the
-appropriate flush instruction to use, and whether the flush is
-required.
+  /sys/devices/system/cpu/vulnerabilities/meltdown
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+This commit wires up that file for 64-bit Book3S powerpc.
+
+For now we default to "Vulnerable" unless the RFI flush is enabled.
+That may not actually be true on all hardware, further patches will
+refine the reporting based on the CPU/platform etc. But for now we
+default to being pessimists.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/powernv/setup.c | 50 ++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
+ arch/powerpc/Kconfig           | 1 +
+ arch/powerpc/kernel/setup_64.c | 8 ++++++++
+ 2 files changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index f48afc06ba14..30c6b3b7be90 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -35,13 +35,63 @@
- #include <asm/opal.h>
- #include <asm/kexec.h>
- #include <asm/smp.h>
-+#include <asm/tm.h>
-+#include <asm/setup.h>
- 
- #include "powernv.h"
- 
-+static void pnv_setup_rfi_flush(void)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0c26025e18f9..e23e555adc3a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -135,6 +135,7 @@ config PPC
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select GENERIC_CMOS_UPDATE
++	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+ 	select GENERIC_TIME_VSYSCALL_OLD
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 7db464c2b129..cd7bfec17654 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -934,5 +934,13 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ 	if (!no_rfi_flush)
+ 		rfi_flush_enable(enable);
+ }
++
++ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	struct device_node *np, *fw_features;
-+	enum l1d_flush_type type;
-+	int enable;
++	if (rfi_flush)
++		return sprintf(buf, "Mitigation: RFI Flush\n");
 +
-+	/* Default to fallback in case fw-features are not available */
-+	type = L1D_FLUSH_FALLBACK;
-+	enable = 1;
-+
-+	np = of_find_node_by_name(NULL, "ibm,opal");
-+	fw_features = of_get_child_by_name(np, "fw-features");
-+	of_node_put(np);
-+
-+	if (fw_features) {
-+		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
-+		if (np && of_property_read_bool(np, "enabled"))
-+			type = L1D_FLUSH_MTTRIG;
-+
-+		of_node_put(np);
-+
-+		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
-+		if (np && of_property_read_bool(np, "enabled"))
-+			type = L1D_FLUSH_ORI;
-+
-+		of_node_put(np);
-+
-+		/* Enable unless firmware says NOT to */
-+		enable = 2;
-+		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable--;
-+
-+		of_node_put(np);
-+
-+		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable--;
-+
-+		of_node_put(np);
-+		of_node_put(fw_features);
-+	}
-+
-+	setup_rfi_flush(type, enable > 0);
++	return sprintf(buf, "Vulnerable\n");
 +}
-+
- static void __init pnv_setup_arch(void)
- {
- 	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
- 
-+	pnv_setup_rfi_flush();
-+
- 	/* Initialize SMP */
- 	pnv_smp_init();
- 
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ #endif
 -- 
 2.14.1
