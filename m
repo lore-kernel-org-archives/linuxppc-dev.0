@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz841nsfzDqhd
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zYz8B43LVzDqkY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Feb 2018 16:01:14 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: stable@vger.kernel.org,
 	greg@kroah.com
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4.4 backport 07/16] powerpc/64s: Simple RFI macro conversions
-Date: Sun,  4 Feb 2018 16:00:01 +1100
-Message-Id: <20180204050010.13669-8-mpe@ellerman.id.au>
+Subject: [PATCH v4.4 backport 08/16] powerpc/64: Convert fast_exception_return
+ to use RFI_TO_USER/KERNEL
+Date: Sun,  4 Feb 2018 16:00:02 +1100
+Message-Id: <20180204050010.13669-9-mpe@ellerman.id.au>
 In-Reply-To: <20180204050010.13669-1-mpe@ellerman.id.au>
 References: <20180204050010.13669-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,260 +25,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-commit 222f20f140623ef6033491d0103ee0875fe87d35 upstream.
+commit a08f828cf47e6c605af21d2cdec68f84e799c318 upstream.
 
-This commit does simple conversions of rfi/rfid to the new macros that
-include the expected destination context. By simple we mean cases
-where there is a single well known destination context, and it's
-simply a matter of substituting the instruction for the appropriate
-macro.
+Similar to the syscall return path, in fast_exception_return we may be
+returning to user or kernel context. We already have a test for that,
+because we conditionally restore r13. So use that existing test and
+branch, and bifurcate the return based on that.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-[Balbir fixed issues with backporting to stable]
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/include/asm/exception-64s.h |  2 +-
- arch/powerpc/kernel/entry_64.S           | 14 +++++++++-----
- arch/powerpc/kernel/exceptions-64s.S     | 18 +++++++++---------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  |  7 +++----
- arch/powerpc/kvm/book3s_rmhandlers.S     |  7 +++++--
- arch/powerpc/kvm/book3s_segment.S        |  4 ++--
- 6 files changed, 29 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/entry_64.S | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index c8c8a81e3976..6dfb6e928f81 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -220,7 +220,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	mtspr	SPRN_##h##SRR0,r12;					\
- 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
- 	mtspr	SPRN_##h##SRR1,r10;					\
--	h##rfid;							\
-+	h##RFI_TO_KERNEL;						\
- 	b	.	/* prevent speculative execution */
- #define EXCEPTION_PROLOG_PSERIES_1(label, h)				\
- 	__EXCEPTION_PROLOG_PSERIES_1(label, h)
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index f6fd0332c3a2..fb2da020e0ee 100644
+index fb2da020e0ee..8efd8c402cf7 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -36,6 +36,11 @@
- #include <asm/hw_irq.h>
- #include <asm/context_tracking.h>
- #include <asm/tm.h>
-+#ifdef CONFIG_PPC_BOOK3S
-+#include <asm/exception-64s.h>
-+#else
-+#include <asm/exception-64e.h>
-+#endif
- 
- /*
-  * System calls.
-@@ -353,8 +358,7 @@ tabort_syscall:
- 	mtmsrd	r10, 1
- 	mtspr	SPRN_SRR0, r11
- 	mtspr	SPRN_SRR1, r12
--
--	rfid
-+	RFI_TO_USER
- 	b	.	/* prevent speculative execution */
- #endif
- 
-@@ -1077,7 +1081,7 @@ _GLOBAL(enter_rtas)
- 	
- 	mtspr	SPRN_SRR0,r5
- 	mtspr	SPRN_SRR1,r6
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 
- rtas_return_loc:
-@@ -1102,7 +1106,7 @@ rtas_return_loc:
- 
- 	mtspr	SPRN_SRR0,r3
- 	mtspr	SPRN_SRR1,r4
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 
- 	.align	3
-@@ -1173,7 +1177,7 @@ _GLOBAL(enter_prom)
- 	LOAD_REG_IMMEDIATE(r12, MSR_SF | MSR_ISF | MSR_LE)
- 	andc	r11,r11,r12
- 	mtsrr1	r11
--	rfid
-+	RFI_TO_KERNEL
- #endif /* CONFIG_PPC_BOOK3E */
- 
- 1:	/* Return from OF */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index b81ccc5fb32d..e3a3b81df363 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -46,7 +46,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 	mtspr	SPRN_SRR0,r10 ; 				\
- 	ld	r10,PACAKMSR(r13) ;				\
- 	mtspr	SPRN_SRR1,r10 ; 				\
--	rfid ; 							\
-+	RFI_TO_KERNEL ; 							\
- 	b	. ;	/* prevent speculative execution */
- 
- #define SYSCALL_PSERIES_3					\
-@@ -54,7 +54,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 1:	mfspr	r12,SPRN_SRR1 ;					\
- 	xori	r12,r12,MSR_LE ;				\
- 	mtspr	SPRN_SRR1,r12 ;					\
--	rfid ;		/* return to userspace */		\
-+	RFI_TO_USER ;		/* return to userspace */		\
- 	b	. ;	/* prevent speculative execution */
- 
- #if defined(CONFIG_RELOCATABLE)
-@@ -507,7 +507,7 @@ BEGIN_FTR_SECTION
- 	LOAD_HANDLER(r12, machine_check_handle_early)
- 1:	mtspr	SPRN_SRR0,r12
- 	mtspr	SPRN_SRR1,r11
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 2:
- 	/* Stack overflow. Stay on emergency stack and panic.
-@@ -601,7 +601,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- 	ld	r11,PACA_EXGEN+EX_R11(r13)
- 	ld	r12,PACA_EXGEN+EX_R12(r13)
- 	ld	r13,PACA_EXGEN+EX_R13(r13)
--	HRFID
-+	HRFI_TO_UNKNOWN
- 	b	.
- #endif
- 
-@@ -666,7 +666,7 @@ masked_##_H##interrupt:					\
- 	ld	r10,PACA_EXGEN+EX_R10(r13);		\
- 	ld	r11,PACA_EXGEN+EX_R11(r13);		\
- 	GET_SCRATCH0(r13);				\
--	##_H##rfid;					\
-+	##_H##RFI_TO_KERNEL;				\
- 	b	.
- 	
- 	MASKED_INTERRUPT()
-@@ -756,7 +756,7 @@ kvmppc_skip_interrupt:
- 	addi	r13, r13, 4
- 	mtspr	SPRN_SRR0, r13
- 	GET_SCRATCH0(r13)
--	rfid
-+	RFI_TO_KERNEL
- 	b	.
- 
- kvmppc_skip_Hinterrupt:
-@@ -768,7 +768,7 @@ kvmppc_skip_Hinterrupt:
- 	addi	r13, r13, 4
- 	mtspr	SPRN_HSRR0, r13
- 	GET_SCRATCH0(r13)
--	hrfid
-+	HRFI_TO_KERNEL
- 	b	.
- #endif
- 
-@@ -1439,7 +1439,7 @@ machine_check_handle_early:
- 	li	r3,MSR_ME
- 	andc	r10,r10,r3		/* Turn off MSR_ME */
- 	mtspr	SPRN_SRR1,r10
--	rfid
-+	RFI_TO_KERNEL
- 	b	.
- 2:
- 	/*
-@@ -1457,7 +1457,7 @@ machine_check_handle_early:
- 	 */
- 	bl	machine_check_queue_event
- 	MACHINE_CHECK_HANDLER_WINDUP
--	rfid
-+	RFI_TO_USER_OR_KERNEL
- 9:
- 	/* Deliver the machine check to host kernel in V mode. */
- 	MACHINE_CHECK_HANDLER_WINDUP
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index ffab9269bfe4..4463718ae614 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -64,7 +64,7 @@ _GLOBAL_TOC(kvmppc_hv_entry_trampoline)
- 	mtmsrd	r0,1		/* clear RI in MSR */
- 	mtsrr0	r5
- 	mtsrr1	r6
--	RFI
-+	RFI_TO_KERNEL
- 
- kvmppc_call_hv_entry:
- 	ld	r4, HSTATE_KVM_VCPU(r13)
-@@ -170,7 +170,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mtsrr0	r8
- 	mtsrr1	r7
- 	beq	cr1, 13f		/* machine check */
--	RFI
-+	RFI_TO_KERNEL
- 
- 	/* On POWER7, we have external interrupts set to use HSRR0/1 */
- 11:	mtspr	SPRN_HSRR0, r8
-@@ -965,8 +965,7 @@ BEGIN_FTR_SECTION
+@@ -891,7 +891,7 @@ BEGIN_FTR_SECTION
  END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ld	r0, VCPU_GPR(R0)(r4)
- 	ld	r4, VCPU_GPR(R4)(r4)
--
--	hrfid
-+	HRFI_TO_GUEST
- 	b	.
- 
- secondary_too_late:
-diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
-index 16c4d88ba27d..a328f99a887c 100644
---- a/arch/powerpc/kvm/book3s_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_rmhandlers.S
-@@ -46,6 +46,9 @@
- 
- #define FUNC(name)		name
- 
-+#define RFI_TO_KERNEL	RFI
-+#define RFI_TO_GUEST	RFI
+ 	ACCOUNT_CPU_USER_EXIT(r2, r4)
+ 	REST_GPR(13, r1)
+-1:
 +
- .macro INTERRUPT_TRAMPOLINE intno
+ 	mtspr	SPRN_SRR1,r3
  
- .global kvmppc_trampoline_\intno
-@@ -141,7 +144,7 @@ kvmppc_handler_skip_ins:
- 	GET_SCRATCH0(r13)
+ 	ld	r2,_CCR(r1)
+@@ -904,8 +904,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	ld	r3,GPR3(r1)
+ 	ld	r4,GPR4(r1)
+ 	ld	r1,GPR1(r1)
++	RFI_TO_USER
++	b	.	/* prevent speculative execution */
++
++1:	mtspr	SPRN_SRR1,r3
++
++	ld	r2,_CCR(r1)
++	mtcrf	0xFF,r2
++	ld	r2,_NIP(r1)
++	mtspr	SPRN_SRR0,r2
  
- 	/* And get back into the code */
--	RFI
+-	rfid
++	ld	r0,GPR0(r1)
++	ld	r2,GPR2(r1)
++	ld	r3,GPR3(r1)
++	ld	r4,GPR4(r1)
++	ld	r1,GPR1(r1)
 +	RFI_TO_KERNEL
- #endif
+ 	b	.	/* prevent speculative execution */
  
- /*
-@@ -164,6 +167,6 @@ _GLOBAL_TOC(kvmppc_entry_trampoline)
- 	ori	r5, r5, MSR_EE
- 	mtsrr0	r7
- 	mtsrr1	r6
--	RFI
-+	RFI_TO_KERNEL
- 
- #include "book3s_segment.S"
-diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-index ca8f174289bb..7c982956d709 100644
---- a/arch/powerpc/kvm/book3s_segment.S
-+++ b/arch/powerpc/kvm/book3s_segment.S
-@@ -156,7 +156,7 @@ no_dcbz32_on:
- 	PPC_LL	r9, SVCPU_R9(r3)
- 	PPC_LL	r3, (SVCPU_R3)(r3)
- 
--	RFI
-+	RFI_TO_GUEST
- kvmppc_handler_trampoline_enter_end:
- 
- 
-@@ -389,5 +389,5 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	cmpwi	r12, BOOK3S_INTERRUPT_DOORBELL
- 	beqa	BOOK3S_INTERRUPT_DOORBELL
- 
--	RFI
-+	RFI_TO_KERNEL
- kvmppc_handler_trampoline_exit_end:
+ #endif /* CONFIG_PPC_BOOK3E */
 -- 
 2.14.1
