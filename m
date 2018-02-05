@@ -1,33 +1,35 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zZbYm2FrKzDqZY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 16:22:03 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w155JGlg140941
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Feb 2018 00:22:02 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fxe5e4vuc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Feb 2018 00:22:01 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 5 Feb 2018 05:21:59 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s/radix: remove unused flush_tlb_lpid variants
-In-Reply-To: <20180203065806.5751-1-npiggin@gmail.com>
-References: <20180203065806.5751-1-npiggin@gmail.com>
-Date: Mon, 05 Feb 2018 10:51:55 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zZfzk42zwzF0r4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 18:56:18 +1100 (AEDT)
+Date: Mon, 5 Feb 2018 18:56:15 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Ulf Magnusson <ulfalizer@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ tfiga@chromium.org, paul.burton@mips.com,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Hans-Christian Noren Egtvedt <egtvedt@samfundet.no>,
+ Linus Walleij <linus.walleij@linaro.org>, vgupta@synopsys.com,
+ mgorman@techsingularity.net, hch@lst.de, mina86@mina86.com,
+ robh@kernel.org, sboyd@codeaurora.org, will.deacon@arm.com,
+ Tony Lindgren <tony@atomide.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 02/20] KVM: PPC: Book3S PR: Fix broken select due to
+ misspelling
+Message-ID: <20180205075615.GA24826@fergus.ozlabs.ibm.com>
+References: <20180205012146.23981-1-ulfalizer@gmail.com>
+ <20180205012146.23981-3-ulfalizer@gmail.com>
+ <20180205044821.3zvs7cfhdr3eu2qa@oak.ozlabs.ibm.com>
+ <CAFkk2KRQRx9kQLk1eCgLzogern240FOKW=OEJAFPNUAgtf4fEg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87bmh4vwng.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAFkk2KRQRx9kQLk1eCgLzogern240FOKW=OEJAFPNUAgtf4fEg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,85 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On Mon, Feb 05, 2018 at 05:58:59AM +0100, Ulf Magnusson wrote:
+> On Mon, Feb 5, 2018 at 5:48 AM, Paul Mackerras <paulus@ozlabs.org> wrote:
+> > On Mon, Feb 05, 2018 at 02:21:14AM +0100, Ulf Magnusson wrote:
+> >> Commit 76d837a4c0f9 ("KVM: PPC: Book3S PR: Don't include SPAPR TCE code
+> >> on non-pseries platforms") added a reference to the globally undefined
+> >> symbol PPC_SERIES. Looking at the rest of the commit, PPC_PSERIES was
+> >> probably intended.
+> >>
+> >> Change PPC_SERIES to PPC_PSERIES.
+> >>
+> >> Discovered with the
+> >> https://github.com/ulfalizer/Kconfiglib/blob/master/examples/list_undefined.py
+> >> script.
+> >>
+> >> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+> >
+> > Acked-by: Paul Mackerras <paulus@ozlabs.org>
+> >
+> > Which tree is this series going into?
+> >
+> > Paul.
+> 
+> I didn't have a particular one in mind. I imagined people would pick
+> up individual patches into the trees that make the most sense. It was
+> easiest to do the undefined symbol removal as a kernel-wide batch job.
 
-> These were intended for use by KVM, but it has its own LPID
-> flushing code and never used these.
->
+OK, I'll take this one then.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  3 --
->  arch/powerpc/mm/tlb-radix.c                        | 40 ----------------------
->  2 files changed, 43 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> index 8eea90f80e45..19b45ba6caf9 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> @@ -47,9 +47,6 @@ extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmad
->  #endif
->  extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
->  extern void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr);
-> -extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
-> -				     unsigned long page_size);
-> -extern void radix__flush_tlb_lpid(unsigned long lpid);
->  extern void radix__flush_tlb_all(void);
->  extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
->  					unsigned long address);
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> index 71d1b19ad1c0..8ce858ec59e1 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -603,46 +603,6 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
->  }
->  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
->  
-> -void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
-> -			      unsigned long page_size)
-> -{
-> -	unsigned long rb,rs,prs,r;
-> -	unsigned long ap;
-> -	unsigned long ric = RIC_FLUSH_TLB;
-> -
-> -	ap = mmu_get_ap(radix_get_mmu_psize(page_size));
-> -	rb = gpa & ~(PPC_BITMASK(52, 63));
-> -	rb |= ap << PPC_BITLSHIFT(58);
-> -	rs = lpid & ((1UL << 32) - 1);
-> -	prs = 0; /* process scoped */
-> -	r = 1;   /* raidx format */
-> -
-> -	asm volatile("ptesync": : :"memory");
-> -	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-> -		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> -	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-> -	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
-> -}
-> -EXPORT_SYMBOL(radix__flush_tlb_lpid_va);
-> -
-> -void radix__flush_tlb_lpid(unsigned long lpid)
-> -{
-> -	unsigned long rb,rs,prs,r;
-> -	unsigned long ric = RIC_FLUSH_ALL;
-> -
-> -	rb = 0x2 << PPC_BITLSHIFT(53); /* IS = 2 */
-> -	rs = lpid & ((1UL << 32) - 1);
-> -	prs = 0; /* partition scoped */
-> -	r = 1;   /* raidx format */
-> -
-> -	asm volatile("ptesync": : :"memory");
-> -	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-> -		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> -	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-> -	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
-> -}
-> -EXPORT_SYMBOL(radix__flush_tlb_lpid);
-> -
->  void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
->  				unsigned long start, unsigned long end)
->  {
-> -- 
-> 2.15.1
+Paul.
