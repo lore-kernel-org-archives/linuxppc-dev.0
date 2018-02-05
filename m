@@ -1,47 +1,33 @@
-Return-Path: <cyrilbur@gmail.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zZbSw0nx1zF0ry
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 16:17:50 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zZbYm2FrKzDqZY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 16:22:03 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w155EFNC088252
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Feb 2018 00:17:49 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fxfx11uy4-1
+ w155JGlg140941
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Feb 2018 00:22:02 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fxe5e4vuc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Feb 2018 00:17:48 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Feb 2018 00:22:01 -0500
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Mon, 5 Feb 2018 05:17:46 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w155HhrT50397350
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Feb 2018 05:17:43 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 788D511C04A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 05:11:08 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 26FC811C058
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 05:11:08 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 05:11:08 +0000 (GMT)
-Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 2F386A00DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Feb 2018 16:17:40 +1100 (AEDT)
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/tm: Update function prototype comment
-Date: Mon,  5 Feb 2018 16:17:16 +1100
-Message-Id: <20180205051716.22529-1-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 5 Feb 2018 05:21:59 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s/radix: remove unused flush_tlb_lpid variants
+In-Reply-To: <20180203065806.5751-1-npiggin@gmail.com>
+References: <20180203065806.5751-1-npiggin@gmail.com>
+Date: Mon, 05 Feb 2018 10:51:55 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87bmh4vwng.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,35 +37,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit eb5c3f1c8647 ("powerpc: Always save/restore checkpointed regs
-during treclaim/trecheckpoint") __tm_recheckpoint was modified to no
-longer take the second parameter 'unsigned long orig_msr' as part of a
-TM rewrite to simplify the reclaiming/recheckpointing process.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-There is a comment in the asm file where the function is delcared which
-has an incorrect prototype with the 'orig_msr' parameter.
+> These were intended for use by KVM, but it has its own LPID
+> flushing code and never used these.
+>
 
-This patch corrects the comment.
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/kernel/tm.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index b92ac8e711db..2eb20264e70d 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -300,8 +300,8 @@ _GLOBAL(tm_reclaim)
- 	blr
- 
- 
--	/* void __tm_recheckpoint(struct thread_struct *thread,
--	 *			  unsigned long orig_msr)
-+       /*
-+	 * void __tm_recheckpoint(struct thread_struct *thread)
- 	 *	- Restore the checkpointed register state saved by tm_reclaim
- 	 *	  when we switch_to a process.
- 	 *
--- 
-2.16.1
+> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  3 --
+>  arch/powerpc/mm/tlb-radix.c                        | 40 ----------------------
+>  2 files changed, 43 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> index 8eea90f80e45..19b45ba6caf9 100644
+> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> @@ -47,9 +47,6 @@ extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmad
+>  #endif
+>  extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
+>  extern void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr);
+> -extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+> -				     unsigned long page_size);
+> -extern void radix__flush_tlb_lpid(unsigned long lpid);
+>  extern void radix__flush_tlb_all(void);
+>  extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
+>  					unsigned long address);
+> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+> index 71d1b19ad1c0..8ce858ec59e1 100644
+> --- a/arch/powerpc/mm/tlb-radix.c
+> +++ b/arch/powerpc/mm/tlb-radix.c
+> @@ -603,46 +603,6 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+>  }
+>  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+>  
+> -void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+> -			      unsigned long page_size)
+> -{
+> -	unsigned long rb,rs,prs,r;
+> -	unsigned long ap;
+> -	unsigned long ric = RIC_FLUSH_TLB;
+> -
+> -	ap = mmu_get_ap(radix_get_mmu_psize(page_size));
+> -	rb = gpa & ~(PPC_BITMASK(52, 63));
+> -	rb |= ap << PPC_BITLSHIFT(58);
+> -	rs = lpid & ((1UL << 32) - 1);
+> -	prs = 0; /* process scoped */
+> -	r = 1;   /* raidx format */
+> -
+> -	asm volatile("ptesync": : :"memory");
+> -	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+> -		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+> -	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+> -	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
+> -}
+> -EXPORT_SYMBOL(radix__flush_tlb_lpid_va);
+> -
+> -void radix__flush_tlb_lpid(unsigned long lpid)
+> -{
+> -	unsigned long rb,rs,prs,r;
+> -	unsigned long ric = RIC_FLUSH_ALL;
+> -
+> -	rb = 0x2 << PPC_BITLSHIFT(53); /* IS = 2 */
+> -	rs = lpid & ((1UL << 32) - 1);
+> -	prs = 0; /* partition scoped */
+> -	r = 1;   /* raidx format */
+> -
+> -	asm volatile("ptesync": : :"memory");
+> -	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+> -		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+> -	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+> -	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
+> -}
+> -EXPORT_SYMBOL(radix__flush_tlb_lpid);
+> -
+>  void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
+>  				unsigned long start, unsigned long end)
+>  {
+> -- 
+> 2.15.1
