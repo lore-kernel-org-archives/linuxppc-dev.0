@@ -1,30 +1,17 @@
-Return-Path: <andrew@lunn.ch>
-Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zZqhz1Tm1zDrDV
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 01:29:06 +1100 (AEDT)
-Date: Mon, 5 Feb 2018 15:29:01 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: PA Semi PWRficient Gigabit Ethernet doesn't work anymore since
- the first networking updates for the kernel 4.16
-Message-ID: <20180205142901.GD11811@lunn.ch>
-References: <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516035556.18795.71.camel@infinera.com>
- <20180116143836.GC22903@lunn.ch>
- <1516125454.18795.87.camel@infinera.com>
- <DB3PR0402MB38492999533EB4400DED45BFECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
- <1516348851.4730.15.camel@infinera.com>
- <20180119132251.GJ32299@lunn.ch>
- <9e8e906d-b2b7-f11c-30ed-ccdf91ac563c@xenosoft.de>
- <20180204171626.GE10544@lunn.ch>
- <93dcb6c1-75d5-539c-c867-09266d43dbd0@xenosoft.de>
-MIME-Version: 1.0
+Return-Path: <segher@gate.crashing.org>
+Date: Mon, 5 Feb 2018 08:41:18 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH (skiboot)] dt: add /cpus/ibm,
+ powerpc-cpu-features device tree bindings
+Message-ID: <20180205144116.GU21977@gate.crashing.org>
+References: <20180203042732.27980-1-npiggin@gmail.com>
+ <20180203153620.GP21977@gate.crashing.org>
+ <20180205112615.4f267659@roar.ozlabs.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <93dcb6c1-75d5-539c-c867-09266d43dbd0@xenosoft.de>
+In-Reply-To: <20180205112615.4f267659@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 05, 2018 at 10:38:34AM +0100, Christian Zigotzky wrote:
-> Hello Andrew,
+On Mon, Feb 05, 2018 at 11:26:15AM +1000, Nicholas Piggin wrote:
+> On Sat, 3 Feb 2018 09:36:20 -0600
+> > On Sat, Feb 03, 2018 at 02:27:32PM +1000, Nicholas Piggin wrote:
+> > > +	/*
+> > > +	 * ISAv3.0B branch instruction and register additions
+> > > +	 * CA32, OV32, mcrxrx, setb
+> > > +	 */
+> > > +	{ "branch-v3",  
+> > 
+> > Those aren't branch instructions, they are integer instructions.  Some
+> > of which use the XER, some of which use CR fields.
 > 
-> Many thanks for your patch. I compiled the latest git kernel today and the
-> PA Semi PWRficient Gigabit Ethernet works with your patch.
+> Okay, well the register changes are for branch facility registers, I
+> guess instructions could move to integer. We have nothing relying on
+> exact definition of these things at the moment, so these we can change.
 
-Great.
+XER is a fixed-point facility register (that's what the "X" means even!)
 
-Can i add a tested-by:
+Thanks,
 
-Thanks
-	Andrew
+
+Segher
