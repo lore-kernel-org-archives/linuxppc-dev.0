@@ -1,41 +1,33 @@
-Return-Path: <compudj@efficios.com>
-Received: from mail.efficios.com (mail.efficios.com [167.114.142.141])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zZzzF4J0wzF0s2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 07:42:01 +1100 (AEDT)
-Date: Mon, 5 Feb 2018 20:32:08 +0000 (UTC)
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linux-api <linux-api@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Boqun Feng <boqun.feng@gmail.com>, Andrew Hunter <ahh@google.com>,
- maged michael <maged.michael@gmail.com>, Avi Kivity <avi@scylladb.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Dave Watson <davejwatson@fb.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Andrea Parri <parri.andrea@gmail.com>,
- "Russell King, ARM Linux" <linux@armlinux.org.uk>,
- Greg Hackmann <ghackmann@google.com>,
- Will Deacon <will.deacon@arm.com>, David Sehr <sehr@google.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, x86 <x86@kernel.org>,
- Alan Stern <stern@rowland.harvard.edu>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arch <linux-arch@vger.kernel.org>
-Message-ID: <1407075321.16343.1517862728006.JavaMail.zimbra@efficios.com>
-In-Reply-To: <20180205202242.6ilyjh35byycf3ez@gmail.com>
-References: <20180129202020.8515-1-mathieu.desnoyers@efficios.com>
- <20180129202020.8515-3-mathieu.desnoyers@efficios.com>
- <20180205202242.6ilyjh35byycf3ez@gmail.com>
-Subject: Re: [PATCH for 4.16 v7 02/11] powerpc: membarrier: Skip memory
- barrier in switch_mm()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zb0hc6nzRzF0Sy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 08:14:24 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w15LE5Pq070105
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Feb 2018 16:14:22 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fxubn8xm5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Feb 2018 16:14:21 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Mon, 5 Feb 2018 16:14:20 -0500
+Subject: Re: Kernel 4.15 lost set_robust_list support on POWER 9
+To: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, mpe@ellerman.id.au
+Cc: Florian Weimer <fweimer@redhat.com>, Jiri Slaby <jslaby@suse.cz>
+References: <3ef0c599-0285-e77a-c002-e21152823fb8@redhat.com>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Mon, 5 Feb 2018 19:14:14 -0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <3ef0c599-0285-e77a-c002-e21152823fb8@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <d5f533cf-bd97-794a-38e8-6b6d8c005023@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,32 +37,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------ On Feb 5, 2018, at 3:22 PM, Ingo Molnar mingo@kernel.org wrote:
+Nick, Michael,
 
-> * Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
-> 
->>  
->> +config ARCH_HAS_MEMBARRIER_HOOKS
->> +	bool
-> 
-> Yeah, so I have renamed this to ARCH_HAS_MEMBARRIER_CALLBACKS, and propagated it
-> through the rest of the patches. "Callback" is the canonical name, and I also
-> cringe every time I see 'hook'.
-> 
-> Please let me know if there are any big objections against this minor cleanup.
+On 02/05/2018 10:48 AM, Florian Weimer wrote:
+> 7041  set_robust_list(0x7fff93dc3980, 24) = -1 ENOSYS (Function not 
+> implemented)
 
-No objection at all,
+The regression was introduced by commit 371b8044 ("powerpc/64s: 
+Initialize ISAv3 MMU registers before setting partition table").
 
-Thanks!
+The problem is Radix MMU specific (does not occur with 'disable_radix'),
+and does not occur with that code reverted (ie do not set PIDR to zero).
 
-Mathieu
+Do you see any reasons why?
+(wondering if at all related to access_ok() in include/asm/uaccess.h)
 
-> 
-> Thanks,
-> 
-> 	Ingo
+with:
 
--- 
-Mathieu Desnoyers
-EfficiOS Inc.
-http://www.efficios.com
+     # strace -e set_robust_list -f ./test
+     set_robust_list(0x7fffa4b03910, 24)     = -1 ENOSYS (Function not 
+implemented)
+     +++ exited with 1 +++
+
+     # uname -r
+     4.15.0
+
+without:
+
+     # strace -e set_robust_list -f ./test
+     set_robust_list(0x7fff889c3910, 24)     = 0
+     +++ exited with 0 +++
+
+     # uname -r
+     4.15.0.nopidr
