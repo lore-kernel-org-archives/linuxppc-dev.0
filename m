@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVnp5BfmzF10M
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:50:38 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVnj52B3zF10H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:50:33 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w16Gn38J130402
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 11:50:37 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fyg4xga16-1
+ w16GnODd036203
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 11:50:31 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fycyga9sx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:50:35 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:50:29 -0500
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 16:50:32 -0000
+ Tue, 6 Feb 2018 16:50:26 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,11 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v7 06/24] mm: Introduce pte_spinlock for FAULT_FLAG_SPECULATIVE
-Date: Tue,  6 Feb 2018 17:49:52 +0100
+Subject: [PATCH v7 03/24] powerpc/mm: Define CONFIG_SPECULATIVE_PAGE_FAULT
+Date: Tue,  6 Feb 2018 17:49:49 +0100
 In-Reply-To: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1517935810-31177-7-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1517935810-31177-4-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,56 +49,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When handling page fault without holding the mmap_sem the fetch of the
-pte lock pointer and the locking will have to be done while ensuring
-that the VMA is not touched in our back.
+Define CONFIG_SPECULATIVE_PAGE_FAULT for BOOK3S_64 and SMP. This enables
+the Speculative Page Fault handler.
 
-So move the fetch and locking operations in a dedicated function.
+Support is only provide for BOOK3S_64 currently because:
+- require CONFIG_PPC_STD_MMU because checks done in
+  set_access_flags_filter()
+- require BOOK3S because we can't support for book3e_hugetlb_preload()
+  called by update_mmu_cache()
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- mm/memory.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index bb058527525a..2560d100b439 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2452,6 +2452,13 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
- 	pte_unmap_unlock(vmf->pte, vmf->ptl);
- }
- 
-+static bool pte_spinlock(struct vm_fault *vmf)
-+{
-+	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
-+	spin_lock(vmf->ptl);
-+	return true;
-+}
-+
- static bool pte_map_lock(struct vm_fault *vmf)
- {
- 	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
-@@ -3819,8 +3826,8 @@ static int do_numa_page(struct vm_fault *vmf)
- 	 * validation through pte_unmap_same(). It's of NUMA type but
- 	 * the pfn may be screwed if the read is non atomic.
- 	 */
--	vmf->ptl = pte_lockptr(vma->vm_mm, vmf->pmd);
--	spin_lock(vmf->ptl);
-+	if (!pte_spinlock(vmf))
-+		return VM_FAULT_RETRY;
- 	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte))) {
- 		pte_unmap_unlock(vmf->pte, vmf->ptl);
- 		goto out;
-@@ -4013,8 +4020,8 @@ static int handle_pte_fault(struct vm_fault *vmf)
- 	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))
- 		return do_numa_page(vmf);
- 
--	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
--	spin_lock(vmf->ptl);
-+	if (!pte_spinlock(vmf))
-+		return VM_FAULT_RETRY;
- 	entry = vmf->orig_pte;
- 	if (unlikely(!pte_same(*vmf->pte, entry)))
- 		goto unlock;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9d3329811cc1..57c19ee79c00 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -232,6 +232,7 @@ config PPC
+ 	select OLD_SIGACTION			if PPC32
+ 	select OLD_SIGSUSPEND
+ 	select SPARSE_IRQ
++	select SPECULATIVE_PAGE_FAULT		if PPC_BOOK3S_64 && SMP
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select VIRT_TO_BUS			if !PPC64
+ 	#
 -- 
 2.7.4
