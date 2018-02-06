@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVpS6sX9zF10q
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:51:12 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVpV6SyVzF10v
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:51:14 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w16Gp8BF017539
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 11:51:10 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fydk60fag-1
+ w16GogT5087728
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 11:51:12 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fyfvm13sa-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:51:09 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:51:10 -0500
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 16:51:06 -0000
+ Tue, 6 Feb 2018 16:51:08 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,11 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v7 23/24] x86/mm: Add speculative pagefault handling
-Date: Tue,  6 Feb 2018 17:50:09 +0100
+Subject: [PATCH v7 24/24] powerpc/mm: Add speculative page fault
+Date: Tue,  6 Feb 2018 17:50:10 +0100
 In-Reply-To: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1517935810-31177-24-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1517935810-31177-25-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,69 +49,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Peter Zijlstra <peterz@infradead.org>
+This patch enable the speculative page fault on the PowerPC
+architecture.
 
-Try a speculative fault before acquiring mmap_sem, if it returns with
-VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
-traditional fault.
+This will try a speculative page fault without holding the mmap_sem,
+if it returns with VM_FAULT_RETRY, the mmap_sem is acquired and the
+traditional page fault processing is done.
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+The speculative path is only tried for multithreaded process as there is no
+risk of contention on the mmap_sem otherwise.
 
-[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
- handle_speculative_fault()]
-[Retry with usual fault path in the case VM_ERROR is returned by
- handle_speculative_fault(). This allows signal to be delivered]
-[Don't build SPF call if !CONFIG_SPECULATIVE_PAGE_FAULT]
-[Try speculative fault path only for multi threaded processes]
-[Try to the VMA fetch during the speculative path in case of retry]
+Build on if CONFIG_SPECULATIVE_PAGE_FAULT is defined (currently for
+BOOK3S_64 && SMP).
+
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- arch/x86/mm/fault.c | 38 +++++++++++++++++++++++++++++++++++++-
- 1 file changed, 37 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/fault.c | 31 ++++++++++++++++++++++++++++++-
+ 1 file changed, 30 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 800de815519c..d9f9236ccb9a 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -1239,6 +1239,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 		unsigned long address)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 866446cf2d9a..104f3cc86b51 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -392,6 +392,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 			   unsigned long error_code)
  {
- 	struct vm_area_struct *vma;
+ 	struct vm_area_struct * vma;
 +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 +	struct vm_area_struct *spf_vma = NULL;
 +#endif
- 	struct task_struct *tsk;
- 	struct mm_struct *mm;
- 	int fault, major = 0;
-@@ -1336,6 +1339,27 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 	if (error_code & X86_PF_INSTR)
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+  	int is_exec = TRAP(regs) == 0x400;
+@@ -459,6 +462,20 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (is_exec)
  		flags |= FAULT_FLAG_INSTRUCTION;
  
 +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-+	if ((error_code & X86_PF_USER) && (atomic_read(&mm->mm_users) > 1)) {
-+		fault = handle_speculative_fault(mm, address, flags,
-+						 &spf_vma);
-+
++	if (is_user && (atomic_read(&mm->mm_users) > 1)) {
++		/* let's try a speculative page fault without grabbing the
++		 * mmap_sem.
++		 */
++		fault = handle_speculative_fault(mm, address, flags, &spf_vma);
 +		if (!(fault & VM_FAULT_RETRY)) {
-+			if (!(fault & VM_FAULT_ERROR)) {
-+				perf_sw_event(PERF_COUNT_SW_SPF, 1,
-+					      regs, address);
-+				goto done;
-+			}
-+			/*
-+			 * In case of error we need the pkey value, but
-+			 * can't get it from the spf_vma as it is only returned
-+			 * when VM_FAULT_RETRY is returned. So we have to
-+			 * retry the page fault with the mmap_sem grabbed.
-+			 */
++			perf_sw_event(PERF_COUNT_SW_SPF, 1,
++				      regs, address);
++			goto done;
 +		}
 +	}
 +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
 +
- 	/*
- 	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in
-@@ -1369,7 +1393,16 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 	/* When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in the
+ 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
+@@ -489,7 +506,16 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
  		might_sleep();
  	}
  
@@ -121,23 +112,23 @@ index 800de815519c..d9f9236ccb9a 100644
 +		if (can_reuse_spf_vma(spf_vma, address))
 +			vma = spf_vma;
 +		else
-+			vma = find_vma(mm, address);
++			vma =  find_vma(mm, address);
 +		spf_vma = NULL;
 +	} else
 +#endif
 +		vma = find_vma(mm, address);
- 	if (unlikely(!vma)) {
- 		bad_area(regs, error_code, address);
- 		return;
-@@ -1455,6 +1488,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 		return;
- 	}
+ 	if (unlikely(!vma))
+ 		return bad_area(regs, address);
+ 	if (likely(vma->vm_start <= address))
+@@ -568,6 +594,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	up_read(&current->mm->mmap_sem);
  
 +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 +done:
 +#endif
- 	/*
- 	 * Major/minor page fault accounting. If any of the events
- 	 * returned VM_FAULT_MAJOR, we account it as a major fault.
+ 	if (unlikely(fault & VM_FAULT_ERROR))
+ 		return mm_fault_error(regs, address, fault);
+ 
 -- 
 2.7.4
