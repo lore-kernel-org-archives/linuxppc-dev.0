@@ -1,22 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbPHT1KFBzF0xv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 23:42:28 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id h129so2288726ita.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 04:42:28 -0800 (PST)
-Subject: Re: [PATCH] powerpc/64s: Fix MASKABLE_RELON_EXCEPTION_HV_OOL macro
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <1517920597-14588-1-git-send-email-maddy@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <8238543e-7027-010b-a6ab-95e87fdad693@ozlabs.ru>
-Date: Tue, 6 Feb 2018 23:42:20 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbQ465FDszF0Z0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 00:17:41 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w16DGxLc006091
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 08:17:39 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fybrbc6hj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 08:17:39 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Tue, 6 Feb 2018 06:17:38 -0700
+Subject: Re: Kernel 4.15 lost set_robust_list support on POWER 9
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Jiri Slaby <jslaby@suse.cz>
+References: <3ef0c599-0285-e77a-c002-e21152823fb8@redhat.com>
+ <d5f533cf-bd97-794a-38e8-6b6d8c005023@linux.vnet.ibm.com>
+ <1517867731.2312.146.camel@au1.ibm.com>
+ <20180206110616.5d1d5881@roar.ozlabs.ibm.com>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Tue, 6 Feb 2018 11:17:31 -0200
 MIME-Version: 1.0
-In-Reply-To: <1517920597-14588-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180206110616.5d1d5881@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <135fc358-3595-67aa-cf52-a13ec35ad9db@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +43,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/18 23:36, Madhavan Srinivasan wrote:
-> Commit f14e953b191f ("powerpc/64s: Add support to take additional parameter in MASKABLE_* macro")
-> messed up MASKABLE_RELON_EXCEPTION_HV_OOL macro by adding the wrong
-> __SOFTEN__ test which caused guest kernel trash at boot. Patch to fix
-> the macro to use SOFTEN_TEST_HV instead of SOFTEN_NOTEST_HV.
+On 02/05/2018 11:06 PM, Nicholas Piggin wrote:
+> Does this help?
 > 
-> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Fix-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/exception-64s.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index 176dfb73d42c..471b2274fbeb 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -645,7 +645,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
->  					  EXC_HV, SOFTEN_TEST_HV, bitmask)
->  
->  #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label, bitmask)		\
-> -	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec, bitmask);\
-> +	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);\
->  	EXCEPTION_RELON_PROLOG_PSERIES_1(label, EXC_HV)
->  
->  /*
-> 
+> powerpc/64s/radix: allocate guard-PID for kernel contexts at boot
 
-Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Yes, the test-case passes:
 
--- 
-Alexey
+     # strace -e set_robust_list -f ./test
+     set_robust_list(0x7fff8d453910, 24)     = 0
+     +++ exited with 0 +++
+
+     # uname -r
+     4.15.0.guardpid
+
+Thanks!
+
+cheers,
+Mauricio
