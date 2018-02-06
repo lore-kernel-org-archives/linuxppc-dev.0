@@ -1,39 +1,49 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbQ465FDszF0Z0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 00:17:41 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w16DGxLc006091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 08:17:39 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fybrbc6hj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 08:17:39 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 06:17:38 -0700
-Subject: Re: Kernel 4.15 lost set_robust_list support on POWER 9
-To: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Jiri Slaby <jslaby@suse.cz>
-References: <3ef0c599-0285-e77a-c002-e21152823fb8@redhat.com>
- <d5f533cf-bd97-794a-38e8-6b6d8c005023@linux.vnet.ibm.com>
- <1517867731.2312.146.camel@au1.ibm.com>
- <20180206110616.5d1d5881@roar.ozlabs.ibm.com>
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Date: Tue, 6 Feb 2018 11:17:31 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbQYl0Jb8zF0yQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 00:39:55 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aik@ozlabs.ru, Alan Modra <amodra@gmail.com>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>, "Aneesh Kumar K. V"
+ <aneesh.kumar@linux.vnet.ibm.com>, anju@linux.vnet.ibm.com, Anton
+ Blanchard <anton@samba.org>, Arnd Bergmann <arnd@arndb.de>, Thiago Jung
+ Bauermann <bauerman@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, bhaktipriya96@gmail.com, Bjorn Helgaas
+ <bhelgaas@google.com>, bryantly@linux.vnet.ibm.com, Balbir Singh
+ <bsingharora@gmail.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
+ clombard@linux.vnet.ibm.com, Cyril Bur <cyrilbur@gmail.com>, Daniel
+ Thompson <daniel.thompson@linaro.org>, david@gibson.dropbear.id.au, Dmitry
+ Torokhov <dmitry.torokhov@gmail.com>, fbarrat@linux.vnet.ibm.com, Geert
+ Uytterhoeven <geert+renesas@glider.be>, geoff@infradead.org,
+ gomonovych@gmail.com, gpiccoli@linux.vnet.ibm.com,
+ gromero@linux.vnet.ibm.com, "Gustavo A. R. Silva"
+ <gustavo@embeddedor.com>, ivan@de.ibm.com, Jeremy Kerr <jk@ozlabs.org>,
+ joakim.tjernlund@infinera.com, Joe Perches <joe@perches.com>, Josh
+ Poimboeuf <jpoimboe@redhat.com>, jsperbeck@google.com, julia@ni.com,
+ kamalesh@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ leoyang.li@nxp.com, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ram Pai <linuxram@us.ibm.com>, maddy@linux.vnet.ibm.com,
+ mahesh@linux.vnet.ibm.com, Mathieu Malaterre <malat@debian.org>,
+ mwb@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com, Nick Piggin <npiggin@gmail.com>,
+ oss@buserror.net, Paul Mackerras <paulus@ozlabs.org>, Rob Herring
+ <robh@kernel.org>, ruscur@russell.cc, santosh@fossix.org, Andreas Schwab
+ <schwab@linux-m68k.org>, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ sukadev@linux.vnet.ibm.com, Tejun Heo <tj@kernel.org>,
+ wei.guo.simon@gmail.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.16-1 tag
+In-Reply-To: <CA+55aFypU331cQy-6ZJ6szF=2KVLqcbwCUGd+gTwPViRqRWN+g@mail.gmail.com>
+References: <87y3kbpkxy.fsf@concordia.ellerman.id.au>
+ <CA+55aFypU331cQy-6ZJ6szF=2KVLqcbwCUGd+gTwPViRqRWN+g@mail.gmail.com>
+Date: Wed, 07 Feb 2018 00:39:53 +1100
+Message-ID: <87mv0mw82e.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180206110616.5d1d5881@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <135fc358-3595-67aa-cf52-a13ec35ad9db@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,21 +53,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/05/2018 11:06 PM, Nicholas Piggin wrote:
-> Does this help?
-> 
-> powerpc/64s/radix: allocate guard-PID for kernel contexts at boot
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+> Hmm. This adds a
+>
+>    static inline void pci_uevent_ers(struct pci_dev *pdev, ..
+>
+> to include/linux/pci.h.
+>
+> Why?
+>
+> You do realize that that header file is included by almost every
+> driver out there. Why is that magical function *so* important that it
+> needs to be an inline function, and those strings etc duplicated in
+> every user?
+>
+> Yes, that header file is already full of random inline functions, but
+> they are generally wrapper functions that don't really do anything,
+> and in many cases ithey are also basically configurable to really do
+> nothing at all so that the compiler can remove all trace of something
+> that isn't enabled.
+>
+> This function, in contrast, is simply not that at all. I see literally
+> _zero_ reason why it should be an inline in a really core file.
+>
+> It's not important.
+>
+> It's not performance critical.
+>
+> It's not even used by any core drivers.
 
-Yes, the test-case passes:
+All true.
 
-     # strace -e set_robust_list -f ./test
-     set_robust_list(0x7fff8d453910, 24)     = 0
-     +++ exited with 0 +++
+> I pulled this, but honestly, this part was *GARBAGE*. I'm used to
+> people always thinking that *their* code is so important that it needs
+> to be front and center, but this is just ridiculous shit.
 
-     # uname -r
-     4.15.0.guardpid
+I disagree. This was just a relatively new contributor looking for somewhere to
+put a function so that it could be shared between powerpc code and the PCI AER
+code, and choosing the easy but wrong option.
 
-Thanks!
+None of us think this code is important, we're not trying to put it "front and
+center", there just isn't an obvious home for this function in an existing .c
+file that doesn't cause it to be built in when it's not needed.
 
-cheers,
-Mauricio
+And yeah I should have caught it in review, so I have no problem with you being
+annoyed about *that*.
+
+Anyway I'll talk to Bjorn and find a better place for it.
+
+cheers
