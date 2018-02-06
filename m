@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVpS4hvzzF10K
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVpS6sX9zF10q
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:51:12 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w16Gomm4077510
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w16Gp8BF017539
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 11:51:10 -0500
 Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fybrbny0t-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fydk60fag-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:51:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:51:09 -0500
 Received: from localhost
  by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 16:50:44 -0000
+ Tue, 6 Feb 2018 16:51:06 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,12 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v7 12/24] mm/migrate: Pass vm_fault pointer to
- migrate_misplaced_page()
-Date: Tue,  6 Feb 2018 17:49:58 +0100
+Subject: [PATCH v7 23/24] x86/mm: Add speculative pagefault handling
+Date: Tue,  6 Feb 2018 17:50:09 +0100
 In-Reply-To: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1517935810-31177-13-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1517935810-31177-24-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,74 +49,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-migrate_misplaced_page() is only called during the page fault handling so
-it's better to pass the pointer to the struct vm_fault instead of the vma.
+From: Peter Zijlstra <peterz@infradead.org>
 
-This way during the speculative page fault path the saved vma->vm_flags
-could be used.
+Try a speculative fault before acquiring mmap_sem, if it returns with
+VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
+traditional fault.
 
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+
+[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
+ handle_speculative_fault()]
+[Retry with usual fault path in the case VM_ERROR is returned by
+ handle_speculative_fault(). This allows signal to be delivered]
+[Don't build SPF call if !CONFIG_SPECULATIVE_PAGE_FAULT]
+[Try speculative fault path only for multi threaded processes]
+[Try to the VMA fetch during the speculative path in case of retry]
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/migrate.h | 4 ++--
- mm/memory.c             | 2 +-
- mm/migrate.c            | 4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/x86/mm/fault.c | 38 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/migrate.h b/include/linux/migrate.h
-index 0c6fe904bc97..08960ec74246 100644
---- a/include/linux/migrate.h
-+++ b/include/linux/migrate.h
-@@ -126,14 +126,14 @@ static inline void __ClearPageMovable(struct page *page)
- #ifdef CONFIG_NUMA_BALANCING
- extern bool pmd_trans_migrating(pmd_t pmd);
- extern int migrate_misplaced_page(struct page *page,
--				  struct vm_area_struct *vma, int node);
-+				  struct vm_fault *vmf, int node);
- #else
- static inline bool pmd_trans_migrating(pmd_t pmd)
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index 800de815519c..d9f9236ccb9a 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -1239,6 +1239,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 		unsigned long address)
  {
- 	return false;
- }
- static inline int migrate_misplaced_page(struct page *page,
--					 struct vm_area_struct *vma, int node)
-+					 struct vm_fault *vmf, int node)
- {
- 	return -EAGAIN; /* can't migrate now */
- }
-diff --git a/mm/memory.c b/mm/memory.c
-index 1d6b9f91f2a6..82b943a369d6 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3892,7 +3892,7 @@ static int do_numa_page(struct vm_fault *vmf)
+ 	struct vm_area_struct *vma;
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++	struct vm_area_struct *spf_vma = NULL;
++#endif
+ 	struct task_struct *tsk;
+ 	struct mm_struct *mm;
+ 	int fault, major = 0;
+@@ -1336,6 +1339,27 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 	if (error_code & X86_PF_INSTR)
+ 		flags |= FAULT_FLAG_INSTRUCTION;
+ 
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++	if ((error_code & X86_PF_USER) && (atomic_read(&mm->mm_users) > 1)) {
++		fault = handle_speculative_fault(mm, address, flags,
++						 &spf_vma);
++
++		if (!(fault & VM_FAULT_RETRY)) {
++			if (!(fault & VM_FAULT_ERROR)) {
++				perf_sw_event(PERF_COUNT_SW_SPF, 1,
++					      regs, address);
++				goto done;
++			}
++			/*
++			 * In case of error we need the pkey value, but
++			 * can't get it from the spf_vma as it is only returned
++			 * when VM_FAULT_RETRY is returned. So we have to
++			 * retry the page fault with the mmap_sem grabbed.
++			 */
++		}
++	}
++#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
++
+ 	/*
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in
+@@ -1369,7 +1393,16 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 		might_sleep();
  	}
  
- 	/* Migrate to the requested node */
--	migrated = migrate_misplaced_page(page, vma, target_nid);
-+	migrated = migrate_misplaced_page(page, vmf, target_nid);
- 	if (migrated) {
- 		page_nid = target_nid;
- 		flags |= TNF_MIGRATED;
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 5d0dc7b85f90..ad8692ca6a4f 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -1900,7 +1900,7 @@ bool pmd_trans_migrating(pmd_t pmd)
-  * node. Caller is expected to have an elevated reference count on
-  * the page that will be dropped by this function before returning.
-  */
--int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
-+int migrate_misplaced_page(struct page *page, struct vm_fault *vmf,
- 			   int node)
- {
- 	pg_data_t *pgdat = NODE_DATA(node);
-@@ -1913,7 +1913,7 @@ int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
- 	 * with execute permissions as they are probably shared libraries.
- 	 */
- 	if (page_mapcount(page) != 1 && page_is_file_cache(page) &&
--	    (vma->vm_flags & VM_EXEC))
-+	    (vmf->vma_flags & VM_EXEC))
- 		goto out;
+-	vma = find_vma(mm, address);
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++	if (spf_vma) {
++		if (can_reuse_spf_vma(spf_vma, address))
++			vma = spf_vma;
++		else
++			vma = find_vma(mm, address);
++		spf_vma = NULL;
++	} else
++#endif
++		vma = find_vma(mm, address);
+ 	if (unlikely(!vma)) {
+ 		bad_area(regs, error_code, address);
+ 		return;
+@@ -1455,6 +1488,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+ 		return;
+ 	}
  
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++done:
++#endif
  	/*
+ 	 * Major/minor page fault accounting. If any of the events
+ 	 * returned VM_FAULT_MAJOR, we account it as a major fault.
 -- 
 2.7.4
