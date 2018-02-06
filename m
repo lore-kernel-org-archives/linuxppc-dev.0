@@ -1,37 +1,25 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbbf22qstzF12F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 07:29:14 +1100 (AEDT)
-Date: Tue, 6 Feb 2018 12:28:31 -0800
-From: Matthew Wilcox <willy@infradead.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v7 04/24] mm: Dont assume page-table invariance during
- faults
-Message-ID: <20180206202831.GB16511@bombadil.infradead.org>
-References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1517935810-31177-5-git-send-email-ldufour@linux.vnet.ibm.com>
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbftL3q3MzF11v
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 09:55:05 +1100 (AEDT)
+Received: by mail-oi0-x244.google.com with SMTP id j15so2621888oii.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 14:55:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1517935810-31177-5-git-send-email-ldufour@linux.vnet.ibm.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
+References: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 6 Feb 2018 23:55:02 +0100
+Message-ID: <CAK8P3a0Wmh6acO7W=weX37B2GNbecJQzPhZdVZcXXAwfT6jZ5A@mail.gmail.com>
+Subject: Re: [PATCH] char: nvram: disable on ARM
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,79 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 06, 2018 at 05:49:50PM +0100, Laurent Dufour wrote:
-> From: Peter Zijlstra <peterz@infradead.org>
-> 
-> One of the side effects of speculating on faults (without holding
-> mmap_sem) is that we can race with free_pgtables() and therefore we
-> cannot assume the page-tables will stick around.
-> 
-> Remove the reliance on the pte pointer.
-> 
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> 
-> In most of the case pte_unmap_same() was returning 1, which meaning that
-> do_swap_page() should do its processing. So in most of the case there will
-> be no impact.
-> 
-> Now regarding the case where pte_unmap_safe() was returning 0, and thus
-> do_swap_page return 0 too, this happens when the page has already been
-> swapped back. This may happen before do_swap_page() get called or while in
-> the call to do_swap_page(). In that later case, the check done when
-> swapin_readahead() returns will detect that case.
-> 
-> The worst case would be that a page fault is occuring on 2 threads at the
-> same time on the same swapped out page. In that case one thread will take
-> much time looping in __read_swap_cache_async(). But in the regular page
-> fault path, this is even worse since the thread would wait for semaphore to
-> be released before starting anything.
-> 
-> [Remove only if !CONFIG_SPECULATIVE_PAGE_FAULT]
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+On Tue, Feb 6, 2018 at 11:05 PM, Alexandre Belloni
+<alexandre.belloni@bootlin.com> wrote:
+> /dev/nvram was never meant to be used alongside the RTC CMOS driver from
+> drivers/rtc as it already expose the NVRAM through another interface..
+> Anyway, the last defconfig to enable it properly was removed in 2010 so
+> prevent ARM users from selecting it.
+>
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> ---
+>  drivers/char/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+> index c28dca0c613d..9bcac927cfd0 100644
+> --- a/drivers/char/Kconfig
+> +++ b/drivers/char/Kconfig
+> @@ -264,7 +264,7 @@ source "drivers/char/hw_random/Kconfig"
+>
+>  config NVRAM
+>         tristate "/dev/nvram support"
+> -       depends on ATARI || X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
+> +       depends on ATARI || X86 || GENERIC_NVRAM
+>         ---help---
+>           If you say Y here and create a character special file /dev/nvram
+>           with major number 10 and minor number 144 using mknod ("man mknod"),
 
-I have a great deal of trouble connecting all of the words above to the
-contents of the patch.
+The change looks good:
 
->  
-> +#ifndef CONFIG_SPECULATIVE_PAGE_FAULT
->  /*
->   * handle_pte_fault chooses page fault handler according to an entry which was
->   * read non-atomically.  Before making any commitment, on those architectures
-> @@ -2311,6 +2312,7 @@ static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
->  	pte_unmap(page_table);
->  	return same;
->  }
-> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
->  
->  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
->  {
-> @@ -2898,11 +2900,13 @@ int do_swap_page(struct vm_fault *vmf)
->  		swapcache = page;
->  	}
->  
-> +#ifndef CONFIG_SPECULATIVE_PAGE_FAULT
->  	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte)) {
->  		if (page)
->  			put_page(page);
->  		goto out;
->  	}
-> +#endif
->  
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-This feels to me like we want:
+but taking a closer look raises a few other points:
 
-#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-[current code]
+* arch/arm/kernel/time.c has this code
+
+#if defined(CONFIG_RTC_DRV_CMOS) || defined(CONFIG_RTC_DRV_CMOS_MODULE) || \
+    defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE)
+/* this needs a better home */
+DEFINE_SPINLOCK(rtc_lock);
+EXPORT_SYMBOL(rtc_lock);
+#endif  /* pc-style 'CMOS' RTC support */
+
+That can be adapted now, or maybe we could move all definitions into
+a common place (that needs some more planning).
+
+* similarly, this line in nvram.c can be simplified:
+#if defined(CONFIG_ATARI)
+#  define MACH ATARI
+#elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)  /* and ?? */
+#  define MACH PC
 #else
-/*
- * Some words here which explains why we always want to return this
- * value if we support speculative page faults.
- */
-static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
-				pte_t *page_table, pte_t orig_pte)
-{
-	return 1;
-}
+#  error Cannot build nvram driver for this machine configuration.
 #endif
 
-instead of cluttering do_swap_page with an ifdef.
+* GENERIC_NVRAM is not really generic, instead this seems to be the
+  chardev that is used for 32-bit powerpc (powermac, 85xx, 86xx), while
+  64-bit powerpc (cell, maple, opal, pseries) use code from
+  arch/powerpc/kernel/nvram_64.c, with the same underlying arch hooks.
+  The nvram_64 code appears to be mostly a superset of the 32-bit
+  generic_nvram one.
+
+* The code in drivers/char/nvram is not used at all when
+   GENERIC_NVRAM is set, and half the code in there is different
+   between x86 and atari.
+
+* most of the external interface in include/linux/nvram.h is
+  unused, the rest tends to be architecture specific
+
+* The procfs file appears to be completely useless on any 64-bit
+   x86 machine, this is what I see:
+
+$ cat /proc/driver/nvram
+Checksum status: valid
+# floppies     : 0
+Floppy 0 type  : none
+Floppy 1 type  : none
+HD 0 type      : none
+HD 1 type      : none
+HD type 48 data: 0/0/0 C/H/S, precomp 0, lz 0
+HD type 49 data: 156/0/0 C/H/S, precomp 0, lz 0
+DOS base memory: 635 kB
+Extended memory: 65535 kB (configured), 65535 kB (tested)
+Gfx adapter    : EGA, VGA, ... (with BIOS)
+FPU            : not installed
+
+      Arnd
