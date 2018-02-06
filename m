@@ -1,36 +1,32 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbGyq2S3kzF0y0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 18:57:38 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w167sZt3081848
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 02:57:35 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fy72334jn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbKj12jsDzF0st
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 21:00:52 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w169x4xM087855
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 05:00:49 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fy88fdb0b-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 02:57:35 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 05:00:49 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 02:57:34 -0500
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, neelegup@linux.vnet.ibm.com,
- stable@vger.kernel.org
-Subject: Re: rtc-opal: Fix handling of firmware error codes, prevent busy loops
-In-Reply-To: <20180206022646.GP3404@piout.net>
-References: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
- <20180206022646.GP3404@piout.net>
-Date: Tue, 06 Feb 2018 18:57:25 +1100
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 6 Feb 2018 10:00:47 -0000
+Subject: Re: [PATCH] powerpc/64s: fix may_hard_irq_enable for PMI soft masking
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20180203071750.6469-1-npiggin@gmail.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Tue, 6 Feb 2018 15:30:43 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87r2pyv9cq.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20180203071750.6469-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <764f5253-eaab-4bae-24f6-6ca3bd5d4700@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +36,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexandre Belloni <alexandre.belloni@bootlin.com> writes:
-> On 02/08/2016 at 11:50:16 +1000, Stewart Smith wrote:
->> According to the OPAL docs:
->> https://github.com/open-power/skiboot/blob/skiboot-5.2.5/doc/opal-api/opal-rtc-read-3.txt
->> https://github.com/open-power/skiboot/blob/skiboot-5.2.5/doc/opal-api/opal-rtc-write-4.txt
->> OPAL_HARDWARE may be returned from OPAL_RTC_READ or OPAL_RTC_WRITE and this
->> indicates either a transient or permanent error.
->> 
->> Prior to this patch, Linux was not dealing with OPAL_HARDWARE being a
->> permanent error particularly well, in that you could end up in a busy
->> loop.
->> 
->> This was not too hard to trigger on an AMI BMC based OpenPOWER machine
->> doing a continuous "ipmitool mc reset cold" to the BMC, the result of
->> that being that we'd get stuck in an infinite loop in opal_get_rtc_time.
->> 
->> We now retry a few times before returning the error higher up the stack.
->> 
->> Cc: stable@vger.kernel.org
->> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
->> ---
->>  drivers/rtc/rtc-opal.c | 12 ++++++++++--
->>  1 file changed, 10 insertions(+), 2 deletions(-)
->> 
->
-> Just a note to let you know that this patch should have gone through my
-> tree but it was not sent to linux-rtc or me.
->
-> I guess what happened is that Michael cleaned up the Linux PPC patchwork
-> queue.
 
-Apologies for not sending there. My (18 month ago self) bad.
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+On Saturday 03 February 2018 12:47 PM, Nicholas Piggin wrote:
+> vThe soft IRQ masking code has to hard-disable interrupts in cases
+> where the exception is not cleared by the masked handler. External
+> interrupts used this approach for soft masking. Now recently PMU
+> interrupts do the same thing.
+>
+> The soft IRQ masking code additionally allowed for interrupt handlers
+> to hard-enable interrupts after soft-disabling them. The idea is to
+> allow PMU interrupts through to profile interrupt handlers.
+>
+> So when interrupts are being replayed when there is a pending
+> interrupt that requires hard-disabling, there is a test to prevent
+> those handlers from hard-enabling them if there is a pending external
+> interrupt. may_hard_irq_enable() handles this.
+>
+> After f442d00480 ("powerpc/64s: Add support to mask perf interrupts
+> and replay them"), may_hard_irq_enable() could prematurely enable
+> MSR[EE] when a PMU exception exists, which would result in the
+> interrupt firing again while masked, and MSR[EE] being disabled again.
+>
+> I haven't seen that this could cause a serious problem, but it's
+> more consistent to handle these soft-masked interrupts in the same
+> way. So introduce a define for all types of interrupts that require
+> MSR[EE] masking in their soft-disable handlers, and use that in
+> may_hard_irq_enable().
+>
+> Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Yes nice catch. We could get into a messy state.
+May be if I run my perf+kernbench longer, could get lucky.
+
+Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+
+> ---
+> Hi,
+>
+> A review of this would be helpful. I think it probably might as well
+> go into 4.16 unless I misunderstood the code. My changelog got a bit
+> long-winded in the end, I could try improve it if it's hard to
+> understand.
+>
+> Thanks,
+> Nick
+>
+>   arch/powerpc/include/asm/hw_irq.h    | 12 +++++++++++-
+>   arch/powerpc/kernel/exceptions-64e.S |  2 ++
+>   arch/powerpc/kernel/exceptions-64s.S |  6 +++---
+>   3 files changed, 16 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+> index 88e5e8f17e98..855e17d158b1 100644
+> --- a/arch/powerpc/include/asm/hw_irq.h
+> +++ b/arch/powerpc/include/asm/hw_irq.h
+> @@ -29,6 +29,16 @@
+>   #define PACA_IRQ_HMI		0x20
+>   #define PACA_IRQ_PMI		0x40
+>
+> +/*
+> + * Some soft-masked interrupts must be hard masked until they are replayed
+> + * (e.g., because the soft-masked handler does not clear the exception).
+> + */
+> +#ifdef CONFIG_PPC_BOOK3S
+> +#define PACA_IRQ_MUST_HARD_MASK	(PACA_IRQ_EE|PACA_IRQ_PMI)
+> +#else
+> +#define PACA_IRQ_MUST_HARD_MASK	(PACA_IRQ_EE)
+> +#endif
+> +
+>   /*
+>    * flags for paca->irq_soft_mask
+>    */
+> @@ -244,7 +254,7 @@ static inline bool lazy_irq_pending(void)
+>   static inline void may_hard_irq_enable(void)
+>   {
+>   	get_paca()->irq_happened &= ~PACA_IRQ_HARD_DIS;
+> -	if (!(get_paca()->irq_happened & PACA_IRQ_EE))
+> +	if (!(get_paca()->irq_happened & PACA_IRQ_MUST_HARD_MASK))
+>   		__hard_irq_enable();
+>   }
+>
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index ee832d344a5a..9b6e653e501a 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -943,6 +943,8 @@ kernel_dbg_exc:
+>   /*
+>    * An interrupt came in while soft-disabled; We mark paca->irq_happened
+>    * accordingly and if the interrupt is level sensitive, we hard disable
+> + * hard disable (full_mask) corresponds to PACA_IRQ_MUST_HARD_MASK, so
+> + * keep these in synch.
+>    */
+>
+>   .macro masked_interrupt_book3e paca_irq full_mask
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 243d072a225a..3ac87e53b3da 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1426,7 +1426,7 @@ EXC_COMMON_BEGIN(soft_nmi_common)
+>    *   triggered and won't automatically refire.
+>    * - If it was a HMI we return immediately since we handled it in realmode
+>    *   and it won't refire.
+> - * - else we hard disable and return.
+> + * - Else it is one of PACA_IRQ_MUST_HARD_MASK, so hard disable and return.
+>    * This is called with r10 containing the value to OR to the paca field.
+>    */
+>   #define MASKED_INTERRUPT(_H)				\
+> @@ -1441,8 +1441,8 @@ masked_##_H##interrupt:					\
+>   	ori	r10,r10,0xffff;				\
+>   	mtspr	SPRN_DEC,r10;				\
+>   	b	MASKED_DEC_HANDLER_LABEL;		\
+> -1:	andi.	r10,r10,(PACA_IRQ_DBELL|PACA_IRQ_HMI);	\
+> -	bne	2f;					\
+> +1:	andi.	r10,r10,PACA_IRQ_MUST_HARD_MASK;	\
+> +	beq	2f;					\
+>   	mfspr	r10,SPRN_##_H##SRR1;			\
+>   	xori	r10,r10,MSR_EE; /* clear MSR_EE */	\
+>   	mtspr	SPRN_##_H##SRR1,r10;			\
