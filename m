@@ -1,32 +1,31 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbKj12jsDzF0st
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 21:00:52 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w169x4xM087855
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 05:00:49 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2fy88fdb0b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 05:00:49 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 10:00:47 -0000
-Subject: Re: [PATCH] powerpc/64s: fix may_hard_irq_enable for PMI soft masking
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20180203071750.6469-1-npiggin@gmail.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 6 Feb 2018 15:30:43 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbMTg6sQlzF0yG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 22:21:08 +1100 (AEDT)
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+To: mad skateman <madskateman@gmail.com>,
+ Madalin-cristian Bucur <madalin.bucur@nxp.com>
+Cc: Andrew Lunn <andrew@lunn.ch>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jamie Krueger <jamie@bitbybitsoftwaregroup.com>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com> <20180116205342.GA29888@lunn.ch>
+ <1516189651.18795.99.camel@infinera.com> <20180117134339.GC32299@lunn.ch>
+ <DB3PR0402MB3849850266808EC52F88A783ECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <DB3PR0402MB3849865056493075A4F4317CECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <DB3PR0402MB38494AC5EE923A10053745DDECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <CAHkrCmGxFUbfEyufdYhFYA4jyOkh+W2z=1yZsZwv+O4t+hE_1w@mail.gmail.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <1d62c827-0ff7-0372-a2f8-f1930e9f788c@xenosoft.de>
+Date: Tue, 6 Feb 2018 12:20:57 +0100
 MIME-Version: 1.0
-In-Reply-To: <20180203071750.6469-1-npiggin@gmail.com>
+In-Reply-To: <CAHkrCmGxFUbfEyufdYhFYA4jyOkh+W2z=1yZsZwv+O4t+hE_1w@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <764f5253-eaab-4bae-24f6-6ca3bd5d4700@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,122 +35,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
+
+I have tried to figure out why there is a problem with the buffer space 
+but unfortunately without any success. Any ideas? Could you please watch 
+Skateman's video? [1]
+
+Thanks,
+Christian
+
+[1] https://drive.google.com/file/d/18RhksfcavRJPr86asQDTzrmsN20D0Xim/view
 
 
-On Saturday 03 February 2018 12:47 PM, Nicholas Piggin wrote:
-> vThe soft IRQ masking code has to hard-disable interrupts in cases
-> where the exception is not cleared by the masked handler. External
-> interrupts used this approach for soft masking. Now recently PMU
-> interrupts do the same thing.
->
-> The soft IRQ masking code additionally allowed for interrupt handlers
-> to hard-enable interrupts after soft-disabling them. The idea is to
-> allow PMU interrupts through to profile interrupt handlers.
->
-> So when interrupts are being replayed when there is a pending
-> interrupt that requires hard-disabling, there is a test to prevent
-> those handlers from hard-enabling them if there is a pending external
-> interrupt. may_hard_irq_enable() handles this.
->
-> After f442d00480 ("powerpc/64s: Add support to mask perf interrupts
-> and replay them"), may_hard_irq_enable() could prematurely enable
-> MSR[EE] when a PMU exception exists, which would result in the
-> interrupt firing again while masked, and MSR[EE] being disabled again.
->
-> I haven't seen that this could cause a serious problem, but it's
-> more consistent to handle these soft-masked interrupts in the same
-> way. So introduce a define for all types of interrupts that require
-> MSR[EE] masking in their soft-disable handlers, and use that in
-> may_hard_irq_enable().
->
-> Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
-Yes nice catch. We could get into a messy state.
-May be if I run my perf+kernbench longer, could get lucky.
-
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-
-> ---
-> Hi,
->
-> A review of this would be helpful. I think it probably might as well
-> go into 4.16 unless I misunderstood the code. My changelog got a bit
-> long-winded in the end, I could try improve it if it's hard to
-> understand.
->
-> Thanks,
-> Nick
->
->   arch/powerpc/include/asm/hw_irq.h    | 12 +++++++++++-
->   arch/powerpc/kernel/exceptions-64e.S |  2 ++
->   arch/powerpc/kernel/exceptions-64s.S |  6 +++---
->   3 files changed, 16 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index 88e5e8f17e98..855e17d158b1 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -29,6 +29,16 @@
->   #define PACA_IRQ_HMI		0x20
->   #define PACA_IRQ_PMI		0x40
->
-> +/*
-> + * Some soft-masked interrupts must be hard masked until they are replayed
-> + * (e.g., because the soft-masked handler does not clear the exception).
-> + */
-> +#ifdef CONFIG_PPC_BOOK3S
-> +#define PACA_IRQ_MUST_HARD_MASK	(PACA_IRQ_EE|PACA_IRQ_PMI)
-> +#else
-> +#define PACA_IRQ_MUST_HARD_MASK	(PACA_IRQ_EE)
-> +#endif
-> +
->   /*
->    * flags for paca->irq_soft_mask
->    */
-> @@ -244,7 +254,7 @@ static inline bool lazy_irq_pending(void)
->   static inline void may_hard_irq_enable(void)
->   {
->   	get_paca()->irq_happened &= ~PACA_IRQ_HARD_DIS;
-> -	if (!(get_paca()->irq_happened & PACA_IRQ_EE))
-> +	if (!(get_paca()->irq_happened & PACA_IRQ_MUST_HARD_MASK))
->   		__hard_irq_enable();
->   }
->
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> index ee832d344a5a..9b6e653e501a 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -943,6 +943,8 @@ kernel_dbg_exc:
->   /*
->    * An interrupt came in while soft-disabled; We mark paca->irq_happened
->    * accordingly and if the interrupt is level sensitive, we hard disable
-> + * hard disable (full_mask) corresponds to PACA_IRQ_MUST_HARD_MASK, so
-> + * keep these in synch.
->    */
->
->   .macro masked_interrupt_book3e paca_irq full_mask
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 243d072a225a..3ac87e53b3da 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1426,7 +1426,7 @@ EXC_COMMON_BEGIN(soft_nmi_common)
->    *   triggered and won't automatically refire.
->    * - If it was a HMI we return immediately since we handled it in realmode
->    *   and it won't refire.
-> - * - else we hard disable and return.
-> + * - Else it is one of PACA_IRQ_MUST_HARD_MASK, so hard disable and return.
->    * This is called with r10 containing the value to OR to the paca field.
->    */
->   #define MASKED_INTERRUPT(_H)				\
-> @@ -1441,8 +1441,8 @@ masked_##_H##interrupt:					\
->   	ori	r10,r10,0xffff;				\
->   	mtspr	SPRN_DEC,r10;				\
->   	b	MASKED_DEC_HANDLER_LABEL;		\
-> -1:	andi.	r10,r10,(PACA_IRQ_DBELL|PACA_IRQ_HMI);	\
-> -	bne	2f;					\
-> +1:	andi.	r10,r10,PACA_IRQ_MUST_HARD_MASK;	\
-> +	beq	2f;					\
->   	mfspr	r10,SPRN_##_H##SRR1;			\
->   	xori	r10,r10,MSR_EE; /* clear MSR_EE */	\
->   	mtspr	SPRN_##_H##SRR1,r10;			\
+On 03 February 2018 at 12:54PM, mad skateman wrote:
+ >
+ > For those interested... i have recorded a video of my X5000 DPAA 
+Ethernet, and the weird problems..
+ > In this Video i am also transfering hundereds of megabytes from my 
+NAS to the X5000.
+ > You will also see pings die... mostly after the 12th packet and 
+giving the no buffer space error..
+ > Hopefully someone might have a clue about what is happening.
+ >
+ > https://drive.google.com/file/d/18RhksfcavRJPr86asQDTzrmsN20D0Xim/view
+ >
+ > On Wed, Jan 17, 2018 at 3:43 PM, Madalin-cristian Bucur 
+<madalin.bucur@nxp.com> wrote:
+ >
+ >     > -----Original Message-----
+ >     > From: Madalin-cristian Bucur
+ >     > Sent: Wednesday, January 17, 2018 4:25 PM
+ >     > To: David S . Miller <davem@davemloft.net>
+ >     > Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org;
+ >     > madskateman@gmail.com; 'Madalin-cristian Bucur' 
+<madalin.bucur@nxp.com>;
+ >     > Andrew Lunn <andrew@lunn.ch>; Joakim Tjernlund
+ >     > <Joakim.Tjernlund@infinera.com>
+ >     > Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+ >     >
+ >     > > -----Original Message-----
+ >     > > From: netdev-owner@vger.kernel.org 
+[mailto:netdev-owner@vger.kernel.org]
+ >     > > On Behalf Of Madalin-cristian Bucur
+ >     > > Sent: Wednesday, January 17, 2018 4:16 PM
+ >     > > To: Andrew Lunn <andrew@lunn.ch>; Joakim Tjernlund
+ >     > > <Joakim.Tjernlund@infinera.com>
+ >     > > Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org;
+ >     > > madskateman@gmail.com; David S . Miller <davem@davemloft.net>
+ >     > > Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+ >     > >
+ >     > > > -----Original Message-----
+ >     > > > From: Andrew Lunn [mailto:andrew@lunn.ch]
+ >     > > > Sent: Wednesday, January 17, 2018 3:44 PM
+ >     > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+ >     > > > Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+ >     > > >
+ >     > > > > That doesn't work really, having users to hit the bug, 
+debug it, fix
+ >     > > it
+ >     > > > and then
+ >     > > > > find it fixed already in upstream, then specifically 
+request it to
+ >     > be
+ >     > > > backported to stable.
+ >     > > > > I don't need this fix to be backported, already got it. 
+Someone else
+ >     > > > might though.
+ >     > > >
+ >     > > > The "someone else might though" is a big point of asking 
+for it to
+ >     > > > added to stable. The other reason is it means one less 
+patch you need
+ >     > > > to maintain in your build.
+ >     > >
+ >     > > I've sent that patch [1] for net but I guess the timing was 
+wrong and
+ >     > > it was merged to net-next.
+ >     > >
+ >     > > > > I would be interested in bug fixes upstream which fixes:
+ >     > > >
+ >     > > > Did you try upstream? Does it give the same errors?
+ >     > > >
+ >     > > >     Andrew
+ >     > >
+ >     > > [1] https://patchwork.kernel.org/patch/10146119/
+ >     > >
+ >     > > Madalin
+ >     >
+ >     > Hi Dave,
+ >     >
+ >     > Can you please add the fix [1] to stable?
+ >     >
+ >     > Thank you,
+ >     > Madalin
+ >
+ >     Sorry,
+ >
+ >     I've provided the wrong link towards the patch (v1 instead of v3),
+ >     here's the correct one:
+ >
+ >     https://patchwork.kernel.org/patch/10151969/
+ >
+ >     Madalin
+ >
+ >
