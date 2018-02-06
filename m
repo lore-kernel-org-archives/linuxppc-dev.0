@@ -1,19 +1,30 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zb7dR6xCqzF0sn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 13:27:06 +1100 (AEDT)
-Date: Tue, 6 Feb 2018 03:26:46 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, neelegup@linux.vnet.ibm.com,
- stable@vger.kernel.org
-Subject: Re: rtc-opal: Fix handling of firmware error codes, prevent busy loops
-Message-ID: <20180206022646.GP3404@piout.net>
-References: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbP9050Q1zDqTt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 23:36:52 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w16CZsMZ105469
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 07:36:50 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2fybnw2hfw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 07:36:49 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 6 Feb 2018 12:36:47 -0000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/64s: Fix MASKABLE_RELON_EXCEPTION_HV_OOL macro
+Date: Tue,  6 Feb 2018 18:06:37 +0530
+Message-Id: <1517920597-14588-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Commit f14e953b191f ("powerpc/64s: Add support to take additional parameter in MASKABLE_* macro")
+messed up MASKABLE_RELON_EXCEPTION_HV_OOL macro by adding the wrong
+__SOFTEN__ test which caused guest kernel trash at boot. Patch to fix
+the macro to use SOFTEN_TEST_HV instead of SOFTEN_NOTEST_HV.
 
-On 02/08/2016 at 11:50:16 +1000, Stewart Smith wrote:
-> According to the OPAL docs:
-> https://github.com/open-power/skiboot/blob/skiboot-5.2.5/doc/opal-api/opal-rtc-read-3.txt
-> https://github.com/open-power/skiboot/blob/skiboot-5.2.5/doc/opal-api/opal-rtc-write-4.txt
-> OPAL_HARDWARE may be returned from OPAL_RTC_READ or OPAL_RTC_WRITE and this
-> indicates either a transient or permanent error.
-> 
-> Prior to this patch, Linux was not dealing with OPAL_HARDWARE being a
-> permanent error particularly well, in that you could end up in a busy
-> loop.
-> 
-> This was not too hard to trigger on an AMI BMC based OpenPOWER machine
-> doing a continuous "ipmitool mc reset cold" to the BMC, the result of
-> that being that we'd get stuck in an infinite loop in opal_get_rtc_time.
-> 
-> We now retry a few times before returning the error higher up the stack.
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-> ---
->  drivers/rtc/rtc-opal.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
+Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Fix-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/exception-64s.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Just a note to let you know that this patch should have gone through my
-tree but it was not sent to linux-rtc or me.
-
-I guess what happened is that Michael cleaned up the Linux PPC patchwork
-queue.
-
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 176dfb73d42c..471b2274fbeb 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -645,7 +645,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 					  EXC_HV, SOFTEN_TEST_HV, bitmask)
+ 
+ #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label, bitmask)		\
+-	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec, bitmask);\
++	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);\
+ 	EXCEPTION_RELON_PROLOG_PSERIES_1(label, EXC_HV)
+ 
+ /*
 -- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+2.7.4
