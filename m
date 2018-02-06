@@ -1,47 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbQYl0Jb8zF0yQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 00:39:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbR816kLRzF0xk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 01:06:09 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aik@ozlabs.ru, Alan Modra <amodra@gmail.com>, Andrew Donnellan
- <andrew.donnellan@au1.ibm.com>, "Aneesh Kumar K. V"
- <aneesh.kumar@linux.vnet.ibm.com>, anju@linux.vnet.ibm.com, Anton
- Blanchard <anton@samba.org>, Arnd Bergmann <arnd@arndb.de>, Thiago Jung
- Bauermann <bauerman@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, bhaktipriya96@gmail.com, Bjorn Helgaas
- <bhelgaas@google.com>, bryantly@linux.vnet.ibm.com, Balbir Singh
- <bsingharora@gmail.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
- clombard@linux.vnet.ibm.com, Cyril Bur <cyrilbur@gmail.com>, Daniel
- Thompson <daniel.thompson@linaro.org>, david@gibson.dropbear.id.au, Dmitry
- Torokhov <dmitry.torokhov@gmail.com>, fbarrat@linux.vnet.ibm.com, Geert
- Uytterhoeven <geert+renesas@glider.be>, geoff@infradead.org,
- gomonovych@gmail.com, gpiccoli@linux.vnet.ibm.com,
- gromero@linux.vnet.ibm.com, "Gustavo A. R. Silva"
- <gustavo@embeddedor.com>, ivan@de.ibm.com, Jeremy Kerr <jk@ozlabs.org>,
- joakim.tjernlund@infinera.com, Joe Perches <joe@perches.com>, Josh
- Poimboeuf <jpoimboe@redhat.com>, jsperbeck@google.com, julia@ni.com,
- kamalesh@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- leoyang.li@nxp.com, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ram Pai <linuxram@us.ibm.com>, maddy@linux.vnet.ibm.com,
- mahesh@linux.vnet.ibm.com, Mathieu Malaterre <malat@debian.org>,
- mwb@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, Nick Piggin <npiggin@gmail.com>,
- oss@buserror.net, Paul Mackerras <paulus@ozlabs.org>, Rob Herring
- <robh@kernel.org>, ruscur@russell.cc, santosh@fossix.org, Andreas Schwab
- <schwab@linux-m68k.org>, Stewart Smith <stewart@linux.vnet.ibm.com>,
- sukadev@linux.vnet.ibm.com, Tejun Heo <tj@kernel.org>,
- wei.guo.simon@gmail.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.16-1 tag
-In-Reply-To: <CA+55aFypU331cQy-6ZJ6szF=2KVLqcbwCUGd+gTwPViRqRWN+g@mail.gmail.com>
-References: <87y3kbpkxy.fsf@concordia.ellerman.id.au>
- <CA+55aFypU331cQy-6ZJ6szF=2KVLqcbwCUGd+gTwPViRqRWN+g@mail.gmail.com>
-Date: Wed, 07 Feb 2018 00:39:53 +1100
-Message-ID: <87mv0mw82e.fsf@concordia.ellerman.id.au>
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ neelegup@linux.vnet.ibm.com, stable@vger.kernel.org
+Subject: Re: rtc-opal: Fix handling of firmware error codes, prevent busy loops
+In-Reply-To: <20180206124212.GQ3404@piout.net>
+References: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <20180206022646.GP3404@piout.net> <87bmh24rq0.fsf@concordia.ellerman.id.au>
+ <20180206124212.GQ3404@piout.net>
+Date: Wed, 07 Feb 2018 01:06:07 +1100
+Message-ID: <87h8quw6uo.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -53,52 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
-> Hmm. This adds a
->
->    static inline void pci_uevent_ers(struct pci_dev *pdev, ..
->
-> to include/linux/pci.h.
->
-> Why?
->
-> You do realize that that header file is included by almost every
-> driver out there. Why is that magical function *so* important that it
-> needs to be an inline function, and those strings etc duplicated in
-> every user?
->
-> Yes, that header file is already full of random inline functions, but
-> they are generally wrapper functions that don't really do anything,
-> and in many cases ithey are also basically configurable to really do
-> nothing at all so that the compiler can remove all trace of something
-> that isn't enabled.
->
-> This function, in contrast, is simply not that at all. I see literally
-> _zero_ reason why it should be an inline in a really core file.
->
-> It's not important.
->
-> It's not performance critical.
->
-> It's not even used by any core drivers.
+Alexandre Belloni <alexandre.belloni@bootlin.com> writes:
 
-All true.
+> On 06/02/2018 at 16:22:47 +1100, Michael Ellerman wrote:
+>> > Just a note to let you know that this patch should have gone through my
+>> > tree but it was not sent to linux-rtc or me.
+>> 
+>> Sorry, I saw it had been languishing for a long time and assumed you'd
+>> missed it.
+>> 
+>> Happy to revert/rework it if you're not happy with it.
+>> 
+>
+> No, that's fine. It's just that the commit title stands out when using
+> git log --oneline and that triggered my OCD ;)
 
-> I pulled this, but honestly, this part was *GARBAGE*. I'm used to
-> people always thinking that *their* code is so important that it needs
-> to be front and center, but this is just ridiculous shit.
-
-I disagree. This was just a relatively new contributor looking for somewhere to
-put a function so that it could be shared between powerpc code and the PCI AER
-code, and choosing the easy but wrong option.
-
-None of us think this code is important, we're not trying to put it "front and
-center", there just isn't an obvious home for this function in an existing .c
-file that doesn't cause it to be built in when it's not needed.
-
-And yeah I should have caught it in review, so I have no problem with you being
-annoyed about *that*.
-
-Anyway I'll talk to Bjorn and find a better place for it.
+Oh no! Now I'm *really* sorry, that's the worst! :)
 
 cheers
