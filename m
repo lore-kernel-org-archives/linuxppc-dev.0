@@ -1,21 +1,22 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zbPHL0wnnzF0r2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 23:42:19 +1100 (AEDT)
-Date: Tue, 6 Feb 2018 13:42:12 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, neelegup@linux.vnet.ibm.com,
- stable@vger.kernel.org
-Subject: Re: rtc-opal: Fix handling of firmware error codes, prevent busy loops
-Message-ID: <20180206124212.GQ3404@piout.net>
-References: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
- <20180206022646.GP3404@piout.net>
- <87bmh24rq0.fsf@concordia.ellerman.id.au>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbPHT1KFBzF0xv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 23:42:28 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id h129so2288726ita.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 04:42:28 -0800 (PST)
+Subject: Re: [PATCH] powerpc/64s: Fix MASKABLE_RELON_EXCEPTION_HV_OOL macro
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <1517920597-14588-1-git-send-email-maddy@linux.vnet.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <8238543e-7027-010b-a6ab-95e87fdad693@ozlabs.ru>
+Date: Tue, 6 Feb 2018 23:42:20 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87bmh24rq0.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1517920597-14588-1-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/2018 at 16:22:47 +1100, Michael Ellerman wrote:
-> > Just a note to let you know that this patch should have gone through my
-> > tree but it was not sent to linux-rtc or me.
+On 06/02/18 23:36, Madhavan Srinivasan wrote:
+> Commit f14e953b191f ("powerpc/64s: Add support to take additional parameter in MASKABLE_* macro")
+> messed up MASKABLE_RELON_EXCEPTION_HV_OOL macro by adding the wrong
+> __SOFTEN__ test which caused guest kernel trash at boot. Patch to fix
+> the macro to use SOFTEN_TEST_HV instead of SOFTEN_NOTEST_HV.
 > 
-> Sorry, I saw it had been languishing for a long time and assumed you'd
-> missed it.
+> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Fix-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/exception-64s.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Happy to revert/rework it if you're not happy with it.
+> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+> index 176dfb73d42c..471b2274fbeb 100644
+> --- a/arch/powerpc/include/asm/exception-64s.h
+> +++ b/arch/powerpc/include/asm/exception-64s.h
+> @@ -645,7 +645,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+>  					  EXC_HV, SOFTEN_TEST_HV, bitmask)
+>  
+>  #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label, bitmask)		\
+> -	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec, bitmask);\
+> +	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);\
+>  	EXCEPTION_RELON_PROLOG_PSERIES_1(label, EXC_HV)
+>  
+>  /*
 > 
 
-No, that's fine. It's just that the commit title stands out when using
-git log --oneline and that triggered my OCD ;)
-
-> > I guess what happened is that Michael cleaned up the Linux PPC patchwork
-> > queue.
-> 
-> Yeah I did.
-> 
-> In future I'll ping you if there's something that seems to have fallen
-> through the cracks.
-> 
-
-Great thanks!
-
+Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 -- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+Alexey
