@@ -1,21 +1,21 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbPBQ3G6dzDqnd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 23:38:05 +1100 (AEDT)
-From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Joel Stanley <joel@jms.id.au>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: wii: Probe the whole devicetree
-Date: Tue,  6 Feb 2018 13:37:04 +0100
-Message-Id: <20180206123707.13715-1-j.neuschaefer@gmx.net>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zbPHL0wnnzF0r2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Feb 2018 23:42:19 +1100 (AEDT)
+Date: Tue, 6 Feb 2018 13:42:12 +0100
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, neelegup@linux.vnet.ibm.com,
+ stable@vger.kernel.org
+Subject: Re: rtc-opal: Fix handling of firmware error codes, prevent busy loops
+Message-ID: <20180206124212.GQ3404@piout.net>
+References: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <20180206022646.GP3404@piout.net>
+ <87bmh24rq0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87bmh24rq0.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously, wii_device_probe would only initialize devices under the
-/hollywood node. After this patch, platform devices placed outside of
-/hollywood will also be initialized.
+On 06/02/2018 at 16:22:47 +1100, Michael Ellerman wrote:
+> > Just a note to let you know that this patch should have gone through my
+> > tree but it was not sent to linux-rtc or me.
+> 
+> Sorry, I saw it had been languishing for a long time and assumed you'd
+> missed it.
+> 
+> Happy to revert/rework it if you're not happy with it.
+> 
 
-The intended usecase for this are devices located outside of the
-Hollywood chip, such as GPIO LEDs and GPIO buttons.
+No, that's fine. It's just that the commit title stands out when using
+git log --oneline and that triggered my OCD ;)
 
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
- arch/powerpc/platforms/embedded6xx/wii.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > I guess what happened is that Michael cleaned up the Linux PPC patchwork
+> > queue.
+> 
+> Yeah I did.
+> 
+> In future I'll ping you if there's something that seems to have fallen
+> through the cracks.
+> 
 
-diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-index f598d5fe1d72..4de26c3c4f6d 100644
---- a/arch/powerpc/platforms/embedded6xx/wii.c
-+++ b/arch/powerpc/platforms/embedded6xx/wii.c
-@@ -248,7 +248,7 @@ static int __init wii_device_probe(void)
- 	if (!machine_is(wii))
- 		return 0;
- 
--	of_platform_bus_probe(NULL, wii_of_bus, NULL);
-+	of_platform_populate(NULL, wii_of_bus, NULL, NULL);
- 	return 0;
- }
- device_initcall(wii_device_probe);
+Great thanks!
+
+
 -- 
-2.15.1
+Alexandre Belloni, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+http://bootlin.com
