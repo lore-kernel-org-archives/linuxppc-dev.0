@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVp571NJzF10F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:50:53 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w16GobvC146897
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbVp62c4rzF10N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 03:50:54 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w16Gn6Wc081719
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Feb 2018 11:50:51 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2fyea5wwv4-1
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2fye20f1cs-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:50:50 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 11:50:51 -0500
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 6 Feb 2018 16:50:47 -0000
+ Tue, 6 Feb 2018 16:50:49 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,11 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v7 13/24] mm: Introduce __lru_cache_add_active_or_unevictable
-Date: Tue,  6 Feb 2018 17:49:59 +0100
+Subject: [PATCH v7 14/24] mm: Introduce __maybe_mkwrite()
+Date: Tue,  6 Feb 2018 17:50:00 +0100
 In-Reply-To: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1517935810-31177-14-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1517935810-31177-15-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,99 +49,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The speculative page fault handler which is run without holding the
-mmap_sem is calling lru_cache_add_active_or_unevictable() but the vm_flags
-is not guaranteed to remain constant.
-Introducing __lru_cache_add_active_or_unevictable() which has the vma flags
-value parameter instead of the vma pointer.
+The current maybe_mkwrite() is getting passed the pointer to the vma
+structure to fetch the vm_flags field.
+
+When dealing with the speculative page fault handler, it will be better to
+rely on the cached vm_flags value stored in the vm_fault structure.
+
+This patch introduce a __maybe_mkwrite() service which can be called by
+passing the value of the vm_flags field.
+
+There is no change functional changes expected for the other callers of
+maybe_mkwrite().
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/swap.h | 10 ++++++++--
- mm/memory.c          |  8 ++++----
- mm/swap.c            |  6 +++---
- 3 files changed, 15 insertions(+), 9 deletions(-)
+ include/linux/mm.h | 9 +++++++--
+ mm/memory.c        | 6 +++---
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index a1a3f4ed94ce..99377b66ea93 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -337,8 +337,14 @@ extern void deactivate_file_page(struct page *page);
- extern void mark_page_lazyfree(struct page *page);
- extern void swap_setup(void);
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index c034f478b73d..4976ea1a8c90 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -685,13 +685,18 @@ void free_compound_page(struct page *page);
+  * pte_mkwrite.  But get_user_pages can cause write faults for mappings
+  * that do not have writing enabled, when used by access_process_vm.
+  */
+-static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
++static inline pte_t __maybe_mkwrite(pte_t pte, unsigned long vma_flags)
+ {
+-	if (likely(vma->vm_flags & VM_WRITE))
++	if (likely(vma_flags & VM_WRITE))
+ 		pte = pte_mkwrite(pte);
+ 	return pte;
+ }
  
--extern void lru_cache_add_active_or_unevictable(struct page *page,
--						struct vm_area_struct *vma);
-+extern void __lru_cache_add_active_or_unevictable(struct page *page,
-+						unsigned long vma_flags);
-+
-+static inline void lru_cache_add_active_or_unevictable(struct page *page,
-+						struct vm_area_struct *vma)
++static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 +{
-+	return __lru_cache_add_active_or_unevictable(page, vma->vm_flags);
++	return __maybe_mkwrite(pte, vma->vm_flags);
 +}
- 
- /* linux/mm/vmscan.c */
- extern unsigned long zone_reclaimable_pages(struct zone *zone);
++
+ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
+ 		struct page *page);
+ int finish_fault(struct vm_fault *vmf);
 diff --git a/mm/memory.c b/mm/memory.c
-index 82b943a369d6..2e4c5755cbc1 100644
+index 2e4c5755cbc1..eb84429be9ea 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -2554,7 +2554,7 @@ static int wp_page_copy(struct vm_fault *vmf)
- 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
- 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(new_page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(new_page, vma);
-+		__lru_cache_add_active_or_unevictable(new_page, vmf->vma_flags);
- 		/*
- 		 * We call the notify macro here because, when using secondary
- 		 * mmu page tables (such as kvm shadow page tables), we want the
-@@ -3095,7 +3095,7 @@ int do_swap_page(struct vm_fault *vmf)
- 	if (unlikely(page != swapcache && swapcache)) {
- 		page_add_new_anon_rmap(page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(page, vma);
-+		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- 	} else {
- 		do_page_add_anon_rmap(page, vma, vmf->address, exclusive);
- 		mem_cgroup_commit_charge(page, memcg, true, false);
-@@ -3246,7 +3246,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
- 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 	page_add_new_anon_rmap(page, vma, vmf->address, false);
- 	mem_cgroup_commit_charge(page, memcg, false, false);
--	lru_cache_add_active_or_unevictable(page, vma);
-+	__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- setpte:
- 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
+@@ -2452,7 +2452,7 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
  
-@@ -3498,7 +3498,7 @@ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 		page_add_new_anon_rmap(page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(page, vma);
-+		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- 	} else {
- 		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
- 		page_add_file_rmap(page, false);
-diff --git a/mm/swap.c b/mm/swap.c
-index 2d337710218f..85fc6e78ca99 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -455,12 +455,12 @@ void lru_cache_add(struct page *page)
-  * directly back onto it's zone's unevictable list, it does NOT use a
-  * per cpu pagevec.
-  */
--void lru_cache_add_active_or_unevictable(struct page *page,
--					 struct vm_area_struct *vma)
-+void __lru_cache_add_active_or_unevictable(struct page *page,
-+					   unsigned long vma_flags)
- {
- 	VM_BUG_ON_PAGE(PageLRU(page), page);
- 
--	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
-+	if (likely((vma_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
- 		SetPageActive(page);
- 	else if (!TestSetPageMlocked(page)) {
+ 	flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
+ 	entry = pte_mkyoung(vmf->orig_pte);
+-	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
++	entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
+ 	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
+ 		update_mmu_cache(vma, vmf->address, vmf->pte);
+ 	pte_unmap_unlock(vmf->pte, vmf->ptl);
+@@ -2543,8 +2543,8 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 			inc_mm_counter_fast(mm, MM_ANONPAGES);
+ 		}
+ 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
+-		entry = mk_pte(new_page, vma->vm_page_prot);
+-		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
++		entry = mk_pte(new_page, vmf->vma_page_prot);
++		entry = __maybe_mkwrite(pte_mkdirty(entry), vmf->vma_flags);
  		/*
+ 		 * Clear the pte entry and flush it first, before updating the
+ 		 * pte with the new entry. This will avoid a race condition
 -- 
 2.7.4
