@@ -1,36 +1,34 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madskateman@gmail.com>
+Received: from mail-qk0-x22f.google.com (mail-qk0-x22f.google.com
+ [IPv6:2607:f8b0:400d:c09::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zcG7x5lJLzF0sH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 09:23:57 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w17MNfsE103209
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Feb 2018 17:23:55 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g0605jgt4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Feb 2018 17:23:54 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 7 Feb 2018 15:23:54 -0700
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, John Allen
- <jallen@linux.vnet.ibm.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [RFC] powerpc/kernel: Add 'ibm,thread-groups' property for CPU
- allocation
-Date: Wed, 7 Feb 2018 16:23:09 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zcDJ2114VzF0Qq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 08:00:49 +1100 (AEDT)
+Received: by mail-qk0-x22f.google.com with SMTP id 15so2960616qkl.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Feb 2018 13:00:48 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <33223d06-d6c6-4043-fc14-d65d48a80556@linux.vnet.ibm.com>
+In-Reply-To: <1d62c827-0ff7-0372-a2f8-f1930e9f788c@xenosoft.de>
+References: <CAHkrCmFCzPd_a1UmyfuZHKM4hXvou0uO0FYoG5bd_fxE8QMueg@mail.gmail.com>
+ <DB3PR0402MB3849EEF00D71FF7A230B70C3ECEB0@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <1516035556.18795.71.camel@infinera.com> <20180116143836.GC22903@lunn.ch>
+ <1516125454.18795.87.camel@infinera.com> <20180116205342.GA29888@lunn.ch>
+ <1516189651.18795.99.camel@infinera.com> <20180117134339.GC32299@lunn.ch>
+ <DB3PR0402MB3849850266808EC52F88A783ECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <DB3PR0402MB3849865056493075A4F4317CECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <DB3PR0402MB38494AC5EE923A10053745DDECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <CAHkrCmGxFUbfEyufdYhFYA4jyOkh+W2z=1yZsZwv+O4t+hE_1w@mail.gmail.com>
+ <1d62c827-0ff7-0372-a2f8-f1930e9f788c@xenosoft.de>
+From: mad skateman <madskateman@gmail.com>
+Date: Wed, 7 Feb 2018 22:00:45 +0100
+Message-ID: <CAHkrCmGrp3eUKYqRpv4__qw24yvL3Fou+MNwaDCX=XGgmFqRRg@mail.gmail.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ Andrew Lunn <andrew@lunn.ch>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jamie Krueger <jamie@bitbybitsoftwaregroup.com>
+Content-Type: multipart/alternative; boundary="001a114c8cacd4641e0564a5962d"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,354 +38,346 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Withdraw/replace previous version submission.  Awaiting hardware
-for further migration tests.  Request comments about current state.]
+--001a114c8cacd4641e0564a5962d
+Content-Type: text/plain; charset="UTF-8"
 
-Add code to parse the new property 'ibm,thread-groups" when it is
-present.  The content of this property explicitly defines the number
-of threads per core as well as the PowerPC 'threads_core_mask'.
-The design provides a common device-tree for both P9 normal core and
-P9 fused core systems.  The new property has been observed to be
-available on P9 pHyp systems, but it may not be present on OpenPower
-BMC systems.
+Hi,
 
-The property updates the kernel to know which CPUs/threads of each
-core are actually present, and then use the map when adding cores
-to the system at boot, or during hotplug operations.
+I just found out that something goes wrong within the ARP table (well thats
+what i think). I hope someone has a clue..
 
-* Previously, the information about the number of threads per core
-  was inferred solely from the "ibm,ppc-interrupt-server#s" property
-  in the system device tree.
-* Also previous to this property, The mask of threads per CPU was
-  inferred to be a strict linear series from 0..(nthreads-1).
-* There may be a different thread group mask for each core in the
-  system.
-* Also after reading the property, we can determine which of the
-  possible threads we are allowed to online for each CPU.  It is no
-  longer a simple linear sequence, but may be discontinuous e.g.
-  activate threads 1,2,3,5,6,7 on a core instead of 0-5 sequentially.
+When i bootup the AmigaOne X5000 with the Ethernet cable connected, it just
+never senses the presence of the UTP cable.
+I must run the following command as root: mii-tool -R eth0 ... it Resets
+the transceiver and the ethernet connection is ready to go.
+But then... it randomly dies....
 
-In the event of LPAR migration, we also provide a hook to re-process
-the property in the event that it is changed.  Rules about fused-core
-and split-core migration are outside the scope of this change, however.
-We update the 'ppc_thread_group_mask' for subsequent use by DLPAR
-operations.  It is the responsibility of the user to put the source
-system into SMT4 mode when moving from a fused-core to split-core
-target.
+After some digging i found that in a working situation the ARP table is
+filled with the correct info. Router address, and corresponding MAC, C mask
+and Interface.
 
-Implementation of the "ibm,thread-groups" property is spread across
-a few files in the powerpc specific code:
+(Working)
+skateman@X5000LNX:~$ arp -n
+Address                  HWtype  HWaddress           Flags Mask
+Iface
+192.168.22.66            ether   08:5b:0e:fd:db:6a   C
+eth0
 
-* prom.c: Parse the property and create 'ppc_thread_group_mask'.
-          Use the mask in operation of early_init_dt_scan_cpus().
-* setup-common.c: Parse the property, create 'ppc_thread_group_mask',
-          and use the value in cpu_init_thread_core_maps(), and
-          smp_setup_cpu_maps.
-* hotplug-cpu.c: Use 'ppc_thread_group_mask' in several locations
-          where the code previously expected to iterate over a
-          linear series of active threads (0..nthreads-1).
-* mobility.c: Look for and process changes to the thread group mask
-          in the context of post migration topology changes
+No more traffic..it just suddenly dies...
+skateman@X5000LNX:~$ ping www.google.com
+ping: unknown host www.google.com
 
-Note that the "ibm,thread-groups" property also includes semantics
-of 'thread-group' i.e. define one or more subgroups of the available
-threads, each group of threads to be used for a specific class of
-task.  Translating thread group semantics into Linux kernel features
-is TBD.
+Rechecked the ARP... and found out it has lost the necessary info.
+skateman@X5000LNX:~$ arp -n
+Address                  HWtype  HWaddress           Flags Mask
+Iface
+192.168.22.66                    (incomplete)
+eth0
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-Changes in V3:
-  -- Update patch description regarding latest changes.
-  -- Move parsing of new property to 'setup-common.c' in new function
-     'process_thread_group_masks'.
-  -- Ensure that code is able to handle unique thread group masks
-     for different cpus.
-  -- Add post migration topology check for 'ibm,thread-groups' using
-     new function process_thread_group_mask when appropriate.
-  -- Tune use of ppc_thread_group_mask during DLPAR operations.
-     Use new function process_thread_group_mask when appropriate.
-  -- Add some more description of property semantics/operation in
-     the case of LPAR migration.
----
- arch/powerpc/include/asm/cputhreads.h        |    6 +
- arch/powerpc/kernel/setup-common.c           |  136 ++++++++++++++++++++++++--
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   14 ++-
- arch/powerpc/platforms/pseries/mobility.c    |    6 +
- 4 files changed, 150 insertions(+), 12 deletions(-)
+Anyone??? :-)
 
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index d71a909..df6ade9 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -31,6 +31,12 @@
- #define threads_core_mask	(*get_cpu_mask(0))
- #endif
- 
-+extern cpumask_t ppc_thread_group_mask;
-+
-+extern int process_thread_group_mask(struct device_node *dn,
-+					const __be32 *prop, int prop_len);
-+
-+
- /* cpu_thread_mask_to_cores - Return a cpumask of one per cores
-  *                            hit by the argument
-  *
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 8fd3a70..1102d12 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -416,13 +416,18 @@ void __init check_for_initrd(void)
- EXPORT_SYMBOL_GPL(threads_shift);
- EXPORT_SYMBOL_GPL(threads_core_mask);
- 
--static void __init cpu_init_thread_core_maps(int tpc)
-+cpumask_t ppc_thread_group_mask;
-+EXPORT_SYMBOL_GPL(ppc_thread_group_mask);
-+
-+static void __init cpu_init_thread_core_maps(int tpc,
-+				cpumask_t *thread_group_mask)
- {
- 	int i;
- 
- 	threads_per_core = tpc;
- 	threads_per_subcore = tpc;
- 	cpumask_clear(&threads_core_mask);
-+	DBG("INFO: Entry %s (%d)\n", __FUNCTION__, tpc);
- 
- 	/* This implementation only supports power of 2 number of threads
- 	 * for simplicity and performance
-@@ -432,12 +437,112 @@ static void __init cpu_init_thread_core_maps(int tpc)
- 
- 	for (i = 0; i < tpc; i++)
- 		cpumask_set_cpu(i, &threads_core_mask);
-+	cpumask_and(&threads_core_mask, &threads_core_mask, thread_group_mask);
- 
- 	printk(KERN_INFO "CPU maps initialized for %d thread%s per core\n",
- 	       tpc, tpc > 1 ? "s" : "");
- 	printk(KERN_DEBUG " (thread shift is %d)\n", threads_shift);
- }
- 
-+int process_thread_group_mask(struct device_node *dn,
-+				const __be32 *prop, int prop_len)
-+{
-+	const __be32 *thrgrp;
-+	const __be32 *intserv;
-+	int lentg, len, cpu, nthreads = 1;
-+	int j, k, rc = 0;
-+	u32 cc_type = 0, no_split = 0, thr_per_split = 0;
-+	DBG("INFO: Entry %s\n", __FUNCTION__);
-+
-+	/* First CPU/thread */
-+	intserv = of_get_property(dn, "reg", &len);
-+	if (intserv)
-+		cpu = of_read_number(intserv, 1);
-+	else
-+		cpu = 0;
-+
-+	/* Num of threads in core */
-+	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s",
-+				&len);
-+	if (intserv) {
-+		DBG("    ibm,ppc-interrupt-server#s -> %d threads\n",
-+		    nthreads);
-+	} else {
-+		DBG("    no ibm,ppc-interrupt-server#s -> 1 thread\n");
-+		len = 4;
-+	}
-+
-+	nthreads = len / sizeof(int);
-+	DBG("    cpu %d nthreads %d\n", cpu, nthreads);
-+
-+	if (prop) {
-+		thrgrp = prop;
-+	} else {
-+		thrgrp = of_get_property(dn, "ibm,thread-groups",
-+					&lentg);
-+		if (!thrgrp) {
-+			rc = -ENOENT;
-+			DBG("    error, %d\n", __LINE__);
-+			goto endit;
-+		}
-+	}
-+
-+	/* Process the thread groups for the Core thread mask */
-+	/* Characteristic type per table */
-+	cc_type = of_read_number(thrgrp++, 1);
-+
-+	/*
-+	 * 1 : Group shares common L1, translation cache, and
-+	 *     instruction data flow
-+	 * >1 : Reserved
-+	 */
-+	if (cc_type != 1) {
-+		rc = -EINVAL;
-+		DBG("    error, %d\n", __LINE__);
-+		goto endit;
-+	}
-+
-+	/* No. splits */
-+	no_split = of_read_number(thrgrp++, 1);
-+	if (no_split == 0) {
-+		rc = -EINVAL;
-+		DBG("    error, %d\n", __LINE__);
-+		goto endit;
-+	}
-+
-+	/* Threads per split */
-+	thr_per_split = of_read_number(thrgrp++, 1);
-+	if (thr_per_split == 0) {
-+		rc = -EINVAL;
-+		DBG("    error, %d\n", __LINE__);
-+		goto endit;
-+	}
-+
-+	DBG("    Property ibm,thread-group "
-+		"(cc_t=%d, no_spl=%d, thr_p_spl=%d)\n",
-+		(int)cc_type, (int)no_split, (int)thr_per_split);
-+
-+	for (j = 0; j < no_split; j++) {
-+		for (k = 0; k < thr_per_split; k++) {
-+			u32 t = of_read_number(thrgrp++, 1);
-+
-+			cpumask_set_cpu(t, &ppc_thread_group_mask);
-+			DBG("      !!enable thread %d\n", (int)t);
-+		}
-+	}
-+
-+endit:
-+	if (rc) {
-+		DBG("    WARNING: error processing (%d)"
-+		    "ibm,thread-group property\n", rc);
-+		for (j = 0; j < nthreads; j++)
-+			cpumask_set_cpu(cpu+j,
-+					&ppc_thread_group_mask);
-+	}
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(process_thread_group_mask);
- 
- /**
-  * setup_cpu_maps - initialize the following cpu maps:
-@@ -489,20 +594,35 @@ void __init smp_setup_cpu_maps(void)
- 
- 		nthreads = len / sizeof(int);
- 
-+		process_thread_group_mask(dn, NULL, 0);
-+
- 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
- 			bool avail;
- 
--			DBG("    thread %d -> cpu %d (hard id %d)\n",
--			    j, cpu, be32_to_cpu(intserv[j]));
--
- 			avail = of_device_is_available(dn);
- 			if (!avail)
- 				avail = !of_property_match_string(dn,
- 						"enable-method", "spin-table");
- 
--			set_cpu_present(cpu, avail);
--			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
--			set_cpu_possible(cpu, true);
-+			DBG("    thread %d -> cpu %d (hard id %d) %d\n",
-+			    j, cpu, be32_to_cpu(intserv[j]),
-+			    cpumask_test_cpu(cpu, &ppc_thread_group_mask));
-+
-+			if (cpumask_test_cpu(cpu,
-+					&ppc_thread_group_mask)) {
-+				DBG("        !!thread %d present"
-+					"/possible\n", (int)cpu);
-+				set_cpu_present(cpu, avail);
-+				set_hard_smp_processor_id(cpu,
-+					be32_to_cpu(intserv[j]));
-+				set_cpu_possible(cpu, true);
-+			} else {
-+				DBG("        !!NOT thread %d "
-+					"present/possible\n", (int)cpu);
-+				set_cpu_present(cpu, false);
-+				set_cpu_possible(cpu, false);
-+			}
-+
- 			cpu++;
- 		}
- 	}
-@@ -561,7 +681,7 @@ void __init smp_setup_cpu_maps(void)
- 	 * every CPU in the system. If that is not the case, then some code
- 	 * here will have to be reworked
- 	 */
--	cpu_init_thread_core_maps(nthreads);
-+	cpu_init_thread_core_maps(nthreads, &ppc_thread_group_mask);
- 
- 	/* Now that possible cpus are set, set nr_cpu_ids for later use */
- 	setup_nr_cpu_ids();
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index a7d14aa7..106d0fe 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -36,6 +36,7 @@
- #include <asm/xics.h>
- #include <asm/xive.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/cputhreads.h>
- 
- #include "pseries.h"
- #include "offline_states.h"
-@@ -254,6 +255,8 @@ static int pseries_add_processor(struct device_node *np)
- 	if (!intserv)
- 		return 0;
- 
-+	process_thread_group_mask(np, NULL, 0);
-+
- 	zalloc_cpumask_var(&candidate_mask, GFP_KERNEL);
- 	zalloc_cpumask_var(&tmp, GFP_KERNEL);
- 
-@@ -325,6 +328,7 @@ static void pseries_remove_processor(struct device_node *np)
- 	cpu_maps_update_begin();
- 	for (i = 0; i < nthreads; i++) {
- 		thread = be32_to_cpu(intserv[i]);
-+		cpumask_clear_cpu(thread, &ppc_thread_group_mask);
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != thread)
- 				continue;
-@@ -363,10 +367,12 @@ static int dlpar_online_cpu(struct device_node *dn)
- 			BUG_ON(get_cpu_current_state(cpu)
- 					!= CPU_STATE_OFFLINE);
- 			cpu_maps_update_done();
--			timed_topology_update(1);
--			rc = device_online(get_cpu_device(cpu));
--			if (rc)
--				goto out;
-+			if (cpumask_test_cpu(thread, &ppc_thread_group_mask)) {
-+				timed_topology_update(1);
-+				rc = device_online(get_cpu_device(cpu));
-+				if (rc)
-+					goto out;
-+			}
- 			cpu_maps_update_begin();
- 
- 			break;
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index f7042ad..0816ccf 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -20,6 +20,7 @@
- 
- #include <asm/machdep.h>
- #include <asm/rtas.h>
-+#include <asm/cputhreads.h>
- #include "pseries.h"
- 
- static struct kobject *mobility_kobj;
-@@ -121,6 +122,11 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
- 	}
- 
- 	if (!more) {
-+		printk(KERN_INFO "INFO: Processing %s %s\n", __FUNCTION__, name);
-+		if (strcmp(name, "ibm,thread-groups") == 0)
-+			process_thread_group_mask(dn,
-+				new_prop->value, new_prop->length);
-+
- 		of_update_property(dn, new_prop);
- 		*prop = NULL;
- 	}
+
+On Tue, Feb 6, 2018 at 12:20 PM, Christian Zigotzky <chzigotzky@xenosoft.de>
+wrote:
+
+> Hello,
+>
+> I have tried to figure out why there is a problem with the buffer space
+> but unfortunately without any success. Any ideas? Could you please watch
+> Skateman's video? [1]
+>
+> Thanks,
+> Christian
+>
+> [1] https://drive.google.com/file/d/18RhksfcavRJPr86asQDTzrmsN20D0Xim/view
+>
+>
+> On 03 February 2018 at 12:54PM, mad skateman wrote:
+> >
+> > For those interested... i have recorded a video of my X5000 DPAA
+> Ethernet, and the weird problems..
+> > In this Video i am also transfering hundereds of megabytes from my NAS
+> to the X5000.
+> > You will also see pings die... mostly after the 12th packet and giving
+> the no buffer space error..
+> > Hopefully someone might have a clue about what is happening.
+> >
+> > https://drive.google.com/file/d/18RhksfcavRJPr86asQDTzrmsN20D0Xim/view
+> >
+> > On Wed, Jan 17, 2018 at 3:43 PM, Madalin-cristian Bucur <
+> madalin.bucur@nxp.com> wrote:
+> >
+> >     > -----Original Message-----
+> >     > From: Madalin-cristian Bucur
+> >     > Sent: Wednesday, January 17, 2018 4:25 PM
+> >     > To: David S . Miller <davem@davemloft.net>
+> >     > Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org;
+> >     > madskateman@gmail.com; 'Madalin-cristian Bucur' <
+> madalin.bucur@nxp.com>;
+> >     > Andrew Lunn <andrew@lunn.ch>; Joakim Tjernlund
+> >     > <Joakim.Tjernlund@infinera.com>
+> >     > Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+> >     >
+> >     > > -----Original Message-----
+> >     > > From: netdev-owner@vger.kernel.org [mailto:
+> netdev-owner@vger.kernel.org]
+> >     > > On Behalf Of Madalin-cristian Bucur
+> >     > > Sent: Wednesday, January 17, 2018 4:16 PM
+> >     > > To: Andrew Lunn <andrew@lunn.ch>; Joakim Tjernlund
+> >     > > <Joakim.Tjernlund@infinera.com>
+> >     > > Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org;
+> >     > > madskateman@gmail.com; David S . Miller <davem@davemloft.net>
+> >     > > Subject: RE: DPAA Ethernet traffice troubles with Linux kernel
+> >     > >
+> >     > > > -----Original Message-----
+> >     > > > From: Andrew Lunn [mailto:andrew@lunn.ch]
+> >     > > > Sent: Wednesday, January 17, 2018 3:44 PM
+> >     > > > To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+> >     > > > Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+> >     > > >
+> >     > > > > That doesn't work really, having users to hit the bug, debug
+> it, fix
+> >     > > it
+> >     > > > and then
+> >     > > > > find it fixed already in upstream, then specifically request
+> it to
+> >     > be
+> >     > > > backported to stable.
+> >     > > > > I don't need this fix to be backported, already got it.
+> Someone else
+> >     > > > might though.
+> >     > > >
+> >     > > > The "someone else might though" is a big point of asking for
+> it to
+> >     > > > added to stable. The other reason is it means one less patch
+> you need
+> >     > > > to maintain in your build.
+> >     > >
+> >     > > I've sent that patch [1] for net but I guess the timing was
+> wrong and
+> >     > > it was merged to net-next.
+> >     > >
+> >     > > > > I would be interested in bug fixes upstream which fixes:
+> >     > > >
+> >     > > > Did you try upstream? Does it give the same errors?
+> >     > > >
+> >     > > >     Andrew
+> >     > >
+> >     > > [1] https://patchwork.kernel.org/patch/10146119/
+> >     > >
+> >     > > Madalin
+> >     >
+> >     > Hi Dave,
+> >     >
+> >     > Can you please add the fix [1] to stable?
+> >     >
+> >     > Thank you,
+> >     > Madalin
+> >
+> >     Sorry,
+> >
+> >     I've provided the wrong link towards the patch (v1 instead of v3),
+> >     here's the correct one:
+> >
+> >     https://patchwork.kernel.org/patch/10151969/
+> >
+> >     Madalin
+> >
+> >
+>
+>
+>
+
+--001a114c8cacd4641e0564a5962d
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><div>Hi,<br><br></div>I just found out that something=
+ goes wrong within the ARP table (well thats what i think). I hope someone =
+has a clue..<br><br><div>When i bootup the AmigaOne X5000 with the Ethernet=
+ cable connected, it just never senses the presence of the UTP cable. <br><=
+/div><div>I must run the following command as root: mii-tool -R eth0 ... it=
+ Resets the transceiver and the ethernet connection is ready to go.<br></di=
+v><div>But then... it randomly dies....=C2=A0 <br><br></div><div>After some=
+ digging i found that in a working situation the ARP table is filled with t=
+he correct info. Router address, and corresponding MAC, C mask and Interfac=
+e.<br><br></div>(Working)<br>skateman@X5000LNX:~$ arp -n<br>Address=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 HWtype=C2=A0 HWaddress=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Flags Mask=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Iface<br>192.168.22.66=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ether=C2=A0=C2=A0 08:5b:0e=
+:fd:db:6a=C2=A0=C2=A0 C=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 eth0<=
+br><br>No more traffic..it just suddenly dies... <br>skateman@X5000LNX:~$ p=
+ing <a target=3D"_blank" href=3D"http://www.google.com">www.google.com</a><=
+br>ping: unknown host <a target=3D"_blank" href=3D"http://www.google.com">w=
+ww.google.com</a><br><br>Rechecked the ARP... and found out it has lost the=
+ necessary info. <br>skateman@X5000LNX:~$ arp -n<br>Address=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0 HWtype=C2=A0 HWaddress=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 Flags Mask=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0 Iface<br>192.168.22.66=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+<wbr>=C2=A0=C2=A0 (incomplete)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0<wbr>=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 eth0<br><br></=
+div><div>Anyone??? :-)<br><br></div></div><div class=3D"gmail_extra"><br><d=
+iv class=3D"gmail_quote">On Tue, Feb 6, 2018 at 12:20 PM, Christian Zigotzk=
+y <span dir=3D"ltr">&lt;<a href=3D"mailto:chzigotzky@xenosoft.de" target=3D=
+"_blank">chzigotzky@xenosoft.de</a>&gt;</span> wrote:<br><blockquote class=
+=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padd=
+ing-left:1ex">Hello,<br>
+<br>
+I have tried to figure out why there is a problem with the buffer space but=
+ unfortunately without any success. Any ideas? Could you please watch Skate=
+man&#39;s video? [1]<br>
+<br>
+Thanks,<br>
+Christian<br>
+<br>
+[1] <a href=3D"https://drive.google.com/file/d/18RhksfcavRJPr86asQDTzrmsN20=
+D0Xim/view" rel=3D"noreferrer" target=3D"_blank">https://drive.google.com/f=
+ile/<wbr>d/18RhksfcavRJPr86asQDTzrmsN20<wbr>D0Xim/view</a><br>
+<br>
+<br>
+On 03 February 2018 at 12:54PM, mad skateman wrote:<br>
+&gt;<br>
+&gt; For those interested... i have recorded a video of my X5000 DPAA Ether=
+net, and the weird problems..<br>
+&gt; In this Video i am also transfering hundereds of megabytes from my NAS=
+ to the X5000.<br>
+&gt; You will also see pings die... mostly after the 12th packet and giving=
+ the no buffer space error..<br>
+&gt; Hopefully someone might have a clue about what is happening.<br>
+&gt;<br>
+&gt; <a href=3D"https://drive.google.com/file/d/18RhksfcavRJPr86asQDTzrmsN2=
+0D0Xim/view" rel=3D"noreferrer" target=3D"_blank">https://drive.google.com/=
+file/<wbr>d/18RhksfcavRJPr86asQDTzrmsN20<wbr>D0Xim/view</a><br>
+&gt;<br>
+&gt; On Wed, Jan 17, 2018 at 3:43 PM, Madalin-cristian Bucur &lt;<a href=3D=
+"mailto:madalin.bucur@nxp.com" target=3D"_blank">madalin.bucur@nxp.com</a>&=
+gt; wrote:<br>
+&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; -----Original Message-----<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; From: Madalin-cristian Bucur<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Sent: Wednesday, January 17, 2018 4:25 PM=
+<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; To: David S . Miller &lt;<a href=3D"mailt=
+o:davem@davemloft.net" target=3D"_blank">davem@davemloft.net</a>&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Cc: <a href=3D"mailto:linuxppc-dev@lists.=
+ozlabs.org" target=3D"_blank">linuxppc-dev@lists.ozlabs.org</a>; <a href=3D=
+"mailto:netdev@vger.kernel.org" target=3D"_blank">netdev@vger.kernel.org</a=
+>;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; <a href=3D"mailto:madskateman@gmail.com" =
+target=3D"_blank">madskateman@gmail.com</a>; &#39;Madalin-cristian Bucur&#3=
+9; &lt;<a href=3D"mailto:madalin.bucur@nxp.com" target=3D"_blank">madalin.b=
+ucur@nxp.com</a>&gt;;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Andrew Lunn &lt;<a href=3D"mailto:andrew@=
+lunn.ch" target=3D"_blank">andrew@lunn.ch</a>&gt;; Joakim Tjernlund<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &lt;<a href=3D"mailto:Joakim.Tjernlund@in=
+finera.com" target=3D"_blank">Joakim.Tjernlund@infinera.com</a><wbr>&gt;<br=
+>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Subject: RE: DPAA Ethernet traffice troub=
+les with Linux kernel<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; -----Original Message-----<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; From: <a href=3D"mailto:netdev-owner=
+@vger.kernel.org" target=3D"_blank">netdev-owner@vger.kernel.org</a> [mailt=
+o:<a href=3D"mailto:netdev-owner@vger.kernel.org" target=3D"_blank">netdev-=
+owner@vger.kern<wbr>el.org</a>]<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; On Behalf Of Madalin-cristian Bucur<=
+br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; Sent: Wednesday, January 17, 2018 4:=
+16 PM<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; To: Andrew Lunn &lt;<a href=3D"mailt=
+o:andrew@lunn.ch" target=3D"_blank">andrew@lunn.ch</a>&gt;; Joakim Tjernlun=
+d<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &lt;<a href=3D"mailto:Joakim.Tjernlu=
+nd@infinera.com" target=3D"_blank">Joakim.Tjernlund@infinera.com</a><wbr>&g=
+t;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; Cc: <a href=3D"mailto:linuxppc-dev@l=
+ists.ozlabs.org" target=3D"_blank">linuxppc-dev@lists.ozlabs.org</a>; <a hr=
+ef=3D"mailto:netdev@vger.kernel.org" target=3D"_blank">netdev@vger.kernel.o=
+rg</a>;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; <a href=3D"mailto:madskateman@gmail.=
+com" target=3D"_blank">madskateman@gmail.com</a>; David S . Miller &lt;<a h=
+ref=3D"mailto:davem@davemloft.net" target=3D"_blank">davem@davemloft.net</a=
+>&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; Subject: RE: DPAA Ethernet traffice =
+troubles with Linux kernel<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; -----Original Message-----<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; From: Andrew Lunn [mailto:<a hr=
+ef=3D"mailto:andrew@lunn.ch" target=3D"_blank">andrew@lunn.ch</a>]<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; Sent: Wednesday, January 17, 20=
+18 3:44 PM<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; To: Joakim Tjernlund &lt;<a hre=
+f=3D"mailto:Joakim.Tjernlund@infinera.com" target=3D"_blank">Joakim.Tjernlu=
+nd@infinera.com</a><wbr>&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; Subject: Re: DPAA Ethernet traf=
+fice troubles with Linux kernel<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; &gt; That doesn&#39;t work real=
+ly, having users to hit the bug, debug it, fix<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; it<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; and then<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; &gt; find it fixed already in u=
+pstream, then specifically request it to<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; be<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; backported to stable.<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; &gt; I don&#39;t need this fix =
+to be backported, already got it. Someone else<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; might though.<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; The &quot;someone else might th=
+ough&quot; is a big point of asking for it to<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; added to stable. The other reas=
+on is it means one less patch you need<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; to maintain in your build.<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; I&#39;ve sent that patch [1] for net=
+ but I guess the timing was wrong and<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; it was merged to net-next.<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; &gt; I would be interested in b=
+ug fixes upstream which fixes:<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt; Did you try upstream? Does it g=
+ive the same errors?<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; &gt;=C2=A0=C2=A0=C2=A0=C2=A0 Andrew<=
+br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; [1] <a href=3D"https://patchwork.ker=
+nel.org/patch/10146119/" rel=3D"noreferrer" target=3D"_blank">https://patch=
+work.kernel.org/p<wbr>atch/10146119/</a><br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; &gt; Madalin<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Hi Dave,<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Can you please add the fix [1] to stable?=
+<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Thank you,<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 &gt; Madalin<br>
+&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 Sorry,<br>
+&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 I&#39;ve provided the wrong link towards the p=
+atch (v1 instead of v3),<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 here&#39;s the correct one:<br>
+&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 <a href=3D"https://patchwork.kernel.org/patch/=
+10151969/" rel=3D"noreferrer" target=3D"_blank">https://patchwork.kernel.or=
+g/p<wbr>atch/10151969/</a><br>
+&gt;<br>
+&gt;=C2=A0=C2=A0=C2=A0=C2=A0 Madalin<br>
+&gt;<br>
+&gt;<br>
+<br>
+<br>
+</blockquote></div><br></div>
+
+--001a114c8cacd4641e0564a5962d--
