@@ -1,20 +1,19 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zbktD5XY6zF0yN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 12:55:15 +1100 (AEDT)
-Date: Wed, 7 Feb 2018 02:55:09 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] char: nvram: disable on ARM
-Message-ID: <20180207015509.GV3404@piout.net>
-References: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
- <CAK8P3a0Wmh6acO7W=weX37B2GNbecJQzPhZdVZcXXAwfT6jZ5A@mail.gmail.com>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmailnode02.adl6.internode.on.net
+ (ipmailnode02.adl6.internode.on.net [150.101.137.148])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zbmf2645GzF0yq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 14:14:50 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Balbir Singh <bsingharora@gmail.com>, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] powerpc/npu: Cleanup MMIO ATSD flushing
+Date: Wed, 07 Feb 2018 14:14:47 +1100
+Message-ID: <5227513.IOhi8YYFsi@new-mexico>
+In-Reply-To: <10851149.oduYqhiQfE@new-mexico>
+References: <20171214011008.4388-1-bsingharora@gmail.com>
+ <10851149.oduYqhiQfE@new-mexico>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a0Wmh6acO7W=weX37B2GNbecJQzPhZdVZcXXAwfT6jZ5A@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +23,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/2018 at 23:55:02 +0100, Arnd Bergmann wrote:
-> * arch/arm/kernel/time.c has this code
-> 
-> #if defined(CONFIG_RTC_DRV_CMOS) || defined(CONFIG_RTC_DRV_CMOS_MODULE) || \
->     defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE)
-> /* this needs a better home */
-> DEFINE_SPINLOCK(rtc_lock);
-> EXPORT_SYMBOL(rtc_lock);
-> #endif  /* pc-style 'CMOS' RTC support */
-> 
-> That can be adapted now, or maybe we could move all definitions into
-> a common place (that needs some more planning).
-> 
+On Tuesday, 16 January 2018 3:15:05 PM AEDT Alistair Popple wrote:
+> Thanks Balbir, one question below. I have no way of testing this at present but
+> it looks ok to me. Thanks!
 
-Yes, on arm, the rtc_lock is mostly there to please
-drivers/rtc/rtc-cmos.c. Maybe we could make the locking in this driver
-x86 and PPC specific.
+The below are more future optimisations once we can test. So in the meantime:
 
-If we can get rid of arch/powerpc/platforms/chrp/time.c and
-arch/powerpc/platforms/maple/time.c (so much duplicated code), then it
-is x86 only.
+Acked-by: Alistair Popple <alistair@popple.id.au>
 
-> * similarly, this line in nvram.c can be simplified:
-> #if defined(CONFIG_ATARI)
-> #  define MACH ATARI
-> #elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)  /* and ?? */
-> #  define MACH PC
-> #else
-> #  error Cannot build nvram driver for this machine configuration.
-> #endif
+> On Thursday, 14 December 2017 12:10:08 PM AEDT Balbir Singh wrote:
+> > While reviewing the code I found that the flush assumes all
+> > pages are of mmu_linear_psize, which is not correct. The patch
+> > uses find_linux_pte to find the right page size and uses that
+> > for launching the ATSD invalidation. A new helper is added
+> > to abstract the invalidation from the various notifiers.
+> > 
+> > The patch also cleans up a bit by removing AP size from PID
+> > flushes.
+> > 
+> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> > ---
+> > 
+> > Changelog:
+> >   Refactor the handling of return values from find_linux_pte
+> >   as suggested by Aneesh
+> > 
+> >  arch/powerpc/platforms/powernv/npu-dma.c | 55 ++++++++++++++++++++++----------
+> >  1 file changed, 38 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> > index f6cbc1a71472..e8caa3e2019d 100644
+> > --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> > @@ -17,6 +17,7 @@
+> >  #include <linux/pci.h>
+> >  #include <linux/memblock.h>
+> >  #include <linux/iommu.h>
+> > +#include <linux/huge_mm.h>
+> >  
+> >  #include <asm/tlb.h>
+> >  #include <asm/powernv.h>
+> > @@ -27,6 +28,7 @@
+> >  #include <asm/pnv-pci.h>
+> >  #include <asm/msi_bitmap.h>
+> >  #include <asm/opal.h>
+> > +#include <asm/pte-walk.h>
+> >  
+> >  #include "powernv.h"
+> >  #include "pci.h"
+> > @@ -460,9 +462,6 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
+> >  	/* PRS set to process-scoped */
+> >  	launch |= PPC_BIT(13);
+> >  
+> > -	/* AP */
+> > -	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+> >
+> >  	/* PID */
+> >  	launch |= pid << PPC_BITLSHIFT(38);
+> >  
+> > @@ -474,7 +473,8 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
+> >  }
+> >  
+> >  static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+> > -			unsigned long pid, bool flush)
+> > +			unsigned long pid, bool flush,
+> > +			unsigned int shift)
+> >  {
+> >  	unsigned long launch;
+> >  
+> > @@ -485,9 +485,8 @@ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+> >  	launch |= PPC_BIT(13);
+> >  
+> >  	/* AP */
+> > -	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+> > +	launch |= (u64) mmu_get_ap(shift) << PPC_BITLSHIFT(17);
+> >  
+> > -	/* PID */
+> >  	launch |= pid << PPC_BITLSHIFT(38);
+> >  
+> >  	/* No flush */
+> > @@ -504,7 +503,8 @@ struct mmio_atsd_reg {
+> >  };
+> >  
+> >  static void mmio_invalidate_wait(
+> > -	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
+> > +	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush,
+> > +	unsigned int shift)
+> >  {
+> >  	struct npu *npu;
+> >  	int i, reg;
+> > @@ -537,7 +537,8 @@ static void mmio_invalidate_wait(
+> >   * the value of va.
+> >   */
+> >  static void mmio_invalidate(struct npu_context *npu_context, int va,
+> > -			unsigned long address, bool flush)
+> > +			unsigned long address, bool flush,
+> > +			unsigned int shift)
+> >  {
+> >  	int i, j;
+> >  	struct npu *npu;
+> > @@ -572,7 +573,7 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+> >  			if (va)
+> >  				mmio_atsd_reg[i].reg =
+> >  					mmio_invalidate_va(npu, address, pid,
+> > -							flush);
+> > +							flush, shift);
+> >  			else
+> >  				mmio_atsd_reg[i].reg =
+> >  					mmio_invalidate_pid(npu, pid, flush);
+> > @@ -585,10 +586,32 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+> >  		}
+> >  	}
+> >  
+> > -	mmio_invalidate_wait(mmio_atsd_reg, flush);
+> > +	mmio_invalidate_wait(mmio_atsd_reg, flush, shift);
+> >  	if (flush)
+> >  		/* Wait for the flush to complete */
+> > -		mmio_invalidate_wait(mmio_atsd_reg, false);
+> > +		mmio_invalidate_wait(mmio_atsd_reg, false, shift);
+> > +}
+> > +
+> > +static void pnv_npu2_invalidate_helper(struct npu_context *npu_context,
+> > +		struct mm_struct *mm, unsigned long start,
+> > +		unsigned long end, bool flush)
+> > +{
+> > +	unsigned long address;
+> > +	unsigned int hshift = 0, shift;
+> > +
+> > +	address = start;
+> > +	do {
+> > +		local_irq_disable();
+> > +		find_linux_pte(mm->pgd, address, NULL, &hshift);
+> > +		if (hshift)
+> > +			shift = hshift;
+> > +		else
+> > +			shift = PAGE_SHIFT;
 > 
-> * GENERIC_NVRAM is not really generic, instead this seems to be the
->   chardev that is used for 32-bit powerpc (powermac, 85xx, 86xx), while
->   64-bit powerpc (cell, maple, opal, pseries) use code from
->   arch/powerpc/kernel/nvram_64.c, with the same underlying arch hooks.
->   The nvram_64 code appears to be mostly a superset of the 32-bit
->   generic_nvram one.
+> Looks better, thanks!
 > 
-> * The code in drivers/char/nvram is not used at all when
->    GENERIC_NVRAM is set, and half the code in there is different
->    between x86 and atari.
+> Also in future we might be able to futher optimise this as I don't think the
+> shift needs to match the actual page size as we are directly issuing ATSDs to
+> the GPU. ie. we could bump shift to cover the whole of (start, end) or to
+> invalidate larger chunks at a time - I don't think we need to limit it to
+> PAGE_SHIFT.
 > 
-> * most of the external interface in include/linux/nvram.h is
->   unused, the rest tends to be architecture specific
+> > +		mmio_invalidate(npu_context, address > 0, address, flush,
+> > +				shift);
 > 
-> * The procfs file appears to be completely useless on any 64-bit
->    x86 machine, this is what I see:
+> If address == 0 we end up invalidating the entire PID rather than just the page
+> at address 0. Probably not a big issue though as I'm guessing we wouldn't
+> actually see invalidations for the page@0 very often?
 > 
-> $ cat /proc/driver/nvram
-> Checksum status: valid
-> # floppies     : 0
-> Floppy 0 type  : none
-> Floppy 1 type  : none
-> HD 0 type      : none
-> HD 1 type      : none
-> HD type 48 data: 0/0/0 C/H/S, precomp 0, lz 0
-> HD type 49 data: 156/0/0 C/H/S, precomp 0, lz 0
-> DOS base memory: 635 kB
-> Extended memory: 65535 kB (configured), 65535 kB (tested)
-> Gfx adapter    : EGA, VGA, ... (with BIOS)
-> FPU            : not installed
+> > +		local_irq_enable();
+> > +		address += (1ull << shift);
+> > +	} while (address < end);
+> >  }
+> >  
+> >  static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+> > @@ -604,7 +627,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+> >  	 * There should be no more translation requests for this PID, but we
+> >  	 * need to ensure any entries for it are removed from the TLB.
+> >  	 */
+> > -	mmio_invalidate(npu_context, 0, 0, true);
+> > +	pnv_npu2_invalidate_helper(npu_context, mm, 0, PAGE_SIZE, true);
+> >  }
+> >  
+> >  static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+> > @@ -614,7 +637,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+> >  {
+> >  	struct npu_context *npu_context = mn_to_npu_context(mn);
+> >  
+> > -	mmio_invalidate(npu_context, 1, address, true);
+> > +	pnv_npu2_invalidate_helper(npu_context, mm, address, address, true);
+> >  }
+> >  
+> >  static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+> > @@ -622,13 +645,11 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+> >  					unsigned long start, unsigned long end)
+> >  {
+> >  	struct npu_context *npu_context = mn_to_npu_context(mn);
+> > -	unsigned long address;
+> >  
+> > -	for (address = start; address < end; address += PAGE_SIZE)
+> > -		mmio_invalidate(npu_context, 1, address, false);
+> > +	pnv_npu2_invalidate_helper(npu_context, mm, start, end, false);
+> >  
+> >  	/* Do the flush only on the final addess == end */
+> > -	mmio_invalidate(npu_context, 1, address, true);
+> > +	pnv_npu2_invalidate_helper(npu_context, mm, end, end, true);
+> >  }
+> >  
+> >  static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
+> > 
 > 
-
-I really don't think anyone is using that but I don't really know much
-about x86 and the specification this may be part of.
-
-I see the info may be used in drivers/video/fbdev/ and
-drivers/platform/x86/thinkpad_acpi.c
-
--- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+> 
