@@ -1,24 +1,19 @@
-Return-Path: <horia.geanta@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0051.outbound.protection.outlook.com [104.47.2.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zc3rd1KF9zF13C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 01:39:58 +1100 (AEDT)
-From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Herbert Xu
- <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
-CC: "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping outside
- the requests
-Date: Wed, 7 Feb 2018 14:39:52 +0000
-Message-ID: <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
-References: <cover.1507284818.git.christophe.leroy@c-s.fr>
- <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="iso-8859-2"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zc3vt6rYbzF14P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 01:42:50 +1100 (AEDT)
+Subject: Re: [PATCH kernel v2] powerpc/mm: Flush radix process translations
+ when setting MMU type
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+References: <20180201050944.30332-1-aik@ozlabs.ru>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <fb14f2b5-03a3-c20b-b729-643d6a79504a@redhat.com>
+Date: Wed, 7 Feb 2018 15:33:04 +0100
 MIME-Version: 1.0
+In-Reply-To: <20180201050944.30332-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/6/2017 4:06 PM, Christophe Leroy wrote:=0A=
-> At every request, we map and unmap the same hash hw_context.=0A=
-> =0A=
-> This patch moves the dma mapping/unmapping in functions ahash_init()=0A=
-> and ahash_import().=0A=
-> =0A=
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>=0A=
-> ---=0A=
->  drivers/crypto/talitos.c | 80 ++++++++++++++++++++++++++++++++++--------=
-------=0A=
->  1 file changed, 57 insertions(+), 23 deletions(-)=0A=
-> =0A=
-> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c=0A=
-> index ebfd6d982ed6..d495649d5267 100644=0A=
-> --- a/drivers/crypto/talitos.c=0A=
-> +++ b/drivers/crypto/talitos.c=0A=
-> @@ -819,6 +819,7 @@ struct talitos_ctx {=0A=
->  	unsigned int keylen;=0A=
->  	unsigned int enckeylen;=0A=
->  	unsigned int authkeylen;=0A=
-> +	dma_addr_t dma_hw_context;=0A=
-This doesn't look correct.=0A=
-=0A=
-talitos_ctx structure is the tfm context.=0A=
-dma_hw_context is the IOVA of hw_context, located in talitos_ahash_req_ctx=
-=0A=
-structure (request context).=0A=
-=0A=
-If there are multiple requests in flight for the same tfm, dma_hw_context w=
-ill=0A=
-be overwritten.=0A=
-=0A=
-dma_hw_context needs to be moved in request context (talitos_ahash_req_ctx =
-struct).=0A=
-=0A=
-Thanks,=0A=
-Horia=0A=
+On 01/02/2018 06:09, Alexey Kardashevskiy wrote:
+> Radix guests do normally invalidate process-scoped translations when
+> a new pid is allocated but migrated guests do not invalidate these so
+> migrated guests crash sometime, especially easy to reproduce with
+> migration happening within first 10 seconds after the guest boot start on
+> the same machine.
+> 
+> This adds the "Invalidate process-scoped translations" flush to fix
+> radix guests migration.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v2:
+> * removed PPC_TLBIE_5() from the !(old&PATH_HR) case as it is pointless
+> on hash
+> 
+> ---
+> 
+> 
+> Not so sure that "process-scoped translations" only require flushing
+> at pid allocation and migration.
+> 
+> ---
+>  arch/powerpc/mm/pgtable_64.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index c9a623c..d75dd52 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -471,6 +471,8 @@ void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
+>  	if (old & PATB_HR) {
+>  		asm volatile(PPC_TLBIE_5(%0,%1,2,0,1) : :
+>  			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
+> +		asm volatile(PPC_TLBIE_5(%0,%1,2,1,1) : :
+> +			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
+>  		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 1);
+>  	} else {
+>  		asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
+> 
+
+This patch fixes for me a VM migration crash on POWER9.
+
+Tested-by: Laurent Vivier <lvivier@redhat.com>
+
+Thanks,
+Laurent
