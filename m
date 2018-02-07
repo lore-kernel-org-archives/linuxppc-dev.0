@@ -1,17 +1,48 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbs6F1BySzF11y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 17:36:05 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id f4so2871003plr.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 22:36:04 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mm/pgtable: Split mappings on hot-unplug
-Date: Wed,  7 Feb 2018 17:35:51 +1100
-Message-Id: <20180207063551.8991-1-bsingharora@gmail.com>
+Return-Path: <ebiederm@xmission.com>
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbtWF4ByRzF0st
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 18:39:20 +1100 (AEDT)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Khalid Aziz <khalid.aziz@oracle.com>
+Cc: davem@davemloft.net, dave.hansen@linux.intel.com, aarcange@redhat.com,
+ akpm@linux-foundation.org, allen.pais@oracle.com, anthony.yznaga@oracle.com,
+ arnd@arndb.de, babu.moger@oracle.com, benh@kernel.crashing.org,
+ bob.picco@oracle.com, bsingharora@gmail.com, corbet@lwn.net,
+ dan.j.williams@intel.com, dave.jiang@intel.com, david.j.aldridge@oracle.com,
+ elena.reshetova@intel.com, glx@linutronix.de, gregkh@linuxfoundation.org,
+ hannes@cmpxchg.org, hillf.zj@alibaba-inc.com, hpa@zytor.com, hughd@google.com,
+ imbrenda@linux.vnet.ibm.com, jack@suse.cz, jag.raman@oracle.com,
+ jane.chu@oracle.com, jglisse@redhat.com, jroedel@suse.de,
+ khalid@gonehiking.org, khandual@linux.vnet.ibm.com,
+ kirill.shutemov@linux.intel.com, kstewart@linuxfoundation.org,
+ ktkhai@virtuozzo.com, liam.merwick@oracle.com, linux-arch@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net, me@tobin.cc,
+ mgorman@suse.de, mgorman@techsingularity.net, mhocko@suse.com,
+ mike.kravetz@oracle.com, minchan@kernel.org, mingo@kernel.org,
+ mingo@redhat.com, mpe@ellerman.id.au, nadav.amit@gmail.com,
+ nagarathnam.muthusamy@oracle.com, nborisov@suse.com, n-horiguchi@ah.jp.nec.com,
+ nick.alcock@oracle.com, nitin.m.gupta@oracle.com, ombredanne@nexb.com,
+ pasha.tatashin@oracle.com, paulus@samba.org, pombredanne@nexb.com,
+ punit.agrawal@arm.com, rob.gardner@oracle.com, ross.zwisler@linux.intel.com,
+ shannon.nelson@oracle.com, shli@fb.com, sparclinux@vger.kernel.org,
+ steven.sistare@oracle.com, tglx@linutronix.de, thomas.tai@oracle.com,
+ tklauser@distanz.ch, tom.hromatka@oracle.com, vegard.nossum@oracle.com,
+ vijay.ac.kumar@oracle.com, willy@infradead.org, x86@kernel.org,
+ zi.yan@cs.rutgers.edu
+References: <cover.1517497017.git.khalid.aziz@oracle.com>
+ <87wozwi0p1.fsf@xmission.com>
+ <0f1bdb63-60d5-467c-a6a4-c06ba62b1f6e@oracle.com>
+Date: Wed, 07 Feb 2018 01:38:40 -0600
+In-Reply-To: <0f1bdb63-60d5-467c-a6a4-c06ba62b1f6e@oracle.com> (Khalid Aziz's
+ message of "Fri, 2 Feb 2018 07:59:25 -0700")
+Message-ID: <87h8qtfdvj.fsf@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: Re: [PATCH v11 00/10] Application Data Integrity feature introduced
+ by SPARC M7
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,183 +52,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch splits the a linear mapping if the hot-unplug range
-is smaller than the mapping size. The code detects if the mapping
-needs to be split into a smaller size and if so, uses the stop
-machine infrastructure to map the current linear mapping with
-a smaller size mapping. Then the requested area is unmapped.
+Khalid Aziz <khalid.aziz@oracle.com> writes:
 
-The code will skip any region of the mapping that overlaps with
-kernel text and warn about it once. We don't want to remove
-a mapping where the kernel text and the LMB we intend to remove
-overlap in the same TLB mapping as it may affect the currently
-executing code (being cautious, we might be able to remove this
-restriction later, see TODOs below)
+> On 02/01/2018 07:29 PM, ebiederm@xmission.com wrote:
+>> Khalid Aziz <khalid.aziz@oracle.com> writes:
+>>
+>>> V11 changes:
+>>> This series is same as v10 and was simply rebased on 4.15 kernel. Can
+>>> mm maintainers please review patches 2, 7, 8 and 9 which are arch
+>>> independent, and include/linux/mm.h and mm/ksm.c changes in patch 10
+>>> and ack these if everything looks good?
+>>
+>> I am a bit puzzled how this differs from the pkey's that other
+>> architectures are implementing to achieve a similar result.
+>>
+>> I am a bit mystified why you don't store the tag in a vma
+>> instead of inventing a new way to store data on page out.
+>
+> Hello Eric,
+>
+> As Steven pointed out, sparc sets tags per cacheline unlike pkey. This results
+> in much finer granularity for tags that pkey and hence requires larger tag
+> storage than what we can do in a vma.
 
-I've tested these changes under a kvm guest with 2 vcpus, from
-a split mapping point of view, some of the caveats mentioned
-above applied to the testing I did.
+*Nod*   I am a bit mystified where you keep the information in memory.
+I would think the tags would need to be stored per cacheline or per
+tlb entry, in some kind of cache that could overflow.  So I would be
+surprised if swapping is the only time this information needs stored
+in memory.  Which makes me wonder if you have the proper data
+structures.
 
-TODOs:
-1. Refine the stop machine with an atomic replacement of the
-PMD. The code needs to be refactored to support those changes.
-I intend to publish those changes, but this is a minimal set
-that should be also probably backported to stable
+I would think an array per vma or something in the page tables would
+tend to make sense.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
+But perhaps I am missing something.
 
+>> Can you please use force_sig_fault to send these signals instead
+>> of force_sig_info.  Emperically I have found that it is very
+>> error prone to generate siginfo's by hand, especially on code
+>> paths where several different si_codes may apply.  So it helps
+>> to go through a helper function to ensure the fiddly bits are
+>> all correct.  AKA the unused bits all need to be set to zero before
+>> struct siginfo is copied to userspace.
+>>
+>
+> What you say makes sense. I followed the same code as other fault handlers for
+> sparc. I could change just the fault handlers for ADI related faults. Would it
+> make more sense to change all the fault handlers in a separate patch and keep
+> the code in arch/sparc/kernel/traps_64.c consistent? Dave M, do you have a
+> preference?
 
-Changelog
-  - Refactored the code based on suggestions from mpe
-  - Removed the local tlb flush
-  - Skip creating mappings for region to be removed
-    and then removing the region, let create_physical_mapping
-    deal with that complexity (it already has the code)
+It is my intention post -rc1 to start sending out patches to get the
+rest of not just sparc but all of the architectures using the new
+helpers.  I have the code I just ran out of time befor the merge
+window opened to ensure everything had a good thorough review.
 
- arch/powerpc/mm/pgtable-radix.c | 95 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 74 insertions(+), 21 deletions(-)
+So if you can handle the your new changes I expect I will handle the
+rest.
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index cfbbee941a76..17ae5c15a9e0 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -17,6 +17,7 @@
- #include <linux/of_fdt.h>
- #include <linux/mm.h>
- #include <linux/string_helpers.h>
-+#include <linux/stop_machine.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -671,6 +672,30 @@ static void free_pmd_table(pmd_t *pmd_start, pud_t *pud)
- 	pud_clear(pud);
- }
- 
-+struct change_mapping_params {
-+	pte_t *pte;
-+	unsigned long start;
-+	unsigned long end;
-+	unsigned long aligned_start;
-+	unsigned long aligned_end;
-+};
-+
-+static int stop_machine_change_mapping(void *data)
-+{
-+	struct change_mapping_params *params =
-+			(struct change_mapping_params *)data;
-+
-+	if (!data)
-+		return -1;
-+
-+	spin_unlock(&init_mm.page_table_lock);
-+	pte_clear(&init_mm, params->aligned_start, params->pte);
-+	create_physical_mapping(params->aligned_start, params->start);
-+	create_physical_mapping(params->end, params->aligned_end);
-+	spin_lock(&init_mm.page_table_lock);
-+	return 0;
-+}
-+
- static void remove_pte_table(pte_t *pte_start, unsigned long addr,
- 			     unsigned long end)
- {
-@@ -699,6 +724,52 @@ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
- 	}
- }
- 
-+/*
-+ * clear the pte and potentially split the mapping helper
-+ */
-+static void split_kernel_mapping(unsigned long addr, unsigned long end,
-+				unsigned long size, pte_t *pte)
-+{
-+	unsigned long mask = ~(size - 1);
-+	unsigned long aligned_start = addr & mask;
-+	unsigned long aligned_end = addr + size;
-+	struct change_mapping_params params;
-+	bool split_region = false;
-+
-+	if ((end - addr) < size) {
-+		/*
-+		 * We're going to clear the PTE, but not flushed
-+		 * the mapping, time to remap and flush. The
-+		 * effects if visible outside the processor or
-+		 * if we are running in code close to the
-+		 * mapping we cleared, we are in trouble.
-+		 */
-+		if (overlaps_kernel_text(aligned_start, addr) ||
-+			overlaps_kernel_text(end, aligned_end)) {
-+			/*
-+			 * Hack, just return, don't pte_clear
-+			 */
-+			WARN_ONCE(1, "Linear mapping %lx->%lx overlaps kernel "
-+				  "text, not splitting\n", addr, end);
-+			return;
-+		}
-+		split_region = true;
-+	}
-+
-+	if (split_region) {
-+		params.pte = pte;
-+		params.start = addr;
-+		params.end = end;
-+		params.aligned_start = addr & ~(size - 1);
-+		params.aligned_end = min_t(unsigned long, aligned_end,
-+				(unsigned long)__va(memblock_end_of_DRAM()));
-+		stop_machine(stop_machine_change_mapping, &params, NULL);
-+		return;
-+	}
-+
-+	pte_clear(&init_mm, addr, pte);
-+}
-+
- static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
- 			     unsigned long end)
- {
-@@ -714,13 +785,7 @@ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
- 			continue;
- 
- 		if (pmd_huge(*pmd)) {
--			if (!IS_ALIGNED(addr, PMD_SIZE) ||
--			    !IS_ALIGNED(next, PMD_SIZE)) {
--				WARN_ONCE(1, "%s: unaligned range\n", __func__);
--				continue;
--			}
--
--			pte_clear(&init_mm, addr, (pte_t *)pmd);
-+			split_kernel_mapping(addr, end, PMD_SIZE, (pte_t *)pmd);
- 			continue;
- 		}
- 
-@@ -745,13 +810,7 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
- 			continue;
- 
- 		if (pud_huge(*pud)) {
--			if (!IS_ALIGNED(addr, PUD_SIZE) ||
--			    !IS_ALIGNED(next, PUD_SIZE)) {
--				WARN_ONCE(1, "%s: unaligned range\n", __func__);
--				continue;
--			}
--
--			pte_clear(&init_mm, addr, (pte_t *)pud);
-+			split_kernel_mapping(addr, end, PUD_SIZE, (pte_t *)pud);
- 			continue;
- 		}
- 
-@@ -777,13 +836,7 @@ static void remove_pagetable(unsigned long start, unsigned long end)
- 			continue;
- 
- 		if (pgd_huge(*pgd)) {
--			if (!IS_ALIGNED(addr, PGDIR_SIZE) ||
--			    !IS_ALIGNED(next, PGDIR_SIZE)) {
--				WARN_ONCE(1, "%s: unaligned range\n", __func__);
--				continue;
--			}
--
--			pte_clear(&init_mm, addr, (pte_t *)pgd);
-+			split_kernel_mapping(addr, end, PGDIR_SIZE, (pte_t *)pgd);
- 			continue;
- 		}
- 
--- 
-2.13.6
+Eric
