@@ -1,22 +1,28 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zc1NH3vdlzF0Qq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 23:48:45 +1100 (AEDT)
-Date: Wed, 7 Feb 2018 13:48:39 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] char: nvram: disable on ARM
-Message-ID: <20180207124839.GX3404@piout.net>
-References: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
- <CAK8P3a0Wmh6acO7W=weX37B2GNbecJQzPhZdVZcXXAwfT6jZ5A@mail.gmail.com>
- <20180207015509.GV3404@piout.net>
- <CAK8P3a3dkAESaqGgLAV9uKKet20rVtBXqBJ-eNGbwQv1i05K7A@mail.gmail.com>
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zc1WG4bdKzF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 23:54:48 +1100 (AEDT)
+Date: Wed, 7 Feb 2018 13:54:34 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-gpio@vger.kernel.org,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Albert Herranz <albert_herranz@yahoo.es>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 3/6] gpio: Add GPIO driver for Nintendo Wii
+Message-ID: <20180207125434.d7wogzlkfthzob5t@latitude>
+References: <20180122050411.32460-1-j.neuschaefer@gmx.net>
+ <20180122050411.32460-4-j.neuschaefer@gmx.net>
+ <CACRpkdZLiw=e-XiS9cbQuJGJ2tJVV86qKaLCy2yG==FSENhAHw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a3dkAESaqGgLAV9uKKet20rVtBXqBJ-eNGbwQv1i05K7A@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="k64rgg4kcmxdkt7v"
+In-Reply-To: <CACRpkdZLiw=e-XiS9cbQuJGJ2tJVV86qKaLCy2yG==FSENhAHw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,95 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2018 at 11:33:55 +0100, Arnd Bergmann wrote:
-> On Wed, Feb 7, 2018 at 2:55 AM, Alexandre Belloni
-> <alexandre.belloni@bootlin.com> wrote:
-> > On 06/02/2018 at 23:55:02 +0100, Arnd Bergmann wrote:
-> >> * arch/arm/kernel/time.c has this code
-> >>
-> >> #if defined(CONFIG_RTC_DRV_CMOS) || defined(CONFIG_RTC_DRV_CMOS_MODULE) || \
-> >>     defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE)
-> >> /* this needs a better home */
-> >> DEFINE_SPINLOCK(rtc_lock);
-> >> EXPORT_SYMBOL(rtc_lock);
-> >> #endif  /* pc-style 'CMOS' RTC support */
-> >>
-> >> That can be adapted now, or maybe we could move all definitions into
-> >> a common place (that needs some more planning).
-> >>
+
+--k64rgg4kcmxdkt7v
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Feb 07, 2018 at 01:29:45PM +0100, Linus Walleij wrote:
+> On Mon, Jan 22, 2018 at 6:04 AM, Jonathan Neusch=C3=A4fer
+> <j.neuschaefer@gmx.net> wrote:
+>=20
+> > The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
+> > that supports a configurable number of pins (up to 32), interrupts, and
+> > some special mechanisms to share the controller between the system's
+> > security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
+> > not supported.
 > >
-> > Yes, on arm, the rtc_lock is mostly there to please
-> > drivers/rtc/rtc-cmos.c. Maybe we could make the locking in this driver
-> > x86 and PPC specific.
+> > This patch adds a basic driver for this GPIO controller. Interrupt
+> > support will come in a later patch.
 > >
-> > If we can get rid of arch/powerpc/platforms/chrp/time.c and
-> > arch/powerpc/platforms/maple/time.c (so much duplicated code), then it
-> > is x86 only.
-> 
-> What about these:
-> 
-> arch/alpha/kernel/rtc.c:        spin_lock(&rtc_lock);
-> arch/alpha/kernel/rtc.c:        spin_unlock(&rtc_lock);
-> arch/alpha/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/alpha/kernel/time.c:EXPORT_SYMBOL(rtc_lock);
-> arch/arm/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/arm/kernel/time.c:EXPORT_SYMBOL(rtc_lock);
-> arch/m32r/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/m32r/kernel/time.c:EXPORT_SYMBOL(rtc_lock);
-> arch/m68k/atari/time.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/m68k/atari/time.c:EXPORT_SYMBOL_GPL(rtc_lock);
-> arch/mn10300/kernel/rtc.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/mn10300/kernel/rtc.c:EXPORT_SYMBOL(rtc_lock);
-> arch/powerpc/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/powerpc/kernel/time.c:EXPORT_SYMBOL_GPL(rtc_lock);
-> arch/sparc/kernel/time_32.c:DEFINE_SPINLOCK(rtc_lock);
-> arch/sparc/kernel/time_32.c:EXPORT_SYMBOL(rtc_lock);
-> arch/sparc/kernel/time_64.c:DEFINE_SPINLOCK(rtc_lock);
-> 
-> Are they all obsolete?
-> 
-
-Yes and no. For those architecture, the spinlock is only used to make
-the driver compile. It is probably not actually needed or at least it
-can be made local to the driver.
-
-For alpha, I just realized I never sent a patch removing the spinlock
-usage, I'll do that this cycle:
-https://github.com/alexandrebelloni/linux/commit/e79e2a754a3a67f2d7e906bfda0042f9dcf66a0b
-
-> >> $ cat /proc/driver/nvram
-> >> Checksum status: valid
-> >> # floppies     : 0
-> >> Floppy 0 type  : none
-> >> Floppy 1 type  : none
-> >> HD 0 type      : none
-> >> HD 1 type      : none
-> >> HD type 48 data: 0/0/0 C/H/S, precomp 0, lz 0
-> >> HD type 49 data: 156/0/0 C/H/S, precomp 0, lz 0
-> >> DOS base memory: 635 kB
-> >> Extended memory: 65535 kB (configured), 65535 kB (tested)
-> >> Gfx adapter    : EGA, VGA, ... (with BIOS)
-> >> FPU            : not installed
-> >>
+> > This patch is based on code developed by Albert Herranz and the GameCube
+> > Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
+> > available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
+> > has grown quite dissimilar.
 > >
-> > I really don't think anyone is using that but I don't really know much
-> > about x86 and the specification this may be part of.
+> > Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
+> > Cc: Albert Herranz <albert_herranz@yahoo.es>
+> > Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> > ---
 > >
-> > I see the info may be used in drivers/video/fbdev/ and
-> > drivers/platform/x86/thinkpad_acpi.c
-> 
-> The thinkpad_acpi driver seems to look at some other bytes
-> in the nvram, which have a platform specific meaning.
-> 
+> > v2:
+>=20
+> All looks very good to me, Andy had some additional comments,
+> once addressed in v3 I will apply this.
+>=20
+> You only need to resend this patch as I already applied the DT
+> bindings.
 
-Yeah, I was more concerned that they need drivers/char/nvram.c for
-nvram_read_byte so we can't simply remove the driver.
+This driver can't be used until the resource mapping problem on PPC32
+(see patch 1/6 and the related discussion) is solved or worked around
+with out-of-tree patches (such as patch 1/6). Should I send v3 anyway?
 
-> For drivers/video/fbdev/, these appear to all be for pre-x86
-> Apple Macintosh (m68k or powerpc).
-> 
 
--- 
-Alexandre Belloni, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+Thanks,
+Jonathan Neusch=C3=A4fer
+
+--k64rgg4kcmxdkt7v
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJaevcCAAoJEAgwRJqO81/b+8AP/1ktieY5QgM4XqJ854jjrcr1
+os/BTiYn6I9sxipwbqGwy48eqAoDJKoFrJBYklkSkRtS0141RLozcU0ImtLRvx8k
+feGqYgHG6SINHXrUObmlVNbt3InwHXtl455m2bHAovrwdWrKh4fucVf7Yg7VwO2w
+THVQIXwzGuoFxzbnLLHl+DRnUTbAOtwwSQN2pQ8QzFXVkbtwm0U80ZRkm8+2HmBe
+mfrA6Av3H1/9HTtbp6Plx9SVsC4ZFUnzXsIiUlO9zAfhe/vfGJy4DkUgovEY2YGX
+pWHmN9V1fQgzSYfgvqRwQx6Uis7JYDgEnT3hiZd98bddNWUG3vAGMGPjomgYSSIw
+XPVQDNbOU8rP5VcOdLlQS+LQybl3nUL9It1Pei2GvC1oLCshXg2TNbpLcK6alf0v
+19kwP7IAW9F4JH9QEnH2yQVdJZTHV8XSw9IYxALyOuzvnmrgd6dAhplx2EL4TbPT
+2L+oY0qYtl5zOluKZ6sLmYD2ZLK0WiehVTRqjvu25TrKXu352fJyOPrmFCnfTCDt
+K6nTS+JBVgVLTNbopdj/1bRLdRym5bljmpVQjbnjcHhY8RiVHntImsDKZIt0tq7W
+qgaCGoNGRFt21Kb28quNuhhdzVxhz70kzPUHsEBbopAFh0LeKdrNloB9jfgxANG0
+ccu2K8aRsheyqEjnkP/K
+=OU8F
+-----END PGP SIGNATURE-----
+
+--k64rgg4kcmxdkt7v--
