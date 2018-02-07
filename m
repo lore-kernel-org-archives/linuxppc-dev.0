@@ -1,48 +1,27 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbtWF4ByRzF0st
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 18:39:20 +1100 (AEDT)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Khalid Aziz <khalid.aziz@oracle.com>
-Cc: davem@davemloft.net, dave.hansen@linux.intel.com, aarcange@redhat.com,
- akpm@linux-foundation.org, allen.pais@oracle.com, anthony.yznaga@oracle.com,
- arnd@arndb.de, babu.moger@oracle.com, benh@kernel.crashing.org,
- bob.picco@oracle.com, bsingharora@gmail.com, corbet@lwn.net,
- dan.j.williams@intel.com, dave.jiang@intel.com, david.j.aldridge@oracle.com,
- elena.reshetova@intel.com, glx@linutronix.de, gregkh@linuxfoundation.org,
- hannes@cmpxchg.org, hillf.zj@alibaba-inc.com, hpa@zytor.com, hughd@google.com,
- imbrenda@linux.vnet.ibm.com, jack@suse.cz, jag.raman@oracle.com,
- jane.chu@oracle.com, jglisse@redhat.com, jroedel@suse.de,
- khalid@gonehiking.org, khandual@linux.vnet.ibm.com,
- kirill.shutemov@linux.intel.com, kstewart@linuxfoundation.org,
- ktkhai@virtuozzo.com, liam.merwick@oracle.com, linux-arch@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net, me@tobin.cc,
- mgorman@suse.de, mgorman@techsingularity.net, mhocko@suse.com,
- mike.kravetz@oracle.com, minchan@kernel.org, mingo@kernel.org,
- mingo@redhat.com, mpe@ellerman.id.au, nadav.amit@gmail.com,
- nagarathnam.muthusamy@oracle.com, nborisov@suse.com, n-horiguchi@ah.jp.nec.com,
- nick.alcock@oracle.com, nitin.m.gupta@oracle.com, ombredanne@nexb.com,
- pasha.tatashin@oracle.com, paulus@samba.org, pombredanne@nexb.com,
- punit.agrawal@arm.com, rob.gardner@oracle.com, ross.zwisler@linux.intel.com,
- shannon.nelson@oracle.com, shli@fb.com, sparclinux@vger.kernel.org,
- steven.sistare@oracle.com, tglx@linutronix.de, thomas.tai@oracle.com,
- tklauser@distanz.ch, tom.hromatka@oracle.com, vegard.nossum@oracle.com,
- vijay.ac.kumar@oracle.com, willy@infradead.org, x86@kernel.org,
- zi.yan@cs.rutgers.edu
-References: <cover.1517497017.git.khalid.aziz@oracle.com>
- <87wozwi0p1.fsf@xmission.com>
- <0f1bdb63-60d5-467c-a6a4-c06ba62b1f6e@oracle.com>
-Date: Wed, 07 Feb 2018 01:38:40 -0600
-In-Reply-To: <0f1bdb63-60d5-467c-a6a4-c06ba62b1f6e@oracle.com> (Khalid Aziz's
- message of "Fri, 2 Feb 2018 07:59:25 -0700")
-Message-ID: <87h8qtfdvj.fsf@xmission.com>
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbyNk38FPzDrC3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 21:33:58 +1100 (AEDT)
+Received: by mail-ot0-x241.google.com with SMTP id a2so353344otf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Feb 2018 02:33:57 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [PATCH v11 00/10] Application Data Integrity feature introduced
- by SPARC M7
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180207015509.GV3404@piout.net>
+References: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
+ <CAK8P3a0Wmh6acO7W=weX37B2GNbecJQzPhZdVZcXXAwfT6jZ5A@mail.gmail.com>
+ <20180207015509.GV3404@piout.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 7 Feb 2018 11:33:55 +0100
+Message-ID: <CAK8P3a3dkAESaqGgLAV9uKKet20rVtBXqBJ-eNGbwQv1i05K7A@mail.gmail.com>
+Subject: Re: [PATCH] char: nvram: disable on ARM
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,62 +31,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Khalid Aziz <khalid.aziz@oracle.com> writes:
-
-> On 02/01/2018 07:29 PM, ebiederm@xmission.com wrote:
->> Khalid Aziz <khalid.aziz@oracle.com> writes:
+On Wed, Feb 7, 2018 at 2:55 AM, Alexandre Belloni
+<alexandre.belloni@bootlin.com> wrote:
+> On 06/02/2018 at 23:55:02 +0100, Arnd Bergmann wrote:
+>> * arch/arm/kernel/time.c has this code
 >>
->>> V11 changes:
->>> This series is same as v10 and was simply rebased on 4.15 kernel. Can
->>> mm maintainers please review patches 2, 7, 8 and 9 which are arch
->>> independent, and include/linux/mm.h and mm/ksm.c changes in patch 10
->>> and ack these if everything looks good?
+>> #if defined(CONFIG_RTC_DRV_CMOS) || defined(CONFIG_RTC_DRV_CMOS_MODULE) || \
+>>     defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE)
+>> /* this needs a better home */
+>> DEFINE_SPINLOCK(rtc_lock);
+>> EXPORT_SYMBOL(rtc_lock);
+>> #endif  /* pc-style 'CMOS' RTC support */
 >>
->> I am a bit puzzled how this differs from the pkey's that other
->> architectures are implementing to achieve a similar result.
->>
->> I am a bit mystified why you don't store the tag in a vma
->> instead of inventing a new way to store data on page out.
->
-> Hello Eric,
->
-> As Steven pointed out, sparc sets tags per cacheline unlike pkey. This results
-> in much finer granularity for tags that pkey and hence requires larger tag
-> storage than what we can do in a vma.
-
-*Nod*   I am a bit mystified where you keep the information in memory.
-I would think the tags would need to be stored per cacheline or per
-tlb entry, in some kind of cache that could overflow.  So I would be
-surprised if swapping is the only time this information needs stored
-in memory.  Which makes me wonder if you have the proper data
-structures.
-
-I would think an array per vma or something in the page tables would
-tend to make sense.
-
-But perhaps I am missing something.
-
->> Can you please use force_sig_fault to send these signals instead
->> of force_sig_info.  Emperically I have found that it is very
->> error prone to generate siginfo's by hand, especially on code
->> paths where several different si_codes may apply.  So it helps
->> to go through a helper function to ensure the fiddly bits are
->> all correct.  AKA the unused bits all need to be set to zero before
->> struct siginfo is copied to userspace.
+>> That can be adapted now, or maybe we could move all definitions into
+>> a common place (that needs some more planning).
 >>
 >
-> What you say makes sense. I followed the same code as other fault handlers for
-> sparc. I could change just the fault handlers for ADI related faults. Would it
-> make more sense to change all the fault handlers in a separate patch and keep
-> the code in arch/sparc/kernel/traps_64.c consistent? Dave M, do you have a
-> preference?
+> Yes, on arm, the rtc_lock is mostly there to please
+> drivers/rtc/rtc-cmos.c. Maybe we could make the locking in this driver
+> x86 and PPC specific.
+>
+> If we can get rid of arch/powerpc/platforms/chrp/time.c and
+> arch/powerpc/platforms/maple/time.c (so much duplicated code), then it
+> is x86 only.
 
-It is my intention post -rc1 to start sending out patches to get the
-rest of not just sparc but all of the architectures using the new
-helpers.  I have the code I just ran out of time befor the merge
-window opened to ensure everything had a good thorough review.
+What about these:
 
-So if you can handle the your new changes I expect I will handle the
-rest.
+arch/alpha/kernel/rtc.c:        spin_lock(&rtc_lock);
+arch/alpha/kernel/rtc.c:        spin_unlock(&rtc_lock);
+arch/alpha/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
+arch/alpha/kernel/time.c:EXPORT_SYMBOL(rtc_lock);
+arch/arm/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
+arch/arm/kernel/time.c:EXPORT_SYMBOL(rtc_lock);
+arch/m32r/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
+arch/m32r/kernel/time.c:EXPORT_SYMBOL(rtc_lock);
+arch/m68k/atari/time.c:DEFINE_SPINLOCK(rtc_lock);
+arch/m68k/atari/time.c:EXPORT_SYMBOL_GPL(rtc_lock);
+arch/mn10300/kernel/rtc.c:DEFINE_SPINLOCK(rtc_lock);
+arch/mn10300/kernel/rtc.c:EXPORT_SYMBOL(rtc_lock);
+arch/powerpc/kernel/time.c:DEFINE_SPINLOCK(rtc_lock);
+arch/powerpc/kernel/time.c:EXPORT_SYMBOL_GPL(rtc_lock);
+arch/sparc/kernel/time_32.c:DEFINE_SPINLOCK(rtc_lock);
+arch/sparc/kernel/time_32.c:EXPORT_SYMBOL(rtc_lock);
+arch/sparc/kernel/time_64.c:DEFINE_SPINLOCK(rtc_lock);
 
-Eric
+Are they all obsolete?
+
+>> * similarly, this line in nvram.c can be simplified:
+>> #if defined(CONFIG_ATARI)
+>> #  define MACH ATARI
+>> #elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)  /* and ?? */
+>> #  define MACH PC
+>> #else
+>> #  error Cannot build nvram driver for this machine configuration.
+>> #endif
+>>
+>> * GENERIC_NVRAM is not really generic, instead this seems to be the
+>>   chardev that is used for 32-bit powerpc (powermac, 85xx, 86xx), while
+>>   64-bit powerpc (cell, maple, opal, pseries) use code from
+>>   arch/powerpc/kernel/nvram_64.c, with the same underlying arch hooks.
+>>   The nvram_64 code appears to be mostly a superset of the 32-bit
+>>   generic_nvram one.
+>>
+>> * The code in drivers/char/nvram is not used at all when
+>>    GENERIC_NVRAM is set, and half the code in there is different
+>>    between x86 and atari.
+>>
+>> * most of the external interface in include/linux/nvram.h is
+>>   unused, the rest tends to be architecture specific
+>>
+>> * The procfs file appears to be completely useless on any 64-bit
+>>    x86 machine, this is what I see:
+>>
+>> $ cat /proc/driver/nvram
+>> Checksum status: valid
+>> # floppies     : 0
+>> Floppy 0 type  : none
+>> Floppy 1 type  : none
+>> HD 0 type      : none
+>> HD 1 type      : none
+>> HD type 48 data: 0/0/0 C/H/S, precomp 0, lz 0
+>> HD type 49 data: 156/0/0 C/H/S, precomp 0, lz 0
+>> DOS base memory: 635 kB
+>> Extended memory: 65535 kB (configured), 65535 kB (tested)
+>> Gfx adapter    : EGA, VGA, ... (with BIOS)
+>> FPU            : not installed
+>>
+>
+> I really don't think anyone is using that but I don't really know much
+> about x86 and the specification this may be part of.
+>
+> I see the info may be used in drivers/video/fbdev/ and
+> drivers/platform/x86/thinkpad_acpi.c
+
+The thinkpad_acpi driver seems to look at some other bytes
+in the nvram, which have a platform specific meaning.
+
+For drivers/video/fbdev/, these appear to all be for pre-x86
+Apple Macintosh (m68k or powerpc).
+
+       Arnd
