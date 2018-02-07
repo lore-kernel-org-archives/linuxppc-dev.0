@@ -1,19 +1,17 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmailnode02.adl6.internode.on.net
- (ipmailnode02.adl6.internode.on.net [150.101.137.148])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zbmf2645GzF0yq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 14:14:50 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbs6F1BySzF11y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 17:36:05 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id f4so2871003plr.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 22:36:04 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Balbir Singh <bsingharora@gmail.com>, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v2] powerpc/npu: Cleanup MMIO ATSD flushing
-Date: Wed, 07 Feb 2018 14:14:47 +1100
-Message-ID: <5227513.IOhi8YYFsi@new-mexico>
-In-Reply-To: <10851149.oduYqhiQfE@new-mexico>
-References: <20171214011008.4388-1-bsingharora@gmail.com>
- <10851149.oduYqhiQfE@new-mexico>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Subject: [PATCH] powerpc/mm/pgtable: Split mappings on hot-unplug
+Date: Wed,  7 Feb 2018 17:35:51 +1100
+Message-Id: <20180207063551.8991-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,197 +21,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, 16 January 2018 3:15:05 PM AEDT Alistair Popple wrote:
-> Thanks Balbir, one question below. I have no way of testing this at present but
-> it looks ok to me. Thanks!
+This patch splits the a linear mapping if the hot-unplug range
+is smaller than the mapping size. The code detects if the mapping
+needs to be split into a smaller size and if so, uses the stop
+machine infrastructure to map the current linear mapping with
+a smaller size mapping. Then the requested area is unmapped.
 
-The below are more future optimisations once we can test. So in the meantime:
+The code will skip any region of the mapping that overlaps with
+kernel text and warn about it once. We don't want to remove
+a mapping where the kernel text and the LMB we intend to remove
+overlap in the same TLB mapping as it may affect the currently
+executing code (being cautious, we might be able to remove this
+restriction later, see TODOs below)
 
-Acked-by: Alistair Popple <alistair@popple.id.au>
+I've tested these changes under a kvm guest with 2 vcpus, from
+a split mapping point of view, some of the caveats mentioned
+above applied to the testing I did.
 
-> On Thursday, 14 December 2017 12:10:08 PM AEDT Balbir Singh wrote:
-> > While reviewing the code I found that the flush assumes all
-> > pages are of mmu_linear_psize, which is not correct. The patch
-> > uses find_linux_pte to find the right page size and uses that
-> > for launching the ATSD invalidation. A new helper is added
-> > to abstract the invalidation from the various notifiers.
-> > 
-> > The patch also cleans up a bit by removing AP size from PID
-> > flushes.
-> > 
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> > ---
-> > 
-> > Changelog:
-> >   Refactor the handling of return values from find_linux_pte
-> >   as suggested by Aneesh
-> > 
-> >  arch/powerpc/platforms/powernv/npu-dma.c | 55 ++++++++++++++++++++++----------
-> >  1 file changed, 38 insertions(+), 17 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> > index f6cbc1a71472..e8caa3e2019d 100644
-> > --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> > @@ -17,6 +17,7 @@
-> >  #include <linux/pci.h>
-> >  #include <linux/memblock.h>
-> >  #include <linux/iommu.h>
-> > +#include <linux/huge_mm.h>
-> >  
-> >  #include <asm/tlb.h>
-> >  #include <asm/powernv.h>
-> > @@ -27,6 +28,7 @@
-> >  #include <asm/pnv-pci.h>
-> >  #include <asm/msi_bitmap.h>
-> >  #include <asm/opal.h>
-> > +#include <asm/pte-walk.h>
-> >  
-> >  #include "powernv.h"
-> >  #include "pci.h"
-> > @@ -460,9 +462,6 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
-> >  	/* PRS set to process-scoped */
-> >  	launch |= PPC_BIT(13);
-> >  
-> > -	/* AP */
-> > -	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
-> >
-> >  	/* PID */
-> >  	launch |= pid << PPC_BITLSHIFT(38);
-> >  
-> > @@ -474,7 +473,8 @@ static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
-> >  }
-> >  
-> >  static int mmio_invalidate_va(struct npu *npu, unsigned long va,
-> > -			unsigned long pid, bool flush)
-> > +			unsigned long pid, bool flush,
-> > +			unsigned int shift)
-> >  {
-> >  	unsigned long launch;
-> >  
-> > @@ -485,9 +485,8 @@ static int mmio_invalidate_va(struct npu *npu, unsigned long va,
-> >  	launch |= PPC_BIT(13);
-> >  
-> >  	/* AP */
-> > -	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
-> > +	launch |= (u64) mmu_get_ap(shift) << PPC_BITLSHIFT(17);
-> >  
-> > -	/* PID */
-> >  	launch |= pid << PPC_BITLSHIFT(38);
-> >  
-> >  	/* No flush */
-> > @@ -504,7 +503,8 @@ struct mmio_atsd_reg {
-> >  };
-> >  
-> >  static void mmio_invalidate_wait(
-> > -	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
-> > +	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush,
-> > +	unsigned int shift)
-> >  {
-> >  	struct npu *npu;
-> >  	int i, reg;
-> > @@ -537,7 +537,8 @@ static void mmio_invalidate_wait(
-> >   * the value of va.
-> >   */
-> >  static void mmio_invalidate(struct npu_context *npu_context, int va,
-> > -			unsigned long address, bool flush)
-> > +			unsigned long address, bool flush,
-> > +			unsigned int shift)
-> >  {
-> >  	int i, j;
-> >  	struct npu *npu;
-> > @@ -572,7 +573,7 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
-> >  			if (va)
-> >  				mmio_atsd_reg[i].reg =
-> >  					mmio_invalidate_va(npu, address, pid,
-> > -							flush);
-> > +							flush, shift);
-> >  			else
-> >  				mmio_atsd_reg[i].reg =
-> >  					mmio_invalidate_pid(npu, pid, flush);
-> > @@ -585,10 +586,32 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
-> >  		}
-> >  	}
-> >  
-> > -	mmio_invalidate_wait(mmio_atsd_reg, flush);
-> > +	mmio_invalidate_wait(mmio_atsd_reg, flush, shift);
-> >  	if (flush)
-> >  		/* Wait for the flush to complete */
-> > -		mmio_invalidate_wait(mmio_atsd_reg, false);
-> > +		mmio_invalidate_wait(mmio_atsd_reg, false, shift);
-> > +}
-> > +
-> > +static void pnv_npu2_invalidate_helper(struct npu_context *npu_context,
-> > +		struct mm_struct *mm, unsigned long start,
-> > +		unsigned long end, bool flush)
-> > +{
-> > +	unsigned long address;
-> > +	unsigned int hshift = 0, shift;
-> > +
-> > +	address = start;
-> > +	do {
-> > +		local_irq_disable();
-> > +		find_linux_pte(mm->pgd, address, NULL, &hshift);
-> > +		if (hshift)
-> > +			shift = hshift;
-> > +		else
-> > +			shift = PAGE_SHIFT;
-> 
-> Looks better, thanks!
-> 
-> Also in future we might be able to futher optimise this as I don't think the
-> shift needs to match the actual page size as we are directly issuing ATSDs to
-> the GPU. ie. we could bump shift to cover the whole of (start, end) or to
-> invalidate larger chunks at a time - I don't think we need to limit it to
-> PAGE_SHIFT.
-> 
-> > +		mmio_invalidate(npu_context, address > 0, address, flush,
-> > +				shift);
-> 
-> If address == 0 we end up invalidating the entire PID rather than just the page
-> at address 0. Probably not a big issue though as I'm guessing we wouldn't
-> actually see invalidations for the page@0 very often?
-> 
-> > +		local_irq_enable();
-> > +		address += (1ull << shift);
-> > +	} while (address < end);
-> >  }
-> >  
-> >  static void pnv_npu2_mn_release(struct mmu_notifier *mn,
-> > @@ -604,7 +627,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
-> >  	 * There should be no more translation requests for this PID, but we
-> >  	 * need to ensure any entries for it are removed from the TLB.
-> >  	 */
-> > -	mmio_invalidate(npu_context, 0, 0, true);
-> > +	pnv_npu2_invalidate_helper(npu_context, mm, 0, PAGE_SIZE, true);
-> >  }
-> >  
-> >  static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
-> > @@ -614,7 +637,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
-> >  {
-> >  	struct npu_context *npu_context = mn_to_npu_context(mn);
-> >  
-> > -	mmio_invalidate(npu_context, 1, address, true);
-> > +	pnv_npu2_invalidate_helper(npu_context, mm, address, address, true);
-> >  }
-> >  
-> >  static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
-> > @@ -622,13 +645,11 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
-> >  					unsigned long start, unsigned long end)
-> >  {
-> >  	struct npu_context *npu_context = mn_to_npu_context(mn);
-> > -	unsigned long address;
-> >  
-> > -	for (address = start; address < end; address += PAGE_SIZE)
-> > -		mmio_invalidate(npu_context, 1, address, false);
-> > +	pnv_npu2_invalidate_helper(npu_context, mm, start, end, false);
-> >  
-> >  	/* Do the flush only on the final addess == end */
-> > -	mmio_invalidate(npu_context, 1, address, true);
-> > +	pnv_npu2_invalidate_helper(npu_context, mm, end, end, true);
-> >  }
-> >  
-> >  static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
-> > 
-> 
-> 
+TODOs:
+1. Refine the stop machine with an atomic replacement of the
+PMD. The code needs to be refactored to support those changes.
+I intend to publish those changes, but this is a minimal set
+that should be also probably backported to stable
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+
+
+Changelog
+  - Refactored the code based on suggestions from mpe
+  - Removed the local tlb flush
+  - Skip creating mappings for region to be removed
+    and then removing the region, let create_physical_mapping
+    deal with that complexity (it already has the code)
+
+ arch/powerpc/mm/pgtable-radix.c | 95 ++++++++++++++++++++++++++++++++---------
+ 1 file changed, 74 insertions(+), 21 deletions(-)
+
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index cfbbee941a76..17ae5c15a9e0 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -17,6 +17,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/mm.h>
+ #include <linux/string_helpers.h>
++#include <linux/stop_machine.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -671,6 +672,30 @@ static void free_pmd_table(pmd_t *pmd_start, pud_t *pud)
+ 	pud_clear(pud);
+ }
+ 
++struct change_mapping_params {
++	pte_t *pte;
++	unsigned long start;
++	unsigned long end;
++	unsigned long aligned_start;
++	unsigned long aligned_end;
++};
++
++static int stop_machine_change_mapping(void *data)
++{
++	struct change_mapping_params *params =
++			(struct change_mapping_params *)data;
++
++	if (!data)
++		return -1;
++
++	spin_unlock(&init_mm.page_table_lock);
++	pte_clear(&init_mm, params->aligned_start, params->pte);
++	create_physical_mapping(params->aligned_start, params->start);
++	create_physical_mapping(params->end, params->aligned_end);
++	spin_lock(&init_mm.page_table_lock);
++	return 0;
++}
++
+ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+ 			     unsigned long end)
+ {
+@@ -699,6 +724,52 @@ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+ 	}
+ }
+ 
++/*
++ * clear the pte and potentially split the mapping helper
++ */
++static void split_kernel_mapping(unsigned long addr, unsigned long end,
++				unsigned long size, pte_t *pte)
++{
++	unsigned long mask = ~(size - 1);
++	unsigned long aligned_start = addr & mask;
++	unsigned long aligned_end = addr + size;
++	struct change_mapping_params params;
++	bool split_region = false;
++
++	if ((end - addr) < size) {
++		/*
++		 * We're going to clear the PTE, but not flushed
++		 * the mapping, time to remap and flush. The
++		 * effects if visible outside the processor or
++		 * if we are running in code close to the
++		 * mapping we cleared, we are in trouble.
++		 */
++		if (overlaps_kernel_text(aligned_start, addr) ||
++			overlaps_kernel_text(end, aligned_end)) {
++			/*
++			 * Hack, just return, don't pte_clear
++			 */
++			WARN_ONCE(1, "Linear mapping %lx->%lx overlaps kernel "
++				  "text, not splitting\n", addr, end);
++			return;
++		}
++		split_region = true;
++	}
++
++	if (split_region) {
++		params.pte = pte;
++		params.start = addr;
++		params.end = end;
++		params.aligned_start = addr & ~(size - 1);
++		params.aligned_end = min_t(unsigned long, aligned_end,
++				(unsigned long)__va(memblock_end_of_DRAM()));
++		stop_machine(stop_machine_change_mapping, &params, NULL);
++		return;
++	}
++
++	pte_clear(&init_mm, addr, pte);
++}
++
+ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
+ 			     unsigned long end)
+ {
+@@ -714,13 +785,7 @@ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
+ 			continue;
+ 
+ 		if (pmd_huge(*pmd)) {
+-			if (!IS_ALIGNED(addr, PMD_SIZE) ||
+-			    !IS_ALIGNED(next, PMD_SIZE)) {
+-				WARN_ONCE(1, "%s: unaligned range\n", __func__);
+-				continue;
+-			}
+-
+-			pte_clear(&init_mm, addr, (pte_t *)pmd);
++			split_kernel_mapping(addr, end, PMD_SIZE, (pte_t *)pmd);
+ 			continue;
+ 		}
+ 
+@@ -745,13 +810,7 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
+ 			continue;
+ 
+ 		if (pud_huge(*pud)) {
+-			if (!IS_ALIGNED(addr, PUD_SIZE) ||
+-			    !IS_ALIGNED(next, PUD_SIZE)) {
+-				WARN_ONCE(1, "%s: unaligned range\n", __func__);
+-				continue;
+-			}
+-
+-			pte_clear(&init_mm, addr, (pte_t *)pud);
++			split_kernel_mapping(addr, end, PUD_SIZE, (pte_t *)pud);
+ 			continue;
+ 		}
+ 
+@@ -777,13 +836,7 @@ static void remove_pagetable(unsigned long start, unsigned long end)
+ 			continue;
+ 
+ 		if (pgd_huge(*pgd)) {
+-			if (!IS_ALIGNED(addr, PGDIR_SIZE) ||
+-			    !IS_ALIGNED(next, PGDIR_SIZE)) {
+-				WARN_ONCE(1, "%s: unaligned range\n", __func__);
+-				continue;
+-			}
+-
+-			pte_clear(&init_mm, addr, (pte_t *)pgd);
++			split_kernel_mapping(addr, end, PGDIR_SIZE, (pte_t *)pgd);
+ 			continue;
+ 		}
+ 
+-- 
+2.13.6
