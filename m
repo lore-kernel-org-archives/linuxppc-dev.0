@@ -1,50 +1,31 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zc7vj0tCkzF15w
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 04:42:56 +1100 (AEDT)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Khalid Aziz <khalid.aziz@oracle.com>
-Cc: davem@davemloft.net, dave.hansen@linux.intel.com, aarcange@redhat.com,
- akpm@linux-foundation.org, allen.pais@oracle.com, anthony.yznaga@oracle.com,
- arnd@arndb.de, babu.moger@oracle.com, benh@kernel.crashing.org,
- bob.picco@oracle.com, bsingharora@gmail.com, corbet@lwn.net,
- dan.j.williams@intel.com, dave.jiang@intel.com, david.j.aldridge@oracle.com,
- elena.reshetova@intel.com, glx@linutronix.de, gregkh@linuxfoundation.org,
- hannes@cmpxchg.org, hillf.zj@alibaba-inc.com, hpa@zytor.com, hughd@google.com,
- imbrenda@linux.vnet.ibm.com, jack@suse.cz, jag.raman@oracle.com,
- jane.chu@oracle.com, jglisse@redhat.com, jroedel@suse.de,
- khalid@gonehiking.org, khandual@linux.vnet.ibm.com,
- kirill.shutemov@linux.intel.com, kstewart@linuxfoundation.org,
- ktkhai@virtuozzo.com, liam.merwick@oracle.com, linux-arch@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net, me@tobin.cc,
- mgorman@suse.de, mgorman@techsingularity.net, mhocko@suse.com,
- mike.kravetz@oracle.com, minchan@kernel.org, mingo@kernel.org,
- mingo@redhat.com, mpe@ellerman.id.au, nadav.amit@gmail.com,
- nagarathnam.muthusamy@oracle.com, nborisov@suse.com, n-horiguchi@ah.jp.nec.com,
- nick.alcock@oracle.com, nitin.m.gupta@oracle.com, ombredanne@nexb.com,
- pasha.tatashin@oracle.com, paulus@samba.org, pombredanne@nexb.com,
- punit.agrawal@arm.com, rob.gardner@oracle.com, ross.zwisler@linux.intel.com,
- shannon.nelson@oracle.com, shli@fb.com, sparclinux@vger.kernel.org,
- steven.sistare@oracle.com, tglx@linutronix.de, thomas.tai@oracle.com,
- tklauser@distanz.ch, tom.hromatka@oracle.com, vegard.nossum@oracle.com,
- vijay.ac.kumar@oracle.com, willy@infradead.org, x86@kernel.org,
- zi.yan@cs.rutgers.edu
-References: <cover.1517497017.git.khalid.aziz@oracle.com>
- <87wozwi0p1.fsf@xmission.com>
- <0f1bdb63-60d5-467c-a6a4-c06ba62b1f6e@oracle.com>
- <87h8qtfdvj.fsf@xmission.com>
- <c50c053f-1ee7-81f9-99bb-e5f6fe6bb43e@oracle.com>
-Date: Wed, 07 Feb 2018 11:42:24 -0600
-In-Reply-To: <c50c053f-1ee7-81f9-99bb-e5f6fe6bb43e@oracle.com> (Khalid Aziz's
- message of "Wed, 7 Feb 2018 09:04:50 -0700")
-Message-ID: <87r2pwae7z.fsf@xmission.com>
+Return-Path: <andrew@lunn.ch>
+Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zcDgL2LVCzF15R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 08:17:33 +1100 (AEDT)
+Date: Wed, 7 Feb 2018 22:17:25 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: mad skateman <madskateman@gmail.com>
+Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jamie Krueger <jamie@bitbybitsoftwaregroup.com>
+Subject: Re: DPAA Ethernet traffice troubles with Linux kernel
+Message-ID: <20180207211725.GA27167@lunn.ch>
+References: <1516125454.18795.87.camel@infinera.com>
+ <20180116205342.GA29888@lunn.ch>
+ <1516189651.18795.99.camel@infinera.com>
+ <20180117134339.GC32299@lunn.ch>
+ <DB3PR0402MB3849850266808EC52F88A783ECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <DB3PR0402MB3849865056493075A4F4317CECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <DB3PR0402MB38494AC5EE923A10053745DDECE90@DB3PR0402MB3849.eurprd04.prod.outlook.com>
+ <CAHkrCmGxFUbfEyufdYhFYA4jyOkh+W2z=1yZsZwv+O4t+hE_1w@mail.gmail.com>
+ <1d62c827-0ff7-0372-a2f8-f1930e9f788c@xenosoft.de>
+ <CAHkrCmGrp3eUKYqRpv4__qw24yvL3Fou+MNwaDCX=XGgmFqRRg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [PATCH v11 00/10] Application Data Integrity feature introduced
- by SPARC M7
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAHkrCmGrp3eUKYqRpv4__qw24yvL3Fou+MNwaDCX=XGgmFqRRg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,93 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Khalid Aziz <khalid.aziz@oracle.com> writes:
+On Wed, Feb 07, 2018 at 10:00:45PM +0100, mad skateman wrote:
+> Hi,
+> 
+> I just found out that something goes wrong within the ARP table (well thats
+> what i think). I hope someone has a clue..
 
-> On 02/07/2018 12:38 AM, ebiederm@xmission.com wrote:
->> Khalid Aziz <khalid.aziz@oracle.com> writes:
->>
->>> On 02/01/2018 07:29 PM, ebiederm@xmission.com wrote:
->>>> Khalid Aziz <khalid.aziz@oracle.com> writes:
->>>>
->>>>> V11 changes:
->>>>> This series is same as v10 and was simply rebased on 4.15 kernel. Can
->>>>> mm maintainers please review patches 2, 7, 8 and 9 which are arch
->>>>> independent, and include/linux/mm.h and mm/ksm.c changes in patch 10
->>>>> and ack these if everything looks good?
->>>>
->>>> I am a bit puzzled how this differs from the pkey's that other
->>>> architectures are implementing to achieve a similar result.
->>>>
->>>> I am a bit mystified why you don't store the tag in a vma
->>>> instead of inventing a new way to store data on page out.
->>>
->>> Hello Eric,
->>>
->>> As Steven pointed out, sparc sets tags per cacheline unlike pkey. This results
->>> in much finer granularity for tags that pkey and hence requires larger tag
->>> storage than what we can do in a vma.
->>
->> *Nod*   I am a bit mystified where you keep the information in memory.
->> I would think the tags would need to be stored per cacheline or per
->> tlb entry, in some kind of cache that could overflow.  So I would be
->> surprised if swapping is the only time this information needs stored
->> in memory.  Which makes me wonder if you have the proper data
->> structures.
->>
->> I would think an array per vma or something in the page tables would
->> tend to make sense.
->>
->> But perhaps I am missing something.
->
-> The ADI tags are stored in spare bits in the RAM. ADI tag storage is
-> managed entirely by memory controller which maintains these tags per
-> ADI block. An ADI block is the same size as cacheline on M7. Tags for
-> each ADI block are associated with the physical ADI block, not the
-> virtual address. When a physical page is reused, the physical ADI tag
-> storage for that page is overwritten with new ADI tags, hence we need
-> to store away the tags when we swap out a page. Kernel updates the ADI
-> tags for physical page when it swaps a new page in. Each vma can cover
-> variable number of pages so it is best to store a pointer to the tag
-> storage in vma as opposed to actual tags in an array. Each 8K page can
-> have 128 tags on it. Since each tag is 4 bits, we need 64 bytes per
-> page to store the tags. That can add up for a large vma.
+This looks like 'normal' behaviour. It has been reported that the
+device runs out of buffers. That means it will fail to receive ARP
+replies. So the ARP entry will time out and be removed, as it should.
 
-If the tags are already stored in RAM I can see why it does not make any
-sense to store them except on page out.  Management wise this feels a
-lot like the encrypted memory options I have been seeing on x86.
+Fix the buffer problem, and ARP will likely work properly.
 
->>>> Can you please use force_sig_fault to send these signals instead
->>>> of force_sig_info.  Emperically I have found that it is very
->>>> error prone to generate siginfo's by hand, especially on code
->>>> paths where several different si_codes may apply.  So it helps
->>>> to go through a helper function to ensure the fiddly bits are
->>>> all correct.  AKA the unused bits all need to be set to zero before
->>>> struct siginfo is copied to userspace.
->>>>
->>>
->>> What you say makes sense. I followed the same code as other fault handlers for
->>> sparc. I could change just the fault handlers for ADI related faults. Would it
->>> make more sense to change all the fault handlers in a separate patch and keep
->>> the code in arch/sparc/kernel/traps_64.c consistent? Dave M, do you have a
->>> preference?
->>
->> It is my intention post -rc1 to start sending out patches to get the
->> rest of not just sparc but all of the architectures using the new
->> helpers.  I have the code I just ran out of time befor the merge
->> window opened to ensure everything had a good thorough review.
->>
->> So if you can handle the your new changes I expect I will handle the
->> rest.
->>
->
-> I can add a patch at the end of my series to update all
-> force_sig_info() in my patchset to force_sig_fault(). That will sync
-> my patches up with your changes cleanly. Does that work for you? I can
-> send an updated series with this change. Can you review and ack the
-> patches after this change.
-
-One additional patch would be fine.  I can certainly review and ack that
-part.  You probably want to wait until post -rc1 so that you have a
-clean base to work off of.
-
-Eric
+    Andrew
