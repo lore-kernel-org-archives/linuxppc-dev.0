@@ -1,25 +1,21 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zbftL3q3MzF11v
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 09:55:05 +1100 (AEDT)
-Received: by mail-oi0-x244.google.com with SMTP id j15so2621888oii.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 14:55:05 -0800 (PST)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
-References: <20180206220534.9929-1-alexandre.belloni@bootlin.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 6 Feb 2018 23:55:02 +0100
-Message-ID: <CAK8P3a0Wmh6acO7W=weX37B2GNbecJQzPhZdVZcXXAwfT6jZ5A@mail.gmail.com>
-Subject: Re: [PATCH] char: nvram: disable on ARM
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zbk5r3Rh3zF10P
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Feb 2018 12:20:15 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id 11so2443036plc.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Feb 2018 17:20:15 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/64s/radix: kernel boot-time NULL pointer protection
+ using a guard-PID
+Date: Wed,  7 Feb 2018 11:20:02 +1000
+Message-Id: <20180207012002.4452-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +25,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 6, 2018 at 11:05 PM, Alexandre Belloni
-<alexandre.belloni@bootlin.com> wrote:
-> /dev/nvram was never meant to be used alongside the RTC CMOS driver from
-> drivers/rtc as it already expose the NVRAM through another interface..
-> Anyway, the last defconfig to enable it properly was removed in 2010 so
-> prevent ARM users from selecting it.
->
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> ---
->  drivers/char/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-> index c28dca0c613d..9bcac927cfd0 100644
-> --- a/drivers/char/Kconfig
-> +++ b/drivers/char/Kconfig
-> @@ -264,7 +264,7 @@ source "drivers/char/hw_random/Kconfig"
->
->  config NVRAM
->         tristate "/dev/nvram support"
-> -       depends on ATARI || X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
-> +       depends on ATARI || X86 || GENERIC_NVRAM
->         ---help---
->           If you say Y here and create a character special file /dev/nvram
->           with major number 10 and minor number 144 using mknod ("man mknod"),
+This change restores and formalises the behaviour that access to NULL or
+other user addresses by the kernel during boot should fault rather than
+succeed and modify memory. This was inadvertently broken when fixing
+another bug, because it was previously not well defined and only worked
+by chance.
 
-The change looks good:
+powerpc/64s/radix uses high address bits to select an address space
+"quadrant", which determines which PID and LPID are used to translate
+the rest of the address (effective PID, effective LPID). The kernel
+mapping at 0xC... selects quadrant 3, which uses PID=0 and LPID=0. So
+the kernel page tables are installed in the PID 0 process table entry.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+An address at 0x0... selects quadrant 0, which uses PID=PIDR for
+translating the rest of the address (that is, it uses the value of the
+PIDR register as the effective PID). If PIDR=0, then the translation is
+performed with the PID 0 process table entry page tables. This is the
+kernel mapping, so we effectively get another copy of the kernel address
+space at 0. A NULL pointer access will access physical memory address 0.
 
-but taking a closer look raises a few other points:
+To prevent duplicating the kernel address space in quadrant 0, this
+patch allocates a guard PID containing no translations, and initializes
+PIDR with this during boot, before the MMU is switched on.  Any kernel
+access to quadrant 0 will use this guard PID for translation and find no
+valid mappings, and therefore fault.
 
-* arch/arm/kernel/time.c has this code
+After boot, this PID will be switchd away to user context PIDs, but
+those contain user mappings (and usually NULL pointer protection) rather
+than kernel mapping, which is much safer (and by design). It may be in
+future this is tightened further, which the guard PID could be used for.
 
-#if defined(CONFIG_RTC_DRV_CMOS) || defined(CONFIG_RTC_DRV_CMOS_MODULE) || \
-    defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE)
-/* this needs a better home */
-DEFINE_SPINLOCK(rtc_lock);
-EXPORT_SYMBOL(rtc_lock);
-#endif  /* pc-style 'CMOS' RTC support */
+Commit 371b8044 ("powerpc/64s: Initialize ISAv3 MMU registers before
+setting partition table"), introduced this problem because it zeroes
+PIDR at boot. However previously the value was inherited from firmware
+or kexec, which is not robust and can be zero (e.g., mambo).
 
-That can be adapted now, or maybe we could move all definitions into
-a common place (that needs some more planning).
+Fixes: 371b8044 ("powerpc/64s: Initialize ISAv3 MMU registers before setting partition table")
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Reported-by: Florian Weimer <fweimer@redhat.com>
+Tested-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
 
-* similarly, this line in nvram.c can be simplified:
-#if defined(CONFIG_ATARI)
-#  define MACH ATARI
-#elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)  /* and ?? */
-#  define MACH PC
-#else
-#  error Cannot build nvram driver for this machine configuration.
-#endif
+Since the patch was posted and tested here,
 
-* GENERIC_NVRAM is not really generic, instead this seems to be the
-  chardev that is used for 32-bit powerpc (powermac, 85xx, 86xx), while
-  64-bit powerpc (cell, maple, opal, pseries) use code from
-  arch/powerpc/kernel/nvram_64.c, with the same underlying arch hooks.
-  The nvram_64 code appears to be mostly a superset of the 32-bit
-  generic_nvram one.
+https://marc.info/?l=linuxppc-embedded&m=151787922500878&w=2
 
-* The code in drivers/char/nvram is not used at all when
-   GENERIC_NVRAM is set, and half the code in there is different
-   between x86 and atari.
+Only comments added and changelog rewritten.
 
-* most of the external interface in include/linux/nvram.h is
-  unused, the rest tends to be architecture specific
+ arch/powerpc/mm/pgtable-radix.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
-* The procfs file appears to be completely useless on any 64-bit
-   x86 machine, this is what I see:
-
-$ cat /proc/driver/nvram
-Checksum status: valid
-# floppies     : 0
-Floppy 0 type  : none
-Floppy 1 type  : none
-HD 0 type      : none
-HD 1 type      : none
-HD type 48 data: 0/0/0 C/H/S, precomp 0, lz 0
-HD type 49 data: 156/0/0 C/H/S, precomp 0, lz 0
-DOS base memory: 635 kB
-Extended memory: 65535 kB (configured), 65535 kB (tested)
-Gfx adapter    : EGA, VGA, ... (with BIOS)
-FPU            : not installed
-
-      Arnd
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 573a9a2ee455..96e07d1f673d 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -20,6 +20,7 @@
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
++#include <asm/mmu_context.h>
+ #include <asm/dma.h>
+ #include <asm/machdep.h>
+ #include <asm/mmu.h>
+@@ -333,6 +334,22 @@ static void __init radix_init_pgtable(void)
+ 		     "r" (TLBIEL_INVAL_SET_LPID), "r" (0));
+ 	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+ 	trace_tlbie(0, 0, TLBIEL_INVAL_SET_LPID, 0, 2, 1, 1);
++
++	/*
++	 * The init_mm context is given the first available (non-zero) PID,
++	 * which is the "guard PID" and contains no page table. PIDR should
++	 * never be set to zero because that duplicates the kernel address
++	 * space at the 0x0... offset (quadrant 0)!
++	 *
++	 * An arbitrary PID that may later be allocated by the PID allocator
++	 * for userspace processes must not be used either, because that
++	 * would cause stale user mappings for that PID on CPUs outside of
++	 * the TLB invalidation scheme (because it won't be in mm_cpumask).
++	 *
++	 * So permanently carve out one PID for the purpose of a guard PID.
++	 */
++	init_mm.context.id = mmu_base_pid;
++	mmu_base_pid++;
+ }
+ 
+ static void __init radix_init_partition_table(void)
+@@ -579,7 +596,8 @@ void __init radix__early_init_mmu(void)
+ 
+ 	radix_init_iamr();
+ 	radix_init_pgtable();
+-
++	/* Switch to the guard PID before turning on MMU */
++	radix__switch_mmu_context(NULL, &init_mm);
+ 	if (cpu_has_feature(CPU_FTR_HVMODE))
+ 		tlbiel_all();
+ }
+@@ -604,6 +622,7 @@ void radix__early_init_mmu_secondary(void)
+ 	}
+ 	radix_init_iamr();
+ 
++	radix__switch_mmu_context(NULL, &init_mm);
+ 	if (cpu_has_feature(CPU_FTR_HVMODE))
+ 		tlbiel_all();
+ }
+-- 
+2.15.1
