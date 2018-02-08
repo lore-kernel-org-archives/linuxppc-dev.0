@@ -1,32 +1,25 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zcr4d4SflzF19b
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 07:53:05 +1100 (AEDT)
-Date: Thu, 8 Feb 2018 12:53:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com, Will Deacon
- <will.deacon@arm.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Alexei Starovoitov
- <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, Tim Chen
- <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v7 00/24] Speculative page faults
-Message-Id: <20180208125301.99445c91979343756e4cca9b@linux-foundation.org>
-In-Reply-To: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zcs6n2SnRzF18h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 08:40:01 +1100 (AEDT)
+Date: Thu, 8 Feb 2018 15:39:56 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@ozlabs.org>, Rob Herring <robh@kernel.org>,
+ Alistair Popple <alistair@popple.id.au>, linux-pci@vger.kernel.org
+Subject: Re: [PATCH kernel] powerpc/pci: Fix broken INTx configuration via OF
+Message-ID: <20180208213956.GC98765@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180208053354.41725-1-aik@ozlabs.ru>
+ <CAErSpo7S7vJTKBrxuzH-G0y-U2Z15jKpPJDZEEuhh7vAs0hjOA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAErSpo7S7vJTKBrxuzH-G0y-U2Z15jKpPJDZEEuhh7vAs0hjOA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,111 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  6 Feb 2018 17:49:46 +0100 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
-
-> This is a port on kernel 4.15 of the work done by Peter Zijlstra to
-> handle page fault without holding the mm semaphore [1].
+On Thu, Feb 08, 2018 at 01:20:04PM -0600, Bjorn Helgaas wrote:
+> [+cc linux-pci]
 > 
-> The idea is to try to handle user space page faults without holding the
-> mmap_sem. This should allow better concurrency for massively threaded
-> process since the page fault handler will not wait for other threads memory
-> layout change to be done, assuming that this change is done in another part
-> of the process's memory space. This type page fault is named speculative
-> page fault. If the speculative page fault fails because of a concurrency is
-> detected or because underlying PMD or PTE tables are not yet allocating, it
-> is failing its processing and a classic page fault is then tried.
+> The original commit was merged via PCI, and I think it's a good idea
+> to merge fixes to it the same way.  I'll try to merge this in time for
+> v4.16-rc1.
 > 
-> The speculative page fault (SPF) has to look for the VMA matching the fault
-> address without holding the mmap_sem, this is done by introducing a rwlock
-> which protects the access to the mm_rb tree. Previously this was done using
-> SRCU but it was introducing a lot of scheduling to process the VMA's
-> freeing
-> operation which was hitting the performance by 20% as reported by Kemi Wang
-> [2].Using a rwlock to protect access to the mm_rb tree is limiting the
-> locking contention to these operations which are expected to be in a O(log
-> n)
-> order. In addition to ensure that the VMA is not freed in our back a
-> reference count is added and 2 services (get_vma() and put_vma()) are
-> introduced to handle the reference count. When a VMA is fetch from the RB
-> tree using get_vma() is must be later freeed using put_vma(). Furthermore,
-> to allow the VMA to be used again by the classic page fault handler a
-> service is introduced can_reuse_spf_vma(). This service is expected to be
-> called with the mmap_sem hold. It checked that the VMA is still matching
-> the specified address and is releasing its reference count as the mmap_sem
-> is hold it is ensure that it will not be freed in our back. In general, the
-> VMA's reference count could be decremented when holding the mmap_sem but it
-> should not be increased as holding the mmap_sem is ensuring that the VMA is
-> stable. I can't see anymore the overhead I got while will-it-scale
-> benchmark anymore.
-> 
-> The VMA's attributes checked during the speculative page fault processing
-> have to be protected against parallel changes. This is done by using a per
-> VMA sequence lock. This sequence lock allows the speculative page fault
-> handler to fast check for parallel changes in progress and to abort the
-> speculative page fault in that case.
-> 
-> Once the VMA is found, the speculative page fault handler would check for
-> the VMA's attributes to verify that the page fault has to be handled
-> correctly or not. Thus the VMA is protected through a sequence lock which
-> allows fast detection of concurrent VMA changes. If such a change is
-> detected, the speculative page fault is aborted and a *classic* page fault
-> is tried.  VMA sequence lockings are added when VMA attributes which are
-> checked during the page fault are modified.
-> 
-> When the PTE is fetched, the VMA is checked to see if it has been changed,
-> so once the page table is locked, the VMA is valid, so any other changes
-> leading to touching this PTE will need to lock the page table, so no
-> parallel change is possible at this time.
-> 
-> The locking of the PTE is done with interrupts disabled, this allows to
-> check for the PMD to ensure that there is not an ongoing collapsing
-> operation. Since khugepaged is firstly set the PMD to pmd_none and then is
-> waiting for the other CPU to have catch the IPI interrupt, if the pmd is
-> valid at the time the PTE is locked, we have the guarantee that the
-> collapsing opertion will have to wait on the PTE lock to move foward. This
-> allows the SPF handler to map the PTE safely. If the PMD value is different
-> than the one recorded at the beginning of the SPF operation, the classic
-> page fault handler will be called to handle the operation while holding the
-> mmap_sem. As the PTE lock is done with the interrupts disabled, the lock is
-> done using spin_trylock() to avoid dead lock when handling a page fault
-> while a TLB invalidate is requested by an other CPU holding the PTE.
-> 
-> Support for THP is not done because when checking for the PMD, we can be
-> confused by an in progress collapsing operation done by khugepaged. The
-> issue is that pmd_none() could be true either if the PMD is not already
-> populate or if the underlying PTE are in the way to be collapsed. So we
-> cannot safely allocate a PMD if pmd_none() is true.
-> 
-> This series builds on top of v4.15-mmotm-2018-01-31-16-51 and is
-> functional on x86 and PowerPC.
+> On Wed, Feb 7, 2018 at 11:33 PM, Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> > Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
+> > correctly states that of_irq_parse_and_map_pci() does the same thing as
+> > of_irq_parse_pci() does as it simply calls
+> > of_irq_parse_pci() and irq_create_of_mapping().
+> >
+> > However of_irq_parse_and_map_pci() not only returns 0 for success and
+> > negative value for an error but also a positive virq value from
+> > irq_create_of_mapping() which the mentioned commit ignores and
+> > INTx config fails.
+> >
+> > This fixes the of_irq_parse_and_map_pci() return value handling.
+> >
+> > Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
+> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > ---
+> >
+> > Found it on POWER9 + powernv system - almost all devices suddenly lost
+> > INTx support.
+> > ---
+> >  arch/powerpc/kernel/pci-common.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> > index ae2ede4..acbb44f2 100644
+> > --- a/arch/powerpc/kernel/pci-common.c
+> > +++ b/arch/powerpc/kernel/pci-common.c
+> > @@ -370,7 +370,8 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
+> >         memset(&oirq, 0xff, sizeof(oirq));
+> >  #endif
+> >         /* Try to get a mapping from the device-tree */
+> > -       if (!of_irq_parse_and_map_pci(pci_dev, 0, 0)) {
+> > +       virq = of_irq_parse_and_map_pci(pci_dev, 0, 0);
+> > +       if (virq <= 0) {
 
-One question which people will want to answer is "is this thing
-working".  ie, how frequently does the code fall back to the regular
-heavyweight fault path.
+I don't understand how this fix works.  We used to check the result of
+of_irq_parse_and_map_pci() and entered the block if it was zero.
 
-I see that trace events have been added for this, but the overall
-changelog doesn't describe them.  I think this material is important
-enough to justify including it here.
+Now you enter the block if it is zero or less than zero, but:
 
-Also, a few words to help people figure out how to gather these stats
-would be nice.  And maybe helper scripts if appropriate?
+  static int pci_read_irq_line(...)
+  {
+    unsigned int virq = 0;     /* unnecessarily initialized, BTW */
 
-I'm wondering if this info should even be presented via
-/proc/self/something, dunno.
+    virq = of_irq_parse_and_map_pci(pci_dev, 0, 0);
+    if (virq <= 0) {
+      ...
 
-And it would be interesting to present the fallback frequency in the
-benchmark results.
+virq is unsigned, so "virq < 0" can never be true.  So how does this
+change anything?
 
-> ------------------
-> Benchmarks results
-> 
-> There is no functional change compared to the v6 so benchmark results are
-> the same.
-> Please see https://lkml.org/lkml/2018/1/12/515 for details.
-
-Please include this vitally important info in the [0/n], don't make
-people chase links.
-
-And I'd really like to see some quantitative testing results for real
-workloads, not just a bunch of microbenchmarks.  Help us understand how
-useful this patchset is to our users.
+Bjorn
