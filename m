@@ -1,34 +1,53 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zchcR6yNwzF19Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 02:16:39 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w18FFJ4F107880
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Feb 2018 10:16:37 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g0pffr6q4-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zclDD0MqfzF10p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 04:14:19 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w18HBiQe118304
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Feb 2018 12:14:17 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g0tj28nn5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 10:16:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 12:14:17 -0500
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 8 Feb 2018 15:16:32 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxram@us.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/mm: Fix crashes with PUD level hugetlb config
-In-Reply-To: <20180208103442.22045-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20180208103442.22045-1-aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 08 Feb 2018 20:46:27 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 8 Feb 2018 17:14:13 -0000
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 04/24] mm: Dont assume page-table invariance during
+ faults
+To: Matthew Wilcox <willy@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1517935810-31177-5-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180206202831.GB16511@bombadil.infradead.org>
+ <484242d8-e632-9e39-5c99-2e1b4b3b69a5@linux.vnet.ibm.com>
+ <20180208150025.GD15846@bombadil.infradead.org>
+Date: Thu, 8 Feb 2018 18:14:03 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87r2pvfr5g.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20180208150025.GD15846@bombadil.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <79917740-7068-2328-2c02-1532054f357e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,238 +57,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> To support memory keys, we moved the hash pte slot information to the second
-> half of the page table. This was ok with PTE entries at level 4 and level 3.
-> We already allocate larger page table pages at those level to accomodate extra
-> details. For level 4 we already have the extra space which was used to track
-> 4k hash page table entry details and at pmd level the extra space was allocated
-> to track the THP details.
->
-> With hugetlbfs PTE, we used this extra space at the PMD level to store the
-> slot details. But we also support hugetlbfs PTE at PUD leve and PUD level page
-> didn't allocate extra space. This resulted in memory corruption.
->
-> Fix this by allocating extra space at PUD level when HUGETLB is enabled. We
-> may need further changes to allocate larger space at PMD level when we enable
-> HUGETLB. That will be done in next patch.
->
-> Fixes:bf9a95f9a6481bc6e(" powerpc: Free up four 64K PTE bits in 64K backed HPTE pages")
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Another fix, I still get random memory corruption with hugetlb test with
-16G hugepage config.
+On 08/02/2018 16:00, Matthew Wilcox wrote:
+> On Thu, Feb 08, 2018 at 03:35:58PM +0100, Laurent Dufour wrote:
+>> I reviewed that part of code, and I think I could now change the way
+>> pte_unmap_safe() is checking for the pte's value. Since we now have all the
+>> needed details in the vm_fault structure, I will pass it to
+>> pte_unamp_same() and deal with the VMA checks when locking for the pte as
+>> it is done in the other part of the page fault handler by calling
+>> pte_spinlock().
+> 
+> This does indeed look much better!  Thank you!
+> 
+>> This means that this patch will be dropped, and pte_unmap_same() will become :
+>>
+>> static inline int pte_unmap_same(struct vm_fault *vmf, int *same)
+>> {
+>> 	int ret = 0;
+>>
+>> 	*same = 1;
+>> #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+>> 	if (sizeof(pte_t) > sizeof(unsigned long)) {
+>> 		if (pte_spinlock(vmf)) {
+>> 			*same = pte_same(*vmf->pte, vmf->orig_pte);
+>> 			spin_unlock(vmf->ptl);
+>> 		}
+>> 		else
+>> 			ret = VM_FAULT_RETRY;
+>> 	}
+>> #endif
+>> 	pte_unmap(vmf->pte);
+>> 	return ret;
+>> }
+> 
+> I'm not a huge fan of auxiliary return values.  Perhaps we could do this
+> instead:
+> 
+> 	ret = pte_unmap_same(vmf);
+> 	if (ret != VM_FAULT_NOTSAME) {
+> 		if (page)
+> 			put_page(page);
+> 		goto out;
+> 	}
+> 	ret = 0;
+> 
+> (we have a lot of unused bits in VM_FAULT_, so adding a new one shouldn't
+> be a big deal)
 
-commit f9484ac6b06bfacfeb82f1116bfc95e396fe7453
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Thu Feb 8 19:36:22 2018 +0530
+I do agree, using an auxiliary return value is not a good idea.
 
-    powerpc/mm/hash64: Store the slot information at the right offset.
-    
-    The hugetlb pte entries are at the PMD and PUD level. Use the right offset
-    for them to get the second half of the table.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+What about the following changes based on your suggestion ?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 949d691094a4..67c5475311ee 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -63,7 +63,8 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
-  * keeping the prototype consistent across the two formats.
-  */
- static inline unsigned long pte_set_hidx(pte_t *ptep, real_pte_t rpte,
--			unsigned int subpg_index, unsigned long hidx)
-+					 unsigned int subpg_index, unsigned long hidx,
-+					 int offset)
- {
- 	return (hidx << H_PAGE_F_GIX_SHIFT) &
- 		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index ee440fb3d240..3bcf269f8f55 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -45,7 +45,7 @@
-  * generic accessors and iterators here
-  */
- #define __real_pte __real_pte
--static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
-+static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep, int offset)
- {
- 	real_pte_t rpte;
- 	unsigned long *hidxp;
-@@ -59,7 +59,7 @@ static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
- 	 */
- 	smp_rmb();
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 7de4323b9e89..0cd31a37bb3d 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1212,6 +1212,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
+ #define VM_FAULT_NEEDDSYNC  0x2000     /* ->fault did not modify page tables
+                                         * and needs fsync() to complete (for
+                                         * synchronous page faults in DAX) */
++#define VM_FAULT_PTNOTSAME 0x4000      /* Page table entries have changed */
  
--	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-+	hidxp = (unsigned long *)(ptep + offset);
- 	rpte.hidx = *hidxp;
- 	return rpte;
+ #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
+                         VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
+diff --git a/mm/memory.c b/mm/memory.c
+index b7da99c74fef..c9b419f8e4c5 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2433,21 +2433,30 @@ static inline bool pte_map_lock(struct vm_fault *vmf)
+  * parts, do_swap_page must check under lock before unmapping the pte and
+  * proceeding (but do_wp_page is only called after already making such a check;
+  * and do_anonymous_page can safely check later on).
++ *
++ * pte_unmap_same() returns:
++ *     0                       if the PTE are the same
++ *     VM_FAULT_PTNOTSAME      if the PTE are different
++ *     VM_FAULT_RETRY          if the VMA has changed in our back during
++ *                             a speculative page fault handling.
+  */
+-static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
+-                               pte_t *page_table, pte_t orig_pte)
++static inline int pte_unmap_same(struct vm_fault *vmf)
+ {
+-       int same = 1;
++       int ret = 0;
++
+ #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+        if (sizeof(pte_t) > sizeof(unsigned long)) {
+-               spinlock_t *ptl = pte_lockptr(mm, pmd);
+-               spin_lock(ptl);
+-               same = pte_same(*page_table, orig_pte);
+-               spin_unlock(ptl);
++               if (pte_spinlock(vmf)) {
++                       if (!pte_same(*vmf->pte, vmf->orig_pte))
++                               ret = VM_FAULT_PTNOTSAME;
++                       spin_unlock(vmf->ptl);
++               }
++               else
++                       ret = VM_FAULT_RETRY;
+        }
+ #endif
+-       pte_unmap(page_table);
+-       return same;
++       pte_unmap(vmf->pte);
++       return ret;
  }
-@@ -86,9 +86,10 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
-  * expected to modify the PTE bits accordingly and commit the PTE to memory.
-  */
- static inline unsigned long pte_set_hidx(pte_t *ptep, real_pte_t rpte,
--		unsigned int subpg_index, unsigned long hidx)
-+					 unsigned int subpg_index,
-+					 unsigned long hidx, int offset)
- {
--	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-+	unsigned long *hidxp = (unsigned long *)(ptep + offset);
  
- 	rpte.hidx &= ~HIDX_BITS(0xfUL, subpg_index);
- 	*hidxp = rpte.hidx  | HIDX_BITS(HIDX_SHIFT_BY_ONE(hidx), subpg_index);
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 3c14663d457d..d92707aff762 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -350,7 +350,7 @@ extern unsigned long pci_io_base;
-  */
- #ifndef __real_pte
+ static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
+@@ -3037,7 +3046,7 @@ int do_swap_page(struct vm_fault *vmf)
+        pte_t pte;
+        int locked;
+        int exclusive = 0;
+-       int ret = 0;
++       int ret;
+        bool vma_readahead = swap_use_vma_readahead();
  
--#define __real_pte(e,p)		((real_pte_t){(e)})
-+#define __real_pte(e, p, o)		((real_pte_t){(e)})
- #define __rpte_to_pte(r)	((r).pte)
- #define __rpte_to_hidx(r,index)	(pte_val(__rpte_to_pte(r)) >> H_PAGE_F_GIX_SHIFT)
+        if (vma_readahead) {
+@@ -3045,9 +3054,16 @@ int do_swap_page(struct vm_fault *vmf)
+                swapcache = page;
+        }
  
-diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 5a69b51d08a3..d573d7d07f25 100644
---- a/arch/powerpc/mm/hash64_4k.c
-+++ b/arch/powerpc/mm/hash64_4k.c
-@@ -55,7 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * need to add in 0x1 if it's a read-only user page
- 	 */
- 	rflags = htab_convert_pte_flags(new_pte);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -117,7 +117,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return -1;
- 		}
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
--		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
-+		new_pte |= pte_set_hidx(ptep, rpte, 0, slot, PTRS_PER_PTE);
- 	}
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 2253bbc6a599..e601d95c3b20 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -86,7 +86,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 
- 	subpg_index = (ea & (PAGE_SIZE - 1)) >> shift;
- 	vpn  = hpt_vpn(ea, vsid, ssize);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 	/*
- 	 *None of the sub 4k page is hashed
- 	 */
-@@ -214,7 +214,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		return -1;
- 	}
- 
--	new_pte |= pte_set_hidx(ptep, rpte, subpg_index, slot);
-+	new_pte |= pte_set_hidx(ptep, rpte, subpg_index, slot, PTRS_PER_PTE);
- 	new_pte |= H_PAGE_HASHPTE;
- 
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
-@@ -262,7 +262,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -327,7 +327,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 		}
- 
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
--		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
-+		new_pte |= pte_set_hidx(ptep, rpte, 0, slot, PTRS_PER_PTE);
- 	}
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 12511f5a015f..b320f5097a06 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -27,7 +27,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	unsigned long vpn;
- 	unsigned long old_pte, new_pte;
- 	unsigned long rflags, pa, sz;
--	long slot;
-+	long slot, offset;
- 
- 	BUG_ON(shift != mmu_psize_defs[mmu_psize].shift);
- 
-@@ -63,7 +63,11 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	} while(!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	if (unlikely(mmu_psize == MMU_PAGE_16G))
-+		offset = PTRS_PER_PUD;
-+	else
-+		offset = PTRS_PER_PMD;
-+	rpte = __real_pte(__pte(old_pte), ptep, offset);
- 
- 	sz = ((1UL) << shift);
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -104,7 +108,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return -1;
- 		}
- 
--		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
-+		new_pte |= pte_set_hidx(ptep, rpte, 0, slot, offset);
- 	}
- 
- 	/*
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 881ebd53ffc2..9b23f12e863c 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -51,7 +51,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 	unsigned int psize;
- 	int ssize;
- 	real_pte_t rpte;
--	int i;
-+	int i, offset;
- 
- 	i = batch->index;
- 
-@@ -67,6 +67,10 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		psize = get_slice_psize(mm, addr);
- 		/* Mask the address for the correct page size */
- 		addr &= ~((1UL << mmu_psize_defs[psize].shift) - 1);
-+		if (unlikely(psize == MMU_PAGE_16G))
-+			offset = PTRS_PER_PUD;
-+		else
-+			offset = PTRS_PER_PMD;
- #else
- 		BUG();
- 		psize = pte_pagesize_index(mm, addr, pte); /* shutup gcc */
-@@ -78,6 +82,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		 * support 64k pages, this might be different from the
- 		 * hardware page size encoded in the slice table. */
- 		addr &= PAGE_MASK;
-+		offset = PTRS_PER_PTE;
- 	}
- 
- 
-@@ -91,7 +96,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 	}
- 	WARN_ON(vsid == 0);
- 	vpn = hpt_vpn(addr, vsid, ssize);
--	rpte = __real_pte(__pte(pte), ptep);
-+	rpte = __real_pte(__pte(pte), ptep, offset);
- 
- 	/*
- 	 * Check if we have an active batch on this CPU. If not, just
+-       if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte)) {
++       ret = pte_unmap_same(vmf);
++       if (ret) {
+                if (page)
+                        put_page(page);
++               /*
++                * In the case the PTE are different, meaning that the
++                * page has already been processed by another CPU, we return 0.
++                */
++               if (ret == VM_FAULT_PTNOTSAME)
++                       ret = 0;
+                goto out;
+        }
+
+Thanks,
+Laurent.
