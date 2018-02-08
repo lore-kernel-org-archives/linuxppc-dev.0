@@ -1,53 +1,22 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <prvs=55778a2bae=ast@fb.com>
+Received: from mx0b-00082601.pphosted.com (mx0b-00082601.pphosted.com
+ [67.231.153.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zclDD0MqfzF10p
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 04:14:19 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w18HBiQe118304
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Feb 2018 12:14:17 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g0tj28nn5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 12:14:17 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 8 Feb 2018 17:14:13 -0000
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 04/24] mm: Dont assume page-table invariance during
- faults
-To: Matthew Wilcox <willy@infradead.org>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1517935810-31177-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180206202831.GB16511@bombadil.infradead.org>
- <484242d8-e632-9e39-5c99-2e1b4b3b69a5@linux.vnet.ibm.com>
- <20180208150025.GD15846@bombadil.infradead.org>
-Date: Thu, 8 Feb 2018 18:14:03 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zclgG2bJNzF15k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 04:34:17 +1100 (AEDT)
+Subject: Re: [RFC][PATCH bpf 1/2] bpf: allow 64-bit offsets for bpf function
+ calls
+To: Sandipan Das <sandipan@linux.vnet.ibm.com>, <daniel@iogearbox.net>
+References: <20180208120306.2568-1-sandipan@linux.vnet.ibm.com>
+CC: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <mpe@ellerman.id.au>, <naveen.n.rao@linux.vnet.ibm.com>
+From: Alexei Starovoitov <ast@fb.com>
+Message-ID: <4ce54c76-f8d5-e739-d9c2-e3318e398417@fb.com>
+Date: Thu, 8 Feb 2018 09:08:45 -0800
 MIME-Version: 1.0
-In-Reply-To: <20180208150025.GD15846@bombadil.infradead.org>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <79917740-7068-2328-2c02-1532054f357e@linux.vnet.ibm.com>
+In-Reply-To: <20180208120306.2568-1-sandipan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,140 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 2/8/18 4:03 AM, Sandipan Das wrote:
+> The imm field of a bpf_insn is a signed 32-bit integer. For
+> JIT-ed bpf-to-bpf function calls, it stores the offset from
+> __bpf_call_base to the start of the callee function.
+>
+> For some architectures, such as powerpc64, it was found that
+> this offset may be as large as 64 bits because of which this
+> cannot be accomodated in the imm field without truncation.
+>
+> To resolve this, we additionally use the aux data within each
+> bpf_prog associated with the caller functions to store the
+> addresses of their respective callees.
+>
+> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+> ---
+>  kernel/bpf/verifier.c | 39 ++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 38 insertions(+), 1 deletion(-)
+>
+> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+> index 5fb69a85d967..52088b4ca02f 100644
+> --- a/kernel/bpf/verifier.c
+> +++ b/kernel/bpf/verifier.c
+> @@ -5282,6 +5282,19 @@ static int jit_subprogs(struct bpf_verifier_env *env)
+>  	 * run last pass of JIT
+>  	 */
+>  	for (i = 0; i <= env->subprog_cnt; i++) {
+> +		u32 flen = func[i]->len, callee_cnt = 0;
+> +		struct bpf_prog **callee;
+> +
+> +		/* for now assume that the maximum number of bpf function
+> +		 * calls that can be made by a caller must be at most the
+> +		 * number of bpf instructions in that function
+> +		 */
+> +		callee = kzalloc(sizeof(func[i]) * flen, GFP_KERNEL);
+> +		if (!callee) {
+> +			err = -ENOMEM;
+> +			goto out_free;
+> +		}
+> +
+>  		insn = func[i]->insnsi;
+>  		for (j = 0; j < func[i]->len; j++, insn++) {
+>  			if (insn->code != (BPF_JMP | BPF_CALL) ||
+> @@ -5292,6 +5305,26 @@ static int jit_subprogs(struct bpf_verifier_env *env)
+>  			insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
+>  				func[subprog]->bpf_func -
+>  				__bpf_call_base;
+> +
+> +			/* the offset to the callee from __bpf_call_base
+> +			 * may be larger than what the 32 bit integer imm
+> +			 * can accomodate which will truncate the higher
+> +			 * order bits
+> +			 *
+> +			 * to avoid this, we additionally utilize the aux
+> +			 * data of each caller function for storing the
+> +			 * addresses of every callee associated with it
+> +			 */
+> +			callee[callee_cnt++] = func[subprog];
 
-
-On 08/02/2018 16:00, Matthew Wilcox wrote:
-> On Thu, Feb 08, 2018 at 03:35:58PM +0100, Laurent Dufour wrote:
->> I reviewed that part of code, and I think I could now change the way
->> pte_unmap_safe() is checking for the pte's value. Since we now have all the
->> needed details in the vm_fault structure, I will pass it to
->> pte_unamp_same() and deal with the VMA checks when locking for the pte as
->> it is done in the other part of the page fault handler by calling
->> pte_spinlock().
-> 
-> This does indeed look much better!  Thank you!
-> 
->> This means that this patch will be dropped, and pte_unmap_same() will become :
->>
->> static inline int pte_unmap_same(struct vm_fault *vmf, int *same)
->> {
->> 	int ret = 0;
->>
->> 	*same = 1;
->> #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
->> 	if (sizeof(pte_t) > sizeof(unsigned long)) {
->> 		if (pte_spinlock(vmf)) {
->> 			*same = pte_same(*vmf->pte, vmf->orig_pte);
->> 			spin_unlock(vmf->ptl);
->> 		}
->> 		else
->> 			ret = VM_FAULT_RETRY;
->> 	}
->> #endif
->> 	pte_unmap(vmf->pte);
->> 	return ret;
->> }
-> 
-> I'm not a huge fan of auxiliary return values.  Perhaps we could do this
-> instead:
-> 
-> 	ret = pte_unmap_same(vmf);
-> 	if (ret != VM_FAULT_NOTSAME) {
-> 		if (page)
-> 			put_page(page);
-> 		goto out;
-> 	}
-> 	ret = 0;
-> 
-> (we have a lot of unused bits in VM_FAULT_, so adding a new one shouldn't
-> be a big deal)
-
-I do agree, using an auxiliary return value is not a good idea.
-
-What about the following changes based on your suggestion ?
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 7de4323b9e89..0cd31a37bb3d 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1212,6 +1212,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
- #define VM_FAULT_NEEDDSYNC  0x2000     /* ->fault did not modify page tables
-                                         * and needs fsync() to complete (for
-                                         * synchronous page faults in DAX) */
-+#define VM_FAULT_PTNOTSAME 0x4000      /* Page table entries have changed */
- 
- #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
-                         VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
-diff --git a/mm/memory.c b/mm/memory.c
-index b7da99c74fef..c9b419f8e4c5 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2433,21 +2433,30 @@ static inline bool pte_map_lock(struct vm_fault *vmf)
-  * parts, do_swap_page must check under lock before unmapping the pte and
-  * proceeding (but do_wp_page is only called after already making such a check;
-  * and do_anonymous_page can safely check later on).
-+ *
-+ * pte_unmap_same() returns:
-+ *     0                       if the PTE are the same
-+ *     VM_FAULT_PTNOTSAME      if the PTE are different
-+ *     VM_FAULT_RETRY          if the VMA has changed in our back during
-+ *                             a speculative page fault handling.
-  */
--static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
--                               pte_t *page_table, pte_t orig_pte)
-+static inline int pte_unmap_same(struct vm_fault *vmf)
- {
--       int same = 1;
-+       int ret = 0;
-+
- #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
-        if (sizeof(pte_t) > sizeof(unsigned long)) {
--               spinlock_t *ptl = pte_lockptr(mm, pmd);
--               spin_lock(ptl);
--               same = pte_same(*page_table, orig_pte);
--               spin_unlock(ptl);
-+               if (pte_spinlock(vmf)) {
-+                       if (!pte_same(*vmf->pte, vmf->orig_pte))
-+                               ret = VM_FAULT_PTNOTSAME;
-+                       spin_unlock(vmf->ptl);
-+               }
-+               else
-+                       ret = VM_FAULT_RETRY;
-        }
- #endif
--       pte_unmap(page_table);
--       return same;
-+       pte_unmap(vmf->pte);
-+       return ret;
- }
- 
- static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
-@@ -3037,7 +3046,7 @@ int do_swap_page(struct vm_fault *vmf)
-        pte_t pte;
-        int locked;
-        int exclusive = 0;
--       int ret = 0;
-+       int ret;
-        bool vma_readahead = swap_use_vma_readahead();
- 
-        if (vma_readahead) {
-@@ -3045,9 +3054,16 @@ int do_swap_page(struct vm_fault *vmf)
-                swapcache = page;
-        }
- 
--       if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte)) {
-+       ret = pte_unmap_same(vmf);
-+       if (ret) {
-                if (page)
-                        put_page(page);
-+               /*
-+                * In the case the PTE are different, meaning that the
-+                * page has already been processed by another CPU, we return 0.
-+                */
-+               if (ret == VM_FAULT_PTNOTSAME)
-+                       ret = 0;
-                goto out;
-        }
-
-Thanks,
-Laurent.
+can you share typical /proc/kallsyms ?
+Are you saying that kernel and kernel modules are allocated from
+address spaces that are always more than 32-bit apart?
+That would mean that all kernel calls into modules are far calls
+and the other way around form .ko into kernel?
+Performance is probably suffering because every call needs to be built
+with full 64-bit offset. No ?
