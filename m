@@ -1,36 +1,31 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zcpDR2rb2zF18Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 06:29:43 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w18JS3rO081414
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Feb 2018 14:29:40 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g0vcprwrf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 14:29:40 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 8 Feb 2018 19:29:39 -0000
-Date: Thu, 8 Feb 2018 11:29:30 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/mm: Fix crashes with PUD level hugetlb config
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180208103442.22045-1-aneesh.kumar@linux.vnet.ibm.com>
- <87r2pvfr5g.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zcpcV2kYnzF1B1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 06:47:05 +1100 (AEDT)
+Received: from mail-qk0-f182.google.com (mail-qk0-f182.google.com
+ [209.85.220.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7E703217B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Feb 2018 19:47:03 +0000 (UTC)
+Received: by mail-qk0-f182.google.com with SMTP id d129so3856224qke.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 11:47:03 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87r2pvfr5g.fsf@linux.vnet.ibm.com>
-Message-Id: <20180208192930.GB5559@ram.oc3035372033.ibm.com>
+In-Reply-To: <20180208053354.41725-1-aik@ozlabs.ru>
+References: <20180208053354.41725-1-aik@ozlabs.ru>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 8 Feb 2018 13:46:41 -0600
+Message-ID: <CAL_JsqKas_etnkOptNvWGDsnUSs_OYOdpW3D+6a7+4MtLeF45Q@mail.gmail.com>
+Subject: Re: [PATCH kernel] powerpc/pci: Fix broken INTx configuration via OF
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
+ Alistair Popple <alistair@popple.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,32 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 08, 2018 at 08:46:27PM +0530, Aneesh Kumar K.V wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> 
-> > To support memory keys, we moved the hash pte slot information to the second
-> > half of the page table. This was ok with PTE entries at level 4 and level 3.
-> > We already allocate larger page table pages at those level to accomodate extra
-> > details. For level 4 we already have the extra space which was used to track
-> > 4k hash page table entry details and at pmd level the extra space was allocated
-> > to track the THP details.
-> >
-> > With hugetlbfs PTE, we used this extra space at the PMD level to store the
-> > slot details. But we also support hugetlbfs PTE at PUD leve and PUD level page
-> > didn't allocate extra space. This resulted in memory corruption.
-> >
-> > Fix this by allocating extra space at PUD level when HUGETLB is enabled. We
-> > may need further changes to allocate larger space at PMD level when we enable
-> > HUGETLB. That will be done in next patch.
-> >
-> > Fixes:bf9a95f9a6481bc6e(" powerpc: Free up four 64K PTE bits in 64K backed HPTE pages")
-> >
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> Another fix, I still get random memory corruption with hugetlb test with
-> 16G hugepage config.
+On Wed, Feb 7, 2018 at 11:33 PM, Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
+> correctly states that of_irq_parse_and_map_pci() does the same thing as
+> of_irq_parse_pci() does as it simply calls
+> of_irq_parse_pci() and irq_create_of_mapping().
+>
+> However of_irq_parse_and_map_pci() not only returns 0 for success and
+> negative value for an error but also a positive virq value from
+> irq_create_of_mapping() which the mentioned commit ignores and
+> INTx config fails.
+>
+> This fixes the of_irq_parse_and_map_pci() return value handling.
+>
+> Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>
+> Found it on POWER9 + powernv system - almost all devices suddenly lost
+> INTx support.
+> ---
+>  arch/powerpc/kernel/pci-common.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-this fix may not be needed. It random corruption may be artifact of the typo you
-had in your first patch?
+Thanks.
 
-RP
+Acked-by: Rob Herring <robh@kernel.org>
