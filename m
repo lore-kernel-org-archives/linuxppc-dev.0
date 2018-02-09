@@ -1,22 +1,39 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
- [79.96.170.134])
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdDgB3w5LzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 23:20:52 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Cc: viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] cpufreq: powernv: Add support of frequency domain
-Date: Fri, 09 Feb 2018 13:19:04 +0100
-Message-ID: <2235126.ZWAqWlELuo@aspire.rjw.lan>
-In-Reply-To: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
-References: <1516609054-13244-1-git-send-email-huntbag@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdFkx5nC9zDqgy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 00:09:13 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w19D93it023838
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Feb 2018 08:09:10 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g186dc4x4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 08:09:07 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Fri, 9 Feb 2018 13:08:56 -0000
+Subject: Re: [PATCH 1/3] cxl: Introduce various enums/defines for PSL9 trace
+ arrays
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+References: <20180209042535.16845-1-vaibhav@linux.vnet.ibm.com>
+ <20180209042535.16845-2-vaibhav@linux.vnet.ibm.com>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Fri, 9 Feb 2018 14:08:52 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20180209042535.16845-2-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ee7a08db-900b-fe9e-7e84-132a871bd38b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,227 +43,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, January 22, 2018 9:17:34 AM CET Abhishek Goel wrote:
-> Frequency-domain indicates group of CPUs that would share same frequency.
-> It is detected using device-tree node "frequency-domain-indicator".
-> frequency-domain-indicator is a bitmask which will have different value
-> depending upon the generation of the processor.
+Le 09/02/2018 à 05:25, Vaibhav Jain a écrit :
+> We introduce a new enum named cxl_psl9_traceid that represents
+> individual trace-arrays available on PSL9. In addition a set of new
+> defines named s CXL_PSL9_TRACESTATE_XXX are introduced that represent
+> various states a trace-array can be in. Value of each define is the
+> value reported by PSL_CTCCFG register for the corresponding state of
+> trace-array. Also a new macro named CXL_PSL9_TRACE_STATE() is
+> introduced that makes it convenient to evaluate state of a trace-array
+> from the PSL_CTCCFG register.
 > 
-> CPUs of the same chip for which the result of a bitwise AND between
-> their PIR and the frequency-domain-indicator is the same share the same
-> frequency.
+> The patch re-factors cxl_stop_trace_psl9() to use these new
+> enums/defines and renames 'cxl_service_layer_ops.debugfs_stoptrace'
+> function pointer to 'cxl_service_layer_ops.stop_psltrace'.
 > 
-> In this patch, we define hash-table indexed by the aforementioned
-> bitwise ANDed value to store the cpumask of the CPUs sharing the same
-> frequency domain. Further, the cpufreq policy will be created per
-> frequency-domain
+> This patch shouldn't cause any behavioral changes.
 > 
-> So for POWER9, a cpufreq policy is created per quad while for POWER8 it
-> is created per core. Governor decides frequency for each policy but
-> multiple cores may come under same policy. In such case frequency needs
-> to be set on each core sharing that policy.
-> 
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 > ---
+>   drivers/misc/cxl/cxl.h    | 29 ++++++++++++++++++++++++++---
+>   drivers/misc/cxl/native.c |  8 ++++----
+>   drivers/misc/cxl/pci.c    | 15 +++++++--------
+>   3 files changed, 37 insertions(+), 15 deletions(-)
 > 
-> Skiboot patch required for the corresponding device-tree changes have been
-> posted here : http://patchwork.ozlabs.org/patch/862256/
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index 4f015da78f28..81da307b60c0 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -418,8 +418,31 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
+>   #define CXL_CARD_MINOR(adapter) (adapter->adapter_num * CXL_DEV_MINORS)
+>   #define CXL_DEVT_ADAPTER(dev) (MINOR(dev) / CXL_DEV_MINORS)
 > 
->  drivers/cpufreq/powernv-cpufreq.c | 104 ++++++++++++++++++++++++++++++++++----
->  1 file changed, 95 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..aab23a4 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -37,6 +37,7 @@
->  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
->  #include <asm/opal.h>
->  #include <linux/timer.h>
-> +#include <linux/hashtable.h>
->  
->  #define POWERNV_MAX_PSTATES	256
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
-> @@ -130,6 +131,9 @@ enum throttle_reason_type {
->  static int nr_chips;
->  static DEFINE_PER_CPU(struct chip *, chip_info);
->  
-> +static u32 freq_domain_indicator;
-> +static bool p9_occ_quirk;
-> +
->  /*
->   * Note:
->   * The set of pstates consists of contiguous integers.
-> @@ -194,6 +198,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
->  	gpstates->last_gpstate_idx = 0;
->  }
->  
-> +#define SIZE NR_CPUS
-> +#define ORDER_FREQ_MAP ilog2(SIZE)
-> +
-> +static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
-> +
-> +struct hashmap {
-> +	cpumask_t mask;
-> +	int chip_id;
-> +	u32 pir_key;
-> +	struct hlist_node hash_node;
+> -#define CXL_PSL9_TRACEID_MAX 0xAU
+> -#define CXL_PSL9_TRACESTATE_FIN 0x3U
+> +/* Various trace arrays available on PSL9 */
+> +enum cxl_psl9_traceid {
+> +	CXL_PSL9_TRACEID_RX0 = 0,
+> +	CXL_PSL9_TRACEID_RX1, /* 1 */
+> +	CXL_PSL9_TRACEID_XSL, /* 2 */
+> +	CXL_PSL9_TRACEID_CT0, /* 3 */
+> +	CXL_PSL9_TRACEID_CT1, /* 4 */
+> +	CXL_PSL9_TRACEID_LA0, /* 5 */
+> +	CXL_PSL9_TRACEID_LA1, /* 6 */
+> +	CXL_PSL9_TRACEID_JM0, /* 7 */
+> +	CXL_PSL9_TRACEID_DMA0, /* 8 */
+> +	CXL_PSL9_TRACEID_DMA1, /* 9 */
+> +	CXL_PSL9_TRACEID_REOA, /* 10 */
+> +	CXL_PSL9_TRACEID_MAX
 > +};
 > +
-> +static void insert(u32 key, int cpu)
-> +{
-> +	struct hashmap *data;
+> +/* State of tracearray as reported in PSL9_CTCCFG */
+> +#define CXL_PSL9_TRACESTATE_IDLE	0x0U
+> +#define CXL_PSL9_TRACESTATE_INIT	0x1U
+> +#define CXL_PSL9_TRACESTATE_WFT		0x2U
+> +#define CXL_PSL9_TRACESTATE_FIN		0x3U
 > +
-> +	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
-> +		if (data->chip_id == cpu_to_chip_id(cpu) &&
-> +			data->pir_key == key) {
-> +			cpumask_set_cpu(cpu, &data->mask);
-> +			return;
-> +		}
-> +	}
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
-> +	cpumask_set_cpu(cpu, &data->mask);
-> +	data->chip_id = cpu_to_chip_id(cpu);
-> +	data->pir_key = key;
-> +
-> +}
-> +
->  /*
->   * Initialize the freq table based on data obtained
->   * from the firmware passed via device-tree
-> @@ -206,6 +242,7 @@ static int init_powernv_pstates(void)
->  	u32 len_ids, len_freqs;
->  	u32 pstate_min, pstate_max, pstate_nominal;
->  	u32 pstate_turbo, pstate_ultra_turbo;
-> +	u32 key;
->  
->  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
->  	if (!power_mgt) {
-> @@ -246,9 +283,18 @@ static int init_powernv_pstates(void)
->  	else
->  		powernv_pstate_info.wof_enabled = true;
->  
-> +	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
-> +		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
-> +				&freq_domain_indicator))
-> +		pr_warn("ibm,freq-domain-indicator not found\n");
-> +
-> +        if (of_device_is_compatible(power_mgt, "p9-occ-quirk"))
-> +		p9_occ_quirk = true;
-> +
->  next:
->  	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
->  		pstate_nominal, pstate_max);
-> +	pr_info("frequency domain indicator %d", freq_domain_indicator);
->  	pr_info("Workload Optimized Frequency is %s in the platform\n",
->  		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
->  
-> @@ -276,6 +322,15 @@ static int init_powernv_pstates(void)
->  		return -ENODEV;
->  	}
->  
-> +	if (freq_domain_indicator) {
-> +		hash_init(freq_domain_map);
-> +		for_each_possible_cpu(i) {
-> +			key = ((u32) get_hard_smp_processor_id(i) &
-> +				freq_domain_indicator);
-> +			insert(key, i);
-> +		}
-> +	}
-> +
->  	powernv_pstate_info.nr_pstates = nr_pstates;
->  	pr_debug("NR PStates %d\n", nr_pstates);
->  	for (i = 0; i < nr_pstates; i++) {
-> @@ -760,25 +815,56 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	spin_unlock(&gpstates->gpstate_lock);
->  
-> -	/*
-> -	 * Use smp_call_function to send IPI and execute the
-> -	 * mtspr on target CPU.  We could do that without IPI
-> -	 * if current CPU is within policy->cpus (core)
-> +	/* The current DVFS implementation in firmware requires that to set a
-> +	 * frequency in a quad, all cores of the quad need to set frequency in
-> +	 * their respective PMCR's. Ideally setting frequency on any of the
-> +	 * core of that quad should change frequency for the quad.
->  	 */
-> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> +	if (p9_occ_quirk) {
-> +		cpumask_t temp;
-> +		u32 cpu;
-> +
-> +		cpumask_copy(&temp, policy->cpus);
-> +		while (!cpumask_empty(&temp)) {
-> +			cpu = cpumask_first(&temp);
-> +			smp_call_function_any(cpu_sibling_mask(cpu),
-> +					set_pstate, &freq_data, 1);
-> +			cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
-> +		}
-> +	} else {
-> +		smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> +	}
-> +
->  	return 0;
->  }
->  
->  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> -	int base, i, ret;
-> +	int ret;
->  	struct kernfs_node *kn;
->  	struct global_pstate_info *gpstates;
->  
-> -	base = cpu_first_thread_sibling(policy->cpu);
-> +	if (!freq_domain_indicator) {
 
-IMO it would be more straightforward to write this conditional as
-
-if (freq_domain_indicator) {
-   do something
-} else {
-   do something else
-}
-
-> +		int base, i;
->  
-> -	for (i = 0; i < threads_per_core; i++)
-> -		cpumask_set_cpu(base + i, policy->cpus);
-> +		base = cpu_first_thread_sibling(policy->cpu);
-> +		for (i = 0; i < threads_per_core; i++)
-> +			cpumask_set_cpu(base + i, policy->cpus);
-> +	} else {
-> +		u32 key;
-> +		struct hashmap *data;
-> +
-> +		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
-> +				freq_domain_indicator);
-
-The outer paren on the right-hand side is not necessary.
-
-The explicit case to u32 isn't necessary as well AFAICS.
-
-> +		hash_for_each_possible(freq_domain_map, data, hash_node,
-> +								 key%SIZE) {
-> +			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
-> +				data->pir_key == key) {
-
-You have slightly confusing indentation here, as the continuation of the
-condition is at the same level as the statements in the conditional block.
-
-> +				cpumask_copy(policy->cpus, &data->mask);
-> +				break;
-> +			}
-> +		}
-> +	}
->  
->  	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
->  	if (!kn) {
+> +/* Find the Trace Array state from PSL9_CTCCFG Reg */
+> +#define CXL_PSL9_TRACE_STATE(STATE, TRACE_ID)		\
+> +	((STATE) >> (62 - (TRACE_ID) * 2) & 0x3)
+>
+>   enum cxl_context_status {
+>   	CLOSED,
+> @@ -654,7 +677,7 @@ struct cxl_service_layer_ops {
+>   	void (*debugfs_add_afu_regs)(struct cxl_afu *afu, struct dentry *dir);
+>   	void (*psl_irq_dump_registers)(struct cxl_context *ctx);
+>   	void (*err_irq_dump_registers)(struct cxl *adapter);
+> -	void (*debugfs_stop_trace)(struct cxl *adapter);
+> +	void (*stop_psltrace)(struct cxl *adapter);
+>   	void (*write_timebase_ctrl)(struct cxl *adapter);
+>   	u64 (*timebase_read)(struct cxl *adapter);
+>   	int capi_mode;
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 1b3d7c65ea3f..bba9e1bb8b4d 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -1135,9 +1135,9 @@ static irqreturn_t native_handle_psl_slice_error(struct cxl_context *ctx,
+>   	if (ctx->afu->adapter->native->sl_ops->psl_irq_dump_registers)
+>   		ctx->afu->adapter->native->sl_ops->psl_irq_dump_registers(ctx);
 > 
+> -	if (ctx->afu->adapter->native->sl_ops->debugfs_stop_trace) {
+> +	if (ctx->afu->adapter->native->sl_ops->stop_psltrace) {
+>   		dev_crit(&ctx->afu->dev, "STOPPING CXL TRACE\n");
+> -		ctx->afu->adapter->native->sl_ops->debugfs_stop_trace(ctx->afu->adapter);
+> +		ctx->afu->adapter->native->sl_ops->stop_psltrace(ctx->afu->adapter);
+>   	}
+> 
+>   	return cxl_ops->ack_irq(ctx, 0, errstat);
+> @@ -1303,9 +1303,9 @@ static irqreturn_t native_irq_err(int irq, void *data)
+>   	err_ivte = cxl_p1_read(adapter, CXL_PSL_ErrIVTE);
+>   	dev_crit(&adapter->dev, "PSL_ErrIVTE: 0x%016llx\n", err_ivte);
+> 
+> -	if (adapter->native->sl_ops->debugfs_stop_trace) {
+> +	if (adapter->native->sl_ops->stop_psltrace) {
+>   		dev_crit(&adapter->dev, "STOPPING CXL TRACE\n");
+> -		adapter->native->sl_ops->debugfs_stop_trace(adapter);
+> +		adapter->native->sl_ops->stop_psltrace(adapter);
+>   	}
+> 
+>   	if (adapter->native->sl_ops->err_irq_dump_registers)
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 9bc30c20b66b..926b13973b73 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1747,15 +1747,14 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
+>   static void cxl_stop_trace_psl9(struct cxl *adapter)
+>   {
+>   	int traceid;
+> -	u64 trace_state, trace_mask;
+> +	u64 trace_cfg, trace_state;
+>   	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
+> 
+> +	trace_cfg = cxl_p1_read(adapter, CXL_PSL9_CTCCFG);
+>   	/* read each tracearray state and issue mmio to stop them is needed */
+> -	for (traceid = 0; traceid <= CXL_PSL9_TRACEID_MAX; ++traceid) {
+> -		trace_state = cxl_p1_read(adapter, CXL_PSL9_CTCCFG);
+> -		trace_mask = (0x3ULL << (62 - traceid * 2));
+> -		trace_state = (trace_state & trace_mask) >> (62 - traceid * 2);
+> -		dev_dbg(&dev->dev, "cxl: Traceid-%d trace_state=0x%0llX\n",
+> +	for (traceid = 0; traceid < CXL_PSL9_TRACEID_MAX; ++traceid) {
+> +		trace_state = CXL_PSL9_TRACE_STATE(trace_cfg, traceid);
+> +		dev_dbg(&dev->dev, "Traceid-%d trace_state=0x%0llX\n",
+>   			traceid, trace_state);
+> 
+any reason to use dev_dbg instead of pr_devel ?
 
-Overall, from cpufreq perspective, I don't see anything to complain about
-here.
-
-Thanks,
-Rafael
+>   		/* issue mmio if the trace array isn't in FIN state */
+> @@ -1799,7 +1798,7 @@ static const struct cxl_service_layer_ops psl9_ops = {
+>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl9,
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
+>   	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
+> -	.debugfs_stop_trace = cxl_stop_trace_psl9,
+> +	.stop_psltrace = cxl_stop_trace_psl9,
+>   	.timebase_read = timebase_read_psl9,
+>   	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
+>   	.needs_reset_before_disable = true,
+> @@ -1822,7 +1821,7 @@ static const struct cxl_service_layer_ops psl8_ops = {
+>   	.debugfs_add_afu_regs = cxl_debugfs_add_afu_regs_psl8,
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl8,
+>   	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl8,
+> -	.debugfs_stop_trace = cxl_stop_trace_psl8,
+> +	.stop_psltrace = cxl_stop_trace_psl8,
+>   	.write_timebase_ctrl = write_timebase_ctrl_psl8,
+>   	.timebase_read = timebase_read_psl8,
+>   	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
+> 
