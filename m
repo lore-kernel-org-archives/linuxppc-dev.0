@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zd1Yw6NW0zF18d
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:00:36 +1100 (AEDT)
-In-Reply-To: <20180207063551.8991-1-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zd1Yx1ghvzF18f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:00:37 +1100 (AEDT)
+In-Reply-To: <20180208053354.41725-1-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/mm/pgtable: Split mappings on hot-unplug
-Message-Id: <3zd1Yw1YWgz9t3F@ozlabs.org>
-Date: Fri,  9 Feb 2018 15:00:35 +1100 (AEDT)
+Cc: Rob Herring <robh@kernel.org>, Alistair Popple <alistair@popple.id.au>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [kernel] powerpc/pci: Fix broken INTx configuration via OF
+Message-Id: <3zd1Yw5kRtz9t3C@ozlabs.org>
+Date: Fri,  9 Feb 2018 15:00:36 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-02-07 at 06:35:51 UTC, Balbir Singh wrote:
-> This patch splits the a linear mapping if the hot-unplug range
-> is smaller than the mapping size. The code detects if the mapping
-> needs to be split into a smaller size and if so, uses the stop
-> machine infrastructure to map the current linear mapping with
-> a smaller size mapping. Then the requested area is unmapped.
+On Thu, 2018-02-08 at 05:33:54 UTC, Alexey Kardashevskiy wrote:
+> Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
+> correctly states that of_irq_parse_and_map_pci() does the same thing as
+> of_irq_parse_pci() does as it simply calls
+> of_irq_parse_pci() and irq_create_of_mapping().
 > 
-> The code will skip any region of the mapping that overlaps with
-> kernel text and warn about it once. We don't want to remove
-> a mapping where the kernel text and the LMB we intend to remove
-> overlap in the same TLB mapping as it may affect the currently
-> executing code (being cautious, we might be able to remove this
-> restriction later, see TODOs below)
+> However of_irq_parse_and_map_pci() not only returns 0 for success and
+> negative value for an error but also a positive virq value from
+> irq_create_of_mapping() which the mentioned commit ignores and
+> INTx config fails.
 > 
-> I've tested these changes under a kvm guest with 2 vcpus, from
-> a split mapping point of view, some of the caveats mentioned
-> above applied to the testing I did.
+> This fixes the of_irq_parse_and_map_pci() return value handling.
 > 
-> TODOs:
-> 1. Refine the stop machine with an atomic replacement of the
-> PMD. The code needs to be refactored to support those changes.
-> I intend to publish those changes, but this is a minimal set
-> that should be also probably backported to stable
-> 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/4dd5f8a99e791a8c6500e3592f3ce8
+https://git.kernel.org/powerpc/c/560c0f978155282e36f33d21b2aeae
 
 cheers
