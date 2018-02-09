@@ -1,22 +1,23 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ua0-x22b.google.com (mail-ua0-x22b.google.com
+ [IPv6:2607:f8b0:400c:c08::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdS6r1vR6zF0fB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 07:57:07 +1100 (AEDT)
-Date: Fri, 9 Feb 2018 14:56:58 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: powerpc-linux-gnu-ld: cannot open linker script file
- arch/powerpc/boot/zImage.coff.lds: No such file or directory
-Message-ID: <20180209205658.GW21977@gate.crashing.org>
-References: <CA+7wUswUir9cHEyvdT8vc+tvSxrcsoY8da+CpqG6kpc4oMj9Wg@mail.gmail.com>
- <20180209144829.GP21977@gate.crashing.org>
- <CA+7wUsybiroxTP8tuvANuAKYKQjNQ8ayNtQDL=1jBV3uZJe-ow@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+7wUsybiroxTP8tuvANuAKYKQjNQ8ayNtQDL=1jBV3uZJe-ow@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdTYS5Ll9zF0hX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 09:01:48 +1100 (AEDT)
+Received: by mail-ua0-x22b.google.com with SMTP id x4so6079501uaj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 14:01:48 -0800 (PST)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 9 Feb 2018 23:01:25 +0100
+Message-ID: <CA+7wUszna8NoXLvpjJM7piveywBux33qFgA-mkV_yteACHsunw@mail.gmail.com>
+Subject: powerpc/pci: Use of_irq_parse_and_map_pci() helper
+To: Rob Herring <robh@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 09, 2018 at 04:55:20PM +0100, Mathieu Malaterre wrote:
-> >> $ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
-> >> $ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
-> >
-> > Works fine for me (exact same arch and defconfig).  Two differences:
-> > 1) I also set CROSS_COMPILE during the config step;
-> > 2) I don't build zImage, just the default (but manual "make zImage"
-> > afterwards works fine).
-> 
-> Could you run command (2) a second time on your system.
+Hi Rob,
 
-That works fine, also with -j$BIG .
+I can no longer boot my old Mac Mini G4 using a custom config. After a
+tedious bisect it appears that (*). Since Mac Mini does not provide
+any serial port I cannot provide a kernel message dump (wish there was
+some kind of null modem serial cable). All I can see is some crazy
+stuff going on with ATA DMA/66 & DMA/100.
 
-> $ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
-> $ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
-> -> ok so far
-> $ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
+Is there anything suspicious in this commit which may prevent this
+machine to boot ?
 
-Ah.  I configure with O=, but then cd to that dir and build without O= .
-Also not in a subdir of the kernel source tree.
+Thanks much,
 
-make ARCH=$ARCH CROSS_COMPILE=$TARGET- -C $KERNEL_SRC O=$PWD $DEFCONFIG
-make ARCH=$ARCH CROSS_COMPILE=$TARGET- $MAKEOPTS
+(*)
+$ git bisect good
+59f47eff03a08cd2d91310f1c15a5343fa0071e5 is the first bad commit
+commit 59f47eff03a08cd2d91310f1c15a5343fa0071e5
+Author: Rob Herring <robh@kernel.org>
+Date:   Thu Jan 4 15:12:14 2018 -0600
 
-(everything run in the build dir).
+    powerpc/pci: Use of_irq_parse_and_map_pci() helper
 
+    Instead of calling both of_irq_parse_pci() and irq_create_of_mapping(),
+    call of_irq_parse_and_map_pci(), which does the same thing. This will allow
+    making of_irq_parse_pci() a private, static function.
 
-Segher
+    This changes the logic slightly in that the fallback path will also be
+    taken if irq_create_of_mapping() fails internally.
+
+    Signed-off-by: Rob Herring <robh@kernel.org>
+    [bhelgaas: fold in virq init from Stephen Rothwell <sfr@canb.auug.org.au>]
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+    Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Cc: Paul Mackerras <paulus@samba.org>
+    Cc: Michael Ellerman <mpe@ellerman.id.au>
+
+:040000 040000 b979406deb8957af240d659be1e76ed75fa43288
+ec3c127fe30428955e2ad1d716c9be2adbd2623d M arch
