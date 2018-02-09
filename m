@@ -1,19 +1,25 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ua0-x22b.google.com (mail-ua0-x22b.google.com
- [IPv6:2607:f8b0:400c:c08::22b])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdV396N6nzF0gL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 09:24:05 +1100 (AEDT)
+Received: from mail-qk0-f169.google.com (mail-qk0-f169.google.com
+ [209.85.220.169])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdTYS5Ll9zF0hX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 09:01:48 +1100 (AEDT)
-Received: by mail-ua0-x22b.google.com with SMTP id x4so6079501uaj.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 14:01:48 -0800 (PST)
+ by mail.kernel.org (Postfix) with ESMTPSA id D2262217AA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 22:24:03 +0000 (UTC)
+Received: by mail-qk0-f169.google.com with SMTP id d72so11904619qkc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 14:24:03 -0800 (PST)
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 9 Feb 2018 23:01:25 +0100
-Message-ID: <CA+7wUszna8NoXLvpjJM7piveywBux33qFgA-mkV_yteACHsunw@mail.gmail.com>
-Subject: powerpc/pci: Use of_irq_parse_and_map_pci() helper
-To: Rob Herring <robh@kernel.org>
+In-Reply-To: <CA+7wUszna8NoXLvpjJM7piveywBux33qFgA-mkV_yteACHsunw@mail.gmail.com>
+References: <CA+7wUszna8NoXLvpjJM7piveywBux33qFgA-mkV_yteACHsunw@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 9 Feb 2018 16:23:42 -0600
+Message-ID: <CAL_Jsq+FXdbNKSZbVv7LcyEUuWgqn1XpNQ5SFZYqYJTLBE5uJg@mail.gmail.com>
+Subject: Re: powerpc/pci: Use of_irq_parse_and_map_pci() helper
+To: Mathieu Malaterre <malat@debian.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
@@ -27,41 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rob,
+On Fri, Feb 9, 2018 at 4:01 PM, Mathieu Malaterre <malat@debian.org> wrote:
+> Hi Rob,
+>
+> I can no longer boot my old Mac Mini G4 using a custom config. After a
+> tedious bisect it appears that (*). Since Mac Mini does not provide
+> any serial port I cannot provide a kernel message dump (wish there was
+> some kind of null modem serial cable). All I can see is some crazy
+> stuff going on with ATA DMA/66 & DMA/100.
+>
+> Is there anything suspicious in this commit which may prevent this
+> machine to boot ?
 
-I can no longer boot my old Mac Mini G4 using a custom config. After a
-tedious bisect it appears that (*). Since Mac Mini does not provide
-any serial port I cannot provide a kernel message dump (wish there was
-some kind of null modem serial cable). All I can see is some crazy
-stuff going on with ATA DMA/66 & DMA/100.
+Yes, it's broken. You need this patch[1]. Sorry for the breakage.
 
-Is there anything suspicious in this commit which may prevent this
-machine to boot ?
+Rob
 
-Thanks much,
-
-(*)
-$ git bisect good
-59f47eff03a08cd2d91310f1c15a5343fa0071e5 is the first bad commit
-commit 59f47eff03a08cd2d91310f1c15a5343fa0071e5
-Author: Rob Herring <robh@kernel.org>
-Date:   Thu Jan 4 15:12:14 2018 -0600
-
-    powerpc/pci: Use of_irq_parse_and_map_pci() helper
-
-    Instead of calling both of_irq_parse_pci() and irq_create_of_mapping(),
-    call of_irq_parse_and_map_pci(), which does the same thing. This will allow
-    making of_irq_parse_pci() a private, static function.
-
-    This changes the logic slightly in that the fallback path will also be
-    taken if irq_create_of_mapping() fails internally.
-
-    Signed-off-by: Rob Herring <robh@kernel.org>
-    [bhelgaas: fold in virq init from Stephen Rothwell <sfr@canb.auug.org.au>]
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-    Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Cc: Michael Ellerman <mpe@ellerman.id.au>
-
-:040000 040000 b979406deb8957af240d659be1e76ed75fa43288
-ec3c127fe30428955e2ad1d716c9be2adbd2623d M arch
+[1] https://patchwork.kernel.org/patch/10208267/
