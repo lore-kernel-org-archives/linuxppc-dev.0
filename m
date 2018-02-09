@@ -1,25 +1,25 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ua0-x236.google.com (mail-ua0-x236.google.com
+ [IPv6:2607:f8b0:400c:c08::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdKGd6vYDzF0k8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 02:48:22 +1100 (AEDT)
-Date: Fri, 9 Feb 2018 16:48:08 +0100
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Cc: linux-kernel@vger.kernel.org, Joel Stanley <joel@jms.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
- devicetree@vger.kernel.org, Albert Herranz <albert_herranz@yahoo.es>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
-Message-ID: <20180209154807.xkfarpxzpieznfsh@latitude>
-References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
- <20180209120732.17863-3-j.neuschaefer@gmx.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdKR40kzlzF0hK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 02:55:43 +1100 (AEDT)
+Received: by mail-ua0-x236.google.com with SMTP id t6so5431920ual.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 07:55:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="blzswmp6chmlj3mw"
-In-Reply-To: <20180209120732.17863-3-j.neuschaefer@gmx.net>
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <20180209144829.GP21977@gate.crashing.org>
+References: <CA+7wUswUir9cHEyvdT8vc+tvSxrcsoY8da+CpqG6kpc4oMj9Wg@mail.gmail.com>
+ <20180209144829.GP21977@gate.crashing.org>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 9 Feb 2018 16:55:20 +0100
+Message-ID: <CA+7wUsybiroxTP8tuvANuAKYKQjNQ8ayNtQDL=1jBV3uZJe-ow@mail.gmail.com>
+Subject: Re: powerpc-linux-gnu-ld: cannot open linker script file
+ arch/powerpc/boot/zImage.coff.lds: No such file or directory
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +29,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Segher,
 
---blzswmp6chmlj3mw
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 9, 2018 at 3:48 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> Hi!
+>
+> On Fri, Feb 09, 2018 at 12:52:03PM +0100, Mathieu Malaterre wrote:
+>> Is anyone using O= output directory option ?
+>
+> Yes, always.
 
-On Fri, Feb 09, 2018 at 01:07:29PM +0100, Jonathan Neusch=C3=A4fer wrote:
-> The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
-> that supports a configurable number of pins (up to 32), interrupts, and
-> some special mechanisms to share the controller between the system's
-> security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
-> not supported.
->=20
-> This patch adds a basic driver for this GPIO controller. Interrupt
-> support will come in a later patch.
->=20
-> This patch is based on code developed by Albert Herranz and the GameCube
-> Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
-> available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
-> has grown quite dissimilar.
->=20
-> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> Cc: Albert Herranz <albert_herranz@yahoo.es>
-> Cc: Segher Boessenkool <segher@kernel.crashing.org>
-> <---
+Great !
 
-Ooops, I just noticed that I broke the separator here. This should be a
-normal --- line, obviously.
+>> It seems that git/master is failing:
+>>
+>> $ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
+>> $ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
+>
+> Works fine for me (exact same arch and defconfig).  Two differences:
+> 1) I also set CROSS_COMPILE during the config step;
+> 2) I don't build zImage, just the default (but manual "make zImage"
+> afterwards works fine).
+
+Could you run command (2) a second time on your system.
+
+>>   WRAP    arch/powerpc/boot/zImage.coff
+>> powerpc-linux-gnu-ld: cannot open linker script file
+>> arch/powerpc/boot/zImage.coff.lds: No such file or directory
+>> ../arch/powerpc/boot/Makefile:375: recipe for target
+>> 'arch/powerpc/boot/zImage.coff' failed
+>> make[2]: *** [arch/powerpc/boot/zImage.coff] Error 1
+>
+> Add V=1?
+
+Full steps:
+
+$ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
+$ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
+-> ok so far
+$ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
+make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
+  CHK     include/config/kernel.release
+  GEN     ./Makefile
+  CHK     include/generated/uapi/linux/version.h
+  Using .. as source for kernel
+  .. is not clean, please run 'make mrproper'
+  in the '..' directory.
+/home/mathieu/tmp/linux/Makefile:1074: recipe for target 'prepare3' failed
+make[1]: *** [prepare3] Error 1
+make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
+Makefile:146: recipe for target 'sub-make' failed
+make: *** [sub-make] Error 2
+
+Then even after a mrproper I enter in an odd state:
+
+$ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- mrproper
+make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
+rm -f .tmp_symbols.txt
+  CLEAN   scripts/basic
+  CLEAN   scripts/kconfig
+  CLEAN   include/config include/generated arch/powerpc/include/generated
+  CLEAN   .config
+make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
+mathieu@vostrodell:~/tmp/linux$ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
+make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
+  HOSTCC  scripts/basic/fixdep
+  GEN     ./Makefile
+  HOSTCC  scripts/kconfig/conf.o
+  YACC    scripts/kconfig/zconf.tab.c
+  LEX     scripts/kconfig/zconf.lex.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+#
+# configuration written to .config
+#
+make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
+$ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- V=1
+make -C /home/mathieu/tmp/linux/ppc6xx KBUILD_SRC=/home/mathieu/tmp/linux \
+-f /home/mathieu/tmp/linux/Makefile
+make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
+set -e; : '  CHK     include/config/kernel.release'; mkdir -p
+include/config/; echo "4.15.0$(/bin/bash ../scripts/setlocalversion
+..)" < include/config/auto.conf > include/config/kernel.release.tmp;
+if [ -r include/config/kernel.release ] && cmp -s
+include/config/kernel.release include/config/kernel.release.tmp; then
+rm -f include/config/kernel.release.tmp; else : '  UPD
+include/config/kernel.release'; mv -f
+include/config/kernel.release.tmp include/config/kernel.release; fi
+ln -fsn .. source
+make -f ../scripts/Makefile.asm-generic \
+            src=uapi/asm obj=arch/powerpc/include/generated/uapi/asm
+/bin/bash ../scripts/mkmakefile \
+    .. . 4 15
+  GEN     ./Makefile
+set -e; : '  CHK     include/generated/uapi/linux/version.h'; mkdir -p
+include/generated/uapi/linux/; (echo \#define LINUX_VERSION_CODE
+265984; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8)
++ (c))';) < ../Makefile > include/generated/uapi/linux/version.h.tmp;
+if [ -r include/generated/uapi/linux/version.h ] && cmp -s
+include/generated/uapi/linux/version.h
+include/generated/uapi/linux/version.h.tmp; then rm -f
+include/generated/uapi/linux/version.h.tmp; else : '  UPD
+include/generated/uapi/linux/version.h'; mv -f
+include/generated/uapi/linux/version.h.tmp
+include/generated/uapi/linux/version.h; fi
+make -f ../scripts/Makefile.build obj=scripts/basic
+rm -f include/linux/version.h
+awk '!x[$0]++' init/modules.builtin usr/modules.builtin
+arch/powerpc/kernel/modules.builtin arch/powerpc/mm/modules.builtin
+arch/powerpc/lib/modules.builtin arch/powerpc/sysdev/modules.builtin
+arch/powerpc/platforms/modules.builtin
+arch/powerpc/math-emu/modules.builtin
+arch/powerpc/crypto/modules.builtin arch/powerpc/net/modules.builtin
+arch/powerpc/xmon/modules.builtin arch/powerpc/perf/modules.builtin
+kernel/modules.builtin certs/modules.builtin mm/modules.builtin
+fs/modules.builtin ipc/modules.builtin security/modules.builtin
+crypto/modules.builtin block/modules.builtin drivers/modules.builtin
+sound/modules.builtin firmware/modules.builtin
+arch/powerpc/oprofile/modules.builtin net/modules.builtin
+lib/modules.builtin virt/modules.builtin > ./modules.builtin
+(cat /dev/null; ) > scripts/basic/modules.order
+rm -f .tmp_quiet_recordmcount
+make -f ../scripts/Makefile.asm-generic \
+            src=asm obj=arch/powerpc/include/generated/asm
+if [ -f ../.config -o -d ../include/config ]; then \
+echo >&2 "  .. is not clean, please run 'make mrproper'"; \
+echo >&2 "  in the '..' directory.";\
+/bin/false; \
+fi;
+  .. is not clean, please run 'make mrproper'
+  in the '..' directory.
+/home/mathieu/tmp/linux/Makefile:1074: recipe for target 'prepare3' failed
+make[1]: *** [prepare3] Error 1
+make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
+Makefile:146: recipe for target 'sub-make' failed
+make: *** [sub-make] Error 2
 
 
-Jonathan Neusch=C3=A4fer
-
---blzswmp6chmlj3mw
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJafcKwAAoJEAgwRJqO81/bYKIQALAd9vMfeRv6ofuyS2/g+wEE
-ZSTvxxfogE+fHJuTxz1eFHlfisMX74qVW7kmjtB01oHhugVkElI4f22vCB+q83+D
-J5dCcxB+QtwoDNURRN3VD2S7dr9oaCmKz2cFSEXBUiM1Kzol1B2W/rmPOPGk6hOv
-Sz8zIfgkGFL/CUqXA7OIqlhccl3vpmg3xTDeVFbMz9L0/m35UzkwHyp3BZ5KhIcJ
-R2EN9+n2ApKmkYgc0ZiiM65TgvKlkXMd3HQQFml86v9naRzaVPgR0Ft+h9s4uDjE
-XhBx96TSi7Zjg4R6a7UfNyoH/watS2L8oiGPt5z+tgqK8zoV3rbwRL/xmoEIWha6
-vVg1ALrb0Ww5d9/XHHWeebG5s8R5dAtA6HGiO6I8mPCGo5Toc+8kvOjQ28/Se6p3
-L9thxpC62pem4aPzlkUPUPn/GV5QHdBz/Lfu9lkjOa9Vx2wgvxkz3WLM4cAVJIna
-h+pfccA/qYHu/BdrU8E5GXJiC3PV+QAbfII18FF9sJSi+PS8wjvb+5pq59eXWxsC
-ENQ9MmxNYstjahGgC4YgeK44zix/i90CGOUkZGTKIN1w/iRF9aKlDAPMbbg/5ptT
-jDka6KhlH/UCPkHT2JPgL/E0i3sGodOJkXOS5GV8yE8WWrCmN0n6tDfLW0E0CuAC
-DVcUna8tarsDfOLtlByd
-=EsLr
------END PGP SIGNATURE-----
-
---blzswmp6chmlj3mw--
+Current commit is f1517df8701c9f12dae9ce7f43a5d300a6917619 on my side,
+no local change.
