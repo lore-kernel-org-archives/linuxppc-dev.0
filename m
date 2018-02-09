@@ -1,15 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zd1Yt02KczF17Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:00:33 +1100 (AEDT)
-In-Reply-To: <151699561194.20320.12952014708209986173.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zd1Yt2kylzF18d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:00:34 +1100 (AEDT)
+In-Reply-To: <20180130151144.32544-1-colin.king@canonical.com>
+To: Colin King <colin.king@canonical.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [RESEND,
- V2] powerpc/numa: Invalidate numa_cpu_lookup_table on cpu remove
-Message-Id: <3zd1Ys4JMGz9s7M@ozlabs.org>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: ocxl: fix signed comparison with less than zero
+Message-Id: <3zd1Ys6HkGz9sRm@ozlabs.org>
 Date: Fri,  9 Feb 2018 15:00:33 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,25 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-01-26 at 19:41:59 UTC, Nathan Fontenot wrote:
-> When DLPAR removing a CPU, the unmapping of the cpu from a node in
-> unmap_cpu_from_node() should also invalidate the CPUs entry in the
-> numa_cpu_lookup_table. There is not a guarantee that on a subsequent
-> DLPAR add of the CPU the associativity will be the same and thus
-> could be in a different node. Invalidating the entry in the
-> numa_cpu_lookup_table causes the associativity to be read from the
-> device tree at the time of the add.
+On Tue, 2018-01-30 at 15:11:44 UTC, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> The current behavior of not invalidating the CPUs entry in the
-> numa_cpu_lookup_table can result in scenarios where the the topology
-> layout of CPUs in the partition does not match the device tree
-> or the topology reported by the HMC.
+> Currently the comparison of used < 0 is always false because
+> uses is a size_t. Fix this by making used a ssize_t type.
 > 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Detected by Coccinelle:
+> drivers/misc/ocxl/file.c:320:6-10: WARNING: Unsigned expression
+> compared with zero: used < 0
+> 
+> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/1d9a090783bef19fe8cdec878620d2
+https://git.kernel.org/powerpc/c/dedab7f0d3137441a97fe7cf9b9ca5
 
 cheers
