@@ -1,31 +1,23 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdLrM4ZjtzF0Sy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 03:59:14 +1100 (AEDT)
-Date: Fri, 9 Feb 2018 17:58:58 +0100
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Joel Stanley <joel@jms.id.au>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- devicetree <devicetree@vger.kernel.org>,
- Albert Herranz <albert_herranz@yahoo.es>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
-Message-ID: <20180209165858.ebm7ed7f4b5uakju@latitude>
-References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
- <20180209120732.17863-3-j.neuschaefer@gmx.net>
- <CAHp75Vf=Z7DTMvbacLN+E-hScBD3ZNpnf6Ch+5xm=JNbX2cbVg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdNMP0H5RzF0p3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 05:07:44 +1100 (AEDT)
+Date: Fri, 9 Feb 2018 12:07:41 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Rob Herring <robh@kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: [PATCH kernel v3] powerpc/pci: Fix broken INTx configuration via
+ OF
+Message-ID: <20180209180741.GB206223@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180209062358.33457-1-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="i7quqgrx7stws5lv"
-In-Reply-To: <CAHp75Vf=Z7DTMvbacLN+E-hScBD3ZNpnf6Ch+5xm=JNbX2cbVg@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180209062358.33457-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,94 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Feb 09, 2018 at 05:23:58PM +1100, Alexey Kardashevskiy wrote:
+> Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
+> replaced of_irq_parse_pci() + irq_create_of_mapping() with
+> of_irq_parse_and_map_pci() but this change lost virq returned by
+> irq_create_of_mapping() so virq remained zero causing INTx
+> misconfiguration.
+> 
+> This fixes pci_read_irq_line() not to loose a virq returned by
+> of_irq_parse_and_map_pci().
 
---i7quqgrx7stws5lv
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+s/not to loose a/to not lose the/
 
-On Fri, Feb 09, 2018 at 05:30:55PM +0200, Andy Shevchenko wrote:
-> On Fri, Feb 9, 2018 at 2:07 PM, Jonathan Neusch=C3=A4fer
-> <j.neuschaefer@gmx.net> wrote:
-> > The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
-> > that supports a configurable number of pins (up to 32), interrupts, and
-> > some special mechanisms to share the controller between the system's
-> > security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
-> > not supported.
-> >
-> > This patch adds a basic driver for this GPIO controller. Interrupt
-> > support will come in a later patch.
-> >
-> > This patch is based on code developed by Albert Herranz and the GameCube
-> > Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
-> > available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
-> > has grown quite dissimilar.
-> >
->=20
-> Fine to me, though one comment below.
-> In any case,
->=20
-> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Thank you.
+I'm fine with this version.
 
+Since you started applying a previous version, Michael, I'll assume
+you will handle this unless you tell me otherwise.  One way or another
+it would be good to get this in before -rc1.
 
-[...]
-> > diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-> > index d6a8e851ad13..47606dfe06cc 100644
-> > --- a/drivers/gpio/Kconfig
-> > +++ b/drivers/gpio/Kconfig
-> > @@ -229,6 +229,15 @@ config GPIO_GRGPIO
-> >           Select this to support Aeroflex Gaisler GRGPIO cores from the=
- GRLIB
-> >           VHDL IP core library.
-> >
-> > +config GPIO_HLWD
-> > +       tristate "Nintendo Wii (Hollywood) GPIO"
->=20
-> > +       depends on OF_GPIO
->=20
-> You may get rid of it if...
-
-[ Even if this driver isn't switched to the unified device property API,
-  I think "depends on OF" would be enough here, because it doesn't use
-  the code that's guarded by CONFIG_OF_GPIO (gpiolib-of.c), but this
-  applies to other drivers (e.g. gpio-aspeed, gpio-bcm-kona) as well, so
-  this would ideally be a bigger cleanup patch. ]
-
-
-> > +       res =3D of_property_read_u32(pdev->dev.of_node, "ngpios", &ngpi=
-os);
->=20
-> ...if you switch to unified device property API.
-
-I don't think this change is worth making, unless/until the of_property
-API is deprecated. I'm rather sure this GPIO controller won't appear in
-an ACPI-based system.
-
-
-Thanks,
-Jonathan Neusch=C3=A4fer
-
---i7quqgrx7stws5lv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJafdNLAAoJEAgwRJqO81/bixcQAIr1riJeusqVnVSqFoRF5AnI
-E5rzLIjuyrWdakM/xRDFvHhKJs2CVNVWyzxsPefEfdYZjPx7jxy9g2ZC0fOR8MRd
-F26NvxC6+x5piXsGXixyWdveWSe5ePsp041xQylW/6J8c9rWN6/H2K0PFaig/oEC
-eRuzu3Ow4G4m6PHYDeiorz7CHZGKYF9bCqPxSXhJRL1GWv2eahlB6MHe+fnSxI/3
-YogJGou88lMQryAG2zLy2JUuXMFR2wcixjso8Np9VwqQiTIWTr+ONqhMDx/P7rfB
-IU1PW027x/571T7dC40jDrtGERe7IPtGtqx86qnO71cczBJFla6Hu8Tjdirs+haZ
-+0AeTpshCXNEG2Hnb1FML9LzO5bMwTqMWFsF8loek4XtJR9/ZJ/xmLk6ieE1ShWD
-+yjjgPpMoqeGFaCZkwzITFZ9XbUV51nuElSLWbwFjagUAzWx48G5/2iml6coFlCA
-a4Z17JNZw9ue68es/nakJiwPiUpA7/73Ck8JzIq4AIXdW+Aiz8H72rnudqCX6qZ5
-ccBbhW2VgAtSE7RYQqK6i6q09Y1RzheUqTwhcDIQ+kGAhWeGCG02mzOHcyUYPUGG
-tsBoqPTeqibSkmo4ZMYTKDacXFq5MYdTZ5M/rxz+sXxLKVYFzNJwHbzvogCXom2G
-6YvcnxSVm0mft+2eLQqs
-=SLYv
------END PGP SIGNATURE-----
-
---i7quqgrx7stws5lv--
+> ---
+> Changes:
+> v3:
+> * change virq from unsigned to int as of_irq_parse_and_map_pci returns int
+> and even though it only returns non-negative values now, this may change
+> in the future
+> 
+> v2:
+> * changed the condition from <=0 to !=0 as by design
+> of_irq_parse_and_map_pci() can only return 0 for an error and virq>0.
+> ---
+>  arch/powerpc/kernel/pci-common.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index ae2ede4..446c796 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -362,7 +362,7 @@ struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
+>   */
+>  static int pci_read_irq_line(struct pci_dev *pci_dev)
+>  {
+> -	unsigned int virq = 0;
+> +	int virq;
+>  
+>  	pr_debug("PCI: Try to map irq for %s...\n", pci_name(pci_dev));
+>  
+> @@ -370,7 +370,8 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
+>  	memset(&oirq, 0xff, sizeof(oirq));
+>  #endif
+>  	/* Try to get a mapping from the device-tree */
+> -	if (!of_irq_parse_and_map_pci(pci_dev, 0, 0)) {
+> +	virq = of_irq_parse_and_map_pci(pci_dev, 0, 0);
+> +	if (virq <= 0) {
+>  		u8 line, pin;
+>  
+>  		/* If that fails, lets fallback to what is in the config
+> -- 
+> 2.11.0
+> 
