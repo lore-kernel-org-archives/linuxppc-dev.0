@@ -1,21 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zd3dr2fHBzDqln
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 16:34:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zd4502Wj7zF0rL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 16:54:12 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Rob Herring <robh@kernel.org>, Alistair Popple <alistair@popple.id.au>,
- Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [kernel] powerpc/pci: Fix broken INTx configuration via OF
-In-Reply-To: <1cb9bd56-3083-388c-5ad1-90a2b1d107a1@ozlabs.ru>
-References: <3zd1Yw5kRtz9t3C@ozlabs.org>
- <1cb9bd56-3083-388c-5ad1-90a2b1d107a1@ozlabs.ru>
-Date: Fri, 09 Feb 2018 16:34:07 +1100
-Message-ID: <87y3k2wwts.fsf@concordia.ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh@kernel.org>,
+ linux-pci@vger.kernel.org
+Subject: Re: [PATCH kernel v2] powerpc/pci: Fix broken INTx configuration via
+ OF
+In-Reply-To: <20180209024125.38862-1-aik@ozlabs.ru>
+References: <20180209024125.38862-1-aik@ozlabs.ru>
+Date: Fri, 09 Feb 2018 16:54:11 +1100
+Message-ID: <87vaf6wvwc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,30 +29,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-> On 09/02/18 15:00, Michael Ellerman wrote:
->> On Thu, 2018-02-08 at 05:33:54 UTC, Alexey Kardashevskiy wrote:
->>> Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
->>> correctly states that of_irq_parse_and_map_pci() does the same thing as
->>> of_irq_parse_pci() does as it simply calls
->>> of_irq_parse_pci() and irq_create_of_mapping().
->>>
->>> However of_irq_parse_and_map_pci() not only returns 0 for success and
->>> negative value for an error but also a positive virq value from
->>> irq_create_of_mapping() which the mentioned commit ignores and
->>> INTx config fails.
->>>
->>> This fixes the of_irq_parse_and_map_pci() return value handling.
->>>
->>> Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> 
->> Applied to powerpc fixes, thanks.
->> 
->> https://git.kernel.org/powerpc/c/560c0f978155282e36f33d21b2aeae
+> Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
+> replaced of_irq_parse_pci() + irq_create_of_mapping() with
+> of_irq_parse_and_map_pci() but this change lost virq returned by
+> irq_create_of_mapping() so virq remained zero causing INTx
+> misconfiguration.
 >
+> This fixes pci_read_irq_line() not to loose a virq returned by
+> of_irq_parse_and_map_pci().
 >
-> there is a v2, this one is not 100% correct
+> Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v2:
+> * changed the condition from <=0 to !=0 as by design
+> of_irq_parse_and_map_pci() can only return 0 for an error and virq>0.
 
-Yeah I just saw, I'll back this out.
+It returns int, so you should store the result in an int, and check the
+result for <= 0.
+
+Otherwise if it starts returning a negative error value this code will
+break.
+
+If it's a problem that of_irq_parse_and_map_pci() might internally
+convert an unsigned virq to int then we need to fix that there, or make
+of_irq_parse_and_map_pci() return unsigned also.
 
 cheers
+
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index ae2ede4..33580a9 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -362,7 +362,7 @@ struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
+>   */
+>  static int pci_read_irq_line(struct pci_dev *pci_dev)
+>  {
+> -	unsigned int virq = 0;
+> +	unsigned int virq;
+>  
+>  	pr_debug("PCI: Try to map irq for %s...\n", pci_name(pci_dev));
+>  
+> @@ -370,7 +370,8 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
+>  	memset(&oirq, 0xff, sizeof(oirq));
+>  #endif
+>  	/* Try to get a mapping from the device-tree */
+> -	if (!of_irq_parse_and_map_pci(pci_dev, 0, 0)) {
+> +	virq = of_irq_parse_and_map_pci(pci_dev, 0, 0);
+> +	if (!virq) {
+>  		u8 line, pin;
+>  
+>  		/* If that fails, lets fallback to what is in the config
+> -- 
+> 2.11.0
