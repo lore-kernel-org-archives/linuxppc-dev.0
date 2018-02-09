@@ -1,36 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdJvg5YbTzF0nD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 02:31:59 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w19FVFO9143608
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Feb 2018 10:31:57 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g1c3my3xp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 10:31:46 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 9 Feb 2018 08:31:39 -0700
-Subject: Re: [PATCH 1/2] powerpc/mm: Fix crashes with PUD level hugetlb config
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-References: <20180208103442.22045-1-aneesh.kumar@linux.vnet.ibm.com>
- <87r2pvfr5g.fsf@linux.vnet.ibm.com>
- <20180208192930.GB5559@ram.oc3035372033.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 9 Feb 2018 21:01:32 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdKGd6vYDzF0k8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 02:48:22 +1100 (AEDT)
+Date: Fri, 9 Feb 2018 16:48:08 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Cc: linux-kernel@vger.kernel.org, Joel Stanley <joel@jms.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
+ devicetree@vger.kernel.org, Albert Herranz <albert_herranz@yahoo.es>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
+Message-ID: <20180209154807.xkfarpxzpieznfsh@latitude>
+References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
+ <20180209120732.17863-3-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
-In-Reply-To: <20180208192930.GB5559@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <e893e512-dc98-4f80-4538-0709aca81e0f@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="blzswmp6chmlj3mw"
+In-Reply-To: <20180209120732.17863-3-j.neuschaefer@gmx.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,39 +30,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--blzswmp6chmlj3mw
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 02/09/2018 12:59 AM, Ram Pai wrote:
-> On Thu, Feb 08, 2018 at 08:46:27PM +0530, Aneesh Kumar K.V wrote:
->> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->>
->>> To support memory keys, we moved the hash pte slot information to the second
->>> half of the page table. This was ok with PTE entries at level 4 and level 3.
->>> We already allocate larger page table pages at those level to accomodate extra
->>> details. For level 4 we already have the extra space which was used to track
->>> 4k hash page table entry details and at pmd level the extra space was allocated
->>> to track the THP details.
->>>
->>> With hugetlbfs PTE, we used this extra space at the PMD level to store the
->>> slot details. But we also support hugetlbfs PTE at PUD leve and PUD level page
->>> didn't allocate extra space. This resulted in memory corruption.
->>>
->>> Fix this by allocating extra space at PUD level when HUGETLB is enabled. We
->>> may need further changes to allocate larger space at PMD level when we enable
->>> HUGETLB. That will be done in next patch.
->>>
->>> Fixes:bf9a95f9a6481bc6e(" powerpc: Free up four 64K PTE bits in 64K backed HPTE pages")
->>>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>
->> Another fix, I still get random memory corruption with hugetlb test with
->> 16G hugepage config.
-> 
-> this fix may not be needed. It random corruption may be artifact of the typo you
-> had in your first patch?
+On Fri, Feb 09, 2018 at 01:07:29PM +0100, Jonathan Neusch=C3=A4fer wrote:
+> The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
+> that supports a configurable number of pins (up to 32), interrupts, and
+> some special mechanisms to share the controller between the system's
+> security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
+> not supported.
+>=20
+> This patch adds a basic driver for this GPIO controller. Interrupt
+> support will come in a later patch.
+>=20
+> This patch is based on code developed by Albert Herranz and the GameCube
+> Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
+> available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
+> has grown quite dissimilar.
+>=20
+> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
+> Cc: Albert Herranz <albert_herranz@yahoo.es>
+> Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> <---
 
-Why? the tables at level 2 and leve3 are of different size and we should 
-use the right offset to store the slot details. Even with the change you 
-mentioned in the previous mail, I still have kernel crashes with 
-hugetlbfs test running in parallel to a kernel build.
+Ooops, I just noticed that I broke the separator here. This should be a
+normal --- line, obviously.
 
--aneesh
+
+Jonathan Neusch=C3=A4fer
+
+--blzswmp6chmlj3mw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJafcKwAAoJEAgwRJqO81/bYKIQALAd9vMfeRv6ofuyS2/g+wEE
+ZSTvxxfogE+fHJuTxz1eFHlfisMX74qVW7kmjtB01oHhugVkElI4f22vCB+q83+D
+J5dCcxB+QtwoDNURRN3VD2S7dr9oaCmKz2cFSEXBUiM1Kzol1B2W/rmPOPGk6hOv
+Sz8zIfgkGFL/CUqXA7OIqlhccl3vpmg3xTDeVFbMz9L0/m35UzkwHyp3BZ5KhIcJ
+R2EN9+n2ApKmkYgc0ZiiM65TgvKlkXMd3HQQFml86v9naRzaVPgR0Ft+h9s4uDjE
+XhBx96TSi7Zjg4R6a7UfNyoH/watS2L8oiGPt5z+tgqK8zoV3rbwRL/xmoEIWha6
+vVg1ALrb0Ww5d9/XHHWeebG5s8R5dAtA6HGiO6I8mPCGo5Toc+8kvOjQ28/Se6p3
+L9thxpC62pem4aPzlkUPUPn/GV5QHdBz/Lfu9lkjOa9Vx2wgvxkz3WLM4cAVJIna
+h+pfccA/qYHu/BdrU8E5GXJiC3PV+QAbfII18FF9sJSi+PS8wjvb+5pq59eXWxsC
+ENQ9MmxNYstjahGgC4YgeK44zix/i90CGOUkZGTKIN1w/iRF9aKlDAPMbbg/5ptT
+jDka6KhlH/UCPkHT2JPgL/E0i3sGodOJkXOS5GV8yE8WWrCmN0n6tDfLW0E0CuAC
+DVcUna8tarsDfOLtlByd
+=EsLr
+-----END PGP SIGNATURE-----
+
+--blzswmp6chmlj3mw--
