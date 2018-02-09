@@ -1,26 +1,20 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ua0-x233.google.com (mail-ua0-x233.google.com
- [IPv6:2607:f8b0:400c:c08::233])
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdL3s09DpzDqgm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 03:24:08 +1100 (AEDT)
-Received: by mail-ua0-x233.google.com with SMTP id i5so5487952uai.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 08:24:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdL8S4vFVzF0kH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 03:28:08 +1100 (AEDT)
+Date: Fri, 9 Feb 2018 23:49:20 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] crypto: talitos: fix Kernel Oops on hashing an empty file
+Message-ID: <20180209154920.GB22273@gondor.apana.org.au>
+References: <20180126160959.BEA466EFCA@localhost.localdomain>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <CA+7wUsybiroxTP8tuvANuAKYKQjNQ8ayNtQDL=1jBV3uZJe-ow@mail.gmail.com>
-References: <CA+7wUswUir9cHEyvdT8vc+tvSxrcsoY8da+CpqG6kpc4oMj9Wg@mail.gmail.com>
- <20180209144829.GP21977@gate.crashing.org>
- <CA+7wUsybiroxTP8tuvANuAKYKQjNQ8ayNtQDL=1jBV3uZJe-ow@mail.gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 9 Feb 2018 17:23:44 +0100
-Message-ID: <CA+7wUsw+ge5i1JwtVaXYOmGPQ+pTGYXGA94i=RpQyJ5c_2K4Mg@mail.gmail.com>
-Subject: Re: powerpc-linux-gnu-ld: cannot open linker script file
- arch/powerpc/boot/zImage.coff.lds: No such file or directory
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180126160959.BEA466EFCA@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,150 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 9, 2018 at 4:55 PM, Mathieu Malaterre <malat@debian.org> wrote:
-> Segher,
->
-> On Fri, Feb 9, 2018 at 3:48 PM, Segher Boessenkool
-> <segher@kernel.crashing.org> wrote:
->> Hi!
->>
->> On Fri, Feb 09, 2018 at 12:52:03PM +0100, Mathieu Malaterre wrote:
->>> Is anyone using O= output directory option ?
->>
->> Yes, always.
->
-> Great !
->
->>> It seems that git/master is failing:
->>>
->>> $ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
->>> $ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
->>
->> Works fine for me (exact same arch and defconfig).  Two differences:
->> 1) I also set CROSS_COMPILE during the config step;
->> 2) I don't build zImage, just the default (but manual "make zImage"
->> afterwards works fine).
->
-> Could you run command (2) a second time on your system.
->
->>>   WRAP    arch/powerpc/boot/zImage.coff
->>> powerpc-linux-gnu-ld: cannot open linker script file
->>> arch/powerpc/boot/zImage.coff.lds: No such file or directory
->>> ../arch/powerpc/boot/Makefile:375: recipe for target
->>> 'arch/powerpc/boot/zImage.coff' failed
->>> make[2]: *** [arch/powerpc/boot/zImage.coff] Error 1
->>
->> Add V=1?
->
-> Full steps:
->
-> $ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
-> $ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
-> -> ok so far
-> $ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
-> make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
->   CHK     include/config/kernel.release
->   GEN     ./Makefile
->   CHK     include/generated/uapi/linux/version.h
->   Using .. as source for kernel
->   .. is not clean, please run 'make mrproper'
->   in the '..' directory.
-> /home/mathieu/tmp/linux/Makefile:1074: recipe for target 'prepare3' failed
-> make[1]: *** [prepare3] Error 1
-> make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
-> Makefile:146: recipe for target 'sub-make' failed
-> make: *** [sub-make] Error 2
->
-> Then even after a mrproper I enter in an odd state:
->
-> $ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- mrproper
-> make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
-> rm -f .tmp_symbols.txt
->   CLEAN   scripts/basic
->   CLEAN   scripts/kconfig
->   CLEAN   include/config include/generated arch/powerpc/include/generated
->   CLEAN   .config
-> make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
-> mathieu@vostrodell:~/tmp/linux$ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
-> make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
->   HOSTCC  scripts/basic/fixdep
->   GEN     ./Makefile
->   HOSTCC  scripts/kconfig/conf.o
->   YACC    scripts/kconfig/zconf.tab.c
->   LEX     scripts/kconfig/zconf.lex.c
->   HOSTCC  scripts/kconfig/zconf.tab.o
->   HOSTLD  scripts/kconfig/conf
-> #
-> # configuration written to .config
-> #
-> make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
-> $ make O=ppc6xx -j4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- V=1
-> make -C /home/mathieu/tmp/linux/ppc6xx KBUILD_SRC=/home/mathieu/tmp/linux \
-> -f /home/mathieu/tmp/linux/Makefile
-> make[1]: Entering directory '/home/mathieu/tmp/linux/ppc6xx'
-> set -e; : '  CHK     include/config/kernel.release'; mkdir -p
-> include/config/; echo "4.15.0$(/bin/bash ../scripts/setlocalversion
-> ..)" < include/config/auto.conf > include/config/kernel.release.tmp;
-> if [ -r include/config/kernel.release ] && cmp -s
-> include/config/kernel.release include/config/kernel.release.tmp; then
-> rm -f include/config/kernel.release.tmp; else : '  UPD
-> include/config/kernel.release'; mv -f
-> include/config/kernel.release.tmp include/config/kernel.release; fi
-> ln -fsn .. source
-> make -f ../scripts/Makefile.asm-generic \
->             src=uapi/asm obj=arch/powerpc/include/generated/uapi/asm
-> /bin/bash ../scripts/mkmakefile \
->     .. . 4 15
->   GEN     ./Makefile
-> set -e; : '  CHK     include/generated/uapi/linux/version.h'; mkdir -p
-> include/generated/uapi/linux/; (echo \#define LINUX_VERSION_CODE
-> 265984; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8)
-> + (c))';) < ../Makefile > include/generated/uapi/linux/version.h.tmp;
-> if [ -r include/generated/uapi/linux/version.h ] && cmp -s
-> include/generated/uapi/linux/version.h
-> include/generated/uapi/linux/version.h.tmp; then rm -f
-> include/generated/uapi/linux/version.h.tmp; else : '  UPD
-> include/generated/uapi/linux/version.h'; mv -f
-> include/generated/uapi/linux/version.h.tmp
-> include/generated/uapi/linux/version.h; fi
-> make -f ../scripts/Makefile.build obj=scripts/basic
-> rm -f include/linux/version.h
-> awk '!x[$0]++' init/modules.builtin usr/modules.builtin
-> arch/powerpc/kernel/modules.builtin arch/powerpc/mm/modules.builtin
-> arch/powerpc/lib/modules.builtin arch/powerpc/sysdev/modules.builtin
-> arch/powerpc/platforms/modules.builtin
-> arch/powerpc/math-emu/modules.builtin
-> arch/powerpc/crypto/modules.builtin arch/powerpc/net/modules.builtin
-> arch/powerpc/xmon/modules.builtin arch/powerpc/perf/modules.builtin
-> kernel/modules.builtin certs/modules.builtin mm/modules.builtin
-> fs/modules.builtin ipc/modules.builtin security/modules.builtin
-> crypto/modules.builtin block/modules.builtin drivers/modules.builtin
-> sound/modules.builtin firmware/modules.builtin
-> arch/powerpc/oprofile/modules.builtin net/modules.builtin
-> lib/modules.builtin virt/modules.builtin > ./modules.builtin
-> (cat /dev/null; ) > scripts/basic/modules.order
-> rm -f .tmp_quiet_recordmcount
-> make -f ../scripts/Makefile.asm-generic \
->             src=asm obj=arch/powerpc/include/generated/asm
-> if [ -f ../.config -o -d ../include/config ]; then \
-> echo >&2 "  .. is not clean, please run 'make mrproper'"; \
-> echo >&2 "  in the '..' directory.";\
-> /bin/false; \
-> fi;
->   .. is not clean, please run 'make mrproper'
->   in the '..' directory.
-> /home/mathieu/tmp/linux/Makefile:1074: recipe for target 'prepare3' failed
-> make[1]: *** [prepare3] Error 1
-> make[1]: Leaving directory '/home/mathieu/tmp/linux/ppc6xx'
-> Makefile:146: recipe for target 'sub-make' failed
-> make: *** [sub-make] Error 2
->
->
-> Current commit is f1517df8701c9f12dae9ce7f43a5d300a6917619 on my side,
-> no local change.
+On Fri, Jan 26, 2018 at 05:09:59PM +0100, Christophe Leroy wrote:
+> Performing the hash of an empty file leads to a kernel Oops
+> 
+> [   44.504600] Unable to handle kernel paging request for data at address 0x0000000c
+> [   44.512819] Faulting instruction address: 0xc02d2be8
+> [   44.524088] Oops: Kernel access of bad area, sig: 11 [#1]
+> [   44.529171] BE PREEMPT CMPC885
+> [   44.532232] CPU: 0 PID: 491 Comm: md5sum Not tainted 4.15.0-rc8-00211-g3a968610b6ea #81
+> [   44.540814] NIP:  c02d2be8 LR: c02d2984 CTR: 00000000
+> [   44.545812] REGS: c6813c90 TRAP: 0300   Not tainted  (4.15.0-rc8-00211-g3a968610b6ea)
+> [   44.554223] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 48222822  XER: 20000000
+> [   44.560855] DAR: 0000000c DSISR: c0000000
+> [   44.560855] GPR00: c02d28fc c6813d40 c6828000 c646fa40 00000001 00000001 00000001 00000000
+> [   44.560855] GPR08: 0000004c 00000000 c000bfcc 00000000 28222822 100280d4 00000000 10020008
+> [   44.560855] GPR16: 00000000 00000020 00000000 00000000 10024008 00000000 c646f9f0 c6179a10
+> [   44.560855] GPR24: 00000000 00000001 c62f0018 c6179a10 00000000 c6367a30 c62f0000 c646f9c0
+> [   44.598542] NIP [c02d2be8] ahash_process_req+0x448/0x700
+> [   44.603751] LR [c02d2984] ahash_process_req+0x1e4/0x700
+> [   44.608868] Call Trace:
+> [   44.611329] [c6813d40] [c02d28fc] ahash_process_req+0x15c/0x700 (unreliable)
+> [   44.618302] [c6813d90] [c02060c4] hash_recvmsg+0x11c/0x210
+> [   44.623716] [c6813db0] [c0331354] ___sys_recvmsg+0x98/0x138
+> [   44.629226] [c6813eb0] [c03332c0] __sys_recvmsg+0x40/0x84
+> [   44.634562] [c6813f10] [c03336c0] SyS_socketcall+0xb8/0x1d4
+> [   44.640073] [c6813f40] [c000d1ac] ret_from_syscall+0x0/0x38
+> [   44.645530] Instruction dump:
+> [   44.648465] 38c00001 7f63db78 4e800421 7c791b78 54690ffe 0f090000 80ff0190 2f870000
+> [   44.656122] 40befe50 2f990001 409e0210 813f01bc <8129000c> b39e003a 7d29c214 913e003c
+> 
+> This patch fixes that Oops by checking if src is NULL.
+> 
+> Fixes: 6a1e8d14156d4 ("crypto: talitos - making mapping helpers more generic")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-After yet another 'make mrproper' I can no longer reproduce the build failure.
-
-Sorry for wasting your time :(
-
--M
+Patch applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
