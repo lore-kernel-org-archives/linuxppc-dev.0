@@ -1,24 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zd20X0P1FzF170
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:20:11 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id u12so1745688ite.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 20:20:11 -0800 (PST)
-Subject: Re: [kernel] powerpc/pci: Fix broken INTx configuration via OF
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Rob Herring <robh@kernel.org>, Alistair Popple <alistair@popple.id.au>,
- Bjorn Helgaas <bhelgaas@google.com>
-References: <3zd1Yw5kRtz9t3C@ozlabs.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <1cb9bd56-3083-388c-5ad1-90a2b1d107a1@ozlabs.ru>
-Date: Fri, 9 Feb 2018 15:20:02 +1100
-MIME-Version: 1.0
-In-Reply-To: <3zd1Yw5kRtz9t3C@ozlabs.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zd27W4jxyzF19L
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:26:15 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w194PmeY041139
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Feb 2018 23:26:13 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g0yd0uqgk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Feb 2018 23:26:12 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 9 Feb 2018 04:26:10 -0000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>
+Subject: [PATCH 0/3] Provide ability to enable PSL traces on card probe
+Date: Fri,  9 Feb 2018 09:55:32 +0530
+Message-Id: <20180209042535.16845-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/02/18 15:00, Michael Ellerman wrote:
-> On Thu, 2018-02-08 at 05:33:54 UTC, Alexey Kardashevskiy wrote:
->> Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
->> correctly states that of_irq_parse_and_map_pci() does the same thing as
->> of_irq_parse_pci() does as it simply calls
->> of_irq_parse_pci() and irq_create_of_mapping().
->>
->> However of_irq_parse_and_map_pci() not only returns 0 for success and
->> negative value for an error but also a positive virq value from
->> irq_create_of_mapping() which the mentioned commit ignores and
->> INTx config fails.
->>
->> This fixes the of_irq_parse_and_map_pci() return value handling.
->>
->> Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-> Applied to powerpc fixes, thanks.
-> 
-> https://git.kernel.org/powerpc/c/560c0f978155282e36f33d21b2aeae
+This patch-set updates the cxl adapter probe procedure to selectively enable
+PSL-traces at the end of a successful probe for a PSL9 based adapter. This would
+let implementors of AFUs that use in-kernel apis to interact with the CXL
+adapter get early debug data.
 
+This feature is controlled via a new module parameter named 'enable_psltrace'
+which is enabled by default. During adapter probe is this parameter is set
+cxl will start PSL-traces on the adapter via PSL_TRACECFG register. The needed
+sequence values written to the register was provided by the PSL h/w team.
 
-there is a v2, this one is not 100% correct
+This patch set is based on an earlier patch titled
+"cxl: Remove function write_timebase_ctrl_psl9() for PSL9" available at [1].
 
+Ref: [1] http://patchwork.ozlabs.org/patch/871199/ 
+Vaibhav Jain (3):
+  cxl: Introduce various enums/defines for PSL9 trace arrays
+  cxl: Introduce module parameter 'enable_psltrace'
+  cxl: Provide implementation for sl_ops.start_psltrace on PSL9
+
+ drivers/misc/cxl/cxl.h    | 31 ++++++++++++++--
+ drivers/misc/cxl/main.c   |  4 +++
+ drivers/misc/cxl/native.c |  8 ++---
+ drivers/misc/cxl/pci.c    | 91 ++++++++++++++++++++++++++++++++++++++++++-----
+ 4 files changed, 119 insertions(+), 15 deletions(-)
 
 -- 
-Alexey
+2.14.3
