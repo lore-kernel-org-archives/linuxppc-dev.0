@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zd1Yt4xKBzF18f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:00:34 +1100 (AEDT)
-In-Reply-To: <20180203071750.6469-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zd1Yv1y4rzF17Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 15:00:35 +1100 (AEDT)
+In-Reply-To: <1517920597-14588-1-git-send-email-maddy@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: fix may_hard_irq_enable for PMI soft masking
-Message-Id: <3zd1Yt1bR4z9s72@ozlabs.org>
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/64s: Fix MASKABLE_RELON_EXCEPTION_HV_OOL macro
+Message-Id: <3zd1Yt4BGnz9t0m@ozlabs.org>
 Date: Fri,  9 Feb 2018 15:00:34 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,38 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2018-02-03 at 07:17:50 UTC, Nicholas Piggin wrote:
-> The soft IRQ masking code has to hard-disable interrupts in cases
-> where the exception is not cleared by the masked handler. External
-> interrupts used this approach for soft masking. Now recently PMU
-> interrupts do the same thing.
+On Tue, 2018-02-06 at 12:36:37 UTC, Madhavan Srinivasan wrote:
+> Commit f14e953b191f ("powerpc/64s: Add support to take additional parameter in MASKABLE_* macro")
+> messed up MASKABLE_RELON_EXCEPTION_HV_OOL macro by adding the wrong
+> __SOFTEN__ test which caused guest kernel trash at boot. Patch to fix
+> the macro to use SOFTEN_TEST_HV instead of SOFTEN_NOTEST_HV.
 > 
-> The soft IRQ masking code additionally allowed for interrupt handlers
-> to hard-enable interrupts after soft-disabling them. The idea is to
-> allow PMU interrupts through to profile interrupt handlers.
-> 
-> So when interrupts are being replayed when there is a pending
-> interrupt that requires hard-disabling, there is a test to prevent
-> those handlers from hard-enabling them if there is a pending external
-> interrupt. may_hard_irq_enable() handles this.
-> 
-> After f442d00480 ("powerpc/64s: Add support to mask perf interrupts
-> and replay them"), may_hard_irq_enable() could prematurely enable
-> MSR[EE] when a PMU exception exists, which would result in the
-> interrupt firing again while masked, and MSR[EE] being disabled again.
-> 
-> I haven't seen that this could cause a serious problem, but it's
-> more consistent to handle these soft-masked interrupts in the same
-> way. So introduce a define for all types of interrupts that require
-> MSR[EE] masking in their soft-disable handlers, and use that in
-> may_hard_irq_enable().
-> 
-> Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Fix-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/6cc3f91bf69fc8c1719704607474f9
+https://git.kernel.org/powerpc/c/5c11d1e52d996749897a8616860b18
 
 cheers
