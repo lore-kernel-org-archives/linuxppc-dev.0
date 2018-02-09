@@ -1,20 +1,37 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdL8S4vFVzF0kH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 03:28:08 +1100 (AEDT)
-Date: Fri, 9 Feb 2018 23:49:20 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] crypto: talitos: fix Kernel Oops on hashing an empty file
-Message-ID: <20180209154920.GB22273@gondor.apana.org.au>
-References: <20180126160959.BEA466EFCA@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdLkb2MRxzDrjH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 03:54:15 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w19GnnYJ083731
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Feb 2018 11:54:12 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g1d7e7ayt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 11:54:12 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 9 Feb 2018 16:54:09 -0000
+Date: Fri, 09 Feb 2018 22:24:04 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH bpf 1/2] bpf: allow 64-bit offsets for bpf function
+ calls
+To: Alexei Starovoitov <ast@fb.com>, daniel@iogearbox.net, Sandipan Das
+ <sandipan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, netdev@vger.kernel.org
+References: <20180208120306.2568-1-sandipan@linux.vnet.ibm.com>
+ <4ce54c76-f8d5-e739-d9c2-e3318e398417@fb.com>
+ <1518112079.b4po0pmm3v.naveen@linux.ibm.com>
+In-Reply-To: <1518112079.b4po0pmm3v.naveen@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180126160959.BEA466EFCA@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1518194739.ublbsk69cm.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +41,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 26, 2018 at 05:09:59PM +0100, Christophe Leroy wrote:
-> Performing the hash of an empty file leads to a kernel Oops
-> 
-> [   44.504600] Unable to handle kernel paging request for data at address 0x0000000c
-> [   44.512819] Faulting instruction address: 0xc02d2be8
-> [   44.524088] Oops: Kernel access of bad area, sig: 11 [#1]
-> [   44.529171] BE PREEMPT CMPC885
-> [   44.532232] CPU: 0 PID: 491 Comm: md5sum Not tainted 4.15.0-rc8-00211-g3a968610b6ea #81
-> [   44.540814] NIP:  c02d2be8 LR: c02d2984 CTR: 00000000
-> [   44.545812] REGS: c6813c90 TRAP: 0300   Not tainted  (4.15.0-rc8-00211-g3a968610b6ea)
-> [   44.554223] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 48222822  XER: 20000000
-> [   44.560855] DAR: 0000000c DSISR: c0000000
-> [   44.560855] GPR00: c02d28fc c6813d40 c6828000 c646fa40 00000001 00000001 00000001 00000000
-> [   44.560855] GPR08: 0000004c 00000000 c000bfcc 00000000 28222822 100280d4 00000000 10020008
-> [   44.560855] GPR16: 00000000 00000020 00000000 00000000 10024008 00000000 c646f9f0 c6179a10
-> [   44.560855] GPR24: 00000000 00000001 c62f0018 c6179a10 00000000 c6367a30 c62f0000 c646f9c0
-> [   44.598542] NIP [c02d2be8] ahash_process_req+0x448/0x700
-> [   44.603751] LR [c02d2984] ahash_process_req+0x1e4/0x700
-> [   44.608868] Call Trace:
-> [   44.611329] [c6813d40] [c02d28fc] ahash_process_req+0x15c/0x700 (unreliable)
-> [   44.618302] [c6813d90] [c02060c4] hash_recvmsg+0x11c/0x210
-> [   44.623716] [c6813db0] [c0331354] ___sys_recvmsg+0x98/0x138
-> [   44.629226] [c6813eb0] [c03332c0] __sys_recvmsg+0x40/0x84
-> [   44.634562] [c6813f10] [c03336c0] SyS_socketcall+0xb8/0x1d4
-> [   44.640073] [c6813f40] [c000d1ac] ret_from_syscall+0x0/0x38
-> [   44.645530] Instruction dump:
-> [   44.648465] 38c00001 7f63db78 4e800421 7c791b78 54690ffe 0f090000 80ff0190 2f870000
-> [   44.656122] 40befe50 2f990001 409e0210 813f01bc <8129000c> b39e003a 7d29c214 913e003c
-> 
-> This patch fixes that Oops by checking if src is NULL.
-> 
-> Fixes: 6a1e8d14156d4 ("crypto: talitos - making mapping helpers more generic")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Naveen N. Rao wrote:
+> Alexei Starovoitov wrote:
+>> On 2/8/18 4:03 AM, Sandipan Das wrote:
+>>> The imm field of a bpf_insn is a signed 32-bit integer. For
+>>> JIT-ed bpf-to-bpf function calls, it stores the offset from
+>>> __bpf_call_base to the start of the callee function.
+>>>
+>>> For some architectures, such as powerpc64, it was found that
+>>> this offset may be as large as 64 bits because of which this
+>>> cannot be accomodated in the imm field without truncation.
+>>>
+>>> To resolve this, we additionally use the aux data within each
+>>> bpf_prog associated with the caller functions to store the
+>>> addresses of their respective callees.
+>>>
+>>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+>>> ---
+>>>  kernel/bpf/verifier.c | 39 ++++++++++++++++++++++++++++++++++++++-
+>>>  1 file changed, 38 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+>>> index 5fb69a85d967..52088b4ca02f 100644
+>>> --- a/kernel/bpf/verifier.c
+>>> +++ b/kernel/bpf/verifier.c
+>>> @@ -5282,6 +5282,19 @@ static int jit_subprogs(struct bpf_verifier_env =
+*env)
+>>>  	 * run last pass of JIT
+>>>  	 */
+>>>  	for (i =3D 0; i <=3D env->subprog_cnt; i++) {
+>>> +		u32 flen =3D func[i]->len, callee_cnt =3D 0;
+>>> +		struct bpf_prog **callee;
+>>> +
+>>> +		/* for now assume that the maximum number of bpf function
+>>> +		 * calls that can be made by a caller must be at most the
+>>> +		 * number of bpf instructions in that function
+>>> +		 */
+>>> +		callee =3D kzalloc(sizeof(func[i]) * flen, GFP_KERNEL);
+>>> +		if (!callee) {
+>>> +			err =3D -ENOMEM;
+>>> +			goto out_free;
+>>> +		}
+>>> +
+>>>  		insn =3D func[i]->insnsi;
+>>>  		for (j =3D 0; j < func[i]->len; j++, insn++) {
+>>>  			if (insn->code !=3D (BPF_JMP | BPF_CALL) ||
+>>> @@ -5292,6 +5305,26 @@ static int jit_subprogs(struct bpf_verifier_env =
+*env)
+>>>  			insn->imm =3D (u64 (*)(u64, u64, u64, u64, u64))
+>>>  				func[subprog]->bpf_func -
+>>>  				__bpf_call_base;
+>>> +
+>>> +			/* the offset to the callee from __bpf_call_base
+>>> +			 * may be larger than what the 32 bit integer imm
+>>> +			 * can accomodate which will truncate the higher
+>>> +			 * order bits
+>>> +			 *
+>>> +			 * to avoid this, we additionally utilize the aux
+>>> +			 * data of each caller function for storing the
+>>> +			 * addresses of every callee associated with it
+>>> +			 */
+>>> +			callee[callee_cnt++] =3D func[subprog];
+>>=20
+>> can you share typical /proc/kallsyms ?
+>> Are you saying that kernel and kernel modules are allocated from
+>> address spaces that are always more than 32-bit apart?
+>=20
+> Yes. On ppc64, kernel text is linearly mapped from 0xc000000000000000,=20
+> while vmalloc'ed area starts from 0xd000000000000000 (for radix, this is
+> different, but still beyond a 32-bit offset).
+>=20
+>> That would mean that all kernel calls into modules are far calls
+>> and the other way around form .ko into kernel?
+>> Performance is probably suffering because every call needs to be built
+>> with full 64-bit offset. No ?
+>=20
+> Possibly, and I think Michael can give a better perspective, but I think
+> this is due to our ABI. For inter-module calls, we need to setup the TOC
+> pointer (or the address of the function being called with ABIv2), which=20
+> would require us to load a full address regardless.
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thinking more about this, as an optimization, for bpf-to-bpf calls, we=20
+could detect a near call and just emit a relative branch since we don't=20
+care about TOC with BPF. But, this will depend on whether the different=20
+BPF functions are close enough (within 32MB) of one another.
+
+We can attempt that once the generic changes are finalized on.
+
+Thanks,
+Naveen
+
+=
