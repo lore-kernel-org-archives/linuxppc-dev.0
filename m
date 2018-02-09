@@ -1,21 +1,19 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-vk0-x231.google.com (mail-vk0-x231.google.com
- [IPv6:2607:f8b0:400c:c05::231])
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdD2L6yr2zF0gw
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 22:52:26 +1100 (AEDT)
-Received: by mail-vk0-x231.google.com with SMTP id t4so4654423vkb.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Feb 2018 03:52:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdDN36GL7zF0jG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Feb 2018 23:07:44 +1100 (AEDT)
+From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: linux-kernel@vger.kernel.org
+Cc: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
+ =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Subject: [PATCH v3 0/4] Nintendo Wii GPIO driver
+Date: Fri,  9 Feb 2018 13:07:27 +0100
+Message-Id: <20180209120732.17863-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 9 Feb 2018 12:52:03 +0100
-Message-ID: <CA+7wUswUir9cHEyvdT8vc+tvSxrcsoY8da+CpqG6kpc4oMj9Wg@mail.gmail.com>
-Subject: powerpc-linux-gnu-ld: cannot open linker script file
- arch/powerpc/boot/zImage.coff.lds: No such file or directory
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi there,
+v2: https://www.spinics.net/lists/devicetree/msg211283.html
 
-Is anyone using O= output directory option ?
+This series adds a driver for the GPIO controller used in the Nintendo
+Wii game console.
 
-It seems that git/master is failing:
+Previous versions of this series included a patch to kernel/resource.c
+("resource: Extend the PPC32 reserved memory hack") to work around a
+resource allocation problem on PPC32. In this version, I dropped this
+patch, because the problem will be solved differently and in a separate
+patchset.
 
-$ make O=ppc6xx ARCH=powerpc ppc6xx_defconfig
-$ make O=ppc6xx ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
-(...)
-Entry Point:  00b001e8
-  DTC     arch/powerpc/boot/asp834x-redboot.dtb
-  WRAP    arch/powerpc/boot/dtbImage.asp834x-redboot
-INFO: Uncompressed kernel (size 0xa51720) overlaps the address of the
-wrapper(0x400000)
-INFO: Fixing the link_address of wrapper to (0xb00000)
-  WRAP    arch/powerpc/boot/zImage.coff
-powerpc-linux-gnu-ld: cannot open linker script file
-arch/powerpc/boot/zImage.coff.lds: No such file or directory
-../arch/powerpc/boot/Makefile:375: recipe for target
-'arch/powerpc/boot/zImage.coff' failed
-make[2]: *** [arch/powerpc/boot/zImage.coff] Error 1
-rm arch/powerpc/boot/pq2fads.dtb arch/powerpc/boot/mpc836x_mds.dtb
-arch/powerpc/boot/mpc832x_mds.dtb arch/powerpc/boot/mpc832x_rdb.dtb
-arch/powerpc/boot/mpc834x_mds.dtb
-arch/powerpc/boot/asp834x-redboot.dtb arch/powerpc/boot/mpc8272ads.dtb
-arch/powerpc/boot/mpc8349emitx.dtb
-arch/powerpc/boot/mpc8349emitxgp.dtb arch/powerpc/boot/ep8248e.dtb
-arch/powerpc/Makefile:291: recipe for target 'zImage' failed
-make[1]: *** [zImage] Error 2
+I also dropped the dt-bindings patch, because Linus Walleij has already
+applied it.
+
+Jonathan Neuschäfer (4):
+  powerpc: wii: Explicitly configure GPIO owner for poweroff pin
+  gpio: Add GPIO driver for Nintendo Wii
+  powerpc: wii.dts: Add ngpios property
+  powerpc: wii.dts: Add GPIO line names
+
+ arch/powerpc/boot/dts/wii.dts            |   9 +++
+ arch/powerpc/platforms/embedded6xx/wii.c |   7 ++
+ drivers/gpio/Kconfig                     |   9 +++
+ drivers/gpio/Makefile                    |   1 +
+ drivers/gpio/gpio-hlwd.c                 | 115 +++++++++++++++++++++++++++++++
+ 5 files changed, 141 insertions(+)
+ create mode 100644 drivers/gpio/gpio-hlwd.c
+
+-- 
+2.15.1
