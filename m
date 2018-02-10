@@ -2,17 +2,20 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdsMn5LX9zF0hP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdsMn2l7czF0h6
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 23:54:37 +1100 (AEDT)
-Message-Id: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
+Message-Id: <4284868e2b1a4358427e4a5d2feaaff9abf277c5.1518226173.git.christophe.leroy@c-s.fr>
+In-Reply-To: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
+References: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 1/5] powerpc/mm/slice: Remove intermediate bitmap copy
+Subject: [PATCH v4 3/5] powerpc/mm/slice: Fix hugepage allocation at hint
+ address on 8xx
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Sat, 10 Feb 2018 13:54:25 +0100 (CET)
+Date: Sat, 10 Feb 2018 13:54:29 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,49 +25,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-bitmap_or() and bitmap_andnot() can work properly with dst identical
-to src1 or src2. There is no need of an intermediate result bitmap
-that is copied back to dst in a second step.
+On the 8xx, the page size is set in the PMD entry and applies to
+all pages of the page table pointed by the said PMD entry.
 
+When an app has some regular pages allocated (e.g. see below) and tries
+to mmap() a huge page at a hint address covered by the same PMD entry,
+the kernel accepts the hint allthough the 8xx cannot handle different
+page sizes in the same PMD entry.
+
+10000000-10001000 r-xp 00000000 00:0f 2597 /root/malloc
+10010000-10011000 rwxp 00000000 00:0f 2597 /root/malloc
+
+mmap(0x10080000, 524288, PROT_READ|PROT_WRITE,
+     MAP_PRIVATE|MAP_ANONYMOUS|0x40000, -1, 0) = 0x10080000
+
+This results the app remaining forever in do_page_fault()/hugetlb_fault()
+and when interrupting that app, we get the following warning:
+
+[162980.035629] WARNING: CPU: 0 PID: 2777 at arch/powerpc/mm/hugetlbpage.c:354 hugetlb_free_pgd_range+0xc8/0x1e4
+[162980.035699] CPU: 0 PID: 2777 Comm: malloc Tainted: G W       4.14.6 #85
+[162980.035744] task: c67e2c00 task.stack: c668e000
+[162980.035783] NIP:  c000fe18 LR: c00e1eec CTR: c00f90c0
+[162980.035830] REGS: c668fc20 TRAP: 0700   Tainted: G W        (4.14.6)
+[162980.035854] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24044224 XER: 20000000
+[162980.036003]
+[162980.036003] GPR00: c00e1eec c668fcd0 c67e2c00 00000010 c6869410 10080000 00000000 77fb4000
+[162980.036003] GPR08: ffff0001 0683c001 00000000 ffffff80 44028228 10018a34 00004008 418004fc
+[162980.036003] GPR16: c668e000 00040100 c668e000 c06c0000 c668fe78 c668e000 c6835ba0 c668fd48
+[162980.036003] GPR24: 00000000 73ffffff 74000000 00000001 77fb4000 100fffff 10100000 10100000
+[162980.036743] NIP [c000fe18] hugetlb_free_pgd_range+0xc8/0x1e4
+[162980.036839] LR [c00e1eec] free_pgtables+0x12c/0x150
+[162980.036861] Call Trace:
+[162980.036939] [c668fcd0] [c00f0774] unlink_anon_vmas+0x1c4/0x214 (unreliable)
+[162980.037040] [c668fd10] [c00e1eec] free_pgtables+0x12c/0x150
+[162980.037118] [c668fd40] [c00eabac] exit_mmap+0xe8/0x1b4
+[162980.037210] [c668fda0] [c0019710] mmput.part.9+0x20/0xd8
+[162980.037301] [c668fdb0] [c001ecb0] do_exit+0x1f0/0x93c
+[162980.037386] [c668fe00] [c001f478] do_group_exit+0x40/0xcc
+[162980.037479] [c668fe10] [c002a76c] get_signal+0x47c/0x614
+[162980.037570] [c668fe70] [c0007840] do_signal+0x54/0x244
+[162980.037654] [c668ff30] [c0007ae8] do_notify_resume+0x34/0x88
+[162980.037744] [c668ff40] [c000dae8] do_user_signal+0x74/0xc4
+[162980.037781] Instruction dump:
+[162980.037821] 7fdff378 81370000 54a3463a 80890020 7d24182e 7c841a14 712a0004 4082ff94
+[162980.038014] 2f890000 419e0010 712a0ff0 408200e0 <0fe00000> 54a9000a 7f984840 419d0094
+[162980.038216] ---[ end trace c0ceeca8e7a5800a ]---
+[162980.038754] BUG: non-zero nr_ptes on freeing mm: 1
+[162985.363322] BUG: non-zero nr_ptes on freeing mm: -1
+
+In order to fix this, this patch uses the address space "slices"
+implemented for BOOK3S/64 and enhanced to support PPC32 by the
+preceding patch.
+
+This patch modifies the context.id on the 8xx to be in the range
+[1:16] instead of [0:15] in order to identify context.id == 0 as
+not initialised contexts as done on BOOK3S
+
+This patch activates CONFIG_PPC_MM_SLICES when CONFIG_HUGETLB_PAGE is
+selected for the 8xx
+
+Alltough we could in theory have as many slices as PMD entries, the
+current slices implementation limits the number of low slices to 16.
+This limitation is not preventing us to fix the initial issue allthough
+it is suboptimal. It will be cured in a subsequent patch.
+
+Fixes: 4b91428699477 ("powerpc/8xx: Implement support of hugepages")
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- v2: New in v2
- v3: patch moved up front of the serie to avoid ephemeral slice_bitmap_copy() function in following patch
- v4: No change
+ v2: First patch of v1 serie split in two parts
+ v3: No changes
+ v4: No changes
 
- arch/powerpc/mm/slice.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/mmu-8xx.h     |  6 ++++++
+ arch/powerpc/kernel/setup-common.c     |  2 ++
+ arch/powerpc/mm/8xx_mmu.c              |  2 +-
+ arch/powerpc/mm/hugetlbpage.c          |  2 ++
+ arch/powerpc/mm/mmu_context_nohash.c   | 18 ++++++++++++++++--
+ arch/powerpc/platforms/Kconfig.cputype |  1 +
+ 6 files changed, 28 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 23ec2c5e3b78..98b53d48968f 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -388,21 +388,17 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index 2f806e329648..b324ab46d838 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -191,6 +191,12 @@ typedef struct {
+ 	unsigned int id;
+ 	unsigned int active;
+ 	unsigned long vdso_base;
++#ifdef CONFIG_PPC_MM_SLICES
++	u16 user_psize;		/* page size index */
++	u64 low_slices_psize;	/* page size encodings */
++	unsigned char high_slices_psize[0];
++	unsigned long slb_addr_limit;
++#endif
+ } mm_context_t;
  
- static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
- {
--	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
--
- 	dst->low_slices |= src->low_slices;
--	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
--	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
-+	bitmap_or(dst->high_slices, dst->high_slices, src->high_slices,
-+		  SLICE_NUM_HIGH);
+ #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index d73ec518ef80..a6002f9449b1 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -919,6 +919,8 @@ void __init setup_arch(char **cmdline_p)
+ #ifdef CONFIG_PPC64
+ 	if (!radix_enabled())
+ 		init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
++#elif defined(CONFIG_PPC_8xx)
++	init_mm.context.slb_addr_limit = DEFAULT_MAP_WINDOW;
+ #else
+ #error	"context.addr_limit not initialized."
+ #endif
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index 849f50cd62f2..cf77d755246d 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -192,7 +192,7 @@ void set_context(unsigned long id, pgd_t *pgd)
+ 	mtspr(SPRN_M_TW, __pa(pgd) - offset);
+ 
+ 	/* Update context */
+-	mtspr(SPRN_M_CASID, id);
++	mtspr(SPRN_M_CASID, id - 1);
+ 	/* sync */
+ 	mb();
  }
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 876da2bc1796..590be3fa0ce2 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -553,9 +553,11 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+ 	struct hstate *hstate = hstate_file(file);
+ 	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
  
- static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
- {
--	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
--
- 	dst->low_slices &= ~src->low_slices;
- 
--	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
--	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
-+	bitmap_andnot(dst->high_slices, dst->high_slices, src->high_slices,
-+		      SLICE_NUM_HIGH);
++#ifdef CONFIG_PPC_RADIX_MMU
+ 	if (radix_enabled())
+ 		return radix__hugetlb_get_unmapped_area(file, addr, len,
+ 						       pgoff, flags);
++#endif
+ 	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
  }
+ #endif
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 4554d6527682..d98f7e5c141b 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -331,6 +331,20 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
+ {
+ 	pr_hard("initing context for mm @%p\n", mm);
  
- #ifdef CONFIG_PPC_64K_PAGES
++#ifdef	CONFIG_PPC_MM_SLICES
++	if (!mm->context.slb_addr_limit)
++		mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
++
++	/*
++	 * We have MMU_NO_CONTEXT set to be ~0. Hence check
++	 * explicitly against context.id == 0. This ensures that we properly
++	 * initialize context slice details for newly allocated mm's (which will
++	 * have id == 0) and don't alter context slice inherited via fork (which
++	 * will have id != 0).
++	 */
++	if (mm->context.id == 0)
++		slice_set_user_psize(mm, mmu_virtual_psize);
++#endif
+ 	mm->context.id = MMU_NO_CONTEXT;
+ 	mm->context.active = 0;
+ 	return 0;
+@@ -428,8 +442,8 @@ void __init mmu_context_init(void)
+ 	 *      -- BenH
+ 	 */
+ 	if (mmu_has_feature(MMU_FTR_TYPE_8xx)) {
+-		first_context = 0;
+-		last_context = 15;
++		first_context = 1;
++		last_context = 16;
+ 		no_selective_tlbil = true;
+ 	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
+ 		first_context = 1;
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index a429d859f15d..5a8b1bf1e819 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -326,6 +326,7 @@ config PPC_BOOK3E_MMU
+ config PPC_MM_SLICES
+ 	bool
+ 	default y if PPC_BOOK3S_64
++	default y if PPC_8xx && HUGETLB_PAGE
+ 	default n
+ 
+ config PPC_HAVE_PMU_SUPPORT
 -- 
 2.13.3
