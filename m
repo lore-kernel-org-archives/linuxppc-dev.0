@@ -1,26 +1,19 @@
-Return-Path: <prvs=55796c978b=ast@fb.com>
-Received: from mx0a-00082601.pphosted.com (mx0b-00082601.pphosted.com
- [67.231.153.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdY2d5nhkzF0fk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:38:49 +1100 (AEDT)
-Subject: Re: [RFC][PATCH bpf 1/2] bpf: allow 64-bit offsets for bpf function
- calls
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, <daniel@iogearbox.net>,
- Sandipan Das <sandipan@linux.vnet.ibm.com>
-References: <20180208120306.2568-1-sandipan@linux.vnet.ibm.com>
- <4ce54c76-f8d5-e739-d9c2-e3318e398417@fb.com>
- <1518112079.b4po0pmm3v.naveen@linux.ibm.com>
- <1518194739.ublbsk69cm.naveen@linux.ibm.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
- <netdev@vger.kernel.org>
-From: Alexei Starovoitov <ast@fb.com>
-Message-ID: <5a552a19-5600-1fd4-57f2-6337127b75e9@fb.com>
-Date: Fri, 9 Feb 2018 16:38:11 -0800
+Return-Path: <mhairgrove@nvidia.com>
+Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdcmB2qj3zF0cY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 14:26:33 +1100 (AEDT)
+From: Mark Hairgrove <mhairgrove@nvidia.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: Alistair Popple <alistair@popple.id.au>, Mark Hairgrove
+ <mhairgrove@nvidia.com>
+Subject: [PATCH] powerpc/npu-dma.c: Fix crash after __mmu_notifier_register
+ failure
+Date: Fri, 9 Feb 2018 19:20:06 -0800
+Message-ID: <1518232806-17661-1-git-send-email-mhairgrove@nvidia.com>
 MIME-Version: 1.0
-In-Reply-To: <1518194739.ublbsk69cm.naveen@linux.ibm.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,95 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/9/18 8:54 AM, Naveen N. Rao wrote:
-> Naveen N. Rao wrote:
->> Alexei Starovoitov wrote:
->>> On 2/8/18 4:03 AM, Sandipan Das wrote:
->>>> The imm field of a bpf_insn is a signed 32-bit integer. For
->>>> JIT-ed bpf-to-bpf function calls, it stores the offset from
->>>> __bpf_call_base to the start of the callee function.
->>>>
->>>> For some architectures, such as powerpc64, it was found that
->>>> this offset may be as large as 64 bits because of which this
->>>> cannot be accomodated in the imm field without truncation.
->>>>
->>>> To resolve this, we additionally use the aux data within each
->>>> bpf_prog associated with the caller functions to store the
->>>> addresses of their respective callees.
->>>>
->>>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
->>>> ---
->>>>  kernel/bpf/verifier.c | 39 ++++++++++++++++++++++++++++++++++++++-
->>>>  1 file changed, 38 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
->>>> index 5fb69a85d967..52088b4ca02f 100644
->>>> --- a/kernel/bpf/verifier.c
->>>> +++ b/kernel/bpf/verifier.c
->>>> @@ -5282,6 +5282,19 @@ static int jit_subprogs(struct
->>>> bpf_verifier_env *env)
->>>>       * run last pass of JIT
->>>>       */
->>>>      for (i = 0; i <= env->subprog_cnt; i++) {
->>>> +        u32 flen = func[i]->len, callee_cnt = 0;
->>>> +        struct bpf_prog **callee;
->>>> +
->>>> +        /* for now assume that the maximum number of bpf function
->>>> +         * calls that can be made by a caller must be at most the
->>>> +         * number of bpf instructions in that function
->>>> +         */
->>>> +        callee = kzalloc(sizeof(func[i]) * flen, GFP_KERNEL);
->>>> +        if (!callee) {
->>>> +            err = -ENOMEM;
->>>> +            goto out_free;
->>>> +        }
->>>> +
->>>>          insn = func[i]->insnsi;
->>>>          for (j = 0; j < func[i]->len; j++, insn++) {
->>>>              if (insn->code != (BPF_JMP | BPF_CALL) ||
->>>> @@ -5292,6 +5305,26 @@ static int jit_subprogs(struct
->>>> bpf_verifier_env *env)
->>>>              insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
->>>>                  func[subprog]->bpf_func -
->>>>                  __bpf_call_base;
->>>> +
->>>> +            /* the offset to the callee from __bpf_call_base
->>>> +             * may be larger than what the 32 bit integer imm
->>>> +             * can accomodate which will truncate the higher
->>>> +             * order bits
->>>> +             *
->>>> +             * to avoid this, we additionally utilize the aux
->>>> +             * data of each caller function for storing the
->>>> +             * addresses of every callee associated with it
->>>> +             */
->>>> +            callee[callee_cnt++] = func[subprog];
->>>
->>> can you share typical /proc/kallsyms ?
->>> Are you saying that kernel and kernel modules are allocated from
->>> address spaces that are always more than 32-bit apart?
->>
->> Yes. On ppc64, kernel text is linearly mapped from 0xc000000000000000,
->> while vmalloc'ed area starts from 0xd000000000000000 (for radix, this is
->> different, but still beyond a 32-bit offset).
->>
->>> That would mean that all kernel calls into modules are far calls
->>> and the other way around form .ko into kernel?
->>> Performance is probably suffering because every call needs to be built
->>> with full 64-bit offset. No ?
->>
->> Possibly, and I think Michael can give a better perspective, but I think
->> this is due to our ABI. For inter-module calls, we need to setup the TOC
->> pointer (or the address of the function being called with ABIv2),
->> which would require us to load a full address regardless.
->
-> Thinking more about this, as an optimization, for bpf-to-bpf calls, we
-> could detect a near call and just emit a relative branch since we don't
-> care about TOC with BPF. But, this will depend on whether the different
-> BPF functions are close enough (within 32MB) of one another.
+pnv_npu2_init_context wasn't checking the return code from
+__mmu_notifier_register. If  __mmu_notifier_register failed, the
+npu_context was still assigned to the mm and the caller wasn't given any
+indication that things went wrong. Later on pnv_npu2_destroy_context would
+be called, which in turn called mmu_notifier_unregister and dropped
+mm->mm_count without having incremented it in the first place. This led to
+various forms of corruption like mm use-after-free and mm double-free.
 
-so that will be just an optimization. Understood.
-How about instead of doing callee = kzalloc(sizeof(func[i]) * flen..
-we keep  insn->off pointing to subprog and move
-prog->aux->func = func;
-before the last JIT pass.
-Then you won't need to alloc this extra array.
+__mmu_notifier_register can fail with EINTR if a signal is pending, so
+this case can be frequent.
+
+This patch calls opal_npu_destroy_context on the failure paths, and makes
+sure not to assign mm->context.npu_context until past the failure points.
+
+Signed-off-by: Mark Hairgrove <mhairgrove@nvidia.com>
+---
+ arch/powerpc/platforms/powernv/npu-dma.c |   32 +++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index f6cbc1a..48c73aa 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -677,6 +677,11 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 		/* No nvlink associated with this GPU device */
+ 		return ERR_PTR(-ENODEV);
+ 
++	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
++	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
++							&nvlink_index)))
++		return ERR_PTR(-ENODEV);
++
+ 	if (!mm || mm->context.id == 0) {
+ 		/*
+ 		 * Kernel thread contexts are not supported and context id 0 is
+@@ -704,25 +709,30 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	 */
+ 	npu_context = mm->context.npu_context;
+ 	if (!npu_context) {
++		rc = -ENOMEM;
+ 		npu_context = kzalloc(sizeof(struct npu_context), GFP_KERNEL);
+-		if (!npu_context)
+-			return ERR_PTR(-ENOMEM);
++		if (npu_context) {
++			kref_init(&npu_context->kref);
++			npu_context->mm = mm;
++			npu_context->mn.ops = &nv_nmmu_notifier_ops;
++			rc = __mmu_notifier_register(&npu_context->mn, mm);
++		}
++
++		if (rc) {
++			kfree(npu_context);
++			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
++					PCI_DEVID(gpdev->bus->number,
++						gpdev->devfn));
++			return ERR_PTR(rc);
++		}
+ 
+ 		mm->context.npu_context = npu_context;
+-		npu_context->mm = mm;
+-		npu_context->mn.ops = &nv_nmmu_notifier_ops;
+-		__mmu_notifier_register(&npu_context->mn, mm);
+-		kref_init(&npu_context->kref);
+ 	} else {
+-		kref_get(&npu_context->kref);
++		WARN_ON(!kref_get_unless_zero(&npu_context->kref));
+ 	}
+ 
+ 	npu_context->release_cb = cb;
+ 	npu_context->priv = priv;
+-	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+-	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+-							&nvlink_index)))
+-		return ERR_PTR(-ENODEV);
+ 	npu_context->npdev[npu->index][nvlink_index] = npdev;
+ 
+ 	if (!nphb->npu.nmmu_flush) {
+-- 
+1.7.2.5
