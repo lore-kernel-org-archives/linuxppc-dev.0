@@ -1,39 +1,37 @@
-Return-Path: <sandipan@linux.vnet.ibm.com>
+Return-Path: <linuxram@us.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdyJL6lcczF0cY
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 03:37:03 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdybh6j2hzF0fn
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 03:50:21 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1AGaU33135487
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:37:00 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g1uxubvnh-1
+ w1AGn0hn067477
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:50:19 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g1vx7arhb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:36:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:50:19 -0500
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Sat, 10 Feb 2018 16:36:57 -0000
-Subject: Re: [RFC][PATCH bpf 1/2] bpf: allow 64-bit offsets for bpf function
- calls
-To: Alexei Starovoitov <ast@fb.com>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, daniel@iogearbox.net,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, netdev@vger.kernel.org
-References: <20180208120306.2568-1-sandipan@linux.vnet.ibm.com>
- <4ce54c76-f8d5-e739-d9c2-e3318e398417@fb.com>
- <1518112079.b4po0pmm3v.naveen@linux.ibm.com>
- <1518194739.ublbsk69cm.naveen@linux.ibm.com>
- <5a552a19-5600-1fd4-57f2-6337127b75e9@fb.com>
-From: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Date: Sat, 10 Feb 2018 22:06:51 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sat, 10 Feb 2018 16:50:17 -0000
+Date: Sat, 10 Feb 2018 08:50:10 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/mm: Fix crashes with PUD level hugetlb config
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <20180208103442.22045-1-aneesh.kumar@linux.vnet.ibm.com>
+ <87r2pvfr5g.fsf@linux.vnet.ibm.com>
+ <87o9kxfa7d.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <5a552a19-5600-1fd4-57f2-6337127b75e9@fb.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <26259daa-3064-3c23-f0f9-7ebcdda4b61a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87o9kxfa7d.fsf@linux.vnet.ibm.com>
+Message-Id: <20180210165010.GC5559@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,105 +41,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 02/10/2018 06:08 AM, Alexei Starovoitov wrote:
-> On 2/9/18 8:54 AM, Naveen N. Rao wrote:
->> Naveen N. Rao wrote:
->>> Alexei Starovoitov wrote:
->>>> On 2/8/18 4:03 AM, Sandipan Das wrote:
->>>>> The imm field of a bpf_insn is a signed 32-bit integer. For
->>>>> JIT-ed bpf-to-bpf function calls, it stores the offset from
->>>>> __bpf_call_base to the start of the callee function.
->>>>>
->>>>> For some architectures, such as powerpc64, it was found that
->>>>> this offset may be as large as 64 bits because of which this
->>>>> cannot be accomodated in the imm field without truncation.
->>>>>
->>>>> To resolve this, we additionally use the aux data within each
->>>>> bpf_prog associated with the caller functions to store the
->>>>> addresses of their respective callees.
->>>>>
->>>>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
->>>>> ---
->>>>>  kernel/bpf/verifier.c | 39 ++++++++++++++++++++++++++++++++++++++-
->>>>>  1 file changed, 38 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
->>>>> index 5fb69a85d967..52088b4ca02f 100644
->>>>> --- a/kernel/bpf/verifier.c
->>>>> +++ b/kernel/bpf/verifier.c
->>>>> @@ -5282,6 +5282,19 @@ static int jit_subprogs(struct
->>>>> bpf_verifier_env *env)
->>>>>       * run last pass of JIT
->>>>>       */
->>>>>      for (i = 0; i <= env->subprog_cnt; i++) {
->>>>> +        u32 flen = func[i]->len, callee_cnt = 0;
->>>>> +        struct bpf_prog **callee;
->>>>> +
->>>>> +        /* for now assume that the maximum number of bpf function
->>>>> +         * calls that can be made by a caller must be at most the
->>>>> +         * number of bpf instructions in that function
->>>>> +         */
->>>>> +        callee = kzalloc(sizeof(func[i]) * flen, GFP_KERNEL);
->>>>> +        if (!callee) {
->>>>> +            err = -ENOMEM;
->>>>> +            goto out_free;
->>>>> +        }
->>>>> +
->>>>>          insn = func[i]->insnsi;
->>>>>          for (j = 0; j < func[i]->len; j++, insn++) {
->>>>>              if (insn->code != (BPF_JMP | BPF_CALL) ||
->>>>> @@ -5292,6 +5305,26 @@ static int jit_subprogs(struct
->>>>> bpf_verifier_env *env)
->>>>>              insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
->>>>>                  func[subprog]->bpf_func -
->>>>>                  __bpf_call_base;
->>>>> +
->>>>> +            /* the offset to the callee from __bpf_call_base
->>>>> +             * may be larger than what the 32 bit integer imm
->>>>> +             * can accomodate which will truncate the higher
->>>>> +             * order bits
->>>>> +             *
->>>>> +             * to avoid this, we additionally utilize the aux
->>>>> +             * data of each caller function for storing the
->>>>> +             * addresses of every callee associated with it
->>>>> +             */
->>>>> +            callee[callee_cnt++] = func[subprog];
->>>>
->>>> can you share typical /proc/kallsyms ?
->>>> Are you saying that kernel and kernel modules are allocated from
->>>> address spaces that are always more than 32-bit apart?
->>>
->>> Yes. On ppc64, kernel text is linearly mapped from 0xc000000000000000,
->>> while vmalloc'ed area starts from 0xd000000000000000 (for radix, this is
->>> different, but still beyond a 32-bit offset).
->>>
->>>> That would mean that all kernel calls into modules are far calls
->>>> and the other way around form .ko into kernel?
->>>> Performance is probably suffering because every call needs to be built
->>>> with full 64-bit offset. No ?
->>>
->>> Possibly, and I think Michael can give a better perspective, but I think
->>> this is due to our ABI. For inter-module calls, we need to setup the TOC
->>> pointer (or the address of the function being called with ABIv2),
->>> which would require us to load a full address regardless.
->>
->> Thinking more about this, as an optimization, for bpf-to-bpf calls, we
->> could detect a near call and just emit a relative branch since we don't
->> care about TOC with BPF. But, this will depend on whether the different
->> BPF functions are close enough (within 32MB) of one another.
+On Sat, Feb 10, 2018 at 03:17:02PM +0530, Aneesh Kumar K.V wrote:
+> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> writes:
 > 
-> so that will be just an optimization. Understood.
-> How about instead of doing callee = kzalloc(sizeof(func[i]) * flen..
-> we keep  insn->off pointing to subprog and move
-> prog->aux->func = func;
-> before the last JIT pass.
-> Then you won't need to alloc this extra array.
+> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> >
+> >> To support memory keys, we moved the hash pte slot information to the second
+> >> half of the page table. This was ok with PTE entries at level 4 and level 3.
+> >> We already allocate larger page table pages at those level to accomodate extra
+> >> details. For level 4 we already have the extra space which was used to track
+> >> 4k hash page table entry details and at pmd level the extra space was allocated
+> >> to track the THP details.
+> >>
+> >> With hugetlbfs PTE, we used this extra space at the PMD level to store the
+> >> slot details. But we also support hugetlbfs PTE at PUD leve and PUD level page
+> >> didn't allocate extra space. This resulted in memory corruption.
+> >>
+> >> Fix this by allocating extra space at PUD level when HUGETLB is enabled. We
+> >> may need further changes to allocate larger space at PMD level when we enable
+> >> HUGETLB. That will be done in next patch.
+> >>
+> >> Fixes:bf9a95f9a6481bc6e(" powerpc: Free up four 64K PTE bits in 64K backed HPTE pages")
+> >>
+> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> >
+> > Another fix, I still get random memory corruption with hugetlb test with
+> > 16G hugepage config.
 > 
+> Another one. I am not sure whether we really want this in this form. But
+> with this tests are running fine.
+> 
+> -aneesh
+> 
+> commit 658fe8c310a913e69e5bc9a40d4c28a3b88d5c08
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Sat Feb 10 13:17:34 2018 +0530
+> 
+>     powerpc/mm/hash64: memset the pagetable pages on allocation.
+>     
+>     Now that we are using second half of the table to store slot details and we
+>     don't clear them in the huge_pte_get_and_clear, we need to make sure we zero
+>     out the range on allocation. This done some extra work because the first half
+>     of the table is cleared by huge_pte_get_and_clear and memset in this patch
+>     zero-out the full table page.
+>     
+>     We need to do this for pgd and pud because both get allocated from the same slab
+>     cache.
 
-Agreed. Will make the necessary changes in v2.
+Do we need to zero pgd aswell to resolve your corruption? pud is not
+sufficient? Or was it done to avoid issues in the future in case pgd
+is used as the leaf; possibly for Terra_huge_pages?
 
---
-With Regards,
-Sandipan
+RP
