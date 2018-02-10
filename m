@@ -2,19 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdsMn2l9qzF0hH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdsMn5LX9zF0hP
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 23:54:37 +1100 (AEDT)
-Message-Id: <61813627b8aef562c425364c89fde863e77974c7.1518226173.git.christophe.leroy@c-s.fr>
-In-Reply-To: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
-References: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
+Message-Id: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 5/5] powerpc/8xx: Increase number of slices to 64
+Subject: [PATCH v4 1/5] powerpc/mm/slice: Remove intermediate bitmap copy
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Sat, 10 Feb 2018 13:54:33 +0100 (CET)
+Date: Sat, 10 Feb 2018 13:54:25 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the 8xx, the minimum slice size is the size of the area
-covered by a single PMD entry, ie 4M in 4K pages mode and 64M in
-16K pages mode.
-
-This patch increases the number of slices from 16 to 64 on the 8xx.
+bitmap_or() and bitmap_andnot() can work properly with dst identical
+to src1 or src2. There is no need of an intermediate result bitmap
+that is copied back to dst in a second step.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- v4: New
- 
- arch/powerpc/include/asm/nohash/32/slice.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ v2: New in v2
+ v3: patch moved up front of the serie to avoid ephemeral slice_bitmap_copy() function in following patch
+ v4: No change
 
-diff --git a/arch/powerpc/include/asm/nohash/32/slice.h b/arch/powerpc/include/asm/nohash/32/slice.h
-index bcb4924f7d22..3deaaea89473 100644
---- a/arch/powerpc/include/asm/nohash/32/slice.h
-+++ b/arch/powerpc/include/asm/nohash/32/slice.h
-@@ -4,7 +4,7 @@
+ arch/powerpc/mm/slice.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 23ec2c5e3b78..98b53d48968f 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -388,21 +388,17 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
  
- #ifdef CONFIG_PPC_MM_SLICES
+ static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
+ {
+-	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+-
+ 	dst->low_slices |= src->low_slices;
+-	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+-	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++	bitmap_or(dst->high_slices, dst->high_slices, src->high_slices,
++		  SLICE_NUM_HIGH);
+ }
  
--#define SLICE_LOW_SHIFT		28
-+#define SLICE_LOW_SHIFT		26	/* 64 slices */
- #define SLICE_LOW_TOP		(0x100000000ull)
- #define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
- #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+ static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
+ {
+-	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+-
+ 	dst->low_slices &= ~src->low_slices;
+ 
+-	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+-	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
++	bitmap_andnot(dst->high_slices, dst->high_slices, src->high_slices,
++		      SLICE_NUM_HIGH);
+ }
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
 -- 
 2.13.3
