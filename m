@@ -1,23 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sandipan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdw5Q5QlCzDqbd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 01:57:30 +1100 (AEDT)
-Subject: Re: [PATCH v4 1/5] powerpc/mm/slice: Remove intermediate bitmap copy
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
- <20180211004309.2eda56a3@roar.ozlabs.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <501bab56-c389-87c6-8d90-24b5b9fd5e67@c-s.fr>
-Date: Sat, 10 Feb 2018 15:57:25 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdyJL6lcczF0cY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 03:37:03 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1AGaU33135487
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:37:00 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g1uxubvnh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 11:36:59 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
+ Sat, 10 Feb 2018 16:36:57 -0000
+Subject: Re: [RFC][PATCH bpf 1/2] bpf: allow 64-bit offsets for bpf function
+ calls
+To: Alexei Starovoitov <ast@fb.com>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, daniel@iogearbox.net,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, netdev@vger.kernel.org
+References: <20180208120306.2568-1-sandipan@linux.vnet.ibm.com>
+ <4ce54c76-f8d5-e739-d9c2-e3318e398417@fb.com>
+ <1518112079.b4po0pmm3v.naveen@linux.ibm.com>
+ <1518194739.ublbsk69cm.naveen@linux.ibm.com>
+ <5a552a19-5600-1fd4-57f2-6337127b75e9@fb.com>
+From: Sandipan Das <sandipan@linux.vnet.ibm.com>
+Date: Sat, 10 Feb 2018 22:06:51 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180211004309.2eda56a3@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <5a552a19-5600-1fd4-57f2-6337127b75e9@fb.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <26259daa-3064-3c23-f0f9-7ebcdda4b61a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,74 +45,103 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 10/02/2018 à 15:43, Nicholas Piggin a écrit :
-> On Sat, 10 Feb 2018 13:54:25 +0100 (CET)
-> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> 
->> bitmap_or() and bitmap_andnot() can work properly with dst identical
->> to src1 or src2. There is no need of an intermediate result bitmap
->> that is copied back to dst in a second step.
-> 
-> Everyone seems to be working on the slice code all of a sudden. I
-> had the same change in my series I just posted, but I didn't notice
-> this one of yours earlier, and it's better split out, so this is
-> fine by me.
-
-Thanks,
-
-I had a quick look at your serie, it looks promising.
-
-The main purpose of mine is to allow the use of slies on the 8xx in 
-order to fix a hugepage related bug.
-
-Your serie is performance oriented and seems nice, indeed I should have 
-noticed that it was passing huge structures instead of pointers to 
-subfunctions. I will look at your serie more in details next week.
-
-Christophe
-
-
-> 
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> 
+On 02/10/2018 06:08 AM, Alexei Starovoitov wrote:
+> On 2/9/18 8:54 AM, Naveen N. Rao wrote:
+>> Naveen N. Rao wrote:
+>>> Alexei Starovoitov wrote:
+>>>> On 2/8/18 4:03 AM, Sandipan Das wrote:
+>>>>> The imm field of a bpf_insn is a signed 32-bit integer. For
+>>>>> JIT-ed bpf-to-bpf function calls, it stores the offset from
+>>>>> __bpf_call_base to the start of the callee function.
+>>>>>
+>>>>> For some architectures, such as powerpc64, it was found that
+>>>>> this offset may be as large as 64 bits because of which this
+>>>>> cannot be accomodated in the imm field without truncation.
+>>>>>
+>>>>> To resolve this, we additionally use the aux data within each
+>>>>> bpf_prog associated with the caller functions to store the
+>>>>> addresses of their respective callees.
+>>>>>
+>>>>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+>>>>> ---
+>>>>>  kernel/bpf/verifier.c | 39 ++++++++++++++++++++++++++++++++++++++-
+>>>>>  1 file changed, 38 insertions(+), 1 deletion(-)
+>>>>>
+>>>>> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+>>>>> index 5fb69a85d967..52088b4ca02f 100644
+>>>>> --- a/kernel/bpf/verifier.c
+>>>>> +++ b/kernel/bpf/verifier.c
+>>>>> @@ -5282,6 +5282,19 @@ static int jit_subprogs(struct
+>>>>> bpf_verifier_env *env)
+>>>>>       * run last pass of JIT
+>>>>>       */
+>>>>>      for (i = 0; i <= env->subprog_cnt; i++) {
+>>>>> +        u32 flen = func[i]->len, callee_cnt = 0;
+>>>>> +        struct bpf_prog **callee;
+>>>>> +
+>>>>> +        /* for now assume that the maximum number of bpf function
+>>>>> +         * calls that can be made by a caller must be at most the
+>>>>> +         * number of bpf instructions in that function
+>>>>> +         */
+>>>>> +        callee = kzalloc(sizeof(func[i]) * flen, GFP_KERNEL);
+>>>>> +        if (!callee) {
+>>>>> +            err = -ENOMEM;
+>>>>> +            goto out_free;
+>>>>> +        }
+>>>>> +
+>>>>>          insn = func[i]->insnsi;
+>>>>>          for (j = 0; j < func[i]->len; j++, insn++) {
+>>>>>              if (insn->code != (BPF_JMP | BPF_CALL) ||
+>>>>> @@ -5292,6 +5305,26 @@ static int jit_subprogs(struct
+>>>>> bpf_verifier_env *env)
+>>>>>              insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
+>>>>>                  func[subprog]->bpf_func -
+>>>>>                  __bpf_call_base;
+>>>>> +
+>>>>> +            /* the offset to the callee from __bpf_call_base
+>>>>> +             * may be larger than what the 32 bit integer imm
+>>>>> +             * can accomodate which will truncate the higher
+>>>>> +             * order bits
+>>>>> +             *
+>>>>> +             * to avoid this, we additionally utilize the aux
+>>>>> +             * data of each caller function for storing the
+>>>>> +             * addresses of every callee associated with it
+>>>>> +             */
+>>>>> +            callee[callee_cnt++] = func[subprog];
+>>>>
+>>>> can you share typical /proc/kallsyms ?
+>>>> Are you saying that kernel and kernel modules are allocated from
+>>>> address spaces that are always more than 32-bit apart?
+>>>
+>>> Yes. On ppc64, kernel text is linearly mapped from 0xc000000000000000,
+>>> while vmalloc'ed area starts from 0xd000000000000000 (for radix, this is
+>>> different, but still beyond a 32-bit offset).
+>>>
+>>>> That would mean that all kernel calls into modules are far calls
+>>>> and the other way around form .ko into kernel?
+>>>> Performance is probably suffering because every call needs to be built
+>>>> with full 64-bit offset. No ?
+>>>
+>>> Possibly, and I think Michael can give a better perspective, but I think
+>>> this is due to our ABI. For inter-module calls, we need to setup the TOC
+>>> pointer (or the address of the function being called with ABIv2),
+>>> which would require us to load a full address regardless.
 >>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>   v2: New in v2
->>   v3: patch moved up front of the serie to avoid ephemeral slice_bitmap_copy() function in following patch
->>   v4: No change
->>
->>   arch/powerpc/mm/slice.c | 12 ++++--------
->>   1 file changed, 4 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
->> index 23ec2c5e3b78..98b53d48968f 100644
->> --- a/arch/powerpc/mm/slice.c
->> +++ b/arch/powerpc/mm/slice.c
->> @@ -388,21 +388,17 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
->>   
->>   static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
->>   {
->> -	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
->> -
->>   	dst->low_slices |= src->low_slices;
->> -	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
->> -	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
->> +	bitmap_or(dst->high_slices, dst->high_slices, src->high_slices,
->> +		  SLICE_NUM_HIGH);
->>   }
->>   
->>   static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
->>   {
->> -	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
->> -
->>   	dst->low_slices &= ~src->low_slices;
->>   
->> -	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
->> -	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
->> +	bitmap_andnot(dst->high_slices, dst->high_slices, src->high_slices,
->> +		      SLICE_NUM_HIGH);
->>   }
->>   
->>   #ifdef CONFIG_PPC_64K_PAGES
+>> Thinking more about this, as an optimization, for bpf-to-bpf calls, we
+>> could detect a near call and just emit a relative branch since we don't
+>> care about TOC with BPF. But, this will depend on whether the different
+>> BPF functions are close enough (within 32MB) of one another.
+> 
+> so that will be just an optimization. Understood.
+> How about instead of doing callee = kzalloc(sizeof(func[i]) * flen..
+> we keep  insn->off pointing to subprog and move
+> prog->aux->func = func;
+> before the last JIT pass.
+> Then you won't need to alloc this extra array.
+> 
+
+Agreed. Will make the necessary changes in v2.
+
+--
+With Regards,
+Sandipan
