@@ -1,36 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdz7H3GqZzF0jl
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 04:14:18 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1AHEGHj052984
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 12:14:16 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g1tjb6duh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 12:14:16 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 10 Feb 2018 10:14:13 -0700
-Subject: Re: [PATCH 1/2] powerpc/mm: Fix crashes with PUD level hugetlb config
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-References: <20180208103442.22045-1-aneesh.kumar@linux.vnet.ibm.com>
- <87r2pvfr5g.fsf@linux.vnet.ibm.com> <87o9kxfa7d.fsf@linux.vnet.ibm.com>
- <20180210165010.GC5559@ram.oc3035372033.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Sat, 10 Feb 2018 22:44:01 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zf1wc1fZRzF0gK
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 06:20:15 +1100 (AEDT)
+Date: Sat, 10 Feb 2018 09:43:42 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: linux-pci@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1] PCI: Make PCI_SCAN_ALL_PCIE_DEVS work for Root as
+ well as Downstream Ports
+Message-ID: <20180210154342.GE206223@bhelgaas-glaptop.roam.corp.google.com>
+References: <20171202002710.17686.21340.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20171202191827.GB18780@bhelgaas-glaptop.roam.corp.google.com>
+ <33CA1586-051C-47F4-83CD-4A406FAE85F7@xenosoft.de>
 MIME-Version: 1.0
-In-Reply-To: <20180210165010.GC5559@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <91be190d-2162-5e02-b4c1-f03b3f3a44f2@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <33CA1586-051C-47F4-83CD-4A406FAE85F7@xenosoft.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,63 +27,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 02/10/2018 10:20 PM, Ram Pai wrote:
-> On Sat, Feb 10, 2018 at 03:17:02PM +0530, Aneesh Kumar K.V wrote:
->> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> writes:
->>
->>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->>>
->>>> To support memory keys, we moved the hash pte slot information to the second
->>>> half of the page table. This was ok with PTE entries at level 4 and level 3.
->>>> We already allocate larger page table pages at those level to accomodate extra
->>>> details. For level 4 we already have the extra space which was used to track
->>>> 4k hash page table entry details and at pmd level the extra space was allocated
->>>> to track the THP details.
->>>>
->>>> With hugetlbfs PTE, we used this extra space at the PMD level to store the
->>>> slot details. But we also support hugetlbfs PTE at PUD leve and PUD level page
->>>> didn't allocate extra space. This resulted in memory corruption.
->>>>
->>>> Fix this by allocating extra space at PUD level when HUGETLB is enabled. We
->>>> may need further changes to allocate larger space at PMD level when we enable
->>>> HUGETLB. That will be done in next patch.
->>>>
->>>> Fixes:bf9a95f9a6481bc6e(" powerpc: Free up four 64K PTE bits in 64K backed HPTE pages")
->>>>
->>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>>
->>> Another fix, I still get random memory corruption with hugetlb test with
->>> 16G hugepage config.
->>
->> Another one. I am not sure whether we really want this in this form. But
->> with this tests are running fine.
->>
->> -aneesh
->>
->> commit 658fe8c310a913e69e5bc9a40d4c28a3b88d5c08
->> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> Date:   Sat Feb 10 13:17:34 2018 +0530
->>
->>      powerpc/mm/hash64: memset the pagetable pages on allocation.
->>      
->>      Now that we are using second half of the table to store slot details and we
->>      don't clear them in the huge_pte_get_and_clear, we need to make sure we zero
->>      out the range on allocation. This done some extra work because the first half
->>      of the table is cleared by huge_pte_get_and_clear and memset in this patch
->>      zero-out the full table page.
->>      
->>      We need to do this for pgd and pud because both get allocated from the same slab
->>      cache.
+On Sat, Feb 10, 2018 at 09:05:40AM +0100, Christian Zigotzky wrote:
+> Hi All,
 > 
-> Do we need to zero pgd aswell to resolve your corruption? pud is not
-> sufficient? Or was it done to avoid issues in the future in case pgd
-> is used as the leaf; possibly for Terra_huge_pages?
+> The AmigaOne X1000 doesn’t boot anymore since the PCI updates. I
+> have seen, that the PCI updates are different to the updates below.
+> The code below works but the latest not. Is there a problem with the
+> latest PCI updates currently?
+
+I'm not aware of a problem, and it *looks* like the patch below is in
+Linus' tree (I'm looking at 9a61df9e5f74 ("Merge tag 'kbuild-v4.16-2'
+of git://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild")).
+
+I assume you're still booting with "pci=pcie_scan_all", since I don't
+think we ever got a quirk to set PCI_SCAN_ALL_PCIE_DEVS automatically.
+
+If AmigaOne X1000 doesn't boot with "pci=pcie_scan_all", can you diff
+the working only_one_child() with the current upstream?  I compared
+the version in my pci/enumeration branch with what's upstream, and
+they're identical.  So maybe the original patch I applied was wrong?
+
+If you have a patch that works, can you post it and maybe I can sort
+out what's different?
+
+> On 2. Dec 2017, at 20:18, Bjorn Helgaas <helgaas@kernel.org> wrote:
 > 
-
-it is the other way round, we need to zero-out pgd. pud zerout can be 
-optional because first half of the page table is always cleared in the 
-unmap path.
-
--aneesh
+> On Fri, Dec 01, 2017 at 06:27:10PM -0600, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> PCIe Downstream Ports normally have only a Device 0 below them.  To
+> optimize enumeration, we don't scan for other devices *unless* the
+> PCI_SCAN_ALL_PCIE_DEVS flag is set by set by quirks or the
+> "pci=pcie_scan_all" kernel parameter.
+> 
+> Previously PCI_SCAN_ALL_PCIE_DEVS only affected scanning below Switch
+> Downstream Ports, not Root Ports.
+> 
+> But the "Nemo" system, also known as the AmigaOne X1000, has a PA Semi Root
+> Port whose link leads to an AMD/ATI SB600 South Bridge.  The Root Port is a
+> PCIe device, of course, but the SB600 contains only conventional PCI
+> devices with no visible PCIe port.
+> 
+> Simplify and restructure only_one_child() so that we scan for all possible
+> devices below Root Ports as well as Switch Downstream Ports when
+> PCI_SCAN_ALL_PCIE_DEVS is set.
+> 
+> This is enough to make Nemo work with "pci=pcie_scan_all".  We would also
+> like to add a quirk to set PCI_SCAN_ALL_PCIE_DEVS automatically on Nemo so
+> users wouldn't have to use the "pci=pcie_scan_all" parameter, but we don't
+> have that yet.
+> 
+> Link: https://lkml.kernel.org/r/CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198057
+> Reported-and-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Applied to pci/enumeration for v4.16.
+> 
+> ---
+> drivers/pci/probe.c |   25 +++++++++++++++----------
+> 1 file changed, 15 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 14e0ea1ff38b..303c0cb0550c 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2215,22 +2215,27 @@ static unsigned next_fn(struct pci_bus *bus, struct pci_dev *dev, unsigned fn)
+> 
+> static int only_one_child(struct pci_bus *bus)
+> {
+> -    struct pci_dev *parent = bus->self;
+> +    struct pci_dev *bridge = bus->self;
+> 
+> -    if (!parent || !pci_is_pcie(parent))
+> +    /*
+> +     * Systems with unusual topologies set PCI_SCAN_ALL_PCIE_DEVS so
+> +     * we scan for all possible devices, not just Device 0.
+> +     */
+> +    if (pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
+>        return 0;
+> -    if (pci_pcie_type(parent) == PCI_EXP_TYPE_ROOT_PORT)
+> -        return 1;
+> 
+>    /*
+> -     * PCIe downstream ports are bridges that normally lead to only a
+> -     * device 0, but if PCI_SCAN_ALL_PCIE_DEVS is set, scan all
+> -     * possible devices, not just device 0.  See PCIe spec r3.0,
+> -     * sec 7.3.1.
+> +     * A PCIe Downstream Port normally leads to a Link with only Device
+> +     * 0 on it (PCIe spec r3.1, sec 7.3.1).  As an optimization, scan
+> +     * only for Device 0 in that situation.
+> +     *
+> +     * Checking has_secondary_link is a hack to identify Downstream
+> +     * Ports because sometimes Switches are configured such that the
+> +     * PCIe Port Type labels are backwards.
+>     */
+> -    if (parent->has_secondary_link &&
+> -        !pci_has_flag(PCI_SCAN_ALL_PCIE_DEVS))
+> +    if (bridge && pci_is_pcie(bridge) && bridge->has_secondary_link)
+>        return 1;
+> +
+>    return 0;
+> }
+> 
