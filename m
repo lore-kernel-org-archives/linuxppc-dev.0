@@ -3,30 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdplx4pQBzF0gg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 21:57:01 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zdpm10fsbzF0gJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 21:57:04 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1AAsBgH052410
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 05:56:59 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g1x5jspyu-1
+ w1AArsjG111807
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 05:57:02 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g1uxu4sfw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 05:56:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 05:57:01 -0500
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 10 Feb 2018 05:56:58 -0500
+ Sat, 10 Feb 2018 05:57:00 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH 2/5] powerpc/mm/slice: Update documentation in the file.
-Date: Sat, 10 Feb 2018 16:26:40 +0530
+Subject: [RFC PATCH 3/5] powerpc/mm/slice: Reduce the stack usage in
+ slice_get_unmapped_area
+Date: Sat, 10 Feb 2018 16:26:41 +0530
 In-Reply-To: <20180210105643.11857-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20180210105643.11857-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180210105643.11857-3-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20180210105643.11857-4-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,77 +37,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will make code changes in the next patch. To make the review easier split
-the documentation update in to a seperate patch.
+This patch kill potential_mask and compat_mask variable and instead use tmp_mask
+so that we can reduce the stack usage. This is required so that we can increase
+the high_slices bitmap to a larger value.
+
+The patch does result in extra computation in final stage, where it ends up
+recomputing the compat mask again.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/slice.c | 27 +++++++++++++++++++--------
- 1 file changed, 19 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/slice.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
 diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 98b53d48968f..259bbda9a222 100644
+index 259bbda9a222..832c681c341a 100644
 --- a/arch/powerpc/mm/slice.c
 +++ b/arch/powerpc/mm/slice.c
-@@ -478,7 +478,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	 * already
- 	 */
- 	slice_mask_for_size(mm, psize, &good_mask, high_limit);
--	slice_print_mask(" good_mask", good_mask);
-+	slice_print_mask("Mask for page size", good_mask);
+@@ -413,8 +413,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ {
+ 	struct slice_mask mask;
+ 	struct slice_mask good_mask;
+-	struct slice_mask potential_mask;
+-	struct slice_mask compat_mask;
++	struct slice_mask tmp_mask;
+ 	int fixed = (flags & MAP_FIXED);
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+ 	unsigned long page_size = 1UL << pshift;
+@@ -449,11 +448,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
  
- 	/*
- 	 * Here "good" means slices that are already the right page size,
-@@ -507,15 +507,17 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 			slice_or_mask(&good_mask, &compat_mask);
+ 	/* silence stupid warning */;
+-	potential_mask.low_slices = 0;
+-	bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
+-
+-	compat_mask.low_slices = 0;
+-	bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
++	tmp_mask.low_slices = 0;
++	bitmap_zero(tmp_mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	/* Sanity checks */
+ 	BUG_ON(mm->task_size == 0);
+@@ -502,9 +498,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	/* If we support combo pages, we can allow 64k pages in 4k slices */
+ 	if (psize == MMU_PAGE_64K) {
+-		slice_mask_for_size(mm, MMU_PAGE_4K, &compat_mask, high_limit);
++		slice_mask_for_size(mm, MMU_PAGE_4K, &tmp_mask, high_limit);
+ 		if (fixed)
+-			slice_or_mask(&good_mask, &compat_mask);
++			slice_or_mask(&good_mask, &tmp_mask);
++
++		slice_print_mask("Mask for compat page size", tmp_mask);
  	}
  #endif
--
  	/* First check hint if it's valid or if we have MAP_FIXED */
- 	if (addr != 0 || fixed) {
--		/* Build a mask for the requested range */
-+		/*
-+		 * Build a mask for the requested range
-+		 */
- 		slice_range_to_mask(addr, len, &mask);
--		slice_print_mask(" mask", mask);
-+		slice_print_mask("Request range mask", mask);
- 
--		/* Check if we fit in the good mask. If we do, we just return,
--		 * nothing else to do
-+		/*
-+		 * Check if we fit in the good mask. If we do, we just
-+		 * return, nothing else to do
- 		 */
- 		if (slice_check_fit(mm, mask, good_mask)) {
- 			slice_dbg(" fits good !\n");
-@@ -553,8 +555,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 		return -EBUSY;
- 
- 	slice_dbg(" search...\n");
--
--	/* If we had a hint that didn't work out, see if we can fit
-+	/*
-+	 * If we had a hint that didn't work out, see if we can fit
- 	 * anywhere in the good area.
+@@ -541,11 +539,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	 * We don't fit in the good mask, check what other slices are
+ 	 * empty and thus can be converted
  	 */
- 	if (addr) {
-@@ -573,7 +575,16 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+-	slice_mask_for_free(mm, &potential_mask, high_limit);
+-	slice_or_mask(&potential_mask, &good_mask);
+-	slice_print_mask(" potential", potential_mask);
++	slice_mask_for_free(mm, &tmp_mask, high_limit);
++	slice_or_mask(&tmp_mask, &good_mask);
++	slice_print_mask("Free area/potential ", tmp_mask);
+ 
+-	if ((addr != 0 || fixed) && slice_check_fit(mm, mask, potential_mask)) {
++	if ((addr != 0 || fixed) && slice_check_fit(mm, mask, tmp_mask)) {
+ 		slice_dbg(" fits potential !\n");
+ 		goto convert;
+ 	}
+@@ -571,7 +569,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	/* Now let's see if we can find something in the existing slices
+ 	 * for that size plus free slices
+ 	 */
+-	addr = slice_find_area(mm, len, potential_mask,
++	addr = slice_find_area(mm, len, tmp_mask,
  			       psize, topdown, high_limit);
  
  #ifdef CONFIG_PPC_64K_PAGES
-+	/*
-+	 * If we didn't request for fixed mapping, we never looked at
-+	 * compat area. Now that we are not finding space, let's look
-+	 * at the 4K slice also.
-+	 */
- 	if (addr == -ENOMEM && psize == MMU_PAGE_64K) {
-+		/*
-+		 * mask variable is free here. Use that for compat
-+		 * size mask.
-+		 */
+@@ -585,9 +583,10 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 		 * mask variable is free here. Use that for compat
+ 		 * size mask.
+ 		 */
++		slice_mask_for_size(mm, MMU_PAGE_4K, &mask, high_limit);
  		/* retry the search with 4k-page slices included */
- 		slice_or_mask(&potential_mask, &compat_mask);
- 		addr = slice_find_area(mm, len, potential_mask,
+-		slice_or_mask(&potential_mask, &compat_mask);
+-		addr = slice_find_area(mm, len, potential_mask,
++		slice_or_mask(&tmp_mask, &mask);
++		addr = slice_find_area(mm, len, tmp_mask,
+ 				       psize, topdown, high_limit);
+ 	}
+ #endif
+@@ -600,8 +599,9 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	slice_print_mask(" mask", mask);
+ 
+  convert:
++	slice_mask_for_size(mm, MMU_PAGE_4K, &tmp_mask, high_limit);
+ 	slice_andnot_mask(&mask, &good_mask);
+-	slice_andnot_mask(&mask, &compat_mask);
++	slice_andnot_mask(&mask, &tmp_mask);
+ 	if (mask.low_slices || !bitmap_empty(mask.high_slices, SLICE_NUM_HIGH)) {
+ 		slice_convert(mm, mask, psize);
+ 		if (psize > MMU_PAGE_BASE)
 -- 
 2.14.3
