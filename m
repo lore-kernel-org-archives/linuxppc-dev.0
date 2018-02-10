@@ -1,19 +1,38 @@
-Return-Path: <mhairgrove@nvidia.com>
-Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zdcmB2qj3zF0cY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 14:26:33 +1100 (AEDT)
-From: Mark Hairgrove <mhairgrove@nvidia.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: Alistair Popple <alistair@popple.id.au>, Mark Hairgrove
- <mhairgrove@nvidia.com>
-Subject: [PATCH] powerpc/npu-dma.c: Fix crash after __mmu_notifier_register
- failure
-Date: Fri, 9 Feb 2018 19:20:06 -0800
-Message-ID: <1518232806-17661-1-git-send-email-mhairgrove@nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <srs0=bna+=fe=linux.vnet.ibm.com=sukadev@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zddGn3dMpzF0Zd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 14:49:37 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zddGn1fswz8vqJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Feb 2018 14:49:37 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zddGm523tz9s72
+ for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2018 14:49:36 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1A3mfCZ041834
+ for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2018 22:49:34 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g1j06cr3a-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 09 Feb 2018 22:49:34 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 9 Feb 2018 22:49:33 -0500
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, <linux-kernel@vger.kernel.org>
+Subject: [PATCH RESEND 1/4] powerpc/vas: Fix order of cleanup in debugfs dir
+Date: Fri,  9 Feb 2018 19:49:24 -0800
+Message-Id: <1518234567-24869-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,82 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pnv_npu2_init_context wasn't checking the return code from
-__mmu_notifier_register. If  __mmu_notifier_register failed, the
-npu_context was still assigned to the mm and the caller wasn't given any
-indication that things went wrong. Later on pnv_npu2_destroy_context would
-be called, which in turn called mmu_notifier_unregister and dropped
-mm->mm_count without having incremented it in the first place. This led to
-various forms of corruption like mm use-after-free and mm double-free.
+Fix the order of cleanup to ensure we free the name buffer in case
+of an error creating 'hvwc' or 'info' files.
 
-__mmu_notifier_register can fail with EINTR if a signal is pending, so
-this case can be frequent.
-
-This patch calls opal_npu_destroy_context on the failure paths, and makes
-sure not to assign mm->context.npu_context until past the failure points.
-
-Signed-off-by: Mark Hairgrove <mhairgrove@nvidia.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c |   32 +++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/powernv/vas-debug.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index f6cbc1a..48c73aa 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -677,6 +677,11 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 		/* No nvlink associated with this GPU device */
- 		return ERR_PTR(-ENODEV);
+diff --git a/arch/powerpc/platforms/powernv/vas-debug.c b/arch/powerpc/platforms/powernv/vas-debug.c
+index ca22f1e..b4de4c6 100644
+--- a/arch/powerpc/platforms/powernv/vas-debug.c
++++ b/arch/powerpc/platforms/powernv/vas-debug.c
+@@ -166,13 +166,13 @@ void vas_window_init_dbgdir(struct vas_window *window)
  
-+	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
-+	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
-+							&nvlink_index)))
-+		return ERR_PTR(-ENODEV);
+ 	return;
+ 
+-free_name:
+-	kfree(window->dbgname);
+-	window->dbgname = NULL;
+-
+ remove_dir:
+ 	debugfs_remove_recursive(window->dbgdir);
+ 	window->dbgdir = NULL;
 +
- 	if (!mm || mm->context.id == 0) {
- 		/*
- 		 * Kernel thread contexts are not supported and context id 0 is
-@@ -704,25 +709,30 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 	 */
- 	npu_context = mm->context.npu_context;
- 	if (!npu_context) {
-+		rc = -ENOMEM;
- 		npu_context = kzalloc(sizeof(struct npu_context), GFP_KERNEL);
--		if (!npu_context)
--			return ERR_PTR(-ENOMEM);
-+		if (npu_context) {
-+			kref_init(&npu_context->kref);
-+			npu_context->mm = mm;
-+			npu_context->mn.ops = &nv_nmmu_notifier_ops;
-+			rc = __mmu_notifier_register(&npu_context->mn, mm);
-+		}
-+
-+		if (rc) {
-+			kfree(npu_context);
-+			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
-+					PCI_DEVID(gpdev->bus->number,
-+						gpdev->devfn));
-+			return ERR_PTR(rc);
-+		}
++free_name:
++	kfree(window->dbgname);
++	window->dbgname = NULL;
+ }
  
- 		mm->context.npu_context = npu_context;
--		npu_context->mm = mm;
--		npu_context->mn.ops = &nv_nmmu_notifier_ops;
--		__mmu_notifier_register(&npu_context->mn, mm);
--		kref_init(&npu_context->kref);
- 	} else {
--		kref_get(&npu_context->kref);
-+		WARN_ON(!kref_get_unless_zero(&npu_context->kref));
- 	}
- 
- 	npu_context->release_cb = cb;
- 	npu_context->priv = priv;
--	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
--	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
--							&nvlink_index)))
--		return ERR_PTR(-ENODEV);
- 	npu_context->npdev[npu->index][nvlink_index] = npdev;
- 
- 	if (!nphb->npu.nmmu_flush) {
+ void vas_instance_init_dbgdir(struct vas_instance *vinst)
 -- 
-1.7.2.5
+2.7.4
