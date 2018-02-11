@@ -1,37 +1,28 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zfkJ52ljGzF0fB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 09:39:32 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1BMd7Ba045425
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 17:39:31 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g2engmkgt-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 17:39:30 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sun, 11 Feb 2018 22:39:28 -0000
-Date: Sun, 11 Feb 2018 14:39:07 -0800
-From: Ram Pai <linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zflX13pyMzDqYv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 10:34:57 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id t4so5270136pgp.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 15:34:57 -0800 (PST)
+Date: Mon, 12 Feb 2018 09:34:35 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 3/4] powerpc/mm/hash64: Store the slot information at
- the right offset.
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180211150009.21297-1-aneesh.kumar@linux.vnet.ibm.com>
- <20180211150009.21297-3-aneesh.kumar@linux.vnet.ibm.com>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 2/5] powerpc/mm/slice: Enhance for supporting PPC32
+Message-ID: <20180212093435.20200712@roar.ozlabs.ibm.com>
+In-Reply-To: <ba493b6c-c61a-5097-e896-5ae3f0128b3a@linux.vnet.ibm.com>
+References: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
+ <0ac518636ae1e601ea0732dd69b48dcd0f347285.1518226173.git.christophe.leroy@c-s.fr>
+ <20180211235944.14c2be39@roar.ozlabs.ibm.com>
+ <ba493b6c-c61a-5097-e896-5ae3f0128b3a@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180211150009.21297-3-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180211223907.GF5559@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,52 +32,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 11, 2018 at 08:30:08PM +0530, Aneesh Kumar K.V wrote:
-> The hugetlb pte entries are at the PMD and PUD level. Use the right offset
-> for them to get the second half of the table.
+On Sun, 11 Feb 2018 21:04:42 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+
+> On 02/11/2018 07:29 PM, Nicholas Piggin wrote:
+> > On Sat, 10 Feb 2018 13:54:27 +0100 (CET)
+> > Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+> >   
+> >> In preparation for the following patch which will fix an issue on
+> >> the 8xx by re-using the 'slices', this patch enhances the
+> >> 'slices' implementation to support 32 bits CPUs.
+> >>
+> >> On PPC32, the address space is limited to 4Gbytes, hence only the low
+> >> slices will be used.
+> >>
+> >> This patch moves "slices" functions prototypes from page64.h to slice.h
+> >>
+> >> The high slices use bitmaps. As bitmap functions are not prepared to
+> >> handling bitmaps of size 0, the bitmap_xxx() calls are wrapped into
+> >> slice_bitmap_xxx() functions which will void on PPC32  
+> > 
+> > On this last point, I think it would be better to put these with the
+> > existing slice bitmap functions in slice.c and just have a few #ifdefs
+> > for SLICE_NUM_HIGH == 0.
+> >   
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/hash-4k.h  |  3 ++-
->  arch/powerpc/include/asm/book3s/64/hash-64k.h |  9 +++++----
->  arch/powerpc/include/asm/book3s/64/pgtable.h  |  2 +-
->  arch/powerpc/mm/hash64_4k.c                   |  4 ++--
->  arch/powerpc/mm/hash64_64k.c                  |  8 ++++----
->  arch/powerpc/mm/hugetlbpage-hash64.c          | 10 +++++++---
->  arch/powerpc/mm/tlb_hash64.c                  |  9 +++++++--
->  7 files changed, 28 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> index 949d691094a4..67c5475311ee 100644
-> diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+> We went back and forth with that. IMHO, we should avoid as much #ifdef 
+> as possible across platforms. It helps to understand the platform 
+> restrictions better as we have less and less access to these platforms. 
+> The above change indicates that nohash 32 wants to use the slice code 
+> and they have different restrictions. With that we now know that 
+> book3s64 and nohash 32 are the two different configs using slice code.
 
-....snip...
+I don't think it's the right place to put it. It's not platform dependent
+so much as it just depends on whether or not you have 0 high slices as
+a workaround for bitmap API not accepting 0 length.
 
-> index 881ebd53ffc2..9b23f12e863c 100644
-> --- a/arch/powerpc/mm/tlb_hash64.c
-> +++ b/arch/powerpc/mm/tlb_hash64.c
-> @@ -51,7 +51,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
->  	unsigned int psize;
->  	int ssize;
->  	real_pte_t rpte;
-> -	int i;
-> +	int i, offset;
-> 
->  	i = batch->index;
-> 
-> @@ -67,6 +67,10 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
->  		psize = get_slice_psize(mm, addr);
->  		/* Mask the address for the correct page size */
->  		addr &= ~((1UL << mmu_psize_defs[psize].shift) - 1);
-> +		if (unlikely(psize == MMU_PAGE_16G))
-> +			offset = PTRS_PER_PUD;
-> +		else
-> +			offset = PTRS_PER_PMD;
+Another platform that uses the slice code would just have to copy and
+paste either the nop or the bitmap implementation depending if it has
+high slices. So I don't think it's the right abstraction. And it
+implies a bitmap operation but it very specifically only works for
+struct slice_mask.high_slices bitmap, which is not clear. Better to
+just work with struct slice_mask.
 
-I prefer to encapsulate this under some function/macro; somewhere in hugetlb.h, which returns
-the offset given a mmu_size.  But no big deal..
+Some ifdefs inside .c code for small helper functions like this IMO isn't
+really a big deal -- it's not worse than having it in headers. You just
+want to avoid ifdef mess when looking at non-trivial logic.
 
+static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
+{
+    dst->low_slices |= src->low_slices;
+#if SLICE_NUM_HIGH > 0
+    bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
+#endif
+}
 
-Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+I think that's pretty fine. If you have a singular hatred for ifdef in .c,
+then if() works just as well.
 
-RP
+Thanks,
+Nick
