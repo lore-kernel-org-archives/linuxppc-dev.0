@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zfX6c4PvSzF0gl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 02:00:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zfX6h2QT5zF0gg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 02:00:44 +1100 (AEDT)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1BEwgd8071856
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 10:00:38 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g2exvkrkc-1
+ w1BEwgOZ071867
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 10:00:42 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g2exvkrmy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 10:00:37 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 10:00:41 -0500
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 11 Feb 2018 08:00:37 -0700
+ Sun, 11 Feb 2018 08:00:41 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Ram Pai <linuxram@us.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 3/4] powerpc/mm/hash64: Store the slot information at the
- right offset.
-Date: Sun, 11 Feb 2018 20:30:08 +0530
+Subject: [PATCH V2 4/4] powerpc/mm/hash64: memset the pagetable pages on
+ allocation.
+Date: Sun, 11 Feb 2018 20:30:09 +0530
 In-Reply-To: <20180211150009.21297-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20180211150009.21297-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180211150009.21297-3-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20180211150009.21297-4-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,219 +38,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hugetlb pte entries are at the PMD and PUD level. Use the right offset
-for them to get the second half of the table.
+Now that we are using second half of the table to store slot details and we
+don't clear them in the huge_pte_get_and_clear, we need to make sure we zero
+out the range on allocation.
+
+Simplify this by calling the object initialization after kmem_cache_alloc and
+update the constructor do nothing.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |  3 ++-
- arch/powerpc/include/asm/book3s/64/hash-64k.h |  9 +++++----
- arch/powerpc/include/asm/book3s/64/pgtable.h  |  2 +-
- arch/powerpc/mm/hash64_4k.c                   |  4 ++--
- arch/powerpc/mm/hash64_64k.c                  |  8 ++++----
- arch/powerpc/mm/hugetlbpage-hash64.c          | 10 +++++++---
- arch/powerpc/mm/tlb_hash64.c                  |  9 +++++++--
- 7 files changed, 28 insertions(+), 17 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 16 +++++++++++++
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 34 +++++++++++++++++++++++-----
+ arch/powerpc/include/asm/nohash/pgalloc.h    | 16 +++++++++++++
+ arch/powerpc/mm/init-common.c                | 15 ------------
+ 4 files changed, 60 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 949d691094a4..67c5475311ee 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -63,7 +63,8 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
-  * keeping the prototype consistent across the two formats.
-  */
- static inline unsigned long pte_set_hidx(pte_t *ptep, real_pte_t rpte,
--			unsigned int subpg_index, unsigned long hidx)
-+					 unsigned int subpg_index, unsigned long hidx,
-+					 int offset)
- {
- 	return (hidx << H_PAGE_F_GIX_SHIFT) &
- 		(H_PAGE_F_SECOND | H_PAGE_F_GIX);
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index ee440fb3d240..3bcf269f8f55 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -45,7 +45,7 @@
-  * generic accessors and iterators here
-  */
- #define __real_pte __real_pte
--static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
-+static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep, int offset)
- {
- 	real_pte_t rpte;
- 	unsigned long *hidxp;
-@@ -59,7 +59,7 @@ static inline real_pte_t __real_pte(pte_t pte, pte_t *ptep)
- 	 */
- 	smp_rmb();
- 
--	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-+	hidxp = (unsigned long *)(ptep + offset);
- 	rpte.hidx = *hidxp;
- 	return rpte;
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 5073cc75f1c8..9f5c411bce1b 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -139,4 +139,20 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 	pgtable_page_dtor(table);
+ 	pgtable_free_tlb(tlb, page_address(table), 0);
  }
-@@ -86,9 +86,10 @@ static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
-  * expected to modify the PTE bits accordingly and commit the PTE to memory.
-  */
- static inline unsigned long pte_set_hidx(pte_t *ptep, real_pte_t rpte,
--		unsigned int subpg_index, unsigned long hidx)
-+					 unsigned int subpg_index,
-+					 unsigned long hidx, int offset)
++
++static inline void pgd_ctor(void *addr)
++{
++	memset(addr, 0, PGD_TABLE_SIZE);
++}
++
++static inline void pud_ctor(void *addr)
++{
++	memset(addr, 0, PUD_TABLE_SIZE);
++}
++
++static inline void pmd_ctor(void *addr)
++{
++	memset(addr, 0, PMD_TABLE_SIZE);
++}
++
+ #endif /* _ASM_POWERPC_BOOK3S_32_PGALLOC_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index 53df86d3cfce..d6ee7563b09d 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -73,10 +73,13 @@ static inline void radix__pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ 
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
  {
--	unsigned long *hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
-+	unsigned long *hidxp = (unsigned long *)(ptep + offset);
++	pgd_t *pgd;
+ 	if (radix_enabled())
+ 		return radix__pgd_alloc(mm);
+-	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+-		pgtable_gfp_flags(mm, GFP_KERNEL));
++	pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
++			       pgtable_gfp_flags(mm, GFP_KERNEL));
++	memset(pgd, 0, PGD_TABLE_SIZE);
++	return pgd;
+ }
  
- 	rpte.hidx &= ~HIDX_BITS(0xfUL, subpg_index);
- 	*hidxp = rpte.hidx  | HIDX_BITS(HIDX_SHIFT_BY_ONE(hidx), subpg_index);
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 1c8c88e90553..a6b9f1d74600 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -350,7 +350,7 @@ extern unsigned long pci_io_base;
-  */
- #ifndef __real_pte
+ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+@@ -93,8 +96,11 @@ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
  
--#define __real_pte(e,p)		((real_pte_t){(e)})
-+#define __real_pte(e, p, o)		((real_pte_t){(e)})
- #define __rpte_to_pte(r)	((r).pte)
- #define __rpte_to_hidx(r,index)	(pte_val(__rpte_to_pte(r)) >> H_PAGE_F_GIX_SHIFT)
+ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return kmem_cache_alloc(PGT_CACHE(PUD_CACHE_INDEX),
+-		pgtable_gfp_flags(mm, GFP_KERNEL));
++	pud_t *pud;
++	pud = kmem_cache_alloc(PGT_CACHE(PUD_CACHE_INDEX),
++			       pgtable_gfp_flags(mm, GFP_KERNEL));
++	memset(pud, 0, PUD_TABLE_SIZE);
++	return pud;
+ }
  
-diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 5a69b51d08a3..d573d7d07f25 100644
---- a/arch/powerpc/mm/hash64_4k.c
-+++ b/arch/powerpc/mm/hash64_4k.c
-@@ -55,7 +55,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * need to add in 0x1 if it's a read-only user page
- 	 */
- 	rflags = htab_convert_pte_flags(new_pte);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
+ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
+@@ -120,8 +126,12 @@ static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
  
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -117,7 +117,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return -1;
- 		}
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
--		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
-+		new_pte |= pte_set_hidx(ptep, rpte, 0, slot, PTRS_PER_PTE);
- 	}
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 2253bbc6a599..e601d95c3b20 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -86,7 +86,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
+-		pgtable_gfp_flags(mm, GFP_KERNEL));
++	pmd_t *pmd;
++	pmd = kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
++			       pgtable_gfp_flags(mm, GFP_KERNEL));
++	memset(pmd, 0, PMD_TABLE_SIZE);
++	return pmd;
++
+ }
  
- 	subpg_index = (ea & (PAGE_SIZE - 1)) >> shift;
- 	vpn  = hpt_vpn(ea, vsid, ssize);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 	/*
- 	 *None of the sub 4k page is hashed
- 	 */
-@@ -214,7 +214,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		return -1;
- 	}
+ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+@@ -218,4 +228,16 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
  
--	new_pte |= pte_set_hidx(ptep, rpte, subpg_index, slot);
-+	new_pte |= pte_set_hidx(ptep, rpte, subpg_index, slot, PTRS_PER_PTE);
- 	new_pte |= H_PAGE_HASHPTE;
+ #define check_pgt_cache()	do { } while (0)
  
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
-@@ -262,7 +262,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -327,7 +327,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 		}
- 
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | H_PAGE_HASHPTE;
--		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
-+		new_pte |= pte_set_hidx(ptep, rpte, 0, slot, PTRS_PER_PTE);
- 	}
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 12511f5a015f..b320f5097a06 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -27,7 +27,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	unsigned long vpn;
- 	unsigned long old_pte, new_pte;
- 	unsigned long rflags, pa, sz;
--	long slot;
-+	long slot, offset;
- 
- 	BUG_ON(shift != mmu_psize_defs[mmu_psize].shift);
- 
-@@ -63,7 +63,11 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	} while(!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
--	rpte = __real_pte(__pte(old_pte), ptep);
-+	if (unlikely(mmu_psize == MMU_PAGE_16G))
-+		offset = PTRS_PER_PUD;
-+	else
-+		offset = PTRS_PER_PMD;
-+	rpte = __real_pte(__pte(old_pte), ptep, offset);
- 
- 	sz = ((1UL) << shift);
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-@@ -104,7 +108,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 			return -1;
- 		}
- 
--		new_pte |= pte_set_hidx(ptep, rpte, 0, slot);
-+		new_pte |= pte_set_hidx(ptep, rpte, 0, slot, offset);
- 	}
- 
- 	/*
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 881ebd53ffc2..9b23f12e863c 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -51,7 +51,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 	unsigned int psize;
- 	int ssize;
- 	real_pte_t rpte;
--	int i;
-+	int i, offset;
- 
- 	i = batch->index;
- 
-@@ -67,6 +67,10 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		psize = get_slice_psize(mm, addr);
- 		/* Mask the address for the correct page size */
- 		addr &= ~((1UL << mmu_psize_defs[psize].shift) - 1);
-+		if (unlikely(psize == MMU_PAGE_16G))
-+			offset = PTRS_PER_PUD;
-+		else
-+			offset = PTRS_PER_PMD;
++static inline void pgd_ctor(void *addr)
++{
++}
++
++static inline void pud_ctor(void *addr)
++{
++}
++
++static inline void pmd_ctor(void *addr)
++{
++}
++
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGALLOC_H */
+diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
+index 0634f2949438..df3be548ff97 100644
+--- a/arch/powerpc/include/asm/nohash/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/pgalloc.h
+@@ -21,4 +21,20 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
  #else
- 		BUG();
- 		psize = pte_pagesize_index(mm, addr, pte); /* shutup gcc */
-@@ -78,6 +82,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		 * support 64k pages, this might be different from the
- 		 * hardware page size encoded in the slice table. */
- 		addr &= PAGE_MASK;
-+		offset = PTRS_PER_PTE;
- 	}
+ #include <asm/nohash/32/pgalloc.h>
+ #endif
++
++static inline void pgd_ctor(void *addr)
++{
++	memset(addr, 0, PGD_TABLE_SIZE);
++}
++
++static inline void pud_ctor(void *addr)
++{
++	memset(addr, 0, PUD_TABLE_SIZE);
++}
++
++static inline void pmd_ctor(void *addr)
++{
++	memset(addr, 0, PMD_TABLE_SIZE);
++}
++
+ #endif /* _ASM_POWERPC_NOHASH_PGALLOC_H */
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 2b656e67f2ea..f92dd8cee3c5 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -25,21 +25,6 @@
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
  
+-static void pgd_ctor(void *addr)
+-{
+-	memset(addr, 0, PGD_TABLE_SIZE);
+-}
+-
+-static void pud_ctor(void *addr)
+-{
+-	memset(addr, 0, PUD_TABLE_SIZE);
+-}
+-
+-static void pmd_ctor(void *addr)
+-{
+-	memset(addr, 0, PMD_TABLE_SIZE);
+-}
+-
+ struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
+ EXPORT_SYMBOL_GPL(pgtable_cache);	/* used by kvm_hv module */
  
-@@ -91,7 +96,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 	}
- 	WARN_ON(vsid == 0);
- 	vpn = hpt_vpn(addr, vsid, ssize);
--	rpte = __real_pte(__pte(pte), ptep);
-+	rpte = __real_pte(__pte(pte), ptep, offset);
- 
- 	/*
- 	 * Check if we have an active batch on this CPU. If not, just
 -- 
 2.14.3
