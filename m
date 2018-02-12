@@ -1,27 +1,24 @@
-Return-Path: <jhogan@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgCc9536ZzF0TG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 04:40:09 +1100 (AEDT)
-Date: Mon, 12 Feb 2018 12:54:22 +0000
-From: James Hogan <jhogan@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Jose Ricardo Ziviani <joserz@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Rob Gardner <rob.gardner@oracle.com>,
- sparclinux <sparclinux@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- adi-buildroot-devel@lists.sourceforge.net
-Subject: Re: Build regressions/improvements in v4.16-rc1
-Message-ID: <20180212125421.GA4290@saruman>
-References: <1518430656-21669-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdW5qRH93CMyRL-gbWgiA_rnizErbjNtSMT5b3d58N3ZTQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
-In-Reply-To: <CAMuHMdW5qRH93CMyRL-gbWgiA_rnizErbjNtSMT5b3d58N3ZTQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgHzp3XVtzF0pJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:57:23 +1100 (AEDT)
+Content-Type: multipart/alternative;
+ boundary=Apple-Mail-C7289CCF-7238-46B5-84F1-2AB59EE99B5B
+Mime-Version: 1.0 (1.0)
+Subject: Re: KVM compile error
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <84E200BC-4202-4BAD-85C2-C8ED6E464FCC@xenosoft.de>
+Date: Mon, 12 Feb 2018 21:57:15 +0100
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Message-Id: <33C704AA-9276-4600-94D9-B5403423AE14@xenosoft.de>
+References: <064C3590-DCF8-4764-B0A4-B49310F1AF89@xenosoft.de>
+ <874lmmwjmc.fsf@concordia.ellerman.id.au>
+ <84E200BC-4202-4BAD-85C2-C8ED6E464FCC@xenosoft.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,69 +29,115 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+--Apple-Mail-C7289CCF-7238-46B5-84F1-2AB59EE99B5B
+Content-Type: text/plain;
+	charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 12, 2018 at 11:28:32AM +0100, Geert Uytterhoeven wrote:
-> On Mon, Feb 12, 2018 at 11:17 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > Below is the list of build error/warning regressions/improvements in
-> > v4.16-rc1[1] compared to v4.15[2].
-> >
-> > Summarized:
-> >   - build errors: +13/-5
-> >   - build warnings: +1653/-1537
-> >
-> > Note that there may be false regressions, as some logs are incomplete.
-> > Still, they're build errors/warnings.
-> >
-> > Happy fixing! ;-)
-> >
-> > Thanks to the linux-next team for providing the build service.
-> >
-> > [1] http://kisskb.ellerman.id.au/kisskb/head/7928b2cbe55b2a410a0f5c1f15=
-4610059c57b1b2/ (all 273 configs)
-> > [2] http://kisskb.ellerman.id.au/kisskb/head/d8a5b80568a9cb66810e75b182=
-018e9edb68e8ff/ (271 out of 273 configs)
-> >
-> >
-> > *** ERRORS ***
-=2E..
-> >   + /home/kisskb/slave/src/drivers/net/ethernet/intel/i40e/i40e_ethtool=
-=2Ec: error: implicit declaration of function 'cmpxchg64' [-Werror=3Dimplic=
-it-function-declaration]:  =3D> 4443:6, 4443:2
+Hello Michael,
+
+I compiled the RC1 of kernel 4.16 today. Unfortunately the issue with KVM st=
+ill exists.
+I get the error 'label out defined but not used' (see error messages below).=
+
+
+Link to the rc1 kernel config without KVM: http://www.xenosoft.de/cyrus-4.16=
+-rc1.config
+
+Link to the git kernel config with KVM: http://www.xenosoft.de/cyrus-4.16-al=
+pha10.config
+
+Thanks,
+Christian
+
+Sent from my iPhone
+
+> On 12. Feb 2018, at 13:04, Christian Zigotzky <chzigotzky@xenosoft.de> wro=
+te:
 >=20
-> mips{,el}-allmodconfig
+> It=E2=80=98s only an info. I tried to compile the latest git version yeste=
+rday and I got this error. I will try to compile the RC1 today and test if t=
+his error still exists.
+>=20
+> Cheers,
+> Christian
+>=20
+> Sent from my iPhone
+>=20
+>> On 12. Feb 2018, at 12:08, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>=20
+>> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+>>=20
+>>> Just for info: KVM doesn=E2=80=99t compile currently.
+>>>=20
+>>> Error messages:
+>>>=20
+>>> CC      arch/powerpc/kvm/powerpc.o
+>>> arch/powerpc/kvm/powerpc.c: In function 'kvm_arch_vcpu_ioctl_run':
+>>> arch/powerpc/kvm/powerpc.c:1611:1: error: label 'out' defined but not us=
+ed [-Werror=3Dunused-label]
+>>> out:
+>>> ^
+>>> cc1: all warnings being treated as errors
+>>=20
+>> I don't see this, which compiler/config/commit is that?
+>>=20
+>> cheers
+>=20
 
-FYI I reported this here:
-https://lkml.kernel.org/r/20180207150907.GB5092@saruman
+--Apple-Mail-C7289CCF-7238-46B5-84F1-2AB59EE99B5B
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-but I haven't seen any action on it yet.
+<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
+utf-8"></head><body dir=3D"auto">Hello Michael,<div><br></div><div>I compile=
+d the RC1 of kernel 4.16 today.&nbsp;<span style=3D"background-color: rgba(2=
+55, 255, 255, 0);">Unfortunately the issue with KVM still exists.</span></di=
+v><div><span style=3D"background-color: rgba(255, 255, 255, 0);">I get the e=
+rror&nbsp;'label out defined but not used' (see error messages below).</span=
+></div><div><br></div><div><span style=3D"background-color: rgba(255, 255, 2=
+55, 0);">Link to the rc1&nbsp;kernel config without KVM:&nbsp;</span><a href=
+=3D"http://www.xenosoft.de/cyrus-4.16-rc1.config">http://www.xenosoft.de/cyr=
+us-4.16-rc1.config</a></div><div><br></div><div><span style=3D"background-co=
+lor: rgba(255, 255, 255, 0);">Link to the git&nbsp;kernel config with KVM:&n=
+bsp;</span><a href=3D"http://www.xenosoft.de/cyrus-4.16-alpha10.config">http=
+://www.xenosoft.de/cyrus-4.16-alpha10.config</a></div><div><br></div><div>Th=
+anks,</div><div>Christian<br><br><div id=3D"AppleMailSignature">Sent from my=
+ iPhone</div><div><br>On 12. Feb 2018, at 13:04, Christian Zigotzky &lt;<a h=
+ref=3D"mailto:chzigotzky@xenosoft.de">chzigotzky@xenosoft.de</a>&gt; wrote:<=
+br><br></div><blockquote type=3D"cite"><div><span>It=E2=80=98s only an info.=
+ I tried to compile the latest git version yesterday and I got this error. I=
+ will try to compile the RC1 today and test if this error still exists.</spa=
+n><br><span></span><br><span>Cheers,</span><br><span>Christian</span><br><sp=
+an></span><br><span>Sent from my iPhone</span><br><span></span><br><blockquo=
+te type=3D"cite"><span>On 12. Feb 2018, at 12:08, Michael Ellerman &lt;<a hr=
+ef=3D"mailto:mpe@ellerman.id.au">mpe@ellerman.id.au</a>&gt; wrote:</span><br=
+></blockquote><blockquote type=3D"cite"><span></span><br></blockquote><block=
+quote type=3D"cite"><span>Christian Zigotzky &lt;<a href=3D"mailto:chzigotzk=
+y@xenosoft.de">chzigotzky@xenosoft.de</a>&gt; writes:</span><br></blockquote=
+><blockquote type=3D"cite"><span></span><br></blockquote><blockquote type=3D=
+"cite"><blockquote type=3D"cite"><span>Just for info: KVM doesn=E2=80=99t co=
+mpile currently.</span><br></blockquote></blockquote><blockquote type=3D"cit=
+e"><blockquote type=3D"cite"><span></span><br></blockquote></blockquote><blo=
+ckquote type=3D"cite"><blockquote type=3D"cite"><span>Error messages:</span>=
+<br></blockquote></blockquote><blockquote type=3D"cite"><blockquote type=3D"=
+cite"><span></span><br></blockquote></blockquote><blockquote type=3D"cite"><=
+blockquote type=3D"cite"><span>CC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arch/powerpc=
+/kvm/powerpc.o</span><br></blockquote></blockquote><blockquote type=3D"cite"=
+><blockquote type=3D"cite"><span>arch/powerpc/kvm/powerpc.c: In function 'kv=
+m_arch_vcpu_ioctl_run':</span><br></blockquote></blockquote><blockquote type=
+=3D"cite"><blockquote type=3D"cite"><span>arch/powerpc/kvm/powerpc.c:1611:1:=
+ error: label 'out' defined but not used [-Werror=3Dunused-label]</span><br>=
+</blockquote></blockquote><blockquote type=3D"cite"><blockquote type=3D"cite=
+"><span>out:</span><br></blockquote></blockquote><blockquote type=3D"cite"><=
+blockquote type=3D"cite"><span>^</span><br></blockquote></blockquote><blockq=
+uote type=3D"cite"><blockquote type=3D"cite"><span>cc1: all warnings being t=
+reated as errors</span><br></blockquote></blockquote><blockquote type=3D"cit=
+e"><span></span><br></blockquote><blockquote type=3D"cite"><span>I don't see=
+ this, which compiler/config/commit is that?</span><br></blockquote><blockqu=
+ote type=3D"cite"><span></span><br></blockquote><blockquote type=3D"cite"><s=
+pan>cheers</span><br></blockquote><span></span><br></div></blockquote></div>=
+</body></html>=
 
-Cheers
-James
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAlqBjncACgkQbAtpk944
-dnrzRA/8C7zFp+hDGfaEMTJvchN1s/KPNhINmM6xqiQkuWMAkYrRx/kGiscsIdtc
-8CGG+u0oFl+yuTI/MY/FQi5MZQ78M2WyXMPTJsvaAHjvtFG3DYGFeDVXRVfGrB6Q
-UvcoERC20bv9ihLy9tI9tR3Mf5OvTsUvjOvN9Cp2tPiOlfTjqWSuqm9UDU9fQ3Y+
-rUkIoUOWOBZKNNdnmYopFEXyH831NM2VzZrLVYT+rkskOptk40chwbMuRt4dN8Rw
-lvYzl+b1Guj6F4tY/fbGQ/VRXOLz1/hWI4mCg/0RIZwBQHuel1sTi2Mjp/PoQsBD
-H7pAQVAkVVR+uu2K0B9dIxj1Dvp98RA3BEU4OHDIYs540BDpI4vd8h29urXhjMNq
-g6BiathgvxPH+fhK8VLDtUwa6CN+tf9h19NHgTFakyj5VJuSl86bcciueq4L7dYv
-fBzxlCfZqfMT6qwV0ifqG8Z+fP6T8+cXBV2bzNnHq0fXLVGvsch0pA/AcoL0PgvD
-MuNpC3fuaZLs9L1z2PM7dSuqU5nUoQBVzUDRNCkMUqGS8tlMgI1Au73zR2SQnvFR
-GsALvr8+eF/EHr1Ona6l9gpn1IDZOnVYi6eUu3kXpRv/+sel19+avnxC9JCMRm6q
-MOvtWqDkU1IY1XnLAAN/8q96FKYTn+ZzfeQu5i/D8r73SjGp1Vo=
-=8KE3
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
+--Apple-Mail-C7289CCF-7238-46B5-84F1-2AB59EE99B5B--
