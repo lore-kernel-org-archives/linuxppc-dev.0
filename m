@@ -1,41 +1,20 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zg6cG1jlWzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 00:54:53 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1CDrmTC024081
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 08:54:51 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g38yxfxj0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 08:54:51 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 12 Feb 2018 13:54:49 -0000
-Subject: Re: [PATCH 2/3] cxl: Introduce module parameter 'enable_psltrace'
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- christophe lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-References: <20180209042535.16845-1-vaibhav@linux.vnet.ibm.com>
- <20180209042535.16845-3-vaibhav@linux.vnet.ibm.com>
- <a3880a5d-6ccb-9a90-14e5-d48376e4c8e0@linux.vnet.ibm.com>
- <87a7wf4flx.fsf@vajain21.in.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 12 Feb 2018 14:54:45 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zg86K2Jk9zF0m2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 02:02:32 +1100 (AEDT)
+Subject: Re: [RFC PATCH 0/5] powerpc/mm/slice: improve slice speed and stack
+ use
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <20180210081139.27236-1-npiggin@gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <e2043d70-97a7-b914-f279-4aad76b9bf91@c-s.fr>
+Date: Mon, 12 Feb 2018 16:02:23 +0100
 MIME-Version: 1.0
-In-Reply-To: <87a7wf4flx.fsf@vajain21.in.ibm.com>
+In-Reply-To: <20180210081139.27236-1-npiggin@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <51364d03-d7a5-471b-2531-cf4c17af8c8d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,38 +26,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 11/02/2018 à 18:10, Vaibhav Jain a écrit :
-> Thanks for reviewing the patch Christophe,
+Le 10/02/2018 à 09:11, Nicholas Piggin a écrit :
+> This series intends to improve performance and reduce stack
+> consumption in the slice allocation code. It does it by keeping slice
+> masks in the mm_context rather than compute them for each allocation,
+> and by reducing bitmaps and slice_masks from stacks, using pointers
+> instead where possible.
 > 
-> christophe lombard <clombard@linux.vnet.ibm.com> writes:
->>> +bool cxl_enable_psltrace = true;
->>> +module_param_named(enable_psltrace, cxl_enable_psltrace, bool, 0600);
->>> +MODULE_PARM_DESC(enable_psltrace, "Set PSL traces on probe. default: on");
->>> +
->> I am not too agree to add a new parameter. This can cause doubts.
->> PSL team has confirmed that enabling traces has no impact.
->> Do you see any reason to disable the traces ?
+> checkstack.pl gives, before:
+> 0x00000de4 slice_get_unmapped_area [slice.o]:           656
+> 0x00001b4c is_hugepage_only_range [slice.o]:            512
+> 0x0000075c slice_find_area_topdown [slice.o]:           416
+> 0x000004c8 slice_find_area_bottomup.isra.1 [slice.o]:   272
+> 0x00001aa0 slice_set_range_psize [slice.o]:             240
+> 0x00000a64 slice_find_area [slice.o]:                   176
+> 0x00000174 slice_check_fit [slice.o]:                   112
 > 
-> Traces on PSL follow a 'set and fetch' model. So once the trace buffer for
-> a specific array is full it will stop and switch to 'FIN' state and at
-> that point we need to fetch the trace-data and reinit the array to
-> re-arm it.
-
-If the PSL trace arrays don't wrap, is there anything to gain by 
-enabling tracing by default instead of letting the developer handle it 
-through sysfs? I was under the (now wrong) impression that the PSL would 
-wrap.
-I'm not a big fan of the module parameter. It seems we're giving a 
-second way of activating traces on top of sysfs, more cumbersome and 
-limited.
-
-   Fred
-
-> There might be some circumstances where this model may lead to confusion
-> specifically when AFU developers assume that the trace arrays are
-> already armed and dont re-arm it causing miss of trace data.
+> after:
+> 0x00000d70 slice_get_unmapped_area [slice.o]:           320
+> 0x000008f8 slice_find_area [slice.o]:                   144
+> 0x00001860 slice_set_range_psize [slice.o]:             144
+> 0x000018ec is_hugepage_only_range [slice.o]:            144
+> 0x00000750 slice_find_area_bottomup.isra.4 [slice.o]:   128
 > 
-> So this module param is a compromise to keep the old behaviour of traces
-> array intact where in the arming/disarming of the trace arrays is
-> controlled completely by userspace tooling and not by cxl.
+> The benchmark in https://github.com/linuxppc/linux/issues/49 gives, before:
+> $ time ./slicemask
+> real	0m20.712s
+> user	0m5.830s
+> sys	0m15.105s
+> 
+> after:
+> $ time ./slicemask
+> real	0m13.197s
+> user	0m5.409s
+> sys	0m7.779s
+
+Hi,
+
+I tested your serie on an 8xx, on top of patch 
+https://patchwork.ozlabs.org/patch/871675/
+
+I don't get a result as significant as yours, but there is some 
+improvment anyway:
+
+ITERATION 500000
+
+Before:
+
+root@vgoip:~# time ./slicemask
+real    0m 33.26s
+user    0m 1.94s
+sys     0m 30.85s
+
+After:
+root@vgoip:~# time ./slicemask
+real    0m 29.69s
+user    0m 2.11s
+sys     0m 27.15s
+
+Most significant improvment is obtained with the first patch of your serie:
+root@vgoip:~# time ./slicemask
+real    0m 30.85s
+user    0m 1.80s
+sys     0m 28.57s
+
+Had to modify your serie a bit, if you are interested I can post it.
+
+Christophe
+
+
+> 
+> Thanks,
+> Nick
+> 
+> Nicholas Piggin (5):
+>    powerpc/mm/slice: pass pointers to struct slice_mask where possible
+>    powerpc/mm/slice: implement a slice mask cache
+>    powerpc/mm/slice: implement slice_check_range_fits
+>    powerpc/mm/slice: Use const pointers to cached slice masks where
+>      possible
+>    powerpc/mm/slice: use the dynamic high slice size to limit bitmap
+>      operations
+> 
+>   arch/powerpc/include/asm/book3s/64/mmu.h |  20 +-
+>   arch/powerpc/mm/slice.c                  | 302 +++++++++++++++++++------------
+>   2 files changed, 204 insertions(+), 118 deletions(-)
 > 
