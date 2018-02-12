@@ -1,25 +1,34 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <richard@nod.at>
+Received: from lilium.sigma-star.at (lilium.sigma-star.at [109.75.188.150])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgKRS4BK5zF0q8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 09:03:00 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id m19so721057pls.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 14:03:00 -0800 (PST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: broonie@kernel.org,
-	timur@tabi.org
-Cc: caleb@crome.org, mail@maciej.szmigiero.name, fabio.estevam@nxp.com,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
- arnaud.mouiche@invoxia.com, lukma@denx.de, kernel@pengutronix.de
-Subject: [PATCH v6 17/17] ASoC: fsl_ssi: Use ssi->streams instead of reading
- register
-Date: Mon, 12 Feb 2018 14:03:25 -0800
-Message-Id: <1518473005-14090-18-git-send-email-nicoleotsuka@gmail.com>
-In-Reply-To: <1518473005-14090-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1518473005-14090-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgKSm2F6kzF0sV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 09:04:08 +1100 (AEDT)
+From: Richard Weinberger <richard@nod.at>
+To: Boris Brezillon <boris.brezillon@bootlin.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Marek Vasut <marek.vasut@gmail.com>,
+ Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>, linux-mtd@lists.infradead.org,
+ Joern Engel <joern@lazybastard.org>, Robert Jarzmik <robert.jarzmik@free.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Artem Bityutskiy <dedekind1@gmail.com>,
+ Solarflare linux maintainers <linux-net-drivers@solarflare.com>,
+ Edward Cree <ecree@solarflare.com>, Bert Kenward <bkenward@solarflare.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, devel@driverdev.osuosl.org,
+ Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH 4/5] mtd: Unconditionally update ->fail_addr and ->addr in
+ part_erase()
+Date: Mon, 12 Feb 2018 23:05:19 +0100
+Message-ID: <1548497.hsdsyCj9Tz@blindfold>
+In-Reply-To: <20180212210311.23244-5-boris.brezillon@bootlin.com>
+References: <20180212210311.23244-1-boris.brezillon@bootlin.com>
+ <20180212210311.23244-5-boris.brezillon@bootlin.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since ssi->streams is being updated along with SCR register and
-its SSIEN bit, it's simpler to use it instead.
+Am Montag, 12. Februar 2018, 22:03:10 CET schrieb Boris Brezillon:
+> ->fail_addr and ->addr can be updated no matter the result of
+> parent->_erase(), we just need to remove the code doing the same thing
+> in mtd_erase_callback() to avoid adjusting those fields twice.
+> 
+> Note that this can be done because all MTD users have been converted to
+> not pass an erase_info->callback() and are thus only taking the
+> ->addr_fail and ->addr fields into account after part_erase() has
+> returned.
+> 
+> While we're at it, get rid of the erase_info->mtd field which was only
+> needed to let mtd_erase_callback() get the partition device back.
+> 
+> Signed-off-by: Boris Brezillon <boris.brezillon@bootlin.com>
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Tested-by: Caleb Crome <caleb@crome.org>
-Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
----
- sound/soc/fsl/fsl_ssi.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+Reviewed-by: Richard Weinberger <richard@nod.at>
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 5bc67ad..0823b08 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -803,11 +803,6 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	unsigned int sample_size = params_width(hw_params);
- 	u32 wl = SSI_SxCCR_WL(sample_size);
- 	int ret;
--	u32 scr;
--	int enabled;
--
--	regmap_read(regs, REG_SSI_SCR, &scr);
--	enabled = scr & SSI_SCR_SSIEN;
- 
- 	/*
- 	 * SSI is properly configured if it is enabled and running in
-@@ -815,7 +810,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	 * that should set separate configurations for STCCR and SRCCR
- 	 * despite running in the synchronous mode.
- 	 */
--	if (enabled && ssi->synchronous)
-+	if (ssi->streams && ssi->synchronous)
- 		return 0;
- 
- 	if (fsl_ssi_is_i2s_master(ssi)) {
--- 
-2.1.4
+Thanks,
+//richard
