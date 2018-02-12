@@ -1,23 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zfs9q113TzF0js
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 14:49:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zfvGb4cSpzF0Wk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 16:23:51 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh@kernel.org>,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH kernel v3] powerpc/pci: Fix broken INTx configuration via
- OF
-In-Reply-To: <20180210205118.GG206223@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180209062358.33457-1-aik@ozlabs.ru>
- <20180209180741.GB206223@bhelgaas-glaptop.roam.corp.google.com>
- <20180210205118.GG206223@bhelgaas-glaptop.roam.corp.google.com>
-Date: Mon, 12 Feb 2018 14:49:32 +1100
-Message-ID: <87k1vix3xv.fsf@concordia.ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] powerpc/vas: Fix cleanup when VAS is not configured
+In-Reply-To: <1518234567-24869-2-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1518234567-24869-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1518234567-24869-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Date: Mon, 12 Feb 2018 16:23:50 +1100
+Message-ID: <87d11awzkp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,32 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 
-> On Fri, Feb 09, 2018 at 12:07:41PM -0600, Bjorn Helgaas wrote:
->> On Fri, Feb 09, 2018 at 05:23:58PM +1100, Alexey Kardashevskiy wrote:
->> > Commit 59f47eff03a0 ("powerpc/pci: Use of_irq_parse_and_map_pci() helper")
->> > replaced of_irq_parse_pci() + irq_create_of_mapping() with
->> > of_irq_parse_and_map_pci() but this change lost virq returned by
->> > irq_create_of_mapping() so virq remained zero causing INTx
->> > misconfiguration.
->> > 
->> > This fixes pci_read_irq_line() not to loose a virq returned by
->> > of_irq_parse_and_map_pci().
->> 
->> s/not to loose a/to not lose the/
->> 
->> > Fixes: 59f47eff03a0 "powerpc/pci: Use of_irq_parse_and_map_pci() helper"
->> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> 
->> I'm fine with this version.
->> 
->> Since you started applying a previous version, Michael, I'll assume
->> you will handle this unless you tell me otherwise.  One way or another
->> it would be good to get this in before -rc1.
+> When VAS is not configured in the system, make sure to remove
+> the VAS debugfs directory and unregister the platform driver.
 >
-> I went ahead and applied this and asked Linus to pull it.
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+...
+> diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
+> index aebbe95..f83e27d8 100644
+> --- a/arch/powerpc/platforms/powernv/vas.c
+> +++ b/arch/powerpc/platforms/powernv/vas.c
+> @@ -169,8 +169,11 @@ static int __init vas_init(void)
+>  		found++;
+>  	}
+>  
+> -	if (!found)
+> +	if (!found) {
+> +		platform_driver_unregister(&vas_driver);
+> +		vas_cleanup_dbgdir();
+>  		return -ENODEV;
+> +	}
 
-Thanks.
+The better patch would be to move the call to vas_init_dbgdir() down
+here, where we know we have successfully registered the driver.
 
 cheers
