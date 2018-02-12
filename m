@@ -1,28 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zflX13pyMzDqYv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 10:34:57 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id t4so5270136pgp.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 15:34:57 -0800 (PST)
-Date: Mon, 12 Feb 2018 09:34:35 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 2/5] powerpc/mm/slice: Enhance for supporting PPC32
-Message-ID: <20180212093435.20200712@roar.ozlabs.ibm.com>
-In-Reply-To: <ba493b6c-c61a-5097-e896-5ae3f0128b3a@linux.vnet.ibm.com>
-References: <01e8f783db8f4d4d41df91e0400a8634272b326f.1518226173.git.christophe.leroy@c-s.fr>
- <0ac518636ae1e601ea0732dd69b48dcd0f347285.1518226173.git.christophe.leroy@c-s.fr>
- <20180211235944.14c2be39@roar.ozlabs.ibm.com>
- <ba493b6c-c61a-5097-e896-5ae3f0128b3a@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zfmWg23fBzF0j6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 11:19:39 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1C0J8rm105754
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 19:19:37 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g2sak0ggn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Feb 2018 19:19:37 -0500
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Mon, 12 Feb 2018 00:19:35 -0000
+Date: Mon, 12 Feb 2018 11:19:29 +1100
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1] powerpc/pseries: Enable RAS hotplug events late
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <b3202827b5f22e9a7e8f145f83140698911641f7.1518394650.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +34,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 11 Feb 2018 21:04:42 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Currently if the kernel receives a memory hot-unplug event early
+enough, it may get stuck in an infinite loop in
+dissolve_free_huge_pages(). This appears as a stall just after:
 
-> On 02/11/2018 07:29 PM, Nicholas Piggin wrote:
-> > On Sat, 10 Feb 2018 13:54:27 +0100 (CET)
-> > Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> >   
-> >> In preparation for the following patch which will fix an issue on
-> >> the 8xx by re-using the 'slices', this patch enhances the
-> >> 'slices' implementation to support 32 bits CPUs.
-> >>
-> >> On PPC32, the address space is limited to 4Gbytes, hence only the low
-> >> slices will be used.
-> >>
-> >> This patch moves "slices" functions prototypes from page64.h to slice.h
-> >>
-> >> The high slices use bitmaps. As bitmap functions are not prepared to
-> >> handling bitmaps of size 0, the bitmap_xxx() calls are wrapped into
-> >> slice_bitmap_xxx() functions which will void on PPC32  
-> > 
-> > On this last point, I think it would be better to put these with the
-> > existing slice bitmap functions in slice.c and just have a few #ifdefs
-> > for SLICE_NUM_HIGH == 0.
-> >   
-> 
-> We went back and forth with that. IMHO, we should avoid as much #ifdef 
-> as possible across platforms. It helps to understand the platform 
-> restrictions better as we have less and less access to these platforms. 
-> The above change indicates that nohash 32 wants to use the slice code 
-> and they have different restrictions. With that we now know that 
-> book3s64 and nohash 32 are the two different configs using slice code.
+pseries-hotplug-mem: Attempting to hot-remove XX LMB(s) at YYYYYYYY
 
-I don't think it's the right place to put it. It's not platform dependent
-so much as it just depends on whether or not you have 0 high slices as
-a workaround for bitmap API not accepting 0 length.
+It appears to be caused by "minimum_order" being uninitialized, due to
+init_ras_IRQ() executing before hugetlb_init().
 
-Another platform that uses the slice code would just have to copy and
-paste either the nop or the bitmap implementation depending if it has
-high slices. So I don't think it's the right abstraction. And it
-implies a bitmap operation but it very specifically only works for
-struct slice_mask.high_slices bitmap, which is not clear. Better to
-just work with struct slice_mask.
+To correct this, extract the part of init_ras_IRQ() that enables
+hotplug event processing and place it in the machine_late_initcall
+phase, which is guaranteed to be after hugetlb_init() is called.
 
-Some ifdefs inside .c code for small helper functions like this IMO isn't
-really a big deal -- it's not worse than having it in headers. You just
-want to avoid ifdef mess when looking at non-trivial logic.
+Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+---
+ arch/powerpc/platforms/pseries/ras.c | 29 +++++++++++++++++++++--------
+ 1 file changed, 21 insertions(+), 8 deletions(-)
 
-static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
-{
-    dst->low_slices |= src->low_slices;
-#if SLICE_NUM_HIGH > 0
-    bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
-#endif
-}
-
-I think that's pretty fine. If you have a singular hatred for ifdef in .c,
-then if() works just as well.
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 81d8614e7379..ba284949af06 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -66,6 +66,26 @@ static int __init init_ras_IRQ(void)
+ 		of_node_put(np);
+ 	}
+ 
++	/* EPOW Events */
++	np = of_find_node_by_path("/event-sources/epow-events");
++	if (np != NULL) {
++		request_event_sources_irqs(np, ras_epow_interrupt, "RAS_EPOW");
++		of_node_put(np);
++	}
++
++	return 0;
++}
++machine_subsys_initcall(pseries, init_ras_IRQ);
++
++/*
++ * Enable the hotplug interrupt late because processing them may touch other
++ * devices or systems (e.g. hugepages) that have not been initialized at the
++ * subsys stage.
++ */
++int __init init_ras_hotplug_IRQ(void)
++{
++	struct device_node *np;
++
+ 	/* Hotplug Events */
+ 	np = of_find_node_by_path("/event-sources/hot-plug-events");
+ 	if (np != NULL) {
+@@ -75,16 +95,9 @@ static int __init init_ras_IRQ(void)
+ 		of_node_put(np);
+ 	}
+ 
+-	/* EPOW Events */
+-	np = of_find_node_by_path("/event-sources/epow-events");
+-	if (np != NULL) {
+-		request_event_sources_irqs(np, ras_epow_interrupt, "RAS_EPOW");
+-		of_node_put(np);
+-	}
+-
+ 	return 0;
+ }
+-machine_subsys_initcall(pseries, init_ras_IRQ);
++machine_late_initcall(pseries, init_ras_hotplug_IRQ);
+ 
+ #define EPOW_SHUTDOWN_NORMAL				1
+ #define EPOW_SHUTDOWN_ON_UPS				2
+-- 
+2.16.1.74.g9b0b1f47b
