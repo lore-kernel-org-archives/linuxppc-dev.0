@@ -1,19 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
+ [IPv6:2607:f8b0:400c:c08::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zg2wN0GtKzF0ks
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 22:08:36 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org <kvm-ppc@vger.kernel.org>
-Subject: Re: KVM compile error
-In-Reply-To: <064C3590-DCF8-4764-B0A4-B49310F1AF89@xenosoft.de>
-References: <064C3590-DCF8-4764-B0A4-B49310F1AF89@xenosoft.de>
-Date: Mon, 12 Feb 2018 22:08:27 +1100
-Message-ID: <874lmmwjmc.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zg30c5zswzF0hh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 22:12:16 +1100 (AEDT)
+Received: by mail-ua0-x242.google.com with SMTP id g5so9204723uac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 03:12:16 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180212085956.12016-1-vaibhav@linux.vnet.ibm.com>
+References: <20180212085956.12016-1-vaibhav@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 12 Feb 2018 22:12:13 +1100
+Message-ID: <CAKTCnz=cDmeU6rvqpHf_oW-JjtcVSNjeSQpwzwRMo5U_g+hAwg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/xmon: Dont register sysrq key when kernel param
+ xmon=off
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Douglas Miller <dougmill@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
-
-> Just for info: KVM doesn=E2=80=99t compile currently.
+On Mon, Feb 12, 2018 at 7:59 PM, Vaibhav Jain
+<vaibhav@linux.vnet.ibm.com> wrote:
+> Presently sysrq key for xmon('x') is registered during kernel init
+> irrespective of the value of kernel param 'xmon'. Thus xmon is enabled
+> even if 'xmon=off' is passed on the kernel command line.
 >
-> Error messages:
+> This minor patch updates setup_xmon_sysrq() to register
+> 'sysrq_xmon_op' only when variable 'xmon_on' is set.
 >
-> CC      arch/powerpc/kvm/powerpc.o
-> arch/powerpc/kvm/powerpc.c: In function 'kvm_arch_vcpu_ioctl_run':
-> arch/powerpc/kvm/powerpc.c:1611:1: error: label 'out' defined but not use=
-d [-Werror=3Dunused-label]
->  out:
->  ^
-> cc1: all warnings being treated as errors
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
 
-I don't see this, which compiler/config/commit is that?
+Any specific issue you've run into without this patch? I presume
+running xmon=off indicates we don't want xmon to take over in case of
+panic/die/oops, why are we tying this to sysrq?
 
-cheers
+Balbir Singh.
