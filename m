@@ -1,26 +1,30 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rdunlap@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgL7Y3rXLzDqZs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 09:34:14 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id e11so2533098pgq.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 14:34:14 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Guenter Roeck <linux@roeck-us.net>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powerpc/pseries: Declare optional dummy function for
- find_and_online_cpu_nid
-Date: Mon, 12 Feb 2018 14:34:08 -0800
-Message-Id: <1518474848-3158-2-git-send-email-linux@roeck-us.net>
-In-Reply-To: <1518474848-3158-1-git-send-email-linux@roeck-us.net>
-References: <1518474848-3158-1-git-send-email-linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgLGq3NwDzDrjJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 09:40:35 +1100 (AEDT)
+Subject: Re: [PATCH] headers: untangle kmemleak.h from mm.h
+To: Michael Ellerman <mpe@ellerman.id.au>, LKML
+ <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Fengguang Wu <fengguang.wu@intel.com>
+Cc: linux-s390 <linux-s390@vger.kernel.org>,
+ John Johansen <john.johansen@canonical.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <a4629db7-194d-3c7c-c8fd-24f61b220a70@infradead.org>
+ <87zi4ev1d2.fsf@concordia.ellerman.id.au>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <2b44ef68-126a-b20a-a50f-48c337fa6d0b@infradead.org>
+Date: Mon, 12 Feb 2018 13:16:10 -0800
+MIME-Version: 1.0
+In-Reply-To: <87zi4ev1d2.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +34,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit e67e02a544e9 ("powerpc/pseries: Fix cpu hotplug crash with
-memoryless nodes") adds an unconditional call to find_and_online_cpu_nid(),
-which is only declared if CONFIG_PPC_SPLPAR is enabled. This results in
-the following build error if this is not the case.
+On 02/12/2018 04:28 AM, Michael Ellerman wrote:
+> Randy Dunlap <rdunlap@infradead.org> writes:
+> 
+>> From: Randy Dunlap <rdunlap@infradead.org>
+>>
+>> Currently <linux/slab.h> #includes <linux/kmemleak.h> for no obvious
+>> reason. It looks like it's only a convenience, so remove kmemleak.h
+>> from slab.h and add <linux/kmemleak.h> to any users of kmemleak_*
+>> that don't already #include it.
+>> Also remove <linux/kmemleak.h> from source files that do not use it.
+>>
+>> This is tested on i386 allmodconfig and x86_64 allmodconfig. It
+>> would be good to run it through the 0day bot for other $ARCHes.
+>> I have neither the horsepower nor the storage space for the other
+>> $ARCHes.
+>>
+>> [slab.h is the second most used header file after module.h; kernel.h
+>> is right there with slab.h. There could be some minor error in the
+>> counting due to some #includes having comments after them and I
+>> didn't combine all of those.]
+>>
+>> This is Lingchi patch #1 (death by a thousand cuts, applied to kernel
+>> header files).
+>>
+>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> 
+> I threw it at a random selection of configs and so far the only failures
+> I'm seeing are:
+> 
+>   lib/test_firmware.c:134:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]                                                                                                          
+>   lib/test_firmware.c:620:25: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
+>   lib/test_firmware.c:620:2: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
+>   security/integrity/digsig.c:146:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]
+> 
+> Full results trickling in here, not all the failures there are caused by
+> this patch, ie. some configs are broken in mainline:
+> 
+>   http://kisskb.ellerman.id.au/kisskb/head/13396/
 
-arch/powerpc/platforms/pseries/hotplug-cpu.o: In function `dlpar_online_cpu':
-arch/powerpc/platforms/pseries/hotplug-cpu.c:369:
-			undefined reference to `.find_and_online_cpu_nid'
+That's very useful, thanks.
 
-Follow the guideline provided by similar functions and provide a dummy
-function if CONFIG_PPC_SPLPAR is not enabled. This also moves the external
-function declaration into an include file where it should be.
+I'll send a few patches for those.
 
-Fixes: e67e02a544e9 ("powerpc/pseries: Fix cpu hotplug crash with ...")
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- arch/powerpc/include/asm/topology.h          | 5 +++++
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 --
- 2 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 88187c285c70..52815982436f 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -82,6 +82,7 @@ static inline int numa_update_cpu_topology(bool cpus_locked)
- extern int start_topology_update(void);
- extern int stop_topology_update(void);
- extern int prrn_is_enabled(void);
-+extern int find_and_online_cpu_nid(int cpu);
- #else
- static inline int start_topology_update(void)
- {
-@@ -95,6 +96,10 @@ static inline int prrn_is_enabled(void)
- {
- 	return 0;
- }
-+static inline int find_and_online_cpu_nid(int cpu)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
- 
- #if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_NEED_MULTIPLE_NODES)
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index dceb51454d8d..f5c6a8cd2926 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -340,8 +340,6 @@ static void pseries_remove_processor(struct device_node *np)
- 	cpu_maps_update_done();
- }
- 
--extern int find_and_online_cpu_nid(int cpu);
--
- static int dlpar_online_cpu(struct device_node *dn)
- {
- 	int rc = 0;
 -- 
-2.7.4
+~Randy
