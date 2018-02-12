@@ -1,7 +1,7 @@
 Return-Path: <boris.brezillon@bootlin.com>
 Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zgJ756jJNzF0rK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 08:03:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zgJ781XvNzF0qB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 08:03:48 +1100 (AEDT)
 From: Boris Brezillon <boris.brezillon@bootlin.com>
 To: David Woodhouse <dwmw2@infradead.org>,
  Brian Norris <computersforpeace@gmail.com>,
@@ -19,9 +19,10 @@ Cc: Joern Engel <joern@lazybastard.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
  devel@driverdev.osuosl.org, Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 3/5] mtd: Stop assuming mtd_erase() is asynchronous
-Date: Mon, 12 Feb 2018 22:03:09 +0100
-Message-Id: <20180212210311.23244-4-boris.brezillon@bootlin.com>
+Subject: [PATCH 5/5] mtd: Stop updating erase_info->state and calling
+ mtd_erase_callback()
+Date: Mon, 12 Feb 2018 22:03:11 +0100
+Message-Id: <20180212210311.23244-6-boris.brezillon@bootlin.com>
 In-Reply-To: <20180212210311.23244-1-boris.brezillon@bootlin.com>
 References: <20180212210311.23244-1-boris.brezillon@bootlin.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,882 +34,783 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-None of the mtd->_erase() implementations work in an asynchronous manner,
-so let's simplify MTD users that call mtd_erase(). All they need to do
-is check the value returned by mtd_erase() and assume that != 0 means
-failure.
+MTD users are no longer checking erase_info->state to determine if the
+erase operation failed or succeeded. Moreover, mtd_erase_callback() is
+now a NOP.
+
+We can safely get rid of all mtd_erase_callback() calls and all
+erase_info->state assignments. While at it, get rid of the
+erase_info->state field, all MTD_ERASE_XXX definitions and the
+mtd_erase_callback() function.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@bootlin.com>
 ---
- drivers/mtd/devices/bcm47xxsflash.c |  3 --
- drivers/mtd/ftl.c                   | 51 ++++----------------
- drivers/mtd/inftlmount.c            |  5 +-
- drivers/mtd/mtdblock.c              | 20 --------
- drivers/mtd/mtdchar.c               | 33 +------------
- drivers/mtd/mtdconcat.c             | 48 ++-----------------
- drivers/mtd/mtdcore.c               |  8 ++--
- drivers/mtd/mtdoops.c               | 19 --------
- drivers/mtd/mtdpart.c               |  2 -
- drivers/mtd/mtdswap.c               | 32 -------------
- drivers/mtd/nftlmount.c             |  4 +-
- drivers/mtd/rfd_ftl.c               | 92 +++++++++++--------------------------
- drivers/mtd/sm_ftl.c                | 18 --------
- drivers/mtd/sm_ftl.h                |  4 --
- drivers/mtd/tests/mtd_test.c        |  4 --
- drivers/mtd/tests/speedtest.c       |  6 ---
- drivers/mtd/ubi/io.c                | 35 --------------
- fs/jffs2/erase.c                    | 36 ++-------------
- include/linux/mtd/mtd.h             |  2 -
- 19 files changed, 52 insertions(+), 370 deletions(-)
+ drivers/mtd/chips/cfi_cmdset_0001.c      | 16 ++--------------
+ drivers/mtd/chips/cfi_cmdset_0002.c      | 26 +++-----------------------
+ drivers/mtd/chips/cfi_cmdset_0020.c      |  3 ---
+ drivers/mtd/chips/map_ram.c              |  2 --
+ drivers/mtd/devices/bcm47xxsflash.c      |  9 +--------
+ drivers/mtd/devices/block2mtd.c          |  7 +------
+ drivers/mtd/devices/docg3.c              | 16 ++--------------
+ drivers/mtd/devices/lart.c               |  4 ----
+ drivers/mtd/devices/mtd_dataflash.c      |  4 ----
+ drivers/mtd/devices/mtdram.c             |  2 --
+ drivers/mtd/devices/phram.c              |  2 --
+ drivers/mtd/devices/pmc551.c             |  2 --
+ drivers/mtd/devices/powernv_flash.c      | 11 ++---------
+ drivers/mtd/devices/slram.c              |  2 --
+ drivers/mtd/devices/spear_smi.c          |  3 ---
+ drivers/mtd/devices/sst25l.c             |  3 ---
+ drivers/mtd/devices/st_spi_fsm.c         |  4 ----
+ drivers/mtd/lpddr/lpddr2_nvm.c           | 10 ++--------
+ drivers/mtd/lpddr/lpddr_cmds.c           |  2 --
+ drivers/mtd/mtdconcat.c                  |  1 -
+ drivers/mtd/mtdcore.c                    |  6 ++----
+ drivers/mtd/mtdpart.c                    |  5 -----
+ drivers/mtd/nand/nand_base.c             | 15 +++------------
+ drivers/mtd/onenand/onenand_base.c       | 17 -----------------
+ drivers/mtd/spi-nor/spi-nor.c            |  3 ---
+ drivers/mtd/ubi/gluebi.c                 |  3 ---
+ drivers/net/ethernet/sfc/falcon/mtd.c    | 11 +----------
+ drivers/net/ethernet/sfc/mtd.c           | 11 +----------
+ drivers/staging/goldfish/goldfish_nand.c |  3 ---
+ include/linux/mtd/mtd.h                  |  9 ---------
+ 30 files changed, 20 insertions(+), 192 deletions(-)
 
+diff --git a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
+index 5e1b68cbcd0a..d4c07b85f18e 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0001.c
++++ b/drivers/mtd/chips/cfi_cmdset_0001.c
+@@ -1993,20 +1993,8 @@ static int __xipram do_erase_oneblock(struct map_info *map, struct flchip *chip,
+ 
+ static int cfi_intelext_erase_varsize(struct mtd_info *mtd, struct erase_info *instr)
+ {
+-	unsigned long ofs, len;
+-	int ret;
+-
+-	ofs = instr->addr;
+-	len = instr->len;
+-
+-	ret = cfi_varsize_frob(mtd, do_erase_oneblock, ofs, len, NULL);
+-	if (ret)
+-		return ret;
+-
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+-
+-	return 0;
++	return cfi_varsize_frob(mtd, do_erase_oneblock, instr->addr,
++				instr->len, NULL);
+ }
+ 
+ static void cfi_intelext_sync (struct mtd_info *mtd)
+diff --git a/drivers/mtd/chips/cfi_cmdset_0002.c b/drivers/mtd/chips/cfi_cmdset_0002.c
+index 56aa6b75213d..668e2cbc155b 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0002.c
++++ b/drivers/mtd/chips/cfi_cmdset_0002.c
+@@ -2415,20 +2415,8 @@ static int __xipram do_erase_oneblock(struct map_info *map, struct flchip *chip,
+ 
+ static int cfi_amdstd_erase_varsize(struct mtd_info *mtd, struct erase_info *instr)
+ {
+-	unsigned long ofs, len;
+-	int ret;
+-
+-	ofs = instr->addr;
+-	len = instr->len;
+-
+-	ret = cfi_varsize_frob(mtd, do_erase_oneblock, ofs, len, NULL);
+-	if (ret)
+-		return ret;
+-
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+-
+-	return 0;
++	return cfi_varsize_frob(mtd, do_erase_oneblock, instr->addr,
++				instr->len, NULL);
+ }
+ 
+ 
+@@ -2436,7 +2424,6 @@ static int cfi_amdstd_erase_chip(struct mtd_info *mtd, struct erase_info *instr)
+ {
+ 	struct map_info *map = mtd->priv;
+ 	struct cfi_private *cfi = map->fldrv_priv;
+-	int ret = 0;
+ 
+ 	if (instr->addr != 0)
+ 		return -EINVAL;
+@@ -2444,14 +2431,7 @@ static int cfi_amdstd_erase_chip(struct mtd_info *mtd, struct erase_info *instr)
+ 	if (instr->len != mtd->size)
+ 		return -EINVAL;
+ 
+-	ret = do_erase_chip(map, &cfi->chips[0]);
+-	if (ret)
+-		return ret;
+-
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+-
+-	return 0;
++	return do_erase_chip(map, &cfi->chips[0]);
+ }
+ 
+ static int do_atmel_lock(struct map_info *map, struct flchip *chip,
+diff --git a/drivers/mtd/chips/cfi_cmdset_0020.c b/drivers/mtd/chips/cfi_cmdset_0020.c
+index 7d342965f392..7b7658a05036 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0020.c
++++ b/drivers/mtd/chips/cfi_cmdset_0020.c
+@@ -965,9 +965,6 @@ static int cfi_staa_erase_varsize(struct mtd_info *mtd,
+ 		}
+ 	}
+ 
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/mtd/chips/map_ram.c b/drivers/mtd/chips/map_ram.c
+index 1cd0fff0e940..c37fce926864 100644
+--- a/drivers/mtd/chips/map_ram.c
++++ b/drivers/mtd/chips/map_ram.c
+@@ -131,8 +131,6 @@ static int mapram_erase (struct mtd_info *mtd, struct erase_info *instr)
+ 	allff = map_word_ff(map);
+ 	for (i=0; i<instr->len; i += map_bankwidth(map))
+ 		map_write(map, allff, instr->addr + i);
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+ 	return 0;
+ }
+ 
 diff --git a/drivers/mtd/devices/bcm47xxsflash.c b/drivers/mtd/devices/bcm47xxsflash.c
-index e2bd81817df4..6b84947cfbea 100644
+index 6b84947cfbea..9baa81b8780c 100644
 --- a/drivers/mtd/devices/bcm47xxsflash.c
 +++ b/drivers/mtd/devices/bcm47xxsflash.c
-@@ -95,9 +95,6 @@ static int bcm47xxsflash_erase(struct mtd_info *mtd, struct erase_info *erase)
- 	else
- 		erase->state = MTD_ERASE_DONE;
+@@ -68,7 +68,6 @@ static int bcm47xxsflash_poll(struct bcm47xxsflash *b47s, int timeout)
+ static int bcm47xxsflash_erase(struct mtd_info *mtd, struct erase_info *erase)
+ {
+ 	struct bcm47xxsflash *b47s = mtd->priv;
+-	int err;
  
--	if (erase->callback)
--		erase->callback(erase);
+ 	switch (b47s->type) {
+ 	case BCM47XXSFLASH_TYPE_ST:
+@@ -89,13 +88,7 @@ static int bcm47xxsflash_erase(struct mtd_info *mtd, struct erase_info *erase)
+ 		break;
+ 	}
+ 
+-	err = bcm47xxsflash_poll(b47s, HZ);
+-	if (err)
+-		erase->state = MTD_ERASE_FAILED;
+-	else
+-		erase->state = MTD_ERASE_DONE;
 -
+-	return err;
++	return bcm47xxsflash_poll(b47s, HZ);
+ }
+ 
+ static int bcm47xxsflash_read(struct mtd_info *mtd, loff_t from, size_t len,
+diff --git a/drivers/mtd/devices/block2mtd.c b/drivers/mtd/devices/block2mtd.c
+index 62fd6905c648..0e741017f189 100644
+--- a/drivers/mtd/devices/block2mtd.c
++++ b/drivers/mtd/devices/block2mtd.c
+@@ -88,17 +88,12 @@ static int block2mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	size_t len = instr->len;
+ 	int err;
+ 
+-	instr->state = MTD_ERASING;
+ 	mutex_lock(&dev->write_mutex);
+ 	err = _block2mtd_erase(dev, from, len);
+ 	mutex_unlock(&dev->write_mutex);
+-	if (err) {
++	if (err)
+ 		pr_err("erase failed err = %d\n", err);
+-		instr->state = MTD_ERASE_FAILED;
+-	} else
+-		instr->state = MTD_ERASE_DONE;
+ 
+-	mtd_erase_callback(instr);
  	return err;
  }
  
-diff --git a/drivers/mtd/ftl.c b/drivers/mtd/ftl.c
-index 664d206a4cbe..fcf9907e7987 100644
---- a/drivers/mtd/ftl.c
-+++ b/drivers/mtd/ftl.c
-@@ -140,12 +140,6 @@ typedef struct partition_t {
- #define XFER_PREPARED	0x03
- #define XFER_FAILED	0x04
- 
--/*====================================================================*/
--
--
--static void ftl_erase_callback(struct erase_info *done);
--
--
- /*======================================================================
- 
-     Scan_header() checks to see if a memory region contains an FTL
-@@ -349,17 +343,19 @@ static int erase_xfer(partition_t *part,
-             return -ENOMEM;
- 
-     erase->mtd = part->mbd.mtd;
--    erase->callback = ftl_erase_callback;
-     erase->addr = xfer->Offset;
-     erase->len = 1 << part->header.EraseUnitSize;
--    erase->priv = (u_long)part;
- 
-     ret = mtd_erase(part->mbd.mtd, erase);
-+    if (!ret) {
-+	xfer->state = XFER_ERASED;
-+	xfer->EraseCount++;
-+    } else {
-+	xfer->state = XFER_FAILED;
-+	pr_notice("ftl_cs: erase failed: err = %d\n", ret);
-+    }
- 
--    if (!ret)
--	    xfer->EraseCount++;
--    else
--	    kfree(erase);
-+    kfree(erase);
- 
-     return ret;
- } /* erase_xfer */
-@@ -371,37 +367,6 @@ static int erase_xfer(partition_t *part,
- 
- ======================================================================*/
- 
--static void ftl_erase_callback(struct erase_info *erase)
--{
--    partition_t *part;
--    struct xfer_info_t *xfer;
--    int i;
--
--    /* Look up the transfer unit */
--    part = (partition_t *)(erase->priv);
--
--    for (i = 0; i < part->header.NumTransferUnits; i++)
--	if (part->XferInfo[i].Offset == erase->addr) break;
--
--    if (i == part->header.NumTransferUnits) {
--	printk(KERN_NOTICE "ftl_cs: internal error: "
--	       "erase lookup failed!\n");
--	return;
--    }
--
--    xfer = &part->XferInfo[i];
--    if (erase->state == MTD_ERASE_DONE)
--	xfer->state = XFER_ERASED;
--    else {
--	xfer->state = XFER_FAILED;
--	printk(KERN_NOTICE "ftl_cs: erase failed: state = %d\n",
--	       erase->state);
--    }
--
--    kfree(erase);
--
--} /* ftl_erase_callback */
--
- static int prepare_xfer(partition_t *part, int i)
+diff --git a/drivers/mtd/devices/docg3.c b/drivers/mtd/devices/docg3.c
+index a85af236b44d..c594fe5eac08 100644
+--- a/drivers/mtd/devices/docg3.c
++++ b/drivers/mtd/devices/docg3.c
+@@ -1191,39 +1191,27 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
  {
-     erase_unit_header_t header;
-diff --git a/drivers/mtd/inftlmount.c b/drivers/mtd/inftlmount.c
-index 8d6bb189ea8e..0f47be4834d8 100644
---- a/drivers/mtd/inftlmount.c
-+++ b/drivers/mtd/inftlmount.c
-@@ -393,9 +393,10 @@ int INFTL_formatblock(struct INFTLrecord *inftl, int block)
- 	   mark only the failed block in the bbt. */
- 	for (physblock = 0; physblock < inftl->EraseSize;
- 	     physblock += instr->len, instr->addr += instr->len) {
--		mtd_erase(inftl->mbd.mtd, instr);
-+		int ret;
+ 	struct docg3 *docg3 = mtd->priv;
+ 	uint64_t len;
+-	int block0, block1, page, ret, ofs = 0;
++	int block0, block1, page, ret = 0, ofs = 0;
  
--		if (instr->state == MTD_ERASE_FAILED) {
-+		ret = mtd_erase(inftl->mbd.mtd, instr);
-+		if (ret) {
- 			printk(KERN_WARNING "INFTL: error while formatting block %d\n",
- 				block);
- 			goto fail;
-diff --git a/drivers/mtd/mtdblock.c b/drivers/mtd/mtdblock.c
-index bb4c14f83c75..7b2b7f651181 100644
---- a/drivers/mtd/mtdblock.c
-+++ b/drivers/mtd/mtdblock.c
-@@ -55,48 +55,28 @@ struct mtdblk_dev {
-  * being written to until a different sector is required.
-  */
+ 	doc_dbg("doc_erase(from=%lld, len=%lld\n", info->addr, info->len);
  
--static void erase_callback(struct erase_info *done)
--{
--	wait_queue_head_t *wait_q = (wait_queue_head_t *)done->priv;
--	wake_up(wait_q);
--}
--
- static int erase_write (struct mtd_info *mtd, unsigned long pos,
- 			int len, const char *buf)
- {
- 	struct erase_info erase;
--	DECLARE_WAITQUEUE(wait, current);
--	wait_queue_head_t wait_q;
- 	size_t retlen;
- 	int ret;
+-	info->state = MTD_ERASE_PENDING;
+ 	calc_block_sector(info->addr + info->len, &block0, &block1, &page,
+ 			  &ofs, docg3->reliable);
+-	ret = -EINVAL;
+ 	if (info->addr + info->len > mtd->size || page || ofs)
+-		goto reset_err;
++		return -EINVAL;
  
- 	/*
- 	 * First, let's erase the flash block.
- 	 */
--
--	init_waitqueue_head(&wait_q);
- 	erase.mtd = mtd;
--	erase.callback = erase_callback;
- 	erase.addr = pos;
- 	erase.len = len;
--	erase.priv = (u_long)&wait_q;
--
--	set_current_state(TASK_INTERRUPTIBLE);
--	add_wait_queue(&wait_q, &wait);
- 
- 	ret = mtd_erase(mtd, &erase);
- 	if (ret) {
--		set_current_state(TASK_RUNNING);
--		remove_wait_queue(&wait_q, &wait);
- 		printk (KERN_WARNING "mtdblock: erase of region [0x%lx, 0x%x] "
- 				     "on \"%s\" failed\n",
- 			pos, len, mtd->name);
- 		return ret;
+-	ret = 0;
+ 	calc_block_sector(info->addr, &block0, &block1, &page, &ofs,
+ 			  docg3->reliable);
+ 	mutex_lock(&docg3->cascade->lock);
+ 	doc_set_device_id(docg3, docg3->device_id);
+ 	doc_set_reliable_mode(docg3);
+ 	for (len = info->len; !ret && len > 0; len -= mtd->erasesize) {
+-		info->state = MTD_ERASING;
+ 		ret = doc_erase_block(docg3, block0, block1);
+ 		block0 += 2;
+ 		block1 += 2;
  	}
+ 	mutex_unlock(&docg3->cascade->lock);
  
--	schedule();  /* Wait for erase to finish. */
--	remove_wait_queue(&wait_q, &wait);
+-	if (ret)
+-		goto reset_err;
 -
- 	/*
- 	 * Next, write the data to flash.
- 	 */
-diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
-index de8c902059b8..2beb22dd6bbb 100644
---- a/drivers/mtd/mtdchar.c
-+++ b/drivers/mtd/mtdchar.c
-@@ -324,10 +324,6 @@ static ssize_t mtdchar_write(struct file *file, const char __user *buf, size_t c
-     IOCTL calls for getting device parameters.
- 
- ======================================================================*/
--static void mtdchar_erase_callback (struct erase_info *instr)
--{
--	wake_up((wait_queue_head_t *)instr->priv);
--}
- 
- static int otp_select_filemode(struct mtd_file_info *mfi, int mode)
- {
-@@ -709,11 +705,6 @@ static int mtdchar_ioctl(struct file *file, u_int cmd, u_long arg)
- 		if (!erase)
- 			ret = -ENOMEM;
- 		else {
--			wait_queue_head_t waitq;
--			DECLARE_WAITQUEUE(wait, current);
--
--			init_waitqueue_head(&waitq);
--
- 			if (cmd == MEMERASE64) {
- 				struct erase_info_user64 einfo64;
- 
-@@ -736,30 +727,8 @@ static int mtdchar_ioctl(struct file *file, u_int cmd, u_long arg)
- 				erase->len = einfo32.length;
- 			}
- 			erase->mtd = mtd;
--			erase->callback = mtdchar_erase_callback;
--			erase->priv = (unsigned long)&waitq;
--
--			/*
--			  FIXME: Allow INTERRUPTIBLE. Which means
--			  not having the wait_queue head on the stack.
--
--			  If the wq_head is on the stack, and we
--			  leave because we got interrupted, then the
--			  wq_head is no longer there when the
--			  callback routine tries to wake us up.
--			*/
-+
- 			ret = mtd_erase(mtd, erase);
--			if (!ret) {
--				set_current_state(TASK_UNINTERRUPTIBLE);
--				add_wait_queue(&waitq, &wait);
--				if (erase->state != MTD_ERASE_DONE &&
--				    erase->state != MTD_ERASE_FAILED)
--					schedule();
--				remove_wait_queue(&waitq, &wait);
--				set_current_state(TASK_RUNNING);
--
--				ret = (erase->state == MTD_ERASE_FAILED)?-EIO:0;
--			}
- 			kfree(erase);
- 		}
- 		break;
-diff --git a/drivers/mtd/mtdconcat.c b/drivers/mtd/mtdconcat.c
-index 60bf53df5454..caa09bf6e572 100644
---- a/drivers/mtd/mtdconcat.c
-+++ b/drivers/mtd/mtdconcat.c
-@@ -333,45 +333,6 @@ concat_write_oob(struct mtd_info *mtd, loff_t to, struct mtd_oob_ops *ops)
- 	return -EINVAL;
- }
- 
--static void concat_erase_callback(struct erase_info *instr)
--{
--	wake_up((wait_queue_head_t *) instr->priv);
--}
--
--static int concat_dev_erase(struct mtd_info *mtd, struct erase_info *erase)
--{
--	int err;
--	wait_queue_head_t waitq;
--	DECLARE_WAITQUEUE(wait, current);
--
--	/*
--	 * This code was stol^H^H^H^Hinspired by mtdchar.c
--	 */
--	init_waitqueue_head(&waitq);
--
--	erase->mtd = mtd;
--	erase->callback = concat_erase_callback;
--	erase->priv = (unsigned long) &waitq;
--
--	/*
--	 * FIXME: Allow INTERRUPTIBLE. Which means
--	 * not having the wait_queue head on the stack.
--	 */
--	err = mtd_erase(mtd, erase);
--	if (!err) {
--		set_current_state(TASK_UNINTERRUPTIBLE);
--		add_wait_queue(&waitq, &wait);
--		if (erase->state != MTD_ERASE_DONE
--		    && erase->state != MTD_ERASE_FAILED)
--			schedule();
--		remove_wait_queue(&waitq, &wait);
--		set_current_state(TASK_RUNNING);
--
--		err = (erase->state == MTD_ERASE_FAILED) ? -EIO : 0;
--	}
--	return err;
--}
--
- static int concat_erase(struct mtd_info *mtd, struct erase_info *instr)
- {
- 	struct mtd_concat *concat = CONCAT(mtd);
-@@ -466,7 +427,8 @@ static int concat_erase(struct mtd_info *mtd, struct erase_info *instr)
- 			erase->len = length;
- 
- 		length -= erase->len;
--		if ((err = concat_dev_erase(subdev, erase))) {
-+		erase->mtd = subdev;
-+		if ((err = mtd_erase(subdev, erase))) {
- 			/* sanity check: should never happen since
- 			 * block alignment has been checked above */
- 			BUG_ON(err == -EINVAL);
-@@ -487,12 +449,8 @@ static int concat_erase(struct mtd_info *mtd, struct erase_info *instr)
- 	}
- 	instr->state = erase->state;
- 	kfree(erase);
--	if (err)
--		return err;
- 
--	if (instr->callback)
--		instr->callback(instr);
+-	info->state = MTD_ERASE_DONE;
 -	return 0;
-+	return err;
+-
+-reset_err:
+-	info->state = MTD_ERASE_FAILED;
+ 	return ret;
  }
  
- static int concat_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index c87859ff338b..f92ad02959eb 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -945,11 +945,9 @@ void __put_mtd_device(struct mtd_info *mtd)
- EXPORT_SYMBOL_GPL(__put_mtd_device);
+diff --git a/drivers/mtd/devices/lart.c b/drivers/mtd/devices/lart.c
+index 555b94406e0b..3d6c8ffd351f 100644
+--- a/drivers/mtd/devices/lart.c
++++ b/drivers/mtd/devices/lart.c
+@@ -415,7 +415,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+ 	 {
+ 		if (!erase_block (addr))
+ 		  {
+-			 instr->state = MTD_ERASE_FAILED;
+ 			 return (-EIO);
+ 		  }
  
- /*
-- * Erase is an asynchronous operation.  Device drivers are supposed
-- * to call instr->callback() whenever the operation completes, even
-- * if it completes with a failure.
-- * Callers are supposed to pass a callback function and wait for it
-- * to be called before writing to the block.
-+ * Erase is an synchronous operation. Device drivers are epected to return a
-+ * negative error code if the operation failed and update instr->fail_addr
-+ * to point the portion that was not properly erased.
-  */
- int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
- {
-diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
-index 97bb8f6304d4..028ded59297b 100644
---- a/drivers/mtd/mtdoops.c
-+++ b/drivers/mtd/mtdoops.c
-@@ -84,12 +84,6 @@ static int page_is_used(struct mtdoops_context *cxt, int page)
- 	return test_bit(page, cxt->oops_page_used);
+@@ -425,9 +424,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+ 		if (addr == mtd->eraseregions[i].offset + (mtd->eraseregions[i].erasesize * mtd->eraseregions[i].numblocks)) i++;
+ 	 }
+ 
+-   instr->state = MTD_ERASE_DONE;
+-   mtd_erase_callback(instr);
+-
+    return (0);
  }
  
--static void mtdoops_erase_callback(struct erase_info *done)
--{
--	wait_queue_head_t *wait_q = (wait_queue_head_t *)done->priv;
--	wake_up(wait_q);
--}
--
- static int mtdoops_erase_block(struct mtdoops_context *cxt, int offset)
- {
- 	struct mtd_info *mtd = cxt->mtd;
-@@ -97,34 +91,21 @@ static int mtdoops_erase_block(struct mtdoops_context *cxt, int offset)
- 	u32 start_page = start_page_offset / record_size;
- 	u32 erase_pages = mtd->erasesize / record_size;
- 	struct erase_info erase;
--	DECLARE_WAITQUEUE(wait, current);
--	wait_queue_head_t wait_q;
- 	int ret;
- 	int page;
- 
--	init_waitqueue_head(&wait_q);
- 	erase.mtd = mtd;
--	erase.callback = mtdoops_erase_callback;
- 	erase.addr = offset;
- 	erase.len = mtd->erasesize;
--	erase.priv = (u_long)&wait_q;
--
--	set_current_state(TASK_INTERRUPTIBLE);
--	add_wait_queue(&wait_q, &wait);
- 
- 	ret = mtd_erase(mtd, &erase);
- 	if (ret) {
--		set_current_state(TASK_RUNNING);
--		remove_wait_queue(&wait_q, &wait);
- 		printk(KERN_WARNING "mtdoops: erase of region [0x%llx, 0x%llx] on \"%s\" failed\n",
- 		       (unsigned long long)erase.addr,
- 		       (unsigned long long)erase.len, mtddev);
- 		return ret;
+diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+index 5dc8bd042cc5..aaaeaae01e1d 100644
+--- a/drivers/mtd/devices/mtd_dataflash.c
++++ b/drivers/mtd/devices/mtd_dataflash.c
+@@ -220,10 +220,6 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
  	}
+ 	mutex_unlock(&priv->lock);
  
--	schedule();  /* Wait for erase to finish. */
--	remove_wait_queue(&wait_q, &wait);
--
- 	/* Mark pages as unused */
- 	for (page = start_page; page < start_page + erase_pages; page++)
- 		mark_page_unused(cxt, page);
-diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
-index 76cd21d1171b..ae1206633d9d 100644
---- a/drivers/mtd/mtdpart.c
-+++ b/drivers/mtd/mtdpart.c
-@@ -222,8 +222,6 @@ void mtd_erase_callback(struct erase_info *instr)
- 			instr->fail_addr -= part->offset;
- 		instr->addr -= part->offset;
- 	}
--	if (instr->callback)
--		instr->callback(instr);
- }
- EXPORT_SYMBOL_GPL(mtd_erase_callback);
- 
-diff --git a/drivers/mtd/mtdswap.c b/drivers/mtd/mtdswap.c
-index 7eb0e1f4f980..d390324d102e 100644
---- a/drivers/mtd/mtdswap.c
-+++ b/drivers/mtd/mtdswap.c
-@@ -536,18 +536,10 @@ static void mtdswap_store_eb(struct mtdswap_dev *d, struct swap_eb *eb)
- 		mtdswap_rb_add(d, eb, MTDSWAP_HIFRAG);
- }
- 
--
--static void mtdswap_erase_callback(struct erase_info *done)
--{
--	wait_queue_head_t *wait_q = (wait_queue_head_t *)done->priv;
--	wake_up(wait_q);
--}
--
- static int mtdswap_erase_block(struct mtdswap_dev *d, struct swap_eb *eb)
- {
- 	struct mtd_info *mtd = d->mtd;
- 	struct erase_info erase;
--	wait_queue_head_t wq;
- 	unsigned int retries = 0;
- 	int ret;
- 
-@@ -556,14 +548,11 @@ static int mtdswap_erase_block(struct mtdswap_dev *d, struct swap_eb *eb)
- 		d->max_erase_count = eb->erase_count;
- 
- retry:
--	init_waitqueue_head(&wq);
- 	memset(&erase, 0, sizeof(struct erase_info));
- 
- 	erase.mtd	= mtd;
--	erase.callback	= mtdswap_erase_callback;
- 	erase.addr	= mtdswap_eb_offset(d, eb);
- 	erase.len	= mtd->erasesize;
--	erase.priv	= (u_long)&wq;
- 
- 	ret = mtd_erase(mtd, &erase);
- 	if (ret) {
-@@ -582,27 +571,6 @@ static int mtdswap_erase_block(struct mtdswap_dev *d, struct swap_eb *eb)
- 		return -EIO;
- 	}
- 
--	ret = wait_event_interruptible(wq, erase.state == MTD_ERASE_DONE ||
--					   erase.state == MTD_ERASE_FAILED);
--	if (ret) {
--		dev_err(d->dev, "Interrupted erase block %#llx erasure on %s\n",
--			erase.addr, mtd->name);
--		return -EINTR;
--	}
--
--	if (erase.state == MTD_ERASE_FAILED) {
--		if (retries++ < MTDSWAP_ERASE_RETRIES) {
--			dev_warn(d->dev,
--				"erase of erase block %#llx on %s failed",
--				erase.addr, mtd->name);
--			yield();
--			goto retry;
--		}
--
--		mtdswap_handle_badblock(d, eb);
--		return -EIO;
--	}
+-	/* Inform MTD subsystem that erase is complete */
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
 -
  	return 0;
  }
  
-diff --git a/drivers/mtd/nftlmount.c b/drivers/mtd/nftlmount.c
-index 184c8fbfe465..07e122449759 100644
---- a/drivers/mtd/nftlmount.c
-+++ b/drivers/mtd/nftlmount.c
-@@ -331,9 +331,7 @@ int NFTL_formatblock(struct NFTLrecord *nftl, int block)
- 	instr->mtd = nftl->mbd.mtd;
- 	instr->addr = block * nftl->EraseSize;
- 	instr->len = nftl->EraseSize;
--	mtd_erase(mtd, instr);
--
--	if (instr->state == MTD_ERASE_FAILED) {
-+	if (mtd_erase(mtd, instr)) {
- 		printk("Error while formatting block %d\n", block);
- 		goto fail;
- 	}
-diff --git a/drivers/mtd/rfd_ftl.c b/drivers/mtd/rfd_ftl.c
-index d1cbf26db2c0..4e0b55cd08e2 100644
---- a/drivers/mtd/rfd_ftl.c
-+++ b/drivers/mtd/rfd_ftl.c
-@@ -266,91 +266,55 @@ static int rfd_ftl_readsect(struct mtd_blktrans_dev *dev, u_long sector, char *b
+diff --git a/drivers/mtd/devices/mtdram.c b/drivers/mtd/devices/mtdram.c
+index 0bf4aeaf0cb8..efef43c6684b 100644
+--- a/drivers/mtd/devices/mtdram.c
++++ b/drivers/mtd/devices/mtdram.c
+@@ -60,8 +60,6 @@ static int ram_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	if (check_offs_len(mtd, instr->addr, instr->len))
+ 		return -EINVAL;
+ 	memset((char *)mtd->priv + instr->addr, 0xff, instr->len);
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
  	return 0;
  }
  
--static void erase_callback(struct erase_info *erase)
--{
--	struct partition *part;
--	u16 magic;
--	int i, rc;
--	size_t retlen;
+diff --git a/drivers/mtd/devices/phram.c b/drivers/mtd/devices/phram.c
+index 7287696a21f9..a963c88d392d 100644
+--- a/drivers/mtd/devices/phram.c
++++ b/drivers/mtd/devices/phram.c
+@@ -44,8 +44,6 @@ static int phram_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	 * I don't feel at all ashamed. This kind of thing is possible anyway
+ 	 * with flash, but unlikely.
+ 	 */
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/mtd/devices/pmc551.c b/drivers/mtd/devices/pmc551.c
+index cadea0620cd0..5d842cbca3de 100644
+--- a/drivers/mtd/devices/pmc551.c
++++ b/drivers/mtd/devices/pmc551.c
+@@ -184,12 +184,10 @@ static int pmc551_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	}
+ 
+       out:
+-	instr->state = MTD_ERASE_DONE;
+ #ifdef CONFIG_MTD_PMC551_DEBUG
+ 	printk(KERN_DEBUG "pmc551_erase() done\n");
+ #endif
+ 
+-	mtd_erase_callback(instr);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
+index 26f9feaa5d17..5f383630c16f 100644
+--- a/drivers/mtd/devices/powernv_flash.c
++++ b/drivers/mtd/devices/powernv_flash.c
+@@ -175,19 +175,12 @@ static int powernv_flash_erase(struct mtd_info *mtd, struct erase_info *erase)
+ {
+ 	int rc;
+ 
+-	erase->state = MTD_ERASING;
 -
--	part = (struct partition*)erase->priv;
--
--	i = (u32)erase->addr / part->block_size;
--	if (i >= part->total_blocks || part->blocks[i].offset != erase->addr ||
--	    erase->addr > UINT_MAX) {
--		printk(KERN_ERR PREFIX "erase callback for unknown offset %llx "
--				"on '%s'\n", (unsigned long long)erase->addr, part->mbd.mtd->name);
--		return;
--	}
--
--	if (erase->state != MTD_ERASE_DONE) {
--		printk(KERN_WARNING PREFIX "erase failed at 0x%llx on '%s', "
--				"state %d\n", (unsigned long long)erase->addr,
--				part->mbd.mtd->name, erase->state);
--
--		part->blocks[i].state = BLOCK_FAILED;
--		part->blocks[i].free_sectors = 0;
--		part->blocks[i].used_sectors = 0;
--
--		kfree(erase);
--
--		return;
--	}
--
--	magic = cpu_to_le16(RFD_MAGIC);
--
--	part->blocks[i].state = BLOCK_ERASED;
--	part->blocks[i].free_sectors = part->data_sectors_per_block;
--	part->blocks[i].used_sectors = 0;
--	part->blocks[i].erases++;
--
--	rc = mtd_write(part->mbd.mtd, part->blocks[i].offset, sizeof(magic),
--		       &retlen, (u_char *)&magic);
--
--	if (!rc && retlen != sizeof(magic))
--		rc = -EIO;
+ 	/* todo: register our own notifier to do a true async implementation */
+ 	rc =  powernv_flash_async_op(mtd, FLASH_OP_ERASE, erase->addr,
+ 			erase->len, NULL, NULL);
 -
 -	if (rc) {
--		printk(KERN_ERR PREFIX "'%s': unable to write RFD "
--				"header at 0x%lx\n",
--				part->mbd.mtd->name,
--				part->blocks[i].offset);
--		part->blocks[i].state = BLOCK_FAILED;
++	if (rc)
+ 		erase->fail_addr = erase->addr;
+-		erase->state = MTD_ERASE_FAILED;
+-	} else {
+-		erase->state = MTD_ERASE_DONE;
 -	}
--	else
--		part->blocks[i].state = BLOCK_OK;
--
--	kfree(erase);
--}
--
- static int erase_block(struct partition *part, int block)
- {
- 	struct erase_info *erase;
--	int rc = -ENOMEM;
-+	int rc;
- 
- 	erase = kmalloc(sizeof(struct erase_info), GFP_KERNEL);
- 	if (!erase)
--		goto err;
-+		return -ENOMEM;
- 
- 	erase->mtd = part->mbd.mtd;
--	erase->callback = erase_callback;
- 	erase->addr = part->blocks[block].offset;
- 	erase->len = part->block_size;
--	erase->priv = (u_long)part;
- 
- 	part->blocks[block].state = BLOCK_ERASING;
- 	part->blocks[block].free_sectors = 0;
- 
- 	rc = mtd_erase(part->mbd.mtd, erase);
--
- 	if (rc) {
- 		printk(KERN_ERR PREFIX "erase of region %llx,%llx on '%s' "
- 				"failed\n", (unsigned long long)erase->addr,
- 				(unsigned long long)erase->len, part->mbd.mtd->name);
--		kfree(erase);
-+		part->blocks[block].state = BLOCK_FAILED;
-+		part->blocks[block].free_sectors = 0;
-+		part->blocks[block].used_sectors = 0;
-+	} else {
-+		u16 magic = cpu_to_le16(RFD_MAGIC);
-+		size_t retlen;
-+
-+		part->blocks[block].state = BLOCK_ERASED;
-+		part->blocks[block].free_sectors = part->data_sectors_per_block;
-+		part->blocks[block].used_sectors = 0;
-+		part->blocks[block].erases++;
-+
-+		rc = mtd_write(part->mbd.mtd, part->blocks[block].offset,
-+			       sizeof(magic), &retlen, (u_char *)&magic);
-+		if (!rc && retlen != sizeof(magic))
-+			rc = -EIO;
-+
-+		if (rc) {
-+			pr_err(PREFIX "'%s': unable to write RFD header at 0x%lx\n",
-+			       part->mbd.mtd->name, part->blocks[block].offset);
-+			part->blocks[block].state = BLOCK_FAILED;
-+		} else {
-+			part->blocks[block].state = BLOCK_OK;
-+		}
- 	}
- 
--err:
-+	kfree(erase);
+-	mtd_erase_callback(erase);
 +
  	return rc;
  }
  
-diff --git a/drivers/mtd/sm_ftl.c b/drivers/mtd/sm_ftl.c
-index 4237c7cebf02..c11156f9d96f 100644
---- a/drivers/mtd/sm_ftl.c
-+++ b/drivers/mtd/sm_ftl.c
-@@ -461,10 +461,8 @@ static int sm_erase_block(struct sm_ftl *ftl, int zone_num, uint16_t block,
- 	struct erase_info erase;
- 
- 	erase.mtd = mtd;
--	erase.callback = sm_erase_callback;
- 	erase.addr = sm_mkoffset(ftl, zone_num, block, 0);
- 	erase.len = ftl->block_size;
--	erase.priv = (u_long)ftl;
- 
- 	if (ftl->unstable)
- 		return -EIO;
-@@ -482,15 +480,6 @@ static int sm_erase_block(struct sm_ftl *ftl, int zone_num, uint16_t block,
- 		goto error;
- 	}
- 
--	if (erase.state == MTD_ERASE_PENDING)
--		wait_for_completion(&ftl->erase_completion);
--
--	if (erase.state != MTD_ERASE_DONE) {
--		sm_printk("erase of block %d in zone %d failed after wait",
--			block, zone_num);
--		goto error;
--	}
--
- 	if (put_free)
- 		kfifo_in(&zone->free_sectors,
- 			(const unsigned char *)&block, sizeof(block));
-@@ -501,12 +490,6 @@ static int sm_erase_block(struct sm_ftl *ftl, int zone_num, uint16_t block,
- 	return -EIO;
+diff --git a/drivers/mtd/devices/slram.c b/drivers/mtd/devices/slram.c
+index 0ec85f316d24..2f05e1801047 100644
+--- a/drivers/mtd/devices/slram.c
++++ b/drivers/mtd/devices/slram.c
+@@ -88,8 +88,6 @@ static int slram_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	 * I don't feel at all ashamed. This kind of thing is possible anyway
+ 	 * with flash, but unlikely.
+ 	 */
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+ 	return(0);
  }
  
--static void sm_erase_callback(struct erase_info *self)
--{
--	struct sm_ftl *ftl = (struct sm_ftl *)self->priv;
--	complete(&ftl->erase_completion);
--}
+diff --git a/drivers/mtd/devices/spear_smi.c b/drivers/mtd/devices/spear_smi.c
+index ddf478976013..986f81d2f93e 100644
+--- a/drivers/mtd/devices/spear_smi.c
++++ b/drivers/mtd/devices/spear_smi.c
+@@ -518,7 +518,6 @@ static int spear_mtd_erase(struct mtd_info *mtd, struct erase_info *e_info)
+ 		/* preparing the command for flash */
+ 		ret = spear_smi_erase_sector(dev, bank, command, 4);
+ 		if (ret) {
+-			e_info->state = MTD_ERASE_FAILED;
+ 			mutex_unlock(&flash->lock);
+ 			return ret;
+ 		}
+@@ -527,8 +526,6 @@ static int spear_mtd_erase(struct mtd_info *mtd, struct erase_info *e_info)
+ 	}
+ 
+ 	mutex_unlock(&flash->lock);
+-	e_info->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(e_info);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/mtd/devices/sst25l.c b/drivers/mtd/devices/sst25l.c
+index 5b84d71efb36..1897f33fe3e7 100644
+--- a/drivers/mtd/devices/sst25l.c
++++ b/drivers/mtd/devices/sst25l.c
+@@ -195,7 +195,6 @@ static int sst25l_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 		err = sst25l_erase_sector(flash, addr);
+ 		if (err) {
+ 			mutex_unlock(&flash->lock);
+-			instr->state = MTD_ERASE_FAILED;
+ 			dev_err(&flash->spi->dev, "Erase failed\n");
+ 			return err;
+ 		}
+@@ -205,8 +204,6 @@ static int sst25l_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 
+ 	mutex_unlock(&flash->lock);
+ 
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/mtd/devices/st_spi_fsm.c b/drivers/mtd/devices/st_spi_fsm.c
+index 7bc29d725200..b0a8ad3c2c7b 100644
+--- a/drivers/mtd/devices/st_spi_fsm.c
++++ b/drivers/mtd/devices/st_spi_fsm.c
+@@ -1825,13 +1825,9 @@ static int stfsm_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 
+ 	mutex_unlock(&fsm->lock);
+ 
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
 -
- /* Thoroughly test that block is valid. */
- static int sm_check_block(struct sm_ftl *ftl, int zone, int block)
+ 	return 0;
+ 
+ out1:
+-	instr->state = MTD_ERASE_FAILED;
+ 	mutex_unlock(&fsm->lock);
+ 
+ 	return ret;
+diff --git a/drivers/mtd/lpddr/lpddr2_nvm.c b/drivers/mtd/lpddr/lpddr2_nvm.c
+index 2342277c9bcb..5d73db2a496d 100644
+--- a/drivers/mtd/lpddr/lpddr2_nvm.c
++++ b/drivers/mtd/lpddr/lpddr2_nvm.c
+@@ -380,14 +380,8 @@ static int lpddr2_nvm_write(struct mtd_info *mtd, loff_t start_add,
+  */
+ static int lpddr2_nvm_erase(struct mtd_info *mtd, struct erase_info *instr)
  {
-@@ -1141,7 +1124,6 @@ static void sm_add_mtd(struct mtd_blktrans_ops *tr, struct mtd_info *mtd)
- 	mutex_init(&ftl->mutex);
- 	timer_setup(&ftl->timer, sm_cache_flush_timer, 0);
- 	INIT_WORK(&ftl->flush_work, sm_cache_flush_work);
--	init_completion(&ftl->erase_completion);
- 
- 	/* Read media information */
- 	if (sm_get_media_info(ftl, mtd)) {
-diff --git a/drivers/mtd/sm_ftl.h b/drivers/mtd/sm_ftl.h
-index 43bb7300785b..0a46d75cdc6a 100644
---- a/drivers/mtd/sm_ftl.h
-+++ b/drivers/mtd/sm_ftl.h
-@@ -53,9 +53,6 @@ struct sm_ftl {
- 	struct work_struct flush_work;
- 	struct timer_list timer;
- 
--	/* Async erase stuff */
--	struct completion erase_completion;
--
- 	/* Geometry stuff */
- 	int heads;
- 	int sectors;
-@@ -86,7 +83,6 @@ struct chs_entry {
- 		printk(KERN_DEBUG "sm_ftl" ": " format "\n", ## __VA_ARGS__)
- 
- 
--static void sm_erase_callback(struct erase_info *self);
- static int sm_erase_block(struct sm_ftl *ftl, int zone_num, uint16_t block,
- 								int put_free);
- static void sm_mark_block_bad(struct sm_ftl *ftl, int zone_num, int block);
-diff --git a/drivers/mtd/tests/mtd_test.c b/drivers/mtd/tests/mtd_test.c
-index 3d0b8b5c1a53..0ac625e8f798 100644
---- a/drivers/mtd/tests/mtd_test.c
-+++ b/drivers/mtd/tests/mtd_test.c
-@@ -24,10 +24,6 @@ int mtdtest_erase_eraseblock(struct mtd_info *mtd, unsigned int ebnum)
- 		return err;
- 	}
- 
--	if (ei.state == MTD_ERASE_FAILED) {
--		pr_info("some erase error occurred at EB %d\n", ebnum);
--		return -EIO;
--	}
- 	return 0;
- }
- 
-diff --git a/drivers/mtd/tests/speedtest.c b/drivers/mtd/tests/speedtest.c
-index 0b89418a0888..f8e5dc11f943 100644
---- a/drivers/mtd/tests/speedtest.c
-+++ b/drivers/mtd/tests/speedtest.c
-@@ -70,12 +70,6 @@ static int multiblock_erase(int ebnum, int blocks)
- 		return err;
- 	}
- 
--	if (ei.state == MTD_ERASE_FAILED) {
--		pr_err("some erase error occurred at EB %d,"
--		       "blocks %d\n", ebnum, blocks);
--		return -EIO;
+-	int ret = lpddr2_nvm_do_block_op(mtd, instr->addr, instr->len,
+-		LPDDR2_NVM_ERASE);
+-	if (!ret) {
+-		instr->state = MTD_ERASE_DONE;
+-		mtd_erase_callback(instr);
 -	}
 -
- 	return 0;
+-	return ret;
++	return lpddr2_nvm_do_block_op(mtd, instr->addr, instr->len,
++				      LPDDR2_NVM_ERASE);
  }
  
-diff --git a/drivers/mtd/ubi/io.c b/drivers/mtd/ubi/io.c
-index 8290432017ce..8843d26837b2 100644
---- a/drivers/mtd/ubi/io.c
-+++ b/drivers/mtd/ubi/io.c
-@@ -308,18 +308,6 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
+ /*
+diff --git a/drivers/mtd/lpddr/lpddr_cmds.c b/drivers/mtd/lpddr/lpddr_cmds.c
+index 018c75faadb3..5c5ba3c7c79d 100644
+--- a/drivers/mtd/lpddr/lpddr_cmds.c
++++ b/drivers/mtd/lpddr/lpddr_cmds.c
+@@ -693,8 +693,6 @@ static int lpddr_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 		ofs += size;
+ 		len -= size;
+ 	}
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/mtd/mtdconcat.c b/drivers/mtd/mtdconcat.c
+index 93c47e56d9d8..6b86d1a73cf2 100644
+--- a/drivers/mtd/mtdconcat.c
++++ b/drivers/mtd/mtdconcat.c
+@@ -446,7 +446,6 @@ static int concat_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 		erase->addr = 0;
+ 		offset += subdev->size;
+ 	}
+-	instr->state = erase->state;
+ 	kfree(erase);
+ 
+ 	return err;
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index f92ad02959eb..f25d65ea7149 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -961,11 +961,9 @@ int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	if (!(mtd->flags & MTD_WRITEABLE))
+ 		return -EROFS;
+ 
+-	if (!instr->len) {
+-		instr->state = MTD_ERASE_DONE;
+-		mtd_erase_callback(instr);
++	if (!instr->len)
+ 		return 0;
+-	}
++
+ 	ledtrig_mtd_activity();
+ 	return mtd->_erase(mtd, instr);
+ }
+diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
+index 1c07a6f0dfe5..85fea8ea3423 100644
+--- a/drivers/mtd/mtdpart.c
++++ b/drivers/mtd/mtdpart.c
+@@ -212,11 +212,6 @@ static int part_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	return ret;
+ }
+ 
+-void mtd_erase_callback(struct erase_info *instr)
+-{
+-}
+-EXPORT_SYMBOL_GPL(mtd_erase_callback);
+-
+ static int part_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
+ {
+ 	struct mtd_part *part = mtd_to_part(mtd);
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 16c8bc06975d..13dd67106859 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -4604,22 +4604,20 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
+ 	if (nand_check_wp(mtd)) {
+ 		pr_debug("%s: device is write protected!\n",
+ 				__func__);
+-		instr->state = MTD_ERASE_FAILED;
++		ret = -EIO;
+ 		goto erase_exit;
+ 	}
+ 
+ 	/* Loop through the pages */
+ 	len = instr->len;
+ 
+-	instr->state = MTD_ERASING;
+-
+ 	while (len) {
+ 		/* Check if we have a bad block, we do not erase bad blocks! */
+ 		if (nand_block_checkbad(mtd, ((loff_t) page) <<
+ 					chip->page_shift, allowbbt)) {
+ 			pr_warn("%s: attempt to erase a bad block at page 0x%08x\n",
+ 				    __func__, page);
+-			instr->state = MTD_ERASE_FAILED;
++			ret = -EIO;
+ 			goto erase_exit;
+ 		}
+ 
+@@ -4637,7 +4635,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
+ 		if (status) {
+ 			pr_debug("%s: failed erase, page 0x%08x\n",
+ 					__func__, page);
+-			instr->state = MTD_ERASE_FAILED;
++			ret = -EIO;
+ 			instr->fail_addr =
+ 				((loff_t)page << chip->page_shift);
+ 			goto erase_exit;
+@@ -4654,20 +4652,13 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
+ 			chip->select_chip(mtd, chipnr);
+ 		}
+ 	}
+-	instr->state = MTD_ERASE_DONE;
+ 
+ erase_exit:
+ 
+-	ret = instr->state == MTD_ERASE_DONE ? 0 : -EIO;
+-
+ 	/* Deselect and wake up anyone waiting on the device */
+ 	chip->select_chip(mtd, -1);
+ 	nand_release_device(mtd);
+ 
+-	/* Do call back function */
+-	if (!ret)
+-		mtd_erase_callback(instr);
+-
+ 	/* Return more or less happy */
+ 	return ret;
+ }
+diff --git a/drivers/mtd/onenand/onenand_base.c b/drivers/mtd/onenand/onenand_base.c
+index 979f4031f23c..8d19b78777b5 100644
+--- a/drivers/mtd/onenand/onenand_base.c
++++ b/drivers/mtd/onenand/onenand_base.c
+@@ -2143,7 +2143,6 @@ static int onenand_multiblock_erase_verify(struct mtd_info *mtd,
+ 		if (ret) {
+ 			printk(KERN_ERR "%s: Failed verify, block %d\n",
+ 			       __func__, onenand_block(this, addr));
+-			instr->state = MTD_ERASE_FAILED;
+ 			instr->fail_addr = addr;
+ 			return -1;
+ 		}
+@@ -2172,8 +2171,6 @@ static int onenand_multiblock_erase(struct mtd_info *mtd,
+ 	int ret = 0;
+ 	int bdry_block = 0;
+ 
+-	instr->state = MTD_ERASING;
+-
+ 	if (ONENAND_IS_DDP(this)) {
+ 		loff_t bdry_addr = this->chipsize >> 1;
+ 		if (addr < bdry_addr && (addr + len) > bdry_addr)
+@@ -2187,7 +2184,6 @@ static int onenand_multiblock_erase(struct mtd_info *mtd,
+ 			printk(KERN_WARNING "%s: attempt to erase a bad block "
+ 			       "at addr 0x%012llx\n",
+ 			       __func__, (unsigned long long) addr);
+-			instr->state = MTD_ERASE_FAILED;
+ 			return -EIO;
+ 		}
+ 		len -= block_size;
+@@ -2227,7 +2223,6 @@ static int onenand_multiblock_erase(struct mtd_info *mtd,
+ 				printk(KERN_ERR "%s: Failed multiblock erase, "
+ 				       "block %d\n", __func__,
+ 				       onenand_block(this, addr));
+-				instr->state = MTD_ERASE_FAILED;
+ 				instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
+ 				return -EIO;
+ 			}
+@@ -2247,7 +2242,6 @@ static int onenand_multiblock_erase(struct mtd_info *mtd,
+ 		if (ret) {
+ 			printk(KERN_ERR "%s: Failed erase, block %d\n",
+ 			       __func__, onenand_block(this, addr));
+-			instr->state = MTD_ERASE_FAILED;
+ 			instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
+ 			return -EIO;
+ 		}
+@@ -2259,7 +2253,6 @@ static int onenand_multiblock_erase(struct mtd_info *mtd,
+ 		/* verify */
+ 		verify_instr.len = eb_count * block_size;
+ 		if (onenand_multiblock_erase_verify(mtd, &verify_instr)) {
+-			instr->state = verify_instr.state;
+ 			instr->fail_addr = verify_instr.fail_addr;
+ 			return -EIO;
+ 		}
+@@ -2294,8 +2287,6 @@ static int onenand_block_by_block_erase(struct mtd_info *mtd,
+ 		region_end = region->offset + region->erasesize * region->numblocks;
+ 	}
+ 
+-	instr->state = MTD_ERASING;
+-
+ 	/* Loop through the blocks */
+ 	while (len) {
+ 		cond_resched();
+@@ -2305,7 +2296,6 @@ static int onenand_block_by_block_erase(struct mtd_info *mtd,
+ 			printk(KERN_WARNING "%s: attempt to erase a bad block "
+ 					"at addr 0x%012llx\n",
+ 					__func__, (unsigned long long) addr);
+-			instr->state = MTD_ERASE_FAILED;
+ 			return -EIO;
+ 		}
+ 
+@@ -2318,7 +2308,6 @@ static int onenand_block_by_block_erase(struct mtd_info *mtd,
+ 		if (ret) {
+ 			printk(KERN_ERR "%s: Failed erase, block %d\n",
+ 				__func__, onenand_block(this, addr));
+-			instr->state = MTD_ERASE_FAILED;
+ 			instr->fail_addr = addr;
+ 			return -EIO;
+ 		}
+@@ -2407,12 +2396,6 @@ static int onenand_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	/* Deselect and wake up anyone waiting on the device */
+ 	onenand_release_device(mtd);
+ 
+-	/* Do call back function */
+-	if (!ret) {
+-		instr->state = MTD_ERASE_DONE;
+-		mtd_erase_callback(instr);
+-	}
+-
+ 	return ret;
+ }
+ 
+diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
+index d445a4d3b770..5bfa36e95f35 100644
+--- a/drivers/mtd/spi-nor/spi-nor.c
++++ b/drivers/mtd/spi-nor/spi-nor.c
+@@ -560,9 +560,6 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
+ erase_err:
+ 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
+ 
+-	instr->state = ret ? MTD_ERASE_FAILED : MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+-
+ 	return ret;
+ }
+ 
+diff --git a/drivers/mtd/ubi/gluebi.c b/drivers/mtd/ubi/gluebi.c
+index 1cb287ec32ad..6b655a53113b 100644
+--- a/drivers/mtd/ubi/gluebi.c
++++ b/drivers/mtd/ubi/gluebi.c
+@@ -272,12 +272,9 @@ static int gluebi_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	if (err)
+ 		goto out_err;
+ 
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
+ 	return 0;
+ 
+ out_err:
+-	instr->state = MTD_ERASE_FAILED;
+ 	instr->fail_addr = (long long)lnum * mtd->erasesize;
  	return err;
  }
- 
--/**
-- * erase_callback - MTD erasure call-back.
-- * @ei: MTD erase information object.
-- *
-- * Note, even though MTD erase interface is asynchronous, all the current
-- * implementations are synchronous anyway.
-- */
--static void erase_callback(struct erase_info *ei)
--{
--	wake_up_interruptible((wait_queue_head_t *)ei->priv);
--}
--
- /**
-  * do_sync_erase - synchronously erase a physical eraseblock.
-  * @ubi: UBI device description object
-@@ -333,7 +321,6 @@ static int do_sync_erase(struct ubi_device *ubi, int pnum)
+diff --git a/drivers/net/ethernet/sfc/falcon/mtd.c b/drivers/net/ethernet/sfc/falcon/mtd.c
+index cde593cb1052..2d67e4621a3d 100644
+--- a/drivers/net/ethernet/sfc/falcon/mtd.c
++++ b/drivers/net/ethernet/sfc/falcon/mtd.c
+@@ -24,17 +24,8 @@
+ static int ef4_mtd_erase(struct mtd_info *mtd, struct erase_info *erase)
  {
- 	int err, retries = 0;
- 	struct erase_info ei;
--	wait_queue_head_t wq;
+ 	struct ef4_nic *efx = mtd->priv;
+-	int rc;
  
- 	dbg_io("erase PEB %d", pnum);
- 	ubi_assert(pnum >= 0 && pnum < ubi->peb_count);
-@@ -344,14 +331,11 @@ static int do_sync_erase(struct ubi_device *ubi, int pnum)
- 	}
- 
- retry:
--	init_waitqueue_head(&wq);
- 	memset(&ei, 0, sizeof(struct erase_info));
- 
- 	ei.mtd      = ubi->mtd;
- 	ei.addr     = (loff_t)pnum * ubi->peb_size;
- 	ei.len      = ubi->peb_size;
--	ei.callback = erase_callback;
--	ei.priv     = (unsigned long)&wq;
- 
- 	err = mtd_erase(ubi->mtd, &ei);
- 	if (err) {
-@@ -366,25 +350,6 @@ static int do_sync_erase(struct ubi_device *ubi, int pnum)
- 		return err;
- 	}
- 
--	err = wait_event_interruptible(wq, ei.state == MTD_ERASE_DONE ||
--					   ei.state == MTD_ERASE_FAILED);
--	if (err) {
--		ubi_err(ubi, "interrupted PEB %d erasure", pnum);
--		return -EINTR;
+-	rc = efx->type->mtd_erase(mtd, erase->addr, erase->len);
+-	if (rc == 0) {
+-		erase->state = MTD_ERASE_DONE;
+-	} else {
+-		erase->state = MTD_ERASE_FAILED;
+-		erase->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
 -	}
--
--	if (ei.state == MTD_ERASE_FAILED) {
--		if (retries++ < UBI_IO_RETRIES) {
--			ubi_warn(ubi, "error while erasing PEB %d, retry",
--				 pnum);
--			yield();
--			goto retry;
--		}
--		ubi_err(ubi, "cannot erase PEB %d", pnum);
--		dump_stack();
--		return -EIO;
--	}
--
- 	err = ubi_self_check_all_ff(ubi, pnum, 0, ubi->peb_size);
- 	if (err)
- 		return err;
-diff --git a/fs/jffs2/erase.c b/fs/jffs2/erase.c
-index 4a6cf289be24..09bb6c00b869 100644
---- a/fs/jffs2/erase.c
-+++ b/fs/jffs2/erase.c
-@@ -21,14 +21,6 @@
- #include <linux/pagemap.h>
- #include "nodelist.h"
- 
--struct erase_priv_struct {
--	struct jffs2_eraseblock *jeb;
--	struct jffs2_sb_info *c;
--};
--
--#ifndef __ECOS
--static void jffs2_erase_callback(struct erase_info *);
--#endif
- static void jffs2_erase_failed(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb, uint32_t bad_offset);
- static void jffs2_erase_succeeded(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
- static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
-@@ -51,7 +43,7 @@ static void jffs2_erase_block(struct jffs2_sb_info *c,
- 	jffs2_dbg(1, "%s(): erase block %#08x (range %#08x-%#08x)\n",
- 		  __func__,
- 		  jeb->offset, jeb->offset, jeb->offset + c->sector_size);
--	instr = kmalloc(sizeof(struct erase_info) + sizeof(struct erase_priv_struct), GFP_KERNEL);
-+	instr = kmalloc(sizeof(struct erase_info), GFP_KERNEL);
- 	if (!instr) {
- 		pr_warn("kmalloc for struct erase_info in jffs2_erase_block failed. Refiling block for later\n");
- 		mutex_lock(&c->erase_free_sem);
-@@ -70,15 +62,13 @@ static void jffs2_erase_block(struct jffs2_sb_info *c,
- 	instr->mtd = c->mtd;
- 	instr->addr = jeb->offset;
- 	instr->len = c->sector_size;
--	instr->callback = jffs2_erase_callback;
--	instr->priv = (unsigned long)(&instr[1]);
--
--	((struct erase_priv_struct *)instr->priv)->jeb = jeb;
--	((struct erase_priv_struct *)instr->priv)->c = c;
- 
- 	ret = mtd_erase(c->mtd, instr);
--	if (!ret)
-+	if (!ret) {
-+		jffs2_erase_succeeded(c, jeb);
-+		kfree(instr);
- 		return;
-+	}
- 
- 	bad_offset = instr->fail_addr;
- 	kfree(instr);
-@@ -214,22 +204,6 @@ static void jffs2_erase_failed(struct jffs2_sb_info *c, struct jffs2_eraseblock
- 	wake_up(&c->erase_wait);
+-	mtd_erase_callback(erase);
+-	return rc;
++	return efx->type->mtd_erase(mtd, erase->addr, erase->len);
  }
  
--#ifndef __ECOS
--static void jffs2_erase_callback(struct erase_info *instr)
--{
--	struct erase_priv_struct *priv = (void *)instr->priv;
--
--	if(instr->state != MTD_ERASE_DONE) {
--		pr_warn("Erase at 0x%08llx finished, but state != MTD_ERASE_DONE. State is 0x%x instead.\n",
--			(unsigned long long)instr->addr, instr->state);
--		jffs2_erase_failed(priv->c, priv->jeb, instr->fail_addr);
+ static void ef4_mtd_sync(struct mtd_info *mtd)
+diff --git a/drivers/net/ethernet/sfc/mtd.c b/drivers/net/ethernet/sfc/mtd.c
+index a77a8bd2dd70..4ac30b6e5dab 100644
+--- a/drivers/net/ethernet/sfc/mtd.c
++++ b/drivers/net/ethernet/sfc/mtd.c
+@@ -24,17 +24,8 @@
+ static int efx_mtd_erase(struct mtd_info *mtd, struct erase_info *erase)
+ {
+ 	struct efx_nic *efx = mtd->priv;
+-	int rc;
+ 
+-	rc = efx->type->mtd_erase(mtd, erase->addr, erase->len);
+-	if (rc == 0) {
+-		erase->state = MTD_ERASE_DONE;
 -	} else {
--		jffs2_erase_succeeded(priv->c, priv->jeb);
+-		erase->state = MTD_ERASE_FAILED;
+-		erase->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
 -	}
--	kfree(instr);
--}
--#endif /* !__ECOS */
+-	mtd_erase_callback(erase);
+-	return rc;
++	return efx->type->mtd_erase(mtd, erase->addr, erase->len);
+ }
+ 
+ static void efx_mtd_sync(struct mtd_info *mtd)
+diff --git a/drivers/staging/goldfish/goldfish_nand.c b/drivers/staging/goldfish/goldfish_nand.c
+index 52cc1363993e..f5e002ecba75 100644
+--- a/drivers/staging/goldfish/goldfish_nand.c
++++ b/drivers/staging/goldfish/goldfish_nand.c
+@@ -119,9 +119,6 @@ static int goldfish_nand_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 		return -EIO;
+ 	}
+ 
+-	instr->state = MTD_ERASE_DONE;
+-	mtd_erase_callback(instr);
 -
- /* Hmmm. Maybe we should accept the extra space it takes and make
-    this a standard doubly-linked list? */
- static inline void jffs2_remove_node_refs_from_ino_list(struct jffs2_sb_info *c,
+ 	return 0;
+ 
+ invalid_arg:
 diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index 2a407dc9beaa..5018437d7999 100644
+index 4cbb7f555244..a86c4fa93115 100644
 --- a/include/linux/mtd/mtd.h
 +++ b/include/linux/mtd/mtd.h
-@@ -48,8 +48,6 @@ struct erase_info {
+@@ -30,12 +30,6 @@
+ 
+ #include <asm/div64.h>
+ 
+-#define MTD_ERASE_PENDING	0x01
+-#define MTD_ERASING		0x02
+-#define MTD_ERASE_SUSPEND	0x04
+-#define MTD_ERASE_DONE		0x08
+-#define MTD_ERASE_FAILED	0x10
+-
+ #define MTD_FAIL_ADDR_UNKNOWN -1LL
+ 
+ struct mtd_info;
+@@ -49,7 +43,6 @@ struct erase_info {
  	uint64_t addr;
  	uint64_t len;
  	uint64_t fail_addr;
--	void (*callback) (struct erase_info *self);
--	u_long priv;
- 	u_char state;
+-	u_char state;
  };
  
+ struct mtd_erase_region_info {
+@@ -589,8 +582,6 @@ extern void register_mtd_user (struct mtd_notifier *new);
+ extern int unregister_mtd_user (struct mtd_notifier *old);
+ void *mtd_kmalloc_up_to(const struct mtd_info *mtd, size_t *size);
+ 
+-void mtd_erase_callback(struct erase_info *instr);
+-
+ static inline int mtd_is_bitflip(int err) {
+ 	return err == -EUCLEAN;
+ }
 -- 
 2.14.1
