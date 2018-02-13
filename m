@@ -1,31 +1,27 @@
-Return-Path: <boris.brezillon@bootlin.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zgb4R3lwvzF0nW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 19:17:27 +1100 (AEDT)
-Date: Tue, 13 Feb 2018 09:17:14 +0100
-From: Boris Brezillon <boris.brezillon@bootlin.com>
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Brian Norris
- <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Richard
- Weinberger <richard@nod.at>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>,
- linux-mtd@lists.infradead.org, Joern Engel <joern@lazybastard.org>, Robert
- Jarzmik <robert.jarzmik@free.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Kyungmin Park <kyungmin.park@samsung.com>,
- Artem Bityutskiy <dedekind1@gmail.com>, Solarflare linux maintainers
- <linux-net-drivers@solarflare.com>, Edward Cree <ecree@solarflare.com>,
- Bert Kenward <bkenward@solarflare.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: [PATCH 5/5] mtd: Stop updating erase_info->state and calling
- mtd_erase_callback()
-Message-ID: <20180213091714.5eca4f45@bbrezillon>
-In-Reply-To: <20180213084246.4f626bec@xps13>
-References: <20180212210311.23244-1-boris.brezillon@bootlin.com>
- <20180212210311.23244-6-boris.brezillon@bootlin.com>
- <20180213084246.4f626bec@xps13>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x231.google.com (mail-pg0-x231.google.com
+ [IPv6:2607:f8b0:400e:c05::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgbb818rrzF0sY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 19:40:35 +1100 (AEDT)
+Received: by mail-pg0-x231.google.com with SMTP id e11so3469700pgq.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 00:40:35 -0800 (PST)
+Date: Tue, 13 Feb 2018 18:40:17 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 0/5] powerpc/mm/slice: improve slice speed and stack
+ use
+Message-ID: <20180213184017.168c31f0@roar.ozlabs.ibm.com>
+In-Reply-To: <7364b502-83a7-8b40-3530-b160e3c80523@c-s.fr>
+References: <20180210081139.27236-1-npiggin@gmail.com>
+ <e2043d70-97a7-b914-f279-4aad76b9bf91@c-s.fr>
+ <20180213012442.45b6f49b@roar.ozlabs.ibm.com>
+ <7364b502-83a7-8b40-3530-b160e3c80523@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,183 +31,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Feb 2018 08:42:46 +0100
-Miquel Raynal <miquel.raynal@bootlin.com> wrote:
+On Mon, 12 Feb 2018 18:42:21 +0100
+Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 
-> Hi Boris,
+> Le 12/02/2018 à 16:24, Nicholas Piggin a écrit :
+> > On Mon, 12 Feb 2018 16:02:23 +0100
+> > Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+> >   
+> >> Le 10/02/2018 à 09:11, Nicholas Piggin a écrit :  
+> >>> This series intends to improve performance and reduce stack
+> >>> consumption in the slice allocation code. It does it by keeping slice
+> >>> masks in the mm_context rather than compute them for each allocation,
+> >>> and by reducing bitmaps and slice_masks from stacks, using pointers
+> >>> instead where possible.
+> >>>
+> >>> checkstack.pl gives, before:
+> >>> 0x00000de4 slice_get_unmapped_area [slice.o]:           656
+> >>> 0x00001b4c is_hugepage_only_range [slice.o]:            512
+> >>> 0x0000075c slice_find_area_topdown [slice.o]:           416
+> >>> 0x000004c8 slice_find_area_bottomup.isra.1 [slice.o]:   272
+> >>> 0x00001aa0 slice_set_range_psize [slice.o]:             240
+> >>> 0x00000a64 slice_find_area [slice.o]:                   176
+> >>> 0x00000174 slice_check_fit [slice.o]:                   112
+> >>>
+> >>> after:
+> >>> 0x00000d70 slice_get_unmapped_area [slice.o]:           320
+> >>> 0x000008f8 slice_find_area [slice.o]:                   144
+> >>> 0x00001860 slice_set_range_psize [slice.o]:             144
+> >>> 0x000018ec is_hugepage_only_range [slice.o]:            144
+> >>> 0x00000750 slice_find_area_bottomup.isra.4 [slice.o]:   128
+> >>>
+> >>> The benchmark in https://github.com/linuxppc/linux/issues/49 gives, before:
+> >>> $ time ./slicemask
+> >>> real	0m20.712s
+> >>> user	0m5.830s
+> >>> sys	0m15.105s
+> >>>
+> >>> after:
+> >>> $ time ./slicemask
+> >>> real	0m13.197s
+> >>> user	0m5.409s
+> >>> sys	0m7.779s  
+> >>
+> >> Hi,
+> >>
+> >> I tested your serie on an 8xx, on top of patch
+> >> https://patchwork.ozlabs.org/patch/871675/
+> >>
+> >> I don't get a result as significant as yours, but there is some
+> >> improvment anyway:
+> >>
+> >> ITERATION 500000
+> >>
+> >> Before:
+> >>
+> >> root@vgoip:~# time ./slicemask
+> >> real    0m 33.26s
+> >> user    0m 1.94s
+> >> sys     0m 30.85s
+> >>
+> >> After:
+> >> root@vgoip:~# time ./slicemask
+> >> real    0m 29.69s
+> >> user    0m 2.11s
+> >> sys     0m 27.15s
+> >>
+> >> Most significant improvment is obtained with the first patch of your serie:
+> >> root@vgoip:~# time ./slicemask
+> >> real    0m 30.85s
+> >> user    0m 1.80s
+> >> sys     0m 28.57s  
+> > 
+> > Okay, thanks. Are you still spending significant time in the slice
+> > code?  
 > 
-> Just a few comments about the form.
-> 
-> Otherwise:
-> Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
-> 
-> 
-> > diff --git a/drivers/mtd/devices/lart.c b/drivers/mtd/devices/lart.c
-> > index 555b94406e0b..3d6c8ffd351f 100644
-> > --- a/drivers/mtd/devices/lart.c
-> > +++ b/drivers/mtd/devices/lart.c
-> > @@ -415,7 +415,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
-> >  	 {
-> >  		if (!erase_block (addr))
-> >  		  {
-> > -			 instr->state = MTD_ERASE_FAILED;
-> >  			 return (-EIO);
-> >  		  }  
-> 
-> You can also safely remove these '{' '}'
+> Do you mean am I still updating my patches ? No I hope we are at last 
 
-Well, this patch is not about fixing coding style issues, otherwise I'd
-have a lot more work on this driver :-)
+Actually I was wondering about CPU time spent for the microbenchmark :)
 
+> run with v4 now that Aneesh has tagged all of them as reviewed-by himself.
+> Once the serie has been accepted, my next step will be to backport at 
+> least the 3 first ones in kernel 4.14
 > 
-> >  
-> > @@ -425,9 +424,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
-> >  		if (addr == mtd->eraseregions[i].offset + (mtd->eraseregions[i].erasesize * mtd->eraseregions[i].numblocks)) i++;
-> >  	 }
-> >  
-> > -   instr->state = MTD_ERASE_DONE;
-> > -   mtd_erase_callback(instr);
-> > -
-> >     return (0);
-> >  }
-> >  
-> > diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
-> > index 5dc8bd042cc5..aaaeaae01e1d 100644
-> > --- a/drivers/mtd/devices/mtd_dataflash.c
-> > +++ b/drivers/mtd/devices/mtd_dataflash.c
-> > @@ -220,10 +220,6 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
-> >  	}
-> >  	mutex_unlock(&priv->lock);
-> >  
-> > -	/* Inform MTD subsystem that erase is complete */
-> > -	instr->state = MTD_ERASE_DONE;
-> > -	mtd_erase_callback(instr);
-> > -
-> >  	return 0;
-> >  }
-> >  
-> > diff --git a/drivers/mtd/devices/mtdram.c b/drivers/mtd/devices/mtdram.c
-> > index 0bf4aeaf0cb8..efef43c6684b 100644
-> > --- a/drivers/mtd/devices/mtdram.c
-> > +++ b/drivers/mtd/devices/mtdram.c
-> > @@ -60,8 +60,6 @@ static int ram_erase(struct mtd_info *mtd, struct erase_info *instr)
-> >  	if (check_offs_len(mtd, instr->addr, instr->len))
-> >  		return -EINVAL;
-> >  	memset((char *)mtd->priv + instr->addr, 0xff, instr->len);
-> > -	instr->state = MTD_ERASE_DONE;
-> > -	mtd_erase_callback(instr);  
+> >   
+> >>
+> >> Had to modify your serie a bit, if you are interested I can post it.
+> >>  
+> > 
+> > Sure, that would be good.  
 > 
-> Space ?
+> Ok, lets share it. The patch are not 100% clean.
 
-I could add a blank line, but again, I'm just following the coding style
-in place in this file :-).
+Those look pretty good, thanks for doing that work.
 
-> 
-> >  	return 0;
-> >  }
-> >  
-> > diff --git a/drivers/mtd/devices/phram.c b/drivers/mtd/devices/phram.c
-> > index 7287696a21f9..a963c88d392d 100644
-> > --- a/drivers/mtd/devices/phram.c
-> > +++ b/drivers/mtd/devices/phram.c
-> > @@ -44,8 +44,6 @@ static int phram_erase(struct mtd_info *mtd, struct erase_info *instr)
-> >  	 * I don't feel at all ashamed. This kind of thing is possible anyway
-> >  	 * with flash, but unlikely.
-> >  	 */  
-> 
-> Not sure this comment is still relevant? Maybe you could remove it
-> or at least change it? 
-> 
-> > -	instr->state = MTD_ERASE_DONE;
-> > -	mtd_erase_callback(instr);  
-> 
-> Space ?
-> 
-> >  	return 0;
-> >  }
-> >  
-> > diff --git a/drivers/mtd/devices/pmc551.c b/drivers/mtd/devices/pmc551.c
-> > index cadea0620cd0..5d842cbca3de 100644
-> > --- a/drivers/mtd/devices/pmc551.c
-> > +++ b/drivers/mtd/devices/pmc551.c
-> > @@ -184,12 +184,10 @@ static int pmc551_erase(struct mtd_info *mtd, struct erase_info *instr)
-> >  	}
-> >  
-> >        out:
-> > -	instr->state = MTD_ERASE_DONE;
-> >  #ifdef CONFIG_MTD_PMC551_DEBUG
-> >  	printk(KERN_DEBUG "pmc551_erase() done\n");
-> >  #endif
-> >  
-> > -	mtd_erase_callback(instr);
-> >  	return 0;
-> >  }
-> >  
-> > diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-> > index 26f9feaa5d17..5f383630c16f 100644
-> > --- a/drivers/mtd/devices/powernv_flash.c
-> > +++ b/drivers/mtd/devices/powernv_flash.c
-> > @@ -175,19 +175,12 @@ static int powernv_flash_erase(struct mtd_info *mtd, struct erase_info *erase)
-> >  {
-> >  	int rc;
-> >  
-> > -	erase->state = MTD_ERASING;
-> > -
-> >  	/* todo: register our own notifier to do a true async implementation */
-> >  	rc =  powernv_flash_async_op(mtd, FLASH_OP_ERASE, erase->addr,
-> >  			erase->len, NULL, NULL);  
-> 
-> Are you sure this is still needed? Maybe this should go away in your
-> first patch?
-
-Hm, indeed. This comment should be dropped.
-
-> 
-> > -
-> > -	if (rc) {
-> > +	if (rc)
-> >  		erase->fail_addr = erase->addr;
-> > -		erase->state = MTD_ERASE_FAILED;
-> > -	} else {
-> > -		erase->state = MTD_ERASE_DONE;
-> > -	}
-> > -	mtd_erase_callback(erase);
-> > +
-> >  	return rc;
-> >  }
-> >  
-> > diff --git a/drivers/mtd/devices/slram.c b/drivers/mtd/devices/slram.c
-> > index 0ec85f316d24..2f05e1801047 100644
-> > --- a/drivers/mtd/devices/slram.c
-> > +++ b/drivers/mtd/devices/slram.c
-> > @@ -88,8 +88,6 @@ static int slram_erase(struct mtd_info *mtd, struct erase_info *instr)
-> >  	 * I don't feel at all ashamed. This kind of thing is possible anyway
-> >  	 * with flash, but unlikely.
-> >  	 */  
-> 
-> Same with this comment.
-
-Actually, I'm not sure I understand that comment, but I guess it's
-talking about races between read/write and erase paths, so nothing
-related to the changed I'm doing here.
-
-> 
-> > -	instr->state = MTD_ERASE_DONE;
-> > -	mtd_erase_callback(instr);  
-> 
-> Space ?
-> 
-> >  	return(0);
-> >  }
-> >    
-> 
-> 
-> 
-> 
-
-
-
--- 
-Boris Brezillon, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+Thanks,
+Nick
