@@ -1,30 +1,31 @@
-Return-Path: <keescook@google.com>
-Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
- [IPv6:2607:f8b0:400c:c05::242])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x22e.google.com (mail-ua0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c08::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgwc66rh4zF1QK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 08:27:34 +1100 (AEDT)
-Received: by mail-vk0-x242.google.com with SMTP id o17so4388992vke.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 13:27:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgxLp3DC7zF0xM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 09:01:06 +1100 (AEDT)
+Received: by mail-ua0-x22e.google.com with SMTP id q8so12509576uae.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:01:06 -0800 (PST)
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20180213103213.GP3443@dhcp22.suse.cz>
-References: <20180212133731.GE3443@dhcp22.suse.cz>
- <87r2ppvaeq.fsf@concordia.ellerman.id.au>
- <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
- <87d1192nzc.fsf@concordia.ellerman.id.au>
- <20180213103213.GP3443@dhcp22.suse.cz>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 13 Feb 2018 13:27:30 -0800
-Message-ID: <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
-Subject: Re: samples/seccomp/ broken when cross compiling s390,
- ppc allyesconfig
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Will Drewry <wad@chromium.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <8737264c91.fsf@vajain21.in.ibm.com>
+References: <20180212085956.12016-1-vaibhav@linux.vnet.ibm.com>
+ <CAKTCnz=cDmeU6rvqpHf_oW-JjtcVSNjeSQpwzwRMo5U_g+hAwg@mail.gmail.com>
+ <8737264c91.fsf@vajain21.in.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 14 Feb 2018 09:01:02 +1100
+Message-ID: <CAKTCnzkBm1L75NZ9n5u6BLHC3y119cfk_RuEJ=8HCxOwhoZO6Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/xmon: Dont register sysrq key when kernel param
+ xmon=off
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Douglas Miller <dougmill@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,55 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 13, 2018 at 2:32 AM, Michal Hocko <mhocko@kernel.org> wrote:
-> On Tue 13-02-18 21:16:55, Michael Ellerman wrote:
->> Kees Cook <keescook@chromium.org> writes:
->>
->> > On Mon, Feb 12, 2018 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> >> Michal Hocko <mhocko@kernel.org> writes:
->> >>> Hi,
->> >>> my build test machinery chokes on samples/seccomp when cross compiling
->> >>> s390 and ppc64 allyesconfig. This has been the case for quite some
->> >>> time already but I never found time to look at the problem and report
->> >>> it. It seems this is not new issue and similar thing happend for
->> >>> MIPS e9107f88c985 ("samples/seccomp/Makefile: do not build tests if
->> >>> cross-compiling for MIPS").
->> >>>
->> >>> The build logs are attached.
->> >>>
->> >>> What is the best way around this? Should we simply skip compilation on
->> >>> cross compile or is actually anybody relying on that? Or should I simply
->> >>> disable it for s390 and ppc?
->> >>
->> >> The whole thing seems very confused. It's not building for the target,
->> >> it's building for the host, ie. the Makefile sets hostprogs-m and
->> >> HOSTCFLAGS etc.
->> >>
->> >> So it can't possibly work with cross compiling as it's currently
->> >> written.
->> >>
->> >> Either the Makefile needs some serious work to properly support cross
->> >> compiling or it should just be disabled when cross compiling.
->> >
->> > Hrm, yeah, the goal was to entirely disable cross compiling, but I
->> > guess we didn't hit it with a hard enough hammer. :)
->>
->> Do you know why it is written that way? Why doesn't it just try to cross
->> compile like normal code?
+On Mon, Feb 12, 2018 at 11:35 PM, Vaibhav Jain
+<vaibhav@linux.vnet.ibm.com> wrote:
+> Thanks for reviewing this patch Balbir
 >
-> No idea, sorry. All I know about this code is that it breaks my build
-> testing.
+> Balbir Singh <bsingharora@gmail.com> writes:
+>
+>> Any specific issue you've run into without this patch?
+> Without this patch since xmon is still accessible via sysrq and there is
+> no indication/warning on the xmon console mentioning that its is not
+> fully functional. Specifically xmon-console would still allow user to
+> set instruction/data breakpoint eventhough they wont work and will
+> result in a kernel-oops.
+>
+> Below is command log illustrating this problem on one of my test system
+> where I tried setting an instruction breakpoint on cmdline_proc_show()
+> with xmon=off:
+>
+> ~# cat /proc/cmdline
+> root=UUID=248ad10e-a272-4187-8672-5b25f701e8b9 ro xmon=off
+>
+> ~# echo 'x' > /proc/sysrq-trigger
+> [  458.904802] sysrq: SysRq : Entering xmon
+>
+> [ snip ]
+>
+> 78:mon> ls cmdline_proc_show
+> cmdline_proc_show: c0000000004196e0
+> 78:mon> bi c0000000004196e0
+> 78:mon> x
+>
+> ~# cat /proc/cmdline
+> [  505.618702] Oops: Exception in kernel mode, sig: 5 [#1]
+> [ snip ]
+> [  505.620082] NIP [c0000000004196e4] cmdline_proc_show+0x4/0x60
+> [  505.620136] LR [c0000000003b1db0] seq_read+0x130/0x5e0
+> [  505.620177] Call Trace:
+> [  505.620202] [c000200e5078fc00] [c0000000003b1d74] seq_read+0xf4/0x5e0 (unreliable)
+> [  505.620267] [c000200e5078fca0] [c00000000040cae0] proc_reg_read+0xb0/0x110
+> [  505.620322] [c000200e5078fcf0] [c00000000037687c] __vfs_read+0x6c/0x1b0
+> [  505.620376] [c000200e5078fd90] [c000000000376a7c] vfs_read+0xbc/0x1b0
+> [  505.620430] [c000200e5078fde0] [c00000000037724c] SyS_read+0x6c/0x110
+> [  505.620485] [c000200e5078fe30] [c00000000000b320] system_call+0x58/0x6c
+> [  505.620536] Instruction dump:
+> [  505.620570] 3c82ff2a 7fe3fb78 38a00000 3884dee0 4bf98c05 60000000 38210030 e8010010
+> [  505.620656] ebe1fff8 7c0803a6 4e800020 3c4c00d6 <38422120> 7c0802a6 f8010010 f821ff91
+> [  505.620728] ---[ end trace eaf583921860b3de ]---
+> [  506.629019]
+> Trace/breakpoint trap
+> ~#
+>
+>
+>> I presume running xmon=off indicates we don't want xmon to take over in case of
+>> panic/die/oops,
+> I believe that when xmon console is available it should be fully
+> functional rather than partially, otherwise it gets really confusing to
+> the user as to why Instruction/Data break points arent working.
+>
 
-IIRC, one of the problems is with build ordering problems: the kernel
-headers used by the samples aren't available when cross compiling.
+OK, so kernel breakpoints are broken with xmon=off and lead to oops as
+opposed to passing them on to a kprobe handler perhaps?
 
-I'm happy to kill it entirely with Michal's patch, though. Feel free
-to carry in your tree!
-
-Acked-by: Kees Cook <keescook@chromium.org>
-
--Kees
-
--- 
-Kees Cook
-Pixel Security
+Balbir Singh.
