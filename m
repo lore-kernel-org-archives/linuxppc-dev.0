@@ -1,42 +1,32 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgfs14BxDzF0s6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 22:07:48 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgfvM6g8vzF0rd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 22:09:51 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1DB4du1036729
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 06:07:45 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g3xf493xq-1
+ w1DB4hDG025080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 06:09:49 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g3upur8nf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 06:07:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 06:09:48 -0500
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 13 Feb 2018 11:07:41 -0000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- christophe lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: Re: [PATCH 2/3] cxl: Introduce module parameter 'enable_psltrace'
-In-Reply-To: <51364d03-d7a5-471b-2531-cf4c17af8c8d@linux.vnet.ibm.com>
-References: <20180209042535.16845-1-vaibhav@linux.vnet.ibm.com>
- <20180209042535.16845-3-vaibhav@linux.vnet.ibm.com>
- <a3880a5d-6ccb-9a90-14e5-d48376e4c8e0@linux.vnet.ibm.com>
- <87a7wf4flx.fsf@vajain21.in.ibm.com>
- <51364d03-d7a5-471b-2531-cf4c17af8c8d@linux.vnet.ibm.com>
-Date: Tue, 13 Feb 2018 16:37:35 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <87zi4d2lmw.fsf@vajain21.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 13 Feb 2018 06:09:47 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V3] powerpc/mm/hash64: memset the pagetable pages on
+ allocation.
+Date: Tue, 13 Feb 2018 16:39:33 +0530
+Message-Id: <20180213110933.5491-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,46 +36,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+On powerpc we allocate page table pages from slab cache of different sizes. For
+now we have a constructor that zero out the objects when we allocate then for
+the first time. We expect the objects to be zeroed out when we free the the
+object back to slab cache. This happens in the unmap path. For hugetlb pages
+we call huge_pte_get_and_clear to do that. With the current configuration of
+page table size, both pud and pgd level tables get allocated from the same slab
+cache. At the pud level, we use the second half of the table to store the slot
+information. But never clear that when unmapping. When such an freed object get
+allocated at pgd level, we will have part of the page table page not initlaized
+correctly. This result in kernel crash
 
-> Le 11/02/2018 =C3=A0 18:10, Vaibhav Jain a =C3=A9crit=C2=A0:
->> Thanks for reviewing the patch Christophe,
->>=20
->> christophe lombard <clombard@linux.vnet.ibm.com> writes:
->>>> +bool cxl_enable_psltrace =3D true;
->>>> +module_param_named(enable_psltrace, cxl_enable_psltrace, bool, 0600);
->>>> +MODULE_PARM_DESC(enable_psltrace, "Set PSL traces on probe. default: =
-on");
->>>> +
->>> I am not too agree to add a new parameter. This can cause doubts.
->>> PSL team has confirmed that enabling traces has no impact.
->>> Do you see any reason to disable the traces ?
->>=20
->> Traces on PSL follow a 'set and fetch' model. So once the trace buffer f=
-or
->> a specific array is full it will stop and switch to 'FIN' state and at
->> that point we need to fetch the trace-data and reinit the array to
->> re-arm it.
->
-> If the PSL trace arrays don't wrap, is there anything to gain by=20
-> enabling tracing by default instead of letting the developer handle it=20
-> through sysfs? I was under the (now wrong) impression that the PSL would=
-=20
-> wrap.
-Enabling the traces quickly enough should let AFU developers debug init
-issues. Specifically AFU's that rely on cxl kernel-apis.
+Simplify this by calling the object initialization after kmem_cache_alloc
 
-> I'm not a big fan of the module parameter. It seems we're giving a=20
-> second way of activating traces on top of sysfs, more cumbersome and=20
-> limited.
-Yes, this indeed is providing a second way of activating traces on top
-of sysfs. The way I see this that there are two ways PSL traces are
-managed:
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-1. Let userspace handle state machine of the traces entirely via sysfs.
-2. PSL trace machine is handled via cxl. It starts it when a card is
-probed and stops it when the card is reset.
-
---=20
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index 53df86d3cfce..e4d154a4d114 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -73,10 +73,13 @@ static inline void radix__pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ 
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
++	pgd_t *pgd;
+ 	if (radix_enabled())
+ 		return radix__pgd_alloc(mm);
+-	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+-		pgtable_gfp_flags(mm, GFP_KERNEL));
++	pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
++			       pgtable_gfp_flags(mm, GFP_KERNEL));
++	memset(pgd, 0, PGD_TABLE_SIZE);
++	return pgd;
+ }
+ 
+ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+-- 
+2.14.3
