@@ -1,17 +1,31 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgZzC2lm8zF0ll
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 19:12:48 +1100 (AEDT)
-Date: Tue, 13 Feb 2018 11:12:34 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: fbarrat@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] ocxl: Add AFU interrupt support
-Message-ID: <20180213081234.GA19567@mwanda>
+Return-Path: <boris.brezillon@bootlin.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zgb4R3lwvzF0nW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 19:17:27 +1100 (AEDT)
+Date: Tue, 13 Feb 2018 09:17:14 +0100
+From: Boris Brezillon <boris.brezillon@bootlin.com>
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Brian Norris
+ <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Richard
+ Weinberger <richard@nod.at>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>,
+ linux-mtd@lists.infradead.org, Joern Engel <joern@lazybastard.org>, Robert
+ Jarzmik <robert.jarzmik@free.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Kyungmin Park <kyungmin.park@samsung.com>,
+ Artem Bityutskiy <dedekind1@gmail.com>, Solarflare linux maintainers
+ <linux-net-drivers@solarflare.com>, Edward Cree <ecree@solarflare.com>,
+ Bert Kenward <bkenward@solarflare.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: Re: [PATCH 5/5] mtd: Stop updating erase_info->state and calling
+ mtd_erase_callback()
+Message-ID: <20180213091714.5eca4f45@bbrezillon>
+In-Reply-To: <20180213084246.4f626bec@xps13>
+References: <20180212210311.23244-1-boris.brezillon@bootlin.com>
+ <20180212210311.23244-6-boris.brezillon@bootlin.com>
+ <20180213084246.4f626bec@xps13>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,119 +35,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Frederic Barrat,
+On Tue, 13 Feb 2018 08:42:46 +0100
+Miquel Raynal <miquel.raynal@bootlin.com> wrote:
 
-The patch aeddad1760ae: "ocxl: Add AFU interrupt support" from Jan
-23, 2018, leads to the following static checker warning:
+> Hi Boris,
+> 
+> Just a few comments about the form.
+> 
+> Otherwise:
+> Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
+> 
+> 
+> > diff --git a/drivers/mtd/devices/lart.c b/drivers/mtd/devices/lart.c
+> > index 555b94406e0b..3d6c8ffd351f 100644
+> > --- a/drivers/mtd/devices/lart.c
+> > +++ b/drivers/mtd/devices/lart.c
+> > @@ -415,7 +415,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+> >  	 {
+> >  		if (!erase_block (addr))
+> >  		  {
+> > -			 instr->state = MTD_ERASE_FAILED;
+> >  			 return (-EIO);
+> >  		  }  
+> 
+> You can also safely remove these '{' '}'
 
-    drivers/misc/ocxl/file.c:163 afu_ioctl()
-    warn: maybe return -EFAULT instead of the bytes remaining?
+Well, this patch is not about fixing coding style issues, otherwise I'd
+have a lot more work on this driver :-)
 
-drivers/misc/ocxl/file.c
-   111  static long afu_ioctl(struct file *file, unsigned int cmd,
-   112                  unsigned long args)
-   113  {
-   114          struct ocxl_context *ctx = file->private_data;
-   115          struct ocxl_ioctl_irq_fd irq_fd;
-   116          u64 irq_offset;
-   117          long rc;
-   118  
-   119          pr_debug("%s for context %d, command %s\n", __func__, ctx->pasid,
-   120                  CMD_STR(cmd));
-   121  
-   122          if (ctx->status == CLOSED)
-   123                  return -EIO;
-   124  
-   125          switch (cmd) {
-   126          case OCXL_IOCTL_ATTACH:
-   127                  rc = afu_ioctl_attach(ctx,
-   128                                  (struct ocxl_ioctl_attach __user *) args);
-   129                  break;
-   130  
-   131          case OCXL_IOCTL_IRQ_ALLOC:
-   132                  rc = ocxl_afu_irq_alloc(ctx, &irq_offset);
-   133                  if (!rc) {
-   134                          rc = copy_to_user((u64 __user *) args, &irq_offset,
-   135                                          sizeof(irq_offset));
-   136                          if (rc)
-                                    ^^
-copy_to_user() returns the number of bytes remaining but we want to
-return -EFAULT on error.
+> 
+> >  
+> > @@ -425,9 +424,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+> >  		if (addr == mtd->eraseregions[i].offset + (mtd->eraseregions[i].erasesize * mtd->eraseregions[i].numblocks)) i++;
+> >  	 }
+> >  
+> > -   instr->state = MTD_ERASE_DONE;
+> > -   mtd_erase_callback(instr);
+> > -
+> >     return (0);
+> >  }
+> >  
+> > diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+> > index 5dc8bd042cc5..aaaeaae01e1d 100644
+> > --- a/drivers/mtd/devices/mtd_dataflash.c
+> > +++ b/drivers/mtd/devices/mtd_dataflash.c
+> > @@ -220,10 +220,6 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
+> >  	}
+> >  	mutex_unlock(&priv->lock);
+> >  
+> > -	/* Inform MTD subsystem that erase is complete */
+> > -	instr->state = MTD_ERASE_DONE;
+> > -	mtd_erase_callback(instr);
+> > -
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/drivers/mtd/devices/mtdram.c b/drivers/mtd/devices/mtdram.c
+> > index 0bf4aeaf0cb8..efef43c6684b 100644
+> > --- a/drivers/mtd/devices/mtdram.c
+> > +++ b/drivers/mtd/devices/mtdram.c
+> > @@ -60,8 +60,6 @@ static int ram_erase(struct mtd_info *mtd, struct erase_info *instr)
+> >  	if (check_offs_len(mtd, instr->addr, instr->len))
+> >  		return -EINVAL;
+> >  	memset((char *)mtd->priv + instr->addr, 0xff, instr->len);
+> > -	instr->state = MTD_ERASE_DONE;
+> > -	mtd_erase_callback(instr);  
+> 
+> Space ?
 
-   137                                  ocxl_afu_irq_free(ctx, irq_offset);
-   138                  }
-   139                  break;
-   140  
+I could add a blank line, but again, I'm just following the coding style
+in place in this file :-).
 
-    drivers/misc/ocxl/file.c:320 afu_read()
-    warn: unsigned 'used' is never less than zero.
+> 
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/drivers/mtd/devices/phram.c b/drivers/mtd/devices/phram.c
+> > index 7287696a21f9..a963c88d392d 100644
+> > --- a/drivers/mtd/devices/phram.c
+> > +++ b/drivers/mtd/devices/phram.c
+> > @@ -44,8 +44,6 @@ static int phram_erase(struct mtd_info *mtd, struct erase_info *instr)
+> >  	 * I don't feel at all ashamed. This kind of thing is possible anyway
+> >  	 * with flash, but unlikely.
+> >  	 */  
+> 
+> Not sure this comment is still relevant? Maybe you could remove it
+> or at least change it? 
+> 
+> > -	instr->state = MTD_ERASE_DONE;
+> > -	mtd_erase_callback(instr);  
+> 
+> Space ?
+> 
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/drivers/mtd/devices/pmc551.c b/drivers/mtd/devices/pmc551.c
+> > index cadea0620cd0..5d842cbca3de 100644
+> > --- a/drivers/mtd/devices/pmc551.c
+> > +++ b/drivers/mtd/devices/pmc551.c
+> > @@ -184,12 +184,10 @@ static int pmc551_erase(struct mtd_info *mtd, struct erase_info *instr)
+> >  	}
+> >  
+> >        out:
+> > -	instr->state = MTD_ERASE_DONE;
+> >  #ifdef CONFIG_MTD_PMC551_DEBUG
+> >  	printk(KERN_DEBUG "pmc551_erase() done\n");
+> >  #endif
+> >  
+> > -	mtd_erase_callback(instr);
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
+> > index 26f9feaa5d17..5f383630c16f 100644
+> > --- a/drivers/mtd/devices/powernv_flash.c
+> > +++ b/drivers/mtd/devices/powernv_flash.c
+> > @@ -175,19 +175,12 @@ static int powernv_flash_erase(struct mtd_info *mtd, struct erase_info *erase)
+> >  {
+> >  	int rc;
+> >  
+> > -	erase->state = MTD_ERASING;
+> > -
+> >  	/* todo: register our own notifier to do a true async implementation */
+> >  	rc =  powernv_flash_async_op(mtd, FLASH_OP_ERASE, erase->addr,
+> >  			erase->len, NULL, NULL);  
+> 
+> Are you sure this is still needed? Maybe this should go away in your
+> first patch?
 
-drivers/misc/ocxl/file.c
-   279          ssize_t rc;
-   280          size_t used = 0;
-                ^^^^^^
-This should be ssize_t
+Hm, indeed. This comment should be dropped.
 
-   281          DEFINE_WAIT(event_wait);
-   282  
-   283          memset(&header, 0, sizeof(header));
-   284  
-   285          /* Require offset to be 0 */
-   286          if (*off != 0)
-   287                  return -EINVAL;
-   288  
-   289          if (count < (sizeof(struct ocxl_kernel_event_header) +
-   290                          AFU_EVENT_BODY_MAX_SIZE))
-   291                  return -EINVAL;
-   292  
-   293          for (;;) {
-   294                  prepare_to_wait(&ctx->events_wq, &event_wait,
-   295                                  TASK_INTERRUPTIBLE);
-   296  
-   297                  if (afu_events_pending(ctx))
-   298                          break;
-   299  
-   300                  if (ctx->status == CLOSED)
-   301                          break;
-   302  
-   303                  if (file->f_flags & O_NONBLOCK) {
-   304                          finish_wait(&ctx->events_wq, &event_wait);
-   305                          return -EAGAIN;
-   306                  }
-   307  
-   308                  if (signal_pending(current)) {
-   309                          finish_wait(&ctx->events_wq, &event_wait);
-   310                          return -ERESTARTSYS;
-   311                  }
-   312  
-   313                  schedule();
-   314          }
-   315  
-   316          finish_wait(&ctx->events_wq, &event_wait);
-   317  
-   318          if (has_xsl_error(ctx)) {
-   319                  used = append_xsl_error(ctx, &header, buf + sizeof(header));
-   320                  if (used < 0)
-                            ^^^^^^^^
-Impossible.
+> 
+> > -
+> > -	if (rc) {
+> > +	if (rc)
+> >  		erase->fail_addr = erase->addr;
+> > -		erase->state = MTD_ERASE_FAILED;
+> > -	} else {
+> > -		erase->state = MTD_ERASE_DONE;
+> > -	}
+> > -	mtd_erase_callback(erase);
+> > +
+> >  	return rc;
+> >  }
+> >  
+> > diff --git a/drivers/mtd/devices/slram.c b/drivers/mtd/devices/slram.c
+> > index 0ec85f316d24..2f05e1801047 100644
+> > --- a/drivers/mtd/devices/slram.c
+> > +++ b/drivers/mtd/devices/slram.c
+> > @@ -88,8 +88,6 @@ static int slram_erase(struct mtd_info *mtd, struct erase_info *instr)
+> >  	 * I don't feel at all ashamed. This kind of thing is possible anyway
+> >  	 * with flash, but unlikely.
+> >  	 */  
+> 
+> Same with this comment.
 
-   321                          return used;
-   322          }
-   323  
-   324          if (!afu_events_pending(ctx))
-   325                  header.flags |= OCXL_KERNEL_EVENT_FLAG_LAST;
-   326  
-   327          if (copy_to_user(buf, &header, sizeof(header)))
-   328                  return -EFAULT;
-   329  
-   330          used += sizeof(header);
-   331  
-   332          rc = (ssize_t) used;
-                     ^^^^^^^^^^^^^^
-You could remove the cast.
+Actually, I'm not sure I understand that comment, but I guess it's
+talking about races between read/write and erase paths, so nothing
+related to the changed I'm doing here.
 
-   333          return rc;
-   334  }
+> 
+> > -	instr->state = MTD_ERASE_DONE;
+> > -	mtd_erase_callback(instr);  
+> 
+> Space ?
+> 
+> >  	return(0);
+> >  }
+> >    
+> 
+> 
+> 
+> 
 
-regards,
-dan carpenter
+
+
+-- 
+Boris Brezillon, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+http://bootlin.com
