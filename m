@@ -1,22 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 15.mo6.mail-out.ovh.net (15.mo6.mail-out.ovh.net
+ [188.165.39.161])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zggn2741NzF0s6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 22:49:26 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Guenter Roeck <linux@roeck-us.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
- Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/kdump: Add missing optional dummy functions
-In-Reply-To: <1518474848-3158-1-git-send-email-linux@roeck-us.net>
-References: <1518474848-3158-1-git-send-email-linux@roeck-us.net>
-Date: Tue, 13 Feb 2018 22:49:22 +1100
-Message-ID: <877erh2jp9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zghMY0t63zF0yM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 23:15:51 +1100 (AEDT)
+Received: from player774.ha.ovh.net (b6.ovh.net [213.186.33.56])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 347A712CFE0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 11:40:53 +0100 (CET)
+Subject: Re: [PATCH] powerpc/xive: use hw CPU ids when configuring the CPU
+ queues
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, stable@vger.kernel.org
+References: <20180213084712.18351-1-clg@kaod.org>
+ <87a7wd2nwn.fsf@concordia.ellerman.id.au>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <592440b1-5943-2315-c477-598900c79521@kaod.org>
+Date: Tue, 13 Feb 2018 10:40:47 +0000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87a7wd2nwn.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guenter Roeck <linux@roeck-us.net> writes:
+On 02/13/2018 10:18 AM, Michael Ellerman wrote:
+> Cédric Le Goater <clg@kaod.org> writes:
+> 
+>> The CPU event notification queues on sPAPR should be configured using
+>> a hardware CPU identifier.
+>>
+>> The problem did not show up on the Power Hypervisor because pHyp
+>> supports 8 threads per core which keeps CPU number contiguous. This is
+>> not the case on all sPAPR virtual machines, some use SMT=1.
+>>
+>> Also improve error logging by adding the CPU number.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>
+>>  I think we should send this one to stable also.
+> 
+> Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
 
-> If KEXEC_CORE is not enabled, PowerNV builds fail as follows.
->
-> arch/powerpc/platforms/powernv/smp.c: In function 'pnv_smp_cpu_kill_self':
-> arch/powerpc/platforms/powernv/smp.c:236:4: error:
-> 	implicit declaration of function 'crash_ipi_callback'
->
-> Add dummy function calls, similar to kdump_in_progress(), to solve the
-> problem.
->
-> Fixes: 4145f358644b ("powernv/kdump: Fix cases where the kdump kernel ...")
+yes.
 
-Personally I prefer these untruncated.
+> Cc: stable@vger.kernel.org # v4.14+
 
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->  arch/powerpc/include/asm/kexec.h | 6 ++++++
->  1 file changed, 6 insertions(+)
+yes. I just added the Cc:. I am not sure that will work with 
+patchwork though.
 
-Thanks. Nathan sent a fix for this a few days ago, but I like this
-version because it uses the existing #ifdefs.
+Thanks,
 
-I've taken this version but used the subject from his patch.
+C. 
 
-cheers
 
-> diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-> index 9dcbfa6bbb91..d8b1e8e7e035 100644
-> --- a/arch/powerpc/include/asm/kexec.h
-> +++ b/arch/powerpc/include/asm/kexec.h
-> @@ -140,6 +140,12 @@ static inline bool kdump_in_progress(void)
->  	return false;
->  }
->  
-> +static inline void crash_ipi_callback(struct pt_regs *regs) { }
-> +
-> +static inline void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
-> +{
-> +}
-> +
->  #endif /* CONFIG_KEXEC_CORE */
->  #endif /* ! __ASSEMBLY__ */
->  #endif /* __KERNEL__ */
-> -- 
-> 2.7.4
+> ?
+> 
+> cheers
+> 
+>> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+>> index d9c4c9366049..091f1d0d0af1 100644
+>> --- a/arch/powerpc/sysdev/xive/spapr.c
+>> +++ b/arch/powerpc/sysdev/xive/spapr.c
+>> @@ -356,7 +356,8 @@ static int xive_spapr_configure_queue(u32 target, struct xive_q *q, u8 prio,
+>>  
+>>  	rc = plpar_int_get_queue_info(0, target, prio, &esn_page, &esn_size);
+>>  	if (rc) {
+>> -		pr_err("Error %lld getting queue info prio %d\n", rc, prio);
+>> +		pr_err("Error %lld getting queue info CPU %d prio %d\n", rc,
+>> +		       target, prio);
+>>  		rc = -EIO;
+>>  		goto fail;
+>>  	}
+>> @@ -370,7 +371,8 @@ static int xive_spapr_configure_queue(u32 target, struct xive_q *q, u8 prio,
+>>  	/* Configure and enable the queue in HW */
+>>  	rc = plpar_int_set_queue_config(flags, target, prio, qpage_phys, order);
+>>  	if (rc) {
+>> -		pr_err("Error %lld setting queue for prio %d\n", rc, prio);
+>> +		pr_err("Error %lld setting queue for CPU %d prio %d\n", rc,
+>> +		       target, prio);
+>>  		rc = -EIO;
+>>  	} else {
+>>  		q->qpage = qpage;
+>> @@ -389,8 +391,8 @@ static int xive_spapr_setup_queue(unsigned int cpu, struct xive_cpu *xc,
+>>  	if (IS_ERR(qpage))
+>>  		return PTR_ERR(qpage);
+>>  
+>> -	return xive_spapr_configure_queue(cpu, q, prio, qpage,
+>> -					  xive_queue_shift);
+>> +	return xive_spapr_configure_queue(get_hard_smp_processor_id(cpu),
+>> +					  q, prio, qpage, xive_queue_shift);
+>>  }
+>>  
+>>  static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
+>> @@ -399,10 +401,12 @@ static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
+>>  	struct xive_q *q = &xc->queue[prio];
+>>  	unsigned int alloc_order;
+>>  	long rc;
+>> +	int hw_cpu = get_hard_smp_processor_id(cpu);
+>>  
+>> -	rc = plpar_int_set_queue_config(0, cpu, prio, 0, 0);
+>> +	rc = plpar_int_set_queue_config(0, hw_cpu, prio, 0, 0);
+>>  	if (rc)
+>> -		pr_err("Error %ld setting queue for prio %d\n", rc, prio);
+>> +		pr_err("Error %ld setting queue for CPU %d prio %d\n", rc,
+>> +		       hw_cpu, prio);
+>>  
+>>  	alloc_order = xive_alloc_order(xive_queue_shift);
+>>  	free_pages((unsigned long)q->qpage, alloc_order);
+>> -- 
+>> 2.13.6
