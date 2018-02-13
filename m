@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgmCS5CfgzF1Q9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 02:09:08 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id p5so6752253plo.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:09:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgmCX0C3GzF1Q4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 02:09:11 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id a11so28772pgu.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:09:11 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 10/14] powerpc/64: allocate pacas per node
-Date: Wed, 14 Feb 2018 01:08:20 +1000
-Message-Id: <20180213150824.27689-11-npiggin@gmail.com>
+Subject: [PATCH 11/14] powerpc/64: allocate per-cpu stacks node-local if
+ possible
+Date: Wed, 14 Feb 2018 01:08:21 +1000
+Message-Id: <20180213150824.27689-12-npiggin@gmail.com>
 In-Reply-To: <20180213150824.27689-1-npiggin@gmail.com>
 References: <20180213150824.27689-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,111 +25,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Per-node allocations are possible on 64s with radix that does
-not have the bolted SLB limitation.
-
-Hash would be able to do the same if all CPUs had the bottom of
-their node-local memory bolted as well. This is left as an
-exercise for the reader.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/paca.c     | 41 +++++++++++++++++++++++++++++++++++------
- arch/powerpc/kernel/setup_64.c |  4 ++++
- 2 files changed, 39 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/setup_64.c | 51 ++++++++++++++++++++++++++----------------
+ 1 file changed, 32 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 12d329467631..470ce21af8b5 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -20,6 +20,37 @@
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 02fa358982e6..16ea71fa1ead 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -611,6 +611,21 @@ __init u64 ppc64_bolted_size(void)
+ #endif
+ }
  
- #include "setup.h"
- 
-+static void *__init alloc_paca_data(unsigned long size, unsigned long align,
-+				unsigned long limit, int cpu)
++static void *__init alloc_stack(unsigned long limit, int cpu)
 +{
 +	unsigned long pa;
-+	int nid;
 +
-+	/*
-+	 * boot_cpuid paca is allocated very early before cpu_to_node is up.
-+	 * Set bottom-up mode, because the boot CPU should be on node-0,
-+	 * which will put its paca in the right place.
-+	 */
-+	if (cpu == boot_cpuid) {
-+		nid = -1;
-+		memblock_set_bottom_up(true);
-+	} else {
-+		nid = early_cpu_to_node(cpu);
-+	}
-+
-+	pa = memblock_alloc_base_nid(size, align, limit, nid, MEMBLOCK_NONE);
++	pa = memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
++					early_cpu_to_node(cpu), MEMBLOCK_NONE);
 +	if (!pa) {
-+		pa = memblock_alloc_base(size, align, limit);
++		pa = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
 +		if (!pa)
-+			panic("cannot allocate paca data");
++			panic("cannot allocate stacks");
 +	}
-+
-+	if (cpu == boot_cpuid)
-+		memblock_set_bottom_up(false);
 +
 +	return __va(pa);
 +}
 +
- #ifdef CONFIG_PPC_PSERIES
+ void __init irqstack_early_init(void)
+ {
+ 	u64 limit = ppc64_bolted_size();
+@@ -622,12 +637,8 @@ void __init irqstack_early_init(void)
+ 	 * accessed in realmode.
+ 	 */
+ 	for_each_possible_cpu(i) {
+-		softirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_alloc_base(THREAD_SIZE,
+-					    THREAD_SIZE, limit));
+-		hardirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_alloc_base(THREAD_SIZE,
+-					    THREAD_SIZE, limit));
++		softirq_ctx[i] = alloc_stack(limit, i);
++		hardirq_ctx[i] = alloc_stack(limit, i);
+ 	}
+ }
  
- /*
-@@ -52,7 +83,7 @@ static struct lppaca * __init new_lppaca(int cpu, unsigned long limit)
- 	if (early_cpu_has_feature(CPU_FTR_HVMODE))
- 		return NULL;
+@@ -635,20 +646,21 @@ void __init irqstack_early_init(void)
+ void __init exc_lvl_early_init(void)
+ {
+ 	unsigned int i;
+-	unsigned long sp;
  
--	lp = __va(memblock_alloc_base(size, 0x400, limit));
-+	lp = alloc_paca_data(size, 0x400, limit, cpu);
- 	init_lppaca(lp);
+ 	for_each_possible_cpu(i) {
+-		sp = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+-		critirq_ctx[i] = (struct thread_info *)__va(sp);
+-		paca_ptrs[i]->crit_kstack = __va(sp + THREAD_SIZE);
++		void *sp;
  
- 	return lp;
-@@ -82,7 +113,7 @@ static struct slb_shadow * __init new_slb_shadow(int cpu, unsigned long limit)
- 			return NULL;
+-		sp = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+-		dbgirq_ctx[i] = (struct thread_info *)__va(sp);
+-		paca_ptrs[i]->dbg_kstack = __va(sp + THREAD_SIZE);
++		sp = alloc_stack(ULONG_MAX, i);
++		critirq_ctx[i] = sp;
++		paca_ptrs[i]->crit_kstack = sp + THREAD_SIZE;
+ 
+-		sp = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+-		mcheckirq_ctx[i] = (struct thread_info *)__va(sp);
+-		paca_ptrs[i]->mc_kstack = __va(sp + THREAD_SIZE);
++		sp = alloc_stack(ULONG_MAX, i);
++		dbgirq_ctx[i] = sp;
++		paca_ptrs[i]->dbg_kstack = sp + THREAD_SIZE;
++
++		sp = alloc_stack(ULONG_MAX, i);
++		mcheckirq_ctx[i] = sp;
++		paca_ptrs[i]->mc_kstack = sp + THREAD_SIZE;
  	}
  
--	s = __va(memblock_alloc_base(sizeof(*s), L1_CACHE_BYTES, limit));
-+	s = alloc_paca_data(sizeof(*s), L1_CACHE_BYTES, limit, cpu);
- 	memset(s, 0, sizeof(*s));
+ 	if (cpu_has_feature(CPU_FTR_DEBUG_LVL_EXC))
+@@ -702,20 +714,21 @@ void __init emergency_stack_init(void)
  
- 	s->persistent = cpu_to_be32(SLB_NUM_BOLTED);
-@@ -173,7 +204,6 @@ void __init allocate_paca_ptrs(void)
- void __init allocate_paca(int cpu)
- {
- 	u64 limit;
--	unsigned long pa;
- 	struct paca_struct *paca;
+ 	for_each_possible_cpu(i) {
+ 		struct thread_info *ti;
+-		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
++
++		ti = alloc_stack(limit, i);
+ 		memset(ti, 0, THREAD_SIZE);
+ 		emerg_stack_init_thread_info(ti, i);
+ 		paca_ptrs[i]->emergency_sp = (void *)ti + THREAD_SIZE;
  
- 	BUG_ON(cpu >= paca_nr_cpu_ids);
-@@ -188,9 +218,8 @@ void __init allocate_paca(int cpu)
- 	limit = ppc64_rma_size;
- #endif
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 		/* emergency stack for NMI exception handling. */
+-		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
++		ti = alloc_stack(limit, i);
+ 		memset(ti, 0, THREAD_SIZE);
+ 		emerg_stack_init_thread_info(ti, i);
+ 		paca_ptrs[i]->nmi_emergency_sp = (void *)ti + THREAD_SIZE;
  
--	pa = memblock_alloc_base(sizeof(struct paca_struct),
--					L1_CACHE_BYTES, limit);
--	paca = __va(pa);
-+	paca = alloc_paca_data(sizeof(struct paca_struct), L1_CACHE_BYTES,
-+				limit, cpu);
- 	paca_ptrs[cpu] = paca;
- 	memset(paca, 0, sizeof(struct paca_struct));
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index dde34d35d1e7..02fa358982e6 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -312,6 +312,10 @@ void __init early_setup(unsigned long dt_ptr)
- 	early_init_devtree(__va(dt_ptr));
- 
- 	/* Now we know the logical id of our boot cpu, setup the paca. */
-+	if (boot_cpuid != 0) {
-+		/* Poison paca_ptrs[0] again if it's not the boot cpu */
-+		memset(&paca_ptrs[0], 0x88, sizeof(paca_ptrs[0]));
-+	}
- 	setup_paca(paca_ptrs[boot_cpuid]);
- 	fixup_boot_paca();
- 
+ 		/* emergency stack for machine check exception handling. */
+-		ti = __va(memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit));
++		ti = alloc_stack(limit, i);
+ 		memset(ti, 0, THREAD_SIZE);
+ 		emerg_stack_init_thread_info(ti, i);
+ 		paca_ptrs[i]->mc_emergency_sp = (void *)ti + THREAD_SIZE;
 -- 
 2.16.1
