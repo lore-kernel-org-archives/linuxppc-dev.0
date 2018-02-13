@@ -1,19 +1,22 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgsC73LnVzF18C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 05:54:11 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/via-pmu: Fix section mismatch warning
-To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20180207194439.32680-1-malat@debian.org>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <dfdca2f9-bf75-cdd3-e149-f3a30944d4ae@redhat.com>
-Date: Tue, 13 Feb 2018 19:54:02 +0100
-MIME-Version: 1.0
-In-Reply-To: <20180207194439.32680-1-malat@debian.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgsRN3WzjzF1Q5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 06:04:46 +1100 (AEDT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (1.0)
+Subject: [PATCH 1/2] KVM: PPC: Fix compile error that occurs when
+ CONFIG_ALTIVEC=n
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <20180213045130.r35rdy24uokzixho@oak.ozlabs.ibm.com>
+Date: Tue, 13 Feb 2018 20:04:39 +0100
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <D5D01768-C887-4DD2-8FD6-2B188B6A0315@xenosoft.de>
+References: <20180213045130.r35rdy24uokzixho@oak.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2018 20:44, Mathieu Malaterre wrote:
-> Remove the __init annotation from pmu_init() to avoid the
-> following warning.
-> 
-> WARNING: vmlinux.o(.data+0x4739c): Section mismatch in reference from the variable via_pmu_driver to the function .init.text:pmu_init()
-> The variable via_pmu_driver references
-> the function __init pmu_init()
-> If the reference is valid then annotate the
-> variable with __init* or __refdata (see linux/init.h) or name the variable:
-> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
-> 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> ---
->  drivers/macintosh/via-pmu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-> index 08849e33c567..5f378272d5b2 100644
-> --- a/drivers/macintosh/via-pmu.c
-> +++ b/drivers/macintosh/via-pmu.c
-> @@ -378,7 +378,7 @@ static int pmu_probe(void)
->  	return vias == NULL? -ENODEV: 0;
->  }
->  
-> -static int __init pmu_init(void)
-> +static int pmu_init(void)
->  {
->  	if (vias == NULL)
->  		return -ENODEV;
-> 
+I successfully compiled the latest Git kernel with this patch without enable=
+d AltiVec for my Freescale P5020 board today. The patch works without any pr=
+oblems.
 
-pmu_init() is really an init function only called by another init
-function (adb_init()).
+=E2=80=94 Christian
 
-So I think it could be good to let the __init marker.
+Sent from my iPhone
 
-Did you try:
+On 13. Feb 2018, at 05:51, Paul Mackerras <paulus@ozlabs.org> wrote:
 
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -198,7 +198,7 @@ static const struct file_operations
-pmu_battery_proc_fops;
- static const struct file_operations pmu_options_proc_fops;
+Commit accb757d798c ("KVM: Move vcpu_load to arch-specific
+kvm_arch_vcpu_ioctl_run", 2017-12-04) added a "goto out"
+statement and an "out:" label to kvm_arch_vcpu_ioctl_run().
+Since the only "goto out" is inside a CONFIG_VSX block,
+compiling with CONFIG_VSX=3Dn gives a warning that label "out"
+is defined but not used, and because arch/powerpc is compiled
+with -Werror, that becomes a compile error that makes the kernel
+build fail.
 
- #ifdef CONFIG_ADB
--struct adb_driver via_pmu_driver = {
-+const struct adb_driver via_pmu_driver = {
-        "PMU",
-        pmu_probe,
-        pmu_init,
+Merge commit 1ab03c072feb ("Merge tag 'kvm-ppc-next-4.16-2' of
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc",
+2018-02-09) added a similar block of code inside a #ifdef
+CONFIG_ALTIVEC, with a "goto out" statement.
 
+In order to make the build succeed, this adds a #ifdef around the
+"out:" label.  This is a minimal, ugly fix, to be replaced later
+by a refactoring of the code.  Since CONFIG_VSX depends on
+CONFIG_ALTIVEC, it is sufficient to use #ifdef CONFIG_ALTIVEC here.
 
-Thanks,
-Laurent
+Fixes: accb757d798c ("KVM: Move vcpu_load to arch-specific kvm_arch_vcpu_ioc=
+tl_run")
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+arch/powerpc/kvm/powerpc.c | 2 ++
+1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 403e642c78f5..0083142c2f84 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -1608,7 +1608,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, str=
+uct kvm_run *run)
+
+   kvm_sigset_deactivate(vcpu);
+
++#ifdef CONFIG_ALTIVEC
+out:
++#endif
+   vcpu_put(vcpu);
+   return r;
+}
+--=20
+2.11.0
