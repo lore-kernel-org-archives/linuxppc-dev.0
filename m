@@ -1,40 +1,36 @@
-Return-Path: <srs0=prwo=fh=linux.vnet.ibm.com=sukadev@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgtWl1YK1zF1QZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 06:53:39 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zgtWj65NHz8tCv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 06:53:37 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zgtWh4B9Bz9t3R
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2018 06:53:36 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1DJoqao022380
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2018 14:53:34 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g43cmygfk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgtWs58zHzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 06:53:45 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1DJqWlJ046831
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:53:42 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g42m4jc0a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2018 14:53:34 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:53:31 -0500
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 13 Feb 2018 14:53:33 -0500
-Date: Tue, 13 Feb 2018 11:53:27 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix cleanup when VAS is not configured
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 13 Feb 2018 19:53:29 -0000
+Subject: Re: [PATCH] cxl: Remove function write_timebase_ctrl_psl9() for PSL9
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+References: <20180209041009.14456-1-vaibhav@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 13 Feb 2018 20:53:26 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20180213195327.GA10678@us.ibm.com>
+In-Reply-To: <20180209041009.14456-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <17a1d3c8-c38d-0134-9463-4eebf1eced70@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,78 +40,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Fri, 9 Feb 2018 11:49:06 -0600
-Subject: [PATCH 1/1] powerpc/vas: Fix cleanup when VAS is not configured
 
-When VAS is not configured, unregister the platform driver. Also simplify
-cleanup by delaying vas debugfs init until we know VAS is configured.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog[v2]
-	- [Michael Ellerman] Move vas_init_dbgdir() into a lower level
-	  function to keep vas_init() cleaner.
----
- arch/powerpc/platforms/powernv/vas-debug.c | 11 +++++++++++
- arch/powerpc/platforms/powernv/vas.c       |  6 +++---
- 2 files changed, 14 insertions(+), 3 deletions(-)
+Le 09/02/2018 à 05:10, Vaibhav Jain a écrit :
+> For PSL9 the time-base enable bit has moved from PSL_TB_CTLSTAT
+> register to PSL_CONTROL register. Hence we don't need an sl_ops
+> implementation for 'write_timebase_ctrl' for PSL9.
+> 
+> Hence this patch removes function write_timebase_ctrl_psl9() and its
+> references from the code.
+> 
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
 
-diff --git a/arch/powerpc/platforms/powernv/vas-debug.c b/arch/powerpc/platforms/powernv/vas-debug.c
-index b4de4c6..4f7276e 100644
---- a/arch/powerpc/platforms/powernv/vas-debug.c
-+++ b/arch/powerpc/platforms/powernv/vas-debug.c
-@@ -179,6 +179,7 @@ void vas_instance_init_dbgdir(struct vas_instance *vinst)
- {
- 	struct dentry *d;
- 
-+	vas_init_dbgdir();
- 	if (!vas_debugfs)
- 		return;
- 
-@@ -201,8 +202,18 @@ void vas_instance_init_dbgdir(struct vas_instance *vinst)
- 	vinst->dbgdir = NULL;
- }
- 
-+/*
-+ * Set up the "root" VAS debugfs dir. Return if we already set it up
-+ * (or failed to) in an earlier instance of VAS.
-+ */
- void vas_init_dbgdir(void)
- {
-+	static bool first_time = true;
-+
-+	if (!first_time)
-+		return;
-+
-+	first_time = false;
- 	vas_debugfs = debugfs_create_dir("vas", NULL);
- 	if (IS_ERR(vas_debugfs))
- 		vas_debugfs = NULL;
-diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
-index aebbe95..5a2b24c 100644
---- a/arch/powerpc/platforms/powernv/vas.c
-+++ b/arch/powerpc/platforms/powernv/vas.c
-@@ -160,8 +160,6 @@ static int __init vas_init(void)
- 	int found = 0;
- 	struct device_node *dn;
- 
--	vas_init_dbgdir();
--
- 	platform_driver_register(&vas_driver);
- 
- 	for_each_compatible_node(dn, NULL, "ibm,vas") {
-@@ -169,8 +167,10 @@ static int __init vas_init(void)
- 		found++;
- 	}
- 
--	if (!found)
-+	if (!found) {
-+		platform_driver_unregister(&vas_driver);
- 		return -ENODEV;
-+	}
- 
- 	pr_devel("Found %d instances\n", found);
- 
--- 
-2.7.4
+The code change looks ok, but am I the only one to think the commit 
+message doesn't match? The enable bit has always been in the PSL_CONTROL 
+register, it was just badly documented on p8. What's been removed is 
+much of the configuration found in PSL_TB_CTLSTAT.
+
+   Fred
+
+
+>   drivers/misc/cxl/pci.c | 10 ++--------
+>   1 file changed, 2 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index c983f23cc2ed..9bc30c20b66b 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -572,12 +572,6 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
+>   /* For the PSL this is a multiple for 0 < n <= 7: */
+>   #define PSL_2048_250MHZ_CYCLES 1
+> 
+> -static void write_timebase_ctrl_psl9(struct cxl *adapter)
+> -{
+> -	cxl_p1_write(adapter, CXL_PSL9_TB_CTLSTAT,
+> -		     TBSYNC_CNT(2 * PSL_2048_250MHZ_CYCLES));
+> -}
+> -
+>   static void write_timebase_ctrl_psl8(struct cxl *adapter)
+>   {
+>   	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT,
+> @@ -639,7 +633,8 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>   	 * Setup PSL Timebase Control and Status register
+>   	 * with the recommended Timebase Sync Count value
+>   	 */
+> -	adapter->native->sl_ops->write_timebase_ctrl(adapter);
+> +	if (adapter->native->sl_ops->write_timebase_ctrl)
+> +		adapter->native->sl_ops->write_timebase_ctrl(adapter);
+> 
+>   	/* Enable PSL Timebase */
+>   	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
+> @@ -1805,7 +1800,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
+>   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
+>   	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
+>   	.debugfs_stop_trace = cxl_stop_trace_psl9,
+> -	.write_timebase_ctrl = write_timebase_ctrl_psl9,
+>   	.timebase_read = timebase_read_psl9,
+>   	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
+>   	.needs_reset_before_disable = true,
+> 
