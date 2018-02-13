@@ -1,28 +1,35 @@
-Return-Path: <srs0=vjkj=fi=gmail.com=cyrilbur@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mike.kravetz@oracle.com>
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zh1nF6JHNzF1FK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 12:20:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zh1nF5R1rz8w72
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 12:20:49 +1100 (AEDT)
-Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
- [IPv6:2607:f8b0:400e:c05::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zh1nF0S0Hz9t5R
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2018 12:20:48 +1100 (AEDT)
-Received: by mail-pg0-x22c.google.com with SMTP id y8so1255568pgr.9
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2018 17:20:48 -0800 (PST)
-Message-ID: <1518571241.9595.4.camel@gmail.com>
-Subject: 4.16-rc1 virtual machine crash on boot
-From: Cyril Bur <cyrilbur@gmail.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Nathan Fontenot
- <nfont@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 14 Feb 2018 12:20:41 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zh2Fv0lF9zF1Fc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 12:42:10 +1100 (AEDT)
+Subject: Re: [PATCH v2] mm: hwpoison: disable memory error handling on 1GB
+ hugepage
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Punit Agrawal <punit.agrawal@arm.com>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ Michal Hocko <mhocko@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <20180130013919.GA19959@hori1.linux.bs1.fc.nec.co.jp>
+ <1517284444-18149-1-git-send-email-n-horiguchi@ah.jp.nec.com>
+ <87inbbjx2w.fsf@e105922-lin.cambridge.arm.com>
+ <20180207011455.GA15214@hori1.linux.bs1.fc.nec.co.jp>
+ <87fu6bfytm.fsf@e105922-lin.cambridge.arm.com>
+ <20180208121749.0ac09af2b5a143106f339f55@linux-foundation.org>
+ <87wozhvc49.fsf@concordia.ellerman.id.au>
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Message-ID: <e673f38a-9e5f-21f6-421b-b3cb4ff02e91@oracle.com>
+Date: Tue, 13 Feb 2018 14:33:33 -0800
+MIME-Version: 1.0
+In-Reply-To: <87wozhvc49.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,118 +39,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello all,
+On 02/12/2018 06:48 PM, Michael Ellerman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+>> On Thu, 08 Feb 2018 12:30:45 +0000 Punit Agrawal <punit.agrawal@arm.com> wrote:
+>>
+>>>>
+>>>> So I don't think that the above test result means that errors are properly
+>>>> handled, and the proposed patch should help for arm64.
+>>>
+>>> Although, the deviation of pud_huge() avoids a kernel crash the code
+>>> would be easier to maintain and reason about if arm64 helpers are
+>>> consistent with expectations by core code.
+>>>
+>>> I'll look to update the arm64 helpers once this patch gets merged. But
+>>> it would be helpful if there was a clear expression of semantics for
+>>> pud_huge() for various cases. Is there any version that can be used as
+>>> reference?
+>>
+>> Is that an ack or tested-by?
+>>
+>> Mike keeps plaintively asking the powerpc developers to take a look,
+>> but they remain steadfastly in hiding.
+> 
+> Cc'ing linuxppc-dev is always a good idea :)
+> 
 
-I'm seeing this crash trying to boot a KVM virtual machine. This kernel
-was compiled with pseries_le_defconfig and run using the following qemu
-commandline:
+Thanks Michael,
 
-qemu-system-ppc64 -enable-kvm -cpu POWER8 -smp 4 -m 4G -M pseries
--nographic -vga none -drive file=vm.raw,if=virtio,format=raw -drive
-file=mkvmconf2xeO,if=virtio,format=raw -netdev type=user,id=net0
--device virtio-net-pci,netdev=net0 -kernel vmlinux_tscr -append
-'root=/dev/vdb1 rw cloud-init=disabled'
+I was mostly concerned about use cases for soft/hard offline of huge pages
+larger than PMD_SIZE on powerpc.  I know that powerpc supports PGD_SIZE
+huge pages, and soft/hard offline support was specifically added for this.
+See, 94310cbcaa3c "mm/madvise: enable (soft|hard) offline of HugeTLB pages
+at PGD level"
 
-qemu-system-ppc64 --version
-QEMU emulator version 2.5.0 (Debian 1:2.5+dfsg-5ubuntu10.16), Copyright
-(c) 2003-2008 Fabrice Bellard
+This patch will disable that functionality.  So, at a minimum this is a
+'heads up'.  If there are actual use cases that depend on this, then more
+work/discussions will need to happen.  From the e-mail thread on PGD_SIZE
+support, I can not tell if there is a real use case or this is just a
+'nice to have'.
 
+-- 
+Mike Kravetz
 
-Key type dns_resolver registered
-Unable to handle kernel paging request for data at address 0x00000010
-Faulting instruction address: 0xc0000000018f2bbc
-Oops: Kernel access of bad area, sig: 11 [#1]
-LE SMP NR_CPUS=2048 NUMA pSeries
-CPU: 1 PID: 1 Comm: swapper/0 Not tainted 4.16.0-rc1v4.16-rc1 #8
-NIP:  c0000000018f2bbc LR: c0000000018f2bb4 CTR: 0000000000000000
-REGS: c0000000fea838d0 TRAP: 0380   Not tainted  (4.16.0-rc1v4.16-rc1)
-MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 84000248  XER:
-20000000
-CFAR: c0000000019591a0 SOFTE: 0 
-GPR00: c0000000018f2bb4 c0000000fea83b50 c000000001bd8400
-0000000000000000 
-GPR04: c0000000fea83b70 0000000000000000 000000000000002f
-0000000000000022 
-GPR08: 0000000000000000 c0000000022a3e90 0000000000000000
-0000000000000220 
-GPR12: 0000000000000000 c00000000fb40980 c00000000000d698
-0000000000000000 
-GPR16: 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 
-GPR20: 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 
-GPR24: 0000000000000000 c0000000018b9248 c0000000018e36d8
-c0000000019738a8 
-GPR28: 0000000000000007 c0000000fffffc68 c0000000fea83bf0
-0000000000000010 
-NIP [c0000000018f2bbc] read_drconf_v1_cell+0x50/0x9c
-LR [c0000000018f2bb4] read_drconf_v1_cell+0x48/0x9c
-Call Trace:
-[c0000000fea83b50] [c0000000018f2bb4] read_drconf_v1_cell+0x48/0x9c
-(unreliable)
-[c0000000fea83b90] [c0000000018f305c] drmem_init+0x13c/0x2ec
-[c0000000fea83c40] [c0000000018e4288] do_one_initcall+0xdc/0x1ac
-[c0000000fea83d00] [c0000000018e45d4] kernel_init_freeable+0x27c/0x358
-[c0000000fea83dc0] [c00000000000d6bc] kernel_init+0x2c/0x160
-[c0000000fea83e30] [c00000000000bc20] ret_from_kernel_thread+0x5c/0xbc
-Instruction dump:
-7c7f1b78 60000000 60000000 7c240b78 3d22ffdc 3929f0a4 e95e0000
-e8690002 
-f9440021 4806657d 60000000 e9210020 <f87f0000> 39090004 39490010
-f9010020 
----[ end trace bd9f49f482d30e03 ]---
-
-Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
-
-WARNING: CPU: 1 PID: 1 at drivers/tty/vt/vt.c:3883
-do_unblank_screen+0x1f0/0x270
-CPU: 1 PID: 1 Comm: swapper/0 Tainted: G      D          4.16.0-
-rc1v4.16-rc1 #8
-NIP:  c0000000009aa800 LR: c0000000009aa63c CTR: c00000000148f5f0
-REGS: c0000000fea832c0 TRAP: 0700   Tainted:
-G      D           (4.16.0-rc1v4.16-rc1)
-MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 28002222  XER:
-20000000
-CFAR: c0000000009aa658 SOFTE: 1 
-GPR00: c0000000009aa63c c0000000fea83540 c000000001bd8400
-0000000000000000 
-GPR04: 0000000000000001 c0000000fb0c200e 0000000000001dd7
-c0000000fea834d0 
-GPR08: 00000000fe430000 0000000000000000 0000000000000000
-0000000000000001 
-GPR12: 0000000028002428 c00000000fb40980 c00000000000d698
-0000000000000000 
-GPR16: 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 
-GPR20: 0000000000000000 0000000000000000 0000000000000000
-0000000000000000 
-GPR24: c0000000fea40000 c0000000feadf910 c000000001a4a7a8
-c000000001cc4ea0 
-GPR28: c00000000173f4f0 c000000001cc4ec8 0000000000000000
-0000000000000000 
-NIP [c0000000009aa800] do_unblank_screen+0x1f0/0x270
-LR [c0000000009aa63c] do_unblank_screen+0x2c/0x270
-Call Trace:
-[c0000000fea83540] [c0000000009aa63c] do_unblank_screen+0x2c/0x270
-(unreliable)
-[c0000000fea835b0] [c0000000008a2a70] bust_spinlocks+0x40/0x80
-[c0000000fea835d0] [c0000000000da90c] panic+0x1b8/0x32c
-[c0000000fea83670] [c0000000000e1bd4] do_exit+0xcb4/0xcc0
-[c0000000fea83730] [c0000000000275fc] die+0x29c/0x450
-[c0000000fea837c0] [c000000000053f88] bad_page_fault+0xe8/0x160
-[c0000000fea83830] [c000000000028a90] slb_miss_bad_addr+0x40/0x90
-[c0000000fea83860] [c000000000008b08] bad_addr_slb+0x158/0x160
---- interrupt: 380 at read_drconf_v1_cell+0x50/0x9c
-    LR = read_drconf_v1_cell+0x48/0x9c
-[c0000000fea83b90] [c0000000018f305c] drmem_init+0x13c/0x2ec
-[c0000000fea83c40] [c0000000018e4288] do_one_initcall+0xdc/0x1ac
-[c0000000fea83d00] [c0000000018e45d4] kernel_init_freeable+0x27c/0x358
-[c0000000fea83dc0] [c00000000000d6bc] kernel_init+0x2c/0x160
-[c0000000fea83e30] [c00000000000bc20] ret_from_kernel_thread+0x5c/0xbc
-Instruction dump:
-3c62ffbf 38840001 7c8407b4 38639ca8 4b7ae0ed 60000000 38210070
-e8010010 
-ebc1fff0 ebe1fff8 7c0803a6 4e800020 <0fe00000> 4bfffe58 60000000
-60420000 
----[ end trace bd9f49f482d30e04 ]---
-Rebooting in 10 seconds..
+>> Folks, this patch fixes a BUG and is marked for -stable.  Can we please
+>> prioritize it?
+> 
+> It's not crashing for me (on 4.16-rc1):
+> 
+>   # ./huge-poison 
+>   Poisoning page...once
+>   Poisoning page...once again
+>   madvise: Bad address
+> 
+> And I guess the above is the expected behaviour?
+> 
+> Looking at the function trace it looks like the 2nd madvise is going
+> down reasonable code paths, but I don't know for sure:
+> 
+>   8)               |  SyS_madvise() {
+>   8)               |    capable() {
+>   8)               |      ns_capable_common() {
+>   8)   0.094 us    |        cap_capable();
+>   8)   0.516 us    |      }
+>   8)   1.052 us    |    }
+>   8)               |    get_user_pages_fast() {
+>   8)   0.354 us    |      gup_pgd_range();
+>   8)               |      get_user_pages_unlocked() {
+>   8)   0.050 us    |        down_read();
+>   8)               |        __get_user_pages() {
+>   8)               |          find_extend_vma() {
+>   8)               |            find_vma() {
+>   8)   0.148 us    |              vmacache_find();
+>   8)   0.622 us    |            }
+>   8)   1.064 us    |          }
+>   8)   0.028 us    |          arch_vma_access_permitted();
+>   8)               |          follow_hugetlb_page() {
+>   8)               |            huge_pte_offset() {
+>   8)   0.128 us    |              __find_linux_pte();
+>   8)   0.580 us    |            }
+>   8)   0.048 us    |            _raw_spin_lock();
+>   8)               |            hugetlb_fault() {
+>   8)               |              huge_pte_offset() {
+>   8)   0.034 us    |                __find_linux_pte();
+>   8)   0.434 us    |              }
+>   8)   0.028 us    |              is_hugetlb_entry_migration();
+>   8)   0.032 us    |              is_hugetlb_entry_hwpoisoned();
+>   8)   2.118 us    |            }
+>   8)   4.940 us    |          }
+>   8)   7.468 us    |        }
+>   8)   0.056 us    |        up_read();
+>   8)   8.722 us    |      }
+>   8) + 10.264 us   |    }
+>   8) + 12.212 us   |  }
+> 
+> 
+> cheers
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
