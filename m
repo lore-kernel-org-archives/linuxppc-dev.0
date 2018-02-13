@@ -1,36 +1,22 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgRwt07tGzF0sj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 13:55:25 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1D2s6Xa051721
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 21:55:23 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g3ps81h7p-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 21:55:23 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 13 Feb 2018 02:55:20 -0000
-Subject: Re: [PATCH] cxl: Enable NORST bit in PSL_DEBUG register for PSL9
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>
-References: <20180209040916.14250-1-vaibhav@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 13 Feb 2018 13:55:16 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgSPv6Vl1zF0vd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:17:07 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] powerpc/vas: Fix cleanup when VAS is not configured
+In-Reply-To: <20180212202510.GB28183@us.ibm.com>
+References: <1518234567-24869-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1518234567-24869-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ <87d11awzkp.fsf@concordia.ellerman.id.au> <20180212202510.GB28183@us.ibm.com>
+Date: Tue, 13 Feb 2018 14:17:07 +1100
+Message-ID: <87tvulvarw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180209040916.14250-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <0ac5aa72-332b-ac98-6b59-2baa8b51366f@au1.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,17 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/02/18 15:09, Vaibhav Jain wrote:
-> We enable the NORST bit by default for debug afu images to prevent
-> reset of AFU trace-data on a PCI link drop. For production AFU images
-> this bit is always ignored and PSL gets reconfigured anyways thereby
-> resetting the trace data. So setting this bit for non-debug images
-> doesn't have any impact.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Michael Ellerman [mpe@ellerman.id.au] wrote:
+>> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+>> 
+>> > When VAS is not configured in the system, make sure to remove
+>> > the VAS debugfs directory and unregister the platform driver.
+>> >
+>> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+>> ...
+>> > diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
+>> > index aebbe95..f83e27d8 100644
+>> > --- a/arch/powerpc/platforms/powernv/vas.c
+>> > +++ b/arch/powerpc/platforms/powernv/vas.c
+>> > @@ -169,8 +169,11 @@ static int __init vas_init(void)
+>> >  		found++;
+>> >  	}
+>> >  
+>> > -	if (!found)
+>> > +	if (!found) {
+>> > +		platform_driver_unregister(&vas_driver);
+>> > +		vas_cleanup_dbgdir();
+>> >  		return -ENODEV;
+>> > +	}
+>> 
+>> The better patch would be to move the call to vas_init_dbgdir() down
+>> here, where we know we have successfully registered the driver.
+>
+> Well, when VAS is configured, init_vas_instance() expects the top level
+> "vas" debugfs dir to already be setup.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+OK.
+
+> We could have each init_vas_instance() assume it is the first and
+> unconditionally call vas_init_dbgdir(). vas_init_dbgdir() could make
+> sure to initialize only once.
+
+Yeah that looks like a good solution.
+
+cheers
