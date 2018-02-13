@@ -1,36 +1,33 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
+Return-Path: <mwb@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgtWs58zHzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 06:53:45 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgtlN1KVfzDqJw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 07:03:40 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1DJqWlJ046831
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:53:42 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g42m4jc0a-1
+ w1DK3R9W049553
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 15:03:38 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g40uy7ek4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:53:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 15:03:38 -0500
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 13 Feb 2018 19:53:29 -0000
-Subject: Re: [PATCH] cxl: Remove function write_timebase_ctrl_psl9() for PSL9
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-References: <20180209041009.14456-1-vaibhav@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Tue, 13 Feb 2018 20:53:26 +0100
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 13 Feb 2018 13:03:37 -0700
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <mwb@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: Revert support for ibm,drc-info devtree property
+Date: Tue, 13 Feb 2018 14:02:53 -0600
 MIME-Version: 1.0
-In-Reply-To: <20180209041009.14456-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <17a1d3c8-c38d-0134-9463-4eebf1eced70@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f5baf8d9-ece2-d3b8-2793-7701a1184c2a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,63 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This reverts commit 02ef6dd8109b581343ebeb1c4c973513682535d6.
 
+The earlier patch tried to enable support for a new property
+"ibm,drc-info" on powerpc systems.
 
-Le 09/02/2018 à 05:10, Vaibhav Jain a écrit :
-> For PSL9 the time-base enable bit has moved from PSL_TB_CTLSTAT
-> register to PSL_CONTROL register. Hence we don't need an sl_ops
-> implementation for 'write_timebase_ctrl' for PSL9.
-> 
-> Hence this patch removes function write_timebase_ctrl_psl9() and its
-> references from the code.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
+Unfortunately, some errors in the associated patch set break things
+in some of the DLPAR operations.  In particular when attempting to
+hot-add a new CPU or set of CPUs, the original patch failed to
+properly calculate the available resources, and aborted the operation.
+In addition, the original set missed several opportunities to compress
+and reuse common code.
 
-The code change looks ok, but am I the only one to think the commit 
-message doesn't match? The enable bit has always been in the PSL_CONTROL 
-register, it was just badly documented on p8. What's been removed is 
-much of the configuration found in PSL_TB_CTLSTAT.
+As the associated patch set was meant to provide an optimization of
+storage and performance of a set of device-tree properties for future
+systems with large amounts of resources, reverting just restores
+the previous behavior for existing systems.  It seems unnecessary
+to enable this feature and introduce the consequent problems in the
+field that it will cause at this time, so please revert it for now
+until testing of the corrections are finished properly.
 
-   Fred
+Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/prom_init.c     | 1 +
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
->   drivers/misc/cxl/pci.c | 10 ++--------
->   1 file changed, 2 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index c983f23cc2ed..9bc30c20b66b 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -572,12 +572,6 @@ static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_
->   /* For the PSL this is a multiple for 0 < n <= 7: */
->   #define PSL_2048_250MHZ_CYCLES 1
-> 
-> -static void write_timebase_ctrl_psl9(struct cxl *adapter)
-> -{
-> -	cxl_p1_write(adapter, CXL_PSL9_TB_CTLSTAT,
-> -		     TBSYNC_CNT(2 * PSL_2048_250MHZ_CYCLES));
-> -}
-> -
->   static void write_timebase_ctrl_psl8(struct cxl *adapter)
->   {
->   	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT,
-> @@ -639,7 +633,8 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
->   	 * Setup PSL Timebase Control and Status register
->   	 * with the recommended Timebase Sync Count value
->   	 */
-> -	adapter->native->sl_ops->write_timebase_ctrl(adapter);
-> +	if (adapter->native->sl_ops->write_timebase_ctrl)
-> +		adapter->native->sl_ops->write_timebase_ctrl(adapter);
-> 
->   	/* Enable PSL Timebase */
->   	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
-> @@ -1805,7 +1800,6 @@ static const struct cxl_service_layer_ops psl9_ops = {
->   	.psl_irq_dump_registers = cxl_native_irq_dump_regs_psl9,
->   	.err_irq_dump_registers = cxl_native_err_irq_dump_regs_psl9,
->   	.debugfs_stop_trace = cxl_stop_trace_psl9,
-> -	.write_timebase_ctrl = write_timebase_ctrl_psl9,
->   	.timebase_read = timebase_read_psl9,
->   	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
->   	.needs_reset_before_disable = true,
-> 
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index adf044d..d22c41c 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -874,7 +874,7 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
+ 		.mmu = 0,
+ 		.hash_ext = 0,
+ 		.radix_ext = 0,
+-		.byte22 = OV5_FEAT(OV5_DRC_INFO),
++		.byte22 = 0,
+ 	},
+ 
+ 	/* option vector 6: IBM PAPR hints */
