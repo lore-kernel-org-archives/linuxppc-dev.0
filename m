@@ -1,16 +1,28 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zgWry1SlLzDqpc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 16:52:15 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Alistair Popple <alistair@popple.id.au>, Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel] powerpc/npu: Do not try invalidating 32bit table when
- 64bit table is enabled
-Date: Tue, 13 Feb 2018 16:51:35 +1100
-Message-Id: <20180213055135.25639-1-aik@ozlabs.ru>
+Return-Path: <keescook@google.com>
+Received: from mail-vk0-x232.google.com (mail-vk0-x232.google.com
+ [IPv6:2607:f8b0:400c:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgWvq1wm5zDqMZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 16:54:44 +1100 (AEDT)
+Received: by mail-vk0-x232.google.com with SMTP id w201so10218015vkw.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 21:54:43 -0800 (PST)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <87r2ppvaeq.fsf@concordia.ellerman.id.au>
+References: <20180212133731.GE3443@dhcp22.suse.cz>
+ <87r2ppvaeq.fsf@concordia.ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 12 Feb 2018 21:54:39 -0800
+Message-ID: <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
+Subject: Re: samples/seccomp/ broken when cross compiling s390,
+ ppc allyesconfig
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michal Hocko <mhocko@kernel.org>, Will Drewry <wad@chromium.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,133 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-GPUs and the corresponding NVLink bridges get different PEs as they have
-separate translation validation entries (TVEs). We put these PEs to
-the same IOMMU group so they cannot be passed through separately.
-So the iommu_table_group_ops::set_window/unset_window for GPUs do set
-tables to the NPU PEs as well which means that iommu_table's list of
-attached PEs (iommu_table_group_link) has both GPU and NPU PEs linked.
-This list is used for TCE cache invalidation.
+On Mon, Feb 12, 2018 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Michal Hocko <mhocko@kernel.org> writes:
+>> Hi,
+>> my build test machinery chokes on samples/seccomp when cross compiling
+>> s390 and ppc64 allyesconfig. This has been the case for quite some
+>> time already but I never found time to look at the problem and report
+>> it. It seems this is not new issue and similar thing happend for
+>> MIPS e9107f88c985 ("samples/seccomp/Makefile: do not build tests if
+>> cross-compiling for MIPS").
+>>
+>> The build logs are attached.
+>>
+>> What is the best way around this? Should we simply skip compilation on
+>> cross compile or is actually anybody relying on that? Or should I simply
+>> disable it for s390 and ppc?
+>
+> The whole thing seems very confused. It's not building for the target,
+> it's building for the host, ie. the Makefile sets hostprogs-m and
+> HOSTCFLAGS etc.
+>
+> So it can't possibly work with cross compiling as it's currently
+> written.
+>
+> Either the Makefile needs some serious work to properly support cross
+> compiling or it should just be disabled when cross compiling.
 
-The problem is that NPU PE has just a single TVE and can be programmed
-to point to 32bit or 64bit windows while GPU PE has two (as any other PCI
-device). So we end up having an 32bit iommu_table struct linked to both
-PEs even though only the 64bit TCE table cache can be invalidated on NPU.
-And a relatively recent skiboot detects this and prints errors.
+Hrm, yeah, the goal was to entirely disable cross compiling, but I
+guess we didn't hit it with a hard enough hammer. :)
 
-This changes GPU's iommu_table_group_ops::set_window/unset_window to make
-sure that NPU PE is only linked to the table actually used by the hardware.
-If there are two tables used by an IOMMU group, the NPU PE will use
-the last programmed one which with the current use scenarios is expected
-to be a 64bit one.
+-Kees
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-Do we need BUG_ON(IOMMU_TABLE_GROUP_MAX_TABLES != 2)?
-
-
-This is an example for:
-
-0004:04:00.0 3D: NVIDIA Corporation Device 1db1 (rev a1)
-0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
-0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
-
-Before the patch (npu2_tce_kill messages are from skiboot):
-
-pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
-pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
-pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
-pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
-NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
-NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
-NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
-NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
-NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
-...
-pci 0004:04     : [PE# 00] Removing DMA window #0
-pci 0006:00:00.0: [PE# 0d] Removing DMA window
-pci 0004:04     : [PE# 00] Removing DMA window #1
-pci 0006:00:00.0: [PE# 0d] Removing DMA window
-pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
-pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
-pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
-pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
-
-After the patch (no errors here):
-
-pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
-pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
-pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
-pci 0006:00:00.0: [PE# 0d] Removing DMA window
-pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
-pci 0004:04     : [PE# 00] Removing DMA window #0
-pci 0004:04     : [PE# 00] Removing DMA window #1
-pci 0006:00:00.0: [PE# 0d] Removing DMA window
-pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
-pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
-pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
-pci 0006:00:00.0: [PE# 0d] Removing DMA window
-pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 496e476..2f91815 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2681,14 +2681,23 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
- static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
- 		int num, struct iommu_table *tbl)
- {
-+	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
-+	int num2 = (num == 0) ? 1 : 0;
- 	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
- 
- 	if (ret)
- 		return ret;
- 
--	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
--	if (ret)
-+	if (table_group->tables[num2])
-+		pnv_npu_unset_window(npe, num2);
-+
-+	ret = pnv_npu_set_window(npe, num, tbl);
-+	if (ret) {
- 		pnv_pci_ioda2_unset_window(table_group, num);
-+		if (table_group->tables[num2])
-+			pnv_npu_set_window(npe, num2,
-+					table_group->tables[num2]);
-+	}
- 
- 	return ret;
- }
-@@ -2697,12 +2706,24 @@ static long pnv_pci_ioda2_npu_unset_window(
- 		struct iommu_table_group *table_group,
- 		int num)
- {
-+	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
-+	int num2 = (num == 0) ? 1 : 0;
- 	long ret = pnv_pci_ioda2_unset_window(table_group, num);
- 
- 	if (ret)
- 		return ret;
- 
--	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
-+	if (!npe->table_group.tables[num])
-+		return 0;
-+
-+	ret = pnv_npu_unset_window(npe, num);
-+	if (ret)
-+		return ret;
-+
-+	if (table_group->tables[num2])
-+		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
-+
-+	return ret;
- }
- 
- static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
 -- 
-2.11.0
+Kees Cook
+Pixel Security
