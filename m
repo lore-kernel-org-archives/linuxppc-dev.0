@@ -1,34 +1,26 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgfwH3S5gzF0WX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 22:10:39 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1DB5FXM015898
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 06:10:36 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g3v3dy904-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 06:10:35 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 13 Feb 2018 11:10:34 -0000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- "Alastair D'Silva" <alastair@linux.ibm.com>
-Subject: [PATCH] cxl: Check if PSL data-cache is available before issue flush
- request
-Date: Tue, 13 Feb 2018 16:40:22 +0530
-Message-Id: <20180213111022.27611-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zggCt4cTFzF0ng
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 22:24:08 +1100 (AEDT)
+Subject: Re: [RFC PATCH 0/5] powerpc/mm/slice: improve slice speed and stack
+ use
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <20180210081139.27236-1-npiggin@gmail.com>
+ <e2043d70-97a7-b914-f279-4aad76b9bf91@c-s.fr>
+ <20180213012442.45b6f49b@roar.ozlabs.ibm.com>
+ <7364b502-83a7-8b40-3530-b160e3c80523@c-s.fr>
+ <20180213184017.168c31f0@roar.ozlabs.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <e939dfed-f992-36e0-c92b-f05fb539b383@c-s.fr>
+Date: Tue, 13 Feb 2018 12:24:02 +0100
+MIME-Version: 1.0
+In-Reply-To: <20180213184017.168c31f0@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,124 +30,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PSL9D doesn't have a data-cache that needs to be flushed before
-resetting the card. However when cxl tries to flush data-cache on such
-a card, it times-out as PSL_Control register never indicates flush
-operation complete due to missing data-cache. This is usually
-indicated in the kernel logs with this message:
 
-"WARNING: cache flush timed out"
 
-To fix this the patch checks PSL_Debug register CDC-Field(BIT:27)
-which indicates the absence of a data-cache and sets a flag
-'no_data_cache' in 'struct cxl_native' to indicate this. When
-cxl_data_cache_flush() is called it checks the flag and if set bails
-out early without requesting a data-cache flush operation to the PSL.
+Le 13/02/2018 à 09:40, Nicholas Piggin a écrit :
+> On Mon, 12 Feb 2018 18:42:21 +0100
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+> 
+>> Le 12/02/2018 à 16:24, Nicholas Piggin a écrit :
+>>> On Mon, 12 Feb 2018 16:02:23 +0100
+>>> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+>>>    
+>>>> Le 10/02/2018 à 09:11, Nicholas Piggin a écrit :
+>>>>> This series intends to improve performance and reduce stack
+>>>>> consumption in the slice allocation code. It does it by keeping slice
+>>>>> masks in the mm_context rather than compute them for each allocation,
+>>>>> and by reducing bitmaps and slice_masks from stacks, using pointers
+>>>>> instead where possible.
+>>>>>
+>>>>> checkstack.pl gives, before:
+>>>>> 0x00000de4 slice_get_unmapped_area [slice.o]:           656
+>>>>> 0x00001b4c is_hugepage_only_range [slice.o]:            512
+>>>>> 0x0000075c slice_find_area_topdown [slice.o]:           416
+>>>>> 0x000004c8 slice_find_area_bottomup.isra.1 [slice.o]:   272
+>>>>> 0x00001aa0 slice_set_range_psize [slice.o]:             240
+>>>>> 0x00000a64 slice_find_area [slice.o]:                   176
+>>>>> 0x00000174 slice_check_fit [slice.o]:                   112
+>>>>>
+>>>>> after:
+>>>>> 0x00000d70 slice_get_unmapped_area [slice.o]:           320
+>>>>> 0x000008f8 slice_find_area [slice.o]:                   144
+>>>>> 0x00001860 slice_set_range_psize [slice.o]:             144
+>>>>> 0x000018ec is_hugepage_only_range [slice.o]:            144
+>>>>> 0x00000750 slice_find_area_bottomup.isra.4 [slice.o]:   128
+>>>>>
+>>>>> The benchmark in https://github.com/linuxppc/linux/issues/49 gives, before:
+>>>>> $ time ./slicemask
+>>>>> real	0m20.712s
+>>>>> user	0m5.830s
+>>>>> sys	0m15.105s
+>>>>>
+>>>>> after:
+>>>>> $ time ./slicemask
+>>>>> real	0m13.197s
+>>>>> user	0m5.409s
+>>>>> sys	0m7.779s
+>>>>
+>>>> Hi,
+>>>>
+>>>> I tested your serie on an 8xx, on top of patch
+>>>> https://patchwork.ozlabs.org/patch/871675/
+>>>>
+>>>> I don't get a result as significant as yours, but there is some
+>>>> improvment anyway:
+>>>>
+>>>> ITERATION 500000
+>>>>
+>>>> Before:
+>>>>
+>>>> root@vgoip:~# time ./slicemask
+>>>> real    0m 33.26s
+>>>> user    0m 1.94s
+>>>> sys     0m 30.85s
+>>>>
+>>>> After:
+>>>> root@vgoip:~# time ./slicemask
+>>>> real    0m 29.69s
+>>>> user    0m 2.11s
+>>>> sys     0m 27.15s
+>>>>
+>>>> Most significant improvment is obtained with the first patch of your serie:
+>>>> root@vgoip:~# time ./slicemask
+>>>> real    0m 30.85s
+>>>> user    0m 1.80s
+>>>> sys     0m 28.57s
+>>>
+>>> Okay, thanks. Are you still spending significant time in the slice
+>>> code?
+>>
+>> Do you mean am I still updating my patches ? No I hope we are at last
+> 
+> Actually I was wondering about CPU time spent for the microbenchmark :)
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/misc/cxl/cxl.h    |  4 ++++
- drivers/misc/cxl/native.c | 11 ++++++++++-
- drivers/misc/cxl/pci.c    | 19 +++++++++++++------
- 3 files changed, 27 insertions(+), 7 deletions(-)
+Lol.
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 4f015da78f28..4949b8d5a748 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -369,6 +369,9 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_PSL_TFC_An_AE (1ull << (63-30)) /* Restart PSL with address error */
- #define CXL_PSL_TFC_An_R  (1ull << (63-31)) /* Restart PSL transaction */
- 
-+/****** CXL_PSL_DEBUG *****************************************************/
-+#define CXL_PSL_DEBUG_CDC  (1ull << (63-27)) /* Coherent Data cache support */
-+
- /****** CXL_XSL9_IERAT_ERAT - CAIA 2 **********************************/
- #define CXL_XSL9_IERAT_MLPID    (1ull << (63-0))  /* Match LPID */
- #define CXL_XSL9_IERAT_MPID     (1ull << (63-1))  /* Match PID */
-@@ -669,6 +672,7 @@ struct cxl_native {
- 	irq_hw_number_t err_hwirq;
- 	unsigned int err_virq;
- 	u64 ps_off;
-+	bool no_data_cache; /* set if no data cache on the card */
- 	const struct cxl_service_layer_ops *sl_ops;
- };
- 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 1b3d7c65ea3f..98f867fcef24 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -353,8 +353,17 @@ int cxl_data_cache_flush(struct cxl *adapter)
- 	u64 reg;
- 	unsigned long timeout = jiffies + (HZ * CXL_TIMEOUT);
- 
--	pr_devel("Flushing data cache\n");
-+	/*
-+	 * Do a datacache flush only if datacache is available.
-+	 * In case of PSL9D datacache absent hence flush operation.
-+	 * would timeout.
-+	 */
-+	if (adapter->native->no_data_cache) {
-+		pr_devel("No PSL data cache. Ignoring cache flush req.\n");
-+		return 0;
-+	}
- 
-+	pr_devel("Flushing data cache\n");
- 	reg = cxl_p1_read(adapter, CXL_PSL_Control);
- 	reg |= CXL_PSL_Control_Fr;
- 	cxl_p1_write(adapter, CXL_PSL_Control, reg);
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 758842f65a1b..39ddf89c3c14 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -456,6 +456,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	u64 chipid;
- 	u32 phb_index;
- 	u64 capp_unit_id;
-+	u64 psl_debug;
- 	int rc;
- 
- 	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
-@@ -506,6 +507,16 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
- 	} else
- 		cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x4000000000000000ULL);
- 
-+	/* Check if PSL has data-cache. We need to flush adapter datacache
-+	 * when as its about to be removed. But data-cache flush is not
-+	 * supported supported on P9-DD1 and
-+	 */
-+	psl_debug = cxl_p1_read(adapter, CXL_PSL9_DEBUG);
-+	if (cxl_is_power9_dd1() || (psl_debug & CXL_PSL_DEBUG_CDC)) {
-+		dev_info(&dev->dev, "No data-cache present\n");
-+		adapter->native->no_data_cache = true;
-+	}
-+
- 	return 0;
- }
- 
-@@ -1449,10 +1460,8 @@ int cxl_pci_reset(struct cxl *adapter)
- 
- 	/*
- 	 * The adapter is about to be reset, so ignore errors.
--	 * Not supported on P9 DD1
- 	 */
--	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
--		cxl_data_cache_flush(adapter);
-+	cxl_data_cache_flush(adapter);
- 
- 	/* pcie_warm_reset requests a fundamental pci reset which includes a
- 	 * PERST assert/deassert.  PERST triggers a loading of the image
-@@ -1936,10 +1945,8 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
- 
- 	/*
- 	 * Flush adapter datacache as its about to be removed.
--	 * Not supported on P9 DD1.
- 	 */
--	if ((cxl_is_power8()) || (!(cxl_is_power9_dd1())))
--		cxl_data_cache_flush(adapter);
-+	cxl_data_cache_flush(adapter);
- 
- 	cxl_deconfigure_adapter(adapter);
- 
--- 
-2.14.3
+I've got the following perf report (functions over 0.50%)
+
+# Overhead  Command    Shared Object      Symbol
+# ........  .........  .................  ..................................
+#
+      7.13%  slicemask  [kernel.kallsyms]  [k] do_brk_flags
+      6.19%  slicemask  [kernel.kallsyms]  [k] DoSyscall
+      5.81%  slicemask  [kernel.kallsyms]  [k] perf_event_mmap
+      5.55%  slicemask  [kernel.kallsyms]  [k] do_munmap
+      4.55%  slicemask  [kernel.kallsyms]  [k] sys_brk
+      4.43%  slicemask  [kernel.kallsyms]  [k] find_vma
+      3.42%  slicemask  [kernel.kallsyms]  [k] vma_compute_subtree_gap
+      3.08%  slicemask  libc-2.23.so       [.] __brk
+      2.95%  slicemask  [kernel.kallsyms]  [k] slice_get_unmapped_area
+      2.81%  slicemask  [kernel.kallsyms]  [k] __vm_enough_memory
+      2.78%  slicemask  [kernel.kallsyms]  [k] kmem_cache_free
+      2.51%  slicemask  [kernel.kallsyms]  [k] perf_iterate_ctx.constprop.84
+      2.40%  slicemask  [kernel.kallsyms]  [k] unmap_page_range
+      2.27%  slicemask  [kernel.kallsyms]  [k] perf_iterate_sb
+      2.21%  slicemask  [kernel.kallsyms]  [k] vmacache_find
+      2.04%  slicemask  [kernel.kallsyms]  [k] vma_gap_update
+      1.91%  slicemask  [kernel.kallsyms]  [k] unmap_region
+      1.81%  slicemask  [kernel.kallsyms]  [k] memset_nocache_branch
+      1.59%  slicemask  [kernel.kallsyms]  [k] kmem_cache_alloc
+      1.57%  slicemask  [kernel.kallsyms]  [k] get_unmapped_area.part.7
+      1.55%  slicemask  [kernel.kallsyms]  [k] up_write
+      1.44%  slicemask  [kernel.kallsyms]  [k] vma_merge
+      1.28%  slicemask  slicemask          [.] main
+      1.27%  slicemask  [kernel.kallsyms]  [k] lru_add_drain
+      1.22%  slicemask  [kernel.kallsyms]  [k] vma_link
+      1.19%  slicemask  [kernel.kallsyms]  [k] tlb_gather_mmu
+      1.17%  slicemask  [kernel.kallsyms]  [k] tlb_flush_mmu_free
+      1.15%  slicemask  libc-2.23.so       [.] got_label
+      1.11%  slicemask  [kernel.kallsyms]  [k] unlink_anon_vmas
+      1.06%  slicemask  [kernel.kallsyms]  [k] lru_add_drain_cpu
+      1.02%  slicemask  [kernel.kallsyms]  [k] free_pgtables
+      1.01%  slicemask  [kernel.kallsyms]  [k] remove_vma
+      0.98%  slicemask  [kernel.kallsyms]  [k] strlcpy
+      0.98%  slicemask  [kernel.kallsyms]  [k] perf_event_mmap_output
+      0.95%  slicemask  [kernel.kallsyms]  [k] may_expand_vm
+      0.90%  slicemask  [kernel.kallsyms]  [k] unmap_vmas
+      0.86%  slicemask  [kernel.kallsyms]  [k] down_write_killable
+      0.83%  slicemask  [kernel.kallsyms]  [k] __vma_link_list
+      0.83%  slicemask  [kernel.kallsyms]  [k] arch_vma_name
+      0.81%  slicemask  [kernel.kallsyms]  [k] __vma_rb_erase
+      0.80%  slicemask  [kernel.kallsyms]  [k] __rcu_read_unlock
+      0.71%  slicemask  [kernel.kallsyms]  [k] tlb_flush_mmu
+      0.70%  slicemask  [kernel.kallsyms]  [k] tlb_finish_mmu
+      0.68%  slicemask  [kernel.kallsyms]  [k] __rb_insert_augmented
+      0.63%  slicemask  [kernel.kallsyms]  [k] cap_capable
+      0.61%  slicemask  [kernel.kallsyms]  [k] free_pgd_range
+      0.59%  slicemask  [kernel.kallsyms]  [k] arch_tlb_finish_mmu
+      0.59%  slicemask  [kernel.kallsyms]  [k] __vma_link_rb
+      0.56%  slicemask  [kernel.kallsyms]  [k] __rcu_read_lock
+      0.55%  slicemask  [kernel.kallsyms]  [k] 
+arch_get_unmapped_area_topdown
+      0.53%  slicemask  [kernel.kallsyms]  [k] unlink_file_vma
+      0.51%  slicemask  [kernel.kallsyms]  [k] vmacache_update
+      0.50%  slicemask  [kernel.kallsyms]  [k] kfree
+
+Unfortunatly I didn't run a perf report before applying the patch serie. 
+If you are interested for the comparison, I won't be able to do it 
+before next week.
+
+> 
+>> run with v4 now that Aneesh has tagged all of them as reviewed-by himself.
+>> Once the serie has been accepted, my next step will be to backport at
+>> least the 3 first ones in kernel 4.14
+>>
+>>>    
+>>>>
+>>>> Had to modify your serie a bit, if you are interested I can post it.
+>>>>   
+>>>
+>>> Sure, that would be good.
+>>
+>> Ok, lets share it. The patch are not 100% clean.
+> 
+> Those look pretty good, thanks for doing that work.
+
+You are welcome. I wanted to try your serie on the 8xx. It is untested 
+on the book3s64, not sure it even compiles.
+
+Christophe
+
+> 
+> Thanks,
+> Nick
+> 
