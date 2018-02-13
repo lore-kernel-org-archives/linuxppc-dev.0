@@ -1,18 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x22b.google.com (mail-pg0-x22b.google.com
- [IPv6:2607:f8b0:400e:c05::22b])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgmBt0sZkzF1Nt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 02:08:37 +1100 (AEDT)
-Received: by mail-pg0-x22b.google.com with SMTP id y8so35582pgr.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:08:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgmBw28P3zF1Nx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 02:08:40 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id y8so35670pgr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:08:40 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 00/14] numa aware allocation for pacas, stacks, pagetables
-Date: Wed, 14 Feb 2018 01:08:10 +1000
-Message-Id: <20180213150824.27689-1-npiggin@gmail.com>
+Subject: [PATCH 01/14] powerpc/64s: do not allocate lppaca if we are not
+ virtualized
+Date: Wed, 14 Feb 2018 01:08:11 +1000
+Message-Id: <20180213150824.27689-2-npiggin@gmail.com>
+In-Reply-To: <20180213150824.27689-1-npiggin@gmail.com>
+References: <20180213150824.27689-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,78 +25,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series allows numa aware allocations for various early data
-structures for radix. Hash still has a bolted SLB limitation that
-prevents at least pacas and stacks from node-affine allocations.
+The "lppaca" is a structure registered with the hypervisor. This
+is unnecessary when running on non-virtualised platforms. One field
+from the lppaca (pmcregs_in_use) is also used by the host, so move
+the host part out into the paca (lppaca field is still updated in
+guest mode).
 
-Fixed up a number of bugs, got pSeries working, added a couple more
-cases where page tables can be allocated node-local.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/paca.h         |  9 +++++++--
+ arch/powerpc/include/asm/pmc.h          | 13 ++++++++++++-
+ arch/powerpc/kernel/asm-offsets.c       |  5 +++++
+ arch/powerpc/kernel/paca.c              | 16 +++++++++++++---
+ arch/powerpc/kvm/book3s_hv_interrupts.S |  3 +--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |  3 +--
+ 6 files changed, 39 insertions(+), 10 deletions(-)
 
-Thanks,
-Nick
-
-Nicholas Piggin (14):
-  powerpc/64s: do not allocate lppaca if we are not virtualized
-  powerpc/64: Use array of paca pointers and allocate pacas individually
-  powerpc/64s: allocate lppacas individually
-  powerpc/64s: allocate slb_shadow structures individually
-  mm: make memblock_alloc_base_nid non-static
-  powerpc/mm/numa: move numa topology discovery earlier
-  powerpc/64: move default SPR recording
-  powerpc/setup: cpu_to_phys_id array
-  powerpc/64: defer paca allocation until memory topology is discovered
-  powerpc/64: allocate pacas per node
-  powerpc/64: allocate per-cpu stacks node-local if possible
-  powerpc: pass node id into create_section_mapping
-  powerpc/64s/radix: split early page table mapping to its own function
-  powerpc/64s/radix: allocate kernel page tables node-local if possible
-
- arch/powerpc/include/asm/book3s/64/hash.h    |   2 +-
- arch/powerpc/include/asm/book3s/64/radix.h   |   2 +-
- arch/powerpc/include/asm/kvm_ppc.h           |   8 +-
- arch/powerpc/include/asm/lppaca.h            |  26 +--
- arch/powerpc/include/asm/paca.h              |  16 +-
- arch/powerpc/include/asm/pmc.h               |  13 +-
- arch/powerpc/include/asm/setup.h             |   1 +
- arch/powerpc/include/asm/smp.h               |   5 +-
- arch/powerpc/include/asm/sparsemem.h         |   2 +-
- arch/powerpc/kernel/asm-offsets.c            |   5 +
- arch/powerpc/kernel/crash.c                  |   2 +-
- arch/powerpc/kernel/head_64.S                |  19 ++-
- arch/powerpc/kernel/machine_kexec_64.c       |  37 +++--
- arch/powerpc/kernel/paca.c                   | 238 ++++++++++++++-------------
- arch/powerpc/kernel/prom.c                   |  12 +-
- arch/powerpc/kernel/setup-common.c           |  30 +++-
- arch/powerpc/kernel/setup.h                  |   9 +-
- arch/powerpc/kernel/setup_64.c               |  80 ++++++---
- arch/powerpc/kernel/smp.c                    |  10 +-
- arch/powerpc/kernel/sysfs.c                  |  18 +-
- arch/powerpc/kvm/book3s_hv.c                 |  34 ++--
- arch/powerpc/kvm/book3s_hv_builtin.c         |   2 +-
- arch/powerpc/kvm/book3s_hv_interrupts.S      |   3 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S      |   3 +-
- arch/powerpc/mm/hash_utils_64.c              |   2 +-
- arch/powerpc/mm/mem.c                        |   9 +-
- arch/powerpc/mm/numa.c                       |  36 ++--
- arch/powerpc/mm/pgtable-book3s64.c           |   6 +-
- arch/powerpc/mm/pgtable-radix.c              | 203 ++++++++++++++++-------
- arch/powerpc/mm/tlb-radix.c                  |   2 +-
- arch/powerpc/platforms/85xx/smp.c            |   8 +-
- arch/powerpc/platforms/cell/smp.c            |   4 +-
- arch/powerpc/platforms/powernv/idle.c        |  13 +-
- arch/powerpc/platforms/powernv/setup.c       |   4 +-
- arch/powerpc/platforms/powernv/smp.c         |   2 +-
- arch/powerpc/platforms/powernv/subcore.c     |   2 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   2 +-
- arch/powerpc/platforms/pseries/kexec.c       |   7 +-
- arch/powerpc/platforms/pseries/lpar.c        |   4 +-
- arch/powerpc/platforms/pseries/setup.c       |   2 +-
- arch/powerpc/platforms/pseries/smp.c         |   4 +-
- arch/powerpc/sysdev/xics/icp-native.c        |   2 +-
- arch/powerpc/xmon/xmon.c                     |   2 +-
- include/linux/memblock.h                     |   5 +-
- mm/memblock.c                                |   2 +-
- 45 files changed, 543 insertions(+), 355 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index b62c31037cad..57fe8aa0c257 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -58,7 +58,7 @@ struct task_struct;
+  * processor.
+  */
+ struct paca_struct {
+-#ifdef CONFIG_PPC_BOOK3S
++#ifdef CONFIG_PPC_PSERIES
+ 	/*
+ 	 * Because hw_cpu_id, unlike other paca fields, is accessed
+ 	 * routinely from other CPUs (from the IRQ code), we stick to
+@@ -67,7 +67,8 @@ struct paca_struct {
+ 	 */
+ 
+ 	struct lppaca *lppaca_ptr;	/* Pointer to LpPaca for PLIC */
+-#endif /* CONFIG_PPC_BOOK3S */
++#endif /* CONFIG_PPC_PSERIES */
++
+ 	/*
+ 	 * MAGIC: the spinlock functions in arch/powerpc/lib/locks.c 
+ 	 * load lock_token and paca_index with a single lwz
+@@ -160,10 +161,14 @@ struct paca_struct {
+ 	u64 saved_msr;			/* MSR saved here by enter_rtas */
+ 	u16 trap_save;			/* Used when bad stack is encountered */
+ 	u8 irq_soft_mask;		/* mask for irq soft masking */
++	u8 soft_enabled;		/* irq soft-enable flag */
+ 	u8 irq_happened;		/* irq happened while soft-disabled */
+ 	u8 io_sync;			/* writel() needs spin_unlock sync */
+ 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+ 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	u8 pmcregs_in_use;		/* pseries puts this in lppaca */
++#endif
+ 	u64 sprg_vdso;			/* Saved user-visible sprg */
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	u64 tm_scratch;                 /* TM scratch area for reclaim */
+diff --git a/arch/powerpc/include/asm/pmc.h b/arch/powerpc/include/asm/pmc.h
+index 5a9ede4962cb..7ac3586c38ab 100644
+--- a/arch/powerpc/include/asm/pmc.h
++++ b/arch/powerpc/include/asm/pmc.h
+@@ -31,10 +31,21 @@ void ppc_enable_pmcs(void);
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #include <asm/lppaca.h>
++#include <asm/firmware.h>
+ 
+ static inline void ppc_set_pmu_inuse(int inuse)
+ {
+-	get_lppaca()->pmcregs_in_use = inuse;
++#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
++	if (firmware_has_feature(FW_FEATURE_LPAR)) {
++#ifdef CONFIG_PPC_PSERIES
++		get_lppaca()->pmcregs_in_use = inuse;
++#endif
++	} else {
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++		get_paca()->pmcregs_in_use = inuse;
++#endif
++	}
++#endif
+ }
+ 
+ extern void power4_enable_pmcs(void);
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 88b84ac76b53..b9b52490acfd 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -221,12 +221,17 @@ int main(void)
+ 	OFFSET(PACA_EXMC, paca_struct, exmc);
+ 	OFFSET(PACA_EXSLB, paca_struct, exslb);
+ 	OFFSET(PACA_EXNMI, paca_struct, exnmi);
++#ifdef CONFIG_PPC_PSERIES
+ 	OFFSET(PACALPPACAPTR, paca_struct, lppaca_ptr);
++#endif
+ 	OFFSET(PACA_SLBSHADOWPTR, paca_struct, slb_shadow_ptr);
+ 	OFFSET(SLBSHADOW_STACKVSID, slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid);
+ 	OFFSET(SLBSHADOW_STACKESID, slb_shadow, save_area[SLB_NUM_BOLTED - 1].esid);
+ 	OFFSET(SLBSHADOW_SAVEAREA, slb_shadow, save_area);
+ 	OFFSET(LPPACA_PMCINUSE, lppaca, pmcregs_in_use);
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	OFFSET(PACA_PMCINUSE, paca_struct, pmcregs_in_use);
++#endif
+ 	OFFSET(LPPACA_DTLIDX, lppaca, dtl_idx);
+ 	OFFSET(LPPACA_YIELDCOUNT, lppaca, yield_count);
+ 	OFFSET(PACA_DTL_RIDX, paca_struct, dtl_ridx);
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 95ffedf14885..5900540e2ff8 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -20,7 +20,7 @@
+ 
+ #include "setup.h"
+ 
+-#ifdef CONFIG_PPC_BOOK3S
++#ifdef CONFIG_PPC_PSERIES
+ 
+ /*
+  * The structure which the hypervisor knows about - this structure
+@@ -47,6 +47,9 @@ static long __initdata lppaca_size;
+ 
+ static void __init allocate_lppacas(int nr_cpus, unsigned long limit)
+ {
++	if (early_cpu_has_feature(CPU_FTR_HVMODE))
++		return;
++
+ 	if (nr_cpus <= NR_LPPACAS)
+ 		return;
+ 
+@@ -60,6 +63,9 @@ static struct lppaca * __init new_lppaca(int cpu)
+ {
+ 	struct lppaca *lp;
+ 
++	if (early_cpu_has_feature(CPU_FTR_HVMODE))
++		return NULL;
++
+ 	if (cpu < NR_LPPACAS)
+ 		return &lppaca[cpu];
+ 
+@@ -73,6 +79,9 @@ static void __init free_lppacas(void)
+ {
+ 	long new_size = 0, nr;
+ 
++	if (early_cpu_has_feature(CPU_FTR_HVMODE))
++		return;
++
+ 	if (!lppaca_size)
+ 		return;
+ 	nr = num_possible_cpus() - NR_LPPACAS;
+@@ -157,9 +166,10 @@ EXPORT_SYMBOL(paca);
+ 
+ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ {
+-#ifdef CONFIG_PPC_BOOK3S
++#ifdef CONFIG_PPC_PSERIES
+ 	new_paca->lppaca_ptr = new_lppaca(cpu);
+-#else
++#endif
++#ifdef CONFIG_PPC_BOOK3E
+ 	new_paca->kernel_pgd = swapper_pg_dir;
+ #endif
+ 	new_paca->lock_token = 0x8000;
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index dc54373c8780..0e8493033288 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -79,8 +79,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	li	r5, 0
+ 	mtspr	SPRN_MMCRA, r5
+ 	isync
+-	ld	r3, PACALPPACAPTR(r13)	/* is the host using the PMU? */
+-	lbz	r5, LPPACA_PMCINUSE(r3)
++	lbz	r5, PACA_PMCINUSE(r13)	/* is the host using the PMU? */
+ 	cmpwi	r5, 0
+ 	beq	31f			/* skip if not */
+ 	mfspr	r5, SPRN_MMCR1
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 7886b313d135..bb2ed7d1b96a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -113,8 +113,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_SPRG_VDSO_WRITE,r3
+ 
+ 	/* Reload the host's PMU registers */
+-	ld	r3, PACALPPACAPTR(r13)	/* is the host using the PMU? */
+-	lbz	r4, LPPACA_PMCINUSE(r3)
++	lbz	r4, PACA_PMCINUSE(r13) /* is the host using the PMU? */
+ 	cmpwi	r4, 0
+ 	beq	23f			/* skip if not */
+ BEGIN_FTR_SECTION
 -- 
 2.16.1
