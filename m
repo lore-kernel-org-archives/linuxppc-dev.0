@@ -1,25 +1,21 @@
-Return-Path: <clg@kaod.org>
-Received: from 15.mo6.mail-out.ovh.net (15.mo6.mail-out.ovh.net
- [188.165.39.161])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zghMY0t63zF0yM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 23:15:51 +1100 (AEDT)
-Received: from player774.ha.ovh.net (b6.ovh.net [213.186.33.56])
- by mo6.mail-out.ovh.net (Postfix) with ESMTP id 347A712CFE0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 11:40:53 +0100 (CET)
-Subject: Re: [PATCH] powerpc/xive: use hw CPU ids when configuring the CPU
- queues
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, stable@vger.kernel.org
-References: <20180213084712.18351-1-clg@kaod.org>
- <87a7wd2nwn.fsf@concordia.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <592440b1-5943-2315-c477-598900c79521@kaod.org>
-Date: Tue, 13 Feb 2018 10:40:47 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zglq55PN6zF1P3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 01:51:25 +1100 (AEDT)
+Date: Tue, 13 Feb 2018 15:51:20 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: pata-macio WARNING at dmam_alloc_coherent+0xec/0x110
+Message-ID: <20180213145120.GA14657@lst.de>
+References: <alpine.LRH.2.21.1802122246230.9153@math.ut.ee>
 MIME-Version: 1.0
-In-Reply-To: <87a7wd2nwn.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LRH.2.21.1802122246230.9153@math.ut.ee>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/13/2018 10:18 AM, Michael Ellerman wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
-> 
->> The CPU event notification queues on sPAPR should be configured using
->> a hardware CPU identifier.
->>
->> The problem did not show up on the Power Hypervisor because pHyp
->> supports 8 threads per core which keeps CPU number contiguous. This is
->> not the case on all sPAPR virtual machines, some use SMT=1.
->>
->> Also improve error logging by adding the CPU number.
->>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>
->>  I think we should send this one to stable also.
-> 
-> Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
+Does this fix your warning?
 
-yes.
-
-> Cc: stable@vger.kernel.org # v4.14+
-
-yes. I just added the Cc:. I am not sure that will work with 
-patchwork though.
-
-Thanks,
-
-C. 
-
-
-> ?
-> 
-> cheers
-> 
->> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
->> index d9c4c9366049..091f1d0d0af1 100644
->> --- a/arch/powerpc/sysdev/xive/spapr.c
->> +++ b/arch/powerpc/sysdev/xive/spapr.c
->> @@ -356,7 +356,8 @@ static int xive_spapr_configure_queue(u32 target, struct xive_q *q, u8 prio,
->>  
->>  	rc = plpar_int_get_queue_info(0, target, prio, &esn_page, &esn_size);
->>  	if (rc) {
->> -		pr_err("Error %lld getting queue info prio %d\n", rc, prio);
->> +		pr_err("Error %lld getting queue info CPU %d prio %d\n", rc,
->> +		       target, prio);
->>  		rc = -EIO;
->>  		goto fail;
->>  	}
->> @@ -370,7 +371,8 @@ static int xive_spapr_configure_queue(u32 target, struct xive_q *q, u8 prio,
->>  	/* Configure and enable the queue in HW */
->>  	rc = plpar_int_set_queue_config(flags, target, prio, qpage_phys, order);
->>  	if (rc) {
->> -		pr_err("Error %lld setting queue for prio %d\n", rc, prio);
->> +		pr_err("Error %lld setting queue for CPU %d prio %d\n", rc,
->> +		       target, prio);
->>  		rc = -EIO;
->>  	} else {
->>  		q->qpage = qpage;
->> @@ -389,8 +391,8 @@ static int xive_spapr_setup_queue(unsigned int cpu, struct xive_cpu *xc,
->>  	if (IS_ERR(qpage))
->>  		return PTR_ERR(qpage);
->>  
->> -	return xive_spapr_configure_queue(cpu, q, prio, qpage,
->> -					  xive_queue_shift);
->> +	return xive_spapr_configure_queue(get_hard_smp_processor_id(cpu),
->> +					  q, prio, qpage, xive_queue_shift);
->>  }
->>  
->>  static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
->> @@ -399,10 +401,12 @@ static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
->>  	struct xive_q *q = &xc->queue[prio];
->>  	unsigned int alloc_order;
->>  	long rc;
->> +	int hw_cpu = get_hard_smp_processor_id(cpu);
->>  
->> -	rc = plpar_int_set_queue_config(0, cpu, prio, 0, 0);
->> +	rc = plpar_int_set_queue_config(0, hw_cpu, prio, 0, 0);
->>  	if (rc)
->> -		pr_err("Error %ld setting queue for prio %d\n", rc, prio);
->> +		pr_err("Error %ld setting queue for CPU %d prio %d\n", rc,
->> +		       hw_cpu, prio);
->>  
->>  	alloc_order = xive_alloc_order(xive_queue_shift);
->>  	free_pages((unsigned long)q->qpage, alloc_order);
->> -- 
->> 2.13.6
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index 62f541f968f6..07074820a167 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -375,6 +375,7 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
+ 	dev->ofdev.dev.of_node = np;
+ 	dev->ofdev.archdata.dma_mask = 0xffffffffUL;
+ 	dev->ofdev.dev.dma_mask = &dev->ofdev.archdata.dma_mask;
++	dev->ofdev.dev.coherent_dma_mask = dev->ofdev.archdata.dma_mask;
+ 	dev->ofdev.dev.parent = parent;
+ 	dev->ofdev.dev.bus = &macio_bus_type;
+ 	dev->ofdev.dev.release = macio_release_dev;
