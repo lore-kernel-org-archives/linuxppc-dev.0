@@ -1,37 +1,29 @@
-Return-Path: <bkenward@solarflare.com>
-Received: from dispatch1-us1.ppe-hosted.com (dispatch1-us1.ppe-hosted.com
- [67.231.154.164])
+Return-Path: <jsmart2021@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zghRg5jNkzDqp2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 23:19:22 +1100 (AEDT)
-Received: from dispatch1-us1.ppe-hosted.com (localhost.localdomain [127.0.0.1])
- by dispatch1-us1.ppe-hosted.com (Proofpoint Essentials ESMTP Server) with
- ESMTP id 7EEDB45D13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 12:09:54 +0000 (UTC)
-Subject: Re: [PATCH 5/5] mtd: Stop updating erase_info->state and calling
- mtd_erase_callback()
-To: Boris Brezillon <boris.brezillon@bootlin.com>, David Woodhouse
- <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, "Marek
- Vasut" <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>, "Cyrille
- Pitchen" <cyrille.pitchen@wedev4u.fr>, <linux-mtd@lists.infradead.org>
-CC: Joern Engel <joern@lazybastard.org>, Robert Jarzmik
- <robert.jarzmik@free.fr>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Kyungmin Park <kyungmin.park@samsung.com>, Artem Bityutskiy
- <dedekind1@gmail.com>, Solarflare linux maintainers
- <linux-net-drivers@solarflare.com>, Edward Cree <ecree@solarflare.com>, "Greg
- Kroah-Hartman" <gregkh@linuxfoundation.org>, <linuxppc-dev@lists.ozlabs.org>,
- <netdev@vger.kernel.org>, <devel@driverdev.osuosl.org>, Miquel Raynal
- <miquel.raynal@bootlin.com>
-References: <20180212210311.23244-1-boris.brezillon@bootlin.com>
- <20180212210311.23244-6-boris.brezillon@bootlin.com>
-From: Bert Kenward <bkenward@solarflare.com>
-Message-ID: <b91389a7-69ef-8552-a4a9-322eca3c9108@solarflare.com>
-Date: Tue, 13 Feb 2018 12:09:20 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgqVz5z18zF1Rh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 04:37:44 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id b66so12020298itd.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 09:37:44 -0800 (PST)
+Subject: Re: [PATCH v2 04/13] lpfc: Add push-to-adapter support to sli4
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <jthumshirn@suse.de>
+Cc: linux-scsi@vger.kernel.org, Dick Kennedy <dick.kennedy@broadcom.com>,
+ James Smart <james.smart@broadcom.com>, Mark Rutland <mark.rutland@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <20180207022851.11800-1-jsmart2021@gmail.com>
+ <20180207022851.11800-5-jsmart2021@gmail.com>
+ <20180207095157.zejjbq6a7eeqmosx@linux-x5ow.site>
+ <20180207102759.qzzqleujqhxnenna@linux-x5ow.site>
+ <871shpo2fu.fsf@concordia.ellerman.id.au>
+From: James Smart <jsmart2021@gmail.com>
+Message-ID: <b55fd2fc-7b10-e39c-8212-aeccadbb99a5@gmail.com>
+Date: Tue, 13 Feb 2018 09:37:35 -0800
 MIME-Version: 1.0
-In-Reply-To: <20180212210311.23244-6-boris.brezillon@bootlin.com>
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <871shpo2fu.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/02/18 21:03, Boris Brezillon wrote:
-> MTD users are no longer checking erase_info->state to determine if the
-> erase operation failed or succeeded. Moreover, mtd_erase_callback() is
-> now a NOP.
+On 2/12/2018 9:59 PM, Michael Ellerman wrote:
+> Johannes Thumshirn <jthumshirn@suse.de> writes:
 > 
-> We can safely get rid of all mtd_erase_callback() calls and all
-> erase_info->state assignments. While at it, get rid of the
-> erase_info->state field, all MTD_ERASE_XXX definitions and the
-> mtd_erase_callback() function.
+>> On Wed, Feb 07, 2018 at 10:51:57AM +0100, Johannes Thumshirn wrote:
+>>>> +			/* Enable combined writes for DPP aperture */
+>>>> +			pg_addr = (unsigned long)(wq->dpp_regaddr) & PAGE_MASK;
+>>>> +#ifdef CONFIG_X86
+>>>> +			rc = set_memory_wc(pg_addr, 1);
+>>>> +			if (rc) {
+>>>> +				lpfc_printf_log(phba, KERN_ERR, LOG_INIT,
+>>>> +						"3272 Cannot setup Combined "
+>>>> +						"Write on WQ[%d] - disable DPP\n",
+>>>> +						wq->queue_id);
+>>>> +				phba->cfg_enable_dpp = 0;
+>>>> +			}
+>>>> +#else
+>>>> +			phba->cfg_enable_dpp = 0;
+>>>> +#endif
+>>>> +		} else
+>>>> +			wq->db_regaddr = phba->sli4_hba.WQDBregaddr;
+>>>
+>>> I don't really like the set_memory_wc() call here. Neither do I like the ifdef
+>>> CONFIG_X86 special casing.
+>>>
+>>> If you really need write combining, can't you at least use ioremap_wc()?
+>>
+>> Coming back to this again (after talking to our ARM/POWER folks internally).
+>> Is this really x86 specific here? I know there are servers with other architectures
+>> using lpfcs out there.
+>>
+>> I _think_ write combining should be possible on other architectures (that have
+>> PCIe and aren't dead) as well.
+>>
+>> The ioremap_wc() I suggested is probably wrong.
+>>
+>> So can you please revisit this? I CCed Mark and Michael, maybe they can help
+>> here.
 > 
-> Signed-off-by: Boris Brezillon <boris.brezillon@bootlin.com>
+> I'm not much of an I/O guy, but I do know that on powerpc we don't
+> implement set_memory_wc(). So if you're using that then you do need the
+> ifdef.
+> 
+> I couldn't easily find the rest of this thread, so I'm not sure if
+> ioremap_wc() is an option. We do implement that and on modern CPUs at
+> least it will give you something that's not just a plain uncached
+> mapping.
 
-For sfc parts:
+I went back and looked at things.  It does appear that we should be 
+using ioremap_wc().  There's a pci routine that wrappers it, but as 
+we're already are using the other routines in the wrapper, it's not very 
+interesting.   Ioremap_wc seems to be supported pretty much anywhere, 
+with platforms managing what it resolves to. Granted, some platforms 
+may not do write combining but will relax the caching aspects (as 
+Michael indicates).
 
-Acked-by: Bert Kenward <bkenward@solarflare.com>
+The interesting thing is - when wc is truly on, we see a substantial 
+difference. But in cases where wc isn't on and we perform the individual 
+writes plus the flush before the doorbell write to synchronize things, 
+it turns out it takes longer than if we don't use the feature. So, in 
+cases where we don't have real wc, I'm going to turn it off. Based on 
+what we've tested so far (includes ppc p8), we'll be leaving it enabled 
+on X86 only.
 
-
-Thanks,
-
-Bert.
+-- james
