@@ -1,18 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgmCF27cpzF1QS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 02:08:57 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id f6so32474pgs.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:08:57 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgmCH4kjhzF1PT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 02:08:59 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id a11so28416pgu.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 07:08:59 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 06/14] powerpc/mm/numa: move numa topology discovery earlier
-Date: Wed, 14 Feb 2018 01:08:16 +1000
-Message-Id: <20180213150824.27689-7-npiggin@gmail.com>
+Subject: [PATCH 07/14] powerpc/64: move default SPR recording
+Date: Wed, 14 Feb 2018 01:08:17 +1000
+Message-Id: <20180213150824.27689-8-npiggin@gmail.com>
 In-Reply-To: <20180213150824.27689-1-npiggin@gmail.com>
 References: <20180213150824.27689-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,135 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split sparsemem initialisation from basic numa topology discovery.
-Move the parsing earlier in boot, before pacas are allocated.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Move this into the early setup code, and don't iterate over CPU masks.
+We don't want to call into sysfs so early from setup, and a future patch
+won't initialize CPU masks by the time this is called.
 ---
- arch/powerpc/include/asm/setup.h   |  1 +
- arch/powerpc/kernel/setup-common.c |  3 +++
- arch/powerpc/mm/mem.c              |  5 ++++-
- arch/powerpc/mm/numa.c             | 32 +++++++++++++++++++-------------
- 4 files changed, 27 insertions(+), 14 deletions(-)
+ arch/powerpc/kernel/paca.c     |  3 +++
+ arch/powerpc/kernel/setup.h    |  9 +++------
+ arch/powerpc/kernel/setup_64.c |  8 ++++++++
+ arch/powerpc/kernel/sysfs.c    | 18 +++++++-----------
+ 4 files changed, 21 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 469b7fdc9be4..d2bf233aebd5 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -23,6 +23,7 @@ extern void reloc_got2(unsigned long);
- #define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 2699f9009286..e560072f122b 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -133,6 +133,9 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ 	new_paca->kexec_state = KEXEC_STATE_NONE;
+ 	new_paca->__current = &init_task;
+ 	new_paca->data_offset = 0xfeeeeeeeeeeeeeeeULL;
++#ifdef CONFIG_PPC64
++	new_paca->dscr_default = spr_default_dscr;
++#endif
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	new_paca->slb_shadow_ptr = NULL;
+ #endif
+diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
+index 3fc11e30308f..d144df54ad40 100644
+--- a/arch/powerpc/kernel/setup.h
++++ b/arch/powerpc/kernel/setup.h
+@@ -45,14 +45,11 @@ void emergency_stack_init(void);
+ static inline void emergency_stack_init(void) { };
+ #endif
  
- void check_for_initrd(void);
-+void mem_topology_setup(void);
- void initmem_init(void);
- void setup_panic(void);
- #define ARCH_PANIC_TIMEOUT 180
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index d73ec518ef80..9eaf26318d20 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -888,6 +888,9 @@ void __init setup_arch(char **cmdline_p)
- 	/* Check the SMT related command line arguments (ppc64). */
- 	check_smt_enabled();
- 
-+	/* Parse memory topology */
-+	mem_topology_setup();
+-#ifdef CONFIG_PPC64
+-void record_spr_defaults(void);
+-#else
+-static inline void record_spr_defaults(void) { };
+-#endif
+-
+ #ifdef CONFIG_PPC64
+ u64 ppc64_bolted_size(void);
 +
- 	/* On BookE, setup per-core TLB data structures. */
- 	setup_tlb_core_data();
++/* Default SPR values from firmware/kexec */
++extern unsigned long spr_default_dscr;
+ #endif
  
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index fe8c61149fb8..4eee46ea4d96 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -212,7 +212,7 @@ walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- EXPORT_SYMBOL_GPL(walk_system_ram_range);
- 
- #ifndef CONFIG_NEED_MULTIPLE_NODES
--void __init initmem_init(void)
-+void __init mem_topology_setup(void)
- {
- 	max_low_pfn = max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
- 	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
-@@ -224,7 +224,10 @@ void __init initmem_init(void)
- 	 * memblock_regions
- 	 */
- 	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, &memblock.memory, 0);
-+}
- 
-+void __init initmem_init(void)
-+{
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
- 	sparse_init();
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 9c3eb62bced5..57a5029b4521 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -831,18 +831,13 @@ static void __init find_possible_nodes(void)
- 	of_node_put(rtas);
+ /*
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 3ce12af4906f..dde34d35d1e7 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -254,6 +254,14 @@ static void cpu_ready_for_interrupts(void)
+ 	get_paca()->kernel_msr = MSR_KERNEL;
  }
  
--void __init initmem_init(void)
-+void __init mem_topology_setup(void)
- {
--	int nid, cpu;
--
--	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
--	max_pfn = max_low_pfn;
-+	int cpu;
- 
- 	if (parse_numa_properties())
- 		setup_nonnuma();
- 
--	memblock_dump_all();
--
- 	/*
- 	 * Modify the set of possible NUMA nodes to reflect information
- 	 * available about the set of online nodes, and the set of nodes
-@@ -853,6 +848,23 @@ void __init initmem_init(void)
- 
- 	find_possible_nodes();
- 
-+	setup_node_to_cpumask_map();
++unsigned long spr_default_dscr = 0;
 +
-+	reset_numa_cpu_lookup_table();
-+
-+	for_each_present_cpu(cpu)
-+		numa_setup_cpu(cpu);
++void __init record_spr_defaults(void)
++{
++	if (early_cpu_has_feature(CPU_FTR_DSCR))
++		spr_default_dscr = mfspr(SPRN_DSCR);
 +}
 +
-+void __init initmem_init(void)
-+{
-+	int nid;
-+
-+	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
-+	max_pfn = max_low_pfn;
-+
-+	memblock_dump_all();
-+
- 	for_each_online_node(nid) {
- 		unsigned long start_pfn, end_pfn;
+ /*
+  * Early initialization entry point. This is called by head.S
+  * with MMU translation disabled. We rely on the "feature" of
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 1f9d94dac3a6..ab4eb61fe659 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -588,21 +588,17 @@ static DEVICE_ATTR(dscr_default, 0600,
  
-@@ -863,10 +875,6 @@ void __init initmem_init(void)
- 
- 	sparse_init();
- 
--	setup_node_to_cpumask_map();
+ static void sysfs_create_dscr_default(void)
+ {
+-	int err = 0;
+-	if (cpu_has_feature(CPU_FTR_DSCR))
+-		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
+-}
 -
--	reset_numa_cpu_lookup_table();
+-void __init record_spr_defaults(void)
+-{
+-	int cpu;
 -
- 	/*
- 	 * We need the numa_cpu_lookup_table to be accurate for all CPUs,
- 	 * even before we online them, so that we can use cpu_to_{node,mem}
-@@ -876,8 +884,6 @@ void __init initmem_init(void)
- 	 */
- 	cpuhp_setup_state_nocalls(CPUHP_POWER_NUMA_PREPARE, "powerpc/numa:prepare",
- 				  ppc_numa_cpu_prepare, ppc_numa_cpu_dead);
--	for_each_present_cpu(cpu)
--		numa_setup_cpu(cpu);
+ 	if (cpu_has_feature(CPU_FTR_DSCR)) {
+-		dscr_default = mfspr(SPRN_DSCR);
+-		for (cpu = 0; cpu < nr_cpu_ids; cpu++)
++		int err = 0;
++		int cpu;
++
++		for_each_possible_cpu(cpu)
+ 			paca_ptrs[cpu]->dscr_default = dscr_default;
++
++		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
+ 	}
  }
++
+ #endif /* CONFIG_PPC64 */
  
- static int __init early_numa(char *p)
+ #ifdef HAS_PPC_PMC_PA6T
 -- 
 2.16.1
