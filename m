@@ -1,22 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <alistair@popple.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgSPv6Vl1zF0vd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:17:07 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
- hbabu@us.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] powerpc/vas: Fix cleanup when VAS is not configured
-In-Reply-To: <20180212202510.GB28183@us.ibm.com>
-References: <1518234567-24869-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1518234567-24869-2-git-send-email-sukadev@linux.vnet.ibm.com>
- <87d11awzkp.fsf@concordia.ellerman.id.au> <20180212202510.GB28183@us.ibm.com>
-Date: Tue, 13 Feb 2018 14:17:07 +1100
-Message-ID: <87tvulvarw.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgSQh35PxzF0yK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 14:17:48 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ Mark Hairgrove <mhairgrove@nvidia.com>,
+ Javier Cabezas <jcabezas@nvidia.com>,
+ Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
+Date: Tue, 13 Feb 2018 14:17:34 +1100
+Message-Id: <20180213031734.19831-1-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +22,310 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+When sending TLB invalidates to the NPU we need to send extra flushes due
+to a hardware issue. The original implementation would lock the all the
+ATSD MMIO registers sequentially before unlocking and relocking each of
+them sequentially to do the extra flush.
 
-> Michael Ellerman [mpe@ellerman.id.au] wrote:
->> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
->> 
->> > When VAS is not configured in the system, make sure to remove
->> > the VAS debugfs directory and unregister the platform driver.
->> >
->> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->> ...
->> > diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
->> > index aebbe95..f83e27d8 100644
->> > --- a/arch/powerpc/platforms/powernv/vas.c
->> > +++ b/arch/powerpc/platforms/powernv/vas.c
->> > @@ -169,8 +169,11 @@ static int __init vas_init(void)
->> >  		found++;
->> >  	}
->> >  
->> > -	if (!found)
->> > +	if (!found) {
->> > +		platform_driver_unregister(&vas_driver);
->> > +		vas_cleanup_dbgdir();
->> >  		return -ENODEV;
->> > +	}
->> 
->> The better patch would be to move the call to vas_init_dbgdir() down
->> here, where we know we have successfully registered the driver.
->
-> Well, when VAS is configured, init_vas_instance() expects the top level
-> "vas" debugfs dir to already be setup.
+This introduced a deadlock as it is possible for one thread to hold one
+ATSD register whilst waiting for another register to be freed while the
+other thread is holding that register waiting for the one in the first
+thread to be freed.
 
-OK.
+For example if there are two threads and two ATSD registers:
 
-> We could have each init_vas_instance() assume it is the first and
-> unconditionally call vas_init_dbgdir(). vas_init_dbgdir() could make
-> sure to initialize only once.
+Thread A	Thread B
+Acquire 1
+Acquire 2
+Release 1	Acquire 1
+Wait 1		Wait 2
 
-Yeah that looks like a good solution.
+Both threads will be stuck waiting to acquire a register resulting in an
+RCU stall warning or soft lockup.
 
-cheers
+This patch solves the deadlock by refactoring the code to ensure registers
+are not released between flushes and to ensure all registers are either
+acquired or released together and in order.
+
+Fixes: bbd5ff50afff ("powerpc/powernv/npu-dma: Add explicit flush when sending an ATSD")
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+
+Michael,
+
+This should probalby go to stable as well, although it's bigger than the 100
+line limit mentioned in the stable kernel rules.
+
+- Alistair
+
+ arch/powerpc/platforms/powernv/npu-dma.c | 195 +++++++++++++++++--------------
+ 1 file changed, 109 insertions(+), 86 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index fb0a6dee9bce..5746b456dfa4 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -408,6 +408,11 @@ struct npu_context {
+ 	void *priv;
+ };
+ 
++struct mmio_atsd_reg {
++	struct npu *npu;
++	int reg;
++};
++
+ /*
+  * Find a free MMIO ATSD register and mark it in use. Return -ENOSPC
+  * if none are available.
+@@ -433,79 +438,83 @@ static void put_mmio_atsd_reg(struct npu *npu, int reg)
+ #define XTS_ATSD_AVA  1
+ #define XTS_ATSD_STAT 2
+ 
+-static int mmio_launch_invalidate(struct npu *npu, unsigned long launch,
+-				unsigned long va)
++static void mmio_launch_invalidate(struct mmio_atsd_reg *mmio_atsd_reg,
++				unsigned long launch, unsigned long va)
+ {
+-	int mmio_atsd_reg;
+-
+-	do {
+-		mmio_atsd_reg = get_mmio_atsd_reg(npu);
+-		cpu_relax();
+-	} while (mmio_atsd_reg < 0);
++	struct npu *npu = mmio_atsd_reg->npu;
++	int reg = mmio_atsd_reg->reg;
+ 
+ 	__raw_writeq(cpu_to_be64(va),
+-		npu->mmio_atsd_regs[mmio_atsd_reg] + XTS_ATSD_AVA);
++		npu->mmio_atsd_regs[reg] + XTS_ATSD_AVA);
+ 	eieio();
+-	__raw_writeq(cpu_to_be64(launch), npu->mmio_atsd_regs[mmio_atsd_reg]);
+-
+-	return mmio_atsd_reg;
++	__raw_writeq(cpu_to_be64(launch), npu->mmio_atsd_regs[reg]);
+ }
+ 
+-static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
++static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
++				unsigned long pid, bool flush)
+ {
++	int i;
+ 	unsigned long launch;
+ 
+-	/* IS set to invalidate matching PID */
+-	launch = PPC_BIT(12);
++	for (i = 0; i <= max_npu2_index; i++) {
++		if (mmio_atsd_reg[i].reg < 0)
++			continue;
+ 
+-	/* PRS set to process-scoped */
+-	launch |= PPC_BIT(13);
++		/* IS set to invalidate matching PID */
++		launch = PPC_BIT(12);
+ 
+-	/* AP */
+-	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
++		/* PRS set to process-scoped */
++		launch |= PPC_BIT(13);
+ 
+-	/* PID */
+-	launch |= pid << PPC_BITLSHIFT(38);
++		/* AP */
++		launch |= (u64)
++			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+ 
+-	/* No flush */
+-	launch |= !flush << PPC_BITLSHIFT(39);
++		/* PID */
++		launch |= pid << PPC_BITLSHIFT(38);
+ 
+-	/* Invalidating the entire process doesn't use a va */
+-	return mmio_launch_invalidate(npu, launch, 0);
++		/* No flush */
++		launch |= !flush << PPC_BITLSHIFT(39);
++
++		/* Invalidating the entire process doesn't use a va */
++		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, 0);
++	}
+ }
+ 
+-static int mmio_invalidate_va(struct npu *npu, unsigned long va,
+-			unsigned long pid, bool flush)
++static void mmio_invalidate_va(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
++			unsigned long va, unsigned long pid, bool flush)
+ {
++	int i;
+ 	unsigned long launch;
+ 
+-	/* IS set to invalidate target VA */
+-	launch = 0;
++	for (i = 0; i <= max_npu2_index; i++) {
++		if (mmio_atsd_reg[i].reg < 0)
++			continue;
++
++		/* IS set to invalidate target VA */
++		launch = 0;
+ 
+-	/* PRS set to process scoped */
+-	launch |= PPC_BIT(13);
++		/* PRS set to process scoped */
++		launch |= PPC_BIT(13);
+ 
+-	/* AP */
+-	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
++		/* AP */
++		launch |= (u64)
++			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+ 
+-	/* PID */
+-	launch |= pid << PPC_BITLSHIFT(38);
++		/* PID */
++		launch |= pid << PPC_BITLSHIFT(38);
+ 
+-	/* No flush */
+-	launch |= !flush << PPC_BITLSHIFT(39);
++		/* No flush */
++		launch |= !flush << PPC_BITLSHIFT(39);
+ 
+-	return mmio_launch_invalidate(npu, launch, va);
++		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, va);
++	}
+ }
+ 
+ #define mn_to_npu_context(x) container_of(x, struct npu_context, mn)
+ 
+-struct mmio_atsd_reg {
+-	struct npu *npu;
+-	int reg;
+-};
+-
+ static void mmio_invalidate_wait(
+-	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
++	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
+ {
+ 	struct npu *npu;
+ 	int i, reg;
+@@ -520,16 +529,46 @@ static void mmio_invalidate_wait(
+ 		reg = mmio_atsd_reg[i].reg;
+ 		while (__raw_readq(npu->mmio_atsd_regs[reg] + XTS_ATSD_STAT))
+ 			cpu_relax();
++	}
++}
+ 
+-		put_mmio_atsd_reg(npu, reg);
++static void acquire_atsd_reg(struct npu_context *npu_context,
++			struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
++{
++	int i, j;
++	struct npu *npu;
++	struct pci_dev *npdev;
++	struct pnv_phb *nphb;
+ 
+-		/*
+-		 * The GPU requires two flush ATSDs to ensure all entries have
+-		 * been flushed. We use PID 0 as it will never be used for a
+-		 * process on the GPU.
+-		 */
+-		if (flush)
+-			mmio_invalidate_pid(npu, 0, true);
++	for (i = 0; i <= max_npu2_index; i++) {
++		mmio_atsd_reg[i].reg = -1;
++		for (j = 0; j < NV_MAX_LINKS; j++) {
++			npdev = npu_context->npdev[i][j];
++			if (!npdev)
++				continue;
++
++			nphb = pci_bus_to_host(npdev->bus)->private_data;
++			npu = &nphb->npu;
++			mmio_atsd_reg[i].npu = npu;
++			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
++			while (mmio_atsd_reg[i].reg < 0) {
++				mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
++				cpu_relax();
++			}
++			break;
++		}
++	}
++}
++
++static void release_atsd_reg(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
++{
++	int i;
++
++	for (i = 0; i <= max_npu2_index; i++) {
++		if (mmio_atsd_reg[i].reg < 0)
++			continue;
++
++		put_mmio_atsd_reg(mmio_atsd_reg[i].npu, mmio_atsd_reg[i].reg);
+ 	}
+ }
+ 
+@@ -540,10 +579,6 @@ static void mmio_invalidate_wait(
+ static void mmio_invalidate(struct npu_context *npu_context, int va,
+ 			unsigned long address, bool flush)
+ {
+-	int i, j;
+-	struct npu *npu;
+-	struct pnv_phb *nphb;
+-	struct pci_dev *npdev;
+ 	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
+ 	unsigned long pid = npu_context->mm->context.id;
+ 
+@@ -559,37 +594,25 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
+ 	 * Loop over all the NPUs this process is active on and launch
+ 	 * an invalidate.
+ 	 */
+-	for (i = 0; i <= max_npu2_index; i++) {
+-		mmio_atsd_reg[i].reg = -1;
+-		for (j = 0; j < NV_MAX_LINKS; j++) {
+-			npdev = npu_context->npdev[i][j];
+-			if (!npdev)
+-				continue;
+-
+-			nphb = pci_bus_to_host(npdev->bus)->private_data;
+-			npu = &nphb->npu;
+-			mmio_atsd_reg[i].npu = npu;
+-
+-			if (va)
+-				mmio_atsd_reg[i].reg =
+-					mmio_invalidate_va(npu, address, pid,
+-							flush);
+-			else
+-				mmio_atsd_reg[i].reg =
+-					mmio_invalidate_pid(npu, pid, flush);
+-
+-			/*
+-			 * The NPU hardware forwards the shootdown to all GPUs
+-			 * so we only have to launch one shootdown per NPU.
+-			 */
+-			break;
+-		}
++	acquire_atsd_reg(npu_context, mmio_atsd_reg);
++	if (va)
++		mmio_invalidate_va(mmio_atsd_reg, address, pid, flush);
++	else
++		mmio_invalidate_pid(mmio_atsd_reg, pid, flush);
++
++	mmio_invalidate_wait(mmio_atsd_reg);
++	if (flush) {
++		/*
++		 * The GPU requires two flush ATSDs to ensure all entries have
++		 * been flushed. We use PID 0 as it will never be used for a
++		 * process on the GPU.
++		 */
++		mmio_invalidate_pid(mmio_atsd_reg, 0, true);
++		mmio_invalidate_wait(mmio_atsd_reg);
++		mmio_invalidate_pid(mmio_atsd_reg, 0, true);
++		mmio_invalidate_wait(mmio_atsd_reg);
+ 	}
+-
+-	mmio_invalidate_wait(mmio_atsd_reg, flush);
+-	if (flush)
+-		/* Wait for the flush to complete */
+-		mmio_invalidate_wait(mmio_atsd_reg, false);
++	release_atsd_reg(mmio_atsd_reg);
+ }
+ 
+ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+-- 
+2.11.0
