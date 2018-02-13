@@ -1,16 +1,16 @@
 Return-Path: <haishan.bai@gmail.com>
-Received: from mail-lf0-x234.google.com (mail-lf0-x234.google.com
- [IPv6:2a00:1450:4010:c07::234])
+Received: from mail-lf0-x236.google.com (mail-lf0-x236.google.com
+ [IPv6:2a00:1450:4010:c07::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgylN2tfPzF0yn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 10:03:56 +1100 (AEDT)
-Received: by mail-lf0-x234.google.com with SMTP id w10so14427977lfc.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 15:03:56 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgyml6K16zF1PJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 10:05:11 +1100 (AEDT)
+Received: by mail-lf0-x236.google.com with SMTP id f136so27212859lff.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 15:05:11 -0800 (PST)
 MIME-Version: 1.0
 From: Shan Hai <haishan.bai@gmail.com>
-Date: Wed, 14 Feb 2018 07:03:51 +0800
-Message-ID: <CACUD6fQ7-5i+prYcf4kA9QLN-v-_qxknc=PXVpCXETXEXZhOsQ@mail.gmail.com>
+Date: Wed, 14 Feb 2018 07:05:07 +0800
+Message-ID: <CACUD6fQxDUWd6ys7mSLL3JbBHnyyCNYS+guwmNkE2dFYbfj=XA@mail.gmail.com>
 Subject: 
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
@@ -23,4 +23,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-confirm 0da5e6b1343dcc6395ebcc8054c362d930498440
+confirm 179e695f420474677205db49a8cbfe950329975c
