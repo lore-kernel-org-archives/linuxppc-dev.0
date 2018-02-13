@@ -1,32 +1,49 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <ldufour@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgZPz6xNqzF12M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 18:47:35 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgZcf3CNpzF0pS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 18:56:46 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1D7kEiv041624
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 02:47:34 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g3ry95rv3-1
+ w1D7sQC8049422
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 02:56:44 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g3rt8632h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 02:47:32 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 02:56:43 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 13 Feb 2018 00:47:32 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH] powerpc/mm/hugetlb: initialize the pagetable cache
- correctly for hugetlb
-Date: Tue, 13 Feb 2018 13:17:15 +0530
-Message-Id: <20180213074715.1492-1-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 13 Feb 2018 07:56:41 -0000
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 00/24] Speculative page faults
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1517935810-31177-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180208125301.99445c91979343756e4cca9b@linux-foundation.org>
+Date: Tue, 13 Feb 2018 08:56:31 +0100
+MIME-Version: 1.0
+In-Reply-To: <20180208125301.99445c91979343756e4cca9b@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f32656e6-ff3d-4833-6564-96471e061a48@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,59 +53,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With 64k page size, we have hugetlb pte entries at the pmd and pud level for
-book3s64. We don't need to create a separate page table cache for that. With 4k
-we need to make sure hugepd page table cache for 16M is placed at PUD level
-and 16G at the PGD level.
+On 08/02/2018 21:53, Andrew Morton wrote:
+> On Tue,  6 Feb 2018 17:49:46 +0100 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+> 
+>> This is a port on kernel 4.15 of the work done by Peter Zijlstra to
+>> handle page fault without holding the mm semaphore [1].
+>>
+>> The idea is to try to handle user space page faults without holding the
+>> mmap_sem. This should allow better concurrency for massively threaded
+>> process since the page fault handler will not wait for other threads memory
+>> layout change to be done, assuming that this change is done in another part
+>> of the process's memory space. This type page fault is named speculative
+>> page fault. If the speculative page fault fails because of a concurrency is
+>> detected or because underlying PMD or PTE tables are not yet allocating, it
+>> is failing its processing and a classic page fault is then tried.
+>>
+>> The speculative page fault (SPF) has to look for the VMA matching the fault
+>> address without holding the mmap_sem, this is done by introducing a rwlock
+>> which protects the access to the mm_rb tree. Previously this was done using
+>> SRCU but it was introducing a lot of scheduling to process the VMA's
+>> freeing
+>> operation which was hitting the performance by 20% as reported by Kemi Wang
+>> [2].Using a rwlock to protect access to the mm_rb tree is limiting the
+>> locking contention to these operations which are expected to be in a O(log
+>> n)
+>> order. In addition to ensure that the VMA is not freed in our back a
+>> reference count is added and 2 services (get_vma() and put_vma()) are
+>> introduced to handle the reference count. When a VMA is fetch from the RB
+>> tree using get_vma() is must be later freeed using put_vma(). Furthermore,
+>> to allow the VMA to be used again by the classic page fault handler a
+>> service is introduced can_reuse_spf_vma(). This service is expected to be
+>> called with the mmap_sem hold. It checked that the VMA is still matching
+>> the specified address and is releasing its reference count as the mmap_sem
+>> is hold it is ensure that it will not be freed in our back. In general, the
+>> VMA's reference count could be decremented when holding the mmap_sem but it
+>> should not be increased as holding the mmap_sem is ensuring that the VMA is
+>> stable. I can't see anymore the overhead I got while will-it-scale
+>> benchmark anymore.
+>>
+>> The VMA's attributes checked during the speculative page fault processing
+>> have to be protected against parallel changes. This is done by using a per
+>> VMA sequence lock. This sequence lock allows the speculative page fault
+>> handler to fast check for parallel changes in progress and to abort the
+>> speculative page fault in that case.
+>>
+>> Once the VMA is found, the speculative page fault handler would check for
+>> the VMA's attributes to verify that the page fault has to be handled
+>> correctly or not. Thus the VMA is protected through a sequence lock which
+>> allows fast detection of concurrent VMA changes. If such a change is
+>> detected, the speculative page fault is aborted and a *classic* page fault
+>> is tried.  VMA sequence lockings are added when VMA attributes which are
+>> checked during the page fault are modified.
+>>
+>> When the PTE is fetched, the VMA is checked to see if it has been changed,
+>> so once the page table is locked, the VMA is valid, so any other changes
+>> leading to touching this PTE will need to lock the page table, so no
+>> parallel change is possible at this time.
+>>
+>> The locking of the PTE is done with interrupts disabled, this allows to
+>> check for the PMD to ensure that there is not an ongoing collapsing
+>> operation. Since khugepaged is firstly set the PMD to pmd_none and then is
+>> waiting for the other CPU to have catch the IPI interrupt, if the pmd is
+>> valid at the time the PTE is locked, we have the guarantee that the
+>> collapsing opertion will have to wait on the PTE lock to move foward. This
+>> allows the SPF handler to map the PTE safely. If the PMD value is different
+>> than the one recorded at the beginning of the SPF operation, the classic
+>> page fault handler will be called to handle the operation while holding the
+>> mmap_sem. As the PTE lock is done with the interrupts disabled, the lock is
+>> done using spin_trylock() to avoid dead lock when handling a page fault
+>> while a TLB invalidate is requested by an other CPU holding the PTE.
+>>
+>> Support for THP is not done because when checking for the PMD, we can be
+>> confused by an in progress collapsing operation done by khugepaged. The
+>> issue is that pmd_none() could be true either if the PMD is not already
+>> populate or if the underlying PTE are in the way to be collapsed. So we
+>> cannot safely allocate a PMD if pmd_none() is true.
+>>
+>> This series builds on top of v4.15-mmotm-2018-01-31-16-51 and is
+>> functional on x86 and PowerPC.
+> 
+> One question which people will want to answer is "is this thing
+> working".  ie, how frequently does the code fall back to the regular
+> heavyweight fault path.
+> 
+> I see that trace events have been added for this, but the overall
+> changelog doesn't describe them.  I think this material is important
+> enough to justify including it here.
 
-Simplify all these by not using HUGEPD_PD_SHIFT which is confusing for book3s64.
+Got it, I'll detail the new perf and trace events here.
 
-Without this patch, with 64k page size we create pagetable caches with shift
-value 10 and 7 which are not used at all.
+> Also, a few words to help people figure out how to gather these stats
+> would be nice.  And maybe helper scripts if appropriate?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hugetlbpage.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 876da2bc1796..3b509b268030 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -122,9 +122,6 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
- #define HUGEPD_PGD_SHIFT PGDIR_SHIFT
- #define HUGEPD_PUD_SHIFT PUD_SHIFT
--#else
--#define HUGEPD_PGD_SHIFT PUD_SHIFT
--#define HUGEPD_PUD_SHIFT PMD_SHIFT
- #endif
+I'll provide some command line examples detailing how to capture those events.
  
- /*
-@@ -669,12 +666,24 @@ static int __init hugetlbpage_init(void)
- 		if (add_huge_page_size(1ULL << shift) < 0)
- 			continue;
+> I'm wondering if this info should even be presented via
+> /proc/self/something, dunno.
+
+My understanding is that this is part of the kernel ABI, so I was not comfortable 
+to touch it but if needed I could probably put some numbers there.
  
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+		if (shift > PGDIR_SHIFT)
-+			BUG();
-+		else if (shift > PUD_SHIFT)
-+			pdshift = PGDIR_SHIFT;
-+		else if (shift > PMD_SHIFT)
-+			pdshift = PUD_SHIFT;
-+		else
-+			pdshift = PMD_SHIFT;
-+#else
- 		if (shift < HUGEPD_PUD_SHIFT)
- 			pdshift = PMD_SHIFT;
- 		else if (shift < HUGEPD_PGD_SHIFT)
- 			pdshift = PUD_SHIFT;
- 		else
- 			pdshift = PGDIR_SHIFT;
-+#endif
- 		/*
- 		 * if we have pdshift and shift value same, we don't
- 		 * use pgt cache for hugepd.
--- 
-2.14.3
+> And it would be interesting to present the fallback frequency in the
+> benchmark results.
+
+Yes these numbers are missing.
+
+Here are numbers I captured during a kernbench run on a 80 CPUs Power node:
+
+          87549520      faults                                                      
+                 0      spf                                                         
+
+Which is expected as the kernbench's processes are not multithreaded.
+
+When running ebizzy on the same node:
+
+            711589      faults                                                      
+            692649      spf                                                         
+             10579      pagefault:spf_pte_lock                                      
+              7815      pagefault:spf_vma_changed                                   
+                 0      pagefault:spf_vma_noanon                                    
+               417      pagefault:spf_vma_notsup                                    
+                 0      pagefault:spf_vma_access                                    
+                 0      pagefault:spf_pmd_changed                                   
+
+Here about 98% of the page faults where managed in a speculative way.
+
+> 
+>> ------------------
+>> Benchmarks results
+>>
+>> There is no functional change compared to the v6 so benchmark results are
+>> the same.
+>> Please see https://lkml.org/lkml/2018/1/12/515 for details.
+> 
+> Please include this vitally important info in the [0/n], don't make
+> people chase links.
+
+Sorry, will do next time.
+
+> 
+> And I'd really like to see some quantitative testing results for real
+> workloads, not just a bunch of microbenchmarks.  Help us understand how
+> useful this patchset is to our users.
+
+We did non official runs using a "popular in memory multithreaded database product" on 
+176 cores SMT8 Power system which showed a 30% improvements in the number of transaction
+processed per second.
+Here are the perf data captured during 2 of these runs :
+		vanilla		spf
+faults		89.418		101.364
+spf                n/a		 97.989
+
+With the SPF kernel, most of the page fault were processed in a speculative way.
+
+Laurent.
