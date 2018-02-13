@@ -1,31 +1,18 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgqpY6ZPHzF1Rb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 04:51:14 +1100 (AEDT)
-Subject: Re: [PATCH] headers: untangle kmemleak.h from mm.h
-To: Michael Ellerman <mpe@ellerman.id.au>, LKML
- <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Fengguang Wu <fengguang.wu@intel.com>
-Cc: linux-s390 <linux-s390@vger.kernel.org>,
- John Johansen <john.johansen@canonical.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, X86 ML <x86@kernel.org>,
- linux-wireless <linux-wireless@vger.kernel.org>,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Dmitry Kasatkin <dmitry.kasatkin@intel.com>
-References: <a4629db7-194d-3c7c-c8fd-24f61b220a70@infradead.org>
- <87zi4ev1d2.fsf@concordia.ellerman.id.au>
- <f119a273-2e86-1b7f-346f-7627ad8b51ed@infradead.org>
- <87fu652oce.fsf@concordia.ellerman.id.au>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <1f96a3c7-0bb3-6c06-0b44-ca47e5a5d127@infradead.org>
-Date: Tue, 13 Feb 2018 09:51:09 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgsC73LnVzF18C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 05:54:11 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/via-pmu: Fix section mismatch warning
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20180207194439.32680-1-malat@debian.org>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <dfdca2f9-bf75-cdd3-e149-f3a30944d4ae@redhat.com>
+Date: Tue, 13 Feb 2018 19:54:02 +0100
 MIME-Version: 1.0
-In-Reply-To: <87fu652oce.fsf@concordia.ellerman.id.au>
+In-Reply-To: <20180207194439.32680-1-malat@debian.org>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,59 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/13/2018 02:09 AM, Michael Ellerman wrote:
-> Randy Dunlap <rdunlap@infradead.org> writes:
+On 07/02/2018 20:44, Mathieu Malaterre wrote:
+> Remove the __init annotation from pmu_init() to avoid the
+> following warning.
 > 
->> On 02/12/2018 04:28 AM, Michael Ellerman wrote:
->>> Randy Dunlap <rdunlap@infradead.org> writes:
->>>
->>>> From: Randy Dunlap <rdunlap@infradead.org>
->>>>
->>>> Currently <linux/slab.h> #includes <linux/kmemleak.h> for no obvious
->>>> reason. It looks like it's only a convenience, so remove kmemleak.h
->>>> from slab.h and add <linux/kmemleak.h> to any users of kmemleak_*
->>>> that don't already #include it.
->>>> Also remove <linux/kmemleak.h> from source files that do not use it.
->>>>
->>>> This is tested on i386 allmodconfig and x86_64 allmodconfig. It
->>>> would be good to run it through the 0day bot for other $ARCHes.
->>>> I have neither the horsepower nor the storage space for the other
->>>> $ARCHes.
->>>>
->>>> [slab.h is the second most used header file after module.h; kernel.h
->>>> is right there with slab.h. There could be some minor error in the
->>>> counting due to some #includes having comments after them and I
->>>> didn't combine all of those.]
->>>>
->>>> This is Lingchi patch #1 (death by a thousand cuts, applied to kernel
->>>> header files).
->>>>
->>>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
->>>
->>> I threw it at a random selection of configs and so far the only failures
->>> I'm seeing are:
->>>
->>>   lib/test_firmware.c:134:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]                                                                                                          
->>>   lib/test_firmware.c:620:25: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
->>>   lib/test_firmware.c:620:2: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
->>>   security/integrity/digsig.c:146:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]
->>
->> Both of those source files need to #include <linux/vmalloc.h>.
+> WARNING: vmlinux.o(.data+0x4739c): Section mismatch in reference from the variable via_pmu_driver to the function .init.text:pmu_init()
+> The variable via_pmu_driver references
+> the function __init pmu_init()
+> If the reference is valid then annotate the
+> variable with __init* or __refdata (see linux/init.h) or name the variable:
+> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
 > 
-> Yep, I added those and rebuilt. I don't see any more failures that look
-> related to your patch.
-
-Great, thanks.
-
-I also sent patches for both of those.
-
->   http://kisskb.ellerman.id.au/kisskb/head/13399/
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> ---
+>  drivers/macintosh/via-pmu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
+> diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+> index 08849e33c567..5f378272d5b2 100644
+> --- a/drivers/macintosh/via-pmu.c
+> +++ b/drivers/macintosh/via-pmu.c
+> @@ -378,7 +378,7 @@ static int pmu_probe(void)
+>  	return vias == NULL? -ENODEV: 0;
+>  }
+>  
+> -static int __init pmu_init(void)
+> +static int pmu_init(void)
+>  {
+>  	if (vias == NULL)
+>  		return -ENODEV;
 > 
-> I haven't gone through the defconfigs I have enabled for a while, so
-> it's possible I have some missing but it's still a reasonable cross
-> section.
+
+pmu_init() is really an init function only called by another init
+function (adb_init()).
+
+So I think it could be good to let the __init marker.
+
+Did you try:
+
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -198,7 +198,7 @@ static const struct file_operations
+pmu_battery_proc_fops;
+ static const struct file_operations pmu_options_proc_fops;
+
+ #ifdef CONFIG_ADB
+-struct adb_driver via_pmu_driver = {
++const struct adb_driver via_pmu_driver = {
+        "PMU",
+        pmu_probe,
+        pmu_init,
 
 
--- 
-~Randy
+Thanks,
+Laurent
