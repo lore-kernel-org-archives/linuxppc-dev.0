@@ -1,19 +1,17 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
- [150.101.137.131])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zgTYG3hZ9zF11y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 15:08:34 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: Mark Hairgrove <mhairgrove@nvidia.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/npu-dma.c: Fix crash after
- __mmu_notifier_register failure
-Date: Tue, 13 Feb 2018 15:07:26 +1100
-Message-ID: <3566487.0GKW0azfUC@new-mexico>
-In-Reply-To: <1518232806-17661-1-git-send-email-mhairgrove@nvidia.com>
-References: <1518232806-17661-1-git-send-email-mhairgrove@nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ot0-x243.google.com (mail-ot0-x243.google.com
+ [IPv6:2607:f8b0:4003:c0f::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgW1D735pzF0pX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 16:14:24 +1100 (AEDT)
+Received: by mail-ot0-x243.google.com with SMTP id l10so16188595oth.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 21:14:24 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC] powerpc/radix/hotunplug: Atomically replace pte entries
+Date: Tue, 13 Feb 2018 16:14:14 +1100
+Message-Id: <20180213051414.26985-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,87 +21,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Mark, this will also fix the lack of cleanup OPAL call in the unlikely
-case the kzalloc() fails.
+The current approach uses stop machine for atomicity while removing
+a smaller range from a larger mapping. For example, while trying
+to hotunplug 256MiB from a 1GiB range, we split the mappings into
+the next slower size (2MiB). This is done using stop machine. This
+approach atomically replaces the pte entry by
 
-Acked-By: Alistair Popple <alistair@popple.id.au>
+a. Creating an array of smaller mappings
+b. Ignoring the holes (the area to be hot-unplugged)
+c. Atomically replacing the entry at the pud/pmd level
 
-On Friday, 9 February 2018 7:20:06 PM AEDT Mark Hairgrove wrote:
-> pnv_npu2_init_context wasn't checking the return code from
-> __mmu_notifier_register. If  __mmu_notifier_register failed, the
-> npu_context was still assigned to the mm and the caller wasn't given any
-> indication that things went wrong. Later on pnv_npu2_destroy_context would
-> be called, which in turn called mmu_notifier_unregister and dropped
-> mm->mm_count without having incremented it in the first place. This led to
-> various forms of corruption like mm use-after-free and mm double-free.
-> 
-> __mmu_notifier_register can fail with EINTR if a signal is pending, so
-> this case can be frequent.
-> 
-> This patch calls opal_npu_destroy_context on the failure paths, and makes
-> sure not to assign mm->context.npu_context until past the failure points.
-> 
-> Signed-off-by: Mark Hairgrove <mhairgrove@nvidia.com>
-> ---
->  arch/powerpc/platforms/powernv/npu-dma.c |   32 +++++++++++++++++++----------
->  1 files changed, 21 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index f6cbc1a..48c73aa 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -677,6 +677,11 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
->  		/* No nvlink associated with this GPU device */
->  		return ERR_PTR(-ENODEV);
->  
-> +	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
-> +	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
-> +							&nvlink_index)))
-> +		return ERR_PTR(-ENODEV);
-> +
->  	if (!mm || mm->context.id == 0) {
->  		/*
->  		 * Kernel thread contexts are not supported and context id 0 is
-> @@ -704,25 +709,30 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
->  	 */
->  	npu_context = mm->context.npu_context;
->  	if (!npu_context) {
-> +		rc = -ENOMEM;
->  		npu_context = kzalloc(sizeof(struct npu_context), GFP_KERNEL);
-> -		if (!npu_context)
-> -			return ERR_PTR(-ENOMEM);
-> +		if (npu_context) {
-> +			kref_init(&npu_context->kref);
-> +			npu_context->mm = mm;
-> +			npu_context->mn.ops = &nv_nmmu_notifier_ops;
-> +			rc = __mmu_notifier_register(&npu_context->mn, mm);
-> +		}
-> +
-> +		if (rc) {
-> +			kfree(npu_context);
-> +			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
-> +					PCI_DEVID(gpdev->bus->number,
-> +						gpdev->devfn));
-> +			return ERR_PTR(rc);
-> +		}
->  
->  		mm->context.npu_context = npu_context;
-> -		npu_context->mm = mm;
-> -		npu_context->mn.ops = &nv_nmmu_notifier_ops;
-> -		__mmu_notifier_register(&npu_context->mn, mm);
-> -		kref_init(&npu_context->kref);
->  	} else {
-> -		kref_get(&npu_context->kref);
-> +		WARN_ON(!kref_get_unless_zero(&npu_context->kref));
->  	}
->  
->  	npu_context->release_cb = cb;
->  	npu_context->priv = priv;
-> -	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
-> -	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
-> -							&nvlink_index)))
-> -		return ERR_PTR(-ENODEV);
->  	npu_context->npdev[npu->index][nvlink_index] = npdev;
->  
->  	if (!nphb->npu.nmmu_flush) {
-> 
+The code assumes that permissions in a linear mapping don't change
+once set. The permissions are copied from the larger PTE to the
+smaller PTE's based on this assumption.
+
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/mm/pgtable-radix.c | 125 +++++++++++++++++++++++++++++-----------
+ 1 file changed, 91 insertions(+), 34 deletions(-)
+
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 17ae5c15a9e06..4b3642a9e8d13 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -124,6 +124,93 @@ int radix__map_kernel_page(unsigned long ea, unsigned long pa,
+ 	return 0;
+ }
+ 
++static int replace_pte_entries(unsigned long start, unsigned long end,
++			       unsigned long hole_start, unsigned long hole_end,
++			       unsigned long map_page_size, pgprot_t flags)
++{
++	int i;
++	int rc = 0;
++	unsigned long addr, pa;
++
++	if (map_page_size == PUD_SIZE) {
++		pgd_t *pgdp;
++		pud_t *pudp;
++		pmd_t *pmdp, *new_pmdp;
++		unsigned long size = RADIX_PMD_TABLE_SIZE / sizeof(pmd_t);
++
++		pgdp = pgd_offset_k(start);
++		pudp = pud_offset(pgdp, start);
++
++		pmdp = pmd_alloc_one(&init_mm, start);
++		if (!pmdp) {
++			rc = 1;
++			goto done;
++		}
++
++		for (i = 0; i < size; i++) {
++			addr = start + i * PMD_SIZE;
++			new_pmdp = (pmd_t *)(pmdp + i);
++
++			if (addr >= hole_start ||
++				addr <= hole_end) {
++				*new_pmdp = __pmd(0ULL);
++				continue;
++			}
++
++			pa = __pa(addr);
++			*new_pmdp = pfn_pmd(pa >> PMD_SHIFT, flags);
++			*new_pmdp = pmd_mkhuge(*pmdp);
++		}
++
++		pud_populate(&init_mm, pudp, pmdp);
++	} else if (map_page_size == PMD_SIZE) {
++		pgd_t *pgdp;
++		pud_t *pudp;
++		pmd_t *pmdp;
++		pte_t *new_ptep, *ptep;
++		unsigned long size = RADIX_PTE_TABLE_SIZE / sizeof(pte_t);
++
++		pgdp = pgd_offset_k(start);
++		pudp = pud_offset(pgdp, start);
++		pmdp = pmd_offset(pudp, start);
++
++		ptep = pte_alloc_one(&init_mm, start);
++		if (!ptep) {
++			rc = 1;
++			goto done;
++		}
++
++		for (i = 0; i < size; i++) {
++			addr = start + i * PAGE_SIZE;
++			new_ptep = (pte_t *)(ptep + i);
++
++			if (addr >= hole_start ||
++				addr <= hole_end) {
++				*new_ptep = __pte(0ULL);
++				continue;
++			}
++
++			pa = __pa(addr);
++			*new_ptep = pfn_pte(pa >> PAGE_SHIFT, flags);
++			*new_ptep = __pte(pte_val(*new_ptep) | _PAGE_PTE);
++		}
++
++		pmd_populate_kernel(&init_mm, pmdp, ptep);
++	} else {
++		WARN_ONCE(1, "Unsupported mapping size to "
++			     "split %lx, ea %lx\n", map_page_size, start);
++		rc = 1;
++	}
++
++	smp_wmb();
++	if (rc == 0)
++		radix__flush_tlb_kernel_range(start, start + map_page_size);
++
++done:
++	return rc;
++
++}
++
+ #ifdef CONFIG_STRICT_KERNEL_RWX
+ void radix__change_memory_range(unsigned long start, unsigned long end,
+ 				unsigned long clear)
+@@ -672,30 +759,6 @@ static void free_pmd_table(pmd_t *pmd_start, pud_t *pud)
+ 	pud_clear(pud);
+ }
+ 
+-struct change_mapping_params {
+-	pte_t *pte;
+-	unsigned long start;
+-	unsigned long end;
+-	unsigned long aligned_start;
+-	unsigned long aligned_end;
+-};
+-
+-static int stop_machine_change_mapping(void *data)
+-{
+-	struct change_mapping_params *params =
+-			(struct change_mapping_params *)data;
+-
+-	if (!data)
+-		return -1;
+-
+-	spin_unlock(&init_mm.page_table_lock);
+-	pte_clear(&init_mm, params->aligned_start, params->pte);
+-	create_physical_mapping(params->aligned_start, params->start);
+-	create_physical_mapping(params->end, params->aligned_end);
+-	spin_lock(&init_mm.page_table_lock);
+-	return 0;
+-}
+-
+ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+ 			     unsigned long end)
+ {
+@@ -728,12 +791,11 @@ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+  * clear the pte and potentially split the mapping helper
+  */
+ static void split_kernel_mapping(unsigned long addr, unsigned long end,
+-				unsigned long size, pte_t *pte)
++				unsigned long size, pte_t *ptep)
+ {
+ 	unsigned long mask = ~(size - 1);
+ 	unsigned long aligned_start = addr & mask;
+ 	unsigned long aligned_end = addr + size;
+-	struct change_mapping_params params;
+ 	bool split_region = false;
+ 
+ 	if ((end - addr) < size) {
+@@ -757,17 +819,12 @@ static void split_kernel_mapping(unsigned long addr, unsigned long end,
+ 	}
+ 
+ 	if (split_region) {
+-		params.pte = pte;
+-		params.start = addr;
+-		params.end = end;
+-		params.aligned_start = addr & ~(size - 1);
+-		params.aligned_end = min_t(unsigned long, aligned_end,
+-				(unsigned long)__va(memblock_end_of_DRAM()));
+-		stop_machine(stop_machine_change_mapping, &params, NULL);
++		replace_pte_entries(aligned_start, aligned_end, addr, end,
++					size, pte_pgprot(*ptep));
+ 		return;
+ 	}
+ 
+-	pte_clear(&init_mm, addr, pte);
++	pte_clear(&init_mm, addr, ptep);
+ }
+ 
+ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
+-- 
+2.13.6
