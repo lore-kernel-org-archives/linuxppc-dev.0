@@ -1,29 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgdYK18T6zDqff
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 21:09:09 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Randy Dunlap <rdunlap@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
- Fengguang Wu <fengguang.wu@intel.com>
-Cc: linux-s390 <linux-s390@vger.kernel.org>,
- John Johansen <john.johansen@canonical.com>,
- "netdev\@vger.kernel.org" <netdev@vger.kernel.org>, X86 ML <x86@kernel.org>,
- linux-wireless <linux-wireless@vger.kernel.org>,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Dmitry Kasatkin <dmitry.kasatkin@intel.com>
-Subject: Re: [PATCH] headers: untangle kmemleak.h from mm.h
-In-Reply-To: <f119a273-2e86-1b7f-346f-7627ad8b51ed@infradead.org>
-References: <a4629db7-194d-3c7c-c8fd-24f61b220a70@infradead.org>
- <87zi4ev1d2.fsf@concordia.ellerman.id.au>
- <f119a273-2e86-1b7f-346f-7627ad8b51ed@infradead.org>
-Date: Tue, 13 Feb 2018 21:09:05 +1100
-Message-ID: <87fu652oce.fsf@concordia.ellerman.id.au>
+Return-Path: <miquel.raynal@bootlin.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zgZJm5mLNzF0xC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 18:43:00 +1100 (AEDT)
+Date: Tue, 13 Feb 2018 08:42:46 +0100
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Boris Brezillon <boris.brezillon@bootlin.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Brian Norris
+ <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Richard
+ Weinberger <richard@nod.at>, Cyrille Pitchen <cyrille.pitchen@wedev4u.fr>,
+ linux-mtd@lists.infradead.org, Joern Engel <joern@lazybastard.org>, Robert
+ Jarzmik <robert.jarzmik@free.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Kyungmin Park <kyungmin.park@samsung.com>,
+ Artem Bityutskiy <dedekind1@gmail.com>, Solarflare linux maintainers
+ <linux-net-drivers@solarflare.com>, Edward Cree <ecree@solarflare.com>,
+ Bert Kenward <bkenward@solarflare.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: Re: [PATCH 5/5] mtd: Stop updating erase_info->state and calling
+ mtd_erase_callback()
+Message-ID: <20180213084246.4f626bec@xps13>
+In-Reply-To: <20180212210311.23244-6-boris.brezillon@bootlin.com>
+References: <20180212210311.23244-1-boris.brezillon@bootlin.com>
+ <20180212210311.23244-6-boris.brezillon@bootlin.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,52 +34,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Randy Dunlap <rdunlap@infradead.org> writes:
+Hi Boris,
 
-> On 02/12/2018 04:28 AM, Michael Ellerman wrote:
->> Randy Dunlap <rdunlap@infradead.org> writes:
->> 
->>> From: Randy Dunlap <rdunlap@infradead.org>
->>>
->>> Currently <linux/slab.h> #includes <linux/kmemleak.h> for no obvious
->>> reason. It looks like it's only a convenience, so remove kmemleak.h
->>> from slab.h and add <linux/kmemleak.h> to any users of kmemleak_*
->>> that don't already #include it.
->>> Also remove <linux/kmemleak.h> from source files that do not use it.
->>>
->>> This is tested on i386 allmodconfig and x86_64 allmodconfig. It
->>> would be good to run it through the 0day bot for other $ARCHes.
->>> I have neither the horsepower nor the storage space for the other
->>> $ARCHes.
->>>
->>> [slab.h is the second most used header file after module.h; kernel.h
->>> is right there with slab.h. There could be some minor error in the
->>> counting due to some #includes having comments after them and I
->>> didn't combine all of those.]
->>>
->>> This is Lingchi patch #1 (death by a thousand cuts, applied to kernel
->>> header files).
->>>
->>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
->> 
->> I threw it at a random selection of configs and so far the only failures
->> I'm seeing are:
->> 
->>   lib/test_firmware.c:134:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]                                                                                                          
->>   lib/test_firmware.c:620:25: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
->>   lib/test_firmware.c:620:2: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
->>   security/integrity/digsig.c:146:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]
->
-> Both of those source files need to #include <linux/vmalloc.h>.
+Just a few comments about the form.
 
-Yep, I added those and rebuilt. I don't see any more failures that look
-related to your patch.
-
-  http://kisskb.ellerman.id.au/kisskb/head/13399/
+Otherwise:
+Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
 
 
-I haven't gone through the defconfigs I have enabled for a while, so
-it's possible I have some missing but it's still a reasonable cross
-section.
+> diff --git a/drivers/mtd/devices/lart.c b/drivers/mtd/devices/lart.c
+> index 555b94406e0b..3d6c8ffd351f 100644
+> --- a/drivers/mtd/devices/lart.c
+> +++ b/drivers/mtd/devices/lart.c
+> @@ -415,7 +415,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+>  	 {
+>  		if (!erase_block (addr))
+>  		  {
+> -			 instr->state = MTD_ERASE_FAILED;
+>  			 return (-EIO);
+>  		  }
 
-cheers
+You can also safely remove these '{' '}'
+
+>  
+> @@ -425,9 +424,6 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+>  		if (addr == mtd->eraseregions[i].offset + (mtd->eraseregions[i].erasesize * mtd->eraseregions[i].numblocks)) i++;
+>  	 }
+>  
+> -   instr->state = MTD_ERASE_DONE;
+> -   mtd_erase_callback(instr);
+> -
+>     return (0);
+>  }
+>  
+> diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+> index 5dc8bd042cc5..aaaeaae01e1d 100644
+> --- a/drivers/mtd/devices/mtd_dataflash.c
+> +++ b/drivers/mtd/devices/mtd_dataflash.c
+> @@ -220,10 +220,6 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
+>  	}
+>  	mutex_unlock(&priv->lock);
+>  
+> -	/* Inform MTD subsystem that erase is complete */
+> -	instr->state = MTD_ERASE_DONE;
+> -	mtd_erase_callback(instr);
+> -
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/mtd/devices/mtdram.c b/drivers/mtd/devices/mtdram.c
+> index 0bf4aeaf0cb8..efef43c6684b 100644
+> --- a/drivers/mtd/devices/mtdram.c
+> +++ b/drivers/mtd/devices/mtdram.c
+> @@ -60,8 +60,6 @@ static int ram_erase(struct mtd_info *mtd, struct erase_info *instr)
+>  	if (check_offs_len(mtd, instr->addr, instr->len))
+>  		return -EINVAL;
+>  	memset((char *)mtd->priv + instr->addr, 0xff, instr->len);
+> -	instr->state = MTD_ERASE_DONE;
+> -	mtd_erase_callback(instr);
+
+Space ?
+
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/mtd/devices/phram.c b/drivers/mtd/devices/phram.c
+> index 7287696a21f9..a963c88d392d 100644
+> --- a/drivers/mtd/devices/phram.c
+> +++ b/drivers/mtd/devices/phram.c
+> @@ -44,8 +44,6 @@ static int phram_erase(struct mtd_info *mtd, struct erase_info *instr)
+>  	 * I don't feel at all ashamed. This kind of thing is possible anyway
+>  	 * with flash, but unlikely.
+>  	 */
+
+Not sure this comment is still relevant? Maybe you could remove it
+or at least change it? 
+
+> -	instr->state = MTD_ERASE_DONE;
+> -	mtd_erase_callback(instr);
+
+Space ?
+
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/mtd/devices/pmc551.c b/drivers/mtd/devices/pmc551.c
+> index cadea0620cd0..5d842cbca3de 100644
+> --- a/drivers/mtd/devices/pmc551.c
+> +++ b/drivers/mtd/devices/pmc551.c
+> @@ -184,12 +184,10 @@ static int pmc551_erase(struct mtd_info *mtd, struct erase_info *instr)
+>  	}
+>  
+>        out:
+> -	instr->state = MTD_ERASE_DONE;
+>  #ifdef CONFIG_MTD_PMC551_DEBUG
+>  	printk(KERN_DEBUG "pmc551_erase() done\n");
+>  #endif
+>  
+> -	mtd_erase_callback(instr);
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
+> index 26f9feaa5d17..5f383630c16f 100644
+> --- a/drivers/mtd/devices/powernv_flash.c
+> +++ b/drivers/mtd/devices/powernv_flash.c
+> @@ -175,19 +175,12 @@ static int powernv_flash_erase(struct mtd_info *mtd, struct erase_info *erase)
+>  {
+>  	int rc;
+>  
+> -	erase->state = MTD_ERASING;
+> -
+>  	/* todo: register our own notifier to do a true async implementation */
+>  	rc =  powernv_flash_async_op(mtd, FLASH_OP_ERASE, erase->addr,
+>  			erase->len, NULL, NULL);
+
+Are you sure this is still needed? Maybe this should go away in your
+first patch?
+
+> -
+> -	if (rc) {
+> +	if (rc)
+>  		erase->fail_addr = erase->addr;
+> -		erase->state = MTD_ERASE_FAILED;
+> -	} else {
+> -		erase->state = MTD_ERASE_DONE;
+> -	}
+> -	mtd_erase_callback(erase);
+> +
+>  	return rc;
+>  }
+>  
+> diff --git a/drivers/mtd/devices/slram.c b/drivers/mtd/devices/slram.c
+> index 0ec85f316d24..2f05e1801047 100644
+> --- a/drivers/mtd/devices/slram.c
+> +++ b/drivers/mtd/devices/slram.c
+> @@ -88,8 +88,6 @@ static int slram_erase(struct mtd_info *mtd, struct erase_info *instr)
+>  	 * I don't feel at all ashamed. This kind of thing is possible anyway
+>  	 * with flash, but unlikely.
+>  	 */
+
+Same with this comment.
+
+> -	instr->state = MTD_ERASE_DONE;
+> -	mtd_erase_callback(instr);
+
+Space ?
+
+>  	return(0);
+>  }
+>  
+
+
+
+
+-- 
+Miquel Raynal, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+http://bootlin.com
