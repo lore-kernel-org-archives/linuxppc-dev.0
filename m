@@ -1,29 +1,21 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zgMH73c3nzDrDV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 10:25:55 +1100 (AEDT)
-Received: by mail-pl0-x243.google.com with SMTP id t4so5737117plo.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Feb 2018 15:25:55 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Mon, 12 Feb 2018 15:25:51 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/kdump: Add missing optional dummy functions
-Message-ID: <20180212232551.GA5199@roeck-us.net>
-References: <1518474848-3158-1-git-send-email-linux@roeck-us.net>
- <CAKTCnzmtDNJHThzuZa1+ydrriQG-dVovHA7uLSVvfLFG2MaidQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zgQNk2DNDzF0t2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 12:45:50 +1100 (AEDT)
+Date: Tue, 13 Feb 2018 02:45:46 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: pata-macio WARNING at dmam_alloc_coherent+0xec/0x110
+Message-ID: <20180213014546.GB3303@lst.de>
+References: <alpine.LRH.2.21.1802122246230.9153@math.ut.ee>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKTCnzmtDNJHThzuZa1+ydrriQG-dVovHA7uLSVvfLFG2MaidQ@mail.gmail.com>
+In-Reply-To: <alpine.LRH.2.21.1802122246230.9153@math.ut.ee>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 13, 2018 at 10:01:57AM +1100, Balbir Singh wrote:
-> On Tue, Feb 13, 2018 at 9:34 AM, Guenter Roeck <linux@roeck-us.net> wrote:
-> > If KEXEC_CORE is not enabled, PowerNV builds fail as follows.
-> >
-> > arch/powerpc/platforms/powernv/smp.c: In function 'pnv_smp_cpu_kill_self':
-> > arch/powerpc/platforms/powernv/smp.c:236:4: error:
-> >         implicit declaration of function 'crash_ipi_callback'
-> >
-> > Add dummy function calls, similar to kdump_in_progress(), to solve the
-> > problem.
-> >
-> > Fixes: 4145f358644b ("powernv/kdump: Fix cases where the kdump kernel ...")
-> > Cc: Balbir Singh <bsingharora@gmail.com>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: Nicholas Piggin <npiggin@gmail.com>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > ---
-> 
-> Thanks for working on this.
-> 
-> You've added two functions, I understand the crash_send_ipi() bits
-> that I broke. Looks like crash_ipi_callback broken without KEXEC_CORE?
-> 
+On Mon, Feb 12, 2018 at 10:52:46PM +0200, Meelis Roos wrote:
+> I tested 4.16-rc1 on my PowerMac G4 and got the following warning from 
+> macio pata driver. Since pata-macio has no recent changes, dma-mapping.h 
+> changes seem to be related.
 
-If I recall correctly, 4145f358644b introduced the call to crash_ipi_callback().
-After I declared the dummy function for that, I got an error about the missing
-crash_send_ipi(). I didn't spend more time on it but just added another dummy
-function. It may well be that another problem was introduced in the same time
-frame. On the other side, maybe I got it all wrong, and my patch is not worth
-the computer it was written on.
+Thje are, as they add just that warning.  But the root cause looks
+older, and that is that the macio bus doesn't seem to to set the
+dma coherent mask, which could cause all kinds of hidden issues.
 
-Thanks,
-Guenter
+I'm travelling right now, but unless someone beats me to it I'll look
+into a patch to properly set the coherent mask ASAP.
