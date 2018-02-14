@@ -1,33 +1,23 @@
-Return-Path: <keescook@google.com>
-Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
- [IPv6:2607:f8b0:400c:c08::242])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zhQy40s1FzF1Hk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 04:14:51 +1100 (AEDT)
-Received: by mail-ua0-x242.google.com with SMTP id r4so14143860uak.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 09:14:51 -0800 (PST)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20180214092045.GZ3443@dhcp22.suse.cz>
-References: <20180212133731.GE3443@dhcp22.suse.cz>
- <87r2ppvaeq.fsf@concordia.ellerman.id.au>
- <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
- <87d1192nzc.fsf@concordia.ellerman.id.au>
- <20180213103213.GP3443@dhcp22.suse.cz>
- <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
- <20180214092045.GZ3443@dhcp22.suse.cz>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 14 Feb 2018 09:14:47 -0800
-Message-ID: <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
-Subject: Re: samples/seccomp/ broken when cross compiling s390,
- ppc allyesconfig
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Will Drewry <wad@chromium.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zhXHq54vVzF1Jj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 08:15:35 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id a84so13959491wmi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 13:15:35 -0800 (PST)
+Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Laurent Vivier <lvivier@redhat.com>, Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] powerpc/via-pmu: Fix section mismatch warning
+Date: Wed, 14 Feb 2018 22:15:18 +0100
+Message-Id: <20180214211519.15683-1-malat@debian.org>
+In-Reply-To: <20180207194439.32680-1-malat@debian.org>
+References: <20180207194439.32680-1-malat@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,152 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 14, 2018 at 1:20 AM, Michal Hocko <mhocko@kernel.org> wrote:
-> On Tue 13-02-18 13:27:30, Kees Cook wrote:
->> On Tue, Feb 13, 2018 at 2:32 AM, Michal Hocko <mhocko@kernel.org> wrote:
->> > On Tue 13-02-18 21:16:55, Michael Ellerman wrote:
->> >> Kees Cook <keescook@chromium.org> writes:
->> >>
->> >> > On Mon, Feb 12, 2018 at 7:25 PM, Michael Ellerman <mpe@ellerman.id.=
-au> wrote:
->> >> >> Michal Hocko <mhocko@kernel.org> writes:
->> >> >>> Hi,
->> >> >>> my build test machinery chokes on samples/seccomp when cross comp=
-iling
->> >> >>> s390 and ppc64 allyesconfig. This has been the case for quite som=
-e
->> >> >>> time already but I never found time to look at the problem and re=
-port
->> >> >>> it. It seems this is not new issue and similar thing happend for
->> >> >>> MIPS e9107f88c985 ("samples/seccomp/Makefile: do not build tests =
-if
->> >> >>> cross-compiling for MIPS").
->> >> >>>
->> >> >>> The build logs are attached.
->> >> >>>
->> >> >>> What is the best way around this? Should we simply skip compilati=
-on on
->> >> >>> cross compile or is actually anybody relying on that? Or should I=
- simply
->> >> >>> disable it for s390 and ppc?
->> >> >>
->> >> >> The whole thing seems very confused. It's not building for the tar=
-get,
->> >> >> it's building for the host, ie. the Makefile sets hostprogs-m and
->> >> >> HOSTCFLAGS etc.
->> >> >>
->> >> >> So it can't possibly work with cross compiling as it's currently
->> >> >> written.
->> >> >>
->> >> >> Either the Makefile needs some serious work to properly support cr=
-oss
->> >> >> compiling or it should just be disabled when cross compiling.
->> >> >
->> >> > Hrm, yeah, the goal was to entirely disable cross compiling, but I
->> >> > guess we didn't hit it with a hard enough hammer. :)
->> >>
->> >> Do you know why it is written that way? Why doesn't it just try to cr=
-oss
->> >> compile like normal code?
->> >
->> > No idea, sorry. All I know about this code is that it breaks my build
->> > testing.
->>
->> IIRC, one of the problems is with build ordering problems: the kernel
->> headers used by the samples aren't available when cross compiling.
->>
->> I'm happy to kill it entirely with Michal's patch, though. Feel free
->> to carry in your tree!
->>
->> Acked-by: Kees Cook <keescook@chromium.org>
->
-> OK, so let's try to nuke it. How should I route this patch?
+Make the struct via_pmu_driver const to avoid following warning:
 
-I'm fine if goes in via ppc (especially if it can land for 4.16). If
-Michael doesn't want it, I can send it through my seccomp tree via
-James Morris.
+WARNING: vmlinux.o(.data+0x4739c): Section mismatch in reference from the variable via_pmu_driver to the function .init.text:pmu_init()
+The variable via_pmu_driver references
+the function __init pmu_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
 
--Kees
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Suggested-by: Laurent Vivier <lvivier@redhat.com>
+---
+v2: pmu_init() is really an init function, leave __init marker
 
->
-> From 8d8457e96296538508e478f598d1c8b3406a8626 Mon Sep 17 00:00:00 2001
-> From: Michal Hocko <mhocko@suse.com>
-> Date: Wed, 14 Feb 2018 10:15:12 +0100
-> Subject: [PATCH] samples/seccomp: do not compile when cross compiled
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=3DUTF-8
-> Content-Transfer-Encoding: 8bit
->
-> samples/seccomp relies on the host setting which is not suitable for
-> crosscompilation and it actually fails when crosscompiling s390 and
-> powerpc all{yes,mod}config on x86_64 with
->
-> samples/seccomp/bpf-helper.h:135:2: error: #error __BITS_PER_LONG value u=
-nusable.
->  #error __BITS_PER_LONG value unusable.
->   ^
-> In file included from samples/seccomp/bpf-fancy.c:13:0:
-> samples/seccomp/bpf-fancy.c: In function =E2=80=98main=E2=80=99:
-> samples/seccomp/bpf-fancy.c:38:11: error: =E2=80=98__NR_exit=E2=80=99 und=
-eclared (first use in this function)
->    SYSCALL(__NR_exit, ALLOW),
->
-> and many others. I am doing these for compile testing and it's been
-> quite useful to catch issues. Crosscompiling sample code on the other
-> hand doesn't seem all that important so it seems like the easiest way to
-> simply disable samples/seccomp when crosscompiling.
->
-> Fixing this properly is not that easy as Kees explains:
-> : IIRC, one of the problems is with build ordering problems: the kernel
-> : headers used by the samples aren't available when cross compiling.
->
-> Acked-by: Kees Cook <keescook@chromium.org>
-> Signed-off-by: Michal Hocko <mhocko@suse.com>
-> ---
->  samples/seccomp/Makefile | 10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
->
-> diff --git a/samples/seccomp/Makefile b/samples/seccomp/Makefile
-> index 0e349b80686e..ba942e3ead89 100644
-> --- a/samples/seccomp/Makefile
-> +++ b/samples/seccomp/Makefile
-> @@ -1,4 +1,5 @@
->  # SPDX-License-Identifier: GPL-2.0
-> +ifndef CROSS_COMPILE
->  hostprogs-$(CONFIG_SAMPLE_SECCOMP) :=3D bpf-fancy dropper bpf-direct
->
->  HOSTCFLAGS_bpf-fancy.o +=3D -I$(objtree)/usr/include
-> @@ -16,7 +17,6 @@ HOSTCFLAGS_bpf-direct.o +=3D -idirafter $(objtree)/incl=
-ude
->  bpf-direct-objs :=3D bpf-direct.o
->
->  # Try to match the kernel target.
-> -ifndef CROSS_COMPILE
->  ifndef CONFIG_64BIT
->
->  # s390 has -m31 flag to build 31 bit binaries
-> @@ -35,12 +35,4 @@ HOSTLOADLIBES_bpf-fancy +=3D $(MFLAG)
->  HOSTLOADLIBES_dropper +=3D $(MFLAG)
->  endif
->  always :=3D $(hostprogs-m)
-> -else
-> -# MIPS system calls are defined based on the -mabi that is passed
-> -# to the toolchain which may or may not be a valid option
-> -# for the host toolchain. So disable tests if target architecture
-> -# is MIPS but the host isn't.
-> -ifndef CONFIG_MIPS
-> -always :=3D $(hostprogs-m)
-> -endif
->  endif
-> --
-> 2.15.1
->
-> --
-> Michal Hocko
-> SUSE Labs
+ drivers/macintosh/via-pmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
---=20
-Kees Cook
-Pixel Security
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 94c0f3f7df69..fc56c7067732 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -198,7 +198,7 @@ static const struct file_operations pmu_battery_proc_fops;
+ static const struct file_operations pmu_options_proc_fops;
+ 
+ #ifdef CONFIG_ADB
+-struct adb_driver via_pmu_driver = {
++const struct adb_driver via_pmu_driver = {
+ 	"PMU",
+ 	pmu_probe,
+ 	pmu_init,
+-- 
+2.11.0
