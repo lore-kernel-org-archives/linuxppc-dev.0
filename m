@@ -1,20 +1,22 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zht3K45XMzF1Jv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 21:35:56 +1100 (AEDT)
-Subject: Re: [PATCH v2] powerpc/via-pmu: Fix section mismatch warning
-To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20180207194439.32680-1-malat@debian.org>
- <20180214211519.15683-1-malat@debian.org>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <ff457b6d-3bc4-f6c1-42da-65fec78e5978@redhat.com>
-Date: Thu, 15 Feb 2018 11:35:50 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zhtP82YRRzF1KK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 21:51:22 +1100 (AEDT)
+To: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "David S. Miller" <davem@davemloft.net>, Haren Myneni <haren@us.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
+ Dan Streetman <ddstreet@ieee.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] crypto: nx-842: Delete an error message for a failed memory
+ allocation in nx842_pseries_init()
+Message-ID: <8261d041-ccd9-c0f8-4530-a4afb43ee7ab@users.sourceforge.net>
+Date: Wed, 14 Feb 2018 17:17:08 +0100
 MIME-Version: 1.0
-In-Reply-To: <20180214211519.15683-1-malat@debian.org>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,37 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/02/2018 22:15, Mathieu Malaterre wrote:
-> Make the struct via_pmu_driver const to avoid following warning:
-> 
-> WARNING: vmlinux.o(.data+0x4739c): Section mismatch in reference from the variable via_pmu_driver to the function .init.text:pmu_init()
-> The variable via_pmu_driver references
-> the function __init pmu_init()
-> If the reference is valid then annotate the
-> variable with __init* or __refdata (see linux/init.h) or name the variable:
-> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
-> 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> Suggested-by: Laurent Vivier <lvivier@redhat.com>
-> ---
-> v2: pmu_init() is really an init function, leave __init marker
-> 
->  drivers/macintosh/via-pmu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-> index 94c0f3f7df69..fc56c7067732 100644
-> --- a/drivers/macintosh/via-pmu.c
-> +++ b/drivers/macintosh/via-pmu.c
-> @@ -198,7 +198,7 @@ static const struct file_operations pmu_battery_proc_fops;
->  static const struct file_operations pmu_options_proc_fops;
->  
->  #ifdef CONFIG_ADB
-> -struct adb_driver via_pmu_driver = {
-> +const struct adb_driver via_pmu_driver = {
->  	"PMU",
->  	pmu_probe,
->  	pmu_init,
-> 
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 14 Feb 2018 17:05:13 +0100
 
-Reviewed-by: Laurent Vivier <lvivier@redhat.com>
+Omit an extra message for a memory allocation failure in this function.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/crypto/nx/nx-842-pseries.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
+index bf52cd1d7fca..66869976cfa2 100644
+--- a/drivers/crypto/nx/nx-842-pseries.c
++++ b/drivers/crypto/nx/nx-842-pseries.c
+@@ -1105,10 +1105,9 @@ static int __init nx842_pseries_init(void)
+ 
+ 	RCU_INIT_POINTER(devdata, NULL);
+ 	new_devdata = kzalloc(sizeof(*new_devdata), GFP_KERNEL);
+-	if (!new_devdata) {
+-		pr_err("Could not allocate memory for device data\n");
++	if (!new_devdata)
+ 		return -ENOMEM;
+-	}
++
+ 	RCU_INIT_POINTER(devdata, new_devdata);
+ 
+ 	ret = vio_register_driver(&nx842_vio_driver);
+-- 
+2.16.1
