@@ -1,29 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zhHXh5ZxvzF1HH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 22:40:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zhL5h5Tz0zF1G3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 00:36:08 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Cc: "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- Douglas Miller <dougmill@linux.vnet.ibm.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/xmon: Dont register sysrq key when kernel param
- xmon=off
-In-Reply-To: <8737264c91.fsf@vajain21.in.ibm.com>
-References: <20180212085956.12016-1-vaibhav@linux.vnet.ibm.com>
- <CAKTCnz=cDmeU6rvqpHf_oW-JjtcVSNjeSQpwzwRMo5U_g+hAwg@mail.gmail.com>
- <8737264c91.fsf@vajain21.in.ibm.com>
-Date: Wed, 14 Feb 2018 22:40:51 +1100
-Message-ID: <87eflnre7w.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aik@ozlabs.ru, andrew.donnellan@au1.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ colin.king@canonical.com, fbarrat@linux.vnet.ibm.com,
+ harish@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux@roeck-us.net,
+ linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com, npiggin@gmail.com, sam.bobroff@au1.ibm.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.16-2 tag
+Date: Thu, 15 Feb 2018 00:36:02 +1100
+Message-ID: <878tbvr8vx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha256; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +27,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+--=-=-=
+Content-Type: text/plain
 
-> Thanks for reviewing this patch Balbir
->
-> Balbir Singh <bsingharora@gmail.com> writes:
->
->> Any specific issue you've run into without this patch? 
-> Without this patch since xmon is still accessible via sysrq and there is
-> no indication/warning on the xmon console mentioning that its is not
-> fully functional. Specifically xmon-console would still allow user to
-> set instruction/data breakpoint eventhough they wont work and will
-> result in a kernel-oops.
->
-> Below is command log illustrating this problem on one of my test system
-> where I tried setting an instruction breakpoint on cmdline_proc_show()
-> with xmon=off:
+Hi Linus,
 
-<snip>
+Please pull some powerpc fixes for 4.16:
 
-But the same crash happens with XMON_DEFAULT=n and nothing on the
-command line.
+The following changes since commit 581e400ff935d34d95811258586128bf11baef15:
 
-The problem is not xmon=off on the command line.
+  Merge tag 'modules-for-v4.16' of git://git.kernel.org/pub/scm/linux/kernel/git/jeyu/linux (2018-02-07 14:29:34 -0800)
 
-The problem is that when xmon_on = false and we enter xmon via sysrq and
-then set breakpoints, we need to enable xmon_on before leaving xmon.
+are available in the git repository at:
 
-So this is a bug introduced by:
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.16-2
 
-  3b5bf42b81d5 ("powerpc/xmon: Fix an unexpected xmon on/off state change")
+for you to fetch changes up to ecdf06e1ea5376bba03c155751f6869d3dfaa210:
 
+  selftests/powerpc: Fix to use ucontext_t instead of struct ucontext (2018-02-13 22:44:18 +1100)
 
-How to fix it is not entirely clear. In general I like the behaviour we
-have since the above commit, ie. quickly dropping into xmon and
-inspecting something doesn't leave xmon enabled, which then causes the
-system not to kdump/reboot later.
+----------------------------------------------------------------
+powerpc fixes for 4.16 #2
 
-What would be nice is if we keep that behaviour, but any action you take
-in xmon that requires xmon to remain resident, ie. setting a breakpoint,
-calls a function which makes sure xmon_on = true and if it wasn't prints
-a nice message saying "Turning xmon on due to breakpoint insertion" or
-something.
+A larger batch of fixes than we'd like. Roughly 1/3 fixes for new code, 1/3
+fixes for stable and 1/3 minor things.
 
-cheers
+There's four commits fixing bugs when using 16GB huge pages on hash, caused by
+some of the preparatory changes for pkeys.
+
+Two fixes for bugs in the enhanced IRQ soft masking for local_t, one of which
+broke KVM in some circumstances.
+
+Four fixes for Power9. The most bizarre being a bug where futexes stopped
+working because a NULL pointer dereference didn't trap during early boot (it
+aliased the kernel mapping). A fix for memory hotplug when using the Radix MMU,
+and a fix for live migration of guests using the Radix MMU.
+
+Two fixes for hotplug on pseries machines. One where we weren't correctly
+updating NUMA info when CPUs are added and removed. And the other fixes
+crashes/hangs seen when doing memory hot remove during boot, which is apparently
+a thing people do.
+
+Finally a handful of build fixes for obscure configs and other minor fixes.
+
+Thanks to:
+  Alexey Kardashevskiy, Aneesh Kumar K.V, Balbir Singh, Colin Ian King, Daniel
+  Henrique Barboza, Florian Weimer, Guenter Roeck, Harish, Laurent Vivier,
+  Madhavan Srinivasan, Mauricio Faria de Oliveira, Nathan Fontenot, Nicholas
+  Piggin, Sam Bobroff.
+
+----------------------------------------------------------------
+Alexey Kardashevskiy (1):
+      powerpc/mm: Flush radix process translations when setting MMU type
+
+Aneesh Kumar K.V (4):
+      powerpc/mm: Fix crashes with 16G huge pages
+      powerpc/mm/hash64: Allocate larger PMD table if hugetlb config is enabled
+      powerpc/mm/hash64: Store the slot information at the right offset for hugetlb
+      powerpc/mm/hash64: Zero PGD pages on allocation
+
+Balbir Singh (1):
+      powerpc/mm/radix: Split linear mapping on hot-unplug
+
+Colin Ian King (1):
+      ocxl: fix signed comparison with less than zero
+
+Guenter Roeck (2):
+      powerpc/pseries: Fix build break for SPLPAR=n and CPU hotplug
+      powerpc/kdump: Fix powernv build break when KEXEC_CORE=n
+
+Harish (1):
+      selftests/powerpc: Fix to use ucontext_t instead of struct ucontext
+
+Madhavan Srinivasan (1):
+      powerpc/64s: Fix MASKABLE_RELON_EXCEPTION_HV_OOL macro
+
+Nathan Fontenot (1):
+      powerpc/numa: Invalidate numa_cpu_lookup_table on cpu remove
+
+Nicholas Piggin (3):
+      powerpc/64s: Fix may_hard_irq_enable() for PMI soft masking
+      powerpc/64s/radix: Boot-time NULL pointer protection using a guard-PID
+      powerpc/vas: Don't set uses_vas for kernel windows
+
+Sam Bobroff (1):
+      powerpc/pseries: Enable RAS hotplug events later
+
+ arch/powerpc/include/asm/book3s/32/pgtable.h       |   1 +
+ arch/powerpc/include/asm/book3s/64/hash-4k.h       |   3 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h      |  16 ++-
+ arch/powerpc/include/asm/book3s/64/hash.h          |  13 ++-
+ arch/powerpc/include/asm/book3s/64/pgalloc.h       |  16 ++-
+ arch/powerpc/include/asm/book3s/64/pgtable.h       |   4 +-
+ arch/powerpc/include/asm/exception-64s.h           |   2 +-
+ arch/powerpc/include/asm/hw_irq.h                  |  12 ++-
+ arch/powerpc/include/asm/kexec.h                   |   6 ++
+ arch/powerpc/include/asm/nohash/32/pgtable.h       |   1 +
+ arch/powerpc/include/asm/nohash/64/pgtable.h       |   1 +
+ arch/powerpc/include/asm/topology.h                |  10 ++
+ arch/powerpc/kernel/exceptions-64e.S               |   2 +
+ arch/powerpc/kernel/exceptions-64s.S               |   6 +-
+ arch/powerpc/mm/hash64_4k.c                        |   4 +-
+ arch/powerpc/mm/hash64_64k.c                       |   8 +-
+ arch/powerpc/mm/hash_utils_64.c                    |   1 +
+ arch/powerpc/mm/hugetlbpage-hash64.c               |  10 +-
+ arch/powerpc/mm/init-common.c                      |   4 +-
+ arch/powerpc/mm/numa.c                             |   5 -
+ arch/powerpc/mm/pgtable-radix.c                    | 117 +++++++++++++++++----
+ arch/powerpc/mm/pgtable_64.c                       |   4 +
+ arch/powerpc/mm/tlb_hash64.c                       |   9 +-
+ arch/powerpc/platforms/powernv/vas-window.c        |  16 +--
+ arch/powerpc/platforms/pseries/hotplug-cpu.c       |   4 +-
+ arch/powerpc/platforms/pseries/ras.c               |  31 ++++--
+ drivers/misc/ocxl/file.c                           |   2 +-
+ .../powerpc/alignment/alignment_handler.c          |   2 +-	# tools/testing/selftests/
+ 28 files changed, 231 insertions(+), 79 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJahDtCAAoJEFHr6jzI4aWAYTIP/0+n4WDZpQxKCOqQVabuR44Q
+R6DhKbqH5zy95wgW/QMeiP6oPmQyG0O+uq7VZ+cVbXWjNocI8+sqHmPHuouXLed+
+VeXYSu+fMpTwdiT+dr5I6eH/eSQFsK+VrNJAY1DU0mCNhm0rUQiF3DFOnODnroR0
+uC7aCTTqHMDQCTHM0TkPwSvS9O1WzOvHhNGic+8eMCM2RqXGVEUbMu5c78/02JKm
+ReKNAyIssDkrGoEkBb8PItjrixc0SX0VC1Kbw1Hx844AAvIXxbpZUsWn+6Munidk
+wHsLXUgeToWyoR+J4aiXMnlzpPOAPYxIfPoTKBgFu7HkyMYw2M6QdZYfMt9R3v4r
++9AZGRe1ZHdgzzd3s8dZMmGka+mM+T/4iZosrW/nl2KbY3cyU7MSNyIy9mwmONOZ
+uN9Wo3KyrgXgT+cQ4PQ108LcOkvIJikEA4TkOIngkXfCfX2Ep6DiRNBpjQND+tsT
+TFRLW6KhcLTPzNXjjdI2peIfuns5JL1j5XTQ2eRDXLNbi5lglYFRDyvWfxznCKIW
+fLS3yTb7hmQvLy75iv1BkJkrrqSsRfHDYJ9WlFiJ89dy4v2NdrVREBR/3Ab8NZfm
+tLn5YgHnsi/6P9+b31QL6k2QNrfPiCMlsP93B7IKIVKSurbZsJgGBnOJICkA3I44
+JXi9ynfakDGUxRby8aZD
+=6IPG
+-----END PGP SIGNATURE-----
+--=-=-=--
