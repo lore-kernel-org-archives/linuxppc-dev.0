@@ -1,30 +1,22 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zhQNh4FPfzF1GP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 03:49:21 +1100 (AEDT)
-Received: by mail-io0-x244.google.com with SMTP id f4so25819255ioh.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 08:49:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zhb5d5XRyzF13Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 10:21:57 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Cyril Bur <cyrilbur@gmail.com>
+Subject: Re: [PATCH V3 0/9] powerpc: Support for ibm,dynamic-memory-v2
+In-Reply-To: <53bf14ae-bb01-585d-3d40-2d8afeb5d345@linux.vnet.ibm.com>
+References: <151214667699.64022.17601877129884655591.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <87a7yz3wjo.fsf@concordia.ellerman.id.au>
+ <53bf14ae-bb01-585d-3d40-2d8afeb5d345@linux.vnet.ibm.com>
+Date: Thu, 15 Feb 2018 10:21:55 +1100
+Message-ID: <873723qhrg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <8261d041-ccd9-c0f8-4530-a4afb43ee7ab@users.sourceforge.net>
-References: <8261d041-ccd9-c0f8-4530-a4afb43ee7ab@users.sourceforge.net>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Wed, 14 Feb 2018 11:48:35 -0500
-Message-ID: <CALZtONBqJ26mzfN02Zs8OjwuoZFLY0vz5BO9tRwyovXF11=SMw@mail.gmail.com>
-Subject: Re: [PATCH] crypto: nx-842: Delete an error message for a failed
- memory allocation in nx842_pseries_init()
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "David S. Miller" <davem@davemloft.net>,
- Haren Myneni <haren@us.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 14, 2018 at 11:17 AM, SF Markus Elfring
-<elfring@users.sourceforge.net> wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Wed, 14 Feb 2018 17:05:13 +0100
->
-> Omit an extra message for a memory allocation failure in this function.
->
-> This issue was detected by using the Coccinelle software.
->
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
 
-Reviewed-by: Dan Streetman <ddstreet@ieee.org>
+> On 12/03/2017 09:13 PM, Michael Ellerman wrote:
+>> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+>> 
+>>> This patch set provides a series of updates to de-couple the LMB
+>>> information provided in the device tree property from the device
+>>> tree property format. This eases the ability to support a new
+>>> format for the dynamic memory property, ibm,dynamic-memory-v2.
+>> 
+>> Something in here is still blowing up for me in a KVM guest:
+>
+> So, it looks like this series was applied despite observing this KVM
+> guest crash.
 
-> ---
->  drivers/crypto/nx/nx-842-pseries.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
-> index bf52cd1d7fca..66869976cfa2 100644
-> --- a/drivers/crypto/nx/nx-842-pseries.c
-> +++ b/drivers/crypto/nx/nx-842-pseries.c
-> @@ -1105,10 +1105,9 @@ static int __init nx842_pseries_init(void)
->
->         RCU_INIT_POINTER(devdata, NULL);
->         new_devdata = kzalloc(sizeof(*new_devdata), GFP_KERNEL);
-> -       if (!new_devdata) {
-> -               pr_err("Could not allocate memory for device data\n");
-> +       if (!new_devdata)
->                 return -ENOMEM;
-> -       }
-> +
->         RCU_INIT_POINTER(devdata, new_devdata);
->
->         ret = vio_register_driver(&nx842_vio_driver);
-> --
-> 2.16.1
->
+The crash has gone away for me, I do that KVM guest test on every push.
+
+So I applied the series, but yeah you're right that was probably silly
+of me.
+
+cheers
