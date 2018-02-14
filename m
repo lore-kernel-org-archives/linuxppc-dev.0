@@ -1,30 +1,28 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=vjkj=fi=gmail.com=cyrilbur@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zh14P3QDXzDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 11:48:50 +1100 (AEDT)
-Subject: Re: [PATCH] headers: untangle kmemleak.h from mm.h
-To: Ingo Molnar <mingo@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Fengguang Wu <fengguang.wu@intel.com>, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390 <linux-s390@vger.kernel.org>,
- sparclinux@vger.kernel.org, X86 ML <x86@kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- linux-wireless <linux-wireless@vger.kernel.org>,
- virtualization@lists.linux-foundation.org,
- John Johansen <john.johansen@canonical.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <a4629db7-194d-3c7c-c8fd-24f61b220a70@infradead.org>
- <20180212072727.saupl35jvwex6hbe@gmail.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <0e4fbe75-7757-6129-b937-1e849ad8946a@infradead.org>
-Date: Tue, 13 Feb 2018 16:48:44 -0800
-MIME-Version: 1.0
-In-Reply-To: <20180212072727.saupl35jvwex6hbe@gmail.com>
-Content-Type: multipart/mixed; boundary="------------F0B99163494C332BC7F40931"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zh1nF6JHNzF1FK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 12:20:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zh1nF5R1rz8w72
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 12:20:49 +1100 (AEDT)
+Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zh1nF0S0Hz9t5R
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2018 12:20:48 +1100 (AEDT)
+Received: by mail-pg0-x22c.google.com with SMTP id y8so1255568pgr.9
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2018 17:20:48 -0800 (PST)
+Message-ID: <1518571241.9595.4.camel@gmail.com>
+Subject: 4.16-rc1 virtual machine crash on boot
+From: Cyril Bur <cyrilbur@gmail.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 14 Feb 2018 12:20:41 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,139 +32,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------F0B99163494C332BC7F40931
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Hello all,
 
-On 02/11/2018 11:27 PM, Ingo Molnar wrote:
-> 
-> * Randy Dunlap <rdunlap@infradead.org> wrote:
-> 
->> From: Randy Dunlap <rdunlap@infradead.org>
->>
->> Currently <linux/slab.h> #includes <linux/kmemleak.h> for no obvious
->> reason. It looks like it's only a convenience, so remove kmemleak.h
->> from slab.h and add <linux/kmemleak.h> to any users of kmemleak_*
->> that don't already #include it.
->> Also remove <linux/kmemleak.h> from source files that do not use it.
->>
->> This is tested on i386 allmodconfig and x86_64 allmodconfig. It
->> would be good to run it through the 0day bot for other $ARCHes.
->> I have neither the horsepower nor the storage space for the other
->> $ARCHes.
->>
->> [slab.h is the second most used header file after module.h; kernel.h
->> is right there with slab.h. There could be some minor error in the
->> counting due to some #includes having comments after them and I
->> didn't combine all of those.]
->>
->> This is Lingchi patch #1 (death by a thousand cuts, applied to kernel
->> header files).
->>
->> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Nice find:
-> 
-> Reviewed-by: Ingo Molnar <mingo@kernel.org>
-> 
-> I agree that it needs to go through 0-day to find any hidden dependencies we might 
-> have grown due to this.
+I'm seeing this crash trying to boot a KVM virtual machine. This kernel
+was compiled with pseries_le_defconfig and run using the following qemu
+commandline:
 
-Andrew,
+qemu-system-ppc64 -enable-kvm -cpu POWER8 -smp 4 -m 4G -M pseries
+-nographic -vga none -drive file=vm.raw,if=virtio,format=raw -drive
+file=mkvmconf2xeO,if=virtio,format=raw -netdev type=user,id=net0
+-device virtio-net-pci,netdev=net0 -kernel vmlinux_tscr -append
+'root=/dev/vdb1 rw cloud-init=disabled'
 
-This patch has mostly survived both 0day and ozlabs multi-arch testing with
-2 build errors being reported by both of them.  I have posted patches for
-those separately. (and are attached here)
-
-other-patch-1:
-lkml.kernel.org/r/5664ced1-a0cd-7e4e-71b6-9c3a97d68927@infradead.org
-"lib/test_firmware: add header file to prevent build errors"
-
-other-patch-2:
-lkml.kernel.org/r/b3b7eebb-0e9f-f175-94a8-379c5ddcaa86@infradead.org
-"integrity/security: fix digsig.c build error"
-
-Will you see that these are merged or do you want me to repost them?
-
-thanks,
--- 
-~Randy
-
---------------F0B99163494C332BC7F40931
-Content-Type: text/x-patch;
- name="integrity_security_digsig_add_header.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="integrity_security_digsig_add_header.patch"
-
-From: Randy Dunlap <rdunlap@infradead.org>
-
-security/integrity/digsig.c has build errors on some $ARCH due to a
-missing header file, so add it.
-
-  security/integrity/digsig.c:146:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]
-
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-integrity@vger.kernel.org
-Link: http://kisskb.ellerman.id.au/kisskb/head/13396/
----
- security/integrity/digsig.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- lnx-416-rc1.orig/security/integrity/digsig.c
-+++ lnx-416-rc1/security/integrity/digsig.c
-@@ -18,6 +18,7 @@
- #include <linux/cred.h>
- #include <linux/key-type.h>
- #include <linux/digsig.h>
-+#include <linux/vmalloc.h>
- #include <crypto/public_key.h>
- #include <keys/system_keyring.h>
- 
+qemu-system-ppc64 --version
+QEMU emulator version 2.5.0 (Debian 1:2.5+dfsg-5ubuntu10.16), Copyright
+(c) 2003-2008 Fabrice Bellard
 
 
+Key type dns_resolver registered
+Unable to handle kernel paging request for data at address 0x00000010
+Faulting instruction address: 0xc0000000018f2bbc
+Oops: Kernel access of bad area, sig: 11 [#1]
+LE SMP NR_CPUS=2048 NUMA pSeries
+CPU: 1 PID: 1 Comm: swapper/0 Not tainted 4.16.0-rc1v4.16-rc1 #8
+NIP:  c0000000018f2bbc LR: c0000000018f2bb4 CTR: 0000000000000000
+REGS: c0000000fea838d0 TRAP: 0380   Not tainted  (4.16.0-rc1v4.16-rc1)
+MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 84000248  XER:
+20000000
+CFAR: c0000000019591a0 SOFTE: 0 
+GPR00: c0000000018f2bb4 c0000000fea83b50 c000000001bd8400
+0000000000000000 
+GPR04: c0000000fea83b70 0000000000000000 000000000000002f
+0000000000000022 
+GPR08: 0000000000000000 c0000000022a3e90 0000000000000000
+0000000000000220 
+GPR12: 0000000000000000 c00000000fb40980 c00000000000d698
+0000000000000000 
+GPR16: 0000000000000000 0000000000000000 0000000000000000
+0000000000000000 
+GPR20: 0000000000000000 0000000000000000 0000000000000000
+0000000000000000 
+GPR24: 0000000000000000 c0000000018b9248 c0000000018e36d8
+c0000000019738a8 
+GPR28: 0000000000000007 c0000000fffffc68 c0000000fea83bf0
+0000000000000010 
+NIP [c0000000018f2bbc] read_drconf_v1_cell+0x50/0x9c
+LR [c0000000018f2bb4] read_drconf_v1_cell+0x48/0x9c
+Call Trace:
+[c0000000fea83b50] [c0000000018f2bb4] read_drconf_v1_cell+0x48/0x9c
+(unreliable)
+[c0000000fea83b90] [c0000000018f305c] drmem_init+0x13c/0x2ec
+[c0000000fea83c40] [c0000000018e4288] do_one_initcall+0xdc/0x1ac
+[c0000000fea83d00] [c0000000018e45d4] kernel_init_freeable+0x27c/0x358
+[c0000000fea83dc0] [c00000000000d6bc] kernel_init+0x2c/0x160
+[c0000000fea83e30] [c00000000000bc20] ret_from_kernel_thread+0x5c/0xbc
+Instruction dump:
+7c7f1b78 60000000 60000000 7c240b78 3d22ffdc 3929f0a4 e95e0000
+e8690002 
+f9440021 4806657d 60000000 e9210020 <f87f0000> 39090004 39490010
+f9010020 
+---[ end trace bd9f49f482d30e03 ]---
 
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
 
---------------F0B99163494C332BC7F40931
-Content-Type: text/x-patch;
- name="lib_test_firmware_add_header_file.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="lib_test_firmware_add_header_file.patch"
-
-From: Randy Dunlap <rdunlap@infradead.org>
-
-lib/test_firmware.c has build errors on some $ARCH due to a
-missing header file, so add it.
-
-  lib/test_firmware.c:134:2: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]
-  lib/test_firmware.c:620:25: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
-
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>
-Cc: Luis R. Rodriguez <mcgrof@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Link: http://kisskb.ellerman.id.au/kisskb/head/13396/
----
- lib/test_firmware.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- lnx-416-rc1.orig/lib/test_firmware.c
-+++ lnx-416-rc1/lib/test_firmware.c
-@@ -21,6 +21,7 @@
- #include <linux/uaccess.h>
- #include <linux/delay.h>
- #include <linux/kthread.h>
-+#include <linux/vfree.h>
- 
- #define TEST_FIRMWARE_NAME	"test-firmware.bin"
- #define TEST_FIRMWARE_NUM_REQS	4
-
-
-
-
---------------F0B99163494C332BC7F40931--
+WARNING: CPU: 1 PID: 1 at drivers/tty/vt/vt.c:3883
+do_unblank_screen+0x1f0/0x270
+CPU: 1 PID: 1 Comm: swapper/0 Tainted: G      D          4.16.0-
+rc1v4.16-rc1 #8
+NIP:  c0000000009aa800 LR: c0000000009aa63c CTR: c00000000148f5f0
+REGS: c0000000fea832c0 TRAP: 0700   Tainted:
+G      D           (4.16.0-rc1v4.16-rc1)
+MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 28002222  XER:
+20000000
+CFAR: c0000000009aa658 SOFTE: 1 
+GPR00: c0000000009aa63c c0000000fea83540 c000000001bd8400
+0000000000000000 
+GPR04: 0000000000000001 c0000000fb0c200e 0000000000001dd7
+c0000000fea834d0 
+GPR08: 00000000fe430000 0000000000000000 0000000000000000
+0000000000000001 
+GPR12: 0000000028002428 c00000000fb40980 c00000000000d698
+0000000000000000 
+GPR16: 0000000000000000 0000000000000000 0000000000000000
+0000000000000000 
+GPR20: 0000000000000000 0000000000000000 0000000000000000
+0000000000000000 
+GPR24: c0000000fea40000 c0000000feadf910 c000000001a4a7a8
+c000000001cc4ea0 
+GPR28: c00000000173f4f0 c000000001cc4ec8 0000000000000000
+0000000000000000 
+NIP [c0000000009aa800] do_unblank_screen+0x1f0/0x270
+LR [c0000000009aa63c] do_unblank_screen+0x2c/0x270
+Call Trace:
+[c0000000fea83540] [c0000000009aa63c] do_unblank_screen+0x2c/0x270
+(unreliable)
+[c0000000fea835b0] [c0000000008a2a70] bust_spinlocks+0x40/0x80
+[c0000000fea835d0] [c0000000000da90c] panic+0x1b8/0x32c
+[c0000000fea83670] [c0000000000e1bd4] do_exit+0xcb4/0xcc0
+[c0000000fea83730] [c0000000000275fc] die+0x29c/0x450
+[c0000000fea837c0] [c000000000053f88] bad_page_fault+0xe8/0x160
+[c0000000fea83830] [c000000000028a90] slb_miss_bad_addr+0x40/0x90
+[c0000000fea83860] [c000000000008b08] bad_addr_slb+0x158/0x160
+--- interrupt: 380 at read_drconf_v1_cell+0x50/0x9c
+    LR = read_drconf_v1_cell+0x48/0x9c
+[c0000000fea83b90] [c0000000018f305c] drmem_init+0x13c/0x2ec
+[c0000000fea83c40] [c0000000018e4288] do_one_initcall+0xdc/0x1ac
+[c0000000fea83d00] [c0000000018e45d4] kernel_init_freeable+0x27c/0x358
+[c0000000fea83dc0] [c00000000000d6bc] kernel_init+0x2c/0x160
+[c0000000fea83e30] [c00000000000bc20] ret_from_kernel_thread+0x5c/0xbc
+Instruction dump:
+3c62ffbf 38840001 7c8407b4 38639ca8 4b7ae0ed 60000000 38210070
+e8010010 
+ebc1fff0 ebe1fff8 7c0803a6 4e800020 <0fe00000> 4bfffe58 60000000
+60420000 
+---[ end trace bd9f49f482d30e04 ]---
+Rebooting in 10 seconds..
