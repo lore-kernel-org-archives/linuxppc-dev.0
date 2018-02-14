@@ -1,18 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zh7cm2thbzDqgJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 16:43:52 +1100 (AEDT)
-In-Reply-To: <20180213110933.5491-1-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, Ram Pai <linuxram@us.ibm.com>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V3] powerpc/mm/hash64: memset the pagetable pages on allocation.
-Message-Id: <3zh7cl4ZvNz9t6j@ozlabs.org>
-Date: Wed, 14 Feb 2018 16:43:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zh7tQ2NKFzF0xj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 16:55:42 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, stable@vger.kernel.org
+Subject: Re: [PATCH] powerpc/xive: use hw CPU ids when configuring the CPU
+ queues
+In-Reply-To: <592440b1-5943-2315-c477-598900c79521@kaod.org>
+References: <20180213084712.18351-1-clg@kaod.org>
+ <87a7wd2nwn.fsf@concordia.ellerman.id.au>
+ <592440b1-5943-2315-c477-598900c79521@kaod.org>
+Date: Wed, 14 Feb 2018 16:55:40 +1100
+Message-ID: <87h8qkqfmr.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-13 at 11:09:33 UTC, "Aneesh Kumar K.V" wrote:
-> On powerpc we allocate page table pages from slab cache of different sizes. For
-> now we have a constructor that zero out the objects when we allocate then for
-> the first time. We expect the objects to be zeroed out when we free the the
-> object back to slab cache. This happens in the unmap path. For hugetlb pages
-> we call huge_pte_get_and_clear to do that. With the current configuration of
-> page table size, both pud and pgd level tables get allocated from the same slab
-> cache. At the pud level, we use the second half of the table to store the slot
-> information. But never clear that when unmapping. When such an freed object get
-> allocated at pgd level, we will have part of the page table page not initlaized
-> correctly. This result in kernel crash
-> 
-> Simplify this by calling the object initialization after kmem_cache_alloc
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+C=C3=A9dric Le Goater <clg@kaod.org> writes:
 
-Applied to powerpc fixes, thanks.
+> On 02/13/2018 10:18 AM, Michael Ellerman wrote:
+>> C=C3=A9dric Le Goater <clg@kaod.org> writes:
+>>=20
+>>> The CPU event notification queues on sPAPR should be configured using
+>>> a hardware CPU identifier.
+>>>
+>>> The problem did not show up on the Power Hypervisor because pHyp
+>>> supports 8 threads per core which keeps CPU number contiguous. This is
+>>> not the case on all sPAPR virtual machines, some use SMT=3D1.
+>>>
+>>> Also improve error logging by adding the CPU number.
+>>>
+>>> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+>>> ---
+>>>
+>>>  I think we should send this one to stable also.
+>>=20
+>> Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE inter=
+rupt controller")
+>
+> yes.
+>
+>> Cc: stable@vger.kernel.org # v4.14+
+>
+> yes. I just added the Cc:. I am not sure that will work with=20
+> patchwork though.
 
-https://git.kernel.org/powerpc/c/fc5c2f4a55a2c258e12013cdf287cf
+They don't accept patches that way.
+
+I'll add the tags and commit it.
 
 cheers
