@@ -1,35 +1,28 @@
-Return-Path: <mike.kravetz@oracle.com>
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zh2Fv0lF9zF1Fc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 12:42:10 +1100 (AEDT)
-Subject: Re: [PATCH v2] mm: hwpoison: disable memory error handling on 1GB
- hugepage
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- Punit Agrawal <punit.agrawal@arm.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Michal Hocko <mhocko@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <20180130013919.GA19959@hori1.linux.bs1.fc.nec.co.jp>
- <1517284444-18149-1-git-send-email-n-horiguchi@ah.jp.nec.com>
- <87inbbjx2w.fsf@e105922-lin.cambridge.arm.com>
- <20180207011455.GA15214@hori1.linux.bs1.fc.nec.co.jp>
- <87fu6bfytm.fsf@e105922-lin.cambridge.arm.com>
- <20180208121749.0ac09af2b5a143106f339f55@linux-foundation.org>
- <87wozhvc49.fsf@concordia.ellerman.id.au>
-From: Mike Kravetz <mike.kravetz@oracle.com>
-Message-ID: <e673f38a-9e5f-21f6-421b-b3cb4ff02e91@oracle.com>
-Date: Tue, 13 Feb 2018 14:33:33 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zh3Nb1NXYzF134
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 13:33:02 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id t4so7719364plo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Feb 2018 18:33:02 -0800 (PST)
+Date: Wed, 14 Feb 2018 13:32:39 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "open list:LINUX
+ FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas
+ Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/kdump: Add missing optional dummy functions
+Message-ID: <20180214133239.498a1e73@balbir.ozlabs.ibm.com>
+In-Reply-To: <20180212232551.GA5199@roeck-us.net>
+References: <1518474848-3158-1-git-send-email-linux@roeck-us.net>
+ <CAKTCnzmtDNJHThzuZa1+ydrriQG-dVovHA7uLSVvfLFG2MaidQ@mail.gmail.com>
+ <20180212232551.GA5199@roeck-us.net>
 MIME-Version: 1.0
-In-Reply-To: <87wozhvc49.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,106 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/12/2018 06:48 PM, Michael Ellerman wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On Mon, 12 Feb 2018 15:25:51 -0800
+Guenter Roeck <linux@roeck-us.net> wrote:
+
+> On Tue, Feb 13, 2018 at 10:01:57AM +1100, Balbir Singh wrote:
+> > On Tue, Feb 13, 2018 at 9:34 AM, Guenter Roeck <linux@roeck-us.net> wrote:  
+> > > If KEXEC_CORE is not enabled, PowerNV builds fail as follows.
+> > >
+> > > arch/powerpc/platforms/powernv/smp.c: In function 'pnv_smp_cpu_kill_self':
+> > > arch/powerpc/platforms/powernv/smp.c:236:4: error:
+> > >         implicit declaration of function 'crash_ipi_callback'
+> > >
+> > > Add dummy function calls, similar to kdump_in_progress(), to solve the
+> > > problem.
+> > >
+> > > Fixes: 4145f358644b ("powernv/kdump: Fix cases where the kdump kernel ...")
+> > > Cc: Balbir Singh <bsingharora@gmail.com>
+> > > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > > Cc: Nicholas Piggin <npiggin@gmail.com>
+> > > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> > > ---  
+> > 
+> > Thanks for working on this.
+> > 
+> > You've added two functions, I understand the crash_send_ipi() bits
+> > that I broke. Looks like crash_ipi_callback broken without KEXEC_CORE?
+> >   
 > 
->> On Thu, 08 Feb 2018 12:30:45 +0000 Punit Agrawal <punit.agrawal@arm.com> wrote:
->>
->>>>
->>>> So I don't think that the above test result means that errors are properly
->>>> handled, and the proposed patch should help for arm64.
->>>
->>> Although, the deviation of pud_huge() avoids a kernel crash the code
->>> would be easier to maintain and reason about if arm64 helpers are
->>> consistent with expectations by core code.
->>>
->>> I'll look to update the arm64 helpers once this patch gets merged. But
->>> it would be helpful if there was a clear expression of semantics for
->>> pud_huge() for various cases. Is there any version that can be used as
->>> reference?
->>
->> Is that an ack or tested-by?
->>
->> Mike keeps plaintively asking the powerpc developers to take a look,
->> but they remain steadfastly in hiding.
-> 
-> Cc'ing linuxppc-dev is always a good idea :)
+> If I recall correctly, 4145f358644b introduced the call to crash_ipi_callback().
+> After I declared the dummy function for that, I got an error about the missing
+> crash_send_ipi(). I didn't spend more time on it but just added another dummy
+> function. It may well be that another problem was introduced in the same time
+> frame. On the other side, maybe I got it all wrong, and my patch is not worth
+> the computer it was written on.
 > 
 
-Thanks Michael,
+The patches worked for me with CONFIG_KEXEC=n and CONFIG_KEXEC_CORE=n
 
-I was mostly concerned about use cases for soft/hard offline of huge pages
-larger than PMD_SIZE on powerpc.  I know that powerpc supports PGD_SIZE
-huge pages, and soft/hard offline support was specifically added for this.
-See, 94310cbcaa3c "mm/madvise: enable (soft|hard) offline of HugeTLB pages
-at PGD level"
+Tested-by: Balbir Singh <bsingharora@gmail.com>
 
-This patch will disable that functionality.  So, at a minimum this is a
-'heads up'.  If there are actual use cases that depend on this, then more
-work/discussions will need to happen.  From the e-mail thread on PGD_SIZE
-support, I can not tell if there is a real use case or this is just a
-'nice to have'.
-
--- 
-Mike Kravetz
-
->> Folks, this patch fixes a BUG and is marked for -stable.  Can we please
->> prioritize it?
-> 
-> It's not crashing for me (on 4.16-rc1):
-> 
->   # ./huge-poison 
->   Poisoning page...once
->   Poisoning page...once again
->   madvise: Bad address
-> 
-> And I guess the above is the expected behaviour?
-> 
-> Looking at the function trace it looks like the 2nd madvise is going
-> down reasonable code paths, but I don't know for sure:
-> 
->   8)               |  SyS_madvise() {
->   8)               |    capable() {
->   8)               |      ns_capable_common() {
->   8)   0.094 us    |        cap_capable();
->   8)   0.516 us    |      }
->   8)   1.052 us    |    }
->   8)               |    get_user_pages_fast() {
->   8)   0.354 us    |      gup_pgd_range();
->   8)               |      get_user_pages_unlocked() {
->   8)   0.050 us    |        down_read();
->   8)               |        __get_user_pages() {
->   8)               |          find_extend_vma() {
->   8)               |            find_vma() {
->   8)   0.148 us    |              vmacache_find();
->   8)   0.622 us    |            }
->   8)   1.064 us    |          }
->   8)   0.028 us    |          arch_vma_access_permitted();
->   8)               |          follow_hugetlb_page() {
->   8)               |            huge_pte_offset() {
->   8)   0.128 us    |              __find_linux_pte();
->   8)   0.580 us    |            }
->   8)   0.048 us    |            _raw_spin_lock();
->   8)               |            hugetlb_fault() {
->   8)               |              huge_pte_offset() {
->   8)   0.034 us    |                __find_linux_pte();
->   8)   0.434 us    |              }
->   8)   0.028 us    |              is_hugetlb_entry_migration();
->   8)   0.032 us    |              is_hugetlb_entry_hwpoisoned();
->   8)   2.118 us    |            }
->   8)   4.940 us    |          }
->   8)   7.468 us    |        }
->   8)   0.056 us    |        up_read();
->   8)   8.722 us    |      }
->   8) + 10.264 us   |    }
->   8) + 12.212 us   |  }
-> 
-> 
-> cheers
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Balbir Singh
