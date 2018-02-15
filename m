@@ -1,29 +1,29 @@
 Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zj1zJ0mwFzF0yx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 03:32:59 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1FGViBc106930
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 11:32:57 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g5cb7cu24-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zj2PS4FsPzF1JH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 03:52:11 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1FGokFL137914
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 11:52:09 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g5cr84d32-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 11:32:56 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 11:52:09 -0500
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Thu, 15 Feb 2018 16:32:54 -0000
+ Thu, 15 Feb 2018 16:52:07 -0000
 From: Christophe Lombard <clombard@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
  vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH] cxl: Fix timebase synchronization status on P9
-Date: Thu, 15 Feb 2018 17:32:51 +0100
-Message-Id: <1518712371-29451-1-git-send-email-clombard@linux.vnet.ibm.com>
+Subject: [PATCH V2] cxl: Fix timebase synchronization status on P9
+Date: Thu, 15 Feb 2018 17:52:04 +0100
+Message-Id: <1518713524-1500-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,6 +42,13 @@ application registers.
 The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
 now dynamically updated according the content of the PSL Timebase
 register.
+
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+
+---
+Changelog[v2]
+ - Missing Signed-off-by
+ - Spaces required around the ':'
 ---
  drivers/misc/cxl/pci.c   | 35 +++++++++++++++++++----------------
  drivers/misc/cxl/sysfs.c | 14 ++++++++++++++
@@ -101,7 +108,7 @@ index 758842f..270afb5 100644
  }
  
 diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index a8b6d6a..f3bfc5a 100644
+index a8b6d6a..5384c59 100644
 --- a/drivers/misc/cxl/sysfs.c
 +++ b/drivers/misc/cxl/sysfs.c
 @@ -63,6 +63,20 @@ static ssize_t psl_timebase_synced_show(struct device *device,
@@ -120,7 +127,7 @@ index a8b6d6a..f3bfc5a 100644
 +		delta = mftb() - psl_tb;
 +		if (delta < 0)
 +			delta = -delta;
-+		adapter->psl_timebase_synced = true ? tb_to_ns(delta) < 16000: false;
++		adapter->psl_timebase_synced = true ? tb_to_ns(delta) < 16000 : false;
 +	}
  	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
  }
