@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjCXM72MHzF1BV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:43:47 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1FNdRM2065169
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:43:45 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjCgD5bfczF1M3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:49:44 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1FNmqSl132605
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:49:42 -0500
 Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g5kebs9gw-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g5keb1dbk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:43:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:49:41 -0500
 Received: from localhost
  by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 15 Feb 2018 16:43:44 -0700
+ Thu, 15 Feb 2018 16:49:40 -0700
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
@@ -25,12 +25,12 @@ Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [RFC 3/3] postmigration/memory: Associativity & ibm, dynamic-memory-v2
-In-Reply-To: <80574cd2-9cef-9724-d6ce-9ff38a7e0677@linux.vnet.ibm.com>
-Date: Thu, 15 Feb 2018 17:42:59 -0600
+Subject: [RFC] powerpc/kernel: Add 'ibm,thread-groups' property for CPU
+ allocation
+Date: Thu, 15 Feb 2018 17:48:55 -0600
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <4ad2161f-b960-8110-a9d3-1fa59f553bee@linux.vnet.ibm.com>
+Message-Id: <f4253654-1e2e-cae7-a1da-069c380e7d74@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,277 +40,338 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-postmigration/memory: Now apply changes to the associativity of memory
-blocks described by the 'ibm,dynamic-memory-v2' property regarding
-the topology of LPARS in Post Migration events.
+Add code to parse the new property 'ibm,thread-groups" when it is
+present.  The content of this property explicitly defines the number
+of threads per core as well as the PowerPC 'threads_core_mask'.
+The design provides a common device-tree for both P9 normal core and
+P9 fused core systems.  The new property has been observed to be
+available on P9 pHyp systems, but it may not be present on OpenPower
+BMC systems.
 
-* Extend the previous work done for the 'ibm,associativity-lookup-array'
-  to apply to either property 'ibm,dynamic-memory' or
-  'ibm,dynamic-memory-v2', whichever is present.
-* Add new code to parse the 'ibm,dynamic-memory-v2' property looking
-  for differences in block 'assignment', associativity indexes per
-  block, and any other difference currently known.
+The property updates the kernel to know which CPUs/threads of each
+core are actually present, and then use the map when adding cores
+to the system at boot, or during hotplug operations.
 
-When block differences are recognized, the memory block may be removed,
-added, or updated depending upon the state of the new device tree
-property and differences from the migrated value of the property.
+* Previously, the information about the number of threads per core
+  was inferred solely from the "ibm,ppc-interrupt-server#s" property
+  in the system device tree.
+* Also previous to this property, The mask of threads per CPU was
+  inferred to be a strict linear series from 0..(nthreads-1).
+* There may be a different thread group mask for each core in the
+  system.
+* Also after reading the property, we can determine which of the
+  possible threads we are allowed to online for each CPU.  It is no
+  longer a simple linear sequence, but may be discontinuous e.g.
+  activate threads 1,2,3,5,6,7 on a core instead of 0-5 sequentially.
+
+In the event of LPAR migration, we also provide a hook to re-process
+the property in the event that it is changed.  Rules about fused-core
+and split-core migration are outside the scope of this change, however.
+We update the 'ppc_thread_group_mask' for subsequent use by DLPAR
+operations.  It is the responsibility of the user to put the source
+system into SMT4 mode when moving from a fused-core to split-core
+target.
+
+Implementation of the "ibm,thread-groups" property is spread across
+a few files in the powerpc specific code:
+
+* prom.c: Parse the property and create 'ppc_thread_group_mask'.
+          Use the mask in operation of early_init_dt_scan_cpus().
+* setup-common.c: Parse the property, create 'ppc_thread_group_mask',
+          and use the value in cpu_init_thread_core_maps(), and
+          smp_setup_cpu_maps.
+* hotplug-cpu.c: Use 'ppc_thread_group_mask' in several locations
+          where the code previously expected to iterate over a
+          linear series of active threads (0..nthreads-1).
+* mobility.c: Look for and process changes to the thread group mask
+          in the context of post migration topology changes
+
+Note that the "ibm,thread-groups" property also includes semantics
+of 'thread-group' i.e. define one or more subgroups of the available
+threads, each group of threads to be used for a specific class of
+task.  Translating thread group semantics into Linux kernel features
+is TBD.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/prom.h                 |   12 ++
- arch/powerpc/platforms/pseries/hotplug-memory.c |  171 ++++++++++++++++++++++-
- 2 files changed, 174 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/cputhreads.h        |    6 +
+ arch/powerpc/kernel/setup-common.c           |  136 ++++++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |   14 ++-
+ arch/powerpc/platforms/pseries/mobility.c    |    6 +
+ 4 files changed, 150 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 825bd59..e16ef0f 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -92,6 +92,18 @@ struct of_drconf_cell {
- 	u32	flags;
- };
+diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
+index d71a909..df6ade9 100644
+--- a/arch/powerpc/include/asm/cputhreads.h
++++ b/arch/powerpc/include/asm/cputhreads.h
+@@ -31,6 +31,12 @@
+ #define threads_core_mask	(*get_cpu_mask(0))
+ #endif
  
-+/* The of_drconf_cell_v2 struct defines the layout of the LMB array
-+ * specified in the device tree property
-+ * ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory-v2
-+ */
-+struct of_drconf_cell_v2 {
-+	u32 num_seq_lmbs;
-+	u64 base_address;
-+	u32 drc_index;
-+	u32 aa_index;
-+	u32 flags;
-+} __attribute__((packed));
++extern cpumask_t ppc_thread_group_mask;
 +
- #define DRCONF_MEM_ASSIGNED	0x00000008
- #define DRCONF_MEM_AI_INVALID	0x00000040
- #define DRCONF_MEM_RESERVED	0x00000080
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 04208b0..96eaa9a 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -1172,14 +1172,112 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
- 	return rc;
++extern int process_thread_group_mask(struct device_node *dn,
++					const __be32 *prop, int prop_len);
++
++
+ /* cpu_thread_mask_to_cores - Return a cpumask of one per cores
+  *                            hit by the argument
+  *
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 8fd3a70..1102d12 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -416,13 +416,18 @@ void __init check_for_initrd(void)
+ EXPORT_SYMBOL_GPL(threads_shift);
+ EXPORT_SYMBOL_GPL(threads_core_mask);
+ 
+-static void __init cpu_init_thread_core_maps(int tpc)
++cpumask_t ppc_thread_group_mask;
++EXPORT_SYMBOL_GPL(ppc_thread_group_mask);
++
++static void __init cpu_init_thread_core_maps(int tpc,
++				cpumask_t *thread_group_mask)
+ {
+ 	int i;
+ 
+ 	threads_per_core = tpc;
+ 	threads_per_subcore = tpc;
+ 	cpumask_clear(&threads_core_mask);
++	DBG("INFO: Entry %s (%d)\n", __FUNCTION__, tpc);
+ 
+ 	/* This implementation only supports power of 2 number of threads
+ 	 * for simplicity and performance
+@@ -432,12 +437,112 @@ static void __init cpu_init_thread_core_maps(int tpc)
+ 
+ 	for (i = 0; i < tpc; i++)
+ 		cpumask_set_cpu(i, &threads_core_mask);
++	cpumask_and(&threads_core_mask, &threads_core_mask, thread_group_mask);
+ 
+ 	printk(KERN_INFO "CPU maps initialized for %d thread%s per core\n",
+ 	       tpc, tpc > 1 ? "s" : "");
+ 	printk(KERN_DEBUG " (thread shift is %d)\n", threads_shift);
  }
  
-+static inline int pseries_memory_v2_find_drc(u32 drc_index,
-+			u64 *base_addr, unsigned long memblock_size,
-+			struct of_drconf_cell_v2 **drmem,
-+			struct of_drconf_cell_v2 *last_drmem)
++int process_thread_group_mask(struct device_node *dn,
++				const __be32 *prop, int prop_len)
 +{
-+	struct of_drconf_cell_v2 *dm = (*drmem);
++	const __be32 *thrgrp;
++	const __be32 *intserv;
++	int lentg, len, cpu, nthreads = 1;
++	int j, k, rc = 0;
++	u32 cc_type = 0, no_split = 0, thr_per_split = 0;
++	DBG("INFO: Entry %s\n", __FUNCTION__);
 +
-+	while (dm < last_drmem) {
-+		if ((be32_to_cpu(dm->drc_index) <= drc_index) &&
-+			(drc_index <= (be32_to_cpu(dm->drc_index)+
-+					be32_to_cpu(dm->num_seq_lmbs)-1))) {
-+			int offset = drc_index - be32_to_cpu(dm->drc_index);
-+			(*base_addr) = be64_to_cpu(dm->base_address) +
-+					(offset * memblock_size);
-+			break;
-+		} else if (drc_index > (be32_to_cpu(dm->drc_index)+
-+					be32_to_cpu(dm->num_seq_lmbs)-1)) {
-+			dm++;
-+			(*drmem) = dm;
-+		} else if (be32_to_cpu(dm->drc_index) > drc_index) {
-+			return -1;
++	/* First CPU/thread */
++	intserv = of_get_property(dn, "reg", &len);
++	if (intserv)
++		cpu = of_read_number(intserv, 1);
++	else
++		cpu = 0;
++
++	/* Num of threads in core */
++	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s",
++				&len);
++	if (intserv) {
++		DBG("    ibm,ppc-interrupt-server#s -> %d threads\n",
++		    nthreads);
++	} else {
++		DBG("    no ibm,ppc-interrupt-server#s -> 1 thread\n");
++		len = 4;
++	}
++
++	nthreads = len / sizeof(int);
++	DBG("    cpu %d nthreads %d\n", cpu, nthreads);
++
++	if (prop) {
++		thrgrp = prop;
++	} else {
++		thrgrp = of_get_property(dn, "ibm,thread-groups",
++					&lentg);
++		if (!thrgrp) {
++			rc = -ENOENT;
++			DBG("    error, %d\n", __LINE__);
++			goto endit;
 +		}
 +	}
 +
-+	return 0;
-+}
++	/* Process the thread groups for the Core thread mask */
++	/* Characteristic type per table */
++	cc_type = of_read_number(thrgrp++, 1);
 +
-+static int pseries_update_drconf_memory_v2(struct of_reconfig_data *pr)
-+{
-+	struct of_drconf_cell_v2 *new_drmem, *old_drmem, *last_old_drmem;
-+	unsigned long memblock_size;
-+	u32 new_entries, old_entries;
-+	u64 old_base_addr;
-+	__be32 *p;
-+	int i, rc = 0;
-+
-+	if (rtas_hp_event)
-+		return 0;
-+
-+	memblock_size = pseries_memory_block_size();
-+	if (!memblock_size)
-+		return -EINVAL;
-+
-+	/* The first int of the property is the number of lmb's
-+	 * described by the property. This is followed by an array
-+	 * of of_drconf_cell_v2 entries. Get the number of entries
-+	 * and skip to the array of of_drconf_cell_v2's.
++	/*
++	 * 1 : Group shares common L1, translation cache, and
++	 *     instruction data flow
++	 * >1 : Reserved
 +	 */
-+	p = (__be32 *) pr->old_prop->value;
-+	if (!p)
-+		return -EINVAL;
-+	old_entries = be32_to_cpu(*p++);
-+	old_drmem = (struct of_drconf_cell_v2 *)p;
-+	last_old_drmem = old_drmem +
-+			(sizeof(struct of_drconf_cell_v2) * old_entries);
++	if (cc_type != 1) {
++		rc = -EINVAL;
++		DBG("    error, %d\n", __LINE__);
++		goto endit;
++	}
 +
-+	p = (__be32 *)pr->prop->value;
-+	new_entries = be32_to_cpu(*p++);
-+	new_drmem = (struct of_drconf_cell_v2 *)p;
++	/* No. splits */
++	no_split = of_read_number(thrgrp++, 1);
++	if (no_split == 0) {
++		rc = -EINVAL;
++		DBG("    error, %d\n", __LINE__);
++		goto endit;
++	}
 +
-+	for (i = 0; i < new_entries; i++) {
-+		int j;
-+		u32 new_drc_index = be32_to_cpu(new_drmem->drc_index);
++	/* Threads per split */
++	thr_per_split = of_read_number(thrgrp++, 1);
++	if (thr_per_split == 0) {
++		rc = -EINVAL;
++		DBG("    error, %d\n", __LINE__);
++		goto endit;
++	}
 +
-+		for (j = 0; j < new_drmem->num_seq_lmbs; j++) {
-+			if (!pseries_memory_v2_find_drc(new_drc_index+j,
-+							&old_base_addr,
-+							memblock_size,
-+							&old_drmem,
-+							last_old_drmem)) {
-+				if ((be32_to_cpu(old_drmem->flags) &
-+						DRCONF_MEM_ASSIGNED) &&
-+				    (!(be32_to_cpu(new_drmem->flags) &
-+						DRCONF_MEM_ASSIGNED))) {
-+					rc = pseries_remove_memblock(
-+						old_base_addr,
-+						memblock_size);
-+				} else if ((!(be32_to_cpu(old_drmem->flags) &
-+						DRCONF_MEM_ASSIGNED)) &&
-+					   (be32_to_cpu(new_drmem->flags) &
-+						DRCONF_MEM_ASSIGNED)) {
-+					rc = memblock_add(
-+						old_base_addr, memblock_size);
-+				} else if ((be32_to_cpu(old_drmem->aa_index) !=
-+					    be32_to_cpu(new_drmem->aa_index)) &&
-+					   (be32_to_cpu(new_drmem->flags) &
-+						DRCONF_MEM_ASSIGNED)) {
-+					dlpar_memory_readd_by_index(
-+						new_drc_index+j,
-+						pr->prop);
-+				}
++	DBG("    Property ibm,thread-group "
++		"(cc_t=%d, no_spl=%d, thr_p_spl=%d)\n",
++		(int)cc_type, (int)no_split, (int)thr_per_split);
++
++	for (j = 0; j < no_split; j++) {
++		for (k = 0; k < thr_per_split; k++) {
++			u32 t = of_read_number(thrgrp++, 1);
++
++			cpumask_set_cpu(t, &ppc_thread_group_mask);
++			DBG("      !!enable thread %d\n", (int)t);
++		}
++	}
++
++endit:
++	if (rc) {
++		DBG("    WARNING: error processing (%d)"
++		    "ibm,thread-group property\n", rc);
++		for (j = 0; j < nthreads; j++)
++			cpumask_set_cpu(cpu+j,
++					&ppc_thread_group_mask);
++	}
++
++	return rc;
++}
++EXPORT_SYMBOL(process_thread_group_mask);
+ 
+ /**
+  * setup_cpu_maps - initialize the following cpu maps:
+@@ -489,20 +594,35 @@ void __init smp_setup_cpu_maps(void)
+ 
+ 		nthreads = len / sizeof(int);
+ 
++		process_thread_group_mask(dn, NULL, 0);
++
+ 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
+ 			bool avail;
+ 
+-			DBG("    thread %d -> cpu %d (hard id %d)\n",
+-			    j, cpu, be32_to_cpu(intserv[j]));
+-
+ 			avail = of_device_is_available(dn);
+ 			if (!avail)
+ 				avail = !of_property_match_string(dn,
+ 						"enable-method", "spin-table");
+ 
+-			set_cpu_present(cpu, avail);
+-			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
+-			set_cpu_possible(cpu, true);
++			DBG("    thread %d -> cpu %d (hard id %d) %d\n",
++			    j, cpu, be32_to_cpu(intserv[j]),
++			    cpumask_test_cpu(cpu, &ppc_thread_group_mask));
++
++			if (cpumask_test_cpu(cpu,
++					&ppc_thread_group_mask)) {
++				DBG("        !!thread %d present"
++					"/possible\n", (int)cpu);
++				set_cpu_present(cpu, avail);
++				set_hard_smp_processor_id(cpu,
++					be32_to_cpu(intserv[j]));
++				set_cpu_possible(cpu, true);
++			} else {
++				DBG("        !!NOT thread %d "
++					"present/possible\n", (int)cpu);
++				set_cpu_present(cpu, false);
++				set_cpu_possible(cpu, false);
 +			}
-+		}
-+	}
 +
-+	return 0;
-+}
-+
- struct assoc_arrays {
- 	u32 n_arrays;
- 	u32 array_sz;
- 	const __be32 *arrays;
- };
- 
--static int pseries_update_ala_memory_aai(int aa_index,
--					struct property *dmprop)
-+static int pseries_update_ala_memory_aai_v1(int aa_index,
-+				struct property *dmprop)
- {
- 	struct of_drconf_cell *drmem;
- 	u32 entries;
-@@ -1211,11 +1309,48 @@ static int pseries_update_ala_memory_aai(int aa_index,
- 	return rc;
- }
- 
-+static int pseries_update_ala_memory_aai_v2(int aa_index,
-+				struct property *dmprop)
-+{
-+	struct of_drconf_cell_v2 *drmem;
-+	u32 entries;
-+	__be32 *p;
-+	int i;
-+
-+	p = (__be32 *) dmprop->value;
-+	if (!p)
-+		return -EINVAL;
-+
-+	/* The first int of the property is the number of lmb's
-+	 * described by the property. This is followed by an array
-+	 * of of_drconf_cell_v2 entries. Get the number of entries
-+	 * and skip to the array of of_drconf_cell_v2's.
-+	 */
-+	entries = be32_to_cpu(*p++);
-+	drmem = (struct of_drconf_cell_v2 *)p;
-+
-+	for (i = 0; i < entries; i++) {
-+		if ((be32_to_cpu(drmem[i].aa_index) != aa_index) &&
-+			(be32_to_cpu(drmem[i].flags) & DRCONF_MEM_ASSIGNED)) {
-+			int j;
-+			int lim = be32_to_cpu(drmem->num_seq_lmbs);
-+			u32 drc_index = be32_to_cpu(drmem->drc_index);
-+
-+			for (j = 0; j < lim; j++)
-+				dlpar_memory_readd_by_index(drc_index+j,
-+							dmprop);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int pseries_update_ala_memory(struct of_reconfig_data *pr)
- {
- 	struct assoc_arrays new_ala, old_ala;
- 	struct device_node *dn;
- 	struct property *dmprop;
-+	bool v1 = true;
- 	__be32 *p;
- 	int i, lim;
- 
-@@ -1228,8 +1363,13 @@ static int pseries_update_ala_memory(struct of_reconfig_data *pr)
- 
- 	dmprop = of_find_property(dn, "ibm,dynamic-memory", NULL);
- 	if (!dmprop) {
--		of_node_put(dn);
--		return -ENODEV;
-+		v1 = false;
-+		dmprop = of_find_property(dn, "ibm,dynamic-memory-v2",
-+					NULL);
-+		if (!dmprop) {
-+			of_node_put(dn);
-+			return -ENODEV;
-+		}
- 	}
- 
- 	/*
-@@ -1271,19 +1411,30 @@ static int pseries_update_ala_memory(struct of_reconfig_data *pr)
- 						new_ala.array_sz))
- 				continue;
- 
--			pseries_update_ala_memory_aai(i, dmprop);
-+			if (v1)
-+				pseries_update_ala_memory_aai_v1(i, dmprop);
-+			else
-+				pseries_update_ala_memory_aai_v2(i, dmprop);
+ 			cpu++;
  		}
+ 	}
+@@ -561,7 +681,7 @@ void __init smp_setup_cpu_maps(void)
+ 	 * every CPU in the system. If that is not the case, then some code
+ 	 * here will have to be reworked
+ 	 */
+-	cpu_init_thread_core_maps(nthreads);
++	cpu_init_thread_core_maps(nthreads, &ppc_thread_group_mask);
  
--		for (i = lim; i < new_ala.n_arrays; i++)
--			pseries_update_ala_memory_aai(i, dmprop);
-+		for (i = lim; i < new_ala.n_arrays; i++) {
-+			if (v1)
-+				pseries_update_ala_memory_aai_v1(i, dmprop);
-+			else
-+				pseries_update_ala_memory_aai_v2(i, dmprop);
-+		}
+ 	/* Now that possible cpus are set, set nr_cpu_ids for later use */
+ 	setup_nr_cpu_ids();
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index a7d14aa7..106d0fe 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -36,6 +36,7 @@
+ #include <asm/xics.h>
+ #include <asm/xive.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/cputhreads.h>
  
- 	} else {
- 		/* Update all entries representing these rows;
- 		 * as all rows have different sizes, none can
- 		 * have equivalent values.
- 		 */
--		for (i = 0; i < lim; i++)
--			pseries_update_ala_memory_aai(i, dmprop);
-+		for (i = 0; i < lim; i++) {
-+			if (v1)
-+				pseries_update_ala_memory_aai_v1(i, dmprop);
-+			else
-+				pseries_update_ala_memory_aai_v2(i, dmprop);
-+		}
+ #include "pseries.h"
+ #include "offline_states.h"
+@@ -254,6 +255,8 @@ static int pseries_add_processor(struct device_node *np)
+ 	if (!intserv)
+ 		return 0;
+ 
++	process_thread_group_mask(np, NULL, 0);
++
+ 	zalloc_cpumask_var(&candidate_mask, GFP_KERNEL);
+ 	zalloc_cpumask_var(&tmp, GFP_KERNEL);
+ 
+@@ -325,6 +328,7 @@ static void pseries_remove_processor(struct device_node *np)
+ 	cpu_maps_update_begin();
+ 	for (i = 0; i < nthreads; i++) {
+ 		thread = be32_to_cpu(intserv[i]);
++		cpumask_clear_cpu(thread, &ppc_thread_group_mask);
+ 		for_each_present_cpu(cpu) {
+ 			if (get_hard_smp_processor_id(cpu) != thread)
+ 				continue;
+@@ -363,10 +367,12 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 			BUG_ON(get_cpu_current_state(cpu)
+ 					!= CPU_STATE_OFFLINE);
+ 			cpu_maps_update_done();
+-			timed_topology_update(1);
+-			rc = device_online(get_cpu_device(cpu));
+-			if (rc)
+-				goto out;
++			if (cpumask_test_cpu(thread, &ppc_thread_group_mask)) {
++				timed_topology_update(1);
++				rc = device_online(get_cpu_device(cpu));
++				if (rc)
++					goto out;
++			}
+ 			cpu_maps_update_begin();
+ 
+ 			break;
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index f7042ad..0816ccf 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -20,6 +20,7 @@
+ 
+ #include <asm/machdep.h>
+ #include <asm/rtas.h>
++#include <asm/cputhreads.h>
+ #include "pseries.h"
+ 
+ static struct kobject *mobility_kobj;
+@@ -121,6 +122,11 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
  	}
  
- 	of_node_put(dn);
-@@ -1306,6 +1457,8 @@ static int pseries_memory_notifier(struct notifier_block *nb,
- 	case OF_RECONFIG_UPDATE_PROPERTY:
- 		if (!strcmp(rd->prop->name, "ibm,dynamic-memory"))
- 			err = pseries_update_drconf_memory(rd);
-+		if (!strcmp(rd->prop->name, "ibm,dynamic-memory-v2"))
-+			err = pseries_update_drconf_memory_v2(rd);
- 		if (!strcmp(rd->prop->name,
- 				"ibm,associativity-lookup-arrays"))
- 			err = pseries_update_ala_memory(rd);
-To: linuxppc-dev@lists.ozlabs.org
+ 	if (!more) {
++		printk(KERN_INFO "INFO: Processing %s %s\n", __FUNCTION__, name);
++		if (strcmp(name, "ibm,thread-groups") == 0)
++			process_thread_group_mask(dn,
++				new_prop->value, new_prop->length);
++
+ 		of_update_property(dn, new_prop);
+ 		*prop = NULL;
+ 	}
