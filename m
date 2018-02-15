@@ -1,28 +1,37 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zhlb34G6FzF1KZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 16:44:31 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id k6so17628554ita.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 21:44:31 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.googlemail.com with ESMTPSA id
- i189sm13738521itf.33.2018.02.14.21.44.27
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 14 Feb 2018 21:44:28 -0800 (PST)
-Subject: Re: [PATCH kernel] powerpc/init: Do not advertise radix during
- client-architecture-support
-To: linuxppc-dev@lists.ozlabs.org
-References: <20180109054520.31704-1-aik@ozlabs.ru>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <111a5e87-2336-c107-74be-af0330be48eb@ozlabs.ru>
-Date: Thu, 15 Feb 2018 16:44:25 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zhm1R11DlzF11V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 17:03:54 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1F602Pk014186
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 01:03:51 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g4xb8b5pb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 01:03:51 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Thu, 15 Feb 2018 06:03:49 -0000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [PATCH] cxl: Remove function write_timebase_ctrl_psl9() for PSL9
+In-Reply-To: <17a1d3c8-c38d-0134-9463-4eebf1eced70@linux.vnet.ibm.com>
+References: <20180209041009.14456-1-vaibhav@linux.vnet.ibm.com>
+ <17a1d3c8-c38d-0134-9463-4eebf1eced70@linux.vnet.ibm.com>
+Date: Thu, 15 Feb 2018 11:33:42 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180109054520.31704-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
+Message-Id: <87fu62x001.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +41,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/01/18 16:45, Alexey Kardashevskiy wrote:
-> Currently the pseries kernel advertises radix MMU support even if
-> the actual support is disabled via the CONFIG_PPC_RADIX_MMU option.
-> 
-> This adds a check for CONFIG_PPC_RADIX_MMU to avoid advertising radix
-> to the hypervisor.
-> 
-> Suggested-by: Paul Mackerras <paulus@ozlabs.org>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
-Ping?
-
-
-> ---
->  arch/powerpc/kernel/prom_init.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 02190e9..65879df 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -1109,7 +1109,8 @@ static void __init prom_check_platform_support(void)
->  		}
->  	}
->  
-> -	if (supported.radix_mmu && supported.radix_gtse) {
-> +	if (supported.radix_mmu && supported.radix_gtse &&
-> +	    IS_ENABLED(CONFIG_PPC_RADIX_MMU)) {
->  		/* Radix preferred - but we require GTSE for now */
->  		prom_debug("Asking for radix with GTSE\n");
->  		ibm_architecture_vec.vec5.mmu = OV5_FEAT(OV5_MMU_RADIX);
-> 
-
+> The code change looks ok, but am I the only one to think the commit 
+> message doesn't match? The enable bit has always been in the PSL_CONTROL 
+> register, it was just badly documented on p8. What's been removed is 
+> much of the configuration found in PSL_TB_CTLSTAT.
+>
+Thanks for pointing this out Fred. I wrongly assumed looking at the PSL8
+implementation that writing to the PSL_TV_CTLSTAT regiser enabled the
+TB. I will update the patch description and resend the patch.
 
 -- 
-Alexey
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
