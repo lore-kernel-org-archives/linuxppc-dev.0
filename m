@@ -1,28 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zhb7M4ckfzF1JN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 10:23:27 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>, Michal Hocko <mhocko@kernel.org>
-Cc: Will Drewry <wad@chromium.org>, linux-s390 <linux-s390@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: samples/seccomp/ broken when cross compiling s390,
- ppc allyesconfig
-In-Reply-To: <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
-References: <20180212133731.GE3443@dhcp22.suse.cz>
- <87r2ppvaeq.fsf@concordia.ellerman.id.au>
- <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
- <87d1192nzc.fsf@concordia.ellerman.id.au>
- <20180213103213.GP3443@dhcp22.suse.cz>
- <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
- <20180214092045.GZ3443@dhcp22.suse.cz>
- <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
-Date: Thu, 15 Feb 2018 10:23:27 +1100
-Message-ID: <87zi4bp34g.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zhlZg5vNMzF1JQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 16:44:11 +1100 (AEDT)
+Received: by mail-it0-x241.google.com with SMTP id w63so4208567ita.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Feb 2018 21:44:11 -0800 (PST)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.googlemail.com with ESMTPSA id k66sm14524126itd.8.2018.02.14.21.44.07
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 14 Feb 2018 21:44:08 -0800 (PST)
+Subject: Re: [PATCH kernel] powerpc/lpar/debug: Initialize flags before
+ printing debug message
+To: linuxppc-dev@lists.ozlabs.org
+References: <20180109055214.32199-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <02c29823-8290-0f4b-b484-a9115a78e4b7@ozlabs.ru>
+Date: Thu, 15 Feb 2018 16:44:05 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180109055214.32199-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
-> On Wed, Feb 14, 2018 at 1:20 AM, Michal Hocko <mhocko@kernel.org> wrote:
-...
->>
->> OK, so let's try to nuke it. How should I route this patch?
->
-> I'm fine if goes in via ppc (especially if it can land for 4.16). If
-> Michael doesn't want it, I can send it through my seccomp tree via
-> James Morris.
+On 09/01/18 16:52, Alexey Kardashevskiy wrote:
+> With enabled DEBUG, there is a compile error:
+> "error: ‘flags’ is used uninitialized in this function".
+> 
+> This moves pr_devel() little further where @flags are initialized.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-It's not really my area, so I'd prefer if you take it, or we could
-always punt to akpm :)
+Ping?
 
-cheers
+
+> ---
+> 
+> /home/aik/p/guest-kernel/arch/powerpc/platforms/pseries/lpar.c: In function ‘pSeries_lpar_hpte_updatepp’:
+> /home/aik/p/guest-kernel/include/linux/printk.h:320:2: error: ‘flags’ is used uninitialized in this function [-Werror=un
+> initialized]
+>   printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+>   ^
+> /home/aik/p/guest-kernel/arch/powerpc/platforms/pseries/lpar.c:304:16: note: ‘flags’ was declared here
+>   unsigned long flags;
+>                 ^
+> ---
+>  arch/powerpc/platforms/pseries/lpar.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+> index 0ee4a46..1365424 100644
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -306,14 +306,14 @@ static long pSeries_lpar_hpte_updatepp(unsigned long slot,
+>  
+>  	want_v = hpte_encode_avpn(vpn, psize, ssize);
+>  
+> +	flags = (newpp & 7) | H_AVPN;
+> +	if (mmu_has_feature(MMU_FTR_KERNEL_RO))
+> +		/* Move pp0 into bit 8 (IBM 55) */
+> +		flags |= (newpp & HPTE_R_PP0) >> 55;
+> +
+>  	pr_devel("    update: avpnv=%016lx, hash=%016lx, f=%lx, psize: %d ...",
+>  		 want_v, slot, flags, psize);
+>  
+> -	flags = (newpp & 7) | H_AVPN;
+> -	if (mmu_has_feature(MMU_FTR_KERNEL_RO))
+> -		/* Move pp0 into bit 8 (IBM 55) */
+> -		flags |= (newpp & HPTE_R_PP0) >> 55;
+> -
+>  	lpar_rc = plpar_pte_protect(flags, slot, want_v);
+>  
+>  	if (lpar_rc == H_NOT_FOUND) {
+> 
+
+
+-- 
+Alexey
