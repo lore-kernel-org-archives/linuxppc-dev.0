@@ -1,29 +1,21 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zj2PS4FsPzF1JH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 03:52:11 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1FGokFL137914
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 11:52:09 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g5cr84d32-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 11:52:09 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Thu, 15 Feb 2018 16:52:07 -0000
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V2] cxl: Fix timebase synchronization status on P9
-Date: Thu, 15 Feb 2018 17:52:04 +0100
-Message-Id: <1518713524-1500-1-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zj2YF6Sh2zF1GF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 03:58:57 +1100 (AEDT)
+Subject: Re: [RFC][PATCH bpf v2 1/2] bpf: allow 64-bit offsets for bpf
+ function calls
+To: Sandipan Das <sandipan@linux.vnet.ibm.com>, ast@fb.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, naveen.n.rao@linux.vnet.ibm.com
+References: <20180213040600.5821-1-sandipan@linux.vnet.ibm.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Message-ID: <d39a3902-39bc-df56-71bf-0e6f9869ce14@iogearbox.net>
+Date: Thu, 15 Feb 2018 17:25:17 +0100
+MIME-Version: 1.0
+In-Reply-To: <20180213040600.5821-1-sandipan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,104 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL Timebase register is updated by the PSL to maintain the
-timebase.
-On P9, the Timebase value is only provided by the CAPP as received
-the last time a timebase request was performed.
-The timebase requests are initiated through the adapter configuration or
-application registers.
-The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
-now dynamically updated according the content of the PSL Timebase
-register.
+On 02/13/2018 05:05 AM, Sandipan Das wrote:
+> The imm field of a bpf_insn is a signed 32-bit integer. For
+> JIT-ed bpf-to-bpf function calls, it stores the offset from
+> __bpf_call_base to the start of the callee function.
+> 
+> For some architectures, such as powerpc64, it was found that
+> this offset may be as large as 64 bits because of which this
+> cannot be accomodated in the imm field without truncation.
+> 
+> To resolve this, we additionally make aux->func within each
+> bpf_prog associated with the functions to point to the list
+> of all function addresses determined by the verifier.
+> 
+> We keep the value assigned to the off field of the bpf_insn
+> as a way to index into aux->func and also set aux->func_cnt
+> so that this can be used for performing basic upper bound
+> checks for the off field.
+> 
+> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+> ---
+> v2: Make aux->func point to the list of functions determined
+>     by the verifier rather than allocating a separate callee
+>     list for each function.
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Approach looks good to me; do you know whether s390x JIT would
+have similar requirement? I think one limitation that would still
+need to be addressed later with such approach would be regarding the
+xlated prog dump in bpftool, see 'BPF calls via JIT' in 7105e828c087
+("bpf: allow for correlation of maps and helpers in dump"). Any
+ideas for this (potentially if we could use off + imm for calls,
+we'd get to 48 bits, but that seems still not be enough as you say)?
 
----
-Changelog[v2]
- - Missing Signed-off-by
- - Spaces required around the ':'
----
- drivers/misc/cxl/pci.c   | 35 +++++++++++++++++++----------------
- drivers/misc/cxl/sysfs.c | 14 ++++++++++++++
- 2 files changed, 33 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 758842f..270afb5 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -612,8 +612,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
- 
- static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- {
--	u64 psl_tb;
--	int delta;
- 	unsigned int retry = 0;
- 	struct device_node *np;
- 
-@@ -641,20 +639,25 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- 	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
- 	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
- 
--	/* Wait until CORE TB and PSL TB difference <= 16usecs */
--	do {
--		msleep(1);
--		if (retry++ > 5) {
--			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
--			return;
--		}
--		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
--		delta = mftb() - psl_tb;
--		if (delta < 0)
--			delta = -delta;
--	} while (tb_to_ns(delta) > 16000);
--
--	adapter->psl_timebase_synced = true;
-+	if (cxl_is_power8()) {
-+		u64 psl_tb;
-+		int delta;
-+
-+		/* Wait until CORE TB and PSL TB difference <= 16usecs */
-+		do {
-+			msleep(1);
-+			if (retry++ > 5) {
-+				dev_info(&dev->dev, "PSL timebase can't synchronize\n");
-+				return;
-+			}
-+			psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-+			delta = mftb() - psl_tb;
-+			if (delta < 0)
-+				delta = -delta;
-+		} while (tb_to_ns(delta) > 16000);
-+
-+		adapter->psl_timebase_synced = true;
-+	}
- 	return;
- }
- 
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index a8b6d6a..5384c59 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -63,6 +63,20 @@ static ssize_t psl_timebase_synced_show(struct device *device,
- {
- 	struct cxl *adapter = to_cxl_adapter(device);
- 
-+	/*
-+	 * On P9, the Timebase value is only updated as a result of
-+	 * PSL TimeBase command sent to CAPP.
-+	 */
-+	if (cxl_is_power9()) {
-+		u64 psl_tb;
-+		int delta;
-+
-+		psl_tb = cxl_p1_read(adapter, CXL_PSL9_Timebase);
-+		delta = mftb() - psl_tb;
-+		if (delta < 0)
-+			delta = -delta;
-+		adapter->psl_timebase_synced = true ? tb_to_ns(delta) < 16000 : false;
-+	}
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
- }
- 
--- 
-2.7.4
+Thanks,
+Daniel
