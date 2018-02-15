@@ -1,36 +1,36 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjCgD5bfczF1M3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:49:44 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1FNmqSl132605
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:49:42 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g5keb1dbk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjClY2f9RzDqGs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:53:29 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1FNpONN072368
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:53:27 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g5kec1jfb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:49:41 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Feb 2018 18:53:26 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 15 Feb 2018 16:49:40 -0700
+ Thu, 15 Feb 2018 16:53:26 -0700
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+In-Reply-To: <531f98fb-a29b-53e2-e7d5-870a531b76fd@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [RFC] powerpc/kernel: Add 'ibm,thread-groups' property for CPU
- allocation
-Date: Thu, 15 Feb 2018 17:48:55 -0600
+Subject: [RFC 3/4] powerpc/hotplug/drcinfo: Fix hot-add CPU issues
+Date: Thu, 15 Feb 2018 17:52:39 -0600
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <f4253654-1e2e-cae7-a1da-069c380e7d74@linux.vnet.ibm.com>
+Message-Id: <831c6db4-0572-6851-1cf6-64b97b3612f9@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,338 +40,342 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add code to parse the new property 'ibm,thread-groups" when it is
-present.  The content of this property explicitly defines the number
-of threads per core as well as the PowerPC 'threads_core_mask'.
-The design provides a common device-tree for both P9 normal core and
-P9 fused core systems.  The new property has been observed to be
-available on P9 pHyp systems, but it may not be present on OpenPower
-BMC systems.
+This patch applies a common parse function for the ibm,drc-info
+property that can be modified by a callback function to the
+hot-add CPU code.  Candidate code is replaced by a call to the
+parser including a pointer to a local context-specific functions,
+and local data.
 
-The property updates the kernel to know which CPUs/threads of each
-core are actually present, and then use the map when adding cores
-to the system at boot, or during hotplug operations.
-
-* Previously, the information about the number of threads per core
-  was inferred solely from the "ibm,ppc-interrupt-server#s" property
-  in the system device tree.
-* Also previous to this property, The mask of threads per CPU was
-  inferred to be a strict linear series from 0..(nthreads-1).
-* There may be a different thread group mask for each core in the
-  system.
-* Also after reading the property, we can determine which of the
-  possible threads we are allowed to online for each CPU.  It is no
-  longer a simple linear sequence, but may be discontinuous e.g.
-  activate threads 1,2,3,5,6,7 on a core instead of 0-5 sequentially.
-
-In the event of LPAR migration, we also provide a hook to re-process
-the property in the event that it is changed.  Rules about fused-core
-and split-core migration are outside the scope of this change, however.
-We update the 'ppc_thread_group_mask' for subsequent use by DLPAR
-operations.  It is the responsibility of the user to put the source
-system into SMT4 mode when moving from a fused-core to split-core
-target.
-
-Implementation of the "ibm,thread-groups" property is spread across
-a few files in the powerpc specific code:
-
-* prom.c: Parse the property and create 'ppc_thread_group_mask'.
-          Use the mask in operation of early_init_dt_scan_cpus().
-* setup-common.c: Parse the property, create 'ppc_thread_group_mask',
-          and use the value in cpu_init_thread_core_maps(), and
-          smp_setup_cpu_maps.
-* hotplug-cpu.c: Use 'ppc_thread_group_mask' in several locations
-          where the code previously expected to iterate over a
-          linear series of active threads (0..nthreads-1).
-* mobility.c: Look for and process changes to the thread group mask
-          in the context of post migration topology changes
-
-Note that the "ibm,thread-groups" property also includes semantics
-of 'thread-group' i.e. define one or more subgroups of the available
-threads, each group of threads to be used for a specific class of
-task.  Translating thread group semantics into Linux kernel features
-is TBD.
+In addition, a bug in the release of the previous patch set may
+break things in some of the CPU DLPAR operations.  For instance,
+when attempting to hot-add a new CPU or set of CPUs, the original
+patch failed to always properly calculate the available resources,
+and aborted the operation.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmwar
+e feature" -- end of patch series applied to powerpc next)
 ---
- arch/powerpc/include/asm/cputhreads.h        |    6 +
- arch/powerpc/kernel/setup-common.c           |  136 ++++++++++++++++++++++++--
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   14 ++-
- arch/powerpc/platforms/pseries/mobility.c    |    6 +
- 4 files changed, 150 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |  129 +++++++++++++++++------
+ arch/powerpc/platforms/pseries/pseries_energy.c |  112 ++++++++++----------
+ 2 files changed, 154 insertions(+), 87 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index d71a909..df6ade9 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -31,6 +31,12 @@
- #define threads_core_mask	(*get_cpu_mask(0))
- #endif
- 
-+extern cpumask_t ppc_thread_group_mask;
-+
-+extern int process_thread_group_mask(struct device_node *dn,
-+					const __be32 *prop, int prop_len);
-+
-+
- /* cpu_thread_mask_to_cores - Return a cpumask of one per cores
-  *                            hit by the argument
-  *
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 8fd3a70..1102d12 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -416,13 +416,18 @@ void __init check_for_initrd(void)
- EXPORT_SYMBOL_GPL(threads_shift);
- EXPORT_SYMBOL_GPL(threads_core_mask);
- 
--static void __init cpu_init_thread_core_maps(int tpc)
-+cpumask_t ppc_thread_group_mask;
-+EXPORT_SYMBOL_GPL(ppc_thread_group_mask);
-+
-+static void __init cpu_init_thread_core_maps(int tpc,
-+				cpumask_t *thread_group_mask)
- {
- 	int i;
- 
- 	threads_per_core = tpc;
- 	threads_per_subcore = tpc;
- 	cpumask_clear(&threads_core_mask);
-+	DBG("INFO: Entry %s (%d)\n", __FUNCTION__, tpc);
- 
- 	/* This implementation only supports power of 2 number of threads
- 	 * for simplicity and performance
-@@ -432,12 +437,112 @@ static void __init cpu_init_thread_core_maps(int tpc)
- 
- 	for (i = 0; i < tpc; i++)
- 		cpumask_set_cpu(i, &threads_core_mask);
-+	cpumask_and(&threads_core_mask, &threads_core_mask, thread_group_mask);
- 
- 	printk(KERN_INFO "CPU maps initialized for %d thread%s per core\n",
- 	       tpc, tpc > 1 ? "s" : "");
- 	printk(KERN_DEBUG " (thread shift is %d)\n", threads_shift);
- }
- 
-+int process_thread_group_mask(struct device_node *dn,
-+				const __be32 *prop, int prop_len)
-+{
-+	const __be32 *thrgrp;
-+	const __be32 *intserv;
-+	int lentg, len, cpu, nthreads = 1;
-+	int j, k, rc = 0;
-+	u32 cc_type = 0, no_split = 0, thr_per_split = 0;
-+	DBG("INFO: Entry %s\n", __FUNCTION__);
-+
-+	/* First CPU/thread */
-+	intserv = of_get_property(dn, "reg", &len);
-+	if (intserv)
-+		cpu = of_read_number(intserv, 1);
-+	else
-+		cpu = 0;
-+
-+	/* Num of threads in core */
-+	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s",
-+				&len);
-+	if (intserv) {
-+		DBG("    ibm,ppc-interrupt-server#s -> %d threads\n",
-+		    nthreads);
-+	} else {
-+		DBG("    no ibm,ppc-interrupt-server#s -> 1 thread\n");
-+		len = 4;
-+	}
-+
-+	nthreads = len / sizeof(int);
-+	DBG("    cpu %d nthreads %d\n", cpu, nthreads);
-+
-+	if (prop) {
-+		thrgrp = prop;
-+	} else {
-+		thrgrp = of_get_property(dn, "ibm,thread-groups",
-+					&lentg);
-+		if (!thrgrp) {
-+			rc = -ENOENT;
-+			DBG("    error, %d\n", __LINE__);
-+			goto endit;
-+		}
-+	}
-+
-+	/* Process the thread groups for the Core thread mask */
-+	/* Characteristic type per table */
-+	cc_type = of_read_number(thrgrp++, 1);
-+
-+	/*
-+	 * 1 : Group shares common L1, translation cache, and
-+	 *     instruction data flow
-+	 * >1 : Reserved
-+	 */
-+	if (cc_type != 1) {
-+		rc = -EINVAL;
-+		DBG("    error, %d\n", __LINE__);
-+		goto endit;
-+	}
-+
-+	/* No. splits */
-+	no_split = of_read_number(thrgrp++, 1);
-+	if (no_split == 0) {
-+		rc = -EINVAL;
-+		DBG("    error, %d\n", __LINE__);
-+		goto endit;
-+	}
-+
-+	/* Threads per split */
-+	thr_per_split = of_read_number(thrgrp++, 1);
-+	if (thr_per_split == 0) {
-+		rc = -EINVAL;
-+		DBG("    error, %d\n", __LINE__);
-+		goto endit;
-+	}
-+
-+	DBG("    Property ibm,thread-group "
-+		"(cc_t=%d, no_spl=%d, thr_p_spl=%d)\n",
-+		(int)cc_type, (int)no_split, (int)thr_per_split);
-+
-+	for (j = 0; j < no_split; j++) {
-+		for (k = 0; k < thr_per_split; k++) {
-+			u32 t = of_read_number(thrgrp++, 1);
-+
-+			cpumask_set_cpu(t, &ppc_thread_group_mask);
-+			DBG("      !!enable thread %d\n", (int)t);
-+		}
-+	}
-+
-+endit:
-+	if (rc) {
-+		DBG("    WARNING: error processing (%d)"
-+		    "ibm,thread-group property\n", rc);
-+		for (j = 0; j < nthreads; j++)
-+			cpumask_set_cpu(cpu+j,
-+					&ppc_thread_group_mask);
-+	}
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(process_thread_group_mask);
- 
- /**
-  * setup_cpu_maps - initialize the following cpu maps:
-@@ -489,20 +594,35 @@ void __init smp_setup_cpu_maps(void)
- 
- 		nthreads = len / sizeof(int);
- 
-+		process_thread_group_mask(dn, NULL, 0);
-+
- 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
- 			bool avail;
- 
--			DBG("    thread %d -> cpu %d (hard id %d)\n",
--			    j, cpu, be32_to_cpu(intserv[j]));
--
- 			avail = of_device_is_available(dn);
- 			if (!avail)
- 				avail = !of_property_match_string(dn,
- 						"enable-method", "spin-table");
- 
--			set_cpu_present(cpu, avail);
--			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
--			set_cpu_possible(cpu, true);
-+			DBG("    thread %d -> cpu %d (hard id %d) %d\n",
-+			    j, cpu, be32_to_cpu(intserv[j]),
-+			    cpumask_test_cpu(cpu, &ppc_thread_group_mask));
-+
-+			if (cpumask_test_cpu(cpu,
-+					&ppc_thread_group_mask)) {
-+				DBG("        !!thread %d present"
-+					"/possible\n", (int)cpu);
-+				set_cpu_present(cpu, avail);
-+				set_hard_smp_processor_id(cpu,
-+					be32_to_cpu(intserv[j]));
-+				set_cpu_possible(cpu, true);
-+			} else {
-+				DBG("        !!NOT thread %d "
-+					"present/possible\n", (int)cpu);
-+				set_cpu_present(cpu, false);
-+				set_cpu_possible(cpu, false);
-+			}
-+
- 			cpu++;
- 		}
- 	}
-@@ -561,7 +681,7 @@ void __init smp_setup_cpu_maps(void)
- 	 * every CPU in the system. If that is not the case, then some code
- 	 * here will have to be reworked
- 	 */
--	cpu_init_thread_core_maps(nthreads);
-+	cpu_init_thread_core_maps(nthreads, &ppc_thread_group_mask);
- 
- 	/* Now that possible cpus are set, set nr_cpu_ids for later use */
- 	setup_nr_cpu_ids();
 diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index a7d14aa7..106d0fe 100644
+index a7d14aa7..9346b04 100644
 --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
 +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -36,6 +36,7 @@
- #include <asm/xics.h>
- #include <asm/xive.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/cputhreads.h>
- 
- #include "pseries.h"
- #include "offline_states.h"
-@@ -254,6 +255,8 @@ static int pseries_add_processor(struct device_node *np)
- 	if (!intserv)
- 		return 0;
- 
-+	process_thread_group_mask(np, NULL, 0);
+@@ -408,25 +408,67 @@ static bool dlpar_cpu_exists(struct device_node *parent, u32 drc_index)
+ 	return found;
+ }
+
+-static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
++static bool check_cpu_drc_index(struct device_node *parent,
++				int (*checkRun)(struct of_drc_info *drc,
++						void *data,
++						void *not_used,
++						int *ret_code),
++				void *cdata)
+ {
+-	bool found = false;
+-	int rc, index;
++	int found = 0;
 +
- 	zalloc_cpumask_var(&candidate_mask, GFP_KERNEL);
- 	zalloc_cpumask_var(&tmp, GFP_KERNEL);
- 
-@@ -325,6 +328,7 @@ static void pseries_remove_processor(struct device_node *np)
- 	cpu_maps_update_begin();
- 	for (i = 0; i < nthreads; i++) {
- 		thread = be32_to_cpu(intserv[i]);
-+		cpumask_clear_cpu(thread, &ppc_thread_group_mask);
- 		for_each_present_cpu(cpu) {
- 			if (get_hard_smp_processor_id(cpu) != thread)
- 				continue;
-@@ -363,10 +367,12 @@ static int dlpar_online_cpu(struct device_node *dn)
- 			BUG_ON(get_cpu_current_state(cpu)
- 					!= CPU_STATE_OFFLINE);
- 			cpu_maps_update_done();
--			timed_topology_update(1);
--			rc = device_online(get_cpu_device(cpu));
--			if (rc)
--				goto out;
-+			if (cpumask_test_cpu(thread, &ppc_thread_group_mask)) {
-+				timed_topology_update(1);
-+				rc = device_online(get_cpu_device(cpu));
-+				if (rc)
-+					goto out;
-+			}
- 			cpu_maps_update_begin();
- 
- 			break;
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index f7042ad..0816ccf 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -20,6 +20,7 @@
- 
- #include <asm/machdep.h>
- #include <asm/rtas.h>
-+#include <asm/cputhreads.h>
- #include "pseries.h"
- 
- static struct kobject *mobility_kobj;
-@@ -121,6 +122,11 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
- 	}
- 
- 	if (!more) {
-+		printk(KERN_INFO "INFO: Processing %s %s\n", __FUNCTION__, name);
-+		if (strcmp(name, "ibm,thread-groups") == 0)
-+			process_thread_group_mask(dn,
-+				new_prop->value, new_prop->length);
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		found = drc_info_parser(parent, checkRun, "CPU", cdata);
++	} else {
++		int rc, index = 0;
+
+-	index = 0;
+-	while (!found) {
+-		u32 drc;
++		while (!found) {
++			u32 drc;
+
+-		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
++			rc = of_property_read_u32_index(parent,
++						"ibm,drc-indexes",
+ 						index++, &drc);
+-		if (rc)
+-			break;
++			if (rc)
++				break;
++			found = checkRun(NULL, cdata, &drc, NULL);
++		}
++	}
+
+-		if (drc == drc_index)
+-			found = true;
++	return (bool)found;
++}
 +
- 		of_update_property(dn, new_prop);
- 		*prop = NULL;
++struct valid_cpu_drc_index_struct {
++	u32 targ_drc_index;
++};
++
++static int valid_cpu_drc_index_checkRun(struct of_drc_info *drc,
++					void *idata,
++					void *drc_index,
++					int *ret_code)
++{
++	struct valid_cpu_drc_index_struct *cdata = idata;
++
++	if (drc) {
++		if ((drc->drc_index_start <= cdata->targ_drc_index) &&
++			(cdata->targ_drc_index <= drc->last_drc_index)) {
++			(*ret_code) = 1;
++			return 1;
++		}
++	} else {
++		if (*((u32*)drc_index) == cdata->targ_drc_index) {
++			(*ret_code) = 1;
++			return 1;
++		}
  	}
++	return 0;
++}
+
+-	return found;
++static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
++{
++	struct valid_cpu_drc_index_struct cdata = { drc_index };
++
++	return check_cpu_drc_index(parent, valid_cpu_drc_index_checkRun,
++				&cdata);
+ }
+
+ static ssize_t dlpar_cpu_add(u32 drc_index)
+@@ -718,11 +760,45 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+ 	return rc;
+ }
+
++struct find_dlpar_cpus_to_add_struct {
++	struct device_node *parent;
++	u32 *cpu_drcs;
++	u32 cpus_to_add;
++	u32 cpus_found;
++};
++
++static int find_dlpar_cpus_to_add_checkRun(struct of_drc_info *drc,
++					void *idata,
++					void *drc_index,
++					int *ret_code)
++{
++	struct find_dlpar_cpus_to_add_struct *cdata = idata;
++
++	if (drc) {
++		int k;
++
++		for (k = 0; (k < drc->num_sequential_elems) &&
++			(cdata->cpus_found < cdata->cpus_to_add); k++) {
++			u32 idrc = drc->drc_index_start +
++				(k * drc->sequential_inc);
++
++			if (dlpar_cpu_exists(cdata->parent, idrc))
++				continue;
++			cdata->cpu_drcs[cdata->cpus_found++] = idrc;
++		}
++	} else {
++		if (!dlpar_cpu_exists(cdata->parent, *((u32*)drc_index)))
++			cdata->cpu_drcs[cdata->cpus_found++] =
++				*((u32*)drc_index);
++	}
++	return 0;
++}
++
+ static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
+ {
+ 	struct device_node *parent;
+-	int cpus_found = 0;
+-	int index, rc;
++	struct find_dlpar_cpus_to_add_struct cdata = {
++		NULL, cpu_drcs, cpus_to_add, 0 };
+
+ 	parent = of_find_node_by_path("/cpus");
+ 	if (!parent) {
+@@ -731,28 +807,15 @@ static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
+ 		return -1;
+ 	}
+
+-	/* Search the ibm,drc-indexes array for possible CPU drcs to
+-	 * add. Note that the format of the ibm,drc-indexes array is
+-	 * the number of entries in the array followed by the array
+-	 * of drc values so we start looking at index = 1.
++	/* Search the appropriate property for possible CPU drcs to
++	 * add.
+ 	 */
+-	index = 1;
+-	while (cpus_found < cpus_to_add) {
+-		u32 drc;
+-
+-		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
+-						index++, &drc);
+-		if (rc)
+-			break;
+-
+-		if (dlpar_cpu_exists(parent, drc))
+-			continue;
+-
+-		cpu_drcs[cpus_found++] = drc;
+-	}
++	cdata.parent = parent;
++	check_cpu_drc_index(parent, find_dlpar_cpus_to_add_checkRun,
++				&cdata);
+
+ 	of_node_put(parent);
+-	return cpus_found;
++	return cdata.cpus_found;
+ }
+
+ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+index c7d84aa..332f3ce 100644
+--- a/arch/powerpc/platforms/pseries/pseries_energy.c
++++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+@@ -36,6 +36,26 @@
+
+ /* Helper Routines to convert between drc_index to cpu numbers */
+
++struct cpu_to_drc_index_struct {
++	u32	thread_index;
++	u32	ret;
++};
++
++static int cpu_to_drc_index_checkRun(struct of_drc_info *drc,
++				void *idata, void *not_used, int *ret_code)
++{
++        struct cpu_to_drc_index_struct *cdata = idata;
++
++	if (cdata->thread_index < drc->last_drc_index) {
++		cdata->ret = drc->drc_index_start +
++			(cdata->thread_index * drc->sequential_inc);
++		(*ret_code) = 1;
++		return 1;
++	}
++	(*ret_code) = 0;
++        return 0;
++}
++
+ static u32 cpu_to_drc_index(int cpu)
+ {
+ 	struct device_node *dn = NULL;
+@@ -51,32 +71,16 @@ static u32 cpu_to_drc_index(int cpu)
+ 	thread_index = cpu_core_index_of_thread(cpu);
+
+ 	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+-		struct property *info = NULL;
+-		struct of_drc_info drc;
+-		int j;
+-		u32 num_set_entries;
+-		const __be32 *value;
+-
+-		info = of_find_property(dn, "ibm,drc-info", NULL);
+-		if (info == NULL)
+-			goto err_of_node_put;
++		struct cpu_to_drc_index_struct cdata = {
++			thread_index, 0 };
+
+-		value = of_prop_next_u32(info, NULL, &num_set_entries);
+-		if (!value)
+-			goto err_of_node_put;
+-		value++;
+-
+-		for (j = 0; j < num_set_entries; j++) {
++		rc = drc_info_parser(dn, &cpu_to_drc_index_checkRun,
++				"CPU", &cdata);
+
+-			of_read_drc_info_cell(&info, &value, &drc);
+-			if (strncmp(drc.drc_type, "CPU", 3))
+-				goto err;
+-
+-			if (thread_index < drc.last_drc_index)
+-				break;
+-		}
++		if (rc < 0)
++			goto err_of_node_put;
+
+-		ret = drc.drc_index_start + (thread_index * drc.sequential_inc);
++		ret = cdata.ret;
+ 	} else {
+ 		const __be32 *indexes;
+
+@@ -102,11 +106,36 @@ static u32 cpu_to_drc_index(int cpu)
+ 	return ret;
+ }
+
++struct drc_index_to_cpu_struct {
++	u32	drc_index;
++	u32	thread_index;
++	u32	cpu;
++};
++
++static int drc_index_to_cpu_checkRun(struct of_drc_info *drc,
++				void *idata, void *not_used, int *ret_code)
++{
++        struct drc_index_to_cpu_struct *cdata = idata;
++
++	if (cdata->drc_index > drc->last_drc_index) {
++		cdata->cpu += drc->num_sequential_elems;
++		(*ret_code) = 0;
++		return 0;
++	} else {
++		cdata->cpu += ((cdata->drc_index - drc->drc_index_start) /
++				drc->sequential_inc);
++
++		cdata->thread_index = cpu_first_thread_of_core(cdata->cpu);
++		(*ret_code) = 0;
++		return 0;
++	}
++}
++
+ static int drc_index_to_cpu(u32 drc_index)
+ {
+ 	struct device_node *dn = NULL;
+ 	const int *indexes;
+-	int thread_index = 0, cpu = 0;
++	int thread_index = 0;
+ 	int rc = 1;
+
+ 	dn = of_find_node_by_path("/cpus");
+@@ -114,38 +143,13 @@ static int drc_index_to_cpu(u32 drc_index)
+ 		goto err;
+
+ 	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+-		struct property *info = NULL;
+-		struct of_drc_info drc;
+-		int j;
+-		u32 num_set_entries;
+-		const __be32 *value;
+-
+-		info = of_find_property(dn, "ibm,drc-info", NULL);
+-		if (info == NULL)
+-			goto err_of_node_put;
+-
+-		value = of_prop_next_u32(info, NULL, &num_set_entries);
+-		if (!value)
+-			goto err_of_node_put;
+-		value++;
+-
+-		for (j = 0; j < num_set_entries; j++) {
++		struct drc_index_to_cpu_struct cdata = {
++			drc_index, 0, 0 };
+
+-			of_read_drc_info_cell(&info, &value, &drc);
+-			if (strncmp(drc.drc_type, "CPU", 3))
+-				goto err;
++		rc = drc_info_parser(dn, &drc_index_to_cpu_checkRun,
++					"CPU", &cdata);
++		thread_index = cdata.thread_index;
+
+-			if (drc_index > drc.last_drc_index) {
+-				cpu += drc.num_sequential_elems;
+-				continue;
+-			}
+-			cpu += ((drc_index - drc.drc_index_start) /
+-				drc.sequential_inc);
+-
+-			thread_index = cpu_first_thread_of_core(cpu);
+-			rc = 0;
+-			break;
+-		}
+ 	} else {
+ 		unsigned long int i;
