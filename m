@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjcS66GlczF1M8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 02:26:30 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjcSH4c0ZzF1M8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 02:26:39 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1GFNR8K135035
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:29 -0500
+ w1GFOMWZ085798
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:37 -0500
 Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g603bcu4y-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g60v4b4ck-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:28 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:35 -0500
 Received: from localhost
  by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Fri, 16 Feb 2018 15:26:26 -0000
+ Fri, 16 Feb 2018 15:26:32 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,11 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v8 11/24] mm: Cache some VMA fields in the vm_fault structure
-Date: Fri, 16 Feb 2018 16:25:25 +0100
+Subject: [PATCH v8 13/24] mm: Introduce __lru_cache_add_active_or_unevictable
+Date: Fri, 16 Feb 2018 16:25:27 +0100
 In-Reply-To: <1518794738-4186-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1518794738-4186-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1518794738-4186-12-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1518794738-4186-14-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,229 +49,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When handling speculative page fault, the vma->vm_flags and
-vma->vm_page_prot fields are read once the page table lock is released. So
-there is no more guarantee that these fields would not change in our back.
-They will be saved in the vm_fault structure before the VMA is checked for
-changes.
-
-This patch also set the fields in hugetlb_no_page() and
-__collapse_huge_page_swapin even if it is not need for the callee.
+The speculative page fault handler which is run without holding the
+mmap_sem is calling lru_cache_add_active_or_unevictable() but the vm_flags
+is not guaranteed to remain constant.
+Introducing __lru_cache_add_active_or_unevictable() which has the vma flags
+value parameter instead of the vma pointer.
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/mm.h |  6 ++++++
- mm/hugetlb.c       |  2 ++
- mm/khugepaged.c    |  2 ++
- mm/memory.c        | 38 ++++++++++++++++++++------------------
- 4 files changed, 30 insertions(+), 18 deletions(-)
+ include/linux/swap.h | 10 ++++++++--
+ mm/memory.c          |  8 ++++----
+ mm/swap.c            |  6 +++---
+ 3 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index dcc2a6db8419..fd4eda5195b9 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -361,6 +361,12 @@ struct vm_fault {
- 					 * page table to avoid allocation from
- 					 * atomic context.
- 					 */
-+	/*
-+	 * These entries are required when handling speculative page fault.
-+	 * This way the page handling is done using consistent field values.
-+	 */
-+	unsigned long vma_flags;
-+	pgprot_t vma_page_prot;
- };
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index a1a3f4ed94ce..99377b66ea93 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -337,8 +337,14 @@ extern void deactivate_file_page(struct page *page);
+ extern void mark_page_lazyfree(struct page *page);
+ extern void swap_setup(void);
  
- /* page entry size for vm->huge_fault() */
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 7c204e3d132b..22a818c7a6de 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -3716,6 +3716,8 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 				.vma = vma,
- 				.address = address,
- 				.flags = flags,
-+				.vma_flags = vma->vm_flags,
-+				.vma_page_prot = vma->vm_page_prot,
- 				/*
- 				 * Hard to debug if it ends up being
- 				 * used by a callee that assumes
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index 32314e9e48dd..a946d5306160 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -882,6 +882,8 @@ static bool __collapse_huge_page_swapin(struct mm_struct *mm,
- 		.flags = FAULT_FLAG_ALLOW_RETRY,
- 		.pmd = pmd,
- 		.pgoff = linear_page_index(vma, address),
-+		.vma_flags = vma->vm_flags,
-+		.vma_page_prot = vma->vm_page_prot,
- 	};
+-extern void lru_cache_add_active_or_unevictable(struct page *page,
+-						struct vm_area_struct *vma);
++extern void __lru_cache_add_active_or_unevictable(struct page *page,
++						unsigned long vma_flags);
++
++static inline void lru_cache_add_active_or_unevictable(struct page *page,
++						struct vm_area_struct *vma)
++{
++	return __lru_cache_add_active_or_unevictable(page, vma->vm_flags);
++}
  
- 	/* we only decide to swapin, if there is enough young ptes */
+ /* linux/mm/vmscan.c */
+ extern unsigned long zone_reclaimable_pages(struct zone *zone);
 diff --git a/mm/memory.c b/mm/memory.c
-index e37af9af4202..66a79f44f303 100644
+index bd5de1aa3f7a..bc14973b4eba 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -2615,7 +2615,7 @@ static int wp_page_copy(struct vm_fault *vmf)
- 		 * Don't let another task, with possibly unlocked vma,
- 		 * keep the mlocked page.
- 		 */
--		if (page_copied && (vma->vm_flags & VM_LOCKED)) {
-+		if (page_copied && (vmf->vma_flags & VM_LOCKED)) {
- 			lock_page(old_page);	/* LRU manipulation */
- 			if (PageMlocked(old_page))
- 				munlock_vma_page(old_page);
-@@ -2649,7 +2649,7 @@ static int wp_page_copy(struct vm_fault *vmf)
-  */
- int finish_mkwrite_fault(struct vm_fault *vmf)
- {
--	WARN_ON_ONCE(!(vmf->vma->vm_flags & VM_SHARED));
-+	WARN_ON_ONCE(!(vmf->vma_flags & VM_SHARED));
- 	if (!pte_map_lock(vmf))
- 		return VM_FAULT_RETRY;
- 	/*
-@@ -2751,7 +2751,7 @@ static int do_wp_page(struct vm_fault *vmf)
- 		 * We should not cow pages in a shared writeable mapping.
- 		 * Just mark the pages writable and/or call ops->pfn_mkwrite.
- 		 */
--		if ((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
-+		if ((vmf->vma_flags & (VM_WRITE|VM_SHARED)) ==
- 				     (VM_WRITE|VM_SHARED))
- 			return wp_pfn_shared(vmf);
- 
-@@ -2798,7 +2798,7 @@ static int do_wp_page(struct vm_fault *vmf)
- 			return VM_FAULT_WRITE;
- 		}
- 		unlock_page(vmf->page);
--	} else if (unlikely((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
-+	} else if (unlikely((vmf->vma_flags & (VM_WRITE|VM_SHARED)) ==
- 					(VM_WRITE|VM_SHARED))) {
- 		return wp_page_shared(vmf);
- 	}
-@@ -3090,7 +3090,7 @@ int do_swap_page(struct vm_fault *vmf)
- 
+@@ -2560,7 +2560,7 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
+ 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
+ 		mem_cgroup_commit_charge(new_page, memcg, false, false);
+-		lru_cache_add_active_or_unevictable(new_page, vma);
++		__lru_cache_add_active_or_unevictable(new_page, vmf->vma_flags);
+ 		/*
+ 		 * We call the notify macro here because, when using secondary
+ 		 * mmu page tables (such as kvm shadow page tables), we want the
+@@ -3106,7 +3106,7 @@ int do_swap_page(struct vm_fault *vmf)
+ 	if (unlikely(page != swapcache && swapcache)) {
+ 		page_add_new_anon_rmap(page, vma, vmf->address, false);
+ 		mem_cgroup_commit_charge(page, memcg, false, false);
+-		lru_cache_add_active_or_unevictable(page, vma);
++		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
+ 	} else {
+ 		do_page_add_anon_rmap(page, vma, vmf->address, exclusive);
+ 		mem_cgroup_commit_charge(page, memcg, true, false);
+@@ -3257,7 +3257,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
  	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 	dec_mm_counter_fast(vma->vm_mm, MM_SWAPENTS);
--	pte = mk_pte(page, vma->vm_page_prot);
-+	pte = mk_pte(page, vmf->vma_page_prot);
- 	if ((vmf->flags & FAULT_FLAG_WRITE) && reuse_swap_page(page, NULL)) {
- 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
- 		vmf->flags &= ~FAULT_FLAG_WRITE;
-@@ -3116,7 +3116,7 @@ int do_swap_page(struct vm_fault *vmf)
+ 	page_add_new_anon_rmap(page, vma, vmf->address, false);
+ 	mem_cgroup_commit_charge(page, memcg, false, false);
+-	lru_cache_add_active_or_unevictable(page, vma);
++	__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
+ setpte:
+ 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
  
- 	swap_free(entry);
- 	if (mem_cgroup_swap_full(page) ||
--	    (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
-+	    (vmf->vma_flags & VM_LOCKED) || PageMlocked(page))
- 		try_to_free_swap(page);
- 	unlock_page(page);
- 	if (page != swapcache && swapcache) {
-@@ -3173,7 +3173,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
- 	pte_t entry;
- 
- 	/* File mapping without ->vm_ops ? */
--	if (vma->vm_flags & VM_SHARED)
-+	if (vmf->vma_flags & VM_SHARED)
- 		return VM_FAULT_SIGBUS;
- 
- 	/*
-@@ -3197,7 +3197,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
- 	if (!(vmf->flags & FAULT_FLAG_WRITE) &&
- 			!mm_forbids_zeropage(vma->vm_mm)) {
- 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address),
--						vma->vm_page_prot));
-+						vmf->vma_page_prot));
- 		if (!pte_map_lock(vmf))
- 			return VM_FAULT_RETRY;
- 		if (!pte_none(*vmf->pte))
-@@ -3230,8 +3230,8 @@ static int do_anonymous_page(struct vm_fault *vmf)
- 	 */
- 	__SetPageUptodate(page);
- 
--	entry = mk_pte(page, vma->vm_page_prot);
--	if (vma->vm_flags & VM_WRITE)
-+	entry = mk_pte(page, vmf->vma_page_prot);
-+	if (vmf->vma_flags & VM_WRITE)
- 		entry = pte_mkwrite(pte_mkdirty(entry));
- 
- 	if (!pte_map_lock(vmf)) {
-@@ -3427,7 +3427,7 @@ static int do_set_pmd(struct vm_fault *vmf, struct page *page)
- 	for (i = 0; i < HPAGE_PMD_NR; i++)
- 		flush_icache_page(vma, page + i);
- 
--	entry = mk_huge_pmd(page, vma->vm_page_prot);
-+	entry = mk_huge_pmd(page, vmf->vma_page_prot);
- 	if (write)
- 		entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
- 
-@@ -3501,11 +3501,11 @@ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 		return VM_FAULT_NOPAGE;
- 
- 	flush_icache_page(vma, page);
--	entry = mk_pte(page, vma->vm_page_prot);
-+	entry = mk_pte(page, vmf->vma_page_prot);
- 	if (write)
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 	/* copy-on-write page */
--	if (write && !(vma->vm_flags & VM_SHARED)) {
-+	if (write && !(vmf->vma_flags & VM_SHARED)) {
+@@ -3509,7 +3509,7 @@ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
  		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
  		page_add_new_anon_rmap(page, vma, vmf->address, false);
  		mem_cgroup_commit_charge(page, memcg, false, false);
-@@ -3544,7 +3544,7 @@ int finish_fault(struct vm_fault *vmf)
+-		lru_cache_add_active_or_unevictable(page, vma);
++		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
+ 	} else {
+ 		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
+ 		page_add_file_rmap(page, false);
+diff --git a/mm/swap.c b/mm/swap.c
+index 2d337710218f..85fc6e78ca99 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -455,12 +455,12 @@ void lru_cache_add(struct page *page)
+  * directly back onto it's zone's unevictable list, it does NOT use a
+  * per cpu pagevec.
+  */
+-void lru_cache_add_active_or_unevictable(struct page *page,
+-					 struct vm_area_struct *vma)
++void __lru_cache_add_active_or_unevictable(struct page *page,
++					   unsigned long vma_flags)
+ {
+ 	VM_BUG_ON_PAGE(PageLRU(page), page);
  
- 	/* Did we COW the page? */
- 	if ((vmf->flags & FAULT_FLAG_WRITE) &&
--	    !(vmf->vma->vm_flags & VM_SHARED))
-+	    !(vmf->vma_flags & VM_SHARED))
- 		page = vmf->cow_page;
- 	else
- 		page = vmf->page;
-@@ -3798,7 +3798,7 @@ static int do_fault(struct vm_fault *vmf)
- 		ret = VM_FAULT_SIGBUS;
- 	else if (!(vmf->flags & FAULT_FLAG_WRITE))
- 		ret = do_read_fault(vmf);
--	else if (!(vma->vm_flags & VM_SHARED))
-+	else if (!(vmf->vma_flags & VM_SHARED))
- 		ret = do_cow_fault(vmf);
- 	else
- 		ret = do_shared_fault(vmf);
-@@ -3855,7 +3855,7 @@ static int do_numa_page(struct vm_fault *vmf)
- 	 * accessible ptes, some can allow access by kernel mode.
- 	 */
- 	pte = ptep_modify_prot_start(vma->vm_mm, vmf->address, vmf->pte);
--	pte = pte_modify(pte, vma->vm_page_prot);
-+	pte = pte_modify(pte, vmf->vma_page_prot);
- 	pte = pte_mkyoung(pte);
- 	if (was_writable)
- 		pte = pte_mkwrite(pte);
-@@ -3889,7 +3889,7 @@ static int do_numa_page(struct vm_fault *vmf)
- 	 * Flag if the page is shared between multiple address spaces. This
- 	 * is later used when determining whether to group tasks together
- 	 */
--	if (page_mapcount(page) > 1 && (vma->vm_flags & VM_SHARED))
-+	if (page_mapcount(page) > 1 && (vmf->vma_flags & VM_SHARED))
- 		flags |= TNF_SHARED;
- 
- 	last_cpupid = page_cpupid_last(page);
-@@ -3934,7 +3934,7 @@ static inline int wp_huge_pmd(struct vm_fault *vmf, pmd_t orig_pmd)
- 		return vmf->vma->vm_ops->huge_fault(vmf, PE_SIZE_PMD);
- 
- 	/* COW handled on pte level: split pmd */
--	VM_BUG_ON_VMA(vmf->vma->vm_flags & VM_SHARED, vmf->vma);
-+	VM_BUG_ON_VMA(vmf->vma_flags & VM_SHARED, vmf->vma);
- 	__split_huge_pmd(vmf->vma, vmf->pmd, vmf->address, false, NULL);
- 
- 	return VM_FAULT_FALLBACK;
-@@ -4081,6 +4081,8 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
- 		.flags = flags,
- 		.pgoff = linear_page_index(vma, address),
- 		.gfp_mask = __get_fault_gfp_mask(vma),
-+		.vma_flags = vma->vm_flags,
-+		.vma_page_prot = vma->vm_page_prot,
- 	};
- 	unsigned int dirty = flags & FAULT_FLAG_WRITE;
- 	struct mm_struct *mm = vma->vm_mm;
+-	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
++	if (likely((vma_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
+ 		SetPageActive(page);
+ 	else if (!TestSetPageMlocked(page)) {
+ 		/*
 -- 
 2.7.4
