@@ -1,38 +1,24 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjczp0766zF1Dx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 02:50:26 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1GFngJs005878
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:50:24 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g61dmab7c-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:50:20 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 16 Feb 2018 15:50:18 -0000
-Date: Fri, 16 Feb 2018 21:20:09 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH bpf v2 1/2] bpf: allow 64-bit offsets for bpf
- function calls
-To: ast@fb.com, Daniel Borkmann <daniel@iogearbox.net>, Sandipan Das
- <sandipan@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, Michael Holzheu
- <holzheu@linux.vnet.ibm.com>
-References: <20180213040600.5821-1-sandipan@linux.vnet.ibm.com>
- <d39a3902-39bc-df56-71bf-0e6f9869ce14@iogearbox.net>
- <ad895533-2f15-bfe4-671c-6d1a8c672bbd@iogearbox.net>
-In-Reply-To: <ad895533-2f15-bfe4-671c-6d1a8c672bbd@iogearbox.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjfMm1RC2zF11x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 03:52:51 +1100 (AEDT)
+Date: Fri, 16 Feb 2018 13:52:45 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: alexander.shishkin@linux.intel.com, jolsa@redhat.com,
+ namhyung@kernel.org, linux-kernel@vger.kernel.org,
+ brueckner@linux.vnet.ibm.com, tmricht@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 1/3] tools include powerpc: Grab a copy of
+ arch/powerpc/include/uapi/asm/unistd.h
+Message-ID: <20180216165245.GD24436@kernel.org>
+References: <20180129083417.31240-1-ravi.bangoria@linux.vnet.ibm.com>
+ <20180129083417.31240-2-ravi.bangoria@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1518791626.5484j97if6.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180129083417.31240-2-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,108 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Borkmann wrote:
-> On 02/15/2018 05:25 PM, Daniel Borkmann wrote:
->> On 02/13/2018 05:05 AM, Sandipan Das wrote:
->>> The imm field of a bpf_insn is a signed 32-bit integer. For
->>> JIT-ed bpf-to-bpf function calls, it stores the offset from
->>> __bpf_call_base to the start of the callee function.
->>>
->>> For some architectures, such as powerpc64, it was found that
->>> this offset may be as large as 64 bits because of which this
->>> cannot be accomodated in the imm field without truncation.
->>>
->>> To resolve this, we additionally make aux->func within each
->>> bpf_prog associated with the functions to point to the list
->>> of all function addresses determined by the verifier.
->>>
->>> We keep the value assigned to the off field of the bpf_insn
->>> as a way to index into aux->func and also set aux->func_cnt
->>> so that this can be used for performing basic upper bound
->>> checks for the off field.
->>>
->>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
->>> ---
->>> v2: Make aux->func point to the list of functions determined
->>>     by the verifier rather than allocating a separate callee
->>>     list for each function.
->>=20
->> Approach looks good to me; do you know whether s390x JIT would
->> have similar requirement? I think one limitation that would still
->> need to be addressed later with such approach would be regarding the
->> xlated prog dump in bpftool, see 'BPF calls via JIT' in 7105e828c087
->> ("bpf: allow for correlation of maps and helpers in dump"). Any
->> ideas for this (potentially if we could use off + imm for calls,
->> we'd get to 48 bits, but that seems still not be enough as you say)?
+Em Mon, Jan 29, 2018 at 02:04:15PM +0530, Ravi Bangoria escreveu:
+> Will be used for generating the syscall id/string translation table.
+> 
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+> ---
+>  tools/arch/powerpc/include/uapi/asm/unistd.h | 399 +++++++++++++++++++++++++++
+>  tools/perf/check-headers.sh                  |   1 +
+>  2 files changed, 400 insertions(+)
+>  create mode 100644 tools/arch/powerpc/include/uapi/asm/unistd.h
 
-All good points. I'm not really sure how s390x works, so I can't comment=20
-on that, but I'm copying Michael Holzheu for his consideration.
+Not building on a cross-compiling environment (ubuntu 16.04), I'm checking...
 
-With the existing scheme, 48 bits won't be enough, so we rejected that=20
-approach. I can also see how this will be a problem with bpftool, but I=20
-haven't looked into it in detail. I wonder if we can annotate the output=20
-to indicate the function being referred to?
-
->=20
-> One other random thought, although I'm not sure how feasible this
-> is for ppc64 JIT to realize ... but idea would be to have something
-> like the below:
->=20
-> diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-> index 29ca920..daa7258 100644
-> --- a/kernel/bpf/core.c
-> +++ b/kernel/bpf/core.c
-> @@ -512,6 +512,11 @@ int bpf_get_kallsym(unsigned int symnum, unsigned lo=
-ng *value, char *type,
->  	return ret;
->  }
->=20
-> +void * __weak bpf_jit_image_alloc(unsigned long size)
-> +{
-> +	return module_alloc(size);
-> +}
-> +
->  struct bpf_binary_header *
->  bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
->  		     unsigned int alignment,
-> @@ -525,7 +530,7 @@ bpf_jit_binary_alloc(unsigned int proglen, u8 **image=
-_ptr,
->  	 * random section of illegal instructions.
->  	 */
->  	size =3D round_up(proglen + sizeof(*hdr) + 128, PAGE_SIZE);
-> -	hdr =3D module_alloc(size);
-> +	hdr =3D bpf_jit_image_alloc(size);
->  	if (hdr =3D=3D NULL)
->  		return NULL;
->=20
-> And ppc64 JIT could override bpf_jit_image_alloc() in a similar way
-> like some archs would override the module_alloc() helper through a
-> custom implementation, usually via __vmalloc_node_range(), so we
-> could perhaps fit the range for BPF JITed images in a way that they
-> could use the 32bit imm in the end? There are not that many progs
-> loaded typically, so the range could be a bit narrower in such case
-> anyway. (Not sure if this would work out though, but I thought to
-> bring it up.)
-
-That'd be a good option to consider. I don't think we want to allocate=20
-anything from the linear memory range since users could load=20
-unprivileged BPF programs and consume a lot of memory that way. I doubt=20
-if we can map vmalloc'ed memory into the 0xc0 address range, but I'm not=20
-entirely sure.
-
-Michael,
-Is the above possible? The question is if we can have BPF programs be=20
-allocated within 4GB of __bpf_call_base (which is a kernel symbol), so=20
-that calls to those programs can be encoded in a 32-bit immediate field=20
-in a BPF instruction. As an extension, we may be able to extend it to=20
-48-bits by combining with another BPF instruction field (offset). In=20
-either case, the vmalloc'ed address range won't work.
-
-The alternative is to pass the full 64-bit address of the BPF program in=20
-an auxiliary field (as proposed in this patch set) but we need to fix it=20
-up for 'bpftool' as well.
-
-Thanks,
-Naveen
-
-=
+  CC       /tmp/build/perf/util/syscalltbl.o
+util/syscalltbl.c: In function 'syscalltbl__init_native':
+util/syscalltbl.c:64:19: error: 'syscalltbl_native_max_id' undeclared (first use in this function)
+  for (i = 0; i <= syscalltbl_native_max_id; ++i)
+                   ^
+util/syscalltbl.c:64:19: note: each undeclared identifier is reported only once for each function it appears in
+util/syscalltbl.c:65:7: error: 'syscalltbl_native' undeclared (first use in this function)
+   if (syscalltbl_native[i])
+       ^
+util/syscalltbl.c: In function 'syscalltbl__name':
+util/syscalltbl.c:105:15: error: 'syscalltbl_native_max_id' undeclared (first use in this function)
+  return id <= syscalltbl_native_max_id ? syscalltbl_native[id]: NULL;
+               ^
+util/syscalltbl.c:105:42: error: 'syscalltbl_native' undeclared (first use in this function)
+  return id <= syscalltbl_native_max_id ? syscalltbl_native[id]: NULL;
+                                          ^
+util/syscalltbl.c:106:1: error: control reaches end of non-void function [-Werror=return-type]
+ }
+ ^
+cc1: all warnings being treated as errors
+mv: cannot stat '/tmp/build/perf/util/.syscalltbl.o.tmp': No such file or directory
+/git/linux/tools/build/Makefile.build:96: recipe for target '/tmp/build/perf/util/syscalltbl.o' failed
+make[4]: *** [/tmp/build/perf/util/syscalltbl.o] Error 1
+make[4]: *** Waiting for unfinished jobs....
+  CC       /tmp/build/perf/tests/sample-parsing.o
+  CC       /tmp/build/perf/tests/parse-no-sample-id-all.o
+  CC       /tmp/build/perf/tests/kmod-path.o
+  CC       /tmp/build/perf/tests/thread-map.o
+  CC       /tmp/build/perf/tests/llvm.o
+  CC       /tmp/build/perf/tests/bpf.o
+  CC       /tmp/build/perf/tests/topology.o
+  CC       /tmp/build/perf/tests/mem.o
+  CC       /tmp/build/perf/tests/cpumap.o
+  CC       /tmp/build/perf/tests/stat.o
+/git/linux/tools/build/Makefile.build:139: recipe for target 'util' failed
+make[3]: *** [util] Error 2
+Makefile.perf:629: recipe for target '/tmp/build/perf/libperf-in.o' failed
+make[2]: *** [/tmp/build/perf/libperf-in.o] Error 2
+make[2]: *** Waiting for unfinished jobs....
+  CC       /tmp/build/perf/tests/event_update.o
