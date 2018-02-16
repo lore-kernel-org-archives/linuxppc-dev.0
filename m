@@ -1,36 +1,36 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
+Return-Path: <mauricfo@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjW0G4rZGzF1MK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 22:20:29 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1GBJoEK017319
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 06:20:27 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g5tn68pnm-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjWfm23x7zF1MY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 22:50:24 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1GBncTv011666
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 06:50:21 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g5s1vvx1b-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 06:20:26 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 06:50:21 -0500
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 16 Feb 2018 11:20:25 -0000
-Subject: Re: [PATCH V2] cxl: Fix timebase synchronization status on P9
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com
-References: <1518713524-1500-1-git-send-email-clombard@linux.vnet.ibm.com>
- <d2f3a000-267f-35cb-484d-7c65371b1ead@linux.vnet.ibm.com>
- <87mv09z1ys.fsf@vajain21.in.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 16 Feb 2018 12:20:21 +0100
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Fri, 16 Feb 2018 04:50:20 -0700
+Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call setup_rfi_flush()
+ again
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <20180215081358.2f37cda4@naga.suse.cz>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Fri, 16 Feb 2018 09:50:13 -0200
 MIME-Version: 1.0
-In-Reply-To: <87mv09z1ys.fsf@vajain21.in.ibm.com>
+In-Reply-To: <20180215081358.2f37cda4@naga.suse.cz>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <ff50966e-acc2-1a1d-a03a-b45d32c87c63@linux.vnet.ibm.com>
+Message-Id: <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +40,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Michal and Michael,
 
+On 02/15/2018 05:13 AM, Michal Suchánek wrote:
+>> From: Michael Ellerman<mpe@ellerman.id.au>
+>>
+>> For PowerVM migration we want to be able to call setup_rfi_flush()
+>> again after we've migrated the partition.
+>>
+>> To support that we need to check that we're not trying to allocate the
+>> fallback flush area after memblock has gone away. If so we just fail,
+>> we don't support migrating from a patched to an unpatched machine. Or
+>> we do support it, but there will be no RFI flush enabled on the
+>> destination.
+>>
+> This sounds bad to me. Either we support RFI flush or we don't.
+> 
+> If we do the fallback area should be allocated at boot so it is always
+> available. [snip]
 
-Le 16/02/2018 à 11:02, Vaibhav Jain a écrit :
-> Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
-> 
->> I'm also wondering if it wouldn't be simpler to always update the
->> timebase_synced flag dynamically, even on p8. That way we wouldn't need
->> to have the p8 specific code to check for synchronization in
->> cxl_setup_psl_timebase(). p8 and p9 code would be the same.
-> 
-> I am wondering if we can have an implementation like this:
-> 
-> static ssize_t psl_timebase_synced_show(struct device *device,
-> {
->    	struct cxl *adapter = to_cxl_adapter(device);
->          
->          /* if not already synced than force a resync */
->          if (!adapter->psl_timebase_synced)
->                  /* Choose appropriate PSL implementation */
->                  adapter->native->sl_ops->psl_sync_timebase(adapter);
-> 
->     	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
-> }
-> 
-> In case of PSL9 if timebase request from PSL->CAPP fails then PSL will
-> send an error interrupt. This can be used to set the
-> 'psl_timebase_synced' flag back to false if timebase ever fails.
+I think the problem with this is the size of the fallback area might
+have to be different between the origin and destination systems, say,
+a larger L1 data cache at the destination.
 
-I kind of like recomputing the status with every call. It takes care of 
-outdated status and could be helpful after a reset for example.
+In that case, the original size might not be enough to fully flush
+the L1 data cache.
 
-As to relying on the PSL error interrupt, I wouldn't sweat too much 
-about it. When we get one, the world stops spinning. So the timebase 
-status is the least of our worries. Or did they add something so that we 
-could find out that the PSL error interrupt is *only* due to a timebase 
-sync pb? Note that recomputing it with every read also works in that 
-case and is simpler.
+Michael, is that the reason it is done that way?  I thought of that,
+but don't know for sure.
 
-   Fred
+Thanks!
+Mauricio
