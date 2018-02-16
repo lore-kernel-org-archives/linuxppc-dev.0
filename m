@@ -1,24 +1,15 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjjdb4g2WzF1QL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 06:20:03 +1100 (AEDT)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
- Jiri Olsa <jolsa@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Namhyung Kim <namhyung@kernel.org>,
- Thomas Richter <tmricht@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 35/41] perf trace powerpc: Use generated syscall table
-Date: Fri, 16 Feb 2018 16:17:40 -0300
-Message-Id: <20180216191746.11095-36-acme@kernel.org>
-In-Reply-To: <20180216191746.11095-1-acme@kernel.org>
-References: <20180216191746.11095-1-acme@kernel.org>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zjqTg6zgxzF1YT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 10:43:28 +1100 (AEDT)
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-rtc@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>
+Subject: [PATCH RESEND] powerpc/5200: dts: digsy_mtc.dts: fix rv3029 compatible
+Date: Sat, 17 Feb 2018 00:43:23 +0100
+Message-Id: <20180216234323.27601-1-alexandre.belloni@bootlin.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,61 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+The proper compatible for rv3029 is microcrystal,rv3029.
 
-This should speed up accessing new system calls introduced with the
-kernel rather than waiting for libaudit updates to include them.
-
-It also enables users to specify wildcards, for example, perf trace -e
-'open*', just like was already possible on x86 and s390.
-
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: Thomas Richter <tmricht@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/20180129083417.31240-4-ravi.bangoria@linux.vnet.ibm.com
-[ Do it for ppc32 as well ]
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Acked-by: Anatolij Gustschin <agust@denx.de>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 ---
- tools/perf/Makefile.config   | 2 ++
- tools/perf/util/syscalltbl.c | 8 ++++++++
- 2 files changed, 10 insertions(+)
 
-diff --git a/tools/perf/Makefile.config b/tools/perf/Makefile.config
-index 0dfdaa9fa81e..577a5d2988fe 100644
---- a/tools/perf/Makefile.config
-+++ b/tools/perf/Makefile.config
-@@ -27,6 +27,8 @@ NO_SYSCALL_TABLE := 1
- # Additional ARCH settings for ppc
- ifeq ($(SRCARCH),powerpc)
-   NO_PERF_REGS := 0
-+  NO_SYSCALL_TABLE := 0
-+  CFLAGS += -I$(OUTPUT)arch/powerpc/include/generated
-   LIBUNWIND_LIBS := -lunwind -lunwind-ppc64
- endif
+Hi,
+
+I'm resending that one because I prefer not taking DT patches through the RTC
+tree.
+
+ arch/powerpc/boot/dts/digsy_mtc.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
+index c280e75c86bf..c3922fc03e0b 100644
+--- a/arch/powerpc/boot/dts/digsy_mtc.dts
++++ b/arch/powerpc/boot/dts/digsy_mtc.dts
+@@ -78,7 +78,7 @@
+ 			};
  
-diff --git a/tools/perf/util/syscalltbl.c b/tools/perf/util/syscalltbl.c
-index 303bdb84ab5a..895122d638dd 100644
---- a/tools/perf/util/syscalltbl.c
-+++ b/tools/perf/util/syscalltbl.c
-@@ -30,6 +30,14 @@ static const char **syscalltbl_native = syscalltbl_x86_64;
- #include <asm/syscalls_64.c>
- const int syscalltbl_native_max_id = SYSCALLTBL_S390_64_MAX_ID;
- static const char **syscalltbl_native = syscalltbl_s390_64;
-+#elif defined(__powerpc64__)
-+#include <asm/syscalls_64.c>
-+const int syscalltbl_native_max_id = SYSCALLTBL_POWERPC_64_MAX_ID;
-+static const char **syscalltbl_native = syscalltbl_powerpc_64;
-+#elif defined(__powerpc__)
-+#include <asm/syscalls_32.c>
-+const int syscalltbl_native_max_id = SYSCALLTBL_POWERPC_32_MAX_ID;
-+static const char **syscalltbl_native = syscalltbl_powerpc_32;
- #endif
+ 			rtc@56 {
+-				compatible = "mc,rv3029c2";
++				compatible = "microcrystal,rv3029";
+ 				reg = <0x56>;
+ 			};
  
- struct syscall {
 -- 
-2.14.3
+2.16.1
