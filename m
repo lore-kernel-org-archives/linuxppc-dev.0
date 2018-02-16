@@ -1,34 +1,35 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
+Return-Path: <vaibhav@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjSnp4thzzF1N3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 20:41:18 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1G9co8f070647
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 04:41:16 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g5s1vrevc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjTGr534SzF1J8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 21:03:00 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1G9wn3q070693
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 05:02:58 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g5tn6625b-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 04:41:15 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 05:02:57 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 16 Feb 2018 09:41:14 -0000
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 16 Feb 2018 10:02:56 -0000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, andrew.donnellan@au1.ibm.com
 Subject: Re: [PATCH V2] cxl: Fix timebase synchronization status on P9
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
+In-Reply-To: <d2f3a000-267f-35cb-484d-7c65371b1ead@linux.vnet.ibm.com>
 References: <1518713524-1500-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 16 Feb 2018 10:41:10 +0100
+ <d2f3a000-267f-35cb-484d-7c65371b1ead@linux.vnet.ibm.com>
+Date: Fri, 16 Feb 2018 15:32:51 +0530
 MIME-Version: 1.0
-In-Reply-To: <1518713524-1500-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <d2f3a000-267f-35cb-484d-7c65371b1ead@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <87mv09z1ys.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,119 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
+> I'm also wondering if it wouldn't be simpler to always update the 
+> timebase_synced flag dynamically, even on p8. That way we wouldn't need 
+> to have the p8 specific code to check for synchronization in 
+> cxl_setup_psl_timebase(). p8 and p9 code would be the same.
 
-Le 15/02/2018 à 17:52, Christophe Lombard a écrit :
-> The PSL Timebase register is updated by the PSL to maintain the
-> timebase.
-> On P9, the Timebase value is only provided by the CAPP as received
-> the last time a timebase request was performed.
-> The timebase requests are initiated through the adapter configuration or
-> application registers.
-> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
-> now dynamically updated according the content of the PSL Timebase
-> register.
-> 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> 
-> ---
-> Changelog[v2]
->   - Missing Signed-off-by
->   - Spaces required around the ':'
-> ---
->   drivers/misc/cxl/pci.c   | 35 +++++++++++++++++++----------------
->   drivers/misc/cxl/sysfs.c | 14 ++++++++++++++
->   2 files changed, 33 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 758842f..270afb5 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -612,8 +612,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
-> 
->   static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
->   {
-> -	u64 psl_tb;
-> -	int delta;
->   	unsigned int retry = 0;
->   	struct device_node *np;
-> 
-> @@ -641,20 +639,25 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
->   	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
->   	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
-> 
-> -	/* Wait until CORE TB and PSL TB difference <= 16usecs */
-> -	do {
-> -		msleep(1);
-> -		if (retry++ > 5) {
-> -			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
-> -			return;
-> -		}
-> -		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-> -		delta = mftb() - psl_tb;
-> -		if (delta < 0)
-> -			delta = -delta;
-> -	} while (tb_to_ns(delta) > 16000);
-> -
-> -	adapter->psl_timebase_synced = true;
-> +	if (cxl_is_power8()) {
-> +		u64 psl_tb;
-> +		int delta;
-> +
-> +		/* Wait until CORE TB and PSL TB difference <= 16usecs */
-> +		do {
-> +			msleep(1);
-> +			if (retry++ > 5) {
-> +				dev_info(&dev->dev, "PSL timebase can't synchronize\n");
-> +				return;
-> +			}
-> +			psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-> +			delta = mftb() - psl_tb;
-> +			if (delta < 0)
-> +				delta = -delta;
-> +		} while (tb_to_ns(delta) > 16000);
-> +
-> +		adapter->psl_timebase_synced = true;
-> +	}
->   	return;
->   }
-> 
-> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-> index a8b6d6a..5384c59 100644
-> --- a/drivers/misc/cxl/sysfs.c
-> +++ b/drivers/misc/cxl/sysfs.c
-> @@ -63,6 +63,20 @@ static ssize_t psl_timebase_synced_show(struct device *device,
->   {
->   	struct cxl *adapter = to_cxl_adapter(device);
-> 
-> +	/*
-> +	 * On P9, the Timebase value is only updated as a result of
-> +	 * PSL TimeBase command sent to CAPP.
-> +	 */
-> +	if (cxl_is_power9()) {
-> +		u64 psl_tb;
-> +		int delta;
-> +
-> +		psl_tb = cxl_p1_read(adapter, CXL_PSL9_Timebase);
-> +		delta = mftb() - psl_tb;
-> +		if (delta < 0)
-> +			delta = -delta;
-> +		adapter->psl_timebase_synced = true ? tb_to_ns(delta) < 16000 : false;
+I am wondering if we can have an implementation like this:
 
-I doubt it is what you meant. The syntax is just wrong, though it may 
-actually work ;-)
+static ssize_t psl_timebase_synced_show(struct device *device,
+{
+  	struct cxl *adapter = to_cxl_adapter(device);
+        
+        /* if not already synced than force a resync */
+        if (!adapter->psl_timebase_synced)
+                /* Choose appropriate PSL implementation */
+                adapter->native->sl_ops->psl_sync_timebase(adapter);
 
-The patch also conflicts with Vaibhav's about write_timebase_ctrl
+   	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
+}
 
-I'm also wondering if it wouldn't be simpler to always update the 
-timebase_synced flag dynamically, even on p8. That way we wouldn't need 
-to have the p8 specific code to check for synchronization in 
-cxl_setup_psl_timebase(). p8 and p9 code would be the same.
+In case of PSL9 if timebase request from PSL->CAPP fails then PSL will
+send an error interrupt. This can be used to set the
+'psl_timebase_synced' flag back to false if timebase ever fails.
 
-   Fred
-
-
-> +	}
->   	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
->   }
-> 
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
