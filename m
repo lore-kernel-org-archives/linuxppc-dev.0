@@ -2,40 +2,24 @@ Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjjbG4Zs8zF1K8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 06:18:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjjdS1CyVzF1MG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 06:19:56 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Andi Kleen <ak@linux.intel.com>, coresight@lists.linaro.org,
- David Ahern <dsahern@gmail.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
- Jaecheol Shin <jcgod413@gmail.com>, Jin Yao <yao.jin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Kan Liang <kan.liang@intel.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Mathieu Poirier <mathieu.poirier@linaro.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Milian Wolff <milian.wolff@kdab.com>, Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
  Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Robert Walker <robert.walker@arm.com>, Sangwon Hong <qpakzk@gmail.com>,
- Stephane Eranian <eranian@google.com>,
- Taeung Song <treeze.taeung@gmail.com>,
- Thomas Richter <tmricht@linux.vnet.ibm.com>,
- Wang Nan <wangnan0@huawei.com>, yuzhoujian <yuzhoujian@didichuxing.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+ Jiri Olsa <jolsa@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Namhyung Kim <namhyung@kernel.org>,
+ Thomas Richter <tmricht@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 00/41] perf/core improvements and fixes
-Date: Fri, 16 Feb 2018 16:17:05 -0300
-Message-Id: <20180216191746.11095-1-acme@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH 33/41] tools include powerpc: Grab a copy of
+ arch/powerpc/include/uapi/asm/unistd.h
+Date: Fri, 16 Feb 2018 16:17:38 -0300
+Message-Id: <20180216191746.11095-34-acme@kernel.org>
+In-Reply-To: <20180216191746.11095-1-acme@kernel.org>
+References: <20180216191746.11095-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,405 +29,455 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 
-	Please consider pulling, this is on top of tip/perf/urgent.
+Will be used for generating the syscall id/string translation table.
 
-- Arnaldo
+Committer notes:
 
-Test results at the end of this message, as usual.
+Update it already to catch with these csets applied since Ravi first
+submitted this patch:
 
-The following changes since commit 297f9233b53a08fd457815e19f1d6f2c3389857b:
+  3350eb2ea127 powerpc: sys_pkey_mprotect() system call
+  9499ec1b5e82 powerpc: sys_pkey_alloc() and sys_pkey_free() system calls
 
-  kprobes: Propagate error from disarm_kprobe_ftrace() (2018-02-16 09:12:58 +0100)
+So now 'perf trace' on ppc now knows about the pkey_ syscals.
 
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.17-20180216
-
-for you to fetch changes up to 21316ac6803d4a1aadd74b896db8d60a92cd1140:
-
-  perf tests shell lib: Use a wildcard to remove the vfs_getname probe (2018-02-16 15:31:12 -0300)
-
-----------------------------------------------------------------
-perf/core improvements and fixes:
-
-- Fix wrong jump arrow in systems with branch records with cycles,
-  i.e. Intel's >= Skylake (Jin Yao)
-
-- Fix 'perf record --per-thread' problem introduced when
-  implementing 'perf stat --per-thread (Jin Yao)
-
-- Use arch__compare_symbol_names() to fix 'perf test vmlinux',
-  that was using strcmp(symbol names) while the dso routines
-  doing symbol lookups used the arch overridable one, making
-  this test fail in architectures that overrided that function
-  with something other than strcmp() (Jiri Olsa)
-
-- Add 'perf script --show-round-event' to display
-  PERF_RECORD_FINISHED_ROUND entries (Jiri Olsa)
-
-- Fix dwarf unwind for stripped binaries in 'perf test' (Jiri Olsa)
-
-- Use ordered_events for 'perf report --tasks', otherwise we may get
-  artifacts when PERF_RECORD_FORK gets processed before PERF_RECORD_COMM
-  (when they got recorded in different CPUs) (Jiri Olsa)
-
-- Add support to display group output for non group events, i.e.
-  now when one uses 'perf report --group' on a perf.data file
-  recorded without explicitly grouping events with {} (e.g.
-  "perf record -e '{cycles,instructions}'" get the same output
-  that would produce, i.e. see all those non-grouped events in
-  multiple columns, at the same time (Jiri Olsa)
-
-- Skip non-address kallsyms entries, e.g. '(null)' for !root (Jiri Olsa)
-
-- Kernel maps fixes wrt perf.data(report) versus live system (top)
-  (Jiri Olsa)
-
-- Fix memory corruption when using 'perf record -j call -g -a <application>'
-  followed by 'perf report --branch-history' (Jiri Olsa)
-
-- ARM CoreSight fixes (Mathieu Poirier)
-
-- Add inject capability for CoreSight Traces (Robert Waker)
-
-- Update documentation for use of 'perf' + ARM CoreSight (Robert Walker)
-
-- Man pages fixes (Sangwon Hong, Jaecheol Shin)
-
-- Fix some 'perf test' cases on s/390 and x86_64 (some backtraces
-  changed with a glibc update) (Thomas Richter)
-
-- Add detailed CPUID info in the 'perf.data' headers for s/390 to
-  then use it in 'perf annotate' (Thomas Richter)
-
-- Add '--interval-count N' to 'perf stat', to use with -I, i.e.
-  'perf stat -I 1000 --interval-count 2' will show stats every
-   1000ms, two times (yuzhoujian)
-
-- Add 'perf stat --timeout Nms', that will run for that many
-  milliseconds and then stop, printing the counters (yuzhoujian)
-
-- Fix description for 'perf report --mem-modex (Andi Kleen)
-
-- Use a wildcard to remove the vfs_getname probe in the
-  'perf test' shell based test cases (Arnaldo Carvalho de Melo)
-
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: Thomas Richter <tmricht@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/20180129083417.31240-2-ravi.bangoria@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-----------------------------------------------------------------
-Andi Kleen (1):
-      perf report: Fix description for --mem-mode
-
-Arnaldo Carvalho de Melo (1):
-      perf tests shell lib: Use a wildcard to remove the vfs_getname probe
-
-Jaecheol Shin (1):
-      perf annotate: Add missing arguments in Man page
-
-Jin Yao (2):
-      perf tools: Use target->per_thread and target->system_wide flags
-      perf report: Fix wrong jump arrow
-
-Jiri Olsa (18):
-      perf record: Put new line after target override warning
-      perf script: Add --show-round-event to display PERF_RECORD_FINISHED_ROUND
-      tools lib api fs: Add filename__read_xll function
-      tools lib api fs: Add sysfs__read_xll function
-      perf tests: Fix dwarf unwind for stripped binaries
-      perf tools: Fix comment for sort__* compare functions
-      perf report: Ask for ordered events for --tasks option
-      perf report: Add support to display group output for non group events
-      tools lib symbol: Skip non-address kallsyms line
-      perf symbols: Check if we read regular file in dso__load()
-      perf machine: Free root_dir in machine__init() error path
-      perf machine: Move kernel mmap name into struct machine
-      perf machine: Generalize machine__set_kernel_mmap()
-      perf machine: Don't search for active kernel start in __machine__create_kernel_maps
-      perf machine: Remove machine__load_kallsyms()
-      perf tools: Do not create kernel maps in sample__resolve()
-      perf tests: Use arch__compare_symbol_names to compare symbols
-      perf report: Fix memory corruption in --branch-history mode --branch-history
-
-Mathieu Poirier (3):
-      perf cs-etm: Freeing allocated memory
-      perf auxtrace arm: Fixing uninitialised variable
-      perf cs-etm: Properly deal with cpu maps
-
-Ravi Bangoria (3):
-      tools include powerpc: Grab a copy of arch/powerpc/include/uapi/asm/unistd.h
-      perf powerpc: Generate system call table from asm/unistd.h
-      perf trace powerpc: Use generated syscall table
-
-Robert Walker (3):
-      perf cs-etm: Inject capabilitity for CoreSight traces
-      perf inject: Emit instruction records on ETM trace discontinuity
-      coresight: Update documentation for perf usage
-
-Sangwon Hong (2):
-      perf kmem: Document a missing option & an argument
-      perf mem: Document a missing option
-
-Thomas Richter (5):
-      perf record: Provide detailed information on s390 CPU
-      perf annotate: Scan cpuid for s390 and save machine type
-      perf cpuid: Introduce a platform specific cpuid compare function
-      perf test: Fix test case 23 for s390 z/VM or KVM guests
-      perf test: Fix test case inet_pton to accept inlines.
-
-yuzhoujian (2):
-      perf stat: Add support to print counts for fixed times
-      perf stat: Add support to print counts after a period of time
-
- Documentation/trace/coresight.txt                  |  51 +++
- tools/arch/powerpc/include/uapi/asm/unistd.h       | 402 +++++++++++++++++
- tools/lib/api/fs/fs.c                              |  44 +-
- tools/lib/api/fs/fs.h                              |   2 +
- tools/lib/symbol/kallsyms.c                        |   4 +
- tools/perf/Documentation/perf-annotate.txt         |   6 +-
- tools/perf/Documentation/perf-kmem.txt             |   6 +-
- tools/perf/Documentation/perf-mem.txt              |   4 +
- tools/perf/Documentation/perf-report.txt           |   5 +-
- tools/perf/Documentation/perf-script.txt           |   3 +
- tools/perf/Documentation/perf-stat.txt             |  10 +
- tools/perf/Makefile.config                         |   2 +
- tools/perf/arch/arm/util/auxtrace.c                |   2 +-
- tools/perf/arch/arm/util/cs-etm.c                  |  51 ++-
- tools/perf/arch/powerpc/Makefile                   |  25 ++
- .../perf/arch/powerpc/entry/syscalls/mksyscalltbl  |  37 ++
- tools/perf/arch/s390/annotate/instructions.c       |  27 +-
- tools/perf/arch/s390/util/header.c                 | 148 ++++++-
- tools/perf/builtin-record.c                        |   2 +-
- tools/perf/builtin-report.c                        |   7 +-
- tools/perf/builtin-script.c                        |  17 +
- tools/perf/builtin-stat.c                          |  53 ++-
- tools/perf/check-headers.sh                        |   1 +
- tools/perf/tests/code-reading.c                    |  33 +-
- tools/perf/tests/dwarf-unwind.c                    |  46 +-
- tools/perf/tests/shell/lib/probe_vfs_getname.sh    |   2 +-
- .../perf/tests/shell/trace+probe_libc_inet_pton.sh |   6 +-
- tools/perf/tests/vmlinux-kallsyms.c                |   4 +-
- tools/perf/ui/browsers/annotate.c                  |   9 +-
- tools/perf/util/build-id.c                         |  10 +-
- tools/perf/util/cs-etm-decoder/cs-etm-decoder.c    |  74 +++-
- tools/perf/util/cs-etm-decoder/cs-etm-decoder.h    |   2 +
- tools/perf/util/cs-etm.c                           | 478 ++++++++++++++++++---
- tools/perf/util/event.c                            |  16 +-
- tools/perf/util/evlist.c                           |  21 +-
- tools/perf/util/header.h                           |   1 +
- tools/perf/util/hist.c                             |   4 +-
- tools/perf/util/hist.h                             |   1 -
- tools/perf/util/machine.c                          | 145 +++----
- tools/perf/util/machine.h                          |   6 +-
- tools/perf/util/pmu.c                              |  47 +-
- tools/perf/util/sort.c                             |   7 +-
- tools/perf/util/stat.h                             |   2 +
- tools/perf/util/symbol.c                           |  13 +-
- tools/perf/util/syscalltbl.c                       |   8 +
- tools/perf/util/thread_map.c                       |   4 +-
- tools/perf/util/thread_map.h                       |   2 +-
- 47 files changed, 1577 insertions(+), 273 deletions(-)
+---
+ tools/arch/powerpc/include/uapi/asm/unistd.h | 402 +++++++++++++++++++++++++++
+ tools/perf/check-headers.sh                  |   1 +
+ 2 files changed, 403 insertions(+)
  create mode 100644 tools/arch/powerpc/include/uapi/asm/unistd.h
- create mode 100755 tools/perf/arch/powerpc/entry/syscalls/mksyscalltbl
 
-Test results:
-
-The first ones are container (docker) based builds of tools/perf with and
-without libelf support.  Where clang is available, it is also used to build
-perf with/without libelf.
-
-The objtool and samples/bpf/ builds are disabled now that I'm switching from
-using the sources in a local volume to fetching them from a http server to
-build it inside the container, to make it easier to build in a container cluster.
-Those will come back later.
-
-Several are cross builds, the ones with -x-ARCH and the android one, and those
-may not have all the features built, due to lack of multi-arch devel packages,
-available and being used so far on just a few, like
-debian:experimental-x-{arm64,mipsel}.
-
-The 'perf test' one will perform a variety of tests exercising
-tools/perf/util/, tools/lib/{bpf,traceevent,etc}, as well as run perf commands
-with a variety of command line event specifications to then intercept the
-sys_perf_event syscall to check that the perf_event_attr fields are set up as
-expected, among a variety of other unit tests.
-
-Then there is the 'make -C tools/perf build-test' ones, that build tools/perf/
-with a variety of feature sets, exercising the build with an incomplete set of
-features as well as with a complete one. It is planned to have it run on each
-of the containers mentioned above, using some container orchestration
-infrastructure. Get in contact if interested in helping having this in place.
-
-  On a Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
-
-  # dm
-   1 39.82 alpine:3.4                    : Ok   gcc (Alpine 5.3.0) 5.3.0
-   2 57.59 alpine:3.5                    : Ok   gcc (Alpine 6.2.1) 6.2.1 20160822
-   3 44.30 alpine:3.6                    : Ok   gcc (Alpine 6.3.0) 6.3.0
-   4 42.14 alpine:edge                   : Ok   gcc (Alpine 6.4.0) 6.4.0
-   5 35.50 amazonlinux:1                 : Ok   gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-11)
-   6 42.97 amazonlinux:2                 : Ok   gcc (GCC) 7.2.1 20170915 (Red Hat 7.2.1-2)
-   7 26.46 android-ndk:r12b-arm          : Ok   arm-linux-androideabi-gcc (GCC) 4.9.x 20150123 (prerelease)
-   8 27.28 android-ndk:r15c-arm          : Ok   arm-linux-androideabi-gcc (GCC) 4.9.x 20150123 (prerelease)
-   9 24.29 centos:5                      : Ok   gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-55)
-  10 32.15 centos:6                      : Ok   gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-18)
-  11 39.36 centos:7                      : Ok   gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-16)
-  12 34.69 debian:7                      : Ok   gcc (Debian 4.7.2-5) 4.7.2
-  13 37.92 debian:8                      : Ok   gcc (Debian 4.9.2-10) 4.9.2
-  14 62.13 debian:9                      : Ok   gcc (Debian 6.3.0-18) 6.3.0 20170516
-  15 65.51 debian:experimental           : Ok   gcc (Debian 7.2.0-18) 7.2.0
-  16 38.73 debian:experimental-x-arm64   : Ok   aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-  17 68.18 debian:experimental-x-mips    : Ok   mips-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-  18 36.21 debian:experimental-x-mips64  : Ok   mips64-linux-gnuabi64-gcc (Debian 7.2.0-11) 7.2.0
-  19 37.57 debian:experimental-x-mipsel  : Ok   mipsel-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-  20 38.22 fedora:20                     : Ok   gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
-  21 42.49 fedora:21                     : Ok   gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
-  22 39.15 fedora:22                     : Ok   gcc (GCC) 5.3.1 20160406 (Red Hat 5.3.1-6)
-  23 41.46 fedora:23                     : Ok   gcc (GCC) 5.3.1 20160406 (Red Hat 5.3.1-6)
-  24 41.12 fedora:24                     : Ok   gcc (GCC) 6.3.1 20161221 (Red Hat 6.3.1-1)
-  25 34.92 fedora:24-x-ARC-uClibc        : Ok   arc-linux-gcc (ARCompact ISA Linux uClibc toolchain 2017.09-rc2) 7.1.1 20170710
-  26 78.28 fedora:25                     : Ok   gcc (GCC) 6.4.1 20170727 (Red Hat 6.4.1-1)
-  27 84.02 fedora:26                     : Ok   gcc (GCC) 7.2.1 20170915 (Red Hat 7.2.1-2)
-  28 95.42 fedora:27                     : Ok   gcc (GCC) 7.2.1 20170915 (Red Hat 7.2.1-2)
-  29 78.89 fedora:rawhide                : Ok   gcc (GCC) 7.2.1 20170915 (Red Hat 7.2.1-4)
-  30 57.48 gentoo-stage3-amd64:latest    : Ok   gcc (Gentoo 6.4.0-r1 p1.3) 6.4.0
-  31 41.18 mageia:5                      : Ok   gcc (GCC) 4.9.2
-  32 42.27 mageia:6                      : Ok   gcc (Mageia 5.4.0-5.mga6) 5.4.0
-  33 39.66 opensuse:42.1                 : Ok   gcc (SUSE Linux) 4.8.5
-  34 40.09 opensuse:42.2                 : Ok   gcc (SUSE Linux) 4.8.5
-  35 41.01 opensuse:42.3                 : Ok   gcc (SUSE Linux) 4.8.5
-  36 82.32 opensuse:tumbleweed           : Ok   gcc (SUSE Linux) 7.3.0
-  37 31.70 oraclelinux:6                 : Ok   gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-18)
-  38 38.39 oraclelinux:7                 : Ok   gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-16)
-  39 30.49 ubuntu:12.04.5                : Ok   gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
-  40 36.44 ubuntu:14.04.4                : Ok   gcc (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4
-  41 32.13 ubuntu:14.04.4-x-linaro-arm64 : Ok   aarch64-linux-gnu-gcc (Linaro GCC 5.5-2017.10) 5.5.0
-  42 58.58 ubuntu:16.04                  : Ok   gcc (Ubuntu 5.4.0-6ubuntu1~16.04.6) 5.4.0 20160609
-  43 31.52 ubuntu:16.04-x-arm            : Ok   arm-linux-gnueabihf-gcc (Ubuntu/Linaro 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  44 31.06 ubuntu:16.04-x-arm64          : Ok   aarch64-linux-gnu-gcc (Ubuntu/Linaro 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  45 31.61 ubuntu:16.04-x-powerpc        : Ok   powerpc-linux-gnu-gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  46 31.93 ubuntu:16.04-x-powerpc64      : Ok   powerpc64-linux-gnu-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.1) 5.4.0 20160609
-  47 33.02 ubuntu:16.04-x-powerpc64el    : Ok   powerpc64le-linux-gnu-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  48 30.94 ubuntu:16.04-x-s390           : Ok   s390x-linux-gnu-gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  49 63.24 ubuntu:16.10                  : Ok   gcc (Ubuntu 6.2.0-5ubuntu12) 6.2.0 20161005
-  50 63.34 ubuntu:17.04                  : Ok   gcc (Ubuntu 6.3.0-12ubuntu2) 6.3.0 20170406
-  51 63.56 ubuntu:17.10                  : Ok   gcc (Ubuntu 7.2.0-8ubuntu3) 7.2.0
-  52 63.45 ubuntu:18.04                  : Ok   gcc (Ubuntu 7.2.0-18ubuntu2) 7.2.0
-
-  # uname -a
-  Linux jouet 4.15.0-rc9+ #7 SMP Mon Jan 22 18:16:36 -03 2018 x86_64 x86_64 x86_64 GNU/Linux
-  # perf test
-   1: vmlinux symtab matches kallsyms                       : Ok
-   2: Detect openat syscall event                           : Ok
-   3: Detect openat syscall event on all cpus               : Ok
-   4: Read samples using the mmap interface                 : Ok
-   5: Test data source output                               : Ok
-   6: Parse event definition strings                        : Ok
-   7: Simple expression parser                              : Ok
-   8: PERF_RECORD_* events & perf_sample fields             : Ok
-   9: Parse perf pmu format                                 : Ok
-  10: DSO data read                                         : Ok
-  11: DSO data cache                                        : Ok
-  12: DSO data reopen                                       : Ok
-  13: Roundtrip evsel->name                                 : Ok
-  14: Parse sched tracepoints fields                        : Ok
-  15: syscalls:sys_enter_openat event fields                : Ok
-  16: Setup struct perf_event_attr                          : Ok
-  17: Match and link multiple hists                         : Ok
-  18: 'import perf' in python                               : Ok
-  19: Breakpoint overflow signal handler                    : Ok
-  20: Breakpoint overflow sampling                          : Ok
-  21: Number of exit events of a simple workload            : Ok
-  22: Software clock events period values                   : Ok
-  23: Object code reading                                   : Ok
-  24: Sample parsing                                        : Ok
-  25: Use a dummy software event to keep tracking           : Ok
-  26: Parse with no sample_id_all bit set                   : Ok
-  27: Filter hist entries                                   : Ok
-  28: Lookup mmap thread                                    : Ok
-  29: Share thread mg                                       : Ok
-  30: Sort output of hist entries                           : Ok
-  31: Cumulate child hist entries                           : Ok
-  32: Track with sched_switch                               : Ok
-  33: Filter fds with revents mask in a fdarray             : Ok
-  34: Add fd to a fdarray, making it autogrow               : Ok
-  35: kmod_path__parse                                      : Ok
-  36: Thread map                                            : Ok
-  37: LLVM search and compile                               :
-  37.1: Basic BPF llvm compile                              : Ok
-  37.2: kbuild searching                                    : Ok
-  37.3: Compile source for BPF prologue generation          : Ok
-  37.4: Compile source for BPF relocation                   : Ok
-  38: Session topology                                      : Ok
-  39: BPF filter                                            :
-  39.1: Basic BPF filtering                                 : Ok
-  39.2: BPF pinning                                         : Ok
-  39.3: BPF prologue generation                             : Ok
-  39.4: BPF relocation checker                              : Ok
-  40: Synthesize thread map                                 : Ok
-  41: Remove thread map                                     : Ok
-  42: Synthesize cpu map                                    : Ok
-  43: Synthesize stat config                                : Ok
-  44: Synthesize stat                                       : Ok
-  45: Synthesize stat round                                 : Ok
-  46: Synthesize attr update                                : Ok
-  47: Event times                                           : Ok
-  48: Read backward ring buffer                             : Ok
-  49: Print cpu map                                         : Ok
-  50: Probe SDT events                                      : Ok
-  51: is_printable_array                                    : Ok
-  52: Print bitmap                                          : Ok
-  53: perf hooks                                            : Ok
-  54: builtin clang support                                 : Skip (not compiled in)
-  55: unit_number__scnprintf                                : Ok
-  56: x86 rdpmc                                             : Ok
-  57: Convert perf time to TSC                              : Ok
-  58: DWARF unwind                                          : Ok
-  59: x86 instruction decoder - new instructions            : Ok
-  60: Use vfs_getname probe to get syscall args filenames   : Ok
-  61: probe libc's inet_pton & backtrace it with ping       : Ok
-  62: Check open filename arg using perf trace + vfs_getname: Ok
-  63: Add vfs_getname probe to get syscall args filenames   : Ok
-  # 
-  
-  $ make -C tools/perf build-test
-  make: Entering directory '/home/acme/git/perf/tools/perf'
-  - tarpkg: ./tests/perf-targz-src-pkg .
-           make_no_libunwind_O: make NO_LIBUNWIND=1
-           make_no_backtrace_O: make NO_BACKTRACE=1
-        make_with_babeltrace_O: make LIBBABELTRACE=1
-  make_no_libdw_dwarf_unwind_O: make NO_LIBDW_DWARF_UNWIND=1
-   make_install_prefix_slash_O: make install prefix=/tmp/krava/
-                 make_static_O: make LDFLAGS=-static
-                make_minimal_O: make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1 NO_JVMTI=1
-         make_with_clangllvm_O: make LIBCLANGLLVM=1
-                make_install_O: make install
-                    make_doc_O: make doc
-                   make_pure_O: make
-            make_no_libaudit_O: make NO_LIBAUDIT=1
-               make_no_slang_O: make NO_SLANG=1
-                make_no_gtk2_O: make NO_GTK2=1
-            make_install_bin_O: make install-bin
-             make_no_libperl_O: make NO_LIBPERL=1
-            make_no_demangle_O: make NO_DEMANGLE=1
-                   make_tags_O: make tags
-            make_no_auxtrace_O: make NO_AUXTRACE=1
-       make_util_pmu_bison_o_O: make util/pmu-bison.o
-         make_install_prefix_O: make install prefix=/tmp/krava
-                  make_debug_O: make DEBUG=1
-             make_no_scripts_O: make NO_LIBPYTHON=1 NO_LIBPERL=1
-                make_no_newt_O: make NO_NEWT=1
-                  make_no_ui_O: make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
-  ^[[5~           make_no_libnuma_O: make NO_LIBNUMA=1
-              make_no_libelf_O: make NO_LIBELF=1
-                   make_help_O: make help
-              make_no_libbpf_O: make NO_LIBBPF=1
-           make_no_libpython_O: make NO_LIBPYTHON=1
-           make_no_libbionic_O: make NO_LIBBIONIC=1
-              make_clean_all_O: make clean all
-                 make_perf_o_O: make perf.o
-             make_util_map_o_O: make util/map.o
-  OK
-  make: Leaving directory '/home/acme/git/perf/tools/perf'
-  $ 
+diff --git a/tools/arch/powerpc/include/uapi/asm/unistd.h b/tools/arch/powerpc/include/uapi/asm/unistd.h
+new file mode 100644
+index 000000000000..389c36fd8299
+--- /dev/null
++++ b/tools/arch/powerpc/include/uapi/asm/unistd.h
+@@ -0,0 +1,402 @@
++/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
++/*
++ * This file contains the system call numbers.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#ifndef _UAPI_ASM_POWERPC_UNISTD_H_
++#define _UAPI_ASM_POWERPC_UNISTD_H_
++
++
++#define __NR_restart_syscall	  0
++#define __NR_exit		  1
++#define __NR_fork		  2
++#define __NR_read		  3
++#define __NR_write		  4
++#define __NR_open		  5
++#define __NR_close		  6
++#define __NR_waitpid		  7
++#define __NR_creat		  8
++#define __NR_link		  9
++#define __NR_unlink		 10
++#define __NR_execve		 11
++#define __NR_chdir		 12
++#define __NR_time		 13
++#define __NR_mknod		 14
++#define __NR_chmod		 15
++#define __NR_lchown		 16
++#define __NR_break		 17
++#define __NR_oldstat		 18
++#define __NR_lseek		 19
++#define __NR_getpid		 20
++#define __NR_mount		 21
++#define __NR_umount		 22
++#define __NR_setuid		 23
++#define __NR_getuid		 24
++#define __NR_stime		 25
++#define __NR_ptrace		 26
++#define __NR_alarm		 27
++#define __NR_oldfstat		 28
++#define __NR_pause		 29
++#define __NR_utime		 30
++#define __NR_stty		 31
++#define __NR_gtty		 32
++#define __NR_access		 33
++#define __NR_nice		 34
++#define __NR_ftime		 35
++#define __NR_sync		 36
++#define __NR_kill		 37
++#define __NR_rename		 38
++#define __NR_mkdir		 39
++#define __NR_rmdir		 40
++#define __NR_dup		 41
++#define __NR_pipe		 42
++#define __NR_times		 43
++#define __NR_prof		 44
++#define __NR_brk		 45
++#define __NR_setgid		 46
++#define __NR_getgid		 47
++#define __NR_signal		 48
++#define __NR_geteuid		 49
++#define __NR_getegid		 50
++#define __NR_acct		 51
++#define __NR_umount2		 52
++#define __NR_lock		 53
++#define __NR_ioctl		 54
++#define __NR_fcntl		 55
++#define __NR_mpx		 56
++#define __NR_setpgid		 57
++#define __NR_ulimit		 58
++#define __NR_oldolduname	 59
++#define __NR_umask		 60
++#define __NR_chroot		 61
++#define __NR_ustat		 62
++#define __NR_dup2		 63
++#define __NR_getppid		 64
++#define __NR_getpgrp		 65
++#define __NR_setsid		 66
++#define __NR_sigaction		 67
++#define __NR_sgetmask		 68
++#define __NR_ssetmask		 69
++#define __NR_setreuid		 70
++#define __NR_setregid		 71
++#define __NR_sigsuspend		 72
++#define __NR_sigpending		 73
++#define __NR_sethostname	 74
++#define __NR_setrlimit		 75
++#define __NR_getrlimit		 76
++#define __NR_getrusage		 77
++#define __NR_gettimeofday	 78
++#define __NR_settimeofday	 79
++#define __NR_getgroups		 80
++#define __NR_setgroups		 81
++#define __NR_select		 82
++#define __NR_symlink		 83
++#define __NR_oldlstat		 84
++#define __NR_readlink		 85
++#define __NR_uselib		 86
++#define __NR_swapon		 87
++#define __NR_reboot		 88
++#define __NR_readdir		 89
++#define __NR_mmap		 90
++#define __NR_munmap		 91
++#define __NR_truncate		 92
++#define __NR_ftruncate		 93
++#define __NR_fchmod		 94
++#define __NR_fchown		 95
++#define __NR_getpriority	 96
++#define __NR_setpriority	 97
++#define __NR_profil		 98
++#define __NR_statfs		 99
++#define __NR_fstatfs		100
++#define __NR_ioperm		101
++#define __NR_socketcall		102
++#define __NR_syslog		103
++#define __NR_setitimer		104
++#define __NR_getitimer		105
++#define __NR_stat		106
++#define __NR_lstat		107
++#define __NR_fstat		108
++#define __NR_olduname		109
++#define __NR_iopl		110
++#define __NR_vhangup		111
++#define __NR_idle		112
++#define __NR_vm86		113
++#define __NR_wait4		114
++#define __NR_swapoff		115
++#define __NR_sysinfo		116
++#define __NR_ipc		117
++#define __NR_fsync		118
++#define __NR_sigreturn		119
++#define __NR_clone		120
++#define __NR_setdomainname	121
++#define __NR_uname		122
++#define __NR_modify_ldt		123
++#define __NR_adjtimex		124
++#define __NR_mprotect		125
++#define __NR_sigprocmask	126
++#define __NR_create_module	127
++#define __NR_init_module	128
++#define __NR_delete_module	129
++#define __NR_get_kernel_syms	130
++#define __NR_quotactl		131
++#define __NR_getpgid		132
++#define __NR_fchdir		133
++#define __NR_bdflush		134
++#define __NR_sysfs		135
++#define __NR_personality	136
++#define __NR_afs_syscall	137 /* Syscall for Andrew File System */
++#define __NR_setfsuid		138
++#define __NR_setfsgid		139
++#define __NR__llseek		140
++#define __NR_getdents		141
++#define __NR__newselect		142
++#define __NR_flock		143
++#define __NR_msync		144
++#define __NR_readv		145
++#define __NR_writev		146
++#define __NR_getsid		147
++#define __NR_fdatasync		148
++#define __NR__sysctl		149
++#define __NR_mlock		150
++#define __NR_munlock		151
++#define __NR_mlockall		152
++#define __NR_munlockall		153
++#define __NR_sched_setparam		154
++#define __NR_sched_getparam		155
++#define __NR_sched_setscheduler		156
++#define __NR_sched_getscheduler		157
++#define __NR_sched_yield		158
++#define __NR_sched_get_priority_max	159
++#define __NR_sched_get_priority_min	160
++#define __NR_sched_rr_get_interval	161
++#define __NR_nanosleep		162
++#define __NR_mremap		163
++#define __NR_setresuid		164
++#define __NR_getresuid		165
++#define __NR_query_module	166
++#define __NR_poll		167
++#define __NR_nfsservctl		168
++#define __NR_setresgid		169
++#define __NR_getresgid		170
++#define __NR_prctl		171
++#define __NR_rt_sigreturn	172
++#define __NR_rt_sigaction	173
++#define __NR_rt_sigprocmask	174
++#define __NR_rt_sigpending	175
++#define __NR_rt_sigtimedwait	176
++#define __NR_rt_sigqueueinfo	177
++#define __NR_rt_sigsuspend	178
++#define __NR_pread64		179
++#define __NR_pwrite64		180
++#define __NR_chown		181
++#define __NR_getcwd		182
++#define __NR_capget		183
++#define __NR_capset		184
++#define __NR_sigaltstack	185
++#define __NR_sendfile		186
++#define __NR_getpmsg		187	/* some people actually want streams */
++#define __NR_putpmsg		188	/* some people actually want streams */
++#define __NR_vfork		189
++#define __NR_ugetrlimit		190	/* SuS compliant getrlimit */
++#define __NR_readahead		191
++#ifndef __powerpc64__			/* these are 32-bit only */
++#define __NR_mmap2		192
++#define __NR_truncate64		193
++#define __NR_ftruncate64	194
++#define __NR_stat64		195
++#define __NR_lstat64		196
++#define __NR_fstat64		197
++#endif
++#define __NR_pciconfig_read	198
++#define __NR_pciconfig_write	199
++#define __NR_pciconfig_iobase	200
++#define __NR_multiplexer	201
++#define __NR_getdents64		202
++#define __NR_pivot_root		203
++#ifndef __powerpc64__
++#define __NR_fcntl64		204
++#endif
++#define __NR_madvise		205
++#define __NR_mincore		206
++#define __NR_gettid		207
++#define __NR_tkill		208
++#define __NR_setxattr		209
++#define __NR_lsetxattr		210
++#define __NR_fsetxattr		211
++#define __NR_getxattr		212
++#define __NR_lgetxattr		213
++#define __NR_fgetxattr		214
++#define __NR_listxattr		215
++#define __NR_llistxattr		216
++#define __NR_flistxattr		217
++#define __NR_removexattr	218
++#define __NR_lremovexattr	219
++#define __NR_fremovexattr	220
++#define __NR_futex		221
++#define __NR_sched_setaffinity	222
++#define __NR_sched_getaffinity	223
++/* 224 currently unused */
++#define __NR_tuxcall		225
++#ifndef __powerpc64__
++#define __NR_sendfile64		226
++#endif
++#define __NR_io_setup		227
++#define __NR_io_destroy		228
++#define __NR_io_getevents	229
++#define __NR_io_submit		230
++#define __NR_io_cancel		231
++#define __NR_set_tid_address	232
++#define __NR_fadvise64		233
++#define __NR_exit_group		234
++#define __NR_lookup_dcookie	235
++#define __NR_epoll_create	236
++#define __NR_epoll_ctl		237
++#define __NR_epoll_wait		238
++#define __NR_remap_file_pages	239
++#define __NR_timer_create	240
++#define __NR_timer_settime	241
++#define __NR_timer_gettime	242
++#define __NR_timer_getoverrun	243
++#define __NR_timer_delete	244
++#define __NR_clock_settime	245
++#define __NR_clock_gettime	246
++#define __NR_clock_getres	247
++#define __NR_clock_nanosleep	248
++#define __NR_swapcontext	249
++#define __NR_tgkill		250
++#define __NR_utimes		251
++#define __NR_statfs64		252
++#define __NR_fstatfs64		253
++#ifndef __powerpc64__
++#define __NR_fadvise64_64	254
++#endif
++#define __NR_rtas		255
++#define __NR_sys_debug_setcontext 256
++/* Number 257 is reserved for vserver */
++#define __NR_migrate_pages	258
++#define __NR_mbind		259
++#define __NR_get_mempolicy	260
++#define __NR_set_mempolicy	261
++#define __NR_mq_open		262
++#define __NR_mq_unlink		263
++#define __NR_mq_timedsend	264
++#define __NR_mq_timedreceive	265
++#define __NR_mq_notify		266
++#define __NR_mq_getsetattr	267
++#define __NR_kexec_load		268
++#define __NR_add_key		269
++#define __NR_request_key	270
++#define __NR_keyctl		271
++#define __NR_waitid		272
++#define __NR_ioprio_set		273
++#define __NR_ioprio_get		274
++#define __NR_inotify_init	275
++#define __NR_inotify_add_watch	276
++#define __NR_inotify_rm_watch	277
++#define __NR_spu_run		278
++#define __NR_spu_create		279
++#define __NR_pselect6		280
++#define __NR_ppoll		281
++#define __NR_unshare		282
++#define __NR_splice		283
++#define __NR_tee		284
++#define __NR_vmsplice		285
++#define __NR_openat		286
++#define __NR_mkdirat		287
++#define __NR_mknodat		288
++#define __NR_fchownat		289
++#define __NR_futimesat		290
++#ifdef __powerpc64__
++#define __NR_newfstatat		291
++#else
++#define __NR_fstatat64		291
++#endif
++#define __NR_unlinkat		292
++#define __NR_renameat		293
++#define __NR_linkat		294
++#define __NR_symlinkat		295
++#define __NR_readlinkat		296
++#define __NR_fchmodat		297
++#define __NR_faccessat		298
++#define __NR_get_robust_list	299
++#define __NR_set_robust_list	300
++#define __NR_move_pages		301
++#define __NR_getcpu		302
++#define __NR_epoll_pwait	303
++#define __NR_utimensat		304
++#define __NR_signalfd		305
++#define __NR_timerfd_create	306
++#define __NR_eventfd		307
++#define __NR_sync_file_range2	308
++#define __NR_fallocate		309
++#define __NR_subpage_prot	310
++#define __NR_timerfd_settime	311
++#define __NR_timerfd_gettime	312
++#define __NR_signalfd4		313
++#define __NR_eventfd2		314
++#define __NR_epoll_create1	315
++#define __NR_dup3		316
++#define __NR_pipe2		317
++#define __NR_inotify_init1	318
++#define __NR_perf_event_open	319
++#define __NR_preadv		320
++#define __NR_pwritev		321
++#define __NR_rt_tgsigqueueinfo	322
++#define __NR_fanotify_init	323
++#define __NR_fanotify_mark	324
++#define __NR_prlimit64		325
++#define __NR_socket		326
++#define __NR_bind		327
++#define __NR_connect		328
++#define __NR_listen		329
++#define __NR_accept		330
++#define __NR_getsockname	331
++#define __NR_getpeername	332
++#define __NR_socketpair		333
++#define __NR_send		334
++#define __NR_sendto		335
++#define __NR_recv		336
++#define __NR_recvfrom		337
++#define __NR_shutdown		338
++#define __NR_setsockopt		339
++#define __NR_getsockopt		340
++#define __NR_sendmsg		341
++#define __NR_recvmsg		342
++#define __NR_recvmmsg		343
++#define __NR_accept4		344
++#define __NR_name_to_handle_at	345
++#define __NR_open_by_handle_at	346
++#define __NR_clock_adjtime	347
++#define __NR_syncfs		348
++#define __NR_sendmmsg		349
++#define __NR_setns		350
++#define __NR_process_vm_readv	351
++#define __NR_process_vm_writev	352
++#define __NR_finit_module	353
++#define __NR_kcmp		354
++#define __NR_sched_setattr	355
++#define __NR_sched_getattr	356
++#define __NR_renameat2		357
++#define __NR_seccomp		358
++#define __NR_getrandom		359
++#define __NR_memfd_create	360
++#define __NR_bpf		361
++#define __NR_execveat		362
++#define __NR_switch_endian	363
++#define __NR_userfaultfd	364
++#define __NR_membarrier		365
++#define __NR_mlock2		378
++#define __NR_copy_file_range	379
++#define __NR_preadv2		380
++#define __NR_pwritev2		381
++#define __NR_kexec_file_load	382
++#define __NR_statx		383
++#define __NR_pkey_alloc		384
++#define __NR_pkey_free		385
++#define __NR_pkey_mprotect	386
++
++#endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+diff --git a/tools/perf/check-headers.sh b/tools/perf/check-headers.sh
+index 790ec25919a0..bf206ffe5c45 100755
+--- a/tools/perf/check-headers.sh
++++ b/tools/perf/check-headers.sh
+@@ -42,6 +42,7 @@ arch/parisc/include/uapi/asm/errno.h
+ arch/powerpc/include/uapi/asm/errno.h
+ arch/sparc/include/uapi/asm/errno.h
+ arch/x86/include/uapi/asm/errno.h
++arch/powerpc/include/uapi/asm/unistd.h
+ include/asm-generic/bitops/arch_hweight.h
+ include/asm-generic/bitops/const_hweight.h
+ include/asm-generic/bitops/__fls.h
+-- 
+2.14.3
