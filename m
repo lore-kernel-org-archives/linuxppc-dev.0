@@ -1,23 +1,23 @@
 Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjTGr534SzF1J8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 21:03:00 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1G9wn3q070693
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 05:02:58 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjTHG20bFzF1NM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 21:03:21 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1G9xWJl013862
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 05:03:20 -0500
 Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g5tn6625b-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g5st97mf6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 05:02:57 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 05:03:19 -0500
 Received: from localhost
  by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Fri, 16 Feb 2018 10:02:56 -0000
+ Fri, 16 Feb 2018 10:03:17 -0000
 From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>,
@@ -26,10 +26,10 @@ Subject: Re: [PATCH V2] cxl: Fix timebase synchronization status on P9
 In-Reply-To: <d2f3a000-267f-35cb-484d-7c65371b1ead@linux.vnet.ibm.com>
 References: <1518713524-1500-1-git-send-email-clombard@linux.vnet.ibm.com>
  <d2f3a000-267f-35cb-484d-7c65371b1ead@linux.vnet.ibm.com>
-Date: Fri, 16 Feb 2018 15:32:51 +0530
+Date: Fri, 16 Feb 2018 15:33:12 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87mv09z1ys.fsf@vajain21.in.ibm.com>
+Message-Id: <87lgftz1y7.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
