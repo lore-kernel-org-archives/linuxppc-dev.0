@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zjcSH4c0ZzF1M8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zjcSH5xGczDqF9
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 02:26:39 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1GFOMWZ085798
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:37 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g60v4b4ck-1
+ w1GFOEkm078179
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:36 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g61dm9fep-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Feb 2018 10:26:35 -0500
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Fri, 16 Feb 2018 15:26:32 -0000
+ Fri, 16 Feb 2018 15:26:29 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,11 +35,12 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v8 13/24] mm: Introduce __lru_cache_add_active_or_unevictable
-Date: Fri, 16 Feb 2018 16:25:27 +0100
+Subject: [PATCH v8 12/24] mm/migrate: Pass vm_fault pointer to
+ migrate_misplaced_page()
+Date: Fri, 16 Feb 2018 16:25:26 +0100
 In-Reply-To: <1518794738-4186-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1518794738-4186-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1518794738-4186-14-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1518794738-4186-13-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,99 +50,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The speculative page fault handler which is run without holding the
-mmap_sem is calling lru_cache_add_active_or_unevictable() but the vm_flags
-is not guaranteed to remain constant.
-Introducing __lru_cache_add_active_or_unevictable() which has the vma flags
-value parameter instead of the vma pointer.
+migrate_misplaced_page() is only called during the page fault handling so
+it's better to pass the pointer to the struct vm_fault instead of the vma.
+
+This way during the speculative page fault path the saved vma->vm_flags
+could be used.
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/swap.h | 10 ++++++++--
- mm/memory.c          |  8 ++++----
- mm/swap.c            |  6 +++---
- 3 files changed, 15 insertions(+), 9 deletions(-)
+ include/linux/migrate.h | 4 ++--
+ mm/memory.c             | 2 +-
+ mm/migrate.c            | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index a1a3f4ed94ce..99377b66ea93 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -337,8 +337,14 @@ extern void deactivate_file_page(struct page *page);
- extern void mark_page_lazyfree(struct page *page);
- extern void swap_setup(void);
- 
--extern void lru_cache_add_active_or_unevictable(struct page *page,
--						struct vm_area_struct *vma);
-+extern void __lru_cache_add_active_or_unevictable(struct page *page,
-+						unsigned long vma_flags);
-+
-+static inline void lru_cache_add_active_or_unevictable(struct page *page,
-+						struct vm_area_struct *vma)
-+{
-+	return __lru_cache_add_active_or_unevictable(page, vma->vm_flags);
-+}
- 
- /* linux/mm/vmscan.c */
- extern unsigned long zone_reclaimable_pages(struct zone *zone);
+diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+index 0c6fe904bc97..08960ec74246 100644
+--- a/include/linux/migrate.h
++++ b/include/linux/migrate.h
+@@ -126,14 +126,14 @@ static inline void __ClearPageMovable(struct page *page)
+ #ifdef CONFIG_NUMA_BALANCING
+ extern bool pmd_trans_migrating(pmd_t pmd);
+ extern int migrate_misplaced_page(struct page *page,
+-				  struct vm_area_struct *vma, int node);
++				  struct vm_fault *vmf, int node);
+ #else
+ static inline bool pmd_trans_migrating(pmd_t pmd)
+ {
+ 	return false;
+ }
+ static inline int migrate_misplaced_page(struct page *page,
+-					 struct vm_area_struct *vma, int node)
++					 struct vm_fault *vmf, int node)
+ {
+ 	return -EAGAIN; /* can't migrate now */
+ }
 diff --git a/mm/memory.c b/mm/memory.c
-index bd5de1aa3f7a..bc14973b4eba 100644
+index 66a79f44f303..bd5de1aa3f7a 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -2560,7 +2560,7 @@ static int wp_page_copy(struct vm_fault *vmf)
- 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
- 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(new_page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(new_page, vma);
-+		__lru_cache_add_active_or_unevictable(new_page, vmf->vma_flags);
- 		/*
- 		 * We call the notify macro here because, when using secondary
- 		 * mmu page tables (such as kvm shadow page tables), we want the
-@@ -3106,7 +3106,7 @@ int do_swap_page(struct vm_fault *vmf)
- 	if (unlikely(page != swapcache && swapcache)) {
- 		page_add_new_anon_rmap(page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(page, vma);
-+		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- 	} else {
- 		do_page_add_anon_rmap(page, vma, vmf->address, exclusive);
- 		mem_cgroup_commit_charge(page, memcg, true, false);
-@@ -3257,7 +3257,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
- 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 	page_add_new_anon_rmap(page, vma, vmf->address, false);
- 	mem_cgroup_commit_charge(page, memcg, false, false);
--	lru_cache_add_active_or_unevictable(page, vma);
-+	__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- setpte:
- 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
+@@ -3903,7 +3903,7 @@ static int do_numa_page(struct vm_fault *vmf)
+ 	}
  
-@@ -3509,7 +3509,7 @@ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 		page_add_new_anon_rmap(page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(page, vma);
-+		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- 	} else {
- 		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
- 		page_add_file_rmap(page, false);
-diff --git a/mm/swap.c b/mm/swap.c
-index 2d337710218f..85fc6e78ca99 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -455,12 +455,12 @@ void lru_cache_add(struct page *page)
-  * directly back onto it's zone's unevictable list, it does NOT use a
-  * per cpu pagevec.
+ 	/* Migrate to the requested node */
+-	migrated = migrate_misplaced_page(page, vma, target_nid);
++	migrated = migrate_misplaced_page(page, vmf, target_nid);
+ 	if (migrated) {
+ 		page_nid = target_nid;
+ 		flags |= TNF_MIGRATED;
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 5d0dc7b85f90..ad8692ca6a4f 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1900,7 +1900,7 @@ bool pmd_trans_migrating(pmd_t pmd)
+  * node. Caller is expected to have an elevated reference count on
+  * the page that will be dropped by this function before returning.
   */
--void lru_cache_add_active_or_unevictable(struct page *page,
--					 struct vm_area_struct *vma)
-+void __lru_cache_add_active_or_unevictable(struct page *page,
-+					   unsigned long vma_flags)
+-int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
++int migrate_misplaced_page(struct page *page, struct vm_fault *vmf,
+ 			   int node)
  {
- 	VM_BUG_ON_PAGE(PageLRU(page), page);
+ 	pg_data_t *pgdat = NODE_DATA(node);
+@@ -1913,7 +1913,7 @@ int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
+ 	 * with execute permissions as they are probably shared libraries.
+ 	 */
+ 	if (page_mapcount(page) != 1 && page_is_file_cache(page) &&
+-	    (vma->vm_flags & VM_EXEC))
++	    (vmf->vma_flags & VM_EXEC))
+ 		goto out;
  
--	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
-+	if (likely((vma_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
- 		SetPageActive(page);
- 	else if (!TestSetPageMlocked(page)) {
- 		/*
+ 	/*
 -- 
 2.7.4
