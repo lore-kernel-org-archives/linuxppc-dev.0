@@ -1,41 +1,20 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zk09x4FY4zF1NP
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 17:15:29 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1H6Ecgj030480
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 01:15:27 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g67yras2m-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 01:15:26 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Sat, 17 Feb 2018 06:15:25 -0000
-Subject: Re: [PATCH 1/3] tools include powerpc: Grab a copy of
- arch/powerpc/include/uapi/asm/unistd.h
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: alexander.shishkin@linux.intel.com, jolsa@redhat.com, namhyung@kernel.org,
- linux-kernel@vger.kernel.org, brueckner@linux.vnet.ibm.com,
- tmricht@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-References: <20180129083417.31240-1-ravi.bangoria@linux.vnet.ibm.com>
- <20180129083417.31240-2-ravi.bangoria@linux.vnet.ibm.com>
- <20180216165245.GD24436@kernel.org> <20180216165616.GF24436@kernel.org>
- <20180216170336.GG24436@kernel.org> <20180216170812.GA16919@kernel.org>
- <20180216172901.GB16919@kernel.org> <20180216175002.GC16919@kernel.org>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Sat, 17 Feb 2018 11:47:15 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zk4rb2VXhzF14G
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Feb 2018 20:45:51 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: clabbe@baylibre.com, clg@kaod.org, cyrilbur@gmail.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com, npiggin@gmail.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.16-3 tag
+Date: Sat, 17 Feb 2018 20:45:46 +1100
+Message-ID: <874lmg3q5x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180216175002.GC16919@kernel.org>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a7b11ddd-2c24-ff15-0861-6621053f9c86@linux.vnet.ibm.com>
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha256; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,32 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oops.. Really sorry about that.
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-I've tested acme/perf/core on ubuntu ppc32 with and without libaudit-dev
-and it's working fine.
+Hi Linus,
 
-Thank you very much for fixing it,
-Ravi
+Please pull some more powerpc fixes for 4.16. Sorry to send a pull
+request on the weekend, and a 2nd one this week, but one of these
+commits fixes a boot crash which would be good to get in before rc2.
 
-On 02/16/2018 11:20 PM, Arnaldo Carvalho de Melo wrote:
-> Em Fri, Feb 16, 2018 at 02:29:01PM -0300, Arnaldo Carvalho de Melo escreveu:
->> Humm, we need to create two tables, one for 32-bit and another for 64,
->> even with ppc not having (AFAIK) clashes in syscall numbers for 32/64...
->>
->> Trying to do it now.
-> Now seems to work, take a look at my perf/core branch, should be one of the first few csets.
->
-> perfbuilder@cc1a85517216:/git/perf$ grep 192 /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_32.c 
-> 	[192] = "mmap2",
-> perfbuilder@cc1a85517216:/git/perf$ powerpc-linux-gnu-gcc --version
-> powerpc-linux-gnu-gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-> perfbuilder@cc1a85517216:/git/perf$
->
-> perfbuilder@9d7fc9dcfb73:/git/perf$ grep 192 /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_32.c
-> 	[192] = "mmap2",
-> perfbuilder@9d7fc9dcfb73:/git/perf$ grep 192 /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_64.c
-> perfbuilder@9d7fc9dcfb73:/git/perf$ powerpc64-linux-gnu-gcc --version
-> powerpc64-linux-gnu-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.1) 5.4.0 20160609
-> perfbuilder@9d7fc9dcfb73:/git/perf$ 
->
+cheers
+
+The following changes since commit 694a20dae6efc3803740971fa9f7c86b8c8d4685:
+
+  Merge tag 'powerpc-4.16-2' of git://git.kernel.org/pub/scm/linux/kernel/g=
+it/powerpc/linux (2018-02-14 10:06:41 -0800)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/po=
+werpc-4.16-3
+
+for you to fetch changes up to 2c10636a0b9c689450e85f9945583920f50337c9:
+
+  powerpc/pseries: Check for zero filled ibm,dynamic-memory property (2018-=
+02-16 21:34:14 +1100)
+
+=2D---------------------------------------------------------------
+powerpc fixes for 4.16 #3
+
+The main attraction is a fix for a bug in the new drmem code, which was cau=
+sing
+an oops on boot on some versions of Qemu.
+
+There's also a fix for XIVE (Power9 interrupt controller) on KVM, as well a=
+s a
+few other minor fixes.
+
+Thanks to:
+  Corentin Labbe, Cyril Bur, C=C3=A9dric Le Goater, Daniel Black, Nathan Fo=
+ntenot,
+  Nicholas Piggin.
+
+=2D---------------------------------------------------------------
+Corentin Labbe (1):
+      powerpc/pseries: Add empty update_numa_cpu_lookup_table() for NUMA=3Dn
+
+Cyril Bur (1):
+      powerpc: Expose TSCR via sysfs only on powernv
+
+C=C3=A9dric Le Goater (1):
+      powerpc/xive: Use hw CPU ids when configuring the CPU queues
+
+Nathan Fontenot (1):
+      powerpc/pseries: Check for zero filled ibm,dynamic-memory property
+
+Nicholas Piggin (1):
+      powerpc/powernv: IMC fix out of bounds memory access at shutdown
+
+ arch/powerpc/include/asm/topology.h       |  3 +++
+ arch/powerpc/kernel/sysfs.c               |  6 ++++--
+ arch/powerpc/mm/drmem.c                   |  8 ++++++++
+ arch/powerpc/platforms/powernv/opal-imc.c |  6 ++++--
+ arch/powerpc/sysdev/xive/spapr.c          | 16 ++++++++++------
+ 5 files changed, 29 insertions(+), 10 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJah/nKAAoJEFHr6jzI4aWAKOgQAItVhwA3tcBOW3NKygCtJM8C
+7+8uBaNKRH1lOWTYuzSrV8bXYXK39zn/Y7MqupFv0PBY6iqElRYGMSzpMflvvbgi
+JJQtZ23Dxp9fWFUUmHMLKlER9GuM9znLcTG+NBtx8VH6pfhaQ5wjNHsQ06aYb/+z
+qfpIVGZO3axsIuzFRuVaI1Lia/8O/6ATsvb0ruzEHTNCVcX3kA/gK/70MwSkvm09
+7qUy20Mit2KpZnP9/uWRrYJM2WaMzHIGjJ5BcLqyeex4yEEsjZmkUpPbG/FEN2/O
+62mdFnPUDqf73TcPoXJgpcHvK2Z1KyQq3ls+RH2vH+ERTEcE1vDi4xLbfj+D010a
+oRfG57rN8AciBI4+y4XyF3rIOAVN4tgKu4dQ4e4V8Mjrd03UJ//stl+mISrIBnRJ
+hgyoX8GQiv7uF62kJphg8+Wkve2OY9w9PHDHAovzBgrTdtW9zGkTEoHF1f42XXYA
+pFXOWdsbpAzZkAR19MRvRvLsrIreSuZXZGxLxaqqKHKwN56512zmwGkPp7OL3CUt
+pRXVS4SgA4HScSMEJlPtw1OPkcFKK2bKYzpoYsKnsfOJujaNCd7qjtLQCyPDjwlm
+oj0b1TBy7WekwHpskgjLiTH7OT54A+Ydoe1PlmuoOAqPFXGlx4VfTnNzyMb7K1CC
+9ThGh3ChU2dg36svCPTt
+=Uj0g
+-----END PGP SIGNATURE-----
+--=-=-=--
