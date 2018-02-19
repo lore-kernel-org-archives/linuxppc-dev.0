@@ -1,29 +1,17 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <prvs=581782ee1=dwmw@amazon.com>
+Received: from smtp-fw-33001.amazon.com (smtp-fw-33001.amazon.com
+ [207.171.190.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlP313q4bzDrW8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 23:59:24 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1JCwd3X171123
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 07:59:22 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g7vhh66qy-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 07:59:21 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 19 Feb 2018 12:59:18 -0000
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V4] cxl: Fix timebase synchronization status on P9
-Date: Mon, 19 Feb 2018 13:59:14 +0100
-Message-Id: <1519045154-28109-1-git-send-email-clombard@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlP3s43W5zDrhT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 00:00:05 +1100 (AEDT)
+From: David Woodhouse <dwmw@amazon.co.uk>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org
+Subject: [PATCH] powerpc: Use generic pci_mmap_resource_range()
+Date: Mon, 19 Feb 2018 12:59:51 +0000
+Message-Id: <1519045191-22145-1-git-send-email-dwmw@amazon.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,94 +21,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL Timebase register is updated by the PSL to maintain the
-timebase.
-On P9, the Timebase value is only provided by the CAPP as received
-the last time a timebase request was performed.
-The timebase requests are initiated through the adapter configuration or
-application registers.
-The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
-now dynamically updated according the content of the PSL Timebase
-register.
+Commit f719582435 ("PCI: Add pci_mmap_resource_range() and use it for
+ARM64") added this generic function with the intent of using it
+everywhere and ultimately killing the old arch-specific implementations.
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Let's get on with that eradication...
 
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
-This patch applies on top of this patch:
- http://patchwork.ozlabs.org/patch/873663/
+ arch/powerpc/include/asm/pci.h   |   9 ++--
+ arch/powerpc/kernel/pci-common.c | 106 ++++-----------------------------------
+ 2 files changed, 15 insertions(+), 100 deletions(-)
 
-Changelog[v4]
- - Rebased to latest upstream.
- - Added log message.
-
-Changelog[v3]
- - Rebased to latest upstream.
- - Dynamic update is now applied to P8.
-
-Changelog[v2]
- - Missing Signed-off-by.
- - Spaces required around the ':'.
----
- drivers/misc/cxl/pci.c   | 17 -----------------
- drivers/misc/cxl/sysfs.c | 11 +++++++++++
- 2 files changed, 11 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 66eed6a..3247eaf 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index d82802f..401c62a 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -76,10 +76,11 @@ extern int pci_proc_domain(struct pci_bus *bus);
  
- static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- {
--	u64 psl_tb;
--	int delta;
--	unsigned int retry = 0;
- 	struct device_node *np;
+ struct vm_area_struct;
  
- 	adapter->psl_timebase_synced = false;
-@@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- 	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
- 	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
+-/* Tell drivers/pci/proc.c that we have pci_mmap_page_range() and it does WC */
+-#define HAVE_PCI_MMAP		1
+-#define arch_can_pci_mmap_io()	1
+-#define arch_can_pci_mmap_wc()	1
++/* Tell PCI code what kind of PCI resource mappings we support */
++#define HAVE_PCI_MMAP			1
++#define ARCH_GENERIC_PCI_MMAP_RESOURCE	1
++#define arch_can_pci_mmap_io()		1
++#define arch_can_pci_mmap_wc()		1
  
--	/* Wait until CORE TB and PSL TB difference <= 16usecs */
--	do {
--		msleep(1);
--		if (retry++ > 5) {
--			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
--			return;
--		}
--		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
--		delta = mftb() - psl_tb;
--		if (delta < 0)
--			delta = -delta;
--	} while (tb_to_ns(delta) > 16000);
+ extern int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val,
+ 			   size_t count);
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 446c796..fe9733f 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -410,72 +410,22 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
+ }
+ 
+ /*
+- * Platform support for /proc/bus/pci/X/Y mmap()s,
+- * modelled on the sparc64 implementation by Dave Miller.
++ * Platform support for /proc/bus/pci/X/Y mmap()s.
+  *  -- paulus.
+  */
 -
--	adapter->psl_timebase_synced = true;
- 	return;
- }
- 
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index a8b6d6a..a816b93 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -62,6 +62,17 @@ static ssize_t psl_timebase_synced_show(struct device *device,
- 					char *buf)
+-/*
+- * Adjust vm_pgoff of VMA such that it is the physical page offset
+- * corresponding to the 32-bit pci bus offset for DEV requested by the user.
+- *
+- * Basically, the user finds the base address for his device which he wishes
+- * to mmap.  They read the 32-bit value from the config space base register,
+- * add whatever PAGE_SIZE multiple offset they wish, and feed this into the
+- * offset parameter of mmap on /proc/bus/pci/XXX for that device.
+- *
+- * Returns negative error code on failure, zero on success.
+- */
+-static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
+-					       resource_size_t *offset,
+-					       enum pci_mmap_state mmap_state)
++int pci_iobar_pfn(struct pci_dev *pdev, int bar, struct vm_area_struct *vma)
  {
- 	struct cxl *adapter = to_cxl_adapter(device);
-+	u64 psl_tb;
-+	int delta;
-+
-+	psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-+	delta = abs(mftb() - psl_tb);
-+
-+	/* CORE TB and PSL TB difference <= 16usecs ? */
-+	adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
-+	pr_devel("PSL timebase %s - delta: 0x%016llx\n",
-+		 (tb_to_ns(delta) < 16000) ? "synchronized" :
-+		 "not synchronized", tb_to_ns(delta));
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	unsigned long io_offset = 0;
+-	int i, res_bit;
+-
+-	if (hose == NULL)
+-		return NULL;		/* should never happen */
+-
+-	/* If memory, add on the PCI bridge address offset */
+-	if (mmap_state == pci_mmap_mem) {
+-#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
+-		*offset += hose->pci_mem_offset;
+-#endif
+-		res_bit = IORESOURCE_MEM;
+-	} else {
+-		io_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-		*offset += io_offset;
+-		res_bit = IORESOURCE_IO;
+-	}
+-
+-	/*
+-	 * Check that the offset requested corresponds to one of the
+-	 * resources of the device.
+-	 */
+-	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+-		struct resource *rp = &dev->resource[i];
+-		int flags = rp->flags;
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	resource_size_t ioaddr = pci_resource_start(pdev, bar);
  
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
+-		/* treat ROM as memory (should be already) */
+-		if (i == PCI_ROM_RESOURCE)
+-			flags |= IORESOURCE_MEM;
+-
+-		/* Active and same type? */
+-		if ((flags & res_bit) == 0)
+-			continue;
+-
+-		/* In the range of this resource? */
+-		if (*offset < (rp->start & PAGE_MASK) || *offset > rp->end)
+-			continue;
++	if (!hose)
++		return -EINVAL;
+ 
+-		/* found it! construct the final physical address */
+-		if (mmap_state == pci_mmap_io)
+-			*offset += hose->io_base_phys - io_offset;
+-		return rp;
+-	}
++	/* Convert to an offset within this PCI controller */
++	ioaddr -= (unsigned long)hose->io_base_virt - _IO_BASE;
+ 
+-	return NULL;
++	vma->vm_pgoff += (ioaddr + hose->io_base_phys) >> PAGE_SHIFT;
++	return 0;
  }
+ 
+ /*
+@@ -527,42 +477,6 @@ pgprot_t pci_phys_mem_access_prot(struct file *file,
+ 	return prot;
+ }
+ 
+-
+-/*
+- * Perform the actual remap of the pages for a PCI device mapping, as
+- * appropriate for this architecture.  The region in the process to map
+- * is described by vm_start and vm_end members of VMA, the base physical
+- * address is found in vm_pgoff.
+- * The pci device structure is provided so that architectures may make mapping
+- * decisions on a per-device or per-bus basis.
+- *
+- * Returns a negative error code on failure, zero on success.
+- */
+-int pci_mmap_page_range(struct pci_dev *dev, int bar,
+-			struct vm_area_struct *vma,
+-			enum pci_mmap_state mmap_state, int write_combine)
+-{
+-	resource_size_t offset =
+-		((resource_size_t)vma->vm_pgoff) << PAGE_SHIFT;
+-	struct resource *rp;
+-	int ret;
+-
+-	rp = __pci_mmap_make_offset(dev, &offset, mmap_state);
+-	if (rp == NULL)
+-		return -EINVAL;
+-
+-	vma->vm_pgoff = offset >> PAGE_SHIFT;
+-	if (write_combine)
+-		vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
+-	else
+-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-
+-	ret = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
+-			       vma->vm_end - vma->vm_start, vma->vm_page_prot);
+-
+-	return ret;
+-}
+-
+ /* This provides legacy IO read access on a bus */
+ int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val, size_t size)
+ {
 -- 
 2.7.4
