@@ -1,42 +1,30 @@
-Return-Path: <ulfalizer@gmail.com>
-Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
- [IPv6:2607:f8b0:400c:c08::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <akshay.adiga@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlS7M15MGzDrV6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 02:18:19 +1100 (AEDT)
-Received: by mail-ua0-x244.google.com with SMTP id 47so6332369uau.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 07:18:19 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20180218221352.GA6651@ravnborg.org>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
-From: Ulf Magnusson <ulfalizer@gmail.com>
-Date: Mon, 19 Feb 2018 16:18:16 +0100
-Message-ID: <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>, Randy Dunlap <rdunlap@infradead.org>,
- Michal Marek <michal.lkml@markovi.net>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- kernel-hardening@lists.openwall.com, Jonathan Corbet <corbet@lwn.net>,
- sparclinux@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Rich Felker <dalias@libc.org>,
- Jeff Dike <jdike@addtoit.com>,
- "H. Peter Anvin" <hpa@zytor.com>, user-mode-linux-devel@lists.sourceforge.net,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, user-mode-linux-user@lists.sourceforge.net,
- Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-doc@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Richard Weinberger <richard@nod.at>, Emese Revfy <re.emese@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlS7k0RwhzDrqK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 02:18:38 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1JFF1Nx014600
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 10:18:36 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g80tk131k-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 10:18:35 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Mon, 19 Feb 2018 15:18:33 -0000
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, stewart@linux.vnet.ibm.com,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle/powernv : Restore different PSSCR for idle and hotplug
+Date: Mon, 19 Feb 2018 20:48:20 +0530
+Message-Id: <1519053500-31860-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,105 +34,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+commit 1e1601b38e6e ("powerpc/powernv/idle: Restore SPRs for deep idle
+states via stop API.") uses stop-api provided by the firmware to restore
+PSSCR. PSSCR restore is required for handling special wakeup. When special
+wakeup is completed, the core enters stop state based on restored PSSCR.
 
-On Sun, Feb 18, 2018 at 11:13 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> Hi Masahiro.
->
-> On Sat, Feb 17, 2018 at 03:38:28AM +0900, Masahiro Yamada wrote:
->> I brushed up the implementation in this version.
->>
->> In the previous RFC, CC_HAS_ was described by using 'option shell=',
->> like this:
->>
->> config CC_HAS_STACKPROTECTOR
->>         bool
->>         option shell="$CC -Werror -fstack-protector -c -x c /dev/null"
->>
->> After I thought a bit more, the following syntax is more grammatical,
->> and flexible.
->>
->> config CC_HAS_STACKPROTECTOR
->>         bool
->>         default $(shell $CC -Werror -fstack-protector -c -x c /dev/null)
->
-> Looks good - but maybe we should go one step further.
->
-> So we in the syntax explicit handles:
-> - shell commands
-> - other commands, defined as strings
-> - environment variables
-> - config variables
->
-> Each case is explicit - so the reader is not confused what is used when.
->
-> $(shell foo)    - output of the shell command foo. Uses $SHELL as the shell.
->                   May include optional paramters.
->                   foo may be a config variable referenced using ${} or a config variable prefixed with $
->                 Example:
->
->                 config BUILD_DIR
->                         string
->                         default $(shell cd ${objtree}; pwd)
->
-> $(call bar)     - output of the bar command that may take optional parameters.
->                   bar may be a text string, a config variable or an environment variable
->                    The definition of bar may reference the parameters using $(1), $(2)
->                    In this context a config variable needs to be prefixed with $
->
->                 Example:
->
->                 config reverse
->                         string
->                         default $(2) $(1)
->
->                 config NEW_ORDER
->                         string
->                         $(call $reverse, A, B)  # Will assign REVERSE the value "B A"
->
->
->                 Example2:
->
->                 config CC_OPTION
->                         string
->                         default $(shell ${srctree}/scripts/cc-option ${CC} $(1) $(2))
->
->                 config CC_OPTIMIZE
->                         string
->                         $(call $CC_OPTION, -Oz, -Os)
->
->
-> ${FOO}          - environment variable
->
-> The above is inspired by how make implement similar functionality.
->
-> I'm not happy that we in one context can reference CONFIG variables
-> directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
-> But I could not come up with something un-ambigious where this could be avoided.
+Currently PSSCR is restored to deepest available stop state, causing
+a idle cpu to enter deeper stop state on a special wakeup, which causes
+the cpu to hang on wakeup.
 
-I think we should be careful about allowing references to config
-symbols. It mixes up the parsing and evaluation phases, since $() is
-expanded during parsing (which I consider a feature and think is
-needed to retain sanity).
+A "sensors" command which reads temperature (through DTS sensors) on idle
+cpu can trigger special wakeup.
 
-Patch 06/23 removes the last existing instance of symbol references in
-strings by getting rid of 'option env'. That's an improvement to me.
-We shouldn't add it back.
+Failed Scenario :
+Request restore of PSSCR with RL = 11
+cpu enters idle state (stop5)
+  user triggers "sensors" command
+   Assert special wakeup on cpu
+     Restores PSSCR with RL = 11  <---- Done by firmware
+      Read DTS sensor
+   Deassert special wakeup
+  cpu enters idle state (stop11) <-- Instead of stop5
 
->
-> The above proposal include the functionality of the macro stuff proposed in this patch-set.
-> But with a simpler syntax and we keep all the other kconfig logic (depends on etc) - so
-> users will not be limited in their creativity.
->
->> Current limitations:
->>
->> Dependency on outside scripts.
->> Inter-option dependency:
->> Functions are evaluated statically:
->
-> Same limitations exists with the syntax suggested above.
->
->         Sam
+Cpu hang is caused because cpu ended up in a deeper state than it requested
 
-Cheers,
-Ulf
+This patch fixes instability caused by special wakeup when stop11 is
+enabled. Requests restore of PSSCR to deepest stop state used by cpuidle.
+Only when offlining cpu, request restore of PSSCR to deepest stop state.
+On onlining cpu, request restore of PSSCR to deepest stop state used by
+cpuidle.
+
+Fixes : 1e1601b38e6e ("powerpc/powernv/idle: Restore SPRs for deep idle
+states via stop API.")
+Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/cpuidle.h    |  2 ++
+ arch/powerpc/platforms/powernv/idle.c | 46 ++++++++++++++++++++++++++++++++---
+ drivers/cpuidle/cpuidle-powernv.c     |  1 -
+ 3 files changed, 45 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+index e210a83..f52e9f1 100644
+--- a/arch/powerpc/include/asm/cpuidle.h
++++ b/arch/powerpc/include/asm/cpuidle.h
+@@ -67,6 +67,8 @@
+ #define ERR_EC_ESL_MISMATCH		-1
+ #define ERR_DEEP_STATE_ESL_MISMATCH	-2
+ 
++#define POWERNV_THRESHOLD_LATENCY_NS 200000
++
+ #ifndef __ASSEMBLY__
+ /* Additional SPRs that need to be saved/restored during stop */
+ struct stop_sprs {
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 443d5ca..4b0c7d24 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -56,8 +56,11 @@ u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
+  */
+ static u64 pnv_deepest_stop_psscr_val;
+ static u64 pnv_deepest_stop_psscr_mask;
++static u64 pnv_deepest_cpuidle_psscr_val;
++static u64 pnv_deepest_cpuidle_psscr_mask;
+ static u64 pnv_deepest_stop_flag;
+ static bool deepest_stop_found;
++static bool deepest_cpuidle_found;
+ 
+ static int pnv_save_sprs_for_deep_states(void)
+ {
+@@ -76,7 +79,14 @@ static int pnv_save_sprs_for_deep_states(void)
+ 	uint64_t hid5_val = mfspr(SPRN_HID5);
+ 	uint64_t hmeer_val = mfspr(SPRN_HMEER);
+ 	uint64_t msr_val = MSR_IDLE;
+-	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
++
++	/*
++	 * Pick deepest cpuidle psscr as the value to be
++	 * restored through wakeup engine.
++	 * We will request a deeper state to be restored
++	 * in hotplug path
++	 */
++	uint64_t psscr_val = pnv_deepest_cpuidle_psscr_val;
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		uint64_t pir = get_hard_smp_processor_id(cpu);
+@@ -409,7 +419,7 @@ static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
+  */
+ unsigned long pnv_cpu_offline(unsigned int cpu)
+ {
+-	unsigned long srr1;
++	u64 srr1;
+ 	u32 idle_states = pnv_get_supported_cpuidle_states();
+ 	u64 lpcr_val;
+ 
+@@ -429,12 +439,18 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
+ 	__ppc64_runlatch_off();
+ 
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
+-		unsigned long psscr;
++		u64 psscr;
++		u64 pir = get_hard_smp_processor_id(cpu);
+ 
+ 		psscr = mfspr(SPRN_PSSCR);
+ 		psscr = (psscr & ~pnv_deepest_stop_psscr_mask) |
+ 						pnv_deepest_stop_psscr_val;
++		if (pnv_deepest_stop_psscr_val != pnv_deepest_cpuidle_psscr_val)
++			opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, psscr);
+ 		srr1 = power9_idle_stop(psscr);
++		psscr = (psscr & ~pnv_deepest_cpuidle_psscr_mask) |
++						pnv_deepest_cpuidle_psscr_val;
++		opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, psscr);
+ 
+ 	} else if ((idle_states & OPAL_PM_WINKLE_ENABLED) &&
+ 		   (idle_states & OPAL_PM_LOSE_FULL_CONTEXT)) {
+@@ -555,6 +571,7 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 	u64 *psscr_val = NULL;
+ 	u64 *psscr_mask = NULL;
+ 	u32 *residency_ns = NULL;
++	u32 *latency_ns = NULL;
+ 	u64 max_residency_ns = 0;
+ 	int rc = 0, i;
+ 
+@@ -562,6 +579,8 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 	psscr_mask = kcalloc(dt_idle_states, sizeof(*psscr_mask), GFP_KERNEL);
+ 	residency_ns = kcalloc(dt_idle_states, sizeof(*residency_ns),
+ 			       GFP_KERNEL);
++	latency_ns = kcalloc(dt_idle_states, sizeof(*latency_ns),
++			     GFP_KERNEL);
+ 
+ 	if (!psscr_val || !psscr_mask || !residency_ns) {
+ 		rc = -1;
+@@ -591,6 +610,13 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 		rc = -1;
+ 		goto out;
+ 	}
++	if (of_property_read_u32_array(np,
++				       "ibm,cpu-idle-state-latencies-ns",
++					latency_ns, dt_idle_states)) {
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latency-ns in DT\n");
++		rc = -1;
++		goto out;
++	}
+ 
+ 	/*
+ 	 * Set pnv_first_deep_stop_state, pnv_deepest_stop_psscr_{val,mask},
+@@ -621,6 +647,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 			continue;
+ 		}
+ 
++		if (latency_ns[i] <= POWERNV_THRESHOLD_LATENCY_NS) {
++			pnv_deepest_cpuidle_psscr_val = psscr_val[i];
++			pnv_deepest_cpuidle_psscr_mask = psscr_mask[i];
++			deepest_cpuidle_found = true;
++		}
++
+ 		if (max_residency_ns < residency_ns[i]) {
+ 			max_residency_ns = residency_ns[i];
+ 			pnv_deepest_stop_psscr_val = psscr_val[i];
+@@ -653,6 +685,14 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 			pnv_deepest_stop_psscr_mask);
+ 	}
+ 
++	if (unlikely(!deepest_cpuidle_found)) {
++		pr_warn("cpuidle-powernv: No suitable deepest CPU-idle state found");
++	} else {
++		pr_info("cpuidle-powernv: Deepest cpuidle: psscr = 0x%016llx,mask=0x%016llx\n",
++			pnv_deepest_cpuidle_psscr_val,
++			pnv_deepest_cpuidle_psscr_mask);
++	}
++
+ 	pr_info("cpuidle-powernv: Requested Level (RL) value of first deep stop = 0x%llx\n",
+ 		pnv_first_deep_stop_state);
+ out:
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 1a8234e..620765d 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -26,7 +26,6 @@
+  * Expose only those Hardware idle states via the cpuidle framework
+  * that have latency value below POWERNV_THRESHOLD_LATENCY_NS.
+  */
+-#define POWERNV_THRESHOLD_LATENCY_NS 200000
+ 
+ static struct cpuidle_driver powernv_idle_driver = {
+ 	.name             = "powernv_idle",
+-- 
+2.5.5
