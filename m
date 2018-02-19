@@ -1,28 +1,30 @@
-Return-Path: <horia.geanta@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0077.outbound.protection.outlook.com [104.47.2.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlH5J5B4MzDrFQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:30:57 +1100 (AEDT)
-From: =?windows-1258?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, Herbert Xu
- <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
-CC: "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping outside
- the requests
-Date: Mon, 19 Feb 2018 08:30:49 +0000
-Message-ID: <VI1PR0402MB334256E1706A4E1AED09F4A598C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
-References: <cover.1507284818.git.christophe.leroy@c-s.fr>
- <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
- <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
- <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
- <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
- <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
-Content-Type: text/plain; charset="windows-1258"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlHCy5zqnzDr12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:36:46 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Douglas Miller <dougmill@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
+ "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc/xmon: Dont register sysrq key when kernel param
+ xmon=off
+In-Reply-To: <87d116wy6g.fsf@vajain21.in.ibm.com>
+References: <20180212085956.12016-1-vaibhav@linux.vnet.ibm.com>
+ <CAKTCnz=cDmeU6rvqpHf_oW-JjtcVSNjeSQpwzwRMo5U_g+hAwg@mail.gmail.com>
+ <8737264c91.fsf@vajain21.in.ibm.com>
+ <87eflnre7w.fsf@concordia.ellerman.id.au>
+ <87d116wy6g.fsf@vajain21.in.ibm.com>
+Date: Mon, 19 Feb 2018 19:36:43 +1100
+Message-ID: <877er9l6jo.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/19/2018 9:58 AM, Christophe LEROY wrote:=0A=
-> Le 18/02/2018 =E0 18:14, Horia Geant=E3 a =E9crit=A0:=0A=
->> There is no ahash_exit() callback mirroring ahash_init().=0A=
->>=0A=
->> The clean-up of request ctx should be done in the last states of the has=
-h flows=0A=
->> described here:=0A=
->> https://www.kernel.org/doc/html/latest/crypto/devel-algos.html#cipher-de=
-finition-with-struct-shash-alg-and-ahash-alg=0A=
->> for e.g. in the final() callback.=0A=
-> =0A=
-> Unfortunatly it seems that we can't rely on those finalising functions =
-=0A=
-> being called all the time.=0A=
-> If you look into test_ahash_jiffies() for instance, in case of error the =
-=0A=
-> call of crypto_hash_final() is skipped.=0A=
-=0A=
-If test_ahash_jiffies() errors before calling crypto_ahash_final(req), this=
-=0A=
-means a previous callback failed.=0A=
-Accordingly, DMA unmapping should be performed also on the corresponding er=
-rors=0A=
-paths in the driver.=0A=
-=0A=
-Horia=0A=
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> <snip>
+<snip>
+>>
+>> What would be nice is if we keep that behaviour, but any action you take
+>> in xmon that requires xmon to remain resident, ie. setting a breakpoint,
+>> calls a function which makes sure xmon_on = true and if it wasn't prints
+>> a nice message saying "Turning xmon on due to breakpoint insertion" or
+>> something.
+
+> That makes sense to me and sounds workable. However we already have a
+> debugfs interface to enable/disable xmon debugger hook. I can also tweak
+> this interface to also register the sysrq key when xmon is enabled. This
+> should provide the user the ability to still use xmon if they want to
+> after the system has booted with xmon=off.
+
+I agree that sounds sensible, but it has one fatal flaw IMO.
+
+Currently you can boot a box with XMON_DEFAULT=n, and it will crash dump
+and so on, but if the box gets stuck you can jump on the console and
+drop into xmon with sysrq-x.
+
+If we additionally require xmon to be enabled via debugfs every boot
+that will break the above use case, and I don't want to do that.
+
+So in short I think I like my idea better :)
+
+cheers
