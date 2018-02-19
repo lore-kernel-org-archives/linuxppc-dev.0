@@ -1,27 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlB9j1w1bzF0Qs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 15:49:29 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: alexander.shishkin@linux.intel.com, jolsa@redhat.com, namhyung@kernel.org,
- linux-kernel@vger.kernel.org, brueckner@linux.vnet.ibm.com,
- tmricht@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] tools include powerpc: Grab a copy of
- arch/powerpc/include/uapi/asm/unistd.h
-In-Reply-To: <20180216175002.GC16919@kernel.org>
-References: <20180129083417.31240-1-ravi.bangoria@linux.vnet.ibm.com>
- <20180129083417.31240-2-ravi.bangoria@linux.vnet.ibm.com>
- <20180216165245.GD24436@kernel.org> <20180216165616.GF24436@kernel.org>
- <20180216170336.GG24436@kernel.org> <20180216170812.GA16919@kernel.org>
- <20180216172901.GB16919@kernel.org> <20180216175002.GC16919@kernel.org>
-Date: Mon, 19 Feb 2018 15:49:28 +1100
-Message-ID: <87a7w5lh2f.fsf@concordia.ellerman.id.au>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [150.101.137.145])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zlBTD0grNzDrhT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 16:02:55 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Mark Hairgrove <mhairgrove@nvidia.com>, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, Javier Cabezas <jcabezas@nvidia.com>
+Subject: Re: [PATCH] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
+Date: Mon, 19 Feb 2018 16:02:52 +1100
+Message-ID: <1563550.Ytkt8OtJkB@new-mexico>
+In-Reply-To: <20180219135704.3bd0cfb9@balbir.ozlabs.ibm.com>
+References: <20180213031734.19831-1-alistair@popple.id.au>
+ <alpine.DEB.2.00.1802151910400.10245@mdh-linux64-2.nvidia.com>
+ <20180219135704.3bd0cfb9@balbir.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnaldo Carvalho de Melo <acme@kernel.org> writes:
+> > Shouldn't that be enforced with READ_ONCE() then?
 
-> Em Fri, Feb 16, 2018 at 02:29:01PM -0300, Arnaldo Carvalho de Melo escreveu:
->> Humm, we need to create two tables, one for 32-bit and another for 64,
->> even with ppc not having (AFAIK) clashes in syscall numbers for 32/64...
->> 
->> Trying to do it now.
->
-> Now seems to work, take a look at my perf/core branch, should be one of the first few csets.
+Yep, I can add that.
 
-LGTM. Thanks for fixing this up.
+> Good point, although I think the acquire_* function itself may be called
+> from a higher layer with the mmap_sem always held. I wonder if we need
+> barriers around get and put mmio_atsd_reg.
 
-cheers
+test_and_set_bit() should imply a memory barrier so I don't think we need one
+there (and looking at the implementation there is one). clear_bit() might need
+one though. For that I guess I could use clear_bit_unlock()? There is also a
+matching test_and_set_bit_lock() so I will submit a v2 which uses those instead
+given we are using these like a lock.
 
-> perfbuilder@cc1a85517216:/git/perf$ grep 192 /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_32.c 
-> 	[192] = "mmap2",
-> perfbuilder@cc1a85517216:/git/perf$ powerpc-linux-gnu-gcc --version
-> powerpc-linux-gnu-gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-> perfbuilder@cc1a85517216:/git/perf$
->
-> perfbuilder@9d7fc9dcfb73:/git/perf$ grep 192 /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_32.c
-> 	[192] = "mmap2",
-> perfbuilder@9d7fc9dcfb73:/git/perf$ grep 192 /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_64.c
-> perfbuilder@9d7fc9dcfb73:/git/perf$ powerpc64-linux-gnu-gcc --version
-> powerpc64-linux-gnu-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.1) 5.4.0 20160609
-> perfbuilder@9d7fc9dcfb73:/git/perf$ 
+> > > I don't think we can as the invalidate_range() function is called under the ptl
+> > > spin-lock and is not allowed to sleep (at least according to
+> > > include/linux/mmu_notifier.h).
+> 
+> I double checked, It's the reverse
+> 
+> 	 /*
+>           * If both of these callbacks cannot block, mmu_notifier_ops.flags
+>           * should have MMU_INVALIDATE_DOES_NOT_BLOCK set.
+>           */
+
+Argh, that must have been merged during the current window. Thanks for pointing
+out - I will submit a seperate patch to update the mmu_notifier_ops.flags to set
+MMU_INVALIDATE_DOES_NOT_BLOCK.
+
+- Alistair
+
+>          void (*invalidate_range_start)(struct mmu_notifier *mn,
+>                                         struct mm_struct *mm,
+>                                         unsigned long start, unsigned long end);
+>          void (*invalidate_range_end)(struct mmu_notifier *mn,
+>                                       struct mm_struct *mm,
+>                                       unsigned long start, unsigned long end);
+> > > 
+> > > - Alistair
+> > >   
+> > > > Balbir
+> > > >   
+> > > 
+> > > 
+> > >   
+> 
+> I think it looks good to me otherwise,
+> 
+> Balbir Singh.
+> 
