@@ -1,39 +1,26 @@
-Return-Path: <sam@ravnborg.org>
-Received: from asavdk3.altibox.net (asavdk3.altibox.net [109.247.116.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zl1XT38yTzDrZ6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 09:20:09 +1100 (AEDT)
-Date: Sun, 18 Feb 2018 23:13:52 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-kbuild@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>,
- Randy Dunlap <rdunlap@infradead.org>, Ulf Magnusson <ulfalizer@gmail.com>,
- Michal Marek <michal.lkml@markovi.net>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- kernel-hardening@lists.openwall.com,
- Jonathan Corbet <corbet@lwn.net>, sparclinux@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Rich Felker <dalias@libc.org>,
- Jeff Dike <jdike@addtoit.com>, "H. Peter Anvin" <hpa@zytor.com>,
- user-mode-linux-devel@lists.sourceforge.net,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- user-mode-linux-user@lists.sourceforge.net, Ingo Molnar <mingo@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Richard Weinberger <richard@nod.at>,
- Emese Revfy <re.emese@gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-Message-ID: <20180218221352.GA6651@ravnborg.org>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zl7hG3FpHzDrVm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 13:57:17 +1100 (AEDT)
+Received: by mail-pf0-x22e.google.com with SMTP id z14so705443pfe.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Feb 2018 18:57:17 -0800 (PST)
+Date: Mon, 19 Feb 2018 13:57:04 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Mark Hairgrove <mhairgrove@nvidia.com>
+Cc: Alistair Popple <alistair@popple.id.au>, <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>, Javier Cabezas <jcabezas@nvidia.com>
+Subject: Re: [PATCH] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
+Message-ID: <20180219135704.3bd0cfb9@balbir.ozlabs.ibm.com>
+In-Reply-To: <alpine.DEB.2.00.1802151910400.10245@mdh-linux64-2.nvidia.com>
+References: <20180213031734.19831-1-alistair@popple.id.au>
+ <20180213170620.409daf29@balbir.ozlabs.ibm.com>
+ <3544963.SI8Y64vzmd@new-mexico>
+ <alpine.DEB.2.00.1802151910400.10245@mdh-linux64-2.nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,89 +30,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Masahiro.
+On Thu, 15 Feb 2018 19:11:19 -0800
+Mark Hairgrove <mhairgrove@nvidia.com> wrote:
 
-On Sat, Feb 17, 2018 at 03:38:28AM +0900, Masahiro Yamada wrote:
-> I brushed up the implementation in this version.
+> On Wed, 14 Feb 2018, Alistair Popple wrote:
 > 
-> In the previous RFC, CC_HAS_ was described by using 'option shell=',
-> like this:
+> > > > +struct mmio_atsd_reg {
+> > > > +	struct npu *npu;
+> > > > +	int reg;
+> > > > +};
+> > > > +  
+> > > 
+> > > Is it just easier to move reg to inside of struct npu?  
+> > 
+> > I don't think so, struct npu is global to all npu contexts where as this is
+> > specific to the given invalidation. We don't have enough registers to assign
+> > each NPU context it's own dedicated register so I'm not sure it makes sense to
+> > put it there either.
+
+Fair enough, also discussed this offline with you.
+
+> >   
+> > > > +static void acquire_atsd_reg(struct npu_context *npu_context,
+> > > > +			struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
+> > > > +{
+> > > > +	int i, j;
+> > > > +	struct npu *npu;
+> > > > +	struct pci_dev *npdev;
+> > > > +	struct pnv_phb *nphb;
+> > > >  
+> > > > -		/*
+> > > > -		 * The GPU requires two flush ATSDs to ensure all entries have
+> > > > -		 * been flushed. We use PID 0 as it will never be used for a
+> > > > -		 * process on the GPU.
+> > > > -		 */
+> > > > -		if (flush)
+> > > > -			mmio_invalidate_pid(npu, 0, true);
+> > > > +	for (i = 0; i <= max_npu2_index; i++) {
+> > > > +		mmio_atsd_reg[i].reg = -1;
+> > > > +		for (j = 0; j < NV_MAX_LINKS; j++) {  
+> > > 
+> > > Is it safe to assume that npu_context->npdev will not change in this
+> > > loop? I guess it would need to be stronger than just this loop.  
+> > 
+> > It is not safe to assume that npu_context->npdev won't change during this loop,
+> > however I don't think it is a problem if it does as we only read each element
+> > once during the invalidation.  
 > 
-> config CC_HAS_STACKPROTECTOR
->         bool
->         option shell="$CC -Werror -fstack-protector -c -x c /dev/null"
+> Shouldn't that be enforced with READ_ONCE() then?
+
+Good point, although I think the acquire_* function itself may be called
+from a higher layer with the mmap_sem always held. I wonder if we need
+barriers around get and put mmio_atsd_reg.
+
+
 > 
-> After I thought a bit more, the following syntax is more grammatical,
-> and flexible.
+> I assume that npdev->bus can't change until after the last
+> pnv_npu2_destroy_context() is called for an npu. In that case, the
+> mmu_notifier_unregister() in pnv_npu2_release_context() will block until
+> mmio_invalidate() is done using npdev. That seems safe enough, but a
+> comment somewhere about that would be useful.
 > 
-> config CC_HAS_STACKPROTECTOR
->         bool
->         default $(shell $CC -Werror -fstack-protector -c -x c /dev/null)
+> > 
+> > There are two possibilities for how this could change. pnv_npu2_init_context()
+> > will add a nvlink to the npdev which will result in the TLB invalidation being
+> > sent to that GPU as well which should not be a problem.
+> > 
+> > pnv_npu2_destroy_context() will remove the the nvlink from npdev. If it happens
+> > prior to this loop it should not be a problem (as the destruction will have
+> > already invalidated the GPU TLB). If it happens after this loop it shouldn't be
+> > a problem either (it will just result in an extra TLB invalidate being sent to
+> > this GPU).
+> >   
+> > > > +			npdev = npu_context->npdev[i][j];
+> > > > +			if (!npdev)
+> > > > +				continue;
+> > > > +
+> > > > +			nphb = pci_bus_to_host(npdev->bus)->private_data;
+> > > > +			npu = &nphb->npu;
+> > > > +			mmio_atsd_reg[i].npu = npu;
+> > > > +			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+> > > > +			while (mmio_atsd_reg[i].reg < 0) {
+> > > > +				mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+> > > > +				cpu_relax();  
+> > > 
+> > > A cond_resched() as well if we have too many tries?  
+> > 
+> > I don't think we can as the invalidate_range() function is called under the ptl
+> > spin-lock and is not allowed to sleep (at least according to
+> > include/linux/mmu_notifier.h).
 
-Looks good - but maybe we should go one step further.
+I double checked, It's the reverse
 
-So we in the syntax explicit handles:
-- shell commands
-- other commands, defined as strings
-- environment variables
-- config variables
-
-Each case is explicit - so the reader is not confused what is used when.
-
-$(shell foo)	- output of the shell command foo. Uses $SHELL as the shell.
-		  May include optional paramters.
-		  foo may be a config variable referenced using ${} or a config variable prefixed with $
-		Example:
-
-		config BUILD_DIR
-			string
-			default $(shell cd ${objtree}; pwd)
-
-$(call bar)	- output of the bar command that may take optional parameters.
-		  bar may be a text string, a config variable or an environment variable
-		   The definition of bar may reference the parameters using $(1), $(2)
-		   In this context a config variable needs to be prefixed with $
-
-		Example:
-
-		config reverse
-			string
-			default $(2) $(1)
-
-		config NEW_ORDER
-			string
-			$(call $reverse, A, B)	# Will assign REVERSE the value "B A"
-
-
-		Example2:
-
-		config CC_OPTION
-			string
-			default $(shell ${srctree}/scripts/cc-option ${CC} $(1) $(2))
-
-		config CC_OPTIMIZE
-			string
-			$(call $CC_OPTION, -Oz, -Os)
+	 /*
+          * If both of these callbacks cannot block, mmu_notifier_ops.flags
+          * should have MMU_INVALIDATE_DOES_NOT_BLOCK set.
+          */
+         void (*invalidate_range_start)(struct mmu_notifier *mn,
+                                        struct mm_struct *mm,
+                                        unsigned long start, unsigned long end);
+         void (*invalidate_range_end)(struct mmu_notifier *mn,
+                                      struct mm_struct *mm,
+                                      unsigned long start, unsigned long end);
 
 
-${FOO}		- environment variable
 
-The above is inspired by how make implement similar functionality.
+> > 
+> > - Alistair
+> >   
+> > > Balbir
+> > >   
+> > 
+> > 
+> >   
 
-I'm not happy that we in one context can reference CONFIG variables
-directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
-But I could not come up with something un-ambigious where this could be avoided.
+I think it looks good to me otherwise,
 
-The above proposal include the functionality of the macro stuff proposed in this patch-set.
-But with a simpler syntax and we keep all the other kconfig logic (depends on etc) - so
-users will not be limited in their creativity.
-
-> Current limitations:
-> 
-> Dependency on outside scripts.
-> Inter-option dependency:
-> Functions are evaluated statically:
-
-Same limitations exists with the syntax suggested above.
-
-	Sam
+Balbir Singh.
