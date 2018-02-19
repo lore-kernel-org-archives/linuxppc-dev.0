@@ -1,29 +1,24 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlQKS4lpLzDrTR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 00:56:52 +1100 (AEDT)
-Received: by mail-wm0-x244.google.com with SMTP id 191so8250832wmm.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 05:56:52 -0800 (PST)
-Date: Mon, 19 Feb 2018 16:56:46 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-mm@kvack.org,
- kirill.shutemov@linux.intel.com, mpe <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- sachinp <sachinp@linux.vnet.ibm.com>
-Subject: Re: [mainline][Memory off/on][83e3c48] kernel Oops with memory
- hot-unplug on ppc
-Message-ID: <20180219135646.lsmxkbgdwrjdlwxy@node.shutemov.name>
-References: <1517840664.647.17.camel@abdul.in.ibm.com>
- <20180219134735.GN21134@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlQT95vrDzDr14
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 01:03:39 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id d26so12276922qtk.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 06:03:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180219134735.GN21134@dhcp22.suse.cz>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1519048647-18732-1-git-send-email-geert@linux-m68k.org>
+References: <1519048647-18732-1-git-send-email-geert@linux-m68k.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 19 Feb 2018 15:03:36 +0100
+Message-ID: <CAMuHMdWs9r4F7FnuHvQGX1L9g91MCepSHroRDhj1tB9E70d5gw@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.16-rc2
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 19, 2018 at 02:47:35PM +0100, Michal Hocko wrote:
-> [CC Kirill - I have a vague recollection that there were some follow ups
->  for 83e3c48729d9 ("mm/sparsemem: Allocate mem_section at runtime for
->  CONFIG_SPARSEMEM_EXTREME=y"). Does any of them apply to this issue?]
+On Mon, Feb 19, 2018 at 2:57 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v4.16-rc2[1] to v4.16-rc1[3], the summaries are:
+>   - build errors: +5/-2
 
-All fixups are in v4.15.
+  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: junk at
+end of line, first unrecognized character is `U':  => 677
+  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: missing ')':  => 677
+  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: unexpected
+characters following instruction at operand 2 -- `movk
+x1,:abs_g0_nc:0xff00ffffffUL':  => 677
+  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: unexpected
+characters following instruction at operand 2 -- `movz
+x1,:abs_g1_s:0xff00ffffffUL':  => 677
 
-> On Mon 05-02-18 19:54:24, Abdul Haleem wrote:
-> > 
-> > Greetings,
-> > 
-> > Kernel Oops seen when memory hot-unplug on powerpc mainline kernel.
-> > 
-> > Machine: Power6 PowerVM ppc64
-> > Kernel: 4.15.0
-> > Config: attached
-> > gcc: 4.8.2
-> > Test: Memory hot-unplug of a memory block
-> > echo offline > /sys/devices/system/memory/memory<x>/state
-> > 
-> > The faulty instruction address points to the code path:
-> > 
-> > # gdb -batch vmlinux -ex 'list *(0xc000000000238330)'
-> > 0xc000000000238330 is in get_pfnblock_flags_mask
-> > (./include/linux/mmzone.h:1157).
-> > 1152	#endif
-> > 1153	
-> > 1154	static inline struct mem_section *__nr_to_section(unsigned long nr)
-> > 1155	{
-> > 1156	#ifdef CONFIG_SPARSEMEM_EXTREME
-> > 1157		if (!mem_section)
-> > 1158			return NULL;
-> > 1159	#endif
-> > 1160		if (!mem_section[SECTION_NR_TO_ROOT(nr)])
-> > 1161			return NULL;
-> > 
-> > 
-> > The code was first introduced with commit( 83e3c48: mm/sparsemem:
-> > Allocate mem_section at runtime for CONFIG_SPARSEMEM_EXTREME=y)
+arm64-allnoconfig
+arm64-allmodconfig
+arm64-defconfig
+(patch available)
 
-Any chance to bisect it?
+  + error: hotplug-cpu.c: undefined reference to
+`timed_topology_update':  => .text+0x410), .text+0x138)
 
-Could you check if the commit just before 83e3c48729d9 is fine?
+ppc64le/pseries_le_defconfig+NO_NUMA
 
--- 
- Kirill A. Shutemov
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
