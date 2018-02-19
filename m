@@ -1,17 +1,30 @@
-Return-Path: <prvs=581782ee1=dwmw@amazon.com>
-Received: from smtp-fw-33001.amazon.com (smtp-fw-33001.amazon.com
- [207.171.190.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0080.outbound.protection.outlook.com [104.47.1.80])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlP3s43W5zDrhT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 00:00:05 +1100 (AEDT)
-From: David Woodhouse <dwmw@amazon.co.uk>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org
-Subject: [PATCH] powerpc: Use generic pci_mmap_resource_range()
-Date: Mon, 19 Feb 2018 12:59:51 +0000
-Message-Id: <1519045191-22145-1-git-send-email-dwmw@amazon.co.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlPQy30pDzDrFG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 00:16:40 +1100 (AEDT)
+From: =?windows-1258?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
+CC: "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping outside
+ the requests
+Date: Mon, 19 Feb 2018 13:16:30 +0000
+Message-ID: <VI1PR0402MB334299B37F17771BFA9AFDDA98C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+References: <cover.1507284818.git.christophe.leroy@c-s.fr>
+ <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
+ <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
+ <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
+ <VI1PR0402MB334256E1706A4E1AED09F4A598C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <d5809df9-fc17-03da-b7f4-038d973dbd1f@c-s.fr>
+Content-Type: text/plain; charset="windows-1258"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,167 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit f719582435 ("PCI: Add pci_mmap_resource_range() and use it for
-ARM64") added this generic function with the intent of using it
-everywhere and ultimately killing the old arch-specific implementations.
-
-Let's get on with that eradication...
-
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- arch/powerpc/include/asm/pci.h   |   9 ++--
- arch/powerpc/kernel/pci-common.c | 106 ++++-----------------------------------
- 2 files changed, 15 insertions(+), 100 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index d82802f..401c62a 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -76,10 +76,11 @@ extern int pci_proc_domain(struct pci_bus *bus);
- 
- struct vm_area_struct;
- 
--/* Tell drivers/pci/proc.c that we have pci_mmap_page_range() and it does WC */
--#define HAVE_PCI_MMAP		1
--#define arch_can_pci_mmap_io()	1
--#define arch_can_pci_mmap_wc()	1
-+/* Tell PCI code what kind of PCI resource mappings we support */
-+#define HAVE_PCI_MMAP			1
-+#define ARCH_GENERIC_PCI_MMAP_RESOURCE	1
-+#define arch_can_pci_mmap_io()		1
-+#define arch_can_pci_mmap_wc()		1
- 
- extern int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val,
- 			   size_t count);
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 446c796..fe9733f 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -410,72 +410,22 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
- }
- 
- /*
-- * Platform support for /proc/bus/pci/X/Y mmap()s,
-- * modelled on the sparc64 implementation by Dave Miller.
-+ * Platform support for /proc/bus/pci/X/Y mmap()s.
-  *  -- paulus.
-  */
--
--/*
-- * Adjust vm_pgoff of VMA such that it is the physical page offset
-- * corresponding to the 32-bit pci bus offset for DEV requested by the user.
-- *
-- * Basically, the user finds the base address for his device which he wishes
-- * to mmap.  They read the 32-bit value from the config space base register,
-- * add whatever PAGE_SIZE multiple offset they wish, and feed this into the
-- * offset parameter of mmap on /proc/bus/pci/XXX for that device.
-- *
-- * Returns negative error code on failure, zero on success.
-- */
--static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
--					       resource_size_t *offset,
--					       enum pci_mmap_state mmap_state)
-+int pci_iobar_pfn(struct pci_dev *pdev, int bar, struct vm_area_struct *vma)
- {
--	struct pci_controller *hose = pci_bus_to_host(dev->bus);
--	unsigned long io_offset = 0;
--	int i, res_bit;
--
--	if (hose == NULL)
--		return NULL;		/* should never happen */
--
--	/* If memory, add on the PCI bridge address offset */
--	if (mmap_state == pci_mmap_mem) {
--#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
--		*offset += hose->pci_mem_offset;
--#endif
--		res_bit = IORESOURCE_MEM;
--	} else {
--		io_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
--		*offset += io_offset;
--		res_bit = IORESOURCE_IO;
--	}
--
--	/*
--	 * Check that the offset requested corresponds to one of the
--	 * resources of the device.
--	 */
--	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
--		struct resource *rp = &dev->resource[i];
--		int flags = rp->flags;
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	resource_size_t ioaddr = pci_resource_start(pdev, bar);
- 
--		/* treat ROM as memory (should be already) */
--		if (i == PCI_ROM_RESOURCE)
--			flags |= IORESOURCE_MEM;
--
--		/* Active and same type? */
--		if ((flags & res_bit) == 0)
--			continue;
--
--		/* In the range of this resource? */
--		if (*offset < (rp->start & PAGE_MASK) || *offset > rp->end)
--			continue;
-+	if (!hose)
-+		return -EINVAL;
- 
--		/* found it! construct the final physical address */
--		if (mmap_state == pci_mmap_io)
--			*offset += hose->io_base_phys - io_offset;
--		return rp;
--	}
-+	/* Convert to an offset within this PCI controller */
-+	ioaddr -= (unsigned long)hose->io_base_virt - _IO_BASE;
- 
--	return NULL;
-+	vma->vm_pgoff += (ioaddr + hose->io_base_phys) >> PAGE_SHIFT;
-+	return 0;
- }
- 
- /*
-@@ -527,42 +477,6 @@ pgprot_t pci_phys_mem_access_prot(struct file *file,
- 	return prot;
- }
- 
--
--/*
-- * Perform the actual remap of the pages for a PCI device mapping, as
-- * appropriate for this architecture.  The region in the process to map
-- * is described by vm_start and vm_end members of VMA, the base physical
-- * address is found in vm_pgoff.
-- * The pci device structure is provided so that architectures may make mapping
-- * decisions on a per-device or per-bus basis.
-- *
-- * Returns a negative error code on failure, zero on success.
-- */
--int pci_mmap_page_range(struct pci_dev *dev, int bar,
--			struct vm_area_struct *vma,
--			enum pci_mmap_state mmap_state, int write_combine)
--{
--	resource_size_t offset =
--		((resource_size_t)vma->vm_pgoff) << PAGE_SHIFT;
--	struct resource *rp;
--	int ret;
--
--	rp = __pci_mmap_make_offset(dev, &offset, mmap_state);
--	if (rp == NULL)
--		return -EINVAL;
--
--	vma->vm_pgoff = offset >> PAGE_SHIFT;
--	if (write_combine)
--		vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
--	else
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--
--	ret = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
--			       vma->vm_end - vma->vm_start, vma->vm_page_prot);
--
--	return ret;
--}
--
- /* This provides legacy IO read access on a bus */
- int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val, size_t size)
- {
--- 
-2.7.4
+On 2/19/2018 11:14 AM, Christophe LEROY wrote:=0A=
+> Le 19/02/2018 =E0 09:30, Horia Geant=E3 a =E9crit=A0:=0A=
+>> On 2/19/2018 9:58 AM, Christophe LEROY wrote:=0A=
+>>> Le 18/02/2018 =E0 18:14, Horia Geant=E3 a =E9crit=A0:=0A=
+>>>> There is no ahash_exit() callback mirroring ahash_init().=0A=
+>>>>=0A=
+>>>> The clean-up of request ctx should be done in the last states of the h=
+ash flows=0A=
+>>>> described here:=0A=
+>>>> https://www.kernel.org/doc/html/latest/crypto/devel-algos.html#cipher-=
+definition-with-struct-shash-alg-and-ahash-alg=0A=
+>>>> for e.g. in the final() callback.=0A=
+>>>=0A=
+>>> Unfortunatly it seems that we can't rely on those finalising functions=
+=0A=
+>>> being called all the time.=0A=
+>>> If you look into test_ahash_jiffies() for instance, in case of error th=
+e=0A=
+>>> call of crypto_hash_final() is skipped.=0A=
+>>=0A=
+>> If test_ahash_jiffies() errors before calling crypto_ahash_final(req), t=
+his=0A=
+>> means a previous callback failed.=0A=
+>> Accordingly, DMA unmapping should be performed also on the corresponding=
+ errors=0A=
+>> paths in the driver.=0A=
+>>=0A=
+> =0A=
+> And what about ALGIF path from user space ?=0A=
+> What if the user never calls the last sendmsg() which will call =0A=
+> hash_finup() ?=0A=
+> =0A=
+User is expected to follow the rules of the crypto API.=0A=
+Of course, kernel won't (or at least shouldn't) crash in case of misuse.=0A=
+However, in these cases some resources might not be freed - it's unavoidabl=
+e.=0A=
+=0A=
+Horia=0A=
