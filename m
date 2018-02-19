@@ -1,29 +1,34 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
+Return-Path: <vaibhav@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlR1b1fyHzDrDM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 01:28:19 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlRBh0YcVzDr9G
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 01:36:11 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1JEOLle133555
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 09:28:16 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g7x5kp4vf-1
+ w1JEYu5H031645
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 09:36:09 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g7yv8swsc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 09:28:16 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 09:36:08 -0500
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 19 Feb 2018 14:28:14 -0000
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: [PATCH V5] cxl: Fix timebase synchronization status on P9
-Date: Mon, 19 Feb 2018 15:28:11 +0100
-Message-Id: <1519050491-15326-1-git-send-email-clombard@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Mon, 19 Feb 2018 14:36:03 -0000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH V5] cxl: Fix timebase synchronization status on P9
+In-Reply-To: <1519050491-15326-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1519050491-15326-1-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Mon, 19 Feb 2018 20:05:56 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87tvudgi7n.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,97 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PSL Timebase register is updated by the PSL to maintain the
-timebase.
-On P9, the Timebase value is only provided by the CAPP as received
-the last time a timebase request was performed.
-The timebase requests are initiated through the adapter configuration or
-application registers.
-The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
-now dynamically updated according the content of the PSL Timebase
-register.
+Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> The PSL Timebase register is updated by the PSL to maintain the
+> timebase.
+> On P9, the Timebase value is only provided by the CAPP as received
+> the last time a timebase request was performed.
+> The timebase requests are initiated through the adapter configuration or
+> application registers.
+> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
+> now dynamically updated according the content of the PSL Timebase
+> register.
+>
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>
+> ---
+> This patch applies on top of this patch:
+>  http://patchwork.ozlabs.org/patch/873663/
 
----
-This patch applies on top of this patch:
- http://patchwork.ozlabs.org/patch/873663/
+LGTM. Thanks for updating the patch Christophe.
 
-Changelog[v5]
- - Rebased to latest upstream.
- - Changed the type of 'delta'
-
-Changelog[v4]
- - Rebased to latest upstream.
- - Added log message.
-
-Changelog[v3]
- - Rebased to latest upstream.
- - Dynamic update is now applied to P8.
-
-Changelog[v2]
- - Missing Signed-off-by.
- - Spaces required around the ':'.
----
- drivers/misc/cxl/pci.c   | 17 -----------------
- drivers/misc/cxl/sysfs.c | 10 ++++++++++
- 2 files changed, 10 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 66eed6a..3247eaf 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
- 
- static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- {
--	u64 psl_tb;
--	int delta;
--	unsigned int retry = 0;
- 	struct device_node *np;
- 
- 	adapter->psl_timebase_synced = false;
-@@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
- 	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
- 	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
- 
--	/* Wait until CORE TB and PSL TB difference <= 16usecs */
--	do {
--		msleep(1);
--		if (retry++ > 5) {
--			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
--			return;
--		}
--		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
--		delta = mftb() - psl_tb;
--		if (delta < 0)
--			delta = -delta;
--	} while (tb_to_ns(delta) > 16000);
--
--	adapter->psl_timebase_synced = true;
- 	return;
- }
- 
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index a8b6d6a..a20bf8e 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -62,6 +62,16 @@ static ssize_t psl_timebase_synced_show(struct device *device,
- 					char *buf)
- {
- 	struct cxl *adapter = to_cxl_adapter(device);
-+	u64 psl_tb, delta;
-+
-+	psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-+	delta = abs(mftb() - psl_tb);
-+
-+	/* CORE TB and PSL TB difference <= 16usecs ? */
-+	adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
-+	pr_devel("PSL timebase %s - delta: 0x%016llx\n",
-+		 (tb_to_ns(delta) < 16000) ? "synchronized" :
-+		 "not synchronized", tb_to_ns(delta));
- 
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
- }
--- 
-2.7.4
+Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
