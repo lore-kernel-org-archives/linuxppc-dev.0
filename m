@@ -1,24 +1,22 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
+ [IPv6:2a01:488:42:1000:50ed:84ea::])
+ (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlQT95vrDzDr14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 01:03:39 +1100 (AEDT)
-Received: by mail-qt0-x241.google.com with SMTP id d26so12276922qtk.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 06:03:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlQtD3VcqzDrKN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 01:21:52 +1100 (AEDT)
+Subject: Linux 4.16: Reported regressions as of Monday, 2018-02-19 (Was: Linux
+ 4.16-rc2)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+References: <CA+55aFwDnBq9V6TVbc82DzVYpf-ELF7UcYzHuY0ei1Xjnob+0A@mail.gmail.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Message-ID: <8af706ec-e1a8-fe16-e11b-6422ac845239@leemhuis.info>
+Date: Mon, 19 Feb 2018 14:58:43 +0100
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1519048647-18732-1-git-send-email-geert@linux-m68k.org>
-References: <1519048647-18732-1-git-send-email-geert@linux-m68k.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 19 Feb 2018 15:03:36 +0100
-Message-ID: <CAMuHMdWs9r4F7FnuHvQGX1L9g91MCepSHroRDhj1tB9E70d5gw@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.16-rc2
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CA+55aFwDnBq9V6TVbc82DzVYpf-ELF7UcYzHuY0ei1Xjnob+0A@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 19, 2018 at 2:57 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v4.16-rc2[1] to v4.16-rc1[3], the summaries are:
->   - build errors: +5/-2
+Hi! Find below my first regression report for Linux 4.16. It lists 2
+regressions I'm currently aware of.
 
-  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: junk at
-end of line, first unrecognized character is `U':  => 677
-  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: missing ')':  => 677
-  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: unexpected
-characters following instruction at operand 2 -- `movk
-x1,:abs_g0_nc:0xff00ffffffUL':  => 677
-  + /home/kisskb/slave/src/arch/arm64/kernel/head.S: Error: unexpected
-characters following instruction at operand 2 -- `movz
-x1,:abs_g1_s:0xff00ffffffUL':  => 677
+Are you aware of any other regressions? Then please let me know by mail
+(a simple bounce or forward to the email address is enough!).
 
-arm64-allnoconfig
-arm64-allmodconfig
-arm64-defconfig
-(patch available)
+For details see http://bit.ly/lnxregtrackid And please tell me if there
+is anything in the report that shouldn't be there.
 
-  + error: hotplug-cpu.c: undefined reference to
-`timed_topology_update':  => .text+0x410), .text+0x138)
+Ciao, Thorsten
 
-ppc64le/pseries_le_defconfig+NO_NUMA
+P.S.: Sorry, I didn't find spare time to work on regression reporting
+and related issues during the 4.15 cycle. I also have a huge todo list
+after the regression tracking discussion during maintainer and kernel
+summit last fall. I will try to work on that that sooner or later; that
+in the end will change nearly all the aspects of regression tracking is
+done currently. But that will take some time (which I struggle to find
+currently :-/ ) to realize, so for this cycle  I'm continuing to do
+regression reports like I used to do them.
 
-Gr{oetje,eeting}s,
+== Current regressions ==
 
-                        Geert
+Debian kernel package tool make-kpkg stalls indefinitely during kernel
+build due to commit "kconfig: remove check_stdin()"
+Status: stalled after some discussions
+Note: Shouldn't be a problem to back this one out either if it turns out
+to cause massive amounts of pain in practice I guess, even if it's the
+Debian tools doing something weird.
+Reported: 2018-02-12
+https://marc.info/?l=linux-kernel&m=151846414807219
+Cause: d2a04648a5dbc3d1d043b35257364f0197d4d868
+Linux-Regression-ID: 2fd778
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+DM Regression: read() returns data when it shouldn't
+Status: Developers are looking into it
+Reported: 2018-02-14
+https://marc.info/?l=linux-kernel&m=151861337518109&w=2
+Cause: 18a25da84354c6bb655320de6072c00eda6eb602
+Linux-Regression-ID: 9e195f
