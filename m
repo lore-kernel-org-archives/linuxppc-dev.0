@@ -1,21 +1,34 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [150.101.137.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zlBTD0grNzDrhT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 16:02:55 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Mark Hairgrove <mhairgrove@nvidia.com>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, Javier Cabezas <jcabezas@nvidia.com>
-Subject: Re: [PATCH] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
-Date: Mon, 19 Feb 2018 16:02:52 +1100
-Message-ID: <1563550.Ytkt8OtJkB@new-mexico>
-In-Reply-To: <20180219135704.3bd0cfb9@balbir.ozlabs.ibm.com>
-References: <20180213031734.19831-1-alistair@popple.id.au>
- <alpine.DEB.2.00.1802151910400.10245@mdh-linux64-2.nvidia.com>
- <20180219135704.3bd0cfb9@balbir.ozlabs.ibm.com>
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlCzc1BSXzDrDk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 17:10:51 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1J63adh082472
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 01:10:49 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g7ppkkxg6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 01:10:48 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Mon, 19 Feb 2018 06:10:47 -0000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH V3] cxl: Fix timebase synchronization status on P9
+In-Reply-To: <1518794852-30137-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1518794852-30137-1-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Mon, 19 Feb 2018 11:40:42 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
+Message-Id: <87woz9h5lp.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > Shouldn't that be enforced with READ_ONCE() then?
 
-Yep, I can add that.
+Hi Christophe,
 
-> Good point, although I think the acquire_* function itself may be called
-> from a higher layer with the mmap_sem always held. I wonder if we need
-> barriers around get and put mmio_atsd_reg.
+Mostly ok with this patch. Some very minor review comments:
 
-test_and_set_bit() should imply a memory barrier so I don't think we need one
-there (and looking at the implementation there is one). clear_bit() might need
-one though. For that I guess I could use clear_bit_unlock()? There is also a
-matching test_and_set_bit_lock() so I will submit a v2 which uses those instead
-given we are using these like a lock.
+Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+> --- a/drivers/misc/cxl/sysfs.c
+> +++ b/drivers/misc/cxl/sysfs.c
+> @@ -62,6 +62,16 @@ static ssize_t psl_timebase_synced_show(struct device *device,
+>  					char *buf)
+>  {
+>  	struct cxl *adapter = to_cxl_adapter(device);
+> +	u64 psl_tb;
+> +	int delta;
+> +
+> +	psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+> +	delta = mftb() - psl_tb;
+> +	if (delta < 0)
+> +		delta = -delta;
+Can just use abs().
+> +
+> +	/* CORE TB and PSL TB difference <= 16usecs ? */
+> +	adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
+Can be re-written as
+'adapter->psl_timebase_synced = (tb_to_ns(abs(delta)) < 16000);'
 
-> > > I don't think we can as the invalidate_range() function is called under the ptl
-> > > spin-lock and is not allowed to sleep (at least according to
-> > > include/linux/mmu_notifier.h).
-> 
-> I double checked, It's the reverse
-> 
-> 	 /*
->           * If both of these callbacks cannot block, mmu_notifier_ops.flags
->           * should have MMU_INVALIDATE_DOES_NOT_BLOCK set.
->           */
+>
+>  	return scnprintf(buf, PAGE_SIZE, "%i\n",
+>  	adapter->psl_timebase_synced);
+Might be a good idea to debug print/print_once the delta.
 
-Argh, that must have been merged during the current window. Thanks for pointing
-out - I will submit a seperate patch to update the mmu_notifier_ops.flags to set
-MMU_INVALIDATE_DOES_NOT_BLOCK.
-
-- Alistair
-
->          void (*invalidate_range_start)(struct mmu_notifier *mn,
->                                         struct mm_struct *mm,
->                                         unsigned long start, unsigned long end);
->          void (*invalidate_range_end)(struct mmu_notifier *mn,
->                                       struct mm_struct *mm,
->                                       unsigned long start, unsigned long end);
-> > > 
-> > > - Alistair
-> > >   
-> > > > Balbir
-> > > >   
-> > > 
-> > > 
-> > >   
-> 
-> I think it looks good to me otherwise,
-> 
-> Balbir Singh.
-> 
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
