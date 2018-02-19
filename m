@@ -1,33 +1,28 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlFJv4SnqzDrJ6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 18:10:54 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1J7A2LU137283
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 02:10:51 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g7bbawr4r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 02:10:49 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Mon, 19 Feb 2018 07:10:47 -0000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: "Manoj N . Kumar" <manoj@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- "Matthew R . Ochs" <mrochs@linux.vnet.ibm.com>,
- Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] scsi: cxlflash: Select SCSI_SCAN_ASYNC
-Date: Mon, 19 Feb 2018 12:40:37 +0530
-Message-Id: <20180219071037.27938-1-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlGMd3Yr8zDrHv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 18:58:20 +1100 (AEDT)
+Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping outside
+ the requests
+To: =?UTF-8?Q?Horia_Geant=c4=83?= <horia.geanta@nxp.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Cc: "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <cover.1507284818.git.christophe.leroy@c-s.fr>
+ <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
+ <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
+ <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
+Date: Mon, 19 Feb 2018 08:58:15 +0100
+MIME-Version: 1.0
+In-Reply-To: <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=windows-1258; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,49 +32,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cxlflash driver uses "Asynchronous SCSI scanning" enabled by
-CONFIG_SCSI_SCAN_ASYNC. Without this enabled the modprobe of cxlflash
-module gets hung with following backtrace:
 
-Call Trace:
- __switch_to+0x2cc/0x470
- __schedule+0x288/0xab0
- schedule+0x40/0xc0
- schedule_timeout+0x254/0x4f0
- wait_for_common+0xdc/0x260
- flush_work+0x140/0x2a0
- work_on_cpu+0x88/0xb0
- pci_device_probe+0x1d0/0x220
- driver_probe_device+0x408/0x5b0
- __driver_attach+0x16c/0x1a0
- bus_for_each_dev+0xb8/0x110
- driver_attach+0x3c/0x60
- bus_add_driver+0x1d8/0x370
- driver_register+0x9c/0x180
- __pci_register_driver+0x74/0xa0
- init_cxlflash+0x158/0x1cc
- do_one_initcall+0x68/0x1e0
- do_init_module+0x90/0x254
- load_module+0x2f8c/0x3720
- SyS_finit_module+0xcc/0x140
- system_call+0x58/0x6c
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Le 18/02/2018 à 18:14, Horia Geantã a écrit :
+> On 2/17/2018 6:32 PM, Christophe LEROY wrote:
+>>
+>>
+>> Le 07/02/2018 à 15:39, Horia Geantã a écrit :
+>>> On 10/6/2017 4:06 PM, Christophe Leroy wrote:
+>>>> At every request, we map and unmap the same hash hw_context.
+>>>>
+>>>> This patch moves the dma mapping/unmapping in functions ahash_init()
+>>>> and ahash_import().
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> ---
+>>>>    drivers/crypto/talitos.c | 80 ++++++++++++++++++++++++++++++++++--------------
+>>>>    1 file changed, 57 insertions(+), 23 deletions(-)
+>>>>
+>>>> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+>>>> index ebfd6d982ed6..d495649d5267 100644
+>>>> --- a/drivers/crypto/talitos.c
+>>>> +++ b/drivers/crypto/talitos.c
+>>>> @@ -819,6 +819,7 @@ struct talitos_ctx {
+>>>>    	unsigned int keylen;
+>>>>    	unsigned int enckeylen;
+>>>>    	unsigned int authkeylen;
+>>>> +	dma_addr_t dma_hw_context;
+>>> This doesn't look correct.
+>>>
+>>> talitos_ctx structure is the tfm context.
+>>> dma_hw_context is the IOVA of hw_context, located in talitos_ahash_req_ctx
+>>> structure (request context).
+>>
+>> Yes but I have now found how I can know that the request context is
+>> being released in order to unmap() dma at that time.
+>> It is tricky to use the tmf context I agree, but at least I know when
+>> tmf context get destroyed, ie in talitos_cra_exit_ahash()
+>> The request context is created by ahash_request_alloc() and released by
+>> ahash_request_free(). I have not found the way to call dma_unmap()
+>> before ahash_request_free() gets called.
+>>
+>>>
+>>> If there are multiple requests in flight for the same tfm, dma_hw_context will
+>>> be overwritten.
+>>
+>> Before overwritting dma_hw_context, it is always released, see
+>> talitos_cra_exit_ahash(), ahash_init(), ahash_import()
+>>
+> The problem is not the unmapping.
+> If there are two requests for the same tfm, then given the following sequence
+> 1. tfm->ahash_init(req1)
+> 	tfm_ctx->dma_hw_context points to req1_ctx->hw_context
+> 2. tfm->ahash_init(req2)
+> 	tfm_ctx->dma_hw_context [unmapped, then] points to req2_ctx->hw_context
+> i.e. req1 will use the hw_context of req2.
+> 
+>>>
+>>> dma_hw_context needs to be moved in request context (talitos_ahash_req_ctx struct).
+>>
+>> Any suggestion then on how to handle the issue explained above ?
+>>
+> There is no ahash_exit() callback mirroring ahash_init().
+> 
+> The clean-up of request ctx should be done in the last states of the hash flows
+> described here:
+> https://www.kernel.org/doc/html/latest/crypto/devel-algos.html#cipher-definition-with-struct-shash-alg-and-ahash-alg
+> for e.g. in the final() callback.
 
-diff --git a/drivers/scsi/cxlflash/Kconfig b/drivers/scsi/cxlflash/Kconfig
-index a011c5dbf214..f054c1b0fff3 100644
---- a/drivers/scsi/cxlflash/Kconfig
-+++ b/drivers/scsi/cxlflash/Kconfig
-@@ -6,6 +6,7 @@ config CXLFLASH
- 	tristate "Support for IBM CAPI Flash"
- 	depends on PCI && SCSI && CXL && EEH
- 	select IRQ_POLL
-+	select SCSI_SCAN_ASYNC
- 	default m
- 	help
- 	  Allows CAPI Accelerated IO to Flash
--- 
-2.14.3
+Unfortunatly it seems that we can't rely on those finalising functions 
+being called all the time.
+If you look into test_ahash_jiffies() for instance, in case of error the 
+call of crypto_hash_final() is skipped.
+So at the time being, I can't see any place to put the unmapping to be 
+100% sure it will be done before the call of ahash_request_free()
+
+Christophe
+
+> 
+> Hope this helps,
+> Horia
+> 
