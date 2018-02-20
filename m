@@ -1,32 +1,25 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mlord@pobox.com>
+Received: from sasl.smtp.pobox.com (pb-sasl2.pobox.com [64.147.108.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmFnm2BTdzDqlb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:35:55 +1100 (AEDT)
-From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- linux-mm@kvack.org, Joel Stanley <joel@jms.id.au>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>
-Subject: [PATCH 5/6] powerpc: Implement DISCONTIGMEM and allow selection on
- PPC32
-Date: Tue, 20 Feb 2018 17:14:23 +0100
-Message-Id: <20180220161424.5421-6-j.neuschaefer@gmx.net>
-In-Reply-To: <20180220161424.5421-1-j.neuschaefer@gmx.net>
-References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmDzj1snNzF15r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:59:28 +1100 (AEDT)
+Subject: [PATCH] bpf, powerpc: fix jit for seccomp_data access
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@amacapital.net>,
+ mpe@ellerman.id.au, Will Drewry <wad@chromium.org>
+References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
+ <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
+ <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
+ <1519154571.d9vaokens9.naveen@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Mark Lord <mlord@pobox.com>
+Message-ID: <2f428cf9-23f3-d1f1-1524-46d6faa17386@pobox.com>
+Date: Tue, 20 Feb 2018 14:49:20 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1519154571.d9vaokens9.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,93 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The implementation of pfn_to_nid and pfn_valid in mmzone.h is based on
-arch/metag's implementation.
+I am using SECCOMP to filter syscalls on a ppc32 platform,
+and noticed that the JIT compiler was failing on the BPF
+even though the interpreter was working fine.
 
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
+The issue was that the compiler was missing one of the instructions
+used by SECCOMP, so here is a patch to enable JIT for that instruction.
 
-NOTE: Checking NODE_DATA(nid) in pfn_to_nid appears to be uncommon.
-Running up to MAX_NUMNODES instead of checking NODE_DATA(nid) would
-require the node_data array to be filled with valid pointers.
----
- arch/powerpc/Kconfig              |  5 ++++-
- arch/powerpc/include/asm/mmzone.h | 21 +++++++++++++++++++++
- arch/powerpc/mm/numa.c            |  7 +++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
+Signed-Off-By:  Mark Lord <mlord@pobox.com>
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 73ce5dd07642..c2633b7b8ed9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -639,7 +639,6 @@ config HAVE_MEMORYLESS_NODES
- 
- config ARCH_SELECT_MEMORY_MODEL
- 	def_bool y
--	depends on PPC64
- 
- config ARCH_FLATMEM_ENABLE
- 	def_bool y
-@@ -654,6 +653,10 @@ config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
- 	depends on PPC_BOOK3S_64
- 
-+config ARCH_DISCONTIGMEM_ENABLE
-+	def_bool y
-+	depends on PPC32
-+
- config SYS_SUPPORTS_HUGETLBFS
- 	bool
- 
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 91c69ff53a8a..1684a5c98d23 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -26,6 +26,27 @@ extern struct pglist_data *node_data[];
-  */
- #define NODE_DATA(nid)		(node_data[nid])
- 
-+static inline int pfn_to_nid(unsigned long pfn)
-+{
-+	int nid;
-+
-+	for (nid = 0; nid < MAX_NUMNODES && NODE_DATA(nid); nid++)
-+		if (pfn >= node_start_pfn(nid) && pfn <= node_end_pfn(nid))
-+			return nid;
-+
-+	return -1;
-+}
-+
-+static inline int pfn_valid(int pfn)
-+{
-+	int nid = pfn_to_nid(pfn);
-+
-+	if (nid >= 0)
-+		return pfn < node_end_pfn(nid);
-+
-+	return 0;
-+}
-+
- /*
-  * Following are specific to this numa platform.
-  */
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index dfe279529463..ec47f1081509 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -744,6 +744,13 @@ static void __init setup_nonnuma(void)
- 				  PFN_PHYS(end_pfn - start_pfn),
- 				  &memblock.memory, nid);
- 		node_set_online(nid);
-+
-+		/*
-+		 * On DISCONTIGMEM systems, place different memory blocks into
-+		 * different nodes.
-+		 */
-+		if (IS_ENABLED(CONFIG_DISCONTIGMEM) && nid < MAX_NUMNODES - 1)
-+			nid++;
- 	}
- }
- 
+--- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -0500
++++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.805227494 -0500
+@@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+                        BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) != 4);
+                        PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
+                        break;
++               case BPF_LDX | BPF_W | BPF_ABS: /* A = *((u32 *)(seccomp_data + K)); */
++                       PPC_LWZ_OFFS(r_A, r_skb, K);
++                       break;
+                case BPF_LDX | BPF_W | BPF_LEN: /* X = skb->len; */
+                        PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff, len));
+                        break;
 -- 
-2.16.1
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com
