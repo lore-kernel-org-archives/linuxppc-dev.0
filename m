@@ -1,40 +1,65 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <marcus.folkesson@gmail.com>
+Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
+ [IPv6:2a00:1450:4010:c07::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmDnK2sKczF1B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:50:29 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1KJIuUX018567
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:22:35 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g8qv6cwmg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:22:34 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 20 Feb 2018 19:22:31 -0000
-Date: Wed, 21 Feb 2018 00:52:27 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH bpf v2 1/2] bpf: allow 64-bit offsets for bpf
- function calls
-To: ast@fb.com, Daniel Borkmann <daniel@iogearbox.net>, Michael Ellerman
- <mpe@ellerman.id.au>, Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
-References: <20180213040600.5821-1-sandipan@linux.vnet.ibm.com>
- <d39a3902-39bc-df56-71bf-0e6f9869ce14@iogearbox.net>
- <ad895533-2f15-bfe4-671c-6d1a8c672bbd@iogearbox.net>
- <1518791626.5484j97if6.naveen@linux.ibm.com>
- <87po50roup.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87po50roup.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmDrt0zgKzF1BM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:53:33 +1100 (AEDT)
+Received: by mail-lf0-x242.google.com with SMTP id g72so6363530lfg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 13:53:33 -0800 (PST)
+Date: Tue, 20 Feb 2018 19:45:22 +0100
+From: Marcus Folkesson <marcus.folkesson@gmail.com>
+To: William Breathitt Gray <vilhelm.gray@gmail.com>
+Cc: Guenter Roeck <linux@roeck-us.net>,
+ Wim Van Sebroeck <wim@linux-watchdog.org>, Joel Stanley <joel@jms.id.au>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ bcm-kernel-feedback-list@broadcom.com, Eric Anholt <eric@anholt.net>,
+ Stefan Wahren <stefan.wahren@i2se.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Support Opensource <support.opensource@diasemi.com>,
+ Baruch Siach <baruch@tkos.co.il>, Jimmy Vance <jimmy.vance@hpe.com>,
+ Keguang Zhang <keguang.zhang@gmail.com>,
+ Joachim Eastwood <manabian@gmail.com>,
+ Tomas Winkler <tomas.winkler@intel.com>,
+ Johannes Thumshirn <morbidrsa@gmail.com>,
+ Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
+ Vladimir Zapolskiy <vz@mleia.com>,
+ Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
+ Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
+ Patrice Chotard <patrice.chotard@st.com>,
+ Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
+ Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
+ Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
+ linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
+ linux-mediatek@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
+Subject: Re: [PATCH v2] watchdog: add SPDX identifiers for watchdog subsystem
+Message-ID: <20180220184522.GF24311@gmail.com>
+References: <20180220104542.32286-1-marcus.folkesson@gmail.com>
+ <20180220124955.GA17814@sophia> <20180220132103.GD24311@gmail.com>
+ <48db897e-8a61-a5bc-5a61-56349cafaa10@roeck-us.net>
+ <20180220153326.GE24311@gmail.com> <20180220181427.GA25467@sophia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1519153431.im5wioxel1.naveen@linux.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="OgApRN/oydYDdnYz"
+In-Reply-To: <20180220181427.GA25467@sophia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,188 +69,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->> Daniel Borkmann wrote:
->>> On 02/15/2018 05:25 PM, Daniel Borkmann wrote:
->>>> On 02/13/2018 05:05 AM, Sandipan Das wrote:
->>>>> The imm field of a bpf_insn is a signed 32-bit integer. For
->>>>> JIT-ed bpf-to-bpf function calls, it stores the offset from
->>>>> __bpf_call_base to the start of the callee function.
->>>>>
->>>>> For some architectures, such as powerpc64, it was found that
->>>>> this offset may be as large as 64 bits because of which this
->>>>> cannot be accomodated in the imm field without truncation.
->>>>>
->>>>> To resolve this, we additionally make aux->func within each
->>>>> bpf_prog associated with the functions to point to the list
->>>>> of all function addresses determined by the verifier.
->>>>>
->>>>> We keep the value assigned to the off field of the bpf_insn
->>>>> as a way to index into aux->func and also set aux->func_cnt
->>>>> so that this can be used for performing basic upper bound
->>>>> checks for the off field.
->>>>>
->>>>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
->>>>> ---
->>>>> v2: Make aux->func point to the list of functions determined
->>>>>     by the verifier rather than allocating a separate callee
->>>>>     list for each function.
->>>>=20
->>>> Approach looks good to me; do you know whether s390x JIT would
->>>> have similar requirement? I think one limitation that would still
->>>> need to be addressed later with such approach would be regarding the
->>>> xlated prog dump in bpftool, see 'BPF calls via JIT' in 7105e828c087
->>>> ("bpf: allow for correlation of maps and helpers in dump"). Any
->>>> ideas for this (potentially if we could use off + imm for calls,
->>>> we'd get to 48 bits, but that seems still not be enough as you say)?
->>
->> All good points. I'm not really sure how s390x works, so I can't comment=
-=20
->> on that, but I'm copying Michael Holzheu for his consideration.
->>
->> With the existing scheme, 48 bits won't be enough, so we rejected that=20
->> approach. I can also see how this will be a problem with bpftool, but I=20
->> haven't looked into it in detail. I wonder if we can annotate the output=
-=20
->> to indicate the function being referred to?
->>
->>>=20
->>> One other random thought, although I'm not sure how feasible this
->>> is for ppc64 JIT to realize ... but idea would be to have something
->>> like the below:
->>>=20
->>> diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
->>> index 29ca920..daa7258 100644
->>> --- a/kernel/bpf/core.c
->>> +++ b/kernel/bpf/core.c
->>> @@ -512,6 +512,11 @@ int bpf_get_kallsym(unsigned int symnum, unsigned =
-long *value, char *type,
->>>  	return ret;
->>>  }
->>>=20
->>> +void * __weak bpf_jit_image_alloc(unsigned long size)
->>> +{
->>> +	return module_alloc(size);
->>> +}
->>> +
->>>  struct bpf_binary_header *
->>>  bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
->>>  		     unsigned int alignment,
->>> @@ -525,7 +530,7 @@ bpf_jit_binary_alloc(unsigned int proglen, u8 **ima=
-ge_ptr,
->>>  	 * random section of illegal instructions.
->>>  	 */
->>>  	size =3D round_up(proglen + sizeof(*hdr) + 128, PAGE_SIZE);
->>> -	hdr =3D module_alloc(size);
->>> +	hdr =3D bpf_jit_image_alloc(size);
->>>  	if (hdr =3D=3D NULL)
->>>  		return NULL;
->>>=20
->>> And ppc64 JIT could override bpf_jit_image_alloc() in a similar way
->>> like some archs would override the module_alloc() helper through a
->>> custom implementation, usually via __vmalloc_node_range(), so we
->>> could perhaps fit the range for BPF JITed images in a way that they
->>> could use the 32bit imm in the end? There are not that many progs
->>> loaded typically, so the range could be a bit narrower in such case
->>> anyway. (Not sure if this would work out though, but I thought to
->>> bring it up.)
->>
->> That'd be a good option to consider. I don't think we want to allocate=20
->> anything from the linear memory range since users could load=20
->> unprivileged BPF programs and consume a lot of memory that way. I doubt=20
->> if we can map vmalloc'ed memory into the 0xc0 address range, but I'm not=
-=20
->> entirely sure.
->>
->> Michael,
->> Is the above possible? The question is if we can have BPF programs be=20
->> allocated within 4GB of __bpf_call_base (which is a kernel symbol), so=20
->> that calls to those programs can be encoded in a 32-bit immediate field=20
->> in a BPF instruction.
->=20
-> Hmmm.
->=20
-> It's not technically impossible, but I don't think it's really a good
-> option.
->=20
-> The 0xc range is a linear mapping of RAM, and the kernel tends to be
-> near the start of RAM for reasons. That means there generally isn't a
-> hole in the 0xc range within 4GB for you to map BPF programs.
->=20
-> You could create a hole by making the 0xc mapping non linear, ie.
-> mapping some RAM near the kernel elsewhere in the 0xc range, to make a
-> hole that you can then remap BPF programs into. But I think that would
-> cause a lot of bugs, it's a pretty fundamental assumption that the
-> linear mapping is 1:1.
->=20
->> As an extension, we may be able to extend it to=20
->> 48-bits by combining with another BPF instruction field (offset). In=20
->> either case, the vmalloc'ed address range won't work.
->=20
-> 48-bits could possibly work, we don't have systems with that much RAM
-> *yet*. So you could remap the BPF programs at the end of the 0xc range,
-> or somewhere we have a gap in RAM.
->=20
-> That would probably still confuse some things, ie. the 0xc mapping would
-> be a 1:1 mapping of RAM plus some other stuff, but it might be tractable
-> to fix.
->=20
-> We don't have page tables for the 0xc range when using the hash MMU, so
-> we'd need to either fix that or use some bespoke data structure for
-> keeping track of the mappings.
->=20
-> It doesn't really appeal :)
 
-Thanks for the detailed explanation. That does look gross :)
+--OgApRN/oydYDdnYz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Feb 20, 2018 at 01:14:27PM -0500, William Breathitt Gray wrote:
+> On Tue, Feb 20, 2018 at 04:33:26PM +0100, Marcus Folkesson wrote:
+> >On Tue, Feb 20, 2018 at 07:13:43AM -0800, Guenter Roeck wrote:
+> >> On 02/20/2018 05:21 AM, Marcus Folkesson wrote:
+> >> > Hello William,
+> >> >=20
+> >> > On Tue, Feb 20, 2018 at 07:49:55AM -0500, William Breathitt Gray wro=
+te:
+> >> > > On Tue, Feb 20, 2018 at 11:45:31AM +0100, Marcus Folkesson wrote:
+> >> > > > - Add SPDX identifier
+> >> > > > - Remove boiler plate license text
+> >> > > > - If MODULE_LICENSE and boiler plate does not match, go for boil=
+er plate
+> >> > > >   license
+> >> > > >=20
+> >> > > > Signed-off-by: Marcus Folkesson <marcus.folkesson@gmail.com>
+> >> > > > Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> >> > > > Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+> >> > > > Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+> >> > > > Acked-by: Michal Simek <michal.simek@xilinx.com>
+> >> > > > ---
+> >> > > >=20
+> >> > > > Notes:
+> >> > > >     v2:
+> >> > > >     	- Put back removed copyright texts for meson_gxbb_wdt and c=
+oh901327_wdt
+> >> > > >     	- Change to BSD-3-Clause for meson_gxbb_wdt
+> >> > > >     v1: Please have an extra look at meson_gxbb_wdt.c
+> >> > >=20
+> >> > > [...]
+> >> > >=20
+> >> > > > diff --git a/drivers/watchdog/ebc-c384_wdt.c b/drivers/watchdog/=
+ebc-c384_wdt.c
+> >> > > > index 2170b275ea01..c173b6f5c866 100644
+> >> > > > --- a/drivers/watchdog/ebc-c384_wdt.c
+> >> > > > +++ b/drivers/watchdog/ebc-c384_wdt.c
+> >> > > > @@ -1,15 +1,8 @@
+> >> > > > +// SPDX-License-Identifier: GPL-2.0
+> >> > > > /*
+> >> > > >   * Watchdog timer driver for the WinSystems EBC-C384
+> >> > > >   * Copyright (C) 2016 William Breathitt Gray
+> >> > > >   *
+> >
+> >The copyright is untouched?
+> >
+> >> > > > - * This program is free software; you can redistribute it and/o=
+r modify
+> >> > > > - * it under the terms of the GNU General Public License, versio=
+n 2, as
+> >> > > > - * published by the Free Software Foundation.
+> >> > > > - *
+> >> > > > - * This program is distributed in the hope that it will be usef=
+ul, but
+> >> > > > - * WITHOUT ANY WARRANTY; without even the implied warranty of
+> >> > > > - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See th=
+e GNU
+> >> > > > - * General Public License for more details.
+> >> > > >   */
+> >> > > > #include <linux/device.h>
+> >> > > > #include <linux/dmi.h>
+> >> >=20
+> >> > Thank you for your feedback!
+> >> > >=20
+> >> > > I have no problem with adding a SPDX line to the top of this file,=
+ but
+> >> > > use "SPDX-License-Identifier: GPL-2.0-only" as I was very intentio=
+nal
+> >> > > with the selection of GPL version 2 only when I published this cod=
+e.
+> >> >=20
+> >> > SPDX-License-Identifier: GPL-2.0
+> >> > Is GPL-2.0 only [1], so it respects your choice of license.
 >=20
-> We load modules in the 0xd range, and they call functions in the kernel,
-> we handle that with trampolines. Can you do something similar?
-
-Yes, we already handle this in our JIT. The scenario being considered=20
-here is in how the BPF core informs the BPF JIT engine when it has to=20
-call out to a different BPF JIT'ed function. The existing approach=20
-encodes an offset from __bpf_call_base() in the imm32 field of the BPF=20
-instruction itself. For powerpc64 though, I think we'll have to have the=20
-address of the JIT'ed BPF functions passed in through other means.
-
+> Ah, this should be fine then. :)
 >=20
-> You obviously still need a 64-bit branch somewhere, but perhaps you only
-> need one, or one per BPF program, rather than one per function call.
 
-We may have more than a single branch depending on how the program is=20
-laid out. We are looking to see if it is worth detecting that a call is=20
-close-by to do a relative branch, rather than loading a full 64-bit=20
-address and branching to that. For BPF-to-BPF calls, we should also be=20
-able to skip all the r12/r2 GEP/TOC handling. We may need to emit an=20
-additional branch to skip over some instructions (or emit nops) just so=20
-we consistently emit a fixed number of instructions each pass.
+Good!
 
+> >> >=20
+> >> > >=20
+> >> > > Furthermore, please do not remove the existing copyright text; alt=
+hough
+> >> >=20
+> >>=20
+> >> It is not a matter if you CAN keep a copyright. You MUST NOT remove a =
+copyright.
+> >> As long as you do, the series is
+> >>=20
+> >> Nacked-by: Guenter Roeck <linux@roeck-us.net>
+> >>=20
+> >> Guenter
+> >
+> >I'm sorry, I do not see where the copyright is removed unless you count
+> >the license text as part of the copyright.
+> >
+> >Can you please point it out?
+> >
+> >>=20
+> >> > The copyright text:
+> >> >=20
+> >> >   Copyright (C) 2016 William Breathitt Gray
+> >> >=20
+> >> > Is still in the file.
+> >
+> >^^^
+> >
+> >> >=20
+> >> >=20
+> >> > > it's just boilerplate for some, I was careful with the selection of
+> >> > > these words, and I worry the SPDX line only -- despite its useful
+> >> > > conciseness -- may lead to misunderstandings about my intentioned
+> >> > > license for this code.
+> >> >=20
+> >> > I'm not sure I understand your concerns here, the SPDX identifier is
+> >> > a shorthand for the GPL 2.0 only license. See [1] - Linux kernel lic=
+ensing rules.
+> >> >=20
+> >> > One of the biggest benefits with SPDX identifier is that it is hard =
+to verify
+> >> > boiler plate licenses due to formatting, types, different formulatio=
+ns and so on.
+> >> >=20
+> >> > If still worrying, I think we could keep the license text as
+> >> > well.
 >=20
->> The alternative is to pass the full 64-bit address of the BPF program in=
-=20
->> an auxiliary field (as proposed in this patch set) but we need to fix it=
-=20
->> up for 'bpftool' as well.
+> I'm sorry for the confusion, I should have wrote "license text" rather
+> than "copyright text" in my previous message. I agree with the benefits
+
+No problem at all.
+
+> of utilizing the SPDX identifier, and I see the addition of the SPDX
+> line as useful, but I would prefer the original license text remain as
+> well.
+
+Of course, I will keep the the original license intact for v3.
 >=20
-> OK. You'll have to explain to me how bpftool is related, I thought it
-> was just for loading/examining BPF programs.
+> William Breathitt Gray
+>=20
 
-It is, and it can also dump loaded BPF programs. When such programs call=20
-out to other BPF programs, bpftool currently figures out the address of=20
-the target BPF function by essentially doing (__bpf_call_base + imm32)=20
-and looking up kallsyms. Since we've established that imm32 is not=20
-enough for us, this won't work on powerpc64.
+Best regards
+Marcus Folkesson
 
-However, if bpf_jit_kallsyms is not enabled, it looks like bpftool will=20
-still fail to resolve the call, and only print out an address today. I'm=20
-wondering if we can instead encode the bpf prog id in imm32. That way,=20
-we should be able to indicate the BPF function being called into. =20
-Daniel, is that something we can consider?
+--OgApRN/oydYDdnYz
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-Thanks!
-- Naveen
+iQIzBAEBCAAdFiEEBVGi6LZstU1kwSxliIBOb1ldUjIFAlqMbL0ACgkQiIBOb1ld
+UjJFERAAhuwiBVxCWQs5NKL67h+hidriNHH3ALoXrhBhYQiVIzKyIiNPCHkpf/4C
+DmquQEuSbAWQoLN73scR5mBRF74ZTu2Oj+BFvu1KS/oj3xdMm0fWBSBkIhyPIFXp
+9pjItNmj3OBhODRP472IRlUxDh9LRnNYL20cpwYpUAVQIrM8HHWDl6W6RH5SKXIf
+CcU1L4Y1i7M5Ir+wuc9bhGPBcHtZopQT7MQh2I/gImWdLVfrPObTsk8KpByaZoCe
+oWAeZSxJRldTPjL+2X8N7lyabRV/Xvrvg4mJUUFXUfjUY1guIae3xbEMI2Ko/Avu
+W0zsXNuBy+37KmW4PTZpIEoK0aaN8vipUBcGmwHYXtTDFHATKxjTugw6+VK2Wpj7
+vjnLUXOVTcZFdt+wWJd7rpHaRfUGhG3aBu+fi73AoAzQSSQM8X9blHgk4yJ4VDiv
+dzS60EDoWoew3PprwJIo8ytO4SnMBIglBeuiaa+V9NORc5tczwkwUiH6aStr/KEa
++L5OiKgiIVIUU1hAlClazpwF/O6I7KH2RHqIM8oSr7SXas0viPy4IXnwDmwr3wBD
+DPeBD79K+Txb+EnKC5D/Z9Wu769rwAZ2TYgMjTQWN8W5hgaXwkB6MJVcJKNmlaxQ
+8TRf6C+lhOCazPIbV18ltcQFWBT35DnO2mGWa6lnArJrfBN2zVg=
+=N61S
+-----END PGP SIGNATURE-----
 
-=
+--OgApRN/oydYDdnYz--
