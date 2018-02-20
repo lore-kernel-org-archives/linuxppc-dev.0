@@ -1,62 +1,33 @@
-Return-Path: <thierry.reding@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from EUR02-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr10051.outbound.protection.outlook.com [40.107.1.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlyvh2z5QzDrSd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 22:25:00 +1100 (AEDT)
-Received: by mail-qk0-x244.google.com with SMTP id y137so9808460qka.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 03:25:00 -0800 (PST)
-Date: Tue, 20 Feb 2018 12:24:55 +0100
-From: Thierry Reding <thierry.reding@gmail.com>
-To: Marcus Folkesson <marcus.folkesson@gmail.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com, Eric Anholt <eric@anholt.net>,
- Stefan Wahren <stefan.wahren@i2se.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Support Opensource <support.opensource@diasemi.com>,
- Baruch Siach <baruch@tkos.co.il>,
- William Breathitt Gray <vilhelm.gray@gmail.com>,
- Jimmy Vance <jimmy.vance@hpe.com>, Keguang Zhang <keguang.zhang@gmail.com>,
- Joachim Eastwood <manabian@gmail.com>,
- Tomas Winkler <tomas.winkler@intel.com>,
- Johannes Thumshirn <morbidrsa@gmail.com>,
- Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
- Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>,
- Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
- Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
- Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
- linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
- linux-mediatek@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
-Subject: Re: [PATCH v2] watchdog: add SPDX identifiers for watchdog subsystem
-Message-ID: <20180220112455.GB9556@ulmo>
-References: <20180220104542.32286-1-marcus.folkesson@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlz4L15QyzDrTq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 22:32:32 +1100 (AEDT)
+From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Christophe LEROY <christophe.leroy@c-s.fr>, "David S. Miller"
+ <davem@davemloft.net>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping outside
+ the requests
+Date: Tue, 20 Feb 2018 11:32:25 +0000
+Message-ID: <VI1PR0402MB3342B99A1BEA5622F29F79EF98CF0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+References: <cover.1507284818.git.christophe.leroy@c-s.fr>
+ <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
+ <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
+ <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
+ <VI1PR0402MB334256E1706A4E1AED09F4A598C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <d5809df9-fc17-03da-b7f4-038d973dbd1f@c-s.fr>
+ <VI1PR0402MB334299B37F17771BFA9AFDDA98C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <20180220103436.GA20571@gondor.apana.org.au>
+Content-Type: text/plain; charset="iso-8859-2"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
-In-Reply-To: <20180220104542.32286-1-marcus.folkesson@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -66,36 +37,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---JP+T4n/bALQSJXh8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue, Feb 20, 2018 at 11:45:31AM +0100, Marcus Folkesson wrote:
-[...]
->  drivers/watchdog/tegra_wdt.c           | 10 +------
-[...]
-
-Acked-by: Thierry Reding <treding@nvidia.com>
-
---JP+T4n/bALQSJXh8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlqMBYcACgkQ3SOs138+
-s6FRCA/+L1X7BfUKUkdJE+llR+ybOHpXilPB7yoH13SoNPr3XHybgRI9O19maL8c
-bwuUEcCW9T9TbpdXf2OgLXeVAYnViZGASGDTZet20w0E3Qdol0WAZNIzVeL76ROv
-Ajx9yQ0LWo8QyZFuc8R2u2TcJ2ogY4KEwM6qOrsSqPtpdQbJH/2IPHQD0q5ty54N
-Yd2GIp41JdD8WGpyeXrDb2AYa3POMgp8lxbFYX3Os7fnC38/MftAn07psibY5aQK
-MkGdFDG2KYeORyNFby7swdCEM8NW79zNy9QIhKkkHMOPbIBq/YOop76yD3ZKb2j/
-PE+9ULqwiPmQFO6EjwT0+UfNQxbIbU9cgaVD4F2wweMUBQFpSk3xh3hRoUmetLN3
-sM810bRGbdevwQ365+7sQ/NRNG4BlxnXseb3JMW4WFvvRWpPdV1OBdyDfVo+P9vV
-e+0wu0C9dXmwkA0MoLoDmJHPzb+XChWNvjmJRwrDx03d6S2HalBn0kE1sJftRopb
-gYmAzxkQhy34/i29PA9+uC93Cub31KQldgpHNnO49/ZwgPUiiZOEjauYl1lliejX
-v+Tr4uQJzZhdCfmv382eTqJ8xFW9EXvaIGK9R3g8XVEEmQey8av3iFyS4iQmHHgt
-IcC2m9dawjP6YkM4gA5WRt+ZriFgCyMzHzQDZ/iU/NlkDPviqzE=
-=HcvD
------END PGP SIGNATURE-----
-
---JP+T4n/bALQSJXh8--
+On 2/20/2018 12:34 PM, Herbert Xu wrote:=0A=
+> On Mon, Feb 19, 2018 at 01:16:30PM +0000, Horia Geant=E3 wrote:=0A=
+>>=0A=
+>>> And what about ALGIF path from user space ?=0A=
+>>> What if the user never calls the last sendmsg() which will call =0A=
+>>> hash_finup() ?=0A=
+>>>=0A=
+>> User is expected to follow the rules of the crypto API.=0A=
+>> Of course, kernel won't (or at least shouldn't) crash in case of misuse.=
+=0A=
+>> However, in these cases some resources might not be freed - it's unavoid=
+able.=0A=
+> =0A=
+> the crypto API does not require the presence of a finalisation.=0A=
+> It is entirely optional.  So leaving resources pinned down until=0A=
+> final/finup occurs is unacceptable, both from user-space and the=0A=
+> kernel.=0A=
+> =0A=
+If final/finup is optional, how is the final hash supposed to be retrieved?=
+=0A=
+=0A=
+According to documentation, these are the accepted flows (with the option t=
+o=0A=
+export/import a partial hash b/w update and final/finup):=0A=
+=0A=
+.init() -> .update() -> .final()=0A=
+            ^    |         |=0A=
+            '----'         '---> HASH=0A=
+=0A=
+.init() -> .update() -> .finup()=0A=
+            ^    |         |=0A=
+            '----'         '---> HASH=0A=
+=0A=
+           .digest()=0A=
+               |=0A=
+               '---------------> HASH=0A=
+=0A=
+Note that digest() is not an issue in the case we are discussing, since res=
+ource=0A=
+allocation happens only in init().=0A=
+=0A=
+Thanks,=0A=
+Horia=0A=
