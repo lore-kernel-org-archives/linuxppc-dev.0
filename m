@@ -1,23 +1,23 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pg0-x233.google.com (mail-pg0-x233.google.com
- [IPv6:2607:f8b0:400e:c05::233])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlmds3nYDzDrSP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:42:25 +1100 (AEDT)
-Received: by mail-pg0-x233.google.com with SMTP id g12so6665914pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:42:25 -0800 (PST)
-Message-ID: <1519098138.6563.3.camel@gmail.com>
-Subject: Re: [RFC PATCH 12/12] [WIP] selftests/powerpc: Remove incorrect
- tm-syscall selftest
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlmgW3JlGzF0QV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:43:51 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id u13so3178733plq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:43:51 -0800 (PST)
+Message-ID: <1519098225.6563.5.camel@gmail.com>
+Subject: Re: [RFC PATCH 06/12] [WIP] powerpc/tm: Remove dead code from
+ __switch_to_tm()
 From: Cyril Bur <cyrilbur@gmail.com>
 To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Tue, 20 Feb 2018 14:42:18 +1100
-In-Reply-To: <1519095881.7360.59.camel@neuling.org>
+Date: Tue, 20 Feb 2018 14:43:45 +1100
+In-Reply-To: <1519095125.7360.54.camel@neuling.org>
 References: <20180220002241.29648-1-cyrilbur@gmail.com>
- <20180220002241.29648-13-cyrilbur@gmail.com>
- <1519095881.7360.59.camel@neuling.org>
+ <20180220002241.29648-7-cyrilbur@gmail.com>
+ <1519095125.7360.54.camel@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,30 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-20 at 14:04 +1100, Michael Neuling wrote:
-> > --- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
-> > +++ /dev/null
-> > @@ -1,106 +0,0 @@
-> > -/*
-> > - * Copyright 2015, Sam Bobroff, IBM Corp.
-> > - * Licensed under GPLv2.
-> > - *
-> > - * Test the kernel's system call code to ensure that a system call
-> > - * made from within an active HTM transaction is aborted with the
-> > - * correct failure code.
-> 
-> The above is still true
-> 
-> > - * Conversely, ensure that a system call made from within a
-> > - * suspended transaction can succeed.
-> 
-> This is true anymore....
-> 
-> So can we just modify the test to remove the second part?
+On Tue, 2018-02-20 at 13:52 +1100, Michael Neuling wrote:
+> Not sure I understand this.. should it be merged with the last patch?
 > 
 
-Oh true I overlooked that
+Its all going to have to be one patch - I've left it split out to make
+it more obvious which bits have had to mess with, this series
+absolutely doesn't bisect.
 
-Thanks
-
-> Mikey
+> Needs a comment here.
+> 
+> 
+> On Tue, 2018-02-20 at 11:22 +1100, Cyril Bur wrote:
+> > ---
+> >  arch/powerpc/kernel/process.c | 24 +++++-------------------
+> >  1 file changed, 5 insertions(+), 19 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> > index ea75da0fd506..574b05fe7d66 100644
+> > --- a/arch/powerpc/kernel/process.c
+> > +++ b/arch/powerpc/kernel/process.c
+> > @@ -1027,27 +1027,13 @@ static inline void __switch_to_tm(struct task_struct *prev,
+> >  		struct task_struct *new)
+> >  {
+> >  	/*
+> > -	 * So, with the rework none of this code should not be needed.
+> > -	 * I've left in the reclaim for now. This *should* save us
+> > -	 * from any mistake in the new code. Also the
+> > -	 * enabling/disabling logic of MSR_TM really should be
+> > +	 * The enabling/disabling logic of MSR_TM really should be
+> >  	 * refactored into a common way with MSR_{FP,VEC,VSX}
+> >  	 */
+> > -	if (cpu_has_feature(CPU_FTR_TM)) {
+> > -		if (tm_enabled(prev) || tm_enabled(new))
+> > -			tm_enable();
+> > -
+> > -		if (tm_enabled(prev)) {
+> > -			prev->thread.load_tm++;
+> > -			tm_reclaim_task(prev);
+> > -			/*
+> > -			 * The disabling logic may be confused don't
+> > -			 * disable for now
+> > -			 *
+> > -			 * if (!MSR_TM_ACTIVE(prev->thread.regs->msr) && prev->thread.load_tm == 0)
+> > -			 *	prev->thread.regs->msr &= ~MSR_TM;
+> > -			 */
+> > -		}
+> > +	if (cpu_has_feature(CPU_FTR_TM) && tm_enabled(prev)) {
+> > +		prev->thread.load_tm++;
+> > +		if (!MSR_TM_ACTIVE(prev->thread.regs->msr) && prev->thread.load_tm == 0)
+> > +			prev->thread.regs->msr &= ~MSR_TM;
+> >  	}
+> >  }
+> >  
