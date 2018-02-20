@@ -1,23 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlvcN4YsszF0Zq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 19:56:36 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- "Manoj N . Kumar" <manoj@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org, "Matthew R . Ochs" <mrochs@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] scsi: cxlflash: Select SCSI_SCAN_ASYNC
-In-Reply-To: <20180219071037.27938-1-vaibhav@linux.vnet.ibm.com>
-References: <20180219071037.27938-1-vaibhav@linux.vnet.ibm.com>
-Date: Tue, 20 Feb 2018 19:56:35 +1100
-Message-ID: <87sh9wrqd8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlvtz56ZkzF0T4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 20:09:15 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1K98uPG105387
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 04:09:13 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g896tdbr3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 04:09:12 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 20 Feb 2018 09:09:10 -0000
+Subject: Re: [PATCH V5] cxl: Fix timebase synchronization status on P9
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1519050491-15326-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 20 Feb 2018 10:09:07 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1519050491-15326-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <603d4cad-becb-6ed0-635e-f4a99339a45f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +38,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
 
-> The cxlflash driver uses "Asynchronous SCSI scanning" enabled by
-> CONFIG_SCSI_SCAN_ASYNC. Without this enabled the modprobe of cxlflash
-> module gets hung with following backtrace:
->
-> Call Trace:
->  __switch_to+0x2cc/0x470
->  __schedule+0x288/0xab0
->  schedule+0x40/0xc0
->  schedule_timeout+0x254/0x4f0
->  wait_for_common+0xdc/0x260
->  flush_work+0x140/0x2a0
->  work_on_cpu+0x88/0xb0
->  pci_device_probe+0x1d0/0x220
->  driver_probe_device+0x408/0x5b0
->  __driver_attach+0x16c/0x1a0
->  bus_for_each_dev+0xb8/0x110
->  driver_attach+0x3c/0x60
->  bus_add_driver+0x1d8/0x370
->  driver_register+0x9c/0x180
->  __pci_register_driver+0x74/0xa0
->  init_cxlflash+0x158/0x1cc
->  do_one_initcall+0x68/0x1e0
->  do_init_module+0x90/0x254
->  load_module+0x2f8c/0x3720
->  SyS_finit_module+0xcc/0x140
->  system_call+0x58/0x6c
 
-Why does it "hang"? That's kind of bizarre, I would expect either a
-build or runtime failure if a feature the driver requires is missing.
+Le 19/02/2018 à 15:28, Christophe Lombard a écrit :
+> The PSL Timebase register is updated by the PSL to maintain the
+> timebase.
+> On P9, the Timebase value is only provided by the CAPP as received
+> the last time a timebase request was performed.
+> The timebase requests are initiated through the adapter configuration or
+> application registers.
+> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
+> now dynamically updated according the content of the PSL Timebase
+> register.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> 
+> ---
+> This patch applies on top of this patch:
+>   http://patchwork.ozlabs.org/patch/873663/
+> 
+> Changelog[v5]
+>   - Rebased to latest upstream.
+>   - Changed the type of 'delta'
+> 
+> Changelog[v4]
+>   - Rebased to latest upstream.
+>   - Added log message.
+> 
+> Changelog[v3]
+>   - Rebased to latest upstream.
+>   - Dynamic update is now applied to P8.
+> 
+> Changelog[v2]
+>   - Missing Signed-off-by.
+>   - Spaces required around the ':'.
+> ---
+>   drivers/misc/cxl/pci.c   | 17 -----------------
+>   drivers/misc/cxl/sysfs.c | 10 ++++++++++
+>   2 files changed, 10 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 66eed6a..3247eaf 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
+> 
+>   static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>   {
+> -	u64 psl_tb;
+> -	int delta;
+> -	unsigned int retry = 0;
+>   	struct device_node *np;
+> 
+>   	adapter->psl_timebase_synced = false;
+> @@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>   	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
+>   	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
+> 
+> -	/* Wait until CORE TB and PSL TB difference <= 16usecs */
+> -	do {
+> -		msleep(1);
+> -		if (retry++ > 5) {
+> -			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
+> -			return;
+> -		}
+> -		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+> -		delta = mftb() - psl_tb;
+> -		if (delta < 0)
+> -			delta = -delta;
+> -	} while (tb_to_ns(delta) > 16000);
+> -
+> -	adapter->psl_timebase_synced = true;
+>   	return;
+>   }
+> 
+> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+> index a8b6d6a..a20bf8e 100644
+> --- a/drivers/misc/cxl/sysfs.c
+> +++ b/drivers/misc/cxl/sysfs.c
+> @@ -62,6 +62,16 @@ static ssize_t psl_timebase_synced_show(struct device *device,
+>   					char *buf)
+>   {
+>   	struct cxl *adapter = to_cxl_adapter(device);
+> +	u64 psl_tb, delta;
+> +
+> +	psl_tb = adapter->native->sl_ops->timebase_read(adapter);
 
-> diff --git a/drivers/scsi/cxlflash/Kconfig b/drivers/scsi/cxlflash/Kconfig
-> index a011c5dbf214..f054c1b0fff3 100644
-> --- a/drivers/scsi/cxlflash/Kconfig
-> +++ b/drivers/scsi/cxlflash/Kconfig
-> @@ -6,6 +6,7 @@ config CXLFLASH
->  	tristate "Support for IBM CAPI Flash"
->  	depends on PCI && SCSI && CXL && EEH
->  	select IRQ_POLL
-> +	select SCSI_SCAN_ASYNC
+It would dump core in a lpar.
+pHyp is supposed to have it initialized, though we have no way to know 
+for sure. On p8, we're also only supporting a card which doesn't have 
+timebase problem on powerVM and it doesn't apply to p9. So I think we 
+just need to recompute the status on bare-metal only.
 
-It's user configurable, so it's rude to select it. It can also be
-disabled on the kernel command line, so this seems like a fragile
-solution.
+   Fred
 
-cheers
+
+> +	delta = abs(mftb() - psl_tb);
+> +
+> +	/* CORE TB and PSL TB difference <= 16usecs ? */
+> +	adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
+> +	pr_devel("PSL timebase %s - delta: 0x%016llx\n",
+> +		 (tb_to_ns(delta) < 16000) ? "synchronized" :
+> +		 "not synchronized", tb_to_ns(delta));
+> 
+>   	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
+>   }
+> 
