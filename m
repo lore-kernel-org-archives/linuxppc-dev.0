@@ -1,55 +1,28 @@
-Return-Path: <pavel@ucw.cz>
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
- [195.113.26.193])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlYnj6MpkzDrDC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 06:33:28 +1100 (AEDT)
-Date: Mon, 19 Feb 2018 20:33:12 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, elfring@users.sourceforge.net,
- kernel list <linux-kernel@vger.kernel.org>, vgupta@synopsys.com,
- linux@armlinux.org.uk, oleg@redhat.com, catalin.marinas@arm.com,
- will.deacon@arm.com, paulus@ozlabs.org, benh@kernel.crashing.org,
- mpe@ellerman.id.au, ard.biesheuvel@linaro.org, tglx@linutronix.de,
- mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- scott.bauer@intel.com, jonathan.derrick@intel.com, axboe@kernel.dk,
- daniel.lezcano@linaro.org, maxime.ripard@free-electrons.com,
- wens@csie.org, alexander.deucher@amd.com, christian.koenig@amd.com,
- David1.Zhou@amd.com, airlied@linux.ie, robdclark@gmail.com,
- joro@8bytes.org, shli@kernel.org, shawnguo@kernel.org,
- kernel@pengutronix.de, fabio.estevam@nxp.com,
- akpm@linux-foundation.org, Alexey.Brodkin@synopsys.com,
- mhocko@suse.com, vbabka@suse.cz, Vladislav.Zakharov@synopsys.com,
- noamca@mellanox.com, yamada.masahiro@socionext.com,
- sboyd@codeaurora.org, viresh.kumar@linaro.org,
- linus.walleij@linaro.org, heiko@sntech.de, aik@ozlabs.ru,
- ruscur@russell.cc, david@gibson.dropbear.id.au,
- fbarrat@linux.vnet.ibm.com, alistair@popple.id.au, robh@kernel.org,
- joe@perches.com, harry.wentland@amd.com, tony.cheng@amd.com,
- Wenjing.Liu@amd.com, airlied@redhat.com, Ding.Wang@amd.com,
- sylvia.tsai@amd.com, hersenxs.wu@amd.com, Rex.Zhu@amd.com,
- JinHuiEric.Huang@amd.com, dan.carpenter@oracle.com,
- architt@codeaurora.org, narmstrong@baylibre.com,
- ville.syrjala@linux.intel.com, jcrouse@codeaurora.org,
- aishpant@gmail.com, noralf@tronnes.org, andresx7@gmail.com,
- Monk.Liu@amd.com, nicolai.haehnle@amd.com,
- Andrey.Grodzovsky@amd.com, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-efi@vger.kernel.org,
- linux-block@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
- freedreno@lists.freedesktop.org, iommu@lists.linux-foundation.org,
- linux-raid@vger.kernel.org
-Subject: Re: [PATCH] fix double ;;s in code
-Message-ID: <20180219193312.GA3709@amd>
-References: <20180217211955.GE9640@amd>
- <187435d4-5017-edb5-9b6a-b433a148bfcc@c-s.fr>
- <20180219154135.GV22199@phenom.ffwll.local>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
-In-Reply-To: <20180219154135.GV22199@phenom.ffwll.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlhCr0P2FzDrHV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 11:23:03 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1K0JmkB053678
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:23:01 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g80r1twcd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:23:01 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Tue, 20 Feb 2018 00:22:58 -0000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: mikey@neuling.org, benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 00/12] Deal with TM on kernel entry and exit
+Date: Tue, 20 Feb 2018 11:22:29 +1100
+Message-Id: <20180220002241.29648-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,118 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is very much a proof of concept and if it isn't clear from the
+commit names, still a work in progress.
 
---wRRV7LY7NUeQGEoC
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I believe I have something that works - all the powerpc selftests
+pass. I would like to get some eyes on it to a) see if I've missed
+anything big and b) some opinions on if it is looking like a net
+improvement.
 
-On Mon 2018-02-19 16:41:35, Daniel Vetter wrote:
-> On Sun, Feb 18, 2018 at 11:00:56AM +0100, Christophe LEROY wrote:
-> >=20
-> >=20
-> > Le 17/02/2018 =E0 22:19, Pavel Machek a =E9crit=A0:
-> > >=20
-> > > Fix double ;;'s in code.
-> > >=20
-> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> >=20
-> > A summary of the files modified on top of the patch would help understa=
-nd
-> > the impact.
-> >=20
-> > A maybe there should be one patch by area, eg one for each arch specific
-> > modif and one for drivers/ and one for block/ ?
->=20
-> Yeah, pls split this into one patch per area, with a suitable patch
-> subject prefix. Look at git log of each file to get a feeling for what's
-> the standard in each area.
+Obviously it is still a bit rough around the edges, I'll have to
+convince myself that the SPR code is correct. I don't think the
+TM_KERNEL_ENTRY macro needs to check that we came from userspace, if
+TM is on then we can probably assume. Maybe a check not in the
+fastpath. Some of the BUG_ON()s will probably go.
 
-Yeah I can spend hour spliting it, and then people will ignore it
-anyway.
+Background:
+Currently TM is dealt with when we need to. That is, when we switch
+processes, we'll (if nessesary) reclaim the outgoing process and (if
+nessesary) recheckpoint the incoming process. Same with signals, if we
+need to deliver a signal, we'll ensure we've reclaimed in order to
+have all the information and go from there.
+I, along with some others got curious to see what it would look like if
+we did the 'opposite'.
+At all kernel entry points that won't simply just zoom straight to an
+RFID we now check if the thread was transactional and do the reclaim.
+Correspondingly do the recheckpoint quite late on exception exit. It
+turns out we already had a lot of the code pathes set up on the exit
+path as there were things that TM had special cased on exit already.
+I wasn't sure it it would lead to more or less complexity and though
+I'd have to try it to see. I feel like it was almost a win but SPRs
+did add some annoying caveats.
 
-If you care about one of the files being modified, please fix the
-bug, ";;" is a clear bug.
+In order to get this past Michael I'm going to prove it performs, or
+rather, doesn't slow anything down - workload suggestions welcome.
 
-If you don't care ... well I don't care either.
+Thanks,
 
-drivers/gpu/ has four entries, i guess that's something for you.
+Cyril Bur (12):
+  powerpc/tm: Remove struct thread_info param from tm_reclaim_thread()
+  selftests/powerpc: Fix tm.h helpers
+  selftests/powerpc: Add tm-signal-drop-transaction TM test
+  selftests/powerpc: Use less common thread names
+  [WIP] powerpc/tm: Reclaim/recheckpoint on entry/exit
+  [WIP] powerpc/tm: Remove dead code from __switch_to_tm()
+  [WIP] powerpc/tm: Add TM_KERNEL_ENTRY in more delicate exception
+    pathes
+  [WIP] powerpc/tm: Fix *unavailable_tm exceptions
+  [WIP] powerpc/tm: Tweak signal code to handle new reclaim/recheckpoint
+    times
+  [WIP] powerpc/tm: Correctly save/restore checkpointed sprs
+  [WIP] powerpc/tm: Afterthoughts
+  [WIP] selftests/powerpc: Remove incorrect tm-syscall selftest
 
-								Pavel
+ arch/powerpc/include/asm/exception-64s.h           |  25 ++++
+ arch/powerpc/kernel/entry_64.S                     |  20 ++-
+ arch/powerpc/kernel/exceptions-64s.S               |  31 ++++-
+ arch/powerpc/kernel/process.c                      | 145 ++++++++++++++++++---
+ arch/powerpc/kernel/ptrace.c                       |   9 +-
+ arch/powerpc/kernel/signal.c                       |  11 +-
+ arch/powerpc/kernel/signal_32.c                    |  16 +--
+ arch/powerpc/kernel/signal_64.c                    |  41 ++++--
+ arch/powerpc/kernel/traps.c                        |   3 -
+ tools/testing/selftests/powerpc/tm/Makefile        |   5 +-
+ .../powerpc/tm/tm-signal-drop-transaction.c        |  74 +++++++++++
+ .../testing/selftests/powerpc/tm/tm-syscall-asm.S  |  28 ----
+ tools/testing/selftests/powerpc/tm/tm-syscall.c    | 106 ---------------
+ .../testing/selftests/powerpc/tm/tm-unavailable.c  |   4 +-
+ tools/testing/selftests/powerpc/tm/tm.h            |  10 +-
+ 15 files changed, 319 insertions(+), 209 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-drop-transaction.c
+ delete mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+ delete mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall.c
 
-> > > diff --git a/drivers/gpu/drm/amd/display/dc/core/dc_link_dp.c b/drive=
-rs/gpu/drm/amd/display/dc/core/dc_link_dp.c
-> > > index 61e8c3e..33d91e4 100644
-> > > --- a/drivers/gpu/drm/amd/display/dc/core/dc_link_dp.c
-> > > +++ b/drivers/gpu/drm/amd/display/dc/core/dc_link_dp.c
-> > > @@ -718,7 +718,7 @@ static enum link_training_result perform_channel_=
-equalization_sequence(
-> > >   	uint32_t retries_ch_eq;
-> > >   	enum dc_lane_count lane_count =3D lt_settings->link_settings.lane_=
-count;
-> > >   	union lane_align_status_updated dpcd_lane_status_updated =3D {{0}};
-> > > -	union lane_status dpcd_lane_status[LANE_COUNT_DP_MAX] =3D {{{0}}};;
-> > > +	union lane_status dpcd_lane_status[LANE_COUNT_DP_MAX] =3D {{{0}}};
-> > >   	hw_tr_pattern =3D get_supported_tp(link);
-> > > diff --git a/drivers/gpu/drm/amd/powerplay/amd_powerplay.c b/drivers/=
-gpu/drm/amd/powerplay/amd_powerplay.c
-> > > index 4c3223a..adb6e7b 100644
-> > > --- a/drivers/gpu/drm/amd/powerplay/amd_powerplay.c
-> > > +++ b/drivers/gpu/drm/amd/powerplay/amd_powerplay.c
-> > > @@ -162,7 +162,7 @@ static int pp_hw_init(void *handle)
-> > >   		if(hwmgr->smumgr_funcs->start_smu(pp_handle->hwmgr)) {
-> > >   			pr_err("smc start failed\n");
-> > >   			hwmgr->smumgr_funcs->smu_fini(pp_handle->hwmgr);
-> > > -			return -EINVAL;;
-> > > +			return -EINVAL;
-> > >   		}
-> > >   		if (ret =3D=3D PP_DPM_DISABLED)
-> > >   			goto exit;
-> > > diff --git a/drivers/gpu/drm/msm/mdp/mdp5/mdp5_kms.c b/drivers/gpu/dr=
-m/msm/mdp/mdp5/mdp5_kms.c
-> > > index 3e9bba4..6d8e3a9 100644
-> > > --- a/drivers/gpu/drm/msm/mdp/mdp5/mdp5_kms.c
-> > > +++ b/drivers/gpu/drm/msm/mdp/mdp5/mdp5_kms.c
-> > > @@ -680,7 +680,7 @@ struct msm_kms *mdp5_kms_init(struct drm_device *=
-dev)
-> > >   	} else {
-> > >   		dev_info(&pdev->dev,
-> > >   			 "no iommu, fallback to phys contig buffers for scanout\n");
-> > > -		aspace =3D NULL;;
-> > > +		aspace =3D NULL;
-> > >   	}
-> > >   	pm_runtime_put_sync(&pdev->dev);
-> > > diff --git a/drivers/gpu/drm/scheduler/gpu_scheduler.c b/drivers/gpu/=
-drm/scheduler/gpu_scheduler.c
-> > > index 2c18996..0d95888 100644
-> > > --- a/drivers/gpu/drm/scheduler/gpu_scheduler.c
-> > > +++ b/drivers/gpu/drm/scheduler/gpu_scheduler.c
-> > > @@ -461,7 +461,7 @@ void drm_sched_hw_job_reset(struct drm_gpu_schedu=
-ler *sched, struct drm_sched_jo
-> > >   {
-> > >   	struct drm_sched_job *s_job;
-> > >   	struct drm_sched_entity *entity, *tmp;
-> > > -	int i;;
-> > > +	int i;
-> > >   	spin_lock(&sched->job_list_lock);
-> > >   	list_for_each_entry_reverse(s_job, &sched->ring_mirror_list, node)=
- {
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---wRRV7LY7NUeQGEoC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlqLJngACgkQMOfwapXb+vLMuACfZ4g9YFmQ7Hp3tW427eLSrtF4
-XoEAn2z1vRKfakxYqYv9uHa2jCPTvkLO
-=NM8e
------END PGP SIGNATURE-----
-
---wRRV7LY7NUeQGEoC--
+-- 
+2.16.2
