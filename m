@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmFGL65lSzF18G
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:12:10 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id a6so4023797pfi.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:12:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmFGm3p7WzF19Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:12:32 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id x19so8212877plr.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:12:32 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 9/9] powerpc/64s: add POWER9 CPU type selection
-Date: Wed, 21 Feb 2018 05:08:32 +1000
-Message-Id: <20180220190832.1872-10-npiggin@gmail.com>
+Subject: [PATCH 1/9] powerpc/64s: cputable add all POWER9 features to
+ CPU_FTRS_ALWAYS
+Date: Wed, 21 Feb 2018 05:08:24 +1000
+Message-Id: <20180220190832.1872-2-npiggin@gmail.com>
 In-Reply-To: <20180220190832.1872-1-npiggin@gmail.com>
 References: <20180220190832.1872-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,46 +27,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/Makefile                  | 3 ++-
- arch/powerpc/platforms/Kconfig.cputype | 5 +++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/cputable.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 973b1a1b98d2..f46b6cf364d7 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -146,7 +146,7 @@ CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
- ifeq ($(CONFIG_PPC_BOOK3S_64),y)
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=power8
--CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power8)
-+CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power9,-mtune=power8)
- else
- CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power7,$(call cc-option,-mtune=power5))
- CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mcpu=power5,-mcpu=power4)
-@@ -175,6 +175,7 @@ CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
- CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
- CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
- CFLAGS-$(CONFIG_POWER8_CPU) += $(call cc-option,-mcpu=power8)
-+CFLAGS-$(CONFIG_POWER9_CPU) += $(call cc-option,-mcpu=power9)
- 
- # Altivec option not allowed with e500mc64 in GCC.
- ifeq ($(CONFIG_ALTIVEC),y)
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index ad878990c896..69be65450c0c 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -121,6 +121,11 @@ config POWER8_CPU
- 	depends on PPC_BOOK3S_64
- 	select ARCH_HAS_FAST_MULTIPLIER
- 
-+config POWER9_CPU
-+	bool "POWER9"
-+	depends on PPC_BOOK3S_64
-+	select ARCH_HAS_FAST_MULTIPLIER
-+
- config E5500_CPU
- 	bool "Freescale e5500"
- 	depends on E500
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index a2c5c95882cf..1fb9b1ea4662 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -541,7 +541,7 @@ enum {
+ 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
+ 	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
+ 	     CPU_FTRS_POWER8_DD1 & ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & \
+-	     CPU_FTRS_POWER9)
++	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1)
+ #endif
+ #else
+ enum {
 -- 
 2.16.1
