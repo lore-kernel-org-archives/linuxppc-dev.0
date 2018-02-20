@@ -1,20 +1,20 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlpwF2bdyzF0WY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 16:25:01 +1100 (AEDT)
-Message-ID: <1519104300.5655.2.camel@neuling.org>
-Subject: Re: [RFC PATCH 05/12] [WIP] powerpc/tm: Reclaim/recheckpoint on
- entry/exit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlpzN1cdvzDqYv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 16:27:44 +1100 (AEDT)
+Message-ID: <1519104463.5655.4.camel@neuling.org>
+Subject: Re: [RFC PATCH 10/12] [WIP] powerpc/tm: Correctly save/restore
+ checkpointed sprs
 From: Michael Neuling <mikey@neuling.org>
 To: Cyril Bur <cyrilbur@gmail.com>, benh@kernel.crashing.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Tue, 20 Feb 2018 16:25:00 +1100
-In-Reply-To: <1519098854.6563.15.camel@gmail.com>
+Date: Tue, 20 Feb 2018 16:27:43 +1100
+In-Reply-To: <1519099169.6563.19.camel@gmail.com>
 References: <20180220002241.29648-1-cyrilbur@gmail.com>
- <20180220002241.29648-6-cyrilbur@gmail.com>
- <1519095033.7360.52.camel@neuling.org> <1519098854.6563.15.camel@gmail.com>
+ <20180220002241.29648-11-cyrilbur@gmail.com>
+ <1519095630.7360.57.camel@neuling.org> <1519099169.6563.19.camel@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,34 +26,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-> > > @@ -1055,6 +1082,8 @@ void restore_tm_state(struct pt_regs *regs)
-> > >  	msr_diff =3D current->thread.ckpt_regs.msr & ~regs->msr;
-> > >  	msr_diff &=3D MSR_FP | MSR_VEC | MSR_VSX;
+On Tue, 2018-02-20 at 14:59 +1100, Cyril Bur wrote:
+> On Tue, 2018-02-20 at 14:00 +1100, Michael Neuling wrote:
+> > This needs a description of what you're trying to do.  "Correctly" does=
+n't
+> > really mean anything.
+> >=20
+> >=20
+> > On Tue, 2018-02-20 at 11:22 +1100, Cyril Bur wrote:
+> > > ---
+> > >  arch/powerpc/kernel/process.c | 57 +++++++++++++++++++++++++++++++++=
+++++++++-
+> > > -
+> > >  arch/powerpc/kernel/ptrace.c  |  9 +++----
+> > >  2 files changed, 58 insertions(+), 8 deletions(-)
+> > >=20
+> > > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/proc=
+ess.c
+> > > index cd3ae80a6878..674f75c56172 100644
+> > > --- a/arch/powerpc/kernel/process.c
+> > > +++ b/arch/powerpc/kernel/process.c
+> > > @@ -859,6 +859,8 @@ static inline bool tm_enabled(struct task_struct =
+*tsk)
+> > >  	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
+> > >  }
 > > > =20
-> > > +	tm_recheckpoint(&current->thread);
+> > > +static inline void save_sprs(struct thread_struct *t);
 > > > +
+> > >  static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cau=
+se)
+> > >  {
+> > >  	/*
+> > > @@ -879,6 +881,8 @@ static void tm_reclaim_thread(struct thread_struc=
+t *thr,
+> > > uint8_t cause)
+> > >  	if (!MSR_TM_SUSPENDED(mfmsr()))
+> > >  		return;
+> > > =20
+> > > +	save_sprs(thr);
+> > > +
+> > >  	giveup_all(container_of(thr, struct task_struct, thread));
+> > > =20
+> > >  	tm_reclaim(thr, cause);
+> > > @@ -991,6 +995,37 @@ void tm_recheckpoint(struct thread_struct *threa=
+d)
+> > > =20
+> > >  	__tm_recheckpoint(thread);
+> > > =20
+> > > +	/*
+> > > +	 * This is a stripped down restore_sprs(), we need to do this
+> > > +	 * now as we might go straight out to userspace and currently
+> > > +	 * the checkpointed values are on the CPU.
+> > > +	 *
+> > > +	 * TODO: Improve
+> > > +	 */
+> > > +#ifdef CONFIG_ALTIVEC
+> > > +	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+> > > +		mtspr(SPRN_VRSAVE, thread->vrsave);
+> > > +#endif
+> > > +#ifdef CONFIG_PPC_BOOK3S_64
+> > > +	if (cpu_has_feature(CPU_FTR_DSCR)) {
+> > > +		u64 dscr =3D get_paca()->dscr_default;
+> > > +		if (thread->dscr_inherit)
+> > > +			dscr =3D thread->dscr;
+> > > +
+> > > +		mtspr(SPRN_DSCR, dscr);
+> > > +	}
+> > > +
+> > > +	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
+> > > +		/* The EBB regs aren't checkpointed */
+> > > +		mtspr(SPRN_FSCR, thread->fscr);
+> > > +
+> > > +		mtspr(SPRN_TAR, thread->tar);
+> > > +	}
+> > > +
+> > > +	/* I think we don't need to */
+> > > +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> > > +		mtspr(SPRN_TIDR, thread->tidr);
+> > > +#endif
 > >=20
-> > So why do we do tm_recheckpoint at all? Shouldn't most of the tm_blah c=
-ode go
-> > away in process.c after all this?
-> >=20
+> > Why are you touching all the above hunk?
 >=20
-> I'm not sure I follow, we need to recheckpoint because we're going back
-> to userspace? Or would you rather calling the tm.S code directly from
-> the exception return path?
+> I copied restore_sprs. I'm tidying that up now - we can't call
+> restore_sprs because we don't have a prev and next thread.
 
-Yeah, I was thinking the point of this series was.  We do tm_reclaim right =
-on
-entry and tm_recheckpoint right on exit. =20
+Yeah needs to be tided up... we can't have another copy of the code.. obvio=
+usly.
 
-The bits in between (ie. the tm_blah() calls process.c) would mostly go awa=
-y.
+>=20
+> >=20
+> > >  	local_irq_restore(flags);
+> > >  }
+> > > =20
+> > > @@ -1193,6 +1228,11 @@ struct task_struct *__switch_to(struct task_st=
+ruct
+> > > *prev,
+> > >  #endif
+> > > =20
+> > >  	new_thread =3D &new->thread;
+> > > +	/*
+> > > +	 * Why not &prev->thread; ?
+> > > +	 * What is the difference between &prev->thread and
+> > > +	 * &current->thread ?
+> > > +	 */
+> >=20
+> > Why not just work it out and FIX THE CODE, rather than just rabbiting o=
+n about
+> > it! :-P
+>=20
+> Agreed - I started to and then had a mini freakout that things would
+> end really badly if they're not the same. So I left that comment as a
+> reminder to investigate.
+>=20
+> They should be the same though right?
 
-
-> Yes, I hope we'll be able to have a fairly big cleanup commit of tm_
-> code in process.c at the end of this series.
-
-Yep, agreed.
+Should be if prev =3D=3D current.
 
 Mikey
