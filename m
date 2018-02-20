@@ -1,61 +1,29 @@
-Return-Path: <vilhelm.gray@gmail.com>
-Received: from mail-yb0-x243.google.com (mail-yb0-x243.google.com
- [IPv6:2607:f8b0:4002:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zm0nv37MRzF0bv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 23:50:07 +1100 (AEDT)
-Received: by mail-yb0-x243.google.com with SMTP id z7-v6so3886962ybz.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 04:50:07 -0800 (PST)
-Date: Tue, 20 Feb 2018 07:49:55 -0500
-From: William Breathitt Gray <vilhelm.gray@gmail.com>
-To: Marcus Folkesson <marcus.folkesson@gmail.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com, Eric Anholt <eric@anholt.net>,
- Stefan Wahren <stefan.wahren@i2se.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Support Opensource <support.opensource@diasemi.com>,
- Baruch Siach <baruch@tkos.co.il>, Jimmy Vance <jimmy.vance@hpe.com>,
- Keguang Zhang <keguang.zhang@gmail.com>,
- Joachim Eastwood <manabian@gmail.com>,
- Tomas Winkler <tomas.winkler@intel.com>,
- Johannes Thumshirn <morbidrsa@gmail.com>,
- Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
- Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>,
- Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
- Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
- Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
- linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
- linux-mediatek@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
-Subject: Re: [PATCH v2] watchdog: add SPDX identifiers for watchdog subsystem
-Message-ID: <20180220124955.GA17814@sophia>
-References: <20180220104542.32286-1-marcus.folkesson@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20180220104542.32286-1-marcus.folkesson@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zm25t4rj2zF0S6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 00:49:04 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1KDigwn071072
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 08:49:02 -0500
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g8kxvttk6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 08:49:02 -0500
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Tue, 20 Feb 2018 13:49:00 -0000
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: [PATCH V6] cxl: Fix timebase synchronization status on P9
+Date: Tue, 20 Feb 2018 14:48:56 +0100
+Message-Id: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,62 +33,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 20, 2018 at 11:45:31AM +0100, Marcus Folkesson wrote:
->- Add SPDX identifier
->- Remove boiler plate license text
->- If MODULE_LICENSE and boiler plate does not match, go for boiler plate
->  license
->
->Signed-off-by: Marcus Folkesson <marcus.folkesson@gmail.com>
->Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
->Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
->Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
->Acked-by: Michal Simek <michal.simek@xilinx.com>
->---
->
->Notes:
->    v2:
->    	- Put back removed copyright texts for meson_gxbb_wdt and coh901327_wdt
->    	- Change to BSD-3-Clause for meson_gxbb_wdt
->    v1: Please have an extra look at meson_gxbb_wdt.c
+The PSL Timebase register is updated by the PSL to maintain the
+timebase.
+On P9, the Timebase value is only provided by the CAPP as received
+the last time a timebase request was performed.
+The timebase requests are initiated through the adapter configuration or
+application registers.
+The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
+now dynamically updated according the content of the PSL Timebase
+register.
 
-[...]
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
->diff --git a/drivers/watchdog/ebc-c384_wdt.c b/drivers/watchdog/ebc-c384_wdt.c
->index 2170b275ea01..c173b6f5c866 100644
->--- a/drivers/watchdog/ebc-c384_wdt.c
->+++ b/drivers/watchdog/ebc-c384_wdt.c
->@@ -1,15 +1,8 @@
->+// SPDX-License-Identifier: GPL-2.0
-> /*
->  * Watchdog timer driver for the WinSystems EBC-C384
->  * Copyright (C) 2016 William Breathitt Gray
->  *
->- * This program is free software; you can redistribute it and/or modify
->- * it under the terms of the GNU General Public License, version 2, as
->- * published by the Free Software Foundation.
->- *
->- * This program is distributed in the hope that it will be useful, but
->- * WITHOUT ANY WARRANTY; without even the implied warranty of
->- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
->- * General Public License for more details.
->  */
-> #include <linux/device.h>
-> #include <linux/dmi.h>
+---
+This patch applies on top of this patch:
+ http://patchwork.ozlabs.org/patch/873663/
 
-I have no problem with adding a SPDX line to the top of this file, but
-use "SPDX-License-Identifier: GPL-2.0-only" as I was very intentional
-with the selection of GPL version 2 only when I published this code.
+Changelog[v6]
+ - Rebased to latest upstream.
+ - Recompute the status only in native mode.
 
-Furthermore, please do not remove the existing copyright text; although
-it's just boilerplate for some, I was careful with the selection of
-these words, and I worry the SPDX line only -- despite its useful
-conciseness -- may lead to misunderstandings about my intentioned
-license for this code.
+Changelog[v5]
+ - Rebased to latest upstream.
+ - Changed the type of 'delta'
 
-For the time being, I can't Ack this patch with the changes it makes
-currently:
+Changelog[v4]
+ - Rebased to latest upstream.
+ - Added log message.
 
-        Nacked-by: William Breathitt Gray <vilhelm.gray@gmail.com>
+Changelog[v3]
+ - Rebased to latest upstream.
+ - Dynamic update is now applied to P8.
 
-William Breathitt Gray
+Changelog[v2]
+ - Missing Signed-off-by.
+ - Spaces required around the ':'.
+---
+ drivers/misc/cxl/pci.c   | 17 -----------------
+ drivers/misc/cxl/sysfs.c | 12 ++++++++++++
+ 2 files changed, 12 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 66eed6a..3247eaf 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
+ 
+ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+ {
+-	u64 psl_tb;
+-	int delta;
+-	unsigned int retry = 0;
+ 	struct device_node *np;
+ 
+ 	adapter->psl_timebase_synced = false;
+@@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+ 	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
+ 	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
+ 
+-	/* Wait until CORE TB and PSL TB difference <= 16usecs */
+-	do {
+-		msleep(1);
+-		if (retry++ > 5) {
+-			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
+-			return;
+-		}
+-		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+-		delta = mftb() - psl_tb;
+-		if (delta < 0)
+-			delta = -delta;
+-	} while (tb_to_ns(delta) > 16000);
+-
+-	adapter->psl_timebase_synced = true;
+ 	return;
+ }
+ 
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index a8b6d6a..95285b7 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -62,7 +62,19 @@ static ssize_t psl_timebase_synced_show(struct device *device,
+ 					char *buf)
+ {
+ 	struct cxl *adapter = to_cxl_adapter(device);
++	u64 psl_tb, delta;
+ 
++	/* Recompute the status only in native mode */
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
++		delta = abs(mftb() - psl_tb);
++
++		/* CORE TB and PSL TB difference <= 16usecs ? */
++		adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
++		pr_devel("PSL timebase %s - delta: 0x%016llx\n",
++			 (tb_to_ns(delta) < 16000) ? "synchronized" :
++			 "not synchronized", tb_to_ns(delta));
++	}
+ 	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
+ }
+ 
+-- 
+2.7.4
