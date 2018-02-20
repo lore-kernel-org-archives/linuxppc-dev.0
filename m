@@ -1,22 +1,56 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Vineet.Gupta1@synopsys.com>
+Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
+ [198.182.47.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlpzN1cdvzDqYv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 16:27:44 +1100 (AEDT)
-Message-ID: <1519104463.5655.4.camel@neuling.org>
-Subject: Re: [RFC PATCH 10/12] [WIP] powerpc/tm: Correctly save/restore
- checkpointed sprs
-From: Michael Neuling <mikey@neuling.org>
-To: Cyril Bur <cyrilbur@gmail.com>, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 20 Feb 2018 16:27:43 +1100
-In-Reply-To: <1519099169.6563.19.camel@gmail.com>
-References: <20180220002241.29648-1-cyrilbur@gmail.com>
- <20180220002241.29648-11-cyrilbur@gmail.com>
- <1519095630.7360.57.camel@neuling.org> <1519099169.6563.19.camel@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlqJg4B24zF0W8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 16:42:42 +1100 (AEDT)
+Subject: Re: [PATCH] fix double ;;s in code
+To: Pavel Machek <pavel@ucw.cz>, <elfring@users.sourceforge.net>,
+ kernel list <linux-kernel@vger.kernel>, <linux@armlinux.org.uk>,
+ <oleg@redhat.com>, <catalin.marinas@arm.com>, <will.deacon@arm.com>,
+ <paulus@ozlabs.org>, <benh@kernel.crashing.org>,
+ <mpe@ellerman.id.au>, <ard.biesheuvel@linaro.org>,
+ <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>,
+ <x86@kernel.org>, <scott.bauer@intel.com>,
+ <jonathan.derrick@intel.com>, <axboe@kernel.dk>,
+ <daniel.lezcano@linaro.org>, <maxime.ripard@free-electrons.com>,
+ <wens@csie.org>, <alexander.deucher@amd.com>,
+ <christian.koenig@amd.com>, <David1.Zhou@amd.com>,
+ <airlied@linux.ie>, <robdclark@gmail.com>, <joro@8bytes.org>,
+ <shli@kernel.org>, <shawnguo@kernel.org>, <kernel@pengutronix.de>,
+ <fabio.estevam@nxp.com>, <akpm@linux-foundation.org>,
+ <Alexey.Brodkin@synopsys.com>, <mhocko@suse.com>, <vbabka@suse.cz>,
+ <Vladislav.Zakharov@synopsys.com>, <noamca@mellanox.com>,
+ <yamada.masahiro@socionext.com>, <sboyd@codeaurora.org>,
+ <viresh.kumar@linaro.org>, <linus.walleij@linaro.org>,
+ <heiko@sntech.de>, <aik@ozlabs.ru>, <ruscur@russell.cc>,
+ <david@gibson.dropbear.id.au>, <fbarrat@linux.vnet.ibm.com>,
+ <alistair@popple.id.au>, <robh@kernel.org>, <joe@perches.com>,
+ <harry.wentland@amd.com>, <tony.cheng@amd.com>,
+ <Wenjing.Liu@amd.com>, <airlied@redhat.com>, <Ding.Wang@amd.com>,
+ <sylvia.tsai@amd.com>, <hersenxs.wu@amd.com>, <Rex.Zhu@amd.com>,
+ <JinHuiEric.Huang@amd.com>, <dan.carpenter@oracle.com>,
+ <architt@codeaurora.org>, <daniel.vetter@ffwll.ch>,
+ <narmstrong@baylibre.com>, <ville.syrjala@linux.intel.com>,
+ <jcrouse@codeaurora.org>, <aishpant@gmail.com>, <noralf@tronnes.org>,
+ <andresx7@gmail.com>, <Monk.Liu@amd.com>, <nicolai.haehnle@amd.com>,
+ <Andrey.Grodzovsky@amd.com>, <linux-snps-arc@lists.infradead.org>,
+ <linux-arm-kernel@lists.infradead.org>, <kvm-ppc@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-efi@vger.kernel.org>,
+ <linux-block@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-arm-msm@vger.kernel.org>,
+ <freedreno@lists.freedesktop.org>,
+ <iommu@lists.linux-foundation.org>, <linux-raid@vger.kernel.org>
+References: <20180217211955.GE9640@amd>
+CC: Luis de Bethencourt <luisbg@kernel.org>
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+Message-ID: <f81083a2-4c64-b694-2059-16894e19a79e@synopsys.com>
+Date: Mon, 19 Feb 2018 21:33:49 -0800
+MIME-Version: 1.0
+In-Reply-To: <20180217211955.GE9640@amd>
+Content-Type: multipart/alternative;
+ boundary="------------5F0C80F3EF0A744020863B16"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,120 +60,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-20 at 14:59 +1100, Cyril Bur wrote:
-> On Tue, 2018-02-20 at 14:00 +1100, Michael Neuling wrote:
-> > This needs a description of what you're trying to do.  "Correctly" does=
-n't
-> > really mean anything.
-> >=20
-> >=20
-> > On Tue, 2018-02-20 at 11:22 +1100, Cyril Bur wrote:
-> > > ---
-> > >  arch/powerpc/kernel/process.c | 57 +++++++++++++++++++++++++++++++++=
-++++++++-
-> > > -
-> > >  arch/powerpc/kernel/ptrace.c  |  9 +++----
-> > >  2 files changed, 58 insertions(+), 8 deletions(-)
-> > >=20
-> > > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/proc=
-ess.c
-> > > index cd3ae80a6878..674f75c56172 100644
-> > > --- a/arch/powerpc/kernel/process.c
-> > > +++ b/arch/powerpc/kernel/process.c
-> > > @@ -859,6 +859,8 @@ static inline bool tm_enabled(struct task_struct =
-*tsk)
-> > >  	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
-> > >  }
-> > > =20
-> > > +static inline void save_sprs(struct thread_struct *t);
-> > > +
-> > >  static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cau=
-se)
-> > >  {
-> > >  	/*
-> > > @@ -879,6 +881,8 @@ static void tm_reclaim_thread(struct thread_struc=
-t *thr,
-> > > uint8_t cause)
-> > >  	if (!MSR_TM_SUSPENDED(mfmsr()))
-> > >  		return;
-> > > =20
-> > > +	save_sprs(thr);
-> > > +
-> > >  	giveup_all(container_of(thr, struct task_struct, thread));
-> > > =20
-> > >  	tm_reclaim(thr, cause);
-> > > @@ -991,6 +995,37 @@ void tm_recheckpoint(struct thread_struct *threa=
-d)
-> > > =20
-> > >  	__tm_recheckpoint(thread);
-> > > =20
-> > > +	/*
-> > > +	 * This is a stripped down restore_sprs(), we need to do this
-> > > +	 * now as we might go straight out to userspace and currently
-> > > +	 * the checkpointed values are on the CPU.
-> > > +	 *
-> > > +	 * TODO: Improve
-> > > +	 */
-> > > +#ifdef CONFIG_ALTIVEC
-> > > +	if (cpu_has_feature(CPU_FTR_ALTIVEC))
-> > > +		mtspr(SPRN_VRSAVE, thread->vrsave);
-> > > +#endif
-> > > +#ifdef CONFIG_PPC_BOOK3S_64
-> > > +	if (cpu_has_feature(CPU_FTR_DSCR)) {
-> > > +		u64 dscr =3D get_paca()->dscr_default;
-> > > +		if (thread->dscr_inherit)
-> > > +			dscr =3D thread->dscr;
-> > > +
-> > > +		mtspr(SPRN_DSCR, dscr);
-> > > +	}
-> > > +
-> > > +	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-> > > +		/* The EBB regs aren't checkpointed */
-> > > +		mtspr(SPRN_FSCR, thread->fscr);
-> > > +
-> > > +		mtspr(SPRN_TAR, thread->tar);
-> > > +	}
-> > > +
-> > > +	/* I think we don't need to */
-> > > +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> > > +		mtspr(SPRN_TIDR, thread->tidr);
-> > > +#endif
-> >=20
-> > Why are you touching all the above hunk?
->=20
-> I copied restore_sprs. I'm tidying that up now - we can't call
-> restore_sprs because we don't have a prev and next thread.
+--------------5F0C80F3EF0A744020863B16
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yeah needs to be tided up... we can't have another copy of the code.. obvio=
-usly.
+On 02/17/2018 01:19 PM, Pavel Machek wrote:
+> Fix double ;;'s in code.
+>
+> Signed-off-by: Pavel Machek<pavel@ucw.cz>
+>
+> diff --git a/arch/arc/kernel/setup.c b/arch/arc/kernel/setup.c
+> index 9d27331..ec12fe1 100644
+> --- a/arch/arc/kernel/setup.c
+> +++ b/arch/arc/kernel/setup.c
+> @@ -373,7 +373,7 @@ static void arc_chk_core_config(void)
+>   {
+>   	struct cpuinfo_arc *cpu = &cpuinfo_arc700[smp_processor_id()];
+>   	int saved = 0, present = 0;
+> -	char *opt_nm = NULL;;
+> +	char *opt_nm = NULL;
+>   
+>   	if (!cpu->extn.timer0)
+>   		panic("Timer0 is not present!\n");
+> diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
+> index 333daab..183391d 100644
+> --- a/arch/arc/kernel/unwind.c
+> +++ b/arch/arc/kernel/unwind.c
+> @@ -366,7 +366,7 @@ static void init_unwind_hdr(struct unwind_table *table,
+>   	return;
+>   
+>   ret_err:
+> -	panic("Attention !!! Dwarf FDE parsing errors\n");;
+> +	panic("Attention !!! Dwarf FDE parsing errors\n");
+>   }
+>   
 
->=20
-> >=20
-> > >  	local_irq_restore(flags);
-> > >  }
-> > > =20
-> > > @@ -1193,6 +1228,11 @@ struct task_struct *__switch_to(struct task_st=
-ruct
-> > > *prev,
-> > >  #endif
-> > > =20
-> > >  	new_thread =3D &new->thread;
-> > > +	/*
-> > > +	 * Why not &prev->thread; ?
-> > > +	 * What is the difference between &prev->thread and
-> > > +	 * &current->thread ?
-> > > +	 */
-> >=20
-> > Why not just work it out and FIX THE CODE, rather than just rabbiting o=
-n about
-> > it! :-P
->=20
-> Agreed - I started to and then had a mini freakout that things would
-> end really badly if they're not the same. So I left that comment as a
-> reminder to investigate.
->=20
-> They should be the same though right?
+I have a fix from Luis to same effect from Jan sitting in my for-curr
 
-Should be if prev =3D=3D current.
+Thx for it anyways.
 
-Mikey
+-Vineet
+
+--------------5F0C80F3EF0A744020863B16
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <div class="moz-cite-prefix">On 02/17/2018 01:19 PM, Pavel Machek
+      wrote:<br>
+    </div>
+    <blockquote type="cite" cite="mid:20180217211955.GE9640@amd">
+      <pre wrap="">Fix double ;;'s in code.
+
+Signed-off-by: Pavel Machek <a class="moz-txt-link-rfc2396E" href="mailto:pavel@ucw.cz" moz-do-not-send="true">&lt;pavel@ucw.cz&gt;</a>
+
+diff --git a/arch/arc/kernel/setup.c b/arch/arc/kernel/setup.c
+index 9d27331..ec12fe1 100644
+--- a/arch/arc/kernel/setup.c
++++ b/arch/arc/kernel/setup.c
+@@ -373,7 +373,7 @@ static void arc_chk_core_config(void)
+ {
+ 	struct cpuinfo_arc *cpu = &amp;cpuinfo_arc700[smp_processor_id()];
+ 	int saved = 0, present = 0;
+-	char *opt_nm = NULL;;
++	char *opt_nm = NULL;
+ 
+ 	if (!cpu-&gt;extn.timer0)
+ 		panic("Timer0 is not present!\n");
+diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
+index 333daab..183391d 100644
+--- a/arch/arc/kernel/unwind.c
++++ b/arch/arc/kernel/unwind.c
+@@ -366,7 +366,7 @@ static void init_unwind_hdr(struct unwind_table *table,
+ 	return;
+ 
+ ret_err:
+-	panic("Attention !!! Dwarf FDE parsing errors\n");;
++	panic("Attention !!! Dwarf FDE parsing errors\n");
+ }
+ </pre>
+    </blockquote>
+    <br>
+    <font face="DejaVu Sans">I have a fix from Luis to same effect from
+      Jan sitting in my for-curr<br>
+      <br>
+      Thx for it anyways.<br>
+      <br>
+      -Vineet<br>
+    </font>
+  </body>
+</html>
+
+--------------5F0C80F3EF0A744020863B16--
