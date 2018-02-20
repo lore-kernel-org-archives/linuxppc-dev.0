@@ -1,18 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmFGD6RbpzDq82
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:12:04 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id x19so8212257plr.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:12:04 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmFGL65lSzF18G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:12:10 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id a6so4023797pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:12:10 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 5/9] powerpc: remove unused CPU_FTR_ARCH_201
-Date: Wed, 21 Feb 2018 05:08:28 +1000
-Message-Id: <20180220190832.1872-6-npiggin@gmail.com>
+Subject: [PATCH 9/9] powerpc/64s: add POWER9 CPU type selection
+Date: Wed, 21 Feb 2018 05:08:32 +1000
+Message-Id: <20180220190832.1872-10-npiggin@gmail.com>
 In-Reply-To: <20180220190832.1872-1-npiggin@gmail.com>
 References: <20180220190832.1872-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,29 +26,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/cputable.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/Makefile                  | 3 ++-
+ arch/powerpc/platforms/Kconfig.cputype | 5 +++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 27bb8e96ce7a..1c684aa7e0de 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -175,7 +175,6 @@ static inline void cpu_feature_keys_init(void) { }
- #endif
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 973b1a1b98d2..f46b6cf364d7 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -146,7 +146,7 @@ CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
+ ifeq ($(CONFIG_PPC_BOOK3S_64),y)
+ ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+ CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=power8
+-CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power8)
++CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power9,-mtune=power8)
+ else
+ CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power7,$(call cc-option,-mtune=power5))
+ CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mcpu=power5,-mcpu=power4)
+@@ -175,6 +175,7 @@ CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
+ CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
+ CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
+ CFLAGS-$(CONFIG_POWER8_CPU) += $(call cc-option,-mcpu=power8)
++CFLAGS-$(CONFIG_POWER9_CPU) += $(call cc-option,-mcpu=power9)
  
- #define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000100000000)
--#define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
- #define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
- #define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
- #define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000001000000000)
-@@ -417,7 +416,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_201 | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
- 	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS | \
- 	    CPU_FTR_HVMODE | CPU_FTR_DABRX)
+ # Altivec option not allowed with e500mc64 in GCC.
+ ifeq ($(CONFIG_ALTIVEC),y)
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index ad878990c896..69be65450c0c 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -121,6 +121,11 @@ config POWER8_CPU
+ 	depends on PPC_BOOK3S_64
+ 	select ARCH_HAS_FAST_MULTIPLIER
+ 
++config POWER9_CPU
++	bool "POWER9"
++	depends on PPC_BOOK3S_64
++	select ARCH_HAS_FAST_MULTIPLIER
++
+ config E5500_CPU
+ 	bool "Freescale e5500"
+ 	depends on E500
 -- 
 2.16.1
