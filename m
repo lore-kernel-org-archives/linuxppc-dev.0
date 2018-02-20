@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlhCv14bvzDrHV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 11:23:06 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlhCz4xpYzF0V8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 11:23:11 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1K0LDXa045005
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:23:05 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g88ybg7my-1
+ w1K0IsA8051599
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:23:10 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g80r1twge-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:23:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:23:09 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 20 Feb 2018 00:23:02 -0000
+ Tue, 20 Feb 2018 00:23:03 -0000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mikey@neuling.org, benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 10/12] [WIP] powerpc/tm: Correctly save/restore
- checkpointed sprs
-Date: Tue, 20 Feb 2018 11:22:39 +1100
+Subject: [RFC PATCH 12/12] [WIP] selftests/powerpc: Remove incorrect
+ tm-syscall selftest
+Date: Tue, 20 Feb 2018 11:22:41 +1100
 In-Reply-To: <20180220002241.29648-1-cyrilbur@gmail.com>
 References: <20180220002241.29648-1-cyrilbur@gmail.com>
-Message-Id: <20180220002241.29648-11-cyrilbur@gmail.com>
+Message-Id: <20180220002241.29648-13-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,135 +35,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
----
- arch/powerpc/kernel/process.c | 57 +++++++++++++++++++++++++++++++++++++++++--
- arch/powerpc/kernel/ptrace.c  |  9 +++----
- 2 files changed, 58 insertions(+), 8 deletions(-)
+Currently we perform transactional memory work at late as possible.
+That is we run in the kernel with the userspace checkpointed state on
+the CPU untill we absolultely must remove it and store it away. Likely
+a process switch, but possibly also signals or ptrace.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index cd3ae80a6878..674f75c56172 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -859,6 +859,8 @@ static inline bool tm_enabled(struct task_struct *tsk)
- 	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
- }
+What this means is that if userspace does a system call in suspended
+mode, it is possible that we will handle the system call and return
+them without the need to to a reclaim/recheckpoint and so they can
+expect to resume their transaction.
+
+This is what tm-syscall tests for - the ability to perform a system
+call in suspended state and still resume it afterwards.
+
+TM reworks have meant that we now deal with any transactional state on
+entry to the kernel, no matter the reason for entry (some expections
+apply). We will categorically doom any suspended transaction that makes
+a system call, making that transaction unresumeable.
+
+This test will now always fail no matter what. I would like to note
+here that this new behaviour does not break userspace at all. Hardware
+Transactional Memory gives zero guarantee of forward progress and any
+correct userspace has already had and will always have to implement a
+non HTM fallback. Relying on this specific kernel behaviour also meant
+relying on the stars aligning in the hardware such that there was no
+cache overlaps and that it had a large enough footprint to handle
+any system call without dooming a transaction.
+---
+ tools/testing/selftests/powerpc/tm/Makefile        |   4 +-
+ .../testing/selftests/powerpc/tm/tm-syscall-asm.S  |  28 ------
+ tools/testing/selftests/powerpc/tm/tm-syscall.c    | 106 ---------------------
+ 3 files changed, 1 insertion(+), 137 deletions(-)
+ delete mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+ delete mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall.c
+
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 7a1e53297588..88d6edffcb24 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -2,7 +2,7 @@
+ SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu \
+ 	tm-signal-context-chk-vmx tm-signal-context-chk-vsx
  
-+static inline void save_sprs(struct thread_struct *t);
-+
- static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cause)
- {
- 	/*
-@@ -879,6 +881,8 @@ static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cause)
- 	if (!MSR_TM_SUSPENDED(mfmsr()))
- 		return;
+-TEST_GEN_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
++TEST_GEN_PROGS := tm-resched-dscr tm-signal-msr-resv tm-signal-stack \
+ 	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-vmx-unavail tm-unavailable tm-trap \
+ 	tm-signal-drop-transaction \
+ 	$(SIGNAL_CONTEXT_CHK_TESTS)
+@@ -13,8 +13,6 @@ $(TEST_GEN_PROGS): ../harness.c ../utils.c
  
-+	save_sprs(thr);
-+
- 	giveup_all(container_of(thr, struct task_struct, thread));
+ CFLAGS += -mhtm
  
- 	tm_reclaim(thr, cause);
-@@ -991,6 +995,37 @@ void tm_recheckpoint(struct thread_struct *thread)
- 
- 	__tm_recheckpoint(thread);
- 
-+	/*
-+	 * This is a stripped down restore_sprs(), we need to do this
-+	 * now as we might go straight out to userspace and currently
-+	 * the checkpointed values are on the CPU.
-+	 *
-+	 * TODO: Improve
-+	 */
-+#ifdef CONFIG_ALTIVEC
-+	if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+		mtspr(SPRN_VRSAVE, thread->vrsave);
-+#endif
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (cpu_has_feature(CPU_FTR_DSCR)) {
-+		u64 dscr = get_paca()->dscr_default;
-+		if (thread->dscr_inherit)
-+			dscr = thread->dscr;
-+
-+		mtspr(SPRN_DSCR, dscr);
-+	}
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-+		/* The EBB regs aren't checkpointed */
-+		mtspr(SPRN_FSCR, thread->fscr);
-+
-+		mtspr(SPRN_TAR, thread->tar);
-+	}
-+
-+	/* I think we don't need to */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		mtspr(SPRN_TIDR, thread->tidr);
-+#endif
- 	local_irq_restore(flags);
- }
- 
-@@ -1193,6 +1228,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
- #endif
- 
- 	new_thread = &new->thread;
-+	/*
-+	 * Why not &prev->thread; ?
-+	 * What is the difference between &prev->thread and
-+	 * &current->thread ?
-+	 */
- 	old_thread = &current->thread;
- 
- 	WARN_ON(!irqs_disabled());
-@@ -1237,8 +1277,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	/*
- 	 * We need to save SPRs before treclaim/trecheckpoint as these will
- 	 * change a number of them.
-+	 *
-+	 * Because we're now reclaiming on kernel entry, we've had to
-+	 * already save them. Don't do it again.
-+	 * Note: To deliver a signal in the signal context, we'll have
-+	 * turned off TM because we don't want the signal context to
-+	 * have the transactional state of the main thread - what if
-+	 * we go through switch to at that point? Can we?
- 	 */
--	save_sprs(&prev->thread);
-+	if (!prev->thread.regs || !MSR_TM_ACTIVE(prev->thread.regs->msr))
-+		save_sprs(&prev->thread);
- 
- 	/* Save FPU, Altivec, VSX and SPE state */
- 	giveup_all(prev);
-@@ -1260,8 +1308,13 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	 * for this is we manually create a stack frame for new tasks that
- 	 * directly returns through ret_from_fork() or
- 	 * ret_from_kernel_thread(). See copy_thread() for details.
-+	 *
-+	 * It isn't stricly nessesary that we avoid the restore here
-+	 * because we'll simply restore again after the recheckpoint,
-+	 * but we can avoid it for performance reasons.
- 	 */
--	restore_sprs(old_thread, new_thread);
-+	if (!new_thread->regs || !MSR_TM_ACTIVE(new_thread->regs->msr))
-+		restore_sprs(old_thread, new_thread);
- 
- 	last = _switch(old_thread, new_thread);
- 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index ca72d7391d40..16001987ba71 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -135,12 +135,9 @@ static void flush_tmregs_to_thread(struct task_struct *tsk)
- 	if ((!cpu_has_feature(CPU_FTR_TM)) || (tsk != current))
- 		return;
- 
--	if (MSR_TM_SUSPENDED(mfmsr())) {
--		tm_reclaim_current(TM_CAUSE_SIGNAL);
--	} else {
--		tm_enable();
--		tm_save_sprs(&(tsk->thread));
+-$(OUTPUT)/tm-syscall: tm-syscall-asm.S
+-$(OUTPUT)/tm-syscall: CFLAGS += -I../../../../../usr/include
+ $(OUTPUT)/tm-tmspr: CFLAGS += -pthread
+ $(OUTPUT)/tm-vmx-unavail: CFLAGS += -pthread -m64
+ $(OUTPUT)/tm-resched-dscr: ../pmu/lib.o
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall-asm.S b/tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+deleted file mode 100644
+index bd1ca25febe4..000000000000
+--- a/tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#include <ppc-asm.h>
+-#include <asm/unistd.h>
+-
+-	.text
+-FUNC_START(getppid_tm_active)
+-	tbegin.
+-	beq 1f
+-	li	r0, __NR_getppid
+-	sc
+-	tend.
+-	blr
+-1:
+-	li	r3, -1
+-	blr
+-
+-FUNC_START(getppid_tm_suspended)
+-	tbegin.
+-	beq 1f
+-	li	r0, __NR_getppid
+-	tsuspend.
+-	sc
+-	tresume.
+-	tend.
+-	blr
+-1:
+-	li	r3, -1
+-	blr
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+deleted file mode 100644
+index 454b965a2db3..000000000000
+--- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
++++ /dev/null
+@@ -1,106 +0,0 @@
+-/*
+- * Copyright 2015, Sam Bobroff, IBM Corp.
+- * Licensed under GPLv2.
+- *
+- * Test the kernel's system call code to ensure that a system call
+- * made from within an active HTM transaction is aborted with the
+- * correct failure code.
+- * Conversely, ensure that a system call made from within a
+- * suspended transaction can succeed.
+- */
+-
+-#include <stdio.h>
+-#include <unistd.h>
+-#include <sys/syscall.h>
+-#include <asm/tm.h>
+-#include <sys/time.h>
+-#include <stdlib.h>
+-
+-#include "utils.h"
+-#include "tm.h"
+-
+-extern int getppid_tm_active(void);
+-extern int getppid_tm_suspended(void);
+-
+-unsigned retries = 0;
+-
+-#define TEST_DURATION 10 /* seconds */
+-#define TM_RETRIES 100
+-
+-pid_t getppid_tm(bool suspend)
+-{
+-	int i;
+-	pid_t pid;
+-
+-	for (i = 0; i < TM_RETRIES; i++) {
+-		if (suspend)
+-			pid = getppid_tm_suspended();
+-		else
+-			pid = getppid_tm_active();
+-
+-		if (pid >= 0)
+-			return pid;
+-
+-		if (failure_is_persistent()) {
+-			if (failure_is_syscall())
+-				return -1;
+-
+-			printf("Unexpected persistent transaction failure.\n");
+-			printf("TEXASR 0x%016lx, TFIAR 0x%016lx.\n",
+-			       __builtin_get_texasr(), __builtin_get_tfiar());
+-			exit(-1);
+-		}
+-
+-		retries++;
 -	}
-+	BUG_ON(MSR_TM_SUSPENDED(mfmsr()));
-+	tm_enable();
-+	tm_save_sprs(&(tsk->thread));
- }
- #else
- static inline void flush_tmregs_to_thread(struct task_struct *tsk) { }
+-
+-	printf("Exceeded limit of %d temporary transaction failures.\n", TM_RETRIES);
+-	printf("TEXASR 0x%016lx, TFIAR 0x%016lx.\n",
+-	       __builtin_get_texasr(), __builtin_get_tfiar());
+-
+-	exit(-1);
+-}
+-
+-int tm_syscall(void)
+-{
+-	unsigned count = 0;
+-	struct timeval end, now;
+-
+-	SKIP_IF(!have_htm_nosc());
+-
+-	setbuf(stdout, NULL);
+-
+-	printf("Testing transactional syscalls for %d seconds...\n", TEST_DURATION);
+-
+-	gettimeofday(&end, NULL);
+-	now.tv_sec = TEST_DURATION;
+-	now.tv_usec = 0;
+-	timeradd(&end, &now, &end);
+-
+-	for (count = 0; timercmp(&now, &end, <); count++) {
+-		/*
+-		 * Test a syscall within a suspended transaction and verify
+-		 * that it succeeds.
+-		 */
+-		FAIL_IF(getppid_tm(true) == -1); /* Should succeed. */
+-
+-		/*
+-		 * Test a syscall within an active transaction and verify that
+-		 * it fails with the correct failure code.
+-		 */
+-		FAIL_IF(getppid_tm(false) != -1);  /* Should fail... */
+-		FAIL_IF(!failure_is_persistent()); /* ...persistently... */
+-		FAIL_IF(!failure_is_syscall());    /* ...with code syscall. */
+-		gettimeofday(&now, 0);
+-	}
+-
+-	printf("%d active and suspended transactions behaved correctly.\n", count);
+-	printf("(There were %d transaction retries.)\n", retries);
+-
+-	return 0;
+-}
+-
+-int main(void)
+-{
+-	return test_harness(tm_syscall, "tm_syscall");
+-}
 -- 
 2.16.2
