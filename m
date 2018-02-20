@@ -2,8 +2,8 @@ Return-Path: <j.neuschaefer@gmx.net>
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmHpv4rh2zF19m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 11:07:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmHrc2zZnzF1D5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 11:08:32 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
@@ -16,10 +16,9 @@ Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  Thomas Gleixner <tglx@linutronix.de>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: [PATCH 3/6] powerpc: numa: Use the right #ifdef guards around
- functions
-Date: Tue, 20 Feb 2018 17:14:21 +0100
-Message-Id: <20180220161424.5421-4-j.neuschaefer@gmx.net>
+Subject: [PATCH 2/6] powerpc: numa: Fix overshift on PPC32
+Date: Tue, 20 Feb 2018 17:14:20 +0100
+Message-Id: <20180220161424.5421-3-j.neuschaefer@gmx.net>
 In-Reply-To: <20180220161424.5421-1-j.neuschaefer@gmx.net>
 References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -33,52 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_node_to_nid and dump_numa_cpu_topology are declared inline in their
-respective header files, if CONFIG_NUMA is not set. Thus it is only
-valid to define these functions in numa.c if CONFIG_NUMA is set.
-(numa.c, despite the name, isn't conditionalized on CONFIG_NUMA, but
-CONFIG_NEED_MULTIPLE_NODES.)
+When read_n_cells is compiled for PPC32, "result << 32" causes an
+overshift, which GCC doesn't like. Fix this by using u64 instead of
+unsigned long.
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
- arch/powerpc/mm/numa.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/mm/numa.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0570bc2a0b13..df03a65b658f 100644
+index edd8d0bc9364..0570bc2a0b13 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -254,6 +254,7 @@ static int of_node_to_nid_single(struct device_node *device)
- 	return nid;
+@@ -357,9 +357,9 @@ static void __init get_n_mem_cells(int *n_addr_cells, int *n_size_cells)
+ 	of_node_put(memory);
  }
  
-+#ifdef CONFIG_NUMA
- /* Walk the device tree upwards, looking for an associativity id */
- int of_node_to_nid(struct device_node *device)
+-static unsigned long read_n_cells(int n, const __be32 **buf)
++static u64 read_n_cells(int n, const __be32 **buf)
  {
-@@ -272,6 +273,7 @@ int of_node_to_nid(struct device_node *device)
- 	return nid;
- }
- EXPORT_SYMBOL(of_node_to_nid);
-+#endif
+-	unsigned long result = 0;
++	u64 result = 0;
  
- static int __init find_min_common_depth(void)
- {
-@@ -744,6 +746,7 @@ static void __init setup_nonnuma(void)
- 	}
- }
- 
-+#ifdef CONFIG_NUMA
- void __init dump_numa_cpu_topology(void)
- {
- 	unsigned int node;
-@@ -778,6 +781,7 @@ void __init dump_numa_cpu_topology(void)
- 		pr_cont("\n");
- 	}
- }
-+#endif
- 
- /* Initialize NODE_DATA for a node on the local memory */
- static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ 	while (n--) {
+ 		result = (result << 32) | of_read_number(*buf, 1);
 -- 
 2.16.1
