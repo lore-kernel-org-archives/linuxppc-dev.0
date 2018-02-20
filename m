@@ -1,18 +1,19 @@
-Return-Path: <Nicolas.Ferre@microchip.com>
-Received: from esa3.microchip.iphmx.com (esa3.microchip.iphmx.com
- [68.232.153.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michal.simek@xilinx.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0075.outbound.protection.outlook.com [104.47.40.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlxg85bH6zF0hY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 21:29:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlxMV6tv1zF0R7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 21:15:31 +1100 (AEDT)
 Subject: Re: [PATCH] watchdog: add SPDX identifiers for watchdog subsystem
 To: Marcus Folkesson <marcus.folkesson@gmail.com>, Wim Van Sebroeck
  <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, Joel Stanley
- <joel@jms.id.au>, Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott
- Branden <sbranden@broadcom.com>, <bcm-kernel-feedback-list@broadcom.com>,
- Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Linus
- Walleij <linus.walleij@linaro.org>, Support Opensource
+ <joel@jms.id.au>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre
+ Belloni <alexandre.belloni@free-electrons.com>, Florian Fainelli
+ <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden
+ <sbranden@broadcom.com>, <bcm-kernel-feedback-list@broadcom.com>, Eric Anholt
+ <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Linus Walleij
+ <linus.walleij@linaro.org>, Support Opensource
  <support.opensource@diasemi.com>, Baruch Siach <baruch@tkos.co.il>, William
  Breathitt Gray <vilhelm.gray@gmail.com>, Jimmy Vance <jimmy.vance@hpe.com>,
  Keguang Zhang <keguang.zhang@gmail.com>, Joachim Eastwood
@@ -40,12 +41,12 @@ CC: <linux-watchdog@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <patches@opensource.cirrus.com>
 References: <20180220093119.23720-1-marcus.folkesson@gmail.com>
-From: Nicolas Ferre <nicolas.ferre@microchip.com>
-Message-ID: <5a06150c-6ac4-4836-d8fb-cb0a9a0d9561@microchip.com>
-Date: Tue, 20 Feb 2018 11:15:52 +0100
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <c7eae315-c8b8-3a4c-af1d-f7d713beb7c8@xilinx.com>
+Date: Tue, 20 Feb 2018 11:14:46 +0100
 MIME-Version: 1.0
 In-Reply-To: <20180220093119.23720-1-marcus.folkesson@gmail.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,35 +56,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/02/2018 at 10:31, Marcus Folkesson wrote:
+On 20.2.2018 10:31, Marcus Folkesson wrote:
 > - Add SPDX identifier
 > - Remove boiler plate license text
 > - If MODULE_LICENSE and boiler plate does not match, go for boiler plate
->    license
+>   license
 > 
 > Signed-off-by: Marcus Folkesson <marcus.folkesson@gmail.com>
 > ---
 > 
 > Notes:
->      v1: Please have an extra look at meson_gxbb_wdt.c
+>     v1: Please have an extra look at meson_gxbb_wdt.c
 > 
->   drivers/watchdog/acquirewdt.c          |  6 +---
+>  drivers/watchdog/cadence_wdt.c         |  5 +---
+>  drivers/watchdog/of_xilinx_wdt.c       |  8 ++---
 
-[..]
 
->   drivers/watchdog/at91rm9200_wdt.c      |  5 +---
->   drivers/watchdog/at91sam9_wdt.c        |  5 +---
->   drivers/watchdog/at91sam9_wdt.h        |  5 +---
+Acked-by: Michal Simek <michal.simek@xilinx.com> (For cadence_wdt and
+of_xilinx_wdt)
 
-For these 3
-
-[..]
-
->   drivers/watchdog/sama5d4_wdt.c         |  3 +-
-
-And this one:
-Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-
-Thanks, best regards,
--- 
-Nicolas Ferre
+Thanks,
+Michal
