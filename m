@@ -1,24 +1,34 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmDQS2Lk4zF17t
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:34:07 +1100 (AEDT)
-From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmDRm63r1zF184
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:35:16 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1KFp3Ej110642
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 10:51:44 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g8n5fcqrv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 10:51:37 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Tue, 20 Feb 2018 15:51:34 -0000
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- linux-mm@kvack.org, Joel Stanley <joel@jms.id.au>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/6] powerpc: wii: Don't rely on reserved memory hack if
- DISCONTIGMEM is set
-Date: Tue, 20 Feb 2018 17:14:24 +0100
-Message-Id: <20180220161424.5421-7-j.neuschaefer@gmx.net>
-In-Reply-To: <20180220161424.5421-1-j.neuschaefer@gmx.net>
-References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
+Cc: fbarrat@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com, benh@au1.ibm.com,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: [PATCH v9 2/2] cxl: read PHB indications from the device tree
+Date: Tue, 20 Feb 2018 16:51:11 +0100
+In-Reply-To: <20180220155111.20459-1-felix@linux.vnet.ibm.com>
+References: <20180220155111.20459-1-felix@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Message-Id: <20180220155111.20459-2-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +38,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
- arch/powerpc/platforms/embedded6xx/wii.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+Configure the P9 XSL_DSNCTL register with PHB indications found
+in the device tree, or else use legacy hard-coded values.
 
-diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-index 4682327f76a9..589ac87a3ce0 100644
---- a/arch/powerpc/platforms/embedded6xx/wii.c
-+++ b/arch/powerpc/platforms/embedded6xx/wii.c
-@@ -81,13 +81,16 @@ void __init wii_memory_fixups(void)
- 	BUG_ON(memblock.memory.cnt != 2);
- 	BUG_ON(!page_aligned(p[0].base) || !page_aligned(p[1].base));
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+Changelog:
+
+v2: New patch. Use the new device tree property "ibm,phb-indications".
+
+v3: No change.
+
+v4: No functional change.
+    Drop cosmetic fix in comment.
+
+v5: get_phb_indications():
+      - make static variables local to function.
+      - return static variable values by arguments.
+
+v6: get_phb_indications():
+      - acquire a mutex before setting the phb indications.
+
+v7: get_phb_indications():
+    cxl_get_xsl9_dsnctl():
+      - return -ENODEV instead of -1.
+
+v8: get_phb_indications():
+      - stay on the safe side: acquire the mutex unconditionally
+
+v9: No change.
+
+This patch depends on the following skiboot patch:
+  https://patchwork.ozlabs.org/patch/874415/
+---
+ drivers/misc/cxl/cxl.h    |  2 +-
+ drivers/misc/cxl/cxllib.c |  2 +-
+ drivers/misc/cxl/pci.c    | 48 ++++++++++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 45 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 4f015da78f28..a7689944b351 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -1065,7 +1065,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
+ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+ 			  u32 *phb_index, u64 *capp_unit_id);
+ int cxl_slot_is_switched(struct pci_dev *dev);
+-int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
++int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
+ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
  
-+	/* determine hole */
-+	wii_hole_start = ALIGN(p[0].base + p[0].size, PAGE_SIZE);
-+	wii_hole_size = p[1].base - wii_hole_start;
-+
-+#ifndef CONFIG_DISCONTIGMEM
- 	/* trim unaligned tail */
- 	memblock_remove(ALIGN(p[1].base + p[1].size, PAGE_SIZE),
- 			(phys_addr_t)ULLONG_MAX);
+ void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index 30ccba436b3b..bea1eb004b49 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
+ 	if (rc)
+ 		return rc;
  
--	/* determine hole, add & reserve them */
--	wii_hole_start = ALIGN(p[0].base + p[0].size, PAGE_SIZE);
--	wii_hole_size = p[1].base - wii_hole_start;
-+	/* add & reserve hole */
- 	memblock_add(wii_hole_start, wii_hole_size);
- 	memblock_reserve(wii_hole_start, wii_hole_size);
- 
-@@ -96,6 +99,7 @@ void __init wii_memory_fixups(void)
- 
- 	/* allow ioremapping the address space in the hole */
- 	__allow_ioremap_reserved = 1;
-+#endif
+-	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
++	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
+ 	if (rc)
+ 		return rc;
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 758842f65a1b..8d179e64a296 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -407,21 +407,59 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
+ 	return 0;
  }
  
- unsigned long __init wii_mmu_mapin_mem2(unsigned long top)
+-int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
++static DEFINE_MUTEX(indications_mutex);
++
++static int get_phb_indications(struct pci_dev *dev, u64 *capiind, u64 *asnind,
++			       u64 *nbwind)
++{
++	static u64 nbw, asn, capi = 0;
++	struct device_node *np;
++	const __be32 *prop;
++
++	mutex_lock(&indications_mutex);
++	if (!capi) {
++		if (!(np = pnv_pci_get_phb_node(dev))) {
++			mutex_unlock(&indications_mutex);
++			return -ENODEV;
++		}
++
++		prop = of_get_property(np, "ibm,phb-indications", NULL);
++		if (!prop) {
++			nbw = 0x0300UL; /* legacy values */
++			asn = 0x0400UL;
++			capi = 0x0200UL;
++		} else {
++			nbw = (u64)be32_to_cpu(prop[2]);
++			asn = (u64)be32_to_cpu(prop[1]);
++			capi = (u64)be32_to_cpu(prop[0]);
++		}
++		of_node_put(np);
++	}
++	*capiind = capi;
++	*asnind = asn;
++	*nbwind = nbw;
++	mutex_unlock(&indications_mutex);
++	return 0;
++}
++
++int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
+ {
+ 	u64 xsl_dsnctl;
++	u64 capiind, asnind, nbwind;
+ 
+ 	/*
+ 	 * CAPI Identifier bits [0:7]
+ 	 * bit 61:60 MSI bits --> 0
+ 	 * bit 59 TVT selector --> 0
+ 	 */
++	if (get_phb_indications(dev, &capiind, &asnind, &nbwind))
++		return -ENODEV;
+ 
+ 	/*
+ 	 * Tell XSL where to route data to.
+ 	 * The field chipid should match the PHB CAPI_CMPM register
+ 	 */
+-	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
++	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
+ 	xsl_dsnctl |= (capp_unit_id << (63-15));
+ 
+ 	/* nMMU_ID Defaults to: b’000001001’*/
+@@ -435,14 +473,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
+ 		 * nbwind=0x03, bits [57:58], must include capi indicator.
+ 		 * Not supported on P9 DD1.
+ 		 */
+-		xsl_dsnctl |= ((u64)0x03 << (63-47));
++		xsl_dsnctl |= (nbwind << (63-55));
+ 
+ 		/*
+ 		 * Upper 16b address bits of ASB_Notify messages sent to the
+ 		 * system. Need to match the PHB’s ASN Compare/Mask Register.
+ 		 * Not supported on P9 DD1.
+ 		 */
+-		xsl_dsnctl |= ((u64)0x04 << (63-55));
++		xsl_dsnctl |= asnind;
+ 	}
+ 
+ 	*reg = xsl_dsnctl;
+@@ -462,7 +500,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
++	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
+ 	if (rc)
+ 		return rc;
+ 
 -- 
 2.16.1
