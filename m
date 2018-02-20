@@ -1,32 +1,21 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zlxp44VdKzDr0H
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 21:35:00 +1100 (AEDT)
-Date: Tue, 20 Feb 2018 18:34:36 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- "David S. Miller" <davem@davemloft.net>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping
- outside the requests
-Message-ID: <20180220103436.GA20571@gondor.apana.org.au>
-References: <cover.1507284818.git.christophe.leroy@c-s.fr>
- <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
- <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
- <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
- <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
- <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
- <VI1PR0402MB334256E1706A4E1AED09F4A598C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
- <d5809df9-fc17-03da-b7f4-038d973dbd1f@c-s.fr>
- <VI1PR0402MB334299B37F17771BFA9AFDDA98C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <VI1PR0402MB334299B37F17771BFA9AFDDA98C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlxyQ3Nf8zF0jx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 21:42:22 +1100 (AEDT)
+Message-ID: <1519123341.5655.5.camel@neuling.org>
+Subject: Re: [PATCH] powerpc/eeh: Add conditional check on notify_resume
+From: Michael Neuling <mikey@neuling.org>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org,
+ jjalvare@linux.vnet.ibm.com,  seroyer@linux.vnet.ibm.com
+Date: Tue, 20 Feb 2018 21:42:21 +1100
+In-Reply-To: <1518720591-84657-1-git-send-email-bryantly@linux.vnet.ibm.com>
+References: <1518720591-84657-1-git-send-email-bryantly@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,23 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 19, 2018 at 01:16:30PM +0000, Horia Geantă wrote:
->
-> > And what about ALGIF path from user space ?
-> > What if the user never calls the last sendmsg() which will call 
-> > hash_finup() ?
-> > 
-> User is expected to follow the rules of the crypto API.
-> Of course, kernel won't (or at least shouldn't) crash in case of misuse.
-> However, in these cases some resources might not be freed - it's unavoidable.
+On Thu, 2018-02-15 at 12:49 -0600, Bryant G. Ly wrote:
+> From: "Juan J. Alvarez" <jjalvare@linux.vnet.ibm.com>
+>=20
+> EEH structure is not populated with function
+> notify resume when running on systems that do not support
+> it, i.e: BMC. Hence adding a conditional check for NULL for
+> systems that don't add function notify_resume.
+>=20
+> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
+> Reviewed-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Tested-by: Carol L. Soto <clsoto@us.ibm.com>
 
-the crypto API does not require the presence of a finalisation.
-It is entirely optional.  So leaving resources pinned down until
-final/finup occurs is unacceptable, both from user-space and the
-kernel.
+Acked-by: Michael Neuling <mikey@neuling.org>
 
-Cheers,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> ---
+>  arch/powerpc/kernel/eeh_driver.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/kernel/eeh_driver.c
+> b/arch/powerpc/kernel/eeh_driver.c
+> index beea218..0c0b66f 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -384,7 +384,8 @@ static void *eeh_report_resume(void *data, void *user=
+data)
+>  	eeh_pcid_put(dev);
+>  	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
+>  #ifdef CONFIG_PCI_IOV
+> -	eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
+> +	if (eeh_ops->notify_resume && eeh_dev_to_pdn(edev))
+> +		eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
+>  #endif
+>  	return NULL;
+>  }
