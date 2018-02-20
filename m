@@ -1,19 +1,23 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pg0-x233.google.com (mail-pg0-x233.google.com
+ [IPv6:2607:f8b0:400e:c05::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zllpL39ctzDqff
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:04:42 +1100 (AEDT)
-Message-ID: <1519095881.7360.59.camel@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zlmds3nYDzDrSP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 14:42:25 +1100 (AEDT)
+Received: by mail-pg0-x233.google.com with SMTP id g12so6665914pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Feb 2018 19:42:25 -0800 (PST)
+Message-ID: <1519098138.6563.3.camel@gmail.com>
 Subject: Re: [RFC PATCH 12/12] [WIP] selftests/powerpc: Remove incorrect
  tm-syscall selftest
-From: Michael Neuling <mikey@neuling.org>
-To: Cyril Bur <cyrilbur@gmail.com>, benh@kernel.crashing.org,
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Tue, 20 Feb 2018 14:04:41 +1100
-In-Reply-To: <20180220002241.29648-13-cyrilbur@gmail.com>
+Date: Tue, 20 Feb 2018 14:42:18 +1100
+In-Reply-To: <1519095881.7360.59.camel@neuling.org>
 References: <20180220002241.29648-1-cyrilbur@gmail.com>
  <20180220002241.29648-13-cyrilbur@gmail.com>
+ <1519095881.7360.59.camel@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,24 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> --- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
-> +++ /dev/null
-> @@ -1,106 +0,0 @@
-> -/*
-> - * Copyright 2015, Sam Bobroff, IBM Corp.
-> - * Licensed under GPLv2.
-> - *
-> - * Test the kernel's system call code to ensure that a system call
-> - * made from within an active HTM transaction is aborted with the
-> - * correct failure code.
+On Tue, 2018-02-20 at 14:04 +1100, Michael Neuling wrote:
+> > --- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
+> > +++ /dev/null
+> > @@ -1,106 +0,0 @@
+> > -/*
+> > - * Copyright 2015, Sam Bobroff, IBM Corp.
+> > - * Licensed under GPLv2.
+> > - *
+> > - * Test the kernel's system call code to ensure that a system call
+> > - * made from within an active HTM transaction is aborted with the
+> > - * correct failure code.
+> 
+> The above is still true
+> 
+> > - * Conversely, ensure that a system call made from within a
+> > - * suspended transaction can succeed.
+> 
+> This is true anymore....
+> 
+> So can we just modify the test to remove the second part?
+> 
 
-The above is still true
+Oh true I overlooked that
 
-> - * Conversely, ensure that a system call made from within a
-> - * suspended transaction can succeed.
+Thanks
 
-This is true anymore....
-
-So can we just modify the test to remove the second part?
-
-Mikey
+> Mikey
