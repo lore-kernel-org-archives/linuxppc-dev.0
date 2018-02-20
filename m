@@ -1,53 +1,29 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmHNF74gYzF19K
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 10:47:22 +1100 (AEDT)
-Date: Tue, 20 Feb 2018 15:47:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Christophe LEROY <christophe.leroy@c-s.fr>,
- elfring@users.sourceforge.net, kernel list <linux-kernel@vger.kernel.org>,
- vgupta@synopsys.com, linux@armlinux.org.uk, oleg@redhat.com,
- catalin.marinas@arm.com, will.deacon@arm.com, paulus@ozlabs.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, ard.biesheuvel@linaro.org,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- scott.bauer@intel.com, jonathan.derrick@intel.com, axboe@kernel.dk,
- daniel.lezcano@linaro.org, maxime.ripard@free-electrons.com, wens@csie.org,
- alexander.deucher@amd.com, christian.koenig@amd.com, David1.Zhou@amd.com,
- airlied@linux.ie, robdclark@gmail.com, joro@8bytes.org, shli@kernel.org,
- shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com,
- Alexey.Brodkin@synopsys.com, mhocko@suse.com, vbabka@suse.cz,
- Vladislav.Zakharov@synopsys.com, noamca@mellanox.com,
- yamada.masahiro@socionext.com, sboyd@codeaurora.org,
- viresh.kumar@linaro.org, linus.walleij@linaro.org, heiko@sntech.de,
- aik@ozlabs.ru, ruscur@russell.cc, david@gibson.dropbear.id.au,
- fbarrat@linux.vnet.ibm.com, alistair@popple.id.au, robh@kernel.org,
- joe@perches.com, harry.wentland@amd.com, tony.cheng@amd.com,
- Wenjing.Liu@amd.com, airlied@redhat.com, Ding.Wang@amd.com,
- sylvia.tsai@amd.com, hersenxs.wu@amd.com, Rex.Zhu@amd.com,
- JinHuiEric.Huang@amd.com, dan.carpenter@oracle.com, architt@codeaurora.org,
- narmstrong@baylibre.com, ville.syrjala@linux.intel.com,
- jcrouse@codeaurora.org, aishpant@gmail.com, noralf@tronnes.org,
- andresx7@gmail.com, Monk.Liu@amd.com, nicolai.haehnle@amd.com,
- Andrey.Grodzovsky@amd.com, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-efi@vger.kernel.org,
- linux-block@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
- freedreno@lists.freedesktop.org, iommu@lists.linux-foundation.org,
- linux-raid@vger.kernel.org
-Subject: Re: [PATCH] fix double ;;s in code
-Message-Id: <20180220154715.2a8ecd75a1c2cc698baefd26@linux-foundation.org>
-In-Reply-To: <87o9kkcck3.fsf@intel.com>
-References: <20180217211955.GE9640@amd>
- <187435d4-5017-edb5-9b6a-b433a148bfcc@c-s.fr>
- <20180219154135.GV22199@phenom.ffwll.local>
- <20180219193312.GA3709@amd> <87o9kkcck3.fsf@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmHpv4rh2zF19m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 11:07:01 +1100 (AEDT)
+From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-mm@kvack.org, Joel Stanley <joel@jms.id.au>,
+ =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: [PATCH 3/6] powerpc: numa: Use the right #ifdef guards around
+ functions
+Date: Tue, 20 Feb 2018 17:14:21 +0100
+Message-Id: <20180220161424.5421-4-j.neuschaefer@gmx.net>
+In-Reply-To: <20180220161424.5421-1-j.neuschaefer@gmx.net>
+References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,28 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 20 Feb 2018 10:03:56 +0200 Jani Nikula <jani.nikula@linux.intel.com> wrote:
+of_node_to_nid and dump_numa_cpu_topology are declared inline in their
+respective header files, if CONFIG_NUMA is not set. Thus it is only
+valid to define these functions in numa.c if CONFIG_NUMA is set.
+(numa.c, despite the name, isn't conditionalized on CONFIG_NUMA, but
+CONFIG_NEED_MULTIPLE_NODES.)
 
-> On Mon, 19 Feb 2018, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Mon 2018-02-19 16:41:35, Daniel Vetter wrote:
-> >> Yeah, pls split this into one patch per area, with a suitable patch
-> >> subject prefix. Look at git log of each file to get a feeling for what's
-> >> the standard in each area.
-> >
-> > Yeah I can spend hour spliting it, and then people will ignore it
-> > anyway.
-> >
-> > If you care about one of the files being modified, please fix the
-> > bug, ";;" is a clear bug.
-> >
-> > If you don't care ... well I don't care either.
-> 
-> Look, if this causes just one conflict down the line because it touches
-> the kernel all over the place, then IMO it already wasn't worth
-> it. Merge conflicts are inevitable, but there's no reason to make life
-> harder just to cater for a cleanup patch. It's not that important.
-> 
-> Had it been split up, the drm parts would've been merged already.
+Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+---
+ arch/powerpc/mm/numa.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-I just stage patches like this behind linux-next.  So if your stuff in
-in -next, you'll never notice a thing.
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0570bc2a0b13..df03a65b658f 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -254,6 +254,7 @@ static int of_node_to_nid_single(struct device_node *device)
+ 	return nid;
+ }
+ 
++#ifdef CONFIG_NUMA
+ /* Walk the device tree upwards, looking for an associativity id */
+ int of_node_to_nid(struct device_node *device)
+ {
+@@ -272,6 +273,7 @@ int of_node_to_nid(struct device_node *device)
+ 	return nid;
+ }
+ EXPORT_SYMBOL(of_node_to_nid);
++#endif
+ 
+ static int __init find_min_common_depth(void)
+ {
+@@ -744,6 +746,7 @@ static void __init setup_nonnuma(void)
+ 	}
+ }
+ 
++#ifdef CONFIG_NUMA
+ void __init dump_numa_cpu_topology(void)
+ {
+ 	unsigned int node;
+@@ -778,6 +781,7 @@ void __init dump_numa_cpu_topology(void)
+ 		pr_cont("\n");
+ 	}
+ }
++#endif
+ 
+ /* Initialize NODE_DATA for a node on the local memory */
+ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+-- 
+2.16.1
