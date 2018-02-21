@@ -1,47 +1,32 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmXv00VcgzF0jt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 20:56:27 +1100 (AEDT)
-Received: by mail-qk0-x243.google.com with SMTP id i184so1175095qkf.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 01:56:27 -0800 (PST)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
- <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
- <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 21 Feb 2018 10:56:24 +0100
-Message-ID: <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Ulf Magnusson <ulfalizer@gmail.com>, Rich Felker <dalias@libc.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Kernel Hardening <kernel-hardening@lists.openwall.com>,
- Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- Sam Ravnborg <sam@ravnborg.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
- X86 ML <x86@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
- Emese Revfy <re.emese@gmail.com>, Kees Cook <keescook@chromium.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
- user-mode-linux-user@lists.sourceforge.net,
- Thomas Gleixner <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmY1j0jNczF0S3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 21:02:15 +1100 (AEDT)
+Received: by mail-pg0-x22a.google.com with SMTP id g12so458291pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 02:02:15 -0800 (PST)
+Date: Wed, 21 Feb 2018 15:32:09 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux PM <linux-pm@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Richard Weinberger <richard@nod.at>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
+ cpufreq_table_find_index_dl()
+Message-ID: <20180221100209.GP28462@vireshk-i7>
+References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7>
+ <874lmasxxx.fsf@concordia.ellerman.id.au>
+ <20180221055450.GO28462@vireshk-i7>
+ <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,66 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
-> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
->
->>>
->>> I'm not happy that we in one context can reference CONFIG variables
->>> directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
->>> But I could not come up with something un-ambigious where this could be avoided.
->>
->> I think we should be careful about allowing references to config
->> symbols. It mixes up the parsing and evaluation phases, since $() is
->> expanded during parsing (which I consider a feature and think is
->> needed to retain sanity).
->>
->> Patch 06/23 removes the last existing instance of symbol references in
->> strings by getting rid of 'option env'. That's an improvement to me.
->> We shouldn't add it back.
->
->
-> This is really important design decision,
-> so I'd like to hear a little more from experts.
->
->
-> For example, x86 allows users to choose sub-arch, either 'i386' or 'x86_64'.
->
-> https://github.com/torvalds/linux/blob/v4.16-rc2/arch/x86/Kconfig#L4
->
->
->
-> If the user toggles CONFIG_64BIT,
-> the bi-arch compiler will work in a slightly different mode
-> (at least, back-end parts)
->
-> So, my question is, is there a case,
->
-> $(cc-option, -m32 -foo) is y, but
-> $(cc-option, -m64 -foo) is n  ?
-> (or vice versa)
->
->
-> If the answer is yes, $(cc-option -foo) would have to be re-calculated
-> every time CONFIG_64BIT is toggled.
->
-> This is what I'd like to avoid, though.
+On 21-02-18, 10:27, Rafael J. Wysocki wrote:
+> To be precise, ->init() should fail as that's where the table is
+> created.  The registration fails as a result then.
+> 
+> But what if the bug is that ->init() doesn't fail when it should?
+> 
+> I guess the core could double check the frequency table after ->init()
+> if ->target_index is not NULL.
+> 
+> The overall point here is that if you get a negative index in
+> ->fast_switch(), that's way too late anyway and we should be able to
+> catch that error much earlier.
 
-The -m32/-m64 trick (and -mbig-endian/-mlittle-endian on other architectures
-as well as a couple of other flags) only works if the compiler is configured to
-support it. In other cases (e.g. big-endian xtensa), the kernel always
-detects what the compiler does and silently configures itself to match
-using Makefile logic.
+I don't want to end up doing double checking as some of it is already
+done at init, but let me check on what can be done.
 
-On x86, compilers are usually built as bi-arch, but you can build one that
-only allows one of them.
-
-I can see two reasonable ways out:
-
-- we don't use  $(cc-option -foo) in a case like this, and instead require the
-  user to have a matching toolchain.
-- we could make the 32/64 selection on x86 a 'choice' statement where
-  each option depends on both the ARCH= variable and the
-  $(cc-option, -m32)/ $(cc-option, -m64) output.
-
-       Arnd
+-- 
+viresh
