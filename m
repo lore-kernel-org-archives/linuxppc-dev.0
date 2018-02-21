@@ -1,52 +1,35 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
- [210.131.2.80])
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmYRT1ybBzDqRT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 21:21:08 +1100 (AEDT)
-Received: from mail-vk0-f50.google.com (mail-vk0-f50.google.com
- [209.85.213.50]) (authenticated)
- by conssluserg-01.nifty.com with ESMTP id w1LAKq5R022943
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 19:20:52 +0900
-Received: by mail-vk0-f50.google.com with SMTP id y127so619711vky.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 02:20:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmYcl674pzDrFk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 21:29:11 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1LAT5bT093817
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 05:29:09 -0500
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g91gv3feg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 05:29:07 -0500
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Wed, 21 Feb 2018 10:28:41 -0000
+Subject: Re: [PATCH V6] cxl: Fix timebase synchronization status on P9
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ fbarrat@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <87d10zrrjm.fsf@concordia.ellerman.id.au>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Wed, 21 Feb 2018 11:28:38 +0100
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
- <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
- <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
- <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 21 Feb 2018 19:20:09 +0900
-Message-ID: <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Ulf Magnusson <ulfalizer@gmail.com>, Rich Felker <dalias@libc.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Kernel Hardening <kernel-hardening@lists.openwall.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux <sparclinux@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Jonathan Corbet <corbet@lwn.net>, X86 ML <x86@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
- Kees Cook <keescook@chromium.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- Jeff Dike <jdike@addtoit.com>, user-mode-linux-user@lists.sourceforge.net,
- Thomas Gleixner <tglx@linutronix.de>,
- Michal Marek <michal.lkml@markovi.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Richard Weinberger <richard@nod.at>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <87d10zrrjm.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <5ce88f8a-6756-6acc-3621-a68481f77a10@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,102 +39,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
-> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
-> <yamada.masahiro@socionext.com> wrote:
->> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+Le 21/02/2018 à 03:43, Michael Ellerman a écrit :
+> Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+> 
+>> The PSL Timebase register is updated by the PSL to maintain the
+>> timebase.
+>> On P9, the Timebase value is only provided by the CAPP as received
+>> the last time a timebase request was performed.
+>> The timebase requests are initiated through the adapter configuration or
+>> application registers.
+>> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
+>> now dynamically updated according the content of the PSL Timebase
+>> register.
 >>
->>>>
->>>> I'm not happy that we in one context can reference CONFIG variables
->>>> directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
->>>> But I could not come up with something un-ambigious where this could be avoided.
->>>
->>> I think we should be careful about allowing references to config
->>> symbols. It mixes up the parsing and evaluation phases, since $() is
->>> expanded during parsing (which I consider a feature and think is
->>> needed to retain sanity).
->>>
->>> Patch 06/23 removes the last existing instance of symbol references in
->>> strings by getting rid of 'option env'. That's an improvement to me.
->>> We shouldn't add it back.
+>> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>> Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+>> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> 
+> Can you give me a Fixes: tag for this?
+> 
+> Does it need to go to stable? I can't tell from the change log how bad
+> the bug this fixes is.
+> 
+
+Sorry, I completely forgot to add it:
+Fixes: f24be42aab37 ("cxl: Add psl9 specific code")
+
+With the current code, the state of the PSL timebase, on P9, is not
+displayed correctly because the feature works differently from
+what was expected.
+This patch fixes this behavior and introduces a new way to get 
+dynamically the state of the PSL timebase.
+
+Thanks
+
+> cheers
+> 
+>> ---
+>> This patch applies on top of this patch:
+>>   http://patchwork.ozlabs.org/patch/873663/
 >>
+>> Changelog[v6]
+>>   - Rebased to latest upstream.
+>>   - Recompute the status only in native mode.
 >>
->> This is really important design decision,
->> so I'd like to hear a little more from experts.
+>> Changelog[v5]
+>>   - Rebased to latest upstream.
+>>   - Changed the type of 'delta'
 >>
+>> Changelog[v4]
+>>   - Rebased to latest upstream.
+>>   - Added log message.
 >>
->> For example, x86 allows users to choose sub-arch, either 'i386' or 'x86_64'.
+>> Changelog[v3]
+>>   - Rebased to latest upstream.
+>>   - Dynamic update is now applied to P8.
 >>
->> https://github.com/torvalds/linux/blob/v4.16-rc2/arch/x86/Kconfig#L4
+>> Changelog[v2]
+>>   - Missing Signed-off-by.
+>>   - Spaces required around the ':'.
+>> ---
+>>   drivers/misc/cxl/pci.c   | 17 -----------------
+>>   drivers/misc/cxl/sysfs.c | 12 ++++++++++++
+>>   2 files changed, 12 insertions(+), 17 deletions(-)
 >>
->>
->>
->> If the user toggles CONFIG_64BIT,
->> the bi-arch compiler will work in a slightly different mode
->> (at least, back-end parts)
->>
->> So, my question is, is there a case,
->>
->> $(cc-option, -m32 -foo) is y, but
->> $(cc-option, -m64 -foo) is n  ?
->> (or vice versa)
->>
->>
->> If the answer is yes, $(cc-option -foo) would have to be re-calculated
->> every time CONFIG_64BIT is toggled.
->>
->> This is what I'd like to avoid, though.
->
-> The -m32/-m64 trick (and -mbig-endian/-mlittle-endian on other architectures
-> as well as a couple of other flags) only works if the compiler is configured to
-> support it. In other cases (e.g. big-endian xtensa), the kernel always
-> detects what the compiler does and silently configures itself to match
-> using Makefile logic.
->
-> On x86, compilers are usually built as bi-arch, but you can build one that
-> only allows one of them.
->
-> I can see two reasonable ways out:
->
-> - we don't use  $(cc-option -foo) in a case like this, and instead require the
->   user to have a matching toolchain.
-> - we could make the 32/64 selection on x86 a 'choice' statement where
->   each option depends on both the ARCH= variable and the
->   $(cc-option, -m32)/ $(cc-option, -m64) output.
->
->        Arnd
-
-
-
-Let me clarify my concern.
-
-When we test the compiler flag, is there a case
-where a particular flag depends on -m{32,64} ?
-
-For example, is there a compiler that supports -fstack-protector
-for 64bit mode, but unsupports it for 32bit mode?
-
-  $(cc-option -m32)                     ->  y
-  $(cc-option -m64)                     ->  y
-  $(cc-option -fstack-protector)        ->  y
-  $(cc-option -m32 -fstack-protector)   ->  n
-  $(cc-option -m64 -fstack-protector)   ->  y
-
-I guess this is unlikely to happen,
-but I am not whether it is zero possibility.
-
-If this could happen,
-$(cc-option ) must be evaluated together with
-correct bi-arch option (either -m32 or -m64).
-
-
-Currently, -m32/-m64 is specified in Makefile,
-but we are moving compiler tests to Kconfig
-and, CONFIG_64BIT can be dynamically toggled in Kconfig.
-
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+>> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+>> index 66eed6a..3247eaf 100644
+>> --- a/drivers/misc/cxl/pci.c
+>> +++ b/drivers/misc/cxl/pci.c
+>> @@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
+>>   
+>>   static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>>   {
+>> -	u64 psl_tb;
+>> -	int delta;
+>> -	unsigned int retry = 0;
+>>   	struct device_node *np;
+>>   
+>>   	adapter->psl_timebase_synced = false;
+>> @@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>>   	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
+>>   	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
+>>   
+>> -	/* Wait until CORE TB and PSL TB difference <= 16usecs */
+>> -	do {
+>> -		msleep(1);
+>> -		if (retry++ > 5) {
+>> -			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
+>> -			return;
+>> -		}
+>> -		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+>> -		delta = mftb() - psl_tb;
+>> -		if (delta < 0)
+>> -			delta = -delta;
+>> -	} while (tb_to_ns(delta) > 16000);
+>> -
+>> -	adapter->psl_timebase_synced = true;
+>>   	return;
+>>   }
+>>   
+>> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+>> index a8b6d6a..95285b7 100644
+>> --- a/drivers/misc/cxl/sysfs.c
+>> +++ b/drivers/misc/cxl/sysfs.c
+>> @@ -62,7 +62,19 @@ static ssize_t psl_timebase_synced_show(struct device *device,
+>>   					char *buf)
+>>   {
+>>   	struct cxl *adapter = to_cxl_adapter(device);
+>> +	u64 psl_tb, delta;
+>>   
+>> +	/* Recompute the status only in native mode */
+>> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+>> +		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+>> +		delta = abs(mftb() - psl_tb);
+>> +
+>> +		/* CORE TB and PSL TB difference <= 16usecs ? */
+>> +		adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
+>> +		pr_devel("PSL timebase %s - delta: 0x%016llx\n",
+>> +			 (tb_to_ns(delta) < 16000) ? "synchronized" :
+>> +			 "not synchronized", tb_to_ns(delta));
+>> +	}
+>>   	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
+>>   }
+>>   
+>> -- 
+>> 2.7.4
+> 
