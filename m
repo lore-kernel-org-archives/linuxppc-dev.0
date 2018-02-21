@@ -1,51 +1,35 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmj2S5KG6zF0yW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 03:03:28 +1100 (AEDT)
-Received: by mail-qk0-x242.google.com with SMTP id t13so2550364qkj.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:03:28 -0800 (PST)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
- <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
- <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
- <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
- <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
- <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
- <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 21 Feb 2018 17:03:25 +0100
-Message-ID: <CAK8P3a3-eufj=HM4Mi+KaSLxuoPwtw0P4EfmtYfVcbnR0mVwAw@mail.gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Rich Felker <dalias@libc.org>,
- Kernel Hardening <kernel-hardening@lists.openwall.com>,
- X86 ML <x86@kernel.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux <sparclinux@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
- Richard Weinberger <richard@nod.at>, Linux-sh list <linux-sh@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
- Kees Cook <keescook@chromium.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- user-mode-linux-user@lists.sourceforge.net,
- Thomas Gleixner <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>,
- Ulf Magnusson <ulfalizer@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmj990Xx3zDqxr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 03:09:16 +1100 (AEDT)
+Date: Wed, 21 Feb 2018 17:08:15 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: kbuild test robot <lkp@intel.com>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-mm@kvack.org, Joel Stanley <joel@jms.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
+ Thomas Gleixner <tglx@linutronix.de>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH 5/6] powerpc: Implement DISCONTIGMEM and allow selection
+ on PPC32
+Message-ID: <20180221160815.dxhpsejt74zeqqjd@latitude>
+References: <20180220161424.5421-6-j.neuschaefer@gmx.net>
+ <201802210756.OZokd64C%fengguang.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="cqenwn745jgkwtzn"
+In-Reply-To: <201802210756.OZokd64C%fengguang.wu@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,41 +39,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 21, 2018 at 1:57 PM, Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
-> 2018-02-21 19:52 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
->> On Wed, Feb 21, 2018 at 11:20 AM, Masahiro Yamada
->> <yamada.masahiro@socionext.com> wrote:
->>> 2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
->>>> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
->>>> <yamada.masahiro@socionext.com> wrote:
->>>>> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
->
-> Hmm, I think I can implement those somehow.
-> But, I hope we do not have many instances like this...
->
->
-> If you know more naive cases, please share your knowledge.
->
 
-One case that comes to mind would be architecture level selection on 32-bit
-ARM, which is roughly this (I probably have some details wrong, but you
-get the idea):
+--cqenwn745jgkwtzn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-- older compilers don't support the latest architecture setting (-march=armv8
-  or -march=armv7ve)
-- newer compilers no longer support really old architectures (-march=armv4)
-- setting -mthumb requires setting one of  -march=armv7-a, armv7ve, armv7-m or
-  armv8 if the compiler doesn't default to those
-- on a compiler that defaults to -marm, setting -march=armv7-m requires
-  setting -mthumb (IIRC)
-- really old compilers only support OABI, but not EABI
-- newer compilers no longer support OABI
-- mthumb requires EABI
-- armv6 and higher are subtly broken with OABI, but only when using
-  certain inline assembly with 64-bit arguments in register pairs.
+On Wed, Feb 21, 2018 at 07:46:28AM +0800, kbuild test robot wrote:
+[...]
+> >> include/linux/mmzone.h:1239:19: error: conflicting types for 'pfn_valid'
+>     static inline int pfn_valid(unsigned long pfn)
+>                       ^~~~~~~~~
+>    In file included from include/linux/mmzone.h:912:0,
+>                     from include/linux/gfp.h:6,
+>                     from include/linux/mm.h:10,
+>                     from include/linux/mman.h:5,
+>                     from arch/powerpc/kernel/asm-offsets.c:22:
+>    arch/powerpc/include/asm/mmzone.h:40:19: note: previous definition of 'pfn_valid' was here
+>     static inline int pfn_valid(int pfn)
+>                       ^~~~~~~~~
+>    make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+>    make[2]: Target '__build' not remade because of errors.
+>    make[1]: *** [prepare0] Error 2
+>    make[1]: Target 'prepare' not remade because of errors.
+>    make: *** [sub-make] Error 2
 
-I think we just shouldn't try to capture all of the above correctly in Kconfig
-conditionals.
+Oops, I'll fix this in the next version (and compile-test on ppc64...).
 
-       Arnd
+Weirdly enough, x86-32 and parisc define pfn_valid with an int
+parameter, too (both of them since the Beginning Of Time, aka.
+v2.6.12-rc2).
+
+--cqenwn745jgkwtzn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJajZlkAAoJEAgwRJqO81/bC9EP/0FAWTZxjLN1131rfl2qXHHO
+PiRFHOZgt/dlfqJQiFZSF8F33gEwQMn29NdOFqPnFyUT+9BNoBbv3RcEVNuJ2Y26
+gyEVfVSINkrhqHHxtHNl+NlFsClxlo5Nrhss4gja1Jm+fZDrvFDj7YoBR1mINdbs
+Wcf4OSqUjSW8ZBG1MJLli5CX5QeKpzmhiBVMKiaNEIyPaceoNZVFSIsqwTxK0LcY
+ILkaUS2lAh7GF+C7vdE7/ur0U77+yPq/dc8RAw0XzzRLfAzuwt8Q12OqnoyoK598
+WMcsFHF1BYs403wktKCHsLlSgQ7YfDDKq+VaJJ1kWm0FwPzAMvSkwyIUcZltAacC
+c6JKm7P+CkyFkrBe/iVIGyoUSWyWAg94V4xT+UdqKz0fQxMRd0HzQNVc0q6Lwgr4
+ij1ylSr+x7uuxlgPtDn1WSP5W9hGCAHcKs7g/XVMqCLXvAgElZ6edZmdSJ2wMDEJ
+TRNz6LMOwUAV1ull1t+1EGOXQzKJDT/fvdeTteDjwjoc0AeycpF1x/tHreYNqaQ7
+ulaG5A5tEfIZ+IxsvOjNJos1WXWG/oGwdqGcFsPgjlehtO9AEKGvlhUWcqRKItmP
+LGO1oWLPejICN8Ev7eeZbJI8JFzkFcKTnZoeJjAtOIV1IOolGqfMFDKgAGVUATkM
+5qCaWm6302I3zd+K6KD3
+=207V
+-----END PGP SIGNATURE-----
+
+--cqenwn745jgkwtzn--
