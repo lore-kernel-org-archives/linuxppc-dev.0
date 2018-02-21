@@ -1,56 +1,64 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
- [210.131.2.82])
+Return-Path: <patrice.chotard@st.com>
+Received: from mx07-00178001.pphosted.com (mx08-00178001.pphosted.com
+ [91.207.212.93])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmcwg1DcjzF0sC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 23:58:10 +1100 (AEDT)
-Received: from mail-ua0-f176.google.com (mail-ua0-f176.google.com
- [209.85.217.176]) (authenticated)
- by conssluserg-03.nifty.com with ESMTP id w1LCvi8Z028873
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 21:57:45 +0900
-Received: by mail-ua0-f176.google.com with SMTP id c20so73685uak.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 04:57:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmcx66jvWzF0sC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 23:58:34 +1100 (AEDT)
+From: Patrice CHOTARD <patrice.chotard@st.com>
+To: Marcus Folkesson <marcus.folkesson@gmail.com>, Wim Van Sebroeck
+ <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, Joel Stanley
+ <joel@jms.id.au>, Nicolas Ferre <nicolas.ferre@microchip.com>, "Alexandre
+ Belloni" <alexandre.belloni@free-electrons.com>, Florian Fainelli
+ <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden
+ <sbranden@broadcom.com>, "bcm-kernel-feedback-list@broadcom.com"
+ <bcm-kernel-feedback-list@broadcom.com>,
+ Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>,
+ Linus Walleij <linus.walleij@linaro.org>, Support Opensource
+ <support.opensource@diasemi.com>, Baruch Siach <baruch@tkos.co.il>,
+ "William Breathitt Gray" <vilhelm.gray@gmail.com>,
+ Jimmy Vance <jimmy.vance@hpe.com>, Keguang Zhang <keguang.zhang@gmail.com>,
+ Joachim Eastwood <manabian@gmail.com>,
+ Tomas Winkler <tomas.winkler@intel.com>, "Johannes
+ Thumshirn" <morbidrsa@gmail.com>, Andreas Werner <andreas.werner@men.de>,
+ Carlo Caione <carlo@caione.org>, Kevin Hilman <khilman@baylibre.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>, Wan ZongShun
+ <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>, "Vladimir
+ Zapolskiy" <vz@mleia.com>, Sylvain Lemieux <slemieux.tyco@gmail.com>,
+ "Kukjin Kim" <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
+ "Zwane Mwaikambo" <zwanem@gmail.com>,
+ Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
+ Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai
+ <wens@csie.org>, Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard
+ <mans@mansr.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Jun Nie
+ <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo
+ <shawnguo@kernel.org>
+CC: "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "linux-rpi-kernel@lists.infradead.org"
+ <linux-rpi-kernel@lists.infradead.org>,
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>, "linux-mips@linux-mips.org"
+ <linux-mips@linux-mips.org>, "linux-amlogic@lists.infradead.org"
+ <linux-amlogic@lists.infradead.org>, "linux-mediatek@lists.infradead.org"
+ <linux-mediatek@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org"
+ <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org"
+ <linux-tegra@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "patches@opensource.cirrus.com"
+ <patches@opensource.cirrus.com>
+Subject: Re: [PATCH] watchdog: add SPDX identifiers for watchdog subsystem
+Date: Wed, 21 Feb 2018 12:34:44 +0000
+Message-ID: <9cf6fba8-7708-bbb3-1586-e195a2b440c6@st.com>
+References: <20180220093119.23720-1-marcus.folkesson@gmail.com>
+In-Reply-To: <20180220093119.23720-1-marcus.folkesson@gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
- <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
- <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
- <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
- <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
- <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 21 Feb 2018 21:57:03 +0900
-Message-ID: <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Rich Felker <dalias@libc.org>,
- Kernel Hardening <kernel-hardening@lists.openwall.com>,
- X86 ML <x86@kernel.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- Sam Ravnborg <sam@ravnborg.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
- Kees Cook <keescook@chromium.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- Jeff Dike <jdike@addtoit.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- user-mode-linux-user@lists.sourceforge.net,
- Thomas Gleixner <tglx@linutronix.de>,
- Michal Marek <michal.lkml@markovi.net>,
- Ulf Magnusson <ulfalizer@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,120 +68,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-02-21 19:52 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
-> On Wed, Feb 21, 2018 at 11:20 AM, Masahiro Yamada
-> <yamada.masahiro@socionext.com> wrote:
->> 2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
->>> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
->>> <yamada.masahiro@socionext.com> wrote:
->>>> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
->>
->> Let me clarify my concern.
->>
->> When we test the compiler flag, is there a case
->> where a particular flag depends on -m{32,64} ?
->>
->> For example, is there a compiler that supports -fstack-protector
->> for 64bit mode, but unsupports it for 32bit mode?
->>
->>   $(cc-option -m32)                     ->  y
->>   $(cc-option -m64)                     ->  y
->>   $(cc-option -fstack-protector)        ->  y
->>   $(cc-option -m32 -fstack-protector)   ->  n
->>   $(cc-option -m64 -fstack-protector)   ->  y
->>
->> I guess this is unlikely to happen,
->> but I am not whether it is zero possibility.
->>
->> If this could happen,
->> $(cc-option ) must be evaluated together with
->> correct bi-arch option (either -m32 or -m64).
->>
->>
->> Currently, -m32/-m64 is specified in Makefile,
->> but we are moving compiler tests to Kconfig
->> and, CONFIG_64BIT can be dynamically toggled in Kconfig.
->
-> I don't think it can happen for this particular combination (stack protector
-> and word size), but I'm sure we'll eventually run into options that
-> need to be tested in combination. For the current CFLAGS_KERNEL
-> setting, we definitely have the case of needing the variables to be
-> evaluated in a specific order.
->
-
-
-
-
-I was thinking of how we can handle complex cases
-in the current approach.
-
-
-
-(Case 1)
-
-Compiler flag -foo and -bar interacts, so
-we also need to check the combination of the two.
-
-
-config CC_HAS_FOO
-        def_bool $(cc-option -foo)
-
-config CC_HAS_BAR
-        def_bool $(cc-option -bar)
-
-config CC_HAS_FOO_WITH_BAR
-        def_bool $(cc-option -foo -bar)
-
-
-
-(Case 2)
-Compiler flag -foo is sensitive to word-size.
-So, we need to test this option together with -m32/-m64.
-User can toggle CONFIG_64BIT, like i386/x86_64.
-
-
-config CC_NEEDS_M64
-          def_bool $(cc-option -m64) && 64BIT
-
-config CC_NEEDS_M32
-          def_bool $(cc-option -m32) && !64BIT
-
-config CC_HAS_FOO
-         bool
-         default $(cc-option -m64 -foo) if CC_NEEDS_M64
-         default $(cc-option -m32 -foo) if CC_NEEDS_M32
-         default $(cc-option -foo)
-
-
-
-(Case 3)
-Compiler flag -foo is sensitive to endian-ness.
-
-
-config CC_NEEDS_BIG_ENDIAN
-          def_bool $(cc-option -mbig-endian) && CPU_BIG_ENDIAN
-
-config CC_NEEDS_LITTLE_ENDIAN
-          def_bool $(cc-option -mlittle-endian) && CPU_LITTLE_ENDIAN
-
-config CC_HAS_FOO
-         bool
-         default $(cc-option -mbig-endian -foo) if CC_NEEDS_BIG_ENDIAN
-         default $(cc-option -mlittle-endian -foo) if CC_NEEDS_LITTLE_ENDIAN
-         default $(cc-option -foo)
-
-
-
-
-Hmm, I think I can implement those somehow.
-But, I hope we do not have many instances like this...
-
-
-If you know more naive cases, please share your knowledge.
-
-Thanks!
-
-
--- 
-Best Regards
-Masahiro Yamada
+SGkgTWFyY3VzDQoNCk9uIDAyLzIwLzIwMTggMTA6MzEgQU0sIE1hcmN1cyBGb2xrZXNzb24gd3Jv
+dGU6DQo+IC0gQWRkIFNQRFggaWRlbnRpZmllcg0KPiAtIFJlbW92ZSBib2lsZXIgcGxhdGUgbGlj
+ZW5zZSB0ZXh0DQo+IC0gSWYgTU9EVUxFX0xJQ0VOU0UgYW5kIGJvaWxlciBwbGF0ZSBkb2VzIG5v
+dCBtYXRjaCwgZ28gZm9yIGJvaWxlciBwbGF0ZQ0KPiAgICBsaWNlbnNlDQo+IA0KPiBTaWduZWQt
+b2ZmLWJ5OiBNYXJjdXMgRm9sa2Vzc29uIDxtYXJjdXMuZm9sa2Vzc29uQGdtYWlsLmNvbT4NCj4g
+LS0tDQo+IA0KPiBOb3RlczoNCj4gICAgICB2MTogUGxlYXNlIGhhdmUgYW4gZXh0cmEgbG9vayBh
+dCBtZXNvbl9neGJiX3dkdC5jDQo+IA0KDQpbLi4uXQ0KDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJz
+L3dhdGNoZG9nL3N0X2xwY193ZHQuYyBiL2RyaXZlcnMvd2F0Y2hkb2cvc3RfbHBjX3dkdC5jDQo+
+IGluZGV4IGU2MTAwZTQ0N2RkOC4uMTc3ODI5YjM3OWRhIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJz
+L3dhdGNoZG9nL3N0X2xwY193ZHQuYw0KPiArKysgYi9kcml2ZXJzL3dhdGNoZG9nL3N0X2xwY193
+ZHQuYw0KPiBAQCAtMSwzICsxLDQgQEANCj4gKy8vIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBH
+UEwtMi4wKw0KPiAgIC8qDQo+ICAgICogU1QncyBMUEMgV2F0Y2hkb2cNCj4gICAgKg0KPiBAQCAt
+NSwxMSArNiw2IEBADQo+ICAgICoNCj4gICAgKiBBdXRob3I6IERhdmlkIFBhcmlzIDxkYXZpZC5w
+YXJpc0BzdC5jb20+IGZvciBTVE1pY3JvZWxlY3Ryb25pY3MNCj4gICAgKiAgICAgICAgIExlZSBK
+b25lcyA8bGVlLmpvbmVzQGxpbmFyby5vcmc+IGZvciBTVE1pY3JvZWxlY3Ryb25pY3MNCj4gLSAq
+DQo+IC0gKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1
+dGUgaXQgYW5kL29yDQo+IC0gKiBtb2RpZnkgaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUg
+R2VuZXJhbCBQdWJsaWMgTGljZW5jZQ0KPiAtICogYXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNv
+ZnR3YXJlIEZvdW5kYXRpb247IGVpdGhlciB2ZXJzaW9uDQo+IC0gKiAyIG9mIHRoZSBMaWNlbmNl
+LCBvciAoYXQgeW91ciBvcHRpb24pIGFueSBsYXRlciB2ZXJzaW9uLg0KPiAgICAqLw0KPiAgIA0K
+DQpGb3Igc3RfbHBjX3dkdC5jDQoNCkFja2VkLWJ5OiBQYXRyaWNlIENob3RhcmQgPHBhdHJpY2Uu
+Y2hvdGFyZEBzdC5jb20+DQoNClRoYW5rcw0KDQo=
