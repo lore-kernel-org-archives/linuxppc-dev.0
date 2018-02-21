@@ -1,58 +1,43 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <srs0=okox=fp=linux.vnet.ibm.com=tyreld@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmdgm70WYzF0dw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:31:58 +1100 (AEDT)
-Date: Wed, 21 Feb 2018 14:31:47 +0100
-From: Johannes Thumshirn <morbidrsa@gmail.com>
-To: Marcus Folkesson <marcus.folkesson@gmail.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com,
- Linus Walleij <linus.walleij@linaro.org>,
- Support Opensource <support.opensource@diasemi.com>,
- Baruch Siach <baruch@tkos.co.il>,
- William Breathitt Gray <vilhelm.gray@gmail.com>,
- Jimmy Vance <jimmy.vance@hpe.com>, Keguang Zhang <keguang.zhang@gmail.com>,
- Joachim Eastwood <manabian@gmail.com>,
- Tomas Winkler <tomas.winkler@intel.com>,
- Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
- Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>,
- Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
- Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
- Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
- linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
- linux-mediatek@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
-Subject: Re: [PATCH v3] watchdog: add SPDX identifiers for watchdog subsystem
-Message-ID: <20180221133147.hv2roffsgo6qmsa3@linux-x5ow.site>
-References: <20180221122744.28300-1-marcus.folkesson@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmrRc2ZFQzF0wm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 08:37:16 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zmrRc1Z9Gz8t0R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 08:37:16 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zmrRb50qTz9sW5
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 08:37:15 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1LLYDRN061352
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 16:37:13 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g9dt8q24b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 16:37:13 -0500
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Wed, 21 Feb 2018 16:37:12 -0500
+Subject: Re: [PATCH] powerpc/pseries: Fix duplicate firmware feature for
+ DRC_INFO
+To: Michael Ellerman <mpe@ellerman.id.au>, mwb@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org
+References: <20180221130523.27836-1-mpe@ellerman.id.au>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Wed, 21 Feb 2018 13:37:06 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180221122744.28300-1-marcus.folkesson@gmail.com>
+In-Reply-To: <20180221130523.27836-1-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <00af50c2-e749-10ba-f16e-39f0187581ce@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,22 +47,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 21, 2018 at 01:27:34PM +0100, Marcus Folkesson wrote:
-> - Add SPDX identifier
-> - Remove boiler plate license text
-> - If MODULE_LICENSE and boiler plate does not match, go for boiler plate
->   license
+On 02/21/2018 05:05 AM, Michael Ellerman wrote:
+> We had a mid-air collision between two new firmware features, DRMEM_V2
+> and DRC_INFO, and they ended up with the same value.
+> 
+> No one's actually reported any problems, presumably because the new
+> firmware that supports both properties is not widely available, and
+> the two properties tend to be enabled together.
+> 
+> Still if we ever had one enabled but not the other, the bugs that
+> could result are many and varied. So fix it.
+> 
+> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmware feature")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
 
-[...]
+Good catch.
 
->  drivers/watchdog/mena21_wdt.c          |  4 +--
+Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-Acked-by: Johannes Thumshirn <jth@kernel.org>
-
--- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+>  arch/powerpc/include/asm/firmware.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+> index 511acfd7ab0d..535add3f7791 100644
+> --- a/arch/powerpc/include/asm/firmware.h
+> +++ b/arch/powerpc/include/asm/firmware.h
+> @@ -52,7 +52,7 @@
+>  #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
+>  #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
+>  #define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
+> -#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000400000000)
+> +#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
+> 
+>  #ifndef __ASSEMBLY__
+> 
