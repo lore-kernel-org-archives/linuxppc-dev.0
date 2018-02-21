@@ -1,44 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmfVQ33WYzF0ks
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 01:09:02 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1LE51Zj096765
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:08:59 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g97enfx6t-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:08:58 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 21 Feb 2018 14:08:54 -0000
-Date: Wed, 21 Feb 2018 19:38:50 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
-To: Mark Lord <mlord@pobox.com>
-Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann
- <daniel@iogearbox.net>,
- Kees Cook <keescook@chromium.org>, linuxppc-dev@lists.ozlabs.org,
- Andy Lutomirski <luto@amacapital.net>, mpe@ellerman.id.au,
- Will Drewry <wad@chromium.org>
-References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
- <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
- <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
- <1519154571.d9vaokens9.naveen@linux.ibm.com>
- <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
- <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
- <32a60518-1de6-9f9c-b3e6-5e5292d6b289@pobox.com>
- <2e79ef59-1731-f3a5-9868-c15beb939142@pobox.com>
-In-Reply-To: <2e79ef59-1731-f3a5-9868-c15beb939142@pobox.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmgFQ5c3bzF12q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 01:42:49 +1100 (AEDT)
+Date: Wed, 21 Feb 2018 15:42:40 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/6] DISCONTIGMEM support for PPC32
+Message-ID: <20180221144240.pfu2run3pixt3pzo@latitude>
+References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
+ <193a407d-e6b8-9e29-af47-3d401b6414a0@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1519221778.inx201t3s9.naveen@linux.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="sj7gzac6guuidn6w"
+In-Reply-To: <193a407d-e6b8-9e29-af47-3d401b6414a0@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,63 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mark Lord wrote:
-> On 18-02-21 07:52 AM, Mark Lord wrote:
->> On 18-02-21 03:35 AM, Naveen N. Rao wrote:
-> ..
->>> Looks good to me, but I am not able to apply this patch. There seems to=
- be whitespace damage.
->>=20
->> Here (attached) is a clean copy.
+
+--sj7gzac6guuidn6w
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Wed, Feb 21, 2018 at 08:06:10AM +0100, Christophe LEROY wrote:
 >=20
-> Again, this time with the commit message included!
-
-Thanks. However...
-I am able to apply this using 'patch', but not with 'git am' since the=20
-headers are missing. FWIW, the usual workflow is to make the changes and=20
-commit it into your repository using 'git commit' and then use 'git=20
-format-patch' to generate a patch file that you can then post.
-
-I'll defer to Michael on whether he is ok to process this as it is.
-
 >=20
-> I am using SECCOMP to filter syscalls on a ppc32 platform,
-> and noticed that the JIT compiler was failing on the BPF
-> even though the interpreter was working fine.
+> Le 20/02/2018 =C3=A0 17:14, Jonathan Neusch=C3=A4fer a =C3=A9crit=C2=A0:
+> > This patchset adds support for DISCONTIGMEM on 32-bit PowerPC. This is
+> > required to properly support the Nintendo Wii's memory layout, in which
+> > there are two blocks of RAM and MMIO in the middle.
+> >=20
+> > Previously, this memory layout was handled by code that joins the two
+> > RAM blocks into one, reserves the MMIO hole, and permits allocations of
+> > reserved memory in ioremap. This hack didn't work with resource-based
+> > allocation (as used for example in the GPIO driver for Wii[1]), however.
+> >=20
+> > After this patchset, users of the Wii can either select CONFIG_FLATMEM
+> > to get the old behaviour, or CONFIG_DISCONTIGMEM to get the new
+> > behaviour.
 >=20
-> The issue was that the compiler was missing one of the instructions
-> used by SECCOMP, so here is a patch to enable JIT for that instruction.
->=20
-> Signed-Off-By:  Mark Lord <mlord@pobox.com>
+> My question might me stupid, as I don't know PCC64 in deep, but when look=
+ing
+> at page_is_ram() in arch/powerpc/mm/mem.c, I have the feeling the PPC64
+> implements ram by blocks. Isn't it what you are trying to achieve ? Would=
+n't
+> it be feasible to map to what's done in PPC64 for PPC32 ?
 
-Minot nit: The correct (TM) tag to use is:
-Signed-off-by:
-(note the case)
+Using page_is_ram in __ioremap_caller and the same memblock-based
+approach that's used on PPC64 on PPC32 *should* work, but I think due to
+the following line in initmem_init, it won't:
 
->=20
-> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -05=
-00
-> +++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.80522=
-7494 -0500
-> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
->                         BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) !=
-=3D 4);
->                         PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,=
- len));
->                         break;
-> +               case BPF_LDX | BPF_W | BPF_ABS: /* A =3D *((u32 *)(seccom=
-p_data + K)); */
-> +                       PPC_LWZ_OFFS(r_A, r_skb, K);
-> +                       break;
->                 case BPF_LDX | BPF_W | BPF_LEN: /* X =3D skb->len; */
->                         PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff,=
- len));
->                         break;
-
-Apart from those aspects, for this patch:
-Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, &memblock.memory, 0);
 
 
-- Naveen
+Thanks,
+Jonathan Neusch=C3=A4fer
 
-=
+--sj7gzac6guuidn6w
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJajYVWAAoJEAgwRJqO81/bt2YQAJVWrBF/ocJJjhm+aS/UxJkD
+QtVPunOENVzUa3TvGRkB+Snlik8tAon75OZBBj0OHllUqiLLVxzUC1OOz8wTzOdP
+AFeBcN4KE+OV1iRlEoN6g42kPs+b9pHWnVnWDnLIdPGpUJxkDIoPV1AnhKjdiNMu
+2X2ri0/aGzFYFBB8je9vV3b9rD9HVkUgDa4UjC01gVL5J+dX0qlPJ/Qj3xLzIFsf
+TFkIQbeU2yuOWxdVk5ngI6J1tW+bzIklqk8ptwtvBMVysU7j4b1Zvx8xu2tZjhmu
+F1/QNOZlcQAQdKvRJn+3O8wUyl3dseD/wXHHZkfeQi1bHnCNRWl7+peiNIdNlfWj
+FneQf7NFENHRHdnblhmYkJuFNIIjJU/K5dFc4UMuYwOMwtyNSdQqnHfCwYRmjOq/
+HynUlOiOSEok411GuOCtd+y2SmTsmdoSB7fqqIZTIrqlqqDUsmAdu/f0WNuPqG2t
+yCrm/+8hrmylwloqWK+kQCpcRSkN90dHwQE/ZWiPDsI59qCdMdJSnfFYFbbgzbbK
+br2sNx1YHXkwDPqkKLCI9gymCgO4BWJGeevuH4gJbfehBGC9+b2Oij5uP9plM4HC
+QPATH4CmOZH7RbBrOaunuHtuva26VpX8f5+IVGzx+ilKFuaBPucsquoDFJu7/SmJ
+LBIs6ol1cb/jr268Wlfl
+=vWFI
+-----END PGP SIGNATURE-----
+
+--sj7gzac6guuidn6w--
