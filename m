@@ -1,38 +1,28 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mlord@pobox.com>
+Received: from sasl.smtp.pobox.com (pb-sasl2.pobox.com [64.147.108.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmdtL5ntNzDqk0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:41:14 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1LDdBm5072448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:41:11 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g96rfr0tv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:41:11 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Wed, 21 Feb 2018 13:41:10 -0000
-Date: Wed, 21 Feb 2018 19:11:02 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v0 0/2] ibm,dynamic-memory-v2 fix
-Reply-To: bharata@linux.vnet.ibm.com
-References: <1519209387-29767-1-git-send-email-bharata@linux.vnet.ibm.com>
- <CAKTCnzm8TJBWG2VG9Bts2zQF01Tsya72bJJSTRimE32XuFC-YA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmdtn31LHzDqqH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:41:35 +1100 (AEDT)
+Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
+From: Mark Lord <mlord@pobox.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Kees Cook <keescook@chromium.org>,
+ Andy Lutomirski <luto@amacapital.net>, mpe@ellerman.id.au,
+ Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org
+References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
+ <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
+ <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
+ <1519154571.d9vaokens9.naveen@linux.ibm.com>
+ <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
+ <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
+ <32a60518-1de6-9f9c-b3e6-5e5292d6b289@pobox.com>
+Message-ID: <2e79ef59-1731-f3a5-9868-c15beb939142@pobox.com>
+Date: Wed, 21 Feb 2018 08:41:30 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKTCnzm8TJBWG2VG9Bts2zQF01Tsya72bJJSTRimE32XuFC-YA@mail.gmail.com>
-Message-Id: <20180221134102.GB30038@in.ibm.com>
+In-Reply-To: <32a60518-1de6-9f9c-b3e6-5e5292d6b289@pobox.com>
+Content-Type: multipart/mixed; boundary="------------69D1A4F2893FF2C6772DFA9B"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,29 +32,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 21, 2018 at 11:27:20PM +1100, Balbir Singh wrote:
-> On Wed, Feb 21, 2018 at 9:36 PM, Bharata B Rao
-> <bharata@linux.vnet.ibm.com> wrote:
-> > Patch 1 fixes a bug that results in unexpected flag bit in
-> > ibm,dynamic-memory-v2 DT property and wrong number of entries
-> > getting created in the same property during hotplug.
-> >
+This is a multi-part message in MIME format.
+--------------69D1A4F2893FF2C6772DFA9B
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+On 18-02-21 07:52 AM, Mark Lord wrote:
+> On 18-02-21 03:35 AM, Naveen N. Rao wrote:
+..
+>> Looks good to me, but I am not able to apply this patch. There seems to be whitespace damage.
 > 
-> Could you please elaborate on what this means?
+> Here (attached) is a clean copy.
 
-Described in 1/2 patch.
+Again, this time with the commit message included!
 
-> Is there a test case -
-> how do we reproduce this?
+I am using SECCOMP to filter syscalls on a ppc32 platform,
+and noticed that the JIT compiler was failing on the BPF
+even though the interpreter was working fine.
 
-Hotplug some memory and check the entries in ibm,dynamic-memory-v2 and also
-check the flags there, you will see DRMEM_LMB_RESERVED set, which
-shouldn't be set.
+The issue was that the compiler was missing one of the instructions
+used by SECCOMP, so here is a patch to enable JIT for that instruction.
 
-You would need QEMU which supports ibm,dynamic-memory-v2. I have posted
-the initial patches for that at:
+Signed-Off-By:  Mark Lord <mlord@pobox.com>
 
-http://lists.gnu.org/archive/html/qemu-ppc/2018-02/msg00236.html
+--- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -0500
++++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.805227494 -0500
+@@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+                        BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) != 4);
+                        PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
+                        break;
++               case BPF_LDX | BPF_W | BPF_ABS: /* A = *((u32 *)(seccomp_data + K)); */
++                       PPC_LWZ_OFFS(r_A, r_skb, K);
++                       break;
+                case BPF_LDX | BPF_W | BPF_LEN: /* X = skb->len; */
+                        PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff, len));
+                        break;
+-- 
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com
 
-Regards,
-Bharata.
+--------------69D1A4F2893FF2C6772DFA9B
+Content-Type: text/x-patch;
+ name="ppc-jit.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="ppc-jit.patch"
+
+I am using SECCOMP to filter syscalls on a ppc32 platform,
+and noticed that the JIT compiler was failing on the BPF
+even though the interpreter was working fine.
+
+The issue was that the compiler was missing one of the instructions
+used by SECCOMP, so here is a patch to enable JIT for that instruction.
+
+Signed-Off-By:  Mark Lord <mlord@pobox.com>
+
+--- old/arch/powerpc/net/bpf_jit_comp.c	2018-02-16 14:07:01.000000000 -0500
++++ linux/arch/powerpc/net/bpf_jit_comp.c	2018-02-20 14:41:20.805227494 -0500
+@@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+ 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) != 4);
+ 			PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
+ 			break;
++		case BPF_LDX | BPF_W | BPF_ABS: /* A = *((u32 *)(seccomp_data + K)); */
++			PPC_LWZ_OFFS(r_A, r_skb, K);
++			break;
+ 		case BPF_LDX | BPF_W | BPF_LEN: /* X = skb->len; */
+ 			PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff, len));
+ 			break;
+
+--------------69D1A4F2893FF2C6772DFA9B--
