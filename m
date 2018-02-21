@@ -1,16 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmd546pbczDqNc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:05:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmdFw5KlKzDr8l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:13:08 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: mwb@linux.vnet.ibm.com,
-	nfont@linux.vnet.ibm.com
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/pseries: Fix duplicate firmware feature for DRC_INFO
-Date: Thu, 22 Feb 2018 00:05:23 +1100
-Message-Id: <20180221130523.27836-1-mpe@ellerman.id.au>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
+ cpufreq_table_find_index_dl()
+In-Reply-To: <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
+References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7> <874lmasxxx.fsf@concordia.ellerman.id.au>
+ <20180221055450.GO28462@vireshk-i7>
+ <CAJZ5v0jEg7FELH6mBY16mB5sfo7s2mbH2SGheH4KVeKLnStjjg@mail.gmail.com>
+Date: Thu, 22 Feb 2018 00:13:03 +1100
+Message-ID: <87vaeqqye8.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We had a mid-air collision between two new firmware features, DRMEM_V2
-and DRC_INFO, and they ended up with the same value.
+"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-No one's actually reported any problems, presumably because the new
-firmware that supports both properties is not widely available, and
-the two properties tend to be enabled together.
+> On Wed, Feb 21, 2018 at 6:54 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 21-02-18, 16:39, Michael Ellerman wrote:
+>>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>>
+>>> > AFAICT, you will get -1 here only if the freq table had no valid
+>>> > frequencies (or the freq table is empty). Why would that happen ?
+>>>
+>>> Bugs?
+>>
+>> The cupfreq driver shouldn't have registered itself in that case (i.e.
+>> if the cpufreq table is empty).
+>
+> To be precise, ->init() should fail as that's where the table is
+> created.  The registration fails as a result then.
+>
+> But what if the bug is that ->init() doesn't fail when it should?
+>
+> I guess the core could double check the frequency table after ->init()
+> if ->target_index is not NULL.
+>
+> The overall point here is that if you get a negative index in
+> ->fast_switch(), that's way too late anyway and we should be able to
+> catch that error much earlier.
 
-Still if we ever had one enabled but not the other, the bugs that
-could result are many and varied. So fix it.
+OK.
 
-Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmware feature")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/firmware.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Still it's one thing for the driver to print a warning and bail out,
+it's another to access off the front of an array and keep running using
+some junk values, or oops (though not in this case because the array
+happens to be static).
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 511acfd7ab0d..535add3f7791 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -52,7 +52,7 @@
- #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
- #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
- #define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
--#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000400000000)
-+#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
- 
- #ifndef __ASSEMBLY__
- 
--- 
-2.14.1
+cheers
