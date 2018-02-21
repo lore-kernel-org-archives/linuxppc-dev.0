@@ -1,20 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmMHN0Y7mzF1CB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 13:43:28 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-Subject: Re: [PATCH V6] cxl: Fix timebase synchronization status on P9
-In-Reply-To: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
-References: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
-Date: Wed, 21 Feb 2018 13:43:25 +1100
-Message-ID: <87d10zrrjm.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmN9D3XymzF1CX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 14:23:08 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1L3J5qS042748
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 22:23:06 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2g8xe54c6b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 22:23:05 -0500
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Tue, 20 Feb 2018 22:23:05 -0500
+Date: Tue, 20 Feb 2018 21:23:01 -0600
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ "Manoj N . Kumar" <manoj@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] scsi: cxlflash: Select SCSI_SCAN_ASYNC
+References: <20180219071037.27938-1-vaibhav@linux.vnet.ibm.com>
+ <87sh9wrqd8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87sh9wrqd8.fsf@concordia.ellerman.id.au>
+Message-Id: <20180221032301.GA58304@p8tul1-build.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,115 +41,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+On Tue, Feb 20, 2018 at 07:56:35PM +1100, Michael Ellerman wrote:
+> Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+> 
+> > The cxlflash driver uses "Asynchronous SCSI scanning" enabled by
+> > CONFIG_SCSI_SCAN_ASYNC. Without this enabled the modprobe of cxlflash
+> > module gets hung with following backtrace:
+> >
+> > Call Trace:
+> >  __switch_to+0x2cc/0x470
+> >  __schedule+0x288/0xab0
+> >  schedule+0x40/0xc0
+> >  schedule_timeout+0x254/0x4f0
+> >  wait_for_common+0xdc/0x260
+> >  flush_work+0x140/0x2a0
+> >  work_on_cpu+0x88/0xb0
+> >  pci_device_probe+0x1d0/0x220
+> >  driver_probe_device+0x408/0x5b0
+> >  __driver_attach+0x16c/0x1a0
+> >  bus_for_each_dev+0xb8/0x110
+> >  driver_attach+0x3c/0x60
+> >  bus_add_driver+0x1d8/0x370
+> >  driver_register+0x9c/0x180
+> >  __pci_register_driver+0x74/0xa0
+> >  init_cxlflash+0x158/0x1cc
+> >  do_one_initcall+0x68/0x1e0
+> >  do_init_module+0x90/0x254
+> >  load_module+0x2f8c/0x3720
+> >  SyS_finit_module+0xcc/0x140
+> >  system_call+0x58/0x6c
+> 
+> Why does it "hang"? That's kind of bizarre, I would expect either a
+> build or runtime failure if a feature the driver requires is missing.
+> 
 
-> The PSL Timebase register is updated by the PSL to maintain the
-> timebase.
-> On P9, the Timebase value is only provided by the CAPP as received
-> the last time a timebase request was performed.
-> The timebase requests are initiated through the adapter configuration or
-> application registers.
-> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
-> now dynamically updated according the content of the PSL Timebase
-> register.
->
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+It hangs due to a bug in the driver. I briefly looked at it several
+months back before getting distracted with other items. IIRC there
+was an issue with the state machine.
 
-Can you give me a Fixes: tag for this?
+> > diff --git a/drivers/scsi/cxlflash/Kconfig b/drivers/scsi/cxlflash/Kconfig
+> > index a011c5dbf214..f054c1b0fff3 100644
+> > --- a/drivers/scsi/cxlflash/Kconfig
+> > +++ b/drivers/scsi/cxlflash/Kconfig
+> > @@ -6,6 +6,7 @@ config CXLFLASH
+> >  	tristate "Support for IBM CAPI Flash"
+> >  	depends on PCI && SCSI && CXL && EEH
+> >  	select IRQ_POLL
+> > +	select SCSI_SCAN_ASYNC
+> 
+> It's user configurable, so it's rude to select it. It can also be
+> disabled on the kernel command line, so this seems like a fragile
+> solution.
+>
+I think Vaibhav's intention here was to avoid the hang while the bug
+is still present - I believe he has encountered it several times recently.
 
-Does it need to go to stable? I can't tell from the change log how bad
-the bug this fixes is.
-
-cheers
-
-> ---
-> This patch applies on top of this patch:
->  http://patchwork.ozlabs.org/patch/873663/
->
-> Changelog[v6]
->  - Rebased to latest upstream.
->  - Recompute the status only in native mode.
->
-> Changelog[v5]
->  - Rebased to latest upstream.
->  - Changed the type of 'delta'
->
-> Changelog[v4]
->  - Rebased to latest upstream.
->  - Added log message.
->
-> Changelog[v3]
->  - Rebased to latest upstream.
->  - Dynamic update is now applied to P8.
->
-> Changelog[v2]
->  - Missing Signed-off-by.
->  - Spaces required around the ':'.
-> ---
->  drivers/misc/cxl/pci.c   | 17 -----------------
->  drivers/misc/cxl/sysfs.c | 12 ++++++++++++
->  2 files changed, 12 insertions(+), 17 deletions(-)
->
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 66eed6a..3247eaf 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
->  
->  static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
->  {
-> -	u64 psl_tb;
-> -	int delta;
-> -	unsigned int retry = 0;
->  	struct device_node *np;
->  
->  	adapter->psl_timebase_synced = false;
-> @@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
->  	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
->  	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
->  
-> -	/* Wait until CORE TB and PSL TB difference <= 16usecs */
-> -	do {
-> -		msleep(1);
-> -		if (retry++ > 5) {
-> -			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
-> -			return;
-> -		}
-> -		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-> -		delta = mftb() - psl_tb;
-> -		if (delta < 0)
-> -			delta = -delta;
-> -	} while (tb_to_ns(delta) > 16000);
-> -
-> -	adapter->psl_timebase_synced = true;
->  	return;
->  }
->  
-> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-> index a8b6d6a..95285b7 100644
-> --- a/drivers/misc/cxl/sysfs.c
-> +++ b/drivers/misc/cxl/sysfs.c
-> @@ -62,7 +62,19 @@ static ssize_t psl_timebase_synced_show(struct device *device,
->  					char *buf)
->  {
->  	struct cxl *adapter = to_cxl_adapter(device);
-> +	u64 psl_tb, delta;
->  
-> +	/* Recompute the status only in native mode */
-> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-> +		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
-> +		delta = abs(mftb() - psl_tb);
-> +
-> +		/* CORE TB and PSL TB difference <= 16usecs ? */
-> +		adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
-> +		pr_devel("PSL timebase %s - delta: 0x%016llx\n",
-> +			 (tb_to_ns(delta) < 16000) ? "synchronized" :
-> +			 "not synchronized", tb_to_ns(delta));
-> +	}
->  	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
->  }
->  
-> -- 
-> 2.7.4
+The proper solution would be to fix the bug.
