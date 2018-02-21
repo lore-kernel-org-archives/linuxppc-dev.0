@@ -1,61 +1,27 @@
-Return-Path: <vilhelm.gray@gmail.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mlord@pobox.com>
+Received: from sasl.smtp.pobox.com (pb-sasl1.pobox.com [64.147.108.66])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmcXP0wKvzF0rd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 23:40:35 +1100 (AEDT)
-Received: by mail-yw0-x242.google.com with SMTP id y186so437839ywf.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 04:40:35 -0800 (PST)
-Date: Wed, 21 Feb 2018 07:40:25 -0500
-From: William Breathitt Gray <vilhelm.gray@gmail.com>
-To: Marcus Folkesson <marcus.folkesson@gmail.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com,
- Linus Walleij <linus.walleij@linaro.org>,
- Support Opensource <support.opensource@diasemi.com>,
- Baruch Siach <baruch@tkos.co.il>, Jimmy Vance <jimmy.vance@hpe.com>,
- Keguang Zhang <keguang.zhang@gmail.com>,
- Joachim Eastwood <manabian@gmail.com>,
- Tomas Winkler <tomas.winkler@intel.com>,
- Johannes Thumshirn <morbidrsa@gmail.com>,
- Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
- Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>,
- Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
- Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
- Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
- linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
- linux-mediatek@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
-Subject: Re: [PATCH v3] watchdog: add SPDX identifiers for watchdog subsystem
-Message-ID: <20180221124024.GA3773@sophia>
-References: <20180221122744.28300-1-marcus.folkesson@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmcpH31bDzF0qN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 23:52:37 +1100 (AEDT)
+Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Kees Cook <keescook@chromium.org>,
+ Andy Lutomirski <luto@amacapital.net>, mpe@ellerman.id.au,
+ Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org
+References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
+ <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
+ <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
+ <1519154571.d9vaokens9.naveen@linux.ibm.com>
+ <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
+ <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
+From: Mark Lord <mlord@pobox.com>
+Message-ID: <32a60518-1de6-9f9c-b3e6-5e5292d6b289@pobox.com>
+Date: Wed, 21 Feb 2018 07:52:30 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20180221122744.28300-1-marcus.folkesson@gmail.com>
+In-Reply-To: <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
+Content-Type: multipart/mixed; boundary="------------54DC93167AF97BD99EF9E7A8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,46 +31,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 21, 2018 at 01:27:34PM +0100, Marcus Folkesson wrote:
->- Add SPDX identifier
->- Remove boiler plate license text
->- If MODULE_LICENSE and boiler plate does not match, go for boiler plate
->  license
->
->Signed-off-by: Marcus Folkesson <marcus.folkesson@gmail.com>
->Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
->Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
->Acked-by: Mans Rullgard <mans@mansr.com>
->Acked-by: Matthias Brugger <matthias.bgg@gmail.com>
->Acked-by: Michal Simek <michal.simek@xilinx.com>
->Acked-by: Neil Armstrong <narmstrong@baylibre.com>
->Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
->Acked-by: Thierry Reding <treding@nvidia.com>
->Reviewed-by: Eric Anholt <eric@anholt.net>
->---
->
->Notes:
->    v3:
->    	- Keep license text for ebc-c384_wdt
->    v2:
->    	- Put back removed copyright texts for meson_gxbb_wdt and coh901327_wdt
->    	- Change to BSD-3-Clause for meson_gxbb_wdt
->    v1: Please have an extra look at meson_gxbb_wdt.c
+This is a multi-part message in MIME format.
+--------------54DC93167AF97BD99EF9E7A8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-[...]
+On 18-02-21 03:35 AM, Naveen N. Rao wrote:
+> Mark Lord wrote:
+>> I am using SECCOMP to filter syscalls on a ppc32 platform,
+>> and noticed that the JIT compiler was failing on the BPF
+>> even though the interpreter was working fine.
+>>
+>> The issue was that the compiler was missing one of the instructions
+>> used by SECCOMP, so here is a patch to enable JIT for that instruction=
+.
+>>
+>> Signed-Off-By:=C2=A0 Mark Lord <mlord@pobox.com>
+>>
+>> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 =
+-0500
+>> +++ linux/arch/powerpc/net/bpf_jit_comp.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 2018-02-20 14:41:20.805227494 -0500
+>> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 BUILD_=
+BUG_ON(FIELD_SIZEOF(struct sk_buff, len) !=3D 4);
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 PPC_LW=
+Z_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 break;
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0 case BPF_LDX | BPF_W | BPF_ABS: /* A =3D *((u32 *)(seccom=
+p_data + K)); */
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 PPC_LWZ_O=
+FFS(r_A, r_skb, K);
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 break;
+>=20
+> Looks good to me, but I am not able to apply this patch. There seems to=
+ be whitespace damage.
 
->diff --git a/drivers/watchdog/ebc-c384_wdt.c b/drivers/watchdog/ebc-c384_wdt.c
->index 2170b275ea01..4c4c8ce78021 100644
->--- a/drivers/watchdog/ebc-c384_wdt.c
->+++ b/drivers/watchdog/ebc-c384_wdt.c
->@@ -1,3 +1,4 @@
->+// SPDX-License-Identifier: GPL-2.0
-> /*
->  * Watchdog timer driver for the WinSystems EBC-C384
->  * Copyright (C) 2016 William Breathitt Gray
+Here (attached) is a clean copy.
 
-For ebc-c384_wdt.c,
+--=20
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com
 
-Acked-by: William Breathitt Gray <vilhelm.gray@gmail.com>
+--------------54DC93167AF97BD99EF9E7A8
+Content-Type: text/x-patch;
+ name="ppc-jit.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="ppc-jit.patch"
 
-William Breathitt Gray
+--- old/arch/powerpc/net/bpf_jit_comp.c	2018-02-16 14:07:01.000000000 -0500
++++ linux/arch/powerpc/net/bpf_jit_comp.c	2018-02-20 14:41:20.805227494 -0500
+@@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+ 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) != 4);
+ 			PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
+ 			break;
++		case BPF_LDX | BPF_W | BPF_ABS: /* A = *((u32 *)(seccomp_data + K)); */
++			PPC_LWZ_OFFS(r_A, r_skb, K);
++			break;
+ 		case BPF_LDX | BPF_W | BPF_LEN: /* X = skb->len; */
+ 			PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff, len));
+ 			break;
+
+--------------54DC93167AF97BD99EF9E7A8--
