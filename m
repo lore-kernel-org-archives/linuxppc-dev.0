@@ -1,48 +1,28 @@
-Return-Path: <srs0=nusq=fp=au1.ibm.com=alastair@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmv6n21g7zF0kx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 10:37:53 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zmv6n1Qz1z8t6w
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 10:37:53 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zmv6m3Gy0z9sW3
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 10:37:52 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1LNTUjo047098
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 18:37:50 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g9fsgdm1y-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 18:37:50 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 21 Feb 2018 23:37:48 -0000
-Subject: Re: [PATCH] ocxl: Add get_metadata IOCTL to share OCXL information
- to userspace
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, Balbir Singh
- <bsingharora@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, frederic.barrat@fr.ibm.com, Greg KH
- <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 22 Feb 2018 10:37:43 +1100
-In-Reply-To: <c6017f9f-67f0-10eb-1eed-527c9c5298ba@linux.vnet.ibm.com>
-References: <20180221045736.7614-1-alastair@au1.ibm.com>
- <CAKTCnz=cy5CkeRjJYpZ1NQpyQN-BVTvKXUxTxOMtTNosZFqJ7A@mail.gmail.com>
- <c6017f9f-67f0-10eb-1eed-527c9c5298ba@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1519256263.2867.8.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmvSP36WtzDrLC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 10:53:05 +1100 (AEDT)
+Received: by mail-qt0-x244.google.com with SMTP id g60so4212934qtd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 15:53:05 -0800 (PST)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au,
+	mingo@redhat.com,
+	akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com,
+ corbet@lwn.net, arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com
+Subject: [PATCH v12 0/3] mm, x86,
+ powerpc: Enhancements to Memory Protection Keys.
+Date: Wed, 21 Feb 2018 15:52:15 -0800
+Message-Id: <1519257138-23797-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,59 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-02-21 at 12:25 +0100, Frederic Barrat wrote:
-> 
-> Le 21/02/2018 à 07:43, Balbir Singh a écrit :
-> > On Wed, Feb 21, 2018 at 3:57 PM, Alastair D'Silva <alastair@au1.ibm
-> > .com> wrote:
-> > > From: Alastair D'Silva <alastair@d-silva.org>
-> > > 
-> > > Some required information is not exposed to userspace currently
-> > > (eg. the
-> > > PASID), pass this information back, along with other information
-> > > which
-> > > is currently communicated via sysfs, which saves some parsing
-> > > effort in
-> > > userspace.
-> > > 
-> > > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> > > 
-<snip>
-> > Should we document the fields? pp_ stands for per process, but is
-> > not
-> > very clear at first look. Why do we care to return only the size,
-> > what
-> > about lpc size?
-> 
-> My bad, I forgot to mention it before. There's a somewhat high-level 
-> description which needs updating in:
-> Documentation/accelerators/ocxl.rst
-> 
-> It doesn't go down to the level of the structure members, but at
-> least 
-> all ioctl commands should have a brief description.
-> 
+This patch series provides arch-neutral enhancements to
+enable memory-keys on new architecutes, and the corresponding
+changes in x86 and powerpc specific code to support that.
 
-I'll update the docs.
+a) Provides ability to support upto 32 keys.  PowerPC
+	can handle 32 keys and hence needs this.
 
-> lpc_size could be added. It's currently useless to the library, but 
-> doesn't hurt. The one which was giving me troubles on a previous
-> version 
-> of this patch was the lpc numa node ID, since that was experimental
-> code 
-> and felt out of place considering what's been upstreamed in skiboot
-> and 
-> linux so far.
+b) Arch-neutral code; and not the arch-specific code,
+   determines the format of the string, that displays the key
+   for each vma in smaps.
 
-I'd rather add the LPC members when the rest of the LPC code goes in.
-At the moment, the LPC size represents the window size (as a power of
-2), whereas we expect that it should represent the actual amount of LPC
-memory exposed. I would rather avoid changing semantics of members in
-released code, or burning another reserved member for the updated
-definition if we can avoid it.
+History:
+-------
+version v12:
+	(1) fixed compilation errors seen with various x86
+		configs.
+version v11:
+	(1) code that displays key in smaps is not any more
+		defined under CONFIG_ARCH_HAS_PKEYS.
+       	    - Comment by Eric W. Biederman and Michal Hocko
+	(2) merged two patches that implemented (1).
+		- comment by Michal Hocko
 
--- 
-Alastair D'Silva
-Open Source Developer
-Linux Technology Centre, IBM Australia
-mob: 0423 762 819
+version prior to v11:
+	(1) used one additional bit from VM_HIGH_ARCH_*
+       		to support 32 keys.
+	    - Suggestion by Dave Hansen.
+	(2) powerpc specific changes to support memory keys.
+
+Ram Pai (3):
+  mm, powerpc, x86: define VM_PKEY_BITx bits if CONFIG_ARCH_HAS_PKEYS
+    is enabled
+  mm, powerpc, x86: introduce an additional vma bit for powerpc pkey
+  mm, x86, powerpc: display pkey in smaps only if arch supports pkeys
+
+ arch/powerpc/include/asm/mmu_context.h |    5 -----
+ arch/x86/include/asm/mmu_context.h     |    5 -----
+ arch/x86/include/asm/pkeys.h           |    1 +
+ arch/x86/kernel/fpu/xstate.c           |    5 +++++
+ arch/x86/kernel/setup.c                |    8 --------
+ fs/proc/task_mmu.c                     |   15 ++++++++-------
+ include/linux/mm.h                     |   12 +++++++-----
+ include/linux/pkeys.h                  |    7 ++++++-
+ 8 files changed, 27 insertions(+), 31 deletions(-)
