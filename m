@@ -1,24 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x22e.google.com (mail-vk0-x22e.google.com
- [IPv6:2607:f8b0:400c:c05::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmQMS41ZHzDqGd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:02:12 +1100 (AEDT)
-Received: by mail-vk0-x22e.google.com with SMTP id t126so244670vkb.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 21:02:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmRC136NyzF0lS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:39:57 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] cpufreq: powernv: Check negative value returned by
+ cpufreq_table_find_index_dl()
+In-Reply-To: <20180212102900.GU28462@vireshk-i7>
+References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180212102900.GU28462@vireshk-i7>
+Date: Wed, 21 Feb 2018 16:39:54 +1100
+Message-ID: <874lmasxxx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87vaeruemb.fsf@linux.vnet.ibm.com>
-References: <20180221010111.30517-1-bsingharora@gmail.com>
- <87vaeruemb.fsf@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 21 Feb 2018 16:02:08 +1100
-Message-ID: <CAKTCnznDmHOmSyr8YHPbbUKD_4JpE61mL-NAy2sF07eQio0gbQ@mail.gmail.com>
-Subject: Re: [RFC] powerpc/powernv/mce: Don't silently restart the machine
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 21, 2018 at 3:54 PM, Stewart Smith
-<stewart@linux.vnet.ibm.com> wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
->> On MCE the current code will restart the machine with
->> ppc_md.restart(). This case was extremely unlikely since
->> prior to that a skiboot call is made and that resulted in
->> a checkstop for analysis.
->>
->> With newer skiboots, on P9 we don't checkstop the box by
->> default, instead we return back to the kernel to extract
->> useful information at the time of the MCE. While we still
->> get this information, this patch converts the restart to
->> a panic(), so that if configured a dump can be taken and
->> we can track and probably debug the potential issue causing
->> the MCE.
->
-> I agree with the patch, although I'd be nervous stating that skiboot is
-> going to keep this behaviour. In *theory* we should only ever get a
-> platform error when there's actually something that isn't the kernel's
-> fault.
->
-> Like any firmware promise though, it's slightly less reliable than one
-> from a politician.
->
-> I'd say that in this case deferring to policy on what to do in event of
-> panic() is the right thing.
->
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-Your right, except that with NPUs and coherent device memory, things
-change. It is a platform error on the device side, the large issue is
-that the CPU touched this memory. Ideally we want the device and
-device driver to handle this error, but its racy as the CPU now treats
-it as a platform error on the system side. IOW, the definition of
-platform has grown and so has the definition of platform error and it
-can no longer be solely contained inside of one boxes firmware.
+> On 12-02-18, 15:51, Shilpasri G Bhat wrote:
+>> This patch fixes the below Coverity warning:
+>> 
+>> *** CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>> /drivers/cpufreq/powernv-cpufreq.c: 1008 in powernv_fast_switch()
+>> 1002     					unsigned int target_freq)
+>> 1003     {
+>> 1004     	int index;
+>> 1005     	struct powernv_smp_call_data freq_data;
+>> 1006
+>> 1007     	index = cpufreq_table_find_index_dl(policy, target_freq);
+>> >>>     CID 182816:  Memory - illegal accesses  (NEGATIVE_RETURNS)
+>> >>>     Using variable "index" as an index to array "powernv_freqs".
+>> 1008     	freq_data.pstate_id = powernv_freqs[index].driver_data;
+>> 1009     	freq_data.gpstate_id = powernv_freqs[index].driver_data;
+>> 1010     	set_pstate(&freq_data);
+>> 1011
+>> 1012     	return powernv_freqs[index].frequency;
+>> 1013     }
+>> 
+>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>> 
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index 29cdec1..69edfe9 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -1005,6 +1005,9 @@ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+>>  	struct powernv_smp_call_data freq_data;
+>>  
+>>  	index = cpufreq_table_find_index_dl(policy, target_freq);
+>> +	if (unlikely(index < 0))
+>> +		index = get_nominal_index();
+>> +
+>
+> AFAICT, you will get -1 here only if the freq table had no valid
+> frequencies (or the freq table is empty). Why would that happen ?
 
-Balbir Singh.
+Bugs?
+
+Or if you ask for a target_freq that is higher than anything in the
+table.
+
+Or the API changes, and we forget to update this call site.
+
+If you're saying that cpufreq_table_find_index_dl() can NEVER fail, then
+write it so that it can never fail and change it to return unsigned int.
+
+Having it potentially return -1, which is then used to index an array
+and not handling that is just asking for bugs to happen.
+
+cheers
