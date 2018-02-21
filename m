@@ -1,35 +1,47 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmXhK00ZtzF0ph
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 20:47:12 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1L9hswR097618
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 04:47:11 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g91gv1ukd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 04:47:10 -0500
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 21 Feb 2018 09:47:08 -0000
-Subject: Re: [PATCH v9 2/2] cxl: read PHB indications from the device tree
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.vnet.ibm.com, benh@au1.ibm.com
-References: <20180220155111.20459-1-felix@linux.vnet.ibm.com>
- <20180220155111.20459-2-felix@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Wed, 21 Feb 2018 10:47:03 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmXv00VcgzF0jt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 20:56:27 +1100 (AEDT)
+Received: by mail-qk0-x243.google.com with SMTP id i184so1175095qkf.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 01:56:27 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20180220155111.20459-2-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <9c9c2a93-9c22-fa0f-e81b-26d68fad3293@linux.vnet.ibm.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <20180218221352.GA6651@ravnborg.org>
+ <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+ <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 21 Feb 2018 10:56:24 +0100
+Message-ID: <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
+Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Ulf Magnusson <ulfalizer@gmail.com>, Rich Felker <dalias@libc.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Kernel Hardening <kernel-hardening@lists.openwall.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ Sam Ravnborg <sam@ravnborg.org>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
+ X86 ML <x86@kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
+ Emese Revfy <re.emese@gmail.com>, Kees Cook <keescook@chromium.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
+ user-mode-linux-user@lists.sourceforge.net,
+ Thomas Gleixner <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Richard Weinberger <richard@nod.at>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,167 +51,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+>
+>>>
+>>> I'm not happy that we in one context can reference CONFIG variables
+>>> directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
+>>> But I could not come up with something un-ambigious where this could be avoided.
+>>
+>> I think we should be careful about allowing references to config
+>> symbols. It mixes up the parsing and evaluation phases, since $() is
+>> expanded during parsing (which I consider a feature and think is
+>> needed to retain sanity).
+>>
+>> Patch 06/23 removes the last existing instance of symbol references in
+>> strings by getting rid of 'option env'. That's an improvement to me.
+>> We shouldn't add it back.
+>
+>
+> This is really important design decision,
+> so I'd like to hear a little more from experts.
+>
+>
+> For example, x86 allows users to choose sub-arch, either 'i386' or 'x86_64'.
+>
+> https://github.com/torvalds/linux/blob/v4.16-rc2/arch/x86/Kconfig#L4
+>
+>
+>
+> If the user toggles CONFIG_64BIT,
+> the bi-arch compiler will work in a slightly different mode
+> (at least, back-end parts)
+>
+> So, my question is, is there a case,
+>
+> $(cc-option, -m32 -foo) is y, but
+> $(cc-option, -m64 -foo) is n  ?
+> (or vice versa)
+>
+>
+> If the answer is yes, $(cc-option -foo) would have to be re-calculated
+> every time CONFIG_64BIT is toggled.
+>
+> This is what I'd like to avoid, though.
 
+The -m32/-m64 trick (and -mbig-endian/-mlittle-endian on other architectures
+as well as a couple of other flags) only works if the compiler is configured to
+support it. In other cases (e.g. big-endian xtensa), the kernel always
+detects what the compiler does and silently configures itself to match
+using Makefile logic.
 
-Le 20/02/2018 à 16:51, Philippe Bergheaud a écrit :
-> Configure the P9 XSL_DSNCTL register with PHB indications found
-> in the device tree, or else use legacy hard-coded values.
-> 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
+On x86, compilers are usually built as bi-arch, but you can build one that
+only allows one of them.
 
+I can see two reasonable ways out:
 
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+- we don't use  $(cc-option -foo) in a case like this, and instead require the
+  user to have a matching toolchain.
+- we could make the 32/64 selection on x86 a 'choice' statement where
+  each option depends on both the ARCH= variable and the
+  $(cc-option, -m32)/ $(cc-option, -m64) output.
 
-
-> Changelog:
-> 
-> v2: New patch. Use the new device tree property "ibm,phb-indications".
-> 
-> v3: No change.
-> 
-> v4: No functional change.
->      Drop cosmetic fix in comment.
-> 
-> v5: get_phb_indications():
->        - make static variables local to function.
->        - return static variable values by arguments.
-> 
-> v6: get_phb_indications():
->        - acquire a mutex before setting the phb indications.
-> 
-> v7: get_phb_indications():
->      cxl_get_xsl9_dsnctl():
->        - return -ENODEV instead of -1.
-> 
-> v8: get_phb_indications():
->        - stay on the safe side: acquire the mutex unconditionally
-> 
-> v9: No change.
-> 
-> This patch depends on the following skiboot patch:
->    https://patchwork.ozlabs.org/patch/874415/
-> ---
->   drivers/misc/cxl/cxl.h    |  2 +-
->   drivers/misc/cxl/cxllib.c |  2 +-
->   drivers/misc/cxl/pci.c    | 48 ++++++++++++++++++++++++++++++++++++++++++-----
->   3 files changed, 45 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 4f015da78f28..a7689944b351 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -1065,7 +1065,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
->   int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
->   			  u32 *phb_index, u64 *capp_unit_id);
->   int cxl_slot_is_switched(struct pci_dev *dev);
-> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg);
-> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg);
->   u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9);
-> 
->   void cxl_native_irq_dump_regs_psl9(struct cxl_context *ctx);
-> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-> index 30ccba436b3b..bea1eb004b49 100644
-> --- a/drivers/misc/cxl/cxllib.c
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -99,7 +99,7 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
->   	if (rc)
->   		return rc;
-> 
-> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &cfg->dsnctl);
-> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
->   	if (rc)
->   		return rc;
->   	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 758842f65a1b..8d179e64a296 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -407,21 +407,59 @@ int cxl_calc_capp_routing(struct pci_dev *dev, u64 *chipid,
->   	return 0;
->   }
-> 
-> -int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
-> +static DEFINE_MUTEX(indications_mutex);
-> +
-> +static int get_phb_indications(struct pci_dev *dev, u64 *capiind, u64 *asnind,
-> +			       u64 *nbwind)
-> +{
-> +	static u64 nbw, asn, capi = 0;
-> +	struct device_node *np;
-> +	const __be32 *prop;
-> +
-> +	mutex_lock(&indications_mutex);
-> +	if (!capi) {
-> +		if (!(np = pnv_pci_get_phb_node(dev))) {
-> +			mutex_unlock(&indications_mutex);
-> +			return -ENODEV;
-> +		}
-> +
-> +		prop = of_get_property(np, "ibm,phb-indications", NULL);
-> +		if (!prop) {
-> +			nbw = 0x0300UL; /* legacy values */
-> +			asn = 0x0400UL;
-> +			capi = 0x0200UL;
-> +		} else {
-> +			nbw = (u64)be32_to_cpu(prop[2]);
-> +			asn = (u64)be32_to_cpu(prop[1]);
-> +			capi = (u64)be32_to_cpu(prop[0]);
-> +		}
-> +		of_node_put(np);
-> +	}
-> +	*capiind = capi;
-> +	*asnind = asn;
-> +	*nbwind = nbw;
-> +	mutex_unlock(&indications_mutex);
-> +	return 0;
-> +}
-> +
-> +int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
->   {
->   	u64 xsl_dsnctl;
-> +	u64 capiind, asnind, nbwind;
-> 
->   	/*
->   	 * CAPI Identifier bits [0:7]
->   	 * bit 61:60 MSI bits --> 0
->   	 * bit 59 TVT selector --> 0
->   	 */
-> +	if (get_phb_indications(dev, &capiind, &asnind, &nbwind))
-> +		return -ENODEV;
-> 
->   	/*
->   	 * Tell XSL where to route data to.
->   	 * The field chipid should match the PHB CAPI_CMPM register
->   	 */
-> -	xsl_dsnctl = ((u64)0x2 << (63-7)); /* Bit 57 */
-> +	xsl_dsnctl = (capiind << (63-15)); /* Bit 57 */
->   	xsl_dsnctl |= (capp_unit_id << (63-15));
-> 
->   	/* nMMU_ID Defaults to: b’000001001’*/
-> @@ -435,14 +473,14 @@ int cxl_get_xsl9_dsnctl(u64 capp_unit_id, u64 *reg)
->   		 * nbwind=0x03, bits [57:58], must include capi indicator.
->   		 * Not supported on P9 DD1.
->   		 */
-> -		xsl_dsnctl |= ((u64)0x03 << (63-47));
-> +		xsl_dsnctl |= (nbwind << (63-55));
-> 
->   		/*
->   		 * Upper 16b address bits of ASB_Notify messages sent to the
->   		 * system. Need to match the PHB’s ASN Compare/Mask Register.
->   		 * Not supported on P9 DD1.
->   		 */
-> -		xsl_dsnctl |= ((u64)0x04 << (63-55));
-> +		xsl_dsnctl |= asnind;
->   	}
-> 
->   	*reg = xsl_dsnctl;
-> @@ -462,7 +500,7 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
->   	if (rc)
->   		return rc;
-> 
-> -	rc = cxl_get_xsl9_dsnctl(capp_unit_id, &xsl_dsnctl);
-> +	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &xsl_dsnctl);
->   	if (rc)
->   		return rc;
-> 
+       Arnd
