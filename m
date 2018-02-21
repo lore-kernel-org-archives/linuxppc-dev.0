@@ -1,29 +1,44 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmf7W0jRCzDqb4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:52:38 +1100 (AEDT)
-Date: Wed, 21 Feb 2018 14:51:19 +0100
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
- Joel Stanley <joel@jms.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
- Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 1/6] powerpc/mm/32: Use pfn_valid to check if pointer is
- in RAM
-Message-ID: <20180221135119.d3qgvdck5yruomi7@latitude>
-References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
- <20180220161424.5421-2-j.neuschaefer@gmx.net>
- <0d14cb2c-dd00-d258-cb15-302b2a9d684f@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmfVQ33WYzF0ks
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 01:09:02 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1LE51Zj096765
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:08:59 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g97enfx6t-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 09:08:58 -0500
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 21 Feb 2018 14:08:54 -0000
+Date: Wed, 21 Feb 2018 19:38:50 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
+To: Mark Lord <mlord@pobox.com>
+Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann
+ <daniel@iogearbox.net>,
+ Kees Cook <keescook@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+ Andy Lutomirski <luto@amacapital.net>, mpe@ellerman.id.au,
+ Will Drewry <wad@chromium.org>
+References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
+ <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
+ <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
+ <1519154571.d9vaokens9.naveen@linux.ibm.com>
+ <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
+ <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
+ <32a60518-1de6-9f9c-b3e6-5e5292d6b289@pobox.com>
+ <2e79ef59-1731-f3a5-9868-c15beb939142@pobox.com>
+In-Reply-To: <2e79ef59-1731-f3a5-9868-c15beb939142@pobox.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="jgd5mu54dmgravdc"
-In-Reply-To: <0d14cb2c-dd00-d258-cb15-302b2a9d684f@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1519221778.inx201t3s9.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,81 +48,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---jgd5mu54dmgravdc
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Christophe,
-
-On Tue, Feb 20, 2018 at 06:45:09PM +0100, christophe leroy wrote:
-[...]
-> > -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
-> > +	if (slab_is_available() && pfn_valid(__phys_to_pfn(p)) &&
+Mark Lord wrote:
+> On 18-02-21 07:52 AM, Mark Lord wrote:
+>> On 18-02-21 03:35 AM, Naveen N. Rao wrote:
+> ..
+>>> Looks good to me, but I am not able to apply this patch. There seems to=
+ be whitespace damage.
+>>=20
+>> Here (attached) is a clean copy.
 >=20
-> I'm not sure this is equivalent:
+> Again, this time with the commit message included!
+
+Thanks. However...
+I am able to apply this using 'patch', but not with 'git am' since the=20
+headers are missing. FWIW, the usual workflow is to make the changes and=20
+commit it into your repository using 'git commit' and then use 'git=20
+format-patch' to generate a patch file that you can then post.
+
+I'll defer to Michael on whether he is ok to process this as it is.
+
 >=20
-> high_memory =3D (void *) __va(max_low_pfn * PAGE_SIZE);
-> #define ARCH_PFN_OFFSET		((unsigned long)(MEMORY_START >> PAGE_SHIFT))
-> #define pfn_valid(pfn)		((pfn) >=3D ARCH_PFN_OFFSET && (pfn) < max_mapnr)
-> set_max_mapnr(max_pfn);
+> I am using SECCOMP to filter syscalls on a ppc32 platform,
+> and noticed that the JIT compiler was failing on the BPF
+> even though the interpreter was working fine.
 >=20
-> So in the current implementation it checks against max_low_pfn while your
-> patch checks against max_pfn
+> The issue was that the compiler was missing one of the instructions
+> used by SECCOMP, so here is a patch to enable JIT for that instruction.
 >=20
-> 	max_low_pfn =3D max_pfn =3D memblock_end_of_DRAM() >> PAGE_SHIFT;
-> #ifdef CONFIG_HIGHMEM
-> 	max_low_pfn =3D lowmem_end_addr >> PAGE_SHIFT;
-> #endif
+> Signed-Off-By:  Mark Lord <mlord@pobox.com>
 
-Good point, I haven't considered CONFIG_HIGHMEM before.
+Minot nit: The correct (TM) tag to use is:
+Signed-off-by:
+(note the case)
 
-As far as I understand it, in the non-CONFIG_HIGHMEM case:
+>=20
+> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -05=
+00
+> +++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.80522=
+7494 -0500
+> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+>                         BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) !=
+=3D 4);
+>                         PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,=
+ len));
+>                         break;
+> +               case BPF_LDX | BPF_W | BPF_ABS: /* A =3D *((u32 *)(seccom=
+p_data + K)); */
+> +                       PPC_LWZ_OFFS(r_A, r_skb, K);
+> +                       break;
+>                 case BPF_LDX | BPF_W | BPF_LEN: /* X =3D skb->len; */
+>                         PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff,=
+ len));
+>                         break;
 
-  - max_low_pfn is set to the same value as max_pfn, so the ioremap
-    check should detect the same PFNs as RAM.
-
-and with CONFIG_HIGHMEM:
-
-  - max_low_pfn is set to lowmem_end_addr >> PAGE_SHIFT
-  - but max_pfn isn't
-
-So, I think you're right.
+Apart from those aspects, for this patch:
+Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 
-While looking through arch/powerpc/mm, I noticed that there's a
-page_is_ram function, which simply uses the memblocks directly, on
-PPC32. It seems like a good candidate for the RAM check in
-__ioremap_caller, except that there's this code, which apparently
-trashes memblock 0 completely on non-CONFIG_NEED_MULTIPLE_NODES:
+- Naveen
 
-  https://elixir.bootlin.com/linux/v4.16-rc2/source/arch/powerpc/mm/mem.c#L=
-223
-
-
-Thanks,
-Jonathan Neusch=C3=A4fer
-
---jgd5mu54dmgravdc
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJajXlOAAoJEAgwRJqO81/bA04P/A5eYOetCVfwe5i8CzVCzswi
-syAI04l5dw0ka8DJ6Vn3mGtDFbw+uDpOmZ4bwyebvvmr4nMnbJP6DLrYgOfs6Jz1
-aczZBbk1Jf/bO28zSvfZtrq1cfw5YI1RF54d6mJsjzC+oDpdCvTAwB03Feq1MbAu
-QYO6tilAaCnJyQ8vvxRL309oh1/jiYSfXga0pyH3KkjxWlPYAK7BrSW4IuWsp8Yw
-7mDJFnWuhiVxRMBgnvlXt4ykz6GLACM/mKaT/mWGtsvh/mTt2r+jk07QnnqX+Tvb
-V9iiXMof5TAM+nLlI8oLgxsXTFbu//QJMiNa6s6NWv6WMA3/Dq2HlWf8X4lj6TXx
-dmNNrcGWkVdCGdZKliwS+jAU0kMZ3cz2VCcLQH+rWJgCutQpbpF1I+J9Lv3vg7cH
-0lcRcsmfnBF5JGKScvjaHjCqH2M98JDSER5xU9B2ff9dZn5db6zeN/804OD7htX3
-nS//MoDImnbeur7ryfthSLgrVv5te78mv1aA/PLclGnveo5C/lrxWU1DjmBEmxW/
-h6o5JU6hV1To0teV47Cu9QLPPebpmM0iVR45TK4Y9u5DjdmvpYLYgnTsxtgXJGkW
-LX5tE060VtbeKZIA0N2VxKpwp+t+osCRPch+bPLlVjlS6Bo/gTtAHO5w9ldqDqf/
-UGnCm3zfS2X0jWMdxvRc
-=afR/
------END PGP SIGNATURE-----
-
---jgd5mu54dmgravdc--
+=
