@@ -1,34 +1,33 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmNHk6RgZzF1Fd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 14:28:50 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1L3Oedn055722
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 22:28:48 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g8xe54g5y-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmQBZ32cvzF0lW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 15:54:30 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1L4sRRf066999
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 23:54:28 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g901yudu4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 22:28:48 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 23:54:26 -0500
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 20 Feb 2018 20:28:47 -0700
+ Tue, 20 Feb 2018 21:54:25 -0700
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, skiboot@lists.ozlabs.org
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 (skiboot)] dt: add /cpus/ibm,
- powerpc-cpu-features device tree bindings
-In-Reply-To: <20180216034042.7356-1-npiggin@gmail.com>
-References: <20180216034042.7356-1-npiggin@gmail.com>
-Date: Wed, 21 Feb 2018 14:28:41 +1100
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com
+Subject: Re: [RFC] powerpc/powernv/mce: Don't silently restart the machine
+In-Reply-To: <20180221010111.30517-1-bsingharora@gmail.com>
+References: <20180221010111.30517-1-bsingharora@gmail.com>
+Date: Wed, 21 Feb 2018 15:54:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87sh9vvx5i.fsf@linux.vnet.ibm.com>
+Message-Id: <87vaeruemb.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,38 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> This is a new CPU feature advertising interface that is fine-grained,
-> extensible, aware of privilege levels, and gives control of features
-> to all levels of the stack (firmware, hypervisor, and OS).
+Balbir Singh <bsingharora@gmail.com> writes:
+> On MCE the current code will restart the machine with
+> ppc_md.restart(). This case was extremely unlikely since
+> prior to that a skiboot call is made and that resulted in
+> a checkstop for analysis.
 >
-> The design and binding specification is described in detail in doc/.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> Since v1:
->
-> - Fold branch-v3 into fixed-point-v3, as pointed out by Segher they
->   are all fixed point facilities.
->
-> - Fixed typo (Segher)
->
->  core/Makefile.inc                                  |   2 +-
->  core/cpufeatures.c                                 | 921 +++++++++++++++++++++
->  core/device.c                                      |   7 +
->  core/init.c                                        |   1 +
->  .../ibm,powerpc-cpu-features/binding.txt           | 245 ++++++
->  .../ibm,powerpc-cpu-features/design.txt            | 157 ++++
->  include/device.h                                   |   1 +
->  include/skiboot.h                                  |   5 +
->  8 files changed, 1338 insertions(+), 1 deletion(-)
->  create mode 100644 core/cpufeatures.c
->  create mode 100644 doc/device-tree/ibm,powerpc-cpu-features/binding.txt
->  create mode 100644
->  doc/device-tree/ibm,powerpc-cpu-features/design.txt
+> With newer skiboots, on P9 we don't checkstop the box by
+> default, instead we return back to the kernel to extract
+> useful information at the time of the MCE. While we still
+> get this information, this patch converts the restart to
+> a panic(), so that if configured a dump can be taken and
+> we can track and probably debug the potential issue causing
+> the MCE.
 
-Merged to master as of 7f4c8e8ce0b78ca046643d7f4f63d81f4fd11746 and has
-made it into -rc4
+I agree with the patch, although I'd be nervous stating that skiboot is
+going to keep this behaviour. In *theory* we should only ever get a
+platform error when there's actually something that isn't the kernel's
+fault.
+
+Like any firmware promise though, it's slightly less reliable than one
+from a politician.
+
+I'd say that in this case deferring to policy on what to do in event of
+panic() is the right thing.
 
 -- 
 Stewart Smith
