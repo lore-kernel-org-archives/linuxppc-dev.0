@@ -1,43 +1,52 @@
-Return-Path: <srs0=okox=fp=linux.vnet.ibm.com=tyreld@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ulfalizer@gmail.com>
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmrRc2ZFQzF0wm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 08:37:16 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zmrRc1Z9Gz8t0R
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 08:37:16 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zmrRb50qTz9sW5
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 08:37:15 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1LLYDRN061352
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 16:37:13 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g9dt8q24b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 16:37:13 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 21 Feb 2018 16:37:12 -0500
-Subject: Re: [PATCH] powerpc/pseries: Fix duplicate firmware feature for
- DRC_INFO
-To: Michael Ellerman <mpe@ellerman.id.au>, mwb@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com
-Cc: linuxppc-dev@ozlabs.org
-References: <20180221130523.27836-1-mpe@ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Wed, 21 Feb 2018 13:37:06 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmrVt27blzDrDb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 08:40:06 +1100 (AEDT)
+Received: by mail-lf0-x241.google.com with SMTP id m69so4456240lfe.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 13:40:05 -0800 (PST)
+Date: Wed, 21 Feb 2018 22:39:46 +0100
+From: Ulf Magnusson <ulfalizer@gmail.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Rich Felker <dalias@libc.org>,
+ Kernel Hardening <kernel-hardening@lists.openwall.com>,
+ X86 ML <x86@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ Sam Ravnborg <sam@ravnborg.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
+ Kees Cook <keescook@chromium.org>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ Jeff Dike <jdike@addtoit.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ user-mode-linux-user@lists.sourceforge.net,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Michal Marek <michal.lkml@markovi.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
+Message-ID: <20180221213946.w4v6ywy7fbiy6oyc@huvuddator>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <20180218221352.GA6651@ravnborg.org>
+ <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+ <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+ <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
+ <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
+ <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
+ <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20180221130523.27836-1-mpe@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <00af50c2-e749-10ba-f16e-39f0187581ce@linux.vnet.ibm.com>
+In-Reply-To: <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,38 +56,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/21/2018 05:05 AM, Michael Ellerman wrote:
-> We had a mid-air collision between two new firmware features, DRMEM_V2
-> and DRC_INFO, and they ended up with the same value.
+On Wed, Feb 21, 2018 at 09:57:03PM +0900, Masahiro Yamada wrote:
+> 2018-02-21 19:52 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+> > On Wed, Feb 21, 2018 at 11:20 AM, Masahiro Yamada
+> > <yamada.masahiro@socionext.com> wrote:
+> >> 2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+> >>> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
+> >>> <yamada.masahiro@socionext.com> wrote:
+> >>>> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+> >>
+> >> Let me clarify my concern.
+> >>
+> >> When we test the compiler flag, is there a case
+> >> where a particular flag depends on -m{32,64} ?
+> >>
+> >> For example, is there a compiler that supports -fstack-protector
+> >> for 64bit mode, but unsupports it for 32bit mode?
+> >>
+> >>   $(cc-option -m32)                     ->  y
+> >>   $(cc-option -m64)                     ->  y
+> >>   $(cc-option -fstack-protector)        ->  y
+> >>   $(cc-option -m32 -fstack-protector)   ->  n
+> >>   $(cc-option -m64 -fstack-protector)   ->  y
+> >>
+> >> I guess this is unlikely to happen,
+> >> but I am not whether it is zero possibility.
+> >>
+> >> If this could happen,
+> >> $(cc-option ) must be evaluated together with
+> >> correct bi-arch option (either -m32 or -m64).
+> >>
+> >>
+> >> Currently, -m32/-m64 is specified in Makefile,
+> >> but we are moving compiler tests to Kconfig
+> >> and, CONFIG_64BIT can be dynamically toggled in Kconfig.
+> >
+> > I don't think it can happen for this particular combination (stack protector
+> > and word size), but I'm sure we'll eventually run into options that
+> > need to be tested in combination. For the current CFLAGS_KERNEL
+> > setting, we definitely have the case of needing the variables to be
+> > evaluated in a specific order.
+> >
 > 
-> No one's actually reported any problems, presumably because the new
-> firmware that supports both properties is not widely available, and
-> the two properties tend to be enabled together.
 > 
-> Still if we ever had one enabled but not the other, the bugs that
-> could result are many and varied. So fix it.
 > 
-> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmware feature")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
+> 
+> I was thinking of how we can handle complex cases
+> in the current approach.
+> 
+> 
+> 
+> (Case 1)
+> 
+> Compiler flag -foo and -bar interacts, so
+> we also need to check the combination of the two.
+> 
+> 
+> config CC_HAS_FOO
+>         def_bool $(cc-option -foo)
+> 
+> config CC_HAS_BAR
+>         def_bool $(cc-option -bar)
+> 
+> config CC_HAS_FOO_WITH_BAR
+>         def_bool $(cc-option -foo -bar)
+> 
+> 
+> 
+> (Case 2)
+> Compiler flag -foo is sensitive to word-size.
+> So, we need to test this option together with -m32/-m64.
+> User can toggle CONFIG_64BIT, like i386/x86_64.
+> 
+> 
+> config CC_NEEDS_M64
+>           def_bool $(cc-option -m64) && 64BIT
+> 
+> config CC_NEEDS_M32
+>           def_bool $(cc-option -m32) && !64BIT
+> 
+> config CC_HAS_FOO
+>          bool
+>          default $(cc-option -m64 -foo) if CC_NEEDS_M64
+>          default $(cc-option -m32 -foo) if CC_NEEDS_M32
+>          default $(cc-option -foo)
+> 
+> 
+> 
+> (Case 3)
+> Compiler flag -foo is sensitive to endian-ness.
+> 
+> 
+> config CC_NEEDS_BIG_ENDIAN
+>           def_bool $(cc-option -mbig-endian) && CPU_BIG_ENDIAN
+> 
+> config CC_NEEDS_LITTLE_ENDIAN
+>           def_bool $(cc-option -mlittle-endian) && CPU_LITTLE_ENDIAN
+> 
+> config CC_HAS_FOO
+>          bool
+>          default $(cc-option -mbig-endian -foo) if CC_NEEDS_BIG_ENDIAN
+>          default $(cc-option -mlittle-endian -foo) if CC_NEEDS_LITTLE_ENDIAN
+>          default $(cc-option -foo)
+> 
+> 
+> 
+> 
+> Hmm, I think I can implement those somehow.
+> But, I hope we do not have many instances like this...
+> 
+> 
+> If you know more naive cases, please share your knowledge.
+> 
+> Thanks!
+> 
+> 
+> -- 
+> Best Regards
+> Masahiro Yamada
 
-Good catch.
+Would get pretty bad if a test needs to consider multiple symbols.
+Exponential explosion there...
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
->  arch/powerpc/include/asm/firmware.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-> index 511acfd7ab0d..535add3f7791 100644
-> --- a/arch/powerpc/include/asm/firmware.h
-> +++ b/arch/powerpc/include/asm/firmware.h
-> @@ -52,7 +52,7 @@
->  #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
->  #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
->  #define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
-> -#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000400000000)
-> +#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
-> 
->  #ifndef __ASSEMBLY__
-> 
+I thought some more about the implementation of dynamic (post-parsing)
+functions to see how bad it would get with the current implementation.
+
+Some background on how things work now:
+
+  1. All expression operands in Kconfig are symbols.
+
+  2. Returning '$ENV' or '$(fn foo)' as a T_WORD during parsing gets
+     you symbols with those strings as names and S_UNKNOWN type (because
+     they act like references to undefined symbols).
+
+  3. For "foo-$(fn foo)", you also get a symbol with that string as its
+     name and S_UNKNOWN type (stored among the SYMBOL_CONST symbols)
+
+  4. Symbols with S_UNKNOWN type get their name as their string value,
+     and the tristate value n.
+
+So, if you do string expansion on the names of symbols with S_UNKNOWN
+type in sym_calc_value(), you're almost there with the current
+implementation, except for the tristate case.
+
+Maybe you could set the tristate value of S_UNKNOWN symbols depending on
+the string value you end up with. Things are getting pretty confusing at
+that point.
+
+Could have something like S_DYNAMIC as well. More Kconfig complexity...
+
+Then there's other complications:
+
+  1. SYMBOL_CONST is no longer constant.
+
+  2. Dependency loop detection needs to consider symbol references
+     within strings.
+
+  3. Dependency loop detection relies on static knowledge of what
+     symbols a symbol depends on. That might get messy for certain
+     expansions, though it might be things you wouldn't do in practice.
+
+  4. Symbols still need to be properly invalidated. It looks like at
+     least menuconfig just does a dumb invalidate-everything whenever
+     the value of a symbol is changed though, so it might not require
+     extra work. (Bit messier in Kconfiglib, which does minimal
+     invalidation to keep scripts fast, but just need to extract a few
+     extra deps there.)
+
+
+It looks like dynamic functions could get quite messy, but might be
+doable if absolutely required. There's probably more devils in the
+details though.
+
+I don't think the static function model precludes switching models later
+btw, when people have more experience.
+
+Cheers,
+Ulf
