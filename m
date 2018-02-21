@@ -1,22 +1,51 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmgh62LyCzDqvC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 02:02:29 +1100 (AEDT)
-Subject: Re: [PATCH 0/6] DISCONTIGMEM support for PPC32
-To: =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>
-Cc: linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
- <193a407d-e6b8-9e29-af47-3d401b6414a0@c-s.fr>
- <20180221144240.pfu2run3pixt3pzo@latitude>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <a36983ec-5e97-e968-8143-1b2615ea55f8@c-s.fr>
-Date: Wed, 21 Feb 2018 16:02:25 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmj2S5KG6zF0yW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 03:03:28 +1100 (AEDT)
+Received: by mail-qk0-x242.google.com with SMTP id t13so2550364qkj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 08:03:28 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20180221144240.pfu2run3pixt3pzo@latitude>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: arndbergmann@gmail.com
+In-Reply-To: <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <20180218221352.GA6651@ravnborg.org>
+ <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+ <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+ <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
+ <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
+ <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
+ <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 21 Feb 2018 17:03:25 +0100
+Message-ID: <CAK8P3a3-eufj=HM4Mi+KaSLxuoPwtw0P4EfmtYfVcbnR0mVwAw@mail.gmail.com>
+Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Rich Felker <dalias@libc.org>,
+ Kernel Hardening <kernel-hardening@lists.openwall.com>,
+ X86 ML <x86@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux <sparclinux@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
+ Richard Weinberger <richard@nod.at>, Linux-sh list <linux-sh@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
+ Kees Cook <keescook@chromium.org>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ user-mode-linux-user@lists.sourceforge.net,
+ Thomas Gleixner <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>,
+ Ulf Magnusson <ulfalizer@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +55,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Feb 21, 2018 at 1:57 PM, Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+> 2018-02-21 19:52 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+>> On Wed, Feb 21, 2018 at 11:20 AM, Masahiro Yamada
+>> <yamada.masahiro@socionext.com> wrote:
+>>> 2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+>>>> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
+>>>> <yamada.masahiro@socionext.com> wrote:
+>>>>> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+>
+> Hmm, I think I can implement those somehow.
+> But, I hope we do not have many instances like this...
+>
+>
+> If you know more naive cases, please share your knowledge.
+>
 
+One case that comes to mind would be architecture level selection on 32-bit
+ARM, which is roughly this (I probably have some details wrong, but you
+get the idea):
 
-Le 21/02/2018 à 15:42, Jonathan Neuschäfer a écrit :
-> Hi,
-> 
-> On Wed, Feb 21, 2018 at 08:06:10AM +0100, Christophe LEROY wrote:
->>
->>
->> Le 20/02/2018 à 17:14, Jonathan Neuschäfer a écrit :
->>> This patchset adds support for DISCONTIGMEM on 32-bit PowerPC. This is
->>> required to properly support the Nintendo Wii's memory layout, in which
->>> there are two blocks of RAM and MMIO in the middle.
->>>
->>> Previously, this memory layout was handled by code that joins the two
->>> RAM blocks into one, reserves the MMIO hole, and permits allocations of
->>> reserved memory in ioremap. This hack didn't work with resource-based
->>> allocation (as used for example in the GPIO driver for Wii[1]), however.
->>>
->>> After this patchset, users of the Wii can either select CONFIG_FLATMEM
->>> to get the old behaviour, or CONFIG_DISCONTIGMEM to get the new
->>> behaviour.
->>
->> My question might me stupid, as I don't know PCC64 in deep, but when looking
->> at page_is_ram() in arch/powerpc/mm/mem.c, I have the feeling the PPC64
->> implements ram by blocks. Isn't it what you are trying to achieve ? Wouldn't
->> it be feasible to map to what's done in PPC64 for PPC32 ?
-> 
-> Using page_is_ram in __ioremap_caller and the same memblock-based
-> approach that's used on PPC64 on PPC32 *should* work, but I think due to
-> the following line in initmem_init, it won't:
-> 
-> 	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, &memblock.memory, 0);
+- older compilers don't support the latest architecture setting (-march=armv8
+  or -march=armv7ve)
+- newer compilers no longer support really old architectures (-march=armv4)
+- setting -mthumb requires setting one of  -march=armv7-a, armv7ve, armv7-m or
+  armv8 if the compiler doesn't default to those
+- on a compiler that defaults to -marm, setting -march=armv7-m requires
+  setting -mthumb (IIRC)
+- really old compilers only support OABI, but not EABI
+- newer compilers no longer support OABI
+- mthumb requires EABI
+- armv6 and higher are subtly broken with OABI, but only when using
+  certain inline assembly with 64-bit arguments in register pairs.
 
-Can't we just fix that ?
+I think we just shouldn't try to capture all of the above correctly in Kconfig
+conditionals.
 
-Christophe
-
-> 
-> 
-> Thanks,
-> Jonathan Neuschäfer
-> 
+       Arnd
