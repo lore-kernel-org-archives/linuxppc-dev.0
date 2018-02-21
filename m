@@ -1,21 +1,50 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmT6g2dybzF0sl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 18:06:19 +1100 (AEDT)
-Subject: Re: [PATCH 0/6] DISCONTIGMEM support for PPC32
-To: =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Joel Stanley <joel@jms.id.au>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
-References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <193a407d-e6b8-9e29-af47-3d401b6414a0@c-s.fr>
-Date: Wed, 21 Feb 2018 08:06:10 +0100
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from condef-03.nifty.com (condef-03.nifty.com [202.248.20.68])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zmTv92XHMzF0lN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 18:41:24 +1100 (AEDT)
+Received: from conssluserg-03.nifty.com ([10.126.8.82])by condef-03.nifty.com
+ with ESMTP id w1L7dTLA023330
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:39:29 +0900
+Received: from mail-vk0-f52.google.com (mail-vk0-f52.google.com
+ [209.85.213.52]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id w1L7d8cB002271
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:39:08 +0900
+Received: by mail-vk0-f52.google.com with SMTP id x203so405183vkx.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 23:39:08 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20180220161424.5421-1-j.neuschaefer@gmx.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <20180218221352.GA6651@ravnborg.org>
+ <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 21 Feb 2018 16:38:25 +0900
+Message-ID: <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
+To: Ulf Magnusson <ulfalizer@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Michal Marek <michal.lkml@markovi.net>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ kernel-hardening@lists.openwall.com, Jonathan Corbet <corbet@lwn.net>,
+ sparclinux@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Rich Felker <dalias@libc.org>, Jeff Dike <jdike@addtoit.com>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ user-mode-linux-devel@lists.sourceforge.net,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ user-mode-linux-user@lists.sourceforge.net, Ingo Molnar <mingo@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Richard Weinberger <richard@nod.at>, Emese Revfy <re.emese@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +54,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+
+>>
+>> I'm not happy that we in one context can reference CONFIG variables
+>> directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
+>> But I could not come up with something un-ambigious where this could be avoided.
+>
+> I think we should be careful about allowing references to config
+> symbols. It mixes up the parsing and evaluation phases, since $() is
+> expanded during parsing (which I consider a feature and think is
+> needed to retain sanity).
+>
+> Patch 06/23 removes the last existing instance of symbol references in
+> strings by getting rid of 'option env'. That's an improvement to me.
+> We shouldn't add it back.
 
 
-Le 20/02/2018 à 17:14, Jonathan Neuschäfer a écrit :
-> This patchset adds support for DISCONTIGMEM on 32-bit PowerPC. This is
-> required to properly support the Nintendo Wii's memory layout, in which
-> there are two blocks of RAM and MMIO in the middle.
-> 
-> Previously, this memory layout was handled by code that joins the two
-> RAM blocks into one, reserves the MMIO hole, and permits allocations of
-> reserved memory in ioremap. This hack didn't work with resource-based
-> allocation (as used for example in the GPIO driver for Wii[1]), however.
-> 
-> After this patchset, users of the Wii can either select CONFIG_FLATMEM
-> to get the old behaviour, or CONFIG_DISCONTIGMEM to get the new
-> behaviour.
+This is really important design decision,
+so I'd like to hear a little more from experts.
 
-My question might me stupid, as I don't know PCC64 in deep, but when 
-looking at page_is_ram() in arch/powerpc/mm/mem.c, I have the feeling 
-the PPC64 implements ram by blocks. Isn't it what you are trying to 
-achieve ? Wouldn't it be feasible to map to what's done in PPC64 for PPC32 ?
 
-Christophe
+For example, x86 allows users to choose sub-arch, either 'i386' or 'x86_64'.
 
-> 
-> Some parts of this patchset are probably not ideal (I'm thinking of my
-> implementation of pfn_to_nid here), and will require some discussion/
-> changes.
-> 
-> [1]: https://www.spinics.net/lists/devicetree/msg213956.html
-> 
-> Jonathan Neuschäfer (6):
->    powerpc/mm/32: Use pfn_valid to check if pointer is in RAM
->    powerpc: numa: Fix overshift on PPC32
->    powerpc: numa: Use the right #ifdef guards around functions
->    powerpc: numa: Restrict fake NUMA enulation to CONFIG_NUMA systems
->    powerpc: Implement DISCONTIGMEM and allow selection on PPC32
->    powerpc: wii: Don't rely on reserved memory hack if DISCONTIGMEM is
->      set
-> 
->   arch/powerpc/Kconfig                     |  5 ++++-
->   arch/powerpc/include/asm/mmzone.h        | 21 +++++++++++++++++++++
->   arch/powerpc/mm/numa.c                   | 18 +++++++++++++++---
->   arch/powerpc/mm/pgtable_32.c             |  2 +-
->   arch/powerpc/platforms/embedded6xx/wii.c | 10 +++++++---
->   5 files changed, 48 insertions(+), 8 deletions(-)
-> 
+https://github.com/torvalds/linux/blob/v4.16-rc2/arch/x86/Kconfig#L4
+
+
+
+If the user toggles CONFIG_64BIT,
+the bi-arch compiler will work in a slightly different mode
+(at least, back-end parts)
+
+So, my question is, is there a case,
+
+$(cc-option, -m32 -foo) is y, but
+$(cc-option, -m64 -foo) is n  ?
+(or vice versa)
+
+
+If the answer is yes, $(cc-option -foo) would have to be re-calculated
+every time CONFIG_64BIT is toggled.
+
+This is what I'd like to avoid, though.
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
