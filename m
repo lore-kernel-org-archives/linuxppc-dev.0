@@ -1,30 +1,49 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmYnY3WcgzDrPf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 21:36:46 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1LAZO86133183
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 05:36:44 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g96mt19t5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 05:36:40 -0500
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Wed, 21 Feb 2018 10:36:37 -0000
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC PATCH v0 0/2] ibm,dynamic-memory-v2 fix
-Date: Wed, 21 Feb 2018 16:06:25 +0530
-Message-Id: <1519209387-29767-1-git-send-email-bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmZ862qVfzF0kr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 21:52:53 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id l19so1321833qtj.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 02:52:53 -0800 (PST)
+MIME-Version: 1.0
+Sender: arndbergmann@gmail.com
+In-Reply-To: <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <20180218221352.GA6651@ravnborg.org>
+ <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+ <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+ <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
+ <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 21 Feb 2018 11:52:50 +0100
+Message-ID: <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
+Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Rich Felker <dalias@libc.org>,
+ Kernel Hardening <kernel-hardening@lists.openwall.com>,
+ X86 ML <x86@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux <sparclinux@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
+ Richard Weinberger <richard@nod.at>, Linux-sh list <linux-sh@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
+ Kees Cook <keescook@chromium.org>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ user-mode-linux-user@lists.sourceforge.net,
+ Thomas Gleixner <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>,
+ Ulf Magnusson <ulfalizer@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +53,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch 1 fixes a bug that results in unexpected flag bit in
-ibm,dynamic-memory-v2 DT property and wrong number of entries
-getting created in the same property during hotplug.
+On Wed, Feb 21, 2018 at 11:20 AM, Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+> 2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+>> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
+>> <yamada.masahiro@socionext.com> wrote:
+>>> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+>
+> Let me clarify my concern.
+>
+> When we test the compiler flag, is there a case
+> where a particular flag depends on -m{32,64} ?
+>
+> For example, is there a compiler that supports -fstack-protector
+> for 64bit mode, but unsupports it for 32bit mode?
+>
+>   $(cc-option -m32)                     ->  y
+>   $(cc-option -m64)                     ->  y
+>   $(cc-option -fstack-protector)        ->  y
+>   $(cc-option -m32 -fstack-protector)   ->  n
+>   $(cc-option -m64 -fstack-protector)   ->  y
+>
+> I guess this is unlikely to happen,
+> but I am not whether it is zero possibility.
+>
+> If this could happen,
+> $(cc-option ) must be evaluated together with
+> correct bi-arch option (either -m32 or -m64).
+>
+>
+> Currently, -m32/-m64 is specified in Makefile,
+> but we are moving compiler tests to Kconfig
+> and, CONFIG_64BIT can be dynamically toggled in Kconfig.
 
-Patch 2 can be optionally considered. It renames DRMEM_LMB_RESERVED
-to DRMEM_LMB_ISOLATED. May be it could be renamed to even more
-appropriate name.
+I don't think it can happen for this particular combination (stack protector
+and word size), but I'm sure we'll eventually run into options that
+need to be tested in combination. For the current CFLAGS_KERNEL
+setting, we definitely have the case of needing the variables to be
+evaluated in a specific order.
 
-Bharata B Rao (2):
-  powerpc,drmem: Fix unexpected flag value in ibm,dynamic-memory-v2
-  powerpc,drmem: Rename DRMEM_LMB_RESERVED to DRMEM_LMB_ISOLATED
-
- arch/powerpc/include/asm/drmem.h                | 14 ++++-----
- arch/powerpc/mm/drmem.c                         |  8 ++---
- arch/powerpc/platforms/pseries/hotplug-memory.c | 40 ++++++++++++-------------
- 3 files changed, 31 insertions(+), 31 deletions(-)
-
--- 
-2.7.4
+      Arnd
