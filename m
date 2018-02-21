@@ -1,27 +1,36 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
+Return-Path: <srs0=rph4=fp=gmail.com=bsingharora@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmSd34mdNzF0pt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 17:44:07 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zmSd31LdFz8t5N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 17:44:07 +1100 (AEDT)
+Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
+ [IPv6:2607:f8b0:400c:c08::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmRXM1HHpzF0p0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:54:58 +1100 (AEDT)
-Received: by mail-pf0-x231.google.com with SMTP id a17so280539pff.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 21:54:58 -0800 (PST)
-Date: Wed, 21 Feb 2018 11:24:50 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] cpufreq: powernv: Check  negative value returned by
- cpufreq_table_find_index_dl()
-Message-ID: <20180221055450.GO28462@vireshk-i7>
-References: <1518430876-24464-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20180212102900.GU28462@vireshk-i7>
- <874lmasxxx.fsf@concordia.ellerman.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id 3zmSd219nQz9rxj
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 17:44:05 +1100 (AEDT)
+Received: by mail-ua0-x243.google.com with SMTP id w3so378458uaj.6
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2018 22:44:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <874lmasxxx.fsf@concordia.ellerman.id.au>
+In-Reply-To: <20180221045736.7614-1-alastair@au1.ibm.com>
+References: <20180221045736.7614-1-alastair@au1.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 21 Feb 2018 17:43:59 +1100
+Message-ID: <CAKTCnz=cy5CkeRjJYpZ1NQpyQN-BVTvKXUxTxOMtTNosZFqJ7A@mail.gmail.com>
+Subject: Re: [PATCH] ocxl: Add get_metadata IOCTL to share OCXL information to
+ userspace
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, frederic.barrat@fr.ibm.com,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ "Alastair D'Silva" <alastair@d-silva.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +40,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21-02-18, 16:39, Michael Ellerman wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
+On Wed, Feb 21, 2018 at 3:57 PM, Alastair D'Silva <alastair@au1.ibm.com> wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+>
+> Some required information is not exposed to userspace currently (eg. the
+> PASID), pass this information back, along with other information which
+> is currently communicated via sysfs, which saves some parsing effort in
+> userspace.
+>
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
+>  drivers/misc/ocxl/file.c | 27 +++++++++++++++++++++++++++
+>  include/uapi/misc/ocxl.h | 22 ++++++++++++++++++++++
+>  2 files changed, 49 insertions(+)
+>
+> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+> index d9aa407db06a..11514a8444e5 100644
+> --- a/drivers/misc/ocxl/file.c
+> +++ b/drivers/misc/ocxl/file.c
+> @@ -102,10 +102,32 @@ static long afu_ioctl_attach(struct ocxl_context *ctx,
+>         return rc;
+>  }
+>
+> +static long afu_ioctl_get_metadata(struct ocxl_context *ctx,
+> +               struct ocxl_ioctl_get_metadata __user *uarg)
 
-> > AFAICT, you will get -1 here only if the freq table had no valid
-> > frequencies (or the freq table is empty). Why would that happen ?
-> 
-> Bugs?
+Why do we call this metadata? Isn't this an afu_descriptor?
 
-The cupfreq driver shouldn't have registered itself in that case (i.e.
-if the cpufreq table is empty).
+> +{
+> +       struct ocxl_ioctl_get_metadata arg;
+> +
+> +       memset(&arg, 0, sizeof(arg));
+> +
+> +       arg.version = 0;
 
-> Or if you ask for a target_freq that is higher than anything in the
-> table.
+Does it make sense to have version 0? Even if does, you can afford
+to skip initialization due to the memset above. I prefer that versions
+start with 1
 
-You will still get a valid index in that case.
+> +
+> +       arg.afu_version_major = ctx->afu->config.version_major;
+> +       arg.afu_version_minor = ctx->afu->config.version_minor;
+> +       arg.pasid = ctx->pasid;
+> +       arg.pp_mmio_size = ctx->afu->config.pp_mmio_stride;
+> +       arg.global_mmio_size = ctx->afu->config.global_mmio_size;
+> +
+> +       if (copy_to_user(uarg, &arg, sizeof(arg)))
+> +               return -EFAULT;
+> +
+> +       return 0;
+> +}
+> +
+>  #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :                        \
+>                         x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :       \
+>                         x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :         \
+>                         x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :     \
+> +                       x == OCXL_IOCTL_GET_METADATA ? "GET_METADATA" : \
+>                         "UNKNOWN")
+>
+>  static long afu_ioctl(struct file *file, unsigned int cmd,
+> @@ -157,6 +179,11 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+>                                         irq_fd.eventfd);
+>                 break;
+>
+> +       case OCXL_IOCTL_GET_METADATA:
+> +               rc = afu_ioctl_get_metadata(ctx,
+> +                               (struct ocxl_ioctl_get_metadata __user *) args);
+> +               break;
+> +
+>         default:
+>                 rc = -EINVAL;
+>         }
+> diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
+> index 4b0b0b756f3e..16e1f48ce280 100644
+> --- a/include/uapi/misc/ocxl.h
+> +++ b/include/uapi/misc/ocxl.h
+> @@ -32,6 +32,27 @@ struct ocxl_ioctl_attach {
+>         __u64 reserved3;
+>  };
+>
+> +/*
+> + * Version contains the version of the struct.
+> + * Versions will always be backwards compatible, that is, new versions will not
+> + * alter existing fields
+> + */
+> +struct ocxl_ioctl_get_metadata {
 
-There is only once case where we return -1, when the cpufreq table
-doesn't have any valid frequencies.
+This sounds more like a function name, do we need it to be _get_metdata?
 
-> Or the API changes, and we forget to update this call site.
+> +       __u16 version;
+> +
+> +       // Version 0 fields
+> +       __u8  afu_version_major;
+> +       __u8  afu_version_minor;
+> +       __u32 pasid;
+> +
+> +       __u64 pp_mmio_size;
+> +       __u64 global_mmio_size;
+> +
 
-I am not sure we can do much about that right now.
+Should we document the fields? pp_ stands for per process, but is not
+very clear at first look. Why do we care to return only the size, what
+about lpc size?
 
-> If you're saying that cpufreq_table_find_index_dl() can NEVER fail,
+> +       // End version 0 fields
+> +
+> +       __u64 reserved[13]; // Total of 16*u64
+> +};
 
-Yes, if we have at least one valid frequency in the table, otherwise
-the cpufreq driver shouldn't have registered itself.
 
-> then
-> write it so that it can never fail and change it to return unsigned int.
-
-But what should we do when there is no frequency in the cpufreq table?
-Just in case where a driver is buggy and tries to call this routine
-for an invalid table.
-
-> Having it potentially return -1, which is then used to index an array
-> and not handling that is just asking for bugs to happen.
-
-I understand what you are trying to say here, but I don't know what
-can be done to prevent this here.
-
-What we can do is change the return type to void and pass a int
-pointer to the routine, but that wouldn't change anything at all. That
-pointers variable can still have -1 in it.
-
--- 
-viresh
+Balbir Singh.
