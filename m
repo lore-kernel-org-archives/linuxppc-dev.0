@@ -1,50 +1,41 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from condef-03.nifty.com (condef-03.nifty.com [202.248.20.68])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zmTv92XHMzF0lN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 18:41:24 +1100 (AEDT)
-Received: from conssluserg-03.nifty.com ([10.126.8.82])by condef-03.nifty.com
- with ESMTP id w1L7dTLA023330
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:39:29 +0900
-Received: from mail-vk0-f52.google.com (mail-vk0-f52.google.com
- [209.85.213.52]) (authenticated)
- by conssluserg-03.nifty.com with ESMTP id w1L7d8cB002271
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 16:39:08 +0900
-Received: by mail-vk0-f52.google.com with SMTP id x203so405183vkx.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Feb 2018 23:39:08 -0800 (PST)
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmW5d6bbGzF0lw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 19:35:33 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1L8YpZo050084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 03:35:30 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g90201uvv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 03:35:28 -0500
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 21 Feb 2018 08:35:26 -0000
+Date: Wed, 21 Feb 2018 14:05:22 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
+To: Mark Lord <mlord@pobox.com>
+Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann
+ <daniel@iogearbox.net>, Kees Cook <keescook@chromium.org>, Andy Lutomirski
+ <luto@amacapital.net>, mpe@ellerman.id.au,
+ Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org
+References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
+ <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
+ <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
+ <1519154571.d9vaokens9.naveen@linux.ibm.com>
+ <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
+In-Reply-To: <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@
+ pobox.com>
 MIME-Version: 1.0
-In-Reply-To: <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
- <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 21 Feb 2018 16:38:25 +0900
-Message-ID: <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-To: Ulf Magnusson <ulfalizer@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- Michal Marek <michal.lkml@markovi.net>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- kernel-hardening@lists.openwall.com, Jonathan Corbet <corbet@lwn.net>,
- sparclinux@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
- X86 ML <x86@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Rich Felker <dalias@libc.org>, Jeff Dike <jdike@addtoit.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- user-mode-linux-devel@lists.sourceforge.net,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- user-mode-linux-user@lists.sourceforge.net, Ingo Molnar <mingo@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Richard Weinberger <richard@nod.at>, Emese Revfy <re.emese@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,51 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+Mark Lord wrote:
+> I am using SECCOMP to filter syscalls on a ppc32 platform,
+> and noticed that the JIT compiler was failing on the BPF
+> even though the interpreter was working fine.
+>=20
+> The issue was that the compiler was missing one of the instructions
+> used by SECCOMP, so here is a patch to enable JIT for that instruction.
+>=20
+> Signed-Off-By:  Mark Lord <mlord@pobox.com>
+>=20
+> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -05=
+00
+> +++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.80522=
+7494 -0500
+> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+>                         BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) !=
+=3D 4);
+>                         PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,=
+ len));
+>                         break;
+> +               case BPF_LDX | BPF_W | BPF_ABS: /* A =3D *((u32 *)(seccom=
+p_data + K)); */
+> +                       PPC_LWZ_OFFS(r_A, r_skb, K);
+> +                       break;
 
->>
->> I'm not happy that we in one context can reference CONFIG variables
->> directly, but inside the $(call ...) and $(shell ...) needs the $ prefix.
->> But I could not come up with something un-ambigious where this could be avoided.
->
-> I think we should be careful about allowing references to config
-> symbols. It mixes up the parsing and evaluation phases, since $() is
-> expanded during parsing (which I consider a feature and think is
-> needed to retain sanity).
->
-> Patch 06/23 removes the last existing instance of symbol references in
-> strings by getting rid of 'option env'. That's an improvement to me.
-> We shouldn't add it back.
+Looks good to me, but I am not able to apply this patch. There seems to=20
+be whitespace damage. Please resend the patch considering the steps=20
+here:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Doc=
+umentation/process/email-clients.rst
 
+Thanks,
+Naveen
 
-This is really important design decision,
-so I'd like to hear a little more from experts.
-
-
-For example, x86 allows users to choose sub-arch, either 'i386' or 'x86_64'.
-
-https://github.com/torvalds/linux/blob/v4.16-rc2/arch/x86/Kconfig#L4
-
-
-
-If the user toggles CONFIG_64BIT,
-the bi-arch compiler will work in a slightly different mode
-(at least, back-end parts)
-
-So, my question is, is there a case,
-
-$(cc-option, -m32 -foo) is y, but
-$(cc-option, -m64 -foo) is n  ?
-(or vice versa)
-
-
-If the answer is yes, $(cc-option -foo) would have to be re-calculated
-every time CONFIG_64BIT is toggled.
-
-This is what I'd like to avoid, though.
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+=
