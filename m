@@ -1,18 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmdwY0G4gzF0xj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:43:08 +1100 (AEDT)
-In-Reply-To: <1518720591-84657-1-git-send-email-bryantly@linux.vnet.ibm.com>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, jjalvare@linux.vnet.ibm.com,
- seroyer@linux.vnet.ibm.com
-Subject: Re: powerpc/eeh: Add conditional check on notify_resume
-Message-Id: <3zmdwW53n5z9sX8@ozlabs.org>
-Date: Thu, 22 Feb 2018 00:43:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmf7W0jRCzDqb4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:52:38 +1100 (AEDT)
+Date: Wed, 21 Feb 2018 14:51:19 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
+ Joel Stanley <joel@jms.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 1/6] powerpc/mm/32: Use pfn_valid to check if pointer is
+ in RAM
+Message-ID: <20180221135119.d3qgvdck5yruomi7@latitude>
+References: <20180220161424.5421-1-j.neuschaefer@gmx.net>
+ <20180220161424.5421-2-j.neuschaefer@gmx.net>
+ <0d14cb2c-dd00-d258-cb15-302b2a9d684f@c-s.fr>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="jgd5mu54dmgravdc"
+In-Reply-To: <0d14cb2c-dd00-d258-cb15-302b2a9d684f@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +33,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-02-15 at 18:49:51 UTC, "Bryant G. Ly" wrote:
-> From: "Juan J. Alvarez" <jjalvare@linux.vnet.ibm.com>
-> 
-> EEH structure is not populated with function
-> notify resume when running on systems that do not support
-> it, i.e: BMC. Hence adding a conditional check for NULL for
-> systems that don't add function notify_resume.
-> 
-> Signed-off-by: Juan J. Alvarez <jjalvare@linux.vnet.ibm.com>
-> Reviewed-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Tested-by: Carol L. Soto <clsoto@us.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Tested-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-> Acked-by: Michael Neuling <mikey@neuling.org>
 
-Applied to powerpc fixes, thanks.
+--jgd5mu54dmgravdc
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-https://git.kernel.org/powerpc/c/521ca5a9859a870e354d1a6b84a6ff
+Hello Christophe,
 
-cheers
+On Tue, Feb 20, 2018 at 06:45:09PM +0100, christophe leroy wrote:
+[...]
+> > -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
+> > +	if (slab_is_available() && pfn_valid(__phys_to_pfn(p)) &&
+>=20
+> I'm not sure this is equivalent:
+>=20
+> high_memory =3D (void *) __va(max_low_pfn * PAGE_SIZE);
+> #define ARCH_PFN_OFFSET		((unsigned long)(MEMORY_START >> PAGE_SHIFT))
+> #define pfn_valid(pfn)		((pfn) >=3D ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> set_max_mapnr(max_pfn);
+>=20
+> So in the current implementation it checks against max_low_pfn while your
+> patch checks against max_pfn
+>=20
+> 	max_low_pfn =3D max_pfn =3D memblock_end_of_DRAM() >> PAGE_SHIFT;
+> #ifdef CONFIG_HIGHMEM
+> 	max_low_pfn =3D lowmem_end_addr >> PAGE_SHIFT;
+> #endif
+
+Good point, I haven't considered CONFIG_HIGHMEM before.
+
+As far as I understand it, in the non-CONFIG_HIGHMEM case:
+
+  - max_low_pfn is set to the same value as max_pfn, so the ioremap
+    check should detect the same PFNs as RAM.
+
+and with CONFIG_HIGHMEM:
+
+  - max_low_pfn is set to lowmem_end_addr >> PAGE_SHIFT
+  - but max_pfn isn't
+
+So, I think you're right.
+
+
+While looking through arch/powerpc/mm, I noticed that there's a
+page_is_ram function, which simply uses the memblocks directly, on
+PPC32. It seems like a good candidate for the RAM check in
+__ioremap_caller, except that there's this code, which apparently
+trashes memblock 0 completely on non-CONFIG_NEED_MULTIPLE_NODES:
+
+  https://elixir.bootlin.com/linux/v4.16-rc2/source/arch/powerpc/mm/mem.c#L=
+223
+
+
+Thanks,
+Jonathan Neusch=C3=A4fer
+
+--jgd5mu54dmgravdc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJajXlOAAoJEAgwRJqO81/bA04P/A5eYOetCVfwe5i8CzVCzswi
+syAI04l5dw0ka8DJ6Vn3mGtDFbw+uDpOmZ4bwyebvvmr4nMnbJP6DLrYgOfs6Jz1
+aczZBbk1Jf/bO28zSvfZtrq1cfw5YI1RF54d6mJsjzC+oDpdCvTAwB03Feq1MbAu
+QYO6tilAaCnJyQ8vvxRL309oh1/jiYSfXga0pyH3KkjxWlPYAK7BrSW4IuWsp8Yw
+7mDJFnWuhiVxRMBgnvlXt4ykz6GLACM/mKaT/mWGtsvh/mTt2r+jk07QnnqX+Tvb
+V9iiXMof5TAM+nLlI8oLgxsXTFbu//QJMiNa6s6NWv6WMA3/Dq2HlWf8X4lj6TXx
+dmNNrcGWkVdCGdZKliwS+jAU0kMZ3cz2VCcLQH+rWJgCutQpbpF1I+J9Lv3vg7cH
+0lcRcsmfnBF5JGKScvjaHjCqH2M98JDSER5xU9B2ff9dZn5db6zeN/804OD7htX3
+nS//MoDImnbeur7ryfthSLgrVv5te78mv1aA/PLclGnveo5C/lrxWU1DjmBEmxW/
+h6o5JU6hV1To0teV47Cu9QLPPebpmM0iVR45TK4Y9u5DjdmvpYLYgnTsxtgXJGkW
+LX5tE060VtbeKZIA0N2VxKpwp+t+osCRPch+bPLlVjlS6Bo/gTtAHO5w9ldqDqf/
+UGnCm3zfS2X0jWMdxvRc
+=afR/
+-----END PGP SIGNATURE-----
+
+--jgd5mu54dmgravdc--
