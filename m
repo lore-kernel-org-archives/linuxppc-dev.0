@@ -1,41 +1,34 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zmW5d6bbGzF0lw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 19:35:33 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zmWKr4lc2zDrJ0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 19:46:08 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1L8YpZo050084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 03:35:30 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g90201uvv-1
+ w1L8jCCv078058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 03:46:06 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g94ywhaq1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 03:35:28 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2018 03:45:53 -0500
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 21 Feb 2018 08:35:26 -0000
-Date: Wed, 21 Feb 2018 14:05:22 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
-To: Mark Lord <mlord@pobox.com>
-Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann
- <daniel@iogearbox.net>, Kees Cook <keescook@chromium.org>, Andy Lutomirski
- <luto@amacapital.net>, mpe@ellerman.id.au,
- Will Drewry <wad@chromium.org>, linuxppc-dev@lists.ozlabs.org
-References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
- <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
- <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
- <1519154571.d9vaokens9.naveen@linux.ibm.com>
- <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
-In-Reply-To: <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@
- pobox.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 21 Feb 2018 08:45:51 -0000
+Subject: Re: [PATCH V6] cxl: Fix timebase synchronization status on P9
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+References: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 21 Feb 2018 09:45:47 +0100
 MIME-Version: 1.0
+In-Reply-To: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
+Message-Id: <fb7b0d41-e5e7-d674-c962-efff6691953a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,38 +38,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mark Lord wrote:
-> I am using SECCOMP to filter syscalls on a ppc32 platform,
-> and noticed that the JIT compiler was failing on the BPF
-> even though the interpreter was working fine.
->=20
-> The issue was that the compiler was missing one of the instructions
-> used by SECCOMP, so here is a patch to enable JIT for that instruction.
->=20
-> Signed-Off-By:  Mark Lord <mlord@pobox.com>
->=20
-> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -05=
-00
-> +++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.80522=
-7494 -0500
-> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
->                         BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) !=
-=3D 4);
->                         PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,=
- len));
->                         break;
-> +               case BPF_LDX | BPF_W | BPF_ABS: /* A =3D *((u32 *)(seccom=
-p_data + K)); */
-> +                       PPC_LWZ_OFFS(r_A, r_skb, K);
-> +                       break;
 
-Looks good to me, but I am not able to apply this patch. There seems to=20
-be whitespace damage. Please resend the patch considering the steps=20
-here:
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Doc=
-umentation/process/email-clients.rst
 
-Thanks,
-Naveen
+Le 20/02/2018 à 14:48, Christophe Lombard a écrit :
+> The PSL Timebase register is updated by the PSL to maintain the
+> timebase.
+> On P9, the Timebase value is only provided by the CAPP as received
+> the last time a timebase request was performed.
+> The timebase requests are initiated through the adapter configuration or
+> application registers.
+> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
+> now dynamically updated according the content of the PSL Timebase
+> register.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> 
+> ---
 
-=
+
+Thanks!
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+> This patch applies on top of this patch:
+>   http://patchwork.ozlabs.org/patch/873663/
+> 
+> Changelog[v6]
+>   - Rebased to latest upstream.
+>   - Recompute the status only in native mode.
+> 
+> Changelog[v5]
+>   - Rebased to latest upstream.
+>   - Changed the type of 'delta'
+> 
+> Changelog[v4]
+>   - Rebased to latest upstream.
+>   - Added log message.
+> 
+> Changelog[v3]
+>   - Rebased to latest upstream.
+>   - Dynamic update is now applied to P8.
+> 
+> Changelog[v2]
+>   - Missing Signed-off-by.
+>   - Spaces required around the ':'.
+> ---
+>   drivers/misc/cxl/pci.c   | 17 -----------------
+>   drivers/misc/cxl/sysfs.c | 12 ++++++++++++
+>   2 files changed, 12 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 66eed6a..3247eaf 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -606,9 +606,6 @@ static u64 timebase_read_xsl(struct cxl *adapter)
+> 
+>   static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>   {
+> -	u64 psl_tb;
+> -	int delta;
+> -	unsigned int retry = 0;
+>   	struct device_node *np;
+> 
+>   	adapter->psl_timebase_synced = false;
+> @@ -636,20 +633,6 @@ static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>   	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
+>   	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
+> 
+> -	/* Wait until CORE TB and PSL TB difference <= 16usecs */
+> -	do {
+> -		msleep(1);
+> -		if (retry++ > 5) {
+> -			dev_info(&dev->dev, "PSL timebase can't synchronize\n");
+> -			return;
+> -		}
+> -		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+> -		delta = mftb() - psl_tb;
+> -		if (delta < 0)
+> -			delta = -delta;
+> -	} while (tb_to_ns(delta) > 16000);
+> -
+> -	adapter->psl_timebase_synced = true;
+>   	return;
+>   }
+> 
+> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+> index a8b6d6a..95285b7 100644
+> --- a/drivers/misc/cxl/sysfs.c
+> +++ b/drivers/misc/cxl/sysfs.c
+> @@ -62,7 +62,19 @@ static ssize_t psl_timebase_synced_show(struct device *device,
+>   					char *buf)
+>   {
+>   	struct cxl *adapter = to_cxl_adapter(device);
+> +	u64 psl_tb, delta;
+> 
+> +	/* Recompute the status only in native mode */
+> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+> +		psl_tb = adapter->native->sl_ops->timebase_read(adapter);
+> +		delta = abs(mftb() - psl_tb);
+> +
+> +		/* CORE TB and PSL TB difference <= 16usecs ? */
+> +		adapter->psl_timebase_synced = (tb_to_ns(delta) < 16000) ? true : false;
+> +		pr_devel("PSL timebase %s - delta: 0x%016llx\n",
+> +			 (tb_to_ns(delta) < 16000) ? "synchronized" :
+> +			 "not synchronized", tb_to_ns(delta));
+> +	}
+>   	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
+>   }
+> 
