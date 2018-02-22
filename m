@@ -1,37 +1,20 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znDHJ0CVTzDq85
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:31:23 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1MCUhAq090949
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 07:31:21 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g9twxfrvg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 07:31:21 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Thu, 22 Feb 2018 12:31:18 -0000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Bryant G . Ly" <bryantly@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PCI/AER: Add a null check before eeh_ops->notify_resume
- callback.
-In-Reply-To: <20180222115803.21738-1-vaibhav@linux.vnet.ibm.com>
-References: <20180222115803.21738-1-vaibhav@linux.vnet.ibm.com>
-Date: Thu, 22 Feb 2018 18:01:11 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87y3jl2okw.fsf@vajain21.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znDNS1nQ3zF1T9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:35:52 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: stable@vger.kernel.org,
+	greg@kroah.com
+Cc: npiggin@gmail.com, linuxppc-dev@ozlabs.org, linux@roeck-us.net,
+ corsac@debian.org
+Subject: [PATCH v4.9 backport 1/3] powerpc/64s: Fix conversion of
+ slb_miss_common to use RFI_TO_USER/KERNEL
+Date: Thu, 22 Feb 2018 23:35:43 +1100
+Message-Id: <20180222123545.8946-1-mpe@ellerman.id.au>
+In-Reply-To: <20180222065738.GB2428@kroah.com>
+References: <20180222065738.GB2428@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,11 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The back port of commit c7305645eb0c ("powerpc/64s: Convert
+slb_miss_common to use RFI_TO_USER/KERNEL") missed a hunk needed to
+restore cr6.
 
-There is already a patch for this issue applied to ppc-next viz commit
-521ca5a9859a870e354d1a6b84a6ff ("powerpc/eeh: Add conditional check on
-notify_resume"). So please ignore the patch.
+Fixes: 48cc95d4e4d6 ("powerpc/64s: Convert slb_miss_common to use RFI_TO_USER/KERNEL")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 96db6c3adebe..d0be752ea86c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -680,6 +680,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ .machine	push
+ .machine	"power4"
+ 	mtcrf	0x80,r9
++	mtcrf	0x02,r9		/* I/D indication is in cr6 */
+ 	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
+ .machine	pop
+ 
 -- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+2.14.1
