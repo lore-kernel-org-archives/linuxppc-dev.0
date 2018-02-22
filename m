@@ -1,20 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znDNT2tn6zF1TL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:35:53 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: stable@vger.kernel.org,
-	greg@kroah.com
-Cc: npiggin@gmail.com, linuxppc-dev@ozlabs.org, linux@roeck-us.net,
- corsac@debian.org
-Subject: [PATCH v4.4 backport 2/3] powerpc/64s: Simple RFI macro conversions
-Date: Thu, 22 Feb 2018 23:35:44 +1100
-Message-Id: <20180222123545.8946-2-mpe@ellerman.id.au>
-In-Reply-To: <20180222123545.8946-1-mpe@ellerman.id.au>
-References: <20180222065738.GB2428@kroah.com>
- <20180222123545.8946-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znDs66nMDzF0mJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:57:10 +1100 (AEDT)
+Received: by mail-io0-x242.google.com with SMTP id l12so5898212ioc.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 04:57:10 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20180209120732.17863-3-j.neuschaefer@gmx.net>
+References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
+ <20180209120732.17863-3-j.neuschaefer@gmx.net>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 22 Feb 2018 13:57:07 +0100
+Message-ID: <CACRpkdZKLm2owgVu7-f80dOdQDzQKCbO2Vvh3QHfOpEzndMxxg@mail.gmail.com>
+Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
+To: =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Joel Stanley <joel@jms.id.au>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-gpio@vger.kernel.org,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Albert Herranz <albert_herranz@yahoo.es>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,316 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+On Fri, Feb 9, 2018 at 1:07 PM, Jonathan Neusch=C3=A4fer
+<j.neuschaefer@gmx.net> wrote:
 
-commit 222f20f140623ef6033491d0103ee0875fe87d35 upstream.
+> The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
+> that supports a configurable number of pins (up to 32), interrupts, and
+> some special mechanisms to share the controller between the system's
+> security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
+> not supported.
+>
+> This patch adds a basic driver for this GPIO controller. Interrupt
+> support will come in a later patch.
+>
+> This patch is based on code developed by Albert Herranz and the GameCube
+> Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
+> available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
+> has grown quite dissimilar.
+>
+> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
+> Cc: Albert Herranz <albert_herranz@yahoo.es>
+> Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> <---
+>
+> v3:
+> - Do some style cleanups, as suggest by Andy Shevchenko
 
-This commit does simple conversions of rfi/rfid to the new macros that
-include the expected destination context. By simple we mean cases
-where there is a single well known destination context, and it's
-simply a matter of substituting the instruction for the appropriate
-macro.
+Patch applied to the GPIO tree for v4.17 with all the review tags.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-[mpe: Backport to 4.9, use RFI_TO_KERNEL in idle_book3s.S]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/exception-64s.h |  2 +-
- arch/powerpc/kernel/entry_64.S           | 14 +++++++++-----
- arch/powerpc/kernel/exceptions-64s.S     | 22 +++++++++++-----------
- arch/powerpc/kernel/idle_book3s.S        |  7 ++++---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  |  7 +++----
- arch/powerpc/kvm/book3s_rmhandlers.S     |  7 +++++--
- arch/powerpc/kvm/book3s_segment.S        |  4 ++--
- 7 files changed, 35 insertions(+), 28 deletions(-)
+I just folded the changelog into the commit message, for new
+drivers it is sometimes useful to keep these around in
+git actually.
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index cab6d2a46c41..903e76a9f158 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -242,7 +242,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	mtspr	SPRN_##h##SRR0,r12;					\
- 	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
- 	mtspr	SPRN_##h##SRR1,r10;					\
--	h##rfid;							\
-+	h##RFI_TO_KERNEL;						\
- 	b	.	/* prevent speculative execution */
- #define EXCEPTION_PROLOG_PSERIES_1(label, h)				\
- 	__EXCEPTION_PROLOG_PSERIES_1(label, h)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index c33b69d10919..2dc52e6d2af4 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -39,6 +39,11 @@
- #include <asm/tm.h>
- #include <asm/ppc-opcode.h>
- #include <asm/export.h>
-+#ifdef CONFIG_PPC_BOOK3S
-+#include <asm/exception-64s.h>
-+#else
-+#include <asm/exception-64e.h>
-+#endif
- 
- /*
-  * System calls.
-@@ -396,8 +401,7 @@ tabort_syscall:
- 	mtmsrd	r10, 1
- 	mtspr	SPRN_SRR0, r11
- 	mtspr	SPRN_SRR1, r12
--
--	rfid
-+	RFI_TO_USER
- 	b	.	/* prevent speculative execution */
- #endif
- 
-@@ -1073,7 +1077,7 @@ _GLOBAL(enter_rtas)
- 	
- 	mtspr	SPRN_SRR0,r5
- 	mtspr	SPRN_SRR1,r6
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 
- rtas_return_loc:
-@@ -1098,7 +1102,7 @@ rtas_return_loc:
- 
- 	mtspr	SPRN_SRR0,r3
- 	mtspr	SPRN_SRR1,r4
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 
- 	.align	3
-@@ -1169,7 +1173,7 @@ _GLOBAL(enter_prom)
- 	LOAD_REG_IMMEDIATE(r12, MSR_SF | MSR_ISF | MSR_LE)
- 	andc	r11,r11,r12
- 	mtsrr1	r11
--	rfid
-+	RFI_TO_KERNEL
- #endif /* CONFIG_PPC_BOOK3E */
- 
- 1:	/* Return from OF */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d0be752ea86c..29892500e646 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -244,7 +244,7 @@ BEGIN_FTR_SECTION
- 	LOAD_HANDLER(r12, machine_check_handle_early)
- 1:	mtspr	SPRN_SRR0,r12
- 	mtspr	SPRN_SRR1,r11
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 2:
- 	/* Stack overflow. Stay on emergency stack and panic.
-@@ -280,7 +280,7 @@ machine_check_pSeries_0:
- 	mtspr	SPRN_SRR0,r12
- 	mfspr	r12,SPRN_SRR1
- 	mtspr	SPRN_SRR1,r10
--	rfid
-+	RFI_TO_KERNEL
- 	b	.	/* prevent speculative execution */
- 
- TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
-@@ -446,7 +446,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	li	r3,MSR_ME
- 	andc	r10,r10,r3		/* Turn off MSR_ME */
- 	mtspr	SPRN_SRR1,r10
--	rfid
-+	RFI_TO_KERNEL
- 	b	.
- 2:
- 	/*
-@@ -464,7 +464,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	 */
- 	bl	machine_check_queue_event
- 	MACHINE_CHECK_HANDLER_WINDUP
--	rfid
-+	RFI_TO_USER_OR_KERNEL
- 9:
- 	/* Deliver the machine check to host kernel in V mode. */
- 	MACHINE_CHECK_HANDLER_WINDUP
-@@ -706,7 +706,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
- 	mtspr	SPRN_SRR0,r10
- 	ld	r10,PACAKMSR(r13)
- 	mtspr	SPRN_SRR1,r10
--	rfid
-+	RFI_TO_KERNEL
- 	b	.
- 
- EXC_COMMON_BEGIN(unrecov_slb)
-@@ -893,7 +893,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 	mtspr	SPRN_SRR0,r10 ; 				\
- 	ld	r10,PACAKMSR(r13) ;				\
- 	mtspr	SPRN_SRR1,r10 ; 				\
--	rfid ; 							\
-+	RFI_TO_KERNEL ;						\
- 	b	. ;	/* prevent speculative execution */
- 
- #define SYSCALL_PSERIES_3					\
-@@ -901,7 +901,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 1:	mfspr	r12,SPRN_SRR1 ;					\
- 	xori	r12,r12,MSR_LE ;				\
- 	mtspr	SPRN_SRR1,r12 ;					\
--	rfid ;		/* return to userspace */		\
-+	RFI_TO_USER ;	/* return to userspace */		\
- 	b	. ;	/* prevent speculative execution */
- 
- #if defined(CONFIG_RELOCATABLE)
-@@ -1276,7 +1276,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- 	ld	r11,PACA_EXGEN+EX_R11(r13)
- 	ld	r12,PACA_EXGEN+EX_R12(r13)
- 	ld	r13,PACA_EXGEN+EX_R13(r13)
--	HRFID
-+	HRFI_TO_UNKNOWN
- 	b	.
- #endif
- 
-@@ -1350,7 +1350,7 @@ masked_##_H##interrupt:					\
- 	ld	r10,PACA_EXGEN+EX_R10(r13);		\
- 	ld	r11,PACA_EXGEN+EX_R11(r13);		\
- 	GET_SCRATCH0(r13);				\
--	##_H##rfid;					\
-+	##_H##RFI_TO_KERNEL;				\
- 	b	.
- 
- /*
-@@ -1372,7 +1372,7 @@ TRAMP_REAL_BEGIN(kvmppc_skip_interrupt)
- 	addi	r13, r13, 4
- 	mtspr	SPRN_SRR0, r13
- 	GET_SCRATCH0(r13)
--	rfid
-+	RFI_TO_KERNEL
- 	b	.
- 
- TRAMP_REAL_BEGIN(kvmppc_skip_Hinterrupt)
-@@ -1384,7 +1384,7 @@ TRAMP_REAL_BEGIN(kvmppc_skip_Hinterrupt)
- 	addi	r13, r13, 4
- 	mtspr	SPRN_HSRR0, r13
- 	GET_SCRATCH0(r13)
--	hrfid
-+	HRFI_TO_KERNEL
- 	b	.
- #endif
- 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index b350ac5e3111..d92c95333435 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -9,6 +9,7 @@
-  */
- 
- #include <linux/threads.h>
-+#include <asm/exception-64s.h>
- #include <asm/processor.h>
- #include <asm/page.h>
- #include <asm/cputable.h>
-@@ -178,7 +179,7 @@ _GLOBAL(pnv_powersave_common)
- 	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
- 	mtspr	SPRN_SRR0, r5
- 	mtspr	SPRN_SRR1, r7
--	rfid
-+	RFI_TO_KERNEL
- 
- 	.globl pnv_enter_arch207_idle_mode
- pnv_enter_arch207_idle_mode:
-@@ -668,7 +669,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	mtcr	r6
- 	mtspr	SPRN_SRR1,r4
- 	mtspr	SPRN_SRR0,r5
--	rfid
-+	RFI_TO_KERNEL
- 
- /*
-  * R3 here contains the value that will be returned to the caller
-@@ -689,4 +690,4 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	mtcr	r6
- 	mtspr	SPRN_SRR1,r4
- 	mtspr	SPRN_SRR0,r5
--	rfid
-+	RFI_TO_KERNEL
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 0447a22a4df6..55fbc0c78721 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -65,7 +65,7 @@ _GLOBAL_TOC(kvmppc_hv_entry_trampoline)
- 	mtmsrd	r0,1		/* clear RI in MSR */
- 	mtsrr0	r5
- 	mtsrr1	r6
--	RFI
-+	RFI_TO_KERNEL
- 
- kvmppc_call_hv_entry:
- 	ld	r4, HSTATE_KVM_VCPU(r13)
-@@ -171,7 +171,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mtsrr0	r8
- 	mtsrr1	r7
- 	beq	cr1, 13f		/* machine check */
--	RFI
-+	RFI_TO_KERNEL
- 
- 	/* On POWER7, we have external interrupts set to use HSRR0/1 */
- 11:	mtspr	SPRN_HSRR0, r8
-@@ -1018,8 +1018,7 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ld	r0, VCPU_GPR(R0)(r4)
- 	ld	r4, VCPU_GPR(R4)(r4)
--
--	hrfid
-+	HRFI_TO_GUEST
- 	b	.
- 
- secondary_too_late:
-diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
-index 42a4b237df5f..34a5adeff084 100644
---- a/arch/powerpc/kvm/book3s_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_rmhandlers.S
-@@ -46,6 +46,9 @@
- 
- #define FUNC(name)		name
- 
-+#define RFI_TO_KERNEL	RFI
-+#define RFI_TO_GUEST	RFI
-+
- .macro INTERRUPT_TRAMPOLINE intno
- 
- .global kvmppc_trampoline_\intno
-@@ -141,7 +144,7 @@ kvmppc_handler_skip_ins:
- 	GET_SCRATCH0(r13)
- 
- 	/* And get back into the code */
--	RFI
-+	RFI_TO_KERNEL
- #endif
- 
- /*
-@@ -164,6 +167,6 @@ _GLOBAL_TOC(kvmppc_entry_trampoline)
- 	ori	r5, r5, MSR_EE
- 	mtsrr0	r7
- 	mtsrr1	r6
--	RFI
-+	RFI_TO_KERNEL
- 
- #include "book3s_segment.S"
-diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-index ca8f174289bb..7c982956d709 100644
---- a/arch/powerpc/kvm/book3s_segment.S
-+++ b/arch/powerpc/kvm/book3s_segment.S
-@@ -156,7 +156,7 @@ no_dcbz32_on:
- 	PPC_LL	r9, SVCPU_R9(r3)
- 	PPC_LL	r3, (SVCPU_R3)(r3)
- 
--	RFI
-+	RFI_TO_GUEST
- kvmppc_handler_trampoline_enter_end:
- 
- 
-@@ -389,5 +389,5 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	cmpwi	r12, BOOK3S_INTERRUPT_DOORBELL
- 	beqa	BOOK3S_INTERRUPT_DOORBELL
- 
--	RFI
-+	RFI_TO_KERNEL
- kvmppc_handler_trampoline_exit_end:
--- 
-2.14.1
+If any further changes are needed we can just patch on top
+of this.
+
+It's a very pretty driver, good work!
+
+Yours,
+Linus Walleij
