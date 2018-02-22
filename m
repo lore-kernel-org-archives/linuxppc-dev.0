@@ -2,41 +2,42 @@ Return-Path: <srs0=lavr=fq=au1.ibm.com=alastair@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zn1LZ0K1xzF15s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zn1LZ0QZtzF15v
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 15:18:30 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zn1LY5tF2z8wPj
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zn1LY5z6dz8wQL
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 15:18:29 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zn1LY21gvz9sWG
+ by ozlabs.org (Postfix) with ESMTPS id 3zn1LY1PlSz9sW9
  for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 15:18:28 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1M4EmwH081308
+ w1M4EnxM116638
  for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 23:18:27 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g9kc4xaxb-1
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g9mr83th0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 23:18:26 -0500
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <alastair@au1.ibm.com>;
- Thu, 22 Feb 2018 04:18:25 -0000
+ Thu, 22 Feb 2018 04:18:24 -0000
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: frederic.barrat@fr.ibm.com, andrew.donnellan@au1.ibm.com, arnd@arndb.de,
  gregkh@linuxfoundation.org, alastair@au1.ibm.com,
  "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH v3 2/2] ocxl: Document the OCXL_IOCTL_GET_METADATA IOCTL
-Date: Thu, 22 Feb 2018 15:17:39 +1100
+Subject: [PATCH v3 1/2] ocxl: Add get_metadata IOCTL to share OCXL information
+ to userspace
+Date: Thu, 22 Feb 2018 15:17:38 +1100
 In-Reply-To: <20180222041739.27899-1-alastair@au1.ibm.com>
 References: <20180222030334.14060-1-alastair@au1.ibm.com>
  <20180222041739.27899-1-alastair@au1.ibm.com>
-Message-Id: <20180222041739.27899-3-alastair@au1.ibm.com>
+Message-Id: <20180222041739.27899-2-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,26 +49,99 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
+Some required information is not exposed to userspace currently (eg. the
+PASID), pass this information back, along with other information which
+is currently communicated via sysfs, which saves some parsing effort in
+userspace.
+
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- Documentation/accelerators/ocxl.rst | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/misc/ocxl/file.c | 27 +++++++++++++++++++++++++++
+ include/uapi/misc/ocxl.h | 17 +++++++++++++++++
+ 2 files changed, 44 insertions(+)
 
-diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-index 4f7af841d935..ddcc58d01cfb 100644
---- a/Documentation/accelerators/ocxl.rst
-+++ b/Documentation/accelerators/ocxl.rst
-@@ -152,6 +152,11 @@ OCXL_IOCTL_IRQ_SET_FD:
-   Associate an event fd to an AFU interrupt so that the user process
-   can be notified when the AFU sends an interrupt.
+diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+index d9aa407db06a..90df1be5ef3f 100644
+--- a/drivers/misc/ocxl/file.c
++++ b/drivers/misc/ocxl/file.c
+@@ -102,10 +102,32 @@ static long afu_ioctl_attach(struct ocxl_context *ctx,
+ 	return rc;
+ }
  
-+OCXL_IOCTL_GET_METADATA:
++static long afu_ioctl_get_metadata(struct ocxl_context *ctx,
++		struct ocxl_ioctl_metadata __user *uarg)
++{
++	struct ocxl_ioctl_metadata arg;
 +
-+  Obtains configuration information from the card, such at the size of
-+  MMIO areas, the AFU version, and the PASID for the current context.
++	memset(&arg, 0, sizeof(arg));
 +
++	arg.version = 0;
++
++	arg.afu_version_major = ctx->afu->config.version_major;
++	arg.afu_version_minor = ctx->afu->config.version_minor;
++	arg.pasid = ctx->pasid;
++	arg.pp_mmio_size = ctx->afu->config.pp_mmio_stride;
++	arg.global_mmio_size = ctx->afu->config.global_mmio_size;
++
++	if (copy_to_user(uarg, &arg, sizeof(arg)))
++		return -EFAULT;
++
++	return 0;
++}
++
+ #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :			\
+ 			x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :	\
+ 			x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :		\
+ 			x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :	\
++			x == OCXL_IOCTL_GET_METADATA ? "GET_METADATA" :	\
+ 			"UNKNOWN")
  
- mmap
- ----
+ static long afu_ioctl(struct file *file, unsigned int cmd,
+@@ -157,6 +179,11 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+ 					irq_fd.eventfd);
+ 		break;
+ 
++	case OCXL_IOCTL_GET_METADATA:
++		rc = afu_ioctl_get_metadata(ctx,
++				(struct ocxl_ioctl_metadata __user *) args);
++		break;
++
+ 	default:
+ 		rc = -EINVAL;
+ 	}
+diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
+index 4b0b0b756f3e..0af83d80fb3e 100644
+--- a/include/uapi/misc/ocxl.h
++++ b/include/uapi/misc/ocxl.h
+@@ -32,6 +32,22 @@ struct ocxl_ioctl_attach {
+ 	__u64 reserved3;
+ };
+ 
++struct ocxl_ioctl_metadata {
++	__u16 version; // struct version, always backwards compatible
++
++	// Version 0 fields
++	__u8  afu_version_major;
++	__u8  afu_version_minor;
++	__u32 pasid;		// PASID assigned to the current context
++
++	__u64 pp_mmio_size;	// Per PASID MMIO size
++	__u64 global_mmio_size;
++
++	// End version 0 fields
++
++	__u64 reserved[13]; // Total of 16*u64
++};
++
+ struct ocxl_ioctl_irq_fd {
+ 	__u64 irq_offset;
+ 	__s32 eventfd;
+@@ -45,5 +61,6 @@ struct ocxl_ioctl_irq_fd {
+ #define OCXL_IOCTL_IRQ_ALLOC	_IOR(OCXL_MAGIC, 0x11, __u64)
+ #define OCXL_IOCTL_IRQ_FREE	_IOW(OCXL_MAGIC, 0x12, __u64)
+ #define OCXL_IOCTL_IRQ_SET_FD	_IOW(OCXL_MAGIC, 0x13, struct ocxl_ioctl_irq_fd)
++#define OCXL_IOCTL_GET_METADATA _IOR(OCXL_MAGIC, 0x14, struct ocxl_ioctl_metadata)
+ 
+ #endif /* _UAPI_MISC_OCXL_H */
 -- 
 2.14.3
