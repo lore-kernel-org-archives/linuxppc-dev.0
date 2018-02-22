@@ -1,45 +1,25 @@
-Return-Path: <srs0=6jub=fq=linux.vnet.ibm.com=fbarrat@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znCyT67gkzDrRX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:16:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3znCyS5Kvpz8w0l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:16:48 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3znCyQ45Bzz9sW3
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 23:16:45 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1MCAb8c095719
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 07:16:44 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2g9wjerfwb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 07:16:43 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 22 Feb 2018 12:16:41 -0000
-Subject: Re: [PATCH v3 2/2] ocxl: Document the OCXL_IOCTL_GET_METADATA IOCTL
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, frederic.barrat@fr.ibm.com, gregkh@linuxfoundation.org,
- andrew.donnellan@au1.ibm.com, "Alastair D'Silva" <alastair@d-silva.org>
-References: <20180222030334.14060-1-alastair@au1.ibm.com>
- <20180222041739.27899-1-alastair@au1.ibm.com>
- <20180222041739.27899-3-alastair@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Thu, 22 Feb 2018 13:16:38 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znCyj21LjzDrLP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:17:00 +1100 (AEDT)
+From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-mm@kvack.org, Joel Stanley <joel@jms.id.au>,
+ Christophe LEROY <christophe.leroy@c-s.fr>,
+ =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH 3/5] powerpc/mm/32: Use page_is_ram to check for RAM
+Date: Thu, 22 Feb 2018 13:15:14 +0100
+Message-Id: <20180222121516.23415-4-j.neuschaefer@gmx.net>
+In-Reply-To: <20180222121516.23415-1-j.neuschaefer@gmx.net>
+References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
-In-Reply-To: <20180222041739.27899-3-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <7793f52d-23f5-27bc-37c4-232e569bbaa1@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,36 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+---
+ arch/powerpc/mm/pgtable_32.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-
-Le 22/02/2018 à 05:17, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> ---
-
-
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-
->   Documentation/accelerators/ocxl.rst | 5 +++++
->   1 file changed, 5 insertions(+)
-> 
-> diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-> index 4f7af841d935..ddcc58d01cfb 100644
-> --- a/Documentation/accelerators/ocxl.rst
-> +++ b/Documentation/accelerators/ocxl.rst
-> @@ -152,6 +152,11 @@ OCXL_IOCTL_IRQ_SET_FD:
->     Associate an event fd to an AFU interrupt so that the user process
->     can be notified when the AFU sends an interrupt.
-> 
-> +OCXL_IOCTL_GET_METADATA:
-> +
-> +  Obtains configuration information from the card, such at the size of
-> +  MMIO areas, the AFU version, and the PASID for the current context.
-> +
-> 
->   mmap
->   ----
-> 
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index d35d9ad3c1cd..d54e1a9c1c99 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -145,9 +145,8 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ #ifndef CONFIG_CRASH_DUMP
+ 	/*
+ 	 * Don't allow anybody to remap normal RAM that we're using.
+-	 * mem_init() sets high_memory so only do the check after that.
+ 	 */
+-	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
++	if (page_is_ram(__phys_to_pfn(p)) &&
+ 	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
+ 		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
+ 		       (unsigned long long)p, __builtin_return_address(0));
+-- 
+2.16.1
