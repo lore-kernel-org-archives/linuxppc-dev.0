@@ -2,20 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znGsB4BB8zDqYZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 01:27:26 +1100 (AEDT)
-Message-Id: <d73e104992133e8fd17c798d817687bf2ea8b50a.1519305410.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znGsD5WSZzDrFG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 01:27:28 +1100 (AEDT)
+Message-Id: <3e9cfc87e78d61310d1b628960a465327c20d895.1519305411.git.christophe.leroy@c-s.fr>
 In-Reply-To: <455276187b369bf019e91715b7488e86cd932d49.1519305410.git.christophe.leroy@c-s.fr>
 References: <455276187b369bf019e91715b7488e86cd932d49.1519305410.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 2/6] powerpc/mm/slice: create header files dedicated to
- slices
+Subject: [PATCH v5 3/6] powerpc/mm/slice: Enhance for supporting PPC32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Thu, 22 Feb 2018 15:27:22 +0100 (CET)
+Date: Thu, 22 Feb 2018 15:27:24 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,205 +24,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for the following patch which will enhance 'slices'
-for supporting PPC32 in order to fix an issue on hugepages on 8xx,
-this patch takes out of page*.h all bits related to 'slices' and put
-them into newly created slice.h header files.
-While common parts go into asm/slice.h, subarch specific
-parts go into respective books3s/64/slice.c and nohash/64/slice.c
-'slices'
+In preparation for the following patch which will fix an issue on
+the 8xx by re-using the 'slices', this patch enhances the
+'slices' implementation to support 32 bits CPUs.
+
+On PPC32, the address space is limited to 4Gbytes, hence only the low
+slices will be used.
+
+The high slices use bitmaps. As bitmap functions are not prepared to
+handle bitmaps of size 0, this patch ensures that bitmap functions
+are called only when SLICE_NUM_HIGH is not nul.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v5: new - come from a split of patch 2 of v4
+ v2: First patch of v1 serie split in two parts ; added slice_bitmap_xxx() macros.
+ v3: Moving slice related stuff in slice.h and slice_32/64.h
+     slice_bitmap_xxx() are now static inline functions and platform dependent
+     SLICE_LOW_TOP declared ull on PPC32 with correct casts allows to keep it 0x100000000
+ v4: Moved slice_32.h and slice_64.h to respective subarch dirs
+     Moved somes #ifdefs from asm/slice.h to respective subarch slice.h
+     SLICE_LOW_ details distributed in repective subarch slices allthough they are identical for the moment
+ v5: Split in two parts. The moving of slice related stuffs into slice.h files is now done in the preceding patch
+     Based on several feedback received, this version removes the slice_bitmap_xxx() wrappers and comes back to
+     the initial approach of checking that SLICE_NUM_HIGH is not nul before using bitmap_xxx() functions. Unlike
+     the others, this approach has the advantage of allowing the reader to immediatly know what's going on and
+     avoid all this set of copy/empty wrappers in subarch slice.h files. It also significantly reduces the size
+     of the patch, which is a prerequisite for backporting it to stable releases.
 
- arch/powerpc/include/asm/book3s/64/slice.h | 27 ++++++++++++++
- arch/powerpc/include/asm/nohash/64/slice.h | 12 ++++++
- arch/powerpc/include/asm/page.h            |  1 +
- arch/powerpc/include/asm/page_64.h         | 59 ------------------------------
- arch/powerpc/include/asm/slice.h           | 40 ++++++++++++++++++++
- 5 files changed, 80 insertions(+), 59 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/64/slice.h
- create mode 100644 arch/powerpc/include/asm/nohash/64/slice.h
- create mode 100644 arch/powerpc/include/asm/slice.h
+ arch/powerpc/include/asm/nohash/32/slice.h | 18 +++++++++++++++
+ arch/powerpc/include/asm/slice.h           |  4 +++-
+ arch/powerpc/mm/slice.c                    | 37 +++++++++++++++++++++++-------
+ 3 files changed, 50 insertions(+), 9 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/nohash/32/slice.h
 
-diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
+diff --git a/arch/powerpc/include/asm/nohash/32/slice.h b/arch/powerpc/include/asm/nohash/32/slice.h
 new file mode 100644
-index 000000000000..db0dedab65ee
+index 000000000000..95d532e18092
 --- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/64/slice.h
-@@ -0,0 +1,27 @@
++++ b/arch/powerpc/include/asm/nohash/32/slice.h
+@@ -0,0 +1,18 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_BOOK3S_64_SLICE_H
-+#define _ASM_POWERPC_BOOK3S_64_SLICE_H
++#ifndef _ASM_POWERPC_NOHASH_32_SLICE_H
++#define _ASM_POWERPC_NOHASH_32_SLICE_H
 +
 +#ifdef CONFIG_PPC_MM_SLICES
 +
 +#define SLICE_LOW_SHIFT		28
-+#define SLICE_LOW_TOP		(0x100000000ul)
++#define SLICE_LOW_TOP		(0x100000000ull)
 +#define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
 +#define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
 +
-+#define SLICE_HIGH_SHIFT	40
-+#define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
-+#define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
-+
-+#else /* CONFIG_PPC_MM_SLICES */
-+
-+#define get_slice_psize(mm, addr)	((mm)->context.user_psize)
-+#define slice_set_user_psize(mm, psize)		\
-+do {						\
-+	(mm)->context.user_psize = (psize);	\
-+	(mm)->context.sllp = SLB_VSID_USER | mmu_psize_defs[(psize)].sllp; \
-+} while (0)
++#define SLICE_HIGH_SHIFT	0
++#define SLICE_NUM_HIGH		0ul
++#define GET_HIGH_SLICE_INDEX(addr)	(addr & 0)
 +
 +#endif /* CONFIG_PPC_MM_SLICES */
 +
-+#endif /* _ASM_POWERPC_BOOK3S_64_SLICE_H */
-diff --git a/arch/powerpc/include/asm/nohash/64/slice.h b/arch/powerpc/include/asm/nohash/64/slice.h
-new file mode 100644
-index 000000000000..ad0d6e3cc1c5
---- /dev/null
-+++ b/arch/powerpc/include/asm/nohash/64/slice.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_NOHASH_64_SLICE_H
-+#define _ASM_POWERPC_NOHASH_64_SLICE_H
-+
-+#ifdef CONFIG_PPC_64K_PAGES
-+#define get_slice_psize(mm, addr)	MMU_PAGE_64K
-+#else /* CONFIG_PPC_64K_PAGES */
-+#define get_slice_psize(mm, addr)	MMU_PAGE_4K
-+#endif /* !CONFIG_PPC_64K_PAGES */
-+#define slice_set_user_psize(mm, psize)	do { BUG(); } while (0)
-+
-+#endif /* _ASM_POWERPC_NOHASH_64_SLICE_H */
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 8da5d4c1cab2..d5f1c41b7dba 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -344,5 +344,6 @@ typedef struct page *pgtable_t;
- 
- #include <asm-generic/memory_model.h>
- #endif /* __ASSEMBLY__ */
-+#include <asm/slice.h>
- 
- #endif /* _ASM_POWERPC_PAGE_H */
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 56234c6fcd61..af04acdb873f 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -86,65 +86,6 @@ extern u64 ppc64_pft_size;
- 
- #endif /* __ASSEMBLY__ */
- 
--#ifdef CONFIG_PPC_MM_SLICES
--
--#define SLICE_LOW_SHIFT		28
--#define SLICE_HIGH_SHIFT	40
--
--#define SLICE_LOW_TOP		(0x100000000ul)
--#define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
--#define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
--
--#define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
--#define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
--
--#ifndef __ASSEMBLY__
--struct mm_struct;
--
--extern unsigned long slice_get_unmapped_area(unsigned long addr,
--					     unsigned long len,
--					     unsigned long flags,
--					     unsigned int psize,
--					     int topdown);
--
--extern unsigned int get_slice_psize(struct mm_struct *mm,
--				    unsigned long addr);
--
--extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
--extern void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
--				  unsigned long len, unsigned int psize);
--
--#endif /* __ASSEMBLY__ */
--#else
--#define slice_init()
--#ifdef CONFIG_PPC_BOOK3S_64
--#define get_slice_psize(mm, addr)	((mm)->context.user_psize)
--#define slice_set_user_psize(mm, psize)		\
--do {						\
--	(mm)->context.user_psize = (psize);	\
--	(mm)->context.sllp = SLB_VSID_USER | mmu_psize_defs[(psize)].sllp; \
--} while (0)
--#else /* !CONFIG_PPC_BOOK3S_64 */
--#ifdef CONFIG_PPC_64K_PAGES
--#define get_slice_psize(mm, addr)	MMU_PAGE_64K
--#else /* CONFIG_PPC_64K_PAGES */
--#define get_slice_psize(mm, addr)	MMU_PAGE_4K
--#endif /* !CONFIG_PPC_64K_PAGES */
--#define slice_set_user_psize(mm, psize)	do { BUG(); } while(0)
--#endif /* CONFIG_PPC_BOOK3S_64 */
--
--#define slice_set_range_psize(mm, start, len, psize)	\
--	slice_set_user_psize((mm), (psize))
--#endif /* CONFIG_PPC_MM_SLICES */
--
--#ifdef CONFIG_HUGETLB_PAGE
--
--#ifdef CONFIG_PPC_MM_SLICES
--#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
--#endif
--
--#endif /* !CONFIG_HUGETLB_PAGE */
--
- #define VM_DATA_DEFAULT_FLAGS \
- 	(is_32bit_task() ? \
- 	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
++#endif /* _ASM_POWERPC_NOHASH_32_SLICE_H */
 diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
-new file mode 100644
-index 000000000000..17c5a5d8c418
---- /dev/null
+index 17c5a5d8c418..172711fadb1c 100644
+--- a/arch/powerpc/include/asm/slice.h
 +++ b/arch/powerpc/include/asm/slice.h
-@@ -0,0 +1,40 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_SLICE_H
-+#define _ASM_POWERPC_SLICE_H
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#include <asm/book3s/64/slice.h>
-+#else
-+#include <asm/nohash/64/slice.h>
+@@ -4,8 +4,10 @@
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #include <asm/book3s/64/slice.h>
+-#else
++#elif defined(CONFIG_PPC64)
+ #include <asm/nohash/64/slice.h>
++#elif defined(CONFIG_PPC_MMU_NOHASH)
++#include <asm/nohash/32/slice.h>
+ #endif
+ 
+ #ifdef CONFIG_PPC_MM_SLICES
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 98b53d48968f..0beca1ba2282 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -73,10 +73,12 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ 	unsigned long end = start + len - 1;
+ 
+ 	ret->low_slices = 0;
+-	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
++	if (SLICE_NUM_HIGH)
++		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	if (start < SLICE_LOW_TOP) {
+-		unsigned long mend = min(end, (SLICE_LOW_TOP - 1));
++		unsigned long mend = min(end,
++					 (unsigned long)(SLICE_LOW_TOP - 1));
+ 
+ 		ret->low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
+ 			- (1u << GET_LOW_SLICE_INDEX(start));
+@@ -113,11 +115,13 @@ static int slice_high_has_vma(struct mm_struct *mm, unsigned long slice)
+ 	unsigned long start = slice << SLICE_HIGH_SHIFT;
+ 	unsigned long end = start + (1ul << SLICE_HIGH_SHIFT);
+ 
++#ifdef CONFIG_PPC64
+ 	/* Hack, so that each addresses is controlled by exactly one
+ 	 * of the high or low area bitmaps, the first high area starts
+ 	 * at 4GB, not 0 */
+ 	if (start == 0)
+ 		start = SLICE_LOW_TOP;
 +#endif
+ 
+ 	return !slice_area_is_free(mm, start, end - start);
+ }
+@@ -128,7 +132,8 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
+ 	unsigned long i;
+ 
+ 	ret->low_slices = 0;
+-	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
++	if (SLICE_NUM_HIGH)
++		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+ 		if (!slice_low_has_vma(mm, i))
+@@ -151,7 +156,8 @@ static void slice_mask_for_size(struct mm_struct *mm, int psize, struct slice_ma
+ 	u64 lpsizes;
+ 
+ 	ret->low_slices = 0;
+-	bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
++	if (SLICE_NUM_HIGH)
++		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+ 	lpsizes = mm->context.low_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+@@ -180,6 +186,10 @@ static int slice_check_fit(struct mm_struct *mm,
+ 	 */
+ 	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
+ 
++	if (!SLICE_NUM_HIGH)
++		return (mask.low_slices & available.low_slices) ==
++		       mask.low_slices;
 +
-+#ifdef CONFIG_PPC_MM_SLICES
-+
-+#ifdef CONFIG_HUGETLB_PAGE
-+#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 	bitmap_and(result, mask.high_slices,
+ 		   available.high_slices, slice_count);
+ 
+@@ -189,6 +199,7 @@ static int slice_check_fit(struct mm_struct *mm,
+ 
+ static void slice_flush_segments(void *parm)
+ {
++#ifdef CONFIG_PPC64
+ 	struct mm_struct *mm = parm;
+ 	unsigned long flags;
+ 
+@@ -200,6 +211,7 @@ static void slice_flush_segments(void *parm)
+ 	local_irq_save(flags);
+ 	slb_flush_and_rebolt();
+ 	local_irq_restore(flags);
 +#endif
-+#define HAVE_ARCH_UNMAPPED_AREA
-+#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+ }
+ 
+ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psize)
+@@ -389,6 +401,8 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
+ static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
+ {
+ 	dst->low_slices |= src->low_slices;
++	if (!SLICE_NUM_HIGH)
++		return;
+ 	bitmap_or(dst->high_slices, dst->high_slices, src->high_slices,
+ 		  SLICE_NUM_HIGH);
+ }
+@@ -397,6 +411,8 @@ static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *
+ {
+ 	dst->low_slices &= ~src->low_slices;
+ 
++	if (!SLICE_NUM_HIGH)
++		return;
+ 	bitmap_andnot(dst->high_slices, dst->high_slices, src->high_slices,
+ 		      SLICE_NUM_HIGH);
+ }
+@@ -446,14 +462,17 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+ 	 * init different masks
+ 	 */
+ 	mask.low_slices = 0;
+-	bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	/* silence stupid warning */;
+ 	potential_mask.low_slices = 0;
+-	bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
+ 
+ 	compat_mask.low_slices = 0;
+-	bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
 +
-+#ifndef __ASSEMBLY__
-+
-+struct mm_struct;
-+
-+unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
-+				      unsigned long flags, unsigned int psize,
-+				      int topdown);
-+
-+unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
-+
-+void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
-+void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
-+			   unsigned long len, unsigned int psize);
-+#endif /* __ASSEMBLY__ */
-+
-+#else /* CONFIG_PPC_MM_SLICES */
-+
-+#define slice_set_range_psize(mm, start, len, psize)	\
-+	slice_set_user_psize((mm), (psize))
-+#endif /* CONFIG_PPC_MM_SLICES */
-+
-+#endif /* _ASM_POWERPC_SLICE_H */
++	if (SLICE_NUM_HIGH) {
++		bitmap_zero(mask.high_slices, SLICE_NUM_HIGH);
++		bitmap_zero(potential_mask.high_slices, SLICE_NUM_HIGH);
++		bitmap_zero(compat_mask.high_slices, SLICE_NUM_HIGH);
++	}
+ 
+ 	/* Sanity checks */
+ 	BUG_ON(mm->task_size == 0);
+@@ -591,7 +610,9 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+  convert:
+ 	slice_andnot_mask(&mask, &good_mask);
+ 	slice_andnot_mask(&mask, &compat_mask);
+-	if (mask.low_slices || !bitmap_empty(mask.high_slices, SLICE_NUM_HIGH)) {
++	if (mask.low_slices ||
++	    (SLICE_NUM_HIGH &&
++	     !bitmap_empty(mask.high_slices, SLICE_NUM_HIGH))) {
+ 		slice_convert(mm, mask, psize);
+ 		if (psize > MMU_PAGE_BASE)
+ 			on_each_cpu(slice_flush_segments, mm, 1);
 -- 
 2.13.3
