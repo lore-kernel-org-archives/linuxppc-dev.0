@@ -1,29 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znTKM2ns5zF1j8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 09:19:03 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Brian King <brking@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, "dougmill\@us.ibm.com" <dougmill@us.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Turn on SCSI_AACRAID in powernv_defconfig
-In-Reply-To: <38f27cd0-7f1a-b3ca-d8f3-615bd97637be@linux.vnet.ibm.com>
-References: <1503899802-13248-1-git-send-email-mpe@ellerman.id.au>
- <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
- <87h8wq1uvv.fsf@concordia.ellerman.id.au>
- <58487ce7-aea1-39c1-b9c8-cd8435e493e0@linux.vnet.ibm.com>
- <87shg91fgc.fsf@concordia.ellerman.id.au> <87y3q0hxtm.fsf@linux.vnet.ibm.com>
- <877exjud52.fsf@concordia.ellerman.id.au>
- <5011affa-e820-1362-2af2-3507f8aeb914@linux.vnet.ibm.com>
- <87mv6f56vl.fsf@concordia.ellerman.id.au> <87y3pvgyko.fsf@linux.vnet.ibm.com>
- <38f27cd0-7f1a-b3ca-d8f3-615bd97637be@linux.vnet.ibm.com>
-Date: Fri, 23 Feb 2018 09:19:02 +1100
-Message-ID: <87y3jkpt0p.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znTMN5RvmzF1jF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 09:20:43 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1MMKdDH137900
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:20:40 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ga2pjr94w-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:20:40 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Thu, 22 Feb 2018 15:20:26 -0700
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 00/38] cxlflash: OpenCXL transport support
+Date: Thu, 22 Feb 2018 16:20:10 -0600
+Message-Id: <1519338010-51782-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,42 +39,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Brian King <brking@linux.vnet.ibm.com> writes:
-> On 09/03/2017 06:19 PM, Stewart Smith wrote:
->> Michael Ellerman <mpe@ellerman.id.au> writes:
->>>> 2. On a bare metal machine, if you set ipr.fast_reboot=1 on the skiboot
->>>>    kernel, then we should also avoid resetting the ipr adapter, so ipr
->>>>    init on the kernel being kexec booted from skiboot should be extremely fast. 
->>>
->>> OK, I didn't know that was an option, so that might help.
->>>
->>>> ...
->>>> If you've got cases where ipr init is taking a long time, I'd be
->>>> interested to know what scenarios are the most annoying to see if there
->>>> is any opportunity to improve.
->>>
->>> Yeah booting bare metal is where I see it (not using ipr.fast_reboot).
->> 
->> Hrm... We should probably enable that by default for petitboot then.
->> 
->> It'd at least cut some time off booting straight through to OS.
->
-> Agreed. I'd be interested to hear if that helps address the issue
-> Michael is seeing.
->
-> You can easily test this by exiting to a petitboot shell:
->
-> echo 1 > /sys/module/ipr/parameters/fast_reboot
->
-> Then go back to petitboot and boot the OS.
+This patch series adds OpenCXL support to the cxlflash driver. With
+this support, new devices using the OpenCXL transport will be supported
+by the cxlflash driver along with the existing CXL devices. An effort is
+made to keep this transport specific function independent of the existing
+core driver that communicates with the AFU.
 
-Just following up on this (!).
+The first three patches contain a minor fix and staging improvements.
 
-This does work, and I've now been running it in my CI for about a month
-(~1000 boots) with no problems.
+This series is intended for 4.17 and is bisectable.
 
-You can also make it persistent by doing:
+Matthew R. Ochs (1):
+  cxlflash: Avoid clobbering context control register value
 
-  $ nvram -p ibm,skiboot --update-config bootargs="ipr.fast_reboot=1"
+Uma Krishnan (37):
+  cxlflash: Preserve number of interrupts for master contexts
+  cxlflash: Add argument identifier names
+  cxlflash: Introduce OpenCXL backend
+  cxlflash: Hardware AFU for OpenCXL
+  cxlflash: Read host function configuration
+  cxlflash: Setup function acTag range
+  cxlflash: Read host AFU configuration
+  cxlflash: Setup AFU acTag range
+  cxlflash: Setup AFU PASID
+  cxlflash: Adapter context support for OpenCXL
+  cxlflash: Use IDR to manage adapter contexts
+  cxlflash: Support adapter file descriptors for OpenCXL
+  cxlflash: Support adapter context discovery
+  cxlflash: Support image reload policy modification
+  cxlflash: MMIO map the AFU
+  cxlflash: Support starting an adapter context
+  cxlflash: Support process specific mappings
+  cxlflash: Support AFU state toggling
+  cxlflash: Support reading adapter VPD data
+  cxlflash: Setup function OpenCXL link
+  cxlflash: Setup OpenCXL transaction layer
+  cxlflash: Support process element lifecycle
+  cxlflash: Support AFU interrupt management
+  cxlflash: Support AFU interrupt mapping and registration
+  cxlflash: Support starting user contexts
+  cxlflash: Support adapter context polling
+  cxlflash: Support adapter context reading
+  cxlflash: Support adapter context mmap and release
+  cxlflash: Support file descriptor mapping
+  cxlflash: Introduce object handle fop
+  cxlflash: Setup LISNs for user contexts
+  cxlflash: Setup LISNs for master contexts
+  cxlflash: Update synchronous interrupt status bits
+  cxlflash: Introduce OCXL context state machine
+  cxlflash: Register for translation errors
+  cxlflash: Support AFU reset
+  cxlflash: Enable OpenCXL operations
 
-cheers
+ drivers/scsi/cxlflash/Kconfig     |    2 +-
+ drivers/scsi/cxlflash/Makefile    |    2 +-
+ drivers/scsi/cxlflash/backend.h   |   50 +-
+ drivers/scsi/cxlflash/common.h    |   10 +-
+ drivers/scsi/cxlflash/cxl_hw.c    |   13 +
+ drivers/scsi/cxlflash/main.c      |   55 +-
+ drivers/scsi/cxlflash/main.h      |    1 +
+ drivers/scsi/cxlflash/ocxl_hw.c   | 1428 +++++++++++++++++++++++++++++++++++++
+ drivers/scsi/cxlflash/ocxl_hw.h   |   76 ++
+ drivers/scsi/cxlflash/sislite.h   |   41 +-
+ drivers/scsi/cxlflash/superpipe.c |   14 +
+ 11 files changed, 1644 insertions(+), 48 deletions(-)
+ create mode 100644 drivers/scsi/cxlflash/ocxl_hw.c
+ create mode 100644 drivers/scsi/cxlflash/ocxl_hw.h
+
+-- 
+2.1.0
