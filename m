@@ -1,29 +1,30 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znDs66nMDzF0mJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:57:10 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id l12so5898212ioc.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 04:57:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znF5D50p5zDr5F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:07:43 +1100 (AEDT)
+Date: Thu, 22 Feb 2018 14:07:38 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Will Drewry <wad@chromium.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: samples/seccomp/ broken when cross compiling s390, ppc
+ allyesconfig
+Message-ID: <20180222130738.GG30681@dhcp22.suse.cz>
+References: <20180212133731.GE3443@dhcp22.suse.cz>
+ <87r2ppvaeq.fsf@concordia.ellerman.id.au>
+ <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
+ <87d1192nzc.fsf@concordia.ellerman.id.au>
+ <20180213103213.GP3443@dhcp22.suse.cz>
+ <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
+ <20180214092045.GZ3443@dhcp22.suse.cz>
+ <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20180209120732.17863-3-j.neuschaefer@gmx.net>
-References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
- <20180209120732.17863-3-j.neuschaefer@gmx.net>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 22 Feb 2018 13:57:07 +0100
-Message-ID: <CACRpkdZKLm2owgVu7-f80dOdQDzQKCbO2Vvh3QHfOpEzndMxxg@mail.gmail.com>
-Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
-To: =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Joel Stanley <joel@jms.id.au>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- linux-gpio@vger.kernel.org,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Albert Herranz <albert_herranz@yahoo.es>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +34,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 9, 2018 at 1:07 PM, Jonathan Neusch=C3=A4fer
-<j.neuschaefer@gmx.net> wrote:
+On Wed 14-02-18 09:14:47, Kees Cook wrote:
+[...]
+> I can send it through my seccomp tree via James Morris.
 
-> The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
-> that supports a configurable number of pins (up to 32), interrupts, and
-> some special mechanisms to share the controller between the system's
-> security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
-> not supported.
->
-> This patch adds a basic driver for this GPIO controller. Interrupt
-> support will come in a later patch.
->
-> This patch is based on code developed by Albert Herranz and the GameCube
-> Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
-> available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
-> has grown quite dissimilar.
->
-> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> Cc: Albert Herranz <albert_herranz@yahoo.es>
-> Cc: Segher Boessenkool <segher@kernel.crashing.org>
-> <---
->
-> v3:
-> - Do some style cleanups, as suggest by Andy Shevchenko
+Could you please do it?
 
-Patch applied to the GPIO tree for v4.17 with all the review tags.
+> >
+> > From 8d8457e96296538508e478f598d1c8b3406a8626 Mon Sep 17 00:00:00 2001
+> > From: Michal Hocko <mhocko@suse.com>
+> > Date: Wed, 14 Feb 2018 10:15:12 +0100
+> > Subject: [PATCH] samples/seccomp: do not compile when cross compiled
+> > MIME-Version: 1.0
+> > Content-Type: text/plain; charset=UTF-8
+> > Content-Transfer-Encoding: 8bit
+> >
+> > samples/seccomp relies on the host setting which is not suitable for
+> > crosscompilation and it actually fails when crosscompiling s390 and
+> > powerpc all{yes,mod}config on x86_64 with
+> >
+> > samples/seccomp/bpf-helper.h:135:2: error: #error __BITS_PER_LONG value unusable.
+> >  #error __BITS_PER_LONG value unusable.
+> >   ^
+> > In file included from samples/seccomp/bpf-fancy.c:13:0:
+> > samples/seccomp/bpf-fancy.c: In function ‘main’:
+> > samples/seccomp/bpf-fancy.c:38:11: error: ‘__NR_exit’ undeclared (first use in this function)
+> >    SYSCALL(__NR_exit, ALLOW),
+> >
+> > and many others. I am doing these for compile testing and it's been
+> > quite useful to catch issues. Crosscompiling sample code on the other
+> > hand doesn't seem all that important so it seems like the easiest way to
+> > simply disable samples/seccomp when crosscompiling.
+> >
+> > Fixing this properly is not that easy as Kees explains:
+> > : IIRC, one of the problems is with build ordering problems: the kernel
+> > : headers used by the samples aren't available when cross compiling.
+> >
+> > Acked-by: Kees Cook <keescook@chromium.org>
+> > Signed-off-by: Michal Hocko <mhocko@suse.com>
+> > ---
+> >  samples/seccomp/Makefile | 10 +---------
+> >  1 file changed, 1 insertion(+), 9 deletions(-)
+> >
+> > diff --git a/samples/seccomp/Makefile b/samples/seccomp/Makefile
+> > index 0e349b80686e..ba942e3ead89 100644
+> > --- a/samples/seccomp/Makefile
+> > +++ b/samples/seccomp/Makefile
+> > @@ -1,4 +1,5 @@
+> >  # SPDX-License-Identifier: GPL-2.0
+> > +ifndef CROSS_COMPILE
+> >  hostprogs-$(CONFIG_SAMPLE_SECCOMP) := bpf-fancy dropper bpf-direct
+> >
+> >  HOSTCFLAGS_bpf-fancy.o += -I$(objtree)/usr/include
+> > @@ -16,7 +17,6 @@ HOSTCFLAGS_bpf-direct.o += -idirafter $(objtree)/include
+> >  bpf-direct-objs := bpf-direct.o
+> >
+> >  # Try to match the kernel target.
+> > -ifndef CROSS_COMPILE
+> >  ifndef CONFIG_64BIT
+> >
+> >  # s390 has -m31 flag to build 31 bit binaries
+> > @@ -35,12 +35,4 @@ HOSTLOADLIBES_bpf-fancy += $(MFLAG)
+> >  HOSTLOADLIBES_dropper += $(MFLAG)
+> >  endif
+> >  always := $(hostprogs-m)
+> > -else
+> > -# MIPS system calls are defined based on the -mabi that is passed
+> > -# to the toolchain which may or may not be a valid option
+> > -# for the host toolchain. So disable tests if target architecture
+> > -# is MIPS but the host isn't.
+> > -ifndef CONFIG_MIPS
+> > -always := $(hostprogs-m)
+> > -endif
+> >  endif
+> > --
+> > 2.15.1
+> >
+> > --
+> > Michal Hocko
+> > SUSE Labs
+> 
+> 
+> 
+> -- 
+> Kees Cook
+> Pixel Security
 
-I just folded the changelog into the commit message, for new
-drivers it is sometimes useful to keep these around in
-git actually.
-
-If any further changes are needed we can just patch on top
-of this.
-
-It's a very pretty driver, good work!
-
-Yours,
-Linus Walleij
+-- 
+Michal Hocko
+SUSE Labs
