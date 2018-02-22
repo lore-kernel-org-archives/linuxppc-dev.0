@@ -1,30 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <srs0=xy4c=fq=gmail.com=bsingharora@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zn0Sx2lTbzDr33
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 14:38:57 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Mark Lord <mlord@pobox.com>
-Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Kees Cook <keescook@chromium.org>, linuxppc-dev@lists.ozlabs.org,
- Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>
-Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
-In-Reply-To: <1519221778.inx201t3s9.naveen@linux.ibm.com>
-References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
- <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
- <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
- <1519154571.d9vaokens9.naveen@linux.ibm.com>
- <2f428cf9-23f3-d1f1-1524-46d6faa17386__30848.5239781023$1519169515$gmane$org@pobox.com>
- <1519201713.vxxqmwxkkx.naveen@linux.ibm.com>
- <32a60518-1de6-9f9c-b3e6-5e5292d6b289@pobox.com>
- <2e79ef59-1731-f3a5-9868-c15beb939142@pobox.com>
- <1519221778.inx201t3s9.naveen@linux.ibm.com>
-Date: Thu, 22 Feb 2018 14:38:56 +1100
-Message-ID: <878tblr8vj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zn0XH35C8zF0Pn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 14:41:51 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zn0XH2GL9z8sw9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 14:41:51 +1100 (AEDT)
+Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
+ [IPv6:2607:f8b0:400c:c08::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zn0XG3Pldz9sW9
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 14:41:50 +1100 (AEDT)
+Received: by mail-ua0-x242.google.com with SMTP id n1so2480687uaa.2
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 19:41:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1519255934.2867.3.camel@au1.ibm.com>
+References: <20180221045736.7614-1-alastair@au1.ibm.com>
+ <CAKTCnz=cy5CkeRjJYpZ1NQpyQN-BVTvKXUxTxOMtTNosZFqJ7A@mail.gmail.com>
+ <1519255934.2867.3.camel@au1.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Thu, 22 Feb 2018 14:41:47 +1100
+Message-ID: <CAKTCnzmmUGPNk1ggpWYQjiDLcAR_c7cqdZyPU+6rKGC6AcNW7A@mail.gmail.com>
+Subject: Re: [PATCH] ocxl: Add get_metadata IOCTL to share OCXL information to
+ userspace
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, frederic.barrat@fr.ibm.com,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +41,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-
-> Mark Lord wrote:
->> On 18-02-21 07:52 AM, Mark Lord wrote:
->>> On 18-02-21 03:35 AM, Naveen N. Rao wrote:
->> ..
->>>> Looks good to me, but I am not able to apply this patch. There seems to be whitespace damage.
->>> 
->>> Here (attached) is a clean copy.
->> 
->> Again, this time with the commit message included!
+On Thu, Feb 22, 2018 at 10:32 AM, Alastair D'Silva <alastair@au1.ibm.com> wrote:
 >
-> Thanks. However...
-> I am able to apply this using 'patch', but not with 'git am' since the 
-> headers are missing. FWIW, the usual workflow is to make the changes and 
-> commit it into your repository using 'git commit' and then use 'git 
-> format-patch' to generate a patch file that you can then post.
+> On Wed, 2018-02-21 at 17:43 +1100, Balbir Singh wrote:
+>> On Wed, Feb 21, 2018 at 3:57 PM, Alastair D'Silva <alastair@au1.ibm.c
+>> om> wrote:
+>> > From: Alastair D'Silva <alastair@d-silva.org>
+>> >
+>> > Some required information is not exposed to userspace currently
+>> > (eg. the
+>> > PASID), pass this information back, along with other information
+>> > which
+>> > is currently communicated via sysfs, which saves some parsing
+>> > effort in
+>> > userspace.
+>> >
+>> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+>> > ---
+>> >  drivers/misc/ocxl/file.c | 27 +++++++++++++++++++++++++++
+>> >  include/uapi/misc/ocxl.h | 22 ++++++++++++++++++++++
+>> >  2 files changed, 49 insertions(+)
+>> >
+>> > diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+>> > index d9aa407db06a..11514a8444e5 100644
+>> > --- a/drivers/misc/ocxl/file.c
+>> > +++ b/drivers/misc/ocxl/file.c
+>> > @@ -102,10 +102,32 @@ static long afu_ioctl_attach(struct
+>> > ocxl_context *ctx,
+>> >         return rc;
+>> >  }
+>> >
+>> > +static long afu_ioctl_get_metadata(struct ocxl_context *ctx,
+>> > +               struct ocxl_ioctl_get_metadata __user *uarg)
+>>
+>> Why do we call this metadata? Isn't this an afu_descriptor?
+>>
 >
-> I'll defer to Michael on whether he is ok to process this as it is.
+> It's metadata for the descriptor.
 
-The main thing is that it's caught by patchwork[1], otherwise I tend to
-miss it. In this case the initial patch was caught by patchwork, so
-that's fine.
+I meant metadata is too generic, could we have other types of metadata in OCXL?
 
-I fixed up the white space and other issues before applying.
+>
+>> > +{
+>> > +       struct ocxl_ioctl_get_metadata arg;
+>> > +
+>> > +       memset(&arg, 0, sizeof(arg));
+>> > +
+>> > +       arg.version = 0;
+>>
+>> Does it make sense to have version 0? Even if does, you can afford
+>> to skip initialization due to the memset above. I prefer that
+>> versions
+>> start with 1
+>>
+>
+> Setting it to 0 is for the reader, not the compiler. I'm not clear on
+> the benefit of starting the version at 1, could you clarify?
 
-In general I'm happy to do that for new/infrequent committers, not so
-much for people who send lots of patches and/or are paid to do so :)
+How do I distinguish between version number never set and 0?
 
-cheers
+>
+>> > +
+>> > +       arg.afu_version_major = ctx->afu->config.version_major;
+>> > +       arg.afu_version_minor = ctx->afu->config.version_minor;
+>> > +       arg.pasid = ctx->pasid;
+>> > +       arg.pp_mmio_size = ctx->afu->config.pp_mmio_stride;
+>> > +       arg.global_mmio_size = ctx->afu->config.global_mmio_size;
+>> > +
+>> > +       if (copy_to_user(uarg, &arg, sizeof(arg)))
+>> > +               return -EFAULT;
+>> > +
+>> > +       return 0;
+>> > +}
+>> > +
+>> >  #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH"
+>> > :                        \
+>> >                         x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC"
+>> > :       \
+>> >                         x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE"
+>> > :         \
+>> >                         x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD"
+>> > :     \
+>> > +                       x == OCXL_IOCTL_GET_METADATA ?
+>> > "GET_METADATA" : \
+>> >                         "UNKNOWN")
+>> >
+>> >  static long afu_ioctl(struct file *file, unsigned int cmd,
+>> > @@ -157,6 +179,11 @@ static long afu_ioctl(struct file *file,
+>> > unsigned int cmd,
+>> >                                         irq_fd.eventfd);
+>> >                 break;
+>> >
+>> > +       case OCXL_IOCTL_GET_METADATA:
+>> > +               rc = afu_ioctl_get_metadata(ctx,
+>> > +                               (struct ocxl_ioctl_get_metadata
+>> > __user *) args);
+>> > +               break;
+>> > +
+>> >         default:
+>> >                 rc = -EINVAL;
+>> >         }
+>> > diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
+>> > index 4b0b0b756f3e..16e1f48ce280 100644
+>> > --- a/include/uapi/misc/ocxl.h
+>> > +++ b/include/uapi/misc/ocxl.h
+>> > @@ -32,6 +32,27 @@ struct ocxl_ioctl_attach {
+>> >         __u64 reserved3;
+>> >  };
+>> >
+>> > +/*
+>> > + * Version contains the version of the struct.
+>> > + * Versions will always be backwards compatible, that is, new
+>> > versions will not
+>> > + * alter existing fields
+>> > + */
+>> > +struct ocxl_ioctl_get_metadata {
+>>
+>> This sounds more like a function name, do we need it to be
+>> _get_metdata?
+>>
+>
+> It pretty much is a function, it returns to userspace metadata about
+> the descriptor being operated on.
+>
 
-1: http://patchwork.ozlabs.org/patch/875890/
+It has a verb indicating action
+
+>> > +       __u16 version;
+>> > +
+>> > +       // Version 0 fields
+>> > +       __u8  afu_version_major;
+>> > +       __u8  afu_version_minor;
+>> > +       __u32 pasid;
+>> > +
+>> > +       __u64 pp_mmio_size;
+>> > +       __u64 global_mmio_size;
+>> > +
+>>
+>> Should we document the fields? pp_ stands for per process, but is not
+>> very clear at first look. Why do we care to return only the size,
+>> what
+>> about lpc size?
+>>
+>
+> Yes, I would rather call it per_pasid_mmio_size, but consistency with
+> the rest of the driver (& exposed sysfs entries) is also important.
+>
+
+Balbir Singh.
