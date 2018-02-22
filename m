@@ -1,18 +1,33 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znFP82KJhzDrYg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:21:32 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com, mikey@neuling.org, oohall@gmail.com,
- linuxram@us.ibm.com, leitao@debian.org, mauricfo@linux.vnet.ibm.com
-Subject: [PATCH 2/2] powerpc/powernv: Support firmware disable of RFI flush
-Date: Fri, 23 Feb 2018 00:21:18 +1100
-Message-Id: <20180222132118.26774-2-mpe@ellerman.id.au>
-In-Reply-To: <20180222132118.26774-1-mpe@ellerman.id.au>
-References: <20180222132118.26774-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znFy91k9PzDrJh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:46:40 +1100 (AEDT)
+Date: Thu, 22 Feb 2018 21:46:24 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>
+Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
+ "David S. Miller" <davem@davemloft.net>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping
+ outside the requests
+Message-ID: <20180222134624.GD28447@gondor.apana.org.au>
+References: <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
+ <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
+ <VI1PR0402MB334256E1706A4E1AED09F4A598C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <d5809df9-fc17-03da-b7f4-038d973dbd1f@c-s.fr>
+ <VI1PR0402MB334299B37F17771BFA9AFDDA98C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <20180220103436.GA20571@gondor.apana.org.au>
+ <VI1PR0402MB3342B99A1BEA5622F29F79EF98CF0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <20180222114741.GA27631@gondor.apana.org.au>
+ <AM0PR0402MB3329F899D4777EE356BBE2B698CD0@AM0PR0402MB3329.eurprd04.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AM0PR0402MB3329F899D4777EE356BBE2B698CD0@AM0PR0402MB3329.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +37,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some versions of firmware will have a setting that can be configured
-to disable the RFI flush, add support for it.
+On Thu, Feb 22, 2018 at 12:29:28PM +0000, Horia Geantă wrote:
+>
+> IIUC this means that there is no room for improvement.
+> This patch needs to be reverted, to restore previous behaviour when the
+> hw_context was mapped / unmapped for every request.
 
-Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush settings")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/setup.c | 4 ++++
- 1 file changed, 4 insertions(+)
+In general we should avoid trying to do batching in drivers.  Such
+optimisations should instead be done at a higher level.  For example,
+for disk encryption we want to do the aggregation at the block layer
+rather than the crypto API because that has innate knowledge of the
+data layout which we can only guess.
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 4fb21e17504a..092715b9674b 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -80,6 +80,10 @@ static void pnv_setup_rfi_flush(void)
- 		if (np && of_property_read_bool(np, "disabled"))
- 			enable--;
- 
-+		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable = 0;
-+
- 		of_node_put(np);
- 		of_node_put(fw_features);
- 	}
+Cheers,
 -- 
-2.14.1
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
