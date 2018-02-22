@@ -1,23 +1,16 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znFJM6hDSzF18M
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:17:23 +1100 (AEDT)
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Caleb Crome <caleb@crome.org>,
- Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
- Mark Brown <broonie@kernel.org>, timur@tabi.org, broonie@kernel.org,
- mail@maciej.szmigiero.name, alsa-devel@alsa-project.org, kernel@pengutronix.de,
- linux-kernel@vger.kernel.org, caleb@crome.org, lgirdwood@gmail.com,
- arnaud.mouiche@invoxia.com, lukma@denx.de, fabio.estevam@nxp.com,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_ssi: Redefine RX and TX macros" to the asoc tree
-In-Reply-To: <1515990087-11598-2-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1eoqkL-0006UU-Na@debutante>
-Date: Thu, 22 Feb 2018 13:17:13 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znFP80VXvzDrJm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:21:32 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com, mikey@neuling.org, oohall@gmail.com,
+ linuxram@us.ibm.com, leitao@debian.org, mauricfo@linux.vnet.ibm.com
+Subject: [PATCH 1/2] powerpc/pseries: Support firmware disable of RFI flush
+Date: Fri, 23 Feb 2018 00:21:17 +1100
+Message-Id: <20180222132118.26774-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,84 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+Some versions of firmware will have a setting that can be configured
+to disable the RFI flush, add support for it.
 
-   ASoC: fsl_ssi: Redefine RX and TX macros
-
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From 1476105c3f4a6b8f0c6c1fe07295fc85cbffbd83 Mon Sep 17 00:00:00 2001
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Mon, 12 Feb 2018 14:03:09 -0800
-Subject: [PATCH] ASoC: fsl_ssi: Redefine RX and TX macros
-
-The RX and TX macros were defined implicitly and there was
-a potential risk if someone changes their values.
-
-Since they were defined to index the array ssi->regvals[2],
-this patch moves these two macros to fsl_ssi.c, closer to
-its owner ssi->regvals. And it also puts some comments here
-to limit their value within [0, 1].
-
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Tested-by: Caleb Crome <caleb@crome.org>
-Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Signed-off-by: Mark Brown <broonie@kernel.org>
+Fixes: 8989d56878a7 ("powerpc/pseries: Query hypervisor for RFI flush settings")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- sound/soc/fsl/fsl_ssi.c | 4 ++++
- sound/soc/fsl/fsl_ssi.h | 3 ---
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 24fb672f3c65..3c8dd609e42e 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -56,6 +56,10 @@
- #include "fsl_ssi.h"
- #include "imx-pcm.h"
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 372d7ada1a0c..1a527625acf7 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -482,7 +482,8 @@ static void pseries_setup_rfi_flush(void)
+ 		if (types == L1D_FLUSH_NONE)
+ 			types = L1D_FLUSH_FALLBACK;
  
-+/* Define RX and TX to index ssi->regvals array; Can be 0 or 1 only */
-+#define RX 0
-+#define TX 1
-+
- /**
-  * FSLSSI_I2S_FORMATS: audio formats supported by the SSI
-  *
-diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
-index de2fdc5db726..18f8dd5209d5 100644
---- a/sound/soc/fsl/fsl_ssi.h
-+++ b/sound/soc/fsl/fsl_ssi.h
-@@ -12,9 +12,6 @@
- #ifndef _MPC8610_I2S_H
- #define _MPC8610_I2S_H
- 
--#define RX 0
--#define TX 1
--
- /* -- SSI Register Map -- */
- 
- /* SSI Transmit Data Register 0 */
+-		if (!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
++		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
++		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+ 			enable = false;
+ 	} else {
+ 		/* Default to fallback if case hcall is not available */
 -- 
-2.16.1
+2.14.1
