@@ -1,29 +1,24 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znF6N1l27zF0lQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:08:43 +1100 (AEDT)
-Date: Thu, 22 Feb 2018 14:08:31 +0100
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Joel Stanley <joel@jms.id.au>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- linux-gpio@vger.kernel.org,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Albert Herranz <albert_herranz@yahoo.es>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
-Message-ID: <20180222130831.hxhvdfyfpz4j4j5t@latitude>
-References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
- <20180209120732.17863-3-j.neuschaefer@gmx.net>
- <CACRpkdZKLm2owgVu7-f80dOdQDzQKCbO2Vvh3QHfOpEzndMxxg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="2silb4ycf5a2su42"
-In-Reply-To: <CACRpkdZKLm2owgVu7-f80dOdQDzQKCbO2Vvh3QHfOpEzndMxxg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znFHL6Lb1zF19n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:16:27 +1100 (AEDT)
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Caleb Crome <caleb@crome.org>,
+ Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
+ Mark Brown <broonie@kernel.org>, timur@tabi.org, broonie@kernel.org,
+ mail@maciej.szmigiero.name, alsa-devel@alsa-project.org, kernel@pengutronix.de,
+ linux-kernel@vger.kernel.org, caleb@crome.org, lgirdwood@gmail.com,
+ arnaud.mouiche@invoxia.com, lukma@denx.de, fabio.estevam@nxp.com,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+Subject: Applied "ASoC: fsl_ssi: Use ssi->streams instead of reading register"
+ to the asoc tree
+In-Reply-To: <1515652995-15996-17-git-send-email-nicoleotsuka@gmail.com>
+Message-Id: <E1eoqjM-0006C3-2a@debutante>
+Date: Thu, 22 Feb 2018 13:16:12 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,73 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The patch
 
---2silb4ycf5a2su42
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+   ASoC: fsl_ssi: Use ssi->streams instead of reading register
 
-On Thu, Feb 22, 2018 at 01:57:07PM +0100, Linus Walleij wrote:
-> On Fri, Feb 9, 2018 at 1:07 PM, Jonathan Neusch=C3=A4fer
-> <j.neuschaefer@gmx.net> wrote:
->=20
-> > The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
-> > that supports a configurable number of pins (up to 32), interrupts, and
-> > some special mechanisms to share the controller between the system's
-> > security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
-> > not supported.
-> >
-> > This patch adds a basic driver for this GPIO controller. Interrupt
-> > support will come in a later patch.
-> >
-> > This patch is based on code developed by Albert Herranz and the GameCube
-> > Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
-> > available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
-> > has grown quite dissimilar.
-> >
-> > Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> > Cc: Albert Herranz <albert_herranz@yahoo.es>
-> > Cc: Segher Boessenkool <segher@kernel.crashing.org>
-> > <---
-> >
-> > v3:
-> > - Do some style cleanups, as suggest by Andy Shevchenko
->=20
-> Patch applied to the GPIO tree for v4.17 with all the review tags.
->=20
-> I just folded the changelog into the commit message, for new
-> drivers it is sometimes useful to keep these around in
-> git actually.
->=20
-> If any further changes are needed we can just patch on top
-> of this.
->=20
-> It's a very pretty driver, good work!
+has been applied to the asoc tree at
 
-Thanks! :-)
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-Jonathan Neusch=C3=A4fer
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
---2silb4ycf5a2su42
-Content-Type: application/pgp-signature; name="signature.asc"
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-iQIcBAABAgAGBQJajsDGAAoJEAgwRJqO81/bEuEQAKyDSerRX42NnNKQtZyCS+1I
-qYrcXBOLLdKa2ZOpNI9BxxalgJEJeJrRRpylu/sxbRsn+Kxbg1J5GVXf85c41wzs
-YHQqe9PXXBYFnJKO3119HXt4OE3sfjfEU7AZ/trKzy3VklKuDif+lvicexBZaPFP
-E/HIYWcMk7iCs817KOwau+SwXQwQe2wNOmCboG4dqTXvwWKGKEofOc3TlSYDmglc
-1ccOrr5/QEpEWj917tFO5jkGJt8kouHzzyEKw/tUD+IPd3xA0hbIi1dz3+qWIcXJ
-6AtQo6yDFYfLXhKev5QbR4Sq0EXzXrnlf0DebR4jksHgM1rnZu2Tog5udKmU8r0U
-DPjvwsm539LYYTKGgV1cAkawOwLFT8QpyFgD5k1zUszMbayLjffWKG9iGrJAwWYs
-ivB7DZwEPuem14FkJeUufrsGIG4mxq0MoXwP2JeH/GqWZi8mvH8xdIM93lhpms62
-x+dU8qipsKOoao3j3F2GA07WwF4220JIFxtOJIuHVVlw5Cq4rOak94GRj4MeJEO3
-USQ3bSoL549ZUrTTWPmzDSzigd/yVPt4vF9AMbYuVyWp1KXONEAEZOJiuncQt8vq
-TzYKW8xPSD+fz+a45kW4UBWgmPx8u9udIXYUP8xCEO7mfsGLr0ZJSxfOqqkA7J12
-E4SJS0ORWpGggYhec6zA
-=xJG3
------END PGP SIGNATURE-----
+Thanks,
+Mark
 
---2silb4ycf5a2su42--
+>From 9c4f509a53cbcd968677c7f15c07260dd6c2276c Mon Sep 17 00:00:00 2001
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+Date: Mon, 12 Feb 2018 14:03:25 -0800
+Subject: [PATCH] ASoC: fsl_ssi: Use ssi->streams instead of reading register
+
+Since ssi->streams is being updated along with SCR register and
+its SSIEN bit, it's simpler to use it instead.
+
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Tested-by: Caleb Crome <caleb@crome.org>
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_ssi.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 5bc67ad8000f..0823b08923b5 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -803,11 +803,6 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	unsigned int sample_size = params_width(hw_params);
+ 	u32 wl = SSI_SxCCR_WL(sample_size);
+ 	int ret;
+-	u32 scr;
+-	int enabled;
+-
+-	regmap_read(regs, REG_SSI_SCR, &scr);
+-	enabled = scr & SSI_SCR_SSIEN;
+ 
+ 	/*
+ 	 * SSI is properly configured if it is enabled and running in
+@@ -815,7 +810,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	 * that should set separate configurations for STCCR and SRCCR
+ 	 * despite running in the synchronous mode.
+ 	 */
+-	if (enabled && ssi->synchronous)
++	if (ssi->streams && ssi->synchronous)
+ 		return 0;
+ 
+ 	if (fsl_ssi_is_i2s_master(ssi)) {
+-- 
+2.16.1
