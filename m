@@ -1,18 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=y+ig=fq=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znGs920dpzDqH0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znGs93w7YzF0q1
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 01:27:25 +1100 (AEDT)
-Message-Id: <455276187b369bf019e91715b7488e86cd932d49.1519305410.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 1/6] powerpc/mm/slice: Remove intermediate bitmap copy
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>
-Date: Thu, 22 Feb 2018 15:27:20 +0100 (CET)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3znGs83kSkz8tkD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 01:27:24 +1100 (AEDT)
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3znGs66FQpz9sDQ
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2018 01:27:22 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id m5so2125385pff.7
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 06:27:22 -0800 (PST)
+Date: Fri, 23 Feb 2018 00:26:58 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: stable@vger.kernel.org, greg@kroah.com, linuxppc-dev@ozlabs.org,
+ linux@roeck-us.net, corsac@debian.org
+Subject: Re: [PATCH v4.4 backport 3/3] powerpc/64s: Improve RFI L1-D cache
+ flush fallback
+Message-ID: <20180223002658.21cdaf61@roar.ozlabs.ibm.com>
+In-Reply-To: <20180222123545.8946-3-mpe@ellerman.id.au>
+References: <20180222065738.GB2428@kroah.com>
+ <20180222123545.8946-1-mpe@ellerman.id.au>
+ <20180222123545.8946-3-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-bitmap_or() and bitmap_andnot() can work properly with dst identical
-to src1 or src2. There is no need of an intermediate result bitmap
-that is copied back to dst in a second step.
+On Thu, 22 Feb 2018 23:35:45 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
----
- v2: New in v2
- v3: patch moved up front of the serie to avoid ephemeral slice_bitmap_copy() function in following patch
- v4: No change
- v5: No change
+> From: Nicholas Piggin <npiggin@gmail.com>
+> 
+> commit bdcb1aefc5b3f7d0f1dc8b02673602bca2ff7a4b upstream.
+> 
+> The fallback RFI flush is used when firmware does not provide a way
+> to flush the cache. It's a "displacement flush" that evicts useful
+> data by displacing it with an uninteresting buffer.
+> 
+> The flush has to take care to work with implementation specific cache
+> replacment policies, so the recipe has been in flux. The initial
+> slow but conservative approach is to touch all lines of a congruence
+> class, with dependencies between each load. It has since been
+> determined that a linear pattern of loads without dependencies is
+> sufficient, and is significantly faster.
+> 
+> Measuring the speed of a null syscall with RFI fallback flush enabled
+> gives the relative improvement:
+> 
+> P8 - 1.83x
+> P9 - 1.75x
+> 
+> The flush also becomes simpler and more adaptable to different cache
+> geometries.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> [mpe: Backport to 4.9]
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
- arch/powerpc/mm/slice.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+Thanks for doing these. They all look okay to me.
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 23ec2c5e3b78..98b53d48968f 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -388,21 +388,17 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
- 
- static inline void slice_or_mask(struct slice_mask *dst, struct slice_mask *src)
- {
--	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
--
- 	dst->low_slices |= src->low_slices;
--	bitmap_or(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
--	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
-+	bitmap_or(dst->high_slices, dst->high_slices, src->high_slices,
-+		  SLICE_NUM_HIGH);
- }
- 
- static inline void slice_andnot_mask(struct slice_mask *dst, struct slice_mask *src)
- {
--	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
--
- 	dst->low_slices &= ~src->low_slices;
- 
--	bitmap_andnot(result, dst->high_slices, src->high_slices, SLICE_NUM_HIGH);
--	bitmap_copy(dst->high_slices, result, SLICE_NUM_HIGH);
-+	bitmap_andnot(dst->high_slices, dst->high_slices, src->high_slices,
-+		      SLICE_NUM_HIGH);
- }
- 
- #ifdef CONFIG_PPC_64K_PAGES
--- 
-2.13.3
+Thanks,
+Nick
