@@ -3,22 +3,21 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znFJ50zc8zF192
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:17:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znFJG5ksVzF1Kv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:17:18 +1100 (AEDT)
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Caleb Crome <caleb@crome.org>,
  Maciej S. Szmigiero <mail@maciej.szmigiero.name>,
  Mark Brown <broonie@kernel.org>, timur@tabi.org, broonie@kernel.org,
- mail@maciej.szmigiero.name, alsa-devel@alsa-project.org, kernel@pengutronix.de,
- linux-kernel@vger.kernel.org, caleb@crome.org, lgirdwood@gmail.com,
+ mail@maciej.szmigiero.name, kernel@pengutronix.de, lgirdwood@gmail.com,
+ alsa-devel@alsa-project.org, caleb@crome.org, linux-kernel@vger.kernel.org,
  arnaud.mouiche@invoxia.com, lukma@denx.de, fabio.estevam@nxp.com,
  linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_ssi: Maintain a mask of active streams" to the
- asoc tree
-In-Reply-To: <1515990087-11598-5-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1eoqk8-0006Qq-HP@debutante>
-Date: Thu, 22 Feb 2018 13:17:00 +0000
+Subject: Applied "ASoC: fsl_ssi: Clean up set_dai_tdm_slot()" to the asoc tree
+In-Reply-To: <1513702819-42310-2-git-send-email-nicoleotsuka@gmail.com>
+Message-Id: <E1eoqkE-0006S8-AE@debutante>
+Date: Thu, 22 Feb 2018 13:17:06 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl_ssi: Maintain a mask of active streams
+   ASoC: fsl_ssi: Clean up set_dai_tdm_slot()
 
 has been applied to the asoc tree at
 
@@ -55,21 +54,15 @@ to this mail.
 Thanks,
 Mark
 
->From e0582731abe004163e78ad2dac4cd1196db0908f Mon Sep 17 00:00:00 2001
+>From 09947634829ccc5568a80ac02c3395a8b77276c1 Mon Sep 17 00:00:00 2001
 From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Mon, 12 Feb 2018 14:03:12 -0800
-Subject: [PATCH] ASoC: fsl_ssi: Maintain a mask of active streams
+Date: Mon, 12 Feb 2018 14:03:11 -0800
+Subject: [PATCH] ASoC: fsl_ssi: Clean up set_dai_tdm_slot()
 
-Checking TE and RE bits in SCR register doesn't work for AC97 mode
-which enables SSIEN, TE and RE in the fsl_ssi_setup_ac97() that's
-called during probe().
-
-So when running into the trigger(), it will always get the result
-of both TE and RE being enabled already, even if actually there is
-no active stream.
-
-This patch fixes this issue by adding a variable to log the active
-streams manually.
+This patch replaces the register read with ssi->i2s_net for
+simplification. It also removes masking SSIEN from scr value
+since it's handled later by regmap_update_bits() to set this
+scr value back.
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
@@ -77,67 +70,34 @@ Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 14046c32dc07..b277a563ff48 100644
+index d4f1f0d64136..14046c32dc07 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -205,6 +205,7 @@ struct fsl_ssi_soc_data {
-  * @cpu_dai_drv: CPU DAI driver for this device
-  *
-  * @dai_fmt: DAI configuration this device is currently used with
-+ * @streams: Mask of current active streams: BIT(TX) and BIT(RX)
-  * @i2s_net: I2S and Network mode configurations of SCR register
-  * @use_dma: DMA is used or FIQ with stream filter
-  * @use_dual_fifo: DMA with support for dual FIFO mode
-@@ -249,6 +250,7 @@ struct fsl_ssi {
- 	struct snd_soc_dai_driver cpu_dai_drv;
- 
- 	unsigned int dai_fmt;
-+	u8 streams;
- 	u8 i2s_net;
- 	bool use_dma;
- 	bool use_dual_fifo;
-@@ -444,15 +446,14 @@ static void fsl_ssi_fifo_clear(struct fsl_ssi *ssi, bool is_rx)
- static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 			   struct fsl_ssi_regvals *vals)
- {
-+	int dir = (&ssi->regvals[TX] == vals) ? TX : RX;
- 	struct regmap *regs = ssi->regs;
- 	struct fsl_ssi_regvals *avals;
- 	int nr_active_streams;
--	u32 scr;
- 	int keep_active;
- 
--	regmap_read(regs, REG_SSI_SCR, &scr);
--
--	nr_active_streams = !!(scr & SSI_SCR_TE) + !!(scr & SSI_SCR_RE);
-+	nr_active_streams = !!(ssi->streams & BIT(TX)) +
-+			    !!(ssi->streams & BIT(RX));
- 
- 	if (nr_active_streams - 1 > 0)
- 		keep_active = 1;
-@@ -474,6 +475,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 					      keep_active);
- 		/* Safely disable SCR register for the stream */
- 		regmap_update_bits(regs, REG_SSI_SCR, scr, 0);
-+
-+		/* Log the disabled stream to the mask */
-+		ssi->streams &= ~BIT(dir);
+@@ -1055,9 +1055,7 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
  	}
  
- 	/*
-@@ -549,6 +553,9 @@ static void fsl_ssi_config(struct fsl_ssi *ssi, bool enable,
- 		}
- 		/* Enable all remaining bits */
- 		regmap_update_bits(regs, REG_SSI_SCR, vals->scr, vals->scr);
-+
-+		/* Log the enabled stream to the mask */
-+		ssi->streams |= BIT(dir);
+ 	/* The slot number should be >= 2 if using Network mode or I2S mode */
+-	regmap_read(regs, REG_SSI_SCR, &val);
+-	val &= SSI_SCR_I2S_MODE_MASK | SSI_SCR_NET;
+-	if (val && slots < 2) {
++	if (ssi->i2s_net && slots < 2) {
+ 		dev_err(dai->dev, "slot number should be >= 2 in I2S or NET\n");
+ 		return -EINVAL;
  	}
- }
+@@ -1067,9 +1065,8 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+ 	regmap_update_bits(regs, REG_SSI_SRCCR,
+ 			   SSI_SxCCR_DC_MASK, SSI_SxCCR_DC(slots));
+ 
+-	/* Save SSIEN bit of the SCR register */
++	/* Save the SCR register value */
+ 	regmap_read(regs, REG_SSI_SCR, &val);
+-	val &= SSI_SCR_SSIEN;
+ 	/* Temporarily enable SSI to allow SxMSKs to be configurable */
+ 	regmap_update_bits(regs, REG_SSI_SCR, SSI_SCR_SSIEN, SSI_SCR_SSIEN);
  
 -- 
 2.16.1
