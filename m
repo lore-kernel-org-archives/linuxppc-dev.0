@@ -1,26 +1,34 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00068.outbound.protection.outlook.com [40.107.0.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znD4Z20cKzF0lD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:22:05 +1100 (AEDT)
-From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- linux-mm@kvack.org, Joel Stanley <joel@jms.id.au>,
- Christophe LEROY <christophe.leroy@c-s.fr>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 5/5] powerpc/mm/32: Remove the reserved memory hack
-Date: Thu, 22 Feb 2018 13:15:16 +0100
-Message-Id: <20180222121516.23415-6-j.neuschaefer@gmx.net>
-In-Reply-To: <20180222121516.23415-1-j.neuschaefer@gmx.net>
-References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znDFD0gSjzF1QR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:29:34 +1100 (AEDT)
+From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>, Christophe LEROY
+ <christophe.leroy@c-s.fr>
+CC: "David S. Miller" <davem@davemloft.net>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 16/18] crypto: talitos - do hw_context DMA mapping outside
+ the requests
+Date: Thu, 22 Feb 2018 12:29:28 +0000
+Message-ID: <AM0PR0402MB3329F899D4777EE356BBE2B698CD0@AM0PR0402MB3329.eurprd04.prod.outlook.com>
+References: <e47bf94ae44f23230b1647e31c9623f1075d3b79.1507284818.git.christophe.leroy@c-s.fr>
+ <VI1PR0402MB3342A0A8530F74D408CA2F0298FC0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <2338eb8d-a26a-9722-d667-5a9785b32977@c-s.fr>
+ <VI1PR0402MB3342D90D574C8829701882BE98C90@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <630c313c-5eca-224d-a5ac-fb3f2783573a@c-s.fr>
+ <VI1PR0402MB334256E1706A4E1AED09F4A598C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <d5809df9-fc17-03da-b7f4-038d973dbd1f@c-s.fr>
+ <VI1PR0402MB334299B37F17771BFA9AFDDA98C80@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <20180220103436.GA20571@gondor.apana.org.au>
+ <VI1PR0402MB3342B99A1BEA5622F29F79EF98CF0@VI1PR0402MB3342.eurprd04.prod.outlook.com>
+ <20180222114741.GA27631@gondor.apana.org.au>
+Content-Type: text/plain; charset="iso-8859-2"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This hack, introduced in commit c5df7f775148 ("powerpc: allow ioremap
-within reserved memory regions") is now unnecessary.
-
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
- arch/powerpc/mm/init_32.c    | 5 -----
- arch/powerpc/mm/mmu_decl.h   | 1 -
- arch/powerpc/mm/pgtable_32.c | 3 +--
- 3 files changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 6419b33ca309..326240177fa6 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -88,11 +88,6 @@ void MMU_init(void);
- int __map_without_bats;
- int __map_without_ltlbs;
- 
--/*
-- * This tells the system to allow ioremapping memory marked as reserved.
-- */
--int __allow_ioremap_reserved;
--
- /* max amount of low RAM to map in */
- unsigned long __max_low_memory = MAX_LOW_MEM;
- 
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 57fbc554c785..c4c0a09a7775 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -98,7 +98,6 @@ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot);
- 
- extern int __map_without_bats;
--extern int __allow_ioremap_reserved;
- extern unsigned int rtas_data, rtas_size;
- 
- struct hash_pte;
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index d54e1a9c1c99..a89eb3b898cd 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -146,8 +146,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 	/*
- 	 * Don't allow anybody to remap normal RAM that we're using.
- 	 */
--	if (page_is_ram(__phys_to_pfn(p)) &&
--	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
-+	if (page_is_ram(__phys_to_pfn(p))) {
- 		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
- 		       (unsigned long long)p, __builtin_return_address(0));
- 		return NULL;
--- 
-2.16.1
+On 2/22/2018 1:47 PM, Herbert Xu wrote:=0A=
+> On Tue, Feb 20, 2018 at 11:32:25AM +0000, Horia Geant=E3 wrote:=0A=
+>>=0A=
+>> If final/finup is optional, how is the final hash supposed to be retriev=
+ed?=0A=
+> =0A=
+> Sometimes the computation ends with a partial hash, that's what=0A=
+> export is for.  Also it is completely legal to abandon the hash=0A=
+> state entirely.=0A=
+> =0A=
+Thanks for the explanation.=0A=
+It's unintuitive to call .init() -> .update() and then not to call any of=
+=0A=
+.final(), .finup(), .export().=0A=
+=0A=
+Christophe,=0A=
+=0A=
+IIUC this means that there is no room for improvement.=0A=
+This patch needs to be reverted, to restore previous behaviour when the=0A=
+hw_context was mapped / unmapped for every request.=0A=
+=0A=
+Thanks,=0A=
+Horia=0A=
