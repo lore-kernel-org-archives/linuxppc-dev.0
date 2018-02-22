@@ -3,8 +3,8 @@ Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znFJH2kYszF1St
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:17:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znFJM6hDSzF18M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:17:23 +1100 (AEDT)
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Caleb Crome <caleb@crome.org>,
@@ -14,10 +14,10 @@ Cc: Caleb Crome <caleb@crome.org>,
  linux-kernel@vger.kernel.org, caleb@crome.org, lgirdwood@gmail.com,
  arnaud.mouiche@invoxia.com, lukma@denx.de, fabio.estevam@nxp.com,
  linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_ssi: Keep ssi->i2s_net updated" to the asoc tree
-In-Reply-To: <1515652995-15996-2-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1eoqkI-0006TJ-Ih@debutante>
-Date: Thu, 22 Feb 2018 13:17:10 +0000
+Subject: Applied "ASoC: fsl_ssi: Redefine RX and TX macros" to the asoc tree
+In-Reply-To: <1515990087-11598-2-git-send-email-nicoleotsuka@gmail.com>
+Message-Id: <E1eoqkL-0006UU-Na@debutante>
+Date: Thu, 22 Feb 2018 13:17:13 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: fsl_ssi: Keep ssi->i2s_net updated
+   ASoC: fsl_ssi: Redefine RX and TX macros
 
 has been applied to the asoc tree at
 
@@ -54,18 +54,18 @@ to this mail.
 Thanks,
 Mark
 
->From ebf08ae3bc906fc5dd33d02977efa5d4b9831517 Mon Sep 17 00:00:00 2001
+>From 1476105c3f4a6b8f0c6c1fe07295fc85cbffbd83 Mon Sep 17 00:00:00 2001
 From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Mon, 12 Feb 2018 14:03:10 -0800
-Subject: [PATCH] ASoC: fsl_ssi: Keep ssi->i2s_net updated
+Date: Mon, 12 Feb 2018 14:03:09 -0800
+Subject: [PATCH] ASoC: fsl_ssi: Redefine RX and TX macros
 
-The hw_params() overwrites i2s_net settings for special cases like
-mono-channel support, however, it doesn't update ssi->i2s_net as
-set_dai_fmt() does.
+The RX and TX macros were defined implicitly and there was
+a potential risk if someone changes their values.
 
-This patch removes the local i2s_net variable and directly updates
-ssi->i2s_net in the hw_params() so that the driver can simply look
-up the ssi->i2s_net instead of reading the register.
+Since they were defined to index the array ssi->regvals[2],
+this patch moves these two macros to fsl_ssi.c, closer to
+its owner ssi->regvals. And it also puts some comments here
+to limit their value within [0, 1].
 
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Tested-by: Caleb Crome <caleb@crome.org>
@@ -73,35 +73,38 @@ Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Reviewed-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ sound/soc/fsl/fsl_ssi.c | 4 ++++
+ sound/soc/fsl/fsl_ssi.h | 3 ---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 3c8dd609e42e..d4f1f0d64136 100644
+index 24fb672f3c65..3c8dd609e42e 100644
 --- a/sound/soc/fsl/fsl_ssi.c
 +++ b/sound/soc/fsl/fsl_ssi.c
-@@ -838,16 +838,16 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
- 	}
+@@ -56,6 +56,10 @@
+ #include "fsl_ssi.h"
+ #include "imx-pcm.h"
  
- 	if (!fsl_ssi_is_ac97(ssi)) {
--		u8 i2s_net;
- 		/* Normal + Network mode to send 16-bit data in 32-bit frames */
- 		if (fsl_ssi_is_i2s_cbm_cfs(ssi) && sample_size == 16)
--			i2s_net = SSI_SCR_I2S_MODE_NORMAL | SSI_SCR_NET;
--		else
--			i2s_net = ssi->i2s_net;
-+			ssi->i2s_net = SSI_SCR_I2S_MODE_NORMAL | SSI_SCR_NET;
++/* Define RX and TX to index ssi->regvals array; Can be 0 or 1 only */
++#define RX 0
++#define TX 1
 +
-+		/* Use Normal mode to send mono data at 1st slot of 2 slots */
-+		if (channels == 1)
-+			ssi->i2s_net = SSI_SCR_I2S_MODE_NORMAL;
+ /**
+  * FSLSSI_I2S_FORMATS: audio formats supported by the SSI
+  *
+diff --git a/sound/soc/fsl/fsl_ssi.h b/sound/soc/fsl/fsl_ssi.h
+index de2fdc5db726..18f8dd5209d5 100644
+--- a/sound/soc/fsl/fsl_ssi.h
++++ b/sound/soc/fsl/fsl_ssi.h
+@@ -12,9 +12,6 @@
+ #ifndef _MPC8610_I2S_H
+ #define _MPC8610_I2S_H
  
- 		regmap_update_bits(regs, REG_SSI_SCR,
--				   SSI_SCR_I2S_NET_MASK,
--				   channels == 1 ? 0 : i2s_net);
-+				   SSI_SCR_I2S_NET_MASK, ssi->i2s_net);
- 	}
+-#define RX 0
+-#define TX 1
+-
+ /* -- SSI Register Map -- */
  
- 	/* In synchronous mode, the SSI uses STCCR for capture */
+ /* SSI Transmit Data Register 0 */
 -- 
 2.16.1
