@@ -1,30 +1,29 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znF5D50p5zDr5F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:07:43 +1100 (AEDT)
-Date: Thu, 22 Feb 2018 14:07:38 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Will Drewry <wad@chromium.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: samples/seccomp/ broken when cross compiling s390, ppc
- allyesconfig
-Message-ID: <20180222130738.GG30681@dhcp22.suse.cz>
-References: <20180212133731.GE3443@dhcp22.suse.cz>
- <87r2ppvaeq.fsf@concordia.ellerman.id.au>
- <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
- <87d1192nzc.fsf@concordia.ellerman.id.au>
- <20180213103213.GP3443@dhcp22.suse.cz>
- <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
- <20180214092045.GZ3443@dhcp22.suse.cz>
- <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znF6N1l27zF0lQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 00:08:43 +1100 (AEDT)
+Date: Thu, 22 Feb 2018 14:08:31 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Joel Stanley <joel@jms.id.au>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ linux-gpio@vger.kernel.org,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Albert Herranz <albert_herranz@yahoo.es>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/4] gpio: Add GPIO driver for Nintendo Wii
+Message-ID: <20180222130831.hxhvdfyfpz4j4j5t@latitude>
+References: <20180209120732.17863-1-j.neuschaefer@gmx.net>
+ <20180209120732.17863-3-j.neuschaefer@gmx.net>
+ <CACRpkdZKLm2owgVu7-f80dOdQDzQKCbO2Vvh3QHfOpEzndMxxg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="2silb4ycf5a2su42"
+In-Reply-To: <CACRpkdZKLm2owgVu7-f80dOdQDzQKCbO2Vvh3QHfOpEzndMxxg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,92 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 14-02-18 09:14:47, Kees Cook wrote:
-[...]
-> I can send it through my seccomp tree via James Morris.
 
-Could you please do it?
+--2silb4ycf5a2su42
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Feb 22, 2018 at 01:57:07PM +0100, Linus Walleij wrote:
+> On Fri, Feb 9, 2018 at 1:07 PM, Jonathan Neusch=C3=A4fer
+> <j.neuschaefer@gmx.net> wrote:
+>=20
+> > The Nintendo Wii's chipset (called "Hollywood") has a GPIO controller
+> > that supports a configurable number of pins (up to 32), interrupts, and
+> > some special mechanisms to share the controller between the system's
+> > security processor (an ARM926) and the PowerPC CPU. Pin multiplexing is
+> > not supported.
 > >
-> > From 8d8457e96296538508e478f598d1c8b3406a8626 Mon Sep 17 00:00:00 2001
-> > From: Michal Hocko <mhocko@suse.com>
-> > Date: Wed, 14 Feb 2018 10:15:12 +0100
-> > Subject: [PATCH] samples/seccomp: do not compile when cross compiled
-> > MIME-Version: 1.0
-> > Content-Type: text/plain; charset=UTF-8
-> > Content-Transfer-Encoding: 8bit
+> > This patch adds a basic driver for this GPIO controller. Interrupt
+> > support will come in a later patch.
 > >
-> > samples/seccomp relies on the host setting which is not suitable for
-> > crosscompilation and it actually fails when crosscompiling s390 and
-> > powerpc all{yes,mod}config on x86_64 with
+> > This patch is based on code developed by Albert Herranz and the GameCube
+> > Linux Team, file arch/powerpc/platforms/embedded6xx/hlwd-gpio.c,
+> > available at https://github.com/DeltaResero/GC-Wii-Linux-Kernels, but
+> > has grown quite dissimilar.
 > >
-> > samples/seccomp/bpf-helper.h:135:2: error: #error __BITS_PER_LONG value unusable.
-> >  #error __BITS_PER_LONG value unusable.
-> >   ^
-> > In file included from samples/seccomp/bpf-fancy.c:13:0:
-> > samples/seccomp/bpf-fancy.c: In function ‘main’:
-> > samples/seccomp/bpf-fancy.c:38:11: error: ‘__NR_exit’ undeclared (first use in this function)
-> >    SYSCALL(__NR_exit, ALLOW),
+> > Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
+> > Cc: Albert Herranz <albert_herranz@yahoo.es>
+> > Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> > <---
 > >
-> > and many others. I am doing these for compile testing and it's been
-> > quite useful to catch issues. Crosscompiling sample code on the other
-> > hand doesn't seem all that important so it seems like the easiest way to
-> > simply disable samples/seccomp when crosscompiling.
-> >
-> > Fixing this properly is not that easy as Kees explains:
-> > : IIRC, one of the problems is with build ordering problems: the kernel
-> > : headers used by the samples aren't available when cross compiling.
-> >
-> > Acked-by: Kees Cook <keescook@chromium.org>
-> > Signed-off-by: Michal Hocko <mhocko@suse.com>
-> > ---
-> >  samples/seccomp/Makefile | 10 +---------
-> >  1 file changed, 1 insertion(+), 9 deletions(-)
-> >
-> > diff --git a/samples/seccomp/Makefile b/samples/seccomp/Makefile
-> > index 0e349b80686e..ba942e3ead89 100644
-> > --- a/samples/seccomp/Makefile
-> > +++ b/samples/seccomp/Makefile
-> > @@ -1,4 +1,5 @@
-> >  # SPDX-License-Identifier: GPL-2.0
-> > +ifndef CROSS_COMPILE
-> >  hostprogs-$(CONFIG_SAMPLE_SECCOMP) := bpf-fancy dropper bpf-direct
-> >
-> >  HOSTCFLAGS_bpf-fancy.o += -I$(objtree)/usr/include
-> > @@ -16,7 +17,6 @@ HOSTCFLAGS_bpf-direct.o += -idirafter $(objtree)/include
-> >  bpf-direct-objs := bpf-direct.o
-> >
-> >  # Try to match the kernel target.
-> > -ifndef CROSS_COMPILE
-> >  ifndef CONFIG_64BIT
-> >
-> >  # s390 has -m31 flag to build 31 bit binaries
-> > @@ -35,12 +35,4 @@ HOSTLOADLIBES_bpf-fancy += $(MFLAG)
-> >  HOSTLOADLIBES_dropper += $(MFLAG)
-> >  endif
-> >  always := $(hostprogs-m)
-> > -else
-> > -# MIPS system calls are defined based on the -mabi that is passed
-> > -# to the toolchain which may or may not be a valid option
-> > -# for the host toolchain. So disable tests if target architecture
-> > -# is MIPS but the host isn't.
-> > -ifndef CONFIG_MIPS
-> > -always := $(hostprogs-m)
-> > -endif
-> >  endif
-> > --
-> > 2.15.1
-> >
-> > --
-> > Michal Hocko
-> > SUSE Labs
-> 
-> 
-> 
-> -- 
-> Kees Cook
-> Pixel Security
+> > v3:
+> > - Do some style cleanups, as suggest by Andy Shevchenko
+>=20
+> Patch applied to the GPIO tree for v4.17 with all the review tags.
+>=20
+> I just folded the changelog into the commit message, for new
+> drivers it is sometimes useful to keep these around in
+> git actually.
+>=20
+> If any further changes are needed we can just patch on top
+> of this.
+>=20
+> It's a very pretty driver, good work!
 
--- 
-Michal Hocko
-SUSE Labs
+Thanks! :-)
+
+
+Jonathan Neusch=C3=A4fer
+
+--2silb4ycf5a2su42
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJajsDGAAoJEAgwRJqO81/bEuEQAKyDSerRX42NnNKQtZyCS+1I
+qYrcXBOLLdKa2ZOpNI9BxxalgJEJeJrRRpylu/sxbRsn+Kxbg1J5GVXf85c41wzs
+YHQqe9PXXBYFnJKO3119HXt4OE3sfjfEU7AZ/trKzy3VklKuDif+lvicexBZaPFP
+E/HIYWcMk7iCs817KOwau+SwXQwQe2wNOmCboG4dqTXvwWKGKEofOc3TlSYDmglc
+1ccOrr5/QEpEWj917tFO5jkGJt8kouHzzyEKw/tUD+IPd3xA0hbIi1dz3+qWIcXJ
+6AtQo6yDFYfLXhKev5QbR4Sq0EXzXrnlf0DebR4jksHgM1rnZu2Tog5udKmU8r0U
+DPjvwsm539LYYTKGgV1cAkawOwLFT8QpyFgD5k1zUszMbayLjffWKG9iGrJAwWYs
+ivB7DZwEPuem14FkJeUufrsGIG4mxq0MoXwP2JeH/GqWZi8mvH8xdIM93lhpms62
+x+dU8qipsKOoao3j3F2GA07WwF4220JIFxtOJIuHVVlw5Cq4rOak94GRj4MeJEO3
+USQ3bSoL549ZUrTTWPmzDSzigd/yVPt4vF9AMbYuVyWp1KXONEAEZOJiuncQt8vq
+TzYKW8xPSD+fz+a45kW4UBWgmPx8u9udIXYUP8xCEO7mfsGLr0ZJSxfOqqkA7J12
+E4SJS0ORWpGggYhec6zA
+=xJG3
+-----END PGP SIGNATURE-----
+
+--2silb4ycf5a2su42--
