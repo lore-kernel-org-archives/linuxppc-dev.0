@@ -1,9 +1,9 @@
 Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znCxl6kgPzDq7m
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:16:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znCxv2ZyQzDqfx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 23:16:18 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
@@ -11,14 +11,10 @@ Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  Christophe LEROY <christophe.leroy@c-s.fr>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Vlastimil Babka <vbabka@suse.cz>,
- Michal Hocko <mhocko@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
- Balbir Singh <bsingharora@gmail.com>, Joe Perches <joe@perches.com>,
- "Oliver O'Halloran" <oohall@gmail.com>
-Subject: [PATCH 1/5] powerpc: mm: Simplify page_is_ram by using
- memblock_is_memory
-Date: Thu, 22 Feb 2018 13:15:12 +0100
-Message-Id: <20180222121516.23415-2-j.neuschaefer@gmx.net>
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 4/5] powerpc: wii: Don't rely on the reserved memory hack
+Date: Thu, 22 Feb 2018 13:15:15 +0100
+Message-Id: <20180222121516.23415-5-j.neuschaefer@gmx.net>
 In-Reply-To: <20180222121516.23415-1-j.neuschaefer@gmx.net>
 References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -32,31 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of open-coding the search in page_is_ram, call memblock_is_memory.
-
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
- arch/powerpc/mm/mem.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ arch/powerpc/platforms/embedded6xx/wii.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index fe8c61149fb8..da4e1555d61d 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -85,13 +85,7 @@ int page_is_ram(unsigned long pfn)
- #ifndef CONFIG_PPC64	/* XXX for now */
- 	return pfn < max_pfn;
- #else
--	unsigned long paddr = (pfn << PAGE_SHIFT);
--	struct memblock_region *reg;
+diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
+index 4682327f76a9..fc00d82691e1 100644
+--- a/arch/powerpc/platforms/embedded6xx/wii.c
++++ b/arch/powerpc/platforms/embedded6xx/wii.c
+@@ -81,21 +81,9 @@ void __init wii_memory_fixups(void)
+ 	BUG_ON(memblock.memory.cnt != 2);
+ 	BUG_ON(!page_aligned(p[0].base) || !page_aligned(p[1].base));
+ 
+-	/* trim unaligned tail */
+-	memblock_remove(ALIGN(p[1].base + p[1].size, PAGE_SIZE),
+-			(phys_addr_t)ULLONG_MAX);
 -
--	for_each_memblock(memory, reg)
--		if (paddr >= reg->base && paddr < (reg->base + reg->size))
--			return 1;
--	return 0;
-+	return memblock_is_memory(__pfn_to_phys(pfn));
- #endif
+-	/* determine hole, add & reserve them */
++	/* determine hole */
+ 	wii_hole_start = ALIGN(p[0].base + p[0].size, PAGE_SIZE);
+ 	wii_hole_size = p[1].base - wii_hole_start;
+-	memblock_add(wii_hole_start, wii_hole_size);
+-	memblock_reserve(wii_hole_start, wii_hole_size);
+-
+-	BUG_ON(memblock.memory.cnt != 1);
+-	__memblock_dump_all();
+-
+-	/* allow ioremapping the address space in the hole */
+-	__allow_ioremap_reserved = 1;
  }
  
+ unsigned long __init wii_mmu_mapin_mem2(unsigned long top)
 -- 
 2.16.1
