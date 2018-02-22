@@ -1,35 +1,37 @@
-Return-Path: <keescook@google.com>
-Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
- [IPv6:2607:f8b0:400c:c08::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znLwb3YbbzF1cC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 04:30:38 +1100 (AEDT)
-Received: by mail-ua0-x241.google.com with SMTP id e25so3806116uan.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 09:30:38 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znNqL00XXzF0ny
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 05:56:13 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1MIqViA146322
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 13:56:11 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ga2pjhydk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 13:56:10 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Thu, 22 Feb 2018 13:56:09 -0500
+Subject: Re: [PATCH] PCI/AER: Add a null check before eeh_ops->notify_resume
+ callback.
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Russell Currey <ruscur@russell.cc>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20180222115803.21738-1-vaibhav@linux.vnet.ibm.com>
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Date: Thu, 22 Feb 2018 12:56:05 -0600
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20180222130738.GG30681@dhcp22.suse.cz>
-References: <20180212133731.GE3443@dhcp22.suse.cz>
- <87r2ppvaeq.fsf@concordia.ellerman.id.au>
- <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
- <87d1192nzc.fsf@concordia.ellerman.id.au>
- <20180213103213.GP3443@dhcp22.suse.cz>
- <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
- <20180214092045.GZ3443@dhcp22.suse.cz>
- <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
- <20180222130738.GG30681@dhcp22.suse.cz>
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 22 Feb 2018 09:30:35 -0800
-Message-ID: <CAGXu5jLLDOqoSn9usuA-pRLb5X=zK6MYdUVMPEh7x7oMgnU5cQ@mail.gmail.com>
-Subject: Re: samples/seccomp/ broken when cross compiling s390,
- ppc allyesconfig
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Will Drewry <wad@chromium.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180222115803.21738-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f60dc968-da13-96bc-2c9f-cb88940f7d5e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,17 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 22, 2018 at 5:07 AM, Michal Hocko <mhocko@kernel.org> wrote:
-> On Wed 14-02-18 09:14:47, Kees Cook wrote:
-> [...]
->> I can send it through my seccomp tree via James Morris.
+On 2/22/18 5:58 AM, Vaibhav Jain wrote:
+
+> This patch puts a NULL check before branching to the address pointed
+> to by eeh_ops->notify_resume in eeh_report_resume(). The callback
+> is used to notify the arch EEH code that a pci device is back
+> online.
 >
-> Could you please do it?
+> For PPC64 presently, only an implementation for pseries platform is
+> available and not for powernv. Hence without this patch EEH recovery
+> on all non-virtualized hosts is causing a kernel panic when
+> CONFIG_PCI_IOV is set. The panic is usually is of the form:
+>
+> EEH: Notify device driver to resume
+> Unable to handle kernel paging request for instruction fetch
+> Faulting instruction address: 0x00000000
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> <snip>
+> LR eeh_report_resume+0x218/0x220
+> Call Trace:
+>  eeh_report_resume+0x1f0/0x220 (unreliable)
+>  eeh_pe_dev_traverse+0x98/0x170
+>  eeh_handle_normal_event+0x3f4/0x650
+>  eeh_handle_event+0x188/0x380
+>  eeh_event_handler+0x208/0x210
+>  kthread+0x168/0x1b0
+>  ret_from_kernel_thread+0x5c/0xb4
+>
+> Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Fixes: 856e1eb9bdd4("PCI/AER: Add uevents in AER and EEH error/resume")
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/eeh_driver.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index beea2182d754..932858a293ea 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -384,7 +384,8 @@ static void *eeh_report_resume(void *data, void *userdata)
+>  	eeh_pcid_put(dev);
+>  	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
+>  #ifdef CONFIG_PCI_IOV
+> -	eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
+> +	if (eeh_ops->notify_resume)
+> +		eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
+>  #endif
+>  	return NULL;
+>  }
 
-Hi! Yes, sorry, this fell through the cracks. Now applied.
+A version of this patch already upstreamed. 
 
--Kees
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=521ca5a9859a870e354d1a6b84a6ff4c07bbceb0
 
--- 
-Kees Cook
-Pixel Security
+-Bryant
