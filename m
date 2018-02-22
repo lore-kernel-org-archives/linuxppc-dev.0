@@ -1,43 +1,26 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zn05Q5LL5zDr8c
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 14:22:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zn0MN6Tc0zF18m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 14:34:08 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Arnd Bergmann <arnd@arndb.de>
-Cc: Rich Felker <dalias@libc.org>, Kernel Hardening
- <kernel-hardening@lists.openwall.com>, X86 ML <x86@kernel.org>, Paul
- Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux
- <sparclinux@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>, Yoshinori
- Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
- Richard Weinberger <richard@nod.at>, Linux-sh list
- <linux-sh@vger.kernel.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>, Emese
- Revfy <re.emese@gmail.com>, Kees Cook <keescook@chromium.org>, uml-devel
- <user-mode-linux-devel@lists.sourceforge.net>, Linux Kbuild mailing list
- <linux-kbuild@vger.kernel.org>, Peter Oberparleiter
- <oberpar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
- user-mode-linux-user@lists.sourceforge.net, Thomas Gleixner
- <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>, Ulf
- Magnusson <ulfalizer@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, "open
- list\:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
-In-Reply-To: <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
-References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
- <20180218221352.GA6651@ravnborg.org>
- <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
- <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
- <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
- <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
- <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
- <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
-Date: Thu, 22 Feb 2018 14:22:02 +1100
-Message-ID: <87efldr9np.fsf@concordia.ellerman.id.au>
+To: Daniel Borkmann <daniel@iogearbox.net>, Mark Lord <mlord@pobox.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Alexei Starovoitov <ast@kernel.org>, Kees Cook <keescook@chromium.org>,
+ Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] bpf, powerpc: fix jit for seccomp_data access
+In-Reply-To: <03bbd3d6-3f67-795a-afa3-2feee367991a@iogearbox.net>
+References: <d79074fe-2ee1-c132-ef2d-f6bb618b53bb@pobox.com>
+ <2a91fe0c-ea85-dd79-6682-66b1301d7e49@iogearbox.net>
+ <53a6b85c-8cb7-d4d0-8234-7ecfb1a709b2@pobox.com>
+ <1519154571.d9vaokens9.naveen@linux.ibm.com>
+ <2f428cf9-23f3-d1f1-1524-46d6faa17386@pobox.com>
+ <87fu5vrxjp.fsf@concordia.ellerman.id.au>
+ <03bbd3d6-3f67-795a-afa3-2feee367991a@iogearbox.net>
+Date: Thu, 22 Feb 2018 14:34:08 +1100
+Message-ID: <87bmghr93j.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -49,30 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
->
-<snip>
->
-> (Case 3)
-> Compiler flag -foo is sensitive to endian-ness.
->
->
-> config CC_NEEDS_BIG_ENDIAN
->           def_bool $(cc-option -mbig-endian) && CPU_BIG_ENDIAN
->
-> config CC_NEEDS_LITTLE_ENDIAN
->           def_bool $(cc-option -mlittle-endian) && CPU_LITTLE_ENDIAN
->
-> config CC_HAS_FOO
->          bool
->          default $(cc-option -mbig-endian -foo) if CC_NEEDS_BIG_ENDIAN
->          default $(cc-option -mlittle-endian -foo) if CC_NEEDS_LITTLE_ENDIAN
->          default $(cc-option -foo)
+Daniel Borkmann <daniel@iogearbox.net> writes:
 
-We may do something like this on powerpc, where we have 32/64-bit and
-big/little endian (on 64-bit) and then some ABI options that we
-set/unset depending on endian.
+> On 02/21/2018 01:33 AM, Michael Ellerman wrote:
+>> Mark Lord <mlord@pobox.com> writes:
+>> 
+>>> I am using SECCOMP to filter syscalls on a ppc32 platform,
+>>> and noticed that the JIT compiler was failing on the BPF
+>>> even though the interpreter was working fine.
+>>>
+>>> The issue was that the compiler was missing one of the instructions
+>>> used by SECCOMP, so here is a patch to enable JIT for that instruction.
+>>>
+>>> Signed-Off-By:  Mark Lord <mlord@pobox.com>
+>> 
+>> Thanks.
+>> 
+>> What is the failure mode without this patch? I assume when you have the
+>> JIT enabled the seccomp filter fails to load entirely? Or do we have
+>> logic to fall back to the interpreter?
+>
+> The logic for all JITs is that once a BPF insn cannot be JITed then it falls
+> back to BPF interpreter. Here, since ppc32 is cBPF the path is: cBPF insn ->
+> cBPF JIT -> fail -> migrate cBPF to eBPF -> run in eBPF interpreter. In the
+> case where interpreter is compiled out (CONFIG_BPF_JIT_ALWAYS_ON), then the
+> filter is rejected.
 
-The above looks like it could work though.
+OK thanks.
+
+>> Either way we should probably back port to stable. I assume this has
+>> been broken since we originally added 32-bit support, so:
+>
+> Note that arm32 before it was converted to be an eBPF JIT (eBPF JITs do handle
+> seccomp BPF in any case) was the only cBPF JIT that had it 'JIT-able', so
+> currently, other cBPF ones like sparc32 or mips32 don't translate it either.
+> Meaning, it would be nice to have as feature; I wouldn't necessarily frame
+> it as a bug though (or at least a stable-urgent one, imho, but I leave that
+> to you, of course).
+
+OK, I'll just add the Fixes tag for our reference and we can always back
+port it to stable later if we want to.
 
 cheers
