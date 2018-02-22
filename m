@@ -1,37 +1,31 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=1/yt=fq=kernel.org=helgaas@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znTgl57DRzF1d8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 09:34:59 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1MMXrCo072995
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:34:57 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ga25r2h14-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:34:57 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Thu, 22 Feb 2018 15:24:45 -0700
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 15/38] cxlflash: Support image reload policy modification
-Date: Thu, 22 Feb 2018 16:24:40 -0600
-In-Reply-To: <1519338010-51782-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1519338010-51782-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1519338280-52326-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znVWD5KZRzF1b4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 10:12:40 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3znVWD3bltz8sk5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 10:12:40 +1100 (AEDT)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3znVWD168Sz9sWd
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2018 10:12:39 +1100 (AEDT)
+Date: Thu, 22 Feb 2018 17:12:36 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, bhelgaas@google.com,
+ linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ torvalds@linux-foundation.org, ruscur@russell.cc,
+ jjalvare@linux.vnet.ibm.com
+Subject: Re: [PATCH] PCI/AER: Move pci_uevent_ers() out of pci.h
+Message-ID: <20180222231236.GB14632@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180208122035.9305-1-mpe@ellerman.id.au>
+ <dcfc6411-20cf-5b3f-20c5-14167de54700@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <dcfc6411-20cf-5b3f-20c5-14167de54700@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,57 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a PERST, the AFU image can be reloaded or left intact. Provide means to
-set this image reload policy.
+On Thu, Feb 08, 2018 at 09:05:45AM -0600, Bryant G. Ly wrote:
+> 
+> On 2/8/18 6:20 AM, Michael Ellerman wrote:
+> 
+> > There's no reason pci_uevent_ers() needs to be inline in pci.h, so
+> > move it out to a C file.
+> >
+> > Given it's used by AER the obvious location would be somewhere in
+> > drivers/pci/pcie/aer, but because it's also used by powerpc EEH code
+> > unfortunately that doesn't work in the case where EEH is enabled but
+> > PCIEPORTBUS is not.
+> >
+> > So for now put it in pci-driver.c, next to pci_uevent(), with an
+> > appropriate #ifdef so it's not built if AER and EEH are both disabled.
+> >
+> > While we're moving it also fix up the kernel doc comment for @pdev to
+> > be accurate.
+> >
+> > Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> >  drivers/pci/pci-driver.c | 36 ++++++++++++++++++++++++++++++++++++
+> >  include/linux/pci.h      | 38 +++-----------------------------------
+> >  2 files changed, 39 insertions(+), 35 deletions(-)
+> 
+> Looks good, thanks for fixing it!
+> 
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 
-Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/ocxl_hw.c | 13 +++++++++++++
- drivers/scsi/cxlflash/ocxl_hw.h |  1 +
- 2 files changed, 14 insertions(+)
+This would normally be a "Reviewed-by" unless you actually
+participated in developing the patch, and in that case, your
+"Signed-off-by" would normally be included in the original posting.
 
-diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 2dab547..6f78e71 100644
---- a/drivers/scsi/cxlflash/ocxl_hw.c
-+++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -252,6 +252,18 @@ static int ocxlflash_release_context(void *ctx_cookie)
- }
- 
- /**
-+ * ocxlflash_perst_reloads_same_image() - sets the image reload policy
-+ * @afu_cookie:	Hardware AFU associated with the host.
-+ * @image:	Whether to load the same image on PERST.
-+ */
-+static void ocxlflash_perst_reloads_same_image(void *afu_cookie, bool image)
-+{
-+	struct ocxl_hw_afu *afu = afu_cookie;
-+
-+	afu->perst_same_image = image;
-+}
-+
-+/**
-  * ocxlflash_destroy_afu() - destroy the AFU structure
-  * @afu_cookie:	AFU to be freed.
-  */
-@@ -493,6 +505,7 @@ const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
- 	.get_context		= ocxlflash_get_context,
- 	.dev_context_init	= ocxlflash_dev_context_init,
- 	.release_context	= ocxlflash_release_context,
-+	.perst_reloads_same_image = ocxlflash_perst_reloads_same_image,
- 	.create_afu		= ocxlflash_create_afu,
- 	.destroy_afu		= ocxlflash_destroy_afu,
- 	.get_fd			= ocxlflash_get_fd,
-diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
-index 7f234b1..6d6e323 100644
---- a/drivers/scsi/cxlflash/ocxl_hw.h
-+++ b/drivers/scsi/cxlflash/ocxl_hw.h
-@@ -17,6 +17,7 @@ struct ocxl_hw_afu {
- 	struct ocxlflash_context *ocxl_ctx; /* Host context */
- 	struct pci_dev *pdev;		/* PCI device */
- 	struct device *dev;		/* Generic device */
-+	bool perst_same_image;		/* Same image loaded on perst */
- 
- 	struct ocxl_fn_config fcfg;	/* DVSEC config of the function */
- 	struct ocxl_afu_config acfg;	/* AFU configuration data */
--- 
-2.1.0
+What do you intend?  I'll be glad to add either.
+
+Bjorn
