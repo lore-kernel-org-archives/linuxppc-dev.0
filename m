@@ -1,23 +1,23 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znTSk3WC2zDqm5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 09:25:26 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1MMO8ro097615
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:25:24 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ga2qx8ppv-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znTT41HRCzDqm5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 09:25:43 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1MMO41O001023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:25:42 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ga268ht4e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:25:24 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 17:25:41 -0500
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Thu, 22 Feb 2018 17:25:23 -0500
+ Thu, 22 Feb 2018 17:25:40 -0500
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 18/38] cxlflash: Support process specific mappings
-Date: Thu, 22 Feb 2018 16:25:14 -0600
+Subject: [PATCH 19/38] cxlflash: Support AFU state toggling
+Date: Thu, 22 Feb 2018 16:25:32 -0600
 In-Reply-To: <1519338010-51782-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1519338010-51782-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1519338314-52434-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1519338332-52470-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,55 +41,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once the context is started, the assigned MMIO space can be mapped
-and unmapped. Provide means to map and unmap the context MMIO space.
+The AFU should be enabled following a successful configuration and
+disabled near the end of the cleanup path.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/ocxl_hw.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ drivers/scsi/cxlflash/ocxl_hw.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 7d92df0..548438f 100644
+index 548438f..7279f67 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.c
 +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -151,6 +151,28 @@ static struct file *ocxlflash_getfile(struct device *dev, const char *name,
- }
+@@ -342,12 +342,18 @@ static void ocxlflash_unconfig_afu(struct ocxl_hw_afu *afu)
+ static void ocxlflash_destroy_afu(void *afu_cookie)
+ {
+ 	struct ocxl_hw_afu *afu = afu_cookie;
++	int pos;
  
- /**
-+ * ocxlflash_psa_map() - map the process specific MMIO space
-+ * @ctx_cookie:	Adapter context for which the mapping needs to be done.
-+ *
-+ * Return: MMIO pointer of the mapped region
-+ */
-+static void __iomem *ocxlflash_psa_map(void *ctx_cookie)
-+{
-+	struct ocxlflash_context *ctx = ctx_cookie;
+ 	if (!afu)
+ 		return;
+ 
+ 	ocxlflash_release_context(afu->ocxl_ctx);
+ 	idr_destroy(&afu->idr);
 +
-+	return ioremap(ctx->psn_phys, ctx->psn_size);
-+}
++	/* Disable the AFU */
++	pos = afu->acfg.dvsec_afu_control_pos;
++	ocxl_config_set_afu_state(afu->pdev, pos, 0);
 +
-+/**
-+ * ocxlflash_psa_unmap() - unmap the process specific MMIO space
-+ * @addr:	MMIO pointer to unmap.
-+ */
-+static void ocxlflash_psa_unmap(void __iomem *addr)
-+{
-+	iounmap(addr);
-+}
+ 	ocxlflash_unconfig_afu(afu);
+ 	kfree(afu);
+ }
+@@ -492,6 +498,9 @@ static int ocxlflash_config_afu(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
+ 			__func__, rc);
+ 		goto out;
+ 	}
 +
-+/**
-  * ocxlflash_process_element() - get process element of the adapter context
-  * @ctx_cookie:	Adapter context associated with the process element.
-  *
-@@ -610,6 +632,8 @@ static void *ocxlflash_fops_get_context(struct file *file)
- /* Backend ops to ocxlflash services */
- const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
- 	.module			= THIS_MODULE,
-+	.psa_map		= ocxlflash_psa_map,
-+	.psa_unmap		= ocxlflash_psa_unmap,
- 	.process_element	= ocxlflash_process_element,
- 	.start_context		= ocxlflash_start_context,
- 	.set_master		= ocxlflash_set_master,
++	/* Enable the AFU */
++	ocxl_config_set_afu_state(pdev, acfg->dvsec_afu_control_pos, 1);
+ out:
+ 	return rc;
+ }
 -- 
 2.1.0
