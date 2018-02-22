@@ -1,43 +1,43 @@
-Return-Path: <srs0=lavr=fq=au1.ibm.com=alastair@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zn1LZ0QZtzF15v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 15:18:30 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zn1LY5z6dz8wQL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 15:18:29 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zn1LY1PlSz9sW9
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2018 15:18:28 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zn2Mh2c8qzF1D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 16:04:32 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1M4EnxM116638
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 23:18:27 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2g9mr83th0-1
+ w1M53n8r082893
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:04:30 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2g9kd0yk7y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2018 23:18:26 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 00:04:29 -0500
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <alastair@au1.ibm.com>;
- Thu, 22 Feb 2018 04:18:24 -0000
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: frederic.barrat@fr.ibm.com, andrew.donnellan@au1.ibm.com, arnd@arndb.de,
- gregkh@linuxfoundation.org, alastair@au1.ibm.com,
- "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH v3 1/2] ocxl: Add get_metadata IOCTL to share OCXL information
- to userspace
-Date: Thu, 22 Feb 2018 15:17:38 +1100
-In-Reply-To: <20180222041739.27899-1-alastair@au1.ibm.com>
-References: <20180222030334.14060-1-alastair@au1.ibm.com>
- <20180222041739.27899-1-alastair@au1.ibm.com>
-Message-Id: <20180222041739.27899-2-alastair@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 22 Feb 2018 05:04:27 -0000
+Subject: Re: [PATCH 21/23] gcc-plugins: move GCC version check for PowerPC to
+ Kconfig
+To: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linux-kbuild@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Ulf Magnusson <ulfalizer@gmail.com>, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, kernel-hardening@lists.openwall.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ Emese Revfy <re.emese@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Sam Ravnborg <sam@ravnborg.org>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <1518806331-7101-22-git-send-email-yamada.masahiro@socionext.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 22 Feb 2018 16:04:21 +1100
+MIME-Version: 1.0
+In-Reply-To: <1518806331-7101-22-git-send-email-yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <6805fb77-23b9-7880-13f1-5d082d5c1599@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,101 +47,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+On 17/02/18 05:38, Masahiro Yamada wrote:
+> For PowerPC, GCC 5.2 is the requirement for GCC plugins.  Move the
+> version check to Kconfig, and remove the ugly checker.
+> 
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 
-Some required information is not exposed to userspace currently (eg. the
-PASID), pass this information back, along with other information which
-is currently communicated via sysfs, which saves some parsing effort in
-userspace.
+The old checker was as non-ugly as I could make it. :)
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- drivers/misc/ocxl/file.c | 27 +++++++++++++++++++++++++++
- include/uapi/misc/ocxl.h | 17 +++++++++++++++++
- 2 files changed, 44 insertions(+)
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-index d9aa407db06a..90df1be5ef3f 100644
---- a/drivers/misc/ocxl/file.c
-+++ b/drivers/misc/ocxl/file.c
-@@ -102,10 +102,32 @@ static long afu_ioctl_attach(struct ocxl_context *ctx,
- 	return rc;
- }
- 
-+static long afu_ioctl_get_metadata(struct ocxl_context *ctx,
-+		struct ocxl_ioctl_metadata __user *uarg)
-+{
-+	struct ocxl_ioctl_metadata arg;
-+
-+	memset(&arg, 0, sizeof(arg));
-+
-+	arg.version = 0;
-+
-+	arg.afu_version_major = ctx->afu->config.version_major;
-+	arg.afu_version_minor = ctx->afu->config.version_minor;
-+	arg.pasid = ctx->pasid;
-+	arg.pp_mmio_size = ctx->afu->config.pp_mmio_stride;
-+	arg.global_mmio_size = ctx->afu->config.global_mmio_size;
-+
-+	if (copy_to_user(uarg, &arg, sizeof(arg)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :			\
- 			x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :	\
- 			x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :		\
- 			x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :	\
-+			x == OCXL_IOCTL_GET_METADATA ? "GET_METADATA" :	\
- 			"UNKNOWN")
- 
- static long afu_ioctl(struct file *file, unsigned int cmd,
-@@ -157,6 +179,11 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
- 					irq_fd.eventfd);
- 		break;
- 
-+	case OCXL_IOCTL_GET_METADATA:
-+		rc = afu_ioctl_get_metadata(ctx,
-+				(struct ocxl_ioctl_metadata __user *) args);
-+		break;
-+
- 	default:
- 		rc = -EINVAL;
- 	}
-diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
-index 4b0b0b756f3e..0af83d80fb3e 100644
---- a/include/uapi/misc/ocxl.h
-+++ b/include/uapi/misc/ocxl.h
-@@ -32,6 +32,22 @@ struct ocxl_ioctl_attach {
- 	__u64 reserved3;
- };
- 
-+struct ocxl_ioctl_metadata {
-+	__u16 version; // struct version, always backwards compatible
-+
-+	// Version 0 fields
-+	__u8  afu_version_major;
-+	__u8  afu_version_minor;
-+	__u32 pasid;		// PASID assigned to the current context
-+
-+	__u64 pp_mmio_size;	// Per PASID MMIO size
-+	__u64 global_mmio_size;
-+
-+	// End version 0 fields
-+
-+	__u64 reserved[13]; // Total of 16*u64
-+};
-+
- struct ocxl_ioctl_irq_fd {
- 	__u64 irq_offset;
- 	__s32 eventfd;
-@@ -45,5 +61,6 @@ struct ocxl_ioctl_irq_fd {
- #define OCXL_IOCTL_IRQ_ALLOC	_IOR(OCXL_MAGIC, 0x11, __u64)
- #define OCXL_IOCTL_IRQ_FREE	_IOW(OCXL_MAGIC, 0x12, __u64)
- #define OCXL_IOCTL_IRQ_SET_FD	_IOW(OCXL_MAGIC, 0x13, struct ocxl_ioctl_irq_fd)
-+#define OCXL_IOCTL_GET_METADATA _IOR(OCXL_MAGIC, 0x14, struct ocxl_ioctl_metadata)
- 
- #endif /* _UAPI_MISC_OCXL_H */
 -- 
-2.14.3
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
