@@ -1,61 +1,29 @@
-Return-Path: <morbidrsa@gmail.com>
-Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
- [IPv6:2a00:1450:400c:c09::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znJg00gwBzF0j2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 02:48:39 +1100 (AEDT)
-Received: by mail-wm0-x233.google.com with SMTP id 191so4548229wmm.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2018 07:48:39 -0800 (PST)
-From: Johannes Thumshirn <morbidrsa@gmail.com>
-To: Marcus Folkesson <marcus.folkesson@gmail.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>,
- Joel Stanley <joel@jms.id.au>, Nicolas Ferre <nicolas.ferre@microchip.com>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Eric Anholt <eric@anholt.net>,
- Stefan Wahren <stefan.wahren@i2se.com>, Florian Fainelli <f.fainelli@gmail.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com,
- Linus Walleij <linus.walleij@linaro.org>,
- Support Opensource <support.opensource@diasemi.com>,
- Baruch Siach <baruch@tkos.co.il>,
- William Breathitt Gray <vilhelm.gray@gmail.com>,
- Jimmy Vance <jimmy.vance@hpe.com>,
- Keguang Zhang <keguang.zhang@gmail.com>, Joachim Eastwood <manabian@gmail.com>,
- Tomas Winkler <tomas.winkler@intel.com>,
- Johannes Thumshirn <morbidrsa@gmail.com>,
- Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>, Sylvain Lemieux <slemieux.tyco@gmail.com>,
- Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
- Jim Cromie <jim.cromie@gmail.com>,
- Barry Song <baohua@kernel.org>, Patrice Chotard <patrice.chotard@st.com>,
- Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
- Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
- Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
- linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
- linux-amlogic@lists.infradead.org, linux-mediatek@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
-Subject: Re: [PATCH v3] watchdog: add SPDX identifiers for watchdog subsystem
-References: <20180221122744.28300-1-marcus.folkesson@gmail.com>
-Date: Thu, 22 Feb 2018 16:48:21 +0100
-In-Reply-To: <20180221122744.28300-1-marcus.folkesson@gmail.com> (Marcus
- Folkesson's message of "Wed, 21 Feb 2018 13:27:34 +0100")
-Message-ID: <mqdlgflm3ei.fsf@linux-x5ow.site>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znTKM2ns5zF1j8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 09:19:03 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Brian King <brking@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, "dougmill\@us.ibm.com" <dougmill@us.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Turn on SCSI_AACRAID in powernv_defconfig
+In-Reply-To: <38f27cd0-7f1a-b3ca-d8f3-615bd97637be@linux.vnet.ibm.com>
+References: <1503899802-13248-1-git-send-email-mpe@ellerman.id.au>
+ <72f7e609-58b9-32dc-4090-fdbd97d0c924@linux.vnet.ibm.com>
+ <87h8wq1uvv.fsf@concordia.ellerman.id.au>
+ <58487ce7-aea1-39c1-b9c8-cd8435e493e0@linux.vnet.ibm.com>
+ <87shg91fgc.fsf@concordia.ellerman.id.au> <87y3q0hxtm.fsf@linux.vnet.ibm.com>
+ <877exjud52.fsf@concordia.ellerman.id.au>
+ <5011affa-e820-1362-2af2-3507f8aeb914@linux.vnet.ibm.com>
+ <87mv6f56vl.fsf@concordia.ellerman.id.au> <87y3pvgyko.fsf@linux.vnet.ibm.com>
+ <38f27cd0-7f1a-b3ca-d8f3-615bd97637be@linux.vnet.ibm.com>
+Date: Fri, 23 Feb 2018 09:19:02 +1100
+Message-ID: <87y3jkpt0p.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,17 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Marcus Folkesson <marcus.folkesson@gmail.com> writes:
-[...]
->  drivers/watchdog/mena21_wdt.c          |  4 +--
+Brian King <brking@linux.vnet.ibm.com> writes:
+> On 09/03/2017 06:19 PM, Stewart Smith wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>>>> 2. On a bare metal machine, if you set ipr.fast_reboot=1 on the skiboot
+>>>>    kernel, then we should also avoid resetting the ipr adapter, so ipr
+>>>>    init on the kernel being kexec booted from skiboot should be extremely fast. 
+>>>
+>>> OK, I didn't know that was an option, so that might help.
+>>>
+>>>> ...
+>>>> If you've got cases where ipr init is taking a long time, I'd be
+>>>> interested to know what scenarios are the most annoying to see if there
+>>>> is any opportunity to improve.
+>>>
+>>> Yeah booting bare metal is where I see it (not using ipr.fast_reboot).
+>> 
+>> Hrm... We should probably enable that by default for petitboot then.
+>> 
+>> It'd at least cut some time off booting straight through to OS.
+>
+> Agreed. I'd be interested to hear if that helps address the issue
+> Michael is seeing.
+>
+> You can easily test this by exiting to a petitboot shell:
+>
+> echo 1 > /sys/module/ipr/parameters/fast_reboot
+>
+> Then go back to petitboot and boot the OS.
 
-For mena21_wdt:
-Acked-by: Johannes Thumshirn <jth@kernel.org>
+Just following up on this (!).
 
---=20
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=C3=BCrnberg
-GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Norton
-HRB 21284 (AG N=C3=BCrnberg)
-Key fingerprint =3D EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+This does work, and I've now been running it in my CI for about a month
+(~1000 boots) with no problems.
+
+You can also make it persistent by doing:
+
+  $ nvram -p ibm,skiboot --update-config bootargs="ipr.fast_reboot=1"
+
+cheers
