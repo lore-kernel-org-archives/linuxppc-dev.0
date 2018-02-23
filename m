@@ -1,32 +1,20 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bharata.rao@gmail.com>
+Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c06::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znmMK5ndhzDqh5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 20:36:45 +1100 (AEDT)
-Date: Fri, 23 Feb 2018 10:12:48 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Will Drewry <wad@chromium.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: samples/seccomp/ broken when cross compiling s390, ppc
- allyesconfig
-Message-ID: <20180223091248.GT30681@dhcp22.suse.cz>
-References: <20180212133731.GE3443@dhcp22.suse.cz>
- <87r2ppvaeq.fsf@concordia.ellerman.id.au>
- <CAGXu5j+DnkUv9pZn93wxA6_2s+c3Ap_Q34OR0weY7Y9MJ1aP9Q@mail.gmail.com>
- <87d1192nzc.fsf@concordia.ellerman.id.au>
- <20180213103213.GP3443@dhcp22.suse.cz>
- <CAGXu5jJZROQMxzxu+Dp3mVMktSg-oTB6pqk7fUyM_6_2oa9c_A@mail.gmail.com>
- <20180214092045.GZ3443@dhcp22.suse.cz>
- <CAGXu5jJCN_Js9rvM4RMjxDCDd4tVzWDo-jdnFiZs1D9e3cunrw@mail.gmail.com>
- <20180222130738.GG30681@dhcp22.suse.cz>
- <CAGXu5jLLDOqoSn9usuA-pRLb5X=zK6MYdUVMPEh7x7oMgnU5cQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znmGl5JhrzF1jN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 20:32:44 +1100 (AEDT)
+Received: by mail-io0-x22f.google.com with SMTP id g21so9181644ioj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 01:32:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAGXu5jLLDOqoSn9usuA-pRLb5X=zK6MYdUVMPEh7x7oMgnU5cQ@mail.gmail.com>
+From: Bharata B Rao <bharata.rao@gmail.com>
+Date: Fri, 23 Feb 2018 15:02:40 +0530
+Message-ID: <CAGZKiBoy5kZxijbGg0VaRr_HbgPyoHS-UnkXyhHt15sCpcT4ow@mail.gmail.com>
+Subject: Hotplug + Reboot is crashing HPT guest with HPT resizing enabled
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Content-Type: multipart/alternative; boundary="089e082ce9a08555570565ddd775"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,18 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 22-02-18 09:30:35, Kees Cook wrote:
-> On Thu, Feb 22, 2018 at 5:07 AM, Michal Hocko <mhocko@kernel.org> wrote:
-> > On Wed 14-02-18 09:14:47, Kees Cook wrote:
-> > [...]
-> >> I can send it through my seccomp tree via James Morris.
-> >
-> > Could you please do it?
-> 
-> Hi! Yes, sorry, this fell through the cracks. Now applied.
+--089e082ce9a08555570565ddd775
+Content-Type: text/plain; charset="UTF-8"
 
-Thanks!
+Hi,
 
+Rebooting a hash guest after hotplugging memory to it is crashing the
+guest. This is seen only when HPT resizing is enabled. I see guest crashing
+at multiple places, but this location is fairly commonly seen:
+
+kernel BUG at mm/slub.c:3912!
+
+Testing with latest guest kernel and ppc-for-2.12 branch of QEMU.
+
+A bit of debugging shows me that when memory is added, the guest kernel
+tries to resize HPT to a htab_shift value lesser than the value with which
+the guest has booted. For eg. a 8GB guest boots with htab_shift of 26. When
+1G is hot-added,
+arch/powerpc/mm/hash_utils_64.c:resize_hpt_for_hotplug() ends up assigning
+24 to target_hpt_shift. This looks suspicious as we are increasing the
+memory, but kernel is asking for shrinking the HPT size. HPT resizing
+requests fail though, but next reboot crashes the guest.
+
+Regards,
+Bharata.
 -- 
-Michal Hocko
-SUSE Labs
+http://raobharata.wordpress.com/
+
+--089e082ce9a08555570565ddd775
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi,<br><br>Rebooting a hash guest after hotplugging memory=
+ to it is crashing the guest. This is seen only when HPT resizing is enable=
+d. I see guest crashing at multiple places, but this location is fairly com=
+monly seen:<br><br>kernel BUG at mm/slub.c:3912!<br><br>Testing with latest=
+ guest kernel and ppc-for-2.12 branch of QEMU.<br><br>A bit of debugging sh=
+ows me that when memory is added, the guest kernel tries to resize HPT to a=
+ htab_shift value lesser than the value with which the guest has booted. Fo=
+r eg. a 8GB guest boots with htab_shift of 26. When 1G is hot-added,<br>arc=
+h/powerpc/mm/hash_utils_64.c:resize_hpt_for_hotplug() ends up assigning 24 =
+to target_hpt_shift. This looks suspicious as we are increasing the memory,=
+ but kernel is asking for shrinking the HPT size. HPT resizing requests fai=
+l though, but next reboot crashes the guest.<br><br>Regards,<br>Bharata.<br=
+ clear=3D"all">-- <br><div class=3D"gmail_signature"><a href=3D"http://raob=
+harata.wordpress.com/" target=3D"_blank">http://raobharata.wordpress.com/</=
+a></div>
+</div>
+
+--089e082ce9a08555570565ddd775--
