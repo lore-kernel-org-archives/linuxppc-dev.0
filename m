@@ -1,17 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zng5N5g4tzF1ky
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 16:39:20 +1100 (AEDT)
-In-Reply-To: <f5baf8d9-ece2-d3b8-2793-7701a1184c2a@linux.vnet.ibm.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zng5P5Mt8zF1ky
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 16:39:21 +1100 (AEDT)
+In-Reply-To: <2f428cf9-23f3-d1f1-1524-46d6faa17386@pobox.com>
+To: Mark Lord <mlord@pobox.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@amacapital.net>,
+ Will Drewry <wad@chromium.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Ellerman <mwb@linux.vnet.ibm.com>
-Subject: Re: powerpc: Revert support for ibm,drc-info devtree property
-Message-Id: <3zng5N43l3z9sWg@ozlabs.org>
-Date: Fri, 23 Feb 2018 16:39:20 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: bpf, powerpc: fix jit for seccomp_data access
+Message-Id: <3zng5P45Slz9sWj@ozlabs.org>
+Date: Fri, 23 Feb 2018 16:39:21 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-13 at 20:02:53 UTC, Michael Bringmann wrote:
-> This reverts commit 02ef6dd8109b581343ebeb1c4c973513682535d6.
+On Tue, 2018-02-20 at 19:49:20 UTC, Mark Lord wrote:
+> I am using SECCOMP to filter syscalls on a ppc32 platform,
+> and noticed that the JIT compiler was failing on the BPF
+> even though the interpreter was working fine.
 > 
-> The earlier patch tried to enable support for a new property
-> "ibm,drc-info" on powerpc systems.
+> The issue was that the compiler was missing one of the instructions
+> used by SECCOMP, so here is a patch to enable JIT for that instruction.
 > 
-> Unfortunately, some errors in the associated patch set break things
-> in some of the DLPAR operations.  In particular when attempting to
-> hot-add a new CPU or set of CPUs, the original patch failed to
-> properly calculate the available resources, and aborted the operation.
-> In addition, the original set missed several opportunities to compress
-> and reuse common code.
+> Signed-Off-By:  Mark Lord <mlord@pobox.com>
 > 
-> As the associated patch set was meant to provide an optimization of
-> storage and performance of a set of device-tree properties for future
-> systems with large amounts of resources, reverting just restores
-> the previous behavior for existing systems.  It seems unnecessary
-> to enable this feature and introduce the consequent problems in the
-> field that it will cause at this time, so please revert it for now
-> until testing of the corrections are finished properly.
-> 
-> Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
+> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -0500
+> +++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.805227494 -0500
+> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
+>                         BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) != 4);
+>                         PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
+>                         break;
+> +               case BPF_LDX | BPF_W | BPF_ABS: /* A = *((u32 *)(seccomp_data + K)); */
+> +                       PPC_LWZ_OFFS(r_A, r_skb, K);
+> +                       break;
+>                 case BPF_LDX | BPF_W | BPF_LEN: /* X = skb->len; */
+>                         PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff, len));
+>                         break;
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/c7a3275e0f9e461bb8942132aa6914
+https://git.kernel.org/powerpc/c/083b20907185b076f21c265b30fe5b
 
 cheers
