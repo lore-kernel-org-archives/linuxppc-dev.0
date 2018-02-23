@@ -3,8 +3,8 @@ Received: from EUR02-AM5-obe.outbound.protection.outlook.com
  (mail-eopbgr00128.outbound.protection.outlook.com [40.107.0.128])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znyC36RhpzF1lF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 04:00:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3znyC53GnqzF1lF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 04:00:17 +1100 (AEDT)
 From: Alexander Sverdlin <alexander.sverdlin@nokia.com>
 To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
@@ -28,9 +28,9 @@ Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH 1/3] ftrace: Add module to ftrace_make_call() parameters
-Date: Fri, 23 Feb 2018 17:58:47 +0100
-Message-Id: <20180223165849.16388-2-alexander.sverdlin@nokia.com>
+Subject: [PATCH 2/3] ARM: PLT: Move struct plt_entries definition to header
+Date: Fri, 23 Feb 2018 17:58:48 +0100
+Message-Id: <20180223165849.16388-3-alexander.sverdlin@nokia.com>
 In-Reply-To: <20180223165849.16388-1-alexander.sverdlin@nokia.com>
 References: <20180223165849.16388-1-alexander.sverdlin@nokia.com>
 MIME-Version: 1.0
@@ -44,263 +44,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ARM support for modules' PLTs will require a module pointer in
-ftrace_make_call() exactly as ftrace_make_nop() has it. Change the function
-signature without functional change for now.
+No functional change, later it will be re-used in several files.
 
 Signed-off-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
 ---
- arch/arm/kernel/ftrace.c           | 3 ++-
- arch/arm64/kernel/ftrace.c         | 3 ++-
- arch/blackfin/kernel/ftrace.c      | 3 ++-
- arch/ia64/kernel/ftrace.c          | 3 ++-
- arch/metag/kernel/ftrace.c         | 3 ++-
- arch/microblaze/kernel/ftrace.c    | 3 ++-
- arch/mips/kernel/ftrace.c          | 3 ++-
- arch/powerpc/kernel/trace/ftrace.c | 3 ++-
- arch/s390/kernel/ftrace.c          | 3 ++-
- arch/sh/kernel/ftrace.c            | 3 ++-
- arch/sparc/kernel/ftrace.c         | 3 ++-
- arch/tile/kernel/ftrace.c          | 3 ++-
- arch/x86/kernel/ftrace.c           | 3 ++-
- include/linux/ftrace.h             | 4 +++-
- kernel/trace/ftrace.c              | 6 +++---
- 15 files changed, 32 insertions(+), 17 deletions(-)
+ arch/arm/include/asm/module.h | 9 +++++++++
+ arch/arm/kernel/module-plts.c | 9 ---------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/kernel/ftrace.c b/arch/arm/kernel/ftrace.c
-index 5617932..be20adc 100644
---- a/arch/arm/kernel/ftrace.c
-+++ b/arch/arm/kernel/ftrace.c
-@@ -162,7 +162,8 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
- 	return ret;
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned long new, old;
- 	unsigned long ip = rec->ip;
-diff --git a/arch/arm64/kernel/ftrace.c b/arch/arm64/kernel/ftrace.c
-index 50986e3..e3a95d3 100644
---- a/arch/arm64/kernel/ftrace.c
-+++ b/arch/arm64/kernel/ftrace.c
-@@ -68,7 +68,8 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
- /*
-  * Turn on the call to ftrace_caller() in instrumented function
-  */
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned long pc = rec->ip;
- 	u32 old, new;
-diff --git a/arch/blackfin/kernel/ftrace.c b/arch/blackfin/kernel/ftrace.c
-index 8dad758..61ffc99 100644
---- a/arch/blackfin/kernel/ftrace.c
-+++ b/arch/blackfin/kernel/ftrace.c
-@@ -45,7 +45,8 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec,
- 	return ftrace_modify_code(rec->ip, mnop, sizeof(mnop));
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	/* Restore the mcount call site */
- 	unsigned char call[8];
-diff --git a/arch/ia64/kernel/ftrace.c b/arch/ia64/kernel/ftrace.c
-index cee411e..658a011 100644
---- a/arch/ia64/kernel/ftrace.c
-+++ b/arch/ia64/kernel/ftrace.c
-@@ -169,7 +169,8 @@ int ftrace_make_nop(struct module *mod,
- 	return ftrace_modify_code(rec->ip, NULL, new, 0);
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
- 	unsigned char *old, *new;
-diff --git a/arch/metag/kernel/ftrace.c b/arch/metag/kernel/ftrace.c
-index f7b23d3..635652a 100644
---- a/arch/metag/kernel/ftrace.c
-+++ b/arch/metag/kernel/ftrace.c
-@@ -104,7 +104,8 @@ int ftrace_make_nop(struct module *mod,
- 	return ftrace_modify_code(ip, old, new);
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned char *new, *old;
- 	unsigned long ip = rec->ip;
-diff --git a/arch/microblaze/kernel/ftrace.c b/arch/microblaze/kernel/ftrace.c
-index d57563c..01b314a 100644
---- a/arch/microblaze/kernel/ftrace.c
-+++ b/arch/microblaze/kernel/ftrace.c
-@@ -161,7 +161,8 @@ int ftrace_make_nop(struct module *mod,
- }
- 
- /* I believe that first is called ftrace_make_nop before this function */
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	int ret;
- 	pr_debug("%s: addr:0x%x, rec->ip: 0x%x, imm:0x%x\n",
-diff --git a/arch/mips/kernel/ftrace.c b/arch/mips/kernel/ftrace.c
-index 7f3dfdb..9dcec19 100644
---- a/arch/mips/kernel/ftrace.c
-+++ b/arch/mips/kernel/ftrace.c
-@@ -200,7 +200,8 @@ int ftrace_make_nop(struct module *mod,
+diff --git a/arch/arm/include/asm/module.h b/arch/arm/include/asm/module.h
+index 89ad059..6996405 100644
+--- a/arch/arm/include/asm/module.h
++++ b/arch/arm/include/asm/module.h
+@@ -19,6 +19,15 @@ enum {
+ };
  #endif
- }
  
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
++#define PLT_ENT_STRIDE		L1_CACHE_BYTES
++#define PLT_ENT_COUNT		(PLT_ENT_STRIDE / sizeof(u32))
++#define PLT_ENT_SIZE		(sizeof(struct plt_entries) / PLT_ENT_COUNT)
++
++struct plt_entries {
++	u32	ldr[PLT_ENT_COUNT];
++	u32	lit[PLT_ENT_COUNT];
++};
++
+ struct mod_plt_sec {
+ 	struct elf32_shdr	*plt;
+ 	int			plt_count;
+diff --git a/arch/arm/kernel/module-plts.c b/arch/arm/kernel/module-plts.c
+index 3d0c2e4..f272711 100644
+--- a/arch/arm/kernel/module-plts.c
++++ b/arch/arm/kernel/module-plts.c
+@@ -14,10 +14,6 @@
+ #include <asm/cache.h>
+ #include <asm/opcodes.h>
+ 
+-#define PLT_ENT_STRIDE		L1_CACHE_BYTES
+-#define PLT_ENT_COUNT		(PLT_ENT_STRIDE / sizeof(u32))
+-#define PLT_ENT_SIZE		(sizeof(struct plt_entries) / PLT_ENT_COUNT)
+-
+ #ifdef CONFIG_THUMB2_KERNEL
+ #define PLT_ENT_LDR		__opcode_to_mem_thumb32(0xf8dff000 | \
+ 							(PLT_ENT_STRIDE - 4))
+@@ -26,11 +22,6 @@
+ 						    (PLT_ENT_STRIDE - 8))
+ #endif
+ 
+-struct plt_entries {
+-	u32	ldr[PLT_ENT_COUNT];
+-	u32	lit[PLT_ENT_COUNT];
+-};
+-
+ static bool in_init(const struct module *mod, unsigned long loc)
  {
- 	unsigned int new;
- 	unsigned long ip = rec->ip;
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 4741fe1..b198433 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -437,7 +437,8 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- #endif /* CONFIG_PPC64 */
- #endif /* CONFIG_MODULES */
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
- 	unsigned int old, new;
-diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
-index dc76d81..1691d53 100644
---- a/arch/s390/kernel/ftrace.c
-+++ b/arch/s390/kernel/ftrace.c
-@@ -136,7 +136,8 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec,
- 	return 0;
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	struct ftrace_insn orig, new, old;
- 
-diff --git a/arch/sh/kernel/ftrace.c b/arch/sh/kernel/ftrace.c
-index 96dd9f7..2d3cacd 100644
---- a/arch/sh/kernel/ftrace.c
-+++ b/arch/sh/kernel/ftrace.c
-@@ -242,7 +242,8 @@ int ftrace_make_nop(struct module *mod,
- 	return ftrace_modify_code(rec->ip, old, new);
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned char *new, *old;
- 	unsigned long ip = rec->ip;
-diff --git a/arch/sparc/kernel/ftrace.c b/arch/sparc/kernel/ftrace.c
-index 915dda4..36117b5 100644
---- a/arch/sparc/kernel/ftrace.c
-+++ b/arch/sparc/kernel/ftrace.c
-@@ -63,7 +63,8 @@ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long ad
- 	return ftrace_modify_code(ip, old, new);
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
- 	u32 old, new;
-diff --git a/arch/tile/kernel/ftrace.c b/arch/tile/kernel/ftrace.c
-index b827a41..749e50f 100644
---- a/arch/tile/kernel/ftrace.c
-+++ b/arch/tile/kernel/ftrace.c
-@@ -136,7 +136,8 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
- 	return ret;
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned long new, old;
- 	unsigned long ip = rec->ip;
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 01ebcb6..389f15c 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -162,7 +162,8 @@ int ftrace_make_nop(struct module *mod,
- 	return -EINVAL;
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+		     unsigned long addr)
- {
- 	unsigned const char *new, *old;
- 	unsigned long ip = rec->ip;
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 9c3c9a3..1e8c421 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -536,6 +536,7 @@ extern int ftrace_make_nop(struct module *mod,
- 
- /**
-  * ftrace_make_call - convert a nop call site into a call to addr
-+ * @mod: module structure if called by module load initialization
-  * @rec: the mcount call site record
-  * @addr: the address that the call site should call
-  *
-@@ -554,7 +555,8 @@ extern int ftrace_make_nop(struct module *mod,
-  *  -EPERM  on error writing to the location
-  * Any other value will be considered a failure.
-  */
--extern int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr);
-+extern int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
-+			    unsigned long addr);
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
- /**
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index eac9ce2..d32f2f5 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2421,7 +2421,7 @@ unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec)
- }
- 
- static int
--__ftrace_replace_code(struct dyn_ftrace *rec, int enable)
-+__ftrace_replace_code(struct module *mod, struct dyn_ftrace *rec, int enable)
- {
- 	unsigned long ftrace_old_addr;
- 	unsigned long ftrace_addr;
-@@ -2442,7 +2442,7 @@ __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
- 
- 	case FTRACE_UPDATE_MAKE_CALL:
- 		ftrace_bug_type = FTRACE_BUG_CALL;
--		return ftrace_make_call(rec, ftrace_addr);
-+		return ftrace_make_call(mod, rec, ftrace_addr);
- 
- 	case FTRACE_UPDATE_MAKE_NOP:
- 		ftrace_bug_type = FTRACE_BUG_NOP;
-@@ -2470,7 +2470,7 @@ void __weak ftrace_replace_code(int enable)
- 		if (rec->flags & FTRACE_FL_DISABLED)
- 			continue;
- 
--		failed = __ftrace_replace_code(rec, enable);
-+		failed = __ftrace_replace_code(NULL, rec, enable);
- 		if (failed) {
- 			ftrace_bug(failed, rec);
- 			/* Stop processing */
+ 	return loc - (u32)mod->init_layout.base < mod->init_layout.size;
 -- 
 2.4.6
