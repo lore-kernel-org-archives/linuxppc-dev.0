@@ -1,20 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zng5P5Mt8zF1ky
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 16:39:21 +1100 (AEDT)
-In-Reply-To: <2f428cf9-23f3-d1f1-1524-46d6faa17386@pobox.com>
-To: Mark Lord <mlord@pobox.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@amacapital.net>,
- Will Drewry <wad@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zng5R2CN4zF1ky
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 16:39:23 +1100 (AEDT)
+In-Reply-To: <20180221130523.27836-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, mwb@linux.vnet.ibm.com,
+ nfont@linux.vnet.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: bpf, powerpc: fix jit for seccomp_data access
-Message-Id: <3zng5P45Slz9sWj@ozlabs.org>
-Date: Fri, 23 Feb 2018 16:39:21 +1100 (AEDT)
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: powerpc/pseries: Fix duplicate firmware feature for DRC_INFO
+Message-Id: <3zng5R04dXz9sWm@ozlabs.org>
+Date: Fri, 23 Feb 2018 16:39:22 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-20 at 19:49:20 UTC, Mark Lord wrote:
-> I am using SECCOMP to filter syscalls on a ppc32 platform,
-> and noticed that the JIT compiler was failing on the BPF
-> even though the interpreter was working fine.
+On Wed, 2018-02-21 at 13:05:23 UTC, Michael Ellerman wrote:
+> We had a mid-air collision between two new firmware features, DRMEM_V2
+> and DRC_INFO, and they ended up with the same value.
 > 
-> The issue was that the compiler was missing one of the instructions
-> used by SECCOMP, so here is a patch to enable JIT for that instruction.
+> No one's actually reported any problems, presumably because the new
+> firmware that supports both properties is not widely available, and
+> the two properties tend to be enabled together.
 > 
-> Signed-Off-By:  Mark Lord <mlord@pobox.com>
+> Still if we ever had one enabled but not the other, the bugs that
+> could result are many and varied. So fix it.
 > 
-> --- old/arch/powerpc/net/bpf_jit_comp.c 2018-02-16 14:07:01.000000000 -0500
-> +++ linux/arch/powerpc/net/bpf_jit_comp.c       2018-02-20 14:41:20.805227494 -0500
-> @@ -329,6 +329,9 @@ static int bpf_jit_build_body(struct bpf
->                         BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, len) != 4);
->                         PPC_LWZ_OFFS(r_A, r_skb, offsetof(struct sk_buff, len));
->                         break;
-> +               case BPF_LDX | BPF_W | BPF_ABS: /* A = *((u32 *)(seccomp_data + K)); */
-> +                       PPC_LWZ_OFFS(r_A, r_skb, K);
-> +                       break;
->                 case BPF_LDX | BPF_W | BPF_LEN: /* X = skb->len; */
->                         PPC_LWZ_OFFS(r_X, r_skb, offsetof(struct sk_buff, len));
->                         break;
+> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmware feature")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/083b20907185b076f21c265b30fe5b
+https://git.kernel.org/powerpc/c/5539d31a04b3b9ac5f55edb766f1d2
 
 cheers
