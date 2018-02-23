@@ -1,40 +1,40 @@
-Return-Path: <alexander.sverdlin@nokia.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00128.outbound.protection.outlook.com [40.107.0.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3znyC65p4zzF1lF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 04:00:18 +1100 (AEDT)
-From: Alexander Sverdlin <alexander.sverdlin@nokia.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Steven Miao <realmz6@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- James Hogan <jhogan@kernel.org>, Michal Simek <monstr@monstr.eu>,
- Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: [PATCH 3/3] ftrace: Add MODULE_PLTS support
-Date: Fri, 23 Feb 2018 17:58:49 +0100
-Message-Id: <20180223165849.16388-4-alexander.sverdlin@nokia.com>
-In-Reply-To: <20180223165849.16388-1-alexander.sverdlin@nokia.com>
-References: <20180223165849.16388-1-alexander.sverdlin@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zp17n55Z5zF1hN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 06:12:37 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1NJCUvn050732
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 14:12:35 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gapyk4mw1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 14:12:31 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Fri, 23 Feb 2018 12:09:17 -0700
+Subject: Re: [PATCH 00/38] cxlflash: OpenCXL transport support
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Content-Type: text/html;
+	charset=us-ascii
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+In-Reply-To: <2d8f0a69-5fef-d027-1456-1a9088c2333b@au1.ibm.com>
+Date: Fri, 23 Feb 2018 12:05:56 -0600
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1519338010-51782-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <2d8f0a69-5fef-d027-1456-1a9088c2333b@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-Id: <49A29C0A-75E2-4604-835A-095D319DC006@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,259 +44,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Teach ftrace_make_call() and ftrace_make_nop() about PLTs.
-Teach PLT code about FTRACE and all its callbacks.
-Otherwise the following might happen:
-
-------------[ cut here ]------------
-WARNING: CPU: 14 PID: 2265 at .../arch/arm/kernel/insn.c:14 __arm_gen_branch+0x83/0x8c()
-...
-Hardware name: LSI Axxia AXM55XX
-[<c0314a49>] (unwind_backtrace) from [<c03115e9>] (show_stack+0x11/0x14)
-[<c03115e9>] (show_stack) from [<c0519f51>] (dump_stack+0x81/0xa8)
-[<c0519f51>] (dump_stack) from [<c032185d>] (warn_slowpath_common+0x69/0x90)
-[<c032185d>] (warn_slowpath_common) from [<c03218f3>] (warn_slowpath_null+0x17/0x1c)
-[<c03218f3>] (warn_slowpath_null) from [<c03143cf>] (__arm_gen_branch+0x83/0x8c)
-[<c03143cf>] (__arm_gen_branch) from [<c0314337>] (ftrace_make_nop+0xf/0x24)
-[<c0314337>] (ftrace_make_nop) from [<c038ebcb>] (ftrace_process_locs+0x27b/0x3e8)
-[<c038ebcb>] (ftrace_process_locs) from [<c0378d79>] (load_module+0x11e9/0x1a44)
-[<c0378d79>] (load_module) from [<c037974d>] (SyS_finit_module+0x59/0x84)
-[<c037974d>] (SyS_finit_module) from [<c030e981>] (ret_fast_syscall+0x1/0x18)
----[ end trace e1b64ced7a89adcc ]---
-------------[ cut here ]------------
-WARNING: CPU: 14 PID: 2265 at .../kernel/trace/ftrace.c:1979 ftrace_bug+0x1b1/0x234()
-...
-Hardware name: LSI Axxia AXM55XX
-[<c0314a49>] (unwind_backtrace) from [<c03115e9>] (show_stack+0x11/0x14)
-[<c03115e9>] (show_stack) from [<c0519f51>] (dump_stack+0x81/0xa8)
-[<c0519f51>] (dump_stack) from [<c032185d>] (warn_slowpath_common+0x69/0x90)
-[<c032185d>] (warn_slowpath_common) from [<c03218f3>] (warn_slowpath_null+0x17/0x1c)
-[<c03218f3>] (warn_slowpath_null) from [<c038e87d>] (ftrace_bug+0x1b1/0x234)
-[<c038e87d>] (ftrace_bug) from [<c038ebd5>] (ftrace_process_locs+0x285/0x3e8)
-[<c038ebd5>] (ftrace_process_locs) from [<c0378d79>] (load_module+0x11e9/0x1a44)
-[<c0378d79>] (load_module) from [<c037974d>] (SyS_finit_module+0x59/0x84)
-[<c037974d>] (SyS_finit_module) from [<c030e981>] (ret_fast_syscall+0x1/0x18)
----[ end trace e1b64ced7a89adcd ]---
-ftrace failed to modify [<e9ef7006>] 0xe9ef7006
-actual: 02:f0:3b:fa
-ftrace record flags: 0
-(0) expected tramp: c0314265
-
-Signed-off-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
----
- arch/arm/include/asm/module.h |  1 +
- arch/arm/kernel/ftrace.c      | 70 ++++++++++++++++++++++++++++++++++++-------
- arch/arm/kernel/module-plts.c | 53 ++++++++++++++++++++++++--------
- 3 files changed, 101 insertions(+), 23 deletions(-)
-
-diff --git a/arch/arm/include/asm/module.h b/arch/arm/include/asm/module.h
-index 6996405..e3d7a51 100644
---- a/arch/arm/include/asm/module.h
-+++ b/arch/arm/include/asm/module.h
-@@ -30,6 +30,7 @@ struct plt_entries {
- 
- struct mod_plt_sec {
- 	struct elf32_shdr	*plt;
-+	struct plt_entries	*plt_ent;
- 	int			plt_count;
- };
- 
-diff --git a/arch/arm/kernel/ftrace.c b/arch/arm/kernel/ftrace.c
-index be20adc..0a0da25 100644
---- a/arch/arm/kernel/ftrace.c
-+++ b/arch/arm/kernel/ftrace.c
-@@ -98,6 +98,19 @@ int ftrace_arch_code_modify_post_process(void)
- 
- static unsigned long ftrace_call_replace(unsigned long pc, unsigned long addr)
- {
-+	s32 offset = addr - pc;
-+	s32 blim = 0xfe000008;
-+	s32 flim = 0x02000004;
-+
-+	if (IS_ENABLED(CONFIG_THUMB2_KERNEL)) {
-+		blim = 0xff000004;
-+		flim = 0x01000002;
-+	}
-+
-+	if (IS_ENABLED(CONFIG_ARM_MODULE_PLTS) &&
-+	    (offset < blim || offset > flim))
-+		return 0;
-+
- 	return arm_gen_branch_link(pc, addr);
- }
- 
-@@ -167,10 +180,27 @@ int ftrace_make_call(struct module *mod, struct dyn_ftrace *rec,
- {
- 	unsigned long new, old;
- 	unsigned long ip = rec->ip;
-+	unsigned long aaddr = adjust_address(rec, addr);
- 
- 	old = ftrace_nop_replace(rec);
- 
--	new = ftrace_call_replace(ip, adjust_address(rec, addr));
-+	new = ftrace_call_replace(ip, aaddr);
-+
-+#ifdef CONFIG_ARM_MODULE_PLTS
-+	if (!new) {
-+		/*
-+		 * mod is only supplied during module loading, later we have to
-+		 * search for it
-+		 */
-+		if (!mod)
-+			mod = __module_address(ip);
-+
-+		if (mod) {
-+			aaddr = get_module_plt(mod, ip, aaddr);
-+			new = ftrace_call_replace(ip, aaddr);
-+		}
-+	}
-+#endif
- 
- 	return ftrace_modify_code(rec->ip, old, new, true);
- }
-@@ -200,20 +230,40 @@ int ftrace_make_nop(struct module *mod,
- 	unsigned long new;
- 	int ret;
- 
--	old = ftrace_call_replace(ip, adjust_address(rec, addr));
--	new = ftrace_nop_replace(rec);
--	ret = ftrace_modify_code(ip, old, new, true);
--
--#ifdef CONFIG_OLD_MCOUNT
--	if (ret == -EINVAL && addr == MCOUNT_ADDR) {
--		rec->arch.old_mcount = true;
-+	for (;;) {
-+		unsigned long aaddr = adjust_address(rec, addr);
-+
-+		old = ftrace_call_replace(ip, aaddr);
-+
-+#ifdef CONFIG_ARM_MODULE_PLTS
-+		if (!old) {
-+			/*
-+			 * mod is only supplied during module loading, later we
-+			 * have to search for it
-+			 */
-+			if (!mod)
-+				mod = __module_address(ip);
-+
-+			if (mod) {
-+				aaddr = get_module_plt(mod, ip, aaddr);
-+				old = ftrace_call_replace(ip, aaddr);
-+			}
-+		}
-+#endif
- 
--		old = ftrace_call_replace(ip, adjust_address(rec, addr));
- 		new = ftrace_nop_replace(rec);
- 		ret = ftrace_modify_code(ip, old, new, true);
--	}
-+
-+#ifdef CONFIG_OLD_MCOUNT
-+		if (ret == -EINVAL && !rec->arch.old_mcount) {
-+			rec->arch.old_mcount = true;
-+			continue;
-+		}
- #endif
- 
-+		break;
-+	}
-+
- 	return ret;
- }
- 
-diff --git a/arch/arm/kernel/module-plts.c b/arch/arm/kernel/module-plts.c
-index f272711..a216256 100644
---- a/arch/arm/kernel/module-plts.c
-+++ b/arch/arm/kernel/module-plts.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/elf.h>
-+#include <linux/ftrace.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/sort.h>
-@@ -22,6 +23,15 @@
- 						    (PLT_ENT_STRIDE - 8))
- #endif
- 
-+static u32 fixed_plts[] = {
-+	FTRACE_ADDR,
-+	MCOUNT_ADDR,
-+#ifdef CONFIG_OLD_MCOUNT
-+	(unsigned long)ftrace_caller_old,
-+	(unsigned long)mcount,
-+#endif
-+};
-+
- static bool in_init(const struct module *mod, unsigned long loc)
- {
- 	return loc - (u32)mod->init_layout.base < mod->init_layout.size;
-@@ -31,26 +41,43 @@ u32 get_module_plt(struct module *mod, unsigned long loc, Elf32_Addr val)
- {
- 	struct mod_plt_sec *pltsec = !in_init(mod, loc) ? &mod->arch.core :
- 							  &mod->arch.init;
-+	int idx;
-+	struct plt_entries *plt;
-+
-+	/* Pre-allocate entries in the first plt */
-+	if (!pltsec->plt_count) {
-+		plt = (struct plt_entries *)pltsec->plt->sh_addr;
-+		for (idx = 0; idx < ARRAY_SIZE(plt->ldr); ++idx)
-+			plt->ldr[idx] = PLT_ENT_LDR;
-+		memcpy(plt->lit, fixed_plts, sizeof(fixed_plts));
-+		pltsec->plt_count = ARRAY_SIZE(fixed_plts);
-+		/*
-+		 * cache the address,
-+		 * ELF header is available only during module load
-+		 */
-+		pltsec->plt_ent = plt;
-+	}
-+	plt = pltsec->plt_ent;
- 
--	struct plt_entries *plt = (struct plt_entries *)pltsec->plt->sh_addr;
--	int idx = 0;
-+	idx = ARRAY_SIZE(fixed_plts);
-+	while (idx)
-+		if (plt->lit[--idx] == val)
-+			return (u32)&plt->ldr[idx];
- 
- 	/*
- 	 * Look for an existing entry pointing to 'val'. Given that the
- 	 * relocations are sorted, this will be the last entry we allocated.
- 	 * (if one exists).
- 	 */
--	if (pltsec->plt_count > 0) {
--		plt += (pltsec->plt_count - 1) / PLT_ENT_COUNT;
--		idx = (pltsec->plt_count - 1) % PLT_ENT_COUNT;
-+	plt += (pltsec->plt_count - 1) / PLT_ENT_COUNT;
-+	idx = (pltsec->plt_count - 1) % PLT_ENT_COUNT;
- 
--		if (plt->lit[idx] == val)
--			return (u32)&plt->ldr[idx];
-+	if (plt->lit[idx] == val)
-+		return (u32)&plt->ldr[idx];
- 
--		idx = (idx + 1) % PLT_ENT_COUNT;
--		if (!idx)
--			plt++;
--	}
-+	idx = (idx + 1) % PLT_ENT_COUNT;
-+	if (!idx)
-+		plt++;
- 
- 	pltsec->plt_count++;
- 	BUG_ON(pltsec->plt_count * PLT_ENT_SIZE > pltsec->plt->sh_size);
-@@ -182,8 +209,8 @@ static unsigned int count_plts(const Elf32_Sym *syms, Elf32_Addr base,
- int module_frob_arch_sections(Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
- 			      char *secstrings, struct module *mod)
- {
--	unsigned long core_plts = 0;
--	unsigned long init_plts = 0;
-+	unsigned long core_plts = ARRAY_SIZE(fixed_plts);
-+	unsigned long init_plts = ARRAY_SIZE(fixed_plts);
- 	Elf32_Shdr *s, *sechdrs_end = sechdrs + ehdr->e_shnum;
- 	Elf32_Sym *syms = NULL;
- 
--- 
-2.4.6
+<html><head></head><body dir=3D"auto" style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; line-break: after-white-space;" =
+class=3D"ApplePlainTextBody"><div dir=3D"auto" style=3D"word-wrap: =
+break-word; -webkit-nbsp-mode: space; line-break: after-white-space;" =
+class=3D"ApplePlainTextBody"><div dir=3D"auto" style=3D"word-wrap: =
+break-word; -webkit-nbsp-mode: space; line-break: after-white-space;" =
+class=3D"ApplePlainTextBody"><div =
+class=3D"ApplePlainTextBody"><br><blockquote type=3D"cite">On Feb 22, =
+2018, at 10:13 PM, Andrew Donnellan &lt;andrew.donnellan@au1.ibm.com&gt; =
+wrote:<br><br>On 23/02/18 09:20, Uma Krishnan wrote:<br><blockquote =
+type=3D"cite">This patch series adds OpenCXL support to the cxlflash =
+driver. With<br>this support, new devices using the OpenCXL transport =
+will be supported<br>by the cxlflash driver along with the existing CXL =
+devices. An effort is<br>made to keep this transport specific function =
+independent of the existing<br>core driver that communicates with the =
+AFU.<br></blockquote><br>It's "OpenCAPI" for the standard, and "ocxl" =
+for the driver - I'd rather not add "OpenCXL" to our already somewhat =
+confusing proliferation of names :)<br><br></blockquote><br>I agree. I =
+will fix it in V2. Thanks for the feedback.<br><br><blockquote =
+type=3D"cite">I'll try to review as much of the ocxl-specific stuff as I =
+can get to, though I'm a bit busy with the OpenCAPI skiboot work and =
+reviewing the libocxl userspace library at the =
+moment.<br><br><br>Andrew<br><br>-- <br>Andrew Donnellan =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;OzLabs, ADL Canberra<br>andrew.donnellan@au1.ibm.com &nbsp;IBM =
+Australia Limited<br></blockquote><br></div></div></div></body></html>=
