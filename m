@@ -1,52 +1,24 @@
-Return-Path: <shawnguo@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zpMQv6gz1zF1kR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 19:56:55 +1100 (AEDT)
-Date: Sat, 24 Feb 2018 16:56:27 +0800
-From: Shawn Guo <shawnguo@kernel.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: elfring@users.sourceforge.net,
- kernel list <linux-kernel@vger.kernel.org>, vgupta@synopsys.com,
- linux@armlinux.org.uk, oleg@redhat.com, catalin.marinas@arm.com,
- will.deacon@arm.com, paulus@ozlabs.org, benh@kernel.crashing.org,
- mpe@ellerman.id.au, ard.biesheuvel@linaro.org, tglx@linutronix.de,
- mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- scott.bauer@intel.com, jonathan.derrick@intel.com, axboe@kernel.dk,
- daniel.lezcano@linaro.org, maxime.ripard@free-electrons.com,
- wens@csie.org, alexander.deucher@amd.com, christian.koenig@amd.com,
- David1.Zhou@amd.com, airlied@linux.ie, robdclark@gmail.com,
- joro@8bytes.org, shli@kernel.org, kernel@pengutronix.de,
- fabio.estevam@nxp.com, akpm@linux-foundation.org,
- Alexey.Brodkin@synopsys.com, mhocko@suse.com, vbabka@suse.cz,
- Vladislav.Zakharov@synopsys.com, noamca@mellanox.com,
- yamada.masahiro@socionext.com, sboyd@codeaurora.org,
- viresh.kumar@linaro.org, linus.walleij@linaro.org, heiko@sntech.de,
- aik@ozlabs.ru, ruscur@russell.cc, david@gibson.dropbear.id.au,
- fbarrat@linux.vnet.ibm.com, alistair@popple.id.au, robh@kernel.org,
- joe@perches.com, harry.wentland@amd.com, tony.cheng@amd.com,
- Wenjing.Liu@amd.com, airlied@redhat.com, Ding.Wang@amd.com,
- sylvia.tsai@amd.com, hersenxs.wu@amd.com, Rex.Zhu@amd.com,
- JinHuiEric.Huang@amd.com, dan.carpenter@oracle.com,
- architt@codeaurora.org, daniel.vetter@ffwll.ch,
- narmstrong@baylibre.com, ville.syrjala@linux.intel.com,
- jcrouse@codeaurora.org, aishpant@gmail.com, noralf@tronnes.org,
- andresx7@gmail.com, Monk.Liu@amd.com, nicolai.haehnle@amd.com,
- Andrey.Grodzovsky@amd.com, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-efi@vger.kernel.org,
- linux-block@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
- freedreno@lists.freedesktop.org, iommu@lists.linux-foundation.org,
- linux-raid@vger.kernel.org
-Subject: Re: [PATCH] fix double ;;s in code
-Message-ID: <20180224085626.GN3217@dragon>
-References: <20180217211955.GE9640@amd> <20180222090932.GJ3217@dragon>
- <20180224085227.GA12996@amd>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zpTvs45tczF1kS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 00:48:56 +1100 (AEDT)
+Date: Sat, 24 Feb 2018 14:48:31 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-mm@kvack.org,
+ Joel Stanley <joel@jms.id.au>
+Subject: Re: [PATCH 0/5] PPC32/ioremap: Use memblock API to check for RAM
+Message-ID: <20180224134831.iulzv7iiz3tq7icr@latitude>
+References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
+ <ca471c17-d2a7-e8e6-2d5a-a5a534e7e6d9@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180224085227.GA12996@amd>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="px5zsypbfveej6ru"
+In-Reply-To: <ca471c17-d2a7-e8e6-2d5a-a5a534e7e6d9@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,34 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 24, 2018 at 09:52:27AM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > > diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
-> > > index 53f7275..cfb42f5 100644
-> > > --- a/drivers/soc/imx/gpc.c
-> > > +++ b/drivers/soc/imx/gpc.c
-> > > @@ -348,7 +348,7 @@ static int imx_gpc_old_dt_init(struct device *dev, struct regmap *regmap,
-> > >  		if (i == 1) {
-> > >  			domain->supply = devm_regulator_get(dev, "pu");
-> > >  			if (IS_ERR(domain->supply))
-> > > -				return PTR_ERR(domain->supply);;
-> > > +				return PTR_ERR(domain->supply);
-> > >  
-> > >  			ret = imx_pgc_get_clocks(dev, domain);
-> > >  			if (ret)
-> > > 
-> > 
-> > Considering the controversy how the changes should be merged, I'm going
-> > to send a separate patch just for IMX GPC driver with a reported-by-you
-> > tag.  Thanks for catching this.
-> 
-> That works for me.
-> 
-> Alternatively... Andrew Morton merged the patch to his -mm tree
-> (thanks!), so you don't need to take any action, and it will be
-> eventually fixed.
 
-Okay, I'm dropping my patch from IMX tree.
+--px5zsypbfveej6ru
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Shawn
+On Fri, Feb 23, 2018 at 09:01:17AM +0100, Christophe LEROY wrote:
+>=20
+>=20
+> Le 22/02/2018 =C3=A0 13:15, Jonathan Neusch=C3=A4fer a =C3=A9crit=C2=A0:
+> > This patchset solves the same problem as my previous one[1] but follows
+> > a rather different approach. Instead of implementing DISCONTIGMEM for
+> > PowerPC32, I simply switched the "is this RAM" check in __ioremap_caller
+> > to the existing page_is_ram function, and unified page_is_ram to search
+> > memblock.memory on PPC64 and PPC32.
+> >=20
+> > The intended result is, as before, that my Wii can allocate the MMIO
+> > range of its GPIO controller, which was previously not possible, because
+> > the reserved memory hack (__allow_ioremap_reserved) didn't affect the
+> > API in kernel/resource.c.
+> >=20
+> > Thanks to Christophe Leroy for reviewing the previous patchset.
+>=20
+> I tested your new serie, it doesn't break my 8xx so it is OK for me.
+
+Thanks for testing it!
+
+
+Jonathan Neusch=C3=A4fer
+
+--px5zsypbfveej6ru
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAABAgAGBQJakW0oAAoJEAgwRJqO81/bnNkP+wZw677bWbfnSz2yBIcXvWEF
+rDZ1mxe7lkYQOB66/e07uuc/1MUFv2I01x8nF6hCGE1jRqE7P2UoTM8659xjpbGv
+iSp+W1qc2KRjyrCXXUW/5gsCHW6Hs0uyDTsmfx9uHPmnVB0UedgFbseNTafL+Hna
+0gwVM1mXRQSewlg/JV1jiEIonJvS4YOMM5TAFWT91FDZzsC7vLE/WsJrtAQaxfBY
+IOe+0/PMICU9bBRk2wGkf8Aw89ydLPfwYKam6kABhsNFapBU61Rq6q4roOl0ZZp1
+iPhzF45leSGjy1MU+f+jzZA4c58xJE82wJpxK5kES9v6yIOLGYjaMkmWVUj0FaOU
+ky0TIc2mj4qRCIuMo8x0X0dMut1Je6Hri4JzlB01H1FgEvOoCj6exl4IIF69LU6A
+mfJOZ9zPsaRrImqlT7i+sQwdTCC5733AdXssiotNuqLhSWpmfVv32EhjA6+ASNRk
+jI5p24iIeneVCh7wV6XGeQXC3JR9ZLH8+H4OFCps2ElMjeHr35qtnX8HPkhT10gD
+HLWSoZN5+itF5ZZn3KlowtUGHM7iycJz3VXbY6bYZp6+SmV0VL5K34b0NtmKQtUC
+4M0Nu2X98Wluv37Zkh7Nc0mbodsS3RUDqMvcHPXuFZJN4sug/0BKqjtnq/V2p7sS
+AHKoHGYHVDzl3QfavCBs
+=RpIO
+-----END PGP SIGNATURE-----
+
+--px5zsypbfveej6ru--
