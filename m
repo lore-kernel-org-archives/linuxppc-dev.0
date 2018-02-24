@@ -1,21 +1,27 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zpKBD1hv7zF1lD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 18:15:48 +1100 (AEDT)
-Received: by mail-pl0-x244.google.com with SMTP id f23so6233198plr.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 23:15:48 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zpKLC456zzF1kP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2018 18:22:43 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id v3so6250402plg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2018 23:22:42 -0800 (PST)
+Date: Sat, 24 Feb 2018 17:22:26 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 3/3] powerpc/64s: micro-optimise __hard_irq_enable() for
- mtmsrd L=1 support
-Date: Sat, 24 Feb 2018 17:15:27 +1000
-Message-Id: <20180224071527.5053-4-npiggin@gmail.com>
-In-Reply-To: <20180224071527.5053-1-npiggin@gmail.com>
-References: <20180224071527.5053-1-npiggin@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Scott Wood
+ <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 2/6] powerpc/mm/slice: create header files dedicated
+ to slices
+Message-ID: <20180224172226.777c78bd@roar.ozlabs.ibm.com>
+In-Reply-To: <d73e104992133e8fd17c798d817687bf2ea8b50a.1519305410.git.christophe.leroy@c-s.fr>
+References: <455276187b369bf019e91715b7488e86cd932d49.1519305410.git.christophe.leroy@c-s.fr>
+ <d73e104992133e8fd17c798d817687bf2ea8b50a.1519305410.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +31,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Book3S minimum supported ISA version now requires mtmsrd L=1. This
-instruction does not require bits other than RI and EE to be
-supplied, so __hard_irq_enable() and __hard_irq_disable() does not
-have to read the kernel_msr from paca.
+On Thu, 22 Feb 2018 15:27:22 +0100 (CET)
+Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-Interrupt entry code already relies on L=1 support.
+> In preparation for the following patch which will enhance 'slices'
+> for supporting PPC32 in order to fix an issue on hugepages on 8xx,
+> this patch takes out of page*.h all bits related to 'slices' and put
+> them into newly created slice.h header files.
+> While common parts go into asm/slice.h, subarch specific
+> parts go into respective books3s/64/slice.c and nohash/64/slice.c
+> 'slices'
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/hw_irq.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I don't see a problem with this. Even by itself it seems like
+a good cleanup.
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 8004d7887ff6..fbc2d83808aa 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -228,8 +228,8 @@ static inline bool arch_irqs_disabled(void)
- #define __hard_irq_enable()	asm volatile("wrteei 1" : : : "memory")
- #define __hard_irq_disable()	asm volatile("wrteei 0" : : : "memory")
- #else
--#define __hard_irq_enable()	__mtmsrd(local_paca->kernel_msr | MSR_EE, 1)
--#define __hard_irq_disable()	__mtmsrd(local_paca->kernel_msr, 1)
-+#define __hard_irq_enable()	__mtmsrd(MSR_EE|MSR_RI, 1)
-+#define __hard_irq_disable()	__mtmsrd(MSR_RI, 1)
- #endif
- 
- #define hard_irq_disable()	do {					\
--- 
-2.16.1
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
+> ---
+>  v5: new - come from a split of patch 2 of v4
+> 
+>  arch/powerpc/include/asm/book3s/64/slice.h | 27 ++++++++++++++
+>  arch/powerpc/include/asm/nohash/64/slice.h | 12 ++++++
+>  arch/powerpc/include/asm/page.h            |  1 +
+>  arch/powerpc/include/asm/page_64.h         | 59 ------------------------------
+>  arch/powerpc/include/asm/slice.h           | 40 ++++++++++++++++++++
+>  5 files changed, 80 insertions(+), 59 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/slice.h
+>  create mode 100644 arch/powerpc/include/asm/nohash/64/slice.h
+>  create mode 100644 arch/powerpc/include/asm/slice.h
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
+> new file mode 100644
+> index 000000000000..db0dedab65ee
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/slice.h
+> @@ -0,0 +1,27 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_BOOK3S_64_SLICE_H
+> +#define _ASM_POWERPC_BOOK3S_64_SLICE_H
+> +
+> +#ifdef CONFIG_PPC_MM_SLICES
+> +
+> +#define SLICE_LOW_SHIFT		28
+> +#define SLICE_LOW_TOP		(0x100000000ul)
+> +#define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
+> +#define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+> +
+> +#define SLICE_HIGH_SHIFT	40
+> +#define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
+> +#define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+> +
+> +#else /* CONFIG_PPC_MM_SLICES */
+> +
+> +#define get_slice_psize(mm, addr)	((mm)->context.user_psize)
+> +#define slice_set_user_psize(mm, psize)		\
+> +do {						\
+> +	(mm)->context.user_psize = (psize);	\
+> +	(mm)->context.sllp = SLB_VSID_USER | mmu_psize_defs[(psize)].sllp; \
+> +} while (0)
+> +
+> +#endif /* CONFIG_PPC_MM_SLICES */
+> +
+> +#endif /* _ASM_POWERPC_BOOK3S_64_SLICE_H */
+> diff --git a/arch/powerpc/include/asm/nohash/64/slice.h b/arch/powerpc/include/asm/nohash/64/slice.h
+> new file mode 100644
+> index 000000000000..ad0d6e3cc1c5
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/nohash/64/slice.h
+> @@ -0,0 +1,12 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_NOHASH_64_SLICE_H
+> +#define _ASM_POWERPC_NOHASH_64_SLICE_H
+> +
+> +#ifdef CONFIG_PPC_64K_PAGES
+> +#define get_slice_psize(mm, addr)	MMU_PAGE_64K
+> +#else /* CONFIG_PPC_64K_PAGES */
+> +#define get_slice_psize(mm, addr)	MMU_PAGE_4K
+> +#endif /* !CONFIG_PPC_64K_PAGES */
+> +#define slice_set_user_psize(mm, psize)	do { BUG(); } while (0)
+> +
+> +#endif /* _ASM_POWERPC_NOHASH_64_SLICE_H */
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 8da5d4c1cab2..d5f1c41b7dba 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -344,5 +344,6 @@ typedef struct page *pgtable_t;
+>  
+>  #include <asm-generic/memory_model.h>
+>  #endif /* __ASSEMBLY__ */
+> +#include <asm/slice.h>
+>  
+>  #endif /* _ASM_POWERPC_PAGE_H */
+> diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+> index 56234c6fcd61..af04acdb873f 100644
+> --- a/arch/powerpc/include/asm/page_64.h
+> +++ b/arch/powerpc/include/asm/page_64.h
+> @@ -86,65 +86,6 @@ extern u64 ppc64_pft_size;
+>  
+>  #endif /* __ASSEMBLY__ */
+>  
+> -#ifdef CONFIG_PPC_MM_SLICES
+> -
+> -#define SLICE_LOW_SHIFT		28
+> -#define SLICE_HIGH_SHIFT	40
+> -
+> -#define SLICE_LOW_TOP		(0x100000000ul)
+> -#define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
+> -#define SLICE_NUM_HIGH		(H_PGTABLE_RANGE >> SLICE_HIGH_SHIFT)
+> -
+> -#define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+> -#define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+> -
+> -#ifndef __ASSEMBLY__
+> -struct mm_struct;
+> -
+> -extern unsigned long slice_get_unmapped_area(unsigned long addr,
+> -					     unsigned long len,
+> -					     unsigned long flags,
+> -					     unsigned int psize,
+> -					     int topdown);
+> -
+> -extern unsigned int get_slice_psize(struct mm_struct *mm,
+> -				    unsigned long addr);
+> -
+> -extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+> -extern void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+> -				  unsigned long len, unsigned int psize);
+> -
+> -#endif /* __ASSEMBLY__ */
+> -#else
+> -#define slice_init()
+> -#ifdef CONFIG_PPC_BOOK3S_64
+> -#define get_slice_psize(mm, addr)	((mm)->context.user_psize)
+> -#define slice_set_user_psize(mm, psize)		\
+> -do {						\
+> -	(mm)->context.user_psize = (psize);	\
+> -	(mm)->context.sllp = SLB_VSID_USER | mmu_psize_defs[(psize)].sllp; \
+> -} while (0)
+> -#else /* !CONFIG_PPC_BOOK3S_64 */
+> -#ifdef CONFIG_PPC_64K_PAGES
+> -#define get_slice_psize(mm, addr)	MMU_PAGE_64K
+> -#else /* CONFIG_PPC_64K_PAGES */
+> -#define get_slice_psize(mm, addr)	MMU_PAGE_4K
+> -#endif /* !CONFIG_PPC_64K_PAGES */
+> -#define slice_set_user_psize(mm, psize)	do { BUG(); } while(0)
+> -#endif /* CONFIG_PPC_BOOK3S_64 */
+> -
+> -#define slice_set_range_psize(mm, start, len, psize)	\
+> -	slice_set_user_psize((mm), (psize))
+> -#endif /* CONFIG_PPC_MM_SLICES */
+> -
+> -#ifdef CONFIG_HUGETLB_PAGE
+> -
+> -#ifdef CONFIG_PPC_MM_SLICES
+> -#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+> -#endif
+> -
+> -#endif /* !CONFIG_HUGETLB_PAGE */
+> -
+>  #define VM_DATA_DEFAULT_FLAGS \
+>  	(is_32bit_task() ? \
+>  	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+> diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
+> new file mode 100644
+> index 000000000000..17c5a5d8c418
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/slice.h
+> @@ -0,0 +1,40 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_SLICE_H
+> +#define _ASM_POWERPC_SLICE_H
+> +
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +#include <asm/book3s/64/slice.h>
+> +#else
+> +#include <asm/nohash/64/slice.h>
+> +#endif
+> +
+> +#ifdef CONFIG_PPC_MM_SLICES
+> +
+> +#ifdef CONFIG_HUGETLB_PAGE
+> +#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+> +#endif
+> +#define HAVE_ARCH_UNMAPPED_AREA
+> +#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +struct mm_struct;
+> +
+> +unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+> +				      unsigned long flags, unsigned int psize,
+> +				      int topdown);
+> +
+> +unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
+> +
+> +void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
+> +void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+> +			   unsigned long len, unsigned int psize);
+> +#endif /* __ASSEMBLY__ */
+> +
+> +#else /* CONFIG_PPC_MM_SLICES */
+> +
+> +#define slice_set_range_psize(mm, start, len, psize)	\
+> +	slice_set_user_psize((mm), (psize))
+> +#endif /* CONFIG_PPC_MM_SLICES */
+> +
+> +#endif /* _ASM_POWERPC_SLICE_H */
