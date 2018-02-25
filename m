@@ -1,22 +1,30 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqF3V3nnYzF1P9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 06:13:06 +1100 (AEDT)
-Date: Sun, 25 Feb 2018 12:53:38 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 01/21] powerpc: Remove warning on array size when empty
-Message-ID: <20180225185337.GM21977@gate.crashing.org>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-2-malat@debian.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180225172236.29650-2-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqLXR1WQYzF1Pb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 10:20:06 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id m5so5770388pff.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 15:20:06 -0800 (PST)
+Date: Mon, 26 Feb 2018 10:19:51 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, akpm@linux-foundation.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ ebiederm@xmission.com, arnd@arndb.de
+Subject: Re: [PATCH v12 22/22] selftests/vm: Fix deadlock in protection_keys.c
+Message-ID: <20180226101951.0136f963@balbir.ozlabs.ibm.com>
+In-Reply-To: <1519264541-7621-23-git-send-email-linuxram@us.ibm.com>
+References: <1519264541-7621-1-git-send-email-linuxram@us.ibm.com>
+ <1519264541-7621-23-git-send-email-linuxram@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!
+On Wed, 21 Feb 2018 17:55:41 -0800
+Ram Pai <linuxram@us.ibm.com> wrote:
 
-On Sun, Feb 25, 2018 at 06:22:16PM +0100, Mathieu Malaterre wrote:
-> When neither CONFIG_ALTIVEC, nor CONFIG_VSX or CONFIG_PPC64 is defined, the
-> array feature_properties is defined as an empty array, which in turn
-> triggers the following warning (treated as error on W=1):
+> From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> 
+> The sig_chld() handler calls dprintf2() taking care of setting
+> dprint_in_signal so that sigsafe_printf() won't call printf().
+> Unfortunately, this precaution is is negated by dprintf_level(), which
+> has a call to fflush().
+>
 
-> -	for (i = 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
-> +	for (; fp != feature_properties + ARRAY_SIZE(feature_properties); ++fp) {
+fflush() is not the signal-safe function list, so this makes sense.
+I wonder if fflush() is needed in sigsafe_printf()?
 
-You could just write != instead of < ?  Seems more readable.
+How about?
 
-Maybe something can be done to ARRAY_SIZE to make this not warn.
+diff --git a/tools/testing/selftests/x86/pkey-helpers.h b/tools/testing/selftests/x86/pkey-helpers.h
+index b3cb7670e026..2c3b39851f10 100644
+--- a/tools/testing/selftests/x86/pkey-helpers.h
++++ b/tools/testing/selftests/x86/pkey-helpers.h
+@@ -29,6 +29,7 @@ static inline void sigsafe_printf(const char *format, ...)
+ 	va_start(ap, format);
+ 	if (!dprint_in_signal) {
+ 		vprintf(format, ap);
++		fflush(NULL);				\
+ 	} else {
+ 		int ret;
+ 		int len = vsnprintf(dprint_in_signal_buffer,
+@@ -49,7 +50,6 @@ static inline void sigsafe_printf(const char *format, ...)
+ #define dprintf_level(level, args...) do {	\
+ 	if (level <= DEBUG_LEVEL)		\
+ 		sigsafe_printf(args);		\
+-	fflush(NULL);				\
+ } while (0)
+ #define dprintf0(args...) dprintf_level(0, args)
+ #define dprintf1(args...) dprintf_level(1, args)
 
 
-Segher
+But both are equivalent I guess, so
+Acked-by: Balbir Singh <bsingharora@gmail.com>
