@@ -1,12 +1,12 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqBcd5Pq0zF1Mn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqBcd5Pf1zF1Nq
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 04:23:13 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id z81so13251999wmb.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 09:23:13 -0800 (PST)
+Received: by mail-wr0-x242.google.com with SMTP id p104so18823394wrc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 09:23:12 -0800 (PST)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -14,10 +14,10 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Mathieu Malaterre <malat@debian.org>
-Subject: [PATCH 19/21] powerpc: Add missing prototypes for
- hw_breakpoint_handler & arch_unregister_hw_breakpoint
-Date: Sun, 25 Feb 2018 18:22:34 +0100
-Message-Id: <20180225172236.29650-20-malat@debian.org>
+Subject: [PATCH 20/21] powerpc: Add missing prototypes for ppc_select &
+ ppc_fadvise64_64
+Date: Sun, 25 Feb 2018 18:22:35 +0100
+Message-Id: <20180225172236.29650-21-malat@debian.org>
 In-Reply-To: <20180225172236.29650-1-malat@debian.org>
 References: <20180225172236.29650-1-malat@debian.org>
 MIME-Version: 1.0
@@ -31,46 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 5aae8a537080 ("powerpc, hw_breakpoints: Implement hw_breakpoints
-for 64-bit server processors") function hw_breakpoint_handler and
-arch_unregister_hw_breakpoint were added without function prototypes in
-hw_breakpoint.h header.
+Add missing prototypes for ppc_select & ppc_fadvise64_64 to header
+asm-prototypes.h. Fix the following warnings (treated as errors in W=1)
 
-Fix the following warning(s) (treated as error in W=1):
-
-  AR      init/built-in.o
-arch/powerpc/kernel/hw_breakpoint.c:106:6: error: no previous prototype for ‘arch_unregister_hw_breakpoint’ [-Werror=missing-prototypes]
- void arch_unregister_hw_breakpoint(struct perf_event *bp)
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arch/powerpc/kernel/hw_breakpoint.c:209:5: error: no previous prototype for ‘hw_breakpoint_handler’ [-Werror=missing-prototypes]
- int hw_breakpoint_handler(struct die_args *args)
-     ^~~~~~~~~~~~~~~~~~~~~
+  CC      arch/powerpc/kernel/syscalls.o
+arch/powerpc/kernel/syscalls.c:87:1: error: no previous prototype for ‘ppc_select’ [-Werror=missing-prototypes]
+ ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct timeval __user *tvp)
+ ^~~~~~~~~~
+arch/powerpc/kernel/syscalls.c:119:6: error: no previous prototype for ‘ppc_fadvise64_64’ [-Werror=missing-prototypes]
+ long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
+      ^~~~~~~~~~~~~~~~
 cc1: all warnings being treated as errors
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/include/asm/hw_breakpoint.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/asm-prototypes.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index ac6432d9be46..90c708e5e7c4 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -66,6 +66,7 @@ extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
- 						unsigned long val, void *data);
- int arch_install_hw_breakpoint(struct perf_event *bp);
- void arch_uninstall_hw_breakpoint(struct perf_event *bp);
-+void arch_unregister_hw_breakpoint(struct perf_event *bp);
- void hw_breakpoint_pmu_read(struct perf_event *bp);
- extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
- 
-@@ -82,6 +83,7 @@ static inline void hw_breakpoint_disable(void)
- 	__set_breakpoint(&brk);
- }
- extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
-+int hw_breakpoint_handler(struct die_args *args);
- 
- #else	/* CONFIG_HAVE_HW_BREAKPOINT */
- static inline void hw_breakpoint_disable(void) { }
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 7c23d9ead694..4d8b89b46018 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -93,7 +93,11 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
+ 			 int ndbg, struct sig_dbg_op __user *dbg,
+ 			 int r6, int r7, int r8,
+ 			 struct pt_regs *regs);
++int
++ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct timeval __user *tvp);
+ #endif
++long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
++		      u32 len_high, u32 len_low);
+ long sys_switch_endian(void);
+ notrace unsigned int __check_irq_replay(void);
+ void notrace restore_interrupts(void);
 -- 
 2.11.0
