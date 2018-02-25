@@ -1,12 +1,12 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqBcW1YYkzF1P2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 04:23:07 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id t3so13276757wmc.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 09:23:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqBcN3FvhzF1P9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 04:23:00 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id q83so13299340wme.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 09:23:00 -0800 (PST)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -14,9 +14,9 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Mathieu Malaterre <malat@debian.org>
-Subject: [PATCH 11/21] powerpc: Add missing prototype for hdec_interrupt
-Date: Sun, 25 Feb 2018 18:22:26 +0100
-Message-Id: <20180225172236.29650-12-malat@debian.org>
+Subject: [PATCH 04/21] powerpc: Mark both tmp variables as unused
+Date: Sun, 25 Feb 2018 18:22:19 +0100
+Message-Id: <20180225172236.29650-5-malat@debian.org>
 In-Reply-To: <20180225172236.29650-1-malat@debian.org>
 References: <20180225172236.29650-1-malat@debian.org>
 MIME-Version: 1.0
@@ -30,32 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit dabe859ec636 ("powerpc: Give hypervisor decrementer interrupts
-their own handler") an empty body function was added, but no prototype was
-declared. Fix warning (treated as error in W=1):
+Since the value of `tmp` is never intended to be read, declare both `tmp`
+variables as unused. Fix warning (treated as error in W=1):
 
-  CC      arch/powerpc/kernel/time.o
-arch/powerpc/kernel/time.c:629:6: error: no previous prototype for ‘hdec_interrupt’ [-Werror=missing-prototypes]
- void hdec_interrupt(struct pt_regs *regs)
-      ^~~~~~~~~~~~~~
+  CC      arch/powerpc/kernel/signal_32.o
+arch/powerpc/kernel/signal_32.c: In function ‘sys_swapcontext’:
+arch/powerpc/kernel/signal_32.c:1048:16: error: variable ‘tmp’ set but not used [-Werror=unused-but-set-variable]
+  unsigned char tmp;
+                ^~~
+arch/powerpc/kernel/signal_32.c: In function ‘sys_debug_setcontext’:
+arch/powerpc/kernel/signal_32.c:1234:16: error: variable ‘tmp’ set but not used [-Werror=unused-but-set-variable]
+  unsigned char tmp;
+                ^~~
 cc1: all warnings being treated as errors
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/include/asm/time.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/signal_32.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index b240666b7bc1..a7a8a9ac5991 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -31,6 +31,7 @@ extern void to_tm(int tim, struct rtc_time * tm);
- extern void tick_broadcast_ipi_handler(void);
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index a46de0035214..492f03451877 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -1045,7 +1045,7 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
+ 		     struct ucontext __user *new_ctx,
+ 		     int ctx_size, int r6, int r7, int r8, struct pt_regs *regs)
+ {
+-	unsigned char tmp;
++	unsigned char tmp __maybe_unused;
+ 	int ctx_has_vsx_region = 0;
  
- extern void generic_calibrate_decr(void);
-+extern void hdec_interrupt(struct pt_regs *regs);
- 
- /* Some sane defaults: 125 MHz timebase, 1GHz processor */
- extern unsigned long ppc_proc_freq;
+ #ifdef CONFIG_PPC64
+@@ -1231,7 +1231,7 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
+ {
+ 	struct sig_dbg_op op;
+ 	int i;
+-	unsigned char tmp;
++	unsigned char tmp __maybe_unused;
+ 	unsigned long new_msr = regs->msr;
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ 	unsigned long new_dbcr0 = current->thread.debug.dbcr0;
 -- 
 2.11.0
