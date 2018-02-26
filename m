@@ -1,37 +1,23 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicholas.piggin@gmail.com>
+Received: from mail-yw0-x232.google.com (mail-yw0-x232.google.com
+ [IPv6:2607:f8b0:4002:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqxGd6vl7zF1TH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:25:13 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1QMOOHP137791
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:25:11 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gcqc30fh5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:25:11 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Feb 2018 15:25:10 -0700
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v2 38/38] cxlflash: Enable OCXL operations
-Date: Mon, 26 Feb 2018 16:25:06 -0600
-In-Reply-To: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1519683906-18124-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqx4Y4gg0zF1Tm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:16:26 +1100 (AEDT)
+Received: by mail-yw0-x232.google.com with SMTP id q184so2060499ywh.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 14:16:25 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20180226140950.12111-1-aneesh.kumar@linux.vnet.ibm.com>
+References: <20180226140950.12111-1-aneesh.kumar@linux.vnet.ibm.com>
+From: Nicholas Piggin <nicholas.piggin@gmail.com>
+Date: Tue, 27 Feb 2018 08:16:22 +1000
+Message-ID: <CANashXPc952+httE=Vhx=wGrkN3Ycva7j+a+WE6jXQaw38p=YQ@mail.gmail.com>
+Subject: Re: [PATCH V2] powerpc: Don't do runtime futex_cmpxchg test
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary="94eb2c0ba9f23a90c6056624dcf0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,55 +27,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This commit enables the OCXL operations for the OCXL devices.
+--94eb2c0ba9f23a90c6056624dcf0
+Content-Type: text/plain; charset="UTF-8"
 
-Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+On 27 Feb. 2018 00:34, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+wrote:
+
+futex_detect_cmpxchg() does a cmpxchg_futex_value_locked on a NULL user
+addr to
+runtime detect whether architecture implements atomic cmpxchg for futex.
+POWER
+do implement the feature and hence we can enable the config instead of
+depending
+on runtime detection.
+
+We could possible enable this on everything. For now limitted to book3s_64
+
+
+I think everything implements it? Might as well do it all at once.
+
+I wouldn't mind putting in an explicit null dereference test if we take
+this out.
+
+Thanks,
+Nick
+
+
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 9 +++++++--
- drivers/scsi/cxlflash/main.h | 1 +
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 8c55fcd..42a95b7 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -3168,7 +3168,8 @@ static struct dev_dependent_vals dev_corsa_vals = { CXLFLASH_MAX_SECTORS,
- static struct dev_dependent_vals dev_flash_gt_vals = { CXLFLASH_MAX_SECTORS,
- 					CXLFLASH_NOTIFY_SHUTDOWN };
- static struct dev_dependent_vals dev_briard_vals = { CXLFLASH_MAX_SECTORS,
--					CXLFLASH_NOTIFY_SHUTDOWN };
-+					(CXLFLASH_NOTIFY_SHUTDOWN |
-+					CXLFLASH_OCXL_DEV) };
- 
- /*
-  * PCI device binding table
-@@ -3679,9 +3680,13 @@ static int cxlflash_probe(struct pci_dev *pdev,
- 
- 	cfg->init_state = INIT_STATE_NONE;
- 	cfg->dev = pdev;
--	cfg->ops = &cxlflash_cxl_ops;
- 	cfg->cxl_fops = cxlflash_cxl_fops;
- 
-+	if (ddv->flags & CXLFLASH_OCXL_DEV)
-+		cfg->ops = &cxlflash_ocxl_ops;
-+	else
-+		cfg->ops = &cxlflash_cxl_ops;
-+
- 	/*
- 	 * Promoted LUNs move to the top of the LUN table. The rest stay on
- 	 * the bottom half. The bottom half grows from the end (index = 255),
-diff --git a/drivers/scsi/cxlflash/main.h b/drivers/scsi/cxlflash/main.h
-index ba0108a..6f1be62 100644
---- a/drivers/scsi/cxlflash/main.h
-+++ b/drivers/scsi/cxlflash/main.h
-@@ -97,6 +97,7 @@ struct dev_dependent_vals {
- 	u64 flags;
- #define CXLFLASH_NOTIFY_SHUTDOWN	0x0000000000000001ULL
- #define CXLFLASH_WWPN_VPD_REQUIRED	0x0000000000000002ULL
-+#define CXLFLASH_OCXL_DEV		0x0000000000000004ULL
- };
- 
- struct asyc_intr_info {
--- 
-2.1.0
+diff --git a/arch/powerpc/platforms/Kconfig.cputype
+b/arch/powerpc/platforms/Kconfig.cputype
+index a429d859f15d..31bc2bd5dfd1 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -75,6 +75,7 @@ config PPC_BOOK3S_64
+        select ARCH_SUPPORTS_NUMA_BALANCING
+        select IRQ_WORK
+        select HAVE_KERNEL_XZ
++       select HAVE_FUTEX_CMPXCHG if FUTEX
+
+ config PPC_BOOK3E_64
+        bool "Embedded processors"
+--
+2.14.3
+
+--94eb2c0ba9f23a90c6056624dcf0
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto"><div><div class=3D"gmail_extra"><div class=3D"gmail_quote=
+">On 27 Feb. 2018 00:34, &quot;Aneesh Kumar K.V&quot; &lt;<a href=3D"mailto=
+:aneesh.kumar@linux.vnet.ibm.com">aneesh.kumar@linux.vnet.ibm.com</a>&gt; w=
+rote:<br type=3D"attribution"><blockquote class=3D"quote" style=3D"margin:0=
+ 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">futex_detect_cmpxchg=
+() does a cmpxchg_futex_value_locked on a NULL user addr to<br>
+runtime detect whether architecture implements atomic cmpxchg for futex. PO=
+WER<br>
+do implement the feature and hence we can enable the config instead of depe=
+nding<br>
+on runtime detection.<br>
+<br>
+We could possible enable this on everything. For now limitted to book3s_64<=
+br></blockquote></div></div></div><div dir=3D"auto"><br></div><div dir=3D"a=
+uto">I think everything implements it? Might as well do it all at once.</di=
+v><div dir=3D"auto"><br></div><div dir=3D"auto">I wouldn&#39;t mind putting=
+ in an explicit null dereference test if we take this out.</div><div dir=3D=
+"auto"><br></div><div dir=3D"auto">Thanks,</div><div dir=3D"auto">Nick</div=
+><div dir=3D"auto"><br></div><div dir=3D"auto"><br></div><div dir=3D"auto">=
+<div class=3D"gmail_extra"><div class=3D"gmail_quote"><blockquote class=3D"=
+quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1=
+ex">
+<br>
+Signed-off-by: Aneesh Kumar K.V &lt;<a href=3D"mailto:aneesh.kumar@linux.vn=
+et.ibm.com">aneesh.kumar@linux.vnet.ibm.<wbr>com</a>&gt;<br>
+---<br>
+=C2=A0arch/powerpc/platforms/<wbr>Kconfig.cputype | 1 +<br>
+=C2=A01 file changed, 1 insertion(+)<br>
+<br>
+diff --git a/arch/powerpc/platforms/<wbr>Kconfig.cputype b/arch/powerpc/pla=
+tforms/<wbr>Kconfig.cputype<br>
+index a429d859f15d..31bc2bd5dfd1 100644<br>
+--- a/arch/powerpc/platforms/<wbr>Kconfig.cputype<br>
++++ b/arch/powerpc/platforms/<wbr>Kconfig.cputype<br>
+@@ -75,6 +75,7 @@ config PPC_BOOK3S_64<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 select ARCH_SUPPORTS_NUMA_BALANCING<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 select IRQ_WORK<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 select HAVE_KERNEL_XZ<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0select HAVE_FUTEX_CMPXCHG if FUTEX<br>
+<br>
+=C2=A0config PPC_BOOK3E_64<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 bool &quot;Embedded processors&quot;<br>
+<font color=3D"#888888">--<br>
+2.14.3<br>
+<br>
+</font></blockquote></div><br></div></div></div>
+
+--94eb2c0ba9f23a90c6056624dcf0--
