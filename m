@@ -1,25 +1,27 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqb5p28XxzF1T6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 19:46:22 +1100 (AEDT)
-Date: Mon, 26 Feb 2018 02:46:02 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>
-Subject: Re: [PATCH 05/21] powerpc: Avoid comparison of unsigned long >= 0 in
- pfn_valid
-Message-ID: <20180226084602.GR21977@gate.crashing.org>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-6-malat@debian.org>
- <55d52f37-c24d-c2da-43c6-73a55403d3b6@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <55d52f37-c24d-c2da-43c6-73a55403d3b6@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqcR90W2szF1Nq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 20:46:28 +1100 (AEDT)
+Received: by mail-qk0-x243.google.com with SMTP id v124so18273949qkh.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 01:46:28 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20180127235140.EA71C296D4@kvm5.telegraphics.com.au>
+References: <20180127235140.EA71C296D4@kvm5.telegraphics.com.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 26 Feb 2018 10:46:25 +0100
+Message-ID: <CAMuHMdUuYF7uoH5ZAHsnEv+Y9VJXEUBAiYKxBpHkXpdDMi+FWw@mail.gmail.com>
+Subject: Re: [PATCH] macintosh/via-pmu68k: Initialize PMU driver with
+ setup_arch and arch_initcall
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 26, 2018 at 07:32:03AM +0100, Christophe LEROY wrote:
-> Le 25/02/2018 à 18:22, Mathieu Malaterre a écrit :
-> >-#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < 
-> >max_mapnr)
-> >+#define pfn_valid(pfn) \
-> >+		(((pfn) - ARCH_PFN_OFFSET) < (max_mapnr - ARCH_PFN_OFFSET))
-> 
-> What will happen when ARCH_PFN_OFFSET is not nul and pfn is lower than 
-> ARCH_PFN_OFFSET ?
+On Sun, Jan 28, 2018 at 12:51 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
+> The PMU watchdog will power down the system if the kernel is slow
+> to start up, e.g. due to unpacking a large initrd. The powerpc
+> version of this driver (via-pmu.c) has a solution for the same
+> problem. It uses this call sequence:
+>
+> setup_arch
+>         find_via_pmu
+>                 init_pmu
+> ...
+> arch_initcall
+>         via_pmu_start
+>
+> Bring via-pmu68k.c into line with via-pmu.c to fix this issue.
+>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Tested-by: Stan Johnson <userm57@yahoo.com>
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-It will work fine.
+Thanks, applied and queue for v4.17.
 
-Say you are asking for  a <= x < b  so (in actual integers, no overflow)
-that is  0 <= x-a < b-a  and you also assume x-a overflows, so that we
-are actually comparing  x-a+M < b-a  with M = 2**32 or such (the maximum
-value in the unsigned integer type plus one).  This comparison is
-obviously always false.
+Gr{oetje,eeting}s,
 
-(It also works if b < a btw).
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Segher
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
