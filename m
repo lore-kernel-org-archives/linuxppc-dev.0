@@ -1,30 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqLXR1WQYzF1Pb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 10:20:06 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id m5so5770388pff.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Feb 2018 15:20:06 -0800 (PST)
-Date: Mon, 26 Feb 2018 10:19:51 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, mingo@redhat.com, akpm@linux-foundation.org,
- dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- ebiederm@xmission.com, arnd@arndb.de
-Subject: Re: [PATCH v12 22/22] selftests/vm: Fix deadlock in protection_keys.c
-Message-ID: <20180226101951.0136f963@balbir.ozlabs.ibm.com>
-In-Reply-To: <1519264541-7621-23-git-send-email-linuxram@us.ibm.com>
-References: <1519264541-7621-1-git-send-email-linuxram@us.ibm.com>
- <1519264541-7621-23-git-send-email-linuxram@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqQNJ5v8FzF1LC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 13:13:20 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: stable@vger.kernel.org,
+	greg@kroah.com
+Cc: linuxppc-dev@ozlabs.org,
+	bernhard.kaindl@thalesgroup.com
+Subject: [PATCH stable v4.4] powerpc/64s: Fix RFI flush dependency on
+ HARDLOCKUP_DETECTOR
+Date: Mon, 26 Feb 2018 13:13:17 +1100
+Message-Id: <20180226021317.28767-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,43 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 Feb 2018 17:55:41 -0800
-Ram Pai <linuxram@us.ibm.com> wrote:
+The backport of commit aa8a5e0062ac ("powerpc/64s: Add support for RFI
+flush of L1-D cache"), incorrectly placed the new RFI flush code
+inside an existing #ifdef CONFIG_HARDLOCKUP_DETECTOR block.
 
-> From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> 
-> The sig_chld() handler calls dprintf2() taking care of setting
-> dprint_in_signal so that sigsafe_printf() won't call printf().
-> Unfortunately, this precaution is is negated by dprintf_level(), which
-> has a call to fflush().
->
+This has the obvious effect of requiring HARDLOCKUP_DETECTOR to be
+enabled in order for RFI flush to be enabled, which is a bug.
 
-fflush() is not the signal-safe function list, so this makes sense.
-I wonder if fflush() is needed in sigsafe_printf()?
+Fix it by moving the #endif up to where it belongs.
 
-How about?
+Fixes: c3892946315e ("powerpc/64s: Add support for RFI flush of L1-D cache")
+Reported-by: Bernhard Kaindl <bernhard.kaindl@thalesgroup.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/x86/pkey-helpers.h b/tools/testing/selftests/x86/pkey-helpers.h
-index b3cb7670e026..2c3b39851f10 100644
---- a/tools/testing/selftests/x86/pkey-helpers.h
-+++ b/tools/testing/selftests/x86/pkey-helpers.h
-@@ -29,6 +29,7 @@ static inline void sigsafe_printf(const char *format, ...)
- 	va_start(ap, format);
- 	if (!dprint_in_signal) {
- 		vprintf(format, ap);
-+		fflush(NULL);				\
- 	} else {
- 		int ret;
- 		int len = vsnprintf(dprint_in_signal_buffer,
-@@ -49,7 +50,6 @@ static inline void sigsafe_printf(const char *format, ...)
- #define dprintf_level(level, args...) do {	\
- 	if (level <= DEBUG_LEVEL)		\
- 		sigsafe_printf(args);		\
--	fflush(NULL);				\
- } while (0)
- #define dprintf0(args...) dprintf_level(0, args)
- #define dprintf1(args...) dprintf_level(1, args)
-
-
-But both are equivalent I guess, so
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index df4a87eb8da4..9eb469bed22b 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -835,6 +835,7 @@ static int __init disable_hardlockup_detector(void)
+ 	return 0;
+ }
+ early_initcall(disable_hardlockup_detector);
++#endif
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ static enum l1d_flush_type enabled_flush_types;
+@@ -973,4 +974,3 @@ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, cha
+ 	return sprintf(buf, "Vulnerable\n");
+ }
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+-#endif
+-- 
+2.14.1
