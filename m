@@ -1,32 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqkG3492lzF1T3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 01:08:59 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqkHL6ttqzF1Sx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 01:10:06 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1QE6m8T044268
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 09:08:56 -0500
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gckpxr4w0-1
+ w1QE4VFs088612
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 09:10:03 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gckej14wb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 09:08:55 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 09:10:03 -0500
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 26 Feb 2018 09:08:54 -0500
+ Mon, 26 Feb 2018 07:10:02 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 4/4] powerpc/mm/hash64: Increase the VA range
-Date: Mon, 26 Feb 2018 19:38:26 +0530
-In-Reply-To: <20180226140826.11641-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20180226140826.11641-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180226140826.11641-5-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2] powerpc: Don't do runtime futex_cmpxchg test
+Date: Mon, 26 Feb 2018 19:39:50 +0530
+Message-Id: <20180226140950.12111-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,85 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
----
- arch/powerpc/include/asm/book3s/64/hash-64k.h | 2 +-
- arch/powerpc/include/asm/processor.h          | 9 ++++++++-
- arch/powerpc/mm/init_64.c                     | 6 ------
- arch/powerpc/mm/pgtable_64.c                  | 5 -----
- 4 files changed, 9 insertions(+), 13 deletions(-)
+futex_detect_cmpxchg() does a cmpxchg_futex_value_locked on a NULL user addr to
+runtime detect whether architecture implements atomic cmpxchg for futex. POWER
+do implement the feature and hence we can enable the config instead of depending
+on runtime detection.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 0ee0fc1ad675..02098d7fe177 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -4,7 +4,7 @@
+We could possible enable this on everything. For now limitted to book3s_64
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/Kconfig.cputype | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index a429d859f15d..31bc2bd5dfd1 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -75,6 +75,7 @@ config PPC_BOOK3S_64
+ 	select ARCH_SUPPORTS_NUMA_BALANCING
+ 	select IRQ_WORK
+ 	select HAVE_KERNEL_XZ
++	select HAVE_FUTEX_CMPXCHG if FUTEX
  
- #define H_PTE_INDEX_SIZE  8
- #define H_PMD_INDEX_SIZE  10
--#define H_PUD_INDEX_SIZE  7
-+#define H_PUD_INDEX_SIZE  10
- #define H_PGD_INDEX_SIZE  8
- /*
-  * No of address bits below which we use the default context
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 70d65b482504..a621a068880a 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -109,6 +109,13 @@ void release_thread(struct task_struct *);
- #define TASK_SIZE_64TB  (0x0000400000000000UL)
- #define TASK_SIZE_128TB (0x0000800000000000UL)
- #define TASK_SIZE_512TB (0x0002000000000000UL)
-+#define TASK_SIZE_1PB   (0x0004000000000000UL)
-+#define TASK_SIZE_2PB   (0x0008000000000000UL)
-+/*
-+ * With 52 bits in the address we can support
-+ * upto 4PB of range.
-+ */
-+#define TASK_SIZE_4PB   (0x0010000000000000UL)
- 
- /*
-  * For now 512TB is only supported with book3s and 64K linux page size.
-@@ -117,7 +124,7 @@ void release_thread(struct task_struct *);
- /*
-  * Max value currently used:
-  */
--#define TASK_SIZE_USER64		TASK_SIZE_512TB
-+#define TASK_SIZE_USER64		TASK_SIZE_4PB
- #define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
- #define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
- #else
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index fdb424a29f03..63470b06c502 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -68,12 +68,6 @@
- 
- #include "mmu_decl.h"
- 
--#ifdef CONFIG_PPC_BOOK3S_64
--#if H_PGTABLE_RANGE > USER_VSID_RANGE
--#warning Limited user VSID range means pagetable space is wasted
--#endif
--#endif /* CONFIG_PPC_BOOK3S_64 */
--
- phys_addr_t memstart_addr = ~0;
- EXPORT_SYMBOL_GPL(memstart_addr);
- phys_addr_t kernstart_addr;
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 28c980eb4422..16636bdf3331 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -57,11 +57,6 @@
- 
- #include "mmu_decl.h"
- 
--#ifdef CONFIG_PPC_BOOK3S_64
--#if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
--#error TASK_SIZE_USER64 exceeds user VSID range
--#endif
--#endif
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- /*
+ config PPC_BOOK3E_64
+ 	bool "Embedded processors"
 -- 
 2.14.3
