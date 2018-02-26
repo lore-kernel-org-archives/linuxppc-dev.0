@@ -1,23 +1,23 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqxCw4ZzjzF1Vs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:22:52 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1QMJBtc127986
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:22:50 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gcp9stynu-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqxD45xdHzF1Vp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:23:00 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1QML2sg005027
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:22:58 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gcp5pjyuh-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:22:49 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:22:57 -0500
 Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Feb 2018 17:22:49 -0500
+ Mon, 26 Feb 2018 17:22:56 -0500
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v2 19/38] cxlflash: Support AFU state toggling
-Date: Mon, 26 Feb 2018 16:22:42 -0600
+Subject: [PATCH v2 20/38] cxlflash: Support reading adapter VPD data
+Date: Mon, 26 Feb 2018 16:22:50 -0600
 In-Reply-To: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1519683763-17438-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1519683770-17474-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,47 +41,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The AFU should be enabled following a successful configuration and
-disabled near the end of the cleanup path.
+Use the PCI VPD services to support reading the VPD data of the
+underlying adapter.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/ocxl_hw.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/scsi/cxlflash/ocxl_hw.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 67f0252..364e7a5 100644
+index 364e7a5..a1d58fc 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.c
 +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -342,12 +342,18 @@ static void ocxlflash_unconfig_afu(struct ocxl_hw_afu *afu)
- static void ocxlflash_destroy_afu(void *afu_cookie)
- {
- 	struct ocxl_hw_afu *afu = afu_cookie;
-+	int pos;
- 
- 	if (!afu)
- 		return;
- 
- 	ocxlflash_release_context(afu->ocxl_ctx);
- 	idr_destroy(&afu->idr);
-+
-+	/* Disable the AFU */
-+	pos = afu->acfg.dvsec_afu_control_pos;
-+	ocxl_config_set_afu_state(afu->pdev, pos, 0);
-+
- 	ocxlflash_unconfig_afu(afu);
- 	kfree(afu);
+@@ -324,6 +324,20 @@ static void ocxlflash_perst_reloads_same_image(void *afu_cookie, bool image)
  }
-@@ -492,6 +498,9 @@ static int ocxlflash_config_afu(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
- 			__func__, rc);
- 		goto out;
- 	}
+ 
+ /**
++ * ocxlflash_read_adapter_vpd() - reads the adapter VPD
++ * @pdev:	PCI device associated with the host.
++ * @buf:	Buffer to get the VPD data.
++ * @count:	Size of buffer (maximum bytes that can be read).
++ *
++ * Return: size of VPD on success, -errno on failure
++ */
++static ssize_t ocxlflash_read_adapter_vpd(struct pci_dev *pdev, void *buf,
++					  size_t count)
++{
++	return pci_read_vpd(pdev, 0, count, buf);
++}
 +
-+	/* Enable the AFU */
-+	ocxl_config_set_afu_state(pdev, acfg->dvsec_afu_control_pos, 1);
- out:
- 	return rc;
- }
++/**
+  * ocxlflash_unconfig_afu() - unconfigure the AFU
+  * @afu: AFU associated with the host.
+  */
+@@ -650,6 +664,7 @@ const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
+ 	.dev_context_init	= ocxlflash_dev_context_init,
+ 	.release_context	= ocxlflash_release_context,
+ 	.perst_reloads_same_image = ocxlflash_perst_reloads_same_image,
++	.read_adapter_vpd	= ocxlflash_read_adapter_vpd,
+ 	.create_afu		= ocxlflash_create_afu,
+ 	.destroy_afu		= ocxlflash_destroy_afu,
+ 	.get_fd			= ocxlflash_get_fd,
 -- 
 2.1.0
