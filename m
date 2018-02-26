@@ -1,44 +1,24 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqg6S130YzF1Ts
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 22:47:11 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1QBioNS064177
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 06:47:09 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gccu8uhvx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 06:47:09 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Mon, 26 Feb 2018 11:47:07 -0000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Balbir Singh <bsingharora@gmail.com>
-Cc: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Douglas Miller <dougmill@linux.vnet.ibm.com>,
- "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc/xmon: Dont register sysrq key when kernel param
- xmon=off
-In-Reply-To: <877er9l6jo.fsf@concordia.ellerman.id.au>
-References: <20180212085956.12016-1-vaibhav@linux.vnet.ibm.com>
- <CAKTCnz=cDmeU6rvqpHf_oW-JjtcVSNjeSQpwzwRMo5U_g+hAwg@mail.gmail.com>
- <8737264c91.fsf@vajain21.in.ibm.com>
- <87eflnre7w.fsf@concordia.ellerman.id.au>
- <87d116wy6g.fsf@vajain21.in.ibm.com>
- <877er9l6jo.fsf@concordia.ellerman.id.au>
-Date: Mon, 26 Feb 2018 17:16:59 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqgG13nmKzF0lJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 22:53:45 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency
+ table twice
+In-Reply-To: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+References: <cover.1519620578.git.viresh.kumar@linaro.org>
+ <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+Date: Mon, 26 Feb 2018 22:53:44 +1100
+Message-ID: <871sh89dbr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87fu5o7z2k.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,11 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for the feedback Mpe,
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+> Subject: Re: [PATCH 15/27] cpufreq: powerenv: Don't validate the frequency table twice
+                                           ^
+                                      powernv
 
-I have sent-out a new patch incorporating your review comments at
-http://patchwork.ozlabs.org/patch/877792/
+> The cpufreq core is already validating the CPU frequency table after
+> calling the ->init() callback of the cpufreq drivers and the drivers
+> don't need to do the same anymore. Though they need to set the
+> policy->freq_table field directly from the ->init() callback now.
+>
+> Stop validating the frequency table from powerenv driver.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 11 +++--------
+>  1 file changed, 3 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 29cdec198657..0591874856d3 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -812,7 +812,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  
+>  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  {
+> -	int base, i, ret;
+> +	int base, i;
+>  	struct kernfs_node *kn;
+>  	struct global_pstate_info *gpstates;
 
--- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+Confusingly this function has two variables called ret, but the other
+one is declared inside an if block below in context not shown.
+
+So this hunk is correct.
+
+> @@ -848,15 +848,10 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	gpstates->timer.expires = jiffies +
+>  				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
+>  	spin_lock_init(&gpstates->gpstate_lock);
+> -	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
+> -
+> -	if (ret < 0) {
+> -		kfree(policy->driver_data);
+> -		return ret;
+> -	}
+>  
+> +	policy->freq_table = powernv_freqs;
+>  	policy->fast_switch_possible = true;
+> -	return ret;
+> +	return 0;
+>  }
+
+LGTM.
+
+cheers
