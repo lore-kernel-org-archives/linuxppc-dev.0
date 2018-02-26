@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqVsK1NWMzF1F0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 16:35:17 +1100 (AEDT)
-In-Reply-To: <1519209387-29767-2-git-send-email-bharata@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqVsL0BnzzF1Fv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 16:35:18 +1100 (AEDT)
+In-Reply-To: <20180222132118.26774-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: nfont@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [RFC, v0, 1/2] powerpc, drmem: Fix unexpected flag value in ibm,
- dynamic-memory-v2
-Message-Id: <3zqVsJ5WH4z9s2B@ozlabs.org>
+Cc: mikey@neuling.org, linuxram@us.ibm.com, npiggin@gmail.com,
+ mauricfo@linux.vnet.ibm.com, oohall@gmail.com, leitao@debian.org
+Subject: Re: [1/2] powerpc/pseries: Support firmware disable of RFI flush
+Message-Id: <3zqVsJ6gWKz9s1t@ozlabs.org>
 Date: Mon, 26 Feb 2018 16:35:16 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,28 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-02-21 at 10:36:26 UTC, Bharata B Rao wrote:
-> Memory addtion and removal by count and indexed-count methods
-> temporarily mark the LMBs that are being added/removed by a special
-> flag value DRMEM_LMB_RESERVED. Accessing flags value directly at
-> a few places without proper accessor method is causing two unexpected
-> side-effects:
+On Thu, 2018-02-22 at 13:21:17 UTC, Michael Ellerman wrote:
+> Some versions of firmware will have a setting that can be configured
+> to disable the RFI flush, add support for it.
 > 
-> - DRMEM_LMB_RESERVED bit is becoming part of the flags word of
->   drconf_cell_v2 entries in ibm,dynamic-memory-v2 DT property.
-> - This results in extra drconf_cell entries in ibm,dynamic-memory-v2.
->   For example if 1G memory is added, it leads to one entry for 3 LMBs
->   and 1 separate entry for the last LMB. All the 4 LMBs should be
->   defined by one entry here.
-> 
-> Fix this by always accessing the flags by its accessor method
-> drmem_lmb_flags().
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Fixes: 8989d56878a7 ("powerpc/pseries: Query hypervisor for RFI flush settings")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/2f7d03e0511991f124455682cc9409
+https://git.kernel.org/powerpc/c/582605a429e20ae68fd0b041b2e840
 
 cheers
