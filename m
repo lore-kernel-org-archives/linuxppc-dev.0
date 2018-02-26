@@ -1,30 +1,25 @@
-Return-Path: <srs0=7hi6=fu=kroah.com=greg@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqb2F1d9lzF1KZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 19:43:17 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 3zqb2D68Bqz8tKv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 19:43:16 +1100 (AEDT)
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3zqb2C5wc2z9s1l
- for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2018 19:43:15 +1100 (AEDT)
-Date: Mon, 26 Feb 2018 09:43:14 +0100
-From: Greg KH <greg@kroah.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: stable@vger.kernel.org, linuxppc-dev@ozlabs.org,
- bernhard.kaindl@thalesgroup.com
-Subject: Re: [PATCH stable v4.4] powerpc/64s: Fix RFI flush dependency on
- HARDLOCKUP_DETECTOR
-Message-ID: <20180226084314.GA24511@kroah.com>
-References: <20180226021317.28767-1-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180226021317.28767-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqb5p28XxzF1T6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 19:46:22 +1100 (AEDT)
+Date: Mon, 26 Feb 2018 02:46:02 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ Jiri Slaby <jslaby@suse.com>
+Subject: Re: [PATCH 05/21] powerpc: Avoid comparison of unsigned long >= 0 in
+ pfn_valid
+Message-ID: <20180226084602.GR21977@gate.crashing.org>
+References: <20180225172236.29650-1-malat@debian.org>
+ <20180225172236.29650-6-malat@debian.org>
+ <55d52f37-c24d-c2da-43c6-73a55403d3b6@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <55d52f37-c24d-c2da-43c6-73a55403d3b6@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,22 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 26, 2018 at 01:13:17PM +1100, Michael Ellerman wrote:
-> The backport of commit aa8a5e0062ac ("powerpc/64s: Add support for RFI
-> flush of L1-D cache"), incorrectly placed the new RFI flush code
-> inside an existing #ifdef CONFIG_HARDLOCKUP_DETECTOR block.
+On Mon, Feb 26, 2018 at 07:32:03AM +0100, Christophe LEROY wrote:
+> Le 25/02/2018 à 18:22, Mathieu Malaterre a écrit :
+> >-#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < 
+> >max_mapnr)
+> >+#define pfn_valid(pfn) \
+> >+		(((pfn) - ARCH_PFN_OFFSET) < (max_mapnr - ARCH_PFN_OFFSET))
 > 
-> This has the obvious effect of requiring HARDLOCKUP_DETECTOR to be
-> enabled in order for RFI flush to be enabled, which is a bug.
-> 
-> Fix it by moving the #endif up to where it belongs.
-> 
-> Fixes: c3892946315e ("powerpc/64s: Add support for RFI flush of L1-D cache")
-> Reported-by: Bernhard Kaindl <bernhard.kaindl@thalesgroup.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/kernel/setup_64.c | 2 +-
+> What will happen when ARCH_PFN_OFFSET is not nul and pfn is lower than 
+> ARCH_PFN_OFFSET ?
 
-Thanks, now queued up.
+It will work fine.
 
-greg k-h
+Say you are asking for  a <= x < b  so (in actual integers, no overflow)
+that is  0 <= x-a < b-a  and you also assume x-a overflows, so that we
+are actually comparing  x-a+M < b-a  with M = 2**32 or such (the maximum
+value in the unsigned integer type plus one).  This comparison is
+obviously always false.
+
+(It also works if b < a btw).
+
+
+Segher
