@@ -1,27 +1,33 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <daniel.m.jordan@oracle.com>
+Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqt3Q2PvnzF1LM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:00:17 +1100 (AEDT)
-Subject: Re: [PATCH 06/21] powerpc: Avoid comparison of unsigned long >= 0 in
- __access_ok
-To: Mathieu Malaterre <malat@debian.org>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, LKML
- <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Jiri Slaby <jslaby@suse.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-7-malat@debian.org>
- <8862c1e1-d161-3410-1b2a-502ad06cef57@c-s.fr>
- <6cba215c-127e-f3eb-b525-773b6aed0eb7@c-s.fr>
- <CA+7wUswNE1ydgeESpG8Dqtz4SGFjZZJJiPp+SHN8Z1qtBtPLLQ@mail.gmail.com>
- <CA+7wUsx047shRJ92PJ+cvg24HNhMnYzM0t5zUdEOaSE00sXkSg@mail.gmail.com>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <4ddba8bc-b1e5-24a0-602e-672e7b51b203@c-s.fr>
-Date: Mon, 26 Feb 2018 21:00:09 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqpSM2Q5WzF1Jk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 04:18:04 +1100 (AEDT)
+Subject: Re: [PATCH v8 18/24] mm: Provide speculative fault infrastructure
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1518794738-4186-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1518794738-4186-19-git-send-email-ldufour@linux.vnet.ibm.com>
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+Message-ID: <5b16d6ce-6b62-e4ca-2d78-c25bb008e27e@oracle.com>
+Date: Mon, 26 Feb 2018 12:16:09 -0500
 MIME-Version: 1.0
-In-Reply-To: <CA+7wUsx047shRJ92PJ+cvg24HNhMnYzM0t5zUdEOaSE00sXkSg@mail.gmail.com>
+In-Reply-To: <1518794738-4186-19-git-send-email-ldufour@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,124 +38,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Laurent,
+
+This series doesn't build for me[*] when CONFIG_TRANSPARENT_HUGEPAGE is unset.
+
+The problem seems to be that the BUILD_BUG() version of pmd_same is called in pte_map_lock:
+
+On 02/16/2018 10:25 AM, Laurent Dufour wrote:
+> +static bool pte_map_lock(struct vm_fault *vmf)
+> +{
+...snip...
+> +	if (!pmd_same(pmdval, vmf->orig_pmd))
+> +		goto out;
+
+Since SPF can now call pmd_same without THP, maybe the way to fix it is just
+
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 2cfa3075d148..e130692db24a 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -375,7 +375,8 @@ static inline int pte_unused(pte_t pte)
+  #endif
+  
+  #ifndef __HAVE_ARCH_PMD_SAME
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++#if defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
++    defined(CONFIG_SPECULATIVE_PAGE_FAULT)
+  static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
+  {
+         return pmd_val(pmd_a) == pmd_val(pmd_b);
+
+?
+
+Daniel
 
 
-Le 26/02/2018 à 18:50, Mathieu Malaterre a écrit :
-> On Mon, Feb 26, 2018 at 8:44 AM, Mathieu Malaterre <malat@debian.org> wrote:
->> On Mon, Feb 26, 2018 at 7:50 AM, Christophe LEROY
->> <christophe.leroy@c-s.fr> wrote:
->>>
->>>
->>> Le 26/02/2018 à 07:34, Christophe LEROY a écrit :
->>>>
->>>>
->>>>
->>>> Le 25/02/2018 à 18:22, Mathieu Malaterre a écrit :
->>>>>
->>>>> Rewrite check size - 1 <= Y as size < Y since `size` is unsigned value.
->>>>> Fix warning (treated as error in W=1):
->>>>>
->>>>>     CC      arch/powerpc/kernel/signal_32.o
->>>>> In file included from ./include/linux/uaccess.h:14:0,
->>>>>                    from ./include/asm-generic/termios-base.h:8,
->>>>>                    from ./arch/powerpc/include/asm/termios.h:20,
->>>>>                    from ./include/uapi/linux/termios.h:6,
->>>>>                    from ./include/linux/tty.h:7,
->>>>>                    from arch/powerpc/kernel/signal_32.c:36:
->>>>> ./include/asm-generic/termios-base.h: In function
->>>>> ‘user_termio_to_kernel_termios’:
->>>>> ./arch/powerpc/include/asm/uaccess.h:52:35: error: comparison of unsigned
->>>>> expression >= 0 is always true [-Werror=type-limits]
->>>>>      (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
->>>>>                                      ^
->>>>> ./arch/powerpc/include/asm/uaccess.h:58:3: note: in expansion of macro
->>>>> ‘__access_ok’
->>>>>      __access_ok((__force unsigned long)(addr), (size), get_fs()))
->>>>>      ^~~~~~~~~~~
->>>>> ./arch/powerpc/include/asm/uaccess.h:262:6: note: in expansion of macro
->>>>> ‘access_ok’
->>>>>     if (access_ok(VERIFY_READ, __gu_addr, (size)))   \
->>>>>         ^~~~~~~~~
->>>>> ./arch/powerpc/include/asm/uaccess.h:80:2: note: in expansion of macro
->>>>> ‘__get_user_check’
->>>>>     __get_user_check((x), (ptr), sizeof(*(ptr)))
->>>>>     ^~~~~~~~~~~~~~~~
->>>>> ./include/asm-generic/termios-base.h:36:6: note: in expansion of macro
->>>>> ‘get_user’
->>>>>     if (get_user(termios->c_line, &termio->c_line) < 0)
->>>>>         ^~~~~~~~
->>>>> [...]
->>>>> cc1: all warnings being treated as errors
->>>>>
->>>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>>>> ---
->>>>>    arch/powerpc/include/asm/uaccess.h | 2 +-
->>>>>    1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/arch/powerpc/include/asm/uaccess.h
->>>>> b/arch/powerpc/include/asm/uaccess.h
->>>>> index 51bfeb8777f0..fadc406bd39d 100644
->>>>> --- a/arch/powerpc/include/asm/uaccess.h
->>>>> +++ b/arch/powerpc/include/asm/uaccess.h
->>>>> @@ -49,7 +49,7 @@
->>>>>    #define __access_ok(addr, size, segment)    \
->>>>>        (((addr) <= (segment).seg) &&        \
->>>>> -     (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
->>>>> +     (((size) == 0) || ((size) < ((segment).seg - (addr)))))
->>>>
->>>>
->>>> IIUC, ((2 - 1) <= 1) is the same as (2 < 1) ?????
->>>
->>
->> The whole series was pretty mediocre, but this one was actually pretty
->> destructive. Thanks for catching this.
->>
->>>
->>> Note that I already try to submit a fix for this warning 3 years ago
->>> (https://patchwork.ozlabs.org/patch/418075/) and it was rejected with the
->>> following comment:
-> 
-> Tested again today with gcc 6.3.0 and gcc is still producing the
-> original warning (treated as error).
+[*]  The errors are:
 
-That's right, it seems that recent versions of gcc are not happy anymore 
-with that change.
-
-Maybe Segher has a suggestion for that one ?
-
-> 
->>> Again, I don't think Linux enables this warning.  What did you do to
->>> produce this?  In any case, it's a bad warning that doesn't take macros
->>> into account, and the answer is not to make the code less clear by hiding
->>> the fact that zero is a special case.
->>
->> Right. I'll try to see how to make W=1 run without error with an
->> alternate solution.
-> 
-> So the other alternative is to update a bunch of ppc32 defconfig(s)
-> with: CONFIG_PPC_DISABLE_WERROR=y.
-> 
-> Would that be preferable ?
-
-No I don't think it is the solution. PPC is built with WERROR in order 
-to catch warnings on real problems.
-You could disable it selectively when you want to run 'make W=1' and see 
-all possible warnings, then select by yourself which warnings are worth 
-fixing up.
-
-Christophe
-
-> 
->>> Christophe
->>>
->>>
->>>>
->>>> Christophe
->>>>
->>>>>    #endif
->>>>>
->>>
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+In file included from /home/dmjordan/src/linux/include/linux/kernel.h:10:0,
+                  from /home/dmjordan/src/linux/include/linux/list.h:9,
+                  from /home/dmjordan/src/linux/include/linux/smp.h:12,
+                  from /home/dmjordan/src/linux/include/linux/kernel_stat.h:5,
+                  from /home/dmjordan/src/linux/mm/memory.c:41:
+In function ‘pmd_same.isra.104’,
+     inlined from ‘pte_map_lock’ at /home/dmjordan/src/linux/mm/memory.c:2380:7:
+/home/dmjordan/src/linux/include/linux/compiler.h:324:38: error: call to ‘__compiletime_assert_391’ declared with attribute error: BUILD_BUG failed
+   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+                                       ^
+/home/dmjordan/src/linux/include/linux/compiler.h:304:4: note: in definition of macro ‘__compiletime_assert’
+     prefix ## suffix();    \
+     ^~~~~~
+/home/dmjordan/src/linux/include/linux/compiler.h:324:2: note: in expansion of macro ‘_compiletime_assert’
+   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+   ^~~~~~~~~~~~~~~~~~~
+/home/dmjordan/src/linux/include/linux/build_bug.h:45:37: note: in expansion of macro ‘compiletime_assert’
+  #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+                                      ^~~~~~~~~~~~~~~~~~
+/home/dmjordan/src/linux/include/linux/build_bug.h:79:21: note: in expansion of macro ‘BUILD_BUG_ON_MSG’
+  #define BUILD_BUG() BUILD_BUG_ON_MSG(1, "BUILD_BUG failed")
+                      ^~~~~~~~~~~~~~~~
+/home/dmjordan/src/linux/include/asm-generic/pgtable.h:391:2: note: in expansion of macro ‘BUILD_BUG’
+   BUILD_BUG();
+   ^~~~~~~~~
+   CC      block/elevator.o
+   CC      crypto/crypto_wq.o
+In function ‘pmd_same.isra.104’,
+     inlined from ‘pte_spinlock’ at /home/dmjordan/src/linux/mm/memory.c:2326:7,
+     inlined from ‘handle_pte_fault’ at /home/dmjordan/src/linux/mm/memory.c:4181:7:
+/home/dmjordan/src/linux/include/linux/compiler.h:324:38: error: call to ‘__compiletime_assert_391’ declared with attribute error: BUILD_BUG failed
+   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+                                       ^
+/home/dmjordan/src/linux/include/linux/compiler.h:304:4: note: in definition of macro ‘__compiletime_assert’
+     prefix ## suffix();    \
+     ^~~~~~
+/home/dmjordan/src/linux/include/linux/compiler.h:324:2: note: in expansion of macro ‘_compiletime_assert’
+   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+   ^~~~~~~~~~~~~~~~~~~
+/home/dmjordan/src/linux/include/linux/build_bug.h:45:37: note: in expansion of macro ‘compiletime_assert’
+  #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+                                      ^~~~~~~~~~~~~~~~~~
+/home/dmjordan/src/linux/include/linux/build_bug.h:79:21: note: in expansion of macro ‘BUILD_BUG_ON_MSG’
+  #define BUILD_BUG() BUILD_BUG_ON_MSG(1, "BUILD_BUG failed")
+                      ^~~~~~~~~~~~~~~~
+/home/dmjordan/src/linux/include/asm-generic/pgtable.h:391:2: note: in expansion of macro ‘BUILD_BUG’
+   BUILD_BUG();
+   ^~~~~~~~~
+...
+make[2]: *** [/home/dmjordan/src/linux/scripts/Makefile.build:316: mm/memory.o] Error 1
+make[1]: *** [/home/dmjordan/src/linux/Makefile:1047: mm] Error 2
