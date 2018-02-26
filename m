@@ -1,29 +1,35 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqx6T53DvzF1Tq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:18:09 +1100 (AEDT)
-Date: Mon, 26 Feb 2018 16:17:48 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Jiri Slaby <jslaby@suse.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 06/21] powerpc: Avoid comparison of unsigned long >= 0 in
- __access_ok
-Message-ID: <20180226221747.GV21977@gate.crashing.org>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-7-malat@debian.org>
- <8862c1e1-d161-3410-1b2a-502ad06cef57@c-s.fr>
- <6cba215c-127e-f3eb-b525-773b6aed0eb7@c-s.fr>
- <CA+7wUswNE1ydgeESpG8Dqtz4SGFjZZJJiPp+SHN8Z1qtBtPLLQ@mail.gmail.com>
- <CA+7wUsx047shRJ92PJ+cvg24HNhMnYzM0t5zUdEOaSE00sXkSg@mail.gmail.com>
- <4ddba8bc-b1e5-24a0-602e-672e7b51b203@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <4ddba8bc-b1e5-24a0-602e-672e7b51b203@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqx7k6bXxzDqG5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:19:14 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1QMJANA066168
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:19:11 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gctgch2kt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 17:19:11 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Mon, 26 Feb 2018 15:19:02 -0700
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH v2 00/38] cxlflash: OCXL transport support
+Date: Mon, 26 Feb 2018 16:18:33 -0600
+Message-Id: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,43 +39,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 26, 2018 at 09:00:09PM +0100, christophe leroy wrote:
-> Le 26/02/2018 à 18:50, Mathieu Malaterre a écrit :
-> >On Mon, Feb 26, 2018 at 8:44 AM, Mathieu Malaterre <malat@debian.org> 
-> >wrote:
-> >>On Mon, Feb 26, 2018 at 7:50 AM, Christophe LEROY
-> >><christophe.leroy@c-s.fr> wrote:
-> >>>Note that I already try to submit a fix for this warning 3 years ago
-> >>>(https://patchwork.ozlabs.org/patch/418075/) and it was rejected with the
-> >>>following comment:
-> >
-> >Tested again today with gcc 6.3.0 and gcc is still producing the
-> >original warning (treated as error).
-> 
-> That's right, it seems that recent versions of gcc are not happy anymore 
-> with that change.
-> 
-> Maybe Segher has a suggestion for that one ?
+This patch series adds OCXL support to the cxlflash driver. With this
+support, new devices using the OCXL transport will be supported by the
+cxlflash driver along with the existing CXL devices. An effort is made
+to keep this transport specific function independent of the existing
+core driver that communicates with the AFU.
 
-Your patch:
+The first three patches contain a minor fix and staging improvements.
 
- #define __access_ok(addr, size, segment)	\
- 	(((addr) <= (segment).seg) &&		\
--	 (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
-+	 (((size) <= 1) || (((size) - 1) <= ((segment).seg - (addr)))))
+This series is intended for 4.17 and is bisectable.
 
-Is there any reason to write this as a macro?  Let's make this more
-readable:
+v2 Changes:
+- Replaced OpenCXL with OCXL in the commit messages and comments
 
-static inline int __access_ok(unsigned long addr, unsigned long size,
-			      mm_segment_t seg)
-{
-	if (addr > seg.seg)
-		return 0;
-	return (size == 0 || size - 1 <= seg.seg - addr);
-}
+Matthew R. Ochs (1):
+  cxlflash: Avoid clobbering context control register value
 
-and I think we are done already, or will this warn for any input?
+Uma Krishnan (37):
+  cxlflash: Preserve number of interrupts for master contexts
+  cxlflash: Add argument identifier names
+  cxlflash: Introduce OCXL backend
+  cxlflash: Hardware AFU for OCXL
+  cxlflash: Read host function configuration
+  cxlflash: Setup function acTag range
+  cxlflash: Read host AFU configuration
+  cxlflash: Setup AFU acTag range
+  cxlflash: Setup AFU PASID
+  cxlflash: Adapter context support for OCXL
+  cxlflash: Use IDR to manage adapter contexts
+  cxlflash: Support adapter file descriptors for OCXL
+  cxlflash: Support adapter context discovery
+  cxlflash: Support image reload policy modification
+  cxlflash: MMIO map the AFU
+  cxlflash: Support starting an adapter context
+  cxlflash: Support process specific mappings
+  cxlflash: Support AFU state toggling
+  cxlflash: Support reading adapter VPD data
+  cxlflash: Setup function OCXL link
+  cxlflash: Setup OCXL transaction layer
+  cxlflash: Support process element lifecycle
+  cxlflash: Support AFU interrupt management
+  cxlflash: Support AFU interrupt mapping and registration
+  cxlflash: Support starting user contexts
+  cxlflash: Support adapter context polling
+  cxlflash: Support adapter context reading
+  cxlflash: Support adapter context mmap and release
+  cxlflash: Support file descriptor mapping
+  cxlflash: Introduce object handle fop
+  cxlflash: Setup LISNs for user contexts
+  cxlflash: Setup LISNs for master contexts
+  cxlflash: Update synchronous interrupt status bits
+  cxlflash: Introduce OCXL context state machine
+  cxlflash: Register for translation errors
+  cxlflash: Support AFU reset
+  cxlflash: Enable OCXL operations
 
+ drivers/scsi/cxlflash/Kconfig     |    2 +-
+ drivers/scsi/cxlflash/Makefile    |    2 +-
+ drivers/scsi/cxlflash/backend.h   |   50 +-
+ drivers/scsi/cxlflash/common.h    |   10 +-
+ drivers/scsi/cxlflash/cxl_hw.c    |   13 +
+ drivers/scsi/cxlflash/main.c      |   55 +-
+ drivers/scsi/cxlflash/main.h      |    1 +
+ drivers/scsi/cxlflash/ocxl_hw.c   | 1428 +++++++++++++++++++++++++++++++++++++
+ drivers/scsi/cxlflash/ocxl_hw.h   |   76 ++
+ drivers/scsi/cxlflash/sislite.h   |   41 +-
+ drivers/scsi/cxlflash/superpipe.c |   14 +
+ 11 files changed, 1644 insertions(+), 48 deletions(-)
+ create mode 100644 drivers/scsi/cxlflash/ocxl_hw.c
+ create mode 100644 drivers/scsi/cxlflash/ocxl_hw.h
 
-Segher
+-- 
+2.1.0
