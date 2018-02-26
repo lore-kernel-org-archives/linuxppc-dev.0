@@ -1,20 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
+ [IPv6:2607:f8b0:400c:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zqncV2DtjzF1C6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 03:40:10 +1100 (AEDT)
-Message-Id: <e57399f4eb1de4b6330a47bdf8c82c9982999a8e.1519660621.git.christophe.leroy@c-s.fr>
-In-Reply-To: <7c934f0788d60bd82fb1cb51d712c9ab1ea7fcb4.1519660621.git.christophe.leroy@c-s.fr>
-References: <7c934f0788d60bd82fb1cb51d712c9ab1ea7fcb4.1519660621.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH  2/2] crypto: talitos - do not perform unnecessary dma
- synchronisation
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Horia Geanta <horia.geanta@nxp.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 26 Feb 2018 17:40:06 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zqq9l2NWhzF1KZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 04:50:34 +1100 (AEDT)
+Received: by mail-vk0-x242.google.com with SMTP id y127so10393369vky.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 09:50:34 -0800 (PST)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <CA+7wUswNE1ydgeESpG8Dqtz4SGFjZZJJiPp+SHN8Z1qtBtPLLQ@mail.gmail.com>
+References: <20180225172236.29650-1-malat@debian.org>
+ <20180225172236.29650-7-malat@debian.org>
+ <8862c1e1-d161-3410-1b2a-502ad06cef57@c-s.fr>
+ <6cba215c-127e-f3eb-b525-773b6aed0eb7@c-s.fr>
+ <CA+7wUswNE1ydgeESpG8Dqtz4SGFjZZJJiPp+SHN8Z1qtBtPLLQ@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 26 Feb 2018 18:50:11 +0100
+Message-ID: <CA+7wUsx047shRJ92PJ+cvg24HNhMnYzM0t5zUdEOaSE00sXkSg@mail.gmail.com>
+Subject: Re: [PATCH 06/21] powerpc: Avoid comparison of unsigned long >= 0 in
+ __access_ok
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, LKML <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,198 +34,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-req_ctx->hw_context is mainly used only by the HW. So it is not needed
-to sync the HW and the CPU each time hw_context in DMA mapped.
-This patch modifies the DMA mapping in order to limit synchronisation
-to necessary situations.
+On Mon, Feb 26, 2018 at 8:44 AM, Mathieu Malaterre <malat@debian.org> wrote=
+:
+> On Mon, Feb 26, 2018 at 7:50 AM, Christophe LEROY
+> <christophe.leroy@c-s.fr> wrote:
+>>
+>>
+>> Le 26/02/2018 =C3=A0 07:34, Christophe LEROY a =C3=A9crit :
+>>>
+>>>
+>>>
+>>> Le 25/02/2018 =C3=A0 18:22, Mathieu Malaterre a =C3=A9crit :
+>>>>
+>>>> Rewrite check size - 1 <=3D Y as size < Y since `size` is unsigned val=
+ue.
+>>>> Fix warning (treated as error in W=3D1):
+>>>>
+>>>>    CC      arch/powerpc/kernel/signal_32.o
+>>>> In file included from ./include/linux/uaccess.h:14:0,
+>>>>                   from ./include/asm-generic/termios-base.h:8,
+>>>>                   from ./arch/powerpc/include/asm/termios.h:20,
+>>>>                   from ./include/uapi/linux/termios.h:6,
+>>>>                   from ./include/linux/tty.h:7,
+>>>>                   from arch/powerpc/kernel/signal_32.c:36:
+>>>> ./include/asm-generic/termios-base.h: In function
+>>>> =E2=80=98user_termio_to_kernel_termios=E2=80=99:
+>>>> ./arch/powerpc/include/asm/uaccess.h:52:35: error: comparison of unsig=
+ned
+>>>> expression >=3D 0 is always true [-Werror=3Dtype-limits]
+>>>>     (((size) =3D=3D 0) || (((size) - 1) <=3D ((segment).seg - (addr)))=
+))
+>>>>                                     ^
+>>>> ./arch/powerpc/include/asm/uaccess.h:58:3: note: in expansion of macro
+>>>> =E2=80=98__access_ok=E2=80=99
+>>>>     __access_ok((__force unsigned long)(addr), (size), get_fs()))
+>>>>     ^~~~~~~~~~~
+>>>> ./arch/powerpc/include/asm/uaccess.h:262:6: note: in expansion of macr=
+o
+>>>> =E2=80=98access_ok=E2=80=99
+>>>>    if (access_ok(VERIFY_READ, __gu_addr, (size)))   \
+>>>>        ^~~~~~~~~
+>>>> ./arch/powerpc/include/asm/uaccess.h:80:2: note: in expansion of macro
+>>>> =E2=80=98__get_user_check=E2=80=99
+>>>>    __get_user_check((x), (ptr), sizeof(*(ptr)))
+>>>>    ^~~~~~~~~~~~~~~~
+>>>> ./include/asm-generic/termios-base.h:36:6: note: in expansion of macro
+>>>> =E2=80=98get_user=E2=80=99
+>>>>    if (get_user(termios->c_line, &termio->c_line) < 0)
+>>>>        ^~~~~~~~
+>>>> [...]
+>>>> cc1: all warnings being treated as errors
+>>>>
+>>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>>>> ---
+>>>>   arch/powerpc/include/asm/uaccess.h | 2 +-
+>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/uaccess.h
+>>>> b/arch/powerpc/include/asm/uaccess.h
+>>>> index 51bfeb8777f0..fadc406bd39d 100644
+>>>> --- a/arch/powerpc/include/asm/uaccess.h
+>>>> +++ b/arch/powerpc/include/asm/uaccess.h
+>>>> @@ -49,7 +49,7 @@
+>>>>   #define __access_ok(addr, size, segment)    \
+>>>>       (((addr) <=3D (segment).seg) &&        \
+>>>> -     (((size) =3D=3D 0) || (((size) - 1) <=3D ((segment).seg - (addr)=
+))))
+>>>> +     (((size) =3D=3D 0) || ((size) < ((segment).seg - (addr)))))
+>>>
+>>>
+>>> IIUC, ((2 - 1) <=3D 1) is the same as (2 < 1) ?????
+>>
+>
+> The whole series was pretty mediocre, but this one was actually pretty
+> destructive. Thanks for catching this.
+>
+>>
+>> Note that I already try to submit a fix for this warning 3 years ago
+>> (https://patchwork.ozlabs.org/patch/418075/) and it was rejected with th=
+e
+>> following comment:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/crypto/talitos.c | 85 +++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 63 insertions(+), 22 deletions(-)
+Tested again today with gcc 6.3.0 and gcc is still producing the
+original warning (treated as error).
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index bb44df1c1f2d..447cb8b1b16a 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -104,16 +104,34 @@ static void to_talitos_ptr_ext_or(struct talitos_ptr *ptr, u8 val, bool is_sec1)
- /*
-  * map virtual single (contiguous) pointer to h/w descriptor pointer
-  */
-+static void __map_single_talitos_ptr(struct device *dev,
-+				     struct talitos_ptr *ptr,
-+				     unsigned int len, void *data,
-+				     enum dma_data_direction dir,
-+				     unsigned long attrs)
-+{
-+	dma_addr_t dma_addr = dma_map_single_attrs(dev, data, len, dir, attrs);
-+	struct talitos_private *priv = dev_get_drvdata(dev);
-+	bool is_sec1 = has_ftr_sec1(priv);
-+
-+	to_talitos_ptr(ptr, dma_addr, len, is_sec1);
-+}
-+
- static void map_single_talitos_ptr(struct device *dev,
- 				   struct talitos_ptr *ptr,
- 				   unsigned int len, void *data,
- 				   enum dma_data_direction dir)
- {
--	dma_addr_t dma_addr = dma_map_single(dev, data, len, dir);
--	struct talitos_private *priv = dev_get_drvdata(dev);
--	bool is_sec1 = has_ftr_sec1(priv);
-+	__map_single_talitos_ptr(dev, ptr, len, data, dir, 0);
-+}
- 
--	to_talitos_ptr(ptr, dma_addr, len, is_sec1);
-+static void map_single_talitos_ptr_nosync(struct device *dev,
-+					  struct talitos_ptr *ptr,
-+					  unsigned int len, void *data,
-+					  enum dma_data_direction dir)
-+{
-+	__map_single_talitos_ptr(dev, ptr, len, data, dir,
-+				 DMA_ATTR_SKIP_CPU_SYNC);
- }
- 
- /*
-@@ -1785,10 +1803,10 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 
- 	/* hash context in */
- 	if (!req_ctx->first || req_ctx->swinit) {
--		map_single_talitos_ptr(dev, &desc->ptr[1],
--				       req_ctx->hw_context_size,
--				       (char *)req_ctx->hw_context,
--				       DMA_TO_DEVICE);
-+		map_single_talitos_ptr_nosync(dev, &desc->ptr[1],
-+					      req_ctx->hw_context_size,
-+					      req_ctx->hw_context,
-+					      DMA_TO_DEVICE);
- 		req_ctx->swinit = 0;
- 	}
- 	/* Indicate next op is not the first. */
-@@ -1832,9 +1850,10 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 				       crypto_ahash_digestsize(tfm),
- 				       areq->result, DMA_FROM_DEVICE);
- 	else
--		map_single_talitos_ptr(dev, &desc->ptr[5],
--				       req_ctx->hw_context_size,
--				       req_ctx->hw_context, DMA_FROM_DEVICE);
-+		map_single_talitos_ptr_nosync(dev, &desc->ptr[5],
-+					      req_ctx->hw_context_size,
-+					      req_ctx->hw_context,
-+					      DMA_FROM_DEVICE);
- 
- 	/* last DWORD empty */
- 
-@@ -1857,10 +1876,10 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 			copy_talitos_ptr(&desc2->ptr[1], &desc->ptr[1],
- 					 is_sec1);
- 		else
--			map_single_talitos_ptr(dev, &desc2->ptr[1],
--					       req_ctx->hw_context_size,
--					       req_ctx->hw_context,
--					       DMA_TO_DEVICE);
-+			map_single_talitos_ptr_nosync(dev, &desc2->ptr[1],
-+						      req_ctx->hw_context_size,
-+						      req_ctx->hw_context,
-+						      DMA_TO_DEVICE);
- 		copy_talitos_ptr(&desc2->ptr[2], &desc->ptr[2], is_sec1);
- 		sg_count = talitos_sg_map(dev, req_ctx->psrc, length, edesc,
- 					  &desc2->ptr[3], sg_count, offset, 0);
-@@ -1868,10 +1887,10 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 			sync_needed = true;
- 		copy_talitos_ptr(&desc2->ptr[5], &desc->ptr[5], is_sec1);
- 		if (req_ctx->last)
--			map_single_talitos_ptr(dev, &desc->ptr[5],
--					       req_ctx->hw_context_size,
--					       req_ctx->hw_context,
--					       DMA_FROM_DEVICE);
-+			map_single_talitos_ptr_nosync(dev, &desc->ptr[5],
-+						      req_ctx->hw_context_size,
-+						      req_ctx->hw_context,
-+						      DMA_FROM_DEVICE);
- 
- 		next_desc = dma_map_single(dev, &desc2->hdr1, TALITOS_DESC_SIZE,
- 					   DMA_BIDIRECTIONAL);
-@@ -1909,8 +1928,11 @@ static struct talitos_edesc *ahash_edesc_alloc(struct ahash_request *areq,
- static int ahash_init(struct ahash_request *areq)
- {
- 	struct crypto_ahash *tfm = crypto_ahash_reqtfm(areq);
-+	struct talitos_ctx *ctx = crypto_ahash_ctx(tfm);
-+	struct device *dev = ctx->dev;
- 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
- 	unsigned int size;
-+	dma_addr_t dma;
- 
- 	/* Initialize the context */
- 	req_ctx->buf_idx = 0;
-@@ -1922,6 +1944,10 @@ static int ahash_init(struct ahash_request *areq)
- 			: TALITOS_MDEU_CONTEXT_SIZE_SHA384_SHA512;
- 	req_ctx->hw_context_size = size;
- 
-+	dma = dma_map_single(dev, req_ctx->hw_context, req_ctx->hw_context_size,
-+			     DMA_TO_DEVICE);
-+	dma_unmap_single(dev, dma, req_ctx->hw_context_size, DMA_TO_DEVICE);
-+
- 	return 0;
- }
- 
-@@ -1933,9 +1959,6 @@ static int ahash_init_sha224_swinit(struct ahash_request *areq)
- {
- 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
- 
--	ahash_init(areq);
--	req_ctx->swinit = 1;/* prevent h/w initting context with sha256 values*/
--
- 	req_ctx->hw_context[0] = SHA224_H0;
- 	req_ctx->hw_context[1] = SHA224_H1;
- 	req_ctx->hw_context[2] = SHA224_H2;
-@@ -1949,6 +1972,9 @@ static int ahash_init_sha224_swinit(struct ahash_request *areq)
- 	req_ctx->hw_context[8] = 0;
- 	req_ctx->hw_context[9] = 0;
- 
-+	ahash_init(areq);
-+	req_ctx->swinit = 1;/* prevent h/w initting context with sha256 values*/
-+
- 	return 0;
- }
- 
-@@ -2105,6 +2131,14 @@ static int ahash_export(struct ahash_request *areq, void *out)
- {
- 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
- 	struct talitos_export_state *export = out;
-+	struct crypto_ahash *tfm = crypto_ahash_reqtfm(areq);
-+	struct talitos_ctx *ctx = crypto_ahash_ctx(tfm);
-+	struct device *dev = ctx->dev;
-+	dma_addr_t dma;
-+
-+	dma = dma_map_single(dev, req_ctx->hw_context, req_ctx->hw_context_size,
-+			     DMA_FROM_DEVICE);
-+	dma_unmap_single(dev, dma, req_ctx->hw_context_size, DMA_FROM_DEVICE);
- 
- 	memcpy(export->hw_context, req_ctx->hw_context,
- 	       req_ctx->hw_context_size);
-@@ -2122,8 +2156,11 @@ static int ahash_import(struct ahash_request *areq, const void *in)
- {
- 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
- 	struct crypto_ahash *tfm = crypto_ahash_reqtfm(areq);
-+	struct talitos_ctx *ctx = crypto_ahash_ctx(tfm);
-+	struct device *dev = ctx->dev;
- 	const struct talitos_export_state *export = in;
- 	unsigned int size;
-+	dma_addr_t dma;
- 
- 	memset(req_ctx, 0, sizeof(*req_ctx));
- 	size = (crypto_ahash_digestsize(tfm) <= SHA256_DIGEST_SIZE)
-@@ -2138,6 +2175,10 @@ static int ahash_import(struct ahash_request *areq, const void *in)
- 	req_ctx->to_hash_later = export->to_hash_later;
- 	req_ctx->nbuf = export->nbuf;
- 
-+	dma = dma_map_single(dev, req_ctx->hw_context, req_ctx->hw_context_size,
-+			     DMA_TO_DEVICE);
-+	dma_unmap_single(dev, dma, req_ctx->hw_context_size, DMA_TO_DEVICE);
-+
- 	return 0;
- }
- 
--- 
-2.13.3
+>> Again, I don't think Linux enables this warning.  What did you do to
+>> produce this?  In any case, it's a bad warning that doesn't take macros
+>> into account, and the answer is not to make the code less clear by hidin=
+g
+>> the fact that zero is a special case.
+>
+> Right. I'll try to see how to make W=3D1 run without error with an
+> alternate solution.
+
+So the other alternative is to update a bunch of ppc32 defconfig(s)
+with: CONFIG_PPC_DISABLE_WERROR=3Dy.
+
+Would that be preferable ?
+
+>> Christophe
+>>
+>>
+>>>
+>>> Christophe
+>>>
+>>>>   #endif
+>>>>
+>>
