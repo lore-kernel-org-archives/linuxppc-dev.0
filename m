@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMq4SP3zF1Xb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMq0W5MzF1XW
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:27 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id m5so8264051pff.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:27 -0800 (PST)
+Received: by mail-pg0-x241.google.com with SMTP id w17so7807509pgv.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:26 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 19/30] KVM: PPC: Book3S PR: enable NV reg restore for
- reading TM SPR at guest privilege state
-Date: Wed, 28 Feb 2018 01:52:27 +0800
-Message-Id: <1519753958-11756-9-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 18/30] KVM: PPC: Book3S PR: always fail transaction in
+ guest privilege state
+Date: Wed, 28 Feb 2018 01:52:26 +0800
+Message-Id: <1519753958-11756-8-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,57 +28,145 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Currently kvmppc_handle_fac() will not update NV GPRs and thus it can
-return with GUEST_RESUME.
+Currently kernel doesn't use transaction memory.
+And there is an issue for privilege guest that:
+tbegin/tsuspend/tresume/tabort TM instructions can impact MSR TM bits
+without trap into PR host. So following code will lead to a false mfmsr
+result:
+	tbegin	<- MSR bits update to Transaction active.
+	beq 	<- failover handler branch
+	mfmsr	<- still read MSR bits from magic page with
+		transaction inactive.
 
-However PR KVM guest always disables MSR_TM bit at privilege state. If PR
-privilege guest are trying to read TM SPRs, it will trigger TM facility
-unavailable exception and fall into kvmppc_handle_fac(). Then the emulation
-will be done by kvmppc_core_emulate_mfspr_pr(). The mfspr instruction can
-include a RT with NV reg. So it is necessary to restore NV GPRs at this
-case, to reflect the update to NV RT.
+It is not an issue for non-privilege guest since its mfmsr is not patched
+with magic page and will always trap into PR host.
 
-This patch make kvmppc_handle_fac() return GUEST_RESUME_NV at TM fac
-exception and with guest privilege state.
+This patch will always fail tbegin attempt for privilege guest, so that
+the above issue is prevented. It is benign since currently (guest) kernel
+doesn't initiate a transaction.
+
+Test case:
+https://github.com/justdoitqd/publicFiles/blob/master/test_tbegin_pr.c
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_pr.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h |  2 ++
+ arch/powerpc/kvm/book3s_emulate.c     | 43 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_pr.c          | 11 ++++++++-
+ 3 files changed, 55 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 2ecb6a3..9690280 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -258,9 +258,11 @@ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
+ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
++void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu);
+ #else
+ static inline void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu) {}
+ static inline void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu) {}
++static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
+ #endif
+ 
+ extern int kvm_irq_bypass;
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index a03533d..90b5f59 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -23,6 +23,7 @@
+ #include <asm/reg.h>
+ #include <asm/switch_to.h>
+ #include <asm/time.h>
++#include <asm/tm.h>
+ #include "book3s.h"
+ 
+ #define OP_19_XOP_RFID		18
+@@ -47,6 +48,8 @@
+ #define OP_31_XOP_EIOIO		854
+ #define OP_31_XOP_SLBMFEE	915
+ 
++#define OP_31_XOP_TBEGIN	654
++
+ /* DCBZ is actually 1014, but we patch it to 1010 so we get a trap */
+ #define OP_31_XOP_DCBZ		1010
+ 
+@@ -362,6 +365,46 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 			break;
+ 		}
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++		case OP_31_XOP_TBEGIN:
++		{
++			if (!cpu_has_feature(CPU_FTR_TM))
++				break;
++
++			if (!(kvmppc_get_msr(vcpu) & MSR_TM)) {
++				kvmppc_trigger_fac_interrupt(vcpu, FSCR_TM_LG);
++				emulated = EMULATE_AGAIN;
++				break;
++			}
++
++			if (!(kvmppc_get_msr(vcpu) & MSR_PR)) {
++				preempt_disable();
++				vcpu->arch.cr = (CR0_TBEGIN_FAILURE |
++				  (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)));
++
++				vcpu->arch.texasr = (TEXASR_FS | TEXASR_EX |
++					(((u64)(TM_CAUSE_EMULATE | TM_CAUSE_PERSISTENT))
++						 << TEXASR_FC_LG));
++
++				if ((inst >> 21) & 0x1)
++					vcpu->arch.texasr |= TEXASR_ROT;
++
++				if (kvmppc_get_msr(vcpu) & MSR_PR)
++					vcpu->arch.texasr |= TEXASR_PR;
++
++				if (kvmppc_get_msr(vcpu) & MSR_HV)
++					vcpu->arch.texasr |= TEXASR_HV;
++
++				vcpu->arch.tfhar = kvmppc_get_pc(vcpu) + 4;
++				vcpu->arch.tfiar = kvmppc_get_pc(vcpu);
++
++				kvmppc_restore_tm_sprs(vcpu);
++				preempt_enable();
++			} else
++				emulated = EMULATE_FAIL;
++			break;
++		}
++#endif
+ 		default:
+ 			emulated = EMULATE_FAIL;
+ 		}
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 82e1a74..f31f9de 100644
+index 473c819..82e1a74 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -998,6 +998,18 @@ static int kvmppc_handle_fac(struct kvm_vcpu *vcpu, ulong fac)
- 		break;
- 	}
- 
+@@ -204,6 +204,15 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	smsr |= MSR_ISF | MSR_HV;
+ #endif
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/* Since we disabled MSR_TM at privilege state, the mfspr instruction
-+	 * for TM spr can trigger TM fac unavailable. In this case, the
-+	 * emulation is handled by kvmppc_emulate_fac(), which invokes
-+	 * kvmppc_emulate_mfspr() finally. But note the mfspr can include
-+	 * RT for NV registers. So it need to restore those NV reg to reflect
-+	 * the update.
++	/*
++	 * in guest privileged state, we want to fail all TM transactions.
++	 * So disable MSR TM bit so that all tbegin. will be able to be
++	 * trapped into host.
 +	 */
-+	if ((fac == FSCR_TM_LG) && !(kvmppc_get_msr(vcpu) & MSR_PR))
-+		return RESUME_GUEST_NV;
++	if (!(guest_msr & MSR_PR))
++		smsr &= ~MSR_TM;
 +#endif
-+
- 	return RESUME_GUEST;
+ 	vcpu->arch.shadow_msr = smsr;
  }
  
-@@ -1359,8 +1371,7 @@ int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	}
- #ifdef CONFIG_PPC_BOOK3S_64
- 	case BOOK3S_INTERRUPT_FAC_UNAVAIL:
--		kvmppc_handle_fac(vcpu, vcpu->arch.shadow_fscr >> 56);
--		r = RESUME_GUEST;
-+		r = kvmppc_handle_fac(vcpu, vcpu->arch.shadow_fscr >> 56);
- 		break;
- #endif
- 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+@@ -301,7 +310,7 @@ static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu)
+ 	tm_disable();
+ }
+ 
+-static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu)
++void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu)
+ {
+ 	tm_enable();
+ 	mtspr(SPRN_TFHAR, vcpu->arch.tfhar);
 -- 
 1.8.3.1
