@@ -1,26 +1,26 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x22f.google.com (mail-pg0-x22f.google.com
- [IPv6:2607:f8b0:400e:c05::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rjw@rjwysocki.net>
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
+ [79.96.170.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrCcV0ng4zF1X0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 20:11:37 +1100 (AEDT)
-Received: by mail-pg0-x22f.google.com with SMTP id g12so7293284pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 01:11:37 -0800 (PST)
-Date: Tue, 27 Feb 2018 19:11:25 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC REBASED 5/5] powerpc/mm/slice: use the dynamic high slice
- size to limit bitmap operations
-Message-ID: <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
-In-Reply-To: <87bmga7qng.fsf@linux.vnet.ibm.com>
-References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
- <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
- <87bmga7qng.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrGV05SQ3zF0lb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 22:21:05 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>,
+ x86 <x86@kernel.org>, William Grant <william.grant@canonical.com>,
+ Woody Suwalski <terraluna977@gmail.com>
+Subject: Re: Linux 4.16: Reported regressions as of Monday,
+ 2018-02-26 (Was: Linux 4.16-rc3)
+Date: Tue, 27 Feb 2018 12:21:48 +0100
+Message-ID: <1585962.fYXxTULH6v@aspire.rjw.lan>
+In-Reply-To: <2cf45d87-066c-7368-3fbd-20675f2d74ae@leemhuis.info>
+References: <CA+55aFxk5KBxL9DvRtBivP3hKT-aOAzvSA_B47L1+y0P2GLe_A@mail.gmail.com>
+ <2cf45d87-066c-7368-3fbd-20675f2d74ae@leemhuis.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Feb 2018 14:31:07 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Monday, February 26, 2018 11:25:09 AM CET Thorsten Leemhuis wrote:
+> On 26.02.2018 04:05, Linus Torvalds wrote:
+> > We're on the normal schedule for 4.16 and everything still looks very regular.
+> 
+> Hi! Find below my second regression report for Linux 4.16. It lists 8
+> regressions I'm currently aware of.
+> 
+> To anyone reading this: Are you aware of any other regressions that got
+> introduced this development cycle? Then please let me know by mail (a
+> simple bounce or forward to the email address is enough!).
+> 
+> For details see http://bit.ly/lnxregtrackid And please tell me if there
+> is anything in the report that shouldn't be there.
 
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
-> > The number of high slices a process might use now depends on its
-> > address space size, and what allocation address it has requested.
-> >
-> > This patch uses that limit throughout call chains where possible,
-> > rather than use the fixed SLICE_NUM_HIGH for bitmap operations.
-> > This saves some cost for processes that don't use very large address
-> > spaces.  
-> 
-> I haven't really looked at the final code. One of the issue we had was
-> with the below scenario.
-> 
-> mmap(addr, len) where addr < 128TB and addr+len > 128TB  We want to make
-> sure we build the mask such that we don't find the addr available.
+Please add https://bugzilla.kernel.org/show_bug.cgi?id=198763
 
-We should run it through the mmap regression tests. I *think* we moved
-all of that logic from the slice code to get_ummapped_area before going
-in to slices. I may have missed something though, it would be good to
-have more eyes on it.
+It has a bisect result and seems to be readily reproducible.
+
+No response from the author of the problematic commit so far.
 
 Thanks,
-Nick
+Rafael
