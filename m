@@ -1,38 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrJGQ29NHzF1WK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 23:41:17 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1RCe3kL135566
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:41:15 -0500
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gd6b8u2cf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:41:14 -0500
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 27 Feb 2018 12:41:12 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC REBASED 5/5] powerpc/mm/slice: use the dynamic high slice
- size to limit bitmap operations
-In-Reply-To: <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
-References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
- <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
- <87bmga7qng.fsf@linux.vnet.ibm.com>
- <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
-Date: Tue, 27 Feb 2018 18:11:07 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrM1J3LLCzF1Cm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 01:45:08 +1100 (AEDT)
+Subject: Re: [RFC][PATCH bpf] tools: bpftool: Fix tags for bpf-to-bpf calls
+To: Sandipan Das <sandipan@linux.vnet.ibm.com>, naveen.n.rao@linux.vnet.ibm.com
+Cc: ast@fb.com, mpe@ellerman.id.au, jakub.kicinski@netronome.com,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1519153431.im5wioxel1.naveen@linux.ibm.com>
+ <20180227121346.16199-1-sandipan@linux.vnet.ibm.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Message-ID: <4cdcc751-d830-51ce-23a0-62f773dc015e@iogearbox.net>
+Date: Tue, 27 Feb 2018 15:44:55 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <878tbe7ggs.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20180227121346.16199-1-sandipan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,48 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On 02/27/2018 01:13 PM, Sandipan Das wrote:
+> "Naveen N. Rao" wrote:
+>> I'm wondering if we can instead encode the bpf prog id in
+>> imm32. That way, we should be able to indicate the BPF
+>> function being called into.  Daniel, is that something we
+>> can consider?
+> 
+> Since each subprog does not get a separate id, we cannot fetch
+> the fd and therefore the tag of a subprog. Instead we can use
+> the tag of the complete program as shown below.
+> 
+> "Daniel Borkmann" wrote:
+>> I think one limitation that would still need to be addressed later
+>> with such approach would be regarding the xlated prog dump in bpftool,
+>> see 'BPF calls via JIT' in 7105e828c087 ("bpf: allow for correlation
+>> of maps and helpers in dump"). Any ideas for this (potentially if we
+>> could use off + imm for calls, we'd get to 48 bits, but that seems
+>> still not be enough as you say)?
+> 
+> As an alternative, this is what I am thinking of:
+> 
+> Currently, for bpf-to-bpf calls, if bpf_jit_kallsyms is enabled,
+> bpftool looks up the name of the corresponding symbol for the
+> JIT-ed subprogram and shows it in the xlated dump alongside the
+> actual call instruction. However, the lookup is based on the
+> target address which is calculated using the imm field of the
+> instruction. So, once again, if imm is truncated, we will end
+> up with the wrong address. Also, the subprog aux data (which
+> has been proposed as a mitigation for this) is not accessible
+> from this tool.
+> 
+> We can still access the tag for the complete bpf program and use
+> this with the correct offset in an objdump-like notation as an
+> alterative for the name of the subprog that is the target of a
+> bpf-to-bpf call instruction.
+> 
+> Currently, an xlated dump looks like this:
+>    0: (85) call pc+2#bpf_prog_5f76847930402518_F
+>    1: (b7) r0 = 1
+>    2: (95) exit
+>    3: (b7) r0 = 2
+>    4: (95) exit
+> 
+> With this patch, it will look like this:
+>    0: (85) call pc+2#bpf_prog_8f85936f29a7790a+3
 
-> On Tue, 27 Feb 2018 14:31:07 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> 
->> > The number of high slices a process might use now depends on its
->> > address space size, and what allocation address it has requested.
->> >
->> > This patch uses that limit throughout call chains where possible,
->> > rather than use the fixed SLICE_NUM_HIGH for bitmap operations.
->> > This saves some cost for processes that don't use very large address
->> > spaces.  
->> 
->> I haven't really looked at the final code. One of the issue we had was
->> with the below scenario.
->> 
->> mmap(addr, len) where addr < 128TB and addr+len > 128TB  We want to make
->> sure we build the mask such that we don't find the addr available.
->
-> We should run it through the mmap regression tests. I *think* we moved
-> all of that logic from the slice code to get_ummapped_area before going
-> in to slices. I may have missed something though, it would be good to
-> have more eyes on it.
->
+(Note the +2 is the insn->off already.)
 
-mmap(-1,...) failed with the test. Something like below fix it
+>    1: (b7) r0 = 1
+>    2: (95) exit
+>    3: (b7) r0 = 2
+>    4: (95) exit
+> 
+> where 8f85936f29a7790a is the tag of the bpf program and 3 is
+> the offset to the start of the subprog from the start of the
+> program.
 
-@@ -756,7 +770,7 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
-        mm->context.low_slices_psize = lpsizes;
- 
-        hpsizes = mm->context.high_slices_psize;
--       high_slices = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
-+       high_slices = SLICE_NUM_HIGH;
-        for (i = 0; i < high_slices; i++) {
-                mask_index = i & 0x1;
-                index = i >> 1;
+The problem with this approach would be that right now the name is
+something like bpf_prog_5f76847930402518_F where the subprog tag is
+just a placeholder so in future, this may well adapt to e.g. the actual
+function name from the elf file. Note that when kallsyms is enabled
+then a name like bpf_prog_5f76847930402518_F will also appear in stack
+traces, perf records, etc, so for correlation/debugging it would really
+help to have them the same everywhere.
 
-I guess for everything in the mm_context_t, we should compute it till
-SLICE_NUM_HIGH. The reason for failure was, even though we recompute the
-slice mask cached in mm_context on slb_addr_limit, it was still derived
-from the high_slices_psizes which was computed with lower value.
-
--aneesh
+Worst case if there's nothing better, potentially what one could do in
+bpf_prog_get_info_by_fd() is to dump an array of full addresses and
+have the imm part as the index pointing to one of them, just unfortunate
+that it's likely only needed in ppc64.
