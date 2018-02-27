@@ -1,24 +1,24 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
+Received: from mail-pg0-x230.google.com (mail-pg0-x230.google.com
+ [IPv6:2607:f8b0:400e:c05::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrCSv0jfXzF132
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 20:05:02 +1100 (AEDT)
-Received: by mail-pf0-x22a.google.com with SMTP id f80so2597867pfa.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 01:05:02 -0800 (PST)
-Date: Tue, 27 Feb 2018 19:04:40 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrCXv3lGNzDqKY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 20:08:30 +1100 (AEDT)
+Received: by mail-pg0-x230.google.com with SMTP id l4so7283675pgp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 01:08:30 -0800 (PST)
+Date: Tue, 27 Feb 2018 19:08:18 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC REBASED 3/5] powerpc/mm/slice: implement
- slice_check_range_fits
-Message-ID: <20180227190440.45ce8641@roar.ozlabs.ibm.com>
-In-Reply-To: <87k1uy7vbr.fsf@linux.vnet.ibm.com>
+Subject: Re: [RFC REBASED 4/5] powerpc/mm/slice: Use const pointers to
+ cached slice masks where possible
+Message-ID: <20180227190818.3f3673e4@roar.ozlabs.ibm.com>
+In-Reply-To: <87h8q27uvi.fsf@linux.vnet.ibm.com>
 References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
- <caa9d52e0a8ef15719bafe8002a4ad2dc359c634.1518382747.git.christophe.leroy@c-s.fr>
- <87k1uy7vbr.fsf@linux.vnet.ibm.com>
+ <6a8c9183257dfcfeb1d8ed1ecc778ec3da19dcd4.1518382747.git.christophe.leroy@c-s.fr>
+ <87h8q27uvi.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,28 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Feb 2018 12:50:08 +0530
+On Tue, 27 Feb 2018 12:59:53 +0530
 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
 > Christophe Leroy <christophe.leroy@c-s.fr> writes:
->  +	if ((start + len) > SLICE_LOW_TOP) {
-> > +		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
-> > +		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
-> > +		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
-> > +		unsigned long i;
-> >  
-> > -	slice_bitmap_and(result, mask->high_slices, available->high_slices,
-> > -			 slice_count);
-> > +		for (i = start_index; i < start_index + count; i++) {
-> > +			if (!test_bit(i, available->high_slices))
-> > +				return false;
-> > +		}
-> > +	}  
 > 
-> why not bitmap_equal here instead of test_bit in loop?
+> > The slice_mask cache was a basic conversion which copied the slice
+> > mask into caller's structures, because that's how the original code
+> > worked. In most cases the pointer can be used directly instead, saving
+> > a copy and an on-stack structure.
+> >
+> > This also converts the slice_mask bit operation helpers to be the usual
+> > 3-operand kind, which is clearer to work with. And we remove some
+> > unnecessary intermediate bitmaps, reducing stack and copy overhead
+> > further.  
+> 
+> Can we move the reduce unncessary intermediate bitmaps as another patch?
 
-Because we only have the available bitmap now. If we see large ranges
-here we could use some bitmap operation like find_next_zero_bit perhaps.
+This was rightly split out -- it moved to Christophe's patch he already
+made in his series. The changelog can just be adjusted.
 
 Thanks,
 Nick
