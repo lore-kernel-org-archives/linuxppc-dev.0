@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMW2WcrzF1Cm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:11 +1100 (AEDT)
-Received: by mail-pl0-x244.google.com with SMTP id u13so11849796plq.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:11 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMZ0791zF1X5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:13 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id i133so589108pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:13 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 12/30] KVM: PPC: Book3S PR: prevent TS bits change in
- kvmppc_interrupt_pr()
-Date: Wed, 28 Feb 2018 01:52:20 +0800
-Message-Id: <1519753958-11756-2-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 13/30] KVM: PPC: Book3S PR: adds new
+ kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm API for PR KVM.
+Date: Wed, 28 Feb 2018 01:52:21 +0800
+Message-Id: <1519753958-11756-3-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,47 +28,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-PR KVM host usually equipped with enabled TM in its host MSR value, and
-with non-transactional TS value.
+This patch adds 2 new APIs: kvmppc_copyto_vcpu_tm() and
+kvmppc_copyfrom_vcpu_tm().  These 2 APIs will be used to copy from/to TM
+data between VCPU_TM/VCPU area.
 
-When a guest with TM active traps into PR KVM host, the rfid at the
-tail of kvmppc_interrupt_pr() will try to switch TS bits from
-S0 (Suspended & TM disabled) to N1 (Non-transactional & TM enabled).
-
-That will leads to TM Bad Thing interrupt.
-
-This patch manually sets target TS bits unchanged to avoid this
-exception.
+PR KVM will use these APIs for treclaim. or trchkpt. emulation.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_segment.S | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/powerpc/kvm/book3s_emulate.c | 41 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-index 93a180c..98ccc7e 100644
---- a/arch/powerpc/kvm/book3s_segment.S
-+++ b/arch/powerpc/kvm/book3s_segment.S
-@@ -383,6 +383,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	 */
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 2eb457b..63af17f 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -87,6 +87,47 @@ static bool spr_allowed(struct kvm_vcpu *vcpu, enum priv_level level)
+ 	return true;
+ }
  
- 	PPC_LL	r6, HSTATE_HOST_MSR(r13)
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/*
-+	 * We don't want to change MSR[TS] bits via rfi here.
-+	 * The actual TM handling logic will be in host with
-+	 * recovered DR/IR bits after HSTATE_VMHANDLER.
-+	 * And MSR_TM can be enabled in HOST_MSR so rfid may
-+	 * not suppress this change and can lead to exception.
-+	 * Manually set MSR to prevent TS state change here.
-+	 */
-+	mfmsr   r7
-+	rldicl  r7, r7, 64 - MSR_TS_S_LG, 62
-+	rldimi  r6, r7, MSR_TS_S_LG, 63 - MSR_TS_T_LG
++static inline void kvmppc_copyto_vcpu_tm(struct kvm_vcpu *vcpu)
++{
++	memcpy(&vcpu->arch.gpr_tm[0], &vcpu->arch.gpr[0],
++			sizeof(vcpu->arch.gpr_tm));
++	memcpy(&vcpu->arch.fp_tm, &vcpu->arch.fp,
++			sizeof(struct thread_fp_state));
++	memcpy(&vcpu->arch.vr_tm, &vcpu->arch.vr,
++			sizeof(struct thread_vr_state));
++	vcpu->arch.ppr_tm = vcpu->arch.ppr;
++	vcpu->arch.dscr_tm = vcpu->arch.dscr;
++	vcpu->arch.amr_tm = vcpu->arch.amr;
++	vcpu->arch.ctr_tm = vcpu->arch.ctr;
++	vcpu->arch.tar_tm = vcpu->arch.tar;
++	vcpu->arch.lr_tm = vcpu->arch.lr;
++	vcpu->arch.cr_tm = vcpu->arch.cr;
++	vcpu->arch.xer_tm = vcpu->arch.xer;
++	vcpu->arch.vrsave_tm = vcpu->arch.vrsave;
++}
++
++static inline void kvmppc_copyfrom_vcpu_tm(struct kvm_vcpu *vcpu)
++{
++	memcpy(&vcpu->arch.gpr[0], &vcpu->arch.gpr_tm[0],
++			sizeof(vcpu->arch.gpr));
++	memcpy(&vcpu->arch.fp, &vcpu->arch.fp_tm,
++			sizeof(struct thread_fp_state));
++	memcpy(&vcpu->arch.vr, &vcpu->arch.vr_tm,
++			sizeof(struct thread_vr_state));
++	vcpu->arch.ppr = vcpu->arch.ppr_tm;
++	vcpu->arch.dscr = vcpu->arch.dscr_tm;
++	vcpu->arch.amr = vcpu->arch.amr_tm;
++	vcpu->arch.ctr = vcpu->arch.ctr_tm;
++	vcpu->arch.tar = vcpu->arch.tar_tm;
++	vcpu->arch.lr = vcpu->arch.lr_tm;
++	vcpu->arch.cr = vcpu->arch.cr_tm;
++	vcpu->arch.xer = vcpu->arch.xer_tm;
++	vcpu->arch.vrsave = vcpu->arch.vrsave_tm;
++}
++
 +#endif
- 	PPC_LL	r8, HSTATE_VMHANDLER(r13)
- 
- #ifdef CONFIG_PPC64
++
+ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			      unsigned int inst, int *advance)
+ {
 -- 
 1.8.3.1
