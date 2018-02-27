@@ -1,22 +1,30 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRNJ4m56zF0vb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:52 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id f80so3163299pfa.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:52 -0800 (PST)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 30/30] KVM: PPC: Book3S PR: enable
- kvmppc_get/set_one_reg_pr() for HTM registers
-Date: Wed, 28 Feb 2018 01:52:38 +0800
-Message-Id: <1519753958-11756-20-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrVyC2wMQzF1ZP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 07:42:59 +1100 (AEDT)
+Date: Tue, 27 Feb 2018 14:42:43 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Jiri Slaby <jslaby@suse.com>
+Subject: Re: [PATCH 01/21] powerpc: Remove warning on array size when empty
+Message-ID: <20180227204243.GW21977@gate.crashing.org>
+References: <20180225172236.29650-1-malat@debian.org>
+ <20180225172236.29650-2-malat@debian.org>
+ <CAHp75Vdpdr-0-vdvo0SBx2XcM=HePrUbbb4SM9+ExT_i-1B69Q@mail.gmail.com>
+ <CAHp75Ve_zxp4_N_YzzvJ=H8Qs65G5j7bgGBv_TvsZ6Ye2nuECA@mail.gmail.com>
+ <CA+7wUszK++8Tr9j1=4jQtRSu-36MH=dqgimq-ST9D9hvacrJSQ@mail.gmail.com>
+ <603d5335-6220-73f2-d902-b92bc74bc79e@c-s.fr>
+ <CA+7wUsys=J8vkEOtzd26B6MGEhfTBRzaA_myuUWNzf24rMvn+A@mail.gmail.com>
+ <CAHp75VePco3hNo_vM916CiLzBAd18i=O1TaecD5YEDewvMpYYQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAHp75VePco3hNo_vM916CiLzBAd18i=O1TaecD5YEDewvMpYYQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,175 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+On Tue, Feb 27, 2018 at 05:52:06PM +0200, Andy Shevchenko wrote:
+> On Tue, Feb 27, 2018 at 9:44 AM, Mathieu Malaterre <malat@debian.org> wrote:
+> > On Tue, Feb 27, 2018 at 8:33 AM, Christophe LEROY
+> > <christophe.leroy@c-s.fr> wrote:
+> 
+> >>>>> Much simpler is just add
+> >>>>>
+> >>>>> if (ARRAY_SIZE() == 0)
+> >>>>>   return;
+> 
+> >> Or add in front:
+> >> if (!ARRAY_SIZE(feature_properties))
+> >>         return;
+> >
+> > (not tested) I believe the compiler still go over the for() loop and
+> > will complain about the original unsigned comparison.
+> 
+> Did you run tests? Did you look into object file?
+> 
+> In kernel we much rely on the compiling away the code which is
+> deterministically not in use.
+> Here I'm pretty sure it will compile away entire function.
 
-We need to migrate PR KVM during transaction and qemu will use
-kvmppc_get_one_reg_pr()/kvmppc_set_one_reg_pr() APIs to get/set
-transaction checkpoint state. This patch adds support for that.
+It does, but it also still warns (this warning is done very early in the
+compiler pipeline).
 
-So far PPC PR qemu doesn't fully function for migration but the
-savevm/loadvm can be done against a RHEL72 guest. During savevm/
-loadvm procedure, the kvm ioctls will be invoked as well.
 
-Test has been performed to savevm/loadvm for a guest running
-a HTM test program:
-https://github.com/justdoitqd/publicFiles/blob/master/test-tm-mig.c
-
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- arch/powerpc/kvm/book3s_pr.c | 133 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 133 insertions(+)
-
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 19f9934..3439229 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1546,6 +1546,73 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 		else
- 			*val = get_reg_val(id, 0);
- 		break;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	case KVM_REG_PPC_TFHAR:
-+		*val = get_reg_val(id, vcpu->arch.tfhar);
-+		break;
-+	case KVM_REG_PPC_TFIAR:
-+		*val = get_reg_val(id, vcpu->arch.tfiar);
-+		break;
-+	case KVM_REG_PPC_TEXASR:
-+		*val = get_reg_val(id, vcpu->arch.texasr);
-+		break;
-+	case KVM_REG_PPC_TM_GPR0 ... KVM_REG_PPC_TM_GPR31:
-+		*val = get_reg_val(id,
-+				vcpu->arch.gpr_tm[id-KVM_REG_PPC_TM_GPR0]);
-+		break;
-+	case KVM_REG_PPC_TM_VSR0 ... KVM_REG_PPC_TM_VSR63:
-+	{
-+		int i, j;
-+
-+		i = id - KVM_REG_PPC_TM_VSR0;
-+		if (i < 32)
-+			for (j = 0; j < TS_FPRWIDTH; j++)
-+				val->vsxval[j] = vcpu->arch.fp_tm.fpr[i][j];
-+		else {
-+			if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+				val->vval = vcpu->arch.vr_tm.vr[i-32];
-+			else
-+				r = -ENXIO;
-+		}
-+		break;
-+	}
-+	case KVM_REG_PPC_TM_CR:
-+		*val = get_reg_val(id, vcpu->arch.cr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_XER:
-+		*val = get_reg_val(id, vcpu->arch.xer_tm);
-+		break;
-+	case KVM_REG_PPC_TM_LR:
-+		*val = get_reg_val(id, vcpu->arch.lr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_CTR:
-+		*val = get_reg_val(id, vcpu->arch.ctr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_FPSCR:
-+		*val = get_reg_val(id, vcpu->arch.fp_tm.fpscr);
-+		break;
-+	case KVM_REG_PPC_TM_AMR:
-+		*val = get_reg_val(id, vcpu->arch.amr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_PPR:
-+		*val = get_reg_val(id, vcpu->arch.ppr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_VRSAVE:
-+		*val = get_reg_val(id, vcpu->arch.vrsave_tm);
-+		break;
-+	case KVM_REG_PPC_TM_VSCR:
-+		if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+			*val = get_reg_val(id, vcpu->arch.vr_tm.vscr.u[3]);
-+		else
-+			r = -ENXIO;
-+		break;
-+	case KVM_REG_PPC_TM_DSCR:
-+		*val = get_reg_val(id, vcpu->arch.dscr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_TAR:
-+		*val = get_reg_val(id, vcpu->arch.tar_tm);
-+		break;
-+#endif
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -1579,6 +1646,72 @@ static int kvmppc_set_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_LPCR_64:
- 		kvmppc_set_lpcr_pr(vcpu, set_reg_val(id, *val));
- 		break;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	case KVM_REG_PPC_TFHAR:
-+		vcpu->arch.tfhar = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TFIAR:
-+		vcpu->arch.tfiar = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TEXASR:
-+		vcpu->arch.texasr = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_GPR0 ... KVM_REG_PPC_TM_GPR31:
-+		vcpu->arch.gpr_tm[id - KVM_REG_PPC_TM_GPR0] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_VSR0 ... KVM_REG_PPC_TM_VSR63:
-+	{
-+		int i, j;
-+
-+		i = id - KVM_REG_PPC_TM_VSR0;
-+		if (i < 32)
-+			for (j = 0; j < TS_FPRWIDTH; j++)
-+				vcpu->arch.fp_tm.fpr[i][j] = val->vsxval[j];
-+		else
-+			if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+				vcpu->arch.vr_tm.vr[i-32] = val->vval;
-+			else
-+				r = -ENXIO;
-+		break;
-+	}
-+	case KVM_REG_PPC_TM_CR:
-+		vcpu->arch.cr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_XER:
-+		vcpu->arch.xer_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_LR:
-+		vcpu->arch.lr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_CTR:
-+		vcpu->arch.ctr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_FPSCR:
-+		vcpu->arch.fp_tm.fpscr = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_AMR:
-+		vcpu->arch.amr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_PPR:
-+		vcpu->arch.ppr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_VRSAVE:
-+		vcpu->arch.vrsave_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_VSCR:
-+		if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+			vcpu->arch.vr.vscr.u[3] = set_reg_val(id, *val);
-+		else
-+			r = -ENXIO;
-+		break;
-+	case KVM_REG_PPC_TM_DSCR:
-+		vcpu->arch.dscr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_TAR:
-+		vcpu->arch.tar_tm = set_reg_val(id, *val);
-+		break;
-+#endif
- 	default:
- 		r = -EINVAL;
- 		break;
--- 
-1.8.3.1
+Segher
