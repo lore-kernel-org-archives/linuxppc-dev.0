@@ -1,19 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMv54DfzF0pw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:31 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id r26so2573753pgv.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMw37wkzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:32 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id z10so3929848pfh.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:32 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 20/30] KVM: PPC: Book3S PR: adds emulation for treclaim.
-Date: Wed, 28 Feb 2018 01:52:28 +0800
-Message-Id: <1519753958-11756-10-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 21/30] KVM: PPC: Book3S PR: add emulation for trechkpt in
+ PR KVM.
+Date: Wed, 28 Feb 2018 01:52:29 +0800
+Message-Id: <1519753958-11756-11-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,95 +28,87 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch adds support for "treclaim." emulation when PR KVM guest
-executes treclaim. and traps to host.
+This patch adds host emulation when guest PR KVM executes "trechkpt.",
+which is a privileged instruction and will trap into host.
 
-We will firstly doing treclaim. and save TM checkpoint. Then it is
-necessary to update vcpu current reg content with checkpointed vals.
-When rfid into guest again, those vcpu current reg content(now the
-checkpoint vals) will be loaded into regs.
+We firstly copy vcpu ongoing content into vcpu tm checkpoint
+content, then perform kvmppc_restore_tm_pr() to do trechkpt.
+with updated vcpu tm checkpoint vals.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/book3s_emulate.c | 77 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 77 insertions(+)
+ arch/powerpc/include/asm/kvm_book3s.h |  2 ++
+ arch/powerpc/kvm/book3s_emulate.c     | 61 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_pr.c          |  2 +-
+ 3 files changed, 64 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 9690280..5873906 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -258,10 +258,12 @@ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
+ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
++void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu);
+ void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu);
+ #else
+ static inline void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu) {}
+ static inline void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu) {}
++static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu) {}
+ static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
+ #endif
+ 
 diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 90b5f59..faa46bc 100644
+index faa46bc..ec88fbf 100644
 --- a/arch/powerpc/kvm/book3s_emulate.c
 +++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -25,6 +25,7 @@
- #include <asm/time.h>
- #include <asm/tm.h>
- #include "book3s.h"
-+#include <asm/asm-prototypes.h>
- 
- #define OP_19_XOP_RFID		18
- #define OP_19_XOP_RFI		50
-@@ -50,6 +51,8 @@
- 
+@@ -52,6 +52,7 @@
  #define OP_31_XOP_TBEGIN	654
  
-+#define OP_31_XOP_TRECLAIM	942
-+
+ #define OP_31_XOP_TRECLAIM	942
++#define OP_31_XOP_TRCHKPT	1006
+ 
  /* DCBZ is actually 1014, but we patch it to 1010 so we get a trap */
  #define OP_31_XOP_DCBZ		1010
- 
-@@ -129,6 +132,46 @@ static inline void kvmppc_copyfrom_vcpu_tm(struct kvm_vcpu *vcpu)
- 	vcpu->arch.vrsave = vcpu->arch.vrsave_tm;
+@@ -172,6 +173,29 @@ static void kvmppc_emulate_treclaim(struct kvm_vcpu *vcpu, int ra_val)
+ 	kvmppc_set_msr(vcpu, guest_msr);
+ 	preempt_enable();
  }
- 
-+static void kvmppc_emulate_treclaim(struct kvm_vcpu *vcpu, int ra_val)
++
++static void kvmppc_emulate_trchkpt(struct kvm_vcpu *vcpu)
 +{
 +	unsigned long guest_msr = kvmppc_get_msr(vcpu);
-+	int fc_val = ra_val ? ra_val : 1;
-+
-+	/* CR0 = 0 | MSR[TS] | 0 */
-+	vcpu->arch.cr = (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)) |
-+		(((guest_msr & MSR_TS_MASK) >> (MSR_TS_S_LG - 1))
-+		 << CR0_SHIFT);
 +
 +	preempt_disable();
-+	kvmppc_save_tm_pr(vcpu);
-+	kvmppc_copyfrom_vcpu_tm(vcpu);
-+
-+	tm_enable();
-+	vcpu->arch.texasr = mfspr(SPRN_TEXASR);
-+	/* failure recording depends on Failure Summary bit */
-+	if (!(vcpu->arch.texasr & TEXASR_FS)) {
-+		vcpu->arch.texasr &= ~TEXASR_FC;
-+		vcpu->arch.texasr |= ((u64)fc_val << TEXASR_FC_LG);
-+
-+		vcpu->arch.texasr &= ~(TEXASR_PR | TEXASR_HV);
-+		if (kvmppc_get_msr(vcpu) & MSR_PR)
-+			vcpu->arch.texasr |= TEXASR_PR;
-+
-+		if (kvmppc_get_msr(vcpu) & MSR_HV)
-+			vcpu->arch.texasr |= TEXASR_HV;
-+
-+		vcpu->arch.tfiar = kvmppc_get_pc(vcpu);
-+		mtspr(SPRN_TEXASR, vcpu->arch.texasr);
-+		mtspr(SPRN_TFIAR, vcpu->arch.tfiar);
-+	}
-+	tm_disable();
 +	/*
-+	 * treclaim need quit to non-transactional state.
++	 * need flush FP/VEC/VSX to vcpu save area before
++	 * copy.
++	 */
++	kvmppc_giveup_ext(vcpu, MSR_VSX);
++	kvmppc_copyto_vcpu_tm(vcpu);
++	kvmppc_save_tm_sprs(vcpu);
++
++	/*
++	 * as a result of trecheckpoint. set TS to suspended.
 +	 */
 +	guest_msr &= ~(MSR_TS_MASK);
++	guest_msr |= MSR_TS_S;
 +	kvmppc_set_msr(vcpu, guest_msr);
++	kvmppc_restore_tm_pr(vcpu);
 +	preempt_enable();
 +}
  #endif
  
  int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
-@@ -404,6 +447,40 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 				emulated = EMULATE_FAIL;
+@@ -481,6 +505,43 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			kvmppc_emulate_treclaim(vcpu, ra_val);
  			break;
  		}
-+		case OP_31_XOP_TRECLAIM:
++		case OP_31_XOP_TRCHKPT:
 +		{
 +			ulong guest_msr = kvmppc_get_msr(vcpu);
-+			unsigned long ra_val = 0;
++			unsigned long texasr;
 +
 +			if (!cpu_has_feature(CPU_FTR_TM))
 +				break;
@@ -126,28 +119,44 @@ index 90b5f59..faa46bc 100644
 +				break;
 +			}
 +
-+			/* generate interrupts based on priorities */
++			/* generate interrupt based on priorities */
 +			if (guest_msr & MSR_PR) {
-+				/* Privileged Instruction type Program Interrupt */
++				/* Privileged Instruction type Program Intr */
 +				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
 +				emulated = EMULATE_AGAIN;
 +				break;
 +			}
 +
-+			if (!MSR_TM_ACTIVE(guest_msr)) {
++			tm_enable();
++			texasr = mfspr(SPRN_TEXASR);
++			tm_disable();
++
++			if (MSR_TM_ACTIVE(guest_msr) ||
++				!(texasr & (TEXASR_FS))) {
 +				/* TM bad thing interrupt */
 +				kvmppc_core_queue_program(vcpu, SRR1_PROGTM);
 +				emulated = EMULATE_AGAIN;
 +				break;
 +			}
 +
-+			if (ra)
-+				ra_val = kvmppc_get_gpr(vcpu, ra);
-+			kvmppc_emulate_treclaim(vcpu, ra_val);
++			kvmppc_emulate_trchkpt(vcpu);
 +			break;
 +		}
  #endif
  		default:
  			emulated = EMULATE_FAIL;
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index f31f9de..f77a004 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -301,7 +301,7 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
+ }
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu)
++void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu)
+ {
+ 	tm_enable();
+ 	vcpu->arch.tfhar = mfspr(SPRN_TFHAR);
 -- 
 1.8.3.1
