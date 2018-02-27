@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMw37wkzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:32 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id z10so3929848pfh.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRN02rRszDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:36 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id ay8so11817729plb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:36 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 21/30] KVM: PPC: Book3S PR: add emulation for trechkpt in
- PR KVM.
-Date: Wed, 28 Feb 2018 01:52:29 +0800
-Message-Id: <1519753958-11756-11-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 23/30] KVM: PPC: Book3S PR: add guard code to prevent
+ returning to guest with PR=0 and Transactional state
+Date: Wed, 28 Feb 2018 01:52:31 +0800
+Message-Id: <1519753958-11756-13-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,135 +28,90 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch adds host emulation when guest PR KVM executes "trechkpt.",
-which is a privileged instruction and will trap into host.
+Currently PR KVM doesn't support transaction memory at guest privilege
+state.
 
-We firstly copy vcpu ongoing content into vcpu tm checkpoint
-content, then perform kvmppc_restore_tm_pr() to do trechkpt.
-with updated vcpu tm checkpoint vals.
+This patch adds a check at setting guest msr, so that we can never return
+to guest with PR=0 and TS=0b10. A tabort will be emulated to indicate
+this and fail transaction immediately.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |  2 ++
- arch/powerpc/kvm/book3s_emulate.c     | 61 +++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_pr.c          |  2 +-
- 3 files changed, 64 insertions(+), 1 deletion(-)
+ arch/powerpc/include/uapi/asm/tm.h |  2 +-
+ arch/powerpc/kvm/book3s.h          |  6 ++++++
+ arch/powerpc/kvm/book3s_emulate.c  |  2 +-
+ arch/powerpc/kvm/book3s_pr.c       | 13 ++++++++++++-
+ 4 files changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 9690280..5873906 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -258,10 +258,12 @@ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
- void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
-+void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu);
- void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu);
- #else
- static inline void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu) {}
- static inline void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu) {}
-+static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu) {}
- static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
- #endif
+diff --git a/arch/powerpc/include/uapi/asm/tm.h b/arch/powerpc/include/uapi/asm/tm.h
+index e1bf0e2..e2947c9 100644
+--- a/arch/powerpc/include/uapi/asm/tm.h
++++ b/arch/powerpc/include/uapi/asm/tm.h
+@@ -13,7 +13,7 @@
+ #define TM_CAUSE_TLBI		0xdc
+ #define TM_CAUSE_FAC_UNAV	0xda
+ #define TM_CAUSE_SYSCALL	0xd8
+-#define TM_CAUSE_MISC		0xd6  /* future use */
++#define TM_CAUSE_PRIV_T		0xd6
+ #define TM_CAUSE_SIGNAL		0xd4
+ #define TM_CAUSE_ALIGNMENT	0xd2
+ #define TM_CAUSE_EMULATE	0xd0
+diff --git a/arch/powerpc/kvm/book3s.h b/arch/powerpc/kvm/book3s.h
+index d2b3ec0..7aaa302 100644
+--- a/arch/powerpc/kvm/book3s.h
++++ b/arch/powerpc/kvm/book3s.h
+@@ -32,4 +32,10 @@ extern int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu,
+ extern int kvmppc_book3s_init_pr(void);
+ extern void kvmppc_book3s_exit_pr(void);
  
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++extern void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val);
++#else
++static inline void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val) {}
++#endif
++
+ #endif
 diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index faa46bc..ec88fbf 100644
+index 5656cdf..6c5ef8c 100644
 --- a/arch/powerpc/kvm/book3s_emulate.c
 +++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -52,6 +52,7 @@
- #define OP_31_XOP_TBEGIN	654
- 
- #define OP_31_XOP_TRECLAIM	942
-+#define OP_31_XOP_TRCHKPT	1006
- 
- /* DCBZ is actually 1014, but we patch it to 1010 so we get a trap */
- #define OP_31_XOP_DCBZ		1010
-@@ -172,6 +173,29 @@ static void kvmppc_emulate_treclaim(struct kvm_vcpu *vcpu, int ra_val)
- 	kvmppc_set_msr(vcpu, guest_msr);
- 	preempt_enable();
+@@ -199,7 +199,7 @@ static void kvmppc_emulate_trchkpt(struct kvm_vcpu *vcpu)
  }
-+
-+static void kvmppc_emulate_trchkpt(struct kvm_vcpu *vcpu)
-+{
-+	unsigned long guest_msr = kvmppc_get_msr(vcpu);
-+
-+	preempt_disable();
-+	/*
-+	 * need flush FP/VEC/VSX to vcpu save area before
-+	 * copy.
-+	 */
-+	kvmppc_giveup_ext(vcpu, MSR_VSX);
-+	kvmppc_copyto_vcpu_tm(vcpu);
-+	kvmppc_save_tm_sprs(vcpu);
-+
-+	/*
-+	 * as a result of trecheckpoint. set TS to suspended.
-+	 */
-+	guest_msr &= ~(MSR_TS_MASK);
-+	guest_msr |= MSR_TS_S;
-+	kvmppc_set_msr(vcpu, guest_msr);
-+	kvmppc_restore_tm_pr(vcpu);
-+	preempt_enable();
-+}
- #endif
  
- int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
-@@ -481,6 +505,43 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			kvmppc_emulate_treclaim(vcpu, ra_val);
- 			break;
- 		}
-+		case OP_31_XOP_TRCHKPT:
-+		{
-+			ulong guest_msr = kvmppc_get_msr(vcpu);
-+			unsigned long texasr;
-+
-+			if (!cpu_has_feature(CPU_FTR_TM))
-+				break;
-+
-+			if (!(kvmppc_get_msr(vcpu) & MSR_TM)) {
-+				kvmppc_trigger_fac_interrupt(vcpu, FSCR_TM_LG);
-+				emulated = EMULATE_AGAIN;
-+				break;
-+			}
-+
-+			/* generate interrupt based on priorities */
-+			if (guest_msr & MSR_PR) {
-+				/* Privileged Instruction type Program Intr */
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGPRIV);
-+				emulated = EMULATE_AGAIN;
-+				break;
-+			}
-+
-+			tm_enable();
-+			texasr = mfspr(SPRN_TEXASR);
-+			tm_disable();
-+
-+			if (MSR_TM_ACTIVE(guest_msr) ||
-+				!(texasr & (TEXASR_FS))) {
-+				/* TM bad thing interrupt */
-+				kvmppc_core_queue_program(vcpu, SRR1_PROGTM);
-+				emulated = EMULATE_AGAIN;
-+				break;
-+			}
-+
-+			kvmppc_emulate_trchkpt(vcpu);
-+			break;
-+		}
- #endif
- 		default:
- 			emulated = EMULATE_FAIL;
+ /* emulate tabort. at guest privilege state */
+-static void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val)
++void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val)
+ {
+ 	/* currently we only emulate tabort. but no emulation of other
+ 	 * tabort variants since there is no kernel usage of them at
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index f31f9de..f77a004 100644
+index f77a004..29ec92e 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -301,7 +301,7 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- }
+@@ -457,12 +457,23 @@ static void kvm_set_spte_hva_pr(struct kvm *kvm, unsigned long hva, pte_t pte)
  
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu)
-+void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu)
+ static void kvmppc_set_msr_pr(struct kvm_vcpu *vcpu, u64 msr)
  {
- 	tm_enable();
- 	vcpu->arch.tfhar = mfspr(SPRN_TFHAR);
+-	ulong old_msr = kvmppc_get_msr(vcpu);
++	ulong old_msr;
+ 
+ #ifdef EXIT_DEBUG
+ 	printk(KERN_INFO "KVM: Set MSR to 0x%llx\n", msr);
+ #endif
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	/* We should never target guest MSR to TS=10 && PR=0,
++	 * since we always fail transaction for guest privilege
++	 * state.
++	 */
++	if (!(msr & MSR_PR) && MSR_TM_TRANSACTIONAL(msr))
++		kvmppc_emulate_tabort(vcpu,
++			TM_CAUSE_PRIV_T | TM_CAUSE_PERSISTENT);
++#endif
++
++	old_msr = kvmppc_get_msr(vcpu);
+ 	msr &= to_book3s(vcpu)->msr_mask;
+ 	kvmppc_set_msr_fast(vcpu, msr);
+ 	kvmppc_recalc_shadow_msr(vcpu);
 -- 
 1.8.3.1
