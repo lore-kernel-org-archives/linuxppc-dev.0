@@ -1,20 +1,22 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMS0cymzF198
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:07 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id k8so11825988pli.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMW2WcrzF1Cm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:11 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id u13so11849796plq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:11 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 11/30] KVM: PPC: Book3S PR: implement RFID TM behavior to
- suppress change from S0 to N0
-Date: Wed, 28 Feb 2018 01:52:19 +0800
-Message-Id: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 12/30] KVM: PPC: Book3S PR: prevent TS bits change in
+ kvmppc_interrupt_pr()
+Date: Wed, 28 Feb 2018 01:52:20 +0800
+Message-Id: <1519753958-11756-2-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
+References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +28,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Accordingly to ISA specification for RFID, in MSR TM disabled and TS
-suspended state(S0), if the target MSR is TM disabled and TS state is
-inactive(N0), rfid should suppress this update.
+PR KVM host usually equipped with enabled TM in its host MSR value, and
+with non-transactional TS value.
 
-This patch make RFID emulation of PR KVM to be consistent with this.
+When a guest with TM active traps into PR KVM host, the rfid at the
+tail of kvmppc_interrupt_pr() will try to switch TS bits from
+S0 (Suspended & TM disabled) to N1 (Non-transactional & TM enabled).
+
+That will leads to TM Bad Thing interrupt.
+
+This patch manually sets target TS bits unchanged to avoid this
+exception.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_emulate.c | 21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_segment.S | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 68d6898..2eb457b 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -117,11 +117,28 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	case 19:
- 		switch (get_xop(inst)) {
- 		case OP_19_XOP_RFID:
--		case OP_19_XOP_RFI:
-+		case OP_19_XOP_RFI: {
-+			unsigned long srr1 = kvmppc_get_srr1(vcpu);
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+			unsigned long cur_msr = kvmppc_get_msr(vcpu);
-+
-+			/*
-+			 * add rules to fit in ISA specification regarding TM
-+			 * state transistion in TM disable/Suspended state,
-+			 * and target TM state is TM inactive(00) state. (the
-+			 * change should be suppressed).
-+			 */
-+			if (((cur_msr & MSR_TM) == 0) &&
-+				((srr1 & MSR_TM) == 0) &&
-+				MSR_TM_SUSPENDED(cur_msr) &&
-+				!MSR_TM_ACTIVE(srr1))
-+				srr1 |= MSR_TS_S;
-+#endif
- 			kvmppc_set_pc(vcpu, kvmppc_get_srr0(vcpu));
--			kvmppc_set_msr(vcpu, kvmppc_get_srr1(vcpu));
-+			kvmppc_set_msr(vcpu, srr1);
- 			*advance = 0;
- 			break;
-+		}
+diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+index 93a180c..98ccc7e 100644
+--- a/arch/powerpc/kvm/book3s_segment.S
++++ b/arch/powerpc/kvm/book3s_segment.S
+@@ -383,6 +383,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	 */
  
- 		default:
- 			emulated = EMULATE_FAIL;
+ 	PPC_LL	r6, HSTATE_HOST_MSR(r13)
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	/*
++	 * We don't want to change MSR[TS] bits via rfi here.
++	 * The actual TM handling logic will be in host with
++	 * recovered DR/IR bits after HSTATE_VMHANDLER.
++	 * And MSR_TM can be enabled in HOST_MSR so rfid may
++	 * not suppress this change and can lead to exception.
++	 * Manually set MSR to prevent TS state change here.
++	 */
++	mfmsr   r7
++	rldicl  r7, r7, 64 - MSR_TS_S_LG, 62
++	rldimi  r6, r7, MSR_TS_S_LG, 63 - MSR_TS_T_LG
++#endif
+ 	PPC_LL	r8, HSTATE_VMHANDLER(r13)
+ 
+ #ifdef CONFIG_PPC64
 -- 
 1.8.3.1
