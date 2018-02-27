@@ -1,22 +1,21 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrQsc5ZJ7zDqy0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 04:38:44 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id g2so7781534pgn.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:38:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrRMh1VcKzF1XR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 05:01:20 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id j20so4836174pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 10:01:20 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 10/30] KVM: PPC: Book3S PR: Sync TM bits to shadow msr for
- problem state guest
-Date: Wed, 28 Feb 2018 01:37:17 +0800
-Message-Id: <1519753057-11059-11-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 16/30] KVM: PPC: Book3S PR: add math support for PR KVM HTM
+Date: Wed, 28 Feb 2018 01:52:24 +0800
+Message-Id: <1519753958-11756-6-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
+References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,125 +27,97 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-MSR TS bits can be modified with non-privileged instruction like
-tbegin./tend.  That means guest can change MSR value "silently" without
-notifying host.
+The math registers will be saved into vcpu->arch.fp/vr and corresponding
+vcpu->arch.fp_tm/vr_tm area.
 
-It is necessary to sync the TM bits to host so that host can calculate
-shadow msr correctly.
+We flush or giveup the math regs into vcpu->arch.fp/vr before saving
+transaction. After transaction is restored, the math regs will be loaded
+back into regs.
 
-note privilege guest will always fail transactions so we only take
-care of problem state guest.
-
-The logic is put into kvmppc_copy_from_svcpu() so that
-kvmppc_handle_exit_pr() can use correct MSR TM bits even when preemption.
+If there is a FP/VEC/VSX unavailable exception during transaction active
+state, the math checkpoint content might be incorrect and we need to do
+treclaim./load the correct checkpoint val/trechkpt. sequence to retry the
+transaction. That will make our solution complicated. To solve this issue,
+we always make the hardware guest MSR math bits (shadow_msr) consistent
+with the MSR val which guest sees (kvmppc_get_msr()) when guest msr is
+with tm enabled. Then all FP/VEC/VSX unavailable exception can be delivered
+to guest and guest handles the exception by itself.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/book3s_pr.c | 73 ++++++++++++++++++++++++++++++--------------
- 1 file changed, 50 insertions(+), 23 deletions(-)
+ arch/powerpc/kvm/book3s_pr.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 5c9e43f..4bf76c9 100644
+index ac9d58f..2fcc059 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -179,10 +179,36 @@ void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
- 	svcpu->in_use = true;
+@@ -310,6 +310,28 @@ static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu)
+ 	tm_disable();
  }
  
-+static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
++/* loadup math bits which is enabled at kvmppc_get_msr() but not enabled at
++ * hardware.
++ */
++static void kvmppc_handle_lost_math_exts(struct kvm_vcpu *vcpu)
 +{
-+	ulong guest_msr = kvmppc_get_msr(vcpu);
-+	ulong smsr = guest_msr;
++	ulong exit_nr;
++	ulong ext_diff = (kvmppc_get_msr(vcpu) & ~vcpu->arch.guest_owned_ext) &
++		(MSR_FP | MSR_VEC | MSR_VSX);
 +
-+	/* Guest MSR values */
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE |
-+		MSR_TM | MSR_TS_MASK;
-+#else
-+	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE;
-+#endif
-+	/* Process MSR values */
-+	smsr |= MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR | MSR_EE;
-+	/* External providers the guest reserved */
-+	smsr |= (guest_msr & vcpu->arch.guest_owned_ext);
-+	/* 64-bit Process MSR values */
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	smsr |= MSR_ISF | MSR_HV;
-+#endif
-+	vcpu->arch.shadow_msr = smsr;
++	if (!ext_diff)
++		return;
++
++	if (ext_diff == MSR_FP)
++		exit_nr = BOOK3S_INTERRUPT_FP_UNAVAIL;
++	else if (ext_diff == MSR_VEC)
++		exit_nr = BOOK3S_INTERRUPT_ALTIVEC;
++	else
++		exit_nr = BOOK3S_INTERRUPT_VSX;
++
++	kvmppc_handle_ext(vcpu, exit_nr, ext_diff);
 +}
 +
- /* Copy data touched by real-mode code from shadow vcpu back to vcpu */
- void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- 			    struct kvmppc_book3s_shadow_vcpu *svcpu)
+ void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu)
  {
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	ulong old_msr;
-+#endif
- 	/*
- 	 * vcpu_put would just call us again because in_use hasn't
- 	 * been updated yet.
-@@ -230,6 +256,30 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- 	to_book3s(vcpu)->vtb += get_vtb() - vcpu->arch.entry_vtb;
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		vcpu->arch.ic += mfspr(SPRN_IC) - vcpu->arch.entry_ic;
+ 	if (!(MSR_TM_ACTIVE(kvmppc_get_msr(vcpu)))) {
+@@ -317,6 +339,8 @@ void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu)
+ 		return;
+ 	}
+ 
++	kvmppc_giveup_ext(vcpu, MSR_VSX);
 +
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/*
-+	 * Unlike other MSR bits, MSR[TS]bits can be changed at guest without
-+	 * notifying host:
-+	 *  modified by unprivileged instructions like "tbegin"/"tend"/
-+	 * "tresume"/"tsuspend" in PR KVM guest.
-+	 *
-+	 * It is necessary to sync here to calculate a correct shadow_msr.
-+	 *
-+	 * privileged guest's tbegin will be failed at present. So we
-+	 * only take care of problem state guest.
-+	 */
-+	old_msr = kvmppc_get_msr(vcpu);
-+	if (unlikely((old_msr & MSR_PR) &&
-+		(vcpu->arch.shadow_srr1 & (MSR_TS_MASK)) !=
-+				(old_msr & (MSR_TS_MASK)))) {
-+		old_msr &= ~(MSR_TS_MASK);
-+		old_msr |= (vcpu->arch.shadow_srr1 & (MSR_TS_MASK));
-+		kvmppc_set_msr_fast(vcpu, old_msr);
-+		kvmppc_recalc_shadow_msr(vcpu);
-+	}
-+#endif
-+
- 	svcpu->in_use = false;
- 
- out:
-@@ -317,29 +367,6 @@ static void kvm_set_spte_hva_pr(struct kvm *kvm, unsigned long hva, pte_t pte)
- 
- /*****************************************/
- 
--static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
--{
--	ulong guest_msr = kvmppc_get_msr(vcpu);
--	ulong smsr = guest_msr;
--
--	/* Guest MSR values */
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE |
--		MSR_TM | MSR_TS_MASK;
--#else
--	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE;
--#endif
--	/* Process MSR values */
--	smsr |= MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR | MSR_EE;
--	/* External providers the guest reserved */
--	smsr |= (guest_msr & vcpu->arch.guest_owned_ext);
--	/* 64-bit Process MSR values */
--#ifdef CONFIG_PPC_BOOK3S_64
--	smsr |= MSR_ISF | MSR_HV;
--#endif
--	vcpu->arch.shadow_msr = smsr;
--}
--
- static void kvmppc_set_msr_pr(struct kvm_vcpu *vcpu, u64 msr)
+ 	preempt_disable();
+ 	_kvmppc_save_tm_pr(vcpu, mfmsr());
+ 	preempt_enable();
+@@ -326,12 +350,18 @@ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu)
  {
- 	ulong old_msr = kvmppc_get_msr(vcpu);
+ 	if (!MSR_TM_ACTIVE(kvmppc_get_msr(vcpu))) {
+ 		kvmppc_restore_tm_sprs(vcpu);
++		if (kvmppc_get_msr(vcpu) & MSR_TM)
++			kvmppc_handle_lost_math_exts(vcpu);
+ 		return;
+ 	}
+ 
+ 	preempt_disable();
+ 	_kvmppc_restore_tm_pr(vcpu, kvmppc_get_msr(vcpu));
+ 	preempt_enable();
++
++	if (kvmppc_get_msr(vcpu) & MSR_TM)
++		kvmppc_handle_lost_math_exts(vcpu);
++
+ }
+ #endif
+ 
+@@ -479,6 +509,9 @@ static void kvmppc_set_msr_pr(struct kvm_vcpu *vcpu, u64 msr)
+ 	/* Preload FPU if it's enabled */
+ 	if (kvmppc_get_msr(vcpu) & MSR_FP)
+ 		kvmppc_handle_ext(vcpu, BOOK3S_INTERRUPT_FP_UNAVAIL, MSR_FP);
++
++	if (kvmppc_get_msr(vcpu) & MSR_TM)
++		kvmppc_handle_lost_math_exts(vcpu);
+ }
+ 
+ void kvmppc_set_pvr_pr(struct kvm_vcpu *vcpu, u32 pvr)
 -- 
 1.8.3.1
