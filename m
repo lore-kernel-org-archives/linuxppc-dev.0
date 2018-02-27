@@ -1,32 +1,38 @@
-Return-Path: <sandipan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrHft42ZKzF1M9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 23:13:57 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrJGQ29NHzF1WK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 23:41:17 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1RCAimA013246
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:13:55 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gd6kh1bkr-1
+ w1RCe3kL135566
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:41:15 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gd6b8u2cf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:13:55 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 07:41:14 -0500
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Tue, 27 Feb 2018 12:13:51 -0000
-From: Sandipan Das <sandipan@linux.vnet.ibm.com>
-To: daniel@iogearbox.net, naveen.n.rao@linux.vnet.ibm.com
-Cc: ast@fb.com, mpe@ellerman.id.au, jakub.kicinski@netronome.com,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC][PATCH bpf] tools: bpftool: Fix tags for bpf-to-bpf calls
-Date: Tue, 27 Feb 2018 17:43:46 +0530
-In-Reply-To: <1519153431.im5wioxel1.naveen@linux.ibm.com>
-References: <1519153431.im5wioxel1.naveen@linux.ibm.com>
-Message-Id: <20180227121346.16199-1-sandipan@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 27 Feb 2018 12:41:12 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC REBASED 5/5] powerpc/mm/slice: use the dynamic high slice
+ size to limit bitmap operations
+In-Reply-To: <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
+References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
+ <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
+ <87bmga7qng.fsf@linux.vnet.ibm.com>
+ <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
+Date: Tue, 27 Feb 2018 18:11:07 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <878tbe7ggs.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,137 +42,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" wrote:
-> I'm wondering if we can instead encode the bpf prog id in
-> imm32. That way, we should be able to indicate the BPF
-> function being called into.  Daniel, is that something we
-> can consider?
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Since each subprog does not get a separate id, we cannot fetch
-the fd and therefore the tag of a subprog. Instead we can use
-the tag of the complete program as shown below.
+> On Tue, 27 Feb 2018 14:31:07 +0530
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> 
+>> > The number of high slices a process might use now depends on its
+>> > address space size, and what allocation address it has requested.
+>> >
+>> > This patch uses that limit throughout call chains where possible,
+>> > rather than use the fixed SLICE_NUM_HIGH for bitmap operations.
+>> > This saves some cost for processes that don't use very large address
+>> > spaces.  
+>> 
+>> I haven't really looked at the final code. One of the issue we had was
+>> with the below scenario.
+>> 
+>> mmap(addr, len) where addr < 128TB and addr+len > 128TB  We want to make
+>> sure we build the mask such that we don't find the addr available.
+>
+> We should run it through the mmap regression tests. I *think* we moved
+> all of that logic from the slice code to get_ummapped_area before going
+> in to slices. I may have missed something though, it would be good to
+> have more eyes on it.
+>
 
-"Daniel Borkmann" wrote:
-> I think one limitation that would still need to be addressed later
-> with such approach would be regarding the xlated prog dump in bpftool,
-> see 'BPF calls via JIT' in 7105e828c087 ("bpf: allow for correlation
-> of maps and helpers in dump"). Any ideas for this (potentially if we
-> could use off + imm for calls, we'd get to 48 bits, but that seems
-> still not be enough as you say)?
+mmap(-1,...) failed with the test. Something like below fix it
 
-As an alternative, this is what I am thinking of:
+@@ -756,7 +770,7 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+        mm->context.low_slices_psize = lpsizes;
+ 
+        hpsizes = mm->context.high_slices_psize;
+-       high_slices = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
++       high_slices = SLICE_NUM_HIGH;
+        for (i = 0; i < high_slices; i++) {
+                mask_index = i & 0x1;
+                index = i >> 1;
 
-Currently, for bpf-to-bpf calls, if bpf_jit_kallsyms is enabled,
-bpftool looks up the name of the corresponding symbol for the
-JIT-ed subprogram and shows it in the xlated dump alongside the
-actual call instruction. However, the lookup is based on the
-target address which is calculated using the imm field of the
-instruction. So, once again, if imm is truncated, we will end
-up with the wrong address. Also, the subprog aux data (which
-has been proposed as a mitigation for this) is not accessible
-from this tool.
+I guess for everything in the mm_context_t, we should compute it till
+SLICE_NUM_HIGH. The reason for failure was, even though we recompute the
+slice mask cached in mm_context on slb_addr_limit, it was still derived
+from the high_slices_psizes which was computed with lower value.
 
-We can still access the tag for the complete bpf program and use
-this with the correct offset in an objdump-like notation as an
-alterative for the name of the subprog that is the target of a
-bpf-to-bpf call instruction.
-
-Currently, an xlated dump looks like this:
-   0: (85) call pc+2#bpf_prog_5f76847930402518_F
-   1: (b7) r0 = 1
-   2: (95) exit
-   3: (b7) r0 = 2
-   4: (95) exit
-
-With this patch, it will look like this:
-   0: (85) call pc+2#bpf_prog_8f85936f29a7790a+3
-   1: (b7) r0 = 1
-   2: (95) exit
-   3: (b7) r0 = 2
-   4: (95) exit
-
-where 8f85936f29a7790a is the tag of the bpf program and 3 is
-the offset to the start of the subprog from the start of the
-program.
-
-Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
----
- tools/bpf/bpftool/prog.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
-
-diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
-index e8e2baaf93c2..93746d5d1e3c 100644
---- a/tools/bpf/bpftool/prog.c
-+++ b/tools/bpf/bpftool/prog.c
-@@ -415,9 +415,11 @@ struct kernel_sym {
- };
- 
- struct dump_data {
-+	unsigned char prog_tag[BPF_TAG_SIZE];
- 	unsigned long address_call_base;
- 	struct kernel_sym *sym_mapping;
- 	__u32 sym_count;
-+	unsigned int curr_line;
- 	char scratch_buff[SYM_MAX_NAME];
- };
- 
-@@ -499,16 +501,16 @@ static void print_insn(struct bpf_verifier_env *env, const char *fmt, ...)
- }
- 
- static const char *print_call_pcrel(struct dump_data *dd,
--				    struct kernel_sym *sym,
--				    unsigned long address,
- 				    const struct bpf_insn *insn)
- {
--	if (sym)
--		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
--			 "%+d#%s", insn->off, sym->name);
--	else
--		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
--			 "%+d#0x%lx", insn->off, address);
-+	snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
-+		 "+%d#bpf_prog_%02x%02x%02x%02x%02x%02x%02x%02x+%d",
-+		 insn->off,
-+		 dd->prog_tag[0], dd->prog_tag[1],
-+		 dd->prog_tag[2], dd->prog_tag[3],
-+		 dd->prog_tag[4], dd->prog_tag[5],
-+		 dd->prog_tag[6], dd->prog_tag[7],
-+		 dd->curr_line + insn->off + 1);
- 	return dd->scratch_buff;
- }
- 
-@@ -534,7 +536,7 @@ static const char *print_call(void *private_data,
- 
- 	sym = kernel_syms_search(dd, address);
- 	if (insn->src_reg == BPF_PSEUDO_CALL)
--		return print_call_pcrel(dd, sym, address, insn);
-+		return print_call_pcrel(dd, insn);
- 	else
- 		return print_call_helper(dd, sym, address);
- }
-@@ -576,6 +578,7 @@ static void dump_xlated_plain(struct dump_data *dd, void *buf,
- 		double_insn = insn[i].code == (BPF_LD | BPF_IMM | BPF_DW);
- 
- 		printf("% 4d: ", i);
-+		dd->curr_line = i;
- 		print_bpf_insn(&cbs, NULL, insn + i, true);
- 
- 		if (opcodes) {
-@@ -628,6 +631,7 @@ static void dump_xlated_json(struct dump_data *dd, void *buf,
- 
- 		jsonw_start_object(json_wtr);
- 		jsonw_name(json_wtr, "disasm");
-+		dd->curr_line = i;
- 		print_bpf_insn(&cbs, NULL, insn + i, true);
- 
- 		if (opcodes) {
-@@ -788,6 +792,7 @@ static int do_dump(int argc, char **argv)
- 
- 			disasm_print_insn(buf, *member_len, opcodes, name);
- 		} else {
-+			memcpy(dd.prog_tag, info.tag, sizeof(info.tag));
- 			kernel_syms_load(&dd);
- 			if (json_output)
- 				dump_xlated_json(&dd, buf, *member_len, opcodes);
--- 
-2.14.3
+-aneesh
