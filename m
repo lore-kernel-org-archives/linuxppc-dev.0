@@ -1,20 +1,21 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrQsC3yhlzF1V5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 04:38:19 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id l24so7788909pgc.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:38:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrQsC62gzzF1V6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 04:38:23 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id a16so2412427pfn.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:38:23 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 00/30] KVM: PPC: Book3S PR: Transaction memory support on
- PR KVM
-Date: Wed, 28 Feb 2018 01:37:07 +0800
-Message-Id: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 02/30] powerpc: add TEXASR related macros
+Date: Wed, 28 Feb 2018 01:37:09 +0800
+Message-Id: <1519753057-11059-3-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
+References: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,138 +27,74 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-In current days, many OS distributions have utilized transaction
-memory functionality. In PowerPC, HV KVM supports TM. But PR KVM
-does not.
+This patches add some macros for CR0/TEXASR bits so that PR KVM TM
+logic(tbegin./treclaim./tabort.) can make use of them later.
 
-The drive for the transaction memory support of PR KVM is the
-openstack Continuous Integration testing - They runs a HV(hypervisor)
-KVM(as level 1) and then run PR KVM(as level 2) on top of that.
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/include/asm/reg.h              | 25 ++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/copy-paste.h |  3 +--
+ 2 files changed, 25 insertions(+), 3 deletions(-)
 
-This patch set add transaction memory support on PR KVM.
-
-v1->v2 changes:
-1. Correct a bug in trechkpt emulation: the tm sprs need to be 
-flushed to vcpu before trechkpt.
-2. add PR kvm ioctl functionalities for TM.
-3. removed save_msr_tm and use kvmppc_get_msr() to determine 
-whether a transaction state need to be restored.
-4. Remove "KVM: PPC: Book3S PR: set MSR HV bit accordingly 
-for PPC970 and others." patch.
-It will prevent PR KVM to start as L1 hypervisor. Since if 
-we set HV bit to 0 when rfid to guest (who is supposed to 
-run at HV=1 && PR=1), the guest will not be able to access 
-its original memory.
-The original code always set HV bits for shadow_msr, it is 
-benign since:
-HV bits can only be altered by sc instruction; it can only 
-be set to 0 by rfid/hrfid instruction.  
-We return to guest with rfid. So:
-* if KVM are running as L1 hypervisor, guest physical MSR 
-expects HV=1.
-* if KVM are running as L2 hypervisor, rfid cannot update 
-HV =1 so the HV is still 0.
-5. add XER register implementation to 
-kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm()
-6. remove unnecessary stack frame in _kvmppc_save/restore_tm().
-7. move MSR bits sync into kvmppc_copy_from_svcpu() so that 
-we always see inconsistent shadow_msr/kvmppc_get_msr() 
-even when preemption.
-8. doing failure recording in treclaim emulation when TEXASR_FS
-is 0.
-
-
-Test cases performed:
-linux/tools/testing/selftests/powerpc/tm/tm-syscall
-linux/tools/testing/selftests/powerpc/tm/tm-fork
-linux/tools/testing/selftests/powerpc/tm/tm-vmx-unavail
-linux/tools/testing/selftests/powerpc/tm/tm-tmspr
-linux/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv
-linux/tools/testing/selftests/powerpc/math/vsx_preempt
-linux/tools/testing/selftests/powerpc/math/fpu_signal
-linux/tools/testing/selftests/powerpc/math/vmx_preempt
-linux/tools/testing/selftests/powerpc/math/fpu_syscall
-linux/tools/testing/selftests/powerpc/math/vmx_syscall
-linux/tools/testing/selftests/powerpc/math/fpu_preempt
-linux/tools/testing/selftests/powerpc/math/vmx_signal
-linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr
-linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr
-linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx
-linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr
-linux/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx
-https://github.com/justdoitqd/publicFiles/blob/master/test_tbegin_pr.c
-https://github.com/justdoitqd/publicFiles/blob/master/test_tabort.c
-https://github.com/justdoitqd/publicFiles/blob/master/test_kvm_htm_cap.c
-https://github.com/justdoitqd/publicFiles/blob/master/test-tm-mig.c
-
-Simon Guo (30):
-  powerpc: export symbol msr_check_and_set().
-  powerpc: add TEXASR related macros
-  powerpc: export tm_enable()/tm_disable/tm_abort() APIs
-  KVM: PPC: Book3S PR: Move kvmppc_save_tm/kvmppc_restore_tm to separate
-    file
-  KVM: PPC: Book3S PR: add new parameter (guest MSR) for
-    kvmppc_save_tm()/kvmppc_restore_tm()
-  KVM: PPC: Book3S PR: turn on FP/VSX/VMX MSR bits in kvmppc_save_tm()
-  KVM: PPC: Book3S PR: add C function wrapper for
-    _kvmppc_save/restore_tm()
-  KVM: PPC: Book3S PR: In PR KVM suspends Transactional state when
-    inject an interrupt.
-  KVM: PPC: Book3S PR: PR KVM pass through MSR TM/TS bits to shadow_msr.
-  KVM: PPC: Book3S PR: Sync TM bits to shadow msr for problem state
-    guest
-  KVM: PPC: Book3S PR: implement RFID TM behavior to suppress change
-    from S0 to N0
-  KVM: PPC: Book3S PR: prevent TS bits change in kvmppc_interrupt_pr()
-  KVM: PPC: Book3S PR: adds new
-    kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm API for PR KVM.
-  KVM: PPC: Book3S PR: add kvmppc_save/restore_tm_sprs() APIs
-  KVM: PPC: Book3S PR: add transaction memory save/restore skeleton for
-    PR KVM
-  KVM: PPC: Book3S PR: add math support for PR KVM HTM
-  KVM: PPC: Book3S PR: make mtspr/mfspr emulation behavior based on
-    active TM SPRs
-  KVM: PPC: Book3S PR: always fail transaction in guest privilege state
-  KVM: PPC: Book3S PR: enable NV reg restore for reading TM SPR at guest
-    privilege state
-  KVM: PPC: Book3S PR: adds emulation for treclaim.
-  KVM: PPC: Book3S PR: add emulation for trechkpt in PR KVM.
-  KVM: PPC: Book3S PR: add emulation for tabort. for privilege guest
-  KVM: PPC: Book3S PR: add guard code to prevent returning to guest with
-    PR=0 and Transactional state
-  KVM: PPC: Book3S PR: Support TAR handling for PR KVM HTM.
-  KVM: PPC: Book3S PR: enable HTM for PR KVM for KVM_CHECK_EXTENSION
-    ioctl
-  KVM: PPC: move vcpu_load/vcpu_put down to each ioctl case in
-    kvm_arch_vcpu_ioctl
-  KVM: PPC: remove load/put vcpu for KVM_GET/SET_ONE_REG ioctl
-  KVM: PPC: remove load/put vcpu for KVM_GET_REGS/KVM_SET_REGS
-  KVM: PPC: add KVM_SET_ONE_REG/KVM_GET_ONE_REG to async ioctl
-  KVM: PPC: Book3S PR: enable kvmppc_get/set_one_reg_pr() for HTM
-    registers
-
- arch/powerpc/include/asm/asm-prototypes.h   |   9 +
- arch/powerpc/include/asm/kvm_book3s.h       |  16 ++
- arch/powerpc/include/asm/kvm_host.h         |   1 -
- arch/powerpc/include/asm/reg.h              |  25 +-
- arch/powerpc/include/asm/tm.h               |   2 -
- arch/powerpc/include/uapi/asm/tm.h          |   2 +-
- arch/powerpc/kernel/process.c               |   1 +
- arch/powerpc/kernel/tm.S                    |  12 +
- arch/powerpc/kvm/Makefile                   |   3 +
- arch/powerpc/kvm/book3s.c                   |   6 -
- arch/powerpc/kvm/book3s.h                   |   6 +
- arch/powerpc/kvm/book3s_64_mmu.c            |  11 +-
- arch/powerpc/kvm/book3s_emulate.c           | 369 ++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S     | 259 ++-----------------
- arch/powerpc/kvm/book3s_pr.c                | 337 +++++++++++++++++++++++--
- arch/powerpc/kvm/book3s_segment.S           |  13 +
- arch/powerpc/kvm/powerpc.c                  |  23 +-
- arch/powerpc/kvm/tm.S                       | 379 ++++++++++++++++++++++++++++
- arch/powerpc/mm/hash_utils_64.c             |   1 +
- arch/powerpc/platforms/powernv/copy-paste.h |   3 +-
- 20 files changed, 1179 insertions(+), 299 deletions(-)
- create mode 100644 arch/powerpc/kvm/tm.S
-
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 14e41b8..173c857 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -146,6 +146,12 @@
+ #define MSR_64BIT	0
+ #endif
+ 
++/* Condition Register related */
++#define CR0_SHIFT	28
++#define CR0_MASK	0xF
++#define CR0_TBEGIN_FAILURE	(0x2 << 28) /* 0b0010 */
++
++
+ /* Power Management - Processor Stop Status and Control Register Fields */
+ #define PSSCR_RL_MASK		0x0000000F /* Requested Level */
+ #define PSSCR_MTL_MASK		0x000000F0 /* Maximum Transition Level */
+@@ -237,8 +243,25 @@
+ #define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
+ #define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
+ #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
+-#define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
++#define TEXASR_FC_LG	(63 - 7)	/* Failure Code */
++#define TEXASR_AB_LG	(63 - 31)	/* Abort */
++#define TEXASR_SU_LG	(63 - 32)	/* Suspend */
++#define TEXASR_HV_LG	(63 - 34)	/* Hypervisor state*/
++#define TEXASR_PR_LG	(63 - 35)	/* Privilege level */
++#define TEXASR_FS_LG	(63 - 36)	/* failure summary */
++#define TEXASR_EX_LG	(63 - 37)	/* TFIAR exact bit */
++#define TEXASR_ROT_LG	(63 - 38)	/* ROT bit */
++#define TEXASR_FC	(ASM_CONST(0xFF) << TEXASR_FC_LG)
++#define TEXASR_AB	__MASK(TEXASR_AB_LG)
++#define TEXASR_SU	__MASK(TEXASR_SU_LG)
++#define TEXASR_HV	__MASK(TEXASR_HV_LG)
++#define TEXASR_PR	__MASK(TEXASR_PR_LG)
++#define TEXASR_FS	__MASK(TEXASR_FS_LG)
++#define TEXASR_EX	__MASK(TEXASR_EX_LG)
++#define TEXASR_ROT	__MASK(TEXASR_ROT_LG)
++
+ #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
++
+ #define SPRN_TIDR	144	/* Thread ID register */
+ #define SPRN_CTRLF	0x088
+ #define SPRN_CTRLT	0x098
+diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
+index c9a5036..3fa62de 100644
+--- a/arch/powerpc/platforms/powernv/copy-paste.h
++++ b/arch/powerpc/platforms/powernv/copy-paste.h
+@@ -7,9 +7,8 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ #include <asm/ppc-opcode.h>
++#include <asm/reg.h>
+ 
+-#define CR0_SHIFT	28
+-#define CR0_MASK	0xF
+ /*
+  * Copy/paste instructions:
+  *
 -- 
 1.8.3.1
