@@ -1,32 +1,36 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-vk0-x230.google.com (mail-vk0-x230.google.com
- [IPv6:2607:f8b0:400c:c05::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zr9gr4zmxzF1Cj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 18:44:24 +1100 (AEDT)
-Received: by mail-vk0-x230.google.com with SMTP id s1so3878911vke.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2018 23:44:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrCNp4zMszF1Kv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 20:01:30 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w1R90Bsm053869
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 04:01:27 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gd1xndskb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 04:01:22 -0500
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 27 Feb 2018 09:01:10 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC REBASED 5/5] powerpc/mm/slice: use the dynamic high slice
+ size to limit bitmap operations
+In-Reply-To: <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
+References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
+ <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
+Date: Tue, 27 Feb 2018 14:31:07 +0530
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <603d5335-6220-73f2-d902-b92bc74bc79e@c-s.fr>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-2-malat@debian.org>
- <CAHp75Vdpdr-0-vdvo0SBx2XcM=HePrUbbb4SM9+ExT_i-1B69Q@mail.gmail.com>
- <CAHp75Ve_zxp4_N_YzzvJ=H8Qs65G5j7bgGBv_TvsZ6Ye2nuECA@mail.gmail.com>
- <CA+7wUszK++8Tr9j1=4jQtRSu-36MH=dqgimq-ST9D9hvacrJSQ@mail.gmail.com>
- <603d5335-6220-73f2-d902-b92bc74bc79e@c-s.fr>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 27 Feb 2018 08:44:01 +0100
-Message-ID: <CA+7wUsys=J8vkEOtzd26B6MGEhfTBRzaA_myuUWNzf24rMvn+A@mail.gmail.com>
-Subject: Re: [PATCH 01/21] powerpc: Remove warning on array size when empty
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+Message-Id: <87bmga7qng.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,65 +40,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 27, 2018 at 8:33 AM, Christophe LEROY
-<christophe.leroy@c-s.fr> wrote:
->
->
-> Le 27/02/2018 =C3=A0 08:25, Mathieu Malaterre a =C3=A9crit :
->>
->> On Mon, Feb 26, 2018 at 3:45 PM, Andy Shevchenko
->> <andy.shevchenko@gmail.com> wrote:
->>>
->>> On Mon, Feb 26, 2018 at 4:44 PM, Andy Shevchenko
->>> <andy.shevchenko@gmail.com> wrote:
->>>>
->>>> On Sun, Feb 25, 2018 at 7:22 PM, Mathieu Malaterre <malat@debian.org>
->>>> wrote:
->>>
->>>
->>>>>   static void __init check_cpu_feature_properties(unsigned long node)
->>>>>   {
->>>>> -       unsigned long i;
->>>>>          struct feature_property *fp =3D feature_properties;
->>>>>          const __be32 *prop;
->>>>>
->>>>
->>>> Much simpler is just add
->>>>
->>>> if (ARRAY_SIZE() =3D=3D 0)
->>>>   return;
->>>>
->>>>> -       for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) =
-{
->>>>> +       for (; fp !=3D feature_properties +
->>>>> ARRAY_SIZE(feature_properties); ++fp) {
->>>
->>>
->>> ...or convert to while(), which will be more readable.
->>
->>
->> So you'd prefer something like:
->>
->> while (fp < feature_properties + ARRAY_SIZE(feature_properties)) {
->>    ...
->>    ++fp;
->> }
->>
->> right ?
->>
->
->
-> Why not do as suggested by Segher, ie just replace < by !=3D in the origi=
-nal
-> form ?
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-I can do that.
+> The number of high slices a process might use now depends on its
+> address space size, and what allocation address it has requested.
+>
+> This patch uses that limit throughout call chains where possible,
+> rather than use the fixed SLICE_NUM_HIGH for bitmap operations.
+> This saves some cost for processes that don't use very large address
+> spaces.
 
-> Or add in front:
-> if (!ARRAY_SIZE(feature_properties))
->         return;
+I haven't really looked at the final code. One of the issue we had was
+with the below scenario.
 
-(not tested) I believe the compiler still go over the for() loop and
-will complain about the original unsigned comparison.
+mmap(addr, len) where addr < 128TB and addr+len > 128TB  We want to make
+sure we build the mask such that we don't find the addr available.
 
-> Christophe
+-aneesh
