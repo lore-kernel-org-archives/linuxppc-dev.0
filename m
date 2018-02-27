@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrQsR5QY1zF0nc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 04:38:35 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id 93-v6so1217683plc.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:38:35 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrQsV59GjzF0nd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 04:38:38 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id ay8so11778150plb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2018 09:38:38 -0800 (PST)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 07/30] KVM: PPC: Book3S PR: add C function wrapper for
- _kvmppc_save/restore_tm()
-Date: Wed, 28 Feb 2018 01:37:14 +0800
-Message-Id: <1519753057-11059-8-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 08/30] KVM: PPC: Book3S PR: In PR KVM suspends
+ Transactional state when inject an interrupt.
+Date: Wed, 28 Feb 2018 01:37:15 +0800
+Message-Id: <1519753057-11059-9-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,213 +28,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Currently _kvmppc_save/restore_tm() APIs can only be invoked from
-assembly function. This patch adds C function wrappers for them so
-that they can be safely called from C function.
+This patch simulates interrupt behavior per Power ISA while injecting
+interrupt in PR KVM:
+- When interrupt happens, transactional state should be suspended.
+
+kvmppc_mmu_book3s_64_reset_msr() will be invoked when injecting an
+interrupt. This patch performs this ISA logic in
+kvmppc_mmu_book3s_64_reset_msr().
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/asm-prototypes.h |  6 ++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  8 +--
- arch/powerpc/kvm/tm.S                     | 95 ++++++++++++++++++++++++++++++-
- 3 files changed, 103 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 002abfc..b0ccd91 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -126,7 +126,13 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- void _mcount(void);
- unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index a93d719..cf9d686 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -38,7 +38,16 @@
  
-+/* Transaction memory related */
- void tm_enable(void);
- void tm_disable(void);
- void tm_abort(uint8_t cause);
+ static void kvmppc_mmu_book3s_64_reset_msr(struct kvm_vcpu *vcpu)
+ {
+-	kvmppc_set_msr(vcpu, vcpu->arch.intr_msr);
++	unsigned long msr = vcpu->arch.intr_msr;
++	unsigned long cur_msr = kvmppc_get_msr(vcpu);
 +
-+struct kvm_vcpu;
-+void _kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu, u64 guest_msr);
-+void _kvmppc_save_tm_pr(struct kvm_vcpu *vcpu, u64 guest_msr);
++	/* If transactional, change to suspend mode on IRQ delivery */
++	if (MSR_TM_TRANSACTIONAL(cur_msr))
++		msr |= MSR_TS_S;
++	else
++		msr |= cur_msr & MSR_TS_MASK;
 +
- #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index df13cea..4b59424 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -790,7 +790,7 @@ BEGIN_FTR_SECTION
- 	 */
- 	mr      r3, r4
- 	ld      r4, VCPU_MSR(r3)
--	bl	kvmppc_restore_tm
-+	bl	__kvmppc_restore_tm
- 	ld	r4, HSTATE_KVM_VCPU(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
-@@ -1735,7 +1735,7 @@ BEGIN_FTR_SECTION
- 	 */
- 	mr      r3, r9
- 	ld      r4, VCPU_MSR(r3)
--	bl	kvmppc_save_tm
-+	bl	__kvmppc_save_tm
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
-@@ -2596,7 +2596,7 @@ BEGIN_FTR_SECTION
- 	 */
- 	ld      r3, HSTATE_KVM_VCPU(r13)
- 	ld      r4, VCPU_MSR(r3)
--	bl	kvmppc_save_tm
-+	bl	__kvmppc_save_tm
- END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
++	kvmppc_set_msr(vcpu, msr);
+ }
  
-@@ -2710,7 +2710,7 @@ BEGIN_FTR_SECTION
- 	 */
- 	mr      r3, r4
- 	ld      r4, VCPU_MSR(r3)
--	bl	kvmppc_restore_tm
-+	bl	__kvmppc_restore_tm
- 	ld	r4, HSTATE_KVM_VCPU(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
-diff --git a/arch/powerpc/kvm/tm.S b/arch/powerpc/kvm/tm.S
-index 2d6fe5b..269dd11 100644
---- a/arch/powerpc/kvm/tm.S
-+++ b/arch/powerpc/kvm/tm.S
-@@ -35,7 +35,7 @@
-  * This can modify all checkpointed registers, but
-  * restores r1, r2 before exit.
-  */
--_GLOBAL(kvmppc_save_tm)
-+_GLOBAL(__kvmppc_save_tm)
- 	mflr	r0
- 	std	r0, PPC_LR_STKOFF(r1)
- 
-@@ -149,6 +149,52 @@ _GLOBAL(kvmppc_save_tm)
- 	blr
- 
- /*
-+ * _kvmppc_save_tm() is a wrapper around __kvmppc_save_tm(), so that it can
-+ * be invoked from C function by PR KVM only.
-+ */
-+_GLOBAL(_kvmppc_save_tm_pr)
-+	mflr	r5
-+	std	r5, PPC_LR_STKOFF(r1)
-+	stdu    r1, -SWITCH_FRAME_SIZE(r1)
-+	SAVE_NVGPRS(r1)
-+
-+	/* save MSR since TM/math bits might be impacted
-+	 * by __kvmppc_save_tm().
-+	 */
-+	mfmsr	r5
-+	SAVE_GPR(5, r1)
-+
-+	/* also save DSCR/CR so that it can be recovered later */
-+	mfspr   r6, SPRN_DSCR
-+	SAVE_GPR(6, r1)
-+
-+	mfcr    r7
-+	stw     r7, _CCR(r1)
-+
-+	bl	__kvmppc_save_tm
-+
-+	ld      r7, _CCR(r1)
-+	mtcr	r7
-+
-+	REST_GPR(6, r1)
-+	mtspr   SPRN_DSCR, r6
-+
-+	/* need preserve current MSR's MSR_TS bits */
-+	REST_GPR(5, r1)
-+	mfmsr   r6
-+	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
-+	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+	mtmsrd  r5
-+
-+	REST_NVGPRS(r1)
-+	addi    r1, r1, SWITCH_FRAME_SIZE
-+	ld	r5, PPC_LR_STKOFF(r1)
-+	mtlr	r5
-+	blr
-+
-+EXPORT_SYMBOL_GPL(_kvmppc_save_tm_pr);
-+
-+/*
-  * Restore transactional state and TM-related registers.
-  * Called with:
-  *  - r3 pointing to the vcpu struct.
-@@ -158,7 +204,7 @@ _GLOBAL(kvmppc_save_tm)
-  * This potentially modifies all checkpointed registers.
-  * It restores r1, r2 from the PACA.
-  */
--_GLOBAL(kvmppc_restore_tm)
-+_GLOBAL(__kvmppc_restore_tm)
- 	mflr	r0
- 	std	r0, PPC_LR_STKOFF(r1)
- 
-@@ -186,6 +232,7 @@ _GLOBAL(kvmppc_restore_tm)
- 	rldicl. r5, r5, 64 - MSR_TS_S_LG, 62
- 	beqlr		/* TM not active in guest */
- 	std	r1, HSTATE_SCRATCH2(r13)
-+	std	r3, HSTATE_SCRATCH1(r13)
- 
- 	/* Make sure the failure summary is set, otherwise we'll program check
- 	 * when we trechkpt.  It's possible that this might have been not set
-@@ -262,6 +309,7 @@ _GLOBAL(kvmppc_restore_tm)
- 	ld	r29, HSTATE_DSCR(r13)
- 	mtspr	SPRN_DSCR, r29
- #endif
-+	ld	r3, HSTATE_SCRATCH1(r13)
- 	ld	r1, HSTATE_SCRATCH2(r13)
- 	ld	r2, PACATMSCRATCH(r13)
- 
-@@ -273,4 +321,47 @@ _GLOBAL(kvmppc_restore_tm)
- 	mtlr	r0
- 	blr
- 
-+/*
-+ * _kvmppc_restore_tm() is a wrapper around __kvmppc_restore_tm(), so that it
-+ * can be invoked from C function by PR KVM only.
-+ */
-+_GLOBAL(_kvmppc_restore_tm_pr)
-+	mflr	r5
-+	std	r5, PPC_LR_STKOFF(r1)
-+	stdu    r1, -SWITCH_FRAME_SIZE(r1)
-+	SAVE_NVGPRS(r1)
-+
-+	/* save MSR to avoid TM/math bits change */
-+	mfmsr	r5
-+	SAVE_GPR(5, r1)
-+
-+	/* also save DSCR/CR so that it can be recovered later */
-+	mfspr   r6, SPRN_DSCR
-+	SAVE_GPR(6, r1)
-+
-+	mfcr    r7
-+	stw     r7, _CCR(r1)
-+
-+	bl	__kvmppc_restore_tm
-+
-+	ld      r7, _CCR(r1)
-+	mtcr	r7
-+
-+	REST_GPR(6, r1)
-+	mtspr   SPRN_DSCR, r6
-+
-+	/* need preserve current MSR's MSR_TS bits */
-+	REST_GPR(5, r1)
-+	mfmsr   r6
-+	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
-+	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+	mtmsrd  r5
-+
-+	REST_NVGPRS(r1)
-+	addi    r1, r1, SWITCH_FRAME_SIZE
-+	ld	r5, PPC_LR_STKOFF(r1)
-+	mtlr	r5
-+	blr
-+
-+EXPORT_SYMBOL_GPL(_kvmppc_restore_tm_pr);
- #endif
+ static struct kvmppc_slb *kvmppc_mmu_book3s_64_find_slbe(
 -- 
 1.8.3.1
