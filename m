@@ -1,27 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
- [IPv6:2607:f8b0:400c:c05::244])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-qt0-x232.google.com (mail-qt0-x232.google.com
+ [IPv6:2607:f8b0:400d:c0d::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrt1Y2LmbzF1X4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 22:02:08 +1100 (AEDT)
-Received: by mail-vk0-x244.google.com with SMTP id a63so1193210vkg.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 03:02:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrtdR2KBFzF1YB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 22:29:45 +1100 (AEDT)
+Received: by mail-qt0-x232.google.com with SMTP id r16so2472016qtm.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 03:29:45 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <87y3jd2xsl.fsf@concordia.ellerman.id.au>
-References: <20171214011008.4388-1-bsingharora@gmail.com>
- <5227513.IOhi8YYFsi@new-mexico>
- <CAKTCnzkO+NWKDwj8RE_jX_N0uu-vY5HRf4AdkJyjsLvL1Loqhg@mail.gmail.com>
- <2478842.lxjFpUTe5s@new-mexico> <87y3jd2xsl.fsf@concordia.ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 28 Feb 2018 22:02:05 +1100
-Message-ID: <CAKTCnz=MYZae27JKffFp5XHVwCoXkU8HRbmckLZSoWeJRHPGZw@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/npu: Cleanup MMIO ATSD flushing
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1519817278-30770-1-git-send-email-geert@linux-m68k.org>
+References: <1519817278-30770-1-git-send-email-geert@linux-m68k.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 28 Feb 2018 12:29:41 +0100
+Message-ID: <CAMuHMdVEFXL6hXhBNya-9LjORrZnyJJPzoBNMrufAdPEBVhLtA@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.16-rc3
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,28 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 28, 2018 at 9:50 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Alistair Popple <alistair@popple.id.au> writes:
->
->>> @aneesh can you please look at this? @mpe can we pick this up if there
->>> are no objections?
->>
->> @mpe any objections to picking this up for this release? Or do you want to wait
->> for the next one? (there are likely more bugfixes coming for ATS support).
->
-> I can grab it for this release if it's fixing a bug, the subject makes
-> it sound like a cleanup. Do we have a Fixes tag for it?
->
-> I don't particularly like the potentially very long loop in
-> pnv_npu2_invalidate_helper() which spends most of its time with
-> interrupts off. I worry we're going to see soft lockups pointing there
-> if we get a very large invalidate.
->
-We have the same loop today in pnv_npu2_mn_invalidate_range(). The bug
-fix is really the fix to invalidate the right page size. I agree we
-can optimize this better, in fact if the mmu notifier is made blocking
-then we can even do cond_resched(). I however agree, the right thing
-to do is to figure out the right trade-off of invalidate range size to
-flushing the entire PID
+On Wed, Feb 28, 2018 at 12:27 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v4.16-rc3[1] to v4.16-rc2[3], the summaries are:
+>   - build errors: +1/-16
 
-Balbir Singh.
+  + /home/kisskb/slave/src/arch/powerpc/kvm/powerpc.c: error: label
+'out' defined but not used [-Werror=unused-label]:  => 1611:1
+
+ppc64_defconfig+NO_ALTIVEC
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/4a3928c6f8a53fa1aed28ccba227742486e8ddcb/ (268 out of 274 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/91ab883eb21325ad80f3473633f794c78ac87f51/ (all 274 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
