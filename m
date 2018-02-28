@@ -1,26 +1,28 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x22a.google.com (mail-wm0-x22a.google.com
- [IPv6:2a00:1450:400c:c09::22a])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
+ [IPv6:2607:f8b0:400c:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zrsxB2lLyzF1KC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 21:58:18 +1100 (AEDT)
-Received: by mail-wm0-x22a.google.com with SMTP id t6so4183916wmt.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 02:58:18 -0800 (PST)
-Date: Wed, 28 Feb 2018 13:58:04 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] selftests/vm: Update max va test to check for high
- address return.
-Message-ID: <20180228105804.2uhjcfxu6zebkixh@node.shutemov.name>
-References: <20180228035830.10089-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zrt1Y2LmbzF1X4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 22:02:08 +1100 (AEDT)
+Received: by mail-vk0-x244.google.com with SMTP id a63so1193210vkg.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 03:02:08 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180228035830.10089-1-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <87y3jd2xsl.fsf@concordia.ellerman.id.au>
+References: <20171214011008.4388-1-bsingharora@gmail.com>
+ <5227513.IOhi8YYFsi@new-mexico>
+ <CAKTCnzkO+NWKDwj8RE_jX_N0uu-vY5HRf4AdkJyjsLvL1Loqhg@mail.gmail.com>
+ <2478842.lxjFpUTe5s@new-mexico> <87y3jd2xsl.fsf@concordia.ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Wed, 28 Feb 2018 22:02:05 +1100
+Message-ID: <CAKTCnz=MYZae27JKffFp5XHVwCoXkU8HRbmckLZSoWeJRHPGZw@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/npu: Cleanup MMIO ATSD flushing
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 28, 2018 at 09:28:30AM +0530, Aneesh Kumar K.V wrote:
-> mmap(-1,..) is expected to search from max supported VA top down. It should find
-> an address above ADDR_SWITCH_HINT. Explicitly check for this.
+On Wed, Feb 28, 2018 at 9:50 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Alistair Popple <alistair@popple.id.au> writes:
+>
+>>> @aneesh can you please look at this? @mpe can we pick this up if there
+>>> are no objections?
+>>
+>> @mpe any objections to picking this up for this release? Or do you want to wait
+>> for the next one? (there are likely more bugfixes coming for ATS support).
+>
+> I can grab it for this release if it's fixing a bug, the subject makes
+> it sound like a cleanup. Do we have a Fixes tag for it?
+>
+> I don't particularly like the potentially very long loop in
+> pnv_npu2_invalidate_helper() which spends most of its time with
+> interrupts off. I worry we're going to see soft lockups pointing there
+> if we get a very large invalidate.
+>
+We have the same loop today in pnv_npu2_mn_invalidate_range(). The bug
+fix is really the fix to invalidate the right page size. I agree we
+can optimize this better, in fact if the mmu notifier is made blocking
+then we can even do cond_resched(). I however agree, the right thing
+to do is to figure out the right trade-off of invalidate range size to
+flushing the entire PID
 
-Hm. I don't think this correct. -1 means the application supports any
-address, not restricted to 47-bit address space. It doesn't mean the
-application *require* the address to be above 47-bit.
-
-At least on x86, -1 just shift upper boundary of address range where we
-can look for unmapped area.
-
--- 
- Kirill A. Shutemov
+Balbir Singh.
