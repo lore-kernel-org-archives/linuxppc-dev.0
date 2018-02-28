@@ -1,36 +1,21 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-ot0-f196.google.com (mail-ot0-f196.google.com
+ [74.125.82.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zs8BF566fzF1dj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 08:40:34 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w1SLYXNR073005
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 16:40:31 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ge2gh50ey-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 16:40:31 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 28 Feb 2018 21:40:29 -0000
-Subject: Re: [RESEND][PATCH] cpuidle/powernv : Restore different PSSCR for
- idle and hotplug
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: stable@vger.kernel.org, npiggin@gmail.com
-Date: Thu, 01 Mar 2018 08:40:22 +1100
-In-Reply-To: <1519846389-29414-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1519846389-29414-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1519854022.2520.12.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zs9bd4BFZzF1Z0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 09:44:12 +1100 (AEDT)
+Received: by mail-ot0-f196.google.com with SMTP id h8so3817483oti.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 14:44:12 -0800 (PST)
+From: Rob Herring <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'
+Date: Wed, 28 Feb 2018 16:44:06 -0600
+Message-Id: <20180228224406.7049-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,199 +25,562 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-03-01 at 01:03 +0530, Akshay Adiga wrote:
-> commit 1e1601b38e6e ("powerpc/powernv/idle: Restore SPRs for deep idle
-> states via stop API.") uses stop-api provided by the firmware to restore
-> PSSCR. PSSCR restore is required for handling special wakeup. When special
-> wakeup is completed, the core enters stop state based on restored PSSCR.
-> 
-> Currently PSSCR is restored to deepest available stop state, causing
-> a idle cpu to enter deeper stop state on a special wakeup, which causes
-> the cpu to hang on wakeup.
-> 
-> A "sensors" command which reads temperature (through DTS sensors) on idle
-> cpu can trigger special wakeup.
-> 
-> Failed Scenario :
-> Request restore of PSSCR with RL = 11
-> cpu enters idle state (stop5)
->   user triggers "sensors" command
->    Assert special wakeup on cpu
->      Restores PSSCR with RL = 11  <---- Done by firmware
->       Read DTS sensor
->    Deassert special wakeup
->   cpu enters idle state (stop11) <-- Instead of stop5
-> 
-> Cpu hang is caused because cpu ended up in a deeper state than it requested
-> 
-> This patch fixes instability caused by special wakeup when stop11 is
-> enabled. Requests restore of PSSCR to deepest stop state used by cpuidle.
-> Only when offlining cpu, request restore of PSSCR to deepest stop state.
-> On onlining cpu, request restore of PSSCR to deepest stop state used by
-> cpuidle.
+'linux,stdout-path' has been deprecated for some time in favor of
+'stdout-path'. Now dtc will warn on occurrences of 'linux,stdout-path'.
+Search and replace all the of occurrences with 'stdout-path'.
 
-So if we chose a stop state, but somebody else does a special wakeup,
-we'll end up going back into a *deeper* one than the one we came from ?
+Signed-off-by: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/boot/dts/acadia.dts           | 2 +-
+ arch/powerpc/boot/dts/adder875-redboot.dts | 2 +-
+ arch/powerpc/boot/dts/adder875-uboot.dts   | 2 +-
+ arch/powerpc/boot/dts/akebono.dts          | 2 +-
+ arch/powerpc/boot/dts/amigaone.dts         | 2 +-
+ arch/powerpc/boot/dts/asp834x-redboot.dts  | 2 +-
+ arch/powerpc/boot/dts/bamboo.dts           | 2 +-
+ arch/powerpc/boot/dts/c2k.dts              | 2 +-
+ arch/powerpc/boot/dts/currituck.dts        | 2 +-
+ arch/powerpc/boot/dts/ebony.dts            | 2 +-
+ arch/powerpc/boot/dts/eiger.dts            | 2 +-
+ arch/powerpc/boot/dts/ep405.dts            | 2 +-
+ arch/powerpc/boot/dts/fsl/mvme7100.dts     | 2 +-
+ arch/powerpc/boot/dts/fsp2.dts             | 2 +-
+ arch/powerpc/boot/dts/holly.dts            | 2 +-
+ arch/powerpc/boot/dts/hotfoot.dts          | 2 +-
+ arch/powerpc/boot/dts/icon.dts             | 2 +-
+ arch/powerpc/boot/dts/iss4xx-mpic.dts      | 2 +-
+ arch/powerpc/boot/dts/iss4xx.dts           | 2 +-
+ arch/powerpc/boot/dts/katmai.dts           | 2 +-
+ arch/powerpc/boot/dts/klondike.dts         | 2 +-
+ arch/powerpc/boot/dts/ksi8560.dts          | 2 +-
+ arch/powerpc/boot/dts/media5200.dts        | 2 +-
+ arch/powerpc/boot/dts/mpc8272ads.dts       | 2 +-
+ arch/powerpc/boot/dts/mpc866ads.dts        | 2 +-
+ arch/powerpc/boot/dts/mpc885ads.dts        | 2 +-
+ arch/powerpc/boot/dts/mvme5100.dts         | 2 +-
+ arch/powerpc/boot/dts/obs600.dts           | 2 +-
+ arch/powerpc/boot/dts/pq2fads.dts          | 2 +-
+ arch/powerpc/boot/dts/rainier.dts          | 2 +-
+ arch/powerpc/boot/dts/redwood.dts          | 2 +-
+ arch/powerpc/boot/dts/sam440ep.dts         | 2 +-
+ arch/powerpc/boot/dts/sequoia.dts          | 2 +-
+ arch/powerpc/boot/dts/storcenter.dts       | 2 +-
+ arch/powerpc/boot/dts/taishan.dts          | 2 +-
+ arch/powerpc/boot/dts/virtex440-ml507.dts  | 2 +-
+ arch/powerpc/boot/dts/virtex440-ml510.dts  | 2 +-
+ arch/powerpc/boot/dts/walnut.dts           | 2 +-
+ arch/powerpc/boot/dts/warp.dts             | 2 +-
+ arch/powerpc/boot/dts/xpedite5200_xmon.dts | 2 +-
+ arch/powerpc/boot/dts/yosemite.dts         | 2 +-
+ 41 files changed, 41 insertions(+), 41 deletions(-)
 
-I still think this is broken by design. The chip should automatically
-go back to the state it went to after special wakeup, thus the PPE
-controlling the state should override the PSSCR value accordingly
-rather than relying on those SW hoops.
-
-> 
-> Cc: <stable@vger.kernel.org> # v4.14+
-> Fixes : 1e1601b38e6e ("powerpc/powernv/idle: Restore SPRs for deep idle
-> states via stop API.")
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/cpuidle.h    |  2 ++
->  arch/powerpc/platforms/powernv/idle.c | 46 ++++++++++++++++++++++++++++++++---
->  drivers/cpuidle/cpuidle-powernv.c     |  1 -
->  3 files changed, 45 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-> index e210a83..f52e9f1 100644
-> --- a/arch/powerpc/include/asm/cpuidle.h
-> +++ b/arch/powerpc/include/asm/cpuidle.h
-> @@ -67,6 +67,8 @@
->  #define ERR_EC_ESL_MISMATCH		-1
->  #define ERR_DEEP_STATE_ESL_MISMATCH	-2
->  
-> +#define POWERNV_THRESHOLD_LATENCY_NS 200000
-> +
->  #ifndef __ASSEMBLY__
->  /* Additional SPRs that need to be saved/restored during stop */
->  struct stop_sprs {
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 443d5ca..4b0c7d24 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -56,8 +56,11 @@ u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
->   */
->  static u64 pnv_deepest_stop_psscr_val;
->  static u64 pnv_deepest_stop_psscr_mask;
-> +static u64 pnv_deepest_cpuidle_psscr_val;
-> +static u64 pnv_deepest_cpuidle_psscr_mask;
->  static u64 pnv_deepest_stop_flag;
->  static bool deepest_stop_found;
-> +static bool deepest_cpuidle_found;
->  
->  static int pnv_save_sprs_for_deep_states(void)
->  {
-> @@ -76,7 +79,14 @@ static int pnv_save_sprs_for_deep_states(void)
->  	uint64_t hid5_val = mfspr(SPRN_HID5);
->  	uint64_t hmeer_val = mfspr(SPRN_HMEER);
->  	uint64_t msr_val = MSR_IDLE;
-> -	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
-> +
-> +	/*
-> +	 * Pick deepest cpuidle psscr as the value to be
-> +	 * restored through wakeup engine.
-> +	 * We will request a deeper state to be restored
-> +	 * in hotplug path
-> +	 */
-> +	uint64_t psscr_val = pnv_deepest_cpuidle_psscr_val;
->  
->  	for_each_possible_cpu(cpu) {
->  		uint64_t pir = get_hard_smp_processor_id(cpu);
-> @@ -409,7 +419,7 @@ static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
->   */
->  unsigned long pnv_cpu_offline(unsigned int cpu)
->  {
-> -	unsigned long srr1;
-> +	u64 srr1;
->  	u32 idle_states = pnv_get_supported_cpuidle_states();
->  	u64 lpcr_val;
->  
-> @@ -429,12 +439,18 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
->  	__ppc64_runlatch_off();
->  
->  	if (cpu_has_feature(CPU_FTR_ARCH_300) && deepest_stop_found) {
-> -		unsigned long psscr;
-> +		u64 psscr;
-> +		u64 pir = get_hard_smp_processor_id(cpu);
->  
->  		psscr = mfspr(SPRN_PSSCR);
->  		psscr = (psscr & ~pnv_deepest_stop_psscr_mask) |
->  						pnv_deepest_stop_psscr_val;
-> +		if (pnv_deepest_stop_psscr_val != pnv_deepest_cpuidle_psscr_val)
-> +			opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, psscr);
->  		srr1 = power9_idle_stop(psscr);
-> +		psscr = (psscr & ~pnv_deepest_cpuidle_psscr_mask) |
-> +						pnv_deepest_cpuidle_psscr_val;
-> +		opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, psscr);
->  
->  	} else if ((idle_states & OPAL_PM_WINKLE_ENABLED) &&
->  		   (idle_states & OPAL_PM_LOSE_FULL_CONTEXT)) {
-> @@ -555,6 +571,7 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
->  	u64 *psscr_val = NULL;
->  	u64 *psscr_mask = NULL;
->  	u32 *residency_ns = NULL;
-> +	u32 *latency_ns = NULL;
->  	u64 max_residency_ns = 0;
->  	int rc = 0, i;
->  
-> @@ -562,6 +579,8 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
->  	psscr_mask = kcalloc(dt_idle_states, sizeof(*psscr_mask), GFP_KERNEL);
->  	residency_ns = kcalloc(dt_idle_states, sizeof(*residency_ns),
->  			       GFP_KERNEL);
-> +	latency_ns = kcalloc(dt_idle_states, sizeof(*latency_ns),
-> +			     GFP_KERNEL);
->  
->  	if (!psscr_val || !psscr_mask || !residency_ns) {
->  		rc = -1;
-> @@ -591,6 +610,13 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
->  		rc = -1;
->  		goto out;
->  	}
-> +	if (of_property_read_u32_array(np,
-> +				       "ibm,cpu-idle-state-latencies-ns",
-> +					latency_ns, dt_idle_states)) {
-> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latency-ns in DT\n");
-> +		rc = -1;
-> +		goto out;
-> +	}
->  
->  	/*
->  	 * Set pnv_first_deep_stop_state, pnv_deepest_stop_psscr_{val,mask},
-> @@ -621,6 +647,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
->  			continue;
->  		}
->  
-> +		if (latency_ns[i] <= POWERNV_THRESHOLD_LATENCY_NS) {
-> +			pnv_deepest_cpuidle_psscr_val = psscr_val[i];
-> +			pnv_deepest_cpuidle_psscr_mask = psscr_mask[i];
-> +			deepest_cpuidle_found = true;
-> +		}
-> +
->  		if (max_residency_ns < residency_ns[i]) {
->  			max_residency_ns = residency_ns[i];
->  			pnv_deepest_stop_psscr_val = psscr_val[i];
-> @@ -653,6 +685,14 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
->  			pnv_deepest_stop_psscr_mask);
->  	}
->  
-> +	if (unlikely(!deepest_cpuidle_found)) {
-> +		pr_warn("cpuidle-powernv: No suitable deepest CPU-idle state found");
-> +	} else {
-> +		pr_info("cpuidle-powernv: Deepest cpuidle: psscr = 0x%016llx,mask=0x%016llx\n",
-> +			pnv_deepest_cpuidle_psscr_val,
-> +			pnv_deepest_cpuidle_psscr_mask);
-> +	}
-> +
->  	pr_info("cpuidle-powernv: Requested Level (RL) value of first deep stop = 0x%llx\n",
->  		pnv_first_deep_stop_state);
->  out:
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 1a8234e..620765d 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -26,7 +26,6 @@
->   * Expose only those Hardware idle states via the cpuidle framework
->   * that have latency value below POWERNV_THRESHOLD_LATENCY_NS.
->   */
-> -#define POWERNV_THRESHOLD_LATENCY_NS 200000
->  
->  static struct cpuidle_driver powernv_idle_driver = {
->  	.name             = "powernv_idle",
+diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
+index 86266159521e..deb52e41ab84 100644
+--- a/arch/powerpc/boot/dts/acadia.dts
++++ b/arch/powerpc/boot/dts/acadia.dts
+@@ -219,6 +219,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts b/arch/powerpc/boot/dts/adder875-redboot.dts
+index 083984720b2f..7f5ff4168482 100644
+--- a/arch/powerpc/boot/dts/adder875-redboot.dts
++++ b/arch/powerpc/boot/dts/adder875-redboot.dts
+@@ -178,6 +178,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &console;
++		stdout-path = &console;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts b/arch/powerpc/boot/dts/adder875-uboot.dts
+index e4554caf8f8d..bd9f33c57737 100644
+--- a/arch/powerpc/boot/dts/adder875-uboot.dts
++++ b/arch/powerpc/boot/dts/adder875-uboot.dts
+@@ -177,6 +177,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &console;
++		stdout-path = &console;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
+index 746779202a12..8a7a10139bc9 100644
+--- a/arch/powerpc/boot/dts/akebono.dts
++++ b/arch/powerpc/boot/dts/akebono.dts
+@@ -410,6 +410,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &UART0;
++		stdout-path = &UART0;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/amigaone.dts b/arch/powerpc/boot/dts/amigaone.dts
+index 49ac36b16dd7..712430155b99 100644
+--- a/arch/powerpc/boot/dts/amigaone.dts
++++ b/arch/powerpc/boot/dts/amigaone.dts
+@@ -168,6 +168,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/pci@80000000/isa@7/serial@3f8";
++		stdout-path = "/pci@80000000/isa@7/serial@3f8";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
+index 9198745f45fb..e987b5af9326 100644
+--- a/arch/powerpc/boot/dts/asp834x-redboot.dts
++++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
+@@ -304,7 +304,7 @@
+ 
+ 	chosen {
+ 		bootargs = "console=ttyS0,38400 root=/dev/mtdblock3 rootfstype=jffs2";
+-		linux,stdout-path = &serial0;
++		stdout-path = &serial0;
+ 	};
+ 
+ };
+diff --git a/arch/powerpc/boot/dts/bamboo.dts b/arch/powerpc/boot/dts/bamboo.dts
+index aa68911f6560..538e42b1120d 100644
+--- a/arch/powerpc/boot/dts/bamboo.dts
++++ b/arch/powerpc/boot/dts/bamboo.dts
+@@ -295,6 +295,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/c2k.dts b/arch/powerpc/boot/dts/c2k.dts
+index 27f169e3ade9..c5beb72d18b7 100644
+--- a/arch/powerpc/boot/dts/c2k.dts
++++ b/arch/powerpc/boot/dts/c2k.dts
+@@ -361,6 +361,6 @@
+ 		};
+ 	};
+ 	chosen {
+-		linux,stdout-path = &MPSC0;
++		stdout-path = &MPSC0;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/currituck.dts b/arch/powerpc/boot/dts/currituck.dts
+index f2ad5815f08d..a04a4fcfde63 100644
+--- a/arch/powerpc/boot/dts/currituck.dts
++++ b/arch/powerpc/boot/dts/currituck.dts
+@@ -237,6 +237,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &UART0;
++		stdout-path = &UART0;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/ebony.dts b/arch/powerpc/boot/dts/ebony.dts
+index ec2d142291b4..5d11e6ea7405 100644
+--- a/arch/powerpc/boot/dts/ebony.dts
++++ b/arch/powerpc/boot/dts/ebony.dts
+@@ -332,6 +332,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@40000200";
++		stdout-path = "/plb/opb/serial@40000200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/eiger.dts b/arch/powerpc/boot/dts/eiger.dts
+index 48bcf7187924..7a1231d9d6f0 100644
+--- a/arch/powerpc/boot/dts/eiger.dts
++++ b/arch/powerpc/boot/dts/eiger.dts
+@@ -421,7 +421,7 @@
+ 
+ 	};
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600200";
++		stdout-path = "/plb/opb/serial@ef600200";
+ 	};
+ 
+ };
+diff --git a/arch/powerpc/boot/dts/ep405.dts b/arch/powerpc/boot/dts/ep405.dts
+index 53ef06cc2134..4ac9c5ab6e6b 100644
+--- a/arch/powerpc/boot/dts/ep405.dts
++++ b/arch/powerpc/boot/dts/ep405.dts
+@@ -225,6 +225,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/mvme7100.dts b/arch/powerpc/boot/dts/fsl/mvme7100.dts
+index e2d306ad37a6..721cb53758ae 100644
+--- a/arch/powerpc/boot/dts/fsl/mvme7100.dts
++++ b/arch/powerpc/boot/dts/fsl/mvme7100.dts
+@@ -146,7 +146,7 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &serial0;
++		stdout-path = &serial0;
+ 	};
+ };
+ 
+diff --git a/arch/powerpc/boot/dts/fsp2.dts b/arch/powerpc/boot/dts/fsp2.dts
+index 6560283c5aec..9311b86b1bd9 100644
+--- a/arch/powerpc/boot/dts/fsp2.dts
++++ b/arch/powerpc/boot/dts/fsp2.dts
+@@ -607,7 +607,7 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@b0020000";
++		stdout-path = "/plb/opb/serial@b0020000";
+ 		bootargs = "console=ttyS0,115200 rw log_buf_len=32768 debug";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/holly.dts b/arch/powerpc/boot/dts/holly.dts
+index 43e6f0c8e449..02bd304c7d38 100644
+--- a/arch/powerpc/boot/dts/holly.dts
++++ b/arch/powerpc/boot/dts/holly.dts
+@@ -191,6 +191,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/tsi109@c0000000/serial@7808";
++		stdout-path = "/tsi109@c0000000/serial@7808";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/hotfoot.dts b/arch/powerpc/boot/dts/hotfoot.dts
+index 71d3bb4931dc..b93bf2d9dd5b 100644
+--- a/arch/powerpc/boot/dts/hotfoot.dts
++++ b/arch/powerpc/boot/dts/hotfoot.dts
+@@ -291,6 +291,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &UART0;
++		stdout-path = &UART0;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/icon.dts b/arch/powerpc/boot/dts/icon.dts
+index 9c94fd737f7c..2e6e3a7b2604 100644
+--- a/arch/powerpc/boot/dts/icon.dts
++++ b/arch/powerpc/boot/dts/icon.dts
+@@ -442,6 +442,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@f0000200";
++		stdout-path = "/plb/opb/serial@f0000200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/iss4xx-mpic.dts b/arch/powerpc/boot/dts/iss4xx-mpic.dts
+index 23e9d9b7e400..f7063198b2dc 100644
+--- a/arch/powerpc/boot/dts/iss4xx-mpic.dts
++++ b/arch/powerpc/boot/dts/iss4xx-mpic.dts
+@@ -150,6 +150,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@40000200";
++		stdout-path = "/plb/opb/serial@40000200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/iss4xx.dts b/arch/powerpc/boot/dts/iss4xx.dts
+index 4ff6555c866d..5533aff25e41 100644
+--- a/arch/powerpc/boot/dts/iss4xx.dts
++++ b/arch/powerpc/boot/dts/iss4xx.dts
+@@ -111,6 +111,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@40000200";
++		stdout-path = "/plb/opb/serial@40000200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index f913dbe25d35..02629e119b87 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -505,6 +505,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@f0000200";
++		stdout-path = "/plb/opb/serial@f0000200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/klondike.dts b/arch/powerpc/boot/dts/klondike.dts
+index 8c9429033618..d9613b7b945f 100644
+--- a/arch/powerpc/boot/dts/klondike.dts
++++ b/arch/powerpc/boot/dts/klondike.dts
+@@ -222,6 +222,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@50001000";
++		stdout-path = "/plb/opb/serial@50001000";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/ksi8560.dts b/arch/powerpc/boot/dts/ksi8560.dts
+index 5d68236e7c3c..fe6c17c8812a 100644
+--- a/arch/powerpc/boot/dts/ksi8560.dts
++++ b/arch/powerpc/boot/dts/ksi8560.dts
+@@ -339,6 +339,6 @@
+ 
+ 
+ 	chosen {
+-		linux,stdout-path = "/soc/cpm/serial@91a00";
++		stdout-path = "/soc/cpm/serial@91a00";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/media5200.dts b/arch/powerpc/boot/dts/media5200.dts
+index b5413cb85f13..843f156a49c4 100644
+--- a/arch/powerpc/boot/dts/media5200.dts
++++ b/arch/powerpc/boot/dts/media5200.dts
+@@ -25,7 +25,7 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &console;
++		stdout-path = &console;
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+index 6d2cddf64cfd..98282c18d989 100644
+--- a/arch/powerpc/boot/dts/mpc8272ads.dts
++++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+@@ -262,6 +262,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/soc/cpm/serial@11a00";
++		stdout-path = "/soc/cpm/serial@11a00";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
+index 34c1f48b1a09..4443fac3f576 100644
+--- a/arch/powerpc/boot/dts/mpc866ads.dts
++++ b/arch/powerpc/boot/dts/mpc866ads.dts
+@@ -185,6 +185,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/soc/cpm/serial@a80";
++		stdout-path = "/soc/cpm/serial@a80";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+index 4e93bd961e0f..5b037f51741d 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -227,6 +227,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/soc/cpm/serial@a80";
++		stdout-path = "/soc/cpm/serial@a80";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mvme5100.dts b/arch/powerpc/boot/dts/mvme5100.dts
+index 1ecb341a232a..a7eb6d25903d 100644
+--- a/arch/powerpc/boot/dts/mvme5100.dts
++++ b/arch/powerpc/boot/dts/mvme5100.dts
+@@ -179,7 +179,7 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &serial0;
++		stdout-path = &serial0;
+         };
+ 
+ };
+diff --git a/arch/powerpc/boot/dts/obs600.dts b/arch/powerpc/boot/dts/obs600.dts
+index 18e7d79ee4c3..d10b0411809b 100644
+--- a/arch/powerpc/boot/dts/obs600.dts
++++ b/arch/powerpc/boot/dts/obs600.dts
+@@ -309,6 +309,6 @@
+ 		};
+ 	};
+         chosen {
+-                linux,stdout-path = "/plb/opb/serial@ef600200";
++                stdout-path = "/plb/opb/serial@ef600200";
+         };
+ };
+diff --git a/arch/powerpc/boot/dts/pq2fads.dts b/arch/powerpc/boot/dts/pq2fads.dts
+index 0c525ff0c257..a477615e3468 100644
+--- a/arch/powerpc/boot/dts/pq2fads.dts
++++ b/arch/powerpc/boot/dts/pq2fads.dts
+@@ -242,6 +242,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/soc/cpm/serial@11a00";
++		stdout-path = "/soc/cpm/serial@11a00";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/rainier.dts b/arch/powerpc/boot/dts/rainier.dts
+index 9684c80e4093..e59829cff556 100644
+--- a/arch/powerpc/boot/dts/rainier.dts
++++ b/arch/powerpc/boot/dts/rainier.dts
+@@ -344,7 +344,7 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 		bootargs = "console=ttyS0,115200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/redwood.dts b/arch/powerpc/boot/dts/redwood.dts
+index d86a3a498118..f3e046fb49e2 100644
+--- a/arch/powerpc/boot/dts/redwood.dts
++++ b/arch/powerpc/boot/dts/redwood.dts
+@@ -381,7 +381,7 @@
+ 
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600200";
++		stdout-path = "/plb/opb/serial@ef600200";
+ 	};
+ 
+ };
+diff --git a/arch/powerpc/boot/dts/sam440ep.dts b/arch/powerpc/boot/dts/sam440ep.dts
+index 088361cf4636..7d15f18e1180 100644
+--- a/arch/powerpc/boot/dts/sam440ep.dts
++++ b/arch/powerpc/boot/dts/sam440ep.dts
+@@ -288,6 +288,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
+index e41b88a5eaee..60d211da9593 100644
+--- a/arch/powerpc/boot/dts/sequoia.dts
++++ b/arch/powerpc/boot/dts/sequoia.dts
+@@ -406,7 +406,7 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 		bootargs = "console=ttyS0,115200";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/storcenter.dts b/arch/powerpc/boot/dts/storcenter.dts
+index 2a555738517e..99f6f544dc5f 100644
+--- a/arch/powerpc/boot/dts/storcenter.dts
++++ b/arch/powerpc/boot/dts/storcenter.dts
+@@ -137,6 +137,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = &serial0;
++		stdout-path = &serial0;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/taishan.dts b/arch/powerpc/boot/dts/taishan.dts
+index 1657ad0bf8a6..803f1bff7fa8 100644
+--- a/arch/powerpc/boot/dts/taishan.dts
++++ b/arch/powerpc/boot/dts/taishan.dts
+@@ -422,6 +422,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@40000300";
++		stdout-path = "/plb/opb/serial@40000300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/virtex440-ml507.dts b/arch/powerpc/boot/dts/virtex440-ml507.dts
+index 391a4e299783..66f1c6312de6 100644
+--- a/arch/powerpc/boot/dts/virtex440-ml507.dts
++++ b/arch/powerpc/boot/dts/virtex440-ml507.dts
+@@ -32,7 +32,7 @@
+ 	} ;
+ 	chosen {
+ 		bootargs = "console=ttyS0 root=/dev/ram";
+-		linux,stdout-path = &RS232_Uart_1;
++		stdout-path = &RS232_Uart_1;
+ 	} ;
+ 	cpus {
+ 		#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/virtex440-ml510.dts b/arch/powerpc/boot/dts/virtex440-ml510.dts
+index 81201d3907e2..3b736ca26ddc 100644
+--- a/arch/powerpc/boot/dts/virtex440-ml510.dts
++++ b/arch/powerpc/boot/dts/virtex440-ml510.dts
+@@ -26,7 +26,7 @@
+ 	} ;
+ 	chosen {
+ 		bootargs = "console=ttyS0 root=/dev/ram";
+-		linux,stdout-path = "/plb@0/serial@83e00000";
++		stdout-path = "/plb@0/serial@83e00000";
+ 	} ;
+ 	cpus {
+ 		#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
+index 4a9f726ada13..0872862c9363 100644
+--- a/arch/powerpc/boot/dts/walnut.dts
++++ b/arch/powerpc/boot/dts/walnut.dts
+@@ -241,6 +241,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
+index ea9053ef4819..b4f32740870e 100644
+--- a/arch/powerpc/boot/dts/warp.dts
++++ b/arch/powerpc/boot/dts/warp.dts
+@@ -304,6 +304,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/xpedite5200_xmon.dts b/arch/powerpc/boot/dts/xpedite5200_xmon.dts
+index 646acfbef0dd..d5e14421c39a 100644
+--- a/arch/powerpc/boot/dts/xpedite5200_xmon.dts
++++ b/arch/powerpc/boot/dts/xpedite5200_xmon.dts
+@@ -503,6 +503,6 @@
+ 
+ 	/* Needed for dtbImage boot wrapper compatibility */
+ 	chosen {
+-		linux,stdout-path = &serial0;
++		stdout-path = &serial0;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/yosemite.dts b/arch/powerpc/boot/dts/yosemite.dts
+index 30bb4753577a..56508785ce13 100644
+--- a/arch/powerpc/boot/dts/yosemite.dts
++++ b/arch/powerpc/boot/dts/yosemite.dts
+@@ -327,6 +327,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@ef600300";
++		stdout-path = "/plb/opb/serial@ef600300";
+ 	};
+ };
+-- 
+2.14.1
