@@ -2,18 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsY131cD2zF1cM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 00:19:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsY2p4PFCzF1KP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 00:20:34 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
 Subject: Re: [RFC PATCH 1/6] powerpc: Add security feature flags for
  Spectre/Meltdown
-In-Reply-To: <20180228150427.GA21977@gate.crashing.org>
+In-Reply-To: <87606geir8.fsf@linkitivity.dja.id.au>
 References: <20180228145316.11347-1-mpe@ellerman.id.au>
- <20180228150427.GA21977@gate.crashing.org>
-Date: Fri, 02 Mar 2018 00:19:02 +1100
-Message-ID: <874lm07x2x.fsf@concordia.ellerman.id.au>
+ <87606geir8.fsf@linkitivity.dja.id.au>
+Date: Fri, 02 Mar 2018 00:20:33 +1100
+Message-ID: <871sh47x0e.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,17 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+Daniel Axtens <dja@axtens.net> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+>> new file mode 100644
+>> index 000000000000..3b690de8b0e8
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/asm/security_features.h
+>> @@ -0,0 +1,65 @@
+...
+>> +// Features indicating support for Spectre/Meltdown mitigations
+>> +
+>> +// The L1-D cache can be flushed with ori r30,r30,0
+>> +#define SEC_FTR_L1D_FLUSH_ORI30		0x0000000000000001ull
+>> +
+>> +// The L1-D cache can be flushed with mtspr 882,r0 (aka SPRN_TRIG2ull
+> This looks like some sort of search-replace gone wrong? ------------^^^^
 
-> Hi!
->
-> On Thu, Mar 01, 2018 at 01:53:11AM +1100, Michael Ellerman wrote:
->> +// A speculation barrier should be used for bounds checks (Spectre variant 1ull
->
-> s/1ull/1)/  ?
+Sure is! Oops.
 
-Haha, oops. Thanks for spotting it.
-
-Result of replacing ASM_CONST(x) with xull.
+Thanks for reviewing.
 
 cheers
