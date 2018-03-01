@@ -1,24 +1,24 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsVnM33sLzF1W4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 22:38:47 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id g12so2200768pgs.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 03:38:46 -0800 (PST)
-Date: Thu, 1 Mar 2018 21:38:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsWCK4ybLzF1kl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 22:57:49 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id i6-v6so3501597plt.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 03:57:49 -0800 (PST)
+Date: Thu, 1 Mar 2018 21:57:34 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
  <ego@linux.vnet.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 2/3] powerpc/64s/idle: avoid sync for KVM state when
- waking from idle
-Message-ID: <20180301213832.3a53e5a3@roar.ozlabs.ibm.com>
-In-Reply-To: <20180228181623.GA20168@drishya.in.ibm.com>
+Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
+ save/restore overhead
+Message-ID: <20180301215734.6602315e@roar.ozlabs.ibm.com>
+In-Reply-To: <20180228183439.GC20168@drishya.in.ibm.com>
 References: <20171117140807.22105-1-npiggin@gmail.com>
- <20171117140807.22105-3-npiggin@gmail.com>
- <20180228181623.GA20168@drishya.in.ibm.com>
+ <20171117140807.22105-4-npiggin@gmail.com>
+ <20180228183439.GC20168@drishya.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,64 +30,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Feb 2018 23:46:23 +0530
+On Thu, 1 Mar 2018 00:04:39 +0530
 Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-> * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:06]:
+> * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:07]:
 > 
-> > When waking from a CPU idle instruction (e.g., nap or stop), the sync
-> > for ordering the KVM secondary thread state can be avoided if there
-> > wakeup is coming from a kernel context rather than KVM context.
+> > When stop is executed with EC=ESL=0, it appears to execute like a
+> > normal instruction (resuming from NIP when woken by interrupt). So all
+> > the save/restore handling can be avoided completely. In particular NV
+> > GPRs do not have to be saved, and MSR does not have to be switched
+> > back to kernel MSR.
 > > 
-> > This improves performance for ping-pong benchmark with the stop0 idle
-> > state by 0.46% for 2 threads in the same core, and 1.02% for different
-> > cores.  
+> > So move the test for EC=ESL=0 sleep states out to power9_idle_stop,
+> > and return directly to the caller after stop in that case. The mtspr
+> > to PSSCR is moved to the top of power9_offline_stop just so it matches
+> > power9_idle_stop.
+> > 
+> > This improves performance for ping-pong benchmark with the stop0_lite
+> > idle state by 2.54% for 2 threads in the same core, and 2.57% for
+> > different cores.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
 > 
-> Cool, the improvement comes from avoiding the "sync" alone?
-
-Yes, they can be pretty costly.
-
->  
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> 
 > > ---
-> >  arch/powerpc/kernel/idle_book3s.S | 3 +++
-> >  1 file changed, 3 insertions(+)
+> >  arch/powerpc/kernel/idle_book3s.S     | 43 +++++++++++------------------------
+> >  arch/powerpc/platforms/powernv/idle.c |  7 +++++-
+> >  2 files changed, 19 insertions(+), 31 deletions(-)
 > > 
 > > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> > index 2f8364e7b489..07a306173c5a 100644
+> > index 07a306173c5a..6243da99b26c 100644
 > > --- a/arch/powerpc/kernel/idle_book3s.S
 > > +++ b/arch/powerpc/kernel/idle_book3s.S
-> > @@ -532,6 +532,9 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
-> >  	mr	r3,r12
-> > 
+> > @@ -324,31 +324,8 @@ enter_winkle:
+> >  /*
+> >   * r3 - PSSCR value corresponding to the requested stop state.
+> >   */
+> > -power_enter_stop:
+> > -/*
+> > - * Check if we are executing the lite variant with ESL=EC=0
+> > - */
+> > -	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+> > +power_enter_stop_esl:
+> >  	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
+> > -	bne	 .Lhandle_esl_ec_set
+> > -	PPC_STOP
+> > -	li	r3,0  /* Since we didn't lose state, return 0 */
+> > -
+> > -	/*
+> > -	 * pnv_wakeup_noloss() expects r12 to contain the SRR1 value so
+> > -	 * it can determine if the wakeup reason is an HMI in
+> > -	 * CHECK_HMI_INTERRUPT.
+> > -	 *
+> > -	 * However, when we wakeup with ESL=0, SRR1 will not contain the wakeup
+> > -	 * reason, so there is no point setting r12 to SRR1.
+> > -	 *
+> > -	 * Further, we clear r12 here, so that we don't accidentally enter the
+> > -	 * HMI in pnv_wakeup_noloss() if the value of r12[42:45] == WAKE_HMI.
+> > -	 */
+> > -	li	r12, 0
+> > -	b 	pnv_wakeup_noloss
+> > -
+> > -.Lhandle_esl_ec_set:
+> >  BEGIN_FTR_SECTION
+> >  	/*
+> >  	 * POWER9 DD2.0 or earlier can incorrectly set PMAO when waking up after
+> > @@ -423,26 +400,32 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+> >   * r3 contains desired PSSCR register value.
+> >   */
+> >  _GLOBAL(power9_idle_stop)
+> > -	std	r3, PACA_REQ_PSSCR(r13)
+> >  	mtspr 	SPRN_PSSCR,r3
+> > -	LOAD_REG_ADDR(r4,power_enter_stop)
+> > +	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+> > +	bne	1f
+> > +	PPC_STOP
+> > +	li	r3,0  /* Since we didn't lose state, return 0 */
+> > +	blr
+> > +
+> > +1:	std	r3, PACA_REQ_PSSCR(r13)
+> > +	LOAD_REG_ADDR(r4,power_enter_stop_esl)
+> >  	b	pnv_powersave_common
+> >  	/* No return */  
+> 
+> Good optimization to skip the context save and directly execute stop
+> for ESL=EC=0 case.
+
+Yep we should now be getting pretty close to optimal for ESL=EC=0.
+About the only other thing we could do is maintain PSSCR state and
+only change it when going to a different idle state. May not be
+worth worrying about but I haven't benchmarked it.
+
+> 
+> >  /*
+> > - * Entered with MSR[EE]=0 and no soft-masked interrupts pending.
+> > - * r3 contains desired PSSCR register value.
+> > + * This is the same as the above, but it sets KVM state for secondaries,
+> > + * and it must have PSSCR[EC]=1
+> >   */
+> >  _GLOBAL(power9_offline_stop)
+> > -	std	r3, PACA_REQ_PSSCR(r13)
+> >  	mtspr 	SPRN_PSSCR,r3
+> > +	std	r3, PACA_REQ_PSSCR(r13)
 > >  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> > +	lbz	r0,HSTATE_HWTHREAD_STATE(r13)
-> > +	cmpwi	r0,KVM_HWTHREAD_IN_KERNEL
-> > +	beq	1f
-> >  	li	r0,KVM_HWTHREAD_IN_KERNEL
-> >  	stb	r0,HSTATE_HWTHREAD_STATE(r13)
-> >  	/* Order setting hwthread_state vs. testing hwthread_req */  
+> >  	/* Tell KVM we're entering idle */
+> >  	li	r4,KVM_HWTHREAD_IN_IDLE
+> >  	/* DO THIS IN REAL MODE!  See comment above. */
+> >  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
+> >  #endif
+> > -	LOAD_REG_ADDR(r4,power_enter_stop)
+> > +	LOAD_REG_ADDR(r4,power_enter_stop_esl)
+> >  	b	pnv_powersave_common
+> >  	/* No return */
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> > index a921d5428d76..610b1637c16f 100644
+> > --- a/arch/powerpc/platforms/powernv/idle.c
+> > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > @@ -621,7 +621,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+> >  			continue;
+> >  		}
+> > 
+> > -		if (max_residency_ns < residency_ns[i]) {
+> > +		/*
+> > +		 * Deepest stop for unplug must be PSSCR[EC]=1 (wakeup at
+> > +		 * 0x100.
+> > +		 */
+> > +		if ((max_residency_ns < residency_ns[i])&&
+> > +				(psscr_val[i] & PSSCR_EC)) {
+> >  			max_residency_ns = residency_ns[i];
+> >  			pnv_deepest_stop_psscr_val = psscr_val[i];
+> >  			pnv_deepest_stop_psscr_mask = psscr_mask[i];  
 > 
-> With this change, we will not check for HSTATE_HWTHREAD_REQ != 0 
-> condition but unconditionally goto host kernel if
-> HSTATE_HWTHREAD_STATE == KVM_HWTHREAD_IN_KERNEL at wakeup.
+> If firmware did not provide any ESL=EC=1 state, we can still leave
+> threads in stop ESL=0 state.  This is just a corner case or random
+> test scenario.  Why do we want to enforce that offline cpus really use
+> a ESL=0 state or just spin? 
 
-That's right.
+It's because power9_offline_stop only has cases for EC=ESL=1
+states now.
 
-> Host is in ST mode and sibling thread got a wakeup event (door bell) to execute
-> a new vcpu by calling kvm_start_guest, what will HSTATE_HWTHREAD_STATE be?
+It actually looks like EC=ESL=0 unplug today is broken KVM, because
+the wakeup side does not check HWTHREAD_REQ, and yet they do set
+HWTHREAD_IN_IDLE. That would probably hang in KVM if we run with
+dependent threads, wouldn't it?
 
-It should be KVM_HWTHREAD_IN_IDLE.
-
-> Just to clarify, what will the flags looks like for
-> 
-> (a) Host cpu sibling thread is offline and need to execute guest
-> (b) Host cpu sibling thread is idle and need to execute guest
-
-In the idle case we are running with independent threads mode and
-siblings not unplugged, so we should not get KVM wake-up requests
-come through this path. I'm not fluent in KVM though, so I could
-be wrong.
+I think banning it for now should be okay.
 
 Thanks,
 Nick
