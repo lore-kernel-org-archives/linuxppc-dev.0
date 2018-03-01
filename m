@@ -1,25 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsS0z6fCpzDsMV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 20:33:39 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/21] powerpc: Remove warning on array size when empty
-In-Reply-To: <CA+7wUsxsZrjHY8=TSUiMEgGMm72XyQRW47b7oqNjFGeFKLMd+w@mail.gmail.com>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-2-malat@debian.org>
- <87woyw8pxe.fsf@concordia.ellerman.id.au>
- <CA+7wUsxsZrjHY8=TSUiMEgGMm72XyQRW47b7oqNjFGeFKLMd+w@mail.gmail.com>
-Date: Thu, 01 Mar 2018 20:33:38 +1100
-Message-ID: <87a7vs87il.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsVnM33sLzF1W4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 22:38:47 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id g12so2200768pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 03:38:46 -0800 (PST)
+Date: Thu, 1 Mar 2018 21:38:32 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH 2/3] powerpc/64s/idle: avoid sync for KVM state when
+ waking from idle
+Message-ID: <20180301213832.3a53e5a3@roar.ozlabs.ibm.com>
+In-Reply-To: <20180228181623.GA20168@drishya.in.ibm.com>
+References: <20171117140807.22105-1-npiggin@gmail.com>
+ <20171117140807.22105-3-npiggin@gmail.com>
+ <20180228181623.GA20168@drishya.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mathieu Malaterre <malat@debian.org> writes:
+On Wed, 28 Feb 2018 23:46:23 +0530
+Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-> On Thu, Mar 1, 2018 at 3:55 AM, Michael Ellerman <mpe@ellerman.id.au> wro=
-te:
->> Mathieu Malaterre <malat@debian.org> writes:
->>
->>> When neither CONFIG_ALTIVEC, nor CONFIG_VSX or CONFIG_PPC64 is defined,=
- the
->>> array feature_properties is defined as an empty array, which in turn
->>> triggers the following warning (treated as error on W=3D1):
->>>
->>>   CC      arch/powerpc/kernel/prom.o
->>> arch/powerpc/kernel/prom.c: In function =E2=80=98check_cpu_feature_prop=
-erties=E2=80=99:
->>> arch/powerpc/kernel/prom.c:298:16: error: comparison of unsigned expres=
-sion < 0 is always false [-Werror=3Dtype-limits]
->>>   for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
->>>                 ^
->>> cc1: all warnings being treated as errors
->>
->> Ugh, that's annoying.
->>
->> This seems to work?
->>
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index 4dffef947b8a..5215119e249c 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -291,11 +291,11 @@ static inline void identical_pvr_fixup(unsigned lo=
-ng node)
->>
->>  static void __init check_cpu_feature_properties(unsigned long node)
->>  {
->> -       unsigned long i;
->>         struct feature_property *fp =3D feature_properties;
->>         const __be32 *prop;
->> +       int i;
->>
->> -       for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
->> +       for (i =3D 0; i < (int)ARRAY_SIZE(feature_properties); ++i, ++fp=
-) {
->>                 prop =3D of_get_flat_dt_prop(node, fp->name, NULL);
->>                 if (prop && be32_to_cpup(prop) >=3D fp->min_value) {
->>                         cur_cpu_spec->cpu_features |=3D fp->cpu_feature;
->>
->
-> Indeed that looks like the less invasive solution, I'll re-submit.
+> * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:06]:
+> 
+> > When waking from a CPU idle instruction (e.g., nap or stop), the sync
+> > for ordering the KVM secondary thread state can be avoided if there
+> > wakeup is coming from a kernel context rather than KVM context.
+> > 
+> > This improves performance for ping-pong benchmark with the stop0 idle
+> > state by 0.46% for 2 threads in the same core, and 1.02% for different
+> > cores.  
+> 
+> Cool, the improvement comes from avoiding the "sync" alone?
 
-Thanks.
+Yes, they can be pretty costly.
 
-> Should I resubmit the entire patch series (21 indep patches) or
-> re-submit only the 3 patches that were discussed (as part of a
-> different series) ?
+>  
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/kernel/idle_book3s.S | 3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> > index 2f8364e7b489..07a306173c5a 100644
+> > --- a/arch/powerpc/kernel/idle_book3s.S
+> > +++ b/arch/powerpc/kernel/idle_book3s.S
+> > @@ -532,6 +532,9 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+> >  	mr	r3,r12
+> > 
+> >  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> > +	lbz	r0,HSTATE_HWTHREAD_STATE(r13)
+> > +	cmpwi	r0,KVM_HWTHREAD_IN_KERNEL
+> > +	beq	1f
+> >  	li	r0,KVM_HWTHREAD_IN_KERNEL
+> >  	stb	r0,HSTATE_HWTHREAD_STATE(r13)
+> >  	/* Order setting hwthread_state vs. testing hwthread_req */  
+> 
+> With this change, we will not check for HSTATE_HWTHREAD_REQ != 0 
+> condition but unconditionally goto host kernel if
+> HSTATE_HWTHREAD_STATE == KVM_HWTHREAD_IN_KERNEL at wakeup.
 
-Just resubmit the ones that need changes. You can either send them as a
-new series of 3, or post each as a reply to the original patch with v2
-in the subject.
+That's right.
 
-cheers
+> Host is in ST mode and sibling thread got a wakeup event (door bell) to execute
+> a new vcpu by calling kvm_start_guest, what will HSTATE_HWTHREAD_STATE be?
+
+It should be KVM_HWTHREAD_IN_IDLE.
+
+> Just to clarify, what will the flags looks like for
+> 
+> (a) Host cpu sibling thread is offline and need to execute guest
+> (b) Host cpu sibling thread is idle and need to execute guest
+
+In the idle case we are running with independent threads mode and
+siblings not unplugged, so we should not get KVM wake-up requests
+come through this path. I'm not fluent in KVM though, so I could
+be wrong.
+
+Thanks,
+Nick
