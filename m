@@ -1,23 +1,23 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsDgk2RgyzF1dj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 12:02:55 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id h19so874947pfd.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 17:02:54 -0800 (PST)
-Date: Wed, 28 Feb 2018 17:02:49 -0800
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsFLd3G79zF1h5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 12:33:13 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Mark Rutland <mark.rutland@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [PATCH] powerpc: Keep const vars out of writable .sdata
-Message-ID: <20180301010249.GA18370@beast>
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: dts: replace 'linux,
+ stdout-path' with 'stdout-path'
+In-Reply-To: <20180228224406.7049-1-robh@kernel.org>
+References: <20180228224406.7049-1-robh@kernel.org>
+Date: Thu, 01 Mar 2018 12:33:08 +1100
+Message-ID: <87606ga8bv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Rob Herring <robh@kernel.org> writes:
 
-Newer gcc will support "-mno-readonly-in-sdata"[1], which makes sure that
-the optimization on PPC32 for variables getting moved into the .sdata
-section will not apply to const variables (which must be in .rodata).
+> 'linux,stdout-path' has been deprecated for some time in favor of
+> 'stdout-path'. Now dtc will warn on occurrences of 'linux,stdout-path'.
+> Search and replace all the of occurrences with 'stdout-path'.
 
-This was originally noticed in mm/rodata_test.c when rodata_test_data
-was not static:
+This patch looks OK.
 
-c0695034 g     O .data	00000004 rodata_test_data
+But please remember that not all device trees are generated with dtc, we
+still have machines in the wild that have firmware which use
+"linux,stdout-path" and may never be updated.
 
-After this patch with an updated compiler, this is correctly in .rodata.
-
-[1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82411
-
-Reported-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/powerpc/Makefile | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index ccd2556bdb53..c7628e973084 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -141,7 +141,9 @@ AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
- endif
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
-+
- CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
-+CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option,-mno-readonly-in-sdata)
- 
- ifeq ($(CONFIG_PPC_BOOK3S_64),y)
- CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power7,-mtune=power4)
--- 
-2.7.4
-
-
--- 
-Kees Cook
-Pixel Security
+cheers
