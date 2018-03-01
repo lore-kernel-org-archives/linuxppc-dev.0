@@ -1,26 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsWCK4ybLzF1kl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 22:57:49 +1100 (AEDT)
-Received: by mail-pl0-x244.google.com with SMTP id i6-v6so3501597plt.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 03:57:49 -0800 (PST)
-Date: Thu, 1 Mar 2018 21:57:34 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
- save/restore overhead
-Message-ID: <20180301215734.6602315e@roar.ozlabs.ibm.com>
-In-Reply-To: <20180228183439.GC20168@drishya.in.ibm.com>
-References: <20171117140807.22105-1-npiggin@gmail.com>
- <20171117140807.22105-4-npiggin@gmail.com>
- <20180228183439.GC20168@drishya.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsXyG59W3zF1gb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 00:16:38 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alistair Popple <alistair@popple.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ Mark Hairgrove <mhairgrove@nvidia.com>
+Subject: Re: [PATCH v2] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
+In-Reply-To: <7309481.ksyhQnkyZL@new-mexico>
+References: <20180228003814.32124-1-alistair@popple.id.au>
+ <877eqx4e07.fsf@concordia.ellerman.id.au> <7309481.ksyhQnkyZL@new-mexico>
+Date: Fri, 02 Mar 2018 00:16:37 +1100
+Message-ID: <877eqw7x6y.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,153 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 1 Mar 2018 00:04:39 +0530
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+Alistair Popple <alistair@popple.id.au> writes:
 
-> * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:07]:
-> 
-> > When stop is executed with EC=ESL=0, it appears to execute like a
-> > normal instruction (resuming from NIP when woken by interrupt). So all
-> > the save/restore handling can be avoided completely. In particular NV
-> > GPRs do not have to be saved, and MSR does not have to be switched
-> > back to kernel MSR.
-> > 
-> > So move the test for EC=ESL=0 sleep states out to power9_idle_stop,
-> > and return directly to the caller after stop in that case. The mtspr
-> > to PSSCR is moved to the top of power9_offline_stop just so it matches
-> > power9_idle_stop.
-> > 
-> > This improves performance for ping-pong benchmark with the stop0_lite
-> > idle state by 2.54% for 2 threads in the same core, and 2.57% for
-> > different cores.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
-> 
-> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> 
-> > ---
-> >  arch/powerpc/kernel/idle_book3s.S     | 43 +++++++++++------------------------
-> >  arch/powerpc/platforms/powernv/idle.c |  7 +++++-
-> >  2 files changed, 19 insertions(+), 31 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> > index 07a306173c5a..6243da99b26c 100644
-> > --- a/arch/powerpc/kernel/idle_book3s.S
-> > +++ b/arch/powerpc/kernel/idle_book3s.S
-> > @@ -324,31 +324,8 @@ enter_winkle:
-> >  /*
-> >   * r3 - PSSCR value corresponding to the requested stop state.
-> >   */
-> > -power_enter_stop:
-> > -/*
-> > - * Check if we are executing the lite variant with ESL=EC=0
-> > - */
-> > -	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-> > +power_enter_stop_esl:
-> >  	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
-> > -	bne	 .Lhandle_esl_ec_set
-> > -	PPC_STOP
-> > -	li	r3,0  /* Since we didn't lose state, return 0 */
-> > -
-> > -	/*
-> > -	 * pnv_wakeup_noloss() expects r12 to contain the SRR1 value so
-> > -	 * it can determine if the wakeup reason is an HMI in
-> > -	 * CHECK_HMI_INTERRUPT.
-> > -	 *
-> > -	 * However, when we wakeup with ESL=0, SRR1 will not contain the wakeup
-> > -	 * reason, so there is no point setting r12 to SRR1.
-> > -	 *
-> > -	 * Further, we clear r12 here, so that we don't accidentally enter the
-> > -	 * HMI in pnv_wakeup_noloss() if the value of r12[42:45] == WAKE_HMI.
-> > -	 */
-> > -	li	r12, 0
-> > -	b 	pnv_wakeup_noloss
-> > -
-> > -.Lhandle_esl_ec_set:
-> >  BEGIN_FTR_SECTION
-> >  	/*
-> >  	 * POWER9 DD2.0 or earlier can incorrectly set PMAO when waking up after
-> > @@ -423,26 +400,32 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
-> >   * r3 contains desired PSSCR register value.
-> >   */
-> >  _GLOBAL(power9_idle_stop)
-> > -	std	r3, PACA_REQ_PSSCR(r13)
-> >  	mtspr 	SPRN_PSSCR,r3
-> > -	LOAD_REG_ADDR(r4,power_enter_stop)
-> > +	andis.	r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-> > +	bne	1f
-> > +	PPC_STOP
-> > +	li	r3,0  /* Since we didn't lose state, return 0 */
-> > +	blr
-> > +
-> > +1:	std	r3, PACA_REQ_PSSCR(r13)
-> > +	LOAD_REG_ADDR(r4,power_enter_stop_esl)
-> >  	b	pnv_powersave_common
-> >  	/* No return */  
-> 
-> Good optimization to skip the context save and directly execute stop
-> for ESL=EC=0 case.
+>> > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+>> > index 0a253b64ac5f..2fed4b116e19 100644
+>> > --- a/arch/powerpc/platforms/powernv/npu-dma.c
+>> > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+>> > @@ -726,7 +749,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+>> >  	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+>> >  							&nvlink_index)))
+>> >  		return ERR_PTR(-ENODEV);
+>> > -	npu_context->npdev[npu->index][nvlink_index] = npdev;
+>> > +	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
+>>   
+>> When you're publishing a struct via a pointer you would typically have a
+>> barrier between the stores that set the fields of the struct, and the
+>> store that publishes the struct. Otherwise the reader can see a
+>> partially setup struct.
+>
+> npdev is just a pointer to a pci_dev setup by the PCI code. We assign it to
+> npdev[][] to indicate to the mmu notifiers that an invalidation should also
+> be sent to this nvlink. However I don't think there is any ordering
+> required wrt to the rest of the npu_context setup - so long as when the
+> notifiers deference npu_context->npdev[i][j] it either sees a valid
+> non-NULL pointer or NULL assigned to npdev[][] everything should be ok.
 
-Yep we should now be getting pretty close to optimal for ESL=EC=0.
-About the only other thing we could do is maintain PSSCR state and
-only change it when going to a different idle state. May not be
-worth worrying about but I haven't benchmarked it.
+Yeah OK. You do then dereference npdev->bus, so you depend on that being
+setup prior to the store that makes the npdev visible. But I guess we're
+saying that happened eons ago somewhere in the PCI code and will have
+happened by now.
 
-> 
-> >  /*
-> > - * Entered with MSR[EE]=0 and no soft-masked interrupts pending.
-> > - * r3 contains desired PSSCR register value.
-> > + * This is the same as the above, but it sets KVM state for secondaries,
-> > + * and it must have PSSCR[EC]=1
-> >   */
-> >  _GLOBAL(power9_offline_stop)
-> > -	std	r3, PACA_REQ_PSSCR(r13)
-> >  	mtspr 	SPRN_PSSCR,r3
-> > +	std	r3, PACA_REQ_PSSCR(r13)
-> >  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> >  	/* Tell KVM we're entering idle */
-> >  	li	r4,KVM_HWTHREAD_IN_IDLE
-> >  	/* DO THIS IN REAL MODE!  See comment above. */
-> >  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
-> >  #endif
-> > -	LOAD_REG_ADDR(r4,power_enter_stop)
-> > +	LOAD_REG_ADDR(r4,power_enter_stop_esl)
-> >  	b	pnv_powersave_common
-> >  	/* No return */
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > index a921d5428d76..610b1637c16f 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -621,7 +621,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
-> >  			continue;
-> >  		}
-> > 
-> > -		if (max_residency_ns < residency_ns[i]) {
-> > +		/*
-> > +		 * Deepest stop for unplug must be PSSCR[EC]=1 (wakeup at
-> > +		 * 0x100.
-> > +		 */
-> > +		if ((max_residency_ns < residency_ns[i])&&
-> > +				(psscr_val[i] & PSSCR_EC)) {
-> >  			max_residency_ns = residency_ns[i];
-> >  			pnv_deepest_stop_psscr_val = psscr_val[i];
-> >  			pnv_deepest_stop_psscr_mask = psscr_mask[i];  
-> 
-> If firmware did not provide any ESL=EC=1 state, we can still leave
-> threads in stop ESL=0 state.  This is just a corner case or random
-> test scenario.  Why do we want to enforce that offline cpus really use
-> a ESL=0 state or just spin? 
+>> I think here the npdev was setup somewhere else, and maybe there has
+>> been an intervening barrier, but it's not clear. A comment at least
+>> would be good.
+>
+> Yes it has been. I will submit a v3 with some more comments incorporating
+> the above. Unless you think my argument is wrong?
 
-It's because power9_offline_stop only has cases for EC=ESL=1
-states now.
+If you can comment it then I think I'm happy with it.
 
-It actually looks like EC=ESL=0 unplug today is broken KVM, because
-the wakeup side does not check HWTHREAD_REQ, and yet they do set
-HWTHREAD_IN_IDLE. That would probably hang in KVM if we run with
-dependent threads, wouldn't it?
+>> In general I feel like a spinlock or two could significantly simply the
+>> locking/ordering in this code, and given we're doing MMIOs anyway would
+>> not affect performance.
+>
+> Indeed, I am working on a patch to add a spinlock around the allocation of
+> the npu_context as pnv_npu2_destroy_context() needs to be serialised with
+> respect to pnv_npu2_init_context() on the same mm_struct. I'd incorrectly
+> assumed the driver would do this serialisation but apparently it can't so
+> we need to ensure kref_get(npu_context) can't race with it's destruction
+> (concurrent init_context() is protected by mmap_sem). I could fold that
+> (unposted) patch into this one if you think that would be better?
 
-I think banning it for now should be okay.
+No this is big enough already, I almost asked you to split it to make
+the diff more readable :)
 
-Thanks,
-Nick
+So just send the spinlock patch when it's ready as a separate patch.
+
+cheers
