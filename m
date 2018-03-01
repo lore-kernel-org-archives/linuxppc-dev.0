@@ -1,61 +1,37 @@
-Return-Path: <marcus.folkesson@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsP8Q0lT5zF1bl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 18:24:53 +1100 (AEDT)
-Received: by mail-lf0-x243.google.com with SMTP id r80so7281813lfe.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 23:24:53 -0800 (PST)
-Date: Thu, 1 Mar 2018 08:24:42 +0100
-From: Marcus Folkesson <marcus.folkesson@gmail.com>
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com, Eric Anholt <eric@anholt.net>,
- Stefan Wahren <stefan.wahren@i2se.com>,
- Support Opensource <support.opensource@diasemi.com>,
- Baruch Siach <baruch@tkos.co.il>,
- William Breathitt Gray <vilhelm.gray@gmail.com>,
- Jimmy Vance <jimmy.vance@hpe.com>, Keguang Zhang <keguang.zhang@gmail.com>,
- Joachim Eastwood <manabian@gmail.com>,
- Tomas Winkler <tomas.winkler@intel.com>,
- Johannes Thumshirn <morbidrsa@gmail.com>,
- Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
- Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
- Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>,
- Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
- Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
- Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
- linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
- linux-mediatek@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
-Subject: Re: [PATCH v4] watchdog: add SPDX identifiers for watchdog subsystem
-Message-ID: <20180301072432.GA8901@gmail.com>
-References: <20180228150209.2525-1-marcus.folkesson@gmail.com>
- <786d740d-f29c-8f09-4648-95244c06e59b@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsR511GmlzF1bT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 19:52:04 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w218oGiR143096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Mar 2018 03:52:02 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gecbed9jh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 03:52:02 -0500
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 1 Mar 2018 08:51:59 -0000
+Date: Thu, 01 Mar 2018 14:21:51 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH bpf] tools: bpftool: Fix tags for bpf-to-bpf calls
+To: Daniel Borkmann <daniel@iogearbox.net>, Sandipan Das
+ <sandipan@linux.vnet.ibm.com>
+Cc: ast@fb.com, jakub.kicinski@netronome.com, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, netdev@vger.kernel.org
+References: <1519153431.im5wioxel1.naveen@linux.ibm.com>
+ <20180227121346.16199-1-sandipan@linux.vnet.ibm.com>
+ <4cdcc751-d830-51ce-23a0-62f773dc015e@iogearbox.net>
+In-Reply-To: <4cdcc751-d830-51ce-23a0-62f773dc015e@iogearbox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <786d740d-f29c-8f09-4648-95244c06e59b@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1519891203.b146m3c5tj.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,66 +41,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Florian,
+Daniel Borkmann wrote:
+> On 02/27/2018 01:13 PM, Sandipan Das wrote:
+>> With this patch, it will look like this:
+>>    0: (85) call pc+2#bpf_prog_8f85936f29a7790a+3
+>=20
+> (Note the +2 is the insn->off already.)
+>=20
+>>    1: (b7) r0 =3D 1
+>>    2: (95) exit
+>>    3: (b7) r0 =3D 2
+>>    4: (95) exit
+>>=20
+>> where 8f85936f29a7790a is the tag of the bpf program and 3 is
+>> the offset to the start of the subprog from the start of the
+>> program.
+>=20
+> The problem with this approach would be that right now the name is
+> something like bpf_prog_5f76847930402518_F where the subprog tag is
+> just a placeholder so in future, this may well adapt to e.g. the actual
+> function name from the elf file. Note that when kallsyms is enabled
+> then a name like bpf_prog_5f76847930402518_F will also appear in stack
+> traces, perf records, etc, so for correlation/debugging it would really
+> help to have them the same everywhere.
+>=20
+> Worst case if there's nothing better, potentially what one could do in
+> bpf_prog_get_info_by_fd() is to dump an array of full addresses and
+> have the imm part as the index pointing to one of them, just unfortunate
+> that it's likely only needed in ppc64.
 
-On Wed, Feb 28, 2018 at 03:45:43PM -0800, Florian Fainelli wrote:
-> On 02/28/2018 07:01 AM, Marcus Folkesson wrote:
-> > - Add SPDX identifier
-> > - Remove boiler plate license text
-> > - If MODULE_LICENSE and boiler plate does not match, go for boiler plate
-> >   license
-> > 
-> > Signed-off-by: Marcus Folkesson <marcus.folkesson@gmail.com>
-> > Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > Acked-by: Baruch Siach <baruch@tkos.co.il>
-> > Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
-> > Acked-by: Keiji Hayashibara <hayashibara.keiji@socionext.com>
-> > Acked-by: Johannes Thumshirn <jth@kernel.org>
-> > Acked-by: Mans Rullgard <mans@mansr.com>
-> > Acked-by: Matthias Brugger <matthias.bgg@gmail.com>
-> > Acked-by: Michal Simek <michal.simek@xilinx.com>
-> > Acked-by: Neil Armstrong <narmstrong@baylibre.com>
-> > Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-> > Acked-by: Thierry Reding <treding@nvidia.com>
-> > Acked-by: Tomas Winkler <tomas.winkler@intel.com>
-> > Acked-by: Patrice Chotard <patrice.chotard@st.com>
-> > Acked-by: William Breathitt Gray <vilhelm.gray@gmail.com>
-> > Reviewed-by: Eric Anholt <eric@anholt.net>
-> > ---
-> > 
-> > Notes:
-> >     v4:
-> >     	- Drop coh901327_wdt since it allready is a pending patch
-> >     v3:
-> >     	- Keep license text for ebc-c384_wdt
-> >     v2:
-> >     	- Put back removed copyright texts for meson_gxbb_wdt and coh901327_wdt
-> >     	- Change to BSD-3-Clause for meson_gxbb_wdt
-> >     v1: Please have an extra look at meson_gxbb_wdt.c
-> > 
-> 
-> >  drivers/watchdog/ar7_wdt.c             | 14 +---------
-> 
-> >  drivers/watchdog/bcm2835_wdt.c         |  5 +---
-> >  drivers/watchdog/bcm47xx_wdt.c         |  5 +---
-> >  drivers/watchdog/bcm63xx_wdt.c         |  5 +---
-> >  drivers/watchdog/bcm7038_wdt.c         | 12 ++------
-> >  drivers/watchdog/bcm_kona_wdt.c        |  9 +-----
-> 
-> >  drivers/watchdog/mtx-1_wdt.c           | 11 +-------
-> 
-> For these drivers above:
-> 
-> Acked-by: Florian Fainelli <f.fainelli@gmail.com>
-> 
-> and it looks like you missed rdc321x_wdt.c, is there a specific reason?
+Ok. We seem to have discussed a few different aspects in this thread. =20
+Let me summarize the different aspects we have discussed:
+1. Passing address of JIT'ed function to the JIT engines:
+    Two approaches discussed:
+    a. Existing approach, where the subprog address is encoded as an=20
+    offset from __bpf_call_base() in imm32 field of the BPF call=20
+    instruction. This requires the JIT'ed function to be within 2GB of=20
+    __bpf_call_base(), which won't be true on ppc64, at the least. So,=20
+    this won't on ppc64 (and any other architectures where vmalloc'ed=20
+    (module_alloc()) memory is from a different, far, address range).
+   =20
+    [As a side note, is it _actually_ guaranteed that JIT'ed functions=20
+    will be within 2GB (signed 32-bit...) on all other architectures=20
+    where BPF JIT is supported? I'm not quite sure how memory allocation=20
+    works on other architectures, but it looks like this can fail if=20
+    there are other larger allocations.]
 
-Good catch!
-I will fix that, thank you.
+    b. Pass the full 64-bit address of the call target in an auxiliary=20
+    field for the JIT engine to use (as implemented in this mail chain). =20
+    We can then use this to determine the call target if this is a=20
+    pseudo call.
 
-> -- 
-> Florian
+    There is a third option we can consider:
+    c. Convert BPF pseudo call instruction into a 2-instruction sequence=20
+    (similar to BPF_DW) and encode the full 64-bit call target in the=20
+    second bpf instruction. To distinguish this from other instruction=20
+    forms, we can set imm32 to -1.
+
+    If we go with (b) or (c), we will need to take a call on whether we=20
+    will implement this in the same manner across all architectures, or=20
+    if we should have ppc64 (and any other affected architectures) work=20
+    differently from the rest.
+
+    Further more, for (b), bpftool won't be able to derive the target=20
+    function call address, but approaches (a) and (c) are fine. More=20
+    about that below...
+
+2. Indicating target function in bpftool:
+    In the existing approach, bpftool can determine target address since=20
+    the offset is encoded in imm32 and is able to lookup the name from=20
+    kallsyms, if enabled.
+
+    If we go with approach (b) for ppc64, this won't work and we will=20
+    have to minimally update bpftool to detect that the target address=20
+    is not available on ppc64.
+
+    If we go with approach (c), the target address will be available and=20
+    we should be able to update bpftool to look that up.
+=20
+    [As a side note, I suppose part of Sandipan's point with the=20
+    previous patch was to make the bpftool output consistent whether or=20
+    not JIT is enabled. It does look a bit weird that bpftool shows the=20
+    address of a JIT'ed function when asked to print the BPF bytecode.]
+
+Thoughts?
 
 
-Best regards
-Marcus Folkesson
+- Naveen
+
+=
