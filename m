@@ -1,27 +1,61 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <marcus.folkesson@gmail.com>
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsNqC1ybVzF1hy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 18:09:59 +1100 (AEDT)
-Subject: Re: [RFC REBASED 5/5] powerpc/mm/slice: use the dynamic high slice
- size to limit bitmap operations
-To: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
- <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
- <87bmga7qng.fsf@linux.vnet.ibm.com>
- <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
- <878tbe7ggs.fsf@linux.vnet.ibm.com>
- <20180228165331.6e09959d@roar.ozlabs.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <4e3c5281-427b-abe8-9c80-f2c1a0247e28@c-s.fr>
-Date: Thu, 1 Mar 2018 08:09:55 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsP8Q0lT5zF1bl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 18:24:53 +1100 (AEDT)
+Received: by mail-lf0-x243.google.com with SMTP id r80so7281813lfe.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2018 23:24:53 -0800 (PST)
+Date: Thu, 1 Mar 2018 08:24:42 +0100
+From: Marcus Folkesson <marcus.folkesson@gmail.com>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ bcm-kernel-feedback-list@broadcom.com, Eric Anholt <eric@anholt.net>,
+ Stefan Wahren <stefan.wahren@i2se.com>,
+ Support Opensource <support.opensource@diasemi.com>,
+ Baruch Siach <baruch@tkos.co.il>,
+ William Breathitt Gray <vilhelm.gray@gmail.com>,
+ Jimmy Vance <jimmy.vance@hpe.com>, Keguang Zhang <keguang.zhang@gmail.com>,
+ Joachim Eastwood <manabian@gmail.com>,
+ Tomas Winkler <tomas.winkler@intel.com>,
+ Johannes Thumshirn <morbidrsa@gmail.com>,
+ Andreas Werner <andreas.werner@men.de>, Carlo Caione <carlo@caione.org>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Wan ZongShun <mcuos.com@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
+ Vladimir Zapolskiy <vz@mleia.com>,
+ Sylvain Lemieux <slemieux.tyco@gmail.com>, Kukjin Kim <kgene@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Zwane Mwaikambo <zwanem@gmail.com>,
+ Jim Cromie <jim.cromie@gmail.com>, Barry Song <baohua@kernel.org>,
+ Patrice Chotard <patrice.chotard@st.com>,
+ Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>,
+ Marc Gonzalez <marc.w.gonzalez@free.fr>, Mans Rullgard <mans@mansr.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jun Nie <jun.nie@linaro.org>,
+ Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>,
+ linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-mips@linux-mips.org, linux-amlogic@lists.infradead.org,
+ linux-mediatek@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com
+Subject: Re: [PATCH v4] watchdog: add SPDX identifiers for watchdog subsystem
+Message-ID: <20180301072432.GA8901@gmail.com>
+References: <20180228150209.2525-1-marcus.folkesson@gmail.com>
+ <786d740d-f29c-8f09-4648-95244c06e59b@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20180228165331.6e09959d@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <786d740d-f29c-8f09-4648-95244c06e59b@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +65,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Florian,
 
-
-Le 28/02/2018 à 07:53, Nicholas Piggin a écrit :
-> On Tue, 27 Feb 2018 18:11:07 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Wed, Feb 28, 2018 at 03:45:43PM -0800, Florian Fainelli wrote:
+> On 02/28/2018 07:01 AM, Marcus Folkesson wrote:
+> > - Add SPDX identifier
+> > - Remove boiler plate license text
+> > - If MODULE_LICENSE and boiler plate does not match, go for boiler plate
+> >   license
+> > 
+> > Signed-off-by: Marcus Folkesson <marcus.folkesson@gmail.com>
+> > Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> > Acked-by: Baruch Siach <baruch@tkos.co.il>
+> > Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+> > Acked-by: Keiji Hayashibara <hayashibara.keiji@socionext.com>
+> > Acked-by: Johannes Thumshirn <jth@kernel.org>
+> > Acked-by: Mans Rullgard <mans@mansr.com>
+> > Acked-by: Matthias Brugger <matthias.bgg@gmail.com>
+> > Acked-by: Michal Simek <michal.simek@xilinx.com>
+> > Acked-by: Neil Armstrong <narmstrong@baylibre.com>
+> > Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+> > Acked-by: Thierry Reding <treding@nvidia.com>
+> > Acked-by: Tomas Winkler <tomas.winkler@intel.com>
+> > Acked-by: Patrice Chotard <patrice.chotard@st.com>
+> > Acked-by: William Breathitt Gray <vilhelm.gray@gmail.com>
+> > Reviewed-by: Eric Anholt <eric@anholt.net>
+> > ---
+> > 
+> > Notes:
+> >     v4:
+> >     	- Drop coh901327_wdt since it allready is a pending patch
+> >     v3:
+> >     	- Keep license text for ebc-c384_wdt
+> >     v2:
+> >     	- Put back removed copyright texts for meson_gxbb_wdt and coh901327_wdt
+> >     	- Change to BSD-3-Clause for meson_gxbb_wdt
+> >     v1: Please have an extra look at meson_gxbb_wdt.c
+> > 
 > 
->> Nicholas Piggin <npiggin@gmail.com> writes:
->>
->>> On Tue, 27 Feb 2018 14:31:07 +0530
->>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>>   
->>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>>    
->>>>> The number of high slices a process might use now depends on its
->>>>> address space size, and what allocation address it has requested.
->>>>>
->>>>> This patch uses that limit throughout call chains where possible,
->>>>> rather than use the fixed SLICE_NUM_HIGH for bitmap operations.
->>>>> This saves some cost for processes that don't use very large address
->>>>> spaces.
->>>>
->>>> I haven't really looked at the final code. One of the issue we had was
->>>> with the below scenario.
->>>>
->>>> mmap(addr, len) where addr < 128TB and addr+len > 128TB  We want to make
->>>> sure we build the mask such that we don't find the addr available.
->>>
->>> We should run it through the mmap regression tests. I *think* we moved
->>> all of that logic from the slice code to get_ummapped_area before going
->>> in to slices. I may have missed something though, it would be good to
->>> have more eyes on it.
->>>   
->>
->> mmap(-1,...) failed with the test. Something like below fix it
->>
->> @@ -756,7 +770,7 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
->>          mm->context.low_slices_psize = lpsizes;
->>   
->>          hpsizes = mm->context.high_slices_psize;
->> -       high_slices = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
->> +       high_slices = SLICE_NUM_HIGH;
->>          for (i = 0; i < high_slices; i++) {
->>                  mask_index = i & 0x1;
->>                  index = i >> 1;
->>
->> I guess for everything in the mm_context_t, we should compute it till
->> SLICE_NUM_HIGH. The reason for failure was, even though we recompute the
->> slice mask cached in mm_context on slb_addr_limit, it was still derived
->> from the high_slices_psizes which was computed with lower value.
+> >  drivers/watchdog/ar7_wdt.c             | 14 +---------
 > 
-> Okay thanks for catching that Aneesh. I guess that's a slow path so it
-> should be okay. Christophe if you're taking care of the series can you
-> fold it in? Otherwise I'll do that after yours gets merged.
+> >  drivers/watchdog/bcm2835_wdt.c         |  5 +---
+> >  drivers/watchdog/bcm47xx_wdt.c         |  5 +---
+> >  drivers/watchdog/bcm63xx_wdt.c         |  5 +---
+> >  drivers/watchdog/bcm7038_wdt.c         | 12 ++------
+> >  drivers/watchdog/bcm_kona_wdt.c        |  9 +-----
 > 
+> >  drivers/watchdog/mtx-1_wdt.c           | 11 +-------
+> 
+> For these drivers above:
+> 
+> Acked-by: Florian Fainelli <f.fainelli@gmail.com>
+> 
+> and it looks like you missed rdc321x_wdt.c, is there a specific reason?
 
-I'm not really taking care of your serie, just took it once to see how 
-it fits on the 8xx.
-I prefer if you can handle them. If you need my help for any test on 
-PPC32 don't hesitate to ask.
+Good catch!
+I will fix that, thank you.
 
-Christophe
+> -- 
+> Florian
+
+
+Best regards
+Marcus Folkesson
