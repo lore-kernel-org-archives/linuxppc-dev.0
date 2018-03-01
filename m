@@ -1,20 +1,23 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [150.101.137.129])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zsH9m27R6zF1jp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 13:55:40 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- Mark Hairgrove <mhairgrove@nvidia.com>
-Subject: Re: [PATCH v2] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
-Date: Thu, 01 Mar 2018 13:55:38 +1100
-Message-ID: <7309481.ksyhQnkyZL@new-mexico>
-In-Reply-To: <877eqx4e07.fsf@concordia.ellerman.id.au>
-References: <20180228003814.32124-1-alistair@popple.id.au>
- <877eqx4e07.fsf@concordia.ellerman.id.au>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsHB91XNHzF1kW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 13:56:01 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Mathieu Malaterre <malat@debian.org>
+Subject: Re: [PATCH 01/21] powerpc: Remove warning on array size when empty
+In-Reply-To: <20180225172236.29650-2-malat@debian.org>
+References: <20180225172236.29650-1-malat@debian.org>
+ <20180225172236.29650-2-malat@debian.org>
+Date: Thu, 01 Mar 2018 13:55:57 +1100
+Message-ID: <87woyw8pxe.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> > index 0a253b64ac5f..2fed4b116e19 100644
-> > --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> > @@ -726,7 +749,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
-> >  	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
-> >  							&nvlink_index)))
-> >  		return ERR_PTR(-ENODEV);
-> > -	npu_context->npdev[npu->index][nvlink_index] = npdev;
-> > +	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
->   
-> When you're publishing a struct via a pointer you would typically have a
-> barrier between the stores that set the fields of the struct, and the
-> store that publishes the struct. Otherwise the reader can see a
-> partially setup struct.
+Mathieu Malaterre <malat@debian.org> writes:
 
-npdev is just a pointer to a pci_dev setup by the PCI code. We assign it to
-npdev[][] to indicate to the mmu notifiers that an invalidation should also
-be sent to this nvlink. However I don't think there is any ordering
-required wrt to the rest of the npu_context setup - so long as when the
-notifiers deference npu_context->npdev[i][j] it either sees a valid
-non-NULL pointer or NULL assigned to npdev[][] everything should be ok.
+> When neither CONFIG_ALTIVEC, nor CONFIG_VSX or CONFIG_PPC64 is defined, t=
+he
+> array feature_properties is defined as an empty array, which in turn
+> triggers the following warning (treated as error on W=3D1):
+>
+>   CC      arch/powerpc/kernel/prom.o
+> arch/powerpc/kernel/prom.c: In function =E2=80=98check_cpu_feature_proper=
+ties=E2=80=99:
+> arch/powerpc/kernel/prom.c:298:16: error: comparison of unsigned expressi=
+on < 0 is always false [-Werror=3Dtype-limits]
+>   for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
+>                 ^
+> cc1: all warnings being treated as errors
 
-> I think here the npdev was setup somewhere else, and maybe there has
-> been an intervening barrier, but it's not clear. A comment at least
-> would be good.
+Ugh, that's annoying.
 
-Yes it has been. I will submit a v3 with some more comments incorporating
-the above. Unless you think my argument is wrong?
+This seems to work?
 
-> In general I feel like a spinlock or two could significantly simply the
-> locking/ordering in this code, and given we're doing MMIOs anyway would
-> not affect performance.
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 4dffef947b8a..5215119e249c 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -291,11 +291,11 @@ static inline void identical_pvr_fixup(unsigned long =
+node)
+=20
+ static void __init check_cpu_feature_properties(unsigned long node)
+ {
+-	unsigned long i;
+ 	struct feature_property *fp =3D feature_properties;
+ 	const __be32 *prop;
++	int i;
+=20
+-	for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
++	for (i =3D 0; i < (int)ARRAY_SIZE(feature_properties); ++i, ++fp) {
+ 		prop =3D of_get_flat_dt_prop(node, fp->name, NULL);
+ 		if (prop && be32_to_cpup(prop) >=3D fp->min_value) {
+ 			cur_cpu_spec->cpu_features |=3D fp->cpu_feature;
 
-Indeed, I am working on a patch to add a spinlock around the allocation of
-the npu_context as pnv_npu2_destroy_context() needs to be serialised with
-respect to pnv_npu2_init_context() on the same mm_struct. I'd incorrectly
-assumed the driver would do this serialisation but apparently it can't so
-we need to ensure kref_get(npu_context) can't race with it's destruction
-(concurrent init_context() is protected by mmap_sem). I could fold that
-(unposted) patch into this one if you think that would be better?
 
-Thanks!
-
-- Alistair
-
-> </rant>
-> 
-> cheers
-> 
+cheers
