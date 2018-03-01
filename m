@@ -1,31 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x235.google.com (mail-pl0-x235.google.com
- [IPv6:2607:f8b0:400e:c01::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsRm70sTBzF1hN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 20:22:30 +1100 (AEDT)
-Received: by mail-pl0-x235.google.com with SMTP id d4-v6so3313037pll.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 01:22:30 -0800 (PST)
-Date: Thu, 1 Mar 2018 19:22:15 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC REBASED 5/5] powerpc/mm/slice: use the dynamic high slice
- size to limit bitmap operations
-Message-ID: <20180301192215.0872484d@roar.ozlabs.ibm.com>
-In-Reply-To: <4e3c5281-427b-abe8-9c80-f2c1a0247e28@c-s.fr>
-References: <02a62db83282b5ef3e0e8281fdc46fa91beffc86.1518382747.git.christophe.leroy@c-s.fr>
- <5badd882663833576c10b8aafe235fe1e443f119.1518382747.git.christophe.leroy@c-s.fr>
- <87bmga7qng.fsf@linux.vnet.ibm.com>
- <20180227191125.659d5cbe@roar.ozlabs.ibm.com>
- <878tbe7ggs.fsf@linux.vnet.ibm.com>
- <20180228165331.6e09959d@roar.ozlabs.ibm.com>
- <4e3c5281-427b-abe8-9c80-f2c1a0247e28@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsS0z6fCpzDsMV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Mar 2018 20:33:39 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/21] powerpc: Remove warning on array size when empty
+In-Reply-To: <CA+7wUsxsZrjHY8=TSUiMEgGMm72XyQRW47b7oqNjFGeFKLMd+w@mail.gmail.com>
+References: <20180225172236.29650-1-malat@debian.org>
+ <20180225172236.29650-2-malat@debian.org>
+ <87woyw8pxe.fsf@concordia.ellerman.id.au>
+ <CA+7wUsxsZrjHY8=TSUiMEgGMm72XyQRW47b7oqNjFGeFKLMd+w@mail.gmail.com>
+Date: Thu, 01 Mar 2018 20:33:38 +1100
+Message-ID: <87a7vs87il.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,68 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 1 Mar 2018 08:09:55 +0100
-Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+Mathieu Malaterre <malat@debian.org> writes:
 
-> Le 28/02/2018 à 07:53, Nicholas Piggin a écrit :
-> > On Tue, 27 Feb 2018 18:11:07 +0530
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >   
-> >> Nicholas Piggin <npiggin@gmail.com> writes:
-> >>  
-> >>> On Tue, 27 Feb 2018 14:31:07 +0530
-> >>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >>>     
-> >>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> >>>>      
-> >>>>> The number of high slices a process might use now depends on its
-> >>>>> address space size, and what allocation address it has requested.
-> >>>>>
-> >>>>> This patch uses that limit throughout call chains where possible,
-> >>>>> rather than use the fixed SLICE_NUM_HIGH for bitmap operations.
-> >>>>> This saves some cost for processes that don't use very large address
-> >>>>> spaces.  
-> >>>>
-> >>>> I haven't really looked at the final code. One of the issue we had was
-> >>>> with the below scenario.
-> >>>>
-> >>>> mmap(addr, len) where addr < 128TB and addr+len > 128TB  We want to make
-> >>>> sure we build the mask such that we don't find the addr available.  
-> >>>
-> >>> We should run it through the mmap regression tests. I *think* we moved
-> >>> all of that logic from the slice code to get_ummapped_area before going
-> >>> in to slices. I may have missed something though, it would be good to
-> >>> have more eyes on it.
-> >>>     
-> >>
-> >> mmap(-1,...) failed with the test. Something like below fix it
-> >>
-> >> @@ -756,7 +770,7 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
-> >>          mm->context.low_slices_psize = lpsizes;
-> >>   
-> >>          hpsizes = mm->context.high_slices_psize;
-> >> -       high_slices = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
-> >> +       high_slices = SLICE_NUM_HIGH;
-> >>          for (i = 0; i < high_slices; i++) {
-> >>                  mask_index = i & 0x1;
-> >>                  index = i >> 1;
-> >>
-> >> I guess for everything in the mm_context_t, we should compute it till
-> >> SLICE_NUM_HIGH. The reason for failure was, even though we recompute the
-> >> slice mask cached in mm_context on slb_addr_limit, it was still derived
-> >> from the high_slices_psizes which was computed with lower value.  
-> > 
-> > Okay thanks for catching that Aneesh. I guess that's a slow path so it
-> > should be okay. Christophe if you're taking care of the series can you
-> > fold it in? Otherwise I'll do that after yours gets merged.
-> >   
-> 
-> I'm not really taking care of your serie, just took it once to see how 
-> it fits on the 8xx.
-> I prefer if you can handle them. If you need my help for any test on 
-> PPC32 don't hesitate to ask.
+> On Thu, Mar 1, 2018 at 3:55 AM, Michael Ellerman <mpe@ellerman.id.au> wro=
+te:
+>> Mathieu Malaterre <malat@debian.org> writes:
+>>
+>>> When neither CONFIG_ALTIVEC, nor CONFIG_VSX or CONFIG_PPC64 is defined,=
+ the
+>>> array feature_properties is defined as an empty array, which in turn
+>>> triggers the following warning (treated as error on W=3D1):
+>>>
+>>>   CC      arch/powerpc/kernel/prom.o
+>>> arch/powerpc/kernel/prom.c: In function =E2=80=98check_cpu_feature_prop=
+erties=E2=80=99:
+>>> arch/powerpc/kernel/prom.c:298:16: error: comparison of unsigned expres=
+sion < 0 is always false [-Werror=3Dtype-limits]
+>>>   for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
+>>>                 ^
+>>> cc1: all warnings being treated as errors
+>>
+>> Ugh, that's annoying.
+>>
+>> This seems to work?
+>>
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index 4dffef947b8a..5215119e249c 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -291,11 +291,11 @@ static inline void identical_pvr_fixup(unsigned lo=
+ng node)
+>>
+>>  static void __init check_cpu_feature_properties(unsigned long node)
+>>  {
+>> -       unsigned long i;
+>>         struct feature_property *fp =3D feature_properties;
+>>         const __be32 *prop;
+>> +       int i;
+>>
+>> -       for (i =3D 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
+>> +       for (i =3D 0; i < (int)ARRAY_SIZE(feature_properties); ++i, ++fp=
+) {
+>>                 prop =3D of_get_flat_dt_prop(node, fp->name, NULL);
+>>                 if (prop && be32_to_cpup(prop) >=3D fp->min_value) {
+>>                         cur_cpu_spec->cpu_features |=3D fp->cpu_feature;
+>>
+>
+> Indeed that looks like the less invasive solution, I'll re-submit.
 
-No problem I can do that. Thanks for rebasing them.
+Thanks.
 
-Thanks,
-Nick
+> Should I resubmit the entire patch series (21 indep patches) or
+> re-submit only the 3 patches that were discussed (as part of a
+> different series) ?
+
+Just resubmit the ones that need changes. You can either send them as a
+new series of 3, or post each as a reply to the original patch with v2
+in the subject.
+
+cheers
