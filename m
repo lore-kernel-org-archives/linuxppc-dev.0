@@ -1,17 +1,57 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
+ [210.131.2.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsyJR5qcczF1pJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 16:18:47 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Balbir Singh <bsingharora@gmail.com>,
- Mark Hairgrove <mhairgrove@nvidia.com>, mpe@ellerman.id.au,
- Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH v3] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
-Date: Fri,  2 Mar 2018 16:18:45 +1100
-Message-Id: <20180302051845.26844-1-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsz2Z2Lr0zF1qW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 16:51:48 +1100 (AEDT)
+Received: from mail-vk0-f46.google.com (mail-vk0-f46.google.com
+ [209.85.213.46]) (authenticated)
+ by conssluserg-04.nifty.com with ESMTP id w225pK1a003424
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Mar 2018 14:51:21 +0900
+Received: by mail-vk0-f46.google.com with SMTP id y127so5146863vky.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Mar 2018 21:51:21 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20180221213946.w4v6ywy7fbiy6oyc@huvuddator>
+References: <1518806331-7101-1-git-send-email-yamada.masahiro@socionext.com>
+ <20180218221352.GA6651@ravnborg.org>
+ <CAFkk2KT1krKuDkWt0eHcasfC61fTVQNf-1kqw7icLP9OYGYkXQ@mail.gmail.com>
+ <CAK7LNAQH0WD3A3T97gce0xmZpMy0zWxTO2StfNWaDbiqjQg8gg@mail.gmail.com>
+ <CAK8P3a2BOQt5Y0B4271WqaJvvWqfxHxD3S6r1i1xONvb+CJ5Dg@mail.gmail.com>
+ <CAK7LNARtZcW1v53ridFJK1MULmj8tQT4s+DoRhKj9PrbMri5rQ@mail.gmail.com>
+ <CAK8P3a1DrhxWXaEs6E85W5HEhvFr23E-GDsu=0X-sG0pX+PLag@mail.gmail.com>
+ <CAK7LNAR3OMh9Q9ZfaBq=FpSJ-+DT5-RH_20ohV-iu34pX9hFKw@mail.gmail.com>
+ <20180221213946.w4v6ywy7fbiy6oyc@huvuddator>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Fri, 2 Mar 2018 14:50:39 +0900
+Message-ID: <CAK7LNARd-9KNRTHT3jrNganqLisheAWbDQMGi_ujp+1GpYzSOg@mail.gmail.com>
+Subject: Re: [PATCH 00/23] kconfig: move compiler capability tests to Kconfig
+To: Ulf Magnusson <ulfalizer@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Rich Felker <dalias@libc.org>,
+ Kernel Hardening <kernel-hardening@lists.openwall.com>,
+ X86 ML <x86@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ Sam Ravnborg <sam@ravnborg.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Emese Revfy <re.emese@gmail.com>,
+ Kees Cook <keescook@chromium.org>,
+ uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ Jeff Dike <jdike@addtoit.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ user-mode-linux-user@lists.sourceforge.net,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Michal Marek <michal.lkml@markovi.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,373 +61,279 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When sending TLB invalidates to the NPU we need to send extra flushes due
-to a hardware issue. The original implementation would lock the all the
-ATSD MMIO registers sequentially before unlocking and relocking each of
-them sequentially to do the extra flush.
+2018-02-22 6:39 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+> On Wed, Feb 21, 2018 at 09:57:03PM +0900, Masahiro Yamada wrote:
+>> 2018-02-21 19:52 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+>> > On Wed, Feb 21, 2018 at 11:20 AM, Masahiro Yamada
+>> > <yamada.masahiro@socionext.com> wrote:
+>> >> 2018-02-21 18:56 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+>> >>> On Wed, Feb 21, 2018 at 8:38 AM, Masahiro Yamada
+>> >>> <yamada.masahiro@socionext.com> wrote:
+>> >>>> 2018-02-20 0:18 GMT+09:00 Ulf Magnusson <ulfalizer@gmail.com>:
+>> >>
+>> >> Let me clarify my concern.
+>> >>
+>> >> When we test the compiler flag, is there a case
+>> >> where a particular flag depends on -m{32,64} ?
+>> >>
+>> >> For example, is there a compiler that supports -fstack-protector
+>> >> for 64bit mode, but unsupports it for 32bit mode?
+>> >>
+>> >>   $(cc-option -m32)                     ->  y
+>> >>   $(cc-option -m64)                     ->  y
+>> >>   $(cc-option -fstack-protector)        ->  y
+>> >>   $(cc-option -m32 -fstack-protector)   ->  n
+>> >>   $(cc-option -m64 -fstack-protector)   ->  y
+>> >>
+>> >> I guess this is unlikely to happen,
+>> >> but I am not whether it is zero possibility.
+>> >>
+>> >> If this could happen,
+>> >> $(cc-option ) must be evaluated together with
+>> >> correct bi-arch option (either -m32 or -m64).
+>> >>
+>> >>
+>> >> Currently, -m32/-m64 is specified in Makefile,
+>> >> but we are moving compiler tests to Kconfig
+>> >> and, CONFIG_64BIT can be dynamically toggled in Kconfig.
+>> >
+>> > I don't think it can happen for this particular combination (stack protector
+>> > and word size), but I'm sure we'll eventually run into options that
+>> > need to be tested in combination. For the current CFLAGS_KERNEL
+>> > setting, we definitely have the case of needing the variables to be
+>> > evaluated in a specific order.
+>> >
+>>
+>>
+>>
+>>
+>> I was thinking of how we can handle complex cases
+>> in the current approach.
+>>
+>>
+>>
+>> (Case 1)
+>>
+>> Compiler flag -foo and -bar interacts, so
+>> we also need to check the combination of the two.
+>>
+>>
+>> config CC_HAS_FOO
+>>         def_bool $(cc-option -foo)
+>>
+>> config CC_HAS_BAR
+>>         def_bool $(cc-option -bar)
+>>
+>> config CC_HAS_FOO_WITH_BAR
+>>         def_bool $(cc-option -foo -bar)
+>>
+>>
+>>
+>> (Case 2)
+>> Compiler flag -foo is sensitive to word-size.
+>> So, we need to test this option together with -m32/-m64.
+>> User can toggle CONFIG_64BIT, like i386/x86_64.
+>>
+>>
+>> config CC_NEEDS_M64
+>>           def_bool $(cc-option -m64) && 64BIT
+>>
+>> config CC_NEEDS_M32
+>>           def_bool $(cc-option -m32) && !64BIT
+>>
+>> config CC_HAS_FOO
+>>          bool
+>>          default $(cc-option -m64 -foo) if CC_NEEDS_M64
+>>          default $(cc-option -m32 -foo) if CC_NEEDS_M32
+>>          default $(cc-option -foo)
+>>
+>>
+>>
+>> (Case 3)
+>> Compiler flag -foo is sensitive to endian-ness.
+>>
+>>
+>> config CC_NEEDS_BIG_ENDIAN
+>>           def_bool $(cc-option -mbig-endian) && CPU_BIG_ENDIAN
+>>
+>> config CC_NEEDS_LITTLE_ENDIAN
+>>           def_bool $(cc-option -mlittle-endian) && CPU_LITTLE_ENDIAN
+>>
+>> config CC_HAS_FOO
+>>          bool
+>>          default $(cc-option -mbig-endian -foo) if CC_NEEDS_BIG_ENDIAN
+>>          default $(cc-option -mlittle-endian -foo) if CC_NEEDS_LITTLE_ENDIAN
+>>          default $(cc-option -foo)
+>>
+>>
+>>
+>>
+>> Hmm, I think I can implement those somehow.
+>> But, I hope we do not have many instances like this...
+>>
+>>
+>> If you know more naive cases, please share your knowledge.
+>>
+>> Thanks!
+>>
+>>
+>> --
+>> Best Regards
+>> Masahiro Yamada
+>
+> Would get pretty bad if a test needs to consider multiple symbols.
+> Exponential explosion there...
+>
+>
+> I thought some more about the implementation of dynamic (post-parsing)
+> functions to see how bad it would get with the current implementation.
+>
+> Some background on how things work now:
+>
+>   1. All expression operands in Kconfig are symbols.
+>
+>   2. Returning '$ENV' or '$(fn foo)' as a T_WORD during parsing gets
+>      you symbols with those strings as names and S_UNKNOWN type (because
+>      they act like references to undefined symbols).
+>
+>   3. For "foo-$(fn foo)", you also get a symbol with that string as its
+>      name and S_UNKNOWN type (stored among the SYMBOL_CONST symbols)
+>
+>   4. Symbols with S_UNKNOWN type get their name as their string value,
+>      and the tristate value n.
+>
+> So, if you do string expansion on the names of symbols with S_UNKNOWN
+> type in sym_calc_value(), you're almost there with the current
+> implementation, except for the tristate case.
+>
+> Maybe you could set the tristate value of S_UNKNOWN symbols depending on
+> the string value you end up with. Things are getting pretty confusing at
+> that point.
+>
+> Could have something like S_DYNAMIC as well. More Kconfig complexity...
+>
+> Then there's other complications:
+>
+>   1. SYMBOL_CONST is no longer constant.
+>
+>   2. Dependency loop detection needs to consider symbol references
+>      within strings.
+>
+>   3. Dependency loop detection relies on static knowledge of what
+>      symbols a symbol depends on. That might get messy for certain
+>      expansions, though it might be things you wouldn't do in practice.
+>
+>   4. Symbols still need to be properly invalidated. It looks like at
+>      least menuconfig just does a dumb invalidate-everything whenever
+>      the value of a symbol is changed though, so it might not require
+>      extra work. (Bit messier in Kconfiglib, which does minimal
+>      invalidation to keep scripts fast, but just need to extract a few
+>      extra deps there.)
+>
+>
+> It looks like dynamic functions could get quite messy, but might be
+> doable if absolutely required. There's probably more devils in the
+> details though.
+>
+> I don't think the static function model precludes switching models later
+> btw, when people have more experience.
 
-This introduced a deadlock as it is possible for one thread to hold one
-ATSD register whilst waiting for another register to be freed while the
-other thread is holding that register waiting for the one in the first
-thread to be freed.
 
-For example if there are two threads and two ATSD registers:
 
-Thread A	Thread B
-Acquire 1
-Acquire 2
-Release 1	Acquire 1
-Wait 1		Wait 2
+I really want to start with the static function model
+and see if we need the dynamic function implementation.
 
-Both threads will be stuck waiting to acquire a register resulting in an
-RCU stall warning or soft lockup.
+Here is an idea for the migration path in case
+we need to do that in the future.
 
-This patch solves the deadlock by refactoring the code to ensure registers
-are not released between flushes and to ensure all registers are either
-acquired or released together and in order.
 
-Fixes: bbd5ff50afff ("powerpc/powernv/npu-dma: Add explicit flush when sending an ATSD")
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
 
----
+Currently, every time user input is given,
+sym_clear_all_valid() is called.
 
-v2:
- - Added memory barriers around ATSD register aquisition/release
- - Added compiler barriers around npdev[][] assignment
+It is not efficient to blindly re-evaluate expensive $(shell ...)
 
-v3:
- - Added comments to describe required locking
 
----
- arch/powerpc/platforms/powernv/npu-dma.c | 228 +++++++++++++++++++------------
- 1 file changed, 139 insertions(+), 89 deletions(-)
+So, have a list of symbols the function depends on
+in its arguments.
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 0a253b64ac5f..0dec96eb3358 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -410,6 +410,11 @@ struct npu_context {
- 	void *priv;
- };
- 
-+struct mmio_atsd_reg {
-+	struct npu *npu;
-+	int reg;
-+};
-+
- /*
-  * Find a free MMIO ATSD register and mark it in use. Return -ENOSPC
-  * if none are available.
-@@ -419,7 +424,7 @@ static int get_mmio_atsd_reg(struct npu *npu)
- 	int i;
- 
- 	for (i = 0; i < npu->mmio_atsd_count; i++) {
--		if (!test_and_set_bit(i, &npu->mmio_atsd_usage))
-+		if (!test_and_set_bit_lock(i, &npu->mmio_atsd_usage))
- 			return i;
- 	}
- 
-@@ -428,86 +433,90 @@ static int get_mmio_atsd_reg(struct npu *npu)
- 
- static void put_mmio_atsd_reg(struct npu *npu, int reg)
- {
--	clear_bit(reg, &npu->mmio_atsd_usage);
-+	clear_bit_unlock(reg, &npu->mmio_atsd_usage);
- }
- 
- /* MMIO ATSD register offsets */
- #define XTS_ATSD_AVA  1
- #define XTS_ATSD_STAT 2
- 
--static int mmio_launch_invalidate(struct npu *npu, unsigned long launch,
--				unsigned long va)
-+static void mmio_launch_invalidate(struct mmio_atsd_reg *mmio_atsd_reg,
-+				unsigned long launch, unsigned long va)
- {
--	int mmio_atsd_reg;
--
--	do {
--		mmio_atsd_reg = get_mmio_atsd_reg(npu);
--		cpu_relax();
--	} while (mmio_atsd_reg < 0);
-+	struct npu *npu = mmio_atsd_reg->npu;
-+	int reg = mmio_atsd_reg->reg;
- 
- 	__raw_writeq(cpu_to_be64(va),
--		npu->mmio_atsd_regs[mmio_atsd_reg] + XTS_ATSD_AVA);
-+		npu->mmio_atsd_regs[reg] + XTS_ATSD_AVA);
- 	eieio();
--	__raw_writeq(cpu_to_be64(launch), npu->mmio_atsd_regs[mmio_atsd_reg]);
--
--	return mmio_atsd_reg;
-+	__raw_writeq(cpu_to_be64(launch), npu->mmio_atsd_regs[reg]);
- }
- 
--static int mmio_invalidate_pid(struct npu *npu, unsigned long pid, bool flush)
-+static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
-+				unsigned long pid, bool flush)
- {
-+	int i;
- 	unsigned long launch;
- 
--	/* IS set to invalidate matching PID */
--	launch = PPC_BIT(12);
-+	for (i = 0; i <= max_npu2_index; i++) {
-+		if (mmio_atsd_reg[i].reg < 0)
-+			continue;
-+
-+		/* IS set to invalidate matching PID */
-+		launch = PPC_BIT(12);
- 
--	/* PRS set to process-scoped */
--	launch |= PPC_BIT(13);
-+		/* PRS set to process-scoped */
-+		launch |= PPC_BIT(13);
- 
--	/* AP */
--	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
-+		/* AP */
-+		launch |= (u64)
-+			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
- 
--	/* PID */
--	launch |= pid << PPC_BITLSHIFT(38);
-+		/* PID */
-+		launch |= pid << PPC_BITLSHIFT(38);
- 
--	/* No flush */
--	launch |= !flush << PPC_BITLSHIFT(39);
-+		/* No flush */
-+		launch |= !flush << PPC_BITLSHIFT(39);
- 
--	/* Invalidating the entire process doesn't use a va */
--	return mmio_launch_invalidate(npu, launch, 0);
-+		/* Invalidating the entire process doesn't use a va */
-+		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, 0);
-+	}
- }
- 
--static int mmio_invalidate_va(struct npu *npu, unsigned long va,
--			unsigned long pid, bool flush)
-+static void mmio_invalidate_va(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
-+			unsigned long va, unsigned long pid, bool flush)
- {
-+	int i;
- 	unsigned long launch;
- 
--	/* IS set to invalidate target VA */
--	launch = 0;
-+	for (i = 0; i <= max_npu2_index; i++) {
-+		if (mmio_atsd_reg[i].reg < 0)
-+			continue;
- 
--	/* PRS set to process scoped */
--	launch |= PPC_BIT(13);
-+		/* IS set to invalidate target VA */
-+		launch = 0;
- 
--	/* AP */
--	launch |= (u64) mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
-+		/* PRS set to process scoped */
-+		launch |= PPC_BIT(13);
- 
--	/* PID */
--	launch |= pid << PPC_BITLSHIFT(38);
-+		/* AP */
-+		launch |= (u64)
-+			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
- 
--	/* No flush */
--	launch |= !flush << PPC_BITLSHIFT(39);
-+		/* PID */
-+		launch |= pid << PPC_BITLSHIFT(38);
- 
--	return mmio_launch_invalidate(npu, launch, va);
-+		/* No flush */
-+		launch |= !flush << PPC_BITLSHIFT(39);
-+
-+		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, va);
-+	}
- }
- 
- #define mn_to_npu_context(x) container_of(x, struct npu_context, mn)
- 
--struct mmio_atsd_reg {
--	struct npu *npu;
--	int reg;
--};
--
- static void mmio_invalidate_wait(
--	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS], bool flush)
-+	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
- {
- 	struct npu *npu;
- 	int i, reg;
-@@ -522,16 +531,65 @@ static void mmio_invalidate_wait(
- 		reg = mmio_atsd_reg[i].reg;
- 		while (__raw_readq(npu->mmio_atsd_regs[reg] + XTS_ATSD_STAT))
- 			cpu_relax();
-+	}
-+}
- 
--		put_mmio_atsd_reg(npu, reg);
-+/*
-+ * Acquires all the address translation shootdown (ATSD) registers required to
-+ * launch an ATSD on all links this npu_context is active on.
-+ */
-+static void acquire_atsd_reg(struct npu_context *npu_context,
-+			struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
-+{
-+	int i, j;
-+	struct npu *npu;
-+	struct pci_dev *npdev;
-+	struct pnv_phb *nphb;
- 
--		/*
--		 * The GPU requires two flush ATSDs to ensure all entries have
--		 * been flushed. We use PID 0 as it will never be used for a
--		 * process on the GPU.
-+	for (i = 0; i <= max_npu2_index; i++) {
-+		mmio_atsd_reg[i].reg = -1;
-+		for (j = 0; j < NV_MAX_LINKS; j++) {
-+			/* There are no ordering requirements with respect to
-+			 * the setup of struct npu_context, but to ensure
-+			 * consistent behaviour we need to ensure npdev[][] is
-+			 * only read once.
-+			 */
-+			npdev = READ_ONCE(npu_context->npdev[i][j]);
-+			if (!npdev)
-+				continue;
-+
-+			nphb = pci_bus_to_host(npdev->bus)->private_data;
-+			npu = &nphb->npu;
-+			mmio_atsd_reg[i].npu = npu;
-+			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
-+			while (mmio_atsd_reg[i].reg < 0) {
-+				mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
-+				cpu_relax();
-+			}
-+			break;
-+		}
-+	}
-+}
-+
-+/*
-+ * Release previously acquired ATSD registers. To avoid deadlocks the registers
-+ * must be released in the same order they were acquired above in
-+ * acquire_atsd_reg.
-+ */
-+static void release_atsd_reg(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
-+{
-+	int i;
-+
-+	for (i = 0; i <= max_npu2_index; i++) {
-+		/* We can't rely on npu_context->npdev[][] being the same here
-+		 * as when acquire_atsd_reg() was called, hence we use the
-+		 * values stored in mmio_atsd_reg during the acquire phase
-+		 * rather than re-reading npdev[][]
- 		 */
--		if (flush)
--			mmio_invalidate_pid(npu, 0, true);
-+		if (mmio_atsd_reg[i].reg < 0)
-+			continue;
-+
-+		put_mmio_atsd_reg(mmio_atsd_reg[i].npu, mmio_atsd_reg[i].reg);
- 	}
- }
- 
-@@ -542,10 +600,6 @@ static void mmio_invalidate_wait(
- static void mmio_invalidate(struct npu_context *npu_context, int va,
- 			unsigned long address, bool flush)
- {
--	int i, j;
--	struct npu *npu;
--	struct pnv_phb *nphb;
--	struct pci_dev *npdev;
- 	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
- 	unsigned long pid = npu_context->mm->context.id;
- 
-@@ -561,37 +615,25 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
- 	 * Loop over all the NPUs this process is active on and launch
- 	 * an invalidate.
- 	 */
--	for (i = 0; i <= max_npu2_index; i++) {
--		mmio_atsd_reg[i].reg = -1;
--		for (j = 0; j < NV_MAX_LINKS; j++) {
--			npdev = npu_context->npdev[i][j];
--			if (!npdev)
--				continue;
--
--			nphb = pci_bus_to_host(npdev->bus)->private_data;
--			npu = &nphb->npu;
--			mmio_atsd_reg[i].npu = npu;
--
--			if (va)
--				mmio_atsd_reg[i].reg =
--					mmio_invalidate_va(npu, address, pid,
--							flush);
--			else
--				mmio_atsd_reg[i].reg =
--					mmio_invalidate_pid(npu, pid, flush);
--
--			/*
--			 * The NPU hardware forwards the shootdown to all GPUs
--			 * so we only have to launch one shootdown per NPU.
--			 */
--			break;
--		}
-+	acquire_atsd_reg(npu_context, mmio_atsd_reg);
-+	if (va)
-+		mmio_invalidate_va(mmio_atsd_reg, address, pid, flush);
-+	else
-+		mmio_invalidate_pid(mmio_atsd_reg, pid, flush);
-+
-+	mmio_invalidate_wait(mmio_atsd_reg);
-+	if (flush) {
-+		/*
-+		 * The GPU requires two flush ATSDs to ensure all entries have
-+		 * been flushed. We use PID 0 as it will never be used for a
-+		 * process on the GPU.
-+		 */
-+		mmio_invalidate_pid(mmio_atsd_reg, 0, true);
-+		mmio_invalidate_wait(mmio_atsd_reg);
-+		mmio_invalidate_pid(mmio_atsd_reg, 0, true);
-+		mmio_invalidate_wait(mmio_atsd_reg);
- 	}
--
--	mmio_invalidate_wait(mmio_atsd_reg, flush);
--	if (flush)
--		/* Wait for the flush to complete */
--		mmio_invalidate_wait(mmio_atsd_reg, false);
-+	release_atsd_reg(mmio_atsd_reg);
- }
- 
- static void pnv_npu2_mn_release(struct mmu_notifier *mn,
-@@ -726,7 +768,15 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
- 							&nvlink_index)))
- 		return ERR_PTR(-ENODEV);
--	npu_context->npdev[npu->index][nvlink_index] = npdev;
-+
-+	/* npdev is a pci_dev pointer setup by the PCI code. We assign it to
-+	 * npdev[][] to indicate to the mmu notifiers that an invalidation
-+	 * should also be sent over this nvlink. The notifiers don't use any
-+	 * other fields in npu_context, so we just need to ensure that when they
-+	 * deference npu_context->npdev[][] it is either a valid pointer or
-+	 * NULL.
-+	 */
-+	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
- 
- 	if (!nphb->npu.nmmu_flush) {
- 		/*
-@@ -778,7 +828,7 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
- 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
- 							&nvlink_index)))
- 		return;
--	npu_context->npdev[npu->index][nvlink_index] = NULL;
-+	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], NULL);
- 	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
- 				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
- 	kref_put(&npu_context->kref, pnv_npu2_release_context);
+For example,
+
+config CC_HAS_SANE_STACKPROTECTOR
+        def_bool $(shell $srctree/scripts/gcc-has-stack-protector.sh
+$CC $(1), CFLAGS_BASE)
+
+
+Here the first argument
+  $srctree/scripts/gcc-x86-has-stack-protector.sh $CC $(1)
+
+is the shell command.
+$(1), $(2), ... will be replaced with the values of symbols (or expressions)
+that follow when running the shell command.
+
+
+The second argument
+CFLAGS_BASE
+is the dependency symbol (or expression).
+
+
+CFLAGS_BASE can be dynamically changed like
+
+config CFLAGS_BASE
+        string
+        default "-m64" if 64BIT
+        default "-m32"
+
+
+When and only when CFLAGS_BASE is updated, the function should be re-calculated.
+(This will require efforts to minimize the amount of re-evaluation.)
+
+
+
+
+cc-option will be implemented like follows:
+
+macro cc-option $(shell $CC -Werror $$(1) $(1) -c -x c /dev/null -o
+/dev/null, CFLAGS_BASE)
+
+
+
+Please notice the difference between $$(1) and $(1).
+
+$(1) is immediately expanded by cc-option macro.
+
+$$(1) is escaped since we want to expand it by $(shell ...), not by
+$(cc-option ...)
+
+
+
+For example,
+
+  $(cc-option -fstack-protector)
+
+will be expanded to
+
+  $(shell gcc -Werror $(1) -fstack-protector -c -x c /dev/null -o
+/dev/null, CFLAGS_BASE)
+
+Since macros are just textual shorthand, so this expansion happens
+during the parse phase.
+
+
+
+Then, the evaluation phase does the following every time CFLAGS_BASE is updated.
+
+gcc -Werror [value of CFLAGS_BASE] -fstack-protector -c -x c /dev/null
+-o /dev/null
+
+
+This is a new form of expression, so it will be managed in AST tree
+with a flag E_SHELL (or E_FUNC) etc.
+
+
+Not implemented at all.  Just a rough sketch.
+
+
 -- 
-2.11.0
+Best Regards
+Masahiro Yamada
