@@ -1,25 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zt7ZM67t4zF1k2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 23:16:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zt7bq142zzF1t1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 23:17:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc: dts: replace 'linux,
- stdout-path' with 'stdout-path'
-In-Reply-To: <CAL_JsqKn3hXaaYYef47afK+E=WUfZyfF6ejGD0vX7C8sNjhdFw@mail.gmail.com>
-References: <20180228224406.7049-1-robh@kernel.org>
- <87606ga8bv.fsf@concordia.ellerman.id.au>
- <CAL_JsqKn3hXaaYYef47afK+E=WUfZyfF6ejGD0vX7C8sNjhdFw@mail.gmail.com>
-Date: Fri, 02 Mar 2018 23:16:24 +1100
-Message-ID: <87k1uuwu3r.fsf@concordia.ellerman.id.au>
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: boot: add strrchr function
+In-Reply-To: <20180301152654.29275-1-robh@kernel.org>
+References: <20180301152654.29275-1-robh@kernel.org>
+Date: Fri, 02 Mar 2018 23:17:41 +1100
+Message-ID: <87h8pywu1m.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,34 +27,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Rob Herring <robh@kernel.org> writes:
 
-> On Wed, Feb 28, 2018 at 7:33 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Rob Herring <robh@kernel.org> writes:
->>
->>> 'linux,stdout-path' has been deprecated for some time in favor of
->>> 'stdout-path'. Now dtc will warn on occurrences of 'linux,stdout-path'.
->>> Search and replace all the of occurrences with 'stdout-path'.
->>
->> This patch looks OK.
->>
->> But please remember that not all device trees are generated with dtc, we
->> still have machines in the wild that have firmware which use
->> "linux,stdout-path" and may never be updated.
+> libfdt gained a new dependency on strrchr, so copy the implementation
+> from lib/string.c. Most of the string functions are in assembly, but
+> stdio.c already has strnlen, so add strrchr there.
 >
-> Absolutely. The core code still supports both.
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Please ack. This is a dependency for dtc/libfdt sync with upstream.
 
-Phew ;)
+Yeah seems fine. At some point we should try and duplicate less code in
+boot, but now is not that time.
 
-It has prompted us to look at various firmware pieces and some we can
-update to start using the new property or both. It's still going to be
-many years before we can actually remove support for linux,stdout-path
-though.
-
-> The only scenario I could come up with is someone has an old
-> bootloader that only understands linux,stdout-path and modifies it and
-> they update the dtb. We may end up with both properties with
-> stdout-path taking preference.
-
-Yeah I think this is fairly safe, and in the unlikely case it does cause
-a problem we can always back the change out for an individual file.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
+
+> diff --git a/arch/powerpc/boot/stdio.c b/arch/powerpc/boot/stdio.c
+> index a701261b1781..98042eff7b26 100644
+> --- a/arch/powerpc/boot/stdio.c
+> +++ b/arch/powerpc/boot/stdio.c
+> @@ -21,6 +21,16 @@ size_t strnlen(const char * s, size_t count)
+>  	return sc - s;
+>  }
+>  
+> +char *strrchr(const char *s, int c)
+> +{
+> +	const char *last = NULL;
+> +	do {
+> +		if (*s == (char)c)
+> +			last = s;
+> +	} while (*s++);
+> +	return (char *)last;
+> +}
+> +
+>  #ifdef __powerpc64__
+>  
+>  # define do_div(n, base) ({						\
+> -- 
+> 2.14.1
