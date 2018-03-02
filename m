@@ -1,20 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zswhJ3f9mzF16w
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:05:52 +1100 (AEDT)
-Date: Fri, 2 Mar 2018 13:21:44 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Bharata B Rao <bharata.rao@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: Hotplug + Reboot is crashing HPT guest with HPT resizing enabled
-Message-ID: <20180302022144.GG13135@umbus.fritz.box>
-References: <CAGZKiBoy5kZxijbGg0VaRr_HbgPyoHS-UnkXyhHt15sCpcT4ow@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="HKEL+t8MFpg/ASTE"
-In-Reply-To: <CAGZKiBoy5kZxijbGg0VaRr_HbgPyoHS-UnkXyhHt15sCpcT4ow@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZZ1ZpzzF1bP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:45:58 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexander.Levin@microsoft.com
+Cc: stable@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
+	npiggin@gmail.com
+Subject: [PATCH v4.1 backport 01/15] powerpc/pseries: Add
+ H_GET_CPU_CHARACTERISTICS flags & wrapper
+Date: Fri,  2 Mar 2018 15:45:35 +1100
+Message-Id: <20180302044549.14930-2-mpe@ellerman.id.au>
+In-Reply-To: <20180302044549.14930-1-mpe@ellerman.id.au>
+References: <20180302044549.14930-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Michael Neuling <mikey@neuling.org>
 
---HKEL+t8MFpg/ASTE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+commit 191eccb1580939fb0d47deb405b82a85b0379070 upstream.
 
-On Fri, Feb 23, 2018 at 03:02:40PM +0530, Bharata B Rao wrote:
-> Hi,
->=20
-> Rebooting a hash guest after hotplugging memory to it is crashing the
-> guest. This is seen only when HPT resizing is enabled. I see guest crashi=
-ng
-> at multiple places, but this location is fairly commonly seen:
->=20
-> kernel BUG at mm/slub.c:3912!
->=20
-> Testing with latest guest kernel and ppc-for-2.12 branch of QEMU.
+A new hypervisor call has been defined to communicate various
+characteristics of the CPU to guests. Add definitions for the hcall
+number, flags and a wrapper function.
 
-Ugh.  We had several bugs along these lines, but I thought I'd fixed
-them.  I wonder what this one is.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+[Balbir fixed conflicts in backport]
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/include/asm/hvcall.h         | 17 +++++++++++++++++
+ arch/powerpc/include/asm/plpar_wrappers.h | 14 ++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-> A bit of debugging shows me that when memory is added, the guest kernel
-> tries to resize HPT to a htab_shift value lesser than the value with which
-> the guest has booted. For eg. a 8GB guest boots with htab_shift of 26. Wh=
-en
-> 1G is hot-added,
-> arch/powerpc/mm/hash_utils_64.c:resize_hpt_for_hotplug() ends up assigning
-> 24 to target_hpt_shift. This looks suspicious as we are increasing the
-> memory, but kernel is asking for shrinking the HPT size.
-
-So the shrink-HPT-on-add-memory is actually expected and should be
-harmless.  It occurs because qemu estimates HPT size on the
-traditional HPT =3D=3D RAM size / 64 formular, which was devised with 4k
-pages in mind.  The kernel on the other hand, knows it is using 64k
-pages and so estimates a smaller HPT size.  Hot plugging memory always
-prompts the guest to re-estimate the required HPT size, but if the
-added memory is small enough, that size can still be smaller than
-qemu's initial guess.
-
-> HPT resizing
-> requests fail though, but next reboot crashes the guest.
-
-As noted the shrink is expected, so we need to debug the crash
-separately.  Do you have 9478956794c11239b7c1c3ef9ce95c883bb839a3 in
-your tree?
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---HKEL+t8MFpg/ASTE
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlqYtTYACgkQbDjKyiDZ
-s5Jc3RAAmzoaHsMSdJkrpnT64gKY43pcs9j61/DVxdwyzzyifev0mNdUdS2n9CBA
-0YdSbSysPKDDZaE2+2gzh758aoLV54/9pLHy453PIJs3pD2Y5G/1nC8GVJyeFOJK
-EKfomVXp67AestFni3MMoH3OfyOQP6mOan+lfAuVSNefh7u8qLPrT6csped/eFYH
-vFiyA4eMMRxKojm1soOi+xzMQT2cwr7F7gjOhLCYmIrssw5x03LROaJv6FZcUh0s
-xgHlMBXe4zbwDzSt6RiodCzqxcc0cSNpsAmOUMhyVBJBdJBbaBIDs9zMtocPOSpb
-eFzSNjSIyFsWjL1oq5j/wVWh2zYg0vDQZgHmecZz6iBznLqcp2T1HtRxVCobbjuA
-QwSn5EX5QRU5pK2dK4t4ogTCWhdTMYsDCQgPAqPLMfd+zLhbM0hRJOsqyQ/wG0nl
-M8ddpcIQLlMJvcQdjWNxenUgDIGDXf25FKB1xOYVOCPaAFcV9n3eA4zs77xXxsh2
-3UKFLb2dsZRPbaSwtXG8oL0bCmonuxw7CGMzByzmU/0thwOxEORdtoSFhuJaw4G3
-m7gKujJwyH53LUpxjVbJwofAJ8834oW1crkEe59G8leJg4gmEMdazgEWTd10CpUK
-SOuqIaLCocOnQqpKikBHb58Ly6CjsVNFaxcUkuJkXJgiPO1VTW4=
-=QIhj
------END PGP SIGNATURE-----
-
---HKEL+t8MFpg/ASTE--
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 85bc8c0d257b..51adbde09845 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -239,6 +239,7 @@
+ #define H_GET_HCA_INFO          0x1B8
+ #define H_GET_PERF_COUNT        0x1BC
+ #define H_MANAGE_TRACE          0x1C0
++#define H_GET_CPU_CHARACTERISTICS 0x1C8
+ #define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
+ #define H_QUERY_INT_STATE       0x1E4
+ #define H_POLL_PENDING		0x1D8
+@@ -285,6 +286,17 @@
+ #define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE	3
+ #define H_SET_MODE_RESOURCE_LE			4
+ 
++/* H_GET_CPU_CHARACTERISTICS return values */
++#define H_CPU_CHAR_SPEC_BAR_ORI31	(1ull << 63) // IBM bit 0
++#define H_CPU_CHAR_BCCTRL_SERIALISED	(1ull << 62) // IBM bit 1
++#define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
++#define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
++#define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++
++#define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
++#define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
++#define H_CPU_BEHAV_BNDS_CHK_SPEC_BAR	(1ull << 61) // IBM bit 2
++
+ #ifndef __ASSEMBLY__
+ 
+ /**
+@@ -423,6 +435,11 @@ extern long pseries_big_endian_exceptions(void);
+ 
+ #endif /* CONFIG_PPC_PSERIES */
+ 
++struct h_cpu_char_result {
++	u64 character;
++	u64 behaviour;
++};
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_HVCALL_H */
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 67859edbf8fd..6e05cb397a5c 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -323,4 +323,18 @@ static inline long plapr_set_watchpoint0(unsigned long dawr0, unsigned long dawr
+ 	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
+ }
+ 
++static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
++{
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	long rc;
++
++	rc = plpar_hcall(H_GET_CPU_CHARACTERISTICS, retbuf);
++	if (rc == H_SUCCESS) {
++		p->character = retbuf[0];
++		p->behaviour = retbuf[1];
++	}
++
++	return rc;
++}
++
+ #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
+-- 
+2.14.1
