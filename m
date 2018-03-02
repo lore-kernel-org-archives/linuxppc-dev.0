@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZf0Q7mzF1cW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZf2DqJzF1cm
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:46:02 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Alexander.Levin@microsoft.com
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org,
 	npiggin@gmail.com
-Subject: [PATCH v4.1 backport 09/15] powerpc/64s: Improve RFI L1-D cache flush
- fallback
-Date: Fri,  2 Mar 2018 15:45:43 +1100
-Message-Id: <20180302044549.14930-10-mpe@ellerman.id.au>
+Subject: [PATCH v4.1 backport 10/15] powerpc/pseries: Query hypervisor for RFI
+ flush settings
+Date: Fri,  2 Mar 2018 15:45:44 +1100
+Message-Id: <20180302044549.14930-11-mpe@ellerman.id.au>
 In-Reply-To: <20180302044549.14930-1-mpe@ellerman.id.au>
 References: <20180302044549.14930-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,211 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+From: Michael Neuling <mikey@neuling.org>
 
-commit bfcd89a1d61a4a6bca3319e2ab70d7c745baf823 upstream.
+commit 8989d56878a7735dfdb234707a2fee6faf631085 upstream.
 
-The fallback RFI flush is used when firmware does not provide a way
-to flush the cache. It's a "displacement flush" that evicts useful
-data by displacing it with an uninteresting buffer.
+A new hypervisor call is available which tells the guest settings
+related to the RFI flush. Use it to query the appropriate flush
+instruction(s), and whether the flush is required.
 
-The flush has to take care to work with implementation specific cache
-replacment policies, so the recipe has been in flux. The initial
-slow but conservative approach is to touch all lines of a congruence
-class, with dependencies between each load. It has since been
-determined that a linear pattern of loads without dependencies is
-sufficient, and is significantly faster.
-
-Measuring the speed of a null syscall with RFI fallback flush enabled
-gives the relative improvement:
-
-P8 - 1.83x
-P9 - 1.75x
-
-The flush also becomes simpler and more adaptable to different cache
-geometries.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/paca.h      |  3 +-
- arch/powerpc/kernel/asm-offsets.c    |  3 +-
- arch/powerpc/kernel/exceptions-64s.S | 76 +++++++++++++++++-------------------
- arch/powerpc/kernel/setup_64.c       | 13 +-----
- 4 files changed, 39 insertions(+), 56 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c | 37 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 45e2aefece16..08e5df3395fa 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -199,8 +199,7 @@ struct paca_struct {
- 	 */
- 	u64 exrfi[13] __aligned(0x80);
- 	void *rfi_flush_fallback_area;
--	u64 l1d_flush_congruence;
--	u64 l1d_flush_sets;
-+	u64 l1d_flush_size;
- #endif
- };
- 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 69761d8ad871..23fe603a98d3 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -246,8 +246,7 @@ int main(void)
- 	DEFINE(PACA_IN_MCE, offsetof(struct paca_struct, in_mce));
- 	DEFINE(PACA_RFI_FLUSH_FALLBACK_AREA, offsetof(struct paca_struct, rfi_flush_fallback_area));
- 	DEFINE(PACA_EXRFI, offsetof(struct paca_struct, exrfi));
--	DEFINE(PACA_L1D_FLUSH_CONGRUENCE, offsetof(struct paca_struct, l1d_flush_congruence));
--	DEFINE(PACA_L1D_FLUSH_SETS, offsetof(struct paca_struct, l1d_flush_sets));
-+	DEFINE(PACA_L1D_FLUSH_SIZE, offsetof(struct paca_struct, l1d_flush_size));
- #endif
- 	DEFINE(PACAHWCPUID, offsetof(struct paca_struct, hw_cpu_id));
- 	DEFINE(PACAKEXECSTATE, offsetof(struct paca_struct, kexec_state));
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9c102be8cd97..3b8991df5101 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1579,39 +1579,37 @@ rfi_flush_fallback:
- 	std	r9,PACA_EXRFI+EX_R9(r13)
- 	std	r10,PACA_EXRFI+EX_R10(r13)
- 	std	r11,PACA_EXRFI+EX_R11(r13)
--	std	r12,PACA_EXRFI+EX_R12(r13)
--	std	r8,PACA_EXRFI+EX_R13(r13)
- 	mfctr	r9
- 	ld	r10,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
--	ld	r11,PACA_L1D_FLUSH_SETS(r13)
--	ld	r12,PACA_L1D_FLUSH_CONGRUENCE(r13)
--	/*
--	 * The load adresses are at staggered offsets within cachelines,
--	 * which suits some pipelines better (on others it should not
--	 * hurt).
--	 */
--	addi	r12,r12,8
-+	ld	r11,PACA_L1D_FLUSH_SIZE(r13)
-+	srdi	r11,r11,(7 + 3) /* 128 byte lines, unrolled 8x */
- 	mtctr	r11
- 	DCBT_STOP_ALL_STREAM_IDS(r11) /* Stop prefetch streams */
- 
- 	/* order ld/st prior to dcbt stop all streams with flushing */
- 	sync
--1:	li	r8,0
--	.rept	8 /* 8-way set associative */
--	ldx	r11,r10,r8
--	add	r8,r8,r12
--	xor	r11,r11,r11	// Ensure r11 is 0 even if fallback area is not
--	add	r8,r8,r11	// Add 0, this creates a dependency on the ldx
--	.endr
--	addi	r10,r10,128 /* 128 byte cache line */
-+
-+	/*
-+	 * The load adresses are at staggered offsets within cachelines,
-+	 * which suits some pipelines better (on others it should not
-+	 * hurt).
-+	 */
-+1:
-+	ld	r11,(0x80 + 8)*0(r10)
-+	ld	r11,(0x80 + 8)*1(r10)
-+	ld	r11,(0x80 + 8)*2(r10)
-+	ld	r11,(0x80 + 8)*3(r10)
-+	ld	r11,(0x80 + 8)*4(r10)
-+	ld	r11,(0x80 + 8)*5(r10)
-+	ld	r11,(0x80 + 8)*6(r10)
-+	ld	r11,(0x80 + 8)*7(r10)
-+	addi	r10,r10,0x80*8
- 	bdnz	1b
- 
- 	mtctr	r9
- 	ld	r9,PACA_EXRFI+EX_R9(r13)
- 	ld	r10,PACA_EXRFI+EX_R10(r13)
- 	ld	r11,PACA_EXRFI+EX_R11(r13)
--	ld	r12,PACA_EXRFI+EX_R12(r13)
--	ld	r8,PACA_EXRFI+EX_R13(r13)
- 	GET_SCRATCH0(r13);
- 	rfid
- 
-@@ -1622,39 +1620,37 @@ hrfi_flush_fallback:
- 	std	r9,PACA_EXRFI+EX_R9(r13)
- 	std	r10,PACA_EXRFI+EX_R10(r13)
- 	std	r11,PACA_EXRFI+EX_R11(r13)
--	std	r12,PACA_EXRFI+EX_R12(r13)
--	std	r8,PACA_EXRFI+EX_R13(r13)
- 	mfctr	r9
- 	ld	r10,PACA_RFI_FLUSH_FALLBACK_AREA(r13)
--	ld	r11,PACA_L1D_FLUSH_SETS(r13)
--	ld	r12,PACA_L1D_FLUSH_CONGRUENCE(r13)
--	/*
--	 * The load adresses are at staggered offsets within cachelines,
--	 * which suits some pipelines better (on others it should not
--	 * hurt).
--	 */
--	addi	r12,r12,8
-+	ld	r11,PACA_L1D_FLUSH_SIZE(r13)
-+	srdi	r11,r11,(7 + 3) /* 128 byte lines, unrolled 8x */
- 	mtctr	r11
- 	DCBT_STOP_ALL_STREAM_IDS(r11) /* Stop prefetch streams */
- 
- 	/* order ld/st prior to dcbt stop all streams with flushing */
- 	sync
--1:	li	r8,0
--	.rept	8 /* 8-way set associative */
--	ldx	r11,r10,r8
--	add	r8,r8,r12
--	xor	r11,r11,r11	// Ensure r11 is 0 even if fallback area is not
--	add	r8,r8,r11	// Add 0, this creates a dependency on the ldx
--	.endr
--	addi	r10,r10,128 /* 128 byte cache line */
-+
-+	/*
-+	 * The load adresses are at staggered offsets within cachelines,
-+	 * which suits some pipelines better (on others it should not
-+	 * hurt).
-+	 */
-+1:
-+	ld	r11,(0x80 + 8)*0(r10)
-+	ld	r11,(0x80 + 8)*1(r10)
-+	ld	r11,(0x80 + 8)*2(r10)
-+	ld	r11,(0x80 + 8)*3(r10)
-+	ld	r11,(0x80 + 8)*4(r10)
-+	ld	r11,(0x80 + 8)*5(r10)
-+	ld	r11,(0x80 + 8)*6(r10)
-+	ld	r11,(0x80 + 8)*7(r10)
-+	addi	r10,r10,0x80*8
- 	bdnz	1b
- 
- 	mtctr	r9
- 	ld	r9,PACA_EXRFI+EX_R9(r13)
- 	ld	r10,PACA_EXRFI+EX_R10(r13)
- 	ld	r11,PACA_EXRFI+EX_R11(r13)
--	ld	r12,PACA_EXRFI+EX_R12(r13)
--	ld	r8,PACA_EXRFI+EX_R13(r13)
- 	GET_SCRATCH0(r13);
- 	hrfid
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index a3993ac21b50..55d8da909db5 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -873,19 +873,8 @@ static void init_fallback_flush(void)
- 	memset(l1d_flush_fallback_area, 0, l1d_size * 2);
- 
- 	for_each_possible_cpu(cpu) {
--		/*
--		 * The fallback flush is currently coded for 8-way
--		 * associativity. Different associativity is possible, but it
--		 * will be treated as 8-way and may not evict the lines as
--		 * effectively.
--		 *
--		 * 128 byte lines are mandatory.
--		 */
--		u64 c = l1d_size / 8;
--
- 		paca[cpu].rfi_flush_fallback_area = l1d_flush_fallback_area;
--		paca[cpu].l1d_flush_congruence = c;
--		paca[cpu].l1d_flush_sets = c / 128;
-+		paca[cpu].l1d_flush_size = l1d_size;
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e6e8b241d717..b4867b4d5a1e 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -507,6 +507,39 @@ static void __init find_and_init_phbs(void)
  	}
  }
  
++static void pseries_setup_rfi_flush(void)
++{
++	struct h_cpu_char_result result;
++	enum l1d_flush_type types;
++	bool enable;
++	long rc;
++
++	/* Enable by default */
++	enable = true;
++
++	rc = plpar_get_cpu_characteristics(&result);
++	if (rc == H_SUCCESS) {
++		types = L1D_FLUSH_NONE;
++
++		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
++			types |= L1D_FLUSH_MTTRIG;
++		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
++			types |= L1D_FLUSH_ORI;
++
++		/* Use fallback if nothing set in hcall */
++		if (types == L1D_FLUSH_NONE)
++			types = L1D_FLUSH_FALLBACK;
++
++		if (!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
++			enable = false;
++	} else {
++		/* Default to fallback if case hcall is not available */
++		types = L1D_FLUSH_FALLBACK;
++	}
++
++	setup_rfi_flush(types, enable);
++}
++
+ static void __init pSeries_setup_arch(void)
+ {
+ 	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
+@@ -523,7 +556,9 @@ static void __init pSeries_setup_arch(void)
+ 
+ 	fwnmi_init();
+ 
+-	/* By default, only probe PCI (can be overriden by rtas_pci) */
++	pseries_setup_rfi_flush();
++
++	/* By default, only probe PCI (can be overridden by rtas_pci) */
+ 	pci_add_flags(PCI_PROBE_ONLY);
+ 
+ 	/* Find and initialize PCI host bridges */
 -- 
 2.14.1
