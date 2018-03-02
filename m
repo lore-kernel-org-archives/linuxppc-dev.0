@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZf5RxkzF1gs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:46:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZg3VYtzF1lr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:46:03 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Alexander.Levin@microsoft.com
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org,
 	npiggin@gmail.com
-Subject: [PATCH v4.1 backport 11/15] powerpc/powernv: Check device-tree for
- RFI flush settings
-Date: Fri,  2 Mar 2018 15:45:45 +1100
-Message-Id: <20180302044549.14930-12-mpe@ellerman.id.au>
+Subject: [PATCH v4.1 backport 12/15] powerpc/64s: Allow control of RFI flush
+ via debugfs
+Date: Fri,  2 Mar 2018 15:45:46 +1100
+Message-Id: <20180302044549.14930-13-mpe@ellerman.id.au>
 In-Reply-To: <20180302044549.14930-1-mpe@ellerman.id.au>
 References: <20180302044549.14930-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,89 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Oliver O'Halloran <oohall@gmail.com>
+commit 236003e6b5443c45c18e613d2b0d776a9f87540e upstream.
 
-commit 6e032b350cd1fdb830f18f8320ef0e13b4e24094 upstream.
+Expose the state of the RFI flush (enabled/disabled) via debugfs, and
+allow it to be enabled/disabled at runtime.
 
-New device-tree properties are available which tell the hypervisor
-settings related to the RFI flush. Use them to determine the
-appropriate flush instruction to use, and whether the flush is
-required.
+eg: $ cat /sys/kernel/debug/powerpc/rfi_flush
+    1
+    $ echo 0 > /sys/kernel/debug/powerpc/rfi_flush
+    $ cat /sys/kernel/debug/powerpc/rfi_flush
+    0
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/powernv/setup.c | 49 ++++++++++++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
+ arch/powerpc/kernel/setup_64.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 20974478f8d0..e3c98361e6e4 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -38,14 +38,63 @@
- #include <asm/cputhreads.h>
- #include <asm/cpuidle.h>
- #include <asm/code-patching.h>
-+#include <asm/setup.h>
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 55d8da909db5..ec01a98a5978 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -38,6 +38,7 @@
+ #include <linux/hugetlb.h>
+ #include <linux/memory.h>
+ #include <linux/nmi.h>
++#include <linux/debugfs.h>
  
- #include "powernv.h"
- #include "subcore.h"
- 
-+static void pnv_setup_rfi_flush(void)
+ #include <asm/io.h>
+ #include <asm/kdump.h>
+@@ -896,5 +897,34 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ 	if (!no_rfi_flush)
+ 		rfi_flush_enable(enable);
+ }
++
++#ifdef CONFIG_DEBUG_FS
++static int rfi_flush_set(void *data, u64 val)
 +{
-+	struct device_node *np, *fw_features;
-+	enum l1d_flush_type type;
-+	int enable;
++	if (val == 1)
++		rfi_flush_enable(true);
++	else if (val == 0)
++		rfi_flush_enable(false);
++	else
++		return -EINVAL;
 +
-+	/* Default to fallback in case fw-features are not available */
-+	type = L1D_FLUSH_FALLBACK;
-+	enable = 1;
-+
-+	np = of_find_node_by_name(NULL, "ibm,opal");
-+	fw_features = of_get_child_by_name(np, "fw-features");
-+	of_node_put(np);
-+
-+	if (fw_features) {
-+		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
-+		if (np && of_property_read_bool(np, "enabled"))
-+			type = L1D_FLUSH_MTTRIG;
-+
-+		of_node_put(np);
-+
-+		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
-+		if (np && of_property_read_bool(np, "enabled"))
-+			type = L1D_FLUSH_ORI;
-+
-+		of_node_put(np);
-+
-+		/* Enable unless firmware says NOT to */
-+		enable = 2;
-+		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable--;
-+
-+		of_node_put(np);
-+
-+		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable--;
-+
-+		of_node_put(np);
-+		of_node_put(fw_features);
-+	}
-+
-+	setup_rfi_flush(type, enable > 0);
++	return 0;
 +}
 +
- static void __init pnv_setup_arch(void)
- {
- 	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
- 
-+	pnv_setup_rfi_flush();
++static int rfi_flush_get(void *data, u64 *val)
++{
++	*val = rfi_flush ? 1 : 0;
++	return 0;
++}
 +
- 	/* Initialize SMP */
- 	pnv_smp_init();
- 
++DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
++
++static __init int rfi_flush_debugfs_init(void)
++{
++	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
++	return 0;
++}
++device_initcall(rfi_flush_debugfs_init);
++#endif
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ #endif
 -- 
 2.14.1
