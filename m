@@ -1,22 +1,17 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zt72m3RmhzF1s0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 22:52:29 +1100 (AEDT)
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix guest time accounting with
- VIRT_CPU_ACCOUNTING_GEN
-To: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@ozlabs.org>,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20180302105156.19506-1-lvivier@redhat.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <ba4aa266-ce9e-cafc-d9bb-8a6686d9e97c@redhat.com>
-Date: Fri, 2 Mar 2018 12:52:24 +0100
-MIME-Version: 1.0
-In-Reply-To: <20180302105156.19506-1-lvivier@redhat.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zt7B86wMDzF1rc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 22:58:56 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC PATCH 7/10] powerpc/powernv: Use the security flags in
+ pnv_setup_rfi_flush()
+Date: Fri,  2 Mar 2018 22:58:43 +1100
+Message-Id: <20180302115846.12240-1-mpe@ellerman.id.au>
+In-Reply-To: <20180228145316.11347-1-mpe@ellerman.id.au>
+References: <20180228145316.11347-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/03/2018 11:51, Laurent Vivier wrote:
-> Since commit 8b24e69fc47e ("KVM: PPC: Book3S HV: Close race with testing
-> for signals on guest entry"), if CONFIG_VIRT_CPU_ACCOUNTING_GEN is set, the
-> guest time is not accounted to guest time and user time, but instead to
-> system time.
-> 
-> This is because guest_enter()/guest_exit() are called while interrupts
-> are disabled and the tick counter cannot be updated between them.
-> 
-> To fix that, move guest_exit() after local_irq_enable(), and as
-> guest_enter() is called with IRQ disabled, calls guest_enter_irqoff()
-> instead.
-> 
-> Fixes: 8b24e69fc47e
-> ("KVM: PPC: Book3S HV: Close race with testing for signals on guest entry")
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+Now that we have the security flags we can significantly simplify the
+code in pnv_setup_rfi_flush(), because we can use the flags instead of
+checking device tree properties and because the security flags have
+pessimistic defaults.
 
-Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/powernv/setup.c | 39 ++++++++--------------------------
+ 1 file changed, 9 insertions(+), 30 deletions(-)
 
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 89707354c2ef..8274c2807202 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -2885,7 +2885,7 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
->  	 */
->  	trace_hardirqs_on();
->  
-> -	guest_enter();
-> +	guest_enter_irqoff();
->  
->  	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
->  
-> @@ -2893,8 +2893,6 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
->  
->  	srcu_read_unlock(&vc->kvm->srcu, srcu_idx);
->  
-> -	guest_exit();
-> -
->  	trace_hardirqs_off();
->  	set_irq_happened(trap);
->  
-> @@ -2937,6 +2935,7 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
->  	kvmppc_set_host_core(pcpu);
->  
->  	local_irq_enable();
-> +	guest_exit();
->  
->  	/* Let secondaries go back to the offline loop */
->  	for (i = 0; i < controlled_threads; ++i) {
-> 
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 5f242b1bab01..8f3e7a84bbf5 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -99,11 +99,10 @@ static void pnv_setup_rfi_flush(void)
+ {
+ 	struct device_node *np, *fw_features;
+ 	enum l1d_flush_type type;
+-	int enable;
++	bool enable;
+ 
+ 	/* Default to fallback in case fw-features are not available */
+ 	type = L1D_FLUSH_FALLBACK;
+-	enable = 1;
+ 
+ 	np = of_find_node_by_name(NULL, "ibm,opal");
+ 	fw_features = of_get_child_by_name(np, "fw-features");
+@@ -111,40 +110,20 @@ static void pnv_setup_rfi_flush(void)
+ 
+ 	if (fw_features) {
+ 		init_fw_feat_flags(fw_features);
++		of_node_put(fw_features);
+ 
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
+ 			type = L1D_FLUSH_MTTRIG;
+ 
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
+ 			type = L1D_FLUSH_ORI;
+-
+-		of_node_put(np);
+-
+-		/* Enable unless firmware says NOT to */
+-		enable = 2;
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable = 0;
+-
+-		of_node_put(np);
+-		of_node_put(fw_features);
+ 	}
+ 
+-	setup_rfi_flush(type, enable > 0);
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
++		 (security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR)   || \
++		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
++
++	setup_rfi_flush(type, enable);
+ }
+ 
+ static void __init pnv_setup_arch(void)
+-- 
+2.14.1
