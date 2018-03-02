@@ -1,17 +1,27 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zt7BC3SMCzF1rc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 22:58:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zt7ZM67t4zF1k2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 23:16:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 10/10] powerpc/64s: Wire up cpu_show_spectre_v2()
-Date: Fri,  2 Mar 2018 22:58:46 +1100
-Message-Id: <20180302115846.12240-4-mpe@ellerman.id.au>
-In-Reply-To: <20180302115846.12240-1-mpe@ellerman.id.au>
-References: <20180228145316.11347-1-mpe@ellerman.id.au>
- <20180302115846.12240-1-mpe@ellerman.id.au>
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc: dts: replace 'linux,
+ stdout-path' with 'stdout-path'
+In-Reply-To: <CAL_JsqKn3hXaaYYef47afK+E=WUfZyfF6ejGD0vX7C8sNjhdFw@mail.gmail.com>
+References: <20180228224406.7049-1-robh@kernel.org>
+ <87606ga8bv.fsf@concordia.ellerman.id.au>
+ <CAL_JsqKn3hXaaYYef47afK+E=WUfZyfF6ejGD0vX7C8sNjhdFw@mail.gmail.com>
+Date: Fri, 02 Mar 2018 23:16:24 +1100
+Message-ID: <87k1uuwu3r.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a definition for cpu_show_spectre_v2() to override the generic
-version. This has several permuations, though in practice some may not
-occur we cater for any combination.
+Rob Herring <robh@kernel.org> writes:
 
-The most verbose is:
+> On Wed, Feb 28, 2018 at 7:33 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Rob Herring <robh@kernel.org> writes:
+>>
+>>> 'linux,stdout-path' has been deprecated for some time in favor of
+>>> 'stdout-path'. Now dtc will warn on occurrences of 'linux,stdout-path'.
+>>> Search and replace all the of occurrences with 'stdout-path'.
+>>
+>> This patch looks OK.
+>>
+>> But please remember that not all device trees are generated with dtc, we
+>> still have machines in the wild that have firmware which use
+>> "linux,stdout-path" and may never be updated.
+>
+> Absolutely. The core code still supports both.
 
-  Mitigation: Indirect branch serialisation (kernel only), Indirect
-  branch cache disabled, ori31 speculation barrier enabled
+Phew ;)
 
-We don't treat the ori31 speculation barrier as a mitigation on its
-own, because it has to be *used* by code in order to be a mitigation
-and we don't know if userspace is doing that. So if that's all we see
-we say:
+It has prompted us to look at various firmware pieces and some we can
+update to start using the new property or both. It's still going to be
+many years before we can actually remove support for linux,stdout-path
+though.
 
-  Vulnerable, ori31 speculation barrier enabled
+> The only scenario I could come up with is someone has an old
+> bootloader that only understands linux,stdout-path and modifies it and
+> they update the dtb. We may end up with both properties with
+> stdout-path taking preference.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/security.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+Yeah I think this is fairly safe, and in the unlikely case it does cause
+a problem we can always back the change out for an individual file.
 
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 0eace3cac818..2cee3dcd231b 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -58,3 +58,36 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, c
- 
- 	return sprintf(buf, "Vulnerable\n");
- }
-+
-+ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	bool bcs, ccd, ori;
-+	struct seq_buf s;
-+
-+	seq_buf_init(&s, buf, PAGE_SIZE - 1);
-+
-+	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
-+	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
-+	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
-+
-+	if (bcs || ccd) {
-+		seq_buf_printf(&s, "Mitigation: ");
-+
-+		if (bcs)
-+			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
-+
-+		if (bcs && ccd)
-+			seq_buf_printf(&s, ", ");
-+
-+		if (ccd)
-+			seq_buf_printf(&s, "Indirect branch cache disabled");
-+	} else
-+		seq_buf_printf(&s, "Vulnerable");
-+
-+	if (ori)
-+		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
-+
-+	seq_buf_printf(&s, "\n");
-+
-+	return s.len;
-+}
--- 
-2.14.1
+cheers
