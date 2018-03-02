@@ -1,30 +1,38 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-vk0-x22d.google.com (mail-vk0-x22d.google.com
- [IPv6:2607:f8b0:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jhogan@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ztKlH1TKmzF1tm
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2018 06:54:50 +1100 (AEDT)
-Received: by mail-vk0-x22d.google.com with SMTP id a63so6424675vkg.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Mar 2018 11:54:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ztNSW3744zF1sG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2018 08:57:15 +1100 (AEDT)
+Date: Fri, 2 Mar 2018 21:57:02 +0000
+From: James Hogan <jhogan@kernel.org>
+To: Deepa Dinamani <deepa.kernel@gmail.com>
+Cc: tglx@linutronix.de, john.stultz@linaro.org,
+ linux-kernel@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
+ acme@kernel.org, benh@kernel.crashing.org, borntraeger@de.ibm.com,
+ catalin.marinas@arm.com, cmetcalf@mellanox.com, cohuck@redhat.com,
+ davem@davemloft.net, deller@gmx.de, devel@driverdev.osuosl.org,
+ gerald.schaefer@de.ibm.com, gregkh@linuxfoundation.org,
+ heiko.carstens@de.ibm.com, hoeppner@linux.vnet.ibm.com,
+ hpa@zytor.com, jejb@parisc-linux.org, jwi@linux.vnet.ibm.com,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ mark.rutland@arm.com, mingo@redhat.com, mpe@ellerman.id.au,
+ oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
+ paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
+ rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
+ sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com,
+ will.deacon@arm.com, x86@kernel.org
+Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
+ compat_time.h
+Message-ID: <20180302215702.GD4197@saruman>
+References: <20180116021818.24791-1-deepa.kernel@gmail.com>
+ <20180116021818.24791-3-deepa.kernel@gmail.com>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <20180226084602.GR21977@gate.crashing.org>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-6-malat@debian.org>
- <55d52f37-c24d-c2da-43c6-73a55403d3b6@c-s.fr>
- <20180226084602.GR21977@gate.crashing.org>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 2 Mar 2018 20:54:27 +0100
-Message-ID: <CA+7wUsz7srOXwehLjuSn_SEgCUkGxu9bq6aOw5AeOaiiipBNtg@mail.gmail.com>
-Subject: Re: [PATCH 05/21] powerpc: Avoid comparison of unsigned long >= 0 in
- pfn_valid
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jslaby@suse.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="jL2BoiuKMElzg3CS"
+In-Reply-To: <20180116021818.24791-3-deepa.kernel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +42,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 26, 2018 at 9:46 AM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
-> On Mon, Feb 26, 2018 at 07:32:03AM +0100, Christophe LEROY wrote:
->> Le 25/02/2018 =C3=A0 18:22, Mathieu Malaterre a =C3=A9crit :
->> >-#define pfn_valid(pfn)              ((pfn) >=3D ARCH_PFN_OFFSET && (pf=
-n) <
->> >max_mapnr)
->> >+#define pfn_valid(pfn) \
->> >+            (((pfn) - ARCH_PFN_OFFSET) < (max_mapnr - ARCH_PFN_OFFSET)=
-)
->>
->> What will happen when ARCH_PFN_OFFSET is not nul and pfn is lower than
->> ARCH_PFN_OFFSET ?
->
-> It will work fine.
->
-> Say you are asking for  a <=3D x < b  so (in actual integers, no overflow=
-)
-> that is  0 <=3D x-a < b-a  and you also assume x-a overflows, so that we
-> are actually comparing  x-a+M < b-a  with M =3D 2**32 or such (the maximu=
-m
-> value in the unsigned integer type plus one).  This comparison is
-> obviously always false.
->
-> (It also works if b < a btw).
->
->
-Thanks Segher !
 
-Christophe does that clarify things or do you want me to update the
-commit message ?
+--jL2BoiuKMElzg3CS
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Jan 15, 2018 at 06:18:10PM -0800, Deepa Dinamani wrote:
+> All the current architecture specific defines for these
+> are the same. Refactor these common defines to a common
+> header file.
+>=20
+> The new common linux/compat_time.h is also useful as it
+> will eventually be used to hold all the defines that
+> are needed for compat time types that support non y2038
+> safe types. New architectures need not have to define these
+> new types as they will only use new y2038 safe syscalls.
+> This file can be deleted after y2038 when we stop supporting
+> non y2038 safe syscalls.
+
+=2E..
+
+>  arch/mips/include/asm/compat.h    | 11 -----------
+>  arch/mips/kernel/signal32.c       |  2 +-
+
+For MIPS:
+Acked-by: James Hogan <jhogan@kernel.org>
+
+Cheers
+James
+
+--jL2BoiuKMElzg3CS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAlqZyK0ACgkQbAtpk944
+dnriXA//fiy/M44auOl6H3L/Sttb1xadP44YPlJKIkOi6RRm+XDNJWeIyb2dB28g
+vkHkEqeW5OX0Yz+YmbMULh8EAl6TV42LSMUcRcDNmI3GjkArQIEQ7T1E7BiwukFd
+lclSwy3Fe9HwtZdLeKQuO+C8W4pZ0rUXZeQW+8A0TvNM1zAKInEKaAGXgxS7PcMs
+7pZBbOcIGBg9sTWFPhU4N63bfMn095wDXupegwflrlB1JSTvFktFxc2E6c0JmIwm
+ij9jNw3J/lUtGaMq2ynmbJQWr+/I1EFVe740bkdKYP2Q1ZdTybWR2FnnoP+cC6kF
+hS49c68Enp1mSirYIqRidTc8YLALwUFpdheUUky1VUPSjBWee2BqZ83VrshoMvkx
+DQTuUfxvlFdnCLF6xHl0Ock5g7QTzrne9rpvqGBge3sGp25RZ1RcJYAruNJ36u+C
+9VP1Y284Sz40x76q77yLxC5rT3inAHQYO2c+ob/BnrKoSrMxfDrWYea1X1yh+x80
+6qyZomlmDEu7OREVX2dnpkIG/0j2GvhQBtjYHAHjvTkmHho80Fe/GBZhObkQjnoW
+xgm1BLteveq/IEGK1tY2MEqjNFgUjQn1/r72KrP1b7PMtmwHjkyaXljB/dEv5TI3
+tEttVw3wzqGUWmbvyj7KZcpv/BQUx/Otrqh/zGMnC30U53Lzrzw=
+=PkCk
+-----END PGP SIGNATURE-----
+
+--jL2BoiuKMElzg3CS--
