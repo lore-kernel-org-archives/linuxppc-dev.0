@@ -1,17 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZY4qY0zF1XC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:45:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zsxZd2tdVzF1bM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Mar 2018 15:46:01 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Alexander.Levin@microsoft.com
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org,
 	npiggin@gmail.com
-Subject: [PATCH v4.1 backport 00/15] powerpc stable backports for v4.1
-Date: Fri,  2 Mar 2018 15:45:34 +1100
-Message-Id: <20180302044549.14930-1-mpe@ellerman.id.au>
+Subject: [PATCH v4.1 backport 06/15] powerpc/64s: Convert slb_miss_common to
+ use RFI_TO_USER/KERNEL
+Date: Fri,  2 Mar 2018 15:45:40 +1100
+Message-Id: <20180302044549.14930-7-mpe@ellerman.id.au>
+In-Reply-To: <20180302044549.14930-1-mpe@ellerman.id.au>
+References: <20180302044549.14930-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,9 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sasha,
+From: Nicholas Piggin <npiggin@gmail.com>
 
-This is a backport to v4.1 of the RFI flush series that went upstream recently.
-There's also a few other commits I noticed had not made it to v4.1.
+commit c7305645eb0c1621351cfc104038831ae87c0053 upstream.
 
-cheers
+In the SLB miss handler we may be returning to user or kernel. We need
+to add a check early on and save the result in the cr4 register, and
+then we bifurcate the return path based on that.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+[mpe: Backport to 4.4 based on patch from Balbir]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 591efc03f80d..c7dfd67c14da 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1511,6 +1511,8 @@ slb_miss_realmode:
+ 
+ 	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+ 	beq-	2f
++	andi.	r10,r12,MSR_PR	/* check for user mode (PR != 0) */
++	bne	1f
+ 
+ .machine	push
+ .machine	"power4"
+@@ -1524,7 +1526,23 @@ slb_miss_realmode:
+ 	ld	r11,PACA_EXSLB+EX_R11(r13)
+ 	ld	r12,PACA_EXSLB+EX_R12(r13)
+ 	ld	r13,PACA_EXSLB+EX_R13(r13)
+-	rfid
++	RFI_TO_KERNEL
++	b	.	/* prevent speculative execution */
++
++1:
++.machine	push
++.machine	"power4"
++	mtcrf	0x80,r9
++	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
++.machine	pop
++
++	RESTORE_PPR_PACA(PACA_EXSLB, r9)
++	ld	r9,PACA_EXSLB+EX_R9(r13)
++	ld	r10,PACA_EXSLB+EX_R10(r13)
++	ld	r11,PACA_EXSLB+EX_R11(r13)
++	ld	r12,PACA_EXSLB+EX_R12(r13)
++	ld	r13,PACA_EXSLB+EX_R13(r13)
++	RFI_TO_USER
+ 	b	.	/* prevent speculative execution */
+ 
+ 2:	mfspr	r11,SPRN_SRR0
+@@ -1533,7 +1551,7 @@ slb_miss_realmode:
+ 	mtspr	SPRN_SRR0,r10
+ 	ld	r10,PACAKMSR(r13)
+ 	mtspr	SPRN_SRR1,r10
+-	rfid
++	RFI_TO_KERNEL
+ 	b	.
+ 
+ unrecov_slb:
+-- 
+2.14.1
