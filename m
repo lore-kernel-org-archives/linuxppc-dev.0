@@ -1,10 +1,10 @@
 Return-Path: <Alexander.Levin@microsoft.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0118.outbound.protection.outlook.com [104.47.33.118])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0124.outbound.protection.outlook.com [104.47.37.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zv1985DL6zDrL8
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Mar 2018 09:31:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zv1K20k2TzF0TK
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Mar 2018 09:37:57 +1100 (AEDT)
 From: Sasha Levin <Alexander.Levin@microsoft.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "stable@vger.kernel.org" <stable@vger.kernel.org>
@@ -14,12 +14,12 @@ CC: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Ananth N
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Arnaldo
  Carvalho de Melo <acme@redhat.com>, Sasha Levin
  <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL for 4.9 005/219] kretprobes: Ensure probe location is
+Subject: [PATCH AUTOSEL for 4.4 002/115] kretprobes: Ensure probe location is
  at function entry
-Date: Sat, 3 Mar 2018 22:27:58 +0000
-Message-ID: <20180303222716.26640-5-alexander.levin@microsoft.com>
-References: <20180303222716.26640-1-alexander.levin@microsoft.com>
-In-Reply-To: <20180303222716.26640-1-alexander.levin@microsoft.com>
+Date: Sat, 3 Mar 2018 22:30:48 +0000
+Message-ID: <20180303223010.27106-2-alexander.levin@microsoft.com>
+References: <20180303223010.27106-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180303223010.27106-1-alexander.levin@microsoft.com>
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -72,7 +72,7 @@ index e23392517db9..56a998f34bdd 100644
  extern bool within_kprobe_blacklist(unsigned long addr);
 =20
 diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index a1a07cf1101f..2ede39e4227f 100644
+index 695763516908..f6232bbbc0e3 100644
 --- a/kernel/kprobes.c
 +++ b/kernel/kprobes.c
 @@ -1834,12 +1834,25 @@ static int pre_handler_kretprobe(struct kprobe *p, =
