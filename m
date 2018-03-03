@@ -1,10 +1,10 @@
 Return-Path: <Alexander.Levin@microsoft.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0124.outbound.protection.outlook.com [104.47.37.124])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0111.outbound.protection.outlook.com [104.47.36.111])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zv1K20k2TzF0TK
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Mar 2018 09:37:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zv1NW5gsfzF097
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Mar 2018 09:40:59 +1100 (AEDT)
 From: Sasha Levin <Alexander.Levin@microsoft.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "stable@vger.kernel.org" <stable@vger.kernel.org>
@@ -14,12 +14,12 @@ CC: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Ananth N
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Arnaldo
  Carvalho de Melo <acme@redhat.com>, Sasha Levin
  <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL for 4.4 002/115] kretprobes: Ensure probe location is
+Subject: [PATCH AUTOSEL for 3.18 02/63] kretprobes: Ensure probe location is
  at function entry
-Date: Sat, 3 Mar 2018 22:30:48 +0000
-Message-ID: <20180303223010.27106-2-alexander.levin@microsoft.com>
-References: <20180303223010.27106-1-alexander.levin@microsoft.com>
-In-Reply-To: <20180303223010.27106-1-alexander.levin@microsoft.com>
+Date: Sat, 3 Mar 2018 22:33:08 +0000
+Message-ID: <20180303223228.27323-2-alexander.levin@microsoft.com>
+References: <20180303223228.27323-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180303223228.27323-1-alexander.levin@microsoft.com>
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -60,7 +60,7 @@ Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
  2 files changed, 14 insertions(+)
 
 diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index e23392517db9..56a998f34bdd 100644
+index 8c0ff78ff45a..1b19416203f0 100644
 --- a/include/linux/kprobes.h
 +++ b/include/linux/kprobes.h
 @@ -266,6 +266,7 @@ extern int arch_init_kprobes(void);
@@ -69,13 +69,13 @@ index e23392517db9..56a998f34bdd 100644
  extern bool arch_within_kprobe_blacklist(unsigned long addr);
 +extern bool arch_function_offset_within_entry(unsigned long offset);
 =20
- extern bool within_kprobe_blacklist(unsigned long addr);
-=20
+ struct kprobe_insn_cache {
+ 	struct mutex mutex;
 diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 695763516908..f6232bbbc0e3 100644
+index 0d2f0e7c7605..12d069a3d6a8 100644
 --- a/kernel/kprobes.c
 +++ b/kernel/kprobes.c
-@@ -1834,12 +1834,25 @@ static int pre_handler_kretprobe(struct kprobe *p, =
+@@ -1823,12 +1823,25 @@ static int pre_handler_kretprobe(struct kprobe *p, =
 struct pt_regs *regs)
  }
  NOKPROBE_SYMBOL(pre_handler_kretprobe);
