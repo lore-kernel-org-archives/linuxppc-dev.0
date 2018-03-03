@@ -1,28 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ztdWw36JtzF1nx
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2018 18:46:04 +1100 (AEDT)
-Subject: Re: [PATCH 05/21] powerpc: Avoid comparison of unsigned long >= 0 in
- pfn_valid
-To: Mathieu Malaterre <malat@debian.org>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
- Jiri Slaby <jslaby@suse.com>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-6-malat@debian.org>
- <55d52f37-c24d-c2da-43c6-73a55403d3b6@c-s.fr>
- <20180226084602.GR21977@gate.crashing.org>
- <CA+7wUsz7srOXwehLjuSn_SEgCUkGxu9bq6aOw5AeOaiiipBNtg@mail.gmail.com>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <298c9ecc-831b-4d70-b86c-f586a319a133@c-s.fr>
-Date: Sat, 3 Mar 2018 08:45:51 +0100
-MIME-Version: 1.0
-In-Reply-To: <CA+7wUsz7srOXwehLjuSn_SEgCUkGxu9bq6aOw5AeOaiiipBNtg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ztjL05WLQzF1kc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2018 21:37:44 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w239JtlR111796
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Mar 2018 04:24:12 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gfpwqu53q-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Mar 2018 04:24:12 -0500
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Sat, 3 Mar 2018 09:24:11 -0000
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/mm: Drop the function native_register_proc_table()
+Date: Sat,  3 Mar 2018 14:54:02 +0530
+Message-Id: <20180303092402.6032-1-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is left over from the segment table implementation and not getting
+called from any where now. Hence just drop it.
 
-
-Le 02/03/2018 à 20:54, Mathieu Malaterre a écrit :
-> On Mon, Feb 26, 2018 at 9:46 AM, Segher Boessenkool
-> <segher@kernel.crashing.org> wrote:
->> On Mon, Feb 26, 2018 at 07:32:03AM +0100, Christophe LEROY wrote:
->>> Le 25/02/2018 à 18:22, Mathieu Malaterre a écrit :
->>>> -#define pfn_valid(pfn)              ((pfn) >= ARCH_PFN_OFFSET && (pfn) <
->>>> max_mapnr)
->>>> +#define pfn_valid(pfn) \
->>>> +            (((pfn) - ARCH_PFN_OFFSET) < (max_mapnr - ARCH_PFN_OFFSET))
->>>
->>> What will happen when ARCH_PFN_OFFSET is not nul and pfn is lower than
->>> ARCH_PFN_OFFSET ?
->>
->> It will work fine.
->>
->> Say you are asking for  a <= x < b  so (in actual integers, no overflow)
->> that is  0 <= x-a < b-a  and you also assume x-a overflows, so that we
->> are actually comparing  x-a+M < b-a  with M = 2**32 or such (the maximum
->> value in the unsigned integer type plus one).  This comparison is
->> obviously always false.
->>
->> (It also works if b < a btw).
->>
->>
-> Thanks Segher !
-> 
-> Christophe does that clarify things or do you want me to update the
-> commit message ?
-> 
-
-No it is fine for me.
-
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
+Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+RFC: http://patchwork.ozlabs.org/patch/857937/
+
+ arch/powerpc/mm/hash_native_64.c | 15 ---------------
+ 1 file changed, 15 deletions(-)
+
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index a0675e91ad7d..993842f1ed60 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -852,18 +852,6 @@ static void native_flush_hash_range(unsigned long number, int local)
+ 	local_irq_restore(flags);
+ }
+ 
+-static int native_register_proc_table(unsigned long base, unsigned long page_size,
+-				      unsigned long table_size)
+-{
+-	unsigned long patb1 = base << 25; /* VSID */
+-
+-	patb1 |= (page_size << 5);  /* sllp */
+-	patb1 |= table_size;
+-
+-	partition_tb->patb1 = cpu_to_be64(patb1);
+-	return 0;
+-}
+-
+ void __init hpte_init_native(void)
+ {
+ 	mmu_hash_ops.hpte_invalidate	= native_hpte_invalidate;
+@@ -875,7 +863,4 @@ void __init hpte_init_native(void)
+ 	mmu_hash_ops.hpte_clear_all	= native_hpte_clear;
+ 	mmu_hash_ops.flush_hash_range = native_flush_hash_range;
+ 	mmu_hash_ops.hugepage_invalidate   = native_hugepage_invalidate;
+-
+-	if (cpu_has_feature(CPU_FTR_ARCH_300))
+-		register_process_table = native_register_proc_table;
+ }
+-- 
+2.11.0
