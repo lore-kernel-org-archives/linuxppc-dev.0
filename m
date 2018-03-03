@@ -1,38 +1,23 @@
-Return-Path: <jhogan@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ztNSW3744zF1sG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2018 08:57:15 +1100 (AEDT)
-Date: Fri, 2 Mar 2018 21:57:02 +0000
-From: James Hogan <jhogan@kernel.org>
-To: Deepa Dinamani <deepa.kernel@gmail.com>
-Cc: tglx@linutronix.de, john.stultz@linaro.org,
- linux-kernel@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
- acme@kernel.org, benh@kernel.crashing.org, borntraeger@de.ibm.com,
- catalin.marinas@arm.com, cmetcalf@mellanox.com, cohuck@redhat.com,
- davem@davemloft.net, deller@gmx.de, devel@driverdev.osuosl.org,
- gerald.schaefer@de.ibm.com, gregkh@linuxfoundation.org,
- heiko.carstens@de.ibm.com, hoeppner@linux.vnet.ibm.com,
- hpa@zytor.com, jejb@parisc-linux.org, jwi@linux.vnet.ibm.com,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- mark.rutland@arm.com, mingo@redhat.com, mpe@ellerman.id.au,
- oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
- paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
- rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
- sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
- sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com,
- will.deacon@arm.com, x86@kernel.org
-Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
- compat_time.h
-Message-ID: <20180302215702.GD4197@saruman>
-References: <20180116021818.24791-1-deepa.kernel@gmail.com>
- <20180116021818.24791-3-deepa.kernel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ztdTt49RDzF1n6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Mar 2018 18:44:16 +1100 (AEDT)
+Subject: Re: [PATCH v2 06/21] powerpc: Avoid comparison of unsigned long >= 0
+ in __access_ok
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20180225172236.29650-7-malat@debian.org>
+ <20180302195051.4472-1-malat@debian.org>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <831294da-9605-d235-8d5e-57c744753800@c-s.fr>
+Date: Sat, 3 Mar 2018 08:44:02 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jL2BoiuKMElzg3CS"
-In-Reply-To: <20180116021818.24791-3-deepa.kernel@gmail.com>
+In-Reply-To: <20180302195051.4472-1-malat@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,54 +28,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---jL2BoiuKMElzg3CS
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 15, 2018 at 06:18:10PM -0800, Deepa Dinamani wrote:
-> All the current architecture specific defines for these
-> are the same. Refactor these common defines to a common
-> header file.
->=20
-> The new common linux/compat_time.h is also useful as it
-> will eventually be used to hold all the defines that
-> are needed for compat time types that support non y2038
-> safe types. New architectures need not have to define these
-> new types as they will only use new y2038 safe syscalls.
-> This file can be deleted after y2038 when we stop supporting
-> non y2038 safe syscalls.
+Le 02/03/2018 à 20:50, Mathieu Malaterre a écrit :
+> Rewrite function-like macro into regular static inline function to avoid a
+> warning during macro expansion.
+> Fix warning (treated as error in W=1):
+> 
+>    CC      arch/powerpc/kernel/signal_32.o
+> In file included from ./include/linux/uaccess.h:14:0,
+>                   from ./include/asm-generic/termios-base.h:8,
+>                   from ./arch/powerpc/include/asm/termios.h:20,
+>                   from ./include/uapi/linux/termios.h:6,
+>                   from ./include/linux/tty.h:7,
+>                   from arch/powerpc/kernel/signal_32.c:36:
+> ./include/asm-generic/termios-base.h: In function ‘user_termio_to_kernel_termios’:
+> ./arch/powerpc/include/asm/uaccess.h:52:35: error: comparison of unsigned expression >= 0 is always true [-Werror=type-limits]
+>     (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
+>                                     ^
+> ./arch/powerpc/include/asm/uaccess.h:58:3: note: in expansion of macro ‘__access_ok’
+>     __access_ok((__force unsigned long)(addr), (size), get_fs()))
+>     ^~~~~~~~~~~
+> ./arch/powerpc/include/asm/uaccess.h:262:6: note: in expansion of macro ‘access_ok’
+>    if (access_ok(VERIFY_READ, __gu_addr, (size)))   \
+>        ^~~~~~~~~
+> ./arch/powerpc/include/asm/uaccess.h:80:2: note: in expansion of macro ‘__get_user_check’
+>    __get_user_check((x), (ptr), sizeof(*(ptr)))
+>    ^~~~~~~~~~~~~~~~
+> ./include/asm-generic/termios-base.h:36:6: note: in expansion of macro ‘get_user’
+>    if (get_user(termios->c_line, &termio->c_line) < 0)
+>        ^~~~~~~~
+> [...]
+> cc1: all warnings being treated as errors
+> 
+> Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
 
-=2E..
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
->  arch/mips/include/asm/compat.h    | 11 -----------
->  arch/mips/kernel/signal32.c       |  2 +-
+> ---
+>   arch/powerpc/include/asm/uaccess.h | 10 +++++++---
+>   1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+> index 51bfeb8777f0..a62ee663b2c8 100644
+> --- a/arch/powerpc/include/asm/uaccess.h
+> +++ b/arch/powerpc/include/asm/uaccess.h
+> @@ -47,9 +47,13 @@
+>   
+>   #else
+>   
+> -#define __access_ok(addr, size, segment)	\
+> -	(((addr) <= (segment).seg) &&		\
+> -	 (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
+> +static inline int __access_ok(unsigned long addr, unsigned long size,
+> +			mm_segment_t seg)
+> +{
+> +	if (addr > seg.seg)
+> +		return 0;
+> +	return (size == 0 || size - 1 <= seg.seg - addr);
+> +}
+>   
+>   #endif
+>   
+> 
 
-For MIPS:
-Acked-by: James Hogan <jhogan@kernel.org>
-
-Cheers
-James
-
---jL2BoiuKMElzg3CS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAlqZyK0ACgkQbAtpk944
-dnriXA//fiy/M44auOl6H3L/Sttb1xadP44YPlJKIkOi6RRm+XDNJWeIyb2dB28g
-vkHkEqeW5OX0Yz+YmbMULh8EAl6TV42LSMUcRcDNmI3GjkArQIEQ7T1E7BiwukFd
-lclSwy3Fe9HwtZdLeKQuO+C8W4pZ0rUXZeQW+8A0TvNM1zAKInEKaAGXgxS7PcMs
-7pZBbOcIGBg9sTWFPhU4N63bfMn095wDXupegwflrlB1JSTvFktFxc2E6c0JmIwm
-ij9jNw3J/lUtGaMq2ynmbJQWr+/I1EFVe740bkdKYP2Q1ZdTybWR2FnnoP+cC6kF
-hS49c68Enp1mSirYIqRidTc8YLALwUFpdheUUky1VUPSjBWee2BqZ83VrshoMvkx
-DQTuUfxvlFdnCLF6xHl0Ock5g7QTzrne9rpvqGBge3sGp25RZ1RcJYAruNJ36u+C
-9VP1Y284Sz40x76q77yLxC5rT3inAHQYO2c+ob/BnrKoSrMxfDrWYea1X1yh+x80
-6qyZomlmDEu7OREVX2dnpkIG/0j2GvhQBtjYHAHjvTkmHho80Fe/GBZhObkQjnoW
-xgm1BLteveq/IEGK1tY2MEqjNFgUjQn1/r72KrP1b7PMtmwHjkyaXljB/dEv5TI3
-tEttVw3wzqGUWmbvyj7KZcpv/BQUx/Otrqh/zGMnC30U53Lzrzw=
-=PkCk
------END PGP SIGNATURE-----
-
---jL2BoiuKMElzg3CS--
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
