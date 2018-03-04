@@ -1,20 +1,20 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
- [IPv6:2607:f8b0:400c:c05::244])
+Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
+ [IPv6:2607:f8b0:400c:c08::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvbjm1fNYzDrvS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 08:27:55 +1100 (AEDT)
-Received: by mail-vk0-x244.google.com with SMTP id s1so8639194vke.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 13:27:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvblD3RwMzF07t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 08:29:12 +1100 (AEDT)
+Received: by mail-ua0-x242.google.com with SMTP id n24so1896990ual.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 13:29:12 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20180304173132.19677-1-vaibhav@linux.vnet.ibm.com>
-References: <20180304173132.19677-1-vaibhav@linux.vnet.ibm.com>
+In-Reply-To: <20180304173025.19520-1-vaibhav@linux.vnet.ibm.com>
+References: <20180304173025.19520-1-vaibhav@linux.vnet.ibm.com>
 From: Balbir Singh <bsingharora@gmail.com>
-Date: Mon, 5 Mar 2018 08:27:52 +1100
-Message-ID: <CAKTCnznOU=8W2up5PQFRQHbmCZvht_8Vmt5F_gb1yaZEKQDTWw@mail.gmail.com>
-Subject: Re: [PATCH] xmon: Clear all breakpoints when xmon is disabled via
- debugfs
+Date: Mon, 5 Mar 2018 08:29:09 +1100
+Message-ID: <CAKTCnzmdB3g0Kh67Lo7HQUp=-qRROaq_3hh8dLnDdSan3guFYw@mail.gmail.com>
+Subject: Re: [PATCH v2] xmon: Setup xmon debugger hooks when first break-point
+ is set
 To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
@@ -34,19 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 5, 2018 at 4:31 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> wrote:
-> Presently when xmon is disabled by debugfs any existing
-> instruction/data-access breakpoints set are not disabled. This may
-> lead to kernel oops when those breakpoints are hit as the necessary
-> debugger hooks aren't installed.
+On Mon, Mar 5, 2018 at 4:30 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> wrote:
+> Presently sysrq key for xmon('x') is registered during kernel init
+> irrespective of the value of kernel param 'xmon'. Thus xmon is enabled
+> even if 'xmon=off' is passed on the kernel command line. However this
+> doesn't enable the kernel debugger hooks needed for instruction or data
+> breakpoints. Thus when a break-point is hit with xmon=off a kernel oops
+> of the form below is reported:
 >
-> Hence this patch introduces a new function named clear_all_bpt()
-> which is called when xmon is disabled via debugfs. The function will
-> unpatch/clear all the trap and ciabr/dab based breakpoints.
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> < snip >
+> Trace/breakpoint trap
+>
+> To fix this the patch checks and enables debugger hooks when an
+> instruction or data break-point is set via xmon console.
 >
 > Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 > ---
-
 Reviewed-by: Balbir Singh <bsingharora@gmail.com>
-
-Balbir
