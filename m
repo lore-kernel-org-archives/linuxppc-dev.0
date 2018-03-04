@@ -1,22 +1,25 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvdnF0dcMzDrTf
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 10:01:05 +1100 (AEDT)
-Date: Mon, 5 Mar 2018 09:49:27 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvdnD68XKzDrSy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 10:01:04 +1100 (AEDT)
+Date: Mon, 5 Mar 2018 10:01:01 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Laurent Vivier <lvivier@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>,
- Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix guest time accounting with
- VIRT_CPU_ACCOUNTING_GEN
-Message-ID: <20180304224927.GB14569@fergus.ozlabs.ibm.com>
-References: <20180302105156.19506-1-lvivier@redhat.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
+ save/restore overhead
+Message-ID: <20180304230101.GC14569@fergus.ozlabs.ibm.com>
+References: <20171117140807.22105-1-npiggin@gmail.com>
+ <20171117140807.22105-4-npiggin@gmail.com>
+ <20180228183439.GC20168@drishya.in.ibm.com>
+ <20180301215734.6602315e@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180302105156.19506-1-lvivier@redhat.com>
+In-Reply-To: <20180301215734.6602315e@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 02, 2018 at 11:51:56AM +0100, Laurent Vivier wrote:
-> Since commit 8b24e69fc47e ("KVM: PPC: Book3S HV: Close race with testing
-> for signals on guest entry"), if CONFIG_VIRT_CPU_ACCOUNTING_GEN is set, the
-> guest time is not accounted to guest time and user time, but instead to
-> system time.
+On Thu, Mar 01, 2018 at 09:57:34PM +1000, Nicholas Piggin wrote:
+> On Thu, 1 Mar 2018 00:04:39 +0530
+> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 > 
-> This is because guest_enter()/guest_exit() are called while interrupts
-> are disabled and the tick counter cannot be updated between them.
+> > * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:07]:
+[snip]
+> > > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> > > index a921d5428d76..610b1637c16f 100644
+> > > --- a/arch/powerpc/platforms/powernv/idle.c
+> > > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > > @@ -621,7 +621,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+> > >  			continue;
+> > >  		}
+> > > 
+> > > -		if (max_residency_ns < residency_ns[i]) {
+> > > +		/*
+> > > +		 * Deepest stop for unplug must be PSSCR[EC]=1 (wakeup at
+> > > +		 * 0x100.
+> > > +		 */
+> > > +		if ((max_residency_ns < residency_ns[i])&&
+> > > +				(psscr_val[i] & PSSCR_EC)) {
+> > >  			max_residency_ns = residency_ns[i];
+> > >  			pnv_deepest_stop_psscr_val = psscr_val[i];
+> > >  			pnv_deepest_stop_psscr_mask = psscr_mask[i];  
+> > 
+> > If firmware did not provide any ESL=EC=1 state, we can still leave
+> > threads in stop ESL=0 state.  This is just a corner case or random
+> > test scenario.  Why do we want to enforce that offline cpus really use
+> > a ESL=0 state or just spin? 
 > 
-> To fix that, move guest_exit() after local_irq_enable(), and as
-> guest_enter() is called with IRQ disabled, calls guest_enter_irqoff()
-> instead.
+> It's because power9_offline_stop only has cases for EC=ESL=1
+> states now.
 > 
-> Fixes: 8b24e69fc47e
-> ("KVM: PPC: Book3S HV: Close race with testing for signals on guest entry")
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+> It actually looks like EC=ESL=0 unplug today is broken KVM, because
+> the wakeup side does not check HWTHREAD_REQ, and yet they do set
+> HWTHREAD_IN_IDLE. That would probably hang in KVM if we run with
+> dependent threads, wouldn't it?
 
-Thanks, applied to my kvm-ppc-fixes branch.
+Right.  KVM with indep_threads_mode=N is broken at the moment if you
+run with powersave=off or if firmware provides no stop states with
+EC=ESL=1.  I'm not sure what's the best way to fix that.
+
+> I think banning it for now should be okay.
+
+Banning what exactly?
 
 Paul.
