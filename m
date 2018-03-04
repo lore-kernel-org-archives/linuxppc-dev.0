@@ -1,23 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <deller@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvYT82SCwzF07g
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 06:46:50 +1100 (AEDT)
-Subject: Re: [PATCH 05/21] powerpc: Avoid comparison of unsigned long >= 0 in
- pfn_valid
-To: Michael Ellerman <mpe@ellerman.id.au>, Mathieu Malaterre <malat@debian.org>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jiri Slaby <jslaby@suse.com>, linuxppc-dev@lists.ozlabs.org
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-6-malat@debian.org>
- <87lgf8gley.fsf@concordia.ellerman.id.au>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <8be155ab-ec2c-2b1e-89a2-02f8e9f0d0ba@c-s.fr>
-Date: Sun, 4 Mar 2018 20:46:44 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvZzM52cnzF08Z
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 07:54:39 +1100 (AEDT)
+Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
+ compat_time.h
+To: Deepa Dinamani <deepa.kernel@gmail.com>, tglx@linutronix.de,
+ john.stultz@linaro.org
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
+ acme@kernel.org, benh@kernel.crashing.org, borntraeger@de.ibm.com,
+ catalin.marinas@arm.com, cmetcalf@mellanox.com, cohuck@redhat.com,
+ davem@davemloft.net, devel@driverdev.osuosl.org, gerald.schaefer@de.ibm.com,
+ gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com,
+ hoeppner@linux.vnet.ibm.com, hpa@zytor.com, jejb@parisc-linux.org,
+ jwi@linux.vnet.ibm.com, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, mark.rutland@arm.com, mingo@redhat.com,
+ mpe@ellerman.id.au, oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
+ paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
+ rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
+ sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com, will.deacon@arm.com,
+ x86@kernel.org
+References: <20180116021818.24791-1-deepa.kernel@gmail.com>
+ <20180116021818.24791-3-deepa.kernel@gmail.com>
+From: Helge Deller <deller@gmx.de>
+Message-ID: <e417db45-d400-3513-3897-7aefa9889711@gmx.de>
+Date: Sun, 4 Mar 2018 21:45:54 +0100
 MIME-Version: 1.0
-In-Reply-To: <87lgf8gley.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20180116021818.24791-3-deepa.kernel@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +40,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 04/03/2018 à 11:55, Michael Ellerman a écrit :
-> Mathieu Malaterre <malat@debian.org> writes:
+On 16.01.2018 03:18, Deepa Dinamani wrote:
+> All the current architecture specific defines for these
+> are the same. Refactor these common defines to a common
+> header file.
 > 
->> Rewrite comparison since all values compared are of type `unsigned long`.
->>
->> Fix a warning (treated as error in W=1):
->>
->>    CC      arch/powerpc/kernel/irq.o
->> In file included from ./include/linux/bug.h:5:0,
->>                   from ./include/linux/cpumask.h:13,
->>                   from ./include/linux/smp.h:13,
->>                   from ./include/linux/kernel_stat.h:5,
->>                   from arch/powerpc/kernel/irq.c:35:
->> ./include/linux/dma-mapping.h: In function ‘dma_map_resource’:
->> ./arch/powerpc/include/asm/page.h:129:32: error: comparison of unsigned expression >= 0 is always true [-Werror=type-limits]
->>   #define pfn_valid(pfn)  ((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
->>                                  ^
->> Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->> ---
->>   arch/powerpc/include/asm/page.h | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
->> index 8da5d4c1cab2..19dea64e7ed2 100644
->> --- a/arch/powerpc/include/asm/page.h
->> +++ b/arch/powerpc/include/asm/page.h
->> @@ -126,7 +126,8 @@ extern long long virt_phys_offset;
->>   
->>   #ifdef CONFIG_FLATMEM
->>   #define ARCH_PFN_OFFSET		((unsigned long)(MEMORY_START >> PAGE_SHIFT))
->> -#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
->> +#define pfn_valid(pfn) \
->> +		(((pfn) - ARCH_PFN_OFFSET) < (max_mapnr - ARCH_PFN_OFFSET))
-> 
-> I'm not a big fan of this one, because the original code is *far* more
-> obvious as to what it's doing.
-> 
-> I'm not sure if we can make this one a static inline, or whether that
-> would help, but it would be worth investigating.
-> 
+> The new common linux/compat_time.h is also useful as it
+> will eventually be used to hold all the defines that
+> are needed for compat time types that support non y2038
+> safe types. New architectures need not have to define these
+> new types as they will only use new y2038 safe syscalls.
+> This file can be deleted after y2038 when we stop supporting
+> non y2038 safe syscalls.
 
-The following seems to give a good result:
+For parisc:
 
-diff --git a/arch/powerpc/include/asm/page.h 
-b/arch/powerpc/include/asm/page.h
-index 8da5d4c1cab2..6f74938483b7 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -126,7 +126,15 @@ extern long long virt_phys_offset;
-
-  #ifdef CONFIG_FLATMEM
-  #define ARCH_PFN_OFFSET		((unsigned long)(MEMORY_START >> PAGE_SHIFT))
--#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
-+#ifndef __ASSEMBLY__
-+extern unsigned long max_mapnr;
-+static inline bool pfn_valid(unsigned long pfn)
-+{
-+	unsigned long min_pfn = ARCH_PFN_OFFSET;
-+
-+	return pfn >= min_pfn && pfn < max_mapnr;
-+}
-+#endif
-  #endif
-
-  #define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
-
-
-Christophe
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+Acked-by: Helge Deller <deller@gmx.de> # parisc
