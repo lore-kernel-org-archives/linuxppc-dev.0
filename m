@@ -1,36 +1,30 @@
-Return-Path: <deller@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
+ [IPv6:2607:f8b0:400c:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvZzM52cnzF08Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 07:54:39 +1100 (AEDT)
-Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
- compat_time.h
-To: Deepa Dinamani <deepa.kernel@gmail.com>, tglx@linutronix.de,
- john.stultz@linaro.org
-Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
- acme@kernel.org, benh@kernel.crashing.org, borntraeger@de.ibm.com,
- catalin.marinas@arm.com, cmetcalf@mellanox.com, cohuck@redhat.com,
- davem@davemloft.net, devel@driverdev.osuosl.org, gerald.schaefer@de.ibm.com,
- gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com,
- hoeppner@linux.vnet.ibm.com, hpa@zytor.com, jejb@parisc-linux.org,
- jwi@linux.vnet.ibm.com, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, mark.rutland@arm.com, mingo@redhat.com,
- mpe@ellerman.id.au, oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
- paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
- rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
- sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
- sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com, will.deacon@arm.com,
- x86@kernel.org
-References: <20180116021818.24791-1-deepa.kernel@gmail.com>
- <20180116021818.24791-3-deepa.kernel@gmail.com>
-From: Helge Deller <deller@gmx.de>
-Message-ID: <e417db45-d400-3513-3897-7aefa9889711@gmx.de>
-Date: Sun, 4 Mar 2018 21:45:54 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvbjm1fNYzDrvS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 08:27:55 +1100 (AEDT)
+Received: by mail-vk0-x244.google.com with SMTP id s1so8639194vke.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 13:27:55 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20180116021818.24791-3-deepa.kernel@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180304173132.19677-1-vaibhav@linux.vnet.ibm.com>
+References: <20180304173132.19677-1-vaibhav@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 5 Mar 2018 08:27:52 +1100
+Message-ID: <CAKTCnznOU=8W2up5PQFRQHbmCZvht_8Vmt5F_gb1yaZEKQDTWw@mail.gmail.com>
+Subject: Re: [PATCH] xmon: Clear all breakpoints when xmon is disabled via
+ debugfs
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Douglas Miller <dougmill@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,19 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16.01.2018 03:18, Deepa Dinamani wrote:
-> All the current architecture specific defines for these
-> are the same. Refactor these common defines to a common
-> header file.
-> 
-> The new common linux/compat_time.h is also useful as it
-> will eventually be used to hold all the defines that
-> are needed for compat time types that support non y2038
-> safe types. New architectures need not have to define these
-> new types as they will only use new y2038 safe syscalls.
-> This file can be deleted after y2038 when we stop supporting
-> non y2038 safe syscalls.
+On Mon, Mar 5, 2018 at 4:31 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> wrote:
+> Presently when xmon is disabled by debugfs any existing
+> instruction/data-access breakpoints set are not disabled. This may
+> lead to kernel oops when those breakpoints are hit as the necessary
+> debugger hooks aren't installed.
+>
+> Hence this patch introduces a new function named clear_all_bpt()
+> which is called when xmon is disabled via debugfs. The function will
+> unpatch/clear all the trap and ciabr/dab based breakpoints.
+>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
 
-For parisc:
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
 
-Acked-by: Helge Deller <deller@gmx.de> # parisc
+Balbir
