@@ -1,23 +1,23 @@
 Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvVSz1JMhzF09j
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 04:31:30 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w24HTLl1138317
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 4 Mar 2018 12:31:28 -0500
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gga78r3mc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvVTl5yHSzF0fZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 04:32:11 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w24HTMip018954
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 4 Mar 2018 12:32:09 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gg9h90t3y-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 12:31:28 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 12:32:08 -0500
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Sun, 4 Mar 2018 17:31:26 -0000
+ Sun, 4 Mar 2018 17:32:07 -0000
 From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Balbir Singh <bsingharora@gmail.com>
 Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
@@ -26,10 +26,9 @@ Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
  Douglas Miller <dougmill@linux.vnet.ibm.com>
-Subject: [PATCH v2] xmon: Setup xmon debugger hooks when first break-point is
- set
-Date: Sun,  4 Mar 2018 23:00:25 +0530
-Message-Id: <20180304173025.19520-1-vaibhav@linux.vnet.ibm.com>
+Subject: [PATCH] xmon: Clear all breakpoints when xmon is disabled via debugfs
+Date: Sun,  4 Mar 2018 23:01:32 +0530
+Message-Id: <20180304173132.19677-1-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,85 +38,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Presently sysrq key for xmon('x') is registered during kernel init
-irrespective of the value of kernel param 'xmon'. Thus xmon is enabled
-even if 'xmon=off' is passed on the kernel command line. However this
-doesn't enable the kernel debugger hooks needed for instruction or data
-breakpoints. Thus when a break-point is hit with xmon=off a kernel oops
-of the form below is reported:
+Presently when xmon is disabled by debugfs any existing
+instruction/data-access breakpoints set are not disabled. This may
+lead to kernel oops when those breakpoints are hit as the necessary
+debugger hooks aren't installed.
 
-Oops: Exception in kernel mode, sig: 5 [#1]
-< snip >
-Trace/breakpoint trap
-
-To fix this the patch checks and enables debugger hooks when an
-instruction or data break-point is set via xmon console.
+Hence this patch introduces a new function named clear_all_bpt()
+which is called when xmon is disabled via debugfs. The function will
+unpatch/clear all the trap and ciabr/dab based breakpoints.
 
 Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 ---
-Change-log:
-
-v2 -> Moved the code that was force enabling xmon to a separate inline
-      function (Balbir)
-
-      The change related to clearing all breakpoints when xmon is
-      disabled via debugfs will be respinned as a separate
-      patch. (Mpe)
----
- arch/powerpc/xmon/xmon.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ arch/powerpc/xmon/xmon.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 82e1a3ee6e0f..e9c7ec8f15f8 100644
+index e9c7ec8f15f8..f43aacd74625 100644
 --- a/arch/powerpc/xmon/xmon.c
 +++ b/arch/powerpc/xmon/xmon.c
-@@ -1273,6 +1273,18 @@ static long check_bp_loc(unsigned long addr)
- 	return 1;
- }
- 
-+/* Force enable xmon if not already enabled */
-+static inline void force_enable_xmon(void)
-+{
-+	static const char warnxmon[] = "xmon: Enabling debugger hooks\n";
-+
-+	/* Enable xmon hooks if needed */
-+	if (!xmon_on) {
-+		printf(warnxmon);
-+		xmon_on = 1;
-+	}
-+}
-+
- static char *breakpoint_help_string =
-     "Breakpoint command usage:\n"
-     "b                show breakpoints\n"
-@@ -1315,6 +1327,8 @@ bpt_cmds(void)
- 			dabr.address &= ~HW_BRK_TYPE_DABR;
- 			dabr.enabled = mode | BP_DABR;
- 		}
-+
-+		force_enable_xmon();
- 		break;
- 
- 	case 'i':	/* bi - hardware instr breakpoint */
-@@ -1335,6 +1349,7 @@ bpt_cmds(void)
- 		if (bp != NULL) {
- 			bp->enabled |= BP_CIABR;
- 			iabr = bp;
-+			force_enable_xmon();
- 		}
- 		break;
- #endif
-@@ -1399,8 +1414,10 @@ bpt_cmds(void)
- 		if (!check_bp_loc(a))
- 			break;
- 		bp = new_breakpoint(a);
--		if (bp != NULL)
-+		if (bp != NULL) {
- 			bp->enabled |= BP_TRAP;
-+			force_enable_xmon();
-+		}
- 		break;
+@@ -903,6 +903,27 @@ static void remove_bpts(void)
  	}
  }
+ 
++static void clear_all_bpt(void)
++{
++	int i;
++
++	/* clear/unpatch all breakpoints */
++	remove_bpts();
++	remove_cpu_bpts();
++
++	/* Disable all breakpoints */
++	for (i = 0; i < NBPTS; ++i)
++		bpts[i].enabled = 0;
++
++	/* Clear any data or iabr breakpoints */
++	if (iabr || dabr.enabled) {
++		iabr = NULL;
++		dabr.enabled = 0;
++	}
++
++	printf("xmon: All breakpoints cleared\n");
++}
++
+ static void remove_cpu_bpts(void)
+ {
+ 	hw_breakpoint_disable();
+@@ -3671,6 +3692,9 @@ static int xmon_dbgfs_set(void *data, u64 val)
+ 	xmon_on = !!val;
+ 	xmon_init(xmon_on);
+ 
++	/* make sure all breakpoints removed when disabling */
++	if (!xmon_on)
++		clear_all_bpt();
+ 	return 0;
+ }
+ 
 -- 
 2.14.3
