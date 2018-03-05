@@ -1,25 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvdnD68XKzDrSy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 10:01:04 +1100 (AEDT)
-Date: Mon, 5 Mar 2018 10:01:01 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
- save/restore overhead
-Message-ID: <20180304230101.GC14569@fergus.ozlabs.ibm.com>
-References: <20171117140807.22105-1-npiggin@gmail.com>
- <20171117140807.22105-4-npiggin@gmail.com>
- <20180228183439.GC20168@drishya.in.ibm.com>
- <20180301215734.6602315e@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180301215734.6602315e@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvms36XfNzF09v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 15:19:50 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id f23-v6so8994641plr.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 20:19:49 -0800 (PST)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V2 15/27] cpufreq: powernv: Don't validate the frequency table
+ twice
+Date: Mon,  5 Mar 2018 09:49:32 +0530
+Message-Id: <fd8651e59a1b5c539e0a9589f2d0648afd42cce1.1520223512.git.viresh.kumar@linaro.org>
+In-Reply-To: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+References: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 01, 2018 at 09:57:34PM +1000, Nicholas Piggin wrote:
-> On Thu, 1 Mar 2018 00:04:39 +0530
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> 
-> > * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:07]:
-[snip]
-> > > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > > index a921d5428d76..610b1637c16f 100644
-> > > --- a/arch/powerpc/platforms/powernv/idle.c
-> > > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > > @@ -621,7 +621,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
-> > >  			continue;
-> > >  		}
-> > > 
-> > > -		if (max_residency_ns < residency_ns[i]) {
-> > > +		/*
-> > > +		 * Deepest stop for unplug must be PSSCR[EC]=1 (wakeup at
-> > > +		 * 0x100.
-> > > +		 */
-> > > +		if ((max_residency_ns < residency_ns[i])&&
-> > > +				(psscr_val[i] & PSSCR_EC)) {
-> > >  			max_residency_ns = residency_ns[i];
-> > >  			pnv_deepest_stop_psscr_val = psscr_val[i];
-> > >  			pnv_deepest_stop_psscr_mask = psscr_mask[i];  
-> > 
-> > If firmware did not provide any ESL=EC=1 state, we can still leave
-> > threads in stop ESL=0 state.  This is just a corner case or random
-> > test scenario.  Why do we want to enforce that offline cpus really use
-> > a ESL=0 state or just spin? 
-> 
-> It's because power9_offline_stop only has cases for EC=ESL=1
-> states now.
-> 
-> It actually looks like EC=ESL=0 unplug today is broken KVM, because
-> the wakeup side does not check HWTHREAD_REQ, and yet they do set
-> HWTHREAD_IN_IDLE. That would probably hang in KVM if we run with
-> dependent threads, wouldn't it?
+The cpufreq core is already validating the CPU frequency table after
+calling the ->init() callback of the cpufreq drivers and the drivers
+don't need to do the same anymore. Though they need to set the
+policy->freq_table field directly from the ->init() callback now.
 
-Right.  KVM with indep_threads_mode=N is broken at the moment if you
-run with powersave=off or if firmware provides no stop states with
-EC=ESL=1.  I'm not sure what's the best way to fix that.
+Stop validating the frequency table from powernv driver.
 
-> I think banning it for now should be okay.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- s/powerenv/powernv/
 
-Banning what exactly?
+ drivers/cpufreq/powernv-cpufreq.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-Paul.
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 29cdec198657..0591874856d3 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -812,7 +812,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i, ret;
++	int base, i;
+ 	struct kernfs_node *kn;
+ 	struct global_pstate_info *gpstates;
+ 
+@@ -848,15 +848,10 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	gpstates->timer.expires = jiffies +
+ 				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
+ 	spin_lock_init(&gpstates->gpstate_lock);
+-	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
+-
+-	if (ret < 0) {
+-		kfree(policy->driver_data);
+-		return ret;
+-	}
+ 
++	policy->freq_table = powernv_freqs;
+ 	policy->fast_switch_possible = true;
+-	return ret;
++	return 0;
+ }
+ 
+ static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+-- 
+2.15.0.194.g9af6a3dea062
