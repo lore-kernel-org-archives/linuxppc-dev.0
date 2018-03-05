@@ -1,10 +1,10 @@
 Return-Path: <nipun.gupta@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00051.outbound.protection.outlook.com [40.107.0.51])
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0041.outbound.protection.outlook.com [104.47.2.41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zw2QC6Dc2zF07m
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 01:30:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zw2kN0XJjzF0m1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 01:44:58 +1100 (AEDT)
 From: Nipun Gupta <nipun.gupta@nxp.com>
 To: will.deacon@arm.com, robin.murphy@arm.com, mark.rutland@arm.com,
  catalin.marinas@arm.com
@@ -14,11 +14,9 @@ Cc: iommu@lists.linux-foundation.org, robh+dt@kernel.org, hch@lst.de,
  devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, bharat.bhushan@nxp.com, stuyoder@gmail.com,
  laurentiu.tudor@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>
-Subject: [PATCH 6/6] dts: fsl-ls208x: updated DT with SMMU support for fsl-mc
-Date: Mon,  5 Mar 2018 19:59:26 +0530
-Message-Id: <1520260166-29387-7-git-send-email-nipun.gupta@nxp.com>
-In-Reply-To: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
-References: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
+Subject: [PATCH 0/6] Support for fsl-mc bus and its devices in SMMU
+Date: Mon,  5 Mar 2018 19:59:20 +0530
+Message-Id: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,48 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
----
- arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+This patchset defines IOMMU DT binding for fsl-mc bus and adds
+support in SMMU for fsl-mc bus.
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-index f3a40af..1f15492 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-@@ -135,6 +135,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <2>;
- 		ranges;
-+		dma-ranges = <0x0 0x0 0x0 0x0 0x10000 0x00000000>;
- 
- 		clockgen: clocking@1300000 {
- 			compatible = "fsl,ls2080a-clockgen";
-@@ -357,6 +358,8 @@
- 			reg = <0x00000008 0x0c000000 0 0x40>,	 /* MC portal base */
- 			      <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
- 			msi-parent = <&its>;
-+			iommu-parent = <&smmu>;
-+			dma-coherent;
- 			#address-cells = <3>;
- 			#size-cells = <1>;
- 
-@@ -460,6 +463,8 @@
- 			compatible = "arm,mmu-500";
- 			reg = <0 0x5000000 0 0x800000>;
- 			#global-interrupts = <12>;
-+			stream-match-mask = <0x7C00>;
-+			dma-coherent;
- 			interrupts = <0 13 4>, /* global secure fault */
- 				     <0 14 4>, /* combined secure interrupt */
- 				     <0 15 4>, /* global non-secure fault */
-@@ -502,7 +507,6 @@
- 				     <0 204 4>, <0 205 4>,
- 				     <0 206 4>, <0 207 4>,
- 				     <0 208 4>, <0 209 4>;
--			mmu-masters = <&fsl_mc 0x300 0>;
- 		};
- 
- 		dspi: dspi@2100000 {
+These patches
+  - Define the new property 'iommu-parent' for fsl-mc bus (patch 1)
+  - Integrates the fsl-mc bus with the SMMU using this
+    IOMMU binding (patch 2,3)
+  - Adds the dma-mapping support for fsl-mc bus (patch 4,5)
+  - Updates the fsl-mc device node with iommu/dma related changes
+
+This patchset is based on staging-testing tree where fsl-mc bus is out
+from staging
+
+This patchset is dependent on patch https://patchwork.kernel.org/patch/10207507/;
+otherwise DPAA2 Ethernet driver functionality will break.
+
+Nipun Gupta (6):
+  Docs: dt: add fsl-mc iommu-parent device-tree binding
+  iommu: support iommu configuration for fsl-mc devices
+  iommu: arm-smmu: Add support for the fsl-mc bus
+  bus: fsl-mc: remove dma ops setup from driver
+  dma-mapping: support fsl-mc bus
+  dts: fsl-ls208x: updated DT with SMMU support for fsl-mc
+
+ .../devicetree/bindings/misc/fsl,qoriq-mc.txt      | 31 ++++++++++++++++++++++
+ arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi     |  6 ++++-
+ drivers/base/dma-mapping.c                         |  7 +++++
+ drivers/bus/fsl-mc/fsl-mc-bus.c                    |  5 +---
+ drivers/iommu/arm-smmu.c                           |  7 +++++
+ drivers/iommu/iommu.c                              | 21 +++++++++++++++
+ drivers/iommu/of_iommu.c                           | 23 ++++++++++++++++
+ include/linux/fsl/mc.h                             |  8 ++++++
+ include/linux/iommu.h                              |  2 ++
+ 9 files changed, 105 insertions(+), 5 deletions(-)
+
 -- 
 1.9.1
