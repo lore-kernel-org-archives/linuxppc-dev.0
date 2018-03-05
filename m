@@ -1,22 +1,29 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:84ea::])
- (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zw71r3MgXzF0gk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 04:58:37 +1100 (AEDT)
-Subject: Linux 4.16: Reported regressions as of Monday, 2018-03-05 (Was: Linux
- 4.16-rc4)
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <CA+55aFxXg8hi+T_DNCG_OrAotqSheyREw-Njf9XgUD1vXqAyHQ@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Message-ID: <dac7ba7c-f287-be1f-eaa4-8f2dda69f920@leemhuis.info>
-Date: Mon, 5 Mar 2018 18:58:30 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zw7xD0YhFzF10n
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 05:39:42 +1100 (AEDT)
+Date: Mon, 5 Mar 2018 19:39:38 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Christoph Hellwig <hch@lst.de>, Nipun Gupta <nipun.gupta@nxp.com>,
+ will.deacon@arm.com, mark.rutland@arm.com, catalin.marinas@arm.com,
+ iommu@lists.linux-foundation.org, robh+dt@kernel.org,
+ m.szyprowski@samsung.com, gregkh@linuxfoundation.org,
+ joro@8bytes.org, leoyang.li@nxp.com, shawnguo@kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com
+Subject: Re: [PATCH 5/6] dma-mapping: support fsl-mc bus
+Message-ID: <20180305183938.GB20086@lst.de>
+References: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
+ <1520260166-29387-6-git-send-email-nipun.gupta@nxp.com>
+ <20180305150814.GA15918@lst.de>
+ <7b4f9972-6aaa-fc9d-3854-d48b19a8051c@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFxXg8hi+T_DNCG_OrAotqSheyREw-Njf9XgUD1vXqAyHQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7b4f9972-6aaa-fc9d-3854-d48b19a8051c@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,102 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05.03.2018 00:15, Linus Torvalds wrote:
-> Hmm. A reasonably calm week - the biggest change is to the 'kvm-stat'
-> tool, not any actual kernel files.
+On Mon, Mar 05, 2018 at 03:48:32PM +0000, Robin Murphy wrote:
+> Unfortunately for us, fsl-mc is conceptually rather like PCI in that it's 
+> software-discoverable and the only thing described in DT is the bus "host", 
+> thus we need the same sort of thing as for PCI to map from the child 
+> devices back to the bus root in order to find the appropriate firmware 
+> node. Worse than PCI, though, we wouldn't even have the option of 
+> describing child devices statically in firmware at all, since it's actually 
+> one of these runtime-configurable "build your own network accelerator" 
+> hardware pools where userspace gets to create and destroy "devices" as it 
+> likes.
 
-Hi! Find below my third regression report for Linux 4.16. It lists 7
-regressions I'm currently aware of. 3 were fixed since last weeks report.
-
-To anyone reading this: Are you aware of any other regressions that got
-introduced this development cycle? Then please let me know by mail (a
-simple bounce or forward to the email address is enough!).
-
-For details see http://bit.ly/lnxregtrackid And please tell me if there
-is anything in the report that shouldn't be there.
-
-Ciao, Thorsten
-
-== Current regressions ==
-
-Dell R640 does not boot due to SCSI/SATA failure
-Status: Reporter looked into this and indicated the change might have
-triggered a firmware bug on his machine
-Reported: 2018-02-22 Last known developer activity:
-https://marc.info/?l=linux-kernel&m=152026091325037
-https://marc.info/?l=linux-kernel&m=151931128006031
-Cause: 84676c1f21e8
-Linux-Regression-ID: 15a115
-
-[mm, mlock, vmscan]  9c4e6b1a70:  stress-ng.hdd.ops_per_sec -7.9% regression
-Status: WIP; side note: lkp-robot warned about something else triggered
-by the same commit:
-https://lkml.kernel.org/r/20180302093940.GE25699@yexl-desktop is related
-Note: performance regression found by lkp-robot
-Reported: 2018-02-25
-https://marc.info/?l=linux-kernel&m=151956997301994
-Cause: 9c4e6b1a7027f102990c0395296015a812525f4d
-
-aim7.jobs-per-min -18.0% regression
-Status: some discussion last week, but no real solution yet
-Note: performance regression found by lkp-robot
-Reported: 2018-02-25
-https://marc.info/?l=linux-kernel&m=151957120702272&w=2
-Cause: c0cef30e4ff0dc025f4a1660b8f0ba43ed58426e
-
-Interrupt storm after suspend causes one busy kworker
-Status: stalled?
-Reported: 2018-02-25
-https://bugzilla.kernel.org/show_bug.cgi?id=198929
-Linux-Regression-ID: 41c451
-
-hci_bcm: Streamline runtime PM code change for 4.16 kernel breaks
-bluetooth on ASUS T100TA
-Status: poked reporters for a update if they reported it to the relevant
-developers
-Reported: 2018-03-01
-https://bugzilla.kernel.org/show_bug.cgi?id=198953
-Cause: 43fff768346810042836df325d736bd2c2a634a7
-
-
-== Regressions with fixes heading mainline ==
-
-selftests: memory-hotplug: fix emit_tests regression
-https://marc.info/?l=linux-kernel&m=151993543423651
-
-
-== Going to get removed from the report ==
-
-Debian kernel package tool make-kpkg stalls indefinitely during kernel
-build due to commit "kconfig: remove check_stdin()"
-Status: stalled after some discussions; seems nobody really cares that much
-Note: From the discussion: "Shouldn't be a problem to back this one out
-either if it turns out to cause massive amounts of pain in practice I
-guess, even if it's the Debian tools doing something weird."
-Reported: 2018-02-12
-https://marc.info/?l=linux-kernel&m=151846414807219
-Cause: d2a04648a5dbc3d1d043b35257364f0197d4d868
-Linux-Regression-ID: 2fd778
-
-
-== Fixed since last report ==
-
-Dell XPS 13 9360 keyboard no longer works
-Status: https://git.kernel.org/torvalds/c/de9647efeaa9
-Reported: 2018-02-22
-https://marc.info/?l=linux-kernel&m=151927645427980
-Cause: 30323fb6d552c41997baca5292bf7001366cab57
-
-on Nokia N900:/dev/input/event6 aka AV Jack support disappeared
-Status: https://git.kernel.org/torvalds/c/6662ae6af82d
-https://git.kernel.org/torvalds/c/ce27fb2c56db
-Reported: 2018-02-24
-https://marc.info/?l=linux-omap&m=151950886524308&w=2
-Cause: 14e3e295b2b9
-Linux-Regression-ID: 4b650f
-
-SD card reader stopped working
-Status: Fixed in 4.16.0-rc3 according to reporter
-Reported: 2018-02-24
-https://bugzilla.kernel.org/show_bug.cgi?id=198917
-Linux-Regression-ID: 9adeaf
+I really hate the PCI special case just as much.  Maybe we just
+need a dma_configure method on the bus, and move PCI as well as fsl-mc
+to it.
