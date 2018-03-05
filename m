@@ -1,29 +1,48 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvwP206v4zF0dw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 20:59:33 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id u5so6981042pfh.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2018 01:59:33 -0800 (PST)
-Date: Mon, 5 Mar 2018 19:59:11 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
- save/restore overhead
-Message-ID: <20180305195911.60381c76@roar.ozlabs.ibm.com>
-In-Reply-To: <20180304230101.GC14569@fergus.ozlabs.ibm.com>
-References: <20171117140807.22105-1-npiggin@gmail.com>
- <20171117140807.22105-4-npiggin@gmail.com>
- <20180228183439.GC20168@drishya.in.ibm.com>
- <20180301215734.6602315e@roar.ozlabs.ibm.com>
- <20180304230101.GC14569@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvxXz0pBBzF09t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 21:51:30 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w25ApNff079723
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2018 05:51:28 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gh0xsgmpn-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2018 05:51:26 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 5 Mar 2018 10:50:32 -0000
+Subject: Re: [PATCH v8 18/24] mm: Provide speculative fault infrastructure
+To: Daniel Jordan <daniel.m.jordan@oracle.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1518794738-4186-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1518794738-4186-19-git-send-email-ldufour@linux.vnet.ibm.com>
+ <5b16d6ce-6b62-e4ca-2d78-c25bb008e27e@oracle.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 5 Mar 2018 11:50:21 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <5b16d6ce-6b62-e4ca-2d78-c25bb008e27e@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <1d6c1ea9-6488-5e25-68b7-6f4aa07d1945@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,59 +52,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 5 Mar 2018 10:01:01 +1100
-Paul Mackerras <paulus@ozlabs.org> wrote:
+Hi Jordan,
 
-> On Thu, Mar 01, 2018 at 09:57:34PM +1000, Nicholas Piggin wrote:
-> > On Thu, 1 Mar 2018 00:04:39 +0530
-> > Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> >   
-> > > * Nicholas Piggin <npiggin@gmail.com> [2017-11-18 00:08:07]:  
-> [snip]
-> > > > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > > > index a921d5428d76..610b1637c16f 100644
-> > > > --- a/arch/powerpc/platforms/powernv/idle.c
-> > > > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > > > @@ -621,7 +621,12 @@ static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
-> > > >  			continue;
-> > > >  		}
-> > > > 
-> > > > -		if (max_residency_ns < residency_ns[i]) {
-> > > > +		/*
-> > > > +		 * Deepest stop for unplug must be PSSCR[EC]=1 (wakeup at
-> > > > +		 * 0x100.
-> > > > +		 */
-> > > > +		if ((max_residency_ns < residency_ns[i])&&
-> > > > +				(psscr_val[i] & PSSCR_EC)) {
-> > > >  			max_residency_ns = residency_ns[i];
-> > > >  			pnv_deepest_stop_psscr_val = psscr_val[i];
-> > > >  			pnv_deepest_stop_psscr_mask = psscr_mask[i];    
-> > > 
-> > > If firmware did not provide any ESL=EC=1 state, we can still leave
-> > > threads in stop ESL=0 state.  This is just a corner case or random
-> > > test scenario.  Why do we want to enforce that offline cpus really use
-> > > a ESL=0 state or just spin?   
-> > 
-> > It's because power9_offline_stop only has cases for EC=ESL=1
-> > states now.
-> > 
-> > It actually looks like EC=ESL=0 unplug today is broken KVM, because
-> > the wakeup side does not check HWTHREAD_REQ, and yet they do set
-> > HWTHREAD_IN_IDLE. That would probably hang in KVM if we run with
-> > dependent threads, wouldn't it?  
+Thanks for reporting this.
+
+On 26/02/2018 18:16, Daniel Jordan wrote:
+> Hi Laurent,
 > 
-> Right.  KVM with indep_threads_mode=N is broken at the moment if you
-> run with powersave=off or if firmware provides no stop states with
-> EC=ESL=1.  I'm not sure what's the best way to fix that.
-
-For EC=ESL=1, would it be enough to do a test and branch right
-after the stop instruction?
-
-> > I think banning it for now should be okay.  
+> This series doesn't build for me[*] when CONFIG_TRANSPARENT_HUGEPAGE is unset.
 > 
-> Banning what exactly?
+> The problem seems to be that the BUILD_BUG() version of pmd_same is called in
+> pte_map_lock:
+> 
+> On 02/16/2018 10:25 AM, Laurent Dufour wrote:
+>> +static bool pte_map_lock(struct vm_fault *vmf)
+>> +{
+> ...snip...
+>> +    if (!pmd_same(pmdval, vmf->orig_pmd))
+>> +        goto out;
+> 
+> Since SPF can now call pmd_same without THP, maybe the way to fix it is just
+> 
+> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+> index 2cfa3075d148..e130692db24a 100644
+> --- a/include/asm-generic/pgtable.h
+> +++ b/include/asm-generic/pgtable.h
+> @@ -375,7 +375,8 @@ static inline int pte_unused(pte_t pte)
+>  #endif
+>  
+>  #ifndef __HAVE_ARCH_PMD_SAME
+> -#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +#if defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
+> +    defined(CONFIG_SPECULATIVE_PAGE_FAULT)
+>  static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
+>  {
+>         return pmd_val(pmd_a) == pmd_val(pmd_b);
 
-power9 CPU unplug using a EC=ESL=0 stop state.
+We can't fix that this way because some architectures define their own
+pmd_same() function (like ppc64), thus forcing the define here will be useless
+since __HAVE_ARCH_PMD_SAME is set in that case.
 
-Thanks,
-Nick
+The right way to fix that is to _not check_ for the PMD value in pte_spinlock()
+when CONFIG_TRANSPARENT_HUGEPAGE is not set since there is no risk of
+collapsing operation in our back if THP are disabled.
+
+I'll fix that in the next version.
+
+Laurent.
+
+> ?
+> 
+> Daniel
+> 
+> 
+> [*]  The errors are:
+> 
+> In file included from /home/dmjordan/src/linux/include/linux/kernel.h:10:0,
+>                  from /home/dmjordan/src/linux/include/linux/list.h:9,
+>                  from /home/dmjordan/src/linux/include/linux/smp.h:12,
+>                  from /home/dmjordan/src/linux/include/linux/kernel_stat.h:5,
+>                  from /home/dmjordan/src/linux/mm/memory.c:41:
+> In function ‘pmd_same.isra.104’,
+>     inlined from ‘pte_map_lock’ at /home/dmjordan/src/linux/mm/memory.c:2380:7:
+> /home/dmjordan/src/linux/include/linux/compiler.h:324:38: error: call to
+> ‘__compiletime_assert_391’ declared with attribute error: BUILD_BUG failed
+>   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+>                                       ^
+> /home/dmjordan/src/linux/include/linux/compiler.h:304:4: note: in definition of
+> macro ‘__compiletime_assert’
+>     prefix ## suffix();    \
+>     ^~~~~~
+> /home/dmjordan/src/linux/include/linux/compiler.h:324:2: note: in expansion of
+> macro ‘_compiletime_assert’
+>   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+>   ^~~~~~~~~~~~~~~~~~~
+> /home/dmjordan/src/linux/include/linux/build_bug.h:45:37: note: in expansion of
+> macro ‘compiletime_assert’
+>  #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+>                                      ^~~~~~~~~~~~~~~~~~
+> /home/dmjordan/src/linux/include/linux/build_bug.h:79:21: note: in expansion of
+> macro ‘BUILD_BUG_ON_MSG’
+>  #define BUILD_BUG() BUILD_BUG_ON_MSG(1, "BUILD_BUG failed")
+>                      ^~~~~~~~~~~~~~~~
+> /home/dmjordan/src/linux/include/asm-generic/pgtable.h:391:2: note: in
+> expansion of macro ‘BUILD_BUG’
+>   BUILD_BUG();
+>   ^~~~~~~~~
+>   CC      block/elevator.o
+>   CC      crypto/crypto_wq.o
+> In function ‘pmd_same.isra.104’,
+>     inlined from ‘pte_spinlock’ at /home/dmjordan/src/linux/mm/memory.c:2326:7,
+>     inlined from ‘handle_pte_fault’ at
+> /home/dmjordan/src/linux/mm/memory.c:4181:7:
+> /home/dmjordan/src/linux/include/linux/compiler.h:324:38: error: call to
+> ‘__compiletime_assert_391’ declared with attribute error: BUILD_BUG failed
+>   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+>                                       ^
+> /home/dmjordan/src/linux/include/linux/compiler.h:304:4: note: in definition of
+> macro ‘__compiletime_assert’
+>     prefix ## suffix();    \
+>     ^~~~~~
+> /home/dmjordan/src/linux/include/linux/compiler.h:324:2: note: in expansion of
+> macro ‘_compiletime_assert’
+>   _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
+>   ^~~~~~~~~~~~~~~~~~~
+> /home/dmjordan/src/linux/include/linux/build_bug.h:45:37: note: in expansion of
+> macro ‘compiletime_assert’
+>  #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+>                                      ^~~~~~~~~~~~~~~~~~
+> /home/dmjordan/src/linux/include/linux/build_bug.h:79:21: note: in expansion of
+> macro ‘BUILD_BUG_ON_MSG’
+>  #define BUILD_BUG() BUILD_BUG_ON_MSG(1, "BUILD_BUG failed")
+>                      ^~~~~~~~~~~~~~~~
+> /home/dmjordan/src/linux/include/asm-generic/pgtable.h:391:2: note: in
+> expansion of macro ‘BUILD_BUG’
+>   BUILD_BUG();
+>   ^~~~~~~~~
+> ...
+> make[2]: *** [/home/dmjordan/src/linux/scripts/Makefile.build:316: mm/memory.o]
+> Error 1
+> make[1]: *** [/home/dmjordan/src/linux/Makefile:1047: mm] Error 2
+> 
