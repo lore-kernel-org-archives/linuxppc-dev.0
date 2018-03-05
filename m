@@ -1,23 +1,49 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwGqG4r5CzF19S
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 10:50:02 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id a16so7959565pfn.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2018 15:50:02 -0800 (PST)
-Message-ID: <1520293795.5421.1.camel@gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: Skip tm-unavailable if TM is not
- enabled
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 06 Mar 2018 10:49:55 +1100
-In-Reply-To: <1520282935-20111-2-git-send-email-gromero@linux.vnet.ibm.com>
-References: <1520282935-20111-1-git-send-email-gromero@linux.vnet.ibm.com>
- <1520282935-20111-2-git-send-email-gromero@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwH0x6RrczF0tq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 10:58:25 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w25Noodg025033
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2018 18:58:23 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ghbk8hnr5-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Mar 2018 18:58:22 -0500
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Mon, 5 Mar 2018 23:58:20 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w25NwIs947710270
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Mar 2018 23:58:18 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B824FA4051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:51:16 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6659BA4040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:51:16 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:51:16 +0000 (GMT)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B16D1A01E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 10:58:16 +1100 (AEDT)
+Date: Tue, 6 Mar 2018 10:58:15 +1100
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/9] EEH refactoring 1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <cover.1520294174.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,109 +53,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-03-05 at 15:48 -0500, Gustavo Romero wrote:
-> Some processor revisions do not support transactional memory, and
-> additionally kernel support can be disabled. In either case the
-> tm-unavailable test should be skipped, otherwise it will fail with
-> a SIGILL.
-> 
-> That commit also sets this selftest to be called through the test
-> harness as it's done for other TM selftests.
-> 
-> Finally, it avoids using "ping" as a thread name since it's
-> ambiguous and can be confusing when shown, for instance,
-> in a kernel backtrace log.
-> 
+Hello everyone,
 
-I spent more time than I care to admit looking at backtraces wondering
-how "ping" got in the mix ;).
+Here is a set of some small, mostly idempotent, changes to improve
+maintainability in some of the EEH code, primarily in eeh_driver.c.
 
+I've kept them all small to aid review but perhaps they should be squashed down
+before being applied.
 
-> Fixes: 77fad8bfb1d2 ("selftests/powerpc: Check FP/VEC on exception in TM")
-> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Cheers,
+Sam.
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+Sam Bobroff (9):
+  powerpc/eeh: Remove eeh_handle_event()
+  powerpc/eeh: Manage EEH_PE_RECOVERING inside eeh_handle_normal_event()
+  powerpc/eeh: Fix misleading comment in __eeh_addr_cache_get_device()
+  powerpc/eeh: Remove misleading test in eeh_handle_normal_event()
+  powerpc/eeh: Rename frozen_bus to bus in eeh_handle_normal_event()
+  powerpc/eeh: Clarify arguments to eeh_reset_device()
+  powerpc/eeh: Remove always-true tests in eeh_reset_device()
+  powerpc/eeh: Factor out common code eeh_reset_device()
+  powerpc/eeh: Add eeh_state_active() helper
 
-> ---
->  .../testing/selftests/powerpc/tm/tm-unavailable.c  | 24 ++++++++++++++--------
->  1 file changed, 16 insertions(+), 8 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-unavailable.c b/tools/testing/selftests/powerpc/tm/tm-unavailable.c
-> index e6a0fad..156c8e7 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-unavailable.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-unavailable.c
-> @@ -80,7 +80,7 @@ bool is_failure(uint64_t condition_reg)
->  	return ((condition_reg >> 28) & 0xa) == 0xa;
->  }
->  
-> -void *ping(void *input)
-> +void *tm_una_ping(void *input)
->  {
->  
->  	/*
-> @@ -280,7 +280,7 @@ void *ping(void *input)
->  }
->  
->  /* Thread to force context switch */
-> -void *pong(void *not_used)
-> +void *tm_una_pong(void *not_used)
->  {
->  	/* Wait thread get its name "pong". */
->  	if (DEBUG)
-> @@ -311,11 +311,11 @@ void test_fp_vec(int fp, int vec, pthread_attr_t *attr)
->  	do {
->  		int rc;
->  
-> -		/* Bind 'ping' to CPU 0, as specified in 'attr'. */
-> -		rc = pthread_create(&t0, attr, ping, (void *) &flags);
-> +		/* Bind to CPU 0, as specified in 'attr'. */
-> +		rc = pthread_create(&t0, attr, tm_una_ping, (void *) &flags);
->  		if (rc)
->  			pr_err(rc, "pthread_create()");
-> -		rc = pthread_setname_np(t0, "ping");
-> +		rc = pthread_setname_np(t0, "tm_una_ping");
->  		if (rc)
->  			pr_warn(rc, "pthread_setname_np");
->  		rc = pthread_join(t0, &ret_value);
-> @@ -333,13 +333,15 @@ void test_fp_vec(int fp, int vec, pthread_attr_t *attr)
->  	}
->  }
->  
-> -int main(int argc, char **argv)
-> +int tm_unavailable_test(void)
->  {
->  	int rc, exception; /* FP = 0, VEC = 1, VSX = 2 */
->  	pthread_t t1;
->  	pthread_attr_t attr;
->  	cpu_set_t cpuset;
->  
-> +	SKIP_IF(!have_htm());
-> +
->  	/* Set only CPU 0 in the mask. Both threads will be bound to CPU 0. */
->  	CPU_ZERO(&cpuset);
->  	CPU_SET(0, &cpuset);
-> @@ -354,12 +356,12 @@ int main(int argc, char **argv)
->  	if (rc)
->  		pr_err(rc, "pthread_attr_setaffinity_np()");
->  
-> -	rc = pthread_create(&t1, &attr /* Bind 'pong' to CPU 0 */, pong, NULL);
-> +	rc = pthread_create(&t1, &attr /* Bind to CPU 0 */, tm_una_pong, NULL);
->  	if (rc)
->  		pr_err(rc, "pthread_create()");
->  
->  	/* Name it for systemtap convenience */
-> -	rc = pthread_setname_np(t1, "pong");
-> +	rc = pthread_setname_np(t1, "tm_una_pong");
->  	if (rc)
->  		pr_warn(rc, "pthread_create()");
->  
-> @@ -394,3 +396,9 @@ int main(int argc, char **argv)
->  		exit(0);
->  	}
->  }
-> +
-> +int main(int argc, char **argv)
-> +{
-> +	test_harness_set_timeout(220);
-> +	return test_harness(tm_unavailable_test, "tm_unavailable_test");
-> +}
+ arch/powerpc/include/asm/eeh.h               |   6 ++
+ arch/powerpc/include/asm/eeh_event.h         |   3 +-
+ arch/powerpc/kernel/eeh.c                    |  19 ++--
+ arch/powerpc/kernel/eeh_cache.c              |   3 +-
+ arch/powerpc/kernel/eeh_driver.c             | 143 +++++++++++----------------
+ arch/powerpc/kernel/eeh_event.c              |   6 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |   9 +-
+ 7 files changed, 75 insertions(+), 114 deletions(-)
+
+-- 
+2.16.1.74.g9b0b1f47b
