@@ -2,20 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvzsj0LCDzF0R7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:36:09 +1100 (AEDT)
-In-Reply-To: <20180222041739.27899-2-alastair@au1.ibm.com>
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvzsk33vkzF0R7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:36:10 +1100 (AEDT)
+In-Reply-To: <1519419359-19163-1-git-send-email-linux@roeck-us.net>
+To: Guenter Roeck <linux@roeck-us.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: alastair@au1.ibm.com, arnd@arndb.de, frederic.barrat@fr.ibm.com,
- gregkh@linuxfoundation.org, andrew.donnellan@au1.ibm.com,
- Alastair D'Silva <alastair@d-silva.org>
-Subject: Re: [v3,
- 1/2] ocxl: Add get_metadata IOCTL to share OCXL information to
- userspace
-Message-Id: <3zvzsh56JRz9sZd@ozlabs.org>
-Date: Mon,  5 Mar 2018 23:36:08 +1100 (AEDT)
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/boot: Fix random build errors
+Message-Id: <3zvzsk1Px8z9sZf@ozlabs.org>
+Date: Mon,  5 Mar 2018 23:36:09 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-02-22 at 04:17:38 UTC, "Alastair D'Silva" wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
+On Fri, 2018-02-23 at 20:55:59 UTC, Guenter Roeck wrote:
+> Once in a while I see build errors similar to the following
+> when building images from a clean tree.
 > 
-> Some required information is not exposed to userspace currently (eg. the
-> PASID), pass this information back, along with other information which
-> is currently communicated via sysfs, which saves some parsing effort in
-> userspace.
+> Building powerpc:virtex-ml507:44x/virtex5_defconfig ... failed
+> ------------
+> Error log:
+> arch/powerpc/boot/treeboot-akebono.c:37:20: fatal error:
+> 	libfdt.h: No such file or directory
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Building powerpc:bamboo:smpdev:44x/bamboo_defconfig ... failed
+> ------------
+> Error log:
+> arch/powerpc/boot/treeboot-akebono.c:37:20: fatal error:
+> 	libfdt.h: No such file or directory
+> 
+> arch/powerpc/boot/treeboot-currituck.c:35:20: fatal error:
+>      libfdt.h: No such file or directory
+> 
+> Rebuilds will succeed.
+> 
+> Turns out that several source files in arch/powerpc/boot/ include
+> libfdt.h, but Makefile dependencies are incomplete. Let's fix that.
+> 
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-Series applied to powerpc fixes, thanks.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/07c5ccd70ad702e561fcda8e4df494
+https://git.kernel.org/powerpc/c/64c3f648c25d108f346fdc96c15180
 
 cheers
