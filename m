@@ -1,24 +1,25 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x243.google.com (mail-vk0-x243.google.com
+ [IPv6:2607:f8b0:400c:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvms36XfNzF09v
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 15:19:50 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id f23-v6so8994641plr.10
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 20:19:49 -0800 (PST)
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Rafael Wysocki <rjw@rjwysocki.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
- Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V2 15/27] cpufreq: powernv: Don't validate the frequency table
- twice
-Date: Mon,  5 Mar 2018 09:49:32 +0530
-Message-Id: <fd8651e59a1b5c539e0a9589f2d0648afd42cce1.1520223512.git.viresh.kumar@linaro.org>
-In-Reply-To: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
-References: <3120e4db4ae3bc014d198a206f46be1305ec65e8.1519620578.git.viresh.kumar@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvqRf66pRzDrf5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 17:16:30 +1100 (AEDT)
+Received: by mail-vk0-x243.google.com with SMTP id k187so9073916vke.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Mar 2018 22:16:30 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1520164518-19097-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1520164518-19097-1-git-send-email-maddy@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 5 Mar 2018 17:16:26 +1100
+Message-ID: <CAKTCnzmY3-n3ZxdUJb_yE_K4sY93j+DfaDVEPBKaGUo_dgbaQg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/perf: Fix kernel address leak to userspace
+ via BHRB buffer
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cpufreq core is already validating the CPU frequency table after
-calling the ->init() callback of the cpufreq drivers and the drivers
-don't need to do the same anymore. Though they need to set the
-policy->freq_table field directly from the ->init() callback now.
+On Sun, Mar 4, 2018 at 10:55 PM, Madhavan Srinivasan
+<maddy@linux.vnet.ibm.com> wrote:
+> The current Branch History Rolling Buffer (BHRB) code does
+> not check for any privilege levels before updating the data
+> from BHRB. This leaks kernel addresses to userspace even when
+> profiling only with userspace privileges. Add proper checks
+> to prevent it.
+>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/perf/core-book3s.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index f89bbd54ecec..337db5831749 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -457,6 +457,10 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+>                                 /* invalid entry */
+>                                 continue;
+>
+> +                       if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN) &&
+> +                               is_kernel_addr(addr))
+> +                               continue;
+> +
 
-Stop validating the frequency table from powernv driver.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2:
-- s/powerenv/powernv/
+Looks good to me. The scope of the leaks concern is KASLR related or
+something else (figuring out what's in the cache?)
 
- drivers/cpufreq/powernv-cpufreq.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 29cdec198657..0591874856d3 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -812,7 +812,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	int base, i, ret;
-+	int base, i;
- 	struct kernfs_node *kn;
- 	struct global_pstate_info *gpstates;
- 
-@@ -848,15 +848,10 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	gpstates->timer.expires = jiffies +
- 				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
- 	spin_lock_init(&gpstates->gpstate_lock);
--	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
--
--	if (ret < 0) {
--		kfree(policy->driver_data);
--		return ret;
--	}
- 
-+	policy->freq_table = powernv_freqs;
- 	policy->fast_switch_possible = true;
--	return ret;
-+	return 0;
- }
- 
- static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
--- 
-2.15.0.194.g9af6a3dea062
+Balbir Singh.
