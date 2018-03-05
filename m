@@ -1,25 +1,22 @@
-Return-Path: <prvs=660224a392=ast@fb.com>
-Received: from mx0a-00082601.pphosted.com (mx0a-00082601.pphosted.com
- [67.231.145.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
+ [IPv6:2a01:488:42:1000:50ed:84ea::])
+ (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zw6C723R6zDrbH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 04:21:38 +1100 (AEDT)
-Subject: Re: [RFC][PATCH bpf] tools: bpftool: Fix tags for bpf-to-bpf calls
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Daniel Borkmann
- <daniel@iogearbox.net>, Sandipan Das <sandipan@linux.vnet.ibm.com>
-References: <1519153431.im5wioxel1.naveen@linux.ibm.com>
- <20180227121346.16199-1-sandipan@linux.vnet.ibm.com>
- <4cdcc751-d830-51ce-23a0-62f773dc015e@iogearbox.net>
- <1519891203.b146m3c5tj.naveen@linux.ibm.com>
-CC: <jakub.kicinski@netronome.com>, <linuxppc-dev@lists.ozlabs.org>,
- <mpe@ellerman.id.au>, <netdev@vger.kernel.org>
-From: Alexei Starovoitov <ast@fb.com>
-Message-ID: <415b415e-f47f-082c-1bc9-87d3e9d3aed1@fb.com>
-Date: Mon, 5 Mar 2018 09:02:20 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zw71r3MgXzF0gk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 04:58:37 +1100 (AEDT)
+Subject: Linux 4.16: Reported regressions as of Monday, 2018-03-05 (Was: Linux
+ 4.16-rc4)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <CA+55aFxXg8hi+T_DNCG_OrAotqSheyREw-Njf9XgUD1vXqAyHQ@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Message-ID: <dac7ba7c-f287-be1f-eaa4-8f2dda69f920@leemhuis.info>
+Date: Mon, 5 Mar 2018 18:58:30 +0100
 MIME-Version: 1.0
-In-Reply-To: <1519891203.b146m3c5tj.naveen@linux.ibm.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+In-Reply-To: <CA+55aFxXg8hi+T_DNCG_OrAotqSheyREw-Njf9XgUD1vXqAyHQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,64 +26,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/1/18 12:51 AM, Naveen N. Rao wrote:
-> Daniel Borkmann wrote:
->> On 02/27/2018 01:13 PM, Sandipan Das wrote:
->>> With this patch, it will look like this:
->>>    0: (85) call pc+2#bpf_prog_8f85936f29a7790a+3
->>
->> (Note the +2 is the insn->off already.)
->>
->>>    1: (b7) r0 = 1
->>>    2: (95) exit
->>>    3: (b7) r0 = 2
->>>    4: (95) exit
->>>
->>> where 8f85936f29a7790a is the tag of the bpf program and 3 is
->>> the offset to the start of the subprog from the start of the
->>> program.
->>
->> The problem with this approach would be that right now the name is
->> something like bpf_prog_5f76847930402518_F where the subprog tag is
->> just a placeholder so in future, this may well adapt to e.g. the actual
->> function name from the elf file. Note that when kallsyms is enabled
->> then a name like bpf_prog_5f76847930402518_F will also appear in stack
->> traces, perf records, etc, so for correlation/debugging it would really
->> help to have them the same everywhere.
->>
->> Worst case if there's nothing better, potentially what one could do in
->> bpf_prog_get_info_by_fd() is to dump an array of full addresses and
->> have the imm part as the index pointing to one of them, just unfortunate
->> that it's likely only needed in ppc64.
->
-> Ok. We seem to have discussed a few different aspects in this thread.
-> Let me summarize the different aspects we have discussed:
-> 1. Passing address of JIT'ed function to the JIT engines:
->    Two approaches discussed:
->    a. Existing approach, where the subprog address is encoded as an
-> offset from __bpf_call_base() in imm32 field of the BPF call
-> instruction. This requires the JIT'ed function to be within 2GB of
-> __bpf_call_base(), which won't be true on ppc64, at the least. So,
-> this won't on ppc64 (and any other architectures where vmalloc'ed
-> (module_alloc()) memory is from a different, far, address range).
+On 05.03.2018 00:15, Linus Torvalds wrote:
+> Hmm. A reasonably calm week - the biggest change is to the 'kvm-stat'
+> tool, not any actual kernel files.
 
-it looks like ppc64 doesn't guarantee today that all of module_alloc()
-will be within 32-bit, but I think it should be trivial to add such
-guarantee. If so, we can define another __bpf_call_base specifically
-for bpf-to-bpf calls when jit is on.
-Then jit_subprogs() math will fit:
-insn->imm = func[subprog]->bpf_func - __bpf_call_base_for_jited_progs;
-and will make it easier for ppc64 jit to optimize and use
-near calls for bpf-to-bpf calls while still using trampoline
-for bpf-to-kernel.
-Also it solves bpftool issue.
-For all other archs we can keep
-__bpf_call_base_for_jited_progs == __bpf_call_base
+Hi! Find below my third regression report for Linux 4.16. It lists 7
+regressions I'm currently aware of. 3 were fixed since last weeks report.
 
->    There is a third option we can consider:
->    c. Convert BPF pseudo call instruction into a 2-instruction sequence
->    (similar to BPF_DW) and encode the full 64-bit call target in the
-> second bpf instruction. To distinguish this from other instruction
-> forms, we can set imm32 to -1.
+To anyone reading this: Are you aware of any other regressions that got
+introduced this development cycle? Then please let me know by mail (a
+simple bounce or forward to the email address is enough!).
 
-Adding new instruction just for that case looks like overkill.
+For details see http://bit.ly/lnxregtrackid And please tell me if there
+is anything in the report that shouldn't be there.
+
+Ciao, Thorsten
+
+== Current regressions ==
+
+Dell R640 does not boot due to SCSI/SATA failure
+Status: Reporter looked into this and indicated the change might have
+triggered a firmware bug on his machine
+Reported: 2018-02-22 Last known developer activity:
+https://marc.info/?l=linux-kernel&m=152026091325037
+https://marc.info/?l=linux-kernel&m=151931128006031
+Cause: 84676c1f21e8
+Linux-Regression-ID: 15a115
+
+[mm, mlock, vmscan]  9c4e6b1a70:  stress-ng.hdd.ops_per_sec -7.9% regression
+Status: WIP; side note: lkp-robot warned about something else triggered
+by the same commit:
+https://lkml.kernel.org/r/20180302093940.GE25699@yexl-desktop is related
+Note: performance regression found by lkp-robot
+Reported: 2018-02-25
+https://marc.info/?l=linux-kernel&m=151956997301994
+Cause: 9c4e6b1a7027f102990c0395296015a812525f4d
+
+aim7.jobs-per-min -18.0% regression
+Status: some discussion last week, but no real solution yet
+Note: performance regression found by lkp-robot
+Reported: 2018-02-25
+https://marc.info/?l=linux-kernel&m=151957120702272&w=2
+Cause: c0cef30e4ff0dc025f4a1660b8f0ba43ed58426e
+
+Interrupt storm after suspend causes one busy kworker
+Status: stalled?
+Reported: 2018-02-25
+https://bugzilla.kernel.org/show_bug.cgi?id=198929
+Linux-Regression-ID: 41c451
+
+hci_bcm: Streamline runtime PM code change for 4.16 kernel breaks
+bluetooth on ASUS T100TA
+Status: poked reporters for a update if they reported it to the relevant
+developers
+Reported: 2018-03-01
+https://bugzilla.kernel.org/show_bug.cgi?id=198953
+Cause: 43fff768346810042836df325d736bd2c2a634a7
+
+
+== Regressions with fixes heading mainline ==
+
+selftests: memory-hotplug: fix emit_tests regression
+https://marc.info/?l=linux-kernel&m=151993543423651
+
+
+== Going to get removed from the report ==
+
+Debian kernel package tool make-kpkg stalls indefinitely during kernel
+build due to commit "kconfig: remove check_stdin()"
+Status: stalled after some discussions; seems nobody really cares that much
+Note: From the discussion: "Shouldn't be a problem to back this one out
+either if it turns out to cause massive amounts of pain in practice I
+guess, even if it's the Debian tools doing something weird."
+Reported: 2018-02-12
+https://marc.info/?l=linux-kernel&m=151846414807219
+Cause: d2a04648a5dbc3d1d043b35257364f0197d4d868
+Linux-Regression-ID: 2fd778
+
+
+== Fixed since last report ==
+
+Dell XPS 13 9360 keyboard no longer works
+Status: https://git.kernel.org/torvalds/c/de9647efeaa9
+Reported: 2018-02-22
+https://marc.info/?l=linux-kernel&m=151927645427980
+Cause: 30323fb6d552c41997baca5292bf7001366cab57
+
+on Nokia N900:/dev/input/event6 aka AV Jack support disappeared
+Status: https://git.kernel.org/torvalds/c/6662ae6af82d
+https://git.kernel.org/torvalds/c/ce27fb2c56db
+Reported: 2018-02-24
+https://marc.info/?l=linux-omap&m=151950886524308&w=2
+Cause: 14e3e295b2b9
+Linux-Regression-ID: 4b650f
+
+SD card reader stopped working
+Status: Fixed in 4.16.0-rc3 according to reporter
+Reported: 2018-02-24
+https://bugzilla.kernel.org/show_bug.cgi?id=198917
+Linux-Regression-ID: 9adeaf
