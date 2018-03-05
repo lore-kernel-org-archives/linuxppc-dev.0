@@ -1,17 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <srs0=j3d0=f3=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvzsq16yRzF0R7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:36:15 +1100 (AEDT)
-In-Reply-To: <20180302020108.22174-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [v2] selftests/powerpc: Skip the subpage_prot tests if the
- syscall is unavailable
-Message-Id: <3zvzsp4KpBz9sZk@ozlabs.org>
-Date: Mon,  5 Mar 2018 23:36:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zw0j12CmszF09h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 00:13:41 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 3zw0j109T0z8sk5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 00:13:41 +1100 (AEDT)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3zw0hz6nqFz9sZ2
+ for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2018 00:13:39 +1100 (AEDT)
+Received: from relay2.suse.de (charybdis-ext.suse.de [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 75FE6ACB1
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Mar 2018 13:13:36 +0000 (UTC)
+Date: Mon, 5 Mar 2018 14:13:35 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: linuxppc-dev@ozlabs.org
+Subject: barrier_nospec for POWER
+Message-ID: <20180305141335.086c4a52@kitsune.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-03-02 at 02:01:08 UTC, Michael Ellerman wrote:
-> The subpage_prot syscall is only functional when the system is using
-> the Hash MMU. Since commit 5b2b80714796 ("powerpc/mm: Invalidate
-> subpage_prot() system call on radix platforms") it returns ENOENT when
-> the Radix MMU is active. Currently this just makes the test fail.
-> 
-> Additionally the syscall is not available if the kernel is built with
-> 4K pages, or if CONFIG_PPC_SUBPAGE_PROT=n, in which case it returns
-> ENOSYS because the syscall is missing entirely.
-> 
-> So check explicitly for ENOENT and ENOSYS and skip if we see either of
-> those.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Hello,
 
-Applied to powerpc fixes.
+there is x86 barrier_nospec which implements the same barrier as the
+earlier out-of-tree gmb() barrier but instead of sprinkling the barrier
+randomly in kernel code it put it in copy_from_user. We have the
+firmware support for barrier_nospec already reported from the hcall
+which is used for RFI flushes. So copy-pasting this from x86 should not
+be that difficult.
 
-https://git.kernel.org/powerpc/c/cd4a6f3ab4d80cb919d15897eb3cbc
+However, there is separate patch which protects the NR_syscalls check of
+syscall entry which does not apply on powerpc because the check is done
+in assembly. I did not manage to write a barrier_nospec that compiles
+both in C and asm so you are spared a RFC patch.
 
-cheers
+Is there some work in progress on addressing this?
+
+Thanks
+
+Michal
