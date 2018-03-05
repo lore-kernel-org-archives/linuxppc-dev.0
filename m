@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zvzsp5nZDzF0TY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:36:14 +1100 (AEDT)
-In-Reply-To: <20180228093257.13049-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zvzsq16yRzF0R7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Mar 2018 23:36:15 +1100 (AEDT)
+In-Reply-To: <20180302020108.22174-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: selftests/powerpc: Fix missing clean of pmu/lib.o
-Message-Id: <3zvzsn0w4xz9sXc@ozlabs.org>
-Date: Mon,  5 Mar 2018 23:36:12 +1100 (AEDT)
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [v2] selftests/powerpc: Skip the subpage_prot tests if the
+ syscall is unavailable
+Message-Id: <3zvzsp4KpBz9sZk@ozlabs.org>
+Date: Mon,  5 Mar 2018 23:36:14 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,18 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-02-28 at 09:32:57 UTC, Michael Ellerman wrote:
-> The tm-resched-dscr test links against pmu/lib.o, but we don't have a
-> rule to clean pmu/lib.o. This can lead to a build break if you build
-> for big endian and then little, or vice versa.
+On Fri, 2018-03-02 at 02:01:08 UTC, Michael Ellerman wrote:
+> The subpage_prot syscall is only functional when the system is using
+> the Hash MMU. Since commit 5b2b80714796 ("powerpc/mm: Invalidate
+> subpage_prot() system call on radix platforms") it returns ENOENT when
+> the Radix MMU is active. Currently this just makes the test fail.
 > 
-> Fix it by making tm-resched-dscr depend on pmu/lib.c, causing the code
-> to be built directly in, meaning no .o is generated.
+> Additionally the syscall is not available if the kernel is built with
+> 4K pages, or if CONFIG_PPC_SUBPAGE_PROT=n, in which case it returns
+> ENOSYS because the syscall is missing entirely.
+> 
+> So check explicitly for ENOENT and ENOSYS and skip if we see either of
+> those.
 > 
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/b7abbd5a3533a31a1e7d4696ea275d
+https://git.kernel.org/powerpc/c/cd4a6f3ab4d80cb919d15897eb3cbc
 
 cheers
