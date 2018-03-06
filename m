@@ -1,53 +1,25 @@
-Return-Path: <deepa.kernel@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwsdl0bwmzF1WP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 09:58:47 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id j7so949655ita.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 14:58:47 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwsxn5Z2jzF08Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 10:12:45 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id 93-v6so207355plc.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 15:12:45 -0800 (PST)
+Date: Wed, 7 Mar 2018 09:12:32 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 06/10] powerpc/mm/slice: implement slice_check_range_fits
+Message-ID: <20180307091232.4fb8d3c2@roar.ozlabs.ibm.com>
+In-Reply-To: <e600126e-ab89-e15b-e4c3-17dec7799a57@c-s.fr>
+References: <20180306132507.10649-1-npiggin@gmail.com>
+ <20180306132507.10649-7-npiggin@gmail.com>
+ <e600126e-ab89-e15b-e4c3-17dec7799a57@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <d8480da9-afe9-8a43-9c47-50919215a2de@de.ibm.com>
-References: <20180116021818.24791-1-deepa.kernel@gmail.com>
- <20180116021818.24791-3-deepa.kernel@gmail.com>
- <c6fb6676-a8d3-8893-660c-2b9899c5d5ab@de.ibm.com>
- <CAK8P3a0Gm1L70EaFzJBk0drRNKtX0FE22BHOSrXBgH1wNfKZ5A@mail.gmail.com>
- <d8480da9-afe9-8a43-9c47-50919215a2de@de.ibm.com>
-From: Deepa Dinamani <deepa.kernel@gmail.com>
-Date: Tue, 6 Mar 2018 14:58:45 -0800
-Message-ID: <CABeXuvrdPV0q4ufuxEnqT6T3b8pCT5RLUfuAZ_cwXr0it8gj0Q@mail.gmail.com>
-Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
- compat_time.h
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
- John Stultz <john.stultz@linaro.org>, Mark Rutland <mark.rutland@arm.com>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- devel@driverdev.osuosl.org, linux-s390 <linux-s390@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Helge Deller <deller@gmx.de>, "the arch/x86 maintainers" <x86@kernel.org>,
- sebott@linux.vnet.ibm.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Will Deacon <will.deacon@arm.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Catalin Marinas <catalin.marinas@arm.com>, Robert Richter <rric@kernel.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
- gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
- gregkh <gregkh@linuxfoundation.org>, cohuck@redhat.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
- Stefan Haberland <sth@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,67 +29,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 6, 2018 at 4:48 AM, Christian Borntraeger
-<borntraeger@de.ibm.com> wrote:
->
->
-> On 03/06/2018 01:46 PM, Arnd Bergmann wrote:
->> On Mon, Mar 5, 2018 at 10:30 AM, Christian Borntraeger
->> <borntraeger@de.ibm.com> wrote:
->>> On 01/16/2018 03:18 AM, Deepa Dinamani wrote:
->>>> All the current architecture specific defines for these
->>>> are the same. Refactor these common defines to a common
->>>> header file.
->>>>
->>>> The new common linux/compat_time.h is also useful as it
->>>> will eventually be used to hold all the defines that
->>>> are needed for compat time types that support non y2038
->>>> safe types. New architectures need not have to define these
->>>> new types as they will only use new y2038 safe syscalls.
->>>> This file can be deleted after y2038 when we stop supporting
->>>> non y2038 safe syscalls.
->>>
->>> You are now include a <linux/*.h> from several asm files
->>> (
->>>  arch/arm64/include/asm/stat.h
->>>  arch/s390/include/asm/elf.h
->>>  arch/x86/include/asm/ftrace.h
->>>  arch/x86/include/asm/sys_ia32.h
->>> )
->>> It works, and it is done in many places, but it looks somewhat weird.
->>> Would it make sense to have an asm-generic/compate-time.h instead? Asking for
->>> opinions here.
->>
->> I don't think we have such a rule. If a header file is common to all
->> architectures (i.e. no architecture uses a different implementation),
->> it should be in include/linux rather than include/asm-generic, regardless
->> of whether it can be used by assembler files or not.
->>
->>>> --- a/drivers/s390/net/qeth_core_main.c
->>>> +++ b/drivers/s390/net/qeth_core_main.c
->>>> @@ -32,7 +32,7 @@
->>>>  #include <asm/chpid.h>
->>>>  #include <asm/io.h>
->>>>  #include <asm/sysinfo.h>
->>>> -#include <asm/compat.h>
->>>> +#include <linux/compat.h>
->>>>  #include <asm/diag.h>
->>>>  #include <asm/cio.h>
->>>>  #include <asm/ccwdev.h>
->>>
->>> Can you move that into the other includes (where all the other <linux/*> includes are.
->>
->> Good catch, this is definitely a rule we have ;-)
->
-> FWIW, this was also broken for
-> arch/x86/include/asm/sys_ia32.h
+On Tue, 6 Mar 2018 15:41:00 +0100
+Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 
-The reason that this was done this way is because of the sed script
-mentioned in the commit text.
-I was trying to make minimal change apart from the script so that we
-don't have other changes like moving the lines to keep the patch
-simpler.
-I will fix this by hand since this is preferred.
-I will post an update.
+> Le 06/03/2018 à 14:25, Nicholas Piggin a écrit :
 
--Deepa
+
+> > +static bool slice_check_range_fits(struct mm_struct *mm,
+> > +			   const struct slice_mask *available,
+> > +			   unsigned long start, unsigned long len)
+> >   {
+> > -	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+> > -	/*
+> > -	 * Make sure we just do bit compare only to the max
+> > -	 * addr limit and not the full bit map size.
+> > -	 */
+> > -	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
+> > +	unsigned long end = start + len - 1;
+> > +	u64 low_slices = 0;
+> >   
+> > -	if (!SLICE_NUM_HIGH)
+> > -		return (mask->low_slices & available->low_slices) ==
+> > -		       mask->low_slices;
+> > +	if (start < SLICE_LOW_TOP) {
+> > +		unsigned long mend = min(end, (SLICE_LOW_TOP - 1));  
+> 
+> See slice_range_to_mask()
+> 
+> You'll have an issue here with PPC32, you have to cast (SLICE_LOW_TOP - 
+> 1) to unsigned long because SLICE_LOW_TOP is unsigned long long on PPC32
+
+Okay thanks. Forgot to cross compiled it on 8xx, so I'll do that next
+time.
+
+> > +
+> > +		low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
+> > +				- (1u << GET_LOW_SLICE_INDEX(start));
+> > +	}
+> > +	if ((low_slices & available->low_slices) != low_slices)
+> > +		return false;
+> > +
+> > +	if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
+> > +		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
+> > +		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+> > +		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+> > +		unsigned long i;
+> >   
+> > -	bitmap_and(result, mask->high_slices,
+> > -		   available->high_slices, slice_count);
+> > +		for (i = start_index; i < start_index + count; i++) {
+> > +			if (!test_bit(i, available->high_slices))
+> > +				return false;
+> > +		}  
+> 
+> What about using bitmap_find_next_zero_area()
+
+I'll look at it. Perhaps in another patch, because existing
+loops are not using bitmap range operations either. A series
+to convert those is a good idea.
+
+> > @@ -562,15 +571,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+> >   #endif
+> >   
+> >   	/* First check hint if it's valid or if we have MAP_FIXED */
+> > -	if (addr != 0 || fixed) {
+> > -		/* Build a mask for the requested range */
+> > -		slice_range_to_mask(addr, len, &mask);
+> > -		slice_print_mask(" mask", &mask);
+> > -
+> > +	if (addr || fixed) {  
+> 
+> It is cleanup, should it really be part of this patch ?
+
+
+
+> > @@ -596,10 +601,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+> >   	slice_or_mask(&potential_mask, &good_mask);
+> >   	slice_print_mask(" potential", &potential_mask);
+> >   
+> > -	if ((addr != 0 || fixed) &&
+> > -			slice_check_fit(mm, &mask, &potential_mask)) {
+> > -		slice_dbg(" fits potential !\n");
+> > -		goto convert;
+> > +	if (addr || fixed) {
+> > +		if (slice_check_range_fits(mm, &potential_mask, addr, len)) {
+> > +			slice_dbg(" fits potential !\n");
+> > +			goto convert;
+> > +		}  
+> 
+> Why not keep the original structure and just replacing slice_check_fit() 
+> by slice_check_range_fits() ?
+> 
+> I believe cleanups should not be mixed with real feature changes. If 
+> needed, you should have a cleanup patch up front the serie.
+
+For code that is already changing, I think minor cleanups are okay if
+they're very simple. Maybe this is getting to the point of needing
+another patch. You've made valid points for a lot of other unnecessary
+cleanups though, so I'll fix all of those.
+
+Thanks,
+Nick
