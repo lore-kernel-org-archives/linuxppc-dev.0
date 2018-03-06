@@ -1,32 +1,53 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deepa.kernel@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwsQ41mbDzF1Yr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 09:48:44 +1100 (AEDT)
-Date: Tue, 6 Mar 2018 14:48:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Khalid Aziz <khalid.aziz@oracle.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- davem@davemloft.net, dave.hansen@linux.intel.com, bsingharora@gmail.com,
- nborisov@suse.com, aarcange@redhat.com, anthony.yznaga@oracle.com,
- mgorman@suse.de, linuxram@us.ibm.com, kirill.shutemov@linux.intel.com,
- dan.j.williams@intel.com, jack@suse.cz, ross.zwisler@linux.intel.com,
- gregkh@linuxfoundation.org, tglx@linutronix.de, mhocko@suse.com,
- n-horiguchi@ah.jp.nec.com, jglisse@redhat.com, henry.willard@oracle.com,
- aneesh.kumar@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, sparclinux@vger.kernel.org, Khalid Aziz
- <khalid@gonehiking.org>
-Subject: Re: [PATCH v12 07/11] mm: Add address parameter to
- arch_validate_prot()
-Message-Id: <20180306144807.30915bcffe6e640c3ad6279c@linux-foundation.org>
-In-Reply-To: <349751cbd54fda6f4a223f941aa71bbfe7be77ce.1519227112.git.khalid.aziz@oracle.com>
-References: <cover.1519227112.git.khalid.aziz@oracle.com>
- <349751cbd54fda6f4a223f941aa71bbfe7be77ce.1519227112.git.khalid.aziz@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwsdl0bwmzF1WP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 09:58:47 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id j7so949655ita.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 14:58:47 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <d8480da9-afe9-8a43-9c47-50919215a2de@de.ibm.com>
+References: <20180116021818.24791-1-deepa.kernel@gmail.com>
+ <20180116021818.24791-3-deepa.kernel@gmail.com>
+ <c6fb6676-a8d3-8893-660c-2b9899c5d5ab@de.ibm.com>
+ <CAK8P3a0Gm1L70EaFzJBk0drRNKtX0FE22BHOSrXBgH1wNfKZ5A@mail.gmail.com>
+ <d8480da9-afe9-8a43-9c47-50919215a2de@de.ibm.com>
+From: Deepa Dinamani <deepa.kernel@gmail.com>
+Date: Tue, 6 Mar 2018 14:58:45 -0800
+Message-ID: <CABeXuvrdPV0q4ufuxEnqT6T3b8pCT5RLUfuAZ_cwXr0it8gj0Q@mail.gmail.com>
+Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
+ compat_time.h
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
+ John Stultz <john.stultz@linaro.org>, Mark Rutland <mark.rutland@arm.com>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ devel@driverdev.osuosl.org, linux-s390 <linux-s390@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Helge Deller <deller@gmx.de>, "the arch/x86 maintainers" <x86@kernel.org>,
+ sebott@linux.vnet.ibm.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Will Deacon <will.deacon@arm.com>,
+ Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
+ Catalin Marinas <catalin.marinas@arm.com>, Robert Richter <rric@kernel.org>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
+ gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
+ gregkh <gregkh@linuxfoundation.org>, cohuck@redhat.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,19 +57,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 Feb 2018 10:15:49 -0700 Khalid Aziz <khalid.aziz@oracle.com> wrote:
+On Tue, Mar 6, 2018 at 4:48 AM, Christian Borntraeger
+<borntraeger@de.ibm.com> wrote:
+>
+>
+> On 03/06/2018 01:46 PM, Arnd Bergmann wrote:
+>> On Mon, Mar 5, 2018 at 10:30 AM, Christian Borntraeger
+>> <borntraeger@de.ibm.com> wrote:
+>>> On 01/16/2018 03:18 AM, Deepa Dinamani wrote:
+>>>> All the current architecture specific defines for these
+>>>> are the same. Refactor these common defines to a common
+>>>> header file.
+>>>>
+>>>> The new common linux/compat_time.h is also useful as it
+>>>> will eventually be used to hold all the defines that
+>>>> are needed for compat time types that support non y2038
+>>>> safe types. New architectures need not have to define these
+>>>> new types as they will only use new y2038 safe syscalls.
+>>>> This file can be deleted after y2038 when we stop supporting
+>>>> non y2038 safe syscalls.
+>>>
+>>> You are now include a <linux/*.h> from several asm files
+>>> (
+>>>  arch/arm64/include/asm/stat.h
+>>>  arch/s390/include/asm/elf.h
+>>>  arch/x86/include/asm/ftrace.h
+>>>  arch/x86/include/asm/sys_ia32.h
+>>> )
+>>> It works, and it is done in many places, but it looks somewhat weird.
+>>> Would it make sense to have an asm-generic/compate-time.h instead? Asking for
+>>> opinions here.
+>>
+>> I don't think we have such a rule. If a header file is common to all
+>> architectures (i.e. no architecture uses a different implementation),
+>> it should be in include/linux rather than include/asm-generic, regardless
+>> of whether it can be used by assembler files or not.
+>>
+>>>> --- a/drivers/s390/net/qeth_core_main.c
+>>>> +++ b/drivers/s390/net/qeth_core_main.c
+>>>> @@ -32,7 +32,7 @@
+>>>>  #include <asm/chpid.h>
+>>>>  #include <asm/io.h>
+>>>>  #include <asm/sysinfo.h>
+>>>> -#include <asm/compat.h>
+>>>> +#include <linux/compat.h>
+>>>>  #include <asm/diag.h>
+>>>>  #include <asm/cio.h>
+>>>>  #include <asm/ccwdev.h>
+>>>
+>>> Can you move that into the other includes (where all the other <linux/*> includes are.
+>>
+>> Good catch, this is definitely a rule we have ;-)
+>
+> FWIW, this was also broken for
+> arch/x86/include/asm/sys_ia32.h
 
-> A protection flag may not be valid across entire address space and
-> hence arch_validate_prot() might need the address a protection bit is
-> being set on to ensure it is a valid protection flag. For example, sparc
-> processors support memory corruption detection (as part of ADI feature)
-> flag on memory addresses mapped on to physical RAM but not on PFN mapped
-> pages or addresses mapped on to devices. This patch adds address to the
-> parameters being passed to arch_validate_prot() so protection bits can
-> be validated in the relevant context.
-> 
-> Signed-off-by: Khalid Aziz <khalid.aziz@oracle.com>
-> Cc: Khalid Aziz <khalid@gonehiking.org>
-> Reviewed-by: Anthony Yznaga <anthony.yznaga@oracle.com>
+The reason that this was done this way is because of the sed script
+mentioned in the commit text.
+I was trying to make minimal change apart from the script so that we
+don't have other changes like moving the lines to keep the patch
+simpler.
+I will fix this by hand since this is preferred.
+I will post an update.
 
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
+-Deepa
