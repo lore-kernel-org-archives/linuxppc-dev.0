@@ -1,31 +1,26 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwV1g30FtzF0gk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 19:14:47 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w268ESWi014694
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2018 03:14:44 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ghpp99hgy-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 03:14:44 -0500
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Tue, 6 Mar 2018 08:14:41 -0000
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com, mpe@ellerman.id.au,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [FIX PATCH] powerpc/pseries: Fix vector5 in ibm architecture vector
- table
-Date: Tue,  6 Mar 2018 13:44:32 +0530
-Message-Id: <20180306081432.3653-1-bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwXqh6PLBzF0Vf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Mar 2018 21:21:18 +1100 (AEDT)
+Date: Tue, 6 Mar 2018 11:21:12 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call
+ setup_rfi_flush() again
+Message-ID: <20180306112112.6cf9694b@naga.suse.cz>
+In-Reply-To: <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
+References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <20180215081358.2f37cda4@naga.suse.cz>
+ <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
+ <87lgforngp.fsf@concordia.ellerman.id.au>
+ <20180220180621.11265945@kitsune.suse.cz>
+ <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With ibm,dynamic-memory-v2 and ibm,drc-info coming around the
-same time, byte22 in vector5 of ibm architecture vector table
-got set twice separately. The end result is that guest kernel
-isn't advertising support for ibm,dynamic-memory-v2.
+On Mon, 5 Mar 2018 19:46:12 -0300
+Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com> wrote:
 
-Fix this by removing the duplicate assignment of byte22.
+> Hi Michael, Michal,
+>=20
+> I got back from vacation. Checking this one.
+>=20
+> On 02/20/2018 02:06 PM, Michal Such=C3=A1nek wrote:
+> >> I did it the way I did because otherwise we waste memory on every
+> >> system on earth just to support a use case that we don't actually
+> >> intend for anyone to ever use - ie. migrating from a patched
+> >> machine to an unpatched machine. =20
+>=20
+> If this thread eventually closes in 'ok, so that memory has to be
+> reserved/wasted anyway', that can be done only in pseries, right?
+>=20
+> It seems not so much memory for this particular platform/hardware.
 
-Fixes: 02ef6dd8109b5 (powerpc: Enable support for ibm,drc-info devtree property)
-Fixes: c7a3275e0f9e4 (powerpc/pseries: Revert support for ibm,drc-info devtree property)
+Yes, that is what I think too.
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/prom_init.c | 1 -
- 1 file changed, 1 deletion(-)
+>=20
+> > If you have multiple hosts running some LPMs and want to update them
+> > without shutting down the whole thing I suppose it might easily
+> > happen that a machine (re)started on a patched host is migrated to
+> > unpatched host. =20
+>=20
+> Right, but that should be temporary, I think -- after updating some of
+> the hosts, the LPAR(s) can be migrated back to one of them, where the
+> fallback flush is not required anymore.
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index d22c41c26bb3..acf4b2e0530c 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -874,7 +874,6 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
- 		.mmu = 0,
- 		.hash_ext = 0,
- 		.radix_ext = 0,
--		.byte22 = 0,
- 	},
- 
- 	/* option vector 6: IBM PAPR hints */
--- 
-2.14.3
+Temporary, yes. But for how long?
+
+Also is it possible to migrate between P8 and P9 in P8 compat mode?
+
+AFAIK on P9 fallback mode is used exclusively so far.
+
+>=20
+> >> I think I'm inclined to leave it the way it is, unless you feel
+> >> strongly about it Michal? =20
+>=20
+> > I think it would be more user friendly to either support the
+> > fallback method 100% or remove it and require patched firmware. =20
+>=20
+> I beg to disagree.  Since the matter is a security issue, the option
+> of still have some sort of fix that works on unpatched firmware does
+> look good and friendly to users (rather than require 'you _must_ get
+> the firmware update') IMHO.
+
+Specifically because this is a security issue user friendly is that
+user can tell clearly if the fix is applied or not. If the kernel tells
+the user the fix is applied and later it tells "sorry, could not
+allocate more memory. disabling fix" this is really unfriendly.=20
+
+Thanks
+
+Michal
