@@ -1,21 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwcwD28HxzF1Kh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 00:25:32 +1100 (AEDT)
-Received: by mail-pl0-x243.google.com with SMTP id s13-v6so11824310plq.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 05:25:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwcwH1DPVzF1R1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 00:25:35 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id w12-v6so109093plp.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 05:25:34 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 02/10] powerpc/mm/slice: Simplify and optimise slice context
- initialisation
-Date: Tue,  6 Mar 2018 23:24:59 +1000
-Message-Id: <20180306132507.10649-3-npiggin@gmail.com>
+Subject: [PATCH 03/10] powerpc/mm/slice: tidy lpsizes and hpsizes update loops
+Date: Tue,  6 Mar 2018 23:25:00 +1000
+Message-Id: <20180306132507.10649-4-npiggin@gmail.com>
 In-Reply-To: <20180306132507.10649-1-npiggin@gmail.com>
 References: <20180306132507.10649-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,182 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The slice state of an mm gets zeroed then initialised upon exec.
-This is the only caller of slice_set_user_psize now, so that can be
-removed and instead implement a faster and simplified approach that
-requires no locking or checking existing state.
-
-This speeds up vfork+exec+exit performance on POWER8 by 3%.
+Make these loops look the same, and change their form so the
+important part is not wrapped over so many lines.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/slice.h       |  8 ++--
- arch/powerpc/mm/mmu_context_book3s64.c |  9 +----
- arch/powerpc/mm/mmu_context_nohash.c   |  5 +--
- arch/powerpc/mm/slice.c                | 69 +++++++---------------------------
- 4 files changed, 19 insertions(+), 72 deletions(-)
+ arch/powerpc/mm/slice.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
-index 172711fadb1c..e40406cf5628 100644
---- a/arch/powerpc/include/asm/slice.h
-+++ b/arch/powerpc/include/asm/slice.h
-@@ -28,15 +28,13 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 
- unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
- 
--void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
- void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- 			   unsigned long len, unsigned int psize);
--#endif /* __ASSEMBLY__ */
- 
--#else /* CONFIG_PPC_MM_SLICES */
-+void slice_init_new_context_exec(struct mm_struct *mm);
-+
-+#endif /* __ASSEMBLY__ */
- 
--#define slice_set_range_psize(mm, start, len, psize)	\
--	slice_set_user_psize((mm), (psize))
- #endif /* CONFIG_PPC_MM_SLICES */
- 
- #endif /* _ASM_POWERPC_SLICE_H */
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 929d9ef7083f..80acad52b006 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -93,13 +93,6 @@ static int hash__init_new_context(struct mm_struct *mm)
- 	if (index < 0)
- 		return index;
- 
--	/*
--	 * In the case of exec, use the default limit,
--	 * otherwise inherit it from the mm we are duplicating.
--	 */
--	if (!mm->context.slb_addr_limit)
--		mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
--
- 	/*
- 	 * The old code would re-promote on fork, we don't do that when using
- 	 * slices as it could cause problem promoting slices that have been
-@@ -115,7 +108,7 @@ static int hash__init_new_context(struct mm_struct *mm)
- 	 * check against 0 is OK.
- 	 */
- 	if (mm->context.id == 0)
--		slice_set_user_psize(mm, mmu_virtual_psize);
-+		slice_init_new_context_exec(mm);
- 
- 	subpage_prot_init_new_context(mm);
- 
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index d98f7e5c141b..be8f5c9d4d08 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -332,9 +332,6 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- 	pr_hard("initing context for mm @%p\n", mm);
- 
- #ifdef	CONFIG_PPC_MM_SLICES
--	if (!mm->context.slb_addr_limit)
--		mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
--
- 	/*
- 	 * We have MMU_NO_CONTEXT set to be ~0. Hence check
- 	 * explicitly against context.id == 0. This ensures that we properly
-@@ -343,7 +340,7 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- 	 * will have id != 0).
- 	 */
- 	if (mm->context.id == 0)
--		slice_set_user_psize(mm, mmu_virtual_psize);
-+		slice_init_new_context_exec(mm);
- #endif
- 	mm->context.id = MMU_NO_CONTEXT;
- 	mm->context.active = 0;
 diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 5e9e1e57d580..af4351b15d01 100644
+index af4351b15d01..9625ceb35685 100644
 --- a/arch/powerpc/mm/slice.c
 +++ b/arch/powerpc/mm/slice.c
-@@ -671,70 +671,29 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
- }
- EXPORT_SYMBOL_GPL(get_slice_psize);
+@@ -232,22 +232,24 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 	spin_lock_irqsave(&slice_convert_lock, flags);
  
--/*
-- * This is called by hash_page when it needs to do a lazy conversion of
-- * an address space from real 64K pages to combo 4K pages (typically
-- * when hitting a non cacheable mapping on a processor or hypervisor
-- * that won't allow them for 64K pages).
-- *
-- * This is also called in init_new_context() to change back the user
-- * psize from whatever the parent context had it set to
-- * N.B. This may be called before mm->context.id has been set.
-- *
-- * This function will only change the content of the {low,high)_slice_psize
-- * masks, it will not flush SLBs as this shall be handled lazily by the
-- * caller.
-- */
--void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
-+void slice_init_new_context_exec(struct mm_struct *mm)
- {
--	int index, mask_index;
- 	unsigned char *hpsizes, *lpsizes;
--	unsigned long flags;
--	unsigned int old_psize;
--	int i;
--
--	slice_dbg("slice_set_user_psize(mm=%p, psize=%d)\n", mm, psize);
--
--	VM_BUG_ON(radix_enabled());
--	spin_lock_irqsave(&slice_convert_lock, flags);
-+	unsigned int psize = mmu_virtual_psize;
- 
--	old_psize = mm->context.user_psize;
--	slice_dbg(" old_psize=%d\n", old_psize);
--	if (old_psize == psize)
--		goto bail;
-+	slice_dbg("slice_init_new_context_exec(mm=%p)\n", mm);
- 
-+	/*
-+	 * In the case of exec, use the default limit. In the
-+	 * case of fork it is just inherited from the mm being
-+	 * duplicated.
-+	 */
-+	mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW_USER64;
- 	mm->context.user_psize = psize;
--	wmb();
- 
-+	/*
-+	 * Set all slice psizes to the default.
-+	 */
  	lpsizes = mm->context.low_slices_psize;
--	for (i = 0; i < SLICE_NUM_LOW; i++) {
--		mask_index = i & 0x1;
--		index = i >> 1;
--		if (((lpsizes[index] >> (mask_index * 4)) & 0xf) == old_psize)
+-	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (mask.low_slices & (1u << i)) {
+-			mask_index = i & 0x1;
+-			index = i >> 1;
 -			lpsizes[index] = (lpsizes[index] &
 -					  ~(0xf << (mask_index * 4))) |
--				(((unsigned long)psize) << (mask_index * 4));
--	}
-+	memset(lpsizes, (psize << 4) | psize, SLICE_NUM_LOW >> 1);
++	for (i = 0; i < SLICE_NUM_LOW; i++) {
++		if (!(mask.low_slices & (1u << i)))
++			continue;
++
++		mask_index = i & 0x1;
++		index = i >> 1;
++		lpsizes[index] = (lpsizes[index] & ~(0xf << (mask_index * 4))) |
+ 				(((unsigned long)psize) << (mask_index * 4));
+-		}
++	}
  
  	hpsizes = mm->context.high_slices_psize;
--	for (i = 0; i < SLICE_NUM_HIGH; i++) {
--		mask_index = i & 0x1;
--		index = i >> 1;
--		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == old_psize)
+ 	for (i = 0; i < GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit); i++) {
++		if (!test_bit(i, mask.high_slices))
++			continue;
++
+ 		mask_index = i & 0x1;
+ 		index = i >> 1;
+-		if (test_bit(i, mask.high_slices))
 -			hpsizes[index] = (hpsizes[index] &
 -					  ~(0xf << (mask_index * 4))) |
--				(((unsigned long)psize) << (mask_index * 4));
--	}
--
--
--
--
--	slice_dbg(" lsps=%lx, hsps=%lx\n",
--		  (unsigned long)mm->context.low_slices_psize,
--		  (unsigned long)mm->context.high_slices_psize);
--
-- bail:
--	spin_unlock_irqrestore(&slice_convert_lock, flags);
-+	memset(hpsizes, (psize << 4) | psize, SLICE_NUM_HIGH >> 1);
- }
++		hpsizes[index] = (hpsizes[index] & ~(0xf << (mask_index * 4))) |
+ 				(((unsigned long)psize) << (mask_index * 4));
+ 	}
  
- void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
 -- 
 2.16.1
