@@ -1,34 +1,40 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zx1Zj56TrzF1hF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 15:56:45 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w274s931121460
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2018 23:56:42 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gj3scarbq-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zx2jL60nXzF1Jy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 16:47:34 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w275icSq033349
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Mar 2018 00:47:32 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gj79ndkvq-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 23:56:42 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 00:47:31 -0500
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 7 Mar 2018 04:56:40 -0000
-Subject: Re: [PATCH] powerpc/perf: Fix kernel address leaks via Sampling
- registers
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-References: <1520165709-20524-1-git-send-email-maddy@linux.vnet.ibm.com>
- <201803062210.ahTRkTqj%fengguang.wu@intel.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Wed, 7 Mar 2018 10:26:34 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 7 Mar 2018 05:47:29 -0000
+Subject: Re: [PATCH v2 05/38] cxlflash: Hardware AFU for OCXL
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1519683625-16930-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 7 Mar 2018 16:47:23 +1100
 MIME-Version: 1.0
-In-Reply-To: <201803062210.ahTRkTqj%fengguang.wu@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <64740f90-d9d2-0207-950c-8f26651d63d7@linux.vnet.ibm.com>
+In-Reply-To: <1519683625-16930-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <dfb0ee32-39ca-652e-cee6-267421e4e503@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +44,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 27/02/18 09:20, Uma Krishnan wrote:
+> When an adapter is initialized, transport specific configuration and MMIO
+> mapping details need to be saved. For CXL, this data is managed by the
+> underlying kernel module. To maintain a separation between the cxlflash
+> core and underlying transports, introduce a new structure to store data
+> specific to the OCXL AFU.
+> 
+> Initially only the pointers to underlying PCI and generic devices are
+> added to this new structure - it will be expanded further in future
+> commits. Services to create and destroy this hardware AFU are added and
+> integrated in the probe and exit paths of the driver.
+> 
+> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 
+One comment below
 
-On Tuesday 06 March 2018 08:36 PM, kbuild test robot wrote:
-> Hi Michael,
->
-> I love your patch! Yet something to improve:
->
-> [auto build test ERROR on v4.16-rc1]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Madhavan-Srinivasan/powerpc-perf-Fix-kernel-address-leaks-via-Sampling-registers/20180306-041036
-> config: powerpc-pmac32_defconfig (attached as .config)
-> compiler: powerpc-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-> reproduce:
->          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # save the attached .config to linux build tree
->          make.cross ARCH=powerpc
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-My bad should have added the ppmu->flag or config check to avoid this
-in 32bit case. Will respin it.
-
-Maddy
-
-> All errors (new ones prefixed by >>):
->
->     {standard input}: Assembler messages:
->>> {standard input}:2476: Error: unsupported relocation against SPRN_SDAR
 > ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>   drivers/scsi/cxlflash/backend.h |  1 +
+>   drivers/scsi/cxlflash/cxl_hw.c  |  6 ++++++
+>   drivers/scsi/cxlflash/main.c    |  9 +++++++--
+>   drivers/scsi/cxlflash/ocxl_hw.c | 40 ++++++++++++++++++++++++++++++++++++++++
+>   drivers/scsi/cxlflash/ocxl_hw.h | 19 +++++++++++++++++++
+>   5 files changed, 73 insertions(+), 2 deletions(-)
+>   create mode 100644 drivers/scsi/cxlflash/ocxl_hw.h
+> 
+> diff --git a/drivers/scsi/cxlflash/backend.h b/drivers/scsi/cxlflash/backend.h
+> index a60f051..f675bcb 100644
+> --- a/drivers/scsi/cxlflash/backend.h
+> +++ b/drivers/scsi/cxlflash/backend.h
+> @@ -36,6 +36,7 @@ struct cxlflash_backend_ops {
+>   	int (*allocate_afu_irqs)(void *ctx_cookie, int num);
+>   	void (*free_afu_irqs)(void *ctx_cookie);
+>   	void * (*create_afu)(struct pci_dev *dev);
+> +	void (*destroy_afu)(void *afu_cookie);
+>   	struct file * (*get_fd)(void *ctx_cookie, struct file_operations *fops,
+>   				int *fd);
+>   	void * (*fops_get_context)(struct file *file);
+> diff --git a/drivers/scsi/cxlflash/cxl_hw.c b/drivers/scsi/cxlflash/cxl_hw.c
+> index db1cada..a1d6d12 100644
+> --- a/drivers/scsi/cxlflash/cxl_hw.c
+> +++ b/drivers/scsi/cxlflash/cxl_hw.c
+> @@ -110,6 +110,11 @@ static void *cxlflash_create_afu(struct pci_dev *dev)
+>   	return cxl_pci_to_afu(dev);
+>   }
+> 
+> +static void cxlflash_destroy_afu(void *afu)
+> +{
+> +	/* Dummy fop for cxl */
+> +}
+> +
+
+For ops structs I think it's more common to set the function pointer to 
+NULL when not implemented and do a NULL check at the call site.
+
+>   static struct file *cxlflash_get_fd(void *ctx_cookie,
+>   				    struct file_operations *fops, int *fd)
+>   {
+> @@ -160,6 +165,7 @@ const struct cxlflash_backend_ops cxlflash_cxl_ops = {
+>   	.allocate_afu_irqs	= cxlflash_allocate_afu_irqs,
+>   	.free_afu_irqs		= cxlflash_free_afu_irqs,
+>   	.create_afu		= cxlflash_create_afu,
+> +	.destroy_afu		= cxlflash_destroy_afu,
+>   	.get_fd			= cxlflash_get_fd,
+>   	.fops_get_context	= cxlflash_fops_get_context,
+>   	.start_work		= cxlflash_start_work,
+> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+> index b83a55a..5d754d1 100644
+> --- a/drivers/scsi/cxlflash/main.c
+> +++ b/drivers/scsi/cxlflash/main.c
+> @@ -971,6 +971,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
+>   	case INIT_STATE_AFU:
+>   		term_afu(cfg);
+>   	case INIT_STATE_PCI:
+> +		cfg->ops->destroy_afu(cfg->afu_cookie);
+>   		pci_disable_device(pdev);
+>   	case INIT_STATE_NONE:
+>   		free_mem(cfg);
+> @@ -3689,8 +3690,6 @@ static int cxlflash_probe(struct pci_dev *pdev,
+> 
+>   	pci_set_drvdata(pdev, cfg);
+> 
+> -	cfg->afu_cookie = cfg->ops->create_afu(pdev);
+> -
+>   	rc = init_pci(cfg);
+>   	if (rc) {
+>   		dev_err(dev, "%s: init_pci failed rc=%d\n", __func__, rc);
+> @@ -3698,6 +3697,12 @@ static int cxlflash_probe(struct pci_dev *pdev,
+>   	}
+>   	cfg->init_state = INIT_STATE_PCI;
+> 
+> +	cfg->afu_cookie = cfg->ops->create_afu(pdev);
+> +	if (unlikely(!cfg->afu_cookie)) {
+> +		dev_err(dev, "%s: create_afu failed\n", __func__);
+> +		goto out_remove;
+> +	}
+> +
+>   	rc = init_afu(cfg);
+>   	if (rc && !wq_has_sleeper(&cfg->reset_waitq)) {
+>   		dev_err(dev, "%s: init_afu failed rc=%d\n", __func__, rc);
+> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
+> index 58a3182..e3a0a9b 100644
+> --- a/drivers/scsi/cxlflash/ocxl_hw.c
+> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
+> @@ -15,8 +15,48 @@
+>   #include <misc/ocxl.h>
+> 
+>   #include "backend.h"
+> +#include "ocxl_hw.h"
+> +
+> +/**
+> + * ocxlflash_destroy_afu() - destroy the AFU structure
+> + * @afu_cookie:	AFU to be freed.
+> + */
+> +static void ocxlflash_destroy_afu(void *afu_cookie)
+> +{
+> +	struct ocxl_hw_afu *afu = afu_cookie;
+> +
+> +	if (!afu)
+> +		return; > +
+> +	kfree(afu);
+> +}
+> +
+> +/**
+> + * ocxlflash_create_afu() - create the AFU for OCXL
+> + * @pdev:	PCI device associated with the host.
+> + *
+> + * Return: AFU on success, NULL on failure
+> + */
+> +static void *ocxlflash_create_afu(struct pci_dev *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct ocxl_hw_afu *afu;
+> +
+> +	afu = kzalloc(sizeof(*afu), GFP_KERNEL);
+> +	if (unlikely(!afu)) {
+> +		dev_err(dev, "%s: HW AFU allocation failed\n", __func__);
+> +		goto out;
+> +	}
+> +
+> +	afu->pdev = pdev;
+> +	afu->dev = dev;
+> +out:
+> +	return afu;
+> +}
+> 
+>   /* Backend ops to ocxlflash services */
+>   const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
+>   	.module			= THIS_MODULE,
+> +	.create_afu		= ocxlflash_create_afu,
+> +	.destroy_afu		= ocxlflash_destroy_afu,
+>   };
+> diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
+> new file mode 100644
+> index 0000000..c7e5c4d
+> --- /dev/null
+> +++ b/drivers/scsi/cxlflash/ocxl_hw.h
+> @@ -0,0 +1,19 @@
+> +/*
+> + * CXL Flash Device Driver
+> + *
+> + * Written by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>, IBM Corporation
+> + *	       Uma Krishnan <ukrishn@linux.vnet.ibm.com>, IBM Corporation
+> + *
+> + * Copyright (C) 2018 IBM Corporation
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +/* OCXL hardware AFU associated with the host */
+> +struct ocxl_hw_afu {
+> +	struct pci_dev *pdev;		/* PCI device */
+> +	struct device *dev;		/* Generic device */
+> +};
+> 
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
