@@ -1,36 +1,24 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwzl32cfQzF1c3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 14:33:51 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w273Scsl015239
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Mar 2018 22:33:48 -0500
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gj4ru6knt-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 22:33:48 -0500
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Wed, 7 Mar 2018 03:33:46 -0000
-Date: Wed, 7 Mar 2018 14:33:39 +1100
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 9/9] powerpc/eeh: Add eeh_state_active() helper
-References: <cover.1520294174.git.sam.bobroff@au1.ibm.com>
- <2c6264797f9efd44679fa8c8ac4f8beb11a38c18.1520294174.git.sam.bobroff@au1.ibm.com>
- <1520315388.2077.15.camel@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwztz1HCNzF1j7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 14:40:42 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id 93-v6so593744plc.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 19:40:42 -0800 (PST)
+Subject: Re: [PATCH kernel] powerpc/npu: Do not try invalidating 32bit table
+ when 64bit table is enabled
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ Alistair Popple <alistair@popple.id.au>, Russell Currey <ruscur@russell.cc>
+References: <20180213055135.25639-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <4191e3cb-9a94-ea6d-702b-49c10fc323fd@ozlabs.ru>
+Date: Wed, 7 Mar 2018 14:40:36 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-In-Reply-To: <1520315388.2077.15.camel@russell.cc>
-Message-Id: <20180307033338.GA4666@tungsten.ozlabs.ibm.com>
+In-Reply-To: <20180213055135.25639-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +28,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 13/02/18 16:51, Alexey Kardashevskiy wrote:
+> GPUs and the corresponding NVLink bridges get different PEs as they have
+> separate translation validation entries (TVEs). We put these PEs to
+> the same IOMMU group so they cannot be passed through separately.
+> So the iommu_table_group_ops::set_window/unset_window for GPUs do set
+> tables to the NPU PEs as well which means that iommu_table's list of
+> attached PEs (iommu_table_group_link) has both GPU and NPU PEs linked.
+> This list is used for TCE cache invalidation.
+> 
+> The problem is that NPU PE has just a single TVE and can be programmed
+> to point to 32bit or 64bit windows while GPU PE has two (as any other PCI
+> device). So we end up having an 32bit iommu_table struct linked to both
+> PEs even though only the 64bit TCE table cache can be invalidated on NPU.
+> And a relatively recent skiboot detects this and prints errors.
+> 
+> This changes GPU's iommu_table_group_ops::set_window/unset_window to make
+> sure that NPU PE is only linked to the table actually used by the hardware.
+> If there are two tables used by an IOMMU group, the NPU PE will use
+> the last programmed one which with the current use scenarios is expected
+> to be a 64bit one.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> --
+> 
+> Do we need BUG_ON(IOMMU_TABLE_GROUP_MAX_TABLES != 2)?
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Mar 06, 2018 at 04:49:48PM +1100, Russell Currey wrote:
-> On Tue, 2018-03-06 at 11:00 +1100, Sam Bobroff wrote:
-> > Checking for a "fully active" device state requires testing two flag
-> > bits, which is open coded in several places, so add a function to do
-> > it.
-> >=20
-> > Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
->=20
-> Thanks for the patches.
-
-Thanks for the review, I'll do a v2 with all the nits mentioned so far,
-Sam.
-
-> Reviewed-by: Russell Currey <ruscur@russell.cc>
 
 
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
+Ping?
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlqfXYoACgkQMX8w6AQl
-/iKLfggAiejRQc0h6WuWI2QfttTU3DSOz0gFR9HedcX/SPXodlVKBm+fN92q3b6m
-uu5Ir4oY13xFMNGaa+tDsVKQ7IR4/m6g/QnRYJDt8d89hVeiS70TnXceRMOEU+ts
-M9xE0fSmuyFbUT3tE+2ezsiNs/HlrDcT6YnlAwtDxK6eem8/leiG0tJqQPcW26Ti
-VsOfV3zoOUwoyjlDWwGmHjRf9aBRfwKgrfEgyyX50Ad5SQBHcaTG5jYZdszZzDc0
-chtXcQC/DpMv8DMNIwcWBmhEGtFaXcVGDLwgNPzHX1ppqq8qSPVJt4IFYZYStpkS
-vr23T45t2Uu3f4QO5AjAsyTPtMfSXQ==
-=Zf1G
------END PGP SIGNATURE-----
 
---azLHFNyN32YCQGCU--
+> 
+> 
+> This is an example for:
+> 
+> 0004:04:00.0 3D: NVIDIA Corporation Device 1db1 (rev a1)
+> 0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
+> 0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
+> 
+> Before the patch (npu2_tce_kill messages are from skiboot):
+> 
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> ...
+> pci 0004:04     : [PE# 00] Removing DMA window #0
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0004:04     : [PE# 00] Removing DMA window #1
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> 
+> After the patch (no errors here):
+> 
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> pci 0004:04     : [PE# 00] Removing DMA window #0
+> pci 0004:04     : [PE# 00] Removing DMA window #1
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 27 ++++++++++++++++++++++++---
+>  1 file changed, 24 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 496e476..2f91815 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2681,14 +2681,23 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
+>  static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
+>  		int num, struct iommu_table *tbl)
+>  {
+> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+> +	int num2 = (num == 0) ? 1 : 0;
+>  	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
+>  
+>  	if (ret)
+>  		return ret;
+>  
+> -	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
+> -	if (ret)
+> +	if (table_group->tables[num2])
+> +		pnv_npu_unset_window(npe, num2);
+> +
+> +	ret = pnv_npu_set_window(npe, num, tbl);
+> +	if (ret) {
+>  		pnv_pci_ioda2_unset_window(table_group, num);
+> +		if (table_group->tables[num2])
+> +			pnv_npu_set_window(npe, num2,
+> +					table_group->tables[num2]);
+> +	}
+>  
+>  	return ret;
+>  }
+> @@ -2697,12 +2706,24 @@ static long pnv_pci_ioda2_npu_unset_window(
+>  		struct iommu_table_group *table_group,
+>  		int num)
+>  {
+> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+> +	int num2 = (num == 0) ? 1 : 0;
+>  	long ret = pnv_pci_ioda2_unset_window(table_group, num);
+>  
+>  	if (ret)
+>  		return ret;
+>  
+> -	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
+> +	if (!npe->table_group.tables[num])
+> +		return 0;
+> +
+> +	ret = pnv_npu_unset_window(npe, num);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (table_group->tables[num2])
+> +		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
+> +
+> +	return ret;
+>  }
+>  
+>  static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+> 
+
+
+-- 
+Alexey
