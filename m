@@ -1,40 +1,23 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zx2jL60nXzF1Jy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 16:47:34 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w275icSq033349
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Mar 2018 00:47:32 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gj79ndkvq-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 00:47:31 -0500
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 7 Mar 2018 05:47:29 -0000
-Subject: Re: [PATCH v2 05/38] cxlflash: Hardware AFU for OCXL
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zx3G43ThVzF1XH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 17:12:27 +1100 (AEDT)
+Subject: Re: [PATCH 06/10] powerpc/mm/slice: implement slice_check_range_fits
+To: Nicholas Piggin <npiggin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1519683625-16930-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 7 Mar 2018 16:47:23 +1100
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <20180306132507.10649-1-npiggin@gmail.com>
+ <20180306132507.10649-7-npiggin@gmail.com>
+ <e600126e-ab89-e15b-e4c3-17dec7799a57@c-s.fr>
+ <20180307091232.4fb8d3c2@roar.ozlabs.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <a61d33eb-dde3-526a-0847-e2d56f824217@c-s.fr>
+Date: Wed, 7 Mar 2018 07:12:23 +0100
 MIME-Version: 1.0
-In-Reply-To: <1519683625-16930-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+In-Reply-To: <20180307091232.4fb8d3c2@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <dfb0ee32-39ca-652e-cee6-267421e4e503@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,187 +27,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/02/18 09:20, Uma Krishnan wrote:
-> When an adapter is initialized, transport specific configuration and MMIO
-> mapping details need to be saved. For CXL, this data is managed by the
-> underlying kernel module. To maintain a separation between the cxlflash
-> core and underlying transports, introduce a new structure to store data
-> specific to the OCXL AFU.
-> 
-> Initially only the pointers to underlying PCI and generic devices are
-> added to this new structure - it will be expanded further in future
-> commits. Services to create and destroy this hardware AFU are added and
-> integrated in the probe and exit paths of the driver.
-> 
-> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 
-One comment below
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Le 07/03/2018 à 00:12, Nicholas Piggin a écrit :
+> On Tue, 6 Mar 2018 15:41:00 +0100
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+> 
+>> Le 06/03/2018 à 14:25, Nicholas Piggin a écrit :
+> 
+> 
+>>> +static bool slice_check_range_fits(struct mm_struct *mm,
+>>> +			   const struct slice_mask *available,
+>>> +			   unsigned long start, unsigned long len)
+>>>    {
+>>> -	DECLARE_BITMAP(result, SLICE_NUM_HIGH);
+>>> -	/*
+>>> -	 * Make sure we just do bit compare only to the max
+>>> -	 * addr limit and not the full bit map size.
+>>> -	 */
+>>> -	unsigned long slice_count = GET_HIGH_SLICE_INDEX(mm->context.slb_addr_limit);
+>>> +	unsigned long end = start + len - 1;
+>>> +	u64 low_slices = 0;
+>>>    
+>>> -	if (!SLICE_NUM_HIGH)
+>>> -		return (mask->low_slices & available->low_slices) ==
+>>> -		       mask->low_slices;
+>>> +	if (start < SLICE_LOW_TOP) {
+>>> +		unsigned long mend = min(end, (SLICE_LOW_TOP - 1));
+>>
+>> See slice_range_to_mask()
+>>
+>> You'll have an issue here with PPC32, you have to cast (SLICE_LOW_TOP -
+>> 1) to unsigned long because SLICE_LOW_TOP is unsigned long long on PPC32
+> 
+> Okay thanks. Forgot to cross compiled it on 8xx, so I'll do that next
+> time.
+> 
+>>> +
+>>> +		low_slices = (1u << (GET_LOW_SLICE_INDEX(mend) + 1))
+>>> +				- (1u << GET_LOW_SLICE_INDEX(start));
+>>> +	}
+>>> +	if ((low_slices & available->low_slices) != low_slices)
+>>> +		return false;
+>>> +
+>>> +	if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
+>>> +		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
+>>> +		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+>>> +		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+>>> +		unsigned long i;
+>>>    
+>>> -	bitmap_and(result, mask->high_slices,
+>>> -		   available->high_slices, slice_count);
+>>> +		for (i = start_index; i < start_index + count; i++) {
+>>> +			if (!test_bit(i, available->high_slices))
+>>> +				return false;
+>>> +		}
+>>
+>> What about using bitmap_find_next_zero_area()
+> 
+> I'll look at it. Perhaps in another patch, because existing
+> loops are not using bitmap range operations either. A series
+> to convert those is a good idea.
+> 
+>>> @@ -562,15 +571,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+>>>    #endif
+>>>    
+>>>    	/* First check hint if it's valid or if we have MAP_FIXED */
+>>> -	if (addr != 0 || fixed) {
+>>> -		/* Build a mask for the requested range */
+>>> -		slice_range_to_mask(addr, len, &mask);
+>>> -		slice_print_mask(" mask", &mask);
+>>> -
+>>> +	if (addr || fixed) {
+>>
+>> It is cleanup, should it really be part of this patch ?
+> 
+> 
+> 
+>>> @@ -596,10 +601,11 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+>>>    	slice_or_mask(&potential_mask, &good_mask);
+>>>    	slice_print_mask(" potential", &potential_mask);
+>>>    
+>>> -	if ((addr != 0 || fixed) &&
+>>> -			slice_check_fit(mm, &mask, &potential_mask)) {
+>>> -		slice_dbg(" fits potential !\n");
+>>> -		goto convert;
+>>> +	if (addr || fixed) {
+>>> +		if (slice_check_range_fits(mm, &potential_mask, addr, len)) {
+>>> +			slice_dbg(" fits potential !\n");
+>>> +			goto convert;
+>>> +		}
+>>
+>> Why not keep the original structure and just replacing slice_check_fit()
+>> by slice_check_range_fits() ?
+>>
+>> I believe cleanups should not be mixed with real feature changes. If
+>> needed, you should have a cleanup patch up front the serie.
+> 
+> For code that is already changing, I think minor cleanups are okay if
+> they're very simple. Maybe this is getting to the point of needing
+> another patch. You've made valid points for a lot of other unnecessary
+> cleanups though, so I'll fix all of those.
 
-> ---
->   drivers/scsi/cxlflash/backend.h |  1 +
->   drivers/scsi/cxlflash/cxl_hw.c  |  6 ++++++
->   drivers/scsi/cxlflash/main.c    |  9 +++++++--
->   drivers/scsi/cxlflash/ocxl_hw.c | 40 ++++++++++++++++++++++++++++++++++++++++
->   drivers/scsi/cxlflash/ocxl_hw.h | 19 +++++++++++++++++++
->   5 files changed, 73 insertions(+), 2 deletions(-)
->   create mode 100644 drivers/scsi/cxlflash/ocxl_hw.h
-> 
-> diff --git a/drivers/scsi/cxlflash/backend.h b/drivers/scsi/cxlflash/backend.h
-> index a60f051..f675bcb 100644
-> --- a/drivers/scsi/cxlflash/backend.h
-> +++ b/drivers/scsi/cxlflash/backend.h
-> @@ -36,6 +36,7 @@ struct cxlflash_backend_ops {
->   	int (*allocate_afu_irqs)(void *ctx_cookie, int num);
->   	void (*free_afu_irqs)(void *ctx_cookie);
->   	void * (*create_afu)(struct pci_dev *dev);
-> +	void (*destroy_afu)(void *afu_cookie);
->   	struct file * (*get_fd)(void *ctx_cookie, struct file_operations *fops,
->   				int *fd);
->   	void * (*fops_get_context)(struct file *file);
-> diff --git a/drivers/scsi/cxlflash/cxl_hw.c b/drivers/scsi/cxlflash/cxl_hw.c
-> index db1cada..a1d6d12 100644
-> --- a/drivers/scsi/cxlflash/cxl_hw.c
-> +++ b/drivers/scsi/cxlflash/cxl_hw.c
-> @@ -110,6 +110,11 @@ static void *cxlflash_create_afu(struct pci_dev *dev)
->   	return cxl_pci_to_afu(dev);
->   }
-> 
-> +static void cxlflash_destroy_afu(void *afu)
-> +{
-> +	/* Dummy fop for cxl */
-> +}
-> +
+Ok, that's not a big point, but I like when patches really modifies
+only the lines they need to modify. Why do we need a double if ?
 
-For ops structs I think it's more common to set the function pointer to 
-NULL when not implemented and do a NULL check at the call site.
+Why not just the following ? With proper alignment of the second line 
+with the open parenthese, it fits in one line
 
->   static struct file *cxlflash_get_fd(void *ctx_cookie,
->   				    struct file_operations *fops, int *fd)
->   {
-> @@ -160,6 +165,7 @@ const struct cxlflash_backend_ops cxlflash_cxl_ops = {
->   	.allocate_afu_irqs	= cxlflash_allocate_afu_irqs,
->   	.free_afu_irqs		= cxlflash_free_afu_irqs,
->   	.create_afu		= cxlflash_create_afu,
-> +	.destroy_afu		= cxlflash_destroy_afu,
->   	.get_fd			= cxlflash_get_fd,
->   	.fops_get_context	= cxlflash_fops_get_context,
->   	.start_work		= cxlflash_start_work,
-> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-> index b83a55a..5d754d1 100644
-> --- a/drivers/scsi/cxlflash/main.c
-> +++ b/drivers/scsi/cxlflash/main.c
-> @@ -971,6 +971,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
->   	case INIT_STATE_AFU:
->   		term_afu(cfg);
->   	case INIT_STATE_PCI:
-> +		cfg->ops->destroy_afu(cfg->afu_cookie);
->   		pci_disable_device(pdev);
->   	case INIT_STATE_NONE:
->   		free_mem(cfg);
-> @@ -3689,8 +3690,6 @@ static int cxlflash_probe(struct pci_dev *pdev,
-> 
->   	pci_set_drvdata(pdev, cfg);
-> 
-> -	cfg->afu_cookie = cfg->ops->create_afu(pdev);
-> -
->   	rc = init_pci(cfg);
->   	if (rc) {
->   		dev_err(dev, "%s: init_pci failed rc=%d\n", __func__, rc);
-> @@ -3698,6 +3697,12 @@ static int cxlflash_probe(struct pci_dev *pdev,
->   	}
->   	cfg->init_state = INIT_STATE_PCI;
-> 
-> +	cfg->afu_cookie = cfg->ops->create_afu(pdev);
-> +	if (unlikely(!cfg->afu_cookie)) {
-> +		dev_err(dev, "%s: create_afu failed\n", __func__);
-> +		goto out_remove;
-> +	}
-> +
->   	rc = init_afu(cfg);
->   	if (rc && !wq_has_sleeper(&cfg->reset_waitq)) {
->   		dev_err(dev, "%s: init_afu failed rc=%d\n", __func__, rc);
-> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-> index 58a3182..e3a0a9b 100644
-> --- a/drivers/scsi/cxlflash/ocxl_hw.c
-> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-> @@ -15,8 +15,48 @@
->   #include <misc/ocxl.h>
-> 
->   #include "backend.h"
-> +#include "ocxl_hw.h"
-> +
-> +/**
-> + * ocxlflash_destroy_afu() - destroy the AFU structure
-> + * @afu_cookie:	AFU to be freed.
-> + */
-> +static void ocxlflash_destroy_afu(void *afu_cookie)
-> +{
-> +	struct ocxl_hw_afu *afu = afu_cookie;
-> +
-> +	if (!afu)
-> +		return; > +
-> +	kfree(afu);
-> +}
-> +
-> +/**
-> + * ocxlflash_create_afu() - create the AFU for OCXL
-> + * @pdev:	PCI device associated with the host.
-> + *
-> + * Return: AFU on success, NULL on failure
-> + */
-> +static void *ocxlflash_create_afu(struct pci_dev *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct ocxl_hw_afu *afu;
-> +
-> +	afu = kzalloc(sizeof(*afu), GFP_KERNEL);
-> +	if (unlikely(!afu)) {
-> +		dev_err(dev, "%s: HW AFU allocation failed\n", __func__);
-> +		goto out;
-> +	}
-> +
-> +	afu->pdev = pdev;
-> +	afu->dev = dev;
-> +out:
-> +	return afu;
-> +}
-> 
->   /* Backend ops to ocxlflash services */
->   const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
->   	.module			= THIS_MODULE,
-> +	.create_afu		= ocxlflash_create_afu,
-> +	.destroy_afu		= ocxlflash_destroy_afu,
->   };
-> diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
-> new file mode 100644
-> index 0000000..c7e5c4d
-> --- /dev/null
-> +++ b/drivers/scsi/cxlflash/ocxl_hw.h
-> @@ -0,0 +1,19 @@
-> +/*
-> + * CXL Flash Device Driver
-> + *
-> + * Written by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>, IBM Corporation
-> + *	       Uma Krishnan <ukrishn@linux.vnet.ibm.com>, IBM Corporation
-> + *
-> + * Copyright (C) 2018 IBM Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +/* OCXL hardware AFU associated with the host */
-> +struct ocxl_hw_afu {
-> +	struct pci_dev *pdev;		/* PCI device */
-> +	struct device *dev;		/* Generic device */
-> +};
-> 
+	if ((addr != 0 || fixed) &&
+-			slice_check_fit(mm, &mask, &potential_mask)) {
++	    slice_check_range_fits(mm, &potential_mask, addr, len)) {
+  		slice_dbg(" fits potential !\n");
+  		goto convert;
+	}
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+
+Christophe
