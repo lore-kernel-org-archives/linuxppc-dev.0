@@ -1,26 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x235.google.com (mail-pg0-x235.google.com
+ [IPv6:2607:f8b0:400e:c05::235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zwtSj6BGvzF1Wh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 10:36:05 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id g8so166527pgv.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 15:36:05 -0800 (PST)
-Date: Wed, 7 Mar 2018 09:35:53 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zwx8r6pcpzF1WK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Mar 2018 12:37:32 +1100 (AEDT)
+Received: by mail-pg0-x235.google.com with SMTP id g12so293372pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Mar 2018 17:37:32 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 10/10] powerpc/mm/slice: remove radix calls to the slice
- code
-Message-ID: <20180307093553.4fb0191c@roar.ozlabs.ibm.com>
-In-Reply-To: <01d94f39-91fc-53c4-79ad-b43b3234c2ea@c-s.fr>
-References: <20180306132507.10649-1-npiggin@gmail.com>
- <20180306132507.10649-11-npiggin@gmail.com>
- <01d94f39-91fc-53c4-79ad-b43b3234c2ea@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 00/10] powerpc/mm/slice: improve slice speed and stack use
+Date: Wed,  7 Mar 2018 11:37:08 +1000
+Message-Id: <20180307013718.13749-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 6 Mar 2018 16:12:34 +0100
-Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+Overall on POWER8, this series increases vfork+exec+exit
+microbenchmark rate by 15.6%, and mmap+munmap rate by 81%. Slice
+code/data size is reduced by 1kB, and max stack overhead through
+slice_get_unmapped_area call goes rom 992 to 448 bytes. The cost is
+288 bytes added to the mm_context_t per mm for the slice masks on
+Book3S.
 
-> Le 06/03/2018 à 14:25, Nicholas Piggin a écrit :
-> > This is a tidy up which removes radix MMU calls into the slice
-> > code.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >   arch/powerpc/include/asm/hugetlb.h |  9 ++++++---
-> >   arch/powerpc/mm/hugetlbpage.c      |  5 +++--
-> >   arch/powerpc/mm/slice.c            | 17 ++++-------------
-> >   3 files changed, 13 insertions(+), 18 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-> > index 1a4847f67ea8..59885d444695 100644
-> > --- a/arch/powerpc/include/asm/hugetlb.h
-> > +++ b/arch/powerpc/include/asm/hugetlb.h
-> > @@ -90,16 +90,19 @@ pte_t *huge_pte_offset_and_shift(struct mm_struct *mm,
-> >   void flush_dcache_icache_hugepage(struct page *page);
-> >   
-> >   #if defined(CONFIG_PPC_MM_SLICES)
-> > -int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
-> > +int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
-> >   			   unsigned long len);
-> > -#else
-> > +#endif
-> >   static inline int is_hugepage_only_range(struct mm_struct *mm,
-> >   					 unsigned long addr,
-> >   					 unsigned long len)
-> >   {
-> > +#if defined(CONFIG_PPC_MM_SLICES)
-> > +	if (!radix_enabled())
-> > +		return slice_is_hugepage_only_range(mm, addr, len);
-> > +#endif
-> >   	return 0;  
-> 
-> Might be easier to understand as
-> 
-> 	if (!IS_ENABLED(CONFIG_PPC_MM_SLICES) || radix_enabled())
-> 		return 0;
-> 	return slice_is_hugepage_only_range(mm, addr, len);
-
-Yep.
-
-
-> >   unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-> >   {
-> >   #ifdef CONFIG_PPC_MM_SLICES
-> > -	unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
-> >   	/* With radix we don't use slice, so derive it from vma*/
-> > -	if (!radix_enabled())
-> > +	if (!radix_enabled()) {
-> > +		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);  
-> 
-> Insert a blank line here.
-
-Okay.
-
-Thanks for the review, it's really appreciated.
+Since v1:
+- Fixed a couple of bugs and compile errors on 8xx.
+- Accounted for all Christophe's review feedback hopefully.
+- Got rid of unrelated "cleanup" hunks, and split one to its own patch.
+- Dropped patch to dynamically limit bitmap operations. This may be
+  revisited after Aneesh's 4TB patches.
 
 Thanks,
 Nick
+
+Nicholas Piggin (10):
+  powerpc/mm/slice: Simplify and optimise slice context initialisation
+  powerpc/mm/slice: tidy lpsizes and hpsizes update loops
+  powerpc/mm/slice: pass pointers to struct slice_mask where possible
+  powerpc/mm/slice: implement a slice mask cache
+  powerpc/mm/slice: implement slice_check_range_fits
+  powerpc/mm/slice: Switch to 3-operand slice bitops helpers
+  powerpc/mm/slice: remove dead code
+  powerpc/mm/slice: Use const pointers to cached slice masks where
+    possible
+  powerpc/mm/slice: remove radix calls to the slice code
+  powerpc/mm/slice: use the dynamic high slice size to limit bitmap
+    operations
+
+ arch/powerpc/include/asm/book3s/64/mmu.h |  18 ++
+ arch/powerpc/include/asm/hugetlb.h       |   7 +-
+ arch/powerpc/include/asm/mmu-8xx.h       |  10 +
+ arch/powerpc/include/asm/slice.h         |   8 +-
+ arch/powerpc/mm/hugetlbpage.c            |   6 +-
+ arch/powerpc/mm/mmu_context_book3s64.c   |   9 +-
+ arch/powerpc/mm/mmu_context_nohash.c     |   5 +-
+ arch/powerpc/mm/slice.c                  | 461 ++++++++++++++++---------------
+ 8 files changed, 277 insertions(+), 247 deletions(-)
+
+-- 
+2.16.1
