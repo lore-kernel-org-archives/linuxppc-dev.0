@@ -1,25 +1,26 @@
-Return-Path: <SRS0=Vxku=F5=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <turtle.in.the.kernel@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zxNLh5PgMzF1lB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 06:02:36 +1100 (AEDT)
-Date: Wed, 7 Mar 2018 14:02:32 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Anton Blanchard <anton@samba.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras
- <paulus@ozlabs.org>
-Subject: Re: [RFC PATCH 1/1] powerpc/ftrace: Exclude real mode code from
-Message-ID: <20180307140232.0023b8cc@vmware.local.home>
-In-Reply-To: <1520447419.431mwwg71x.naveen@linux.ibm.com>
-References: <cover.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
- <ecbf7e8d6895a7d56b4eb60cbf7461bd463086b3.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
- <20180307124553.312ea88c@vmware.local.home>
- <1520447419.431mwwg71x.naveen@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zxP1b4dFxzF1kD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 06:32:47 +1100 (AEDT)
+Received: by mail-qt0-x242.google.com with SMTP id g60so3999197qtd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 11:32:47 -0800 (PST)
+Subject: Re: [RFC v2 1/3] hotplug/mobility: Apply assoc updates for Post
+ Migration Topo
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
+References: <54713533-2d91-60f0-5901-02b41a2b948d@linux.vnet.ibm.com>
+From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Message-ID: <b64fdaf1-17c6-9708-a40b-2886f9929fa2@gmail.com>
+Date: Wed, 7 Mar 2018 11:32:43 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <54713533-2d91-60f0-5901-02b41a2b948d@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +30,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 08 Mar 2018 00:07:07 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On 02/26/2018 12:52 PM, Michael Bringmann wrote:
+> hotplug/mobility: Recognize more changes to the associativity of
+> memory blocks described by the 'ibm,dynamic-memory' and 'cpu'
+> properties when processing the topology of LPARS in Post Migration
+> events.  Previous efforts only recognized whether a memory block's
+> assignment had changed in the property.  Changes here include:
+> 
+> * Checking the aa_index values of the old/new properties and 'readd'
+>   any block for which the setting has changed.
+> * Checking for changes in cpu associativity and making 'readd' calls
+>   when differences are observed.
+> 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+> Changes in RFC:
+>   -- Simplify code to update CPU nodes during mobility checks.
+>      Remove functions to generate extra HP_ELOG messages in favor
+>      of direct function calls to dlpar_cpu_readd_by_index.
+>   -- Move check for "cpu" node type from pseries_update_cpu to
+>      pseries_smp_notifier in 'hotplug-cpu.c'
+>   -- Remove functions 'pseries_memory_readd_by_index' and
+>      'pseries_cpu_readd_by_index' as no longer needed outside of
+>      'mobility.c'.
+> ---
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c    |   69 +++++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |    6 ++
+>  2 files changed, 75 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index a7d14aa7..91ef22a 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -636,6 +636,27 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>  	return rc;
+>  }
+>  
+> +static int dlpar_cpu_readd_by_index(u32 drc_index)
+> +{
+> +	int rc = 0;
+> +
+> +	pr_info("Attempting to update CPU, drc index %x\n", drc_index);
+> +
+> +	if (dlpar_cpu_remove_by_index(drc_index))
+> +		rc = -EINVAL;
+> +	else if (dlpar_cpu_add(drc_index))
+> +		rc = -EINVAL;
 
-> Yes, that's negligible.
-> Though, to be honest, I will have to introduce a 'mfmsr' for the older 
-> -pg variant. I still think that the improved reliability far outweighs 
-> the minor slowdown there.
+While this if block appears to do the right thing it looks a little icky to me as I find it hard to follow the flow. To me the natural way of thinking about this is if the remove succeeds then add the cpu back. Further, you are masking the return codes from the dlpar code by reporting EINVAL instead of capturing the actual return values. EINVAL implies that their was something wrong with the drc_index supplied. I would do something more like the following which captures the return codes and only relies on a single conditional if statement.
 
-In that case, can you introduce a read_mostly variable that can be
-tested before calling the mfmsr. Why punish normal ftrace tracing if
-kvm is not enabled or running?
+rc = dlpar_cpu_remove_by_index(drc_index);
+if (!rc)
+	rc = dlpar_cpu_add(drc_index);
 
-Both should probably have an #ifdef CONFIG_KVM encapsulating the code.
+-Tyrel
 
--- Steve
+> +
+> +	if (rc)
+> +		pr_info("Failed to update cpu at drc_index %lx\n",
+> +				(unsigned long int)drc_index);
+> +	else
+> +		pr_info("CPU at drc_index %lx was updated\n",
+> +				(unsigned long int)drc_index);
+> +
+> +	return rc;
+> +}
+> +
+>  static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+>  {
+>  	struct device_node *dn;
+> @@ -826,6 +847,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+>  		else
+>  			rc = -EINVAL;
+>  		break;
+> +	case PSERIES_HP_ELOG_ACTION_READD:
+> +		rc = dlpar_cpu_readd_by_index(drc_index);
+> +		break;
+>  	default:
+>  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+>  		rc = -EINVAL;
+> @@ -876,12 +900,53 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>  
+>  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+>  
+> +static int pseries_update_cpu(struct of_reconfig_data *pr)
+> +{
+> +	u32 old_entries, new_entries;
+> +	__be32 *p, *old_assoc, *new_assoc;
+> +	int rc = 0;
+> +
+> +	/* So far, we only handle the 'ibm,associativity' property,
+> +	 * here.
+> +	 * The first int of the property is the number of domains
+> +	 * described.  This is followed by an array of level values.
+> +	 */
+> +	p = (__be32 *) pr->old_prop->value;
+> +	if (!p)
+> +		return -EINVAL;
+> +	old_entries = be32_to_cpu(*p++);
+> +	old_assoc = p;
+> +
+> +	p = (__be32 *)pr->prop->value;
+> +	if (!p)
+> +		return -EINVAL;
+> +	new_entries = be32_to_cpu(*p++);
+> +	new_assoc = p;
+> +
+> +	if (old_entries == new_entries) {
+> +		int sz = old_entries * sizeof(int);
+> +
+> +		if (!memcmp(old_assoc, new_assoc, sz))
+> +			rc = dlpar_cpu_readd_by_index(
+> +					be32_to_cpu(pr->dn->phandle));
+> +
+> +	} else {
+> +		rc = dlpar_cpu_readd_by_index(
+> +					be32_to_cpu(pr->dn->phandle));
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+>  static int pseries_smp_notifier(struct notifier_block *nb,
+>  				unsigned long action, void *data)
+>  {
+>  	struct of_reconfig_data *rd = data;
+>  	int err = 0;
+>  
+> +	if (strcmp(rd->dn->type, "cpu"))
+> +		return notifier_from_errno(err);
+> +
+>  	switch (action) {
+>  	case OF_RECONFIG_ATTACH_NODE:
+>  		err = pseries_add_processor(rd->dn);
+> @@ -889,6 +954,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+>  	case OF_RECONFIG_DETACH_NODE:
+>  		pseries_remove_processor(rd->dn);
+>  		break;
+> +	case OF_RECONFIG_UPDATE_PROPERTY:
+> +		if (!strcmp(rd->prop->name, "ibm,associativity"))
+> +			err = pseries_update_cpu(rd);
+> +		break;
+>  	}
+>  	return notifier_from_errno(err);
+>  }
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index c1578f5..2341eae 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -1040,6 +1040,12 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+>  					  memblock_size);
+>  			rc = (rc < 0) ? -EINVAL : 0;
+>  			break;
+> +		} else if ((be32_to_cpu(old_drmem[i].aa_index) !=
+> +					be32_to_cpu(new_drmem[i].aa_index)) &&
+> +				(be32_to_cpu(new_drmem[i].flags) &
+> +					DRCONF_MEM_ASSIGNED)) {
+> +			rc = dlpar_memory_readd_by_index(
+> +				be32_to_cpu(new_drmem[i].drc_index));
+>  		}
+>  	}
+>  	return rc;
+> 
