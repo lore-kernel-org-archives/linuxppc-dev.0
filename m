@@ -1,23 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zxYjR4tlWzF1nK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 13:04:26 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id h19so1738310pfd.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 18:04:26 -0800 (PST)
-Date: Thu, 8 Mar 2018 12:04:12 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/14] numa aware allocation for pacas, stacks, pagetables
-Message-ID: <20180308120412.1cbe9ace@roar.ozlabs.ibm.com>
-In-Reply-To: <87muzkdusj.fsf@concordia.ellerman.id.au>
-References: <20180213150824.27689-1-npiggin@gmail.com>
- <87muzkdusj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zxZFX45x4zF1pR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 13:28:48 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w282O4Qr088196
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Mar 2018 21:28:45 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gjpe2caar-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 21:28:44 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 7 Mar 2018 19:28:44 -0700
+Subject: Re: [PATCH 1/2] powerpc/mm/keys: Move pte bits to correct headers
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180307133645.29290-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20180307202831.GJ1060@ram.oc3035372033.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 8 Mar 2018 07:58:35 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20180307202831.GJ1060@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <38fd173d-9109-d602-377d-760c4d0fb6b7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +39,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 07 Mar 2018 21:50:04 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On 03/08/2018 01:58 AM, Ram Pai wrote:
+> On Wed, Mar 07, 2018 at 07:06:44PM +0530, Aneesh Kumar K.V wrote:
+>> Memory keys are supported only with hash translation mode. Instead of #ifdef in
+>> generic code move the key related pte bits to respective headers
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/book3s/64/hash-4k.h  |  7 +++++++
+>>   arch/powerpc/include/asm/book3s/64/hash-64k.h |  7 +++++++
+>>   arch/powerpc/include/asm/book3s/64/pgtable.h  | 19 -------------------
+>>   3 files changed, 14 insertions(+), 19 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+>> index fc3dc6a93939..4103bfc7c223 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+>> @@ -33,6 +33,13 @@
+>>   #define H_PAGE_THP_HUGE 0x0
+>>   #define H_PAGE_COMBO	0x0
+>>
+>> +/* memory key bits, only 8 keys supported */
+>> +#define H_PTE_PKEY_BIT0	0
+>> +#define H_PTE_PKEY_BIT1	0
+>> +#define H_PTE_PKEY_BIT2	_RPAGE_RSV3
+>> +#define H_PTE_PKEY_BIT3	_RPAGE_RSV4
+>> +#define H_PTE_PKEY_BIT4	_RPAGE_RSV5
+>> +
+> 
+> 
+> If CONFIG_PPC_MEM_KEYS is not defined, all of them have to be 0.  How is
+> that handled here?
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > This series allows numa aware allocations for various early data
-> > structures for radix. Hash still has a bolted SLB limitation that
-> > prevents at least pacas and stacks from node-affine allocations.
-> >
-> > Fixed up a number of bugs, got pSeries working, added a couple more
-> > cases where page tables can be allocated node-local.  
-> 
-> Few problems in here:
-> 
-> FAILURE kernel-build-linux » powerpc,gcc_ubuntu_be,pmac32
->   arch/powerpc/kernel/prom.c:748:2: error: implicit declaration of function 'allocate_paca_ptrs' [-Werror=implicit-function-declaration]
-> 
-> FAILURE kernel-build-linux » powerpc,gcc_ubuntu_le,powernv
->   arch/powerpc/include/asm/paca.h:49:33: error: 'struct paca_struct' has no member named 'lppaca_ptr'
->   arch/powerpc/include/asm/paca.h:49:33: error: 'struct paca_struct' has no member named 'lppaca_ptr'
-> 
-> Did I miss a follow-up or something?
+why? conditional defines of pte bits always results in error, like we 
+check for an overloaded key bit in some code path and taking wrong action.
 
-Here's a patch that applies to "powerpc/64: defer paca allocation
-until memory topology is discovered". The first hunk fixes the ppc32
-issue, and the second hunk avoids freeing the cpu_to_phys_id array
-if the platform didn't allocate it. But I've just realized that
-should go into the previous patch (which is missing the
-memblock_free).
---
+> 
+>>   /* 8 bytes per each pte entry */
+>>   #define H_PTE_FRAG_SIZE_SHIFT  (H_PTE_INDEX_SIZE + 3)
+>>   #define H_PTE_FRAG_NR	(PAGE_SIZE >> H_PTE_FRAG_SIZE_SHIFT)
+>> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+>> index e53728ff29a0..bb880c97b87d 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+>> @@ -16,6 +16,13 @@
+>>   #define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
+>>   #define H_PAGE_HASHPTE	_RPAGE_RPN43	/* PTE has associated HPTE */
+>>
+>> +/* memory key bits. */
+>> +#define H_PTE_PKEY_BIT0	_RPAGE_RSV1
+>> +#define H_PTE_PKEY_BIT1	_RPAGE_RSV2
+>> +#define H_PTE_PKEY_BIT2	_RPAGE_RSV3
+>> +#define H_PTE_PKEY_BIT3	_RPAGE_RSV4
+>> +#define H_PTE_PKEY_BIT4	_RPAGE_RSV5
+>> +
+> 
+> same comment as above.
+> 
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 8aaa697701f1..fff29b8057d9 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -258,7 +258,8 @@ extern void free_unused_pacas(void);
- 
- #else /* CONFIG_PPC64 */
- 
--static inline void allocate_pacas(void) { };
-+static inline void allocate_paca_ptrs(void) { };
-+static inline allocate_paca(int cpu) { } ;
- static inline void free_unused_pacas(void) { };
- 
- #endif /* CONFIG_PPC64 */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 56f7a2b793e0..2ba05acc2973 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -854,8 +854,10 @@ static void smp_setup_pacas(void)
- 		set_hard_smp_processor_id(cpu, cpu_to_phys_id[cpu]);
- 	}
- 
--	memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
--	cpu_to_phys_id = NULL;
-+	if (cpu_to_phys_id) {
-+		memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
-+		cpu_to_phys_id = NULL;
-+	}
- }
- #endif
- 
+-aneesh
