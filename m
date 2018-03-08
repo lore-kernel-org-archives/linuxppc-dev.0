@@ -1,41 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zxjB81fHXzF19n
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 18:41:19 +1100 (AEDT)
-Date: Thu, 8 Mar 2018 08:41:15 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Nipun Gupta <nipun.gupta@nxp.com>
-Cc: Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "joro@8bytes.org" <joro@8bytes.org>, Leo Li <leoyang.li@nxp.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bharat Bhushan <bharat.bhushan@nxp.com>,
- "stuyoder@gmail.com" <stuyoder@gmail.com>,
- Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Subject: Re: [PATCH 5/6] dma-mapping: support fsl-mc bus
-Message-ID: <20180308074115.GB15748@lst.de>
-References: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
- <1520260166-29387-6-git-send-email-nipun.gupta@nxp.com>
- <20180305150814.GA15918@lst.de>
- <7b4f9972-6aaa-fc9d-3854-d48b19a8051c@arm.com>
- <20180305183938.GB20086@lst.de>
- <1729ae21-d08c-b413-51a3-f22c394b388d@arm.com>
- <HE1PR0401MB24251E99564CAA526F719ECCE6D90@HE1PR0401MB2425.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zxk671wcgzF1j7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 19:22:55 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Mark Hairgrove <mhairgrove@nvidia.com>
+Subject: Re: [PATCH v3] powerpc/npu-dma.c: Fix deadlock in mmio_invalidate
+In-Reply-To: <1790107.80T5BVHxd3@new-mexico>
+References: <20180302051845.26844-1-alistair@popple.id.au>
+ <1790107.80T5BVHxd3@new-mexico>
+Date: Thu, 08 Mar 2018 19:22:52 +1100
+Message-ID: <87bmfzdlib.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <HE1PR0401MB24251E99564CAA526F719ECCE6D90@HE1PR0401MB2425.eurprd04.prod.outlook.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,17 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 06, 2018 at 04:41:56AM +0000, Nipun Gupta wrote:
-> Sorry for asking a trivial question - looking into dma_configure() I see that
-> PCI is used in the start and the end of the API.
-> In the end part pci_put_host_bridge_device() is called.
-> So are two bus callbacks something like 'dma_config_start' & 'dma_config_end'
-> will be required where the former one will return "dma_dev"?
+Alistair Popple <alistair@popple.id.au> writes:
 
-I'd just use dma_configure as the callback.
+> Michael,
+>
+> This won't apply cleanly on top of Balbir's MMIO ATSD Flushing patch
+> (https://patchwork.ozlabs.org/patch/848343/). I will resend a v4 which applies
+> cleanly on top of that as the rebase/merge is non-trivial.
 
-Currently the of_dma_configure and acpi_dma_configure are only used
-for PCI anyway, as no one else sets a non-NULL dma dev.   For fsl-mc
-I suspect only of_dma_configure is relevanet, so just call that directly.
-If at some point we get enough busses with either OF or ACPI we could
-create a helper called from ->dma_configure for that.
+I have this (v3) merged in my testing branch (for next), so it might be
+better to send me a new version of Balbir's patch which applies on top
+of this.
+
+cheers
