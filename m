@@ -1,33 +1,23 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zxXlH3dS9zDqpx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 12:20:56 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w281K6im024898
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Mar 2018 20:20:54 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gjth9hp36-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 20:20:53 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 7 Mar 2018 18:20:53 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com
-Subject: Re: [PATCH] powerpc/powernv/mce: Don't silently restart the machine
-In-Reply-To: <20180308003606.10721-1-bsingharora@gmail.com>
-References: <20180308003606.10721-1-bsingharora@gmail.com>
-Date: Thu, 08 Mar 2018 12:20:48 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zxYjR4tlWzF1nK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 13:04:26 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id h19so1738310pfd.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Mar 2018 18:04:26 -0800 (PST)
+Date: Thu, 8 Mar 2018 12:04:12 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 00/14] numa aware allocation for pacas, stacks, pagetables
+Message-ID: <20180308120412.1cbe9ace@roar.ozlabs.ibm.com>
+In-Reply-To: <87muzkdusj.fsf@concordia.ellerman.id.au>
+References: <20180213150824.27689-1-npiggin@gmail.com>
+ <87muzkdusj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87ina7qs5r.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,30 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-> On MCE the current code will restart the machine with
-> ppc_md.restart(). This case was extremely unlikely since
-> prior to that a skiboot call is made and that resulted in
-> a checkstop for analysis.
->
-> With newer skiboots, on P9 we don't checkstop the box by
-> default, instead we return back to the kernel to extract
-> useful information at the time of the MCE. While we still
-> get this information, this patch converts the restart to
-> a panic(), so that if configured a dump can be taken and
-> we can track and probably debug the potential issue causing
-> the MCE.
+On Wed, 07 Mar 2018 21:50:04 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-This will likely change again, but I can send a patch that changes the
-comment (along with the logic of decoding it all and having enough
-information to make sensible decisions). But... I kind of don't want to
-bikeshed a comment to death :)
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > This series allows numa aware allocations for various early data
+> > structures for radix. Hash still has a bolted SLB limitation that
+> > prevents at least pacas and stacks from node-affine allocations.
+> >
+> > Fixed up a number of bugs, got pSeries working, added a couple more
+> > cases where page tables can be allocated node-local.  
+> 
+> Few problems in here:
+> 
+> FAILURE kernel-build-linux » powerpc,gcc_ubuntu_be,pmac32
+>   arch/powerpc/kernel/prom.c:748:2: error: implicit declaration of function 'allocate_paca_ptrs' [-Werror=implicit-function-declaration]
+> 
+> FAILURE kernel-build-linux » powerpc,gcc_ubuntu_le,powernv
+>   arch/powerpc/include/asm/paca.h:49:33: error: 'struct paca_struct' has no member named 'lppaca_ptr'
+>   arch/powerpc/include/asm/paca.h:49:33: error: 'struct paca_struct' has no member named 'lppaca_ptr'
+> 
+> Did I miss a follow-up or something?
 
-I reckon the panic() here is the right thing to do no matter
-what.
+Here's a patch that applies to "powerpc/64: defer paca allocation
+until memory topology is discovered". The first hunk fixes the ppc32
+issue, and the second hunk avoids freeing the cpu_to_phys_id array
+if the platform didn't allocate it. But I've just realized that
+should go into the previous patch (which is missing the
+memblock_free).
+--
 
-Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
--- 
-Stewart Smith
-OPAL Architect, IBM.
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 8aaa697701f1..fff29b8057d9 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -258,7 +258,8 @@ extern void free_unused_pacas(void);
+ 
+ #else /* CONFIG_PPC64 */
+ 
+-static inline void allocate_pacas(void) { };
++static inline void allocate_paca_ptrs(void) { };
++static inline allocate_paca(int cpu) { } ;
+ static inline void free_unused_pacas(void) { };
+ 
+ #endif /* CONFIG_PPC64 */
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 56f7a2b793e0..2ba05acc2973 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -854,8 +854,10 @@ static void smp_setup_pacas(void)
+ 		set_hard_smp_processor_id(cpu, cpu_to_phys_id[cpu]);
+ 	}
+ 
+-	memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
+-	cpu_to_phys_id = NULL;
++	if (cpu_to_phys_id) {
++		memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
++		cpu_to_phys_id = NULL;
++	}
+ }
+ #endif
+ 
