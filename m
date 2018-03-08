@@ -1,18 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zxZqm2zQJzF1pR
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 13:55:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zxb1z2B3MzF0yZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Mar 2018 14:03:51 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH 4/4] powerpc/xmon: Move empty plpar_set_ciabr() into
- plpar_wrappers.h
-Date: Thu,  8 Mar 2018 13:54:42 +1100
-Message-Id: <20180308025442.6165-4-mpe@ellerman.id.au>
-In-Reply-To: <20180308025442.6165-1-mpe@ellerman.id.au>
-References: <20180308025442.6165-1-mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@ozlabs.org>, Steven Rostedt <rostedt@goodmis.org>
+Cc: Anton Blanchard <anton@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 1/1] powerpc/ftrace: Exclude real mode code from
+In-Reply-To: <ecbf7e8d6895a7d56b4eb60cbf7461bd463086b3.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
+ <ecbf7e8d6895a7d56b4eb60cbf7461bd463086b3.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 08 Mar 2018 14:03:49 +1100
+Message-ID: <87efkve0a2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that plpar_wrappers.h has an #ifdef PSERIES we can move the empty
-version of plpar_set_ciabr() which xmon wants into there.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/plpar_wrappers.h | 6 ++++++
- arch/powerpc/xmon/xmon.c                  | 7 +------
- 2 files changed, 7 insertions(+), 6 deletions(-)
+> We can't take a trap in most parts of real mode code. Instead of adding
+> the 'notrace' annotation to all C functions that can be invoked from
+> real mode, detect that we are in real mode on ftrace entry and return
+> back.
+>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+> This RFC only handles -mprofile-kernel to demonstrate the approach being 
+> considered. We will need to handle other ftrace entry if we decide to 
+> continue down this path.
 
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 9233b84f489a..96c1a46acbd0 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -334,6 +334,12 @@ static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
- 	return rc;
- }
- 
-+#else /* !CONFIG_PPC_PSERIES */
-+
-+static inline long plpar_set_ciabr(unsigned long ciabr)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PPC_PSERIES */
- 
- #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index ecbb34eb1ddf..4118f723ed00 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -41,6 +41,7 @@
- #include <asm/pgtable.h>
- #include <asm/mmu.h>
- #include <asm/mmu_context.h>
-+#include <asm/plpar_wrappers.h>
- #include <asm/cputable.h>
- #include <asm/rtas.h>
- #include <asm/sstep.h>
-@@ -61,12 +62,6 @@
- #include <asm/paca.h>
- #endif
- 
--#if defined(CONFIG_PPC_SPLPAR)
--#include <asm/plpar_wrappers.h>
--#else
--static inline long plpar_set_ciabr(unsigned long ciabr) {return 0; };
--#endif
--
- #include "nonstdio.h"
- #include "dis-asm.h"
- 
--- 
-2.14.1
+Paul and I were talking about having a paca flag for this, ie.
+paca->safe_to_ftrace (or whatever). I'm not sure if you've talked to
+him and decided this is a better approach.
+
+I guess I'm 50/50 on which is better, they both have pluses and minuses.
+
+cheers
+
+> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> index 3f3e81852422..ecc0e8e38ead 100644
+> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> @@ -56,6 +56,21 @@ _GLOBAL(ftrace_caller)
+>  
+>  	/* Load special regs for save below */
+>  	mfmsr   r8
+> +
+> +	/* Only proceed if we are not in real mode and can take interrupts */
+> +	andi.	r9, r8, MSR_IR|MSR_DR|MSR_RI
+> +	cmpdi	r9, MSR_IR|MSR_DR|MSR_RI
+> +	beq	1f
+> +	mflr	r8
+> +	mtctr	r8
+> +	REST_GPR(9, r1)
+> +	REST_GPR(8, r1)
+> +	addi	r1, r1, SWITCH_FRAME_SIZE
+> +	ld	r0, LRSAVE(r1)
+> +	mtlr	r0
+> +	bctr
+> +
+> +1:
+>  	mfctr   r9
+>  	mfxer   r10
+>  	mfcr	r11
+> -- 
+> 2.16.1
