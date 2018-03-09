@@ -1,34 +1,37 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zy3tH1jYXzF1vT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2018 08:43:50 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id z10so440883pfh.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Mar 2018 13:43:50 -0800 (PST)
-Date: Fri, 9 Mar 2018 08:43:33 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Miroslav Benes <mbenes@suse.cz>, Michael Ellerman <mpe@ellerman.id.au>,
- Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH 2/2] ppc64le save_stack_trace_tsk_reliable (Was:
- HAVE_RELIABLE_STACKTRACE)
-Message-ID: <20180309084333.23287074@gmail.com>
-In-Reply-To: <20180227160924.GA19111@lst.de>
-References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
- <20171005124313.GA25100@lst.de>
- <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
- <20171017144733.GB2136@lst.de>
- <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
- <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
- <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
- <20171212113912.GA1907@lst.de>
- <alpine.LSU.2.21.1712121308440.21907@pobox.suse.cz>
- <20180227160924.GA19111@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zy7TQ4w17zF1pv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2018 11:26:01 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w290OAam143709
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Mar 2018 19:25:59 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gkb1c26s4-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Mar 2018 19:25:58 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 9 Mar 2018 00:25:56 -0000
+Subject: Re: [PATCH] cxl: Perform NULL check for 'cxl_afu *' at various places
+ in cxl
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>
+References: <20180308100547.2994-1-vaibhav@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 9 Mar 2018 11:25:51 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180308100547.2994-1-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <afc6ba10-e2de-af7d-7a68-e78b4bc1e496@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,109 +41,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Feb 2018 17:09:24 +0100
-Torsten Duwe <duwe@lst.de> wrote:
-
-> On Tue, Dec 12, 2017 at 01:12:37PM +0100, Miroslav Benes wrote:
-> > 
-> > I think that this is not enough. You need to also implement 
-> > save_stack_trace_tsk_reliable() for powerpc defined as __weak in 
-> > kernel/stacktrace.c.  
+On 08/03/18 21:05, Vaibhav Jain wrote:
+> It is possible for a CXL card to have a valid PSL but no valid
+> AFUs. When this happens we have a valid instance of 'struct cxl'
+> representing the adapter but with its member 'struct cxl_afu *cxl[]'
+> as empty. Unfortunately at many placed within cxl code (especially
+> during an EEH) the elements of this array are passed on to various
+> other cxl functions. Which may result in kernel oops/panic when this
+> 'struct cxl_afu *' is dereferenced.
 > 
-> So here is my initial proposal. I'd really like to get the successful
-> exit stricter, i.e. hit the initial stack value exactly instead of just
-> a window. Also, the check for kernel code looks clumsy IMHO. IOW:
-> Comments more than welcome!
+> So this patch puts a NULL check at the beginning of various cxl
+> functions that accept 'struct cxl_afu *' as a formal argument and are
+> called from with a loop of the form:
 > 
-> Most of it is Copy&Waste, nonetheless:
+>         for (i = 0; i < adapter->slices; i++) {
+>         	   	afu = adapter->afu[i];
+> 		/* call some function with 'afu' */
+> 	}
 
-:)
+Surely in this case adapter->slices should be 0?
+
+We might still need to harden for other cases...
 
 > 
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+>   drivers/misc/cxl/api.c     |  2 +-
+>   drivers/misc/cxl/context.c |  3 +++
+>   drivers/misc/cxl/guest.c   |  4 ++++
+>   drivers/misc/cxl/main.c    |  3 +++
+>   drivers/misc/cxl/native.c  |  4 ++++
+>   drivers/misc/cxl/pci.c     | 13 ++++++++++++-
+>   6 files changed, 27 insertions(+), 2 deletions(-)
 > 
+> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+> index 753b1a698fc4..3466ef8b9e86 100644
+> --- a/drivers/misc/cxl/api.c
+> +++ b/drivers/misc/cxl/api.c
+> @@ -128,7 +128,7 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev)
+>   	int rc;
 > 
-> diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-> index d534ed901538..e08af49e71d0 100644
-> --- a/arch/powerpc/kernel/stacktrace.c
-> +++ b/arch/powerpc/kernel/stacktrace.c
-> @@ -13,6 +13,7 @@
->  #include <linux/export.h>
->  #include <linux/sched.h>
->  #include <linux/sched/debug.h>
-> +#include <linux/sched/task_stack.h>
->  #include <linux/stacktrace.h>
->  #include <asm/ptrace.h>
->  #include <asm/processor.h>
-> @@ -76,3 +77,58 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
->  	save_context_stack(trace, regs->gpr[1], current, 0);
->  }
->  EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+>   	afu = cxl_pci_to_afu(dev);
+> -	if (IS_ERR(afu))
+> +	if (IS_ERR_OR_NULL(afu))
+>   		return ERR_CAST(afu);
+> 
+>   	ctx = cxl_context_alloc();
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 7ff315ad3692..3957e6e7d187 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -303,6 +303,9 @@ void cxl_context_detach_all(struct cxl_afu *afu)
+>   	struct cxl_context *ctx;
+>   	int tmp;
+> 
+> +	if (afu == NULL)
+> +		return;
 > +
-> +#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
-> +int
-> +save_stack_trace_tsk_reliable(struct task_struct *tsk,
-> +                              struct stack_trace *trace)
-
-Just double checking this is called under the task_rq_lock, so its safe
-to call task_stack_page() as opposed to try_get_task_stack()
-
-> +{
-> +	unsigned long sp;
-> +	unsigned long stack_page = (unsigned long)task_stack_page(tsk);
-> +	/* the last frame (unwinding first) may not yet have saved its LR onto the stack. */
-> +	int firstframe = 1;
+>   	mutex_lock(&afu->contexts_lock);
+>   	idr_for_each_entry(&afu->contexts_idr, ctx, tmp) {
+>   		/*
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index f58b4b6c79f2..8165f6f26704 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -760,6 +760,8 @@ static int activate_afu_directed(struct cxl_afu *afu)
+> 
+>   static int guest_afu_activate_mode(struct cxl_afu *afu, int mode)
+>   {
+> +	if (afu == NULL)
+> +		return -EINVAL;
+>   	if (!mode)
+>   		return 0;
+>   	if (!(mode & afu->modes_supported))
+> @@ -791,6 +793,8 @@ static int deactivate_afu_directed(struct cxl_afu *afu)
+> 
+>   static int guest_afu_deactivate_mode(struct cxl_afu *afu, int mode)
+>   {
+> +	if (afu == NULL)
+> +		return -EINVAL;
+>   	if (!mode)
+>   		return 0;
+>   	if (!(mode & afu->modes_supported))
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index c1ba0d42cbc8..296a71ca6f2e 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -271,6 +271,9 @@ struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
+> 
+>   int cxl_afu_select_best_mode(struct cxl_afu *afu)
+>   {
+> +	if (afu == NULL)
+> +		return -EINVAL;
 > +
-> +	if (tsk == current)
-> +		sp = current_stack_pointer();
-> +	else
-> +		sp = tsk->thread.ksp;
+>   	if (afu->modes_supported & CXL_MODE_DIRECTED)
+>   		return cxl_ops->afu_activate_mode(afu, CXL_MODE_DIRECTED);
+> 
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index 1b3d7c65ea3f..d46415b19b71 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -971,6 +971,8 @@ static int deactivate_dedicated_process(struct cxl_afu *afu)
+> 
+>   static int native_afu_deactivate_mode(struct cxl_afu *afu, int mode)
+>   {
+> +	if (afu == NULL)
+> +		return -EINVAL;
+>   	if (mode == CXL_MODE_DIRECTED)
+>   		return deactivate_afu_directed(afu);
+>   	if (mode == CXL_MODE_DEDICATED)
+> @@ -980,6 +982,8 @@ static int native_afu_deactivate_mode(struct cxl_afu *afu, int mode)
+> 
+>   static int native_afu_activate_mode(struct cxl_afu *afu, int mode)
+>   {
+> +	if (!afu)
+> +		return -EINVAL;
+>   	if (!mode)
+>   		return 0;
+>   	if (!(mode & afu->modes_supported))
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 758842f65a1b..8c87d9fdcf5a 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1295,6 +1295,9 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
+>   {
+>   	int rc;
+> 
+> +	if (afu == NULL)
+> +		return -EINVAL;
 > +
-> +	if (sp < stack_page + sizeof(struct thread_struct)
-> +	    || sp > stack_page + THREAD_SIZE - STACK_FRAME_OVERHEAD)
-> +		return 1;
-
-Some of this is already present in validate_sp(), it also validates
-irq stacks, should we just reuse that?
-
-> +	
-> +	for (;;) {
-> +		unsigned long *stack = (unsigned long *) sp;
-> +		unsigned long newsp, ip;
+>   	if ((rc = pci_map_slice_regs(afu, adapter, dev)))
+>   		return rc;
+> 
+> @@ -1341,6 +1344,10 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
+> 
+>   static void pci_deconfigure_afu(struct cxl_afu *afu)
+>   {
 > +
-> +		newsp = stack[0];
-> +		/* Stack grows downwards; unwinder may only go up */
-> +		if (newsp <= sp)
-> +			return 1;
+> +	if (afu == NULL)
+> +		return;
 > +
-> +		if (newsp >= stack_page + THREAD_SIZE)
-> +			return 1; /* invalid backlink, too far up! */
+>   	/*
+>   	 * It's okay to deconfigure when AFU is already locked, otherwise wait
+>   	 * until there are no readers
+> @@ -2078,6 +2085,10 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
+>   	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
+>   	pci_ers_result_t afu_result = PCI_ERS_RESULT_NEED_RESET;
+> 
+> +	/* Force a hotplug if an uninitiaized AFU is encountered */
+> +	if (afu == NULL)
+> +		return PCI_ERS_RESULT_DISCONNECT;
 > +
-> +		/* Examine the saved LR: it must point into kernel code. */
-> +		ip = stack[STACK_FRAME_LR_SAVE];
-> +		if ( (ip & 0xEFFF000000000000) != CONFIG_KERNEL_START
-> +		     && !firstframe)
-> +			return 1;
-> +		firstframe = 0;
-> +
-> +		if (!trace->skip)
-> +			trace->entries[trace->nr_entries++] = ip;
-> +		else
-> +			trace->skip--;
-> +
-> +		if (newsp > stack_page + THREAD_SIZE - STACK_FRAME_OVERHEAD)
-> +			break; /* hit the window for last frame */
-> +
-> +		if (trace->nr_entries >= trace->max_entries)
-> +			return -E2BIG;
-> +
-> +		sp = newsp;
-> +	}
-> +	return 0;
-> +}
-> +#endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
+>   	/* There should only be one entry, but go through the list
+>   	 * anyway
+>   	 */
+> @@ -2330,7 +2341,7 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+> 
+> -		if (afu->phb == NULL)
+> +		if (afu == NULL || afu->phb == NULL)
+>   			continue;
+> 
+>   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
 > 
 
-Looks good to me otherwise.
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
