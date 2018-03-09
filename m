@@ -2,28 +2,19 @@ Return-Path: <duwe@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyX4b036VzF1ll
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 02:54:22 +1100 (AEDT)
-Date: Fri, 9 Mar 2018 16:54:12 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zyYFp2SCgzF1ms
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 03:47:26 +1100 (AEDT)
+Date: Fri, 9 Mar 2018 17:47:18 +0100
 From: Torsten Duwe <duwe@lst.de>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Miroslav Benes <mbenes@suse.cz>, Michael Ellerman <mpe@ellerman.id.au>,
- Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH 2/2] ppc64le save_stack_trace_tsk_reliable (Was:
- HAVE_RELIABLE_STACKTRACE)
-Message-ID: <20180309165412.78646b45@blackhole.lan>
-In-Reply-To: <20180309084333.23287074@gmail.com>
-References: <20171004152516.25803-1-kamalesh@linux.vnet.ibm.com>
- <20171005124313.GA25100@lst.de>
- <9f388c9a-8d74-865a-b113-f77322918b39@linux.vnet.ibm.com>
- <20171017144733.GB2136@lst.de>
- <95e6f942-88b7-0208-0eb0-2f5462aec410@linux.vnet.ibm.com>
- <20171020120739.GA20306@lst.de> <1508547548.5662.2.camel@gmail.com>
- <39bb7180-1adf-4df6-c9ba-c6f92754767f@linux.vnet.ibm.com>
- <20171212113912.GA1907@lst.de>
- <alpine.LSU.2.21.1712121308440.21907@pobox.suse.cz>
- <20180227160924.GA19111@lst.de> <20180309084333.23287074@gmail.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nicholas
+ Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org
+Subject: Re: [PATCH v2] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20180309174718.2700b29e@blackhole.lan>
+In-Reply-To: <20180308162616.yhbymodggnfzpskx@treble>
+References: <20180305164928.GA17953@lst.de>
+ <20180308162616.yhbymodggnfzpskx@treble>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,36 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 9 Mar 2018 08:43:33 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+On Thu, 8 Mar 2018 10:26:16 -0600
+Josh Poimboeuf <jpoimboe@redhat.com> wrote:
 
-> On Tue, 27 Feb 2018 17:09:24 +0100
-> Torsten Duwe <duwe@lst.de> wrote:
+> This doesn't seem to address some of my previous concerns:
 
-> > +save_stack_trace_tsk_reliable(struct task_struct *tsk,
-> > +                              struct stack_trace *trace)  
+You're right. That discussion quickly headed towards objtool
+and I forgot about this one paragraph with the remarks.
+
+> - Bailing on interrupt/exception frames
+
+That is a good question. My current code keeps unwinding as long
+as the trace looks sane. If the exception frame has a valid code
+pointer in the LR slot it will continue. Couldn't there be cases
+where this is desirable? Should this be configurable? Not that
+I have an idea how this situation could occur for a thread
+that is current or sleeping...
+
+Michael, Balbir: is that possible? Any Idea how to reliably detect
+an exception frame? My approach would be to look at the next return
+address and compare it to the usual suspects (i.e. collect all 
+"b ret" addresses in the EXCEPTION_COMMON macro, for BookS).
+
+> - Function graph tracing return address conversion
 > 
-> Just double checking this is called under the task_rq_lock, so its
-> safe to call task_stack_page() as opposed to try_get_task_stack()
+> - kretprobes return address conversion
 
-Yes. IIRC a comment at the call site mentioned it.
+You mean like in arch/x86/kernel/unwind_frame.c the call to
+ftrace_graph_ret_addr ?
 
-[...]
-> > +	if (sp < stack_page + sizeof(struct thread_struct)
-> > +	    || sp > stack_page + THREAD_SIZE -
-> > STACK_FRAME_OVERHEAD)
-> > +		return 1;  
-> 
-> Some of this is already present in validate_sp(), it also validates
-> irq stacks, should we just reuse that?
+Forgive me my directness but I don't see why these should be handled in
+arch-dependent code, other than maybe a hook, if inevitable, that calls
+back into the graph tracer / kretprobes in order to get the proper
+address, or simply call the trace unreliable in case it finds such a
+return address.
 
-This goes a bit along one of Josh's points; I'll answer there, OK?
-
-[...]
-
-> Looks good to me otherwise.
-> 
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-Thanks.
+I understand that x86 has a hard time with its multiple unwinders, but
+there should be a simpler, generic solution for all other architectures.
 
 	Torsten
