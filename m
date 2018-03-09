@@ -1,22 +1,20 @@
 Return-Path: <andreyknvl@google.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyWwc1qzMzF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 02:47:27 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id e64-v6so3315529ita.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 07:47:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zyZqK6J62zF1rT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 04:58:05 +1100 (AEDT)
+Received: by mail-io0-x242.google.com with SMTP id v6so4415010iog.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 09:58:04 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <b320ff92-43ae-a479-35aa-4257b9c5430e@arm.com>
+In-Reply-To: <963e112a-88a0-94bc-e6eb-0e9f9a6ee14a@arm.com>
 References: <cover.1520600533.git.andreyknvl@google.com>
- <89b4bb181a0622d2c581699bb3814fc041078d04.1520600533.git.andreyknvl@google.com>
- <b320ff92-43ae-a479-35aa-4257b9c5430e@arm.com>
+ <963e112a-88a0-94bc-e6eb-0e9f9a6ee14a@arm.com>
 From: Andrey Konovalov <andreyknvl@google.com>
-Date: Fri, 9 Mar 2018 16:47:23 +0100
-Message-ID: <CAAeHK+y=_imh4uNSAg_vj3DLAeDLcVP3a4f79dNMW=Ot5oLiZQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 6/6] arch: add untagged_addr definition for other
- arches
+Date: Fri, 9 Mar 2018 18:58:00 +0100
+Message-ID: <CAAeHK+xTEp-jcMDxNK4kCKcNtVbu4s4VXxzThsKMMFaTdBv0RQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] arm64: untag user pointers passed to the kernel
 To: Robin Murphy <robin.murphy@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Will Deacon <will.deacon@arm.com>,
@@ -90,22 +88,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 9, 2018 at 3:16 PM, Robin Murphy <robin.murphy@arm.com> wrote:
-> On 09/03/18 14:02, Andrey Konovalov wrote:
+On Fri, Mar 9, 2018 at 3:15 PM, Robin Murphy <robin.murphy@arm.com> wrote:
+> Hi Andrey,
+>
+> On 09/03/18 14:01, Andrey Konovalov wrote:
 >>
->> To allow arm64 syscalls accept tagged pointers from userspace, we must
->> untag them when they are passed to the kernel. Since untagging is done in
->> generic parts of the kernel (like the mm subsystem), the untagged_addr
->> macro should be defined for all architectures.
+>> arm64 has a feature called Top Byte Ignore, which allows to embed pointer
+>> tags into the top byte of each pointer. Userspace programs (such as
+>> HWASan, a memory debugging tool [1]) might use this feature and pass
+>> tagged user pointers to the kernel through syscalls or other interfaces.
 >
 >
-> Would it not suffice to have an "#ifndef untagged_addr..." fallback in
-> linux/uaccess.h?
+> If you propose changing the ABI, then
+> Documentation/arm64/tagged-pointers.txt needs to reflect the new one, since
+> passing nonzero tags via syscalls is currently explicitly forbidden.
 >
+> Robin.
 
 Hi Robin!
 
-This approach is much better, I'll try it. This will also solve the
-merge issues that Arnd mentioned.
+I will include changes to Documentation/arm64/tagged-pointers.txt in
+the next version.
 
 Thanks!
