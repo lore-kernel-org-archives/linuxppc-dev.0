@@ -1,84 +1,32 @@
-Return-Path: <andreyknvl@google.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyZqK6J62zF1rT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 04:58:05 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id v6so4415010iog.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 09:58:04 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <963e112a-88a0-94bc-e6eb-0e9f9a6ee14a@arm.com>
-References: <cover.1520600533.git.andreyknvl@google.com>
- <963e112a-88a0-94bc-e6eb-0e9f9a6ee14a@arm.com>
-From: Andrey Konovalov <andreyknvl@google.com>
-Date: Fri, 9 Mar 2018 18:58:00 +0100
-Message-ID: <CAAeHK+xTEp-jcMDxNK4kCKcNtVbu4s4VXxzThsKMMFaTdBv0RQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/6] arm64: untag user pointers passed to the kernel
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Mark Rutland <mark.rutland@arm.com>, Al Viro <viro@zeniv.linux.org.uk>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Ingo Molnar <mingo@kernel.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Minchan Kim <minchan@kernel.org>,
- Michal Hocko <mhocko@suse.com>, Shaohua Li <shli@fb.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Vlastimil Babka <vbabka@suse.cz>, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Shakeel Butt <shakeelb@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Hugh Dickins <hughd@google.com>, Mel Gorman <mgorman@techsingularity.net>,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Mike Kravetz <mike.kravetz@oracle.com>, Zi Yan <zi.yan@cs.rutgers.edu>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
- Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
- Mark Salter <msalter@redhat.com>,
- Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
- Mikael Starvik <starvik@axis.com>, Jesper Nilsson <jesper.nilsson@axis.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, James Hogan <jhogan@kernel.org>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- David Howells <dhowells@redhat.com>, Ley Foon Tan <lftan@altera.com>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Palmer Dabbelt <palmer@sifive.com>,
- Albert Ou <albert@sifive.com>,
- Chen Liqin <liqin.linux@gmail.com>, Lennox Wu <lennox.wu@gmail.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
- "the arch/x86 maintainers" <x86@kernel.org>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
- linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-am33-list@redhat.com, nios2-dev@lists.rocketboards.org,
- openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org,
- Dmitry Vyukov <dvyukov@google.com>, Kostya Serebryany <kcc@google.com>,
- Evgeniy Stepanov <eugenis@google.com>, Lee Smith <Lee.Smith@arm.com>,
- Ramana Radhakrishnan <Ramana.Radhakrishnan@arm.com>,
- Jacob Bramley <Jacob.Bramley@arm.com>,
- Ruben Ayrapetyan <Ruben.Ayrapetyan@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zygdf1LJtzF1ZF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 08:35:01 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w29LYjRX079222
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Mar 2018 16:34:59 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gkxkfr3f6-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 16:34:59 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Fri, 9 Mar 2018 14:34:58 -0700
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, mpe@ellerman.id.au, jeyu@kernel.org
+Cc: npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/64: Fix section mismatch warnings for early boot
+ symbols
+Date: Fri,  9 Mar 2018 18:34:50 -0300
+In-Reply-To: <1520628111-1361-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+References: <1520628111-1361-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+Message-Id: <1520631290-5340-1-git-send-email-mauricfo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -88,26 +36,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 9, 2018 at 3:15 PM, Robin Murphy <robin.murphy@arm.com> wrote:
-> Hi Andrey,
->
-> On 09/03/18 14:01, Andrey Konovalov wrote:
->>
->> arm64 has a feature called Top Byte Ignore, which allows to embed pointer
->> tags into the top byte of each pointer. Userspace programs (such as
->> HWASan, a memory debugging tool [1]) might use this feature and pass
->> tagged user pointers to the kernel through syscalls or other interfaces.
->
->
-> If you propose changing the ABI, then
-> Documentation/arm64/tagged-pointers.txt needs to reflect the new one, since
-> passing nonzero tags via syscalls is currently explicitly forbidden.
->
-> Robin.
+Some of the boot code located at the start of kernel text is "init"
+class, in that it only runs at boot time, however marking it as normal
+init code is problematic because that puts it into a different section
+located at the very end of kernel text.
 
-Hi Robin!
+e.g., in case the TOC is not set up, we may not be able to tolerate a
+branch trampoline to reach the init function.
 
-I will include changes to Documentation/arm64/tagged-pointers.txt in
-the next version.
+Credits: code and message are based on 2016 patch by Nicholas Piggin,
+and slightly modified so not to rename the powerpc code/symbol names.
 
-Thanks!
+    Subject: [PATCH] powerpc/64: quieten section mismatch warnings
+    From: Nicholas Piggin <npiggin at gmail.com>
+    Date: Fri Dec 23 00:14:19 AEDT 2016
+
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+---
+v2: fix missing close parenthesis in conditional (wrong patch file, sorry)
+
+ scripts/mod/modpost.c | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 9917f92..c65d5e2 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1174,8 +1174,15 @@ static const struct sectioncheck *section_mismatch(
+  *   fromsec = text section
+  *   refsymname = *.constprop.*
+  *
++ * Pattern 6:
++ *   powerpc64 has boot functions that reference init, but must remain in text.
++ *   This pattern is identified by
++ *   tosec   = init section
++ *   fromsym = <function list>
++ *
+  **/
+-static int secref_whitelist(const struct sectioncheck *mismatch,
++static int secref_whitelist(const struct elf_info *elf,
++			    const struct sectioncheck *mismatch,
+ 			    const char *fromsec, const char *fromsym,
+ 			    const char *tosec, const char *tosym)
+ {
+@@ -1212,6 +1219,17 @@ static int secref_whitelist(const struct sectioncheck *mismatch,
+ 	    match(fromsym, optim_symbols))
+ 		return 0;
+ 
++	/* Check for pattern 6 */
++	if (elf->hdr->e_machine == EM_PPC64)
++		if (match(tosec, init_sections) &&
++		    (!strncmp(fromsym, "__boot_from_prom",
++				strlen("__boot_from_prom")) ||
++		     !strncmp(fromsym, "start_here_multiplatform",
++				strlen("start_here_multiplatform")) ||
++		     !strncmp(fromsym, "start_here_common",
++				strlen("start_here_common"))))
++			return 0;
++
+ 	return 1;
+ }
+ 
+@@ -1552,7 +1570,7 @@ static void default_mismatch_handler(const char *modname, struct elf_info *elf,
+ 	tosym = sym_name(elf, to);
+ 
+ 	/* check whitelist - we may ignore it */
+-	if (secref_whitelist(mismatch,
++	if (secref_whitelist(elf, mismatch,
+ 			     fromsec, fromsym, tosec, tosym)) {
+ 		report_sec_mismatch(modname, mismatch,
+ 				    fromsec, r->r_offset, fromsym,
+-- 
+1.8.3.1
