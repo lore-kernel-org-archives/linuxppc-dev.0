@@ -1,8 +1,9 @@
 Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3zyTtK2p2bzF1sZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 01:15:19 +1100 (AEDT)
-Subject: Re: [RFC PATCH 0/6] arm64: untag user pointers passed to the kernel
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3zyTwB0kqGzF1Vv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 01:16:57 +1100 (AEDT)
+Subject: Re: [RFC PATCH 6/6] arch: add untagged_addr definition for other
+ arches
 To: Andrey Konovalov <andreyknvl@google.com>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
  <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>,
@@ -63,11 +64,12 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Kostya Serebryany <kcc@google.com>,
  Jacob Bramley <Jacob.Bramley@arm.com>,
  Ruben Ayrapetyan <Ruben.Ayrapetyan@arm.com>
 References: <cover.1520600533.git.andreyknvl@google.com>
+ <89b4bb181a0622d2c581699bb3814fc041078d04.1520600533.git.andreyknvl@google.com>
 From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <963e112a-88a0-94bc-e6eb-0e9f9a6ee14a@arm.com>
-Date: Fri, 9 Mar 2018 14:15:00 +0000
+Message-ID: <b320ff92-43ae-a479-35aa-4257b9c5430e@arm.com>
+Date: Fri, 9 Mar 2018 14:16:40 +0000
 MIME-Version: 1.0
-In-Reply-To: <cover.1520600533.git.andreyknvl@google.com>
+In-Reply-To: <89b4bb181a0622d2c581699bb3814fc041078d04.1520600533.git.andreyknvl@google.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -78,80 +80,381 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrey,
+On 09/03/18 14:02, Andrey Konovalov wrote:
+> To allow arm64 syscalls accept tagged pointers from userspace, we must
+> untag them when they are passed to the kernel. Since untagging is done in
+> generic parts of the kernel (like the mm subsystem), the untagged_addr
+> macro should be defined for all architectures.
 
-On 09/03/18 14:01, Andrey Konovalov wrote:
-> arm64 has a feature called Top Byte Ignore, which allows to embed pointer
-> tags into the top byte of each pointer. Userspace programs (such as
-> HWASan, a memory debugging tool [1]) might use this feature and pass
-> tagged user pointers to the kernel through syscalls or other interfaces.
-
-If you propose changing the ABI, then 
-Documentation/arm64/tagged-pointers.txt needs to reflect the new one, 
-since passing nonzero tags via syscalls is currently explicitly forbidden.
+Would it not suffice to have an "#ifndef untagged_addr..." fallback in 
+linux/uaccess.h?
 
 Robin.
 
-> This patch makes a few of the kernel interfaces accept tagged user
-> pointers. The kernel is already able to handle user faults with tagged
-> pointers and has the untagged_addr macro, which this patchset reuses.
+> Define it as a noop for all other architectures besides arm64.
 > 
-> We're not trying to cover all possible ways the kernel accepts user
-> pointers in one patchset, so this one should be considered as a start.
-> It would be nice to learn about the interfaces that I missed though.
+> Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+> ---
+>   arch/alpha/include/asm/uaccess.h      | 2 ++
+>   arch/arc/include/asm/uaccess.h        | 1 +
+>   arch/arm/include/asm/uaccess.h        | 2 ++
+>   arch/blackfin/include/asm/uaccess.h   | 2 ++
+>   arch/c6x/include/asm/uaccess.h        | 2 ++
+>   arch/cris/include/asm/uaccess.h       | 2 ++
+>   arch/frv/include/asm/uaccess.h        | 2 ++
+>   arch/ia64/include/asm/uaccess.h       | 2 ++
+>   arch/m32r/include/asm/uaccess.h       | 2 ++
+>   arch/m68k/include/asm/uaccess.h       | 2 ++
+>   arch/metag/include/asm/uaccess.h      | 2 ++
+>   arch/microblaze/include/asm/uaccess.h | 2 ++
+>   arch/mips/include/asm/uaccess.h       | 2 ++
+>   arch/mn10300/include/asm/uaccess.h    | 2 ++
+>   arch/nios2/include/asm/uaccess.h      | 2 ++
+>   arch/openrisc/include/asm/uaccess.h   | 2 ++
+>   arch/parisc/include/asm/uaccess.h     | 2 ++
+>   arch/powerpc/include/asm/uaccess.h    | 2 ++
+>   arch/riscv/include/asm/uaccess.h      | 2 ++
+>   arch/score/include/asm/uaccess.h      | 2 ++
+>   arch/sh/include/asm/uaccess.h         | 2 ++
+>   arch/sparc/include/asm/uaccess.h      | 2 ++
+>   arch/tile/include/asm/uaccess.h       | 2 ++
+>   arch/x86/include/asm/uaccess.h        | 2 ++
+>   arch/xtensa/include/asm/uaccess.h     | 2 ++
+>   include/asm-generic/uaccess.h         | 2 ++
+>   26 files changed, 51 insertions(+)
 > 
-> Sending this as an RFC, as I'm not sure if this should be committed as is,
-> and would like to receive some feedback.
-> 
-> Thanks!
-> 
-> [1] http://clang.llvm.org/docs/HardwareAssistedAddressSanitizerDesign.html
-> 
-> Andrey Konovalov (6):
->    arm64: add type casts to untagged_addr macro
->    arm64: untag user addresses in copy_from_user and others
->    mm, arm64: untag user addresses in memory syscalls
->    mm, arm64: untag user addresses in mm/gup.c
->    lib, arm64: untag addrs passed to strncpy_from_user and strnlen_user
->    arch: add untagged_addr definition for other arches
-> 
->   arch/alpha/include/asm/uaccess.h      |  2 ++
->   arch/arc/include/asm/uaccess.h        |  1 +
->   arch/arm/include/asm/uaccess.h        |  2 ++
->   arch/arm64/include/asm/uaccess.h      |  9 +++++++--
->   arch/blackfin/include/asm/uaccess.h   |  2 ++
->   arch/c6x/include/asm/uaccess.h        |  2 ++
->   arch/cris/include/asm/uaccess.h       |  2 ++
->   arch/frv/include/asm/uaccess.h        |  2 ++
->   arch/ia64/include/asm/uaccess.h       |  2 ++
->   arch/m32r/include/asm/uaccess.h       |  2 ++
->   arch/m68k/include/asm/uaccess.h       |  2 ++
->   arch/metag/include/asm/uaccess.h      |  2 ++
->   arch/microblaze/include/asm/uaccess.h |  2 ++
->   arch/mips/include/asm/uaccess.h       |  2 ++
->   arch/mn10300/include/asm/uaccess.h    |  2 ++
->   arch/nios2/include/asm/uaccess.h      |  2 ++
->   arch/openrisc/include/asm/uaccess.h   |  2 ++
->   arch/parisc/include/asm/uaccess.h     |  2 ++
->   arch/powerpc/include/asm/uaccess.h    |  2 ++
->   arch/riscv/include/asm/uaccess.h      |  2 ++
->   arch/score/include/asm/uaccess.h      |  2 ++
->   arch/sh/include/asm/uaccess.h         |  2 ++
->   arch/sparc/include/asm/uaccess.h      |  2 ++
->   arch/tile/include/asm/uaccess.h       |  2 ++
->   arch/x86/include/asm/uaccess.h        |  2 ++
->   arch/xtensa/include/asm/uaccess.h     |  2 ++
->   include/asm-generic/uaccess.h         |  2 ++
->   lib/strncpy_from_user.c               |  2 ++
->   lib/strnlen_user.c                    |  2 ++
->   mm/gup.c                              | 12 ++++++++++++
->   mm/madvise.c                          |  2 ++
->   mm/mempolicy.c                        |  6 ++++++
->   mm/mincore.c                          |  2 ++
->   mm/mlock.c                            |  5 +++++
->   mm/mmap.c                             |  9 +++++++++
->   mm/mprotect.c                         |  2 ++
->   mm/mremap.c                           |  2 ++
->   mm/msync.c                            |  3 +++
->   38 files changed, 105 insertions(+), 2 deletions(-)
+> diff --git a/arch/alpha/include/asm/uaccess.h b/arch/alpha/include/asm/uaccess.h
+> index 87d8c4f0307d..09d136bb4ff5 100644
+> --- a/arch/alpha/include/asm/uaccess.h
+> +++ b/arch/alpha/include/asm/uaccess.h
+> @@ -2,6 +2,8 @@
+>   #ifndef __ALPHA_UACCESS_H
+>   #define __ALPHA_UACCESS_H
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/arc/include/asm/uaccess.h b/arch/arc/include/asm/uaccess.h
+> index c9173c02081c..2a04b7a4aada 100644
+> --- a/arch/arc/include/asm/uaccess.h
+> +++ b/arch/arc/include/asm/uaccess.h
+> @@ -26,6 +26,7 @@
+>   
+>   #include <linux/string.h>	/* for generic string functions */
+>   
+> +#define untagged_addr(addr)	addr
+>   
+>   #define __kernel_ok		(uaccess_kernel())
+>   
+> diff --git a/arch/arm/include/asm/uaccess.h b/arch/arm/include/asm/uaccess.h
+> index 0bf2347495f1..7d4f4e4021f2 100644
+> --- a/arch/arm/include/asm/uaccess.h
+> +++ b/arch/arm/include/asm/uaccess.h
+> @@ -19,6 +19,8 @@
+>   
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * These two functions allow hooking accesses to userspace to increase
+>    * system integrity by ensuring that the kernel can not inadvertantly
+> diff --git a/arch/blackfin/include/asm/uaccess.h b/arch/blackfin/include/asm/uaccess.h
+> index 45da4bcb050e..fb6bdc54e7bd 100644
+> --- a/arch/blackfin/include/asm/uaccess.h
+> +++ b/arch/blackfin/include/asm/uaccess.h
+> @@ -18,6 +18,8 @@
+>   #include <asm/segment.h>
+>   #include <asm/sections.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define get_ds()        (KERNEL_DS)
+>   #define get_fs()        (current_thread_info()->addr_limit)
+>   
+> diff --git a/arch/c6x/include/asm/uaccess.h b/arch/c6x/include/asm/uaccess.h
+> index ba6756879f00..f187696cf440 100644
+> --- a/arch/c6x/include/asm/uaccess.h
+> +++ b/arch/c6x/include/asm/uaccess.h
+> @@ -9,6 +9,8 @@
+>   #ifndef _ASM_C6X_UACCESS_H
+>   #define _ASM_C6X_UACCESS_H
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #include <linux/types.h>
+>   #include <linux/compiler.h>
+>   #include <linux/string.h>
+> diff --git a/arch/cris/include/asm/uaccess.h b/arch/cris/include/asm/uaccess.h
+> index 3b42ab0cae93..86d8fbd200c4 100644
+> --- a/arch/cris/include/asm/uaccess.h
+> +++ b/arch/cris/include/asm/uaccess.h
+> @@ -19,6 +19,8 @@
+>   #include <asm/processor.h>
+>   #include <asm/page.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/frv/include/asm/uaccess.h b/arch/frv/include/asm/uaccess.h
+> index ff9562dc6825..be21b42bde09 100644
+> --- a/arch/frv/include/asm/uaccess.h
+> +++ b/arch/frv/include/asm/uaccess.h
+> @@ -12,6 +12,8 @@
+>   #ifndef _ASM_UACCESS_H
+>   #define _ASM_UACCESS_H
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * User space memory access functions
+>    */
+> diff --git a/arch/ia64/include/asm/uaccess.h b/arch/ia64/include/asm/uaccess.h
+> index a74524f2d625..1c46bf1c4f73 100644
+> --- a/arch/ia64/include/asm/uaccess.h
+> +++ b/arch/ia64/include/asm/uaccess.h
+> @@ -42,6 +42,8 @@
+>   #include <asm/io.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * For historical reasons, the following macros are grossly misnamed:
+>    */
+> diff --git a/arch/m32r/include/asm/uaccess.h b/arch/m32r/include/asm/uaccess.h
+> index 9d89bc3d8181..6e0fe6b215be 100644
+> --- a/arch/m32r/include/asm/uaccess.h
+> +++ b/arch/m32r/include/asm/uaccess.h
+> @@ -16,6 +16,8 @@
+>   #include <asm/setup.h>
+>   #include <linux/prefetch.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/m68k/include/asm/uaccess.h b/arch/m68k/include/asm/uaccess.h
+> index e896466a41a4..02e0c5878ad5 100644
+> --- a/arch/m68k/include/asm/uaccess.h
+> +++ b/arch/m68k/include/asm/uaccess.h
+> @@ -5,3 +5,5 @@
+>   #include <asm/uaccess_mm.h>
+>   #endif
+>   #include <asm/extable.h>
+> +
+> +#define untagged_addr(addr)	addr
+> diff --git a/arch/metag/include/asm/uaccess.h b/arch/metag/include/asm/uaccess.h
+> index a5311eb36e32..1b2f0478868a 100644
+> --- a/arch/metag/include/asm/uaccess.h
+> +++ b/arch/metag/include/asm/uaccess.h
+> @@ -14,6 +14,8 @@
+>    * For historical reasons, these macros are grossly misnamed.
+>    */
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define MAKE_MM_SEG(s)  ((mm_segment_t) { (s) })
+>   
+>   #define KERNEL_DS       MAKE_MM_SEG(0xFFFFFFFF)
+> diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
+> index 81f16aadbf9e..a66bc26660c3 100644
+> --- a/arch/microblaze/include/asm/uaccess.h
+> +++ b/arch/microblaze/include/asm/uaccess.h
+> @@ -20,6 +20,8 @@
+>   #include <asm/extable.h>
+>   #include <linux/string.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * On Microblaze the fs value is actually the top of the corresponding
+>    * address space.
+> diff --git a/arch/mips/include/asm/uaccess.h b/arch/mips/include/asm/uaccess.h
+> index b71306947290..2db7606c388b 100644
+> --- a/arch/mips/include/asm/uaccess.h
+> +++ b/arch/mips/include/asm/uaccess.h
+> @@ -16,6 +16,8 @@
+>   #include <asm/asm-eva.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/mn10300/include/asm/uaccess.h b/arch/mn10300/include/asm/uaccess.h
+> index 5af468fd1359..6604699b34b6 100644
+> --- a/arch/mn10300/include/asm/uaccess.h
+> +++ b/arch/mn10300/include/asm/uaccess.h
+> @@ -17,6 +17,8 @@
+>   #include <linux/kernel.h>
+>   #include <asm/page.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/nios2/include/asm/uaccess.h b/arch/nios2/include/asm/uaccess.h
+> index dfa3c7cb30b4..36152a7302a8 100644
+> --- a/arch/nios2/include/asm/uaccess.h
+> +++ b/arch/nios2/include/asm/uaccess.h
+> @@ -19,6 +19,8 @@
+>   
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * Segment stuff
+>    */
+> diff --git a/arch/openrisc/include/asm/uaccess.h b/arch/openrisc/include/asm/uaccess.h
+> index bbf5c79cce7a..5b43d13ab363 100644
+> --- a/arch/openrisc/include/asm/uaccess.h
+> +++ b/arch/openrisc/include/asm/uaccess.h
+> @@ -27,6 +27,8 @@
+>   #include <asm/page.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/parisc/include/asm/uaccess.h b/arch/parisc/include/asm/uaccess.h
+> index ea70e36ce6af..b0f3cd529c8d 100644
+> --- a/arch/parisc/include/asm/uaccess.h
+> +++ b/arch/parisc/include/asm/uaccess.h
+> @@ -11,6 +11,8 @@
+>   #include <linux/bug.h>
+>   #include <linux/string.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define KERNEL_DS	((mm_segment_t){0})
+>   #define USER_DS 	((mm_segment_t){1})
+>   
+> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+> index 51bfeb8777f0..07ae1c318166 100644
+> --- a/arch/powerpc/include/asm/uaccess.h
+> +++ b/arch/powerpc/include/asm/uaccess.h
+> @@ -8,6 +8,8 @@
+>   #include <asm/page.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/riscv/include/asm/uaccess.h b/arch/riscv/include/asm/uaccess.h
+> index 14b0b22fb578..e774239aac24 100644
+> --- a/arch/riscv/include/asm/uaccess.h
+> +++ b/arch/riscv/include/asm/uaccess.h
+> @@ -25,6 +25,8 @@
+>   #include <asm/byteorder.h>
+>   #include <asm/asm.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define __enable_user_access()							\
+>   	__asm__ __volatile__ ("csrs sstatus, %0" : : "r" (SR_SUM) : "memory")
+>   #define __disable_user_access()							\
+> diff --git a/arch/score/include/asm/uaccess.h b/arch/score/include/asm/uaccess.h
+> index a233f3236846..fd16c2a71091 100644
+> --- a/arch/score/include/asm/uaccess.h
+> +++ b/arch/score/include/asm/uaccess.h
+> @@ -5,6 +5,8 @@
+>   #include <linux/kernel.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define get_ds()		(KERNEL_DS)
+>   #define get_fs()		(current_thread_info()->addr_limit)
+>   #define segment_eq(a, b)	((a).seg == (b).seg)
+> diff --git a/arch/sh/include/asm/uaccess.h b/arch/sh/include/asm/uaccess.h
+> index 32eb56e00c11..31f3ea075190 100644
+> --- a/arch/sh/include/asm/uaccess.h
+> +++ b/arch/sh/include/asm/uaccess.h
+> @@ -5,6 +5,8 @@
+>   #include <asm/segment.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define __addr_ok(addr) \
+>   	((unsigned long __force)(addr) < current_thread_info()->addr_limit.seg)
+>   
+> diff --git a/arch/sparc/include/asm/uaccess.h b/arch/sparc/include/asm/uaccess.h
+> index dd85bc2c2cad..70c2f5ea09ce 100644
+> --- a/arch/sparc/include/asm/uaccess.h
+> +++ b/arch/sparc/include/asm/uaccess.h
+> @@ -7,6 +7,8 @@
+>   #include <asm/uaccess_32.h>
+>   #endif
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   #define user_addr_max() \
+>   	(uaccess_kernel() ? ~0UL : TASK_SIZE)
+>   
+> diff --git a/arch/tile/include/asm/uaccess.h b/arch/tile/include/asm/uaccess.h
+> index cb4fbe7e4f88..7d365b087dcb 100644
+> --- a/arch/tile/include/asm/uaccess.h
+> +++ b/arch/tile/include/asm/uaccess.h
+> @@ -22,6 +22,8 @@
+>   #include <asm/processor.h>
+>   #include <asm/page.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+> index aae77eb8491c..3c233fbdd32b 100644
+> --- a/arch/x86/include/asm/uaccess.h
+> +++ b/arch/x86/include/asm/uaccess.h
+> @@ -12,6 +12,8 @@
+>   #include <asm/smap.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should be
+>    * performed or not.  If get_fs() == USER_DS, checking is performed, with
+> diff --git a/arch/xtensa/include/asm/uaccess.h b/arch/xtensa/include/asm/uaccess.h
+> index f1158b4c629c..130e419c4d6e 100644
+> --- a/arch/xtensa/include/asm/uaccess.h
+> +++ b/arch/xtensa/include/asm/uaccess.h
+> @@ -20,6 +20,8 @@
+>   #include <asm/types.h>
+>   #include <asm/extable.h>
+>   
+> +#define untagged_addr(addr)	addr
+> +
+>   /*
+>    * The fs value determines whether argument validity checking should
+>    * be performed or not.  If get_fs() == USER_DS, checking is
+> diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
+> index 6b2e63df2739..2c46d2253dba 100644
+> --- a/include/asm-generic/uaccess.h
+> +++ b/include/asm-generic/uaccess.h
+> @@ -35,6 +35,8 @@ static inline void set_fs(mm_segment_t fs)
+>   #define segment_eq(a, b) ((a).seg == (b).seg)
+>   #endif
+>   
+> +#define untagged_addr(addr) addr
+> +
+>   #define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
+>   
+>   /*
 > 
