@@ -1,12 +1,12 @@
 Return-Path: <andreyknvl@google.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
+ [IPv6:2a00:1450:400c:c0c::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyTbH6JDyzF1qt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 01:02:19 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id i3so4062804wmi.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 06:02:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zyTbH4c9xzF1hT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 01:02:15 +1100 (AEDT)
+Received: by mail-wr0-x243.google.com with SMTP id o76so9117554wrb.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 06:02:15 -0800 (PST)
 From: Andrey Konovalov <andreyknvl@google.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
  Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>,
@@ -69,14 +69,9 @@ Cc: Dmitry Vyukov <dvyukov@google.com>, Kostya Serebryany <kcc@google.com>,
  Jacob Bramley <Jacob.Bramley@arm.com>,
  Ruben Ayrapetyan <Ruben.Ayrapetyan@arm.com>,
  Andrey Konovalov <andreyknvl@google.com>
-Subject: [RFC PATCH 2/6] arm64: untag user addresses in copy_from_user and
- others
-Date: Fri,  9 Mar 2018 15:02:00 +0100
-Message-Id: <d681c0dee907ee5cc55d313e2f843237c6087bf0.1520600533.git.andreyknvl@google.com>
-In-Reply-To: <cover.1520600533.git.andreyknvl@google.com>
-References: <cover.1520600533.git.andreyknvl@google.com>
-In-Reply-To: <cover.1520600533.git.andreyknvl@google.com>
-References: <cover.1520600533.git.andreyknvl@google.com>
+Subject: [RFC PATCH 0/6] arm64: untag user pointers passed to the kernel
+Date: Fri,  9 Mar 2018 15:01:58 +0100
+Message-Id: <cover.1520600533.git.andreyknvl@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -86,47 +81,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-copy_from_user (and a few other similar functions) are used to copy data
-from user memory into the kernel memory or vice versa. Since a user can
-provided a tagged pointer to one of the syscalls that use copy_from_user,
-we need to correctly handle such pointers.
+arm64 has a feature called Top Byte Ignore, which allows to embed pointer
+tags into the top byte of each pointer. Userspace programs (such as
+HWASan, a memory debugging tool [1]) might use this feature and pass
+tagged user pointers to the kernel through syscalls or other interfaces.
 
-Do this by untagging user pointers in access_ok and in __uaccess_mask_ptr.
+This patch makes a few of the kernel interfaces accept tagged user
+pointers. The kernel is already able to handle user faults with tagged
+pointers and has the untagged_addr macro, which this patchset reuses.
 
-Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
----
- arch/arm64/include/asm/uaccess.h | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+We're not trying to cover all possible ways the kernel accepts user
+pointers in one patchset, so this one should be considered as a start.
+It would be nice to learn about the interfaces that I missed though.
 
-diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
-index 2d6451cbaa86..24a221678fe3 100644
---- a/arch/arm64/include/asm/uaccess.h
-+++ b/arch/arm64/include/asm/uaccess.h
-@@ -105,7 +105,8 @@ static inline unsigned long __range_ok(const void __user *addr, unsigned long si
- #define untagged_addr(addr)		\
- 	((__typeof__(addr))sign_extend64((__u64)(addr), 55))
- 
--#define access_ok(type, addr, size)	__range_ok(addr, size)
-+#define access_ok(type, addr, size)	\
-+	__range_ok(untagged_addr(addr), size)
- #define user_addr_max			get_fs
- 
- #define _ASM_EXTABLE(from, to)						\
-@@ -238,12 +239,15 @@ static inline void uaccess_enable_not_uao(void)
- /*
-  * Sanitise a uaccess pointer such that it becomes NULL if above the
-  * current addr_limit.
-+ * Also untag user pointers that have the top byte tag set.
-  */
- #define uaccess_mask_ptr(ptr) (__typeof__(ptr))__uaccess_mask_ptr(ptr)
- static inline void __user *__uaccess_mask_ptr(const void __user *ptr)
- {
- 	void __user *safe_ptr;
- 
-+	ptr = untagged_addr(ptr);
-+
- 	asm volatile(
- 	"	bics	xzr, %1, %2\n"
- 	"	csel	%0, %1, xzr, eq\n"
+Sending this as an RFC, as I'm not sure if this should be committed as is,
+and would like to receive some feedback.
+
+Thanks!
+
+[1] http://clang.llvm.org/docs/HardwareAssistedAddressSanitizerDesign.html
+
+Andrey Konovalov (6):
+  arm64: add type casts to untagged_addr macro
+  arm64: untag user addresses in copy_from_user and others
+  mm, arm64: untag user addresses in memory syscalls
+  mm, arm64: untag user addresses in mm/gup.c
+  lib, arm64: untag addrs passed to strncpy_from_user and strnlen_user
+  arch: add untagged_addr definition for other arches
+
+ arch/alpha/include/asm/uaccess.h      |  2 ++
+ arch/arc/include/asm/uaccess.h        |  1 +
+ arch/arm/include/asm/uaccess.h        |  2 ++
+ arch/arm64/include/asm/uaccess.h      |  9 +++++++--
+ arch/blackfin/include/asm/uaccess.h   |  2 ++
+ arch/c6x/include/asm/uaccess.h        |  2 ++
+ arch/cris/include/asm/uaccess.h       |  2 ++
+ arch/frv/include/asm/uaccess.h        |  2 ++
+ arch/ia64/include/asm/uaccess.h       |  2 ++
+ arch/m32r/include/asm/uaccess.h       |  2 ++
+ arch/m68k/include/asm/uaccess.h       |  2 ++
+ arch/metag/include/asm/uaccess.h      |  2 ++
+ arch/microblaze/include/asm/uaccess.h |  2 ++
+ arch/mips/include/asm/uaccess.h       |  2 ++
+ arch/mn10300/include/asm/uaccess.h    |  2 ++
+ arch/nios2/include/asm/uaccess.h      |  2 ++
+ arch/openrisc/include/asm/uaccess.h   |  2 ++
+ arch/parisc/include/asm/uaccess.h     |  2 ++
+ arch/powerpc/include/asm/uaccess.h    |  2 ++
+ arch/riscv/include/asm/uaccess.h      |  2 ++
+ arch/score/include/asm/uaccess.h      |  2 ++
+ arch/sh/include/asm/uaccess.h         |  2 ++
+ arch/sparc/include/asm/uaccess.h      |  2 ++
+ arch/tile/include/asm/uaccess.h       |  2 ++
+ arch/x86/include/asm/uaccess.h        |  2 ++
+ arch/xtensa/include/asm/uaccess.h     |  2 ++
+ include/asm-generic/uaccess.h         |  2 ++
+ lib/strncpy_from_user.c               |  2 ++
+ lib/strnlen_user.c                    |  2 ++
+ mm/gup.c                              | 12 ++++++++++++
+ mm/madvise.c                          |  2 ++
+ mm/mempolicy.c                        |  6 ++++++
+ mm/mincore.c                          |  2 ++
+ mm/mlock.c                            |  5 +++++
+ mm/mmap.c                             |  9 +++++++++
+ mm/mprotect.c                         |  2 ++
+ mm/mremap.c                           |  2 ++
+ mm/msync.c                            |  3 +++
+ 38 files changed, 105 insertions(+), 2 deletions(-)
+
 -- 
 2.16.2.395.g2e18187dfd-goog
