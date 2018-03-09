@@ -1,31 +1,36 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyLWZ61NXzF1rw
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2018 19:43:38 +1100 (AEDT)
-Received: by mail-wr0-x244.google.com with SMTP id o76so8198326wrb.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 00:43:38 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 9 Mar 2018 09:43:32 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, corbet@lwn.net,
- arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com,
- Ulrich.Weigand@de.ibm.com
-Subject: Re: [PATCH] x86, powerpc : pkey-mprotect must allow pkey-0
-Message-ID: <20180309084332.hk6xt6obghoqokbc@gmail.com>
-References: <1520583161-11741-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zyNDL2XCtzF1tq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2018 21:00:32 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id h11so1091963pfn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 02:00:32 -0800 (PST)
+Date: Fri, 9 Mar 2018 15:30:26 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, bcm-kernel-feedback-list@broadcom.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Gregory Fong <gregory.0xf0@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Kukjin Kim <kgene@kernel.org>, Markus Mayer <mmayer@broadcom.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
+ linux-arm-kernel@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: Re: [PATCH 00/27] cpufreq: Stop validating cpufreq table in drivers
+Message-ID: <20180309100026.GQ6842@vireshk-i7>
+References: <cover.1519620578.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1520583161-11741-1-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <cover.1519620578.git.viresh.kumar@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,58 +40,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Ram Pai <linuxram@us.ibm.com> wrote:
-
-> Once an address range is associated with an allocated pkey, it cannot be
-> reverted back to key-0. There is no valid reason for the above behavior.  On
-> the contrary applications need the ability to do so.
+On 26-02-18, 10:38, Viresh Kumar wrote:
+> Hi,
 > 
-> The patch relaxes the restriction.
+> A patchset [1] sent last week already updated the cpufreq core to start
+> validating cpufreq table if the policy contains a valid
+> "policy->freq_table" pointer.
 > 
-> Tested on powerpc and x86_64.
+> This series updates all such drivers to stop validating the cpufreq
+> table directly and let only the core handle it.
 > 
-> cc: Dave Hansen <dave.hansen@intel.com>
-> cc: Michael Ellermen <mpe@ellerman.id.au>
-> cc: Ingo Molnar <mingo@kernel.org>
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  arch/powerpc/include/asm/pkeys.h | 19 ++++++++++++++-----
->  arch/x86/include/asm/pkeys.h     |  5 +++--
->  2 files changed, 17 insertions(+), 7 deletions(-)
+> It depends on the previous series [1] and two cleanup patches [2][3] and
+> is rebased over 4.16-rc3.
 > 
-> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> index 0409c80..3e8abe4 100644
-> --- a/arch/powerpc/include/asm/pkeys.h
-> +++ b/arch/powerpc/include/asm/pkeys.h
-> @@ -101,10 +101,18 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
->  
->  static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
->  {
-> -	/* A reserved key is never considered as 'explicitly allocated' */
-> -	return ((pkey < arch_max_pkey()) &&
-> -		!__mm_pkey_is_reserved(pkey) &&
-> -		__mm_pkey_is_allocated(mm, pkey));
-> +	/* pkey 0 is allocated by default. */
-> +	if (!pkey)
-> +	       return true;
-> +
-> +	if (pkey < 0 || pkey >= arch_max_pkey())
-> +	       return false;
-> +
-> +	/* reserved keys are never allocated. */
-> +	if (__mm_pkey_is_reserved(pkey))
-> +	       return false;
+> It is already tested by the 0-day testing infrastructure and no issues
+> were reported.
 
-Please capitalize in comments consistently, i.e.:
+We will assume no objections or concerns if you (cc'd here and on the individual
+commits) don't respond and the series will then get merged into linux-next next
+week.
 
-	/* Reserved keys are never allocated: */
+Thanks.
 
-> +
-> +	return(__mm_pkey_is_allocated(mm, pkey));
-
-'return' is not a function.
-
-Thanks,
-
-	Ingo
+--
+viresh
