@@ -1,22 +1,41 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0072.outbound.protection.outlook.com [104.47.0.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyYFp2SCgzF1ms
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 03:47:26 +1100 (AEDT)
-Date: Fri, 9 Mar 2018 17:47:18 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nicholas
- Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org
-Subject: Re: [PATCH v2] On ppc64le we HAVE_RELIABLE_STACKTRACE
-Message-ID: <20180309174718.2700b29e@blackhole.lan>
-In-Reply-To: <20180308162616.yhbymodggnfzpskx@treble>
-References: <20180305164928.GA17953@lst.de>
- <20180308162616.yhbymodggnfzpskx@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zybX141VKzF1vH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 05:29:50 +1100 (AEDT)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: Christoph Hellwig <hch@lst.de>
+CC: Robin Murphy <robin.murphy@arm.com>, "will.deacon@arm.com"
+ <will.deacon@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "m.szyprowski@samsung.com"
+ <m.szyprowski@samsung.com>, "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>, "joro@8bytes.org" <joro@8bytes.org>, Leo Li
+ <leoyang.li@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "stuyoder@gmail.com" <stuyoder@gmail.com>, Laurentiu Tudor
+ <laurentiu.tudor@nxp.com>
+Subject: RE: [PATCH 5/6] dma-mapping: support fsl-mc bus
+Date: Fri, 9 Mar 2018 18:29:41 +0000
+Message-ID: <HE1PR0401MB2425871215B13AD0EFDCA5C3E6DE0@HE1PR0401MB2425.eurprd04.prod.outlook.com>
+References: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
+ <1520260166-29387-6-git-send-email-nipun.gupta@nxp.com>
+ <20180305150814.GA15918@lst.de>
+ <7b4f9972-6aaa-fc9d-3854-d48b19a8051c@arm.com>
+ <20180305183938.GB20086@lst.de>
+ <1729ae21-d08c-b413-51a3-f22c394b388d@arm.com>
+ <HE1PR0401MB24251E99564CAA526F719ECCE6D90@HE1PR0401MB2425.eurprd04.prod.outlook.com>
+ <20180308074115.GB15748@lst.de>
+In-Reply-To: <20180308074115.GB15748@lst.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +45,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 8 Mar 2018 10:26:16 -0600
-Josh Poimboeuf <jpoimboe@redhat.com> wrote:
 
-> This doesn't seem to address some of my previous concerns:
 
-You're right. That discussion quickly headed towards objtool
-and I forgot about this one paragraph with the remarks.
+> -----Original Message-----
+> From: Christoph Hellwig [mailto:hch@lst.de]
+> Sent: Thursday, March 08, 2018 13:11
+>=20
+> On Tue, Mar 06, 2018 at 04:41:56AM +0000, Nipun Gupta wrote:
+> > Sorry for asking a trivial question - looking into dma_configure() I se=
+e that
+> > PCI is used in the start and the end of the API.
+> > In the end part pci_put_host_bridge_device() is called.
+> > So are two bus callbacks something like 'dma_config_start' &
+> 'dma_config_end'
+> > will be required where the former one will return "dma_dev"?
+>=20
+> I'd just use dma_configure as the callback.
 
-> - Bailing on interrupt/exception frames
+This would be a decent stuff.
 
-That is a good question. My current code keeps unwinding as long
-as the trace looks sane. If the exception frame has a valid code
-pointer in the LR slot it will continue. Couldn't there be cases
-where this is desirable? Should this be configurable? Not that
-I have an idea how this situation could occur for a thread
-that is current or sleeping...
+>=20
+> Currently the of_dma_configure and acpi_dma_configure are only used
+> for PCI anyway, as no one else sets a non-NULL dma dev.
 
-Michael, Balbir: is that possible? Any Idea how to reliably detect
-an exception frame? My approach would be to look at the next return
-address and compare it to the usual suspects (i.e. collect all 
-"b ret" addresses in the EXCEPTION_COMMON macro, for BookS).
+My understanding is that even the platform bus uses the of_dma_configure
+and probably acpi_dma_configure too. So platform bus may also need the
+callback implemented. Please correct me if my understanding is wrong.
 
-> - Function graph tracing return address conversion
-> 
-> - kretprobes return address conversion
+I will submit the patch with 'dma_configure' callback implemented for
+the busses shortly.
 
-You mean like in arch/x86/kernel/unwind_frame.c the call to
-ftrace_graph_ret_addr ?
+> For fsl-mc I suspect only of_dma_configure is relevanet, so just call tha=
+t directly.
+> If at some point we get enough busses with either OF or ACPI we could
+> create a helper called from ->dma_configure for that.
 
-Forgive me my directness but I don't see why these should be handled in
-arch-dependent code, other than maybe a hook, if inevitable, that calls
-back into the graph tracer / kretprobes in order to get the proper
-address, or simply call the trace unreliable in case it finds such a
-return address.
+Totally agree with this.
 
-I understand that x86 has a hard time with its multiple unwinders, but
-there should be a simpler, generic solution for all other architectures.
-
-	Torsten
+Thanks,
+Nipun
