@@ -1,28 +1,38 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zyKrK4pwczF1sJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2018 19:13:05 +1100 (AEDT)
-Received: by mail-qt0-x242.google.com with SMTP id y6so9830457qtm.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 00:13:05 -0800 (PST)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au,
-	mingo@redhat.com,
-	akpm@linux-foundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com,
- corbet@lwn.net, arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com,
- Ulrich.Weigand@de.ibm.com
-Subject: [PATCH] x86, powerpc : pkey-mprotect must allow pkey-0
-Date: Fri,  9 Mar 2018 00:12:41 -0800
-Message-Id: <1520583161-11741-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zyKvb2LQXzF1v7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Mar 2018 19:15:55 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w298Dx1T139080
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Mar 2018 03:15:53 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gkn2n39p2-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Mar 2018 03:15:52 -0500
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 9 Mar 2018 08:15:50 -0000
+Date: Fri, 09 Mar 2018 13:45:45 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 1/1] powerpc/ftrace: Exclude real mode code from
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>, Steven Rostedt
+ <rostedt@goodmis.org>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>
+References: <cover.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
+ <ecbf7e8d6895a7d56b4eb60cbf7461bd463086b3.1520435958.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87efkve0a2.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87efkve0a2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1520581934.wrzeu3w6z6.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,82 +42,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once an address range is associated with an allocated pkey, it cannot be
-reverted back to key-0. There is no valid reason for the above behavior.  On
-the contrary applications need the ability to do so.
+Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>=20
+>> We can't take a trap in most parts of real mode code. Instead of adding
+>> the 'notrace' annotation to all C functions that can be invoked from
+>> real mode, detect that we are in real mode on ftrace entry and return
+>> back.
+>>
+>> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>> ---
+>> This RFC only handles -mprofile-kernel to demonstrate the approach being=
+=20
+>> considered. We will need to handle other ftrace entry if we decide to=20
+>> continue down this path.
+>=20
+> Paul and I were talking about having a paca flag for this, ie.
+> paca->safe_to_ftrace (or whatever). I'm not sure if you've talked to
+> him and decided this is a better approach.
+>=20
+> I guess I'm 50/50 on which is better, they both have pluses and minuses.
 
-The patch relaxes the restriction.
+Thanks, I hadn't spoken to Paul, but I now think that this is probably=20
+the better approach to take.
 
-Tested on powerpc and x86_64.
+My earlier assumption was that we have other scenarios when we are in=20
+realmode (specifically with MSR_RI unset) where we won't be able to=20
+recover from a trap, during function tracing (*). I did a set of=20
+experiments yesterday to verify that, but I was not able to uncover any=20
+such scenarios with my brief testing. So, we seem to be functioning just=20
+fine while tracing realmode C code, except for KVM.
 
-cc: Dave Hansen <dave.hansen@intel.com>
-cc: Michael Ellermen <mpe@ellerman.id.au>
-cc: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+As such, rather than blacklisting all realmode code, I think it is=20
+better to be selective and just disable the tracer for KVM since we know=20
+we can't take a trap there. We will be able to use the same approach if=20
+we uncover additional scenarios where we can't use function tracing. I=20
+will look at implementing a paca field for this purpose.
+
+I also noticed that even with an unexpected timebase, we still seem to=20
+recover just fine with a simple change:
+
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2629,8 +2629,8 @@ static noinline void
+ rb_handle_timestamp(struct ring_buffer_per_cpu *cpu_buffer,
+                    struct rb_event_info *info)
+ {
+-       WARN_ONCE(info->delta > (1ULL << 59),
+-                 KERN_WARNING "Delta way too big! %llu ts=3D%llu write sta=
+mp =3D %llu\n%s",
++       if (info->delta > (1ULL << 59))
++               pr_warn_once("Delta way too big! %llu ts=3D%llu write stamp=
+ =3D %llu\n%s",
+                  (unsigned long long)info->delta,
+                  (unsigned long long)info->ts,
+                  (unsigned long long)cpu_buffer->write_stamp,
+
+
+This allowed the virtual machine to boot and we were able to trace the=20
+rest of KVM C code. I only just did a boot test, so I'm not sure if=20
+there are other scenarios where things can go wrong.
+
+Steve,
+Would you be willing to accept a patch like the above? Since we seem to=20
+handle the larger delta just fine, I think the above change should be=20
+fine?
+
+I will still work on excluding KVM C code from being traced, but the=20
+advantage with the above patch is that we will be able to trace KVM C=20
+code with a small change if necessary.
+
+
+- Naveen
+
 ---
- arch/powerpc/include/asm/pkeys.h | 19 ++++++++++++++-----
- arch/x86/include/asm/pkeys.h     |  5 +++--
- 2 files changed, 17 insertions(+), 7 deletions(-)
+(*) putting on my kprobe hat
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 0409c80..3e8abe4 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -101,10 +101,18 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
- 
- static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- {
--	/* A reserved key is never considered as 'explicitly allocated' */
--	return ((pkey < arch_max_pkey()) &&
--		!__mm_pkey_is_reserved(pkey) &&
--		__mm_pkey_is_allocated(mm, pkey));
-+	/* pkey 0 is allocated by default. */
-+	if (!pkey)
-+	       return true;
-+
-+	if (pkey < 0 || pkey >= arch_max_pkey())
-+	       return false;
-+
-+	/* reserved keys are never allocated. */
-+	if (__mm_pkey_is_reserved(pkey))
-+	       return false;
-+
-+	return(__mm_pkey_is_allocated(mm, pkey));
- }
- 
- extern void __arch_activate_pkey(int pkey);
-@@ -150,7 +158,8 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
- 	if (static_branch_likely(&pkey_disabled))
- 		return -1;
- 
--	if (!mm_pkey_is_allocated(mm, pkey))
-+	/* pkey 0 cannot be freed */
-+	if (!pkey || !mm_pkey_is_allocated(mm, pkey))
- 		return -EINVAL;
- 
- 	/*
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index a0ba1ff..6ea7486 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -52,7 +52,7 @@ bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- 	 * from pkey_alloc().  pkey 0 is special, and never
- 	 * returned from pkey_alloc().
- 	 */
--	if (pkey <= 0)
-+	if (pkey < 0)
- 		return false;
- 	if (pkey >= arch_max_pkey())
- 		return false;
-@@ -92,7 +92,8 @@ int mm_pkey_alloc(struct mm_struct *mm)
- static inline
- int mm_pkey_free(struct mm_struct *mm, int pkey)
- {
--	if (!mm_pkey_is_allocated(mm, pkey))
-+	/* pkey 0 is special and can never be freed */
-+	if (!pkey || !mm_pkey_is_allocated(mm, pkey))
- 		return -EINVAL;
- 
- 	mm_set_pkey_free(mm, pkey);
--- 
-1.8.3.1
+=
