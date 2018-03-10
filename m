@@ -1,29 +1,25 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zzC1S254WzF1Z0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 05:08:59 +1100 (AEDT)
-Received: by mail-ot0-x241.google.com with SMTP id l12so11646166otj.7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Mar 2018 10:08:59 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zzFCN1w5VzF1Vv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 06:47:43 +1100 (AEDT)
+Date: Sat, 10 Mar 2018 11:47:42 -0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: stable@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 4.14 1/4] powerpc/mm/slice: Remove intermediate bitmap copy
+Message-ID: <20180310194742.GA12279@kroah.com>
+References: <69684e92a32d00c491540e8adfa34fcb50c36244.1520468013.git.christophe.leroy@c-s.fr>
+ <20180310001043.GD13963@kroah.com>
+ <39af0017-6a9c-a032-8167-40b5f30840f8@c-s.fr>
+ <20180310145258.GA6874@kroah.com>
+ <84cf5fef-a940-cb2a-431e-5a550f725c4f@c-s.fr>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <87po4kglgv.fsf@concordia.ellerman.id.au>
-References: <20180225172236.29650-1-malat@debian.org>
- <20180225172236.29650-4-malat@debian.org>
- <87po4kglgv.fsf@concordia.ellerman.id.au>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Sat, 10 Mar 2018 19:08:37 +0100
-Message-ID: <CA+7wUswMObjDxYO-3TXsM2jLkKR=pnweSpqO37_H6id91i_dZQ@mail.gmail.com>
-Subject: Re: [PATCH 03/21] powerpc: Mark the variable earlycon_acpi_spcr_enable
- maybe_unused
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Jiri Slaby <jslaby@suse.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <84cf5fef-a940-cb2a-431e-5a550f725c4f@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,65 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 4, 2018 at 11:54 AM, Michael Ellerman <mpe@ellerman.id.au> wrot=
-e:
-> Mathieu Malaterre <malat@debian.org> writes:
->
->> Re-use the object-like macro EARLYCON_USED_OR_UNUSED to mark
->> `earlycon_acpi_spcr_enable` as maybe_unused.
->>
->> Fix the following warning (treated as error in W=3D1)
->>
->>   CC      arch/powerpc/kernel/setup-common.o
->> In file included from ./include/linux/serial_8250.h:14:0,
->>                  from arch/powerpc/kernel/setup-common.c:33:
->> ./include/linux/serial_core.h:382:19: error: =E2=80=98earlycon_acpi_spcr=
-_enable=E2=80=99 defined but not used [-Werror=3Dunused-const-variable=3D]
->>  static const bool earlycon_acpi_spcr_enable;
->>                    ^~~~~~~~~~~~~~~~~~~~~~~~~
->> cc1: all warnings being treated as errors
->>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->> ---
->>  include/linux/serial_core.h | 1 +
->
-> I can't take this one as that's not a file I maintain.
->
-> The script says:
->
->   $ ./scripts/get_maintainer.pl include/linux/serial_core.h
->   gregkh@linuxfoundation.org
->   jslaby@suse.com
->   linux-kernel@vger.kernel.org
->
->
-> Can you resend it to them?
+On Sat, Mar 10, 2018 at 05:14:22PM +0100, christophe leroy wrote:
+> 
+> 
+> Le 10/03/2018 à 15:52, Greg Kroah-Hartman a écrit :
+> > On Sat, Mar 10, 2018 at 08:27:54AM +0100, christophe leroy wrote:
+> > > 
+> > > 
+> > > Le 10/03/2018 à 01:10, Greg Kroah-Hartman a écrit :
+> > > > On Fri, Mar 09, 2018 at 04:48:59PM +0100, Christophe Leroy wrote:
+> > > > > Upstream 326691ad4f179e6edc7eb1271e618dd673e4736d
+> > > > 
+> > > > There is no such git commit id in Linus's tree :(
+> > > > 
+> > > > Please fix up and resend the series.
+> > > 
+> > > I checked again, it is there
+> > > 
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/arch/powerpc/mm/slice.c?h=next-20180309&id=326691ad4f179e6edc7eb1271e618dd673e4736d
+> > 
+> > That is linux-next, which has everything and the kitchen sink.  It is
+> > not Linus's tree.  Please wait for these things to be merged into
+> > Linus's tree before asking for the to be merged into the stable tree.
+> > That's a requirement.
+> > 
+> 
+> Oops, sorry, I thought everything on kernel.org was official.
 
-Ah right, thanks.
->
->> diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
->> index b32df49a3bd5..4d14ecd7dbe8 100644
->> --- a/include/linux/serial_core.h
->> +++ b/include/linux/serial_core.h
->> @@ -379,6 +379,7 @@ extern int of_setup_earlycon(const struct earlycon_i=
-d *match,
->>  extern bool earlycon_acpi_spcr_enable __initdata;
->>  int setup_earlycon(char *buf);
->>  #else
->> +EARLYCON_USED_OR_UNUSED
->>  static const bool earlycon_acpi_spcr_enable;
->
-> The macro eventually turns into an __attribute__, which I think is
-> typically placed after the variable, so eg:
->
->   static const bool earlycon_acpi_spcr_enable EARLYCON_USED_OR_UNUSED;
->
+That would be a whole lot of "official" :)
 
-Indeed makes it more consistent with style.  Thanks!
+Please read:
+    https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
+for what the rules are here, if you haven't already.
 
-> cheers
->
->>  static inline int setup_earlycon(char *buf) { return 0; }
->>  #endif
->> --
->> 2.11.0
+> Once it is in, do I resend the patches or do I just ping you ?
+
+You would need to resend the patches (if they need backporting
+manually), or just send a list of the git commit ids that are needed to
+be applied (usually easier.)
+
+Also, why were these patches not tagged with the stable tag to start
+with?  That way they would be automatically included in the stable tree
+when they hit Linus's tree.
+
+thanks,
+
+greg k-h
