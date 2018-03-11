@@ -1,12 +1,12 @@
 Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zzgfH5fFRzDrf5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 23:38:58 +1100 (AEDT)
-Received: by mail-wr0-x244.google.com with SMTP id h2so5731693wre.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 05:38:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zzgfP1m1tzDrc7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 23:39:08 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id a20so9510884wmd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 05:39:08 -0700 (PDT)
 From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 To: linux-arm-kernel@lists.infradead.org
 Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -23,10 +23,13 @@ Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Jessica Yu <jeyu@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: [PATCH v8 0/6] add support for relative references in special sections
-Date: Sun, 11 Mar 2018 12:38:09 +0000
-Message-Id: <20180311123815.17916-1-ard.biesheuvel@linaro.org>
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+ Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH v8 3/6] module: use relative references for __ksymtab entries
+Date: Sun, 11 Mar 2018 12:38:12 +0000
+Message-Id: <20180311123815.17916-4-ard.biesheuvel@linaro.org>
+In-Reply-To: <20180311123815.17916-1-ard.biesheuvel@linaro.org>
+References: <20180311123815.17916-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,159 +39,285 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds support for emitting special sections such as initcall arrays,
-PCI fixups and tracepoints as relative references rather than absolute
-references. This reduces the size by 50% on 64-bit architectures, but
-more importantly, it removes the need for carrying relocation metadata
-for these sections in relocatable kernels (e.g., for KASLR) that needs
-to be fixed up at boot time. On arm64, this reduces the vmlinux footprint
-of such a reference by 8x (8 byte absolute reference + 24 byte RELA entry
-vs 4 byte relative reference)
+An ordinary arm64 defconfig build has ~64 KB worth of __ksymtab
+entries, each consisting of two 64-bit fields containing absolute
+references, to the symbol itself and to a char array containing
+its name, respectively.
 
-Patch #3 was sent out before as a single patch. This series supersedes
-the previous submission. This version makes relative ksymtab entries
-dependent on the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS rather
-than trying to infer from kbuild test robot replies for which architectures
-it should be blacklisted.
+When we build the same configuration with KASLR enabled, we end
+up with an additional ~192 KB of relocations in the .init section,
+i.e., one 24 byte entry for each absolute reference, which all need
+to be processed at boot time.
 
-Patch #1 introduces the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS,
-and sets it for the main architectures that are expected to benefit the
-most from this feature, i.e., 64-bit architectures or ones that use
-runtime relocations.
+Given how the struct kernel_symbol that describes each entry is
+completely local to module.c (except for the references emitted
+by EXPORT_SYMBOL() itself), we can easily modify it to contain
+two 32-bit relative references instead. This reduces the size of
+the __ksymtab section by 50% for all 64-bit architectures, and
+gets rid of the runtime relocations entirely for architectures
+implementing KASLR, either via standard PIE linking (arm64) or
+using custom host tools (x86).
 
-Patch #2 add support for #define'ing __DISABLE_EXPORTS to get rid of
-ksymtab/kcrctab sections in decompressor and EFI stub objects when
-rebuilding existing C files to run in a different context.
+Note that the binary search involving __ksymtab contents relies
+on each section being sorted by symbol name. This is implemented
+based on the input section names, not the names in the ksymtab
+entries, so this patch does not interfere with that.
 
-Patches #4 - #6 implement relative references for initcalls, PCI fixups
-and tracepoints, respectively, all of which produce sections with order
-~1000 entries on an arm64 defconfig kernel with tracing enabled. This
-means we save about 28 KB of vmlinux space for each of these patches.
-
-[From the v7 series blurb, which included the jump_label patches as well]:
-  For the arm64 kernel, all patches combined reduce the memory footprint of
-  vmlinux by about 1.3 MB (using a config copied from Ubuntu that has KASLR
-  enabled), of which ~1 MB is the size reduction of the RELA section in .init,
-  and the remaining 300 KB is reduction of .text/.data.
-
-Branch:
-git://git.kernel.org/pub/scm/linux/kernel/git/ardb/linux.git relative-special-sections-v8
-
-Changes since v7:
-- dropped the jump_label patches, these will be revisited in a separate series
-- reorder __DISABLE_EXPORTS with __KSYM_DEPS__ check in #2
-- use offset_to_ptr() helper function to abstract the relative pointer
-  conversion [int *off -> (ulong)off + *off] (#3 - #6)
-- rebase onto v4.16-rc3
-
-Changes since v6:
-- drop S390 from patch #1 introducing HAVE_ARCH_PREL32_RELOCATIONS: kbuild
-  robot threw me some s390 curveballs, and given that s390 does not define
-  CONFIG_RELOCATABLE in the first place, it does not benefit as much from
-  relative references as arm64, x86 and power do
-- add patch to allow symbol exports to be disabled at compilation unit
-  granularity (#2)
-- get rid of arm64 vmlinux.lds.S hunk to ensure code generated by __ADDRESSABLE
-  gets discarded from the EFI stub - it is no longer needed after adding #2 (#1)
-- change _ADDRESSABLE() to emit a data reference, not a code reference - this
-  is another simplification made possible by patch #2 (#3)
-- add Steven's ack to #6
-- split x86 jump_label patch into two (#9, #10)
-
-Changes since v5:
-- add missing jump_label prototypes to s390 jump_label.h (#6)
-- fix inverted condition in call to jump_entry_is_module_init() (#6)
-
-Changes since v4:
-- add patches to convert x86 and arm64 to use relative references for jump
-  tables (#6 - #8)
-- rename PCI patch and add Bjorn's ack (#4)
-- rebase onto v4.15-rc5
-
-Changes since v3:
-- fix module unload issue in patch #5 reported by Jessica, by reusing the
-  updated routine for_each_tracepoint_range() for the quiescent check at
-  module unload time; this requires this routine to be moved before
-  tracepoint_module_going() in kernel/tracepoint.c
-- add Jessica's ack to #2
-- rebase onto v4.14-rc1
-
-Changes since v2:
-- Revert my slightly misguided attempt to appease checkpatch, which resulted
-  in needless churn and worse code. This v3 is based on v1 with a few tweaks
-  that were actually reasonable checkpatch warnings: unnecessary braces (as
-  pointed out by Ingo) and other minor whitespace misdemeanors.
-
-Changes since v1:
-- Remove checkpatch errors to the extent feasible: in some cases, this
-  involves moving extern declarations into C files, and switching to
-  struct definitions rather than typedefs. Some errors are impossible
-  to fix: please find the remaining ones after the diffstat.
-- Used 'int' instead if 'signed int' for the various offset fields: there
-  is no ambiguity between architectures regarding its signedness (unlike
-  'char')
-- Refactor the different patches to be more uniform in the way they define
-  the section entry type and accessors in the .h file, and avoid the need to
-  add #ifdefs to the C code.
+Given that the use of place-relative relocations requires support
+both in the toolchain and in the module loader, we cannot enable
+this feature for all architectures. So make it dependent on whether
+CONFIG_HAVE_ARCH_PREL32_RELOCATIONS is defined.
 
 Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Thomas Garnier <thgarnie@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: James Morris <james.l.morris@oracle.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Thomas Garnier <thgarnie@google.com>
 Cc: Nicolas Pitre <nico@linaro.org>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jessica Yu <jeyu@kernel.org>
+Acked-by: Jessica Yu <jeyu@kernel.org>
+Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+---
+ arch/x86/include/asm/Kbuild   |  1 +
+ arch/x86/include/asm/export.h |  5 ---
+ include/asm-generic/export.h  | 12 ++++-
+ include/linux/compiler.h      | 19 ++++++++
+ include/linux/export.h        | 46 +++++++++++++++-----
+ kernel/module.c               | 32 +++++++++++---
+ 6 files changed, 91 insertions(+), 24 deletions(-)
 
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: x86@kernel.org
-
-Ard Biesheuvel (6):
-  arch: enable relative relocations for arm64, power and x86
-  module: allow symbol exports to be disabled
-  module: use relative references for __ksymtab entries
-  init: allow initcall tables to be emitted using relative references
-  PCI: Add support for relative addressing in quirk tables
-  kernel: tracepoints: add support for relative references
-
- arch/Kconfig                          | 10 ++++
- arch/arm64/Kconfig                    |  1 +
- arch/powerpc/Kconfig                  |  1 +
- arch/x86/Kconfig                      |  1 +
- arch/x86/boot/compressed/kaslr.c      |  5 +-
- arch/x86/include/asm/Kbuild           |  1 +
- arch/x86/include/asm/export.h         |  5 --
- drivers/firmware/efi/libstub/Makefile |  3 +-
- drivers/pci/quirks.c                  | 12 +++--
- include/asm-generic/export.h          | 12 ++++-
- include/linux/compiler.h              | 19 +++++++
- include/linux/export.h                | 57 +++++++++++++++-----
- include/linux/init.h                  | 44 +++++++++++----
- include/linux/pci.h                   | 20 +++++++
- include/linux/tracepoint.h            | 19 +++++--
- init/main.c                           | 32 +++++------
- kernel/module.c                       | 32 ++++++++---
- kernel/printk/printk.c                |  4 +-
- kernel/tracepoint.c                   | 49 +++++++++--------
- security/security.c                   |  4 +-
- 20 files changed, 240 insertions(+), 91 deletions(-)
- delete mode 100644 arch/x86/include/asm/export.h
-
+diff --git a/arch/x86/include/asm/Kbuild b/arch/x86/include/asm/Kbuild
+index de690c2d2e33..a0ab9ab61c75 100644
+--- a/arch/x86/include/asm/Kbuild
++++ b/arch/x86/include/asm/Kbuild
+@@ -8,5 +8,6 @@ generated-y += xen-hypercalls.h
+ 
+ generic-y += dma-contiguous.h
+ generic-y += early_ioremap.h
++generic-y += export.h
+ generic-y += mcs_spinlock.h
+ generic-y += mm-arch-hooks.h
+diff --git a/arch/x86/include/asm/export.h b/arch/x86/include/asm/export.h
+deleted file mode 100644
+index 2a51d66689c5..000000000000
+--- a/arch/x86/include/asm/export.h
++++ /dev/null
+@@ -1,5 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifdef CONFIG_64BIT
+-#define KSYM_ALIGN 16
+-#endif
+-#include <asm-generic/export.h>
+diff --git a/include/asm-generic/export.h b/include/asm-generic/export.h
+index 719db1968d81..97ce606459ae 100644
+--- a/include/asm-generic/export.h
++++ b/include/asm-generic/export.h
+@@ -5,12 +5,10 @@
+ #define KSYM_FUNC(x) x
+ #endif
+ #ifdef CONFIG_64BIT
+-#define __put .quad
+ #ifndef KSYM_ALIGN
+ #define KSYM_ALIGN 8
+ #endif
+ #else
+-#define __put .long
+ #ifndef KSYM_ALIGN
+ #define KSYM_ALIGN 4
+ #endif
+@@ -25,6 +23,16 @@
+ #define KSYM(name) name
+ #endif
+ 
++.macro __put, val, name
++#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
++	.long	\val - ., \name - .
++#elif defined(CONFIG_64BIT)
++	.quad	\val, \name
++#else
++	.long	\val, \name
++#endif
++.endm
++
+ /*
+  * note on .section use: @progbits vs %progbits nastiness doesn't matter,
+  * since we immediately emit into those sections anyway.
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index ab4711c63601..0a9328ea9dbd 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -280,6 +280,25 @@ unsigned long read_word_at_a_time(const void *addr)
+ 
+ #endif /* __KERNEL__ */
+ 
++/*
++ * Force the compiler to emit 'sym' as a symbol, so that we can reference
++ * it from inline assembler. Necessary in case 'sym' could be inlined
++ * otherwise, or eliminated entirely due to lack of references that are
++ * visible to the compiler.
++ */
++#define __ADDRESSABLE(sym) \
++	static void * const __attribute__((section(".discard"), used))	\
++		__PASTE(__addressable_##sym, __LINE__) = (void *)&sym;
++
++/**
++ * offset_to_ptr - convert a relative memory offset to an absolute pointer
++ * @off:	the address of the 32-bit offset value
++ */
++static inline void *offset_to_ptr(const int *off)
++{
++	return (void *)((unsigned long)off + *off);
++}
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #ifndef __optimize
+diff --git a/include/linux/export.h b/include/linux/export.h
+index 25005b55b079..04c78e6bfec9 100644
+--- a/include/linux/export.h
++++ b/include/linux/export.h
+@@ -24,12 +24,6 @@
+ #define VMLINUX_SYMBOL_STR(x) __VMLINUX_SYMBOL_STR(x)
+ 
+ #ifndef __ASSEMBLY__
+-struct kernel_symbol
+-{
+-	unsigned long value;
+-	const char *name;
+-};
+-
+ #ifdef MODULE
+ extern struct module __this_module;
+ #define THIS_MODULE (&__this_module)
+@@ -60,17 +54,47 @@ extern struct module __this_module;
+ #define __CRC_SYMBOL(sym, sec)
+ #endif
+ 
++#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
++#include <linux/compiler.h>
++/*
++ * Emit the ksymtab entry as a pair of relative references: this reduces
++ * the size by half on 64-bit architectures, and eliminates the need for
++ * absolute relocations that require runtime processing on relocatable
++ * kernels.
++ */
++#define __KSYMTAB_ENTRY(sym, sec)					\
++	__ADDRESSABLE(sym)						\
++	asm("	.section \"___ksymtab" sec "+" #sym "\", \"a\"	\n"	\
++	    "	.balign	8					\n"	\
++	    VMLINUX_SYMBOL_STR(__ksymtab_##sym) ":		\n"	\
++	    "	.long "	VMLINUX_SYMBOL_STR(sym) "- .		\n"	\
++	    "	.long "	VMLINUX_SYMBOL_STR(__kstrtab_##sym) "- .\n"	\
++	    "	.previous					\n")
++
++struct kernel_symbol {
++	int value_offset;
++	int name_offset;
++};
++#else
++#define __KSYMTAB_ENTRY(sym, sec)					\
++	static const struct kernel_symbol __ksymtab_##sym		\
++	__attribute__((section("___ksymtab" sec "+" #sym), used))	\
++	= { (unsigned long)&sym, __kstrtab_##sym }
++
++struct kernel_symbol {
++	unsigned long value;
++	const char *name;
++};
++#endif
++
+ /* For every exported symbol, place a struct in the __ksymtab section */
+ #define ___EXPORT_SYMBOL(sym, sec)					\
+ 	extern typeof(sym) sym;						\
+ 	__CRC_SYMBOL(sym, sec)						\
+ 	static const char __kstrtab_##sym[]				\
+-	__attribute__((section("__ksymtab_strings"), aligned(1)))	\
++	__attribute__((section("__ksymtab_strings"), used, aligned(1)))	\
+ 	= VMLINUX_SYMBOL_STR(sym);					\
+-	static const struct kernel_symbol __ksymtab_##sym		\
+-	__used								\
+-	__attribute__((section("___ksymtab" sec "+" #sym), used))	\
+-	= { (unsigned long)&sym, __kstrtab_##sym }
++	__KSYMTAB_ENTRY(sym, sec)
+ 
+ #if defined(__DISABLE_EXPORTS)
+ 
+diff --git a/kernel/module.c b/kernel/module.c
+index ad2d420024f6..b4782cfbb79b 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -549,12 +549,30 @@ static bool check_symbol(const struct symsearch *syms,
+ 	return true;
+ }
+ 
++static unsigned long kernel_symbol_value(const struct kernel_symbol *sym)
++{
++#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
++	return (unsigned long)offset_to_ptr(&sym->value_offset);
++#else
++	return sym->value;
++#endif
++}
++
++static const char *kernel_symbol_name(const struct kernel_symbol *sym)
++{
++#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
++	return offset_to_ptr(&sym->name_offset);
++#else
++	return sym->name;
++#endif
++}
++
+ static int cmp_name(const void *va, const void *vb)
+ {
+ 	const char *a;
+ 	const struct kernel_symbol *b;
+ 	a = va; b = vb;
+-	return strcmp(a, b->name);
++	return strcmp(a, kernel_symbol_name(b));
+ }
+ 
+ static bool find_symbol_in_section(const struct symsearch *syms,
+@@ -2198,7 +2216,7 @@ void *__symbol_get(const char *symbol)
+ 		sym = NULL;
+ 	preempt_enable();
+ 
+-	return sym ? (void *)sym->value : NULL;
++	return sym ? (void *)kernel_symbol_value(sym) : NULL;
+ }
+ EXPORT_SYMBOL_GPL(__symbol_get);
+ 
+@@ -2228,10 +2246,12 @@ static int verify_export_symbols(struct module *mod)
+ 
+ 	for (i = 0; i < ARRAY_SIZE(arr); i++) {
+ 		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
+-			if (find_symbol(s->name, &owner, NULL, true, false)) {
++			if (find_symbol(kernel_symbol_name(s), &owner, NULL,
++					true, false)) {
+ 				pr_err("%s: exports duplicate symbol %s"
+ 				       " (owned by %s)\n",
+-				       mod->name, s->name, module_name(owner));
++				       mod->name, kernel_symbol_name(s),
++				       module_name(owner));
+ 				return -ENOEXEC;
+ 			}
+ 		}
+@@ -2280,7 +2300,7 @@ static int simplify_symbols(struct module *mod, const struct load_info *info)
+ 			ksym = resolve_symbol_wait(mod, info, name);
+ 			/* Ok if resolved.  */
+ 			if (ksym && !IS_ERR(ksym)) {
+-				sym[i].st_value = ksym->value;
++				sym[i].st_value = kernel_symbol_value(ksym);
+ 				break;
+ 			}
+ 
+@@ -2540,7 +2560,7 @@ static int is_exported(const char *name, unsigned long value,
+ 		ks = lookup_symbol(name, __start___ksymtab, __stop___ksymtab);
+ 	else
+ 		ks = lookup_symbol(name, mod->syms, mod->syms + mod->num_syms);
+-	return ks != NULL && ks->value == value;
++	return ks != NULL && kernel_symbol_value(ks) == value;
+ }
+ 
+ /* As per nm */
 -- 
 2.15.1
