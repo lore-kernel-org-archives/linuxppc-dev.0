@@ -1,23 +1,34 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
+ [IPv6:2a00:1450:400c:c0c::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zzZ8T5xp3zDrWN
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 19:31:21 +1100 (AEDT)
-To: linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zzgfK1xwXzDrbM
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 23:39:05 +1100 (AEDT)
+Received: by mail-wr0-x243.google.com with SMTP id m12so13008180wrm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 05:39:04 -0700 (PDT)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-arm-kernel@lists.infradead.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>,
- Josh Sklar <sklar@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Tom Lendacky <thomas.lendacky@amd.com>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] powerpc: Use common error handling code in setup_new_fdt()
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Message-ID: <0dd9d938-8d89-f0e0-f05f-9a3e5dc42a57@users.sourceforge.net>
-Date: Sun, 11 Mar 2018 09:16:47 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>, James Morris <james.l.morris@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: [PATCH v8 2/6] module: allow symbol exports to be disabled
+Date: Sun, 11 Mar 2018 12:38:11 +0000
+Message-Id: <20180311123815.17916-3-ard.biesheuvel@linaro.org>
+In-Reply-To: <20180311123815.17916-1-ard.biesheuvel@linaro.org>
+References: <20180311123815.17916-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +38,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 11 Mar 2018 09:03:42 +0100
+To allow existing C code to be incorporated into the decompressor or
+the UEFI stub, introduce a CPP macro that turns all EXPORT_SYMBOL_xxx
+declarations into nops, and #define it in places where such exports
+are undesirable. Note that this gets rid of a rather dodgy redefine
+of linux/export.h's header guard.
 
-Add a jump target so that a bit of exception handling can be better reused
-at the end of this function.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- arch/powerpc/kernel/machine_kexec_file_64.c | 28 ++++++++++++----------------
- 1 file changed, 12 insertions(+), 16 deletions(-)
+ arch/x86/boot/compressed/kaslr.c      |  5 +----
+ drivers/firmware/efi/libstub/Makefile |  3 ++-
+ include/linux/export.h                | 11 ++++++++++-
+ 3 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec_file_64.c b/arch/powerpc/kernel/machine_kexec_file_64.c
-index e4395f937d63..90c6004c2eec 100644
---- a/arch/powerpc/kernel/machine_kexec_file_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_file_64.c
-@@ -302,18 +302,14 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
- 		ret = fdt_setprop_u64(fdt, chosen_node,
- 				      "linux,initrd-start",
- 				      initrd_load_addr);
--		if (ret < 0) {
--			pr_err("Error setting up the new device tree.\n");
--			return -EINVAL;
--		}
-+		if (ret < 0)
-+			goto report_setup_failure;
+diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
+index 8199a6187251..3a2a6d7049e4 100644
+--- a/arch/x86/boot/compressed/kaslr.c
++++ b/arch/x86/boot/compressed/kaslr.c
+@@ -23,11 +23,8 @@
+  * _ctype[] in lib/ctype.c is needed by isspace() of linux/ctype.h.
+  * While both lib/ctype.c and lib/cmdline.c will bring EXPORT_SYMBOL
+  * which is meaningless and will cause compiling error in some cases.
+- * So do not include linux/export.h and define EXPORT_SYMBOL(sym)
+- * as empty.
+  */
+-#define _LINUX_EXPORT_H
+-#define EXPORT_SYMBOL(sym)
++#define __DISABLE_EXPORTS
  
- 		/* initrd-end is the first address after the initrd image. */
- 		ret = fdt_setprop_u64(fdt, chosen_node, "linux,initrd-end",
- 				      initrd_load_addr + initrd_len);
--		if (ret < 0) {
--			pr_err("Error setting up the new device tree.\n");
--			return -EINVAL;
--		}
-+		if (ret < 0)
-+			goto report_setup_failure;
+ #include "misc.h"
+ #include "error.h"
+diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
+index 7b3ba40f0745..896a882c89f4 100644
+--- a/drivers/firmware/efi/libstub/Makefile
++++ b/drivers/firmware/efi/libstub/Makefile
+@@ -20,7 +20,8 @@ cflags-$(CONFIG_EFI_ARMSTUB)	+= -I$(srctree)/scripts/dtc/libfdt
+ KBUILD_CFLAGS			:= $(cflags-y) -DDISABLE_BRANCH_PROFILING \
+ 				   -D__NO_FORTIFY \
+ 				   $(call cc-option,-ffreestanding) \
+-				   $(call cc-option,-fno-stack-protector)
++				   $(call cc-option,-fno-stack-protector) \
++				   -D__DISABLE_EXPORTS
  
- 		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
- 		if (ret) {
-@@ -325,10 +321,8 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
+ GCOV_PROFILE			:= n
+ KASAN_SANITIZE			:= n
+diff --git a/include/linux/export.h b/include/linux/export.h
+index 1a1dfdb2a5c6..25005b55b079 100644
+--- a/include/linux/export.h
++++ b/include/linux/export.h
+@@ -72,7 +72,16 @@ extern struct module __this_module;
+ 	__attribute__((section("___ksymtab" sec "+" #sym), used))	\
+ 	= { (unsigned long)&sym, __kstrtab_##sym }
  
- 	if (cmdline != NULL) {
- 		ret = fdt_setprop_string(fdt, chosen_node, "bootargs", cmdline);
--		if (ret < 0) {
--			pr_err("Error setting up the new device tree.\n");
--			return -EINVAL;
--		}
-+		if (ret < 0)
-+			goto report_setup_failure;
- 	} else {
- 		ret = fdt_delprop(fdt, chosen_node, "bootargs");
- 		if (ret && ret != -FDT_ERR_NOTFOUND) {
-@@ -344,10 +338,12 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
- 	}
- 
- 	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
--	if (ret) {
--		pr_err("Error setting up the new device tree.\n");
--		return -EINVAL;
--	}
-+	if (ret)
-+		goto report_setup_failure;
- 
- 	return 0;
+-#if defined(__KSYM_DEPS__)
++#if defined(__DISABLE_EXPORTS)
 +
-+report_setup_failure:
-+	pr_err("Error setting up the new device tree.\n");
-+	return -EINVAL;
- }
++/*
++ * Allow symbol exports to be disabled completely so that C code may
++ * be reused in other execution contexts such as the UEFI stub or the
++ * decompressor.
++ */
++#define __EXPORT_SYMBOL(sym, sec)
++
++#elif defined(__KSYM_DEPS__)
+ 
+ /*
+  * For fine grained build dependencies, we want to tell the build system
 -- 
-2.16.2
+2.15.1
