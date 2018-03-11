@@ -1,23 +1,25 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3zztDf5CWFzDrC6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 07:36:02 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id k21so5125181ioc.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 13:36:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3zzvH93230zDrFv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 08:23:16 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id j7-v6so8932306ita.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Mar 2018 14:23:16 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFxcB+5oB_hL83EASOJQrVRCrzT9iS+2+XtEUToG6VHiqA@mail.gmail.com>
+Sender: linus971@gmail.com
+In-Reply-To: <CAKv+Gu_E8mVqaR9OmzP2whc7WHGaFX5ypCh7F0UHEyY1DY_t3Q@mail.gmail.com>
 References: <20180311123815.17916-1-ard.biesheuvel@linaro.org>
  <20180311123815.17916-2-ard.biesheuvel@linaro.org>
  <CA+55aFxcB+5oB_hL83EASOJQrVRCrzT9iS+2+XtEUToG6VHiqA@mail.gmail.com>
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Sun, 11 Mar 2018 20:35:58 +0000
-Message-ID: <CAKv+Gu_E8mVqaR9OmzP2whc7WHGaFX5ypCh7F0UHEyY1DY_t3Q@mail.gmail.com>
+ <CAKv+Gu_E8mVqaR9OmzP2whc7WHGaFX5ypCh7F0UHEyY1DY_t3Q@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sun, 11 Mar 2018 14:23:12 -0700
+Message-ID: <CA+55aFwTUY5s6nh+bmmDyVEoz6ntt5OgdduKUbTnMn5e0q8Y3A@mail.gmail.com>
 Subject: Re: [PATCH v8 1/6] arch: enable relative relocations for arm64, power
  and x86
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
  Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
@@ -44,44 +46,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11 March 2018 at 20:20, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> On Sun, Mar 11, 2018 at 5:38 AM, Ard Biesheuvel
-> <ard.biesheuvel@linaro.org> wrote:
->> Before updating certain subsystems to use place relative 32-bit
->> relocations in special sections, to save space and reduce the
->> number of absolute relocations that need to be processed at runtime
->> by relocatable kernels, introduce the Kconfig symbol and define it
->> for some architectures that should be able to support and benefit
->> from it.
+On Sun, Mar 11, 2018 at 1:35 PM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
 >
-> Are there actually architectures hat _don't_ support those relative
-> 32-bit relocations? That really feels pretty fundamental.
->
+> I'm sure all of these architectures define some kind of 32-bit place
+> relative relocation in their ELF psABI, and I see how it would be
+> cleaner to change everything at once, but I anticipate a long tail of
+> issues with toolchains for niche architectures that I have no way to
+> test.
 
-I started out doing all of them, and I don't remember the exact list,
-but there are quite a few architectures that don't support these
-relocations in their module loaders, and in fact, not even ARM does
-(as one of the 'big' architectures).
+Ok, fair enough.
 
-This is not really surprising, given that the C compiler never emits
-such relative references.
-
-> I would have expected all of them to do it - is your selection of
-> arm64/powerpc/x86 perhaps more about "I have tested these" than about
-> anything else?
->
-> Because I'd almost prefer to just do the switch-over unconditionally
-> if that is at all possible?
->
-
-arm64, powerpc and x86 implement CONFIG_RELOCATABLE, and so they
-benefit more than other architectures, because of the fact that the
-relocation metadata for these data structures can be dropped entirely.
-Other 64-bit architectures only have the 50% size reduction benefit,
-and 32-bit architectures have no benefit at all.
-
-I'm sure all of these architectures define some kind of 32-bit place
-relative relocation in their ELF psABI, and I see how it would be
-cleaner to change everything at once, but I anticipate a long tail of
-issues with toolchains for niche architectures that I have no way to
-test.
+           Linus
