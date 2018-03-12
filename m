@@ -1,54 +1,28 @@
-Return-Path: <deepa.kernel@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400Qk44XrvzDr7s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 04:59:56 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id w63so12308644ita.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 10:59:56 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CABeXuvrdPV0q4ufuxEnqT6T3b8pCT5RLUfuAZ_cwXr0it8gj0Q@mail.gmail.com>
-References: <20180116021818.24791-1-deepa.kernel@gmail.com>
- <20180116021818.24791-3-deepa.kernel@gmail.com>
- <c6fb6676-a8d3-8893-660c-2b9899c5d5ab@de.ibm.com>
- <CAK8P3a0Gm1L70EaFzJBk0drRNKtX0FE22BHOSrXBgH1wNfKZ5A@mail.gmail.com>
- <d8480da9-afe9-8a43-9c47-50919215a2de@de.ibm.com>
- <CABeXuvrdPV0q4ufuxEnqT6T3b8pCT5RLUfuAZ_cwXr0it8gj0Q@mail.gmail.com>
-From: Deepa Dinamani <deepa.kernel@gmail.com>
-Date: Mon, 12 Mar 2018 10:59:53 -0700
-Message-ID: <CABeXuvo-D-NFhhx9KXDFy6bYjp0-XZvoky6ugQGdBZr8DjUzxw@mail.gmail.com>
-Subject: Re: [PATCH v3 02/10] include: Move compat_timespec/ timeval to
- compat_time.h
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
- John Stultz <john.stultz@linaro.org>, Mark Rutland <mark.rutland@arm.com>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- devel@driverdev.osuosl.org, linux-s390 <linux-s390@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Helge Deller <deller@gmx.de>, "the arch/x86 maintainers" <x86@kernel.org>,
- sebott@linux.vnet.ibm.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Will Deacon <will.deacon@arm.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Catalin Marinas <catalin.marinas@arm.com>, Robert Richter <rric@kernel.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ursula Braun <ubraun@linux.vnet.ibm.com>,
- gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
- gregkh <gregkh@linuxfoundation.org>, cohuck@redhat.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
- Stefan Haberland <sth@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400YRx47b2zF07p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 10:03:09 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2CN2Tsi124730
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 19:03:07 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gp0mxveua-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 19:03:06 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Mon, 12 Mar 2018 17:03:06 -0600
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
+Subject: [PATCH v2 0/4] Setup RFI flush after PowerVM LPM migration
+Date: Mon, 12 Mar 2018 20:02:54 -0300
+Message-Id: <1520895778-17586-1-git-send-email-mauricfo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,81 +32,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I posted the updated series. I fixed up the order of include files
-where I could find some order.
-There have been other commits that used scripts to do such
-replacements and have already stomped on the order.
-For example:
+This patchset allows for setup_rfi_flush() to be called again
+after PowerVM LPM (live partition mobility) aka LPAR migration,
+in order to possibly switch to a different flush method.
 
-commit 7c0f6ba682b9c7632072ffbedf8d328c8f3c42ba
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Replace <asm/uaccess.h> with <linux/uaccess.h> globally
+The patches are mostly from Michael Ellerman, I have rebased to
+powerpc/linux.git merge branch as of commit 249d7ba (March 12th),
+and added one extra commit to force init of fallback flush area
+on pseries.
 
--Deepa
+Testing:
+-------
+
+I've disabled most code in the LPM functions migration_store()
+and post_mobility_fixup() to just reach pseries_setup_rfi_flush(),
+and modified pseries_setup_rfi_flush() a few times to fake the
+first and non-first calls to either enable instructions or the
+fallback flush method, to cover all 4 possible scenarios.
+
+Case 1) fallback -> fallback
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using fallback displacement flush
+    [    0.000000] rfi-flush: patched 8 locations
+
+    # echo > /sys/kernel/mobility/migration 
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using fallback displacement flush
+    [    0.000000] rfi-flush: patched 8 locations
+    [   20.583029] rfi-flush: Using fallback displacement flush
+    [   20.583038] rfi-flush: patched 8 locations
+
+Case 2) instructions -> fallback
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using ori type flush
+    [    0.000000] rfi-flush: Using mttrig type flush
+    [    0.000000] rfi-flush: patched 8 locations
+
+    # echo > /sys/kernel/mobility/migration 
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using ori type flush
+    [    0.000000] rfi-flush: Using mttrig type flush
+    [    0.000000] rfi-flush: patched 8 locations
+    [   36.023759] rfi-flush: Using fallback displacement flush
+    [   36.023764] rfi-flush: patched 8 locations
+
+Case 3) fallback -> instructions
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using fallback displacement flush
+    [    0.000000] rfi-flush: patched 8 locations
+
+    # echo > /sys/kernel/mobility/migration 
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using fallback displacement flush
+    [    0.000000] rfi-flush: patched 8 locations
+    [   23.373037] rfi-flush: Using ori type flush
+    [   23.373039] rfi-flush: Using mttrig type flush
+    [   23.373044] rfi-flush: patched 8 locations
+
+Case 4) instructions -> instructions
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using ori type flush
+    [    0.000000] rfi-flush: Using mttrig type flush
+    [    0.000000] rfi-flush: patched 8 locations
+
+    # echo > /sys/kernel/mobility/migration 
+
+    # dmesg | grep rfi-flush
+    [    0.000000] rfi-flush: Using ori type flush
+    [    0.000000] rfi-flush: Using mttrig type flush
+    [    0.000000] rfi-flush: patched 8 locations
+    [   23.243564] rfi-flush: Using ori type flush
+    [   23.243566] rfi-flush: Using mttrig type flush
+    [   23.243570] rfi-flush: patched 8 locations
 
 
-On Tue, Mar 6, 2018 at 2:58 PM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
-> On Tue, Mar 6, 2018 at 4:48 AM, Christian Borntraeger
-> <borntraeger@de.ibm.com> wrote:
->>
->>
->> On 03/06/2018 01:46 PM, Arnd Bergmann wrote:
->>> On Mon, Mar 5, 2018 at 10:30 AM, Christian Borntraeger
->>> <borntraeger@de.ibm.com> wrote:
->>>> On 01/16/2018 03:18 AM, Deepa Dinamani wrote:
->>>>> All the current architecture specific defines for these
->>>>> are the same. Refactor these common defines to a common
->>>>> header file.
->>>>>
->>>>> The new common linux/compat_time.h is also useful as it
->>>>> will eventually be used to hold all the defines that
->>>>> are needed for compat time types that support non y2038
->>>>> safe types. New architectures need not have to define these
->>>>> new types as they will only use new y2038 safe syscalls.
->>>>> This file can be deleted after y2038 when we stop supporting
->>>>> non y2038 safe syscalls.
->>>>
->>>> You are now include a <linux/*.h> from several asm files
->>>> (
->>>>  arch/arm64/include/asm/stat.h
->>>>  arch/s390/include/asm/elf.h
->>>>  arch/x86/include/asm/ftrace.h
->>>>  arch/x86/include/asm/sys_ia32.h
->>>> )
->>>> It works, and it is done in many places, but it looks somewhat weird.
->>>> Would it make sense to have an asm-generic/compate-time.h instead? Asking for
->>>> opinions here.
->>>
->>> I don't think we have such a rule. If a header file is common to all
->>> architectures (i.e. no architecture uses a different implementation),
->>> it should be in include/linux rather than include/asm-generic, regardless
->>> of whether it can be used by assembler files or not.
->>>
->>>>> --- a/drivers/s390/net/qeth_core_main.c
->>>>> +++ b/drivers/s390/net/qeth_core_main.c
->>>>> @@ -32,7 +32,7 @@
->>>>>  #include <asm/chpid.h>
->>>>>  #include <asm/io.h>
->>>>>  #include <asm/sysinfo.h>
->>>>> -#include <asm/compat.h>
->>>>> +#include <linux/compat.h>
->>>>>  #include <asm/diag.h>
->>>>>  #include <asm/cio.h>
->>>>>  #include <asm/ccwdev.h>
->>>>
->>>> Can you move that into the other includes (where all the other <linux/*> includes are.
->>>
->>> Good catch, this is definitely a rule we have ;-)
->>
->> FWIW, this was also broken for
->> arch/x86/include/asm/sys_ia32.h
->
-> The reason that this was done this way is because of the sed script
-> mentioned in the commit text.
-> I was trying to make minimal change apart from the script so that we
-> don't have other changes like moving the lines to keep the patch
-> simpler.
-> I will fix this by hand since this is preferred.
-> I will post an update.
->
-> -Deepa
+Mauricio Faria de Oliveira (1):
+  rfi-flush: Allow pseries to force init of fallback flush area
+
+Michael Ellerman (3):
+  rfi-flush: Move the logic to avoid a redo into the debugfs code
+  rfi-flush: Make it possible to call setup_rfi_flush() again
+  rfi-flush: Call setup_rfi_flush() after LPM migration
+
+ arch/powerpc/include/asm/setup.h          |  2 +-
+ arch/powerpc/kernel/setup_64.c            | 22 +++++++++++++++-------
+ arch/powerpc/platforms/powernv/setup.c    |  3 ++-
+ arch/powerpc/platforms/pseries/mobility.c |  3 +++
+ arch/powerpc/platforms/pseries/pseries.h  |  2 ++
+ arch/powerpc/platforms/pseries/setup.c    |  6 +++---
+ 6 files changed, 26 insertions(+), 12 deletions(-)
+
+-- 
+2.7.4
