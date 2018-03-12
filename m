@@ -1,38 +1,22 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
+ [IPv6:2a01:488:42:1000:50ed:84ea::])
+ (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400HMx0N81zF08f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 23:28:43 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2CCJI0l105778
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 08:28:40 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gnrm02k0r-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 08:28:40 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Mon, 12 Mar 2018 08:28:39 -0400
-Subject: Re: [PATCH] powerpc/mm: Fix section mismatch warning in
- stop_machine_change_mapping()
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-References: <1520628358-1762-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <CAKTCnzmdNx01cx94J3mn0auDFrRuOs1PvwsxvOt9VK0AtQf7eA@mail.gmail.com>
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Date: Mon, 12 Mar 2018 09:28:33 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400KTV2yK0zF08m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 01:03:38 +1100 (AEDT)
+Subject: Linux 4.16: Reported regressions as of , 2018-03-12 (Was: Linux
+ 4.16-rc5)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+References: <CA+55aFxXAMHeD8zz1BLv9r_2rjWJ6xE=cNGVAoWOvQJog7oz9A@mail.gmail.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Message-ID: <b5a36282-49a8-d6ca-8f68-ef15e1019fd3@leemhuis.info>
+Date: Mon, 12 Mar 2018 15:03:31 +0100
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnzmdNx01cx94J3mn0auDFrRuOs1PvwsxvOt9VK0AtQf7eA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <c12c1909-30e2-e3be-c288-806168dba9bb@linux.vnet.ibm.com>
+In-Reply-To: <CA+55aFxXAMHeD8zz1BLv9r_2rjWJ6xE=cNGVAoWOvQJog7oz9A@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,17 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir,
+On 12.03.2018 01:42, Linus Torvalds wrote:
+> This continue to be pretty normal - this rc is slightly larger than
+> rc4 was, but that looks like one of the normal fluctuations
 
-On 03/11/2018 03:23 AM, Balbir Singh wrote:
-> Looks reasonable, I'd recommend trying to compile with MEMORY_HOTPLUG
-> and MEMORY_HOTREMOVE enabled/disabled as well
+Hi! Find below my fourth regression report for Linux 4.16. It lists 9
+regressions I'm currently aware of. 1 was fixed since last weeks report.
 
-Thanks for reviewing.
+To anyone reading this: Are you aware of any other regressions that got
+introduced this development cycle? Then please let me know by mail (a
+simple bounce or forward to the sender of this email address is enough!).
 
-I should have mentioned it :) I did that (disable CONFIG_MEMORY_HOTPLUG)
-and all the related functions are not included in vmlinux, since they
-are guarded under that config option.
+For details see http://bit.ly/lnxregtrackid And please tell me if there
+is anything in the report that shouldn't be there.
 
-cheers,
-Mauricio
+Ciao, Thorsten
+
+== Current regressions ==
+
+Dell R640 does not boot due to SCSI/SATA failure
+- Status: WIP; some other changed planed for 4.17 solve this regression,
+but there is a discussion if they are too big for 4.16-rc
+- Cause: 84676c1f21e8
+- Reported: 2018-02-22
+https://marc.info/?l=linux-kernel&m=151931128006031
+- Last known developer activity:
+https://marc.info/?i=1520515113.20980.31.camel%40gmail.com
+- Last relevant activity:
+https://marc.info/?l=linux-kernel&m=152026091325037
+- Linux-Regression-ID: 15a115
+
+[mm, mlock, vmscan]  9c4e6b1a70:  stress-ng.hdd.ops_per_sec -7.9% regression
+- Status: looks stalled; side note: lkp-robot warned about something
+else triggered by the same commit:
+https://lkml.kernel.org/r/20180302093940.GE25699@yexl-desktop is related
+- Cause: 9c4e6b1a7027f102990c0395296015a812525f4d
+- Reported: 2018-02-25
+https://marc.info/?l=linux-kernel&m=151956997301994
+- Note: performance regression found by lkp-robot
+
+aim7.jobs-per-min -18.0% regression
+- Status: looks stalled after some discussions happened the week before last
+- Cause: c0cef30e4ff0dc025f4a1660b8f0ba43ed58426e
+- Reported: 2018-02-25
+https://marc.info/?l=linux-kernel&m=151957120702272&w=2
+- Note: performance regression found by lkp-robot
+
+Interrupt storm after suspend causes one busy kworker
+- Status: Waiting for data from reporter
+- Reported: 2018-02-25
+https://bugzilla.kernel.org/show_bug.cgi?id=198929
+- Linux-Regression-ID: 41c451
+
+hci_bcm: Streamline runtime PM code change for 4.16 kernel breaks
+bluetooth on ASUS T100TA
+- Status: WIP
+- Cause: 43fff768346810042836df325d736bd2c2a634a7
+- Reported: 2018-03-01
+https://bugzilla.kernel.org/show_bug.cgi?id=198953
+
+Error updating SMART data during runtime and could not connect to lv
+["Possible Regression"]
+- Status: Brand new
+- Reported: 2018-03-11
+https://marc.info/?l=linux-kernel&m=152075643627082
+https://bugzilla.kernel.org/show_bug.cgi?id=199077
+
+Regression from efi: call get_event_log before ExitBootServices
+- Status: WIP, looks like a firmware issue that gets triggerd
+- Cause: 33b6d03469b2
+- Reported: 2018-03-06
+https://marc.info/?l=linux-kernel&m=152035206220237&w=2
+
+15% longer running times on lvm2 test suite
+- Status: Quite new
+- Cause: 44c02a2c3dc55835e9f0d8ef73966406cd805001
+- Reported: 2018-03-11
+https://marc.info/?l=linux-kernel&m=152077333230274
+
+
+== Regressions with fixes heading mainline ==
+
+[amdgpu CARRIZO] disabled backlight after S3 resume
+- Status: Alex provided a patch "drm/amdgpu: save/restore backlight
+level in legacy dce code"; assuming he'll send it upstream
+- Cause: 4ec6ecf48c64d1da82a008f6fb0be86c4044287d
+- Reported: 2018-03-07
+https://bugzilla.kernel.org/show_bug.cgi?id=199047
+
+
+== Fixed since last report ==
+
+selftests: memory-hotplug: fix emit_tests regression
+- Status: Fixed by https://git.kernel.org/torvalds/c/ba004a2955f7
+- Cause: 16c513b13477
+https://marc.info/?l=linux-kernel&m=151993543423651
