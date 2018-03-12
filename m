@@ -1,28 +1,36 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deepa.kernel@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400Mlh69n2zF085
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 02:46:07 +1100 (AEDT)
-Subject: Re: [PATCH] x86, powerpc : pkey-mprotect must allow pkey-0
-To: Ram Pai <linuxram@us.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1520583161-11741-1-git-send-email-linuxram@us.ibm.com>
- <87lgf1v9di.fsf@concordia.ellerman.id.au>
- <20180309200631.GS1060@ram.oc3035372033.ibm.com>
-Cc: mingo@redhat.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
- corbet@lwn.net, arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com,
- Ulrich.Weigand@de.ibm.com
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <96b08909-906b-86b6-f4ee-67b9f8eff5d7@intel.com>
-Date: Mon, 12 Mar 2018 08:46:04 -0700
-MIME-Version: 1.0
-In-Reply-To: <20180309200631.GS1060@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400QZp5XlKzDsMV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 04:53:38 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id x1so4673000pfh.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 10:53:38 -0700 (PDT)
+From: Deepa Dinamani <deepa.kernel@gmail.com>
+To: arnd@arndb.de,
+	tglx@linutronix.de,
+	john.stultz@linaro.org
+Cc: linux-kernel@vger.kernel.org, y2038@lists.linaro.org, acme@kernel.org,
+ benh@kernel.crashing.org, borntraeger@de.ibm.com, catalin.marinas@arm.com,
+ cmetcalf@mellanox.com, cohuck@redhat.com, davem@davemloft.net,
+ deller@gmx.de, devel@driverdev.osuosl.org, gerald.schaefer@de.ibm.com,
+ gregkh@linuxfoundation.org, heiko.carstens@de.ibm.com,
+ hoeppner@linux.vnet.ibm.com, hpa@zytor.com, jejb@parisc-linux.org,
+ jwi@linux.vnet.ibm.com, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, mark.rutland@arm.com, mingo@redhat.com,
+ mpe@ellerman.id.au, oberpar@linux.vnet.ibm.com, oprofile-list@lists.sf.net,
+ paulus@samba.org, peterz@infradead.org, ralf@linux-mips.org,
+ rostedt@goodmis.org, rric@kernel.org, schwidefsky@de.ibm.com,
+ sebott@linux.vnet.ibm.com, sparclinux@vger.kernel.org,
+ sth@linux.vnet.ibm.com, ubraun@linux.vnet.ibm.com, will.deacon@arm.com,
+ x86@kernel.org
+Subject: [PATCH v4 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
+ conversion
+Date: Mon, 12 Mar 2018 10:52:57 -0700
+Message-Id: <20180312175307.11032-1-deepa.kernel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,15 +40,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/09/2018 12:06 PM, Ram Pai wrote:
-> On Fri, Mar 09, 2018 at 09:19:53PM +1100, Michael Ellerman wrote:
->> Ram Pai <linuxram@us.ibm.com> writes:
->>
->>> Once an address range is associated with an allocated pkey, it cannot be
->>> reverted back to key-0. There is no valid reason for the above behavior.  On
->>> the contrary applications need the ability to do so.
->> Please explain this in much more detail. Is it an ABI change?
-> Not necessarily an ABI change. older binary applications  will continue
-> to work. It can be considered as a bug-fix.
+The series is a preparation series for individual architectures
+to use 64 bit time_t syscalls in compat and 32 bit emulation modes.
 
-Yeah, agreed.  I do not think this is an ABI change.
+This is a follow up to the series Arnd Bergmann posted:
+https://sourceware.org/ml/libc-alpha/2015-05/msg00070.html [1]
+
+Thomas, Arnd, this seems ready to be merged now.
+Can you help get this merged?
+
+Big picture is as per the lwn article:
+https://lwn.net/Articles/643234/ [2]
+
+The series is directed at converting posix clock syscalls:
+clock_gettime, clock_settime, clock_getres and clock_nanosleep
+to use a new data structure __kernel_timespec at syscall boundaries.
+__kernel_timespec maintains 64 bit time_t across all execution modes.
+
+vdso will be handled as part of each architecture when they enable
+support for 64 bit time_t.
+
+The compat syscalls are repurposed to provide backward compatibility
+by using them as native syscalls as well for 32 bit architectures.
+They will continue to use timespec at syscall boundaries.
+
+CONFIG_64_BIT_TIME controls whether the syscalls use __kernel_timespec
+or timespec at syscall boundaries.
+
+The series does the following:
+1. Enable compat syscalls on 32 bit architectures.
+2. Add a new __kernel_timespec type to be used as the data structure
+   for all the new syscalls.
+3. Add new config CONFIG_64BIT_TIME(intead of the CONFIG_COMPAT_TIME in
+   [1] and [2] to switch to new definition of __kernel_timespec. It is
+   the same as struct timespec otherwise.
+4. Add new CONFIG_32BIT_TIME to conditionally compile compat syscalls.
+
+* Changes since v3:
+ * Updated include file ordering
+* Changes since v2:
+ * Dropped the ARCH_HAS_64BIT_TIME config.
+ * Fixed zeroing out of higher order bits of tv_nsec for real.
+ * Addressed minor review comments from v1.
+* Changes since v1:
+ * Introduce CONFIG_32BIT_TIME
+ * Fixed zeroing out of higher order bits of tv_nsec
+ * Included Arnd's changes to fix up use of compat headers
+
+I decided against using LEGACY_TIME_SYSCALLS to conditionally compile
+legacy time syscalls such as sys_nanosleep because this will need to
+enclose compat_sys_nanosleep as well. So, defining it as 
+
+config LEGACY_TIME_SYSCALLS
+     def_bool 64BIT || !64BIT_TIME
+
+will not include compat_sys_nanosleep. We will instead need a new config to
+exclusively mark legacy syscalls.
+
+Deepa Dinamani (10):
+  compat: Make compat helpers independent of CONFIG_COMPAT
+  include: Move compat_timespec/ timeval to compat_time.h
+  compat: enable compat_get/put_timespec64 always
+  arch: introduce CONFIG_64BIT_TIME
+  arch: Introduce CONFIG_COMPAT_32BIT_TIME
+  posix-clocks: Make compat syscalls depend on CONFIG_COMPAT_32BIT_TIME
+  include: Add new y2038 safe __kernel_timespec
+  fix get_timespec64() for y2038 safe compat interfaces
+  change time types to new y2038 safe __kernel_* types
+  nanosleep: change time types to safe __kernel_* types
+
+ arch/Kconfig                           | 15 +++++++++
+ arch/arm64/include/asm/compat.h        | 11 -------
+ arch/arm64/include/asm/stat.h          |  1 +
+ arch/arm64/kernel/hw_breakpoint.c      |  1 -
+ arch/arm64/kernel/perf_regs.c          |  2 +-
+ arch/arm64/kernel/process.c            |  1 -
+ arch/mips/include/asm/compat.h         | 11 -------
+ arch/mips/kernel/signal32.c            |  2 +-
+ arch/parisc/include/asm/compat.h       | 11 -------
+ arch/powerpc/include/asm/compat.h      | 11 -------
+ arch/powerpc/kernel/asm-offsets.c      |  2 +-
+ arch/powerpc/oprofile/backtrace.c      |  2 +-
+ arch/s390/hypfs/hypfs_sprp.c           |  1 -
+ arch/s390/include/asm/compat.h         | 11 -------
+ arch/s390/include/asm/elf.h            |  4 +--
+ arch/s390/kvm/priv.c                   |  1 -
+ arch/s390/pci/pci_clp.c                |  1 -
+ arch/sparc/include/asm/compat.h        | 11 -------
+ arch/tile/include/asm/compat.h         | 11 -------
+ arch/x86/events/core.c                 |  2 +-
+ arch/x86/include/asm/compat.h          | 11 -------
+ arch/x86/include/asm/ftrace.h          |  2 +-
+ arch/x86/include/asm/sys_ia32.h        |  2 +-
+ arch/x86/kernel/sys_x86_64.c           |  2 +-
+ drivers/s390/block/dasd_ioctl.c        |  1 -
+ drivers/s390/char/fs3270.c             |  1 -
+ drivers/s390/char/sclp_ctl.c           |  1 -
+ drivers/s390/char/vmcp.c               |  1 -
+ drivers/s390/cio/chsc_sch.c            |  1 -
+ drivers/s390/net/qeth_core_main.c      |  2 +-
+ include/linux/compat.h                 | 11 ++++---
+ include/linux/compat_time.h            | 23 ++++++++++++++
+ include/linux/restart_block.h          |  7 ++--
+ include/linux/syscalls.h               | 12 +++----
+ include/linux/time.h                   |  4 +--
+ include/linux/time64.h                 | 10 +++++-
+ include/uapi/asm-generic/posix_types.h |  1 +
+ include/uapi/linux/time.h              |  7 ++++
+ kernel/compat.c                        | 52 +++++-------------------------
+ kernel/time/hrtimer.c                  | 10 ++++--
+ kernel/time/posix-stubs.c              | 12 ++++---
+ kernel/time/posix-timers.c             | 24 ++++++++++----
+ kernel/time/time.c                     | 58 +++++++++++++++++++++++++++++++---
+ 43 files changed, 177 insertions(+), 190 deletions(-)
+ create mode 100644 include/linux/compat_time.h
+
+
+base-commit: 61530b14b059d4838dcc2186e9de9d57e195ce55
+-- 
+2.14.1
+
+Cc: acme@kernel.org
+Cc: benh@kernel.crashing.org
+Cc: borntraeger@de.ibm.com
+Cc: catalin.marinas@arm.com
+Cc: cmetcalf@mellanox.com
+Cc: cohuck@redhat.com
+Cc: davem@davemloft.net
+Cc: deller@gmx.de
+Cc: devel@driverdev.osuosl.org
+Cc: gerald.schaefer@de.ibm.com
+Cc: gregkh@linuxfoundation.org
+Cc: heiko.carstens@de.ibm.com
+Cc: hoeppner@linux.vnet.ibm.com
+Cc: hpa@zytor.com
+Cc: jejb@parisc-linux.org
+Cc: jwi@linux.vnet.ibm.com
+Cc: linux-api@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: mark.rutland@arm.com
+Cc: mingo@redhat.com
+Cc: mpe@ellerman.id.au
+Cc: oberpar@linux.vnet.ibm.com
+Cc: oprofile-list@lists.sf.net
+Cc: paulus@samba.org
+Cc: peterz@infradead.org
+Cc: ralf@linux-mips.org
+Cc: rostedt@goodmis.org
+Cc: rric@kernel.org
+Cc: schwidefsky@de.ibm.com
+Cc: sebott@linux.vnet.ibm.com
+Cc: sparclinux@vger.kernel.org
+Cc: sth@linux.vnet.ibm.com
+Cc: ubraun@linux.vnet.ibm.com
+Cc: will.deacon@arm.com
+Cc: x86@kernel.org
