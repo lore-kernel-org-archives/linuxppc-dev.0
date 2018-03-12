@@ -1,22 +1,23 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:84ea::])
- (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400KTV2yK0zF08m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 01:03:38 +1100 (AEDT)
-Subject: Linux 4.16: Reported regressions as of , 2018-03-12 (Was: Linux
- 4.16-rc5)
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-References: <CA+55aFxXAMHeD8zz1BLv9r_2rjWJ6xE=cNGVAoWOvQJog7oz9A@mail.gmail.com>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Message-ID: <b5a36282-49a8-d6ca-8f68-ef15e1019fd3@leemhuis.info>
-Date: Mon, 12 Mar 2018 15:03:31 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400MWd43tjzDrKY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 02:35:40 +1100 (AEDT)
+Date: Mon, 12 Mar 2018 10:35:36 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org
+Subject: Re: [PATCH v2] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20180312153536.7avozx64ku4lvd3e@treble>
+References: <20180305164928.GA17953@lst.de>
+ <20180308162616.yhbymodggnfzpskx@treble>
+ <20180309174718.2700b29e@blackhole.lan>
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFxXAMHeD8zz1BLv9r_2rjWJ6xE=cNGVAoWOvQJog7oz9A@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180309174718.2700b29e@blackhole.lan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,98 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12.03.2018 01:42, Linus Torvalds wrote:
-> This continue to be pretty normal - this rc is slightly larger than
-> rc4 was, but that looks like one of the normal fluctuations
+On Fri, Mar 09, 2018 at 05:47:18PM +0100, Torsten Duwe wrote:
+> On Thu, 8 Mar 2018 10:26:16 -0600
+> Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> 
+> > This doesn't seem to address some of my previous concerns:
+> 
+> You're right. That discussion quickly headed towards objtool
+> and I forgot about this one paragraph with the remarks.
+> 
+> > - Bailing on interrupt/exception frames
+> 
+> That is a good question. My current code keeps unwinding as long
+> as the trace looks sane. If the exception frame has a valid code
+> pointer in the LR slot it will continue. Couldn't there be cases
+> where this is desirable?
 
-Hi! Find below my fourth regression report for Linux 4.16. It lists 9
-regressions I'm currently aware of. 1 was fixed since last weeks report.
+I thought we established in the previous discussion that this could
+cause some functions to get skipped in the stack trace:
 
-To anyone reading this: Are you aware of any other regressions that got
-introduced this development cycle? Then please let me know by mail (a
-simple bounce or forward to the sender of this email address is enough!).
+  https://lkml.kernel.org/r/20171219214652.u7qeb7fxov62ttke@treble
 
-For details see http://bit.ly/lnxregtrackid And please tell me if there
-is anything in the report that shouldn't be there.
+> Should this be configurable? Not that
+> I have an idea how this situation could occur for a thread
+> that is current or sleeping...
 
-Ciao, Thorsten
+Page faults and preemption.
 
-== Current regressions ==
+> Michael, Balbir: is that possible? Any Idea how to reliably detect
+> an exception frame? My approach would be to look at the next return
+> address and compare it to the usual suspects (i.e. collect all 
+> "b ret" addresses in the EXCEPTION_COMMON macro, for BookS).
 
-Dell R640 does not boot due to SCSI/SATA failure
-- Status: WIP; some other changed planed for 4.17 solve this regression,
-but there is a discussion if they are too big for 4.16-rc
-- Cause: 84676c1f21e8
-- Reported: 2018-02-22
-https://marc.info/?l=linux-kernel&m=151931128006031
-- Last known developer activity:
-https://marc.info/?i=1520515113.20980.31.camel%40gmail.com
-- Last relevant activity:
-https://marc.info/?l=linux-kernel&m=152026091325037
-- Linux-Regression-ID: 15a115
+It looks like show_stack() already knows how to do this:
 
-[mm, mlock, vmscan]  9c4e6b1a70:  stress-ng.hdd.ops_per_sec -7.9% regression
-- Status: looks stalled; side note: lkp-robot warned about something
-else triggered by the same commit:
-https://lkml.kernel.org/r/20180302093940.GE25699@yexl-desktop is related
-- Cause: 9c4e6b1a7027f102990c0395296015a812525f4d
-- Reported: 2018-02-25
-https://marc.info/?l=linux-kernel&m=151956997301994
-- Note: performance regression found by lkp-robot
+		/*
+		 * See if this is an exception frame.
+		 * We look for the "regshere" marker in the current frame.
+		 */
+		if (validate_sp(sp, tsk, STACK_INT_FRAME_SIZE)
+		    && stack[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
 
-aim7.jobs-per-min -18.0% regression
-- Status: looks stalled after some discussions happened the week before last
-- Cause: c0cef30e4ff0dc025f4a1660b8f0ba43ed58426e
-- Reported: 2018-02-25
-https://marc.info/?l=linux-kernel&m=151957120702272&w=2
-- Note: performance regression found by lkp-robot
+So you could do something similar.
 
-Interrupt storm after suspend causes one busy kworker
-- Status: Waiting for data from reporter
-- Reported: 2018-02-25
-https://bugzilla.kernel.org/show_bug.cgi?id=198929
-- Linux-Regression-ID: 41c451
+> > - Function graph tracing return address conversion
+> > 
+> > - kretprobes return address conversion
+> 
+> You mean like in arch/x86/kernel/unwind_frame.c the call to
+> ftrace_graph_ret_addr ?
+> 
+> Forgive me my directness but I don't see why these should be handled in
+> arch-dependent code, other than maybe a hook, if inevitable, that calls
+> back into the graph tracer / kretprobes in order to get the proper
+> address,
 
-hci_bcm: Streamline runtime PM code change for 4.16 kernel breaks
-bluetooth on ASUS T100TA
-- Status: WIP
-- Cause: 43fff768346810042836df325d736bd2c2a634a7
-- Reported: 2018-03-01
-https://bugzilla.kernel.org/show_bug.cgi?id=198953
+I don't really follow, where exactly would you propose calling
+ftrace_graph_ret_addr() from?
 
-Error updating SMART data during runtime and could not connect to lv
-["Possible Regression"]
-- Status: Brand new
-- Reported: 2018-03-11
-https://marc.info/?l=linux-kernel&m=152075643627082
-https://bugzilla.kernel.org/show_bug.cgi?id=199077
+> or simply call the trace unreliable in case it finds such a
+> return address.
 
-Regression from efi: call get_event_log before ExitBootServices
-- Status: WIP, looks like a firmware issue that gets triggerd
-- Cause: 33b6d03469b2
-- Reported: 2018-03-06
-https://marc.info/?l=linux-kernel&m=152035206220237&w=2
+If you're going to make livepatch incompatible with function graph
+tracing, there needs to be a good justification for it (and we'd need to
+make sure existing users are fine with it).
 
-15% longer running times on lvm2 test suite
-- Status: Quite new
-- Cause: 44c02a2c3dc55835e9f0d8ef73966406cd805001
-- Reported: 2018-03-11
-https://marc.info/?l=linux-kernel&m=152077333230274
-
-
-== Regressions with fixes heading mainline ==
-
-[amdgpu CARRIZO] disabled backlight after S3 resume
-- Status: Alex provided a patch "drm/amdgpu: save/restore backlight
-level in legacy dce code"; assuming he'll send it upstream
-- Cause: 4ec6ecf48c64d1da82a008f6fb0be86c4044287d
-- Reported: 2018-03-07
-https://bugzilla.kernel.org/show_bug.cgi?id=199047
-
-
-== Fixed since last report ==
-
-selftests: memory-hotplug: fix emit_tests regression
-- Status: Fixed by https://git.kernel.org/torvalds/c/ba004a2955f7
-- Cause: 16c513b13477
-https://marc.info/?l=linux-kernel&m=151993543423651
+-- 
+Josh
