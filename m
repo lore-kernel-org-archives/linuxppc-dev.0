@@ -1,26 +1,38 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400GFP2fP7zF088
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 22:38:01 +1100 (AEDT)
-Received: by mail-it0-x243.google.com with SMTP id v194-v6so11029009itb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 04:38:01 -0700 (PDT)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: sudeep.dutt@intel.com, ashutosh.dixit@intel.com, arnd@arndb.de,
- gregkh@linuxfoundation.org, fbarrat@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] misc: ocxl: use put_device() instead of
- device_unregister()
-Date: Mon, 12 Mar 2018 17:06:53 +0530
-Message-Id: <8c4d28703e408b71284af68d07c117e7b8c8a75a.1520849284.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <cover.1520849284.git.arvind.yadav.cs@gmail.com>
-References: <cover.1520849284.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <cover.1520849284.git.arvind.yadav.cs@gmail.com>
-References: <cover.1520849284.git.arvind.yadav.cs@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400HMx0N81zF08f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 23:28:43 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2CCJI0l105778
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 08:28:40 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gnrm02k0r-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Mar 2018 08:28:40 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Mon, 12 Mar 2018 08:28:39 -0400
+Subject: Re: [PATCH] powerpc/mm: Fix section mismatch warning in
+ stop_machine_change_mapping()
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+References: <1520628358-1762-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <CAKTCnzmdNx01cx94J3mn0auDFrRuOs1PvwsxvOt9VK0AtQf7eA@mail.gmail.com>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Mon, 12 Mar 2018 09:28:33 -0300
+MIME-Version: 1.0
+In-Reply-To: <CAKTCnzmdNx01cx94J3mn0auDFrRuOs1PvwsxvOt9VK0AtQf7eA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <c12c1909-30e2-e3be-c288-806168dba9bb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +42,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-if device_register() returned an error! Always use put_device()
-to give up the reference initialized.
+Balbir,
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/misc/ocxl/pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 03/11/2018 03:23 AM, Balbir Singh wrote:
+> Looks reasonable, I'd recommend trying to compile with MEMORY_HOTPLUG
+> and MEMORY_HOTREMOVE enabled/disabled as well
 
-diff --git a/drivers/misc/ocxl/pci.c b/drivers/misc/ocxl/pci.c
-index 0051d9e..21f4254 100644
---- a/drivers/misc/ocxl/pci.c
-+++ b/drivers/misc/ocxl/pci.c
-@@ -519,7 +519,7 @@ static struct ocxl_fn *init_function(struct pci_dev *dev)
- 	rc = device_register(&fn->dev);
- 	if (rc) {
- 		deconfigure_function(fn);
--		device_unregister(&fn->dev);
-+		put_device(&fn->dev);
- 		return ERR_PTR(rc);
- 	}
- 	return fn;
--- 
-1.9.1
+Thanks for reviewing.
+
+I should have mentioned it :) I did that (disable CONFIG_MEMORY_HOTPLUG)
+and all the related functions are not included in vmlinux, since they
+are guarded under that config option.
+
+cheers,
+Mauricio
