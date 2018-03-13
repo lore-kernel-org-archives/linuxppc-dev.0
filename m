@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4012gy73r6zF09Y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:00:14 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2DHx2kk015673
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:00:12 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gpgd2hc7a-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4012h109y8zF09R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:00:16 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2DHsaVJ078086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:00:15 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gpgykf4mj-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:00:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:00:14 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 13 Mar 2018 18:00:08 -0000
+ Tue, 13 Mar 2018 18:00:10 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,11 +35,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v9 02/24] x86/mm: Define CONFIG_SPECULATIVE_PAGE_FAULT
-Date: Tue, 13 Mar 2018 18:59:32 +0100
+Subject: [PATCH v9 03/24] powerpc/mm: Define CONFIG_SPECULATIVE_PAGE_FAULT
+Date: Tue, 13 Mar 2018 18:59:33 +0100
 In-Reply-To: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1520963994-28477-3-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1520963994-28477-4-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,26 +49,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce CONFIG_SPECULATIVE_PAGE_FAULT which turns on the Speculative Page
-Fault handler when building for 64bits with SMP.
+Define CONFIG_SPECULATIVE_PAGE_FAULT for BOOK3S_64 and SMP. This enables
+the Speculative Page Fault handler.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Support is only provide for BOOK3S_64 currently because:
+- require CONFIG_PPC_STD_MMU because checks done in
+  set_access_flags_filter()
+- require BOOK3S because we can't support for book3e_hugetlb_preload()
+  called by update_mmu_cache()
+
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- arch/x86/Kconfig | 1 +
+ arch/powerpc/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index a0a777ce4c7c..4c018c48d414 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -29,6 +29,7 @@ config X86_64
- 	select HAVE_ARCH_SOFT_DIRTY
- 	select MODULES_USE_ELF_RELA
- 	select X86_DEV_DMA_OPS
-+	select SPECULATIVE_PAGE_FAULT if SMP
- 
- #
- # Arch settings
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 73ce5dd07642..acf2696a6505 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -233,6 +233,7 @@ config PPC
+ 	select OLD_SIGACTION			if PPC32
+ 	select OLD_SIGSUSPEND
+ 	select SPARSE_IRQ
++	select SPECULATIVE_PAGE_FAULT		if PPC_BOOK3S_64 && SMP
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select VIRT_TO_BUS			if !PPC64
+ 	#
 -- 
 2.7.4
