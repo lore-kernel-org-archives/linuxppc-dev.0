@@ -2,26 +2,29 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400sPc3TctzDrDs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 22:02:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400tFH4W50zDr9F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 22:40:03 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- "linux\@roeck-us.net \>\> Guenter Roeck" <linux@roeck-us.net>,
- Andrew Jeffery  <andrew@aj.id.au>
-Subject: Re: [PATCH] powerpc/powernv : Add support to enable sensor groups
-In-Reply-To: <7b64ac19-5463-5f30-83bb-d5ff0611dc94@linux.vnet.ibm.com>
-References: <1511760988-10377-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <87bmjmzla7.fsf@concordia.ellerman.id.au>
- <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
- <87609nxfym.fsf@linux.vnet.ibm.com>
- <7b64ac19-5463-5f30-83bb-d5ff0611dc94@linux.vnet.ibm.com>
-Date: Tue, 13 Mar 2018 22:02:09 +1100
-Message-ID: <87a7vcgrwu.fsf@concordia.ellerman.id.au>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michal
+ =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call setup_rfi_flush()
+ again
+In-Reply-To: <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
+References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <20180215081358.2f37cda4@naga.suse.cz>
+ <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
+ <87lgforngp.fsf@concordia.ellerman.id.au>
+ <20180220180621.11265945@kitsune.suse.cz>
+ <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
+ <876069flhq.fsf@concordia.ellerman.id.au>
+ <20180306135522.040707de@kitsune.suse.cz>
+ <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
+Date: Tue, 13 Mar 2018 22:39:59 +1100
+Message-ID: <876060gq5s.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,61 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> On 12/04/2017 10:11 AM, Stewart Smith wrote:
->> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
->>> On 11/28/2017 05:07 PM, Michael Ellerman wrote:
->>>> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
->>>>
->>>>> Adds support to enable/disable a sensor group. This can be used to
->>>>> select the sensor groups that needs to be copied to main memory by
->>>>> OCC. Sensor groups like power, temperature, current, voltage,
->>>>> frequency, utilization can be enabled/disabled at runtime.
->>>>>
->>>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->>>>> ---
->>>>> The skiboot patch for the opal call is posted below:
->>>>> https://lists.ozlabs.org/pipermail/skiboot/2017-November/009713.html
->>>>
->>>> Can you remind me why we're doing this with a completely bespoke sysfs
->>>> API, rather than using some generic sensors API?
->>>
->>> Disabling/Enabling sensor groups is not supported in the current generic sensors
->>> API. And also we dont export all type of sensors in HWMON as not all of them are
->>> environment sensors (like performance).
->> 
->> Are there barriers to adding such concepts to the generic sensors API?
+Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com> writes:
+
+> Hi Michael and Michal,
 >
-> Yes.
+> Got back to this; sorry for the delay.
 >
-> HWMON does not support attributes for a sensor-group. If we are to extend HWMON
-> to add new per-sensor attributes to disable/enable, then we need to do either of
-> the below:
+> On 03/06/2018 09:55 AM, Michal Such=C3=A1nek wrote:
+>> Michael Ellerman<mpe@ellerman.id.au>  wrote:
 >
-> 1) If any one of the sensor is disabled then all the sensors belonging to that
-> group will be disabled. OR
+>>> I*think*  the patch below is all we need, as well as some tweaking of
+>>> patch 2, are you able to test and repost?
 >
-> 2) To disable a sensor group we need to disable all the sensors belonging to
-> that group.
+>> Enabling the fallback flush always looks a bit dodgy but
+>> do_rfi_flush_fixups will overwrite the jump so long any other fixup is
+>> enabled.
+>
+> I agree; the 'Using fallback displacement flush' message is misleading
+> (is the system slower/fallback or not? =C3=94_o)
 
-Either of those sound doable, the first is probably simpler, as long as
-there's some way for userspace to understand that it is modifying the
-state of the whole group.
+That message is actually just wrong.
 
-> Another problem is hwmon categorizes the sensor-groups based on the type of
-> sensors like power, temp. If OCC allows multiple groups of the same type then
-> this approach adds some more complexity to the user to identify the sensors
-> belonging to correct group.
+It still prints that even if enable=3Dfalse.
 
-I don't really understand this one, what do you mean by "If OCC allows"?
+So we should change all those messages, perhaps:
 
-Also do we really expect users to be using this API? Or rather tools?
+	pr_info("rfi-flush: fallback displacement flush available\n");
+	pr_info("rfi-flush: ori type flush available\n");
+	pr_info("rfi-flush: mttrig type flush available\n");
 
-> And lastly HWMON does not allow platform specific non-standard sensor groups
-> like CSM, job-scheduler, profiler.
 
-Have we actually made specific proposals to the hwmon maintainers on
-adding/changing any of the above? Have they rejected those proposals and
-told us to go away?
+> So I wrote something with a new function parameter to force the init of
+> the fallback flush area (true in pseries, false in powernv).  Not that
+> contained, but it seemed to convey the intent here in a clear way.
+>
+> That's v2, just sent.
+
+OK thanks. I don't really like it :D - sorry!
+
+It's a lot of plumbing of that bool just to avoid the message, whereas I
+think we could just change the message like above.
 
 cheers
