@@ -2,8 +2,8 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qs5C6pzDqtg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:33:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qv2LhpzDr7r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:33:59 +1100 (AEDT)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -30,9 +30,9 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 5/8] powerpc/64: Patch barrier_nospec in modules
-Date: Tue, 13 Mar 2018 19:33:03 +0100
-Message-Id: <7a0d36c27c354f04c803ce5c4ef743e6f753b2d6.1520965380.git.msuchanek@suse.de>
+Subject: [PATCH RFC 8/8] powerpc/64: barrier_nospec: Add commandline trigger
+Date: Tue, 13 Mar 2018 19:33:06 +0100
+Message-Id: <8639fc8cb02548d478b041c3a00ad9053fdd8bc4.1520965380.git.msuchanek@suse.de>
 In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
 References: <cover.1520965380.git.msuchanek@suse.de>
 In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
@@ -46,112 +46,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Copypasta from lwsync patching.
-
-Note that unlike RFI which is patched only in kernel the nospec state
-reflects settings at the time the module was loaded.
-
-Iterating all modules and re-patching every time the settings change is
-not implemented.
+Copypasta from rfi implementation
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- arch/powerpc/include/asm/setup.h  |  5 ++++-
- arch/powerpc/kernel/module.c      |  6 ++++++
- arch/powerpc/kernel/setup_64.c    |  4 ++--
- arch/powerpc/lib/feature-fixups.c | 17 ++++++++++++++---
- 4 files changed, 26 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/setup_64.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 486d02e4a310..7e3a41248810 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -58,7 +58,10 @@ enum spec_barrier_type {
- void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
- void __init setup_barrier_nospec(enum spec_barrier_type, bool enable);
--void do_barrier_nospec_fixups(enum spec_barrier_type type);
-+void do_barrier_nospec_fixups_kernel(enum spec_barrier_type type);
-+void do_barrier_nospec_fixups(enum spec_barrier_type type,
-+			      void *start, void *end);
-+extern enum spec_barrier_type powerpc_barrier_nospec;
- 
- #endif /* !__ASSEMBLY__ */
- 
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index 3f7ba0f5bf29..7b6d0ec06a21 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -72,6 +72,12 @@ int module_finalize(const Elf_Ehdr *hdr,
- 		do_feature_fixups(powerpc_firmware_features,
- 				  (void *)sect->sh_addr,
- 				  (void *)sect->sh_addr + sect->sh_size);
-+
-+	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
-+	if (sect != NULL)
-+		do_barrier_nospec_fixups(powerpc_barrier_nospec,
-+				  (void *)sect->sh_addr,
-+				  (void *)sect->sh_addr + sect->sh_size);
- #endif
- 
- 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 09f21a954bfc..d1d9f047161e 100644
+index 4b67b7b877d9..257f0e6be107 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -909,11 +909,11 @@ void barrier_nospec_enable(bool enable)
- 
- 	if (enable) {
- 		powerpc_barrier_nospec = barrier_nospec_type;
--		do_barrier_nospec_fixups(powerpc_barrier_nospec);
-+		do_barrier_nospec_fixups_kernel(powerpc_barrier_nospec);
- 		on_each_cpu(do_nothing, NULL, 1);
- 	} else {
- 		powerpc_barrier_nospec = SPEC_BARRIER_NONE;
--		do_barrier_nospec_fixups(powerpc_barrier_nospec);
-+		do_barrier_nospec_fixups_kernel(powerpc_barrier_nospec);
- 	}
+@@ -840,6 +840,14 @@ static int __init handle_no_pti(char *p)
  }
+ early_param("nopti", handle_no_pti);
  
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 000e153184ad..b59ebc2215e8 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -156,14 +156,15 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 	printk(KERN_DEBUG "rfi-flush: patched %d locations\n", i);
- }
- 
--void do_barrier_nospec_fixups(enum spec_barrier_type type)
-+void do_barrier_nospec_fixups(enum spec_barrier_type type,
-+			      void *fixup_start, void *fixup_end)
- {
- 	unsigned int instr, *dest;
- 	long *start, *end;
- 	int i;
- 
--	start = PTRRELOC(&__start___spec_barrier_fixup),
--	end = PTRRELOC(&__stop___spec_barrier_fixup);
-+	start = fixup_start;
-+	end = fixup_end;
- 
- 	instr = 0x60000000; /* nop */
- 
-@@ -182,6 +183,16 @@ void do_barrier_nospec_fixups(enum spec_barrier_type type)
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
- }
- 
-+void do_barrier_nospec_fixups_kernel(enum spec_barrier_type type)
++static int __init handle_no_nospec(char *p)
 +{
-+	void *start, *end;
-+
-+	start = PTRRELOC(&__start___spec_barrier_fixup),
-+	end = PTRRELOC(&__stop___spec_barrier_fixup);
-+
-+	do_barrier_nospec_fixups(type, start, end);
++	pr_info("barrier_nospec: disabled on command line.");
++	no_nospec = true;
++	return 0;
 +}
++early_param("no_nospec", handle_no_nospec);
 +
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
- void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ static void do_nothing(void *unused)
+ {
+ 	/*
 -- 
 2.13.6
