@@ -2,7 +2,7 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qs53vjzDq82
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qs5BpwzDqG4
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:33:57 +1100 (AEDT)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
@@ -30,9 +30,9 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 6/8] powerpc/64: barrier_nospec: Add debugfs trigger
-Date: Tue, 13 Mar 2018 19:33:04 +0100
-Message-Id: <614dfe0abb78fffd35f127d0ba78e644e1a0570a.1520965380.git.msuchanek@suse.de>
+Subject: [PATCH RFC 7/8] powerpc/64s: barrier_nospec: Add hcall triggerr
+Date: Tue, 13 Mar 2018 19:33:05 +0100
+Message-Id: <1c687d0e029de81ae27465dd4c32036e956f4970.1520965380.git.msuchanek@suse.de>
 In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
 References: <cover.1520965380.git.msuchanek@suse.de>
 In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
@@ -50,54 +50,84 @@ Copypasta from rfi implementation
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- arch/powerpc/kernel/setup_64.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c | 38 ++++++++++++++++++++++------------
+ 1 file changed, 25 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index d1d9f047161e..4b67b7b877d9 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -955,6 +955,41 @@ static __init int rfi_flush_debugfs_init(void)
- 	return 0;
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 1a527625acf7..b779ddb8e250 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -459,38 +459,50 @@ static void __init find_and_init_phbs(void)
+ 	of_pci_check_probe_only();
  }
- device_initcall(rfi_flush_debugfs_init);
-+
-+static int barrier_nospec_set(void *data, u64 val)
-+{
-+	switch (val) {
-+	case 0:
-+	case 1:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (!!val == !!barrier_nospec_enabled)
-+		return 0;
-+
-+	barrier_nospec_enable(!!val);
-+
-+	return 0;
-+}
-+
-+static int barrier_nospec_get(void *data, u64 *val)
-+{
-+	*val = barrier_nospec_enabled ? 1 : 0;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_barrier_nospec,
-+			barrier_nospec_get, barrier_nospec_set, "%llu\n");
-+
-+static __init int barrier_nospec_debugfs_init(void)
-+{
-+	debugfs_create_file("barrier_nospec", 0600, powerpc_debugfs_root, NULL,
-+			    &fops_barrier_nospec);
-+	return 0;
-+}
-+device_initcall(barrier_nospec_debugfs_init);
- #endif
  
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+-static void pseries_setup_rfi_flush(void)
++static void pseries_setup_rfi_nospec(void)
+ {
+ 	struct h_cpu_char_result result;
+-	enum l1d_flush_type types;
+-	bool enable;
++	enum l1d_flush_type flush_types;
++	enum spec_barrier_type barrier_type;
++	bool flush_enable;
++	bool barrier_enable;
+ 	long rc;
+ 
+ 	/* Enable by default */
+-	enable = true;
++	flush_enable = true;
++	barrier_enable = true;
++	/* no fallback if the firmware does not tell us */
++	barrier_type = SPEC_BARRIER_NONE;
+ 
+ 	rc = plpar_get_cpu_characteristics(&result);
+ 	if (rc == H_SUCCESS) {
+-		types = L1D_FLUSH_NONE;
++		flush_types = L1D_FLUSH_NONE;
+ 
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+-			types |= L1D_FLUSH_MTTRIG;
++			flush_types |= L1D_FLUSH_MTTRIG;
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+-			types |= L1D_FLUSH_ORI;
++			flush_types |= L1D_FLUSH_ORI;
++		if (result.character & H_CPU_CHAR_SPEC_BAR_ORI31)
++			barrier_type |= SPEC_BARRIER_ORI;
+ 
+ 		/* Use fallback if nothing set in hcall */
+-		if (types == L1D_FLUSH_NONE)
+-			types = L1D_FLUSH_FALLBACK;
++		if (flush_types == L1D_FLUSH_NONE)
++			flush_types = L1D_FLUSH_FALLBACK;
+ 
+ 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
+ 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+-			enable = false;
++			flush_enable = false;
++
++		if ((!(result.behaviour & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR)) ||
++		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
++			barrier_enable = false;
+ 	} else {
+ 		/* Default to fallback if case hcall is not available */
+-		types = L1D_FLUSH_FALLBACK;
++		flush_types = L1D_FLUSH_FALLBACK;
+ 	}
+ 
+-	setup_rfi_flush(types, enable);
++	setup_barrier_nospec(barrier_type, barrier_enable);
++	setup_rfi_flush(flush_types, flush_enable);
+ }
+ 
+ #ifdef CONFIG_PCI_IOV
+@@ -666,7 +678,7 @@ static void __init pSeries_setup_arch(void)
+ 
+ 	fwnmi_init();
+ 
+-	pseries_setup_rfi_flush();
++	pseries_setup_rfi_nospec();
+ 
+ 	/* By default, only probe PCI (can be overridden by rtas_pci) */
+ 	pci_add_flags(PCI_PROBE_ONLY);
 -- 
 2.13.6
