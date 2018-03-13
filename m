@@ -1,46 +1,46 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4012wW4ChJzDqgc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:11:07 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4012z26Fw4zF0Tn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:13:18 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2DHvtxM037703
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:11:05 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gpgxm7tus-1
+ w2DIBc6s096958
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:13:16 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gpj5cm4xa-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:11:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:13:15 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 13 Mar 2018 18:00:47 -0000
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: [PATCH v9 19/24] mm: Adding speculative page fault failure trace
- events
-Date: Tue, 13 Mar 2018 18:59:49 +0100
-In-Reply-To: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1520963994-28477-20-git-send-email-ldufour@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Tue, 13 Mar 2018 12:13:15 -0600
+Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call setup_rfi_flush()
+ again
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <20180215081358.2f37cda4@naga.suse.cz>
+ <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
+ <87lgforngp.fsf@concordia.ellerman.id.au>
+ <20180220180621.11265945@kitsune.suse.cz>
+ <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
+ <876069flhq.fsf@concordia.ellerman.id.au>
+ <20180306135522.040707de@kitsune.suse.cz>
+ <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
+ <876060gq5s.fsf@concordia.ellerman.id.au>
+ <c7cadceb-1957-046e-8934-592baccca5b7@linux.vnet.ibm.com>
+ <20180313185916.3e4a0ea6@kitsune.suse.cz>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Tue, 13 Mar 2018 15:13:11 -0300
+MIME-Version: 1.0
+In-Reply-To: <20180313185916.3e4a0ea6@kitsune.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <db75ecdd-32da-d429-8ea6-3bd1453bd89e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,308 +50,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch a set of new trace events to collect the speculative page fault
-event failures.
+On 03/13/2018 02:59 PM, Michal Suchánek wrote:
+> Maybe it would make more sense to move the messages to the function
+> that actually patches in the instructions?
 
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- include/trace/events/pagefault.h | 87 ++++++++++++++++++++++++++++++++++++++++
- mm/memory.c                      | 62 ++++++++++++++++++++++------
- 2 files changed, 136 insertions(+), 13 deletions(-)
- create mode 100644 include/trace/events/pagefault.h
+That helps, but if the instructions are not patched (e.g., no_rfi_flush)
+then there is no information about what the system actually supports,
+which is useful for diagnostics/debugging (and patch verification! :-) )
 
-diff --git a/include/trace/events/pagefault.h b/include/trace/events/pagefault.h
-new file mode 100644
-index 000000000000..1d793f8c739b
---- /dev/null
-+++ b/include/trace/events/pagefault.h
-@@ -0,0 +1,87 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM pagefault
-+
-+#if !defined(_TRACE_PAGEFAULT_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_PAGEFAULT_H
-+
-+#include <linux/tracepoint.h>
-+#include <linux/mm.h>
-+
-+DECLARE_EVENT_CLASS(spf,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address),
-+
-+	TP_STRUCT__entry(
-+		__field(unsigned long, caller)
-+		__field(unsigned long, vm_start)
-+		__field(unsigned long, vm_end)
-+		__field(unsigned long, address)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->caller		= caller;
-+		__entry->vm_start	= vma->vm_start;
-+		__entry->vm_end		= vma->vm_end;
-+		__entry->address	= address;
-+	),
-+
-+	TP_printk("ip:%lx vma:%lx-%lx address:%lx",
-+		  __entry->caller, __entry->vm_start, __entry->vm_end,
-+		  __entry->address)
-+);
-+
-+DEFINE_EVENT(spf, spf_pte_lock,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address)
-+);
-+
-+DEFINE_EVENT(spf, spf_vma_changed,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address)
-+);
-+
-+DEFINE_EVENT(spf, spf_vma_noanon,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address)
-+);
-+
-+DEFINE_EVENT(spf, spf_vma_notsup,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address)
-+);
-+
-+DEFINE_EVENT(spf, spf_vma_access,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address)
-+);
-+
-+DEFINE_EVENT(spf, spf_pmd_changed,
-+
-+	TP_PROTO(unsigned long caller,
-+		 struct vm_area_struct *vma, unsigned long address),
-+
-+	TP_ARGS(caller, vma, address)
-+);
-+
-+#endif /* _TRACE_PAGEFAULT_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/mm/memory.c b/mm/memory.c
-index f0f2caa11282..f39c4a4df703 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -80,6 +80,9 @@
- 
- #include "internal.h"
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/pagefault.h>
-+
- #if defined(LAST_CPUPID_NOT_IN_PAGE_FLAGS) && !defined(CONFIG_COMPILE_TEST)
- #warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_cpupid.
- #endif
-@@ -2312,8 +2315,10 @@ static bool pte_spinlock(struct vm_fault *vmf)
- 	}
- 
- 	local_irq_disable();
--	if (vma_has_changed(vmf))
-+	if (vma_has_changed(vmf)) {
-+		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
-+	}
- 
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- 	/*
-@@ -2321,16 +2326,21 @@ static bool pte_spinlock(struct vm_fault *vmf)
- 	 * is not a huge collapse operation in progress in our back.
- 	 */
- 	pmdval = READ_ONCE(*vmf->pmd);
--	if (!pmd_same(pmdval, vmf->orig_pmd))
-+	if (!pmd_same(pmdval, vmf->orig_pmd)) {
-+		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
-+	}
- #endif
- 
- 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
--	if (unlikely(!spin_trylock(vmf->ptl)))
-+	if (unlikely(!spin_trylock(vmf->ptl))) {
-+		trace_spf_pte_lock(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
-+	}
- 
- 	if (vma_has_changed(vmf)) {
- 		spin_unlock(vmf->ptl);
-+		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
- 	}
- 
-@@ -2363,8 +2373,10 @@ static bool pte_map_lock(struct vm_fault *vmf)
- 	 * block on the PTL and thus we're safe.
- 	 */
- 	local_irq_disable();
--	if (vma_has_changed(vmf))
-+	if (vma_has_changed(vmf)) {
-+		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
-+	}
- 
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- 	/*
-@@ -2372,8 +2384,10 @@ static bool pte_map_lock(struct vm_fault *vmf)
- 	 * is not a huge collapse operation in progress in our back.
- 	 */
- 	pmdval = READ_ONCE(*vmf->pmd);
--	if (!pmd_same(pmdval, vmf->orig_pmd))
-+	if (!pmd_same(pmdval, vmf->orig_pmd)) {
-+		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
-+	}
- #endif
- 
- 	/*
-@@ -2387,11 +2401,13 @@ static bool pte_map_lock(struct vm_fault *vmf)
- 	pte = pte_offset_map(vmf->pmd, vmf->address);
- 	if (unlikely(!spin_trylock(ptl))) {
- 		pte_unmap(pte);
-+		trace_spf_pte_lock(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
- 	}
- 
- 	if (vma_has_changed(vmf)) {
- 		pte_unmap_unlock(pte, ptl);
-+		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
- 		goto out;
- 	}
- 
-@@ -4305,47 +4321,60 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
- 		return ret;
- 
- 	seq = raw_read_seqcount(&vma->vm_sequence); /* rmb <-> seqlock,vma_rb_erase() */
--	if (seq & 1)
-+	if (seq & 1) {
-+		trace_spf_vma_changed(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
- 	/*
- 	 * Can't call vm_ops service has we don't know what they would do
- 	 * with the VMA.
- 	 * This include huge page from hugetlbfs.
- 	 */
--	if (vma->vm_ops)
-+	if (vma->vm_ops) {
-+		trace_spf_vma_notsup(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
- 	/*
- 	 * __anon_vma_prepare() requires the mmap_sem to be held
- 	 * because vm_next and vm_prev must be safe. This can't be guaranteed
- 	 * in the speculative path.
- 	 */
--	if (unlikely(!vma->anon_vma))
-+	if (unlikely(!vma->anon_vma)) {
-+		trace_spf_vma_notsup(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
- 	vmf.vma_flags = READ_ONCE(vma->vm_flags);
- 	vmf.vma_page_prot = READ_ONCE(vma->vm_page_prot);
- 
- 	/* Can't call userland page fault handler in the speculative path */
--	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING))
-+	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING)) {
-+		trace_spf_vma_notsup(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
--	if (vmf.vma_flags & VM_GROWSDOWN || vmf.vma_flags & VM_GROWSUP)
-+	if (vmf.vma_flags & VM_GROWSDOWN || vmf.vma_flags & VM_GROWSUP) {
- 		/*
- 		 * This could be detected by the check address against VMA's
- 		 * boundaries but we want to trace it as not supported instead
- 		 * of changed.
- 		 */
-+		trace_spf_vma_notsup(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
- 	if (address < READ_ONCE(vma->vm_start)
--	    || READ_ONCE(vma->vm_end) <= address)
-+	    || READ_ONCE(vma->vm_end) <= address) {
-+		trace_spf_vma_changed(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
- 	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
- 				       flags & FAULT_FLAG_INSTRUCTION,
- 				       flags & FAULT_FLAG_REMOTE)) {
-+		trace_spf_vma_access(_RET_IP_, vma, address);
- 		ret = VM_FAULT_SIGSEGV;
- 		goto out_put;
- 	}
-@@ -4353,10 +4382,12 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
- 	/* This is one is required to check that the VMA has write access set */
- 	if (flags & FAULT_FLAG_WRITE) {
- 		if (unlikely(!(vmf.vma_flags & VM_WRITE))) {
-+			trace_spf_vma_access(_RET_IP_, vma, address);
- 			ret = VM_FAULT_SIGSEGV;
- 			goto out_put;
- 		}
- 	} else if (unlikely(!(vmf.vma_flags & (VM_READ|VM_EXEC|VM_WRITE)))) {
-+		trace_spf_vma_access(_RET_IP_, vma, address);
- 		ret = VM_FAULT_SIGSEGV;
- 		goto out_put;
- 	}
-@@ -4369,8 +4400,10 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
- 	pol = __get_vma_policy(vma, address);
- 	if (!pol)
- 		pol = get_task_policy(current);
--	if (pol && pol->mode == MPOL_INTERLEAVE)
-+	if (pol && pol->mode == MPOL_INTERLEAVE) {
-+		trace_spf_vma_notsup(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- #endif
- 
- 	/*
-@@ -4443,8 +4476,10 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
- 	 * We need to re-validate the VMA after checking the bounds, otherwise
- 	 * we might have a false positive on the bounds.
- 	 */
--	if (read_seqcount_retry(&vma->vm_sequence, seq))
-+	if (read_seqcount_retry(&vma->vm_sequence, seq)) {
-+		trace_spf_vma_changed(_RET_IP_, vma, address);
- 		goto out_put;
-+	}
- 
- 	mem_cgroup_oom_enable();
- 	ret = handle_pte_fault(&vmf);
-@@ -4463,6 +4498,7 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
- 	return ret;
- 
- out_walk:
-+	trace_spf_vma_notsup(_RET_IP_, vma, address);
- 	local_irq_enable();
- out_put:
- 	put_vma(vma);
--- 
-2.7.4
+cheers,
+mauricio
