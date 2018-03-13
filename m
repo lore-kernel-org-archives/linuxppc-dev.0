@@ -2,7 +2,7 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qs5BpwzDqG4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qs5C6pzDqtg
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:33:57 +1100 (AEDT)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
@@ -30,9 +30,9 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 7/8] powerpc/64s: barrier_nospec: Add hcall triggerr
-Date: Tue, 13 Mar 2018 19:33:05 +0100
-Message-Id: <1c687d0e029de81ae27465dd4c32036e956f4970.1520965380.git.msuchanek@suse.de>
+Subject: [PATCH RFC 5/8] powerpc/64: Patch barrier_nospec in modules
+Date: Tue, 13 Mar 2018 19:33:03 +0100
+Message-Id: <7a0d36c27c354f04c803ce5c4ef743e6f753b2d6.1520965380.git.msuchanek@suse.de>
 In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
 References: <cover.1520965380.git.msuchanek@suse.de>
 In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
@@ -46,88 +46,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Copypasta from rfi implementation
+Copypasta from lwsync patching.
+
+Note that unlike RFI which is patched only in kernel the nospec state
+reflects settings at the time the module was loaded.
+
+Iterating all modules and re-patching every time the settings change is
+not implemented.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- arch/powerpc/platforms/pseries/setup.c | 38 ++++++++++++++++++++++------------
- 1 file changed, 25 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/setup.h  |  5 ++++-
+ arch/powerpc/kernel/module.c      |  6 ++++++
+ arch/powerpc/kernel/setup_64.c    |  4 ++--
+ arch/powerpc/lib/feature-fixups.c | 17 ++++++++++++++---
+ 4 files changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 1a527625acf7..b779ddb8e250 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -459,38 +459,50 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
- }
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 486d02e4a310..7e3a41248810 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -58,7 +58,10 @@ enum spec_barrier_type {
+ void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
+ void do_rfi_flush_fixups(enum l1d_flush_type types);
+ void __init setup_barrier_nospec(enum spec_barrier_type, bool enable);
+-void do_barrier_nospec_fixups(enum spec_barrier_type type);
++void do_barrier_nospec_fixups_kernel(enum spec_barrier_type type);
++void do_barrier_nospec_fixups(enum spec_barrier_type type,
++			      void *start, void *end);
++extern enum spec_barrier_type powerpc_barrier_nospec;
  
--static void pseries_setup_rfi_flush(void)
-+static void pseries_setup_rfi_nospec(void)
- {
- 	struct h_cpu_char_result result;
--	enum l1d_flush_type types;
--	bool enable;
-+	enum l1d_flush_type flush_types;
-+	enum spec_barrier_type barrier_type;
-+	bool flush_enable;
-+	bool barrier_enable;
- 	long rc;
+ #endif /* !__ASSEMBLY__ */
  
- 	/* Enable by default */
--	enable = true;
-+	flush_enable = true;
-+	barrier_enable = true;
-+	/* no fallback if the firmware does not tell us */
-+	barrier_type = SPEC_BARRIER_NONE;
- 
- 	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS) {
--		types = L1D_FLUSH_NONE;
-+		flush_types = L1D_FLUSH_NONE;
- 
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
--			types |= L1D_FLUSH_MTTRIG;
-+			flush_types |= L1D_FLUSH_MTTRIG;
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
--			types |= L1D_FLUSH_ORI;
-+			flush_types |= L1D_FLUSH_ORI;
-+		if (result.character & H_CPU_CHAR_SPEC_BAR_ORI31)
-+			barrier_type |= SPEC_BARRIER_ORI;
- 
- 		/* Use fallback if nothing set in hcall */
--		if (types == L1D_FLUSH_NONE)
--			types = L1D_FLUSH_FALLBACK;
-+		if (flush_types == L1D_FLUSH_NONE)
-+			flush_types = L1D_FLUSH_FALLBACK;
- 
- 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
- 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
--			enable = false;
-+			flush_enable = false;
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index 3f7ba0f5bf29..7b6d0ec06a21 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -72,6 +72,12 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
 +
-+		if ((!(result.behaviour & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR)) ||
-+		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
-+			barrier_enable = false;
- 	} else {
- 		/* Default to fallback if case hcall is not available */
--		types = L1D_FLUSH_FALLBACK;
-+		flush_types = L1D_FLUSH_FALLBACK;
- 	}
++	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
++	if (sect != NULL)
++		do_barrier_nospec_fixups(powerpc_barrier_nospec,
++				  (void *)sect->sh_addr,
++				  (void *)sect->sh_addr + sect->sh_size);
+ #endif
  
--	setup_rfi_flush(types, enable);
-+	setup_barrier_nospec(barrier_type, barrier_enable);
-+	setup_rfi_flush(flush_types, flush_enable);
+ 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 09f21a954bfc..d1d9f047161e 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -909,11 +909,11 @@ void barrier_nospec_enable(bool enable)
+ 
+ 	if (enable) {
+ 		powerpc_barrier_nospec = barrier_nospec_type;
+-		do_barrier_nospec_fixups(powerpc_barrier_nospec);
++		do_barrier_nospec_fixups_kernel(powerpc_barrier_nospec);
+ 		on_each_cpu(do_nothing, NULL, 1);
+ 	} else {
+ 		powerpc_barrier_nospec = SPEC_BARRIER_NONE;
+-		do_barrier_nospec_fixups(powerpc_barrier_nospec);
++		do_barrier_nospec_fixups_kernel(powerpc_barrier_nospec);
+ 	}
  }
  
- #ifdef CONFIG_PCI_IOV
-@@ -666,7 +678,7 @@ static void __init pSeries_setup_arch(void)
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 000e153184ad..b59ebc2215e8 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -156,14 +156,15 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ 	printk(KERN_DEBUG "rfi-flush: patched %d locations\n", i);
+ }
  
- 	fwnmi_init();
+-void do_barrier_nospec_fixups(enum spec_barrier_type type)
++void do_barrier_nospec_fixups(enum spec_barrier_type type,
++			      void *fixup_start, void *fixup_end)
+ {
+ 	unsigned int instr, *dest;
+ 	long *start, *end;
+ 	int i;
  
--	pseries_setup_rfi_flush();
-+	pseries_setup_rfi_nospec();
+-	start = PTRRELOC(&__start___spec_barrier_fixup),
+-	end = PTRRELOC(&__stop___spec_barrier_fixup);
++	start = fixup_start;
++	end = fixup_end;
  
- 	/* By default, only probe PCI (can be overridden by rtas_pci) */
- 	pci_add_flags(PCI_PROBE_ONLY);
+ 	instr = 0x60000000; /* nop */
+ 
+@@ -182,6 +183,16 @@ void do_barrier_nospec_fixups(enum spec_barrier_type type)
+ 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
+ }
+ 
++void do_barrier_nospec_fixups_kernel(enum spec_barrier_type type)
++{
++	void *start, *end;
++
++	start = PTRRELOC(&__start___spec_barrier_fixup),
++	end = PTRRELOC(&__stop___spec_barrier_fixup);
++
++	do_barrier_nospec_fixups(type, start, end);
++}
++
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 -- 
 2.13.6
