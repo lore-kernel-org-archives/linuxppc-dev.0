@@ -1,19 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400rfP3lBMzDqjt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 21:28:12 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/numa: Correct kernel message severity
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com
-References: <1520935913-23593-1-git-send-email-vipin@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <29183547-d1c5-5282-86cb-3d5acbade58f@c-s.fr>
-Date: Tue, 13 Mar 2018 11:28:04 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400sPc3TctzDrDs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 22:02:12 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
+ akshay.adiga@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
+ "linux\@roeck-us.net \>\> Guenter Roeck" <linux@roeck-us.net>,
+ Andrew Jeffery  <andrew@aj.id.au>
+Subject: Re: [PATCH] powerpc/powernv : Add support to enable sensor groups
+In-Reply-To: <7b64ac19-5463-5f30-83bb-d5ff0611dc94@linux.vnet.ibm.com>
+References: <1511760988-10377-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <87bmjmzla7.fsf@concordia.ellerman.id.au>
+ <06a771ec-fc79-0515-9166-f2a105eb33d0@linux.vnet.ibm.com>
+ <87609nxfym.fsf@linux.vnet.ibm.com>
+ <7b64ac19-5463-5f30-83bb-d5ff0611dc94@linux.vnet.ibm.com>
+Date: Tue, 13 Mar 2018 22:02:09 +1100
+Message-ID: <87a7vcgrwu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1520935913-23593-1-git-send-email-vipin@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+> On 12/04/2017 10:11 AM, Stewart Smith wrote:
+>> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>>> On 11/28/2017 05:07 PM, Michael Ellerman wrote:
+>>>> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>>>>
+>>>>> Adds support to enable/disable a sensor group. This can be used to
+>>>>> select the sensor groups that needs to be copied to main memory by
+>>>>> OCC. Sensor groups like power, temperature, current, voltage,
+>>>>> frequency, utilization can be enabled/disabled at runtime.
+>>>>>
+>>>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>>>> ---
+>>>>> The skiboot patch for the opal call is posted below:
+>>>>> https://lists.ozlabs.org/pipermail/skiboot/2017-November/009713.html
+>>>>
+>>>> Can you remind me why we're doing this with a completely bespoke sysfs
+>>>> API, rather than using some generic sensors API?
+>>>
+>>> Disabling/Enabling sensor groups is not supported in the current generic sensors
+>>> API. And also we dont export all type of sensors in HWMON as not all of them are
+>>> environment sensors (like performance).
+>> 
+>> Are there barriers to adding such concepts to the generic sensors API?
+>
+> Yes.
+>
+> HWMON does not support attributes for a sensor-group. If we are to extend HWMON
+> to add new per-sensor attributes to disable/enable, then we need to do either of
+> the below:
+>
+> 1) If any one of the sensor is disabled then all the sensors belonging to that
+> group will be disabled. OR
+>
+> 2) To disable a sensor group we need to disable all the sensors belonging to
+> that group.
 
+Either of those sound doable, the first is probably simpler, as long as
+there's some way for userspace to understand that it is modifying the
+state of the whole group.
 
-Le 13/03/2018 à 11:11, Vipin K Parashar a écrit :
-> printk in unmap_cpu_from_node() uses KERN_ERR message severity
-> for a WARNING message. Correct message severity to KERN_WARNING.
-> 
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/mm/numa.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index edd8d0b..79c94cc 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -163,7 +163,7 @@ static void unmap_cpu_from_node(unsigned long cpu)
->   	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
->   		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
->   	} else {
-> -		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
-> +		printk(KERN_WARNING "WARNING: cpu %lu not found in node %d\n",
- >   		       cpu, node);
+> Another problem is hwmon categorizes the sensor-groups based on the type of
+> sensors like power, temp. If OCC allows multiple groups of the same type then
+> this approach adds some more complexity to the user to identify the sensors
+> belonging to correct group.
 
-Why not take the opportunity to use pr_warn() instead, hence to put back 
-the cpu and node vars on the same line.
+I don't really understand this one, what do you mean by "If OCC allows"?
 
-Christophe
+Also do we really expect users to be using this API? Or rather tools?
 
->   	}
->   }
-> 
+> And lastly HWMON does not allow platform specific non-standard sensor groups
+> like CSM, job-scheduler, profiler.
+
+Have we actually made specific proposals to the hwmon maintainers on
+adding/changing any of the above? Have they rejected those proposals and
+told us to go away?
+
+cheers
