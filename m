@@ -2,29 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 400tFH4W50zDr9F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 22:40:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 400tr0301SzDrBW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 23:06:40 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michal
- =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call setup_rfi_flush()
- again
-In-Reply-To: <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
-References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
- <20180215081358.2f37cda4@naga.suse.cz>
- <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
- <87lgforngp.fsf@concordia.ellerman.id.au>
- <20180220180621.11265945@kitsune.suse.cz>
- <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
- <876069flhq.fsf@concordia.ellerman.id.au>
- <20180306135522.040707de@kitsune.suse.cz>
- <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
-Date: Tue, 13 Mar 2018 22:39:59 +1100
-Message-ID: <876060gq5s.fsf@concordia.ellerman.id.au>
+To: akpm@linux-foundation.org, mhocko@suse.com, catalin.marinas@arm.com,
+ pasha.tatashin@oracle.com, takahiro.akashi@linaro.org,
+ gi-oh.kim@profitbricks.com, npiggin@gmail.com, baiyaowei@cmss.chinamobile.com,
+ bob.picco@oracle.com, ard.biesheuvel@linaro.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: OK to merge via powerpc? (was Re: [PATCH 05/14] mm: make
+ memblock_alloc_base_nid non-static)
+In-Reply-To: <20180213150824.27689-6-npiggin@gmail.com>
+References: <20180213150824.27689-1-npiggin@gmail.com>
+ <20180213150824.27689-6-npiggin@gmail.com>
+Date: Tue, 13 Mar 2018 23:06:35 +1100
+Message-ID: <873714goxg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,45 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com> writes:
+Anyone object to us merging the following patch via the powerpc tree?
 
-> Hi Michael and Michal,
->
-> Got back to this; sorry for the delay.
->
-> On 03/06/2018 09:55 AM, Michal Such=C3=A1nek wrote:
->> Michael Ellerman<mpe@ellerman.id.au>  wrote:
->
->>> I*think*  the patch below is all we need, as well as some tweaking of
->>> patch 2, are you able to test and repost?
->
->> Enabling the fallback flush always looks a bit dodgy but
->> do_rfi_flush_fixups will overwrite the jump so long any other fixup is
->> enabled.
->
-> I agree; the 'Using fallback displacement flush' message is misleading
-> (is the system slower/fallback or not? =C3=94_o)
-
-That message is actually just wrong.
-
-It still prints that even if enable=3Dfalse.
-
-So we should change all those messages, perhaps:
-
-	pr_info("rfi-flush: fallback displacement flush available\n");
-	pr_info("rfi-flush: ori type flush available\n");
-	pr_info("rfi-flush: mttrig type flush available\n");
-
-
-> So I wrote something with a new function parameter to force the init of
-> the fallback flush area (true in pseries, false in powernv).  Not that
-> contained, but it seemed to convey the intent here in a clear way.
->
-> That's v2, just sent.
-
-OK thanks. I don't really like it :D - sorry!
-
-It's a lot of plumbing of that bool just to avoid the message, whereas I
-think we could just change the message like above.
+Full series is here if anyone's interested:
+  http://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=28377&state=*
 
 cheers
+
+Nicholas Piggin <npiggin@gmail.com> writes:
+> This will be used by powerpc to allocate per-cpu stacks and other
+> data structures node-local where possible.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  include/linux/memblock.h | 5 ++++-
+>  mm/memblock.c            | 2 +-
+>  2 files changed, 5 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+> index 8be5077efb5f..8cab51398705 100644
+> --- a/include/linux/memblock.h
+> +++ b/include/linux/memblock.h
+> @@ -316,9 +316,12 @@ static inline bool memblock_bottom_up(void)
+>  #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
+>  #define MEMBLOCK_ALLOC_ACCESSIBLE	0
+>  
+> -phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
+> +phys_addr_t memblock_alloc_range(phys_addr_t size, phys_addr_t align,
+>  					phys_addr_t start, phys_addr_t end,
+>  					ulong flags);
+> +phys_addr_t memblock_alloc_base_nid(phys_addr_t size,
+> +					phys_addr_t align, phys_addr_t max_addr,
+> +					int nid, ulong flags);
+>  phys_addr_t memblock_alloc_base(phys_addr_t size, phys_addr_t align,
+>  				phys_addr_t max_addr);
+>  phys_addr_t __memblock_alloc_base(phys_addr_t size, phys_addr_t align,
+> diff --git a/mm/memblock.c b/mm/memblock.c
+> index 5a9ca2a1751b..cea2af494da0 100644
+> --- a/mm/memblock.c
+> +++ b/mm/memblock.c
+> @@ -1190,7 +1190,7 @@ phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
+>  					flags);
+>  }
+>  
+> -static phys_addr_t __init memblock_alloc_base_nid(phys_addr_t size,
+> +phys_addr_t __init memblock_alloc_base_nid(phys_addr_t size,
+>  					phys_addr_t align, phys_addr_t max_addr,
+>  					int nid, ulong flags)
+>  {
+> -- 
+> 2.16.1
