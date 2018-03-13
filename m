@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4012vt02yRzDr4x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:10:33 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2DHsa8Y078069
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:10:31 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gpgykfj8j-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4012wW4ChJzDqgc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:11:07 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2DHvtxM037703
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:11:05 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gpgxm7tus-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:10:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 14:11:04 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 13 Mar 2018 18:00:21 -0000
+ Tue, 13 Mar 2018 18:00:47 -0000
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
@@ -35,12 +35,12 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v9 08/24] mm: Protect VMA modifications using VMA sequence
- count
-Date: Tue, 13 Mar 2018 18:59:38 +0100
+Subject: [PATCH v9 19/24] mm: Adding speculative page fault failure trace
+ events
+Date: Tue, 13 Mar 2018 18:59:49 +0100
 In-Reply-To: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1520963994-28477-20-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,397 +50,308 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The VMA sequence count has been introduced to allow fast detection of
-VMA modification when running a page fault handler without holding
-the mmap_sem.
-
-This patch provides protection against the VMA modification done in :
-	- madvise()
-	- mpol_rebind_policy()
-	- vma_replace_policy()
-	- change_prot_numa()
-	- mlock(), munlock()
-	- mprotect()
-	- mmap_region()
-	- collapse_huge_page()
-	- userfaultd registering services
-
-In addition, VMA fields which will be read during the speculative fault
-path needs to be written using WRITE_ONCE to prevent write to be split
-and intermediate values to be pushed to other CPUs.
+This patch a set of new trace events to collect the speculative page fault
+event failures.
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- fs/proc/task_mmu.c |  5 ++++-
- fs/userfaultfd.c   | 17 +++++++++++++----
- mm/khugepaged.c    |  3 +++
- mm/madvise.c       |  6 +++++-
- mm/mempolicy.c     | 51 ++++++++++++++++++++++++++++++++++-----------------
- mm/mlock.c         | 13 ++++++++-----
- mm/mmap.c          | 17 ++++++++++-------
- mm/mprotect.c      |  4 +++-
- mm/swap_state.c    |  8 ++++++--
- 9 files changed, 86 insertions(+), 38 deletions(-)
+ include/trace/events/pagefault.h | 87 ++++++++++++++++++++++++++++++++++++++++
+ mm/memory.c                      | 62 ++++++++++++++++++++++------
+ 2 files changed, 136 insertions(+), 13 deletions(-)
+ create mode 100644 include/trace/events/pagefault.h
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 65ae54659833..a2d9c87b7b0b 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -1136,8 +1136,11 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
- 					goto out_mm;
- 				}
- 				for (vma = mm->mmap; vma; vma = vma->vm_next) {
--					vma->vm_flags &= ~VM_SOFTDIRTY;
-+					vm_write_begin(vma);
-+					WRITE_ONCE(vma->vm_flags,
-+						   vma->vm_flags & ~VM_SOFTDIRTY);
- 					vma_set_page_prot(vma);
-+					vm_write_end(vma);
- 				}
- 				downgrade_write(&mm->mmap_sem);
- 				break;
-diff --git a/fs/userfaultfd.c b/fs/userfaultfd.c
-index cec550c8468f..b8212ba17695 100644
---- a/fs/userfaultfd.c
-+++ b/fs/userfaultfd.c
-@@ -659,8 +659,11 @@ int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
- 
- 	octx = vma->vm_userfaultfd_ctx.ctx;
- 	if (!octx || !(octx->features & UFFD_FEATURE_EVENT_FORK)) {
-+		vm_write_begin(vma);
- 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
--		vma->vm_flags &= ~(VM_UFFD_WP | VM_UFFD_MISSING);
-+		WRITE_ONCE(vma->vm_flags,
-+			   vma->vm_flags & ~(VM_UFFD_WP | VM_UFFD_MISSING));
-+		vm_write_end(vma);
- 		return 0;
- 	}
- 
-@@ -885,8 +888,10 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
- 			vma = prev;
- 		else
- 			prev = vma;
--		vma->vm_flags = new_flags;
-+		vm_write_begin(vma);
-+		WRITE_ONCE(vma->vm_flags, new_flags);
- 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
-+		vm_write_end(vma);
- 	}
- 	up_write(&mm->mmap_sem);
- 	mmput(mm);
-@@ -1434,8 +1439,10 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
- 		 * the next vma was merged into the current one and
- 		 * the current one has not been updated yet.
- 		 */
--		vma->vm_flags = new_flags;
-+		vm_write_begin(vma);
-+		WRITE_ONCE(vma->vm_flags, new_flags);
- 		vma->vm_userfaultfd_ctx.ctx = ctx;
-+		vm_write_end(vma);
- 
- 	skip:
- 		prev = vma;
-@@ -1592,8 +1599,10 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
- 		 * the next vma was merged into the current one and
- 		 * the current one has not been updated yet.
- 		 */
--		vma->vm_flags = new_flags;
-+		vm_write_begin(vma);
-+		WRITE_ONCE(vma->vm_flags, new_flags);
- 		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
-+		vm_write_end(vma);
- 
- 	skip:
- 		prev = vma;
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index b7e2268dfc9a..32314e9e48dd 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -1006,6 +1006,7 @@ static void collapse_huge_page(struct mm_struct *mm,
- 	if (mm_find_pmd(mm, address) != pmd)
- 		goto out;
- 
-+	vm_write_begin(vma);
- 	anon_vma_lock_write(vma->anon_vma);
- 
- 	pte = pte_offset_map(pmd, address);
-@@ -1041,6 +1042,7 @@ static void collapse_huge_page(struct mm_struct *mm,
- 		pmd_populate(mm, pmd, pmd_pgtable(_pmd));
- 		spin_unlock(pmd_ptl);
- 		anon_vma_unlock_write(vma->anon_vma);
-+		vm_write_end(vma);
- 		result = SCAN_FAIL;
- 		goto out;
- 	}
-@@ -1075,6 +1077,7 @@ static void collapse_huge_page(struct mm_struct *mm,
- 	set_pmd_at(mm, address, pmd, _pmd);
- 	update_mmu_cache_pmd(vma, address, pmd);
- 	spin_unlock(pmd_ptl);
-+	vm_write_end(vma);
- 
- 	*hpage = NULL;
- 
-diff --git a/mm/madvise.c b/mm/madvise.c
-index 4d3c922ea1a1..e328f7ab5942 100644
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -184,7 +184,9 @@ static long madvise_behavior(struct vm_area_struct *vma,
- 	/*
- 	 * vm_flags is protected by the mmap_sem held in write mode.
- 	 */
--	vma->vm_flags = new_flags;
-+	vm_write_begin(vma);
-+	WRITE_ONCE(vma->vm_flags, new_flags);
-+	vm_write_end(vma);
- out:
- 	return error;
- }
-@@ -450,9 +452,11 @@ static void madvise_free_page_range(struct mmu_gather *tlb,
- 		.private = tlb,
- 	};
- 
-+	vm_write_begin(vma);
- 	tlb_start_vma(tlb, vma);
- 	walk_page_range(addr, end, &free_walk);
- 	tlb_end_vma(tlb, vma);
-+	vm_write_end(vma);
- }
- 
- static int madvise_free_single_vma(struct vm_area_struct *vma,
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index e0e706f0b34e..2632c6f93b63 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -380,8 +380,11 @@ void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new)
- 	struct vm_area_struct *vma;
- 
- 	down_write(&mm->mmap_sem);
--	for (vma = mm->mmap; vma; vma = vma->vm_next)
-+	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-+		vm_write_begin(vma);
- 		mpol_rebind_policy(vma->vm_policy, new);
-+		vm_write_end(vma);
-+	}
- 	up_write(&mm->mmap_sem);
- }
- 
-@@ -554,9 +557,11 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
- {
- 	int nr_updated;
- 
-+	vm_write_begin(vma);
- 	nr_updated = change_protection(vma, addr, end, PAGE_NONE, 0, 1);
- 	if (nr_updated)
- 		count_vm_numa_events(NUMA_PTE_UPDATES, nr_updated);
-+	vm_write_end(vma);
- 
- 	return nr_updated;
- }
-@@ -657,6 +662,7 @@ static int vma_replace_policy(struct vm_area_struct *vma,
- 	if (IS_ERR(new))
- 		return PTR_ERR(new);
- 
-+	vm_write_begin(vma);
- 	if (vma->vm_ops && vma->vm_ops->set_policy) {
- 		err = vma->vm_ops->set_policy(vma, new);
- 		if (err)
-@@ -664,11 +670,17 @@ static int vma_replace_policy(struct vm_area_struct *vma,
- 	}
- 
- 	old = vma->vm_policy;
--	vma->vm_policy = new; /* protected by mmap_sem */
-+	/*
-+	 * The speculative page fault handler access this field without
-+	 * hodling the mmap_sem.
-+	 */
-+	WRITE_ONCE(vma->vm_policy,  new);
-+	vm_write_end(vma);
- 	mpol_put(old);
- 
- 	return 0;
-  err_out:
-+	vm_write_end(vma);
- 	mpol_put(new);
- 	return err;
- }
-@@ -1552,23 +1564,28 @@ COMPAT_SYSCALL_DEFINE6(mbind, compat_ulong_t, start, compat_ulong_t, len,
- struct mempolicy *__get_vma_policy(struct vm_area_struct *vma,
- 						unsigned long addr)
- {
--	struct mempolicy *pol = NULL;
-+	struct mempolicy *pol;
- 
--	if (vma) {
--		if (vma->vm_ops && vma->vm_ops->get_policy) {
--			pol = vma->vm_ops->get_policy(vma, addr);
--		} else if (vma->vm_policy) {
--			pol = vma->vm_policy;
-+	if (!vma)
-+		return NULL;
- 
--			/*
--			 * shmem_alloc_page() passes MPOL_F_SHARED policy with
--			 * a pseudo vma whose vma->vm_ops=NULL. Take a reference
--			 * count on these policies which will be dropped by
--			 * mpol_cond_put() later
--			 */
--			if (mpol_needs_cond_ref(pol))
--				mpol_get(pol);
--		}
-+	if (vma->vm_ops && vma->vm_ops->get_policy)
-+		return vma->vm_ops->get_policy(vma, addr);
+diff --git a/include/trace/events/pagefault.h b/include/trace/events/pagefault.h
+new file mode 100644
+index 000000000000..1d793f8c739b
+--- /dev/null
++++ b/include/trace/events/pagefault.h
+@@ -0,0 +1,87 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM pagefault
 +
-+	/*
-+	 * This could be called without holding the mmap_sem in the
-+	 * speculative page fault handler's path.
-+	 */
-+	pol = READ_ONCE(vma->vm_policy);
-+	if (pol) {
-+		/*
-+		 * shmem_alloc_page() passes MPOL_F_SHARED policy with
-+		 * a pseudo vma whose vma->vm_ops=NULL. Take a reference
-+		 * count on these policies which will be dropped by
-+		 * mpol_cond_put() later
-+		 */
-+		if (mpol_needs_cond_ref(pol))
-+			mpol_get(pol);
++#if !defined(_TRACE_PAGEFAULT_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_PAGEFAULT_H
++
++#include <linux/tracepoint.h>
++#include <linux/mm.h>
++
++DECLARE_EVENT_CLASS(spf,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, caller)
++		__field(unsigned long, vm_start)
++		__field(unsigned long, vm_end)
++		__field(unsigned long, address)
++	),
++
++	TP_fast_assign(
++		__entry->caller		= caller;
++		__entry->vm_start	= vma->vm_start;
++		__entry->vm_end		= vma->vm_end;
++		__entry->address	= address;
++	),
++
++	TP_printk("ip:%lx vma:%lx-%lx address:%lx",
++		  __entry->caller, __entry->vm_start, __entry->vm_end,
++		  __entry->address)
++);
++
++DEFINE_EVENT(spf, spf_pte_lock,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address)
++);
++
++DEFINE_EVENT(spf, spf_vma_changed,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address)
++);
++
++DEFINE_EVENT(spf, spf_vma_noanon,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address)
++);
++
++DEFINE_EVENT(spf, spf_vma_notsup,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address)
++);
++
++DEFINE_EVENT(spf, spf_vma_access,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address)
++);
++
++DEFINE_EVENT(spf, spf_pmd_changed,
++
++	TP_PROTO(unsigned long caller,
++		 struct vm_area_struct *vma, unsigned long address),
++
++	TP_ARGS(caller, vma, address)
++);
++
++#endif /* _TRACE_PAGEFAULT_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/mm/memory.c b/mm/memory.c
+index f0f2caa11282..f39c4a4df703 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -80,6 +80,9 @@
+ 
+ #include "internal.h"
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/pagefault.h>
++
+ #if defined(LAST_CPUPID_NOT_IN_PAGE_FLAGS) && !defined(CONFIG_COMPILE_TEST)
+ #warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_cpupid.
+ #endif
+@@ -2312,8 +2315,10 @@ static bool pte_spinlock(struct vm_fault *vmf)
  	}
  
- 	return pol;
-diff --git a/mm/mlock.c b/mm/mlock.c
-index 74e5a6547c3d..c40285c94ced 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -445,7 +445,9 @@ static unsigned long __munlock_pagevec_fill(struct pagevec *pvec,
- void munlock_vma_pages_range(struct vm_area_struct *vma,
- 			     unsigned long start, unsigned long end)
- {
--	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
-+	vm_write_begin(vma);
-+	WRITE_ONCE(vma->vm_flags, vma->vm_flags & VM_LOCKED_CLEAR_MASK);
-+	vm_write_end(vma);
+ 	local_irq_disable();
+-	if (vma_has_changed(vmf))
++	if (vma_has_changed(vmf)) {
++		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
++	}
  
- 	while (start < end) {
- 		struct page *page;
-@@ -568,10 +570,11 @@ static int mlock_fixup(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 	 * It's okay if try_to_unmap_one unmaps a page just after we
- 	 * set VM_LOCKED, populate_vma_page_range will bring it back.
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ 	/*
+@@ -2321,16 +2326,21 @@ static bool pte_spinlock(struct vm_fault *vmf)
+ 	 * is not a huge collapse operation in progress in our back.
  	 */
--
--	if (lock)
--		vma->vm_flags = newflags;
--	else
-+	if (lock) {
-+		vm_write_begin(vma);
-+		WRITE_ONCE(vma->vm_flags, newflags);
-+		vm_write_end(vma);
-+	} else
- 		munlock_vma_pages_range(vma, start, end);
+ 	pmdval = READ_ONCE(*vmf->pmd);
+-	if (!pmd_same(pmdval, vmf->orig_pmd))
++	if (!pmd_same(pmdval, vmf->orig_pmd)) {
++		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
++	}
+ #endif
  
- out:
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 5898255d0aeb..d6533cb85213 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -847,17 +847,18 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+ 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+-	if (unlikely(!spin_trylock(vmf->ptl)))
++	if (unlikely(!spin_trylock(vmf->ptl))) {
++		trace_spf_pte_lock(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
++	}
+ 
+ 	if (vma_has_changed(vmf)) {
+ 		spin_unlock(vmf->ptl);
++		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
  	}
  
- 	if (start != vma->vm_start) {
--		vma->vm_start = start;
-+		WRITE_ONCE(vma->vm_start, start);
- 		start_changed = true;
- 	}
- 	if (end != vma->vm_end) {
--		vma->vm_end = end;
-+		WRITE_ONCE(vma->vm_end, end);
- 		end_changed = true;
- 	}
--	vma->vm_pgoff = pgoff;
-+	WRITE_ONCE(vma->vm_pgoff, pgoff);
- 	if (adjust_next) {
--		next->vm_start += adjust_next << PAGE_SHIFT;
--		next->vm_pgoff += adjust_next;
-+		WRITE_ONCE(next->vm_start,
-+			   next->vm_start + (adjust_next << PAGE_SHIFT));
-+		WRITE_ONCE(next->vm_pgoff, next->vm_pgoff + adjust_next);
- 	}
- 
- 	if (root) {
-@@ -1781,6 +1782,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
- out:
- 	perf_event_mmap(vma);
- 
-+	vm_write_begin(vma);
- 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
- 	if (vm_flags & VM_LOCKED) {
- 		if (!((vm_flags & VM_SPECIAL) || is_vm_hugetlb_page(vma) ||
-@@ -1803,6 +1805,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
- 	vma->vm_flags |= VM_SOFTDIRTY;
- 
- 	vma_set_page_prot(vma);
-+	vm_write_end(vma);
- 
- 	return addr;
- 
-@@ -2431,8 +2434,8 @@ int expand_downwards(struct vm_area_struct *vma,
- 					mm->locked_vm += grow;
- 				vm_stat_account(mm, vma->vm_flags, grow);
- 				anon_vma_interval_tree_pre_update_vma(vma);
--				vma->vm_start = address;
--				vma->vm_pgoff -= grow;
-+				WRITE_ONCE(vma->vm_start, address);
-+				WRITE_ONCE(vma->vm_pgoff, vma->vm_pgoff - grow);
- 				anon_vma_interval_tree_post_update_vma(vma);
- 				vma_gap_update(vma);
- 				spin_unlock(&mm->page_table_lock);
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index e3309fcf586b..9b7a71c30287 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -366,7 +366,8 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
- 	 * vm_flags and vm_page_prot are protected by the mmap_sem
- 	 * held in write mode.
+@@ -2363,8 +2373,10 @@ static bool pte_map_lock(struct vm_fault *vmf)
+ 	 * block on the PTL and thus we're safe.
  	 */
--	vma->vm_flags = newflags;
-+	vm_write_begin(vma);
-+	WRITE_ONCE(vma->vm_flags, newflags);
- 	dirty_accountable = vma_wants_writenotify(vma, vma->vm_page_prot);
- 	vma_set_page_prot(vma);
+ 	local_irq_disable();
+-	if (vma_has_changed(vmf))
++	if (vma_has_changed(vmf)) {
++		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
++	}
  
-@@ -381,6 +382,7 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
- 			(newflags & VM_WRITE)) {
- 		populate_vma_page_range(vma, start, end, NULL);
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ 	/*
+@@ -2372,8 +2384,10 @@ static bool pte_map_lock(struct vm_fault *vmf)
+ 	 * is not a huge collapse operation in progress in our back.
+ 	 */
+ 	pmdval = READ_ONCE(*vmf->pmd);
+-	if (!pmd_same(pmdval, vmf->orig_pmd))
++	if (!pmd_same(pmdval, vmf->orig_pmd)) {
++		trace_spf_pmd_changed(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
++	}
+ #endif
+ 
+ 	/*
+@@ -2387,11 +2401,13 @@ static bool pte_map_lock(struct vm_fault *vmf)
+ 	pte = pte_offset_map(vmf->pmd, vmf->address);
+ 	if (unlikely(!spin_trylock(ptl))) {
+ 		pte_unmap(pte);
++		trace_spf_pte_lock(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
  	}
-+	vm_write_end(vma);
  
- 	vm_stat_account(mm, oldflags, -nrpages);
- 	vm_stat_account(mm, newflags, nrpages);
-diff --git a/mm/swap_state.c b/mm/swap_state.c
-index 486f7c26386e..691bd6e06967 100644
---- a/mm/swap_state.c
-+++ b/mm/swap_state.c
-@@ -575,6 +575,10 @@ static unsigned long swapin_nr_pages(unsigned long offset)
-  * the readahead.
-  *
-  * Caller must hold down_read on the vma->vm_mm if vmf->vma is not NULL.
-+ * This is needed to ensure the VMA will not be freed in our back. In the case
-+ * of the speculative page fault handler, this cannot happen, even if we don't
-+ * hold the mmap_sem. Callees are assumed to take care of reading VMA's fields
-+ * using READ_ONCE() to read consistent values.
-  */
- struct page *swap_cluster_readahead(swp_entry_t entry, gfp_t gfp_mask,
- 				struct vm_fault *vmf)
-@@ -669,9 +673,9 @@ static inline void swap_ra_clamp_pfn(struct vm_area_struct *vma,
- 				     unsigned long *start,
- 				     unsigned long *end)
- {
--	*start = max3(lpfn, PFN_DOWN(vma->vm_start),
-+	*start = max3(lpfn, PFN_DOWN(READ_ONCE(vma->vm_start)),
- 		      PFN_DOWN(faddr & PMD_MASK));
--	*end = min3(rpfn, PFN_DOWN(vma->vm_end),
-+	*end = min3(rpfn, PFN_DOWN(READ_ONCE(vma->vm_end)),
- 		    PFN_DOWN((faddr & PMD_MASK) + PMD_SIZE));
- }
+ 	if (vma_has_changed(vmf)) {
+ 		pte_unmap_unlock(pte, ptl);
++		trace_spf_vma_changed(_RET_IP_, vmf->vma, vmf->address);
+ 		goto out;
+ 	}
  
+@@ -4305,47 +4321,60 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+ 		return ret;
+ 
+ 	seq = raw_read_seqcount(&vma->vm_sequence); /* rmb <-> seqlock,vma_rb_erase() */
+-	if (seq & 1)
++	if (seq & 1) {
++		trace_spf_vma_changed(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+ 	/*
+ 	 * Can't call vm_ops service has we don't know what they would do
+ 	 * with the VMA.
+ 	 * This include huge page from hugetlbfs.
+ 	 */
+-	if (vma->vm_ops)
++	if (vma->vm_ops) {
++		trace_spf_vma_notsup(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+ 	/*
+ 	 * __anon_vma_prepare() requires the mmap_sem to be held
+ 	 * because vm_next and vm_prev must be safe. This can't be guaranteed
+ 	 * in the speculative path.
+ 	 */
+-	if (unlikely(!vma->anon_vma))
++	if (unlikely(!vma->anon_vma)) {
++		trace_spf_vma_notsup(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+ 	vmf.vma_flags = READ_ONCE(vma->vm_flags);
+ 	vmf.vma_page_prot = READ_ONCE(vma->vm_page_prot);
+ 
+ 	/* Can't call userland page fault handler in the speculative path */
+-	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING))
++	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING)) {
++		trace_spf_vma_notsup(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+-	if (vmf.vma_flags & VM_GROWSDOWN || vmf.vma_flags & VM_GROWSUP)
++	if (vmf.vma_flags & VM_GROWSDOWN || vmf.vma_flags & VM_GROWSUP) {
+ 		/*
+ 		 * This could be detected by the check address against VMA's
+ 		 * boundaries but we want to trace it as not supported instead
+ 		 * of changed.
+ 		 */
++		trace_spf_vma_notsup(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+ 	if (address < READ_ONCE(vma->vm_start)
+-	    || READ_ONCE(vma->vm_end) <= address)
++	    || READ_ONCE(vma->vm_end) <= address) {
++		trace_spf_vma_changed(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+ 	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
+ 				       flags & FAULT_FLAG_INSTRUCTION,
+ 				       flags & FAULT_FLAG_REMOTE)) {
++		trace_spf_vma_access(_RET_IP_, vma, address);
+ 		ret = VM_FAULT_SIGSEGV;
+ 		goto out_put;
+ 	}
+@@ -4353,10 +4382,12 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+ 	/* This is one is required to check that the VMA has write access set */
+ 	if (flags & FAULT_FLAG_WRITE) {
+ 		if (unlikely(!(vmf.vma_flags & VM_WRITE))) {
++			trace_spf_vma_access(_RET_IP_, vma, address);
+ 			ret = VM_FAULT_SIGSEGV;
+ 			goto out_put;
+ 		}
+ 	} else if (unlikely(!(vmf.vma_flags & (VM_READ|VM_EXEC|VM_WRITE)))) {
++		trace_spf_vma_access(_RET_IP_, vma, address);
+ 		ret = VM_FAULT_SIGSEGV;
+ 		goto out_put;
+ 	}
+@@ -4369,8 +4400,10 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+ 	pol = __get_vma_policy(vma, address);
+ 	if (!pol)
+ 		pol = get_task_policy(current);
+-	if (pol && pol->mode == MPOL_INTERLEAVE)
++	if (pol && pol->mode == MPOL_INTERLEAVE) {
++		trace_spf_vma_notsup(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ #endif
+ 
+ 	/*
+@@ -4443,8 +4476,10 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+ 	 * We need to re-validate the VMA after checking the bounds, otherwise
+ 	 * we might have a false positive on the bounds.
+ 	 */
+-	if (read_seqcount_retry(&vma->vm_sequence, seq))
++	if (read_seqcount_retry(&vma->vm_sequence, seq)) {
++		trace_spf_vma_changed(_RET_IP_, vma, address);
+ 		goto out_put;
++	}
+ 
+ 	mem_cgroup_oom_enable();
+ 	ret = handle_pte_fault(&vmf);
+@@ -4463,6 +4498,7 @@ int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+ 	return ret;
+ 
+ out_walk:
++	trace_spf_vma_notsup(_RET_IP_, vma, address);
+ 	local_irq_enable();
+ out_put:
+ 	put_vma(vma);
 -- 
 2.7.4
