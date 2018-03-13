@@ -2,8 +2,8 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qn2TSdzDrBv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:33:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4013Qp39M3zDqq4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 05:33:54 +1100 (AEDT)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -30,9 +30,13 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH RFC 0/8] powerpc barrier_nospec
-Date: Tue, 13 Mar 2018 19:32:58 +0100
-Message-Id: <cover.1520965380.git.msuchanek@suse.de>
+Subject: [PATCH RFC 3/8] powerpc/64: Use barrier_nospec in syscall entry
+Date: Tue, 13 Mar 2018 19:33:01 +0100
+Message-Id: <7121fe11b8ecbc0dd041819d8d331324df58c0e0.1520965380.git.msuchanek@suse.de>
+In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
+References: <cover.1520965380.git.msuchanek@suse.de>
+In-Reply-To: <cover.1520965380.git.msuchanek@suse.de>
+References: <cover.1520965380.git.msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,42 +46,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/kernel/entry_64.S | 3 +++
+ 1 file changed, 3 insertions(+)
 
-this is patchset adding barrier_nospec on powerpc. It is based on the
-out-of-tree gmb() patch and the existing rfi patches.
-
-I do not have the tests for the Spectre/Meltdown issues available so this is
-untested.
-
-Feedback on the general approach as well as actual effectivity is welcome.
-
-Thanks
-
-Michal
-
-
-Michal Suchanek (8):
-  powerpc: Add barrier_nospec
-  powerpc: Use barrier_nospec in copy_from_user
-  powerpc/64: Use barrier_nospec in syscall entry
-  powerpc/64s: Add support for ori barrier_nospec
-  powerpc/64: Patch barrier_nospec in modules
-  powerpc/64: barrier_nospec: Add debugfs trigger
-  powerpc/64s: barrier_nospec: Add hcall triggerr
-  powerpc/64: barrier_nospec: Add commandline trigger
-
- arch/powerpc/include/asm/barrier.h        |  9 ++++
- arch/powerpc/include/asm/feature-fixups.h |  9 ++++
- arch/powerpc/include/asm/setup.h          | 11 +++++
- arch/powerpc/include/asm/uaccess.h        | 11 ++++-
- arch/powerpc/kernel/entry_64.S            |  3 ++
- arch/powerpc/kernel/module.c              |  6 +++
- arch/powerpc/kernel/setup_64.c            | 72 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S         |  7 +++
- arch/powerpc/lib/feature-fixups.c         | 38 ++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c    | 38 ++++++++++------
- 10 files changed, 190 insertions(+), 14 deletions(-)
-
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2cb5109a7ea3..7bfc4cf48af2 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -36,6 +36,7 @@
+ #include <asm/context_tracking.h>
+ #include <asm/tm.h>
+ #include <asm/ppc-opcode.h>
++#include <asm/barrier.h>
+ #include <asm/export.h>
+ #ifdef CONFIG_PPC_BOOK3S
+ #include <asm/exception-64s.h>
+@@ -159,6 +160,7 @@ system_call:			/* label this so stack traces look sane */
+ 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+ 	bne	.Lsyscall_dotrace		/* does not return */
+ 	cmpldi	0,r0,NR_syscalls
++	barrier_nospec
+ 	bge-	.Lsyscall_enosys
+ 
+ .Lsyscall:
+@@ -319,6 +321,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	ld	r10,TI_FLAGS(r10)
+ 
+ 	cmpldi	r0,NR_syscalls
++	barrier_nospec
+ 	blt+	.Lsyscall
+ 
+ 	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
 -- 
 2.13.6
