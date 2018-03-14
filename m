@@ -2,16 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RGB18c0zDqpn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:27:46 +1100 (AEDT)
-In-Reply-To: <20180214211519.15683-1-malat@debian.org>
-To: Mathieu Malaterre <malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RGC2w9PzDqjw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:27:47 +1100 (AEDT)
+In-Reply-To: <20180215061936.27131-1-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Laurent Vivier <lvivier@redhat.com>, Mathieu Malaterre <malat@debian.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v2] powerpc/via-pmu: Fix section mismatch warning
-Message-Id: <401RG939z2z9sD0@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:27:45 +1100 (AEDT)
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Alastair D'Silva <alastair@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: Re: [v2] cxl: Remove function write_timebase_ctrl_psl9() for PSL9
+Message-Id: <401RGC0QvCz9sVf@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:27:46 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-02-14 at 21:15:18 UTC, Mathieu Malaterre wrote:
-> Make the struct via_pmu_driver const to avoid following warning:
+On Thu, 2018-02-15 at 06:19:36 UTC, Vaibhav Jain wrote:
+> For PSL9 the contents of PSL_TB_CTLSTAT register have changed in PSL9
+> and all of the register is now readonly. Hence we don't need an sl_ops
+> implementation for 'write_timebase_ctrl' for to populate this register
+> for PSL9.
 > 
-> WARNING: vmlinux.o(.data+0x4739c): Section mismatch in reference from the variable via_pmu_driver to the function .init.text:pmu_init()
-> The variable via_pmu_driver references
-> the function __init pmu_init()
-> If the reference is valid then annotate the
-> variable with __init* or __refdata (see linux/init.h) or name the variable:
-> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+> Hence this patch removes function write_timebase_ctrl_psl9() and its
+> references from the code.
 > 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> Suggested-by: Laurent Vivier <lvivier@redhat.com>
-> Reviewed-by: Laurent Vivier <lvivier@redhat.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/58935176ad17976b7a7f6ea25c0ceb
+https://git.kernel.org/powerpc/c/02b63b420223db3e33e19cc0aaf346
 
 cheers
