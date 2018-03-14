@@ -3,29 +3,28 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401msR241vzDrKN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 09:40:59 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401msS1pj2zDrKN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 09:41:00 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2EMevx1016188
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:40:57 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gq8w6gdrj-1
+ w2EMbkt5064588
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:40:58 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gqcmm07xb-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:40:57 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
  Wed, 14 Mar 2018 18:40:56 -0400
 From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
-Subject: [PATCH v3 2/5] rfi-flush: Make it possible to call setup_rfi_flush()
- again
-Date: Wed, 14 Mar 2018 19:40:39 -0300
+Subject: [PATCH v3 3/5] rfi-flush: Always enable fallback flush on pseries
+Date: Wed, 14 Mar 2018 19:40:40 -0300
 In-Reply-To: <1521067243-19520-1-git-send-email-mauricfo@linux.vnet.ibm.com>
 References: <1521067243-19520-1-git-send-email-mauricfo@linux.vnet.ibm.com>
-Message-Id: <1521067243-19520-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+Message-Id: <1521067243-19520-4-git-send-email-mauricfo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,55 +36,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-For PowerVM migration we want to be able to call setup_rfi_flush()
-again after we've migrated the partition.
-
-To support that we need to check that we're not trying to allocate the
-fallback flush area after memblock has gone away (i.e., boot-time only).
+This ensures the fallback flush area is always allocated on pseries,
+so in case a LPAR is migrated from a patched to an unpatched system,
+it is possible to enable the fallback flush in the target system.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/setup.h | 2 +-
- arch/powerpc/kernel/setup_64.c   | 6 +++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 469b7fd..bbcdf92 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -49,7 +49,7 @@ enum l1d_flush_type {
- 	L1D_FLUSH_MTTRIG	= 0x8,
- };
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 4642e48..b20d107 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -468,26 +468,18 @@ static void pseries_setup_rfi_flush(void)
  
--void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
-+void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
+ 	/* Enable by default */
+ 	enable = true;
++	types = L1D_FLUSH_FALLBACK;
  
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 3efc01a..d60e2f7 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -860,6 +860,10 @@ static void init_fallback_flush(void)
- 	u64 l1d_size, limit;
- 	int cpu;
+ 	rc = plpar_get_cpu_characteristics(&result);
+ 	if (rc == H_SUCCESS) {
+-		types = L1D_FLUSH_NONE;
+-
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+ 			types |= L1D_FLUSH_MTTRIG;
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+ 			types |= L1D_FLUSH_ORI;
  
-+	/* Only allocate the fallback flush area once (at boot time). */
-+	if (l1d_flush_fallback_area)
-+		return;
-+
- 	l1d_size = ppc64_caches.l1d.size;
- 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
- 
-@@ -877,7 +881,7 @@ static void init_fallback_flush(void)
+-		/* Use fallback if nothing set in hcall */
+-		if (types == L1D_FLUSH_NONE)
+-			types = L1D_FLUSH_FALLBACK;
+-
+ 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
+ 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+ 			enable = false;
+-	} else {
+-		/* Default to fallback if case hcall is not available */
+-		types = L1D_FLUSH_FALLBACK;
  	}
- }
  
--void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
-+void setup_rfi_flush(enum l1d_flush_type types, bool enable)
- {
- 	if (types & L1D_FLUSH_FALLBACK) {
- 		pr_info("rfi-flush: Using fallback displacement flush\n");
+ 	setup_rfi_flush(types, enable);
 -- 
 2.7.4
