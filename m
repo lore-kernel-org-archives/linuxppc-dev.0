@@ -1,26 +1,19 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401P2K1W74zF0p6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:47:20 +1100 (AEDT)
-Received: by mail-qt0-x244.google.com with SMTP id v90so2428549qte.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 00:47:20 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mingo@redhat.com
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- akpm@linux-foundation.org, dave.hansen@intel.com, benh@kernel.crashing.org,
- paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
- linuxram@us.ibm.com, corbet@lwn.net, arnd@arndb.de, fweimer@redhat.com,
- msuchanek@suse.com
-Subject: [PATCH 1/1 v2] x86: pkey-mprotect must allow pkey-0
-Date: Wed, 14 Mar 2018 00:46:14 -0700
-Message-Id: <1521013574-27041-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401P3w2yzvzF09V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:48:42 +1100 (AEDT)
+Subject: PASEMI: PCI_SCAN_ALL_PCIE_DEVS
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: linuxppc-dev@lists.ozlabs.org, Olof Johansson <olof@lixom.net>
+References: <BD2DFDC2-07CF-41A8-9AAE-9D990EFF6360@xenosoft.de>
+Message-ID: <95560a8d-a75b-4ce1-8939-d2999e57e8fc@xenosoft.de>
+Date: Wed, 14 Mar 2018 08:48:34 +0100
+MIME-Version: 1.0
+In-Reply-To: <BD2DFDC2-07CF-41A8-9AAE-9D990EFF6360@xenosoft.de>
+Content-Type: multipart/mixed; boundary="------------9ED0271E1EEED8E60AA1655B"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once an address range is associated with an allocated pkey, it cannot be
-reverted back to key-0. There is no valid reason for the above behavior.  On
-the contrary applications need the ability to do so.
+This is a multi-part message in MIME format.
+--------------9ED0271E1EEED8E60AA1655B
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The patch relaxes the restriction.
+Hi All,
 
-Tested on x86_64.
+Please find attached the current pci.c patch. We use this patch on our 
+P.A. Semi boards because we don't need to add 'pci=pcie_scan_all' to the 
+kernel boot arguments.
 
-cc: Dave Hansen <dave.hansen@intel.com>
-cc: Michael Ellermen <mpe@ellerman.id.au>
-cc: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- arch/x86/include/asm/pkeys.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Please add this patch to the official kernel source code.
 
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index a0ba1ff..6ea7486 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -52,7 +52,7 @@ bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- 	 * from pkey_alloc().  pkey 0 is special, and never
- 	 * returned from pkey_alloc().
- 	 */
--	if (pkey <= 0)
-+	if (pkey < 0)
- 		return false;
- 	if (pkey >= arch_max_pkey())
- 		return false;
-@@ -92,7 +92,8 @@ int mm_pkey_alloc(struct mm_struct *mm)
- static inline
- int mm_pkey_free(struct mm_struct *mm, int pkey)
- {
--	if (!mm_pkey_is_allocated(mm, pkey))
-+	/* pkey 0 is special and can never be freed */
-+	if (!pkey || !mm_pkey_is_allocated(mm, pkey))
- 		return -EINVAL;
+Thanks,
+Christian
+
+--------------9ED0271E1EEED8E60AA1655B
+Content-Type: text/x-patch;
+ name="pci.c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="pci.c.patch"
+
+arch/powerpc/platforms/pasemi/pci.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index 5ff6108..ea54ed2 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -224,6 +224,8 @@ void __init pas_pci_init(void)
+ 		return;
+ 	}
  
- 	mm_set_pkey_free(mm, pkey);
--- 
-1.8.3.1
++	pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
++
+ 	for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
+ 		if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
+ 			of_node_get(np);
+
+--------------9ED0271E1EEED8E60AA1655B--
