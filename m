@@ -1,20 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RHQ6vJlzDqjw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:50 +1100 (AEDT)
-In-Reply-To: <20180304173025.19520-1-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RHS2K2FzDqsV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:52 +1100 (AEDT)
+In-Reply-To: <20180308003606.10721-1-bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- Douglas Miller <dougmill@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2] xmon: Setup xmon debugger hooks when first break-point is set
-Message-Id: <401RHQ2TS9z9s2R@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:28:31 +1100 (AEDT)
+Cc: npiggin@gmail.com
+Subject: Re: powerpc/powernv/mce: Don't silently restart the machine
+Message-Id: <401RHR65YBz9sVj@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:28:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2018-03-04 at 17:30:25 UTC, Vaibhav Jain wrote:
-> Presently sysrq key for xmon('x') is registered during kernel init
-> irrespective of the value of kernel param 'xmon'. Thus xmon is enabled
-> even if 'xmon=off' is passed on the kernel command line. However this
-> doesn't enable the kernel debugger hooks needed for instruction or data
-> breakpoints. Thus when a break-point is hit with xmon=off a kernel oops
-> of the form below is reported:
+On Thu, 2018-03-08 at 00:36:06 UTC, Balbir Singh wrote:
+> On MCE the current code will restart the machine with
+> ppc_md.restart(). This case was extremely unlikely since
+> prior to that a skiboot call is made and that resulted in
+> a checkstop for analysis.
 > 
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> < snip >
-> Trace/breakpoint trap
+> With newer skiboots, on P9 we don't checkstop the box by
+> default, instead we return back to the kernel to extract
+> useful information at the time of the MCE. While we still
+> get this information, this patch converts the restart to
+> a panic(), so that if configured a dump can be taken and
+> we can track and probably debug the potential issue causing
+> the MCE.
 > 
-> To fix this the patch checks and enables debugger hooks when an
-> instruction or data break-point is set via xmon console.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e1368d0c9edbc366e45216e7295fd6
+https://git.kernel.org/powerpc/c/5ee573e8ef034e687c420cb1091137
 
 cheers
