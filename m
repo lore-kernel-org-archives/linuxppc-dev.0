@@ -1,26 +1,30 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <desnesn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401kjS2XbMzF09c
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 08:03:56 +1100 (AEDT)
-Received: by mail-qt0-x244.google.com with SMTP id v90so4998989qte.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 14:03:56 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
- akpm@linux-foundation.org, dave.hansen@intel.com, benh@kernel.crashing.org,
- paulus@samba.org, khandual@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
- linuxram@us.ibm.com, corbet@lwn.net, arnd@arndb.de, fweimer@redhat.com,
- msuchanek@suse.com, Ulrich.Weigand@de.ibm.com
-Subject: [PATCH v3] powerpc: treat pkey-0 special
-Date: Wed, 14 Mar 2018 14:01:35 -0700
-Message-Id: <1521061295-22605-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401ksq21HPzDr4T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 08:11:10 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2EL6BpQ054464
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 17:11:08 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gq88pqayj-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 17:11:08 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
+ Wed, 14 Mar 2018 15:11:07 -0600
+From: "Desnes A. Nunes do Rosario" <desnesn@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: bhelgaas@google.com, brking@linux.vnet.ibm.com
+Subject: [PATCH, pci, v2] pci: Delete PCI disabling informational messages
+Date: Wed, 14 Mar 2018 18:10:53 -0300
+Message-Id: <20180314211053.26605-1-desnesn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Applications need the ability to associate an address-range with some
-key and latter revert to its initial default key. Pkey-0 comes close to
-providing this function but falls short, because the current
-implementation disallows applications to explicitly associate pkey-0 to
-the address range.
+The disabling informational messages on the PCI subsystem should be deleted
+since they do not represent any real value for the system logs.
 
-This patch clarifies the semantics of pkey-0 and provides the
-corresponding implementation on powerpc.
+These messages are either not presented, or presented for all PCI devices
+(e.g., powerpc now realigns all PCI devices to its page size). Thus, they
+are flooding system logs and can be interpreted as a false positive for
+total PCI failure on the system.
 
-Pkey-0 is special with the following semantics.
-(a) it is implicitly allocated and can never be freed. It always exists.
-(b) it is the default key assigned to any address-range.
-(c) it can be explicitly associated with any address-range.
+[root@system user]# dmesg | grep -i disabling
+[    0.692270] pci 0000:00:00.0: Disabling memory decoding and releasing memory resources
+[    0.692324] pci 0000:00:00.0: disabling bridge mem windows
+[    0.729134] pci 0001:00:00.0: Disabling memory decoding and releasing memory resources
+[    0.737352] pci 0001:00:00.0: disabling bridge mem windows
+[    0.776295] pci 0002:00:00.0: Disabling memory decoding and releasing memory resources
+[    0.784509] pci 0002:00:00.0: disabling bridge mem windows
+... and goes on for all PCI devices on the system ...
 
-Tested on powerpc.
-
-History:
-    v3 : added clarification of the semantics of pkey0.
-    		-- suggested by Dave Hansen
-    v2 : split the patch into two, one for x86 and one for powerpc
-    		-- suggested by Michael Ellermen
-
-cc: Dave Hansen <dave.hansen@intel.com>
-cc: Michael Ellermen <mpe@ellerman.id.au>
-cc: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Fixes: 38274637699 ("powerpc/powernv: Override pcibios_default_alignment() to force PCI devices to be page aligned")
+Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pkeys.h | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+ drivers/pci/pci.c       | 1 -
+ drivers/pci/setup-res.c | 2 --
+ 2 files changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 0409c80..3c1deec 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -101,10 +101,18 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 8c71d1a66cdd..1563ce1ee091 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5505,7 +5505,6 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+ 		return;
+ 	}
  
- static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+-	pci_info(dev, "Disabling memory decoding and releasing memory resources\n");
+ 	pci_read_config_word(dev, PCI_COMMAND, &command);
+ 	command &= ~PCI_COMMAND_MEMORY;
+ 	pci_write_config_word(dev, PCI_COMMAND, command);
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index 369d48d6c6f1..6bd35e8e7cde 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -172,8 +172,6 @@ EXPORT_SYMBOL(pci_claim_resource);
+ 
+ void pci_disable_bridge_window(struct pci_dev *dev)
  {
--	/* A reserved key is never considered as 'explicitly allocated' */
--	return ((pkey < arch_max_pkey()) &&
--		!__mm_pkey_is_reserved(pkey) &&
--		__mm_pkey_is_allocated(mm, pkey));
-+	/* pkey 0 is allocated by default. */
-+	if (!pkey)
-+	       return true;
-+
-+	if (pkey < 0 || pkey >= arch_max_pkey())
-+	       return false;
-+
-+	/* Reserved keys are never allocated. */
-+	if (__mm_pkey_is_reserved(pkey))
-+	       return false;
-+
-+	return __mm_pkey_is_allocated(mm, pkey);
- }
+-	pci_info(dev, "disabling bridge mem windows\n");
+-
+ 	/* MMIO Base/Limit */
+ 	pci_write_config_dword(dev, PCI_MEMORY_BASE, 0x0000fff0);
  
- extern void __arch_activate_pkey(int pkey);
-@@ -150,7 +158,8 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
- 	if (static_branch_likely(&pkey_disabled))
- 		return -1;
- 
--	if (!mm_pkey_is_allocated(mm, pkey))
-+	/* pkey 0 cannot be freed */
-+	if (!pkey || !mm_pkey_is_allocated(mm, pkey))
- 		return -EINVAL;
- 
- 	/*
 -- 
-1.8.3.1
+2.14.3
