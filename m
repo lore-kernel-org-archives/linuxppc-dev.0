@@ -1,18 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401PHb526KzDqsV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:58:50 +1100 (AEDT)
-Subject: Re: [PATCH v2] powerpc/numa: Correct kernel message severity
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com
-References: <1521013954-21348-1-git-send-email-vipin@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <e3ad74a9-4cf6-ff62-0840-30732aee129d@c-s.fr>
-Date: Wed, 14 Mar 2018 08:58:45 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401PKr4CBbzDqsV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:00:47 +1100 (AEDT)
+Subject: Re: [PATCH] x86, powerpc : pkey-mprotect must allow pkey-0
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, corbet@lwn.net,
+ arnd@arndb.de, msuchanek@suse.com, Ulrich.Weigand@de.ibm.com
+References: <1520583161-11741-1-git-send-email-linuxram@us.ibm.com>
+ <ec90ed75-2810-bcc3-8439-8dc85a6b46ac@redhat.com>
+ <20180309200017.GR1060@ram.oc3035372033.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <f71b583f-2b66-e9ed-b08b-fddff228a5a7@redhat.com>
+Date: Wed, 14 Mar 2018 09:00:36 +0100
 MIME-Version: 1.0
-In-Reply-To: <1521013954-21348-1-git-send-email-vipin@linux.vnet.ibm.com>
+In-Reply-To: <20180309200017.GR1060@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,32 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 14/03/2018 à 08:52, Vipin K Parashar a écrit :
-> printk() in unmap_cpu_from_node() uses KERN_ERR message severity,
-> for a WARNING message. Change it to pr_warn().
+On 03/09/2018 09:00 PM, Ram Pai wrote:
+> On Fri, Mar 09, 2018 at 12:04:49PM +0100, Florian Weimer wrote:
+>> On 03/09/2018 09:12 AM, Ram Pai wrote:
+>>> Once an address range is associated with an allocated pkey, it cannot be
+>>> reverted back to key-0. There is no valid reason for the above behavior.
+>>
+>> mprotect without a key does not necessarily use key 0, e.g. if
+>> protection keys are used to emulate page protection flag combination
+>> which is not directly supported by the hardware.
+>>
+>> Therefore, it seems to me that filtering out non-allocated keys is
+>> the right thing to do.
 > 
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> I am not sure, what you mean. Do you agree with the patch or otherwise?
 
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+I think it's inconsistent to make key 0 allocated, but not the key which 
+is used for PROT_EXEC emulation, which is still reserved.  Even if you 
+change the key 0 behavior, it is still not possible to emulate mprotect 
+behavior faithfully with an allocated key.
 
-> ---
->   arch/powerpc/mm/numa.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index edd8d0b..1632f4b 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -163,8 +163,7 @@ static void unmap_cpu_from_node(unsigned long cpu)
->   	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
->   		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
->   	} else {
-> -		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
-> -		       cpu, node);
-> +		pr_warn("WARNING: cpu %lu not found in node %d\n", cpu, node);
->   	}
->   }
->   #endif /* CONFIG_HOTPLUG_CPU || CONFIG_PPC_SPLPAR */
-> 
+Thanks,
+Florian
