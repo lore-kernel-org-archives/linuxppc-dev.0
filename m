@@ -2,17 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RGt3MRLzDr2V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:22 +1100 (AEDT)
-In-Reply-To: <20180225172236.29650-9-malat@debian.org>
-To: Mathieu Malaterre <malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RH327C5zDr2C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:31 +1100 (AEDT)
+In-Reply-To: <20180227112555.DEBCE6E8BA@po15720vm.idsi0.si.c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Vitaly Bordug <vitb@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [08/21] powerpc: Make function __giveup_fpu static
-Message-Id: <401RGt0zpqz9sVn@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:28:15 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/8xx: fix cpm_cascade() dual end of interrupt
+Message-Id: <401RH26WRbz9sTw@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:28:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2018-02-25 at 17:22:23 UTC, Mathieu Malaterre wrote:
-> When CONFIG_PPC_FPU is defined the prototype exposed in asm/switch_to.h is:
+On Tue, 2018-02-27 at 11:25:55 UTC, Christophe Leroy wrote:
+> cpm_cascade() doesn't have to call eoi() as it is already called
+> by handle_fasteoi_irq()
 > 
->   extern void giveup_fpu(struct task_struct *);
+> And cpm_get_irq() will always return an unsigned int so the test
+> is useless
 > 
-> Change the function prototype of __giveup_fpu to static. Fix warning
-> (treated as error in W=1):
-> 
->   CC      arch/powerpc/kernel/process.o
-> arch/powerpc/kernel/process.c:176:6: error: no previous prototype for ‘__giveup_fpu’ [-Werror=missing-prototypes]
->  void __giveup_fpu(struct task_struct *tsk)
->       ^~~~~~~~~~~~
-> cc1: all warnings being treated as errors
-> 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1cdf039bf82a39d816ca4b8161b01c
+https://git.kernel.org/powerpc/c/c554ac91ce2213faa91c51c4542377
 
 cheers
