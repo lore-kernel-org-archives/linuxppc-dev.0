@@ -2,17 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RH26nLyzDqjw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:30 +1100 (AEDT)
-In-Reply-To: <20180302194918.4358-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RHG0phkzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:42 +1100 (AEDT)
+In-Reply-To: <20180307203436.23696-1-malat@debian.org>
 To: Mathieu Malaterre <malat@debian.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- Andy Shevchenko <andy.shevchenko@gmail.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2,01/21] powerpc: Remove warning on array size when empty
-Message-Id: <401RH218Zgz9sVp@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:28:24 +1100 (AEDT)
+Cc: Mathieu Malaterre <malat@debian.org>,
+ open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [v2,
+ 05/21] powerpc: Avoid comparison of unsigned long >= 0 in pfn_valid
+Message-Id: <401RHF2pwPz9sCS@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:28:25 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-03-02 at 19:49:18 UTC, Mathieu Malaterre wrote:
-> When neither CONFIG_ALTIVEC, nor CONFIG_VSX or CONFIG_PPC64 is defined, the
-> array feature_properties is defined as an empty array, which in turn
-> triggers the following warning (treated as error on W=1):
+On Wed, 2018-03-07 at 20:34:35 UTC, Mathieu Malaterre wrote:
+> Rewrite comparison since all values compared are of type `unsigned long`.
 > 
->   CC      arch/powerpc/kernel/prom.o
-> arch/powerpc/kernel/prom.c: In function ‘check_cpu_feature_properties’:
-> arch/powerpc/kernel/prom.c:298:16: error: comparison of unsigned expression < 0 is always false [-Werror=type-limits]
->   for (i = 0; i < ARRAY_SIZE(feature_properties); ++i, ++fp) {
->                 ^
-> cc1: all warnings being treated as errors
+> Instead of using unsigned properties and rewriting the original code as:
+> (originally suggested by Segher Boessenkool <segher@kernel.crashing.org>)
 > 
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+>   #define pfn_valid(pfn) \
+>                (((pfn) - ARCH_PFN_OFFSET) < (max_mapnr - ARCH_PFN_OFFSET))
+> 
+> Prefer a static inline function to make code as readable as possible.
+> 
+> Fix a warning (treated as error in W=1):
+> 
+>   CC      arch/powerpc/kernel/irq.o
+> In file included from ./include/linux/bug.h:5:0,
+>                  from ./include/linux/cpumask.h:13,
+>                  from ./include/linux/smp.h:13,
+>                  from ./include/linux/kernel_stat.h:5,
+>                  from arch/powerpc/kernel/irq.c:35:
+> ./include/linux/dma-mapping.h: In function ‘dma_map_resource’:
+> ./arch/powerpc/include/asm/page.h:129:32: error: comparison of unsigned expression >= 0 is always true [-Werror=type-limits]
+>  #define pfn_valid(pfn)  ((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+>                                 ^
+> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > Signed-off-by: Mathieu Malaterre <malat@debian.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4f1f40f7b2b4487f582ecafec64076
+https://git.kernel.org/powerpc/c/603b892200e653dd7e86a0e4a31556
 
 cheers
