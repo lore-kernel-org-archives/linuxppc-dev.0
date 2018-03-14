@@ -1,25 +1,37 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401QCY3LK5zDrBW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:40:25 +1100 (AEDT)
-Date: Wed, 14 Mar 2018 19:39:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-next
- <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- Kees Cook <keescook@chromium.org>, mpe <mpe@ellerman.id.au>, sachinp
- <sachinp@linux.vnet.ibm.com>
-Subject: Re: [linux-next][bisected c7c133f3][gcc 4.8.5] build fail with
- error: first argument to =?UTF-8?B?4oCYX19idWlsdGluX2Nob29zZV9leHBy4oCZ?=
- not a constant
-Message-ID: <20180314193957.5f835d33@canb.auug.org.au>
-In-Reply-To: <1521016194.31953.9.camel@abdul.in.ibm.com>
-References: <1521016194.31953.9.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401QSR4lV1zDrLh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:51:35 +1100 (AEDT)
+Date: Wed, 14 Mar 2018 09:48:44 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ kirill@shutemov.name, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v9 17/24] mm: Protect mm_rb tree with a rwlock
+Message-ID: <20180314084844.GP4043@hirez.programming.kicks-ass.net>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-18-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/21sGLEFcpkIqcEbljcmmAvq"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1520963994-28477-18-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +41,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/21sGLEFcpkIqcEbljcmmAvq
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Mar 13, 2018 at 06:59:47PM +0100, Laurent Dufour wrote:
+> This change is inspired by the Peter's proposal patch [1] which was
+> protecting the VMA using SRCU. Unfortunately, SRCU is not scaling well in
+> that particular case, and it is introducing major performance degradation
+> due to excessive scheduling operations.
 
-Hi Abdul,
+Do you happen to have a little more detail on that?
 
-On Wed, 14 Mar 2018 13:59:54 +0530 Abdul Haleem <abdhalee@linux.vnet.ibm.co=
-m> wrote:
->
-> Today's next kernel fails to build with gcc 4.8.5 on powerpc machine.
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index 34fde7111e88..28c763ea1036 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -335,6 +335,7 @@ struct vm_area_struct {
+>  	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
+>  #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>  	seqcount_t vm_sequence;
+> +	atomic_t vm_ref_count;		/* see vma_get(), vma_put() */
+>  #endif
+>  } __randomize_layout;
+>  
+> @@ -353,6 +354,9 @@ struct kioctx_table;
+>  struct mm_struct {
+>  	struct vm_area_struct *mmap;		/* list of VMAs */
+>  	struct rb_root mm_rb;
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	rwlock_t mm_rb_lock;
+> +#endif
+>  	u32 vmacache_seqnum;                   /* per-thread vmacache */
+>  #ifdef CONFIG_MMU
+>  	unsigned long (*get_unmapped_area) (struct file *filp,
 
-Thanks for the report.  Just for the future, please include  the
-next-XXXXXXXX tag when making reports about linux-next.
+When I tried this, it simply traded contention on mmap_sem for
+contention on these two cachelines.
 
-> ./include/linux/jiffies.h: In function =E2=80=98jiffies_delta_to_clock_t=
-=E2=80=99:
-> ./include/linux/kernel.h:855:2: error: first argument to =E2=80=98__built=
-in_choose_expr=E2=80=99 not a constant
->   __builtin_choose_expr(__builtin_constant_p(x) &&  \
->   ^
-> ./include/linux/kernel.h:867:19: note: in expansion of macro =E2=80=98__m=
-ax=E2=80=99
->  #define max(x, y) __max(typeof(x), typeof(y), x, y)
->=20
-> Machine Type: Power8 Baremetal
-> gcc: 4.8.5
->=20
->=20
-> Builds fine when below patch is reverted
-> c7c133f3 kernel.h: skip single-eval logic on literals in min()/max()
+This was for the concurrent fault benchmark, where mmap_sem is only ever
+acquired for reading (so no blocking ever happens) and the bottle-neck
+was really pure cacheline access.
 
-Those patches have been removed from today's linux-next (next-20180314).
+Only by using RCU can you avoid that thrashing.
 
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/21sGLEFcpkIqcEbljcmmAvq
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlqo390ACgkQAVBC80lX
-0GwkHgf/a+Lef+M+WPHetI1QbQzaOstol7l3phUCYNXFdk+Kver6ehX3oZYIr5S9
-IJYYhifaiNZida7Ie9nRLEvAHGQfLqDCmL4oGtBP5qIel0z+Z0i+iTt+ByvGWAUE
-/zjj/YEYxlfPOLSc/xO/DPiXjRrVU+TXBQhT1+YyKyB3nfDgPaySGnO+E6R8Z+SE
-qJyNARoPHGPf/MQQRzmMGXuSW76ugyDy66CX9GWseHJYOPgU/QdnOqwPegVbmXkb
-FAuBl/ogb86QhrrxL9TrjC7oPNBE2UynMLfGH17NHZgeBuG2abCHnhpBiLDGKINm
-F5SuC4xhgVqShEX7ekRiH6gizLL5kw==
-=6n8K
------END PGP SIGNATURE-----
-
---Sig_/21sGLEFcpkIqcEbljcmmAvq--
+Also note that if your database allocates the one giant mapping, it'll
+be _one_ VMA and that vm_ref_count gets _very_ hot indeed.
