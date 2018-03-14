@@ -1,36 +1,20 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <liyiadam@gmail.com>
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401Pzl05m3zF17N
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:30:04 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2E8ShHl028830
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 04:30:02 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gptrjjjr1-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 04:30:01 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Wed, 14 Mar 2018 02:30:01 -0600
-Subject: [linux-next][bisected c7c133f3][gcc 4.8.5] build fail with error:
- first argument to
- =?UTF-8?Q?=E2=80=98=5F=5Fbuiltin=5Fchoose=5Fexpr=E2=80=99?= not a constant
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next <linux-next@vger.kernel.org>, linux-kernel
- <linux-kernel@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Kees Cook <keescook@chromium.org>, mpe <mpe@ellerman.id.au>, sachinp
- <sachinp@linux.vnet.ibm.com>
-Date: Wed, 14 Mar 2018 13:59:54 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401Q4N1d1ZzDqnb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:34:08 +1100 (AEDT)
+Received: by mail-wr0-x244.google.com with SMTP id h2so3762874wre.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 01:34:08 -0700 (PDT)
+MIME-Version: 1.0
+From: "Li Yi (Adam)" <liyiadam@gmail.com>
+Date: Wed, 14 Mar 2018 16:34:04 +0800
+Message-ID: <CAN7W-Tbai=VjA6HBVM-2tQwdgk1ebiSZ_d-D2o42Yhz=bJOo-Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Fix NULL AT_BASE_PLATFORM when using DT CPU
+ features
+To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1521016194.31953.9.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,27 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greetings,
+> Date: Wed, 14 Mar 2018 10:14:11 +1100
+> From: Michael Ellerman <mpe@ellerman.id.au>
+> To: linuxppc-dev@ozlabs.org
+> Cc: sukadev@linux.vnet.ibm.com, npiggin@gmail.com
+> Subject: [PATCH] powerpc/64s: Fix NULL AT_BASE_PLATFORM when using DT
+>         CPU features
+> Message-ID: <20180313231411.9537-1-mpe@ellerman.id.au>
+>
+> When running virtualised the powerpc kernel is able to run the system
+> in "compat mode" - which means the kernel and hardware are pretending
+> to userspace that the CPU is an older version than it actually is.
+>
+> AT_BASE_PLATFORM is an AUXV entry that we export to userspace for use
+> when we're running in that mode, which tells userspace the "platform"
+> string for the real CPU version, as opposed to the faked version.
+>
+> Although we don't support compat mode when using DT CPU features, and
+> arguably don't need to set AT_BASE_PLATFORM, the existing cputable
+> based code always sets it even when we're running bare metal. That
+> means the lack of AT_BASE_PLATFORM is a user-visible artifact of the
+> fact that the kernel is using DT CPU features, which we don't want.
+>
+> So set it in the DT CPU features code also.
+>
+> This results in eg:
+>   $ LD_SHOW_AUXV=1 /bin/true | grep "AT_.*PLATFORM"
+>   AT_PLATFORM:     power9
+>   AT_BASE_PLATFORM:power9
+>
 
-Today's next kernel fails to build with gcc 4.8.5 on powerpc machine.
+Is this issue related with DD2.2 CPU?
+I tested on a Boston system with DD2.1 CPU, with kernel 4.14.23,
+AT_BASE_PLATFORM value is correct:
 
+[root@boston-sh-04 ~]# LD_SHOW_AUXV=1 /bin/true | grep "AT_.*PLATFORM"
+AT_PLATFORM:     power9
+AT_BASE_PLATFORM:power9
+[root@boston-sh-04 ~]# uname -a
+Linux boston-sh-04 4.14.23 #1 SMP Sat Mar 3 12:14:56 CST 2018 ppc64le
+ppc64le ppc64le GNU/Linux
 
-./include/linux/jiffies.h: In function ‘jiffies_delta_to_clock_t’:
-./include/linux/kernel.h:855:2: error: first argument to ‘__builtin_choose_expr’ not a constant
-  __builtin_choose_expr(__builtin_constant_p(x) &&  \
-  ^
-./include/linux/kernel.h:867:19: note: in expansion of macro ‘__max’
- #define max(x, y) __max(typeof(x), typeof(y), x, y)
+Thanks,
+-Yi
 
-Machine Type: Power8 Baremetal
-gcc: 4.8.5
-
-
-Builds fine when below patch is reverted
-c7c133f3 kernel.h: skip single-eval logic on literals in min()/max()
-
--- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/dt_cpu_ftrs.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> index 945e2c29ad2d..0bcfb0f256e1 100644
+> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> @@ -720,6 +720,9 @@ static void __init cpufeatures_setup_finished(void)
+>                 cur_cpu_spec->cpu_features |= CPU_FTR_HVMODE;
+>         }
+>
+> +       /* Make sure powerpc_base_platform is non-NULL */
+> +       powerpc_base_platform = cur_cpu_spec->platform;
+> +
+>         system_registers.lpcr = mfspr(SPRN_LPCR);
+>         system_registers.hfscr = mfspr(SPRN_HFSCR);
+>         system_registers.fscr = mfspr(SPRN_FSCR);
+> --
+> 2.14.1
