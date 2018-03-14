@@ -1,37 +1,16 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401QSR4lV1zDrLh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:51:35 +1100 (AEDT)
-Date: Wed, 14 Mar 2018 09:48:44 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
- kirill@shutemov.name, ak@linux.intel.com, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v9 17/24] mm: Protect mm_rb tree with a rwlock
-Message-ID: <20180314084844.GP4043@hirez.programming.kicks-ass.net>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-18-git-send-email-ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1520963994-28477-18-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RBy512BzF0W6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:24:58 +1100 (AEDT)
+In-Reply-To: <20180313231411.9537-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: sukadev@linux.vnet.ibm.com, npiggin@gmail.com
+Subject: Re: powerpc/64s: Fix NULL AT_BASE_PLATFORM when using DT CPU features
+Message-Id: <401RBx67Bzz9sVK@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:24:57 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,45 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2018 at 06:59:47PM +0100, Laurent Dufour wrote:
-> This change is inspired by the Peter's proposal patch [1] which was
-> protecting the VMA using SRCU. Unfortunately, SRCU is not scaling well in
-> that particular case, and it is introducing major performance degradation
-> due to excessive scheduling operations.
+On Tue, 2018-03-13 at 23:14:11 UTC, Michael Ellerman wrote:
+> When running virtualised the powerpc kernel is able to run the system
+> in "compat mode" - which means the kernel and hardware are pretending
+> to userspace that the CPU is an older version than it actually is.
+> 
+> AT_BASE_PLATFORM is an AUXV entry that we export to userspace for use
+> when we're running in that mode, which tells userspace the "platform"
+> string for the real CPU version, as opposed to the faked version.
+> 
+> Although we don't support compat mode when using DT CPU features, and
+> arguably don't need to set AT_BASE_PLATFORM, the existing cputable
+> based code always sets it even when we're running bare metal. That
+> means the lack of AT_BASE_PLATFORM is a user-visible artifact of the
+> fact that the kernel is using DT CPU features, which we don't want.
+> 
+> So set it in the DT CPU features code also.
+> 
+> This results in eg:
+>   $ LD_SHOW_AUXV=1 /bin/true | grep "AT_.*PLATFORM"
+>   AT_PLATFORM:     power9
+>   AT_BASE_PLATFORM:power9
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Do you happen to have a little more detail on that?
+Applied to powerpc fixes.
 
-> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-> index 34fde7111e88..28c763ea1036 100644
-> --- a/include/linux/mm_types.h
-> +++ b/include/linux/mm_types.h
-> @@ -335,6 +335,7 @@ struct vm_area_struct {
->  	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
->  #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
->  	seqcount_t vm_sequence;
-> +	atomic_t vm_ref_count;		/* see vma_get(), vma_put() */
->  #endif
->  } __randomize_layout;
->  
-> @@ -353,6 +354,9 @@ struct kioctx_table;
->  struct mm_struct {
->  	struct vm_area_struct *mmap;		/* list of VMAs */
->  	struct rb_root mm_rb;
-> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> +	rwlock_t mm_rb_lock;
-> +#endif
->  	u32 vmacache_seqnum;                   /* per-thread vmacache */
->  #ifdef CONFIG_MMU
->  	unsigned long (*get_unmapped_area) (struct file *filp,
+https://git.kernel.org/powerpc/c/e4b79900222b8cccd4da4a7a89581f
 
-When I tried this, it simply traded contention on mmap_sem for
-contention on these two cachelines.
-
-This was for the concurrent fault benchmark, where mmap_sem is only ever
-acquired for reading (so no blocking ever happens) and the bottle-neck
-was really pure cacheline access.
-
-Only by using RCU can you avoid that thrashing.
-
-Also note that if your database allocates the one giant mapping, it'll
-be _one_ VMA and that vm_ref_count gets _very_ hot indeed.
+cheers
