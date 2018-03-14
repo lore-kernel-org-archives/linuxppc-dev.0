@@ -1,25 +1,53 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Return-Path: <deepa.kernel@gmail.com>
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401GQm6qWyzF0q2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 13:49:36 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id 9-v6so960571ple.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 19:49:36 -0700 (PDT)
-Subject: Re: [PATCH kernel] powerpc/npu: Do not try invalidating 32bit table
- when 64bit table is enabled
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: David Gibson <david@gibson.dropbear.id.au>,
- Alistair Popple <alistair@popple.id.au>, Russell Currey <ruscur@russell.cc>
-References: <20180213055135.25639-1-aik@ozlabs.ru>
- <4191e3cb-9a94-ea6d-702b-49c10fc323fd@ozlabs.ru>
-Message-ID: <b19ce701-a514-06da-de8f-1fcfeea2e45b@ozlabs.ru>
-Date: Wed, 14 Mar 2018 13:49:30 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401Hn71NrmzDqp2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 14:50:35 +1100 (AEDT)
+Received: by mail-io0-x243.google.com with SMTP id p78so2636591iod.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Mar 2018 20:50:34 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <4191e3cb-9a94-ea6d-702b-49c10fc323fd@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <201803132313.a4R8Y434%fengguang.wu@intel.com>
+References: <20180312175307.11032-3-deepa.kernel@gmail.com>
+ <201803132313.a4R8Y434%fengguang.wu@intel.com>
+From: Deepa Dinamani <deepa.kernel@gmail.com>
+Date: Tue, 13 Mar 2018 20:50:31 -0700
+Message-ID: <CABeXuvqNKfuvffU24Xydixv6Ro8R=2nAH4bruzx0AW=ax-6yOQ@mail.gmail.com>
+Subject: Re: [Y2038] [PATCH v4 02/10] include: Move compat_timespec/ timeval
+ to compat_time.h
+To: kbuild test robot <lkp@intel.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux <sparclinux@vger.kernel.org>, devel@driverdev.osuosl.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
+ "the arch/x86 maintainers" <x86@kernel.org>, sebott@linux.vnet.ibm.com,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ Robert Richter <rric@kernel.org>, Chris Metcalf <cmetcalf@mellanox.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Will Deacon <will.deacon@arm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+ gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ cohuck@redhat.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, "David S. Miller" <davem@davemloft.net>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>, kbuild-all@01.org,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,152 +57,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/3/18 2:40 pm, Alexey Kardashevskiy wrote:
-> On 13/02/18 16:51, Alexey Kardashevskiy wrote:
->> GPUs and the corresponding NVLink bridges get different PEs as they have
->> separate translation validation entries (TVEs). We put these PEs to
->> the same IOMMU group so they cannot be passed through separately.
->> So the iommu_table_group_ops::set_window/unset_window for GPUs do set
->> tables to the NPU PEs as well which means that iommu_table's list of
->> attached PEs (iommu_table_group_link) has both GPU and NPU PEs linked.
->> This list is used for TCE cache invalidation.
->>
->> The problem is that NPU PE has just a single TVE and can be programmed
->> to point to 32bit or 64bit windows while GPU PE has two (as any other PCI
->> device). So we end up having an 32bit iommu_table struct linked to both
->> PEs even though only the 64bit TCE table cache can be invalidated on NPU.
->> And a relatively recent skiboot detects this and prints errors.
->>
->> This changes GPU's iommu_table_group_ops::set_window/unset_window to make
->> sure that NPU PE is only linked to the table actually used by the hardware.
->> If there are two tables used by an IOMMU group, the NPU PE will use
->> the last programmed one which with the current use scenarios is expected
->> to be a 64bit one.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> --
->>
->> Do we need BUG_ON(IOMMU_TABLE_GROUP_MAX_TABLES != 2)?
-> 
-> 
-> 
-> Ping?
+The file arch/arm64/kernel/process.c needs asm/compat.h also to be
+included directly since this is included conditionally from
+include/compat.h. This does seem to be typical of arm64 as I was not
+completely able to get rid of asm/compat.h includes for arm64 in this
+series. My plan is to have separate patches to get rid of asm/compat.h
+includes for the architectures that are not straight forward to keep
+this series simple.
+I will fix this and update the series.
+
+-Deepa
 
 
-Anyone? Alistair? :)
-
-
-> 
-> 
-> 
->>
->>
->> This is an example for:
->>
->> 0004:04:00.0 3D: NVIDIA Corporation Device 1db1 (rev a1)
->> 0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
->> 0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
->>
->> Before the patch (npu2_tce_kill messages are from skiboot):
->>
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> ...
->> pci 0004:04     : [PE# 00] Removing DMA window #0
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0004:04     : [PE# 00] Removing DMA window #1
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->>
->> After the patch (no errors here):
->>
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->> pci 0004:04     : [PE# 00] Removing DMA window #0
->> pci 0004:04     : [PE# 00] Removing DMA window #1
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->> ---
->>  arch/powerpc/platforms/powernv/pci-ioda.c | 27 ++++++++++++++++++++++++---
->>  1 file changed, 24 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 496e476..2f91815 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -2681,14 +2681,23 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
->>  static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
->>  		int num, struct iommu_table *tbl)
->>  {
->> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
->> +	int num2 = (num == 0) ? 1 : 0;
->>  	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
->>  
->>  	if (ret)
->>  		return ret;
->>  
->> -	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
->> -	if (ret)
->> +	if (table_group->tables[num2])
->> +		pnv_npu_unset_window(npe, num2);
->> +
->> +	ret = pnv_npu_set_window(npe, num, tbl);
->> +	if (ret) {
->>  		pnv_pci_ioda2_unset_window(table_group, num);
->> +		if (table_group->tables[num2])
->> +			pnv_npu_set_window(npe, num2,
->> +					table_group->tables[num2]);
->> +	}
->>  
->>  	return ret;
->>  }
->> @@ -2697,12 +2706,24 @@ static long pnv_pci_ioda2_npu_unset_window(
->>  		struct iommu_table_group *table_group,
->>  		int num)
->>  {
->> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
->> +	int num2 = (num == 0) ? 1 : 0;
->>  	long ret = pnv_pci_ioda2_unset_window(table_group, num);
->>  
->>  	if (ret)
->>  		return ret;
->>  
->> -	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
->> +	if (!npe->table_group.tables[num])
->> +		return 0;
->> +
->> +	ret = pnv_npu_unset_window(npe, num);
->> +	if (ret)
->> +		return ret;
->> +
->> +	if (table_group->tables[num2])
->> +		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
->> +
->> +	return ret;
->>  }
->>  
->>  static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
->>
-> 
-> 
-
-
--- 
-Alexey
+On Tue, Mar 13, 2018 at 8:22 AM, kbuild test robot <lkp@intel.com> wrote:
+> Hi Deepa,
+>
+> Thank you for the patch! Yet something to improve:
+>
+> [auto build test ERROR on ]
+>
+> url:    https://github.com/0day-ci/linux/commits/Deepa-Dinamani/posix_clocks-Prepare-syscalls-for-64-bit-time_t-conversion/20180313-203305
+> base:
+> config: arm64-allnoconfig (attached as .config)
+> compiler: aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=arm64
+>
+> All errors (new ones prefixed by >>):
+>
+>    arch/arm64/kernel/process.c: In function 'copy_thread':
+>>> arch/arm64/kernel/process.c:342:8: error: implicit declaration of function 'is_compat_thread'; did you mean 'is_compat_task'? [-Werror=implicit-function-declaration]
+>        if (is_compat_thread(task_thread_info(p)))
+>            ^~~~~~~~~~~~~~~~
+>            is_compat_task
+>    cc1: some warnings being treated as errors
+>
+> vim +342 arch/arm64/kernel/process.c
+>
+> b3901d54d Catalin Marinas  2012-03-05  307
+> b3901d54d Catalin Marinas  2012-03-05  308  int copy_thread(unsigned long clone_flags, unsigned long stack_start,
+> afa86fc42 Al Viro          2012-10-22  309              unsigned long stk_sz, struct task_struct *p)
+> b3901d54d Catalin Marinas  2012-03-05  310  {
+> b3901d54d Catalin Marinas  2012-03-05  311      struct pt_regs *childregs = task_pt_regs(p);
+> b3901d54d Catalin Marinas  2012-03-05  312
+> c34501d21 Catalin Marinas  2012-10-05  313      memset(&p->thread.cpu_context, 0, sizeof(struct cpu_context));
+> c34501d21 Catalin Marinas  2012-10-05  314
+> bc0ee4760 Dave Martin      2017-10-31  315      /*
+> bc0ee4760 Dave Martin      2017-10-31  316       * Unalias p->thread.sve_state (if any) from the parent task
+> bc0ee4760 Dave Martin      2017-10-31  317       * and disable discard SVE state for p:
+> bc0ee4760 Dave Martin      2017-10-31  318       */
+> bc0ee4760 Dave Martin      2017-10-31  319      clear_tsk_thread_flag(p, TIF_SVE);
+> bc0ee4760 Dave Martin      2017-10-31  320      p->thread.sve_state = NULL;
+> bc0ee4760 Dave Martin      2017-10-31  321
+> 071b6d4a5 Dave Martin      2017-12-05  322      /*
+> 071b6d4a5 Dave Martin      2017-12-05  323       * In case p was allocated the same task_struct pointer as some
+> 071b6d4a5 Dave Martin      2017-12-05  324       * other recently-exited task, make sure p is disassociated from
+> 071b6d4a5 Dave Martin      2017-12-05  325       * any cpu that may have run that now-exited task recently.
+> 071b6d4a5 Dave Martin      2017-12-05  326       * Otherwise we could erroneously skip reloading the FPSIMD
+> 071b6d4a5 Dave Martin      2017-12-05  327       * registers for p.
+> 071b6d4a5 Dave Martin      2017-12-05  328       */
+> 071b6d4a5 Dave Martin      2017-12-05  329      fpsimd_flush_task_state(p);
+> 071b6d4a5 Dave Martin      2017-12-05  330
+> 9ac080021 Al Viro          2012-10-21  331      if (likely(!(p->flags & PF_KTHREAD))) {
+> 9ac080021 Al Viro          2012-10-21  332              *childregs = *current_pt_regs();
+> b3901d54d Catalin Marinas  2012-03-05  333              childregs->regs[0] = 0;
+> d00a3810c Will Deacon      2015-05-27  334
+> b3901d54d Catalin Marinas  2012-03-05  335              /*
+> b3901d54d Catalin Marinas  2012-03-05  336               * Read the current TLS pointer from tpidr_el0 as it may be
+> b3901d54d Catalin Marinas  2012-03-05  337               * out-of-sync with the saved value.
+> b3901d54d Catalin Marinas  2012-03-05  338               */
+> adf758999 Mark Rutland     2016-09-08  339              *task_user_tls(p) = read_sysreg(tpidr_el0);
+> d00a3810c Will Deacon      2015-05-27  340
+> e0fd18ce1 Al Viro          2012-10-18  341              if (stack_start) {
+> d00a3810c Will Deacon      2015-05-27 @342                      if (is_compat_thread(task_thread_info(p)))
+> d00a3810c Will Deacon      2015-05-27  343                              childregs->compat_sp = stack_start;
+> d00a3810c Will Deacon      2015-05-27  344                      else
+> b3901d54d Catalin Marinas  2012-03-05  345                              childregs->sp = stack_start;
+> b3901d54d Catalin Marinas  2012-03-05  346              }
+> d00a3810c Will Deacon      2015-05-27  347
+> c34501d21 Catalin Marinas  2012-10-05  348              /*
+> c34501d21 Catalin Marinas  2012-10-05  349               * If a TLS pointer was passed to clone (4th argument), use it
+> c34501d21 Catalin Marinas  2012-10-05  350               * for the new thread.
+> c34501d21 Catalin Marinas  2012-10-05  351               */
+> b3901d54d Catalin Marinas  2012-03-05  352              if (clone_flags & CLONE_SETTLS)
+> d00a3810c Will Deacon      2015-05-27  353                      p->thread.tp_value = childregs->regs[3];
+> c34501d21 Catalin Marinas  2012-10-05  354      } else {
+> c34501d21 Catalin Marinas  2012-10-05  355              memset(childregs, 0, sizeof(struct pt_regs));
+> c34501d21 Catalin Marinas  2012-10-05  356              childregs->pstate = PSR_MODE_EL1h;
+> 57f4959ba James Morse      2016-02-05  357              if (IS_ENABLED(CONFIG_ARM64_UAO) &&
+> a4023f682 Suzuki K Poulose 2016-11-08  358                  cpus_have_const_cap(ARM64_HAS_UAO))
+> 57f4959ba James Morse      2016-02-05  359                      childregs->pstate |= PSR_UAO_BIT;
+> c34501d21 Catalin Marinas  2012-10-05  360              p->thread.cpu_context.x19 = stack_start;
+> c34501d21 Catalin Marinas  2012-10-05  361              p->thread.cpu_context.x20 = stk_sz;
+> c34501d21 Catalin Marinas  2012-10-05  362      }
+> c34501d21 Catalin Marinas  2012-10-05  363      p->thread.cpu_context.pc = (unsigned long)ret_from_fork;
+> c34501d21 Catalin Marinas  2012-10-05  364      p->thread.cpu_context.sp = (unsigned long)childregs;
+> b3901d54d Catalin Marinas  2012-03-05  365
+> b3901d54d Catalin Marinas  2012-03-05  366      ptrace_hw_copy_thread(p);
+> b3901d54d Catalin Marinas  2012-03-05  367
+> b3901d54d Catalin Marinas  2012-03-05  368      return 0;
+> b3901d54d Catalin Marinas  2012-03-05  369  }
+> b3901d54d Catalin Marinas  2012-03-05  370
+>
+> :::::: The code at line 342 was first introduced by commit
+> :::::: d00a3810c16207d2541b7796a73cca5a24ea3742 arm64: context-switch user tls register tpidr_el0 for compat tasks
+>
+> :::::: TO: Will Deacon <will.deacon@arm.com>
+> :::::: CC: Catalin Marinas <catalin.marinas@arm.com>
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> _______________________________________________
+> Y2038 mailing list
+> Y2038@lists.linaro.org
+> https://lists.linaro.org/mailman/listinfo/y2038
