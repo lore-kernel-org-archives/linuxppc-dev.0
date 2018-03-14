@@ -1,54 +1,26 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401kS82DXDzDrNC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 07:52:24 +1100 (AEDT)
-Received: by mail-qk0-x241.google.com with SMTP id v124so5011266qkh.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 13:52:24 -0700 (PDT)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CABeXuvqNKfuvffU24Xydixv6Ro8R=2nAH4bruzx0AW=ax-6yOQ@mail.gmail.com>
-References: <20180312175307.11032-3-deepa.kernel@gmail.com>
- <201803132313.a4R8Y434%fengguang.wu@intel.com>
- <CABeXuvqNKfuvffU24Xydixv6Ro8R=2nAH4bruzx0AW=ax-6yOQ@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 14 Mar 2018 21:52:21 +0100
-Message-ID: <CAK8P3a1fxWAK94GH0cpzh6CHXgL4uJuDNCGpdJen5ib1HH1xoA@mail.gmail.com>
-Subject: Re: [Y2038] [PATCH v4 02/10] include: Move compat_timespec/ timeval
- to compat_time.h
-To: Deepa Dinamani <deepa.kernel@gmail.com>
-Cc: kbuild test robot <lkp@intel.com>, Mark Rutland <mark.rutland@arm.com>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux <sparclinux@vger.kernel.org>, devel@driverdev.osuosl.org,
- linux-s390 <linux-s390@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
- "the arch/x86 maintainers" <x86@kernel.org>, sebott@linux.vnet.ibm.com,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Catalin Marinas <catalin.marinas@arm.com>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- Robert Richter <rric@kernel.org>, Chris Metcalf <cmetcalf@mellanox.com>,
- Will Deacon <will.deacon@arm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>,
- Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
- gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
- Greg KH <gregkh@linuxfoundation.org>,
- cohuck@redhat.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, "David S. Miller" <davem@davemloft.net>,
- Jan Hoeppner <hoeppner@linux.vnet.ibm.com>, kbuild-all@01.org,
- Stefan Haberland <sth@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401kf24sRjzDrCY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 08:00:58 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id a26so5038924qtj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 14:00:58 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mingo@redhat.com
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ akpm@linux-foundation.org, dave.hansen@intel.com, benh@kernel.crashing.org,
+ paulus@samba.org, khandual@linux.vnet.ibm.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, ebiederm@xmission.com,
+ linuxram@us.ibm.com, corbet@lwn.net, arnd@arndb.de, fweimer@redhat.com,
+ msuchanek@suse.com, Ulrich.Weigand@de.ibm.com
+Subject: [PATCH v3] x86: treat pkey-0 special
+Date: Wed, 14 Mar 2018 14:00:14 -0700
+Message-Id: <1521061214-22385-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,59 +30,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 14, 2018 at 4:50 AM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
-> The file arch/arm64/kernel/process.c needs asm/compat.h also to be
-> included directly since this is included conditionally from
-> include/compat.h. This does seem to be typical of arm64 as I was not
-> completely able to get rid of asm/compat.h includes for arm64 in this
-> series. My plan is to have separate patches to get rid of asm/compat.h
-> includes for the architectures that are not straight forward to keep
-> this series simple.
-> I will fix this and update the series.
->
+Applications need the ability to associate an address-range with some
+key and latter revert to its initial default key. Pkey-0 comes close to
+providing this function but falls short, because the current
+implementation disallows applications to explicitly associate pkey-0 to
+the address range.
 
-I ran across the same thing in two more files during randconfig testing on
-arm64 now, adding this fixup on top for the moment, but maybe there
-is a better way:
+This patch clarifies the semantics of pkey-0 and provides the
+corresponding implementation on powerpc.
 
-commit 4f3e9e1211799a79b201a1af309a1ec3864147ec
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Wed Mar 14 18:23:16 2018 +0100
+Pkey-0 is special with the following semantics.
+(a) it is implicitly allocated and can never be freed. It always exists.
+(b) it is the default key assigned to any address-range.
+(c) it can be explicitly associated with any address-range.
 
-    arm64: fix perf_regs.c
+Tested on x86_64.
 
-    arch/arm64/kernel/perf_regs.c: In function 'perf_reg_abi':
-    arch/arm64/kernel/perf_regs.c:50:6: error: implicit declaration of
-function 'is_compat_thread'; did you mean 'is_compat_task'?
-[-Werror=implicit-function-declaration]
-    arch/arm64/kernel/hw_breakpoint.c: In function 'is_compat_bp':
-    arch/arm64/kernel/hw_breakpoint.c:182:16: error: implicit
-declaration of function 'is_compat_thread'; did you mean
-'is_compat_task'? [-Werror=implicit-function-declaration]
+History:
+    v3 : added clarification of the semantics of pkey0.
+    		-- suggested by Dave Hansen
+    v2 : split the patch into two, one for x86 and one for powerpc
+    		-- suggested by Michael Ellermen
 
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+cc: Dave Hansen <dave.hansen@intel.com>
+cc: Michael Ellermen <mpe@ellerman.id.au>
+cc: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+---
+ arch/x86/include/asm/pkeys.h | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/kernel/hw_breakpoint.c
-b/arch/arm64/kernel/hw_breakpoint.c
-index 413dbe530da8..74bb56f656ef 100644
---- a/arch/arm64/kernel/hw_breakpoint.c
-+++ b/arch/arm64/kernel/hw_breakpoint.c
-@@ -30,6 +30,7 @@
- #include <linux/smp.h>
- #include <linux/uaccess.h>
-
-+#include <asm/compat.h>
- #include <asm/current.h>
- #include <asm/debug-monitors.h>
- #include <asm/hw_breakpoint.h>
-diff --git a/arch/arm64/kernel/perf_regs.c b/arch/arm64/kernel/perf_regs.c
-index 0bbac612146e..1b463a4efe49 100644
---- a/arch/arm64/kernel/perf_regs.c
-+++ b/arch/arm64/kernel/perf_regs.c
-@@ -6,6 +6,7 @@
- #include <linux/bug.h>
- #include <linux/sched/task_stack.h>
-
-+#include <asm/compat.h>
- #include <asm/perf_regs.h>
- #include <asm/ptrace.h>
+diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
+index a0ba1ff..6ea7486 100644
+--- a/arch/x86/include/asm/pkeys.h
++++ b/arch/x86/include/asm/pkeys.h
+@@ -52,7 +52,7 @@ bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+ 	 * from pkey_alloc().  pkey 0 is special, and never
+ 	 * returned from pkey_alloc().
+ 	 */
+-	if (pkey <= 0)
++	if (pkey < 0)
+ 		return false;
+ 	if (pkey >= arch_max_pkey())
+ 		return false;
+@@ -92,7 +92,8 @@ int mm_pkey_alloc(struct mm_struct *mm)
+ static inline
+ int mm_pkey_free(struct mm_struct *mm, int pkey)
+ {
+-	if (!mm_pkey_is_allocated(mm, pkey))
++	/* pkey 0 is special and can never be freed */
++	if (!pkey || !mm_pkey_is_allocated(mm, pkey))
+ 		return -EINVAL;
+ 
+ 	mm_set_pkey_free(mm, pkey);
+-- 
+1.8.3.1
