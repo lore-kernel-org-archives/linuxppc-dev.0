@@ -1,55 +1,50 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401cFW4ZXJzF0qm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 03:12:47 +1100 (AEDT)
-Received: by mail-it0-x242.google.com with SMTP id z7-v6so3967272iti.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 09:12:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401cXg2dkrzDsSJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 03:25:54 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2EGPq9b047384
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 12:25:52 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gq515f1tj-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 12:25:52 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 14 Mar 2018 16:25:41 -0000
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v9 17/24] mm: Protect mm_rb tree with a rwlock
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ kirill@shutemov.name, ak@linux.intel.com, mhocko@kernel.org,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-18-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180314084844.GP4043@hirez.programming.kicks-ass.net>
+Date: Wed, 14 Mar 2018 17:25:30 +0100
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20180314040333.3291-1-deepa.kernel@gmail.com>
-References: <20180314040333.3291-1-deepa.kernel@gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 14 Mar 2018 17:12:44 +0100
-Message-ID: <CAK8P3a3hbD=-P1wBwXEOnMdewGsUpZPERBHv6wo+3qqDkZD1qg@mail.gmail.com>
-Subject: Re: [PATCH v5 00/10] posix_clocks: Prepare syscalls for 64 bit time_t
- conversion
-To: Deepa Dinamani <deepa.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, cohuck@redhat.com,
- David Miller <davem@davemloft.net>, Helge Deller <deller@gmx.de>,
- devel@driverdev.osuosl.org,
- gerald.schaefer@de.ibm.com, gregkh <gregkh@linuxfoundation.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Jan Hoeppner <hoeppner@linux.vnet.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Julian Wiedmann <jwi@linux.vnet.ibm.com>, Linux API <linux-api@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
- oprofile-list@lists.sf.net, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <peterz@infradead.org>, Ralf Baechle <ralf@linux-mips.org>,
- Steven Rostedt <rostedt@goodmis.org>, Robert Richter <rric@kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, sebott@linux.vnet.ibm.com,
- sparclinux <sparclinux@vger.kernel.org>,
- Stefan Haberland <sth@linux.vnet.ibm.com>,
- Ursula Braun <ubraun@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
- "the arch/x86 maintainers" <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180314084844.GP4043@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <399d758c-c329-fe49-d501-065067eb3b29@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,52 +54,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 14, 2018 at 5:03 AM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
-> The series is a preparation series for individual architectures
-> to use 64 bit time_t syscalls in compat and 32 bit emulation modes.
->
-> This is a follow up to the series Arnd Bergmann posted:
-> https://sourceware.org/ml/libc-alpha/2015-05/msg00070.html [1]
->
-> Thomas, Arnd, this seems ready to be merged now.
-> Can you help get this merged?
->
-> Big picture is as per the lwn article:
-> https://lwn.net/Articles/643234/ [2]
->
-> The series is directed at converting posix clock syscalls:
-> clock_gettime, clock_settime, clock_getres and clock_nanosleep
-> to use a new data structure __kernel_timespec at syscall boundaries.
-> __kernel_timespec maintains 64 bit time_t across all execution modes.
->
-> vdso will be handled as part of each architecture when they enable
-> support for 64 bit time_t.
->
-> The compat syscalls are repurposed to provide backward compatibility
-> by using them as native syscalls as well for 32 bit architectures.
-> They will continue to use timespec at syscall boundaries.
->
-> CONFIG_64_BIT_TIME controls whether the syscalls use __kernel_timespec
-> or timespec at syscall boundaries.
->
-> The series does the following:
-> 1. Enable compat syscalls on 32 bit architectures.
-> 2. Add a new __kernel_timespec type to be used as the data structure
->    for all the new syscalls.
-> 3. Add new config CONFIG_64BIT_TIME(intead of the CONFIG_COMPAT_TIME in
->    [1] and [2] to switch to new definition of __kernel_timespec. It is
->    the same as struct timespec otherwise.
-> 4. Add new CONFIG_32BIT_TIME to conditionally compile compat syscalls.
+On 14/03/2018 09:48, Peter Zijlstra wrote:
+> On Tue, Mar 13, 2018 at 06:59:47PM +0100, Laurent Dufour wrote:
+>> This change is inspired by the Peter's proposal patch [1] which was
+>> protecting the VMA using SRCU. Unfortunately, SRCU is not scaling well in
+>> that particular case, and it is introducing major performance degradation
+>> due to excessive scheduling operations.
+> 
+> Do you happen to have a little more detail on that?
 
-I've applied all 10 patches to my y2038 git branch [1], which is part
-of linux-next,
-to give it a little wider testing. If everything goes well, I'd send a
-pull request to
-Thomas next week so he can integrate it into tip from there, or (if he prefers)
-send it directly to Linus in the merge window.
+This has been reported by kemi who find bad performance when running some
+benchmarks on top of the v5 series:
+https://patchwork.kernel.org/patch/9999687/
 
-Thanks a lot for your persistence and your work on this!
+It appears that SRCU is generating a lot of additional scheduling to manage the
+freeing of the VMA structure. SRCU is dealing through per cpu ressources but
+the SRCU callback is And since we are handling this way a per process
+ressource (VMA) through a global resource (SRCU) this leads to a lot of
+overhead when scheduling the SRCU callback.
 
-      Arnd
+>> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+>> index 34fde7111e88..28c763ea1036 100644
+>> --- a/include/linux/mm_types.h
+>> +++ b/include/linux/mm_types.h
+>> @@ -335,6 +335,7 @@ struct vm_area_struct {
+>>  	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
+>>  #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>>  	seqcount_t vm_sequence;
+>> +	atomic_t vm_ref_count;		/* see vma_get(), vma_put() */
+>>  #endif
+>>  } __randomize_layout;
+>>   
+>> @@ -353,6 +354,9 @@ struct kioctx_table;
+>>  struct mm_struct {
+>>  	struct vm_area_struct *mmap;		/* list of VMAs */
+>>  	struct rb_root mm_rb;
+>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>> +	rwlock_t mm_rb_lock;
+>> +#endif
+>>  	u32 vmacache_seqnum;                   /* per-thread vmacache */
+>>  #ifdef CONFIG_MMU
+>>  	unsigned long (*get_unmapped_area) (struct file *filp,
+> 
+> When I tried this, it simply traded contention on mmap_sem for
+> contention on these two cachelines.
+> 
+> This was for the concurrent fault benchmark, where mmap_sem is only ever
+> acquired for reading (so no blocking ever happens) and the bottle-neck
+> was really pure cacheline access.
 
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git#y2038
+I'd say that this expected if multiple threads are dealing on the same VMA, but
+if the VMA differ then this contention is disappearing while it is remaining
+when using the mmap_sem.
+
+This being said, test I did on PowerPC using will-it-scale/page_fault1_threads
+showed that the number of caches-misses generated in get_vma() are very low
+(less than 5%). Am I missing something ?
+
+> Only by using RCU can you avoid that thrashing.
+
+I agree, but this kind of test is the best use case for SRCU because there are
+not so many updates, so not a lot of call to the SRCU asynchronous callback.
+
+Honestly, I can't see an ideal solution here, RCU is not optimal when there is
+a high number of updates, and using a rwlock may introduced a bottleneck there.
+I get better results when using the rwlock than using SRCU in that case, but if
+you have another proposal, please advise, I'll give it a try.
+
+> Also note that if your database allocates the one giant mapping, it'll
+> be _one_ VMA and that vm_ref_count gets _very_ hot indeed.
+
+In the case of the database product I mentioned in the series header, that's
+the opposite, the VMA number is very high so this doesn't happen. But in the
+case of one VMA, it's clear that there will be a contention on vm_ref_count,
+but this would be better than blocking on the mmap_sem.
+
+Laurent.
