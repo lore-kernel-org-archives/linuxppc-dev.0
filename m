@@ -1,41 +1,26 @@
-Return-Path: <desnesn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0049.outbound.protection.outlook.com [104.47.42.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401g7h5m5dzF15q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 05:22:56 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2EIMbRX002696
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 14:22:54 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gq6nex9ej-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 14:22:54 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <desnesn@linux.vnet.ibm.com>;
- Wed, 14 Mar 2018 14:22:52 -0400
-Subject: Re: [PATCH 1/2, pci] pci: Addition of PCI_DEV_FLAGS_QUIET_PCI_REALIGN
- attribute to the PCI subsystem
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ruscur@russell.cc, aik@ozlabs.ru, david@gibson.dropbear.id.au,
- fbarrat@linux.vnet.ibm.com, brking@linux.vnet.ibm.com
-References: <20180314163455.15854-1-desnesn@linux.vnet.ibm.com>
- <20180314163455.15854-2-desnesn@linux.vnet.ibm.com>
- <20180314180642.GC179719@bhelgaas-glaptop.roam.corp.google.com>
-From: =?UTF-8?Q?Desnes_Augusto_Nunes_do_Ros=c3=a1rio?=
- <desnesn@linux.vnet.ibm.com>
-Date: Wed, 14 Mar 2018 15:22:44 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401gbN37h5zDrKY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 05:43:23 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "davem@davemloft.net" <davem@davemloft.net>, "madalin.bucur@nxp.com"
+ <madalin.bucur@nxp.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>, "camelia.groza@nxp.com"
+ <camelia.groza@nxp.com>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 0/5] DPAA Ethernet fixes
+Date: Wed, 14 Mar 2018 18:43:17 +0000
+Message-ID: <1521052994.4790.148.camel@infinera.com>
+References: <20180314133732.24068-1-madalin.bucur@nxp.com>
+In-Reply-To: <20180314133732.24068-1-madalin.bucur@nxp.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <20180314180642.GC179719@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <30c63477-620b-3f8b-82df-fd1e34cd99b8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,61 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Bjorn,
-
-On 03/14/2018 03:06 PM, Bjorn Helgaas wrote:
-> On Wed, Mar 14, 2018 at 01:34:54PM -0300, Desnes A. Nunes do Rosario wrote:
->> Add PCI_DEV_FLAGS_QUIET_PCI_REALIGN to pci_dev_flags and use it to
->> silent PCI realignment messages if the flag is turned on by a driver.
->>
->> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
->> ---
->>   drivers/pci/pci.c       | 3 ++-
->>   drivers/pci/setup-res.c | 3 ++-
->>   include/linux/pci.h     | 2 ++
->>   3 files changed, 6 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index 8c71d1a66cdd..be197c944e5f 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -5505,7 +5505,8 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->>   		return;
->>   	}
->>   
->> -	pci_info(dev, "Disabling memory decoding and releasing memory resources\n");
->> +	if (!(dev->dev_flags & PCI_DEV_FLAGS_QUIET_PCI_REALIGN))
->> +		pci_info(dev, "Disabling memory decoding and releasing memory resources\n");
->>   	pci_read_config_word(dev, PCI_COMMAND, &command);
->>   	command &= ~PCI_COMMAND_MEMORY;
->>   	pci_write_config_word(dev, PCI_COMMAND, command);
->> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
->> index 369d48d6c6f1..00a538def763 100644
->> --- a/drivers/pci/setup-res.c
->> +++ b/drivers/pci/setup-res.c
->> @@ -172,7 +172,8 @@ EXPORT_SYMBOL(pci_claim_resource);
->>   
->>   void pci_disable_bridge_window(struct pci_dev *dev)
->>   {
->> -	pci_info(dev, "disabling bridge mem windows\n");
->> +	if (!(dev->dev_flags & PCI_DEV_FLAGS_QUIET_PCI_REALIGN))
->> +		pci_info(dev, "disabling bridge mem windows\n");
-> 
-> As far as I'm concerned, we can just remove these messages completely.
-> I don't think there's any real value there.
-
-After I found out that this was happening to all PCI devices on powerpc 
-due to the __weak
-pcibios_default_alignment() interface (necessary for VFIO passthrough 
-and performance), I confess that this was my first approach to this 
-matter; however I couldn't vouch the need of these messages on other 
-architectures.
-
-If there are no further concerns, I definitely prefer sending a second 
-version of this patch only eliminating these messages and attesting the 
-reason why.
-
-Thank you very much for your review Bjorn,
-
--- 
-Desnes A. Nunes do Rosário
+T24gV2VkLCAyMDE4LTAzLTE0IGF0IDA4OjM3IC0wNTAwLCBNYWRhbGluIEJ1Y3VyIHdyb3RlOg0K
+PiBIaSwNCj4gDQo+IFRoaXMgcGF0Y2ggc2V0IGlzIGFkZHJlc3Npbmcgc2V2ZXJhbCBpc3N1ZXMg
+aW4gdGhlIERQQUEgRXRoZXJuZXQNCj4gZHJpdmVyIHN1aXRlOg0KPiANCj4gIC0gbW9kdWxlIHVu
+bG9hZCBjcmFzaCBjYXVzZWQgYnkgd3JvbmcgcmVmZXJlbmNlIHRvIGRldmljZSBiZWluZyBsZWZ0
+DQo+ICAgIGluIHRoZSBjbGVhbnVwIGNvZGUgYWZ0ZXIgdGhlIERTQSByZWxhdGVkIGNoYW5nZXMN
+Cj4gIC0gc2NoZWR1bGluZyB3aWxlIGF0b21pYyBidWcgaW4gUU1hbiBjb2RlIHJldmVhbGVkIGR1
+cmluZyBkcGFhX2V0aA0KPiAgICBtb2R1bGUgdW5sb2FkDQo+ICAtIGEgY291cGxlIG9mIGVycm9y
+IGNvdW50ZXIgZml4ZXMsIGEgZHVwbGljYXRlZCBpbml0IGluIGRwYWFfZXRoLg0KDQpobW0sIHNv
+bWUgb2YgdGhlc2UoYWxsPykgYnVncyBhcmUgaW4gc3RhYmxlIHRvbywgQ0M6IHN0YWJsZSBwZXJo
+YXBzPyANCg0KPiANCj4gTWFkYWxpbg0KPiANCj4gQ2FtZWxpYSBHcm96YSAoMyk6DQo+ICAgZHBh
+YV9ldGg6IHJlbW92ZSBkdXBsaWNhdGUgaW5pdGlhbGl6YXRpb24NCj4gICBkcGFhX2V0aDogaW5j
+cmVtZW50IHRoZSBSWCBkcm9wcGVkIGNvdW50ZXIgd2hlbiBuZWVkZWQNCj4gICBkcGFhX2V0aDog
+cmVtb3ZlIGR1cGxpY2F0ZSBpbmNyZW1lbnQgb2YgdGhlIHR4X2Vycm9ycyBjb3VudGVyDQo+IA0K
+PiBNYWRhbGluIEJ1Y3VyICgyKToNCj4gICBzb2MvZnNsL3FibWFuOiBmaXggaXNzdWUgaW4gcW1h
+bl9kZWxldGVfY2dyX3NhZmUoKQ0KPiAgIGRwYWFfZXRoOiBmaXggZXJyb3IgaW4gZHBhYV9yZW1v
+dmUoKQ0KPiANCj4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2RwYWFfZXRo
+LmMgfCAgOCArKysrLS0tLQ0KPiAgZHJpdmVycy9zb2MvZnNsL3FibWFuL3FtYW4uYyAgICAgICAg
+ICAgICAgICAgICB8IDI4ICsrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAyIGZpbGVzIGNo
+YW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgMjcgZGVsZXRpb25zKC0pDQo+IA0KPiAtLQ0KPiAyLjEu
+MA0KPiANCg==
