@@ -1,39 +1,21 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401S0L28YCzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 21:00:49 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2EA0dwi057493
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 06:00:47 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gq0dmtvxs-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 06:00:41 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Wed, 14 Mar 2018 05:59:13 -0400
-Subject: Re: [linux-next][bisected c7c133f3][gcc 4.8.5] build fail with
- error: first argument to
- =?UTF-8?Q?=E2=80=98=5F=5Fbuiltin=5Fchoose=5Fexpr=E2=80=99?= not a constant
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-next
- <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- Kees Cook <keescook@chromium.org>, mpe <mpe@ellerman.id.au>, sachinp
- <sachinp@linux.vnet.ibm.com>
-Date: Wed, 14 Mar 2018 15:29:06 +0530
-In-Reply-To: <20180314193957.5f835d33@canb.auug.org.au>
-References: <1521016194.31953.9.camel@abdul.in.ibm.com>
- <20180314193957.5f835d33@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1521021546.31953.12.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401Sqc603vzDqps
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 21:38:20 +1100 (AEDT)
+Subject: Re: [PATCH 04/21] powerpc: Mark both tmp variables as unused
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Jiri Slaby <jslaby@suse.com>, linuxppc-dev@lists.ozlabs.org
+References: <20180225172236.29650-1-malat@debian.org>
+ <20180225172236.29650-5-malat@debian.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <3f881ec2-eb0f-77e6-f1c5-95530b8f84ad@c-s.fr>
+Date: Wed, 14 Mar 2018 11:38:13 +0100
+MIME-Version: 1.0
+In-Reply-To: <20180225172236.29650-5-malat@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,36 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-14 at 19:39 +1100, Stephen Rothwell wrote:
-> Hi Abdul,
-> 
-> On Wed, 14 Mar 2018 13:59:54 +0530 Abdul Haleem <abdhalee@linux.vnet.ibm.com> wrote:
-> >
-> > Today's next kernel fails to build with gcc 4.8.5 on powerpc machine.
-> 
-> Thanks for the report.  Just for the future, please include  the
-> next-XXXXXXXX tag when making reports about linux-next.
 
-Sure, I will. next-20180313 is the bad tag
-> 
-> > ./include/linux/jiffies.h: In function ‘jiffies_delta_to_clock_t’:
-> > ./include/linux/kernel.h:855:2: error: first argument to ‘__builtin_choose_expr’ not a constant
-> >   __builtin_choose_expr(__builtin_constant_p(x) &&  \
-> >   ^
-> > ./include/linux/kernel.h:867:19: note: in expansion of macro ‘__max’
-> >  #define max(x, y) __max(typeof(x), typeof(y), x, y)
-> > 
-> > Machine Type: Power8 Baremetal
-> > gcc: 4.8.5
-> > 
-> > 
-> > Builds fine when below patch is reverted
-> > c7c133f3 kernel.h: skip single-eval logic on literals in min()/max()
-> 
-> Those patches have been removed from today's linux-next (next-20180314).
 
--- 
-Regard's
+Le 25/02/2018 à 18:22, Mathieu Malaterre a écrit :
+> Since the value of `tmp` is never intended to be read, declare both `tmp`
+> variables as unused. Fix warning (treated as error in W=1):
 
-Abdul Haleem
-IBM Linux Technology Centre
+What about using fault_in_pages_readable() instead ?
+
+Christophe
+
+> 
+>    CC      arch/powerpc/kernel/signal_32.o
+> arch/powerpc/kernel/signal_32.c: In function ‘sys_swapcontext’:
+> arch/powerpc/kernel/signal_32.c:1048:16: error: variable ‘tmp’ set but not used [-Werror=unused-but-set-variable]
+>    unsigned char tmp;
+>                  ^~~
+> arch/powerpc/kernel/signal_32.c: In function ‘sys_debug_setcontext’:
+> arch/powerpc/kernel/signal_32.c:1234:16: error: variable ‘tmp’ set but not used [-Werror=unused-but-set-variable]
+>    unsigned char tmp;
+>                  ^~~
+> cc1: all warnings being treated as errors
+> 
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> ---
+>   arch/powerpc/kernel/signal_32.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index a46de0035214..492f03451877 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -1045,7 +1045,7 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
+>   		     struct ucontext __user *new_ctx,
+>   		     int ctx_size, int r6, int r7, int r8, struct pt_regs *regs)
+>   {
+> -	unsigned char tmp;
+> +	unsigned char tmp __maybe_unused;
+>   	int ctx_has_vsx_region = 0;
+>   
+>   #ifdef CONFIG_PPC64
+> @@ -1231,7 +1231,7 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
+>   {
+>   	struct sig_dbg_op op;
+>   	int i;
+> -	unsigned char tmp;
+> +	unsigned char tmp __maybe_unused;
+>   	unsigned long new_msr = regs->msr;
+>   #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>   	unsigned long new_dbcr0 = current->thread.debug.dbcr0;
+> 
