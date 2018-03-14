@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RHS2K2FzDqsV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RHS2HbnzDqjw
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:52 +1100 (AEDT)
-In-Reply-To: <20180308003606.10721-1-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20180308025442.6165-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: npiggin@gmail.com
-Subject: Re: powerpc/powernv/mce: Don't silently restart the machine
-Message-Id: <401RHR65YBz9sVj@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:28:45 +1100 (AEDT)
+Subject: Re: [1/4] powerpc/pseries: Move smp_query_cpu_stopped() etc. out of
+ plpar_wrappers.h
+Message-Id: <401RHQ5WVNz9sVv@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:28:48 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-03-08 at 00:36:06 UTC, Balbir Singh wrote:
-> On MCE the current code will restart the machine with
-> ppc_md.restart(). This case was extremely unlikely since
-> prior to that a skiboot call is made and that resulted in
-> a checkstop for analysis.
+On Thu, 2018-03-08 at 02:54:39 UTC, Michael Ellerman wrote:
+> smp_query_cpu_stopped() and related #defines are currently in
+> plpar_wrappers.h. The function actually does an RTAS call, not an
+> hcall, and basically has nothing to do with plpar_wrappers.h
 > 
-> With newer skiboots, on P9 we don't checkstop the box by
-> default, instead we return back to the kernel to extract
-> useful information at the time of the MCE. While we still
-> get this information, this patch converts the restart to
-> a panic(), so that if configured a dump can be taken and
-> we can track and probably debug the potential issue causing
-> the MCE.
+> Move it into pseries.h, where it can easily be used by the only two
+> callers in pseries/smp.c and pseries/hotplug-cpu.c.
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/5ee573e8ef034e687c420cb1091137
+https://git.kernel.org/powerpc/c/16560e88320d276036b393d4ba51cf
 
 cheers
