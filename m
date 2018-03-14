@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RHS2HbnzDqjw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:52 +1100 (AEDT)
-In-Reply-To: <20180308025442.6165-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RHT16y6zDqFV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:28:53 +1100 (AEDT)
+In-Reply-To: <1520412364-2680-1-git-send-email-wei.guo.simon@gmail.com>
+To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: npiggin@gmail.com
-Subject: Re: [1/4] powerpc/pseries: Move smp_query_cpu_stopped() etc. out of
- plpar_wrappers.h
-Message-Id: <401RHQ5WVNz9sVv@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:28:48 +1100 (AEDT)
+Cc: Simon Guo <wei.guo.simon@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org
+Subject: Re: PCI/hotplug: ppc: correct a php_slot usage after free
+Message-Id: <401RHS1y6kz9sRX@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:28:43 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,18 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-03-08 at 02:54:39 UTC, Michael Ellerman wrote:
-> smp_query_cpu_stopped() and related #defines are currently in
-> plpar_wrappers.h. The function actually does an RTAS call, not an
-> hcall, and basically has nothing to do with plpar_wrappers.h
+On Wed, 2018-03-07 at 08:46:04 UTC, wei.guo.simon@gmail.com wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> Move it into pseries.h, where it can easily be used by the only two
-> callers in pseries/smp.c and pseries/hotplug-cpu.c.
+> In pnv_php_unregister_one(), pnv_php_put_slot() might kfree
+> php_slot structure. But there is pci_hp_deregister() after
+> that with php_slot reference.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> This patch moves pnv_php_put_slot() to the end of function.
+> 
+> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 
-Series applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/16560e88320d276036b393d4ba51cf
+https://git.kernel.org/powerpc/c/97c6f25d5828b497e3e802b1f7c701
 
 cheers
