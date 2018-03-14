@@ -1,21 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401RG918TxzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:27:45 +1100 (AEDT)
-In-Reply-To: <20180209040916.14250-1-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401RGB18c0zDqpn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 20:27:46 +1100 (AEDT)
+In-Reply-To: <20180214211519.15683-1-malat@debian.org>
+To: Mathieu Malaterre <malat@debian.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Alastair D'Silva <alastair@linux.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Subject: Re: cxl: Enable NORST bit in PSL_DEBUG register for PSL9
-Message-Id: <401RG83Zrtz9sVP@ozlabs.org>
-Date: Wed, 14 Mar 2018 20:27:43 +1100 (AEDT)
+Cc: Laurent Vivier <lvivier@redhat.com>, Mathieu Malaterre <malat@debian.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v2] powerpc/via-pmu: Fix section mismatch warning
+Message-Id: <401RG939z2z9sD0@ozlabs.org>
+Date: Wed, 14 Mar 2018 20:27:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-02-09 at 04:09:16 UTC, Vaibhav Jain wrote:
-> We enable the NORST bit by default for debug afu images to prevent
-> reset of AFU trace-data on a PCI link drop. For production AFU images
-> this bit is always ignored and PSL gets reconfigured anyways thereby
-> resetting the trace data. So setting this bit for non-debug images
-> doesn't have any impact.
+On Wed, 2018-02-14 at 21:15:18 UTC, Mathieu Malaterre wrote:
+> Make the struct via_pmu_driver const to avoid following warning:
 > 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Reviewed-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> WARNING: vmlinux.o(.data+0x4739c): Section mismatch in reference from the variable via_pmu_driver to the function .init.text:pmu_init()
+> The variable via_pmu_driver references
+> the function __init pmu_init()
+> If the reference is valid then annotate the
+> variable with __init* or __refdata (see linux/init.h) or name the variable:
+> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+> 
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Suggested-by: Laurent Vivier <lvivier@redhat.com>
+> Reviewed-by: Laurent Vivier <lvivier@redhat.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/03ebb419b896e0fb2da3f34b57d45e
+https://git.kernel.org/powerpc/c/58935176ad17976b7a7f6ea25c0ceb
 
 cheers
