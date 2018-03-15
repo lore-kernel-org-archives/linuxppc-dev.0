@@ -1,25 +1,56 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4020pZ0kyyzDqm2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 18:39:15 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id j7-v6so7954036ita.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 00:39:14 -0700 (PDT)
-Subject: Re: [PATCH kernel] powerpc/npu: Do not try invalidating 32bit table
- when 64bit table is enabled
-To: Alistair Popple <alistair@popple.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, Russell Currey <ruscur@russell.cc>
-References: <20180213055135.25639-1-aik@ozlabs.ru>
- <1946633.GlQphcvEDT@new-mexico>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <89334758-304d-ca69-d091-31868a6f6fe5@ozlabs.ru>
-Date: Thu, 15 Mar 2018 18:39:07 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4021MC1KzXzF0xg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 19:04:06 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id z7-v6so6075616iti.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 01:04:06 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1946633.GlQphcvEDT@new-mexico>
-Content-Type: text/plain; charset=utf-8
+Sender: arndbergmann@gmail.com
+In-Reply-To: <CABeXuvpFfD+a6tSSOvni=v23DuJ-bWeZwmnzg4SU+TR=WHxs7Q@mail.gmail.com>
+References: <20180312175307.11032-3-deepa.kernel@gmail.com>
+ <201803132313.a4R8Y434%fengguang.wu@intel.com>
+ <CABeXuvqNKfuvffU24Xydixv6Ro8R=2nAH4bruzx0AW=ax-6yOQ@mail.gmail.com>
+ <CAK8P3a1fxWAK94GH0cpzh6CHXgL4uJuDNCGpdJen5ib1HH1xoA@mail.gmail.com>
+ <CABeXuvpFfD+a6tSSOvni=v23DuJ-bWeZwmnzg4SU+TR=WHxs7Q@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 15 Mar 2018 09:04:04 +0100
+Message-ID: <CAK8P3a1p1PruO_KsiE-sGAZdmoAVi2E3zZ+SXMzU=AZsb-RY-A@mail.gmail.com>
+Subject: Re: [Y2038] [PATCH v4 02/10] include: Move compat_timespec/ timeval
+ to compat_time.h
+To: Deepa Dinamani <deepa.kernel@gmail.com>
+Cc: kbuild test robot <lkp@intel.com>, Mark Rutland <mark.rutland@arm.com>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux <sparclinux@vger.kernel.org>, devel@driverdev.osuosl.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
+ "the arch/x86 maintainers" <x86@kernel.org>, sebott@linux.vnet.ibm.com,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ Robert Richter <rric@kernel.org>, Chris Metcalf <cmetcalf@mellanox.com>,
+ Will Deacon <will.deacon@arm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+ gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ cohuck@redhat.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, "David S. Miller" <davem@davemloft.net>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>, kbuild-all@01.org,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,169 +60,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/3/18 4:18 pm, Alistair Popple wrote:
-> I must admit I haven't really looked at the iommu_table_group code in depth so
-> don't fully understand it, but I was wondering why we don't hit this for NVLink1
-> as well?
-> 
-> The error that Skiboot is printing is because the requested page size doesn't
-> match expected so I guess there is a possibility the address might not meet the
-> required alignment (I don't know we don't just check that directly).
-> 
-> The reason you don't see this on NVLink1 is that we rely on the kernel to do the
-> TCE invalidate directly rather than via an OPAL call, and the kernel seems to do
-> less checking.
+On Thu, Mar 15, 2018 at 3:51 AM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
+> On Wed, Mar 14, 2018 at 1:52 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Wed, Mar 14, 2018 at 4:50 AM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
+>>> The file arch/arm64/kernel/process.c needs asm/compat.h also to be
+>>> included directly since this is included conditionally from
+>>> include/compat.h. This does seem to be typical of arm64 as I was not
+>>> completely able to get rid of asm/compat.h includes for arm64 in this
+>>> series. My plan is to have separate patches to get rid of asm/compat.h
+>>> includes for the architectures that are not straight forward to keep
+>>> this series simple.
+>>> I will fix this and update the series.
+>>>
+>>
+>> I ran across the same thing in two more files during randconfig testing on
+>> arm64 now, adding this fixup on top for the moment, but maybe there
+>> is a better way:
+>
+> I was looking at how Al tested his uaccess patches:
+> https://www.spinics.net/lists/linux-fsdevel/msg108752.html
+>
+> He seems to be running the kbuild bot tests on his own git.
+> Is it possible to verify it this way on the 2038 tree? Or, I could
+> host a tree also.
 
-Correct.
+The kbuild bot should generally pick up any branch on git.kernel.org,
+and the patches sent to the mailing list. It tests a lot of things
+configurations, but I tend to find some things that it doesn't find
+by doing lots of randconfig builds on fewer target architectures
+(I only build arm, arm64 and x86 regularly).
 
-> So I wonder if there is a bug there as well (invalidate for a
-> mismatched page size/address alignment)?
-> And wether this would also fix that?
+I remember that there was some discussion about a method
+to get the bot to test other branches (besides asking Fengguang
+to add it manually), but I don't remember what came out of that.
 
-Correct. Although afair we simply reset the entire cache (due to some
-hardware bug about which I am not now sure that it actually exists) so we
-did not see it. May be with this fix applied we won't have to do that and
-can invalidate individual tces (but I doubt because of the bug).
-
-
-
-
-> 
-> - Alistair
-> 
-> On Tuesday, 13 February 2018 4:51:35 PM AEDT Alexey Kardashevskiy wrote:
->> GPUs and the corresponding NVLink bridges get different PEs as they have
->> separate translation validation entries (TVEs). We put these PEs to
->> the same IOMMU group so they cannot be passed through separately.
->> So the iommu_table_group_ops::set_window/unset_window for GPUs do set
->> tables to the NPU PEs as well which means that iommu_table's list of
->> attached PEs (iommu_table_group_link) has both GPU and NPU PEs linked.
->> This list is used for TCE cache invalidation.
->>
->> The problem is that NPU PE has just a single TVE and can be programmed
->> to point to 32bit or 64bit windows while GPU PE has two (as any other PCI
->> device). So we end up having an 32bit iommu_table struct linked to both
->> PEs even though only the 64bit TCE table cache can be invalidated on NPU.
->> And a relatively recent skiboot detects this and prints errors.
->>
->> This changes GPU's iommu_table_group_ops::set_window/unset_window to make
->> sure that NPU PE is only linked to the table actually used by the hardware.
->> If there are two tables used by an IOMMU group, the NPU PE will use
->> the last programmed one which with the current use scenarios is expected
->> to be a 64bit one.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>
->> Do we need BUG_ON(IOMMU_TABLE_GROUP_MAX_TABLES != 2)?
->>
->>
->> This is an example for:
->>
->> 0004:04:00.0 3D: NVIDIA Corporation Device 1db1 (rev a1)
->> 0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
->> 0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
->>
->> Before the patch (npu2_tce_kill messages are from skiboot):
->>
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
->> ...
->> pci 0004:04     : [PE# 00] Removing DMA window #0
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0004:04     : [PE# 00] Removing DMA window #1
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->>
->> After the patch (no errors here):
->>
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->> pci 0004:04     : [PE# 00] Removing DMA window #0
->> pci 0004:04     : [PE# 00] Removing DMA window #1
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
->> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
->> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
->> pci 0006:00:00.0: [PE# 0d] Removing DMA window
->> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
->> ---
->>  arch/powerpc/platforms/powernv/pci-ioda.c | 27 ++++++++++++++++++++++++---
->>  1 file changed, 24 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 496e476..2f91815 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -2681,14 +2681,23 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
->>  static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
->>  		int num, struct iommu_table *tbl)
->>  {
->> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
->> +	int num2 = (num == 0) ? 1 : 0;
->>  	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
->>  
->>  	if (ret)
->>  		return ret;
->>  
->> -	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
->> -	if (ret)
->> +	if (table_group->tables[num2])
->> +		pnv_npu_unset_window(npe, num2);
->> +
->> +	ret = pnv_npu_set_window(npe, num, tbl);
->> +	if (ret) {
->>  		pnv_pci_ioda2_unset_window(table_group, num);
->> +		if (table_group->tables[num2])
->> +			pnv_npu_set_window(npe, num2,
->> +					table_group->tables[num2]);
->> +	}
->>  
->>  	return ret;
->>  }
->> @@ -2697,12 +2706,24 @@ static long pnv_pci_ioda2_npu_unset_window(
->>  		struct iommu_table_group *table_group,
->>  		int num)
->>  {
->> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
->> +	int num2 = (num == 0) ? 1 : 0;
->>  	long ret = pnv_pci_ioda2_unset_window(table_group, num);
->>  
->>  	if (ret)
->>  		return ret;
->>  
->> -	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
->> +	if (!npe->table_group.tables[num])
->> +		return 0;
->> +
->> +	ret = pnv_npu_unset_window(npe, num);
->> +	if (ret)
->> +		return ret;
->> +
->> +	if (table_group->tables[num2])
->> +		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
->> +
->> +	return ret;
->>  }
->>  
->>  static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
->>
-> 
-> 
-
-
--- 
-Alexey
+        Arnd
