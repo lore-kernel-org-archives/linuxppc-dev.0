@@ -1,23 +1,20 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401wtJ1zFDzF16f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 15:42:16 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id i14so2351332pgv.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 21:42:16 -0700 (PDT)
-From: Pingfan Liu <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: cascardo@canonical.com, gpiccoli@linux.vnet.ibm.com,
- kexec@lists.infradead.org, paulus@ozlabs.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org
-Subject: [PATCHv5 3/3] ppc64 boot: Wait for boot cpu to show up if nr_cpus
- limit is about to hit.
-Date: Thu, 15 Mar 2018 12:41:52 +0800
-Message-Id: <1521088912-31742-4-git-send-email-kernelfans@gmail.com>
-In-Reply-To: <1521088912-31742-1-git-send-email-kernelfans@gmail.com>
-References: <1521088912-31742-1-git-send-email-kernelfans@gmail.com>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [150.101.137.145])
+ by lists.ozlabs.org (Postfix) with ESMTP id 401xgd31mDzDrFN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 16:18:05 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ Russell Currey <ruscur@russell.cc>
+Subject: Re: [PATCH kernel] powerpc/npu: Do not try invalidating 32bit table
+ when 64bit table is enabled
+Date: Thu, 15 Mar 2018 16:18:02 +1100
+Message-ID: <1946633.GlQphcvEDT@new-mexico>
+In-Reply-To: <20180213055135.25639-1-aik@ozlabs.ru>
+References: <20180213055135.25639-1-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,95 +24,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+I must admit I haven't really looked at the iommu_table_group code in depth so
+don't fully understand it, but I was wondering why we don't hit this for NVLink1
+as well?
 
-The kernel boot parameter 'nr_cpus=' allows one to specify number of
-possible cpus in the system. In the normal scenario the first cpu (cpu0)
-that shows up is the boot cpu and hence it gets covered under nr_cpus
-limit.
+The error that Skiboot is printing is because the requested page size doesn't
+match expected so I guess there is a possibility the address might not meet the
+required alignment (I don't know we don't just check that directly).
 
-But this assumption will be broken in kdump scenario where kdump kenrel
-after a crash can boot up on an non-zero boot cpu. The paca structure
-allocation depends on value of nr_cpus and is indexed using logical cpu
-ids. This definetly will be an issue if boot cpu id > nr_cpus
+The reason you don't see this on NVLink1 is that we rely on the kernel to do the
+TCE invalidate directly rather than via an OPAL call, and the kernel seems to do
+less checking. So I wonder if there is a bug there as well (invalidate for a
+mismatched page size/address alignment)? And wether this would also fix that?
 
-This patch modifies allocate_pacas() and smp_setup_cpu_maps() to
-accommodate boot cpu for the case where boot_cpuid > nr_cpu_ids.
+- Alistair
 
-This change would help to reduce the memory reservation requirement for
-kdump on ppc64.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-Tested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com> (separate the logical for
-               cpu id mapping and stick to the semantics of nr_cpus)
-
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
----
- arch/powerpc/include/asm/paca.h |  3 +++
- arch/powerpc/kernel/paca.c      | 19 ++++++++++++++-----
- 2 files changed, 17 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index b62c310..49ab29d 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -49,6 +49,9 @@ extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
- #define get_lppaca()	(get_paca()->lppaca_ptr)
- #define get_slb_shadow()	(get_paca()->slb_shadow_ptr)
- 
-+/* Maximum number of threads per core. */
-+#define	MAX_SMT		8
-+
- struct task_struct;
- 
- /*
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 95ffedf..9c6f135 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -209,6 +209,7 @@ void __init allocate_pacas(void)
- {
- 	u64 limit;
- 	int cpu;
-+	unsigned int nr_cpus_aligned;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 	/*
-@@ -220,20 +221,28 @@ void __init allocate_pacas(void)
- 	limit = ppc64_rma_size;
- #endif
- 
--	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
-+	/*
-+	 * Alloc the paca[] align up to SMT threads.
-+	 * This will help us to prepare for a situation where
-+	 * boot cpu id > nr_cpus.
-+	 * We keep the semantics of nr_cpus in kernel cmdline, but
-+	 * waste a bit memory
-+	 */
-+	nr_cpus_aligned = _ALIGN_UP(nr_cpu_ids, MAX_SMT);
-+	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpus_aligned);
- 
- 	paca = __va(memblock_alloc_base(paca_size, PAGE_SIZE, limit));
- 	memset(paca, 0, paca_size);
- 
- 	printk(KERN_DEBUG "Allocated %u bytes for %u pacas at %p\n",
--		paca_size, nr_cpu_ids, paca);
-+		paca_size, nr_cpus_aligned, paca);
- 
--	allocate_lppacas(nr_cpu_ids, limit);
-+	allocate_lppacas(nr_cpus_aligned, limit);
- 
--	allocate_slb_shadows(nr_cpu_ids, limit);
-+	allocate_slb_shadows(nr_cpus_aligned, limit);
- 
- 	/* Can't use for_each_*_cpu, as they aren't functional yet */
--	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
-+	for (cpu = 0; cpu < nr_cpus_aligned; cpu++)
- 		initialise_paca(&paca[cpu], cpu);
- }
- 
--- 
-2.7.4
+On Tuesday, 13 February 2018 4:51:35 PM AEDT Alexey Kardashevskiy wrote:
+> GPUs and the corresponding NVLink bridges get different PEs as they have
+> separate translation validation entries (TVEs). We put these PEs to
+> the same IOMMU group so they cannot be passed through separately.
+> So the iommu_table_group_ops::set_window/unset_window for GPUs do set
+> tables to the NPU PEs as well which means that iommu_table's list of
+> attached PEs (iommu_table_group_link) has both GPU and NPU PEs linked.
+> This list is used for TCE cache invalidation.
+> 
+> The problem is that NPU PE has just a single TVE and can be programmed
+> to point to 32bit or 64bit windows while GPU PE has two (as any other PCI
+> device). So we end up having an 32bit iommu_table struct linked to both
+> PEs even though only the 64bit TCE table cache can be invalidated on NPU.
+> And a relatively recent skiboot detects this and prints errors.
+> 
+> This changes GPU's iommu_table_group_ops::set_window/unset_window to make
+> sure that NPU PE is only linked to the table actually used by the hardware.
+> If there are two tables used by an IOMMU group, the NPU PE will use
+> the last programmed one which with the current use scenarios is expected
+> to be a 64bit one.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> 
+> Do we need BUG_ON(IOMMU_TABLE_GROUP_MAX_TABLES != 2)?
+> 
+> 
+> This is an example for:
+> 
+> 0004:04:00.0 3D: NVIDIA Corporation Device 1db1 (rev a1)
+> 0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
+> 0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
+> 
+> Before the patch (npu2_tce_kill messages are from skiboot):
+> 
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> NPU6: npu2_tce_kill: Unexpected TCE size (got 0x1000 expected 0x10000)
+> ...
+> pci 0004:04     : [PE# 00] Removing DMA window #0
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0004:04     : [PE# 00] Removing DMA window #1
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> 
+> After the patch (no errors here):
+> 
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> pci 0004:04     : [PE# 00] Removing DMA window #0
+> pci 0004:04     : [PE# 00] Removing DMA window #1
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+> pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+> pci 0004:04     : [PE# 00] Setting up window#1 800000000000000..8000000ffffffff pg=10000
+> pci 0006:00:00.0: [PE# 0d] Removing DMA window
+> pci 0006:00:00.0: [PE# 0d] Setting up window 800000000000000..8000000ffffffff pg=10000
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 27 ++++++++++++++++++++++++---
+>  1 file changed, 24 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 496e476..2f91815 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2681,14 +2681,23 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
+>  static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
+>  		int num, struct iommu_table *tbl)
+>  {
+> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+> +	int num2 = (num == 0) ? 1 : 0;
+>  	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
+>  
+>  	if (ret)
+>  		return ret;
+>  
+> -	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
+> -	if (ret)
+> +	if (table_group->tables[num2])
+> +		pnv_npu_unset_window(npe, num2);
+> +
+> +	ret = pnv_npu_set_window(npe, num, tbl);
+> +	if (ret) {
+>  		pnv_pci_ioda2_unset_window(table_group, num);
+> +		if (table_group->tables[num2])
+> +			pnv_npu_set_window(npe, num2,
+> +					table_group->tables[num2]);
+> +	}
+>  
+>  	return ret;
+>  }
+> @@ -2697,12 +2706,24 @@ static long pnv_pci_ioda2_npu_unset_window(
+>  		struct iommu_table_group *table_group,
+>  		int num)
+>  {
+> +	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+> +	int num2 = (num == 0) ? 1 : 0;
+>  	long ret = pnv_pci_ioda2_unset_window(table_group, num);
+>  
+>  	if (ret)
+>  		return ret;
+>  
+> -	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
+> +	if (!npe->table_group.tables[num])
+> +		return 0;
+> +
+> +	ret = pnv_npu_unset_window(npe, num);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (table_group->tables[num2])
+> +		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
+> +
+> +	return ret;
+>  }
+>  
+>  static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+> 
