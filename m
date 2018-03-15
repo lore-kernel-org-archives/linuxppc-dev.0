@@ -1,38 +1,35 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <muriloo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402JH033HQzF15q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 06:16:28 +1100 (AEDT)
-From: Michal Suchanek <msuchanek@suse.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>, Nicholas Piggin <npiggin@gmail.com>,
- Al Viro <viro@zeniv.linux.org.uk>,
- David Gibson <david@gibson.dropbear.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Philippe Ombredanne <pombredanne@nexb.com>, Joe Perches <joe@perches.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Tobin C. Harding" <me@tobin.cc>, Michal Suchanek <msuchanek@suse.de>
-Subject: [PATCH RFC rebase 8/9] powerpc/64s: barrier_nospec: Add hcall triggerr
-Date: Thu, 15 Mar 2018 20:15:57 +0100
-Message-Id: <54913b22e2f3647c670b6fb3e1fecce34729b736.1521141122.git.msuchanek@suse.de>
-In-Reply-To: <cover.1521141122.git.msuchanek@suse.de>
-References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
- <cover.1521141122.git.msuchanek@suse.de>
-In-Reply-To: <cover.1521141122.git.msuchanek@suse.de>
-References: <cover.1521141122.git.msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402L2x16CRzF1KJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 07:36:08 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2FKYwEX047862
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 16:36:06 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gqvg89xh9-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 16:36:06 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.vnet.ibm.com>;
+ Thu, 15 Mar 2018 14:36:04 -0600
+Subject: Re: [PATCH v3 1/5] rfi-flush: Move the logic to avoid a redo into the
+ debugfs code
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
+References: <1521067243-19520-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1521067243-19520-2-git-send-email-mauricfo@linux.vnet.ibm.com>
+From: Murilo Opsfelder Araujo <muriloo@linux.vnet.ibm.com>
+Date: Thu, 15 Mar 2018 17:36:00 -0300
+MIME-Version: 1.0
+In-Reply-To: <1521067243-19520-2-git-send-email-mauricfo@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4ae7af3f-219e-33dc-d7fa-49141d268222@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,109 +39,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adapted from the RFI implementation
+On 03/14/2018 07:40 PM, Mauricio Faria de Oliveira wrote:
+> From: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> rfi_flush_enable() includes a check to see if we're already
+> enabled (or disabled), and in that case does nothing.
+> 
+> But that means calling setup_rfi_flush() a 2nd time doesn't actually
+> work, which is a bit confusing.
+> 
+> Move that check into the debugfs code, where it really belongs.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/setup_64.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index c388cc3..3efc01a 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -846,9 +846,6 @@ static void do_nothing(void *unused)
+> 
+>  void rfi_flush_enable(bool enable)
+>  {
+> -	if (rfi_flush == enable)
+> -		return;
+> -
+>  	if (enable) {
+>  		do_rfi_flush_fixups(enabled_flush_types);
+>  		on_each_cpu(do_nothing, NULL, 1);
+> @@ -902,13 +899,19 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+>  #ifdef CONFIG_DEBUG_FS
+>  static int rfi_flush_set(void *data, u64 val)
+>  {
+> +	bool enable;
+> +
+>  	if (val == 1)
+> -		rfi_flush_enable(true);
+> +		enable = true;
+>  	else if (val == 0)
+> -		rfi_flush_enable(false);
+> +		enable = false;
+>  	else
+>  		return -EINVAL;
+> 
+> +	/* Only do anything if we're changing state */
+> +	if (enable != rfi_flush)
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- arch/powerpc/platforms/pseries/mobility.c |  2 +-
- arch/powerpc/platforms/pseries/pseries.h  |  2 +-
- arch/powerpc/platforms/pseries/setup.c    | 37 ++++++++++++++++++++++---------
- 3 files changed, 29 insertions(+), 12 deletions(-)
+Hi, Mauricio.
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 8a8033a249c7..9d506be1580e 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -349,7 +349,7 @@ void post_mobility_fixup(void)
- 			"failed: %d\n", rc);
- 
- 	/* Possibly switch to a new RFI flush type */
--	pseries_setup_rfi_flush();
-+	pseries_setup_rfi_nospec();
- 
- 	return;
- }
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 27cdcb69fd18..d49670c67686 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -100,6 +100,6 @@ static inline unsigned long cmo_get_page_size(void)
- 
- int dlpar_workqueue_init(void);
- 
--void pseries_setup_rfi_flush(void);
-+void pseries_setup_rfi_nospec(void);
- 
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 9877c3dfcdc8..4b899a4db6dd 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -459,30 +459,47 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
- }
- 
--void pseries_setup_rfi_flush(void)
-+void pseries_setup_rfi_nospec(void)
- {
- 	struct h_cpu_char_result result;
--	enum l1d_flush_type types;
--	bool enable;
-+	enum l1d_flush_type flush_types;
-+	enum spec_barrier_type barrier_type;
-+	bool flush_enable;
-+	bool barrier_enable;
- 	long rc;
- 
- 	/* Enable by default */
--	enable = true;
--	types = L1D_FLUSH_FALLBACK;
-+	flush_enable = true;
-+	flush_types = L1D_FLUSH_FALLBACK;
-+	barrier_enable = true;
-+	/* no fallback available if the firmware does not tell us */
-+	barrier_type = SPEC_BARRIER_NONE;
- 
- 	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS) {
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
--			types |= L1D_FLUSH_MTTRIG;
-+			flush_types |= L1D_FLUSH_MTTRIG;
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
--			types |= L1D_FLUSH_ORI;
-+			flush_types |= L1D_FLUSH_ORI;
-+		if (result.character & H_CPU_CHAR_SPEC_BAR_ORI31)
-+			barrier_type |= SPEC_BARRIER_ORI;
- 
- 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
- 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
--			enable = false;
-+			flush_enable = false;
-+		/*
-+		 * Do not check H_CPU_BEHAV_BNDS_CHK_SPEC_BAR - the ORI does
-+		 * nothing anyway when not supported.
-+		 */
-+		if ((!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
-+			barrier_enable = false;
-+	} else {
-+		/* Default to fallback if case hcall is not available */
-+		flush_types = L1D_FLUSH_FALLBACK;
- 	}
- 
--	setup_rfi_flush(types, enable);
-+	setup_barrier_nospec(barrier_type, barrier_enable);
-+	setup_rfi_flush(flush_types, flush_enable);
- }
- 
- #ifdef CONFIG_PCI_IOV
-@@ -658,7 +675,7 @@ static void __init pSeries_setup_arch(void)
- 
- 	fwnmi_init();
- 
--	pseries_setup_rfi_flush();
-+	pseries_setup_rfi_nospec();
- 
- 	/* By default, only probe PCI (can be overridden by rtas_pci) */
- 	pci_add_flags(PCI_PROBE_ONLY);
--- 
-2.13.6
+Do we need to take into account if no_rfi_flush == true?
+
+    if ((enable != rfi_flush) && !no_rfi_flush)
+
+> +		rfi_flush_enable(enable);
+> +
+>  	return 0;
+>  }
+> 
+
+Cheers
+Murilo
