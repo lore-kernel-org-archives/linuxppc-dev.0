@@ -1,31 +1,54 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <deepa.kernel@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401msb1rs8zDrDB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 09:41:06 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2EMf5rj072807
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:41:05 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gqcmm082f-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 18:41:05 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Wed, 14 Mar 2018 18:41:03 -0400
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, msuchanek@suse.de
-Subject: [TESTS] Create 'enabled_flush_types' boot option,
- and short-circuit LPM
-Date: Wed, 14 Mar 2018 19:40:43 -0300
-In-Reply-To: <1521067243-19520-1-git-send-email-mauricfo@linux.vnet.ibm.com>
-References: <1521067243-19520-1-git-send-email-mauricfo@linux.vnet.ibm.com>
-Message-Id: <1521067243-19520-7-git-send-email-mauricfo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401tQb0jv2zF0QY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 13:51:34 +1100 (AEDT)
+Received: by mail-it0-x244.google.com with SMTP id j7-v6so7259726ita.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Mar 2018 19:51:34 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAK8P3a1fxWAK94GH0cpzh6CHXgL4uJuDNCGpdJen5ib1HH1xoA@mail.gmail.com>
+References: <20180312175307.11032-3-deepa.kernel@gmail.com>
+ <201803132313.a4R8Y434%fengguang.wu@intel.com>
+ <CABeXuvqNKfuvffU24Xydixv6Ro8R=2nAH4bruzx0AW=ax-6yOQ@mail.gmail.com>
+ <CAK8P3a1fxWAK94GH0cpzh6CHXgL4uJuDNCGpdJen5ib1HH1xoA@mail.gmail.com>
+From: Deepa Dinamani <deepa.kernel@gmail.com>
+Date: Wed, 14 Mar 2018 19:51:31 -0700
+Message-ID: <CABeXuvpFfD+a6tSSOvni=v23DuJ-bWeZwmnzg4SU+TR=WHxs7Q@mail.gmail.com>
+Subject: Re: [Y2038] [PATCH v4 02/10] include: Move compat_timespec/ timeval
+ to compat_time.h
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: kbuild test robot <lkp@intel.com>, Mark Rutland <mark.rutland@arm.com>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux <sparclinux@vger.kernel.org>, devel@driverdev.osuosl.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
+ "the arch/x86 maintainers" <x86@kernel.org>, sebott@linux.vnet.ibm.com,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+ Robert Richter <rric@kernel.org>, Chris Metcalf <cmetcalf@mellanox.com>,
+ Will Deacon <will.deacon@arm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Julian Wiedmann <jwi@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+ gerald.schaefer@de.ibm.com, Parisc List <linux-parisc@vger.kernel.org>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ cohuck@redhat.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, "David S. Miller" <davem@davemloft.net>,
+ Jan Hoeppner <hoeppner@linux.vnet.ibm.com>, kbuild-all@01.org,
+ Stefan Haberland <sth@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ursula Braun <ubraun@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,202 +58,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fallback -> fallback:
+On Wed, Mar 14, 2018 at 1:52 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Wed, Mar 14, 2018 at 4:50 AM, Deepa Dinamani <deepa.kernel@gmail.com> wrote:
+>> The file arch/arm64/kernel/process.c needs asm/compat.h also to be
+>> included directly since this is included conditionally from
+>> include/compat.h. This does seem to be typical of arm64 as I was not
+>> completely able to get rid of asm/compat.h includes for arm64 in this
+>> series. My plan is to have separate patches to get rid of asm/compat.h
+>> includes for the architectures that are not straight forward to keep
+>> this series simple.
+>> I will fix this and update the series.
+>>
+>
+> I ran across the same thing in two more files during randconfig testing on
+> arm64 now, adding this fixup on top for the moment, but maybe there
+> is a better way:
 
-    # dmesg -c | grep rfi-flush
-    [    0.000000] rfi-flush (debug): enabled flush types: 0x0
-    [    0.000000] rfi-flush: fallback displacement flush available
-    [    0.000000] rfi-flush: patched 8 locations (fallback displacement flush)
+I was looking at how Al tested his uaccess patches:
+https://www.spinics.net/lists/linux-fsdevel/msg108752.html
 
-    # echo > /sys/kernel/mobility/migration 
+He seems to be running the kbuild bot tests on his own git.
+Is it possible to verify it this way on the 2038 tree? Or, I could
+host a tree also.
 
-    # dmesg -c | grep rfi-flush
-    [   32.525443] rfi-flush: fallback displacement flush available
-    [   32.526269] rfi-flush: patched 8 locations (fallback displacement flush)
-
-fallback -> instructions:
-
-    # dmesg -c | grep rfi-flush
-    [    0.000000] rfi-flush (debug): enabled flush types: 0x0
-    [    0.000000] rfi-flush: fallback displacement flush available
-    [    0.000000] rfi-flush: patched 8 locations (fallback displacement flush)
-
-    # echo 24 > /sys/kernel/debug/powerpc/rfi_flush 
-
-    # dmesg -c | grep rfi-flush
-    [   30.984247] rfi-flush (debug): enabled flush types: 0xc
-
-    # echo > /sys/kernel/mobility/migration 
-
-    # dmesg -c | grep rfi-flush
-    [   51.554357] rfi-flush: fallback displacement flush available
-    [   51.554360] rfi-flush: ori type flush available
-    [   51.554361] rfi-flush: mttrig type flush available
-    [   51.554366] rfi-flush: patched 8 locations (ori+mttrig type flush)
-
-instructions -> instructions:
-
-    # dmesg -c | grep rfi-flush
-    [    0.000000] rfi-flush (debug): enabled flush types: 0xc
-    [    0.000000] rfi-flush: fallback displacement flush available
-    [    0.000000] rfi-flush: ori type flush available
-    [    0.000000] rfi-flush: mttrig type flush available
-    [    0.000000] rfi-flush: patched 8 locations (ori+mttrig type flush)
-
-    # echo > /sys/kernel/mobility/migration 
-
-    # dmesg -c | grep rfi-flush
-    [   55.100566] rfi-flush: fallback displacement flush available
-    [   55.100570] rfi-flush: ori type flush available
-    [   55.100571] rfi-flush: mttrig type flush available
-    [   55.100575] rfi-flush: patched 8 locations (ori+mttrig type flush)
-
-instructions -> fallback:
-
-    # dmesg -c | grep rfi-flush
-    [    0.000000] rfi-flush (debug): enabled flush types: 0xc
-    [    0.000000] rfi-flush: fallback displacement flush available
-    [    0.000000] rfi-flush: ori type flush available
-    [    0.000000] rfi-flush: mttrig type flush available
-    [    0.000000] rfi-flush: patched 8 locations (ori+mttrig type flush)
-
-    # echo 1111 > /sys/kernel/debug/powerpc/rfi_flush
-
-    # dmesg -c | grep rfi-flush
-    [   18.730782] rfi-flush (debug): enabled flush types: 0x0
-
-    # echo > /sys/kernel/mobility/migration                                                                                                                                                    
-
-    # dmesg -c | grep rfi-flush
-    [   27.120071] rfi-flush: fallback displacement flush available
-    [   27.120078] rfi-flush: patched 8 locations (fallback displacement flush)
-
-debugfs switch:
-
-    # echo 0 > /sys/kernel/debug/powerpc/rfi_flush 
-    # echo 1 > /sys/kernel/debug/powerpc/rfi_flush 
-
-    # dmesg -c | grep rfi-flush
-    [  106.031993] rfi-flush: patched 8 locations (no flush)
-    [  109.670966] rfi-flush: patched 8 locations (fallback displacement flush)
-
-ori type only:
-
-    # echo 8 > /sys/kernel/debug/powerpc/rfi_flush
-    # echo 0 > /sys/kernel/debug/powerpc/rfi_flush 
-    # echo 1 > /sys/kernel/debug/powerpc/rfi_flush 
-
-    # dmesg -c | grep rfi-flush
-    [  308.988958] rfi-flush (debug): enabled flush types: 0x4
-    [  314.206548] rfi-flush: patched 8 locations (no flush)
-    [  316.349916] rfi-flush: patched 8 locations (ori type flush)
-
-mttrig type only:
-
-    # echo 16 > /sys/kernel/debug/powerpc/rfi_flush
-    # echo 0 > /sys/kernel/debug/powerpc/rfi_flush 
-    # echo 1 > /sys/kernel/debug/powerpc/rfi_flush 
-
-    # dmesg -c | grep rfi-flush
-    [  355.993189] rfi-flush (debug): enabled flush types: 0x8
-    [  360.644291] rfi-flush: patched 8 locations (no flush)
-    [  365.300547] rfi-flush: patched 8 locations (mttrig type flush)
-
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/setup_64.c            | 29 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/mobility.c |  4 ++++
- 2 files changed, 33 insertions(+)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 4ec4a27..9c9568e 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -816,6 +816,24 @@ static void *l1d_flush_fallback_area;
- static bool no_rfi_flush;
- bool rfi_flush;
- 
-+static int __init handle_enabled_flush_types(char *p)
-+{
-+	int rc;
-+	enum l1d_flush_type types;
-+
-+	rc = kstrtoul(p, 0, (long unsigned int *)&types);
-+	if (!rc) {
-+		enabled_flush_types = types;
-+		pr_info("rfi-flush (debug): enabled flush types: 0x%x\n", enabled_flush_types);
-+	} else {
-+		enabled_flush_types = L1D_FLUSH_NONE;
-+		pr_info("rfi-flush (debug): enabled flush types is invalid\n");
-+	}
-+
-+	return rc;
-+}
-+early_param("enabled_flush_types", handle_enabled_flush_types);
-+
- static int __init handle_no_rfi_flush(char *p)
- {
- 	pr_info("rfi-flush: disabled on command line.");
-@@ -883,6 +901,8 @@ static void init_fallback_flush(void)
- 
- void setup_rfi_flush(enum l1d_flush_type types, bool enable)
- {
-+	types |= enabled_flush_types;
-+
- 	if (types & L1D_FLUSH_FALLBACK) {
- 		pr_info("rfi-flush: fallback displacement flush available\n");
- 		init_fallback_flush();
-@@ -909,6 +929,15 @@ static int rfi_flush_set(void *data, u64 val)
- 		enable = true;
- 	else if (val == 0)
- 		enable = false;
-+	else if (val == 1111) {
-+		enable = true;
-+		enabled_flush_types = 0;
-+		pr_info("rfi-flush (debug): enabled flush types: 0x%x\n", enabled_flush_types);
-+	} else if (val >= 2) {
-+		enable = true;
-+		enabled_flush_types = val >> 1;
-+		pr_info("rfi-flush (debug): enabled flush types: 0x%x\n", enabled_flush_types);
-+	}
- 	else
- 		return -EINVAL;
- 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 8a8033a..2a8458a 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -326,6 +326,7 @@ int pseries_devicetree_update(s32 scope)
- 
- void post_mobility_fixup(void)
- {
-+#if 0
- 	int rc;
- 	int activate_fw_token;
- 
-@@ -348,6 +349,7 @@ void post_mobility_fixup(void)
- 		printk(KERN_ERR "Post-mobility device tree update "
- 			"failed: %d\n", rc);
- 
-+#endif
- 	/* Possibly switch to a new RFI flush type */
- 	pseries_setup_rfi_flush();
- 
-@@ -358,6 +360,7 @@ static ssize_t migration_store(struct class *class,
- 			       struct class_attribute *attr, const char *buf,
- 			       size_t count)
- {
-+#if 0
- 	u64 streamid;
- 	int rc;
- 
-@@ -374,6 +377,7 @@ static ssize_t migration_store(struct class *class,
- 	if (rc)
- 		return rc;
- 
-+#endif
- 	post_mobility_fixup();
- 	return count;
- }
--- 
-2.7.4
+Thanks,
+Deepa
