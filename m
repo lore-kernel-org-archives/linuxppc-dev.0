@@ -2,8 +2,8 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402JGt6JZZzF15q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 06:16:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402JGx6VbszF17N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 06:16:25 +1100 (AEDT)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Kate Stewart <kstewart@linuxfoundation.org>,
@@ -25,11 +25,15 @@ Cc: Kate Stewart <kstewart@linuxfoundation.org>,
  Oliver O'Halloran <oohall@gmail.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Tobin C. Harding" <me@tobin.cc>, Michal Suchanek <msuchanek@suse.de>
-Subject: [PATCH RFC rebase 0/9] powerpc barrier_nospec
-Date: Thu, 15 Mar 2018 20:15:49 +0100
-Message-Id: <cover.1521141122.git.msuchanek@suse.de>
-In-Reply-To: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
+Subject: [PATCH RFC rebase 4/9] powerpc/64s: Use barrier_nospec in
+ RFI_FLUSH_SLOT
+Date: Thu, 15 Mar 2018 20:15:53 +0100
+Message-Id: <89e52fff32b76d01d5c0c961f6558dade0676f7a.1521141122.git.msuchanek@suse.de>
+In-Reply-To: <cover.1521141122.git.msuchanek@suse.de>
 References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
+ <cover.1521141122.git.msuchanek@suse.de>
+In-Reply-To: <cover.1521141122.git.msuchanek@suse.de>
+References: <cover.1521141122.git.msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,41 +43,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yes, it is good idea to add some commit messages.
+The RFI flush support patches the speculation barrier into
+RFI_FLUSH_SLOT as part of the RFI flush. Use separate barrier_nospec
+instead.
 
-Also I rebased the patches on top v3 of series
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/include/asm/exception-64s.h | 2 +-
+ arch/powerpc/lib/feature-fixups.c        | 9 +++------
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
-Setup RFI flush after PowerVM LPM migration
-
-Thanks
-
-Michal
-
-Michal Suchanek (9):
-  powerpc: Add barrier_nospec
-  powerpc: Use barrier_nospec in copy_from_user
-  powerpc/64: Use barrier_nospec in syscall entry
-  powerpc/64s: Use barrier_nospec in RFI_FLUSH_SLOT
-  powerpc/64s: Add support for ori barrier_nospec patching
-  powerpc/64: Patch barrier_nospec in modules
-  powerpc/64: barrier_nospec: Add debugfs trigger
-  powerpc/64s: barrier_nospec: Add hcall triggerr
-  powerpc/64: barrier_nospec: Add commandline trigger
-
- arch/powerpc/include/asm/barrier.h        |  9 ++++
- arch/powerpc/include/asm/exception-64s.h  |  2 +-
- arch/powerpc/include/asm/feature-fixups.h |  9 ++++
- arch/powerpc/include/asm/setup.h          | 11 ++++
- arch/powerpc/include/asm/uaccess.h        | 11 +++-
- arch/powerpc/kernel/entry_64.S            |  3 ++
- arch/powerpc/kernel/module.c              |  6 +++
- arch/powerpc/kernel/setup_64.c            | 87 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S         |  7 +++
- arch/powerpc/lib/feature-fixups.c         | 47 ++++++++++++++---
- arch/powerpc/platforms/pseries/mobility.c |  2 +-
- arch/powerpc/platforms/pseries/pseries.h  |  2 +-
- arch/powerpc/platforms/pseries/setup.c    | 37 +++++++++----
- 13 files changed, 213 insertions(+), 20 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 471b2274fbeb..bb5a3052b29b 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -81,9 +81,9 @@
+  * L1-D cache when returning to userspace or a guest.
+  */
+ #define RFI_FLUSH_SLOT							\
++	barrier_nospec_asm;						\
+ 	RFI_FLUSH_FIXUP_SECTION;					\
+ 	nop;								\
+-	nop;								\
+ 	nop
+ 
+ #define RFI_TO_KERNEL							\
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 35f80ab7cbd8..4cc2f0c5c863 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -119,7 +119,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ {
+-	unsigned int instrs[3], *dest;
++	unsigned int instrs[2], *dest;
+ 	long *start, *end;
+ 	int i;
+ 
+@@ -128,15 +128,13 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ 
+ 	instrs[0] = 0x60000000; /* nop */
+ 	instrs[1] = 0x60000000; /* nop */
+-	instrs[2] = 0x60000000; /* nop */
+ 
+ 	if (types & L1D_FLUSH_FALLBACK)
+-		/* b .+16 to fallback flush */
+-		instrs[0] = 0x48000010;
++		/* b .+12 to fallback flush */
++		instrs[0] = 0x4800000c;
+ 
+ 	i = 0;
+ 	if (types & L1D_FLUSH_ORI) {
+-		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
+ 		instrs[i++] = 0x63de0000; /* ori 30,30,0 L1d flush*/
+ 	}
+ 
+@@ -150,7 +148,6 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ 
+ 		patch_instruction(dest, instrs[0]);
+ 		patch_instruction(dest + 1, instrs[1]);
+-		patch_instruction(dest + 2, instrs[2]);
+ 	}
+ 
+ 	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
 -- 
 2.13.6
