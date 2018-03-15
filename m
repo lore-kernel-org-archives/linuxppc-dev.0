@@ -1,45 +1,38 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402HLg3SW3zF1KC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 05:34:35 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2FIYWMF041163
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 14:34:33 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gqv6f62xj-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 14:34:32 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 15 Mar 2018 14:34:12 -0400
-References: <0dd9d938-8d89-f0e0-f05f-9a3e5dc42a57@users.sourceforge.net>
- <87fu52jqtc.fsf@morokweng.localdomain>
- <20180315115753.rjejlkrp3fhdxbyk@mwanda>
- <1521126196.22221.10.camel@perches.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>,
- SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>,
- Josh Sklar <sklar@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Tom Lendacky <thomas.lendacky@amd.com>,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Use common error handling code in setup_new_fdt()
-In-reply-to: <1521126196.22221.10.camel@perches.com>
-Date: Thu, 15 Mar 2018 15:34:01 -0300
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87605xp4rq.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402JGw0FYtzF15q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 06:16:24 +1100 (AEDT)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Kate Stewart <kstewart@linuxfoundation.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Nicholas Piggin <npiggin@gmail.com>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>, Joe Perches <joe@perches.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Tobin C. Harding" <me@tobin.cc>, Michal Suchanek <msuchanek@suse.de>
+Subject: [PATCH RFC rebase 1/9] powerpc: Add barrier_nospec
+Date: Thu, 15 Mar 2018 20:15:50 +0100
+Message-Id: <8cb7d41beef9bdd351120d0512f73ac3bfada168.1521141122.git.msuchanek@suse.de>
+In-Reply-To: <cover.1521141122.git.msuchanek@suse.de>
+References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
+ <cover.1521141122.git.msuchanek@suse.de>
+In-Reply-To: <cover.1521141122.git.msuchanek@suse.de>
+References: <cover.1521141122.git.msuchanek@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,41 +42,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When the firmware supports it an otherwise useless combination of ORI
+instruction arguments is interpreted as speculation barrier. Implement
+barrier_nospec using this instruction.
 
-Joe Perches <joe@perches.com> writes:
+Based on the out-of-tree gmb() implementation.
 
-> On Thu, 2018-03-15 at 14:57 +0300, Dan Carpenter wrote:
->> On Wed, Mar 14, 2018 at 06:22:07PM -0300, Thiago Jung Bauermann wrote:
->> > 
->> > SF Markus Elfring <elfring@users.sourceforge.net> writes:
->> > 
->> > > From: Markus Elfring <elfring@users.sourceforge.net>
->> > > Date: Sun, 11 Mar 2018 09:03:42 +0100
->> > > 
->> > > Add a jump target so that a bit of exception handling can be better reused
->> > > at the end of this function.
->> > > 
->> > > This issue was detected by using the Coccinelle software.
->> > > 
->> > > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
->> > > ---
->> > >  arch/powerpc/kernel/machine_kexec_file_64.c | 28 ++++++++++++----------------
->> > >  1 file changed, 12 insertions(+), 16 deletions(-)
->> > 
->> > I liked it. Thanks!
->> > 
->> > Reviewed-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
->> > 
->> 
->> You know that compilers already re-use string constants so this doesn't
->> actually save memory?
->
-> And modern compilers create their own jump labels
-> so this doesn't change object code either?
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/include/asm/barrier.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-IMHO it's an improvement to the source code itself. I wasn't thinking
-about the object file.
-
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index 10daa1d56e0a..8e47b3abe405 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -75,6 +75,15 @@ do {									\
+ 	___p1;								\
+ })
+ 
++/* TODO: add patching so this can be disabled */
++/* Prevent speculative execution past this barrier. */
++#define barrier_nospec_asm ori 31,31,0
++#ifdef __ASSEMBLY__
++#define barrier_nospec barrier_nospec_asm
++#else
++#define barrier_nospec() __asm__ __volatile__ (stringify_in_c(barrier_nospec_asm) : : :)
++#endif
++
+ #include <asm-generic/barrier.h>
+ 
+ #endif /* _ASM_POWERPC_BARRIER_H */
 -- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+2.13.6
