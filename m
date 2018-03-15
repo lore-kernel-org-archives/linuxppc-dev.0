@@ -1,26 +1,28 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00053.outbound.protection.outlook.com [40.107.0.53])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4023KR42F6zF12j
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 20:32:41 +1100 (AEDT)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: "jocke@infinera.com" <joakim.tjernlund@infinera.com>,
- "davem@davemloft.net" <davem@davemloft.net>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li
- <leoyang.li@nxp.com>, Camelia Alexandra Groza <camelia.groza@nxp.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH 0/5] DPAA Ethernet fixes
-Date: Thu, 15 Mar 2018 09:32:35 +0000
-Message-ID: <AM5PR04MB3267BC402A80D9E772BC8903ECD00@AM5PR04MB3267.eurprd04.prod.outlook.com>
-References: <20180314133732.24068-1-madalin.bucur@nxp.com>
- <1521052994.4790.148.camel@infinera.com>
-In-Reply-To: <1521052994.4790.148.camel@infinera.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4024Y04JqczDqsY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Mar 2018 21:27:48 +1100 (AEDT)
+Date: Thu, 15 Mar 2018 10:46:05 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ram Pai <linuxram@us.ibm.com>
+cc: mingo@redhat.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, x86@kernel.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, corbet@lwn.net,
+ arnd@arndb.de, fweimer@redhat.com, msuchanek@suse.com,
+ Ulrich.Weigand@de.ibm.com
+Subject: Re: [PATCH v3] x86: treat pkey-0 special
+In-Reply-To: <1521061214-22385-1-git-send-email-linuxram@us.ibm.com>
+Message-ID: <alpine.DEB.2.21.1803151039430.1525@nanos.tec.linutronix.de>
+References: <1521061214-22385-1-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKb2FraW0gVGplcm5sdW5kIFtt
-YWlsdG86Sm9ha2ltLlRqZXJubHVuZEBpbmZpbmVyYS5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwg
-TWFyY2ggMTQsIDIwMTggODo0MyBQTQ0KPiBUbzogZGF2ZW1AZGF2ZW1sb2Z0Lm5ldDsgTWFkYWxp
-bi1jcmlzdGlhbiBCdWN1cg0KPiA8bWFkYWxpbi5idWN1ckBueHAuY29tPg0KPiANCj4gT24gV2Vk
-LCAyMDE4LTAzLTE0IGF0IDA4OjM3IC0wNTAwLCBNYWRhbGluIEJ1Y3VyIHdyb3RlOg0KPiA+IEhp
-LA0KPiA+DQo+ID4gVGhpcyBwYXRjaCBzZXQgaXMgYWRkcmVzc2luZyBzZXZlcmFsIGlzc3VlcyBp
-biB0aGUgRFBBQSBFdGhlcm5ldA0KPiA+IGRyaXZlciBzdWl0ZToNCj4gPg0KPiA+ICAtIG1vZHVs
-ZSB1bmxvYWQgY3Jhc2ggY2F1c2VkIGJ5IHdyb25nIHJlZmVyZW5jZSB0byBkZXZpY2UgYmVpbmcg
-bGVmdA0KPiA+ICAgIGluIHRoZSBjbGVhbnVwIGNvZGUgYWZ0ZXIgdGhlIERTQSByZWxhdGVkIGNo
-YW5nZXMNCj4gPiAgLSBzY2hlZHVsaW5nIHdpbGUgYXRvbWljIGJ1ZyBpbiBRTWFuIGNvZGUgcmV2
-ZWFsZWQgZHVyaW5nIGRwYWFfZXRoDQo+ID4gICAgbW9kdWxlIHVubG9hZA0KPiA+ICAtIGEgY291
-cGxlIG9mIGVycm9yIGNvdW50ZXIgZml4ZXMsIGEgZHVwbGljYXRlZCBpbml0IGluIGRwYWFfZXRo
-Lg0KPiANCj4gaG1tLCBzb21lIG9mIHRoZXNlKGFsbD8pIGJ1Z3MgYXJlIGluIHN0YWJsZSB0b28s
-IENDOiBzdGFibGUgcGVyaGFwcz8NCg0KSGkgSm9ja2UsDQoNCkkgZGlkIG5vdCBjaGVjayB0aGF0
-LCB0aGV5IHNob3VsZCBiZSBhZGRlZC4NCg0KVGhhbmtzLA0KTWFkYWxpbg0KDQo+ID4NCj4gPiBN
-YWRhbGluDQo+ID4NCj4gPiBDYW1lbGlhIEdyb3phICgzKToNCj4gPiAgIGRwYWFfZXRoOiByZW1v
-dmUgZHVwbGljYXRlIGluaXRpYWxpemF0aW9uDQo+ID4gICBkcGFhX2V0aDogaW5jcmVtZW50IHRo
-ZSBSWCBkcm9wcGVkIGNvdW50ZXIgd2hlbiBuZWVkZWQNCj4gPiAgIGRwYWFfZXRoOiByZW1vdmUg
-ZHVwbGljYXRlIGluY3JlbWVudCBvZiB0aGUgdHhfZXJyb3JzIGNvdW50ZXINCj4gPg0KPiA+IE1h
-ZGFsaW4gQnVjdXIgKDIpOg0KPiA+ICAgc29jL2ZzbC9xYm1hbjogZml4IGlzc3VlIGluIHFtYW5f
-ZGVsZXRlX2Nncl9zYWZlKCkNCj4gPiAgIGRwYWFfZXRoOiBmaXggZXJyb3IgaW4gZHBhYV9yZW1v
-dmUoKQ0KPiA+DQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL2RwYWFf
-ZXRoLmMgfCAgOCArKysrLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvcWJtYW4vcW1hbi5jICAg
-ICAgICAgICAgICAgICAgIHwgMjggKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiAgMiBm
-aWxlcyBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDI3IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4g
-LS0NCj4gPiAyLjEuMA0KPiA+DQo=
+On Wed, 14 Mar 2018, Ram Pai wrote:
+> Applications need the ability to associate an address-range with some
+> key and latter revert to its initial default key. Pkey-0 comes close to
+> providing this function but falls short, because the current
+> implementation disallows applications to explicitly associate pkey-0 to
+> the address range.
+> 
+> This patch clarifies the semantics of pkey-0 and provides the
+
+grep 'This patch' Documentation/process
+
+> corresponding implementation on powerpc.
+> 
+> Pkey-0 is special with the following semantics.
+> (a) it is implicitly allocated and can never be freed. It always exists.
+> (b) it is the default key assigned to any address-range.
+> (c) it can be explicitly associated with any address-range.
+> 
+> Tested on x86_64.
+
+I'm curious how the corresponding implementation on powerpc can be tested
+on x86_64. Copy and paste is not enough ...
+
+> 
+> History:
+>     v3 : added clarification of the semantics of pkey0.
+>     		-- suggested by Dave Hansen
+>     v2 : split the patch into two, one for x86 and one for powerpc
+>     		-- suggested by Michael Ellermen
+
+Please put the history below the --- seperator. It's not part of the
+changelog. That way the tools can discard it when picking up the patch.
+
+> 
+> cc: Dave Hansen <dave.hansen@intel.com>
+> cc: Michael Ellermen <mpe@ellerman.id.au>
+> cc: Ingo Molnar <mingo@kernel.org>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/x86/include/asm/pkeys.h | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
+> index a0ba1ff..6ea7486 100644
+> --- a/arch/x86/include/asm/pkeys.h
+> +++ b/arch/x86/include/asm/pkeys.h
+> @@ -52,7 +52,7 @@ bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+>  	 * from pkey_alloc().  pkey 0 is special, and never
+>  	 * returned from pkey_alloc().
+>  	 */
+> -	if (pkey <= 0)
+> +	if (pkey < 0)
+>  		return false;
+>  	if (pkey >= arch_max_pkey())
+>  		return false;
+> @@ -92,7 +92,8 @@ int mm_pkey_alloc(struct mm_struct *mm)
+>  static inline
+>  int mm_pkey_free(struct mm_struct *mm, int pkey)
+>  {
+> -	if (!mm_pkey_is_allocated(mm, pkey))
+> +	/* pkey 0 is special and can never be freed */
+
+This comment is pretty useless. How should anyone figure out whats special
+about pkey 0?
+
+> +	if (!pkey || !mm_pkey_is_allocated(mm, pkey))
+
+Why this extra check? mm_pkey_is_allocated(mm, 0) should not return true
+ever. If it does, then this wants to be fixed.
+
+Thanks,
+
+	tglx
