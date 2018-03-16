@@ -2,20 +2,34 @@ Return-Path: <msuchanek@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402fN56bjkzF0Wy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 19:52:05 +1100 (AEDT)
-Date: Fri, 16 Mar 2018 09:52:00 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402fvg2MrSzDqBf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 20:15:58 +1100 (AEDT)
+Date: Fri, 16 Mar 2018 10:15:49 +0100
 From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Murilo Opsfelder Araujo <muriloo@linux.vnet.ibm.com>
-Cc: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v3 1/5] rfi-flush: Move the logic to avoid a redo into
- the debugfs code
-Message-ID: <20180316095200.78f31a50@naga.suse.cz>
-In-Reply-To: <4ae7af3f-219e-33dc-d7fa-49141d268222@linux.vnet.ibm.com>
-References: <1521067243-19520-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <1521067243-19520-2-git-send-email-mauricfo@linux.vnet.ibm.com>
- <4ae7af3f-219e-33dc-d7fa-49141d268222@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Madhavan Srinivasan
+ <maddy@linux.vnet.ibm.com>, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Michael Neuling <mikey@neuling.org>, "Bryant G. Ly"
+ <bryantly@linux.vnet.ibm.com>, "Naveen N. Rao"
+ <naveen.n.rao@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>, David Gibson
+ <david@gibson.dropbear.id.au>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sergey
+ Senozhatsky <sergey.senozhatsky@gmail.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>, Joe Perches <joe@perches.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Andrew Morton
+ <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "Tobin C.
+ Harding" <me@tobin.cc>
+Subject: Re: [PATCH RFC rebase 3/9] powerpc/64: Use barrier_nospec in
+ syscall entry
+Message-ID: <20180316101549.31238bdf@naga.suse.cz>
+In-Reply-To: <20180316151823.2f28d5ea@roar.ozlabs.ibm.com>
+References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
+ <cover.1521141122.git.msuchanek@suse.de>
+ <b8253774e223530c808eed65d116deecc46ad36b.1521141122.git.msuchanek@suse.de>
+ <20180316151823.2f28d5ea@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,67 +41,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Mar 2018 17:36:00 -0300
-Murilo Opsfelder Araujo <muriloo@linux.vnet.ibm.com> wrote:
+Hello,
 
-> On 03/14/2018 07:40 PM, Mauricio Faria de Oliveira wrote:
-> > From: Michael Ellerman <mpe@ellerman.id.au>
-> > 
-> > rfi_flush_enable() includes a check to see if we're already
-> > enabled (or disabled), and in that case does nothing.
-> > 
-> > But that means calling setup_rfi_flush() a 2nd time doesn't actually
-> > work, which is a bit confusing.
-> > 
-> > Move that check into the debugfs code, where it really belongs.
-> > 
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > Signed-off-by: Mauricio Faria de Oliveira
-> > <mauricfo@linux.vnet.ibm.com> ---
-> >  arch/powerpc/kernel/setup_64.c | 13 ++++++++-----
-> >  1 file changed, 8 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/setup_64.c
-> > b/arch/powerpc/kernel/setup_64.c index c388cc3..3efc01a 100644
-> > --- a/arch/powerpc/kernel/setup_64.c
-> > +++ b/arch/powerpc/kernel/setup_64.c
-> > @@ -846,9 +846,6 @@ static void do_nothing(void *unused)
-> > 
-> >  void rfi_flush_enable(bool enable)
-> >  {
-> > -	if (rfi_flush == enable)
-> > -		return;
-> > -
-> >  	if (enable) {
-> >  		do_rfi_flush_fixups(enabled_flush_types);
-> >  		on_each_cpu(do_nothing, NULL, 1);
-> > @@ -902,13 +899,19 @@ void __init setup_rfi_flush(enum
-> > l1d_flush_type types, bool enable) #ifdef CONFIG_DEBUG_FS
-> >  static int rfi_flush_set(void *data, u64 val)
-> >  {
-> > +	bool enable;
-> > +
-> >  	if (val == 1)
-> > -		rfi_flush_enable(true);
-> > +		enable = true;
-> >  	else if (val == 0)
-> > -		rfi_flush_enable(false);
-> > +		enable = false;
-> >  	else
-> >  		return -EINVAL;
-> > 
-> > +	/* Only do anything if we're changing state */
-> > +	if (enable != rfi_flush)  
+On Fri, 16 Mar 2018 15:18:23 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
+
+> On Thu, 15 Mar 2018 20:15:52 +0100
+> Michal Suchanek <msuchanek@suse.de> wrote:
 > 
-> Hi, Mauricio.
+> > On powerpc syscall entry is done in assembly so patch in an explicit
+> > barrier_nospec.  
 > 
-> Do we need to take into account if no_rfi_flush == true?
+> Same comment as Linus for this -- the barriers are before the branch
+> here, so is it possible the branch instruction can be speculative
+> while the index is used to load the syscall table?
 
-I think it makes sense you are able to override that using debugfs.
+As far as I understand barriers they separate code before the barrier
+and code after the barrier.
 
-It's interface used for diagnostics and testing.
+So inserting barrier_nospec after cmpldi means that the result of the
+cmpldi has to be known before any instruction following barrier_nospec
+that depends on the result can be executed. 
 
-If this was in sysfs it would be a different story.
+In many cases it is useful to put the barrier after a branch. It allows
+the compiler to speculate on the computed value at compile time and if
+it is constrained optimize out the branch. It may also result in the
+need to include many barriers and less readable code.
+
+However, you have probably knowledge of the powerpc implementation of
+the barrier so if the semantic is actually different then please
+enlighten me.
 
 Thanks
 
