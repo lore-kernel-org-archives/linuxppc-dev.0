@@ -1,11 +1,11 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
+Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
+ [IPv6:2a00:1450:400c:c0c::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402jH04FjbzF09b
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402jH10m14zF07D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 22:02:52 +1100 (AEDT)
-Received: by mail-wm0-x231.google.com with SMTP id h76so2273129wme.4
+Received: by mail-wr0-x241.google.com with SMTP id o1so11246215wro.10
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 04:02:52 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
@@ -13,9 +13,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  Mathieu Malaterre <malat@debian.org>
-Subject: [PATCH 00/19] Start using __printf attribute (single commit series)
-Date: Fri, 16 Mar 2018 12:02:05 +0100
-Message-Id: <20180316110224.12260-1-malat@debian.org>
+Subject: [PATCH 04/19] ppc32: change %lx into %p
+Date: Fri, 16 Mar 2018 12:02:09 +0100
+Message-Id: <20180316110224.12260-5-malat@debian.org>
+In-Reply-To: <20180316110224.12260-1-malat@debian.org>
+References: <20180316110224.12260-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,48 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is part of my warning fixes branch. When preparing the patch, I
-figured that sending it as single patch would make the reviewing task fairly
-difficult. I decided to split it into fake commits and group them by warning
-types to make reviewing much easier. Obviously this series is not meant to be
-applied as-is but squashed into a single commit (maybe two if I move the gcc
-attribute as second patch). I saw that my previous patches were applied with a
-trimmed warning context to reduce the level of noise, I'll keep that in mind
-when preparing the squashed commit.
+also remove extra fp->link since no formatter associated.
 
-This series has only been compiled tested using ppc32_defconfig and
-ppc64_defconfig, hopefully those two cover all combinations for this piece of
-code. I am not sure what (if anything?) I am going to break when replacing
-%016lx with %p on 32 bits arch, the other changes seems more direct. I am open
-for suggestion for the last commit (maybe combine the two function-like macros
-DUMP & DUMPPTR into a single one with an extra parameter).
+  CC      arch/powerpc/xmon/xmon.o
+../arch/powerpc/xmon/xmon.c: In function ‘excprint’:
+../arch/powerpc/xmon/xmon.c:1607:31: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘struct pt_regs *’ [-Werror=format=]
+  printf("Vector: %lx %s at [%lx]\n", fp->trap, getvecname(trap), fp);
+                               ^
+../arch/powerpc/xmon/xmon.c:1611:9: error: too many arguments for format [-Werror=format-extra-args]
+  printf("    lr: ", fp->link);
+         ^~~~~~~~~~
+../arch/powerpc/xmon/xmon.c:1623:26: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘struct task_struct *’ [-Werror=format=]
+  printf("  current = 0x%lx\n", current);
+                          ^
+cc1: all warnings being treated as errors
 
-Mathieu Malaterre (19):
-  xmon: Use __printf markup to silence compiler
-  ppc32: change %x into %lx
-  ppc32: Change %.16x into %p
-  ppc32: change %lx into %p
-  ppc32: change %lx into %tx (ptrdiff_t)
-  ppc64: change %lx into %llx
-  ppc64: change %ld into %d
-  ppc64: change %x into %lx
-  ppc64: change %016lx into %p
-  ppc64: change %lx into %p
-  ppc64: change %lx into %x
-  ppc64: change %lx into %llx
-  ppc64: change %llx into %lx
-  ppc64: change %p into %llx
-  ppc64: change %d into %ld
-  ppc64: Change %d into %lu
-  ppc64: change %d into %llu
-  ppc64: change %ld into %d
-  ppc64: Handle %p format in DUMPPTR() function-like macro
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+ arch/powerpc/xmon/xmon.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- arch/powerpc/include/asm/xmon.h |   2 +-
- arch/powerpc/xmon/nonstdio.h    |   8 +--
- arch/powerpc/xmon/spu-dis.c     |  18 +++---
- arch/powerpc/xmon/xmon.c        | 133 ++++++++++++++++++++--------------------
- 4 files changed, 82 insertions(+), 79 deletions(-)
-
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index f155f030550f..15011be7a051 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1604,11 +1604,11 @@ static void excprint(struct pt_regs *fp)
+ #endif /* CONFIG_SMP */
+ 
+ 	trap = TRAP(fp);
+-	printf("Vector: %lx %s at [%lx]\n", fp->trap, getvecname(trap), fp);
++	printf("Vector: %lx %s at [%p]\n", fp->trap, getvecname(trap), fp);
+ 	printf("    pc: ");
+ 	xmon_print_symbol(fp->nip, ": ", "\n");
+ 
+-	printf("    lr: ", fp->link);
++	printf("    lr: ");
+ 	xmon_print_symbol(fp->link, ": ", "\n");
+ 
+ 	printf("    sp: %lx\n", fp->gpr[1]);
+@@ -1620,7 +1620,7 @@ static void excprint(struct pt_regs *fp)
+ 			printf(" dsisr: %lx\n", fp->dsisr);
+ 	}
+ 
+-	printf("  current = 0x%lx\n", current);
++	printf("  current = 0x%p\n", current);
+ #ifdef CONFIG_PPC64
+ 	printf("  paca    = 0x%lx\t softe: %d\t irq_happened: 0x%02x\n",
+ 	       local_paca, local_paca->irq_soft_mask, local_paca->irq_happened);
 -- 
 2.11.0
