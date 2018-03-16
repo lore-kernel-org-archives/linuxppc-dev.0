@@ -1,23 +1,23 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402y5X5T2vzF1b9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 07:40:32 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2GKdFEj035659
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 16:40:30 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2grhkg002y-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402yBD4p1mzF1YQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 07:44:36 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2GKhhP6005491
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 16:44:34 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2grjdb693e-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 16:40:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 16:44:33 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 16 Mar 2018 14:40:28 -0600
+ Fri, 16 Mar 2018 14:39:32 -0600
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linux-integrity@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
@@ -31,11 +31,12 @@ Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v6 12/12] ima: Write modsig to the measurement list
-Date: Fri, 16 Mar 2018 17:38:37 -0300
+Subject: [PATCH v6 02/12] PKCS#7: Introduce pkcs7_get_message_sig() and
+ verify_pkcs7_message_sig()
+Date: Fri, 16 Mar 2018 17:38:27 -0300
 In-Reply-To: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
 References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
-Message-Id: <20180316203837.10174-13-bauerman@linux.vnet.ibm.com>
+Message-Id: <20180316203837.10174-3-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,138 +46,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define new "d-sig" template field which holds the digest that is expected
-to match the one contained in the modsig.
+IMA will need to know the key that signed a given PKCS#7 message, so add
+pkcs7_get_message_sig().
 
-Also add modsig support to the "sig" template field, allowing the the
-contents of the modsig to be included in the measurement list.
+It will also need to verify an already parsed PKCS#7 message. For this
+purpose, add verify_pkcs7_message_sig() which takes a struct pkcs7_message
+for verification instead of the raw bytes that verify_pkcs7_signature()
+takes.
 
-Suggested-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>
 ---
- Documentation/security/IMA-templates.rst  |  5 ++++
- security/integrity/ima/ima_template.c     |  4 ++-
- security/integrity/ima/ima_template_lib.c | 47 +++++++++++++++++++++++++++++--
- security/integrity/ima/ima_template_lib.h |  2 ++
- 4 files changed, 55 insertions(+), 3 deletions(-)
+ certs/system_keyring.c                | 61 ++++++++++++++++++++++++++---------
+ crypto/asymmetric_keys/pkcs7_parser.c | 16 +++++++++
+ include/crypto/pkcs7.h                |  2 ++
+ include/linux/verification.h          | 10 ++++++
+ 4 files changed, 73 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/security/IMA-templates.rst b/Documentation/security/IMA-templates.rst
-index 2cd0e273cc9a..f2a0f4225857 100644
---- a/Documentation/security/IMA-templates.rst
-+++ b/Documentation/security/IMA-templates.rst
-@@ -68,6 +68,11 @@ descriptors by adding their identifier to the format string
-  - 'd-ng': the digest of the event, calculated with an arbitrary hash
-    algorithm (field format: [<hash algo>:]digest, where the digest
-    prefix is shown only if the hash algorithm is not SHA1 or MD5);
-+ - 'd-sig': the digest of the event for files that have an appended modsig. This
-+   field is calculated without including the modsig and thus will differ from
-+   the total digest of the file, but it is what should match the digest
-+   contained in the modsig (if it doesn't, the signature is invalid). It is
-+   shown in the same format as 'd-ng';
-  - 'n-ng': the name of the event, without size limitations;
-  - 'sig': the file signature.
+diff --git a/certs/system_keyring.c b/certs/system_keyring.c
+index 6251d1b27f0c..7ddc8b7a3062 100644
+--- a/certs/system_keyring.c
++++ b/certs/system_keyring.c
+@@ -190,33 +190,27 @@ late_initcall(load_system_certificate_list);
+ #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
  
-diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
-index 30db39b23804..36fc32f538b5 100644
---- a/security/integrity/ima/ima_template.c
-+++ b/security/integrity/ima/ima_template.c
-@@ -43,8 +43,10 @@ static struct ima_template_field supported_fields[] = {
- 	 .field_show = ima_show_template_string},
- 	{.field_id = "sig", .field_init = ima_eventsig_init,
- 	 .field_show = ima_show_template_sig},
-+	{.field_id = "d-sig", .field_init = ima_eventdigest_sig_init,
-+	 .field_show = ima_show_template_digest_ng},
- };
--#define MAX_TEMPLATE_NAME_LEN 15
-+#define MAX_TEMPLATE_NAME_LEN 24
- 
- static struct ima_template_desc *ima_template;
- static struct ima_template_desc *lookup_template_desc(const char *name);
-diff --git a/security/integrity/ima/ima_template_lib.c b/security/integrity/ima/ima_template_lib.c
-index afb52a90e532..1dca082cce43 100644
---- a/security/integrity/ima/ima_template_lib.c
-+++ b/security/integrity/ima/ima_template_lib.c
-@@ -220,7 +220,8 @@ int ima_parse_buf(void *bufstartp, void *bufendp, void **bufcurp,
- 	return 0;
- }
- 
--static int ima_eventdigest_init_common(u8 *digest, u32 digestsize, u8 hash_algo,
-+static int ima_eventdigest_init_common(const u8 *digest, u32 digestsize,
-+				       u8 hash_algo,
- 				       struct ima_field_data *field_data)
+ /**
+- * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
++ * verify_pkcs7_message_sig - Verify a PKCS#7-based signature on system data.
+  * @data: The data to be verified (NULL if expecting internal data).
+  * @len: Size of @data.
+- * @raw_pkcs7: The PKCS#7 message that is the signature.
+- * @pkcs7_len: The size of @raw_pkcs7.
++ * @pkcs7: The PKCS#7 message that is the signature.
+  * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
+  *					(void *)1UL for all trusted keys).
+  * @usage: The use to which the key is being put.
+  * @view_content: Callback to gain access to content.
+  * @ctx: Context for callback.
+  */
+-int verify_pkcs7_signature(const void *data, size_t len,
+-			   const void *raw_pkcs7, size_t pkcs7_len,
+-			   struct key *trusted_keys,
+-			   enum key_being_used_for usage,
+-			   int (*view_content)(void *ctx,
+-					       const void *data, size_t len,
+-					       size_t asn1hdrlen),
+-			   void *ctx)
++int verify_pkcs7_message_sig(const void *data, size_t len,
++			     struct pkcs7_message *pkcs7,
++			     struct key *trusted_keys,
++			     enum key_being_used_for usage,
++			     int (*view_content)(void *ctx,
++						 const void *data, size_t len,
++						 size_t asn1hdrlen),
++			     void *ctx)
  {
- 	/*
-@@ -323,6 +324,35 @@ int ima_eventdigest_ng_init(struct ima_event_data *event_data,
- 					   hash_algo, field_data);
- }
+-	struct pkcs7_message *pkcs7;
+ 	int ret;
  
-+/*
-+ * This function writes the digest of the file which is expected to match the
-+ * digest contained in the file's embedded signature.
-+ */
-+int ima_eventdigest_sig_init(struct ima_event_data *event_data,
-+			     struct ima_field_data *field_data)
-+{
-+	struct evm_ima_xattr_data *xattr_value = event_data->xattr_value;
-+	enum hash_algo hash_algo = HASH_ALGO_SHA1;
-+	const u8 *cur_digest = NULL;
-+	u8 cur_digestsize = 0;
-+	int ret;
-+
-+	if (!xattr_value || xattr_value->type != IMA_MODSIG)
-+		return 0;
-+
-+	if (event_data->violation)	/* recording a violation. */
-+		goto out;
-+
-+	ret = ima_get_modsig_hash(xattr_value, &hash_algo, &cur_digest,
-+				  &cur_digestsize);
-+	if (ret)
-+		return ret;
-+
-+ out:
-+	return ima_eventdigest_init_common(cur_digest, cur_digestsize,
-+					   hash_algo, field_data);
+-	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
+-	if (IS_ERR(pkcs7))
+-		return PTR_ERR(pkcs7);
+-
+ 	/* The data should be detached - so we need to supply it. */
+ 	if (data && pkcs7_supply_detached_data(pkcs7, data, len) < 0) {
+ 		pr_err("PKCS#7 signature with non-detached data\n");
+@@ -258,6 +252,41 @@ int verify_pkcs7_signature(const void *data, size_t len,
+ 	}
+ 
+ error:
++	pr_devel("<==%s() = %d\n", __func__, ret);
++	return ret;
 +}
 +
- static int ima_eventname_init_common(struct ima_event_data *event_data,
- 				     struct ima_field_data *field_data,
- 				     bool size_limit)
-@@ -379,10 +409,23 @@ int ima_eventsig_init(struct ima_event_data *event_data,
- 		      struct ima_field_data *field_data)
- {
- 	struct evm_ima_xattr_data *xattr_value = event_data->xattr_value;
-+	int xattr_len = event_data->xattr_len;
- 
- 	if (!is_ima_sig(xattr_value))
- 		return 0;
- 
--	return ima_write_template_field_data(xattr_value, event_data->xattr_len,
-+	/*
-+	 * The xattr_value for IMA_MODSIG is a runtime structure containing
-+	 * pointers. Get its raw data instead.
-+	 */
-+	if (xattr_value->type == IMA_MODSIG) {
-+		int rc;
++/**
++ * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
++ * @data: The data to be verified (NULL if expecting internal data).
++ * @len: Size of @data.
++ * @raw_pkcs7: The PKCS#7 message that is the signature.
++ * @pkcs7_len: The size of @raw_pkcs7.
++ * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
++ *					(void *)1UL for all trusted keys).
++ * @usage: The use to which the key is being put.
++ * @view_content: Callback to gain access to content.
++ * @ctx: Context for callback.
++ */
++int verify_pkcs7_signature(const void *data, size_t len,
++			   const void *raw_pkcs7, size_t pkcs7_len,
++			   struct key *trusted_keys,
++			   enum key_being_used_for usage,
++			   int (*view_content)(void *ctx,
++					       const void *data, size_t len,
++					       size_t asn1hdrlen),
++			   void *ctx)
++{
++	struct pkcs7_message *pkcs7;
++	int ret;
 +
-+		rc = ima_modsig_serialize_data(&xattr_value, &xattr_len);
-+		if (rc)
-+			return rc;
-+	}
++	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
++	if (IS_ERR(pkcs7))
++		return PTR_ERR(pkcs7);
 +
-+	return ima_write_template_field_data(xattr_value, xattr_len,
- 					     DATA_FMT_HEX, field_data);
++	ret = verify_pkcs7_message_sig(data, len, pkcs7, trusted_keys, usage,
++				       view_content, ctx);
++
+ 	pkcs7_free_message(pkcs7);
+ 	pr_devel("<==%s() = %d\n", __func__, ret);
+ 	return ret;
+diff --git a/crypto/asymmetric_keys/pkcs7_parser.c b/crypto/asymmetric_keys/pkcs7_parser.c
+index a6dcaa659aa8..456b803972b5 100644
+--- a/crypto/asymmetric_keys/pkcs7_parser.c
++++ b/crypto/asymmetric_keys/pkcs7_parser.c
+@@ -683,3 +683,19 @@ int pkcs7_note_signed_info(void *context, size_t hdrlen,
+ 		return -ENOMEM;
+ 	return 0;
  }
-diff --git a/security/integrity/ima/ima_template_lib.h b/security/integrity/ima/ima_template_lib.h
-index 6a3d8b831deb..3cd353e83f73 100644
---- a/security/integrity/ima/ima_template_lib.h
-+++ b/security/integrity/ima/ima_template_lib.h
-@@ -38,6 +38,8 @@ int ima_eventname_init(struct ima_event_data *event_data,
- 		       struct ima_field_data *field_data);
- int ima_eventdigest_ng_init(struct ima_event_data *event_data,
- 			    struct ima_field_data *field_data);
-+int ima_eventdigest_sig_init(struct ima_event_data *event_data,
-+			     struct ima_field_data *field_data);
- int ima_eventname_ng_init(struct ima_event_data *event_data,
- 			  struct ima_field_data *field_data);
- int ima_eventsig_init(struct ima_event_data *event_data,
++
++/**
++ * pkcs7_get_message_sig - get signature in @pkcs7
++ */
++const struct public_key_signature *pkcs7_get_message_sig(
++					const struct pkcs7_message *pkcs7)
++{
++	/*
++	 * This function doesn't support messages with more than one signature,
++	 * so don't return anything in that case.
++	 */
++	if (pkcs7->signed_infos == NULL || pkcs7->signed_infos->next != NULL)
++		return NULL;
++
++	return pkcs7->signed_infos->sig;
++}
+diff --git a/include/crypto/pkcs7.h b/include/crypto/pkcs7.h
+index 583f199400a3..6f51d0cb6d12 100644
+--- a/include/crypto/pkcs7.h
++++ b/include/crypto/pkcs7.h
+@@ -28,6 +28,8 @@ extern void pkcs7_free_message(struct pkcs7_message *pkcs7);
+ extern int pkcs7_get_content_data(const struct pkcs7_message *pkcs7,
+ 				  const void **_data, size_t *_datalen,
+ 				  size_t *_headerlen);
++extern const struct public_key_signature *pkcs7_get_message_sig(
++					const struct pkcs7_message *pkcs7);
+ 
+ /*
+  * pkcs7_trust.c
+diff --git a/include/linux/verification.h b/include/linux/verification.h
+index a10549a6c7cd..f04dac2728ec 100644
+--- a/include/linux/verification.h
++++ b/include/linux/verification.h
+@@ -29,6 +29,7 @@ extern const char *const key_being_used_for[NR__KEY_BEING_USED_FOR];
+ #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
+ 
+ struct key;
++struct pkcs7_message;
+ 
+ extern int verify_pkcs7_signature(const void *data, size_t len,
+ 				  const void *raw_pkcs7, size_t pkcs7_len,
+@@ -38,6 +39,15 @@ extern int verify_pkcs7_signature(const void *data, size_t len,
+ 						      const void *data, size_t len,
+ 						      size_t asn1hdrlen),
+ 				  void *ctx);
++extern int verify_pkcs7_message_sig(const void *data, size_t len,
++				    struct pkcs7_message *pkcs7,
++				    struct key *trusted_keys,
++				    enum key_being_used_for usage,
++				    int (*view_content)(void *ctx,
++							const void *data,
++							size_t len,
++							size_t asn1hdrlen),
++				    void *ctx);
+ 
+ #ifdef CONFIG_SIGNED_PE_FILE_VERIFICATION
+ extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
