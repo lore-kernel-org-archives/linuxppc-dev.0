@@ -2,16 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402nW90Yd4zDqnN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:13:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402nZt3HytzF0sx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:16:54 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: dtc warnings
-In-Reply-To: <20180314161854.51b994ff@canb.auug.org.au>
-References: <20180314161854.51b994ff@canb.auug.org.au>
-Date: Sat, 17 Mar 2018 01:13:36 +1100
-Message-ID: <87r2okglbj.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 03/14] powerpc/64s: allocate lppacas individually
+In-Reply-To: <20180313225438.0c853b89@roar.ozlabs.ibm.com>
+References: <20180213150824.27689-1-npiggin@gmail.com>
+ <20180213150824.27689-4-npiggin@gmail.com>
+ <87woygf8qd.fsf@concordia.ellerman.id.au>
+ <20180313225438.0c853b89@roar.ozlabs.ibm.com>
+Date: Sat, 17 Mar 2018 01:16:52 +1100
+Message-ID: <87o9jogl63.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,52 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-
-> Hi all,
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Tue, 13 Mar 2018 23:41:46 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> > diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
+>> > index eeb13429d685..3fe126796975 100644
+>> > --- a/arch/powerpc/platforms/pseries/kexec.c
+>> > +++ b/arch/powerpc/platforms/pseries/kexec.c
+>> > @@ -23,7 +23,12 @@
+>> >  
+>> >  void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
+>> >  {
+>> > -	/* Don't risk a hypervisor call if we're crashing */
+>> > +	/*
+>> > +	 * Don't risk a hypervisor call if we're crashing
+>> > +	 * XXX: Why? The hypervisor is not crashing. It might be better
+>> > +	 * to at least attempt unregister to avoid the hypervisor stepping
+>> > +	 * on our memory.
+>> > +	 */  
+>> 
+>> Because every extra line of code we run in the crashed kernel is another
+>> opportunity to screw up and not make it into the kdump kernel.
+>> 
+>> For example the hcalls we do to unregister the VPA might trigger hcall
+>> tracing which runs a bunch of code and might trip up on something. We
+>> could modify those hcalls to not be traced, but then we can't trace them
+>> in normal operation.
 >
->
-> I get the following from a powerpc_ppc44x defconfig build in current
-> linux-next:
->
-> arch/powerpc/boot/ebony.dtb: Warning (pci_bridge): /plb/pci@20ec00000: missing bus-range for PCI bridge
-> arch/powerpc/boot/ebony.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/ebony.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/sequoia.dtb: Warning (pci_bridge): /plb/pci@1ec000000: missing bus-range for PCI bridge
-> arch/powerpc/boot/sequoia.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/sequoia.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/sam440ep.dtb: Warning (pci_bridge): /plb/pci@ec000000: missing bus-range for PCI bridge
-> arch/powerpc/boot/sam440ep.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/sam440ep.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/rainier.dtb: Warning (pci_bridge): /plb/pci@1ec000000: missing bus-range for PCI bridge
-> arch/powerpc/boot/rainier.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/rainier.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/taishan.dtb: Warning (pci_bridge): /plb/pci@20ec00000: missing bus-range for PCI bridge
-> arch/powerpc/boot/taishan.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/taishan.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/bamboo.dtb: Warning (pci_bridge): /plb/pci@ec000000: missing bus-range for PCI bridge
-> arch/powerpc/boot/bamboo.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/bamboo.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/katmai.dtb: Warning (pci_bridge): /plb/pciex@d00000000: node name is not "pci" or "pcie"
-> arch/powerpc/boot/katmai.dtb: Warning (pci_bridge): /plb/pciex@d20000000: node name is not "pci" or "pcie"
-> arch/powerpc/boot/katmai.dtb: Warning (pci_bridge): /plb/pciex@d40000000: node name is not "pci" or "pcie"
-> arch/powerpc/boot/katmai.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/katmai.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/warp.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
-> arch/powerpc/boot/yosemite.dtb: Warning (pci_bridge): /plb/pci@ec000000: missing bus-range for PCI bridge
-> arch/powerpc/boot/yosemite.dtb: Warning (pci_device_bus_num): Failed prerequisite 'pci_bridge'
-> arch/powerpc/boot/yosemite.dtb: Warning (chosen_node_stdout_path): /chosen:linux,stdout-path: Use 'stdout-path' instead
->
-> I though someone might like to do something about them ...
+> We really make no other hcalls in a crash? I didn't think of that.
 
-Feel free!
+We do, but they're explicitly written to use plpar_hcall_raw().
 
-Oh that's not what you meant :P
-
-Rob sent a patch to fix most of them:
-  http://patchwork.ozlabs.org/patch/879475/
-
-I thought he was going to merge it, but actually I'm not sure why I
-thought that. So I should probably merge it.
+And TBH I haven't tested a kdump with hcall tracing enabled lately, so
+for all I know it's broken, but that's the theory at least.
 
 cheers
