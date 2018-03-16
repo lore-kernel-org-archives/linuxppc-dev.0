@@ -1,54 +1,19 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from emh02.mail.saunalahti.fi (emh02.mail.saunalahti.fi
+ [62.142.5.108])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402wZg5KcHzF1Vw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 06:32:11 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2GJW1vg109993
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 15:32:08 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2grhf6p7mp-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 15:32:08 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 16 Mar 2018 19:32:05 -0000
-Date: Fri, 16 Mar 2018 12:31:52 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, linux-mm <linux-mm@kvack.org>,
- "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Dave Hansen <dave.hansen@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
- Haren Myneni/Beaverton/IBM <hbabu@us.ibm.com>,
- Michal Hocko <mhocko@kernel.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Jonathan Corbet <corbet@lwn.net>, Arnd Bergmann <arnd@arndb.de>,
- fweimer@redhat.com, msuchanek@suse.com,
- Thomas Gleixner <tglx@linutronix.de>, Ulrich.Weigand@de.ibm.com,
- Ram Pai <ram.n.pai@gmail.com>
-Subject: Re: [PATCH v4] mm, pkey: treat pkey-0 special
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1521196416-18157-1-git-send-email-linuxram@us.ibm.com>
- <CAKTCnzmSCT+VecdSRpyY2Rb_AW2ngCi3UTZfLE3VOLNSQn6vsA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKTCnzmSCT+VecdSRpyY2Rb_AW2ngCi3UTZfLE3VOLNSQn6vsA@mail.gmail.com>
-Message-Id: <20180316193152.GG1060@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402xhy08ySzF1KL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 07:22:38 +1100 (AEDT)
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: [PATCH] drivers: macintosh: rack-meter: really fix bogus memsets
+Date: Fri, 16 Mar 2018 22:17:28 +0200
+Message-Id: <20180316201728.3377-1-aaro.koskinen@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,51 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2018 at 10:02:22PM +1100, Balbir Singh wrote:
-> On Fri, Mar 16, 2018 at 9:33 PM, Ram Pai <linuxram@us.ibm.com> wrote:
-> > Applications need the ability to associate an address-range with some
-> > key and latter revert to its initial default key. Pkey-0 comes close to
-> > providing this function but falls short, because the current
-> > implementation disallows applications to explicitly associate pkey-0 to
-> > the address range.
-> >
-> > Clarify the semantics of pkey-0 and provide the corresponding
-> > implementation.
-> >
-> > Pkey-0 is special with the following semantics.
-> > (a) it is implicitly allocated and can never be freed. It always exists.
-> > (b) it is the default key assigned to any address-range.
-> > (c) it can be explicitly associated with any address-range.
-> >
-> > Tested on powerpc only. Could not test on x86.
-> 
-> 
-> Ram,
-> 
-> I was wondering if we should check the AMOR values on the ppc side to make sure
-> that pkey0 is indeed available for use as default. I am still of the
-> opinion that we
+We should zero an array using sizeof instead of number of elements.
 
-AMOR cannot be read/written by the OS in priviledge-non-hypervisor-mode.
-We could try testing if key-0 is available to the OS by temproarily
-changing the bits key-0 bits of AMR or IAMR register. But will be
-dangeorous to do, for you might disable read,execute of all the pages,
-since all pages are asscoiated with key-0 bydefault.
+Fixes the following compiler (GCC 7.3.0) warnings:
 
-May be we can play with UAMOR register and check if its key-0 can be
-modified. That is a good indication that key-0 is available.
-If it is not available, disable the pkey-subsystem, and operate
-the legacy way; no pkeys.
+drivers/macintosh/rack-meter.c: In function 'rackmeter_do_pause':
+drivers/macintosh/rack-meter.c:157:2: warning: 'memset' used with length equal to number of elements without multiplication by element size [-Wmemset-elt-size]
+drivers/macintosh/rack-meter.c:158:2: warning: 'memset' used with length equal to number of elements without multiplication by element size [-Wmemset-elt-size]
 
+Fixes: 4f7bef7a9f69 ("drivers: macintosh: rack-meter: fix bogus memsets")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ drivers/macintosh/rack-meter.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> should consider non-0 default pkey in the long run. I'm OK with the patches for
-> now, but really 0 is not special except for it being the default bit
-> values present
-> in the PTE.
-
-it will be a pain. Any new pte that gets instantiated will now have to
-explicitly initialize its key to this default-non-zero-key.  I hope
-we or any architecture goes there ever.
-
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+index 910b5b6..eb65b6e 100644
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -154,8 +154,8 @@ static void rackmeter_do_pause(struct rackmeter *rm, int pause)
+ 		DBDMA_DO_STOP(rm->dma_regs);
+ 		return;
+ 	}
+-	memset(rdma->buf1, 0, ARRAY_SIZE(rdma->buf1));
+-	memset(rdma->buf2, 0, ARRAY_SIZE(rdma->buf2));
++	memset(rdma->buf1, 0, sizeof(rdma->buf1));
++	memset(rdma->buf2, 0, sizeof(rdma->buf2));
+ 
+ 	rm->dma_buf_v->mark = 0;
+ 
 -- 
-Ram Pai
+2.9.2
