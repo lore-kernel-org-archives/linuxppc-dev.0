@@ -1,36 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Return-Path: <srs1=dc9a=kernel.org==p2sp=gg=goodmis.org=rostedt@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [103.22.144.68])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402nd31tvbzDqGV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:18:47 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michal
- =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call setup_rfi_flush()
- again
-In-Reply-To: <ff878619-a2c4-2dd2-8d39-ed0a535a9b8d@linux.vnet.ibm.com>
-References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
- <20180215081358.2f37cda4@naga.suse.cz>
- <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
- <87lgforngp.fsf@concordia.ellerman.id.au>
- <20180220180621.11265945@kitsune.suse.cz>
- <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
- <876069flhq.fsf@concordia.ellerman.id.au>
- <20180306135522.040707de@kitsune.suse.cz>
- <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
- <876060gq5s.fsf@concordia.ellerman.id.au>
- <c7cadceb-1957-046e-8934-592baccca5b7@linux.vnet.ibm.com>
- <20180313185916.3e4a0ea6@kitsune.suse.cz>
- <db75ecdd-32da-d429-8ea6-3bd1453bd89e@linux.vnet.ibm.com>
- <20180313193652.069ed57b@kitsune.suse.cz>
- <ff878619-a2c4-2dd2-8d39-ed0a535a9b8d@linux.vnet.ibm.com>
-Date: Sat, 17 Mar 2018 01:18:45 +1100
-Message-ID: <87lgesgl2y.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402p6Z4vsgzF189
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:40:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 402p6R61z8z8tQL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:40:47 +1100 (AEDT)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 402p6G75FTz9sQs
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2018 01:40:34 +1100 (AEDT)
+Date: Fri, 16 Mar 2018 10:40:30 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, naveen.n.rao@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 1/2] ftrace: Allow arches to opt-out of static ftrace
+Message-ID: <20180316104030.0df39af7@gandalf.local.home>
+In-Reply-To: <20180316134633.10584-1-mpe@ellerman.id.au>
+References: <20180316134633.10584-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,34 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com> writes:
+On Sat, 17 Mar 2018 00:46:32 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> On 03/13/2018 03:36 PM, Michal Such=C3=A1nek wrote:
->> On Tue, 13 Mar 2018 15:13:11 -0300
->> Mauricio Faria de Oliveira<mauricfo@linux.vnet.ibm.com>  wrote:
->>=20
->>> On 03/13/2018 02:59 PM, Michal Such=C3=A1nek wrote:
->>>> Maybe it would make more sense to move the messages to the function
->>>> that actually patches in the instructions?
->
->>> That helps, but if the instructions are not patched (e.g.,
->>> no_rfi_flush) then there is no information about what the system
->>> actually supports, which is useful for diagnostics/debugging (and
->>> patch verification!:-)  )
->
->> Can't you patch with debugfs in that case?
->
-> For development purposes, yes, sure; but unfortunately sometimes only a
-> dmesg output or other offline/postmortem data is available.
->
-> And there's the user case where he is not aware/willing/allowed to use
-> the debugfs switch.
->
-> I still think the correct, informative messages are a good way to go :)
+> There is a small but non-zero amount of code required by arches to
+> suppory non-dynamic (static) ftrace, and more importantly there is the
+> added work of testing both configurations.
+> 
+> There are also almost no down sides to dynamic ftrace once it's well
+> tested, other than a small increase in code/data size.
+> 
+> So give arches the option to opt-out of supporting static ftrace.
+> 
+> This is implemented as a DYNAMIC_FTRACE_CHOICE option, which controls
+> whether DYNAMIC_FTRACE is presented as a user-selectable option or if
+> it is just enabled based on its dependencies being enabled (because
+> it's already default y).
+> 
+> Then the CHOICE option depends on an arch *not* selecting
+> HAVE_DYNAMIC_FTRACE_ONLY. This would be more natural in reverse, as a
+> HAVE_STATIC_FTRACE option, but that would require updating every arch.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Yeah I agree.
+Why not just add in arch/powerpc/Kconfig:
 
-We probably want to do both, print what's available at boot, and print
-what's actually patched when the patching happens.
+config PPC
+	[..]
+	select DYNAMIC_FTRACE			if FUNCTION_TRACER
 
-cheers
+?
+
+It seems to work for me.
+
+-- Steve
