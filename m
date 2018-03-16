@@ -1,31 +1,38 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402lnP1XxBzF13m
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 23:55:48 +1100 (AEDT)
-Subject: [PATCH 1/1] PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi boards
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-pci@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Olof Johansson <olof@lixom.net>
-References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
- <87tvxl15qx.fsf@concordia.ellerman.id.au>
- <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
- <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
- <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
- <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
- <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
- <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
- <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
- <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
-Message-ID: <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
-Date: Fri, 16 Mar 2018 13:55:36 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402mNr3JKlzDqnN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 00:23:08 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Michal Suchanek <msuchanek@suse.de>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Madhavan Srinivasan
+ <maddy@linux.vnet.ibm.com>, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, "Naveen N. Rao"
+ <naveen.n.rao@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ Nicholas Piggin <npiggin@gmail.com>, =?utf-8?Q?C=C3=A9dric?= Le Goater
+ <clg@kaod.org>, David Gibson <david@gibson.dropbear.id.au>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Sergey Senozhatsky
+ <sergey.senozhatsky@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Philippe Ombredanne
+ <pombredanne@nexb.com>, Joe Perches <joe@perches.com>, Oliver O'Halloran
+ <oohall@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, "Tobin C.
+ Harding" <me@tobin.cc>, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Al Viro
+ <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH RFC rebase 2/9] powerpc: Use barrier_nospec in
+ copy_from_user
+In-Reply-To: <CA+55aFw8LJ7T_4jTe4q5q0d2JuP0iBWdwcTXZULKe-c4w7QrPA@mail.gmail.com>
+References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
+ <cover.1521141122.git.msuchanek@suse.de>
+ <32268431948dc1a32264a98a76d41d71ae7536b3.1521141122.git.msuchanek@suse.de>
+ <CA+55aFw8LJ7T_4jTe4q5q0d2JuP0iBWdwcTXZULKe-c4w7QrPA@mail.gmail.com>
+Date: Sat, 17 Mar 2018 00:22:54 +1100
+Message-ID: <87605wi28h.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +42,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas created a patch for making PCI_SCAN_ALL_PCIE_DEVS work for 
-Root Ports as well as Downstream. Previously PCI_SCAN_ALL_PCIE_DEVS (set 
-by quirks or the "pci=pcie_scan_all"
-kernel parameter) only affected Switch Downstream Ports, not Root Ports. 
-The problem is, that we have to add always the boot argument 
-"pci=pcie_scan_all" for using Bjorn's improvements. Without the boot 
-argument "pci=pcie_scan_all", the kernel doesn't boot on P.A. Semi 
-boards with SB600 chipset (SB600 chipset is connected via PCIe x4 to the 
-P.A. Semi’s PA6T-1682M System-on-a-Chip) because the kernel can't find 
-any drives connected to the SB600 anymore. Olof Johansson has created a 
-patch for executing "pci=pcie_scan_all" automatically on P.A. Semi 
-boards. With his patch, we don't need to add 'pci=pcie_scan_all' to the 
-kernel boot arguments anymore.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
----
+> On Thu, Mar 15, 2018 at 12:15 PM, Michal Suchanek <msuchanek@suse.de> wrote:
+>> This is based on x86 patch doing the same.
+>>
+>> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+>> ---
+>> --- a/arch/powerpc/include/asm/uaccess.h
+>> +++ b/arch/powerpc/include/asm/uaccess.h
+>> @@ -258,8 +259,10 @@ do {                                                               \
+>>         long __gu_err = -EFAULT;                                        \
+>>         unsigned long  __gu_val = 0;                                    \
+>>         const __typeof__(*(ptr)) __user *__gu_addr = (ptr);             \
+>> +       int can_access = access_ok(VERIFY_READ, __gu_addr, (size));     \
+>>         might_fault();                                                  \
+>> -       if (access_ok(VERIFY_READ, __gu_addr, (size)))                  \
+>> +       barrier_nospec();                                               \
+>> +       if (can_access)                                                 \
+>>                 __get_user_size(__gu_val, __gu_addr, (size), __gu_err); \
+>>         (x) = (__force __typeof__(*(ptr)))__gu_val;                             \
+>>         __gu_err;                                                       \
+>
+> Is the above really correct? The barrier is *before* the conditional
+> branch that might be mis-predicted.
+>
+> I don't know how the ppc barrier works, but that sounds completely bogus.
 
-arch/powerpc/platforms/pasemi/pci.c | 2 ++
-  1 file changed, 2 insertions(+)
+Yeah it should be after the branch.
 
-diff --git a/arch/powerpc/platforms/pasemi/pci.c 
-b/arch/powerpc/platforms/pasemi/pci.c
-index 5ff6108..ea54ed2 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -224,6 +224,8 @@ void __init pas_pci_init(void)
-          return;
-      }
+I don't have a formal spec for the barrier yet, it should be defined in
+a hopefully soon to be released revision of the ISA.
 
-+    pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
-+
-      for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
-          if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
-              of_node_get(np);
+But the gist is it will stall execution until any older branches are no
+longer speculating.
 
---
+It doesn't order any two arbitrary instructions, such as a comparison
+and a branch, which I suspect is how Michal was interpreting it.
+
+cheers
