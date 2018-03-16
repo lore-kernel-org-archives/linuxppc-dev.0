@@ -1,42 +1,21 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402yBD4p1mzF1YQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 07:44:36 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2GKhhP6005491
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 16:44:34 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2grjdb693e-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 16:44:33 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 16 Mar 2018 14:39:32 -0600
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linux-integrity@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- David Howells <dhowells@redhat.com>,
- David Woodhouse <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v6 02/12] PKCS#7: Introduce pkcs7_get_message_sig() and
- verify_pkcs7_message_sig()
-Date: Fri, 16 Mar 2018 17:38:27 -0300
-In-Reply-To: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
-References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
-Message-Id: <20180316203837.10174-3-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402z732BZpzF1X6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 08:26:55 +1100 (AEDT)
+Date: Sat, 17 Mar 2018 08:25:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: dtc warnings
+Message-ID: <20180317082545.3074a84d@canb.auug.org.au>
+In-Reply-To: <87r2okglbj.fsf@concordia.ellerman.id.au>
+References: <20180314161854.51b994ff@canb.auug.org.au>
+ <87r2okglbj.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/sMnW9OFgsUuiFscV+_OVDhT"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,178 +25,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IMA will need to know the key that signed a given PKCS#7 message, so add
-pkcs7_get_message_sig().
+--Sig_/sMnW9OFgsUuiFscV+_OVDhT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It will also need to verify an already parsed PKCS#7 message. For this
-purpose, add verify_pkcs7_message_sig() which takes a struct pkcs7_message
-for verification instead of the raw bytes that verify_pkcs7_signature()
-takes.
+Hi Michael,
 
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>
----
- certs/system_keyring.c                | 61 ++++++++++++++++++++++++++---------
- crypto/asymmetric_keys/pkcs7_parser.c | 16 +++++++++
- include/crypto/pkcs7.h                |  2 ++
- include/linux/verification.h          | 10 ++++++
- 4 files changed, 73 insertions(+), 16 deletions(-)
+On Sat, 17 Mar 2018 01:13:36 +1100 Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
+>=20
+> > I get the following from a powerpc_ppc44x defconfig build in current
+> > linux-next:
+> >
+> > arch/powerpc/boot/ebony.dtb: Warning (pci_bridge): /plb/pci@20ec00000: =
+missing bus-range for PCI bridge
+> > arch/powerpc/boot/ebony.dtb: Warning (pci_device_bus_num): Failed prere=
+quisite 'pci_bridge'
+> > arch/powerpc/boot/ebony.dtb: Warning (chosen_node_stdout_path): /chosen=
+:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/sequoia.dtb: Warning (pci_bridge): /plb/pci@1ec000000=
+: missing bus-range for PCI bridge
+> > arch/powerpc/boot/sequoia.dtb: Warning (pci_device_bus_num): Failed pre=
+requisite 'pci_bridge'
+> > arch/powerpc/boot/sequoia.dtb: Warning (chosen_node_stdout_path): /chos=
+en:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/sam440ep.dtb: Warning (pci_bridge): /plb/pci@ec000000=
+: missing bus-range for PCI bridge
+> > arch/powerpc/boot/sam440ep.dtb: Warning (pci_device_bus_num): Failed pr=
+erequisite 'pci_bridge'
+> > arch/powerpc/boot/sam440ep.dtb: Warning (chosen_node_stdout_path): /cho=
+sen:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/rainier.dtb: Warning (pci_bridge): /plb/pci@1ec000000=
+: missing bus-range for PCI bridge
+> > arch/powerpc/boot/rainier.dtb: Warning (pci_device_bus_num): Failed pre=
+requisite 'pci_bridge'
+> > arch/powerpc/boot/rainier.dtb: Warning (chosen_node_stdout_path): /chos=
+en:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/taishan.dtb: Warning (pci_bridge): /plb/pci@20ec00000=
+: missing bus-range for PCI bridge
+> > arch/powerpc/boot/taishan.dtb: Warning (pci_device_bus_num): Failed pre=
+requisite 'pci_bridge'
+> > arch/powerpc/boot/taishan.dtb: Warning (chosen_node_stdout_path): /chos=
+en:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/bamboo.dtb: Warning (pci_bridge): /plb/pci@ec000000: =
+missing bus-range for PCI bridge
+> > arch/powerpc/boot/bamboo.dtb: Warning (pci_device_bus_num): Failed prer=
+equisite 'pci_bridge'
+> > arch/powerpc/boot/bamboo.dtb: Warning (chosen_node_stdout_path): /chose=
+n:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/katmai.dtb: Warning (pci_bridge): /plb/pciex@d0000000=
+0: node name is not "pci" or "pcie"
+> > arch/powerpc/boot/katmai.dtb: Warning (pci_bridge): /plb/pciex@d2000000=
+0: node name is not "pci" or "pcie"
+> > arch/powerpc/boot/katmai.dtb: Warning (pci_bridge): /plb/pciex@d4000000=
+0: node name is not "pci" or "pcie"
+> > arch/powerpc/boot/katmai.dtb: Warning (pci_device_bus_num): Failed prer=
+equisite 'pci_bridge'
+> > arch/powerpc/boot/katmai.dtb: Warning (chosen_node_stdout_path): /chose=
+n:linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/warp.dtb: Warning (chosen_node_stdout_path): /chosen:=
+linux,stdout-path: Use 'stdout-path' instead
+> > arch/powerpc/boot/yosemite.dtb: Warning (pci_bridge): /plb/pci@ec000000=
+: missing bus-range for PCI bridge
+> > arch/powerpc/boot/yosemite.dtb: Warning (pci_device_bus_num): Failed pr=
+erequisite 'pci_bridge'
+> > arch/powerpc/boot/yosemite.dtb: Warning (chosen_node_stdout_path): /cho=
+sen:linux,stdout-path: Use 'stdout-path' instead
+> >
+> > I though someone might like to do something about them ... =20
+>=20
+> Feel free!
+>=20
+> Oh that's not what you meant :P
 
-diff --git a/certs/system_keyring.c b/certs/system_keyring.c
-index 6251d1b27f0c..7ddc8b7a3062 100644
---- a/certs/system_keyring.c
-+++ b/certs/system_keyring.c
-@@ -190,33 +190,27 @@ late_initcall(load_system_certificate_list);
- #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
- 
- /**
-- * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
-+ * verify_pkcs7_message_sig - Verify a PKCS#7-based signature on system data.
-  * @data: The data to be verified (NULL if expecting internal data).
-  * @len: Size of @data.
-- * @raw_pkcs7: The PKCS#7 message that is the signature.
-- * @pkcs7_len: The size of @raw_pkcs7.
-+ * @pkcs7: The PKCS#7 message that is the signature.
-  * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
-  *					(void *)1UL for all trusted keys).
-  * @usage: The use to which the key is being put.
-  * @view_content: Callback to gain access to content.
-  * @ctx: Context for callback.
-  */
--int verify_pkcs7_signature(const void *data, size_t len,
--			   const void *raw_pkcs7, size_t pkcs7_len,
--			   struct key *trusted_keys,
--			   enum key_being_used_for usage,
--			   int (*view_content)(void *ctx,
--					       const void *data, size_t len,
--					       size_t asn1hdrlen),
--			   void *ctx)
-+int verify_pkcs7_message_sig(const void *data, size_t len,
-+			     struct pkcs7_message *pkcs7,
-+			     struct key *trusted_keys,
-+			     enum key_being_used_for usage,
-+			     int (*view_content)(void *ctx,
-+						 const void *data, size_t len,
-+						 size_t asn1hdrlen),
-+			     void *ctx)
- {
--	struct pkcs7_message *pkcs7;
- 	int ret;
- 
--	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
--	if (IS_ERR(pkcs7))
--		return PTR_ERR(pkcs7);
--
- 	/* The data should be detached - so we need to supply it. */
- 	if (data && pkcs7_supply_detached_data(pkcs7, data, len) < 0) {
- 		pr_err("PKCS#7 signature with non-detached data\n");
-@@ -258,6 +252,41 @@ int verify_pkcs7_signature(const void *data, size_t len,
- 	}
- 
- error:
-+	pr_devel("<==%s() = %d\n", __func__, ret);
-+	return ret;
-+}
-+
-+/**
-+ * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
-+ * @data: The data to be verified (NULL if expecting internal data).
-+ * @len: Size of @data.
-+ * @raw_pkcs7: The PKCS#7 message that is the signature.
-+ * @pkcs7_len: The size of @raw_pkcs7.
-+ * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
-+ *					(void *)1UL for all trusted keys).
-+ * @usage: The use to which the key is being put.
-+ * @view_content: Callback to gain access to content.
-+ * @ctx: Context for callback.
-+ */
-+int verify_pkcs7_signature(const void *data, size_t len,
-+			   const void *raw_pkcs7, size_t pkcs7_len,
-+			   struct key *trusted_keys,
-+			   enum key_being_used_for usage,
-+			   int (*view_content)(void *ctx,
-+					       const void *data, size_t len,
-+					       size_t asn1hdrlen),
-+			   void *ctx)
-+{
-+	struct pkcs7_message *pkcs7;
-+	int ret;
-+
-+	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
-+	if (IS_ERR(pkcs7))
-+		return PTR_ERR(pkcs7);
-+
-+	ret = verify_pkcs7_message_sig(data, len, pkcs7, trusted_keys, usage,
-+				       view_content, ctx);
-+
- 	pkcs7_free_message(pkcs7);
- 	pr_devel("<==%s() = %d\n", __func__, ret);
- 	return ret;
-diff --git a/crypto/asymmetric_keys/pkcs7_parser.c b/crypto/asymmetric_keys/pkcs7_parser.c
-index a6dcaa659aa8..456b803972b5 100644
---- a/crypto/asymmetric_keys/pkcs7_parser.c
-+++ b/crypto/asymmetric_keys/pkcs7_parser.c
-@@ -683,3 +683,19 @@ int pkcs7_note_signed_info(void *context, size_t hdrlen,
- 		return -ENOMEM;
- 	return 0;
- }
-+
-+/**
-+ * pkcs7_get_message_sig - get signature in @pkcs7
-+ */
-+const struct public_key_signature *pkcs7_get_message_sig(
-+					const struct pkcs7_message *pkcs7)
-+{
-+	/*
-+	 * This function doesn't support messages with more than one signature,
-+	 * so don't return anything in that case.
-+	 */
-+	if (pkcs7->signed_infos == NULL || pkcs7->signed_infos->next != NULL)
-+		return NULL;
-+
-+	return pkcs7->signed_infos->sig;
-+}
-diff --git a/include/crypto/pkcs7.h b/include/crypto/pkcs7.h
-index 583f199400a3..6f51d0cb6d12 100644
---- a/include/crypto/pkcs7.h
-+++ b/include/crypto/pkcs7.h
-@@ -28,6 +28,8 @@ extern void pkcs7_free_message(struct pkcs7_message *pkcs7);
- extern int pkcs7_get_content_data(const struct pkcs7_message *pkcs7,
- 				  const void **_data, size_t *_datalen,
- 				  size_t *_headerlen);
-+extern const struct public_key_signature *pkcs7_get_message_sig(
-+					const struct pkcs7_message *pkcs7);
- 
- /*
-  * pkcs7_trust.c
-diff --git a/include/linux/verification.h b/include/linux/verification.h
-index a10549a6c7cd..f04dac2728ec 100644
---- a/include/linux/verification.h
-+++ b/include/linux/verification.h
-@@ -29,6 +29,7 @@ extern const char *const key_being_used_for[NR__KEY_BEING_USED_FOR];
- #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
- 
- struct key;
-+struct pkcs7_message;
- 
- extern int verify_pkcs7_signature(const void *data, size_t len,
- 				  const void *raw_pkcs7, size_t pkcs7_len,
-@@ -38,6 +39,15 @@ extern int verify_pkcs7_signature(const void *data, size_t len,
- 						      const void *data, size_t len,
- 						      size_t asn1hdrlen),
- 				  void *ctx);
-+extern int verify_pkcs7_message_sig(const void *data, size_t len,
-+				    struct pkcs7_message *pkcs7,
-+				    struct key *trusted_keys,
-+				    enum key_being_used_for usage,
-+				    int (*view_content)(void *ctx,
-+							const void *data,
-+							size_t len,
-+							size_t asn1hdrlen),
-+				    void *ctx);
- 
- #ifdef CONFIG_SIGNED_PE_FILE_VERIFICATION
- extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
+:-)
+
+> Rob sent a patch to fix most of them:
+>   http://patchwork.ozlabs.org/patch/879475/
+>=20
+> I thought he was going to merge it, but actually I'm not sure why I
+> thought that. So I should probably merge it.
+
+excellent, thanks
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/sMnW9OFgsUuiFscV+_OVDhT
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlqsNlkACgkQAVBC80lX
+0GyU0AgAoWdap+yq/YkG23fkdEYtASgVp/MhU1dzW1R9KZ8bBfKmHyVkk9LJNgxX
+wRCgu0mi6DVsfv+p57OKA5cWgalZcHWl4XjZTYumuoCClrrKq9An7PKKevd3TzOA
+KRcUv/Cemg4reQ9C3bguNuDR5DKKndRcuvlInUlYVnOE/UpUzasia66GxbmavnPG
+ajdIpmkscg/2Pq+K8lTQ2aLliTKV+PatUs4308f0rp0MlWjqp47mXeeB1O2dY2P7
+ZZD/ToAKsrFwNx3TaaP3Hkf4jG+IZsUttP/OaZQxJLcBKRmLJ+1W6eznMeY2hWDU
+6jY6jLlsIDrvJuqNMRw5YQERhwdKNQ==
+=OTgo
+-----END PGP SIGNATURE-----
+
+--Sig_/sMnW9OFgsUuiFscV+_OVDhT--
