@@ -1,39 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402mWL00djzDqGV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 00:28:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402mw7676XzDrJm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 00:46:47 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Nicholas Piggin
- <npiggin@gmail.com>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Madhavan Srinivasan
- <maddy@linux.vnet.ibm.com>, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Michael Neuling <mikey@neuling.org>, "Bryant G. Ly"
- <bryantly@linux.vnet.ibm.com>, "Naveen N. Rao"
- <naveen.n.rao@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
- =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>, David Gibson
- <david@gibson.dropbear.id.au>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sergey
- Senozhatsky <sergey.senozhatsky@gmail.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Philippe Ombredanne <pombredanne@nexb.com>, Joe Perches <joe@perches.com>,
- Oliver O'Halloran <oohall@gmail.com>, Andrew Morton
- <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "Tobin C.
- Harding" <me@tobin.cc>
-Subject: Re: [PATCH RFC rebase 3/9] powerpc/64: Use barrier_nospec in syscall
- entry
-In-Reply-To: <20180316101549.31238bdf@naga.suse.cz>
-References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
- <cover.1521141122.git.msuchanek@suse.de>
- <b8253774e223530c808eed65d116deecc46ad36b.1521141122.git.msuchanek@suse.de>
- <20180316151823.2f28d5ea@roar.ozlabs.ibm.com>
- <20180316101549.31238bdf@naga.suse.cz>
-Date: Sat, 17 Mar 2018 00:28:42 +1100
-Message-ID: <873710i1yt.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: rostedt@goodmis.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, naveen.n.rao@linux.vnet.ibm.com
+Subject: [RFC PATCH 1/2] ftrace: Allow arches to opt-out of static ftrace
+Date: Sat, 17 Mar 2018 00:46:32 +1100
+Message-Id: <20180316134633.10584-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,48 +20,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
+There is a small but non-zero amount of code required by arches to
+suppory non-dynamic (static) ftrace, and more importantly there is the
+added work of testing both configurations.
 
-Thanks for working on this series in the absence of any documentation.
+There are also almost no down sides to dynamic ftrace once it's well
+tested, other than a small increase in code/data size.
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
-> On Fri, 16 Mar 2018 15:18:23 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
->
->> On Thu, 15 Mar 2018 20:15:52 +0100
->> Michal Suchanek <msuchanek@suse.de> wrote:
->>=20
->> > On powerpc syscall entry is done in assembly so patch in an explicit
->> > barrier_nospec.=20=20
->>=20
->> Same comment as Linus for this -- the barriers are before the branch
->> here, so is it possible the branch instruction can be speculative
->> while the index is used to load the syscall table?
->
-> As far as I understand barriers they separate code before the barrier
-> and code after the barrier.
->
-> So inserting barrier_nospec after cmpldi means that the result of the
-> cmpldi has to be known before any instruction following barrier_nospec
-> that depends on the result can be executed.=20
+So give arches the option to opt-out of supporting static ftrace.
 
-That would make sense, but I don't think that's how the barrier's been
-defined.
+This is implemented as a DYNAMIC_FTRACE_CHOICE option, which controls
+whether DYNAMIC_FTRACE is presented as a user-selectable option or if
+it is just enabled based on its dependencies being enabled (because
+it's already default y).
 
-I don't have a formal spec for it (yet), but what I do have indicates it
-only orders older branches vs future instructions.
+Then the CHOICE option depends on an arch *not* selecting
+HAVE_DYNAMIC_FTRACE_ONLY. This would be more natural in reverse, as a
+HAVE_STATIC_FTRACE option, but that would require updating every arch.
 
-> However, you have probably knowledge of the powerpc implementation of
-> the barrier so if the semantic is actually different then please
-> enlighten me.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ Documentation/trace/ftrace-design.txt | 12 ++++++++++++
+ kernel/trace/Kconfig                  |  9 ++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-We have some knowledge, but only some :)
-
-It's not necessarily implemented the same way on each chip revision, so
-it's not entirely clear what the formal semantics will be vs what we are
-seeing in current implementations. But I think it's safe to say it
-should always go after the branch that might be speculatively executed.
-
-Will try and get some better documentation for you.
-
-cheers
+diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
+index a273dd0bbaaa..50c1d252f01d 100644
+--- a/Documentation/trace/ftrace-design.txt
++++ b/Documentation/trace/ftrace-design.txt
+@@ -391,3 +391,15 @@ Quick notes:
+ 	  ftrace_graph_call location with a call to ftrace_graph_caller()
+ 	- ftrace_disable_ftrace_graph_caller() will runtime patch the
+ 	  ftrace_graph_call location with nops
++
++HAVE_DYNAMIC_FTRACE_ONLY
++------------------------
++
++An arch can select this option to indicate that it only supports dynamic ftrace,
++and not non-dynamic (static) ftrace.
++
++Once dynamic ftrace is well tested it is superior to static ftrace in basically
++all respects other than code/data size.
++
++Selection this option allows an arch to only support dyanmic, removing a small
++amount of code complexity required to support both static and dynamic.
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 0b249e2f0c3c..1998e30d2ea2 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -29,6 +29,9 @@ config HAVE_DYNAMIC_FTRACE
+ 	help
+ 	  See Documentation/trace/ftrace-design.txt
+ 
++config HAVE_DYNAMIC_FTRACE_ONLY
++	bool
++
+ config HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	bool
+ 
+@@ -488,8 +491,12 @@ config BPF_EVENTS
+ config PROBE_EVENTS
+ 	def_bool n
+ 
++config DYNAMIC_FTRACE_CHOICE
++	def_bool y
++	depends on !HAVE_DYNAMIC_FTRACE_ONLY
++
+ config DYNAMIC_FTRACE
+-	bool "enable/disable function tracing dynamically"
++	bool "enable/disable function tracing dynamically" if DYNAMIC_FTRACE_CHOICE
+ 	depends on FUNCTION_TRACER
+ 	depends on HAVE_DYNAMIC_FTRACE
+ 	default y
+-- 
+2.14.1
