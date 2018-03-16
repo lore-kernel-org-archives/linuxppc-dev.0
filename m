@@ -1,34 +1,49 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402qnm2jDszDqhq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 02:56:28 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2GFsNPR057163
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 11:56:23 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2grf45n45c-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402rk76Wj4zF16w
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 03:38:23 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2GGbX34124821
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 12:38:21 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2grh8a905f-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 11:56:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 12:38:20 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 16 Mar 2018 15:56:21 -0000
-Subject: Re: [PATCH] cxl: Add new kernel traces
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-References: <1520933440-24652-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 16 Mar 2018 16:56:16 +0100
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 16 Mar 2018 16:38:18 -0000
+Subject: Re: [mm] b33ddf50eb: INFO:trying_to_register_non-static_key
+To: kernel test robot <fengguang.wu@intel.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, lkp@01.org
+References: <20180316102359.pzjwi24hbkhnyk2a@inn>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Fri, 16 Mar 2018 17:38:06 +0100
 MIME-Version: 1.0
-In-Reply-To: <1520933440-24652-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <07ad1ae6-8beb-9076-ce54-56a9344f036b@linux.vnet.ibm.com>
+In-Reply-To: <20180316102359.pzjwi24hbkhnyk2a@inn>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <7a638500-ce14-809a-6b40-79f32537b818@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,226 +53,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 16/03/2018 11:23, kernel test robot wrote:
+> FYI, we noticed the following commit (built with gcc-7):
+> 
+> commit: b33ddf50ebcc740b990dd2e0e8ff0b92c7acf58e ("mm: Protect mm_rb tree with a rwlock")
+> url: https://github.com/0day-ci/linux/commits/Laurent-Dufour/Speculative-page-faults/20180316-151833
+> 
+> 
+> in testcase: boot
+> 
+> on test machine: qemu-system-x86_64 -enable-kvm -cpu host -smp 2 -m 4G
+> 
+> caused below changes (please refer to attached dmesg/kmsg for entire log/backtrace):
+> 
+> 
+> +----------------------------------------+------------+------------+
+> |                                        | 7f3f7b4e80 | b33ddf50eb |
+> +----------------------------------------+------------+------------+
+> | boot_successes                         | 8          | 0          |
+> | boot_failures                          | 0          | 6          |
+> | INFO:trying_to_register_non-static_key | 0          | 6          |
+> +----------------------------------------+------------+------------+
+> 
+> 
+> 
+> [   22.218186] INFO: trying to register non-static key.
+> [   22.220252] the code is fine but needs lockdep annotation.
+> [   22.222471] turning off the locking correctness validator.
+> [   22.224839] CPU: 0 PID: 1 Comm: init Not tainted 4.16.0-rc4-next-20180309-00017-gb33ddf5 #1
+> [   22.228528] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.10.2-1 04/01/2014
+> [   22.232443] Call Trace:
+> [   22.234234]  dump_stack+0x85/0xbc
+> [   22.236085]  register_lock_class+0x237/0x477
+> [   22.238057]  __lock_acquire+0xd0/0xf15
+> [   22.240032]  lock_acquire+0x19c/0x1ce
+> [   22.241927]  ? do_mmap+0x3aa/0x3ff
+> [   22.243749]  mmap_region+0x37a/0x4c0
+> [   22.245619]  ? do_mmap+0x3aa/0x3ff
+> [   22.247425]  do_mmap+0x3aa/0x3ff
+> [   22.249175]  vm_mmap_pgoff+0xa1/0xea
+> [   22.251083]  elf_map+0x6d/0x134
+> [   22.252873]  load_elf_binary+0x56f/0xe07
+> [   22.254853]  search_binary_handler+0x75/0x1f8
+> [   22.256934]  do_execveat_common+0x661/0x92b
+> [   22.259164]  ? rest_init+0x22e/0x22e
+> [   22.261082]  do_execve+0x1f/0x21
+> [   22.262884]  kernel_init+0x5a/0xf0
+> [   22.264722]  ret_from_fork+0x3a/0x50
+> [   22.303240] systemd[1]: RTC configured in localtime, applying delta of 480 minutes to system time.
+> [   22.313544] systemd[1]: Failed to insert module 'autofs4': No such file or directory
 
+Thanks a lot for reporting this.
 
-Le 13/03/2018 à 10:30, Christophe Lombard a écrit :
-> This patch adds new kernel traces in the current in-kernel 'library'
-> which can be called by other drivers to help interacting with an
-> IBM XSL on a POWER9 system.
-> 
-> If some kernel traces exist in the 'normal path' to handle a page or a
-> segment fault, some others are missing when a page fault is handle
-> through cxllib.
-> 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
+I found the issue introduced in that patch.
+I mistakenly remove in the call to seqcount_init(&vma->vm_sequence) in
+__vma_link_rb().
+This doesn't have a functional impact as the vm_sequence is incremented
+monotonically.
 
-Thanks!
+I'll fix that in the next series.
 
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
->   drivers/misc/cxl/cxllib.c |   3 ++
->   drivers/misc/cxl/fault.c  |   2 +
->   drivers/misc/cxl/irq.c    |   2 +-
->   drivers/misc/cxl/trace.h  | 115 ++++++++++++++++++++++++++--------------------
->   4 files changed, 72 insertions(+), 50 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-> index 30ccba4..91cfb69 100644
-> --- a/drivers/misc/cxl/cxllib.c
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -13,6 +13,7 @@
->   #include <misc/cxllib.h>
-> 
->   #include "cxl.h"
-> +#include "trace.h"
-> 
->   #define CXL_INVALID_DRA                 ~0ull
->   #define CXL_DUMMY_READ_SIZE             128
-> @@ -218,6 +219,8 @@ int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
->   	if (mm == NULL)
->   		return -EFAULT;
-> 
-> +	trace_cxl_lib_handle_fault(addr, size, flags);
-> +
->   	down_read(&mm->mmap_sem);
-> 
->   	vma = find_vma(mm, addr);
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index 70dbb6d..1c4fd74 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -138,6 +138,8 @@ int cxl_handle_mm_fault(struct mm_struct *mm, u64 dsisr, u64 dar)
->   	int result;
->   	unsigned long access, flags, inv_flags = 0;
-> 
-> +	trace_cxl_handle_mm_fault(dsisr, dar);
-> +
->   	/*
->   	 * Add the fault handling cpu to task mm cpumask so that we
->   	 * can do a safe lockless page table walk when inserting the
-> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-> index ce08a9f..79b8b49 100644
-> --- a/drivers/misc/cxl/irq.c
-> +++ b/drivers/misc/cxl/irq.c
-> @@ -41,7 +41,7 @@ irqreturn_t cxl_irq_psl9(int irq, struct cxl_context *ctx, struct cxl_irq_info *
->   	dsisr = irq_info->dsisr;
->   	dar = irq_info->dar;
-> 
-> -	trace_cxl_psl9_irq(ctx, irq, dsisr, dar);
-> +	trace_cxl_psl_irq(ctx, irq, dsisr, dar);
-> 
->   	pr_devel("CXL interrupt %i for afu pe: %i DSISR: %#llx DAR: %#llx\n", irq, ctx->pe, dsisr, dar);
-> 
-> diff --git a/drivers/misc/cxl/trace.h b/drivers/misc/cxl/trace.h
-> index b8e300a..8eb2607 100644
-> --- a/drivers/misc/cxl/trace.h
-> +++ b/drivers/misc/cxl/trace.h
-> @@ -26,19 +26,20 @@
->   		{ CXL_PSL9_DSISR_An_OC,		"OC" }, \
->   		{ CXL_PSL9_DSISR_An_S,		"S" })
-> 
-> -#define DSISR_FLAGS \
-> -	{ CXL_PSL_DSISR_An_DS,	"DS" }, \
-> -	{ CXL_PSL_DSISR_An_DM,	"DM" }, \
-> -	{ CXL_PSL_DSISR_An_ST,	"ST" }, \
-> -	{ CXL_PSL_DSISR_An_UR,	"UR" }, \
-> -	{ CXL_PSL_DSISR_An_PE,	"PE" }, \
-> -	{ CXL_PSL_DSISR_An_AE,	"AE" }, \
-> -	{ CXL_PSL_DSISR_An_OC,	"OC" }, \
-> -	{ CXL_PSL_DSISR_An_M,	"M" }, \
-> -	{ CXL_PSL_DSISR_An_P,	"P" }, \
-> -	{ CXL_PSL_DSISR_An_A,	"A" }, \
-> -	{ CXL_PSL_DSISR_An_S,	"S" }, \
-> -	{ CXL_PSL_DSISR_An_K,	"K" }
-> +#define dsisr_psl8_flags(flags) \
-> +	__print_flags(flags, "|", \
-> +		{ CXL_PSL_DSISR_An_DS,	"DS" }, \
-> +		{ CXL_PSL_DSISR_An_DM,	"DM" }, \
-> +		{ CXL_PSL_DSISR_An_ST,	"ST" }, \
-> +		{ CXL_PSL_DSISR_An_UR,	"UR" }, \
-> +		{ CXL_PSL_DSISR_An_PE,	"PE" }, \
-> +		{ CXL_PSL_DSISR_An_AE,	"AE" }, \
-> +		{ CXL_PSL_DSISR_An_OC,	"OC" }, \
-> +		{ CXL_PSL_DSISR_An_M,	"M" }, \
-> +		{ CXL_PSL_DSISR_An_P,	"P" }, \
-> +		{ CXL_PSL_DSISR_An_A,	"A" }, \
-> +		{ CXL_PSL_DSISR_An_S,	"S" }, \
-> +		{ CXL_PSL_DSISR_An_K,	"K" })
-> 
->   #define TFC_FLAGS \
->   	{ CXL_PSL_TFC_An_A,	"A" }, \
-> @@ -163,7 +164,7 @@ TRACE_EVENT(cxl_afu_irq,
->   	)
->   );
-> 
-> -TRACE_EVENT(cxl_psl9_irq,
-> +TRACE_EVENT(cxl_psl_irq,
->   	TP_PROTO(struct cxl_context *ctx, int irq, u64 dsisr, u64 dar),
-> 
->   	TP_ARGS(ctx, irq, dsisr, dar),
-> @@ -192,40 +193,8 @@ TRACE_EVENT(cxl_psl9_irq,
->   		__entry->pe,
->   		__entry->irq,
->   		__entry->dsisr,
-> -		dsisr_psl9_flags(__entry->dsisr),
-> -		__entry->dar
-> -	)
-> -);
-> -
-> -TRACE_EVENT(cxl_psl_irq,
-> -	TP_PROTO(struct cxl_context *ctx, int irq, u64 dsisr, u64 dar),
-> -
-> -	TP_ARGS(ctx, irq, dsisr, dar),
-> -
-> -	TP_STRUCT__entry(
-> -		__field(u8, card)
-> -		__field(u8, afu)
-> -		__field(u16, pe)
-> -		__field(int, irq)
-> -		__field(u64, dsisr)
-> -		__field(u64, dar)
-> -	),
-> -
-> -	TP_fast_assign(
-> -		__entry->card = ctx->afu->adapter->adapter_num;
-> -		__entry->afu = ctx->afu->slice;
-> -		__entry->pe = ctx->pe;
-> -		__entry->irq = irq;
-> -		__entry->dsisr = dsisr;
-> -		__entry->dar = dar;
-> -	),
-> -
-> -	TP_printk("afu%i.%i pe=%i irq=%i dsisr=%s dar=0x%016llx",
-> -		__entry->card,
-> -		__entry->afu,
-> -		__entry->pe,
-> -		__entry->irq,
-> -		__print_flags(__entry->dsisr, "|", DSISR_FLAGS),
-> +		cxl_is_power8() ? dsisr_psl8_flags(__entry->dsisr) :
-> +				  dsisr_psl9_flags(__entry->dsisr),
->   		__entry->dar
->   	)
->   );
-> @@ -342,11 +311,59 @@ TRACE_EVENT(cxl_pte_miss,
->   		__entry->card,
->   		__entry->afu,
->   		__entry->pe,
-> -		__print_flags(__entry->dsisr, "|", DSISR_FLAGS),
-> +		cxl_is_power8() ? dsisr_psl8_flags(__entry->dsisr) :
-> +				  dsisr_psl9_flags(__entry->dsisr),
-> +		__entry->dar
-> +	)
-> +);
-> +
-> +TRACE_EVENT(cxl_handle_mm_fault,
-> +	TP_PROTO(u64 dsisr, u64 dar),
-> +
-> +	TP_ARGS(dsisr, dar),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(u64, dsisr)
-> +		__field(u64, dar)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->dsisr = dsisr;
-> +		__entry->dar = dar;
-> +	),
-> +
-> +	TP_printk("dsisr=0x%016llx(%s), dar=0x%016llx",
-> +		__entry->dsisr,
-> +		cxl_is_power8() ? dsisr_psl8_flags(__entry->dsisr) :
-> +				  dsisr_psl9_flags(__entry->dsisr),
->   		__entry->dar
->   	)
->   );
-> 
-> +TRACE_EVENT(cxl_lib_handle_fault,
-> +	TP_PROTO(u64 addr, u64 size, u64 flags),
-> +
-> +	TP_ARGS(addr, size, flags),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(u64, addr)
-> +		__field(u64, size)
-> +		__field(u64, flags)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->addr = addr;
-> +		__entry->size = size;
-> +		__entry->flags = flags;
-> +	),
-> +
-> +	TP_printk("addr=0x%016llx, size=0x%016llx, flags=0x%016llx",
-> +		__entry->addr,
-> +		__entry->size,
-> +		__entry->flags
-> +	)
-> +);
-> +
->   TRACE_EVENT(cxl_llcmd,
->   	TP_PROTO(struct cxl_context *ctx, u64 cmd),
-> 
+Laurent.
