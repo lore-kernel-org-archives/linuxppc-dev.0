@@ -1,25 +1,30 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402jTG5PgJzDrNC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 22:11:46 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id u10so2317941wmu.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 04:11:46 -0700 (PDT)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Mathieu Malaterre <malat@debian.org>
-Subject: [PATCH 16/19] ppc64: Change %d into %lu
-Date: Fri, 16 Mar 2018 12:02:21 +0100
-Message-Id: <20180316110224.12260-17-malat@debian.org>
-In-Reply-To: <20180316110224.12260-1-malat@debian.org>
-References: <20180316110224.12260-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402knd1HhNzDq82
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 23:10:58 +1100 (AEDT)
+Subject: [PATCH 0/1] PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi boards
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Olof Johansson <olof@lixom.net>
+References: <f3513294-6da0-456f-0f98-1f8c3bac90c9@xenosoft.de>
+ <87tvxl15qx.fsf@concordia.ellerman.id.au>
+ <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+ <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
+ <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
+ <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
+ <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
+ <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+ <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
+ <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
+Date: Fri, 16 Mar 2018 13:10:43 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +34,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  CC      arch/powerpc/xmon/spu-dis.o
-../arch/powerpc/xmon/spu-dis.c: In function ‘print_insn_spu’:
-../arch/powerpc/xmon/spu-dis.c:137:18: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("$%d",
-                  ^
-../arch/powerpc/xmon/spu-dis.c:141:18: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("$%d",
-                  ^
-../arch/powerpc/xmon/spu-dis.c:145:18: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("$%d",
-                  ^
-../arch/powerpc/xmon/spu-dis.c:149:18: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("$%d",
-                  ^
-../arch/powerpc/xmon/spu-dis.c:153:20: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("$sp%d",
-                    ^
-../arch/powerpc/xmon/spu-dis.c:157:20: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("$ch%d",
-                    ^
-../arch/powerpc/xmon/spu-dis.c:165:17: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("%d",
-                 ^
-../arch/powerpc/xmon/spu-dis.c:169:17: error: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘long unsigned int’ [-Werror=format=]
-        printf("%d",
-                 ^
-cc1: all warnings being treated as errors
+On 02 December 2017 at 00:27PM, Bjorn Helgaas wrote:
+ > On Fri, Dec 01, 2017 at 11:08:46PM +0100, Christian Zigotzky wrote:
+ >> On 30.11.2017 23:42, Bjorn Helgaas wrote:
+ >>>
+ >>> 00:11.0 claims to be a PCIe Root Port leading to [bus 05-06]. That
+ >>> means there's a Link (presumably this A-Link II Express thing), and the
+ >>> downstream end of the Link *should* be a PCIe Upstream Port on bus 05,
+ >>> but no such device is visible.  I suppose the SB600 does implement
+ >>> some sort of PCIe Port there, but keeps it invisible to software, and
+ >>> at the same time, contains an invisible bridge that connects the Link
+ >>> to all the conventional PCI devices on bus 05.
+ >>>
+ >>> When we scan bus 05, we do this:
+ >>>
+ >>>    pci_scan_child_bus_extend(bus=05)
+ >>>      for (devfn = 0; devfn < 0x100; devfn += 8)
+ >>>        pci_scan_slot(05, 00.0)
+ >>>          pci_scan_single_device
+ >>>            pci_scan_device(05, 00.0)           # fails; no 05:00.0
+ >>>        pci_scan_slot(05, 01.0)
+ >>>          only_one_child(bus=05)
+ >>>            parent = 00:11.0
+ >>>            pci_pcie_type(00:11.0) == ROOT_PORT # returns true
+ >>>
+ >>> Since only_one_child() sees that 00:11.0 is a Root Port, we give up
+ >>> before we even get to the PCI_SCAN_ALL_PCIE_DEVS test.
+ >>>
+ >>> I *think* something like the patch below should make this work if you
+ >>> use the "pci=pcie_scan_all" parameter.  We have some x86 DMI quirks
+ >>> that set PCI_SCAN_ALL_PCIE_DEVS automatically.  I don't know how to do
+ >>> something similar on powerpc, but maybe you do?
+ >>>
+ >>
+ >> Hi Bjorn,
+ >>
+ >> I tested your new patch today. It boots with the boot argument
+ >> "pci=pcie_scan_all". Well done! :-)
+ >>
+ >> It doesn't boot without the boot argument "pci=pcie_scan_all".
+ >
+ > Thanks for testing that.  I'll merge a similar patch for v4.16.
+ >
+ > I don't think using "pci=pcie_scan_all" is really an acceptable
+ > long-term answer for you, though.  Is there some way we can identify
+ > at run-time whether we're on a Nemo system?  If so, we can make this
+ > happen automatically.
+ >
+ > Bjorn
+ >
 
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
- arch/powerpc/xmon/spu-dis.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+Hi Bjorn,
+Hi All,
 
-diff --git a/arch/powerpc/xmon/spu-dis.c b/arch/powerpc/xmon/spu-dis.c
-index 6b83b680b9f6..4cbc7da88524 100644
---- a/arch/powerpc/xmon/spu-dis.c
-+++ b/arch/powerpc/xmon/spu-dis.c
-@@ -134,27 +134,27 @@ print_insn_spu (unsigned long insn, unsigned long memaddr)
- 	  switch (arg)
- 	    {
- 	    case A_T:
--	      printf("$%d",
-+	      printf("$%lu",
- 				     DECODE_INSN_RT (insn));
- 	      break;
- 	    case A_A:
--	      printf("$%d",
-+	      printf("$%lu",
- 				     DECODE_INSN_RA (insn));
- 	      break;
- 	    case A_B:
--	      printf("$%d",
-+	      printf("$%lu",
- 				     DECODE_INSN_RB (insn));
- 	      break;
- 	    case A_C:
--	      printf("$%d",
-+	      printf("$%lu",
- 				     DECODE_INSN_RC (insn));
- 	      break;
- 	    case A_S:
--	      printf("$sp%d",
-+	      printf("$sp%lu",
- 				     DECODE_INSN_RA (insn));
- 	      break;
- 	    case A_H:
--	      printf("$ch%d",
-+	      printf("$ch%lu",
- 				     DECODE_INSN_RA (insn));
- 	      break;
- 	    case A_P:
-@@ -162,11 +162,11 @@ print_insn_spu (unsigned long insn, unsigned long memaddr)
- 	      printf("(");
- 	      break;
- 	    case A_U7A:
--	      printf("%d",
-+	      printf("%lu",
- 				     173 - DECODE_INSN_U8 (insn));
- 	      break;
- 	    case A_U7B:
--	      printf("%d",
-+	      printf("%lu",
- 				     155 - DECODE_INSN_U8 (insn));
- 	      break;
- 	    case A_S3:
--- 
-2.11.0
+Olof Johansson has created a patch for us. With this patch, 
+"pci=pcie_scan_all" executes automatically on P.A. Semi boards. We don't 
+need to add 'pci=pcie_scan_all' to the
+kernel boot arguments anymore. Could you please add Olof's patch to the 
+official kernel source code?
+
+arch/powerpc/platforms/pasemi/pci.c | 2 ++
+  1 file changed, 2 insertions(+)
+
+Thanks,
+Christian
