@@ -1,18 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402gxD3CW3zF09v
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 21:02:23 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id y186so3968347pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 03:02:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402gxH3pjPzF09v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 21:02:27 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id s13so3882099pgn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 03:02:27 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH 0/4] more sreset debugging improvements
-Date: Fri, 16 Mar 2018 20:02:08 +1000
-Message-Id: <20180316100212.5110-1-npiggin@gmail.com>
+Subject: [RFC PATCH 1/4] powerpc/64s: return more carefully from sreset NMI
+Date: Fri, 16 Mar 2018 20:02:09 +1000
+Message-Id: <20180316100212.5110-2-npiggin@gmail.com>
+In-Reply-To: <20180316100212.5110-1-npiggin@gmail.com>
+References: <20180316100212.5110-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,60 +24,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This code seems to never end. This series attempts to make sreset
-debugging more robust, particularly I'm looking at taking exceptions
-from CPUs within OPAL. This is starting to work to a degree now (with
-some skiboot patches I'll post in a minute). At least we can examine
-registers of the CPU from xmon, can print to console, and sanely
-crash rather than recover with a trashed OPAL stack.
+System Reset, being an NMI, must return more carefully than other
+interrupts. It has traditionally returned via the nromal return
+from exception path, but that has a number of problems.
 
-After this and the skiboot series, we can take a 0x100 and get to
-xmon like this:
+- r13 does not get restored if returning to kernel. This is for
+  interrupts which may cause a context switch, which sreset will
+  never do. Interrupting OPAL (which uses a different r13) is one
+  place where this causes breakage.
 
-(initramfs) WARNING: cpu 0x0 stopped in OPAL, cannot recover
-cpu 0x0: Vector: 100 (System Reset) at [c0000000fffcfd80]
-    pc: 000000003001b708
-    lr: 000000003000515c
-    sp: 31c03d20
-   msr: 9000000002803000
-  current = 0xc0000000fd862600
-  paca    = 0xc00000000fff0000   softe: 3        irq_happened: 0x01
-    pid   = 16, comm = kopald
-Linux version 4.16.0-rc2-00004-g86f2ceed5cac (npiggin@roar) (gcc version 7.3.0 (Debian 7.3.0-1)) #1638 SMP Fri Mar 16 19:53:12 AEST 2018
-WARNING: exception is not recoverable, can't continue
-enter ? for help
-SP (31c03d20) is in userspace
-0:mon> x
-[   45.426677142,5] CPU ATTEMPT TO RE-ENTER FIRMWARE! PIR=0000 cpu @0x31c00000 -> pir=0000 token=8
-Kernel panic - not syncing: Unrecoverable System Reset
-CPU: 0 PID: 16 Comm: kopald Not tainted 4.16.0-rc2-00004-g86f2ceed5cac #1638
-Call Trace:
-nvram_write_os_partition: Failed nvram_write (-5)
+- It may cause several other problems returning to kernel with
+  preempt or TIF_EMULATE_STACK_STORE if it hits at the wrong time.
 
-Without the series we end up in a big mess.
+It's safer just to have a simple restore and return, like machine
+check which is the other NMI.
 
-Of course it's best not to sreset a CPU that's in OPAL in the
-first place. I have another few patches for Linux to take a target
-out of OPAL with quiesce API before sending a sreset. But someitmes
-a CPU will get stuck in OPAL or we could hit it with pdbg etc.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 61 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 58 insertions(+), 3 deletions(-)
 
-Thanks,
-Nick
-
-Nicholas Piggin (4):
-  powerpc/64s: return more carefully from sreset NMI
-  powerpc/64s: sreset panic if there is no debugger or crash dump
-    handlers
-  powerpc/powernv/nvram: opal_nvram_write handle unknown OPAL errors
-  powerpc/xmon: Detect if OPAL was interrupted and mark unrecoverable
-
- arch/powerpc/include/asm/opal.h             |  2 +
- arch/powerpc/kernel/exceptions-64s.S        | 61 +++++++++++++++++++++++++++--
- arch/powerpc/kernel/traps.c                 | 15 ++++++-
- arch/powerpc/platforms/powernv/opal-nvram.c |  2 +
- arch/powerpc/platforms/powernv/opal.c       |  5 +++
- arch/powerpc/xmon/xmon.c                    | 14 +++++++
- 6 files changed, 94 insertions(+), 5 deletions(-)
-
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 3ac87e53b3da..114ff7170562 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -139,6 +139,21 @@ EXC_COMMON_BEGIN(system_reset_idle_common)
+ 	b	pnv_powersave_wakeup
+ #endif
+ 
++/*
++ * Set IRQS_ALL_DISABLED unconditionally so arch_irqs_disabled does
++ * the right thing. We do not want to reconcile because that goes
++ * through irq tracing which we don't want in NMI.
++ *
++ * Save PACAIRQHAPPENED because some code will do a hard disable
++ * (e.g., xmon). So we want to restore this back to where it was
++ * when we return. DAR is unused in the stack, so save it there.
++ */
++#define ADD_RECONCILE_NMI						\
++	li	r10,IRQS_ALL_DISABLED;					\
++	stb	r10,PACAIRQSOFTMASK(r13);				\
++	lbz	r10,PACAIRQHAPPENED(r13);				\
++	std	r10,_DAR(r1)
++
+ EXC_COMMON_BEGIN(system_reset_common)
+ 	/*
+ 	 * Increment paca->in_nmi then enable MSR_RI. SLB or MCE will be able
+@@ -157,16 +172,56 @@ EXC_COMMON_BEGIN(system_reset_common)
+ 	subi	r1,r1,INT_FRAME_SIZE
+ 	EXCEPTION_COMMON_NORET_STACK(PACA_EXNMI, 0x100,
+ 			system_reset, system_reset_exception,
+-			ADD_NVGPRS;ADD_RECONCILE)
++			ADD_NVGPRS;ADD_RECONCILE_NMI)
++
++	/* This (and MCE) can be simplified with mtmsrd L=1 */
++	/* Clear MSR_RI before setting SRR0 and SRR1. */
++	li	r0,MSR_RI
++	mfmsr	r9
++	andc	r9,r9,r0
++	mtmsrd	r9,1
+ 
+ 	/*
+-	 * The stack is no longer in use, decrement in_nmi.
++	 * MSR_RI is clear, now we can decrement paca->in_nmi.
+ 	 */
+ 	lhz	r10,PACA_IN_NMI(r13)
+ 	subi	r10,r10,1
+ 	sth	r10,PACA_IN_NMI(r13)
+ 
+-	b	ret_from_except
++	/*
++	 * Restore soft mask settings.
++	 */
++	ld	r10,_DAR(r1)
++	stb	r10,PACAIRQHAPPENED(r13)
++	ld	r10,SOFTE(r1)
++	stb	r10,PACAIRQSOFTMASK(r13)
++
++	/*
++	 * Keep below code in synch with MACHINE_CHECK_HANDLER_WINDUP.
++	 * Should share common bits...
++	 */
++
++	/* Move original SRR0 and SRR1 into the respective regs */
++	ld	r9,_MSR(r1)
++	mtspr	SPRN_SRR1,r9
++	ld	r3,_NIP(r1)
++	mtspr	SPRN_SRR0,r3
++	ld	r9,_CTR(r1)
++	mtctr	r9
++	ld	r9,_XER(r1)
++	mtxer	r9
++	ld	r9,_LINK(r1)
++	mtlr	r9
++	REST_GPR(0, r1)
++	REST_8GPRS(2, r1)
++	REST_GPR(10, r1)
++	ld	r11,_CCR(r1)
++	mtcr	r11
++	REST_GPR(11, r1)
++	REST_2GPRS(12, r1)
++	/* restore original r1. */
++	ld	r1,GPR1(r1)
++	RFI_TO_USER_OR_KERNEL
+ 
+ #ifdef CONFIG_PPC_PSERIES
+ /*
 -- 
 2.16.1
