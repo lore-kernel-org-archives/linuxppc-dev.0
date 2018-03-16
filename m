@@ -2,37 +2,38 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402mNr3JKlzDqnN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 00:23:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402mWL00djzDqGV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 00:28:45 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Michal Suchanek <msuchanek@suse.de>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Nicholas Piggin
+ <npiggin@gmail.com>
 Cc: Kate Stewart <kstewart@linuxfoundation.org>, Madhavan Srinivasan
  <maddy@linux.vnet.ibm.com>, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, "Naveen N. Rao"
+ Al Viro <viro@zeniv.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Michael Neuling <mikey@neuling.org>, "Bryant G. Ly"
+ <bryantly@linux.vnet.ibm.com>, "Naveen N. Rao"
  <naveen.n.rao@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>,
- Nicholas Piggin <npiggin@gmail.com>, =?utf-8?Q?C=C3=A9dric?= Le Goater
- <clg@kaod.org>, David Gibson <david@gibson.dropbear.id.au>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Sergey Senozhatsky
- <sergey.senozhatsky@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Philippe Ombredanne
- <pombredanne@nexb.com>, Joe Perches <joe@perches.com>, Oliver O'Halloran
- <oohall@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, "Tobin C.
- Harding" <me@tobin.cc>, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Al Viro
- <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH RFC rebase 2/9] powerpc: Use barrier_nospec in
- copy_from_user
-In-Reply-To: <CA+55aFw8LJ7T_4jTe4q5q0d2JuP0iBWdwcTXZULKe-c4w7QrPA@mail.gmail.com>
+ =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>, David Gibson
+ <david@gibson.dropbear.id.au>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sergey
+ Senozhatsky <sergey.senozhatsky@gmail.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>, Joe Perches <joe@perches.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Andrew Morton
+ <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "Tobin C.
+ Harding" <me@tobin.cc>
+Subject: Re: [PATCH RFC rebase 3/9] powerpc/64: Use barrier_nospec in syscall
+ entry
+In-Reply-To: <20180316101549.31238bdf@naga.suse.cz>
 References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
  <cover.1521141122.git.msuchanek@suse.de>
- <32268431948dc1a32264a98a76d41d71ae7536b3.1521141122.git.msuchanek@suse.de>
- <CA+55aFw8LJ7T_4jTe4q5q0d2JuP0iBWdwcTXZULKe-c4w7QrPA@mail.gmail.com>
-Date: Sat, 17 Mar 2018 00:22:54 +1100
-Message-ID: <87605wi28h.fsf@concordia.ellerman.id.au>
+ <b8253774e223530c808eed65d116deecc46ad36b.1521141122.git.msuchanek@suse.de>
+ <20180316151823.2f28d5ea@roar.ozlabs.ibm.com>
+ <20180316101549.31238bdf@naga.suse.cz>
+Date: Sat, 17 Mar 2018 00:28:42 +1100
+Message-ID: <873710i1yt.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,42 +43,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Hi Michal,
 
-> On Thu, Mar 15, 2018 at 12:15 PM, Michal Suchanek <msuchanek@suse.de> wrote:
->> This is based on x86 patch doing the same.
->>
->> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
->> ---
->> --- a/arch/powerpc/include/asm/uaccess.h
->> +++ b/arch/powerpc/include/asm/uaccess.h
->> @@ -258,8 +259,10 @@ do {                                                               \
->>         long __gu_err = -EFAULT;                                        \
->>         unsigned long  __gu_val = 0;                                    \
->>         const __typeof__(*(ptr)) __user *__gu_addr = (ptr);             \
->> +       int can_access = access_ok(VERIFY_READ, __gu_addr, (size));     \
->>         might_fault();                                                  \
->> -       if (access_ok(VERIFY_READ, __gu_addr, (size)))                  \
->> +       barrier_nospec();                                               \
->> +       if (can_access)                                                 \
->>                 __get_user_size(__gu_val, __gu_addr, (size), __gu_err); \
->>         (x) = (__force __typeof__(*(ptr)))__gu_val;                             \
->>         __gu_err;                                                       \
+Thanks for working on this series in the absence of any documentation.
+
+Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+> On Fri, 16 Mar 2018 15:18:23 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
 >
-> Is the above really correct? The barrier is *before* the conditional
-> branch that might be mis-predicted.
+>> On Thu, 15 Mar 2018 20:15:52 +0100
+>> Michal Suchanek <msuchanek@suse.de> wrote:
+>>=20
+>> > On powerpc syscall entry is done in assembly so patch in an explicit
+>> > barrier_nospec.=20=20
+>>=20
+>> Same comment as Linus for this -- the barriers are before the branch
+>> here, so is it possible the branch instruction can be speculative
+>> while the index is used to load the syscall table?
 >
-> I don't know how the ppc barrier works, but that sounds completely bogus.
+> As far as I understand barriers they separate code before the barrier
+> and code after the barrier.
+>
+> So inserting barrier_nospec after cmpldi means that the result of the
+> cmpldi has to be known before any instruction following barrier_nospec
+> that depends on the result can be executed.=20
 
-Yeah it should be after the branch.
+That would make sense, but I don't think that's how the barrier's been
+defined.
 
-I don't have a formal spec for the barrier yet, it should be defined in
-a hopefully soon to be released revision of the ISA.
+I don't have a formal spec for it (yet), but what I do have indicates it
+only orders older branches vs future instructions.
 
-But the gist is it will stall execution until any older branches are no
-longer speculating.
+> However, you have probably knowledge of the powerpc implementation of
+> the barrier so if the semantic is actually different then please
+> enlighten me.
 
-It doesn't order any two arbitrary instructions, such as a comparison
-and a branch, which I suspect is how Michal was interpreting it.
+We have some knowledge, but only some :)
+
+It's not necessarily implemented the same way on each chip revision, so
+it's not entirely clear what the formal semantics will be vs what we are
+seeing in current implementations. But I think it's safe to say it
+should always go after the branch that might be speculatively executed.
+
+Will try and get some better documentation for you.
 
 cheers
