@@ -1,29 +1,31 @@
-Return-Path: <srs1=dc9a=kernel.org==p2sp=gg=goodmis.org=rostedt@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [103.22.144.68])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402p8x07jGzDqmk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:42:57 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 402p8s5vPyz8w2x
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 01:42:53 +1100 (AEDT)
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 402p8r1c0cz9sDr
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2018 01:42:52 +1100 (AEDT)
-Date: Fri, 16 Mar 2018 10:42:48 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402pqZ5VKVzDr2S
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 02:12:58 +1100 (AEDT)
+Date: Fri, 16 Mar 2018 13:35:11 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, naveen.n.rao@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH 2/2] powerpc: Only support DYNAMIC_FTRACE not static
-Message-ID: <20180316104248.6aa11792@gandalf.local.home>
-In-Reply-To: <20180316134633.10584-2-mpe@ellerman.id.au>
-References: <20180316134633.10584-1-mpe@ellerman.id.au>
- <20180316134633.10584-2-mpe@ellerman.id.au>
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ SF Markus Elfring <elfring@users.sourceforge.net>,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>,
+ Josh Sklar <sklar@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] powerpc: Use common error handling code in setup_new_fdt()
+Message-ID: <20180316103511.77hog6scdxg2k7ts@mwanda>
+References: <0dd9d938-8d89-f0e0-f05f-9a3e5dc42a57@users.sourceforge.net>
+ <87fu52jqtc.fsf@morokweng.localdomain>
+ <20180315115753.rjejlkrp3fhdxbyk@mwanda>
+ <87bmfofh8y.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87bmfofh8y.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 17 Mar 2018 00:46:33 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> We've had dynamic ftrace support for over 9 years since Steve first
-> wrote it, all the distros use dynamic, and static is basically
-> untested these days, so drop support for static ftrace.
+On Fri, Mar 16, 2018 at 09:26:53PM +1100, Michael Ellerman wrote:
+> Dan Carpenter <dan.carpenter@oracle.com> writes:
+> > On Wed, Mar 14, 2018 at 06:22:07PM -0300, Thiago Jung Bauermann wrote:
+> >> SF Markus Elfring <elfring@users.sourceforge.net> writes:
+> >> > From: Markus Elfring <elfring@users.sourceforge.net>
+> >> > Date: Sun, 11 Mar 2018 09:03:42 +0100
+> >> >
+> >> > Add a jump target so that a bit of exception handling can be better reused
+> >> > at the end of this function.
+> >> >
+> >> > This issue was detected by using the Coccinelle software.
+> >> >
+> >> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> >> > ---
+> >> >  arch/powerpc/kernel/machine_kexec_file_64.c | 28 ++++++++++++----------------
+> >> >  1 file changed, 12 insertions(+), 16 deletions(-)
+> >> 
+> >> I liked it. Thanks!
+> >> 
+> >> Reviewed-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> >
+> > You know that compilers already re-use string constants so this doesn't
+> > actually save memory?
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/Kconfig                           |  1 +
->  arch/powerpc/include/asm/ftrace.h              |  4 +---
->  arch/powerpc/include/asm/module.h              |  5 -----
->  arch/powerpc/kernel/trace/ftrace.c             |  2 --
->  arch/powerpc/kernel/trace/ftrace_32.S          | 20 ------------------
->  arch/powerpc/kernel/trace/ftrace_64.S          | 29 --------------------------
->  arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  3 ---
->  arch/powerpc/kernel/trace/ftrace_64_pg.S       |  2 --
->  8 files changed, 2 insertions(+), 64 deletions(-)
+> Sure, but it's still clearer to only have the string appear once in the
+> code.
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 73ce5dd07642..23a325df784a 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -189,6 +189,7 @@ config PPC
->  	select HAVE_DEBUG_STACKOVERFLOW
->  	select HAVE_DMA_API_DEBUG
->  	select HAVE_DYNAMIC_FTRACE
-> +	select HAVE_DYNAMIC_FTRACE_ONLY
 
-I still think adding:
+To me the original was better.
 
-	select DYNAMIC_FTRACE			if FUNCTION_TRACER
+> > Also we should be preserving the error codes
+> > instead of always returning -EINVAL.
+> 
+> The error codes come from libfdt code, so they don't necessarily make
+> sense in the kernel. eg. FDT_ERR_NOSPACE == 3 == ESRCH.
+> 
+> Perhaps we should be trying harder to convert them, but that's a
+> criticism of the original code not this patch.
 
-is the better approach.
+Ah.  You're right.  I look at the patch in context, sorry.
 
-But I'm all for this patch. I've debated doing the same thing for x86,
-but the only reason I have not, was because it's the only way I test
-the !DYNAMIC_FTRACE code. I've broken the static function tracing
-several times and only find out during my test suite that still tests
-that case. But yeah, it would be nice to just nuke static function
-tracing for all archs. Perhaps after we finish removing unused archs,
-that may be the way to go forward.
-
--- Steve
-
-
-
->  	select HAVE_DYNAMIC_FTRACE_WITH_REGS	if MPROFILE_KERNEL
->  	select HAVE_EBPF_JIT			if PPC64
->  	select HAVE_EFFICIENT_UNALIGNED_ACCESS	if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+regards,
+dan carpenter
