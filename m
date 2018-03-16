@@ -1,34 +1,22 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from emh07.mail.saunalahti.fi (emh07.mail.saunalahti.fi
+ [62.142.5.117])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402gFW15kbzDqxx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 20:31:26 +1100 (AEDT)
-Date: Fri, 16 Mar 2018 10:31:21 +0100
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Madhavan Srinivasan
- <maddy@linux.vnet.ibm.com>, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Michael Neuling <mikey@neuling.org>, "Bryant G. Ly"
- <bryantly@linux.vnet.ibm.com>, "Naveen N. Rao"
- <naveen.n.rao@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>, Nicholas
- Piggin <npiggin@gmail.com>, =?UTF-8?B?Q8OpZHJpYw==?= Le Goater
- <clg@kaod.org>, David Gibson <david@gibson.dropbear.id.au>,
- linux-kernel@vger.kernel.org, Sergey Senozhatsky
- <sergey.senozhatsky@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Philippe Ombredanne
- <pombredanne@nexb.com>, Joe Perches <joe@perches.com>, Oliver O'Halloran
- <oohall@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "Tobin C. Harding" <me@tobin.cc>
-Subject: Re: [PATCH RFC rebase 0/9] powerpc barrier_nospec
-Message-ID: <20180316103121.6dadf5b2@naga.suse.cz>
-In-Reply-To: <20180316080810.GA29615@kroah.com>
-References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
- <cover.1521141122.git.msuchanek@suse.de>
- <20180316080810.GA29615@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402gbP0Bw7zDqrQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 20:46:56 +1100 (AEDT)
+Date: Fri, 16 Mar 2018 11:37:47 +0200
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: build warning in drivers/macintosh/rack-meter.c
+Message-ID: <20180316093747.dxle5xhwwi2nptqz@darkstar.musicnaut.iki.fi>
+References: <20180316164614.07f2f573@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180316164614.07f2f573@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,18 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 16 Mar 2018 09:08:10 +0100
-Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
+Hi,
 
-> On Thu, Mar 15, 2018 at 08:15:49PM +0100, Michal Suchanek wrote:
-> > Yes, it is good idea to add some commit messages.  
+On Fri, Mar 16, 2018 at 04:46:14PM +1100, Stephen Rothwell wrote:
+> These warnings have beeen around for a while now;
 > 
-> Always a good idea :)
+> drivers/macintosh/rack-meter.c:157:2: warning: 'memset' used with length equal to number of elements without multiplication by element size [-Wmemset-elt-size]
+>   memset(rdma->buf1, 0, ARRAY_SIZE(rdma->buf1));
+>   ^~~~~~
+> drivers/macintosh/rack-meter.c:158:2: warning: 'memset' used with length equal to number of elements without multiplication by element size [-Wmemset-elt-size]
+>   memset(rdma->buf2, 0, ARRAY_SIZE(rdma->buf2));
+>   ^~~~~~
 > 
-> Also, any reason you are not tagging these for the stable release(s)?
+> Introduced by commit
+> 
+>   4f7bef7a9f69 ("drivers: macintosh: rack-meter: fix bogus memsets")
+> 
+> I guess updating to a newer compiler has started generating these.
 
-Oh, right. cc:stable would be a good idea as well.
+Eh, that's really embarrassing. Obviously it should be sizeof(). I can send
+a fix for this and test on Xserve.
 
-Thanks
-
-Michal
+A.
