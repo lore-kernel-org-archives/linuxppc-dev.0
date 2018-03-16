@@ -1,51 +1,47 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x22f.google.com (mail-it0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c0b::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402s1T3q8KzF0nG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 03:51:41 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2GGn9vV103432
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 12:51:38 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2grg0vmxkb-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 12:51:38 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Fri, 16 Mar 2018 12:51:37 -0400
-Subject: Re: [PATCH 2/3] rfi-flush: Make it possible to call setup_rfi_flush()
- again
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org
-References: <1518644021-17037-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <1518644021-17037-3-git-send-email-mauricfo@linux.vnet.ibm.com>
- <20180215081358.2f37cda4@naga.suse.cz>
- <b87d6261-c48d-6eab-e328-6988f628c949@linux.vnet.ibm.com>
- <87lgforngp.fsf@concordia.ellerman.id.au>
- <20180220180621.11265945@kitsune.suse.cz>
- <2bb5a110-3ea4-af5c-81fb-cf5350587dff@linux.vnet.ibm.com>
- <876069flhq.fsf@concordia.ellerman.id.au>
- <20180306135522.040707de@kitsune.suse.cz>
- <f11fdded-9d5e-d06f-b75e-d0a802b2005d@linux.vnet.ibm.com>
- <876060gq5s.fsf@concordia.ellerman.id.au>
- <c7cadceb-1957-046e-8934-592baccca5b7@linux.vnet.ibm.com>
- <20180313185916.3e4a0ea6@kitsune.suse.cz>
- <db75ecdd-32da-d429-8ea6-3bd1453bd89e@linux.vnet.ibm.com>
- <20180313193652.069ed57b@kitsune.suse.cz>
- <ff878619-a2c4-2dd2-8d39-ed0a535a9b8d@linux.vnet.ibm.com>
- <87lgesgl2y.fsf@concordia.ellerman.id.au>
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Date: Fri, 16 Mar 2018 13:51:32 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402sP448yJzF1Dg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 04:08:40 +1100 (AEDT)
+Received: by mail-it0-x22f.google.com with SMTP id g7-v6so2932023itf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 10:08:40 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <87lgesgl2y.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <00189945-c147-4c8c-fa4a-515bcfdae6cb@linux.vnet.ibm.com>
+Sender: linus971@gmail.com
+In-Reply-To: <20180316101549.31238bdf@naga.suse.cz>
+References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
+ <cover.1521141122.git.msuchanek@suse.de>
+ <b8253774e223530c808eed65d116deecc46ad36b.1521141122.git.msuchanek@suse.de>
+ <20180316151823.2f28d5ea@roar.ozlabs.ibm.com>
+ <20180316101549.31238bdf@naga.suse.cz>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 16 Mar 2018 10:08:37 -0700
+Message-ID: <CA+55aFxYOrn0XRPF8EXvizqAf3GOGmUxu-aKrqvtOsbgxwP2tg@mail.gmail.com>
+Subject: Re: [PATCH RFC rebase 3/9] powerpc/64: Use barrier_nospec in syscall
+ entry
+To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Michael Neuling <mikey@neuling.org>,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>,
+ =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Joe Perches <joe@perches.com>, "Oliver O'Halloran" <oohall@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, "Tobin C. Harding" <me@tobin.cc>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,23 +51,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael,
+On Fri, Mar 16, 2018 at 2:15 AM, Michal Such=C3=A1nek <msuchanek@suse.de> w=
+rote:
+>
+> As far as I understand barriers they separate code before the barrier
+> and code after the barrier.
 
-On 03/16/2018 11:18 AM, Michael Ellerman wrote:
->> I still think the correct, informative messages are a good way to go:)
-> Yeah I agree.
-> 
-> We probably want to do both, print what's available at boot, and print
-> what's actually patched when the patching happens.
+Almost certainly not. Even if you were to do an expensive
+serialization before the branch, the branch will still predict after
+the serialization.
 
-Nice.  Not sure you had a chance to review yet, but 'PATCH v3 4/5' does
-exactly that :- )
+The thing is, it doesn't make sense to insert a barrier before a
+conditional branch for Spectre mitigation.
 
-I think its implementation of the latter part looks a bit strange, but I
-couldn't figure an elegant way to fit that in (either that one or string
-array indexed by flush-type possible values or a long if-else chain).
+The problem is not that the data isn't ready for the branch - the
+problem is that the branch is predicted _regardless_ of the data.
 
-I'd be happy with suggestions if it's preferred in some other way.
+Sure, some micro-architecture might not predict branches at all if
+they have a stable conditional, so a barrier _can_ make sense.
 
-cheers,
-Mauricio
+But fundamentally, good branch prediction - in order to be optimal -
+has to happen before instructions have even been parsed, much less
+things like "stable conditional register state" having been decided
+on. You'll want to do I$ prefetching etc.
+
+So the problem is that even if the data is ready, the branch will be
+predicted according to some unrelated historical data, and a barrier
+to make the branch conditional be stable is pointless.
+
+A barrier *after* the branch, making sure that you don't actually
+start executing instructions past it (even if you might have predicted
+and fetched stuff past it) *if* you have mis-predicted the previous
+branch, is what a sane architecture would specify.
+
+Of course, on x86, we mostly tried to avoid branch prediction being
+the critical problem and having to have barriers by just making it an
+address generation dependency instead. That should presumably work on
+powerpc too, since address generation is part of the memory ordering
+definition. But obviously a microarchitecture *could* end up
+speculating and just redoing even for memory ordering, and maybe the
+ppc architects prefer the barrier since they are already used to crazy
+and not very well architected barriers elsewhere.
+
+              Linus
