@@ -1,47 +1,54 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x22f.google.com (mail-it0-x22f.google.com
- [IPv6:2607:f8b0:4001:c0b::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402sP448yJzF1Dg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 04:08:40 +1100 (AEDT)
-Received: by mail-it0-x22f.google.com with SMTP id g7-v6so2932023itf.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 10:08:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 402wZg5KcHzF1Vw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 06:32:11 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2GJW1vg109993
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 15:32:08 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2grhf6p7mp-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Mar 2018 15:32:08 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 16 Mar 2018 19:32:05 -0000
+Date: Fri, 16 Mar 2018 12:31:52 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, linux-mm <linux-mm@kvack.org>,
+ "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Dave Hansen <dave.hansen@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+ Haren Myneni/Beaverton/IBM <hbabu@us.ibm.com>,
+ Michal Hocko <mhocko@kernel.org>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Jonathan Corbet <corbet@lwn.net>, Arnd Bergmann <arnd@arndb.de>,
+ fweimer@redhat.com, msuchanek@suse.com,
+ Thomas Gleixner <tglx@linutronix.de>, Ulrich.Weigand@de.ibm.com,
+ Ram Pai <ram.n.pai@gmail.com>
+Subject: Re: [PATCH v4] mm, pkey: treat pkey-0 special
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1521196416-18157-1-git-send-email-linuxram@us.ibm.com>
+ <CAKTCnzmSCT+VecdSRpyY2Rb_AW2ngCi3UTZfLE3VOLNSQn6vsA@mail.gmail.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20180316101549.31238bdf@naga.suse.cz>
-References: <20180313200108.GA4082@hirez.programming.kicks-ass.net>
- <cover.1521141122.git.msuchanek@suse.de>
- <b8253774e223530c808eed65d116deecc46ad36b.1521141122.git.msuchanek@suse.de>
- <20180316151823.2f28d5ea@roar.ozlabs.ibm.com>
- <20180316101549.31238bdf@naga.suse.cz>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 16 Mar 2018 10:08:37 -0700
-Message-ID: <CA+55aFxYOrn0XRPF8EXvizqAf3GOGmUxu-aKrqvtOsbgxwP2tg@mail.gmail.com>
-Subject: Re: [PATCH RFC rebase 3/9] powerpc/64: Use barrier_nospec in syscall
- entry
-To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Michael Neuling <mikey@neuling.org>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>,
- =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Joe Perches <joe@perches.com>, "Oliver O'Halloran" <oohall@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, "Tobin C. Harding" <me@tobin.cc>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKTCnzmSCT+VecdSRpyY2Rb_AW2ngCi3UTZfLE3VOLNSQn6vsA@mail.gmail.com>
+Message-Id: <20180316193152.GG1060@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,46 +58,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2018 at 2:15 AM, Michal Such=C3=A1nek <msuchanek@suse.de> w=
-rote:
->
-> As far as I understand barriers they separate code before the barrier
-> and code after the barrier.
+On Fri, Mar 16, 2018 at 10:02:22PM +1100, Balbir Singh wrote:
+> On Fri, Mar 16, 2018 at 9:33 PM, Ram Pai <linuxram@us.ibm.com> wrote:
+> > Applications need the ability to associate an address-range with some
+> > key and latter revert to its initial default key. Pkey-0 comes close to
+> > providing this function but falls short, because the current
+> > implementation disallows applications to explicitly associate pkey-0 to
+> > the address range.
+> >
+> > Clarify the semantics of pkey-0 and provide the corresponding
+> > implementation.
+> >
+> > Pkey-0 is special with the following semantics.
+> > (a) it is implicitly allocated and can never be freed. It always exists.
+> > (b) it is the default key assigned to any address-range.
+> > (c) it can be explicitly associated with any address-range.
+> >
+> > Tested on powerpc only. Could not test on x86.
+> 
+> 
+> Ram,
+> 
+> I was wondering if we should check the AMOR values on the ppc side to make sure
+> that pkey0 is indeed available for use as default. I am still of the
+> opinion that we
 
-Almost certainly not. Even if you were to do an expensive
-serialization before the branch, the branch will still predict after
-the serialization.
+AMOR cannot be read/written by the OS in priviledge-non-hypervisor-mode.
+We could try testing if key-0 is available to the OS by temproarily
+changing the bits key-0 bits of AMR or IAMR register. But will be
+dangeorous to do, for you might disable read,execute of all the pages,
+since all pages are asscoiated with key-0 bydefault.
 
-The thing is, it doesn't make sense to insert a barrier before a
-conditional branch for Spectre mitigation.
+May be we can play with UAMOR register and check if its key-0 can be
+modified. That is a good indication that key-0 is available.
+If it is not available, disable the pkey-subsystem, and operate
+the legacy way; no pkeys.
 
-The problem is not that the data isn't ready for the branch - the
-problem is that the branch is predicted _regardless_ of the data.
 
-Sure, some micro-architecture might not predict branches at all if
-they have a stable conditional, so a barrier _can_ make sense.
+> should consider non-0 default pkey in the long run. I'm OK with the patches for
+> now, but really 0 is not special except for it being the default bit
+> values present
+> in the PTE.
 
-But fundamentally, good branch prediction - in order to be optimal -
-has to happen before instructions have even been parsed, much less
-things like "stable conditional register state" having been decided
-on. You'll want to do I$ prefetching etc.
+it will be a pain. Any new pte that gets instantiated will now have to
+explicitly initialize its key to this default-non-zero-key.  I hope
+we or any architecture goes there ever.
 
-So the problem is that even if the data is ready, the branch will be
-predicted according to some unrelated historical data, and a barrier
-to make the branch conditional be stable is pointless.
-
-A barrier *after* the branch, making sure that you don't actually
-start executing instructions past it (even if you might have predicted
-and fetched stuff past it) *if* you have mis-predicted the previous
-branch, is what a sane architecture would specify.
-
-Of course, on x86, we mostly tried to avoid branch prediction being
-the critical problem and having to have barriers by just making it an
-address generation dependency instead. That should presumably work on
-powerpc too, since address generation is part of the memory ordering
-definition. But obviously a microarchitecture *could* end up
-speculating and just redoing even for memory ordering, and maybe the
-ppc architects prefer the barrier since they are already used to crazy
-and not very well architected barriers elsewhere.
-
-              Linus
+-- 
+Ram Pai
