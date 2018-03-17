@@ -1,31 +1,22 @@
-Return-Path: <timur@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 403GSN1jWMzDr4x
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Mar 2018 19:57:55 +1100 (AEDT)
-Subject: Re: [PATCH v3 18/18] infiniband: cxgb4: Eliminate duplicate barriers
- on weakly-ordered archs
-To: Steve Wise <swise@opengridcomputing.com>, 'Jason Gunthorpe'
- <jgg@ziepe.ca>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Cc: 'Sinan Kaya' <okaya@codeaurora.org>, netdev@vger.kernel.org,
- sulrich@codeaurora.org, linux-arm-msm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, 'Steve Wise' <swise@chelsio.com>,
- 'Doug Ledford' <dledford@redhat.com>, linux-rdma@vger.kernel.org,
- linux-kernel@vger.kernel.org, 'Michael Werner' <werner@chelsio.com>,
- 'Casey Leedom' <leedom@chelsio.com>
-References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
- <1521216991-28706-19-git-send-email-okaya@codeaurora.org>
- <003601d3bd6a$783d6970$68b83c50$@opengridcomputing.com>
- <20180316221347.GA958@ziepe.ca>
- <004401d3bd7b$2a2e70b0$7e8b5210$@opengridcomputing.com>
-From: Timur Tabi <timur@codeaurora.org>
-Message-ID: <b327cb67-562c-8b95-b31b-96594d6a41ae@codeaurora.org>
-Date: Fri, 16 Mar 2018 23:08:16 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 403QfG2BwQzDr2D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 02:07:01 +1100 (AEDT)
+From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org,
+ =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ devicetree@vger.kernel.org
+Subject: [PATCH] powerpc: wii.dts: Add drive slot LED
+Date: Sat, 17 Mar 2018 16:06:17 +0100
+Message-Id: <20180317150617.26913-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
-In-Reply-To: <004401d3bd7b$2a2e70b0$7e8b5210$@opengridcomputing.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,16 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/16/18 6:04 PM, Steve Wise wrote:
-> Anybody understand why the PPC implementation of writeX_relaxed() isn't
-> relaxed?
+The Wii has a blue LED in the disk drive slot, which is controlled via a
+GPIO line. Add this LED to wii.dts, and mark it as a panic-indicator.
 
-You probably should ask that on the linuxppc-dev@lists.ozlabs.org 
-mailing list.
+Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+---
+ arch/powerpc/boot/dts/wii.dts | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-I've always wondered why PowerPC has non-standard I/O accessors.
-
+diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
+index d697f706fc22..a946a8f4bee3 100644
+--- a/arch/powerpc/boot/dts/wii.dts
++++ b/arch/powerpc/boot/dts/wii.dts
+@@ -13,6 +13,7 @@
+  */
+ 
+ /dts-v1/;
++#include <dt-bindings/gpio/gpio.h>
+ 
+ /*
+  * This is commented-out for now.
+@@ -228,5 +229,16 @@
+ 			interrupts = <2>;
+ 		};
+ 	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++
++		/* This is the blue LED in the disk drive slot */
++		drive-slot {
++			label = "wii:blue:drive_slot";
++			gpios = <&GPIO 5 GPIO_ACTIVE_HIGH>;
++			panic-indicator;
++		};
++	};
+ };
+ 
 -- 
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm
-Technologies, Inc.  Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.16.2
