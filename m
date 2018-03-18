@@ -1,38 +1,32 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40460n3xMvzF0wy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 04:40:25 +1100 (AEDT)
-Received: by mail-io0-x244.google.com with SMTP id e7so7570416iof.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 10:40:24 -0700 (PDT)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20180318161056.5377-4-linux@dominikbrodowski.net>
-References: <20180318161056.5377-1-linux@dominikbrodowski.net>
- <20180318161056.5377-4-linux@dominikbrodowski.net>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 18 Mar 2018 10:40:22 -0700
-Message-ID: <CA+55aFy3THY_nw7NNeUZYoGcszSDkGW-DFK0K063uFMUEO9w=g@mail.gmail.com>
-Subject: Re: [RFC PATCH 3/6] fs: provide generic compat_sys_p{read,
- write}64() implementations
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4046Cz5psXzF0mk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 04:50:07 +1100 (AEDT)
+Date: Sun, 18 Mar 2018 17:49:56 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Al Viro <viro@zeniv.linux.org.uk>, linux-arch <linux-arch@vger.kernel.org>,
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+ arnd@arndb.de, linux-arch@vger.kernel.org,
  Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
- linux-mips <linux-mips@linux-mips.org>,
+ linux-mips@linux-mips.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
  "David S . Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Jiri Slaby <jslaby@suse.com>, "the arch/x86 maintainers" <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ Jiri Slaby <jslaby@suse.com>, x86@kernel.org
+Subject: Re: [RFC PATCH 2/6] fs: provide a generic compat_sys_truncate64()
+ implementation
+Message-ID: <20180318174956.GS30522@ZenIV.linux.org.uk>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-3-linux@dominikbrodowski.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180318161056.5377-3-linux@dominikbrodowski.net>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Honestly, I think the patches like this are disgusting:
+On Sun, Mar 18, 2018 at 05:10:52PM +0100, Dominik Brodowski wrote:
 
-On Sun, Mar 18, 2018 at 9:10 AM, Dominik Brodowski
-<linux@dominikbrodowski.net> wrote:
-> +#ifdef __ARCH_WANT_COMPAT_SYS_PREADWRITE64
+> +#ifdef __ARCH_WANT_COMPAT_SYS_TRUNCATE64
 > +#if defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
-> +       defined(__ARCH_WANT_LE_COMPAT_SYS)
-> +COMPAT_SYSCALL_DEFINE6(pread64, unsigned int, fd, char __user *, ubuf,
-> +                      u32, count, u32, padding, u32, poslo, u32, poshi)
+> +	defined(__ARCH_WANT_LE_COMPAT_SYS)
+> +COMPAT_SYSCALL_DEFINE4(truncate64, const char __user *, filename, u32 padding,
+> +		       unsigned int, offset_low, unsigned int, offset_high)
 > +#elif defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
-> +       !defined(__ARCH_WANT_LE_COMPAT_SYS)
-> +COMPAT_SYSCALL_DEFINE6(pread64, unsigned int, fd, char __user *, ubuf,
-> +                      u32, count, u32, padding, u32, poshi, u32, poslo)
+> +	!defined(__ARCH_WANT_LE_COMPAT_SYS)
+> +COMPAT_SYSCALL_DEFINE4(truncate64, const char __user *, filename, u32 padding,
+> +		       unsigned int, offset_high, unsigned int, offset_low)
 > +#elif !defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
-> +       defined(__ARCH_WANT_LE_COMPAT_SYS)
-> +COMPAT_SYSCALL_DEFINE5(pread64, unsigned int, fd, char __user *, ubuf,
-> +                      u32, count, u32, poslo, u32, poshi)
+> +	defined(__ARCH_WANT_LE_COMPAT_SYS)
+> +COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, filename,
+> +		       unsigned int, offset_low, unsigned int, offset_high)
 > +#else /* no padding, big endian */
-> +COMPAT_SYSCALL_DEFINE5(pread64, unsigned int, fd, char __user *, ubuf,
-> +                      u32, count, u32, poshi, u32, poslo)
+> +COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, filename,
+> +		       unsigned int, offset_high, unsigned int, offset_low)
 > +#endif
 > +{
-> +#ifdef CONFIG_S390
-> +       if ((compat_ssize_t) count < 0)
-> +               return -EINVAL;
-> +#endif /* CONFIG_S390 */
+> +#ifdef CONFIG_SPARC
+> +	if ((int) offset_high < 0)
+> +		return -EINVAL;
+> +#endif
+> +	return do_sys_truncate(filename,
+> +			       ((loff_t) offset_high << 32) | offset_low);
+> +}
+> +#endif /* __ARCH_WANT_COMPAT_SYS_TRUNCATE64 */
 
-and we should just keep code like this entirely architecture-dependent.
+Ow...
 
-It doesn't save all that many lines:
+For one thing, the same observation as for readahead(2).  For another, that
+sparc-specific test is very suspicious, innit?  Let's take a look at
+do_sys_truncate():
+static long do_sys_truncate(const char __user *pathname, loff_t length)
+{
+        unsigned int lookup_flags = LOOKUP_FOLLOW;
+        struct path path;
+        int error;
 
- 19 files changed, 97 insertions(+), 106 deletions(-)
+        if (length < 0) /* sorry, but loff_t says... */
+                return -EINVAL;
 
-and the lines it adds are an unreadable mess compared to the lines it removes.
+So in case of offset_high having bit 31 set, we would get length with bit 63 set,
+and step into that if (length < 0) return -EINVAL;
 
-So please keep the high/low/padding stuff in the arch wrapper, and
-just make them use "do_pwrite64()" and friends instead (or
-"kern_pwrite64()", or whatever we ended up using as the kernel naming
-for in-kernel system call wrappers).
-
-                Linus
+Sure, any set of texts can be combined, given a sufficiently large pile of ifdefs,
+but you are replacing an arseload of almost but not quite identical functions
+spread all over the tree with something that is in one place, but is awfully hard
+to look at, nevermind reading it...
