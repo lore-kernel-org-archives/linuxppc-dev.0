@@ -1,32 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 403xGP4NBTzDqm0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:06:37 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2IB4RAD127792
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 07:06:35 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gsgab15q0-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 07:06:35 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 18 Mar 2018 05:06:34 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 4/4] powerpc/mm/hash: Don't memset pgd table if not needed
-Date: Sun, 18 Mar 2018 16:35:58 +0530
-In-Reply-To: <20180318110558.30493-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20180318110558.30493-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180318110558.30493-5-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4042fG5g3GzDqlT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:09:09 +1100 (AEDT)
+Date: Sun, 18 Mar 2018 11:08:57 -0400 (EDT)
+Message-Id: <20180318.110857.1660518649370410007.davem@davemloft.net>
+To: khalid.aziz@oracle.com
+Cc: dave.hansen@linux.intel.com, aarcange@redhat.com,
+ akpm@linux-foundation.org, allen.pais@oracle.com,
+ aneesh.kumar@linux.vnet.ibm.com, anthony.yznaga@oracle.com, arnd@arndb.de,
+ benh@kernel.crashing.org, bob.picco@oracle.com, bsingharora@gmail.com,
+ corbet@lwn.net, dan.j.williams@intel.com, dave.jiang@intel.com,
+ david.j.aldridge@oracle.com, dwindsor@gmail.com, ebiederm@xmission.com,
+ elena.reshetova@intel.com, gregkh@linuxfoundation.org, hannes@cmpxchg.org,
+ henry.willard@oracle.com, hpa@zytor.com, hughd@google.com,
+ imbrenda@linux.vnet.ibm.com, jack@suse.cz, jag.raman@oracle.com,
+ jane.chu@oracle.com, jglisse@redhat.com, jroedel@suse.de,
+ khalid@gonehiking.org, khandual@linux.vnet.ibm.com,
+ kirill.shutemov@linux.intel.com, kstewart@linuxfoundation.org,
+ ktkhai@virtuozzo.com, liam.merwick@oracle.com, linux-arch@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linuxram@us.ibm.com,
+ linux@roeck-us.net, me@tobin.cc, mgorman@suse.de,
+ mgorman@techsingularity.net, mhocko@suse.com, mike.kravetz@oracle.com,
+ minchan@kernel.org, mingo@kernel.org
+Subject: Re: [PATCH v12 00/11] Application Data Integrity feature
+ introduced by SPARC M7
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <cover.1519227112.git.khalid.aziz@oracle.com>
+References: <cover.1519227112.git.khalid.aziz@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to zero-out pgd table only if we share the slab cache with pud/pmd
-level caches. With the support of 4PB, we don't share the slab cache anymore.
-Instead of removing the code completely hide it within an #ifdef. We don't need
-to do this with any other page table level, because they all allocate table
-of double the size and we take of initializing the first half corrrectly during
-page table zap.
+From: Khalid Aziz <khalid.aziz@oracle.com>
+Date: Wed, 21 Feb 2018 10:15:42 -0700
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgalloc.h | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+> V12 changes:
+> This series is same as v10 and v11 and was simply rebased on 4.16-rc2
+> kernel and patch 11 was added to update signal delivery code to use the
+> new helper functions added by Eric Biederman. Can mm maintainers please
+> review patches 2, 7, 8 and 9 which are arch independent, and
+> include/linux/mm.h and mm/ksm.c changes in patch 10 and ack these if
+> everything looks good? 
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 4746bc68d446..07f0dbac479f 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -80,8 +80,19 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
- 
- 	pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
- 			       pgtable_gfp_flags(mm, GFP_KERNEL));
-+	/*
-+	 * With hugetlb, we don't clear the second half of the page table.
-+	 * If we share the same slab cache with the pmd or pud level table,
-+	 * we need to make sure we zero out the full table on alloc.
-+	 * With 4K we don't store slot in the second half. Hence we don't
-+	 * need to do this for 4k.
-+	 */
-+#if (H_PGD_INDEX_SIZE == H_PUD_CACHE_INDEX) || \
-+		(H_PGD_INDEX_SIZE == H_PMD_CACHE_INDEX)
-+#if defined(CONFIG_HUGETLB_PAGE) && defined(CONFIG_PPC_64K_PAGES)
- 	memset(pgd, 0, PGD_TABLE_SIZE);
--
-+#endif
-+#endif
- 	return pgd;
- }
- 
--- 
-2.14.3
+Khalid I've applied this series to sparc-next, thank you!
+
+But one thing has to be fixed up.
+
+In uapi/asm/auxvec.h you conditionalize the ADI aux vectors on
+CONFIG_SPARC64.
+
+That's not correct, you should never control user facing definitions
+based upon kernel configuration.
+
+Also, both 32-bit and 64-bit applications running on ADI capable
+machines want to compile against and use this informaiton.
+
+So please remove these CPP checks.
