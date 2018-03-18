@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 403xG82lhDzDqYx
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:06:24 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 403xGG57NTzDqlx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:06:29 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2IB4RA7127792
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 07:06:21 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gsgab15jm-1
+ w2IB5e9v124145
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 07:06:27 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gsjw65ru2-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 07:06:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 07:06:27 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 18 Mar 2018 05:06:20 -0600
+ Sun, 18 Mar 2018 05:06:26 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V5 1/4] powerpc/mm/slice: Consolidate the return path for the
- function.
-Date: Sun, 18 Mar 2018 16:35:55 +0530
+Subject: [PATCH V5 2/4] powerpc/mm: Add support for handling > 512TB address
+ in SLB miss
+Date: Sun, 18 Mar 2018 16:35:56 +0530
 In-Reply-To: <20180318110558.30493-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20180318110558.30493-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180318110558.30493-2-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20180318110558.30493-3-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,106 +37,527 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the follow up patch, on finding a free area we will need to do allocated
-extra contexts as needed. Consolidating the return path for
-slice_get_unmapped_area makes it easy.
+For address above 512TB we allocate additional mmu context. To make it all
+easy, address above 512TB is handled with IR/DR=1 and with stack frame setup.
 
-Split into a separate patch to make review easy.
+The mmu_context_t is also updated to track the new extended_ids. To support
+upto 4PB we need a total 8 contexts.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/slice.c | 36 ++++++++++++++++++++----------------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |   6 ++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |   6 ++
+ arch/powerpc/include/asm/book3s/64/mmu.h      |  31 +++++++-
+ arch/powerpc/include/asm/mmu_context.h        |  38 +++++++++
+ arch/powerpc/include/asm/processor.h          |   6 ++
+ arch/powerpc/kernel/exceptions-64s.S          |  11 ++-
+ arch/powerpc/kernel/traps.c                   |  12 ---
+ arch/powerpc/mm/copro_fault.c                 |   2 +-
+ arch/powerpc/mm/hash_utils_64.c               |   4 +-
+ arch/powerpc/mm/mmu_context_book3s64.c        |  15 +++-
+ arch/powerpc/mm/pgtable-hash64.c              |   2 +-
+ arch/powerpc/mm/slb.c                         | 108 ++++++++++++++++++++++++++
+ arch/powerpc/mm/slb_low.S                     |   8 +-
+ arch/powerpc/mm/slice.c                       |  15 +++-
+ arch/powerpc/mm/tlb_hash64.c                  |   2 +-
+ 15 files changed, 239 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 15a857772617..f64bfe8bae57 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -585,7 +585,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 		 */
- 		if (slice_check_range_fits(mm, &good_mask, addr, len)) {
- 			slice_dbg(" fits good !\n");
--			return addr;
-+			newaddr = addr;
-+			goto return_addr;
- 		}
- 	} else {
- 		/* Now let's see if we can find something in the existing
-@@ -598,7 +599,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 			 * we thus return directly
- 			 */
- 			slice_dbg(" found area at 0x%lx\n", newaddr);
--			return newaddr;
-+			goto return_addr;
- 		}
- 	}
- 	/*
-@@ -612,6 +613,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	if (addr || fixed) {
- 		if (slice_check_range_fits(mm, &potential_mask, addr, len)) {
- 			slice_dbg(" fits potential !\n");
-+			newaddr = addr;
- 			goto convert;
- 		}
- 	}
-@@ -626,34 +628,34 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	 * anywhere in the good area.
- 	 */
- 	if (addr) {
--		addr = slice_find_area(mm, len, &good_mask,
--				       psize, topdown, high_limit);
--		if (addr != -ENOMEM) {
--			slice_dbg(" found area at 0x%lx\n", addr);
--			return addr;
-+		newaddr = slice_find_area(mm, len, &good_mask,
-+					  psize, topdown, high_limit);
-+		if (newaddr != -ENOMEM) {
-+			slice_dbg(" found area at 0x%lx\n", newaddr);
-+			goto return_addr;
- 		}
- 	}
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 67c5475311ee..1a35eb944481 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -11,6 +11,12 @@
+ #define H_PUD_INDEX_SIZE  9
+ #define H_PGD_INDEX_SIZE  9
  
- 	/* Now let's see if we can find something in the existing slices
- 	 * for that size plus free slices
- 	 */
--	addr = slice_find_area(mm, len, &potential_mask,
--			       psize, topdown, high_limit);
-+	newaddr = slice_find_area(mm, len, &potential_mask,
-+				  psize, topdown, high_limit);
++/*
++ * Each context is 512TB. But on 4k we restrict our max TASK size to 64TB
++ * Hence also limit max EA bits to 64TB.
++ */
++#define MAX_EA_BITS_PER_CONTEXT		46
++
+ #ifndef __ASSEMBLY__
+ #define H_PTE_TABLE_SIZE	(sizeof(pte_t) << H_PTE_INDEX_SIZE)
+ #define H_PMD_TABLE_SIZE	(sizeof(pmd_t) << H_PMD_INDEX_SIZE)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 3bcf269f8f55..8d0cbbb31023 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -7,6 +7,12 @@
+ #define H_PUD_INDEX_SIZE  7
+ #define H_PGD_INDEX_SIZE  8
  
- #ifdef CONFIG_PPC_64K_PAGES
--	if (addr == -ENOMEM && psize == MMU_PAGE_64K) {
-+	if (newaddr == -ENOMEM && psize == MMU_PAGE_64K) {
- 		/* retry the search with 4k-page slices included */
- 		slice_or_mask(&potential_mask, &potential_mask, compat_maskp, high_slices);
--		addr = slice_find_area(mm, len, &potential_mask,
--				       psize, topdown, high_limit);
-+		newaddr = slice_find_area(mm, len, &potential_mask,
-+					  psize, topdown, high_limit);
- 	}
++/*
++ * Each context is 512TB size. SLB miss for first context/default context
++ * is handled in the hotpath.
++ */
++#define MAX_EA_BITS_PER_CONTEXT		49
++
+ /*
+  * 64k aligned address free up few of the lower bits of RPN for us
+  * We steal that here. For more deatils look at pte_pfn/pfn_pte()
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 777778579305..33ba81d69bd1 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -91,7 +91,18 @@ struct slice_mask {
+ };
+ 
+ typedef struct {
+-	mm_context_id_t id;
++	union {
++		/*
++		 * We use id as the PIDR content for radix. On hash we can use
++		 * more than one id. The extended ids are used when we start
++		 * having address above 512TB. We allocate one extended id
++		 * for each 512TB. The new id is then used with the 49 bit
++		 * EA to build a new VA. We always use ESID_BITS_1T_MASK bits
++		 * from EA and new context ids to build the new VAs.
++		 */
++		mm_context_id_t id;
++		mm_context_id_t extended_id[TASK_SIZE_USER64/TASK_CONTEXT_SIZE];
++	};
+ 	u16 user_psize;		/* page size index */
+ 
+ 	/* Number of bits in the mm_cpumask */
+@@ -193,5 +204,23 @@ extern void radix_init_pseries(void);
+ static inline void radix_init_pseries(void) { };
  #endif
  
--	if (addr == -ENOMEM)
-+	if (newaddr == -ENOMEM)
- 		return -ENOMEM;
++static inline int get_ea_context(mm_context_t *ctx, unsigned long ea)
++{
++	int index = ea >> MAX_EA_BITS_PER_CONTEXT;
++
++	if (likely(index < ARRAY_SIZE(ctx->extended_id)))
++		return ctx->extended_id[index];
++	/* should never happen */
++	BUG();
++}
++
++static inline unsigned long get_user_vsid(mm_context_t *ctx,
++					  unsigned long ea, int ssize)
++{
++	unsigned long context = get_ea_context(ctx, ea);
++
++	return get_vsid(context, ea, ssize);
++}
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_MMU_H_ */
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 051b3d63afe3..61d96b4a03b9 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -60,12 +60,50 @@ extern int hash__alloc_context_id(void);
+ extern void hash__reserve_context_id(int id);
+ extern void __destroy_context(int context_id);
+ static inline void mmu_context_init(void) { }
++
++static inline int alloc_extended_context(struct mm_struct *mm,
++					 unsigned long ea)
++{
++	int context_id;
++
++	int index = ea >> MAX_EA_BITS_PER_CONTEXT;
++
++	context_id = hash__alloc_context_id();
++	if (context_id < 0)
++		return context_id;
++
++	VM_WARN_ON(mm->context.extended_id[index]);
++	mm->context.extended_id[index] = context_id;
++	return context_id;
++}
++
++static inline bool need_extra_context(struct mm_struct *mm, unsigned long ea)
++{
++	int context_id;
++	context_id = get_ea_context(&mm->context, ea);
++	if (!context_id)
++		return true;
++	return false;
++}
++
+ #else
+ extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
+ 			       struct task_struct *tsk);
+ extern unsigned long __init_new_context(void);
+ extern void __destroy_context(unsigned long context_id);
+ extern void mmu_context_init(void);
++static inline int alloc_extended_context(struct mm_struct *mm,
++					 unsigned long ea)
++{
++	/* non book3s_64 should never find this called */
++	WARN_ON(1);
++	return -ENOMEM;
++}
++
++static inline bool need_extra_context(struct mm_struct *mm, unsigned long ea)
++{
++	return false;
++}
+ #endif
  
--	slice_range_to_mask(addr, len, &potential_mask, high_slices);
--	slice_dbg(" found potential area at 0x%lx\n", addr);
-+	slice_range_to_mask(newaddr, len, &potential_mask, high_slices);
-+	slice_dbg(" found potential area at 0x%lx\n", newaddr);
+ #if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE) && defined(CONFIG_PPC_RADIX_MMU)
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 01299cdc9806..75b084486ce1 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -119,9 +119,15 @@ void release_thread(struct task_struct *);
+  */
+ #define TASK_SIZE_USER64		TASK_SIZE_512TB
+ #define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
++#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
+ #else
+ #define TASK_SIZE_USER64		TASK_SIZE_64TB
+ #define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
++/*
++ * We don't need to allocate extended context ids for 4K page size, because
++ * we limit the max effective address on this config to 64TB.
++ */
++#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
+ #endif
+ 
+ /*
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 3ac87e53b3da..2b1d79900b0a 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -621,7 +621,10 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
+ 	mtlr	r10
+ 
+-	beq-	8f		/* if bad address, make full stack frame */
++	/*
++	 * Large address, check whether we have to allocate new contexts.
++	 */
++	beq-	8f
+ 
+ 	bne-	cr5,2f		/* if unrecoverable exception, oops */
+ 
+@@ -685,7 +688,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	mr	r3,r12
+ 	mfspr	r11,SPRN_SRR0
+ 	mfspr	r12,SPRN_SRR1
+-	LOAD_HANDLER(r10,bad_addr_slb)
++	LOAD_HANDLER(r10, large_addr_slb)
+ 	mtspr	SPRN_SRR0,r10
+ 	ld	r10,PACAKMSR(r13)
+ 	mtspr	SPRN_SRR1,r10
+@@ -700,7 +703,7 @@ EXC_COMMON_BEGIN(unrecov_slb)
+ 	bl	unrecoverable_exception
+ 	b	1b
+ 
+-EXC_COMMON_BEGIN(bad_addr_slb)
++EXC_COMMON_BEGIN(large_addr_slb)
+ 	EXCEPTION_PROLOG_COMMON(0x380, PACA_EXSLB)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	ld	r3, PACA_EXSLB+EX_DAR(r13)
+@@ -710,7 +713,7 @@ EXC_COMMON_BEGIN(bad_addr_slb)
+ 	std	r10, _TRAP(r1)
+ 2:	bl	save_nvgprs
+ 	addi	r3, r1, STACK_FRAME_OVERHEAD
+-	bl	slb_miss_bad_addr
++	bl	slb_miss_large_addr
+ 	b	ret_from_except
+ 
+ EXC_REAL_BEGIN(hardware_interrupt, 0x500, 0x100)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1e48d157196a..f200bfd98b17 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1495,18 +1495,6 @@ void alignment_exception(struct pt_regs *regs)
+ 	exception_exit(prev_state);
+ }
+ 
+-void slb_miss_bad_addr(struct pt_regs *regs)
+-{
+-	enum ctx_state prev_state = exception_enter();
+-
+-	if (user_mode(regs))
+-		_exception(SIGSEGV, regs, SEGV_BNDERR, regs->dar);
+-	else
+-		bad_page_fault(regs, regs->dar, SIGSEGV);
+-
+-	exception_exit(prev_state);
+-}
+-
+ void StackOverflow(struct pt_regs *regs)
+ {
+ 	printk(KERN_CRIT "Kernel stack overflow in process %p, r1=%lx\n",
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index 697b70ad1195..7d0945bd3a61 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -112,7 +112,7 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ 			return 1;
+ 		psize = get_slice_psize(mm, ea);
+ 		ssize = user_segment_size(ea);
+-		vsid = get_vsid(mm->context.id, ea, ssize);
++		vsid = get_user_vsid(&mm->context, ea, ssize);
+ 		vsidkey = SLB_VSID_USER;
+ 		break;
+ 	case VMALLOC_REGION_ID:
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index b578148d89e6..f62325d4f5f5 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1261,7 +1261,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ 		}
+ 		psize = get_slice_psize(mm, ea);
+ 		ssize = user_segment_size(ea);
+-		vsid = get_vsid(mm->context.id, ea, ssize);
++		vsid = get_user_vsid(&mm->context, ea, ssize);
+ 		break;
+ 	case VMALLOC_REGION_ID:
+ 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
+@@ -1526,7 +1526,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 
+ 	/* Get VSID */
+ 	ssize = user_segment_size(ea);
+-	vsid = get_vsid(mm->context.id, ea, ssize);
++	vsid = get_user_vsid(&mm->context, ea, ssize);
+ 	if (!vsid)
+ 		return;
+ 	/*
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 80acad52b006..d3acc9d9352a 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -178,6 +178,19 @@ void __destroy_context(int context_id)
+ }
+ EXPORT_SYMBOL_GPL(__destroy_context);
+ 
++static void destroy_contexts(mm_context_t *ctx)
++{
++	int index, context_id;
++
++	spin_lock(&mmu_context_lock);
++	for (index = 0; index < ARRAY_SIZE(ctx->extended_id); index++) {
++		context_id = ctx->extended_id[index];
++		if (context_id)
++			ida_remove(&mmu_context_ida, context_id);
++	}
++	spin_unlock(&mmu_context_lock);
++}
++
+ #ifdef CONFIG_PPC_64K_PAGES
+ static void destroy_pagetable_page(struct mm_struct *mm)
+ {
+@@ -216,7 +229,7 @@ void destroy_context(struct mm_struct *mm)
+ 	else
+ 		subpage_prot_free(mm);
+ 	destroy_pagetable_page(mm);
+-	__destroy_context(mm->context.id);
++	destroy_contexts(&mm->context);
+ 	mm->context.id = MMU_NO_CONTEXT;
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 469808e77e58..a87b18cf6749 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -320,7 +320,7 @@ void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
+ 
+ 	if (!is_kernel_addr(addr)) {
+ 		ssize = user_segment_size(addr);
+-		vsid = get_vsid(mm->context.id, addr, ssize);
++		vsid = get_user_vsid(&mm->context, addr, ssize);
+ 		WARN_ON(vsid == 0);
+ 	} else {
+ 		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 13cfe413b40d..a94c3cd97c95 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -22,6 +22,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/smp.h>
+ #include <linux/compiler.h>
++#include <linux/context_tracking.h>
+ #include <linux/mm_types.h>
+ 
+ #include <asm/udbg.h>
+@@ -340,3 +341,110 @@ void slb_initialize(void)
+ 
+ 	asm volatile("isync":::"memory");
+ }
++
++static void insert_slb_entry(unsigned long vsid, unsigned long ea,
++			     int bpsize, int ssize)
++{
++	int slb_cache_index;
++	unsigned long flags;
++	enum slb_index index;
++	unsigned long vsid_data, esid_data;
++
++	/*
++	 * We are irq disabled, hence should be safe to access PACA.
++	 */
++	index = get_paca()->stab_rr;
++
++	/*
++	 * simple round-robin replacement of slb starting at SLB_NUM_BOLTED.
++	 */
++	if (index < mmu_slb_size)
++		index++;
++	else
++		index = SLB_NUM_BOLTED;
++
++	get_paca()->stab_rr = index;
++
++	flags = SLB_VSID_USER | mmu_psize_defs[bpsize].sllp;
++	vsid_data = (vsid << slb_vsid_shift(ssize)) | flags |
++		    ((unsigned long) ssize << SLB_VSID_SSIZE_SHIFT);
++	esid_data = mk_esid_data(ea, ssize, index);
++
++	asm volatile("slbmte %0, %1" : : "r" (vsid_data), "r" (esid_data)
++		     : "memory");
++
++	/*
++	 * Now update slb cache entries
++	 */
++	slb_cache_index = get_paca()->slb_cache_ptr;
++	if (slb_cache_index < SLB_CACHE_ENTRIES) {
++		/*
++		 * We have space in slb cache for optimized switch_slb().
++		 * Top 36 bits from esid_data as per ISA
++		 */
++		get_paca()->slb_cache[slb_cache_index++] = esid_data >> 28;
++	}
++
++	/*
++	 * if we are full, just increment and return.
++	 */
++	get_paca()->slb_cache_ptr++;
++}
++
++static void handle_multi_context_slb_miss(int context_id, unsigned long ea)
++{
++	int bpsize;
++	unsigned long vsid;
++	struct mm_struct *mm = current->mm;
++
++	/*
++	 * We are always above 1TB, hence use high user segment size.
++	 */
++	vsid = get_vsid(context_id, ea, mmu_highuser_ssize);
++	bpsize = get_slice_psize(mm, ea);
++	insert_slb_entry(vsid, ea, bpsize, mmu_highuser_ssize);
++}
++
++void slb_miss_large_addr(struct pt_regs *regs)
++{
++	int context;
++	enum ctx_state prev_state = exception_enter();
++	unsigned long ea = regs->dar;
++
++	if (REGION_ID(ea) != USER_REGION_ID)
++		goto slb_bad_addr;
++
++	/*
++	 * Are we beyound what the page table layout supports ?
++	 */
++	if ((ea & ~REGION_MASK) >= H_PGTABLE_RANGE)
++		goto slb_bad_addr;
++
++	/* Lower address should have been handled by asm code */
++	if (ea < (1UL << MAX_EA_BITS_PER_CONTEXT))
++		goto slb_bad_addr;
++
++#ifdef CONFIG_PPC_MM_SLICES
++	/*
++	 * consider this as bad access if we take a SLB miss
++	 * on an address above addr limit.
++	 */
++	if (ea >= current->mm->context.slb_addr_limit)
++		goto slb_bad_addr;
++#endif
++
++	context = get_ea_context(&current->mm->context, ea);
++	if (!context)
++		goto slb_bad_addr;
++
++	handle_multi_context_slb_miss(context, ea);
++	exception_exit(prev_state);
++	return;
++
++slb_bad_addr:
++	if (user_mode(regs))
++		_exception(SIGSEGV, regs, SEGV_BNDERR, ea);
++	else
++		bad_page_fault(regs, ea, SIGSEGV);
++	exception_exit(prev_state);
++}
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 2c7c717fd2ea..7cf006228e2e 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -74,11 +74,13 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_68_BIT_VA)
+  * No other registers are examined or changed.
+  */
+ _GLOBAL(slb_allocate)
+-	/*
+-	 * check for bad kernel/user address
++        /*
++         * Check for address range for which we need to handle multi context. For
++         * the default context we allocate the slb via the fast path. For large
++         * address we branch out to C-code and look at additional context allocated.
+ 	 * (ea & ~REGION_MASK) >= PGTABLE_RANGE
+ 	 */
+-	rldicr. r9,r3,4,(63 - H_PGTABLE_EADDR_SIZE - 4)
++	rldicr. r9,r3,4,(63 - MAX_EA_BITS_PER_CONTEXT - 4)
+ 	bne-	8f
+ 
+ 	srdi	r9,r3,60		/* get region */
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index f64bfe8bae57..dbb534eff2c3 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -659,6 +659,15 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
  	slice_print_mask(" mask", &potential_mask);
  
   convert:
-@@ -667,7 +669,9 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
++	/*
++	 * Try to allocate the context before we do slice convert
++	 * so that we handle the context allocation failure gracefully.
++	 */
++	if (need_extra_context(mm, newaddr)) {
++		if (alloc_extended_context(mm, newaddr) < 0)
++			return -ENOMEM;
++	}
++
+ 	slice_andnot_mask(&potential_mask, &potential_mask, &good_mask, high_slices);
+ 	if (compat_maskp && !fixed)
+ 		slice_andnot_mask(&potential_mask, &potential_mask, compat_maskp, high_slices);
+@@ -669,10 +678,14 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
  		if (psize > MMU_PAGE_BASE)
  			on_each_cpu(slice_flush_segments, mm, 1);
  	}
--	return addr;
-+
-+return_addr:
 +	return newaddr;
  
+ return_addr:
++	if (need_extra_context(mm, newaddr)) {
++		if (alloc_extended_context(mm, newaddr) < 0)
++			return -ENOMEM;
++	}
+ 	return newaddr;
+-
  }
  EXPORT_SYMBOL_GPL(slice_get_unmapped_area);
+ 
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index 9b23f12e863c..87d71dd25441 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -89,7 +89,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 	/* Build full vaddr */
+ 	if (!is_kernel_addr(addr)) {
+ 		ssize = user_segment_size(addr);
+-		vsid = get_vsid(mm->context.id, addr, ssize);
++		vsid = get_user_vsid(&mm->context, addr, ssize);
+ 	} else {
+ 		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
+ 		ssize = mmu_kernel_ssize;
 -- 
 2.14.3
