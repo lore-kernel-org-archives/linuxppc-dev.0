@@ -2,9 +2,9 @@ Return-Path: <viro@ftp.linux.org.uk>
 Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4046Cz5psXzF0mk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 04:50:07 +1100 (AEDT)
-Date: Sun, 18 Mar 2018 17:49:56 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4046Yf6LhmzF0x9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 05:05:26 +1100 (AEDT)
+Date: Sun, 18 Mar 2018 18:05:14 +0000
 From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Dominik Brodowski <linux@dominikbrodowski.net>
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
@@ -18,14 +18,14 @@ Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
  "David S . Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
  Jiri Slaby <jslaby@suse.com>, x86@kernel.org
-Subject: Re: [RFC PATCH 2/6] fs: provide a generic compat_sys_truncate64()
- implementation
-Message-ID: <20180318174956.GS30522@ZenIV.linux.org.uk>
+Subject: Re: [RFC PATCH 3/6] fs: provide generic compat_sys_p{read, write}64()
+ implementations
+Message-ID: <20180318180514.GT30522@ZenIV.linux.org.uk>
 References: <20180318161056.5377-1-linux@dominikbrodowski.net>
- <20180318161056.5377-3-linux@dominikbrodowski.net>
+ <20180318161056.5377-4-linux@dominikbrodowski.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180318161056.5377-3-linux@dominikbrodowski.net>
+In-Reply-To: <20180318161056.5377-4-linux@dominikbrodowski.net>
 Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,53 +36,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 18, 2018 at 05:10:52PM +0100, Dominik Brodowski wrote:
+On Sun, Mar 18, 2018 at 05:10:53PM +0100, Dominik Brodowski wrote:
 
-> +#ifdef __ARCH_WANT_COMPAT_SYS_TRUNCATE64
+> +#ifdef __ARCH_WANT_COMPAT_SYS_PREADWRITE64
 > +#if defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
 > +	defined(__ARCH_WANT_LE_COMPAT_SYS)
-> +COMPAT_SYSCALL_DEFINE4(truncate64, const char __user *, filename, u32 padding,
-> +		       unsigned int, offset_low, unsigned int, offset_high)
+> +COMPAT_SYSCALL_DEFINE6(pread64, unsigned int, fd, char __user *, ubuf,
+> +		       u32, count, u32, padding, u32, poslo, u32, poshi)
 > +#elif defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
 > +	!defined(__ARCH_WANT_LE_COMPAT_SYS)
-> +COMPAT_SYSCALL_DEFINE4(truncate64, const char __user *, filename, u32 padding,
-> +		       unsigned int, offset_high, unsigned int, offset_low)
+> +COMPAT_SYSCALL_DEFINE6(pread64, unsigned int, fd, char __user *, ubuf,
+> +		       u32, count, u32, padding, u32, poshi, u32, poslo)
 > +#elif !defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
 > +	defined(__ARCH_WANT_LE_COMPAT_SYS)
-> +COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, filename,
-> +		       unsigned int, offset_low, unsigned int, offset_high)
+> +COMPAT_SYSCALL_DEFINE5(pread64, unsigned int, fd, char __user *, ubuf,
+> +		       u32, count, u32, poslo, u32, poshi)
 > +#else /* no padding, big endian */
-> +COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, filename,
-> +		       unsigned int, offset_high, unsigned int, offset_low)
+> +COMPAT_SYSCALL_DEFINE5(pread64, unsigned int, fd, char __user *, ubuf,
+> +		       u32, count, u32, poshi, u32, poslo)
 > +#endif
 > +{
-> +#ifdef CONFIG_SPARC
-> +	if ((int) offset_high < 0)
+> +#ifdef CONFIG_S390
+> +	if ((compat_ssize_t) count < 0)
 > +		return -EINVAL;
-> +#endif
-> +	return do_sys_truncate(filename,
-> +			       ((loff_t) offset_high << 32) | offset_low);
+> +#endif /* CONFIG_S390 */
+> +	return do_pread64(fd, ubuf, count,
+> +			  ((loff_t) (unsigned long) (poshi) << 32) |
+> +				(unsigned long) (poslo));
 > +}
-> +#endif /* __ARCH_WANT_COMPAT_SYS_TRUNCATE64 */
 
-Ow...
+Egads...  You have 4 ifdefs before you even get to the body.  And good luck
+trying to actually keep track of that mess.
 
-For one thing, the same observation as for readahead(2).  For another, that
-sparc-specific test is very suspicious, innit?  Let's take a look at
-do_sys_truncate():
-static long do_sys_truncate(const char __user *pathname, loff_t length)
-{
-        unsigned int lookup_flags = LOOKUP_FOLLOW;
-        struct path path;
-        int error;
+They clearly go in 2 pairs, right?  One parameter is "do we have padding"
+(== does ABI prohibit passing 64bit value in 4th and 5th words), another
+is the order in which the halves of 64bit are passed.  On l-e you have
+bits 0..31 in the first one and bits 32..63 in the second; on b-e it's the
+other way round.
 
-        if (length < 0) /* sorry, but loff_t says... */
-                return -EINVAL;
-
-So in case of offset_high having bit 31 set, we would get length with bit 63 set,
-and step into that if (length < 0) return -EINVAL;
-
-Sure, any set of texts can be combined, given a sufficiently large pile of ifdefs,
-but you are replacing an arseload of almost but not quite identical functions
-spread all over the tree with something that is in one place, but is awfully hard
-to look at, nevermind reading it...
+Only the logics for putting them together into a 64bit value cares which
+half is which; insisting on the names of form <something>{hi,lo} gives
+you arseloads of similar variants in ifdefs, all for the sake of not
+having conditional code in the body.  Or, actually, in the inlined
+helper for building that 64bit out of two halves...
