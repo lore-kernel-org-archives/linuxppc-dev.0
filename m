@@ -1,39 +1,32 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4046b96GtnzF1GG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 05:06:45 +1100 (AEDT)
-Received: by mail-it0-x243.google.com with SMTP id k79-v6so7615347ita.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 11:06:45 -0700 (PDT)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20180318174014.GR30522@ZenIV.linux.org.uk>
-References: <20180318161056.5377-1-linux@dominikbrodowski.net>
- <20180318161056.5377-5-linux@dominikbrodowski.net>
- <20180318174014.GR30522@ZenIV.linux.org.uk>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 18 Mar 2018 11:06:42 -0700
-Message-ID: <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
-Subject: Re: [RFC PATCH 4/6] mm: provide generic compat_sys_readahead()
- implementation
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- linux-arch <linux-arch@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>, linux-mips <linux-mips@linux-mips.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4046rg2lWxzF0g8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 05:18:27 +1100 (AEDT)
+Date: Sun, 18 Mar 2018 17:40:14 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+ arnd@arndb.de, linux-arch@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips@linux-mips.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
  "David S . Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Jiri Slaby <jslaby@suse.com>, "the arch/x86 maintainers" <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ Jiri Slaby <jslaby@suse.com>, x86@kernel.org
+Subject: Re: [RFC PATCH 4/6] mm: provide generic compat_sys_readahead()
+ implementation
+Message-ID: <20180318174014.GR30522@ZenIV.linux.org.uk>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-5-linux@dominikbrodowski.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180318161056.5377-5-linux@dominikbrodowski.net>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,106 +36,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 18, 2018 at 10:40 AM, Al Viro <viro@zeniv.linux.org.uk> wrote:
->
-> *UGH*
->
-> static inline compat_to_u64(u32 w0, u32 w1)
-> {
-> #ifdef __BIG_ENDIAN
->         return ((u64)w0 << 32) | w1;
-> #else
->         return ((u64)w1 << 32) | w0;
-> #endif
-> }
->
-> in compat.h, then this turns into
->
-> #ifdef __ARCH_WANT_COMPAT_SYS_WITH_PADDING
-> COMPAT_SYSCALL_DEFINE5(readahead, int, fd, unsigned int, padding,
->                        u32, off0, u32 off1,
->                        compat_size_t, count)
-> #else
-> COMPAT_SYSCALL_DEFINE4(readahead, int, fd,
->                        u32, off0, u32 off1,
->                        compat_size_t, count)
-> #endif
+On Sun, Mar 18, 2018 at 05:10:54PM +0100, Dominik Brodowski wrote:
 
-No. This is still too ugly to live.
+> +#ifdef __ARCH_WANT_COMPAT_SYS_READAHEAD
+> +#if defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
+> +	defined(__ARCH_WANT_LE_COMPAT_SYS)
+> +COMPAT_SYSCALL_DEFINE5(readahead, int, fd, unsigned int, padding,
+> +		       unsigned int, off_lo, unsigned int, off_hi,
+> +		       size_t, count)
+> +#elif defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
+> +	!defined(__ARCH_WANT_LE_COMPAT_SYS)
+> +COMPAT_SYSCALL_DEFINE5(readahead, int, fd, unsigned int, padding,
+> +		       unsigned int, off_hi, unsigned int, off_lo,
+> +		       size_t, count)
+> +#elif !defined(__ARCH_WANT_COMPAT_SYS_WITH_PADDING) && \
+> +	defined(__ARCH_WANT_LE_COMPAT_SYS)
+> +COMPAT_SYSCALL_DEFINE4(readahead, int, fd,
+> +		       unsigned int, off_lo, unsigned int, off_hi,
+> +		       size_t, count)
+> +#else /* no padding, big endian */
+> +COMPAT_SYSCALL_DEFINE4(readahead, int, fd,
+> +		       unsigned int, off_hi, unsigned int, off_lo,
+> +		       size_t, count)
+> +#endif
+> +{
+> +	return do_readahead(fd, ((u64) off_hi << 32) | off_lo, count);
+>  }
 
-What *may* be acceptable is if architectures defined something like this:
+*UGH*
 
-x86:
+static inline compat_to_u64(u32 w0, u32 w1)
+{
+#ifdef __BIG_ENDIAN
+	return ((u64)w0 << 32) | w1;
+#else
+	return ((u64)w1 << 32) | w0;
+#endif
+}
 
-    /* Little endian registers - low bits first, no padding for odd
-register numbers necessary */
-    #define COMPAT_ARG_64BIT(x) unsigned int x##_lo, unsigned int x##_hi
-    #define COMPAT_ARG_64BIT_ODD(x) COMPAT_ARG_64BIT(x)
+in compat.h, then this turns into
 
-ppc BE:
-
-    /* Big-endian registers - high bits first, odd argument pairs
-padded up to the next even register */
-    #define COMPAT_ARG_64BIT(x) unsigned int x##_hi, unsigned int x##_lo
-    #define COMPAT_ARG_64BIT_ODD(x) unsigned int  x##_padding,
-COMPAT_ARG_64BIT(x)
-
-and then we can do
-
-  COMPAT_SYSCALL_DEFINE5(readahead, int, fd,
-COMPAT_ARG_64BIT_ODD(off), compat_size_t, count)
-  {
-      return do_readahead(fd, off_lo + ((u64)off_hi << 64), count);
-  }
-
-which at least looks reasonably legible, and has *zero* ifdef's anywhere.
-
-I do *not* want to see those disgusting __ARCH_WANT_LE_COMPAT_SYS
-things and crazy #ifdef's in code.
-
-So either let the architectures do their own trivial wrappers
-entirely, or do something clean like the above. Do *not* do
-#ifdef'fery at the system call declaration time.
-
-Also note that the "ODD" arguments may not be the ones that need
-padding. I could easily see a system call argument numbering scheme
-like
-
-   r0 - system call number
-   r1 - first argument
-   r2 - second argument
-   ...
-
-and then it's the *EVEN* 64-bit arguments that would need the padding
-(because they are actually odd in the register numbers). The above
-COMPAT_ARG_64BIT[_ODD]() model allows for that too.
-
-Of course, if some architecture then has some other arbitrary rules (I
-could see register pairing rules that aren't the usual "even register"
-ones), then such an architecture would really have to have its own
-wrapper, but the above at least would handle the simple cases, and
-doesn't look disgusting to use.
-
-                   Linus
-
-PS. It is possible that we should then add a
-
-   #define COMPAT_ARG_64BIT_VAL(x) (x_##lo + ((u64)x_##hi << 32))
-
-and then do
-
-  COMPAT_SYSCALL_DEFINE5(readahead, int, fd,
-COMPAT_ARG_64BIT_ODD(off), compat_size_t, count)
-  {
-      return do_readahead(fd, COMPAT_ARG_64BIT_VAL(off), count);
-  }
-
-because then we could perhaps generate the *non*compat system calls
-this way too, just using
-
-    #define COMPAT_ARG_64BIT(x) unsigned long x
-    #define COMPAT_ARG_64BIT_VAL(x) (x)
-
-instead (there might also be a "compat" mode that actually has access
-to 64-bit registers, like x32 does, but I suspect it would have other
-issues).
+#ifdef __ARCH_WANT_COMPAT_SYS_WITH_PADDING
+COMPAT_SYSCALL_DEFINE5(readahead, int, fd, unsigned int, padding,
+		       u32, off0, u32 off1,
+		       compat_size_t, count)
+#else
+COMPAT_SYSCALL_DEFINE4(readahead, int, fd,
+		       u32, off0, u32 off1,
+		       compat_size_t, count)
+#endif
+{
+	return do_readahead(fd, compat_to_u64(off0, off1), count);
+}
