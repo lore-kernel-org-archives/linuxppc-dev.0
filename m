@@ -1,10 +1,10 @@
 Return-Path: <Alexander.Levin@microsoft.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0122.outbound.protection.outlook.com [104.47.32.122])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0126.outbound.protection.outlook.com [104.47.41.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404gzn5HzszF0Xs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 03:11:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404h3k0lYSzF0my
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 03:14:57 +1100 (AEDT)
 From: Sasha Levin <Alexander.Levin@microsoft.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "stable@vger.kernel.org" <stable@vger.kernel.org>
@@ -13,12 +13,12 @@ CC: "Eric W. Biederman" <ebiederm@xmission.com>, Paul Mackerras
  <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Sasha Levin
  <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL for 4.4 166/167] signal/powerpc: Document conflicts
+Subject: [PATCH AUTOSEL for 3.18 101/102] signal/powerpc: Document conflicts
  with SI_USER and SIGFPE and SIGTRAP
-Date: Mon, 19 Mar 2018 16:08:52 +0000
-Message-ID: <20180319160513.16384-166-alexander.levin@microsoft.com>
-References: <20180319160513.16384-1-alexander.levin@microsoft.com>
-In-Reply-To: <20180319160513.16384-1-alexander.levin@microsoft.com>
+Date: Mon, 19 Mar 2018 16:13:40 +0000
+Message-ID: <20180319161117.17833-101-alexander.levin@microsoft.com>
+References: <20180319161117.17833-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180319161117.17833-1-alexander.levin@microsoft.com>
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -96,10 +96,10 @@ index ccce3ef5cd86..9c437eaf7c21 100644
 +
  #endif	/* _ASM_POWERPC_SIGINFO_H */
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index e4dcb0a43e3f..9ac9dfa6f796 100644
+index 0dc43f9932cf..6cc0280a8ae0 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -771,7 +771,7 @@ void unknown_exception(struct pt_regs *regs)
+@@ -769,7 +769,7 @@ void unknown_exception(struct pt_regs *regs)
  	printk("Bad trap at PC: %lx, SR: %lx, vector=3D%lx\n",
  	       regs->nip, regs->msr, regs->trap);
 =20
@@ -108,7 +108,7 @@ index e4dcb0a43e3f..9ac9dfa6f796 100644
 =20
  	exception_exit(prev_state);
  }
-@@ -793,7 +793,7 @@ void instruction_breakpoint_exception(struct pt_regs *r=
+@@ -791,7 +791,7 @@ void instruction_breakpoint_exception(struct pt_regs *r=
 egs)
 =20
  void RunModeException(struct pt_regs *regs)
@@ -118,7 +118,7 @@ egs)
  }
 =20
  void __kprobes single_step_exception(struct pt_regs *regs)
-@@ -828,7 +828,7 @@ static void emulate_single_step(struct pt_regs *regs)
+@@ -826,7 +826,7 @@ static void emulate_single_step(struct pt_regs *regs)
 =20
  static inline int __parse_fpscr(unsigned long fpscr)
  {
@@ -127,7 +127,7 @@ egs)
 =20
  	/* Invalid operation */
  	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX))
-@@ -1764,7 +1764,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+@@ -1742,7 +1742,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
  	extern int do_spe_mathemu(struct pt_regs *regs);
  	unsigned long spefscr;
  	int fpexc_mode;
@@ -136,7 +136,7 @@ egs)
  	int err;
 =20
  	flush_spe_to_thread(current);
-@@ -1833,7 +1833,7 @@ void SPEFloatingPointRoundException(struct pt_regs *r=
+@@ -1811,7 +1811,7 @@ void SPEFloatingPointRoundException(struct pt_regs *r=
 egs)
  		printk(KERN_ERR "unrecognized spe instruction "
  		       "in %s at %lx\n", current->comm, regs->nip);
