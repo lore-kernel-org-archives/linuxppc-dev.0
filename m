@@ -1,40 +1,49 @@
-Return-Path: <jgg@ziepe.ca>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404Jqh4Bk0zF1X8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 12:48:10 +1100 (AEDT)
-Received: by mail-io0-x242.google.com with SMTP id o4so4572031iod.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 18:48:10 -0700 (PDT)
-Date: Sun, 18 Mar 2018 19:48:05 -0600
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Sinan Kaya <okaya@codeaurora.org>
-Cc: Steve Wise <swise@opengridcomputing.com>, netdev@vger.kernel.org,
- timur@codeaurora.org, sulrich@codeaurora.org,
- linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- 'Steve Wise' <swise@chelsio.com>,
- 'Doug Ledford' <dledford@redhat.com>, linux-rdma@vger.kernel.org,
- linux-kernel@vger.kernel.org, 'Michael Werner' <werner@chelsio.com>,
- 'Casey Leedom' <leedom@chelsio.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3 18/18] infiniband: cxgb4: Eliminate duplicate barriers
- on weakly-ordered archs
-Message-ID: <20180319014805.GA27186@ziepe.ca>
-References: <1521216991-28706-1-git-send-email-okaya@codeaurora.org>
- <1521216991-28706-19-git-send-email-okaya@codeaurora.org>
- <003601d3bd6a$783d6970$68b83c50$@opengridcomputing.com>
- <83387f6e-adcb-14e9-2c22-96abf9493cc6@codeaurora.org>
- <004501d3bd7b$505e70f0$f11b52d0$@opengridcomputing.com>
- <740c7d45-450e-c9b3-ceed-7bc7fcefbc5a@codeaurora.org>
- <71e37a55-537b-d75a-cfde-f188b7cfce8e@codeaurora.org>
- <1f5e3b14-05a1-08d0-c0cb-00805526448d@codeaurora.org>
- <20180317150520.GA23463@ziepe.ca>
- <ac9c34e1-0a81-a494-c7c7-ac9c3922095a@codeaurora.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404L6P5YvQzDqph
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 13:46:04 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2J2hr7o098240
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:46:02 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gsjw6sb26-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:46:02 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Mon, 19 Mar 2018 02:46:00 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w2J2jvWD65863796
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:45:57 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A1C66AE045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:36:19 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4E17AAE053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:36:19 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:36:19 +0000 (GMT)
+Received: from tungsten.ozlabs.ibm.com (unknown [9.192.172.254])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 62B4AA003E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 13:45:55 +1100 (AEDT)
+Date: Mon, 19 Mar 2018 13:45:53 +1100
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/9] EEH refactoring 1
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ac9c34e1-0a81-a494-c7c7-ac9c3922095a@codeaurora.org>
+Message-Id: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,19 +53,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 17, 2018 at 02:30:10PM -0400, Sinan Kaya wrote:
+Hello everyone,
 
-> Somebody also has to take a task and work very hard to get rid of __raw_writeX()
-> APIs in drivers/net directory. It looked like a very common practice though
-> it clearly violates multiarch portability concerns Jason and Deve highlighted.
+Here is a set of some small, mostly idempotent, changes to improve
+maintainability in some of the EEH code, primarily in eeh_driver.c.
 
-When you posted your list I thought most of the hits were in what I'd
-think of 'one-arch drivers', eg an IRQ controller or clock driver or
-something.. Some might have a reason for it (eg avoiding the swap, for
-instance), maybe it is a hold over from before writel_relaxed, or
-maybe it is just a cargo-cult behavior..
+I've kept them all small to aid review but perhaps they should be squashed down
+before being applied.
 
-It is the obviously multi-arch drivers that probably need some
-attention..
+Cheers,
+Sam.
 
-Jason
+Patch set changelog follows:
+
+====== v1 -> v2: ======
+
+Patch 1/9: powerpc/eeh: Remove eeh_handle_event()
+
+Patch 2/9: powerpc/eeh: Manage EEH_PE_RECOVERING inside eeh_handle_normal_event()
+
+Patch 3/9: powerpc/eeh: Fix misleading comment in __eeh_addr_cache_get_device()
+
+Patch 4/9: powerpc/eeh: Remove misleading test in eeh_handle_normal_event()
+
+Patch 5/9: powerpc/eeh: Rename frozen_bus to bus in eeh_handle_normal_event()
+
+Patch 6/9: powerpc/eeh: Clarify arguments to eeh_reset_device()
+* Re-ordered parameters to eeh_reset_device() to keep pe first.
+* Changed eeh_aware_driver to driver_eeh_aware.
+
+Patch 7/9: powerpc/eeh: Remove always-true tests in eeh_reset_device()
+
+Patch 8/9: powerpc/eeh: Factor out common code eeh_reset_device()
+* In one case, added braces to "if" to match "else".
+
+Patch 9/9: powerpc/eeh: Add eeh_state_active() helper
+
+====== v1: ======
+
+Patch 1/9: powerpc/eeh: Remove eeh_handle_event()
+Patch 2/9: powerpc/eeh: Manage EEH_PE_RECOVERING inside eeh_handle_normal_event()
+Patch 3/9: powerpc/eeh: Fix misleading comment in __eeh_addr_cache_get_device()
+Patch 4/9: powerpc/eeh: Remove misleading test in eeh_handle_normal_event()
+Patch 5/9: powerpc/eeh: Rename frozen_bus to bus in eeh_handle_normal_event()
+Patch 6/9: powerpc/eeh: Clarify arguments to eeh_reset_device()
+Patch 7/9: powerpc/eeh: Remove always-true tests in eeh_reset_device()
+Patch 8/9: powerpc/eeh: Factor out common code eeh_reset_device()
+Patch 9/9: powerpc/eeh: Add eeh_state_active() helper
+
+Sam Bobroff (9):
+  powerpc/eeh: Remove eeh_handle_event()
+  powerpc/eeh: Manage EEH_PE_RECOVERING inside eeh_handle_normal_event()
+  powerpc/eeh: Fix misleading comment in __eeh_addr_cache_get_device()
+  powerpc/eeh: Remove misleading test in eeh_handle_normal_event()
+  powerpc/eeh: Rename frozen_bus to bus in eeh_handle_normal_event()
+  powerpc/eeh: Clarify arguments to eeh_reset_device()
+  powerpc/eeh: Remove always-true tests in eeh_reset_device()
+  powerpc/eeh: Factor out common code eeh_reset_device()
+  powerpc/eeh: Add eeh_state_active() helper
+
+ arch/powerpc/include/asm/eeh.h               |   6 ++
+ arch/powerpc/include/asm/eeh_event.h         |   3 +-
+ arch/powerpc/kernel/eeh.c                    |  19 ++--
+ arch/powerpc/kernel/eeh_cache.c              |   3 +-
+ arch/powerpc/kernel/eeh_driver.c             | 137 +++++++++++----------------
+ arch/powerpc/kernel/eeh_event.c              |   6 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |   9 +-
+ 7 files changed, 72 insertions(+), 111 deletions(-)
+
+-- 
+2.16.1.74.g9b0b1f47b
