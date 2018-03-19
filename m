@@ -1,28 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404Xfl0V9PzF0wd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 21:41:18 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id i9so634641pgq.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 03:41:18 -0700 (PDT)
-Date: Mon, 19 Mar 2018 20:40:59 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
- sathnaga@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] powerpc64/ftrace: Add a field in paca to disable
- ftrace in unsafe code paths
-Message-ID: <20180319204059.4c3a698e@roar.ozlabs.ibm.com>
-In-Reply-To: <cdbe15845a5da965878b6344f69b6ed6dbabb87b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
- <cdbe15845a5da965878b6344f69b6ed6dbabb87b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404YVz64jXzF1Vp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 22:19:39 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Jonathan =?utf-8?Q?Neusch=C3=A4fer?=
+ <j.neuschaefer@gmx.net>, linux-mm@kvack.org, Paul Mackerras
+ <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, Guenter Roeck
+ <linux@roeck-us.net>
+Subject: Re: [PATCH 3/5] powerpc/mm/32: Use page_is_ram to check for RAM
+In-Reply-To: <874llcha6p.fsf@concordia.ellerman.id.au>
+References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
+ <20180222121516.23415-4-j.neuschaefer@gmx.net>
+ <874llcha6p.fsf@concordia.ellerman.id.au>
+Date: Mon, 19 Mar 2018 22:19:32 +1100
+Message-ID: <87y3iofh2z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 Mar 2018 14:43:00 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net> writes:
+>
+>> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
+>> ---
+>>  arch/powerpc/mm/pgtable_32.c | 3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+>> index d35d9ad3c1cd..d54e1a9c1c99 100644
+>> --- a/arch/powerpc/mm/pgtable_32.c
+>> +++ b/arch/powerpc/mm/pgtable_32.c
+>> @@ -145,9 +145,8 @@ __ioremap_caller(phys_addr_t addr, unsigned long siz=
+e, unsigned long flags,
+>>  #ifndef CONFIG_CRASH_DUMP
+>>  	/*
+>>  	 * Don't allow anybody to remap normal RAM that we're using.
+>> -	 * mem_init() sets high_memory so only do the check after that.
+>>  	 */
+>> -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
+>> +	if (page_is_ram(__phys_to_pfn(p)) &&
+>>  	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size)=
+)) {
+>>  		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
+>>  		       (unsigned long long)p, __builtin_return_address(0));
+>
+>
+> This is killing my p5020ds (Freescale e5500) unfortunately:
 
-> We have some C code that we call into from real mode where we cannot
-> take any exceptions. Though the C functions themselves are mostly safe,
-> if these functions are traced, there is a possibility that we may take
-> an exception. For instance, in certain conditions, the ftrace code uses
-> WARN(), which uses a 'trap' to do its job.
-> 
-> For such scenarios, introduce a new field in paca 'ftrace_disabled',
-> which is checked on ftrace entry before continuing. This field can then
-> be set to a non-zero value to disable/pause ftrace, and reset to zero to
-> resume ftrace.
-> 
-> Since KVM is the only user for this currently, we guard the
-> ftrace/mcount checks within CONFIG_KVM. This can later be removed
-> if/when there are other users.
+Duh, I should actually read the patch :)
 
-Why not test HSTATE_IN_GUEST then? Add ftrace_disabled if non-KVM users
-come along.
+This is a 32-bit system with 4G of RAM, so not all of RAM is mapped,
+some of it is highem which is why removing the test against high_memory
+above breaks it.
 
-Thanks,
-Nick
+So I need the high_memory test on this system.
+
+I'm not clear why it was a problem for you on the Wii, do you even build
+the Wii kernel with HIGHMEM enabled?
+
+cheers
