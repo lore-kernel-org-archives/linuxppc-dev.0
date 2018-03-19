@@ -1,51 +1,38 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404LBP02R8zF0wb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 13:49:32 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2J2n8Yk122903
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:49:31 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gt33maqdc-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Mar 2018 22:49:31 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Mon, 19 Mar 2018 02:49:29 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w2J2nQ6T42336406
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:49:26 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7D4B94203F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:41:36 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DA21642041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:41:35 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:41:35 +0000 (GMT)
-Received: from tungsten.ozlabs.ibm.com (unknown [9.192.172.254])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D068BA003E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 13:49:24 +1100 (AEDT)
-Date: Mon, 19 Mar 2018 13:49:23 +1100
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 9/9] powerpc/eeh: Add eeh_state_active() helper
-References: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404NGf40PzzF1Vm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 15:23:22 +1100 (AEDT)
+Date: Mon, 19 Mar 2018 04:23:00 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips <linux-mips@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Jiri Slaby <jslaby@suse.com>, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [RFC PATCH 4/6] mm: provide generic compat_sys_readahead()
+ implementation
+Message-ID: <20180319042300.GW30522@ZenIV.linux.org.uk>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-5-linux@dominikbrodowski.net>
+ <20180318174014.GR30522@ZenIV.linux.org.uk>
+ <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
+ <20180318181848.GU30522@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
-Message-Id: <c7cc2334ac3a7c88cc68b45337de890bcdcc80f7.1521427331.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <20180318181848.GU30522@ZenIV.linux.org.uk>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,147 +42,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Checking for a "fully active" device state requires testing two flag
-bits, which is open coded in several places, so add a function to do
-it.
+On Sun, Mar 18, 2018 at 06:18:48PM +0000, Al Viro wrote:
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- arch/powerpc/include/asm/eeh.h               |  6 ++++++
- arch/powerpc/kernel/eeh.c                    | 19 ++++++-------------
- arch/powerpc/platforms/powernv/eeh-powernv.c |  9 ++-------
- 3 files changed, 14 insertions(+), 20 deletions(-)
+> I'd done some digging in that area, will find the notes and post.
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index fd37cc101f4f..c2266ca61853 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -256,6 +256,12 @@ static inline void eeh_serialize_unlock(unsigned long flags)
- 	raw_spin_unlock_irqrestore(&confirm_error_lock, flags);
- }
- 
-+static inline bool eeh_state_active(int state)
-+{
-+	return (state & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
-+	== (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
-+}
-+
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
- void eeh_set_pe_aux_size(int size);
- int eeh_phb_pe_create(struct pci_controller *phb);
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 2b9df0040d6b..bc640e4c5ca5 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -394,9 +394,7 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
- 	/* Check PHB state */
- 	ret = eeh_ops->get_state(phb_pe, NULL);
- 	if ((ret < 0) ||
--	    (ret == EEH_STATE_NOT_SUPPORT) ||
--	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
--	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
-+	    (ret == EEH_STATE_NOT_SUPPORT) || eeh_state_active(ret)) {
- 		ret = 0;
- 		goto out;
- 	}
-@@ -433,7 +431,6 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
- int eeh_dev_check_failure(struct eeh_dev *edev)
- {
- 	int ret;
--	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	unsigned long flags;
- 	struct device_node *dn;
- 	struct pci_dev *dev;
-@@ -525,8 +522,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	 * state, PE is in good state.
- 	 */
- 	if ((ret < 0) ||
--	    (ret == EEH_STATE_NOT_SUPPORT) ||
--	    ((ret & active_flags) == active_flags)) {
-+	    (ret == EEH_STATE_NOT_SUPPORT) || eeh_state_active(ret)) {
- 		eeh_stats.false_positives++;
- 		pe->false_positives++;
- 		rc = 0;
-@@ -546,8 +542,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 
- 		/* Frozen parent PE ? */
- 		ret = eeh_ops->get_state(parent_pe, NULL);
--		if (ret > 0 &&
--		    (ret & active_flags) != active_flags)
-+		if (ret > 0 && !eeh_state_active(ret))
- 			pe = parent_pe;
- 
- 		/* Next parent level */
-@@ -888,7 +883,6 @@ static void *eeh_set_dev_freset(void *data, void *flag)
-  */
- int eeh_pe_reset_full(struct eeh_pe *pe)
- {
--	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	int reset_state = (EEH_PE_RESET | EEH_PE_CFG_BLOCKED);
- 	int type = EEH_RESET_HOT;
- 	unsigned int freset = 0;
-@@ -919,7 +913,7 @@ int eeh_pe_reset_full(struct eeh_pe *pe)
- 
- 		/* Wait until the PE is in a functioning state */
- 		state = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
--		if ((state & active_flags) == active_flags)
-+		if (eeh_state_active(state))
- 			break;
- 
- 		if (state < 0) {
-@@ -1352,16 +1346,15 @@ static int eeh_pe_change_owner(struct eeh_pe *pe)
- 	struct eeh_dev *edev, *tmp;
- 	struct pci_dev *pdev;
- 	struct pci_device_id *id;
--	int flags, ret;
-+	int ret;
- 
- 	/* Check PE state */
--	flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	ret = eeh_ops->get_state(pe, NULL);
- 	if (ret < 0 || ret == EEH_STATE_NOT_SUPPORT)
- 		return 0;
- 
- 	/* Unfrozen PE, nothing to do */
--	if ((ret & flags) == flags)
-+	if (eeh_state_active(ret))
- 		return 0;
- 
- 	/* Frozen PE, check if it needs PE level reset */
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 33c86c1a1720..ddfc3544d285 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1425,11 +1425,8 @@ static int pnv_eeh_get_pe(struct pci_controller *hose,
- 	dev_pe = dev_pe->parent;
- 	while (dev_pe && !(dev_pe->type & EEH_PE_PHB)) {
- 		int ret;
--		int active_flags = (EEH_STATE_MMIO_ACTIVE |
--				    EEH_STATE_DMA_ACTIVE);
--
- 		ret = eeh_ops->get_state(dev_pe, NULL);
--		if (ret <= 0 || (ret & active_flags) == active_flags) {
-+		if (ret <= 0 || eeh_state_active(ret)) {
- 			dev_pe = dev_pe->parent;
- 			continue;
- 		}
-@@ -1463,7 +1460,6 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
- 	struct eeh_pe *phb_pe, *parent_pe;
- 	__be64 frozen_pe_no;
- 	__be16 err_type, severity;
--	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	long rc;
- 	int state, ret = EEH_NEXT_ERR_NONE;
- 
-@@ -1626,8 +1622,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
- 
- 				/* Frozen parent PE ? */
- 				state = eeh_ops->get_state(parent_pe, NULL);
--				if (state > 0 &&
--				    (state & active_flags) != active_flags)
-+				if (state > 0 && !eeh_state_active(state))
- 					*pe = parent_pe;
- 
- 				/* Next parent level */
--- 
-2.16.1.74.g9b0b1f47b
+OK, found:
+
+We have two ABIs in the game - syscall and normal C.  The latter
+(for all targets we support) can be described in the following
+terms:
+	* there is a series of word-sized objects used to pass
+arguments, some in registers, some on stack.  Arguments are
+mapped on that sequence.  Anything up to word size simply takes
+the next available word, so on 64bit it's all there is - nth
+argument goes into the nth object, types simply do not matter.
+On 32bit it's not that simple - there 64bit arguments occupy
+two objects.  They are still picked from the same sequence;
+on little-endian the lower half goes first, on big-endian -
+the higher one.  For some architectures that's all there is to it.
+However, on quite a few there's an extra complication - not every
+pair can be used for 64bit value.  Rules for those are arch-dependent.
+One variety is "pairs should be aligned", i.e. "if we'd consumed
+an odd number of slots, add a dummy one before eating a pair".
+Another is "don't let a pair span the registers/stack boundary";
+surprisingly enough, that's not universal.
+
+The syscall ABI can considerably differ from C one.  First of all,
+we really do *not* want to pass anything on stack - it's a major
+headache at syscall entry.  See mips/o32 for the scale of that headache.
+Not fun.  OTOH, the registers that can be used are a limited resource.
+i386 can't pass more than 6 words and that has served as an upper
+limit.  If we encode the argument sizes (W - word, D - 64bit) we
+have the following variants among the syscalls:
+	* no arguments at all (SYSCALL_DEFINE0)
+	* W (SYSCALL_DEFINE1)
+	* WW (SYSCALL_DEFINE2)
+	* WWW (SYSCALL_DEFINE3)
+	* WWWW (SYSCALL_DEFINE4)
+	* WWWWW (SYSCALL_DEFINE5)
+	* WWWWWW (SYSCALL_DEFINE6)
+	* WD (SYSCALL_DEFINE2, truncate64, ftruncate64)
+	* DWW (SYSCALL_DEFINE3, lookup_dcookie)
+	* WDW (SYSCALL_DEFINE3, readahead)
+	* WWWD (SYSCALL_DEFINE4, pread64, pwrite64)
+	* WWDD (SYSCALL_DEFINE4, fallocate, sync_file_range2)
+	* WDDW (SYSCALL_DEFINE4, sync_file_range, fadvise64_64)
+	* WDWW (SYSCALL_DEFINE4, fadvise64)
+	* WWDWW (SYSCALL_DEFINE5, fanotify_mark)
+
+The list for each long long-passing variant might be incomplete, but
+they really are rare.  And a source of headache; not just for biarch
+architectures - e.g. c6x and metag are not biarch and these syscalls
+are exactly what stinks them up.
+
+One thing we *really* don't want is syscall-dependent mapping from
+syscall ABI registers to C ABI sequence.  Inside a syscall (or in
+per-syscall glue) - sure, we can do it (if not happily).  In the
+syscall dispatcher - fuck no, too much PITA.  mips/o32 used to be
+a horrible example of why not, then they went for "copy from userland
+stack whether we need it or not"...
+
+For simple syscalls (first 7 classes in the above, each argument fits
+into word) we simply map registers to the first 6 slots of the sequence
+and we are done.  It's bloody tempting to use the same mapping for
+the rest - use the same code that calls simple syscalls and have it
+call sys_readahead() instead of sys_mkdir(), etc.  For something like
+x86 or sparc that works perfectly - these guys have no padding for 64bit
+arguments, so we are good (provided that userland sets those registers
+sanely, that is).
+
+OTOH, consider arm.  There we have
+	* r0, r1, r2, r3, [sp,#8], [sp,#12], [sp,#16]... is the sequence
+of objects used to pass arguments
+	* 32bit and less - pick the next available slot
+	* 64bit - skip a slot if we'd already taken an odd number, then use
+the next two slots for lower and upper 32 bits of the argument.
+
+So our classes take
+simple n-argument:	0 to 6 slots
+WD			4 slots
+DWW			4 slots
+WDW			5 slots
+WWDD			6 slots
+WDWW			5 slots
+WWWD			6 slots
+WWDWW			6 slots
+WDDW			7 slots (!)  Also ****, !!!!, !@#!@#!@#!# and other nice
+and well-deserved comments from arch maintainers, some of them even printable:
+/* It would be nice if people remember that not all the world's an i386
+   when they introduce new system calls */
+SYSCALL_DEFINE4(sync_file_range2, int, fd, unsigned int, flags,
+                                 loff_t, offset, loff_t, nbytes)
+
+No idea why that hadn't been done to fadvise64_64() - that got
+/*
+ * Since loff_t is a 64 bit type we avoid a lot of ABI hassle
+ * with a different argument ordering.
+ */
+asmlinkage long sys_arm_fadvise64_64(int fd, int advice,
+                                     loff_t offset, loff_t len)
+{
+        return sys_fadvise64_64(fd, offset, len, advice);
+}
+long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
+                      u32 len_high, u32 len_low)
+{
+        return sys_fadvise64(fd, (u64)offset_high << 32 | offset_low,
+                             (u64)len_high << 32 | len_low, advice);
+}
+and
+asmlinkage long parisc_fadvise64_64(int fd,
+                        unsigned int high_off, unsigned int low_off,
+                        unsigned int high_len, unsigned int low_len, int advice)
+{
+        return sys_fadvise64_64(fd, (loff_t)high_off << 32 | low_off,
+                        (loff_t)high_len << 32 | low_len, advice);
+}
+consistency, shmonsistency...  And yes, glibc has
+#ifdef __ASSUME_FADVISE64_64_6ARG
+  int ret = INTERNAL_SYSCALL_CALL (fadvise64_64, err, fd, advise,
+                                   SYSCALL_LL64 (offset), SYSCALL_LL64 (len));
+#else
+  int ret = INTERNAL_SYSCALL_CALL (fadvise64_64, err, fd,
+                                   __ALIGNMENT_ARG SYSCALL_LL64 (offset),
+                                   SYSCALL_LL64 (len), advise);
+#endif
+with __ASSUME_FADVISE64_64_6ARG defined for arm and ppc...
+xtensa, BTW, has
+asmlinkage long xtensa_fadvise64_64(int fd, int advice,
+                unsigned long long offset, unsigned long long len)
+{
+        return sys_fadvise64_64(fd, offset, len, advice);
+}
+In other words, same solution as arm and ppc.  No xtensa support in
+glibc, AFAICS...
+
+Anyway, padding rules for 32bit ones, with not too many arguments:
+
+* arc cris frv h8300 i386 m32r m68k microblaze mn10300 nios2 openrisc
+riscv sparc - no padding.
+Note that e.g. frv *does* have a "don't let it cross regs/stack
+boundary" rule, but it has 6 register slots, so for syscalls it
+doesn't matter.  OTOH, sparc (and m32r, and...) really won't
+care about regs/stack boundary.
+
+* arm mips parisc ppc xtensa - pad to even number of words consumed;
+since the number of registers in the sequence is even for all those,
+there is nothing special going on at the edge.  WDDW is a bitch for
+that group; mips goes for "fuck it, we copy userland stack anyway",
+the rest try to cope in various ways.
+
+* s390 - 5 register slots, padding on the crossing the regs/stack
+boundary and nowhere else (i.e. pad if exactly 4 words had been
+consumed).  WWDD runs afoul of that one.
+
+* bfin - similar, except that we pad on exactly 2 words.  Same
+story as with s390, only we have 3 register slots.  Headache
+on: WWDWW and WWDD.
+
+* c6x - strange beast, that; registers are 32bit, but for the
+argument passing purposes it's using 64bit register pairs, filling
+only the lower half when passing a 32bit argument.
+
+* sh - really weird.  If 64bit would span the registers/stack
+boundary (4 register slots there), it's done on stack... and
+the first 32bit argument after that will eat the remaining
+register.  Out of our classes it affects WWWD (as if there
+had been a padding) and WDDW (as if the last two arguments had
+switched places).
+
+FWIW, it looks like we have several different issues mixed here
+
+1) teaching COMPAT_SYSCALL_DEFINE to do the right thing in case
+when 64bit arguments are present.  It's not terribly hard (sh
+is not biarch, thankfully), but we'd better watch out carefully
+when unifying - "fucker eats 7 slots" cases are irregular by
+definition and solutions used for those differ between the
+architectures.  It won't be pretty, though - we can get something
+like
+asmlinkage long compat_sys_truncate64(long a0, long a1, long a2, long a3, long a4, long a5)
+{
+	CS_truncate64((const char __user *)a0, ((u64)a2<<32)|(u64)a3);
+}
+static inline long CS_truncate64(const char __user *path, loff_t length)
+{
+	return sys_truncate64(path, length);
+}
+out of
+COMPAT_SYSCALL_DEFINE2(trucate64, const char __user *, path, loff_t, length)
+{
+	return sys_truncate(path, length);
+}
+but the damn thing will be 6-argument and expressions for arguments will
+expand to something equal to the forms above, but they'll be choke-full
+of conditional expressions with constant 0 or 1 for selectors.  What we can't
+do is evaluation of "is it long long" at macro expansion time - we can't tell
+int, loff_t from int, pid_t until typedefs had been handled, at which point
+the parse tree is cast in stone.  It will have to be 6-argument.
+Alternatively, we could do COMPAT_SYSCALL_DEFINE_WD et.al. so that preprocessor
+would get that information directly from us.
+
+[snip the preprocessor horrors - the sketches I've got there are downright obscene]
+
+2) s390 compat wrappers ;-/  I still wonder if we would be better
+off with SYSCALL_DEFINE on s390 defining a wrapper with COMPAT_SYSCALL_DEFINE
+(if present) redefining it, throwing the original away.  That could be done
+with some amount of linker trickery.
+
+3) sparc wrappers in sys32.S.  Most of those got killed off back in 2012,
+what remained was
+SIGN1(sys32_getrusage, compat_sys_getrusage, %o0)
+SIGN1(sys32_readahead, compat_sys_readahead, %o0)
+SIGN2(sys32_fadvise64, compat_sys_fadvise64, %o0, %o4)
+SIGN2(sys32_fadvise64_64, compat_sys_fadvise64_64, %o0, %o5)
+SIGN1(sys32_clock_nanosleep, compat_sys_clock_nanosleep, %o1)
+SIGN1(sys32_timer_settime, compat_sys_timer_settime, %o1)
+SIGN1(sys32_io_submit, compat_sys_io_submit, %o1)
+SIGN1(sys32_mq_open, compat_sys_mq_open, %o1)
+SIGN1(sys32_select, compat_sys_select, %o0)
+SIGN3(sys32_futex, compat_sys_futex, %o1, %o2, %o5)
+SIGN2(sys32_sendfile, compat_sys_sendfile, %o0, %o1)
+SIGN1(sys32_recvfrom, compat_sys_recvfrom, %o0)
+SIGN1(sys32_recvmsg, compat_sys_recvmsg, %o0)
+SIGN1(sys32_sendmsg, compat_sys_sendmsg, %o0)
+SIGN2(sys32_sync_file_range, compat_sync_file_range, %o0, %o5)
+SIGN1(sys32_vmsplice, compat_sys_vmsplice, %o0)
+with some of those killed off later and (completely pointless)
+SIGN2(sys32_renameat2, sys_renameat2, %o0, %o2)
+added.
+
+Since then clock_nanosleep(), timer_settime(), io_submit(), mq_open(),
+select(), recvfrom(), recvmsg(), sendmsg(), getrusage(), sync_file_range(),
+futex() and vmsplice() got switched to COMPAT_SYSCALL_DEFINE, making those
+SIGN... wrappers pointless.  That leaves
+SIGN1(sys32_readahead, compat_sys_readahead, %o0)
+SIGN2(sys32_fadvise64, compat_sys_fadvise64, %o0, %o4)
+SIGN2(sys32_fadvise64_64, compat_sys_fadvise64_64, %o0, %o5)
+all of which are right there in arch/sparc/kernel/sys_sparc32.c and
+trivially converted to COMPAT_SYSCALL_DEFINE.  Which would kill all the
+SIGN... bunch off, leaving there sys_mmap() and sys_socketcall()
+
+4) stuff in arch really needs a good look.  And not just biarch -
+I could've easily missed some "takes a 64bit argument" cases in
+that area.  Moreover, it might be a good idea to have all syscall
+tables generated a-la x86 and s390 ones are, ideally with the same
+format of input data for all of them...
