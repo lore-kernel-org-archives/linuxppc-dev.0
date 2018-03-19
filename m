@@ -1,24 +1,40 @@
-Return-Path: <SRS0=vN3B=GJ=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <khalid.aziz@oracle.com>
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404dN05THFzF1YH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 01:13:48 +1100 (AEDT)
-Date: Mon, 19 Mar 2018 10:13:44 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras
- <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Anton Blanchard <anton@samba.org>, Nicholas
- Piggin <npiggin@gmail.com>, sathnaga@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] powerpc64/ftrace: Add a field in paca to disable
- ftrace in unsafe code paths
-Message-ID: <20180319101344.72144f30@gandalf.local.home>
-In-Reply-To: <cdbe15845a5da965878b6344f69b6ed6dbabb87b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
- <cdbe15845a5da965878b6344f69b6ed6dbabb87b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404frN0fR1zF1jJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 02:20:03 +1100 (AEDT)
+Subject: Re: [PATCH v12 00/11] Application Data Integrity feature introduced
+ by SPARC M7
+To: David Miller <davem@davemloft.net>
+Cc: dave.hansen@linux.intel.com, aarcange@redhat.com,
+ akpm@linux-foundation.org, allen.pais@oracle.com,
+ aneesh.kumar@linux.vnet.ibm.com, anthony.yznaga@oracle.com,
+ arnd@arndb.de, benh@kernel.crashing.org, bob.picco@oracle.com,
+ bsingharora@gmail.com, corbet@lwn.net, dan.j.williams@intel.com,
+ dave.jiang@intel.com, david.j.aldridge@oracle.com, dwindsor@gmail.com,
+ ebiederm@xmission.com, elena.reshetova@intel.com,
+ gregkh@linuxfoundation.org, hannes@cmpxchg.org,
+ henry.willard@oracle.com, hpa@zytor.com, hughd@google.com,
+ imbrenda@linux.vnet.ibm.com, jack@suse.cz, jag.raman@oracle.com,
+ jane.chu@oracle.com, jglisse@redhat.com, jroedel@suse.de,
+ khalid@gonehiking.org, khandual@linux.vnet.ibm.com,
+ kirill.shutemov@linux.intel.com, kstewart@linuxfoundation.org,
+ ktkhai@virtuozzo.com, liam.merwick@oracle.com,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linuxram@us.ibm.com, linux@roeck-us.net,
+ me@tobin.cc, mgorman@suse.de, mgorman@techsingularity.net,
+ mhocko@suse.com, mike.kravetz@oracle.com, minchan@kernel.org,
+ mingo@kernel.org
+References: <cover.1519227112.git.khalid.aziz@oracle.com>
+ <20180318.110857.1660518649370410007.davem@davemloft.net>
+From: Khalid Aziz <khalid.aziz@oracle.com>
+Message-ID: <b9507686-6c3f-7fb1-b305-c1817f86a884@oracle.com>
+Date: Mon, 19 Mar 2018 09:19:21 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180318.110857.1660518649370410007.davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +44,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 Mar 2018 14:43:00 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On 03/18/2018 09:08 AM, David Miller wrote:
+> In uapi/asm/auxvec.h you conditionalize the ADI aux vectors on
+> CONFIG_SPARC64.
+> 
+> That's not correct, you should never control user facing definitions
+> based upon kernel configuration.
+> 
+> Also, both 32-bit and 64-bit applications running on ADI capable
+> machines want to compile against and use this informaiton.
+> 
+> So please remove these CPP checks.
+> 
 
-> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> index 3f3e81852422..fdf702b4df25 100644
-> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> @@ -60,6 +60,19 @@ _GLOBAL(ftrace_caller)
->  	mfxer   r10
->  	mfcr	r11
->  
-> +#ifdef CONFIG_KVM
-> +	lbz	r3, PACA_FTRACE_DISABLED(r13)
-> +	cmpdi	r3, 0
-> +	beq	1f
-> +	mflr	r3
-> +	mtctr	r3
-> +	REST_GPR(3, r1)
-> +	addi	r1, r1, SWITCH_FRAME_SIZE
-> +	mtlr	r0
-> +	bctr
-> +1:
-> +#endif
+Hi Dave,
 
-I wonder if we should try to move the return out of the fast path (for
-cache reasons), as most of the time the above compare will be true. That
-is:
+That makes sense. I will send a patch to remove these.
 
-#ifdef CONFIG_KVM
-	lbz	r3, PACA_FTRACE_DISABLED(r13)
-	cmpdi	r3, 0
-	bne	no_trace
-#endif
-
-/* rest of ftrace_caller code */
-
-/* after ftrace_caller... */
-        bctr                    /* jump after _mcount site */
-
-#ifdef	CONFIG_KVM
-no_trace:
-	mflr	r3
-	mtctr	r3
-	REST_GPR(3, r1)
-	addi	r1, r1, SWITCH_FRAME_SIZE
-	mtlr	r0
-	bctr
-#endif
-
-
--- Steve
-
-> +
->  	/* Get the _mcount() call site out of LR */
->  	mflr	r7
->  	/* Save it as pt_regs->nip */
+Thanks,
+Khalid
