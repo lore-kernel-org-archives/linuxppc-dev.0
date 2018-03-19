@@ -1,31 +1,42 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
+ [IPv6:2a00:1450:400c:c0c::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404m1Q6cjGzDrHw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 06:13:14 +1100 (AEDT)
-Date: Mon, 19 Mar 2018 14:13:10 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 1/1] PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi
- boards
-Message-ID: <20180319191310.GG77194@bhelgaas-glaptop.roam.corp.google.com>
-References: <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
- <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
- <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
- <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
- <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
- <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
- <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
- <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
- <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404mbH2nb1zDrKN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 06:39:07 +1100 (AEDT)
+Received: by mail-wr0-x243.google.com with SMTP id l8so19829539wrg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 12:39:06 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 19 Mar 2018 20:39:00 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Andi Kleen <ak@linux.intel.com>, Colin King <colin.king@canonical.com>,
+ David Ahern <dsahern@gmail.com>, Jin Yao <yao.jin@linux.intel.com>,
+ Jiri Olsa <jolsa@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Kan Liang <kan.liang@linux.intel.com>,
+ kernel-janitors@vger.kernel.org, Laura Abbott <labbott@redhat.com>,
+ linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-trace-users@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Shuah Khan <shuah@kernel.org>, Stephane Eranian <eranian@google.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Tom Zanussi <tom.zanussi@linux.intel.com>,
+ Wang Nan <wangnan0@huawei.com>, Willy Tarreau <w@1wt.eu>,
+ Yisheng Xie <xieyisheng1@huawei.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [GIT PULL 00/14] perf/core improvements and fixes
+Message-ID: <20180319193900.27fk6paow6fy4gkk@gmail.com>
+References: <20180319190136.7441-1-acme@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180319190136.7441-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,44 +46,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2018 at 01:55:36PM +0100, Christian Zigotzky wrote:
-> Bjorn Helgaas created a patch for making PCI_SCAN_ALL_PCIE_DEVS work for
-> Root Ports as well as Downstream. Previously PCI_SCAN_ALL_PCIE_DEVS (set by
-> quirks or the "pci=pcie_scan_all"
-> kernel parameter) only affected Switch Downstream Ports, not Root Ports. The
-> problem is, that we have to add always the boot argument "pci=pcie_scan_all"
-> for using Bjorn's improvements. Without the boot argument
-> "pci=pcie_scan_all", the kernel doesn't boot on P.A. Semi boards with SB600
-> chipset (SB600 chipset is connected via PCIe x4 to the P.A. Semi’s
-> PA6T-1682M System-on-a-Chip) because the kernel can't find any drives
-> connected to the SB600 anymore. Olof Johansson has created a patch for
-> executing "pci=pcie_scan_all" automatically on P.A. Semi boards. With his
-> patch, we don't need to add 'pci=pcie_scan_all' to the kernel boot arguments
-> anymore.
 
-The patch looks fine, but I need a signed-off-by line before I can apply
-it.  See https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst
+* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
 
-> ---
+> Hi Ingo,
 > 
-> arch/powerpc/platforms/pasemi/pci.c | 2 ++
->  1 file changed, 2 insertions(+)
+> 	Please consider pulling, this has those 31 patches that were
+> blocked due to some problems (author not being the fist S-o-B, build
+> broken on ppc), those issues should all be fixed and then we have 14
+> patches more, described in the signed tag.
 > 
-> diff --git a/arch/powerpc/platforms/pasemi/pci.c
-> b/arch/powerpc/platforms/pasemi/pci.c
-> index 5ff6108..ea54ed2 100644
-> --- a/arch/powerpc/platforms/pasemi/pci.c
-> +++ b/arch/powerpc/platforms/pasemi/pci.c
-> @@ -224,6 +224,8 @@ void __init pas_pci_init(void)
->          return;
->      }
+> Regards,
 > 
-> +    pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
-> +
->      for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
->          if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
->              of_node_get(np);
+> - Arnaldo
 > 
-> --
+> Test results at the end of this message, as usual.
 > 
+> The following changes since commit 10f354a36f9a9aa1b8bffe0abc1cd43822a85bcd:
 > 
+>   perf test: Fix exit code for record+probe_libc_inet_pton.sh (2018-03-16 13:56:31 -0300)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.17-20180319
+> 
+> for you to fetch changes up to 1cd618838b9703eabe4a75badf433382b12f6bef:
+> 
+>   perf tests bp_account: Fix build with clang-6 (2018-03-19 13:51:54 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/core improvements and fixes:
+> 
+> - Fixes for problems experienced with new gcc 8 warnings, that treated
+>   as errors, broke the build, related to snprintf and casting issues.
+>   (Arnaldo Carvalho de Melo, Jiri Olsa, Josh Poinboeuf)
+> 
+> - Fix build of new breakpoint 'perf test' entry with clang < 6, noticed
+>   on fedora 25, 26 and 27 (Arnaldo Carvalho de Melo)
+> 
+> - Workaround problem with symbol resolution in 'perf annotate', using
+>   the symbol name already present in the objdump output (Arnaldo Carvalho de Melo)
+> 
+> - Document 'perf top --ignore-vmlinux' (Arnaldo Carvalho de Melo)
+> 
+> - Fix out of bounds access on array fd when cnt is 100 in one of the
+>   'perf test' entries, detected using 'cpptest' (Colin Ian King)
+> 
+> - Add support for the forced leader feature, i.e. 'perf report --group'
+>   for a group of events not really grouped when scheduled (without using
+>   {} to enclose the list of events in the command line) in pipe mode,
+>   e.g.:
+> 
+>   $ perf record -e cycles,instructions -o - kill | perf report --group -i -
+> 
+> - Use right type to access array elements in 'perf probe' (Masami Hiramatsu)
+> 
+> - Update POWER9 vendor events (those described in JSON format) (Sukadev Bhattiprolu)
+> 
+> - Discard head in overwrite_rb_find_range() (Yisheng Xie)
+> 
+> - Avoid setting 'quiet' to 'true' unnecessarily (Yisheng Xie)
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> ----------------------------------------------------------------
+> Arnaldo Carvalho de Melo (4):
+>       perf annotate: Use asprintf when formatting objdump command line
+>       perf top: Document --ignore-vmlinux
+>       perf annotate: Use ops->target.name when available for unresolved call targets
+>       perf tests bp_account: Fix build with clang-6
+> 
+> Colin Ian King (1):
+>       perf tests: Fix out of bounds access on array fd when cnt is 100
+> 
+> Jiri Olsa (4):
+>       perf record: Synthesize features before events in pipe mode
+>       perf report: Support forced leader feature in pipe mode
+>       perf tools: Fix snprint warnings for gcc 8
+>       perf tools: Fix python extension build for gcc 8
+> 
+> Josh Poimboeuf (1):
+>       objtool, perf: Fix GCC 8 -Wrestrict error
+> 
+> Masami Hiramatsu (1):
+>       perf probe: Use right type to access array elements
+> 
+> Sukadev Bhattiprolu (1):
+>       perf vendor events: Update POWER9 events
+> 
+> Yisheng Xie (2):
+>       perf mmap: Discard head in overwrite_rb_find_range()
+>       perf debug: Avoid setting 'quiet' to 'true' unnecessarily
+> 
+>  tools/lib/str_error_r.c                            |   2 +-
+>  tools/perf/Documentation/perf-top.txt              |   3 +
+>  tools/perf/builtin-record.c                        |  18 +-
+>  tools/perf/builtin-report.c                        |  57 +++--
+>  tools/perf/builtin-script.c                        |  22 +-
+>  .../perf/pmu-events/arch/powerpc/power9/cache.json |  25 ---
+>  .../pmu-events/arch/powerpc/power9/frontend.json   |  10 -
+>  .../pmu-events/arch/powerpc/power9/marked.json     |   5 -
+>  .../pmu-events/arch/powerpc/power9/memory.json     |   5 -
+>  .../perf/pmu-events/arch/powerpc/power9/other.json | 241 ++++++++++++++-------
+>  .../pmu-events/arch/powerpc/power9/pipeline.json   |  50 ++---
+>  tools/perf/pmu-events/arch/powerpc/power9/pmc.json |   5 -
+>  .../arch/powerpc/power9/translation.json           |  10 +-
+>  tools/perf/tests/attr.c                            |   4 +-
+>  tools/perf/tests/bp_account.c                      |  10 +-
+>  tools/perf/tests/mem.c                             |   2 +-
+>  tools/perf/tests/pmu.c                             |   2 +-
+>  tools/perf/util/annotate.c                         |  20 +-
+>  tools/perf/util/cgroup.c                           |   2 +-
+>  tools/perf/util/debug.c                            |   1 -
+>  tools/perf/util/header.c                           |  11 +-
+>  tools/perf/util/mmap.c                             |  15 +-
+>  tools/perf/util/parse-events.c                     |   4 +-
+>  tools/perf/util/pmu.c                              |   2 +-
+>  tools/perf/util/probe-finder.c                     |  13 +-
+>  tools/perf/util/setup.py                           |   2 +
+>  26 files changed, 298 insertions(+), 243 deletions(-)
+
+Pulled, thanks a lot Arnaldo!
+
+	Ingo
