@@ -1,38 +1,43 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404VjW5KCZzF1W3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 20:13:35 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2J9Andr083534
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 05:13:33 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gt2jgxmht-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 05:13:33 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 19 Mar 2018 09:13:30 -0000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404W3q6ngdzF1Wj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 20:29:26 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id t6so14237987wmt.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 02:29:26 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 19 Mar 2018 10:29:20 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips <linux-mips@linux-mips.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Anton Blanchard <anton@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- sathnaga@linux.vnet.ibm.com
-Subject: [PATCH 2/2] powerpc64/ftrace: Disable ftrace during kvm guest
- entry/exit
-Date: Mon, 19 Mar 2018 14:43:01 +0530
-In-Reply-To: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <c74eb8345bdbd86ff265c278a8a23f321ce9cf2b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Jiri Slaby <jslaby@suse.com>, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [RFC PATCH 4/6] mm: provide generic compat_sys_readahead()
+ implementation
+Message-ID: <20180319092920.tbh2xwkruegshzqe@gmail.com>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-5-linux@dominikbrodowski.net>
+ <20180318174014.GR30522@ZenIV.linux.org.uk>
+ <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
+ <20180318181848.GU30522@ZenIV.linux.org.uk>
+ <20180319042300.GW30522@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180319042300.GW30522@ZenIV.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,51 +47,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During guest entry/exit, we switch over to/from the guest MMU context.
-While doing so, we set our state to KVM_GUEST_MODE_HOST_HV to note down
-the fact that we cannot take any exceptions in the hypervisor code.
 
-Since ftrace may be enabled and since it can result in us taking a trap,
-disable ftrace by setting paca->ftrace_disabled. Once we exit the guest
-and restore host MMU context, we re-enable ftrace.
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 8 ++++++++
- 1 file changed, 8 insertions(+)
+> On Sun, Mar 18, 2018 at 06:18:48PM +0000, Al Viro wrote:
+> 
+> > I'd done some digging in that area, will find the notes and post.
+> 
+> OK, found:
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index f31f357b8c5a..9292087adb68 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -600,6 +600,10 @@ kvmppc_hv_entry:
- 	/* Save R1 in the PACA */
- 	std	r1, HSTATE_HOST_R1(r13)
- 
-+	/* Disable ftrace since we can't take a trap any more */
-+	li	r6, 1
-+	stb	r6, PACA_FTRACE_DISABLED(r13)
-+
- 	li	r6, KVM_GUEST_MODE_HOST_HV
- 	stb	r6, HSTATE_IN_GUEST(r13)
- 
-@@ -2048,6 +2052,8 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
- 	/* Unset guest mode */
- 	li	r0, KVM_GUEST_MODE_NONE
- 	stb	r0, HSTATE_IN_GUEST(r13)
-+	li	r0, 0
-+	stb	r0, PACA_FTRACE_DISABLED(r13)
- 
- 	ld	r0, SFS+PPC_LR_STKOFF(r1)
- 	addi	r1, r1, SFS
-@@ -3379,6 +3385,8 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
- 	ld	r8, KVM_HOST_LPCR(r10)
- 	mtspr	SPRN_LPCR, r8
- 	isync
-+	li	r0, 0
-+	stb	r0, PACA_FTRACE_DISABLED(r13)
- 	li	r0, KVM_GUEST_MODE_NONE
- 	stb	r0, HSTATE_IN_GUEST(r13)
- 
--- 
-2.16.2
+Very nice writeup - IMHO this should go into Documentation/!
+
+> OTOH, consider arm.  There we have
+> 	* r0, r1, r2, r3, [sp,#8], [sp,#12], [sp,#16]... is the sequence
+> of objects used to pass arguments
+> 	* 32bit and less - pick the next available slot
+> 	* 64bit - skip a slot if we'd already taken an odd number, then use
+> the next two slots for lower and upper 32 bits of the argument.
+> 
+> So our classes take
+> simple n-argument:	0 to 6 slots
+> WD			4 slots
+> DWW			4 slots
+> WDW			5 slots
+> WWDD			6 slots
+> WDWW			5 slots
+> WWWD			6 slots
+> WWDWW			6 slots
+> WDDW			7 slots (!)  Also ****, !!!!, !@#!@#!@#!# and other nice
+> and well-deserved comments from arch maintainers, some of them even printable:
+> /* It would be nice if people remember that not all the world's an i386
+>    when they introduce new system calls */
+> SYSCALL_DEFINE4(sync_file_range2, int, fd, unsigned int, flags,
+>                                  loff_t, offset, loff_t, nbytes)
+
+Such idiosyncratic platform quirks that have an impact on generic code should be 
+as self-maintaining as possible: i.e. there should be a build time warning even on 
+x86 if someone introduces a new, suboptimally packed system call.
+
+Otherwise we'll have such incidents again and again as new system calls get added.
+
+> [snip the preprocessor horrors - the sketches I've got there are downright obscene]
+
+I still think we should consider creating a generic facility and a tool: which 
+would immediately and automatically add new system calls to *every* architecture - 
+or which would initially at least check these syscall ABI constraints.
+
+I.e. this would start with a new generic kernel facility that warns about 
+suboptimal new system call argument layouts on every architecture, not just on the 
+affected ones.
+
+That's a significant undertaking but should be possible to do.
+
+Once such a facility is in place all the existing old mess is still a PITA, but 
+should be manageable eventually - as no new mess is added to it.
+
+IMHO that's the only thing that could break the somewhat deadly current dynamic of 
+system call mappings mess. Complaining about people not knowing about quirks won't 
+help.
+
+One way to implement this would be to put the argument chain types (string) and 
+sizes (int) into a special debug section which isn't included in the final kernel 
+image but which can be checked at link time.
+
+For example this attempt at creating a new system call:
+
+  SYSCALL_DEFINE3(moron, int, fd, loff_t, offset, size_t, count)
+
+... would translate into something like:
+
+	.name = "moron", .pattern = "WWW", .type = "int",    .size = 4,
+	.name = NULL,                      .type = "loff_t", .size = 8,
+	.name = NULL,                      .type = "size_t", .size = 4,
+	.name = NULL,                      .type = NULL,     .size = 0,     /* end of parameter list */
+
+i.e. "WDW". The build-time constraint checker could then warn about:
+
+  # error: System call "moron" uses invalid 'WWW' argument mapping for a 'WDW' sequence
+  #        please avoid long-long arguments or use 'SYSCALL_DEFINE3_WDW()' instead
+
+Each architecture can provide its own syscall parameter checking logic. Both 
+'stack boundary' and parameter packing rules would be straightforward to express 
+if we had such a data structure.
+
+Also note that this tool could also check for optimum packing, i.e. if the new 
+system call is defined as:
+
+  SYSCALL_DEFINE3_WDW(moron, int, fd, loff_t, offset, size_t, count)
+
+... would translate to something like:
+
+	.name = "moron", .pattern = "WDW", .type = "int",    .size = 4,
+	.name = NULL,                      .type = "loff_t", .size = 8,
+	.name = NULL,                      .type = "size_t", .size = 4,
+	.name = NULL,                      .type = NULL,     .size = 0,     /* end of parameter list */
+
+where the tool would print out this error:
+
+  # error: System call "moron" uses suboptimal 'WDW' argument mapping instead of 'WWD'
+
+there would be a whitelist of existing system calls that are already using an 
+suboptimal argument order - but the warnings/errors would trigger for all new 
+system calls.
+
+But adding non-straight-mapped system calls would be the exception in any case.
+
+Such tooling could also do other things, such as limit the C types used for system 
+call defines to a well-chosen set of ABI-safe types, such as:
+
+      3  key_t
+      3  uint32_t
+      4  aio_context_t
+      4  mqd_t
+      4  timer_t
+     10  clockid_t
+     10  gid_t
+     10  loff_t
+     10  long
+     10  old_gid_t
+     10  old_uid_t
+     10  umode_t
+     11  uid_t
+     31  pid_t
+     34  size_t
+     69  unsigned int
+    130  unsigned long
+    226  int
+
+This would also allow us some cleanups as well, such as dropping the pointless 
+'const' from arithmetic types in syscall definitions for example.
+
+etc.
+
+Basically this tool would be a secondary parser of the syscall arguments, with 
+most of the parsing and type sizing difficulties solved by the C parser already.
+
+I think this problem could be much more sanely solved via annotations and a bit of 
+tooling, than trying to trick CPP into doing this for us (which won't really work 
+in any case).
+
+Thanks,
+
+	Ingo
