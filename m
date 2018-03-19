@@ -1,24 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404jsQ2lnqzDrj3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 04:36:08 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/boot: Remove duplicate typedefs from libfdt_env.h
-To: Mark Greer <mgreer@animalcreek.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20180316215443.2807-1-mgreer@animalcreek.com>
- <e710d9d7-232b-6420-96a7-8167dd91b824@c-s.fr>
- <20180319160216.GD9670@animalcreek.com>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <481a22e4-67d8-3182-ddaa-4530c251fa6a@c-s.fr>
-Date: Mon, 19 Mar 2018 18:35:59 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404lZb1yNMzF0xH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 05:53:26 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2JIo8cE177855
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 14:53:24 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gth4vcja9-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 14:53:24 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 19 Mar 2018 18:53:22 -0000
+Date: Tue, 20 Mar 2018 00:23:17 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc64/ftrace: Add a field in paca to disable
+ ftrace in unsafe code paths
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Anton Blanchard <anton@samba.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>, Steven Rostedt
+ <rostedt@goodmis.org>, sathnaga@linux.vnet.ibm.com
+References: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ <cdbe15845a5da965878b6344f69b6ed6dbabb87b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20180319204059.4c3a698e@roar.ozlabs.ibm.com>
+In-Reply-To: <20180319204059.4c3a698e@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180319160216.GD9670@animalcreek.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1521485554.xdqk4zmukv.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,71 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Nicholas Piggin wrote:
+> On Mon, 19 Mar 2018 14:43:00 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+>=20
+>> We have some C code that we call into from real mode where we cannot
+>> take any exceptions. Though the C functions themselves are mostly safe,
+>> if these functions are traced, there is a possibility that we may take
+>> an exception. For instance, in certain conditions, the ftrace code uses
+>> WARN(), which uses a 'trap' to do its job.
+>>=20
+>> For such scenarios, introduce a new field in paca 'ftrace_disabled',
+>> which is checked on ftrace entry before continuing. This field can then
+>> be set to a non-zero value to disable/pause ftrace, and reset to zero to
+>> resume ftrace.
+>>=20
+>> Since KVM is the only user for this currently, we guard the
+>> ftrace/mcount checks within CONFIG_KVM. This can later be removed
+>> if/when there are other users.
+>=20
+> Why not test HSTATE_IN_GUEST then? Add ftrace_disabled if non-KVM users
+> come along.
 
+That's indeed simpler -- thanks for the suggestion!
 
-Le 19/03/2018 à 17:02, Mark Greer a écrit :
-> On Mon, Mar 19, 2018 at 09:53:09AM +0100, Christophe LEROY wrote:
->>
->>
->> Le 16/03/2018 à 22:54, Mark Greer a écrit :
->>> When building a uImage or zImage using ppc6xx_defconfig and some other
->>> defconfigs, the following error occurs:
->>>
->>>    BOOTCC  arch/powerpc/boot/fdt.o
->>>    In file included from arch/powerpc/boot/fdt.c:51:0:
->>>    ../arch/powerpc/boot/libfdt_env.h:10:13: error: redefinition of typedef 'uint32_t'
->>>    ../arch/powerpc/boot/types.h:21:13: note: previous declaration of 'uint32_t' was here
->>>    ../arch/powerpc/boot/libfdt_env.h:11:13: error: redefinition of typedef 'uint64_t'
->>>    ../arch/powerpc/boot/types.h:22:13: note: previous declaration of 'uint64_t' was here
->>>    ../arch/powerpc/boot/Makefile:210: recipe for target 'arch/powerpc/boot/fdt.o' failed
->>>    make[2]: *** [arch/powerpc/boot/fdt.o] Error 1
->>>
->>> The problem is that commit 656ad58ef19e (powerpc/boot: Add OPAL console
->>> to epapr wrappers) adds typedefs for uint32_t and uint64_t to type.h but
->>> doesn't remove the pre-existing (and now duplicate) typedefs from
->>> libfdt_env.h.  Fix the error by removing the duplicat typedefs from
->>> libfdt_env.h
->>>
->>> CC: David Gibson <david@gibson.dropbear.id.au>
->>> CC: Oliver O'Halloran <oohall@gmail.com>
->>> Signed-off-by: Mark Greer <mgreer@animalcreek.com>
->>> ---
->>> Having said all of that, commit 656ad58ef19e (powerpc/boot: Add OPAL
->>> console to epapr wrappers) went into mainline back in 2016 so, AFAICT,
->>> this has been broken since then.  That seems unlikely so I must be
->>> missing something...  Any ideas what that is?
->>
->> I just compiled uImage for ppc6xx_defconfig, and I don't get such error.
->> I looked at what gcc -E outputs, u32 is defined twice but it doesn't seems
->> to bother GCC.
->>
->> What version of GCC do you use ?
->> I tried with 5.4.0 and 4.6.3, both seems to work.
->>
->> Christophe
-> 
-> Hi Christophe.
-> 
-> That's interesting.  I would expect an error regardless of version.
-> 
-> I used an old 4.5.1 gcc that I had laying around (from denx, iirc).
-> I'll find a newer one and try it.
-> 
-> Either way, it seems to me that we should remove the duplicate definitions.
-> Do you agree?
-
-Yes I agree. I was however intrigued by your statement that compilation 
-should have been broken since 2016.
-
-Christophe
-
-> 
-> Thanks,
-> 
-> Mark
-> --
-> 
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+- Naveen
+=
