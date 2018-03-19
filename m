@@ -1,17 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404rDJ29QrzF1WH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:22:55 +1100 (AEDT)
-In-Reply-To: <1519134536-16485-1-git-send-email-clombard@linux.vnet.ibm.com>
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404rDP2GfjzF1Wc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:23:01 +1100 (AEDT)
+In-Reply-To: <20180221214633.2012-1-alexandre.belloni@bootlin.com>
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [V6] cxl: Fix timebase synchronization status on P9
-Message-Id: <404rDH2vtbz9sVr@ozlabs.org>
-Date: Tue, 20 Mar 2018 09:22:54 +1100 (AEDT)
+Cc: linux-rtc@vger.kernel.org,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/time: stop validating rtc_time in .read_time
+Message-Id: <404rDL3m5Dz9sVZ@ozlabs.org>
+Date: Tue, 20 Mar 2018 09:22:56 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-20 at 13:48:56 UTC, Christophe Lombard wrote:
-> The PSL Timebase register is updated by the PSL to maintain the
-> timebase.
-> On P9, the Timebase value is only provided by the CAPP as received
-> the last time a timebase request was performed.
-> The timebase requests are initiated through the adapter configuration or
-> application registers.
-> The specific sysfs entry "/sys/class/cxl/cardxx/psl_timebase_synced" is
-> now dynamically updated according the content of the PSL Timebase
-> register.
+On Wed, 2018-02-21 at 21:46:33 UTC, Alexandre Belloni wrote:
+> The RTC core is always calling rtc_valid_tm after the read_time callback.
+> It is not necessary to call it just before returning from the callback.
 > 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c2be663d5307fb9751a562ac664fa7
+https://git.kernel.org/powerpc/c/890ae7979758568734881ad0f382c4
 
 cheers
