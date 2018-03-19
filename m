@@ -2,17 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404rDH40RbzF1W6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:22:55 +1100 (AEDT)
-In-Reply-To: <20180216234323.27601-1-alexandre.belloni@bootlin.com>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404rD823T8zF0xN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:22:48 +1100 (AEDT)
+In-Reply-To: <20170720062514.2069-1-matthew.brown.dev@gmail.com>
+To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-rtc@vger.kernel.org,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND] powerpc/5200: dts: digsy_mtc.dts: fix rv3029 compatible
-Message-Id: <404rDF3D4sz9sVl@ozlabs.org>
-Date: Tue, 20 Mar 2018 09:22:52 +1100 (AEDT)
+Subject: Re: powerpc/include/asm: Remove unused 64bit cacheflush function
+Message-Id: <404rD6034wz9sVZ@ozlabs.org>
+Date: Tue, 20 Mar 2018 09:22:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,14 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-02-16 at 23:43:23 UTC, Alexandre Belloni wrote:
-> The proper compatible for rv3029 is microcrystal,rv3029.
+On Thu, 2017-07-20 at 06:25:14 UTC, Matt Brown wrote:
+> The flush_dcache_phys_range function is no longer used in the kernel.
+> This patch removes and cleans up the function.
 > 
-> Acked-by: Anatolij Gustschin <agust@denx.de>
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7004263bd4f4c79da9ca2a1d04d38d
+https://git.kernel.org/powerpc/c/1d82fc5c54ef7956f5c01bbcf26b52
 
 cheers
