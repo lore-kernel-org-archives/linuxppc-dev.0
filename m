@@ -2,35 +2,18 @@ Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404lmG1NkvzDrHv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 06:01:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404lmW5gQNzF1TT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 06:02:03 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Andi Kleen <ak@linux.intel.com>, Colin King <colin.king@canonical.com>,
- David Ahern <dsahern@gmail.com>, Jin Yao <yao.jin@linux.intel.com>,
- Jiri Olsa <jolsa@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Kan Liang <kan.liang@linux.intel.com>, kernel-janitors@vger.kernel.org,
- Laura Abbott <labbott@redhat.com>, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-trace-users@vger.kernel.org,
- Masami Hiramatsu <mhiramat@kernel.org>, Namhyung Kim <namhyung@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Shuah Khan <shuah@kernel.org>, Stephane Eranian <eranian@google.com>,
- Steven Rostedt <rostedt@goodmis.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Tom Zanussi <tom.zanussi@linux.intel.com>, Wang Nan <wangnan0@huawei.com>,
- Willy Tarreau <w@1wt.eu>, Yisheng Xie <xieyisheng1@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 00/14] perf/core improvements and fixes
-Date: Mon, 19 Mar 2018 16:01:22 -0300
-Message-Id: <20180319190136.7441-1-acme@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 05/14] perf vendor events: Update POWER9 events
+Date: Mon, 19 Mar 2018 16:01:27 -0300
+Message-Id: <20180319190136.7441-6-acme@kernel.org>
+In-Reply-To: <20180319190136.7441-1-acme@kernel.org>
+References: <20180319190136.7441-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,100 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-	Please consider pulling, this has those 31 patches that were
-blocked due to some problems (author not being the fist S-o-B, build
-broken on ppc), those issues should all be fixed and then we have 14
-patches more, described in the signed tag.
-
-Regards,
-
-- Arnaldo
-
-Test results at the end of this message, as usual.
-
-The following changes since commit 10f354a36f9a9aa1b8bffe0abc1cd43822a85bcd:
-
-  perf test: Fix exit code for record+probe_libc_inet_pton.sh (2018-03-16 13:56:31 -0300)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-4.17-20180319
-
-for you to fetch changes up to 1cd618838b9703eabe4a75badf433382b12f6bef:
-
-  perf tests bp_account: Fix build with clang-6 (2018-03-19 13:51:54 -0300)
-
-----------------------------------------------------------------
-perf/core improvements and fixes:
-
-- Fixes for problems experienced with new gcc 8 warnings, that treated
-  as errors, broke the build, related to snprintf and casting issues.
-  (Arnaldo Carvalho de Melo, Jiri Olsa, Josh Poinboeuf)
-
-- Fix build of new breakpoint 'perf test' entry with clang < 6, noticed
-  on fedora 25, 26 and 27 (Arnaldo Carvalho de Melo)
-
-- Workaround problem with symbol resolution in 'perf annotate', using
-  the symbol name already present in the objdump output (Arnaldo Carvalho de Melo)
-
-- Document 'perf top --ignore-vmlinux' (Arnaldo Carvalho de Melo)
-
-- Fix out of bounds access on array fd when cnt is 100 in one of the
-  'perf test' entries, detected using 'cpptest' (Colin Ian King)
-
-- Add support for the forced leader feature, i.e. 'perf report --group'
-  for a group of events not really grouped when scheduled (without using
-  {} to enclose the list of events in the command line) in pipe mode,
-  e.g.:
-
-  $ perf record -e cycles,instructions -o - kill | perf report --group -i -
-
-- Use right type to access array elements in 'perf probe' (Masami Hiramatsu)
-
-- Update POWER9 vendor events (those described in JSON format) (Sukadev Bhattiprolu)
-
-- Discard head in overwrite_rb_find_range() (Yisheng Xie)
-
-- Avoid setting 'quiet' to 'true' unnecessarily (Yisheng Xie)
-
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Link: https://lkml.kernel.org/r/20180313224647.GA22960@us.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-----------------------------------------------------------------
-Arnaldo Carvalho de Melo (4):
-      perf annotate: Use asprintf when formatting objdump command line
-      perf top: Document --ignore-vmlinux
-      perf annotate: Use ops->target.name when available for unresolved call targets
-      perf tests bp_account: Fix build with clang-6
-
-Colin Ian King (1):
-      perf tests: Fix out of bounds access on array fd when cnt is 100
-
-Jiri Olsa (4):
-      perf record: Synthesize features before events in pipe mode
-      perf report: Support forced leader feature in pipe mode
-      perf tools: Fix snprint warnings for gcc 8
-      perf tools: Fix python extension build for gcc 8
-
-Josh Poimboeuf (1):
-      objtool, perf: Fix GCC 8 -Wrestrict error
-
-Masami Hiramatsu (1):
-      perf probe: Use right type to access array elements
-
-Sukadev Bhattiprolu (1):
-      perf vendor events: Update POWER9 events
-
-Yisheng Xie (2):
-      perf mmap: Discard head in overwrite_rb_find_range()
-      perf debug: Avoid setting 'quiet' to 'true' unnecessarily
-
- tools/lib/str_error_r.c                            |   2 +-
- tools/perf/Documentation/perf-top.txt              |   3 +
- tools/perf/builtin-record.c                        |  18 +-
- tools/perf/builtin-report.c                        |  57 +++--
- tools/perf/builtin-script.c                        |  22 +-
+---
  .../perf/pmu-events/arch/powerpc/power9/cache.json |  25 ---
  .../pmu-events/arch/powerpc/power9/frontend.json   |  10 -
  .../pmu-events/arch/powerpc/power9/marked.json     |   5 -
@@ -142,220 +38,966 @@ Yisheng Xie (2):
  .../pmu-events/arch/powerpc/power9/pipeline.json   |  50 ++---
  tools/perf/pmu-events/arch/powerpc/power9/pmc.json |   5 -
  .../arch/powerpc/power9/translation.json           |  10 +-
- tools/perf/tests/attr.c                            |   4 +-
- tools/perf/tests/bp_account.c                      |  10 +-
- tools/perf/tests/mem.c                             |   2 +-
- tools/perf/tests/pmu.c                             |   2 +-
- tools/perf/util/annotate.c                         |  20 +-
- tools/perf/util/cgroup.c                           |   2 +-
- tools/perf/util/debug.c                            |   1 -
- tools/perf/util/header.c                           |  11 +-
- tools/perf/util/mmap.c                             |  15 +-
- tools/perf/util/parse-events.c                     |   4 +-
- tools/perf/util/pmu.c                              |   2 +-
- tools/perf/util/probe-finder.c                     |  13 +-
- tools/perf/util/setup.py                           |   2 +
- 26 files changed, 298 insertions(+), 243 deletions(-)
+ 8 files changed, 178 insertions(+), 173 deletions(-)
 
-Test results:
-
-The first ones are container (docker) based builds of tools/perf with and
-without libelf support.  Where clang is available, it is also used to build
-perf with/without libelf.
-
-The objtool and samples/bpf/ builds are disabled now that I'm switching from
-using the sources in a local volume to fetching them from a http server to
-build it inside the container, to make it easier to build in a container cluster.
-Those will come back later.
-
-Several are cross builds, the ones with -x-ARCH and the android one, and those
-may not have all the features built, due to lack of multi-arch devel packages,
-available and being used so far on just a few, like
-debian:experimental-x-{arm64,mipsel}.
-
-The 'perf test' one will perform a variety of tests exercising
-tools/perf/util/, tools/lib/{bpf,traceevent,etc}, as well as run perf commands
-with a variety of command line event specifications to then intercept the
-sys_perf_event syscall to check that the perf_event_attr fields are set up as
-expected, among a variety of other unit tests.
-
-Then there is the 'make -C tools/perf build-test' ones, that build tools/perf/
-with a variety of feature sets, exercising the build with an incomplete set of
-features as well as with a complete one. It is planned to have it run on each
-of the containers mentioned above, using some container orchestration
-infrastructure. Get in contact if interested in helping having this in place.
-
-[root@jouet ~]# time dm
-   1 alpine:3.4                    : Ok   gcc (Alpine 5.3.0) 5.3.0
-   2 alpine:3.5                    : Ok   gcc (Alpine 6.2.1) 6.2.1 20160822
-   3 alpine:3.6                    : Ok   gcc (Alpine 6.3.0) 6.3.0
-   4 alpine:3.7                    : Ok   gcc (Alpine 6.4.0) 6.4.0
-   5 alpine:edge                   : Ok   gcc (Alpine 6.4.0) 6.4.0
-   6 amazonlinux:1                 : Ok   gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-11)
-   7 amazonlinux:2                 : Ok   gcc (GCC) 7.2.1 20170915 (Red Hat 7.2.1-2)
-   8 android-ndk:r12b-arm          : Ok   arm-linux-androideabi-gcc (GCC) 4.9.x 20150123 (prerelease)
-   9 android-ndk:r15c-arm          : Ok   arm-linux-androideabi-gcc (GCC) 4.9.x 20150123 (prerelease)
-  10 centos:5                      : Ok   gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-55)
-  11 centos:6                      : Ok   gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-18)
-  12 centos:7                      : Ok   gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-16)
-  13 debian:7                      : Ok   gcc (Debian 4.7.2-5) 4.7.2
-  14 debian:8                      : Ok   gcc (Debian 4.9.2-10+deb8u1) 4.9.2
-  15 debian:9                      : Ok   gcc (Debian 6.3.0-18+deb9u1) 6.3.0 20170516
-  16 debian:experimental           : Ok   gcc (Debian 7.2.0-17) 7.2.1 20171205
-  17 debian:experimental-x-arm64   : Ok   aarch64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-  18 debian:experimental-x-mips    : Ok   mips-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-  19 debian:experimental-x-mips64  : Ok   mips64-linux-gnuabi64-gcc (Debian 7.2.0-11) 7.2.0
-  20 debian:experimental-x-mipsel  : Ok   mipsel-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-  21 fedora:20                     : Ok   gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
-  22 fedora:21                     : Ok   gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
-  23 fedora:22                     : Ok   gcc (GCC) 5.3.1 20160406 (Red Hat 5.3.1-6)
-  24 fedora:23                     : Ok   gcc (GCC) 5.3.1 20160406 (Red Hat 5.3.1-6)
-  25 fedora:24                     : Ok   gcc (GCC) 6.3.1 20161221 (Red Hat 6.3.1-1)
-  26 fedora:24-x-ARC-uClibc        : Ok   arc-linux-gcc (ARCompact ISA Linux uClibc toolchain 2017.09-rc2) 7.1.1 20170710
-  27 fedora:25                     : Ok   gcc (GCC) 6.4.1 20170727 (Red Hat 6.4.1-1)
-  28 fedora:26                     : Ok   gcc (GCC) 7.3.1 20180130 (Red Hat 7.3.1-2)
-  29 fedora:27                     : Ok   gcc (GCC) 7.3.1 20180303 (Red Hat 7.3.1-5)
-  30 fedora:rawhide                : Ok   gcc (GCC) 8.0.1 20180222 (Red Hat 8.0.1-0.16)
-  31 gentoo-stage3-amd64:latest    : Ok   gcc (Gentoo 6.4.0-r1 p1.3) 6.4.0
-  32 mageia:5                      : Ok   gcc (GCC) 4.9.2
-  33 mageia:6                      : Ok   gcc (Mageia 5.4.0-5.mga6) 5.4.0
-  34 opensuse:42.1                 : Ok   gcc (SUSE Linux) 4.8.5
-  35 opensuse:42.2                 : Ok   gcc (SUSE Linux) 4.8.5
-  36 opensuse:42.3                 : Ok   gcc (SUSE Linux) 4.8.5
-  37 opensuse:tumbleweed           : Ok   gcc (SUSE Linux) 7.3.0
-  38 oraclelinux:6                 : Ok   gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-18)
-  39 oraclelinux:7                 : Ok   gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-16.0.3)
-  40 ubuntu:12.04.5                : Ok   gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
-  41 ubuntu:14.04.4                : Ok   gcc (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4
-  42 ubuntu:14.04.4-x-linaro-arm64 : Ok   aarch64-linux-gnu-gcc (Linaro GCC 5.4-2017.05) 5.4.1 20170404
-  43 ubuntu:15.04                  : Ok   gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2
-  44 ubuntu:16.04                  : Ok   gcc (Ubuntu 5.4.0-6ubuntu1~16.04.5) 5.4.0 20160609
-  45 ubuntu:16.04-x-arm            : Ok   arm-linux-gnueabihf-gcc (Ubuntu/Linaro 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  46 ubuntu:16.04-x-arm64          : Ok   aarch64-linux-gnu-gcc (Ubuntu/Linaro 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  47 ubuntu:16.04-x-powerpc        : Ok   powerpc-linux-gnu-gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  48 ubuntu:16.04-x-powerpc64      : Ok   powerpc64-linux-gnu-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.1) 5.4.0 20160609
-  49 ubuntu:16.04-x-powerpc64el    : Ok   powerpc64le-linux-gnu-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  50 ubuntu:16.04-x-s390           : Ok   s390x-linux-gnu-gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
-  51 ubuntu:16.10                  : Ok   gcc (Ubuntu 6.2.0-5ubuntu12) 6.2.0 20161005
-  52 ubuntu:17.04                  : Ok   gcc (Ubuntu 6.3.0-12ubuntu2) 6.3.0 20170406
-  53 ubuntu:17.10                  : Ok   gcc (Ubuntu 7.2.0-8ubuntu3) 7.2.0
-  54 ubuntu:18.04                  : Ok   gcc (Ubuntu 7.2.0-16ubuntu1) 7.2.0
-
-  # uname -a
-  Linux jouet 4.16.0-rc5-00086-gdf09348f78dc #1 SMP Fri Mar 16 09:46:40 -03 2018 x86_64 x86_64 x86_64 GNU/Linux
-  # perf test
-   1: vmlinux symtab matches kallsyms                       : Ok
-   2: Detect openat syscall event                           : Ok
-   3: Detect openat syscall event on all cpus               : Ok
-   4: Read samples using the mmap interface                 : Ok
-   5: Test data source output                               : Ok
-   6: Parse event definition strings                        : Ok
-   7: Simple expression parser                              : Ok
-   8: PERF_RECORD_* events & perf_sample fields             : Ok
-   9: Parse perf pmu format                                 : Ok
-  10: DSO data read                                         : Ok
-  11: DSO data cache                                        : Ok
-  12: DSO data reopen                                       : Ok
-  13: Roundtrip evsel->name                                 : Ok
-  14: Parse sched tracepoints fields                        : Ok
-  15: syscalls:sys_enter_openat event fields                : Ok
-  16: Setup struct perf_event_attr                          : Ok
-  17: Match and link multiple hists                         : Ok
-  18: 'import perf' in python                               : Ok
-  19: Breakpoint overflow signal handler                    : Ok
-  20: Breakpoint overflow sampling                          : Ok
-  21: Breakpoint accounting                                 : Skip
-  22: Number of exit events of a simple workload            : Ok
-  23: Software clock events period values                   : Ok
-  24: Object code reading                                   : Ok
-  25: Sample parsing                                        : Ok
-  26: Use a dummy software event to keep tracking           : Ok
-  27: Parse with no sample_id_all bit set                   : Ok
-  28: Filter hist entries                                   : Ok
-  29: Lookup mmap thread                                    : Ok
-  30: Share thread mg                                       : Ok
-  31: Sort output of hist entries                           : Ok
-  32: Cumulate child hist entries                           : Ok
-  33: Track with sched_switch                               : Ok
-  34: Filter fds with revents mask in a fdarray             : Ok
-  35: Add fd to a fdarray, making it autogrow               : Ok
-  36: kmod_path__parse                                      : Ok
-  37: Thread map                                            : Ok
-  38: LLVM search and compile                               :
-  38.1: Basic BPF llvm compile                              : Ok
-  38.2: kbuild searching                                    : Ok
-  38.3: Compile source for BPF prologue generation          : Ok
-  38.4: Compile source for BPF relocation                   : Ok
-  39: Session topology                                      : Ok
-  40: BPF filter                                            :
-  40.1: Basic BPF filtering                                 : Ok
-  40.2: BPF pinning                                         : Ok
-  40.3: BPF prologue generation                             : Ok
-  40.4: BPF relocation checker                              : Ok
-  41: Synthesize thread map                                 : Ok
-  42: Remove thread map                                     : Ok
-  43: Synthesize cpu map                                    : Ok
-  44: Synthesize stat config                                : Ok
-  45: Synthesize stat                                       : Ok
-  46: Synthesize stat round                                 : Ok
-  47: Synthesize attr update                                : Ok
-  48: Event times                                           : Ok
-  49: Read backward ring buffer                             : Ok
-  50: Print cpu map                                         : Ok
-  51: Probe SDT events                                      : Ok
-  52: is_printable_array                                    : Ok
-  53: Print bitmap                                          : Ok
-  54: perf hooks                                            : Ok
-  55: builtin clang support                                 : Skip (not compiled in)
-  56: unit_number__scnprintf                                : Ok
-  57: mem2node                                              : Ok
-  58: x86 rdpmc                                             : Ok
-  59: Convert perf time to TSC                              : Ok
-  60: DWARF unwind                                          : Ok
-  61: x86 instruction decoder - new instructions            : Ok
-  62: Use vfs_getname probe to get syscall args filenames   : Ok
-  63: Check open filename arg using perf trace + vfs_getname: Ok
-  64: probe libc's inet_pton & backtrace it with ping       : Ok
-  65: Add vfs_getname probe to get syscall args filenames   : Ok
-  #
-
-  $ make -C tools/perf build-test
-  make: Entering directory '/home/acme/git/perf/tools/perf'
-  - tarpkg: ./tests/perf-targz-src-pkg .
-           make_no_libbionic_O: make NO_LIBBIONIC=1
-              make_no_libelf_O: make NO_LIBELF=1
-         make_with_clangllvm_O: make LIBCLANGLLVM=1
-   make_install_prefix_slash_O: make install prefix=/tmp/krava/
-              make_no_libbpf_O: make NO_LIBBPF=1
-           make_no_backtrace_O: make NO_BACKTRACE=1
-                make_minimal_O: make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1 NO_JVMTI=1
-               make_no_slang_O: make NO_SLANG=1
-             make_no_libnuma_O: make NO_LIBNUMA=1
-              make_clean_all_O: make clean all
-             make_util_map_o_O: make util/map.o
-            make_no_demangle_O: make NO_DEMANGLE=1
-            make_no_auxtrace_O: make NO_AUXTRACE=1
-                   make_pure_O: make
-            make_install_bin_O: make install-bin
-                make_install_O: make install
-  make_no_libdw_dwarf_unwind_O: make NO_LIBDW_DWARF_UNWIND=1
-                   make_tags_O: make tags
-         make_install_prefix_O: make install prefix=/tmp/krava
-                  make_no_ui_O: make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
-             make_no_libperl_O: make NO_LIBPERL=1
-                make_no_gtk2_O: make NO_GTK2=1
-                 make_static_O: make LDFLAGS=-static
-                   make_help_O: make help
-                make_no_newt_O: make NO_NEWT=1
-                  make_debug_O: make DEBUG=1
-           make_no_libunwind_O: make NO_LIBUNWIND=1
-        make_with_babeltrace_O: make LIBBABELTRACE=1
-            make_no_libaudit_O: make NO_LIBAUDIT=1
-                 make_perf_o_O: make perf.o
-             make_no_scripts_O: make NO_LIBPYTHON=1 NO_LIBPERL=1
-       make_util_pmu_bison_o_O: make util/pmu-bison.o
-           make_no_libpython_O: make NO_LIBPYTHON=1
-                    make_doc_O: make doc
-  OK
-  make: Leaving directory '/home/acme/git/perf/tools/perf'
-  $
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/cache.json b/tools/perf/pmu-events/arch/powerpc/power9/cache.json
+index 7945c5196c43..851072105054 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/cache.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/cache.json
+@@ -19,11 +19,6 @@
+     "EventName": "PM_CMPLU_STALL_FXU",
+     "BriefDescription": "Finish stall due to a scalar fixed point or CR instruction in the execution pipeline. These instructions get routed to the ALU, ALU2, and DIV pipes"
+   },
+-  {,
+-    "EventCode": "0x1D15C",
+-    "EventName": "PM_MRK_DTLB_MISS_1G",
+-    "BriefDescription": "Marked Data TLB reload (after a miss) page size 2M. Implies radix translation was used"
+-  },
+   {,
+     "EventCode": "0x4D12A",
+     "EventName": "PM_MRK_DATA_FROM_RL4_CYC",
+@@ -79,21 +74,6 @@
+     "EventName": "PM_THRESH_EXC_4096",
+     "BriefDescription": "Threshold counter exceed a count of 4096"
+   },
+-  {,
+-    "EventCode": "0x3D156",
+-    "EventName": "PM_MRK_DTLB_MISS_64K",
+-    "BriefDescription": "Marked Data TLB Miss page size 64K"
+-  },
+-  {,
+-    "EventCode": "0x4C15E",
+-    "EventName": "PM_MRK_DTLB_MISS_16M",
+-    "BriefDescription": "Marked Data TLB Miss page size 16M"
+-  },
+-  {,
+-    "EventCode": "0x2D15E",
+-    "EventName": "PM_MRK_DTLB_MISS_16G",
+-    "BriefDescription": "Marked Data TLB Miss page size 16G"
+-  },
+   {,
+     "EventCode": "0x3F14A",
+     "EventName": "PM_MRK_DPTEG_FROM_RMEM",
+@@ -123,10 +103,5 @@
+     "EventCode": "0x1002A",
+     "EventName": "PM_CMPLU_STALL_LARX",
+     "BriefDescription": "Finish stall because the NTF instruction was a larx waiting to be satisfied"
+-  },
+-  {,
+-    "EventCode": "0x1C058",
+-    "EventName": "PM_DTLB_MISS_16G",
+-    "BriefDescription": "Data TLB Miss page size 16G"
+   }
+ ]
+\ No newline at end of file
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/frontend.json b/tools/perf/pmu-events/arch/powerpc/power9/frontend.json
+index bd8361b5fd6a..f9fa84b16fb5 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/frontend.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/frontend.json
+@@ -154,11 +154,6 @@
+     "EventName": "PM_MRK_DATA_FROM_RL2L3_SHR_CYC",
+     "BriefDescription": "Duration in cycles to reload with Shared (S) data from another chip's L2 or L3 on the same Node or Group (Remote), as this chip due to a marked load"
+   },
+-  {,
+-    "EventCode": "0x3C056",
+-    "EventName": "PM_DTLB_MISS_64K",
+-    "BriefDescription": "Data TLB Miss page size 64K"
+-  },
+   {,
+     "EventCode": "0x30060",
+     "EventName": "PM_TM_TRANS_RUN_INST",
+@@ -344,11 +339,6 @@
+     "EventName": "PM_MRK_LARX_FIN",
+     "BriefDescription": "Larx finished"
+   },
+-  {,
+-    "EventCode": "0x4C056",
+-    "EventName": "PM_DTLB_MISS_16M",
+-    "BriefDescription": "Data TLB Miss page size 16M"
+-  },
+   {,
+     "EventCode": "0x1003A",
+     "EventName": "PM_CMPLU_STALL_LSU_FIN",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/marked.json b/tools/perf/pmu-events/arch/powerpc/power9/marked.json
+index 22f9f32060a8..b1954c38bab1 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/marked.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/marked.json
+@@ -529,11 +529,6 @@
+     "EventName": "PM_L1_ICACHE_RELOADED_ALL",
+     "BriefDescription": "Counts all Icache reloads includes demand, prefetch, prefetch turned into demand and demand turned into prefetch"
+   },
+-  {,
+-    "EventCode": "0x4003C",
+-    "EventName": "PM_DISP_HELD_SYNC_HOLD",
+-    "BriefDescription": "Cycles in which dispatch is held because of a synchronizing instruction in the pipeline"
+-  },
+   {,
+     "EventCode": "0x3003C",
+     "EventName": "PM_CMPLU_STALL_NESTED_TEND",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/memory.json b/tools/perf/pmu-events/arch/powerpc/power9/memory.json
+index 9960d1c0dd44..2e2ebc700c74 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/memory.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/memory.json
+@@ -44,11 +44,6 @@
+     "EventName": "PM_LD_CMPL",
+     "BriefDescription": "count of Loads completed"
+   },
+-  {,
+-    "EventCode": "0x2D156",
+-    "EventName": "PM_MRK_DTLB_MISS_4K",
+-    "BriefDescription": "Marked Data TLB Miss page size 4k"
+-  },
+   {,
+     "EventCode": "0x4C042",
+     "EventName": "PM_DATA_FROM_L3",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/other.json b/tools/perf/pmu-events/arch/powerpc/power9/other.json
+index 5ce312973f1e..48cf4f920b3f 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/other.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/other.json
+@@ -69,6 +69,11 @@
+     "EventName": "PM_THRD_PRIO_0_1_CYC",
+     "BriefDescription": "Cycles thread running at priority level 0 or 1"
+   },
++  {,
++    "EventCode": "0x4C054",
++    "EventName": "PM_DERAT_MISS_16G_1G",
++    "BriefDescription": "Data ERAT Miss (Data TLB Access) page size 16G (hpt mode) or 1G (radix mode)"
++  },
+   {,
+     "EventCode": "0x2084",
+     "EventName": "PM_FLUSH_HB_RESTORE_CYC",
+@@ -107,12 +112,12 @@
+   {,
+     "EventCode": "0x360B2",
+     "EventName": "PM_L3_GRP_GUESS_WRONG_LOW",
+-    "BriefDescription": "Initial scope=group (GS or NNS) but data from outside group (far or rem). Prediction too Low"
++    "BriefDescription": "Prefetch scope predictor selected GS or NNS, but was wrong because scope was LNS"
+   },
+   {,
+     "EventCode": "0x168A6",
+     "EventName": "PM_TM_CAM_OVERFLOW",
+-    "BriefDescription": "L3 TM cam overflow during L2 co of SC"
++    "BriefDescription": "L3 TM CAM is full when a L2 castout of TM_SC line occurs.  Line is pushed to memory"
+   },
+   {,
+     "EventCode": "0xE8B0",
+@@ -149,11 +154,6 @@
+     "EventName": "PM_ISU3_ISS_HOLD_ALL",
+     "BriefDescription": "All ISU rejects"
+   },
+-  {,
+-    "EventCode": "0x460A6",
+-    "EventName": "PM_RD_FORMING_SC",
+-    "BriefDescription": "Read forming SC"
+-  },
+   {,
+     "EventCode": "0x468A0",
+     "EventName": "PM_L3_PF_OFF_CHIP_MEM",
+@@ -187,7 +187,7 @@
+   {,
+     "EventCode": "0x368A6",
+     "EventName": "PM_SNP_TM_HIT_T",
+-    "BriefDescription": "Snp TM sthit T/Tn/Te"
++    "BriefDescription": "TM snoop that is a store hits line in L3 in T, Tn or Te state (shared modified)"
+   },
+   {,
+     "EventCode": "0x3001A",
+@@ -204,6 +204,11 @@
+     "EventName": "PM_MRK_DATA_FROM_L31_ECO_MOD_CYC",
+     "BriefDescription": "Duration in cycles to reload with Modified (M) data from another core's ECO L3 on the same chip due to a marked load"
+   },
++  {,
++    "EventCode": "0xF0B4",
++    "EventName": "PM_DC_PREF_CONS_ALLOC",
++    "BriefDescription": "Prefetch stream allocated in the conservative phase by either the hardware prefetch mechanism or software prefetch. The sum of this pair subtracted from the total number of allocs will give the total allocs in normal phase"
++  },
+   {,
+     "EventCode": "0xF894",
+     "EventName": "PM_LSU3_L1_CAM_CANCEL",
+@@ -227,7 +232,12 @@
+   {,
+     "EventCode": "0x468A6",
+     "EventName": "PM_RD_CLEARING_SC",
+-    "BriefDescription": "Read clearing SC"
++    "BriefDescription": "Core TM load hits line in L3 in TM_SC state and causes it to be invalidated"
++  },
++  {,
++    "EventCode": "0xD0B0",
++    "EventName": "PM_HWSYNC",
++    "BriefDescription": ""
+   },
+   {,
+     "EventCode": "0x168B0",
+@@ -264,6 +274,11 @@
+     "EventName": "PM_DC_PREF_HW_ALLOC",
+     "BriefDescription": "Prefetch stream allocated by the hardware prefetch mechanism"
+   },
++  {,
++    "EventCode": "0xF0BC",
++    "EventName": "PM_LS2_UNALIGNED_ST",
++    "BriefDescription": "Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size.  If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
+   {,
+     "EventCode": "0xD0AC",
+     "EventName": "PM_SRQ_SYNC_CYC",
+@@ -274,6 +289,11 @@
+     "EventName": "PM_MRK_INST_FROM_L3MISS",
+     "BriefDescription": "Marked instruction was reloaded from a location beyond the local chiplet"
+   },
++  {,
++    "EventCode": "0x58A8",
++    "EventName": "PM_DECODE_HOLD_ICT_FULL",
++    "BriefDescription": "Counts the number of cycles in which the IFU was not able to decode and transmit one or more instructions because all itags were in use.  This means the ICT is full for this thread"
++  },
+   {,
+     "EventCode": "0x26082",
+     "EventName": "PM_L2_IC_INV",
+@@ -364,6 +384,16 @@
+     "EventName": "PM_MRK_DATA_FROM_OFF_CHIP_CACHE_CYC",
+     "BriefDescription": "Duration in cycles to reload either shared or modified data from another core's L2/L3 on a different chip (remote or distant) due to a marked load"
+   },
++  {,
++    "EventCode": "0xF888",
++    "EventName": "PM_LSU1_STORE_REJECT",
++    "BriefDescription": "All internal store rejects cause the instruction to go back to the SRQ and go to sleep until woken up to try again after the condition has been met"
++  },
++  {,
++    "EventCode": "0xC098",
++    "EventName": "PM_LS2_UNALIGNED_LD",
++    "BriefDescription": "Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size.  If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
+   {,
+     "EventCode": "0x20058",
+     "EventName": "PM_DARQ1_10_12_ENTRIES",
+@@ -372,7 +402,7 @@
+   {,
+     "EventCode": "0x360A6",
+     "EventName": "PM_SNP_TM_HIT_M",
+-    "BriefDescription": "Snp TM st hit M/Mu"
++    "BriefDescription": "TM snoop that is a store hits line in L3 in M or Mu state (exclusive modified)"
+   },
+   {,
+     "EventCode": "0x5898",
+@@ -395,9 +425,9 @@
+     "BriefDescription": "A data line was written to the L1 due to a hardware or software prefetch"
+   },
+   {,
+-    "EventCode": "0xF888",
+-    "EventName": "PM_LSU1_STORE_REJECT",
+-    "BriefDescription": "All internal store rejects cause the instruction to go back to the SRQ and go to sleep until woken up to try again after the condition has been met"
++    "EventCode": "0x2608E",
++    "EventName": "PM_TM_LD_CONF",
++    "BriefDescription": "TM Load (fav or non-fav) ran into conflict (failed)"
+   },
+   {,
+     "EventCode": "0x1D144",
+@@ -422,7 +452,7 @@
+   {,
+     "EventCode": "0x26884",
+     "EventName": "PM_DSIDE_MRU_TOUCH",
+-    "BriefDescription": "D-side L2 MRU touch sent to L2"
++    "BriefDescription": "D-side L2 MRU touch commands sent to the L2"
+   },
+   {,
+     "EventCode": "0x30134",
+@@ -439,6 +469,16 @@
+     "EventName": "PM_EAT_FORCE_MISPRED",
+     "BriefDescription": "XL-form branch was mispredicted due to the predicted target address missing from EAT.  The EAT forces a mispredict in this case since there is no predicated target to validate.  This is a rare case that may occur when the EAT is full and a branch is issued"
+   },
++  {,
++    "EventCode": "0xC094",
++    "EventName": "PM_LS0_UNALIGNED_LD",
++    "BriefDescription": "Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size.  If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
++  {,
++    "EventCode": "0xF8BC",
++    "EventName": "PM_LS3_UNALIGNED_ST",
++    "BriefDescription": "Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size.  If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
+   {,
+     "EventCode": "0x460AE",
+     "EventName": "PM_L3_P2_CO_RTY",
+@@ -492,7 +532,7 @@
+   {,
+     "EventCode": "0xC880",
+     "EventName": "PM_LS1_LD_VECTOR_FIN",
+-    "BriefDescription": ""
++    "BriefDescription": "LS1 finished load vector op"
+   },
+   {,
+     "EventCode": "0x2894",
+@@ -514,6 +554,11 @@
+     "EventName": "PM_MRK_LSU_DERAT_MISS",
+     "BriefDescription": "Marked derat reload (miss) for any page size"
+   },
++  {,
++    "EventCode": "0x160A0",
++    "EventName": "PM_L3_PF_MISS_L3",
++    "BriefDescription": "L3 PF missed in L3"
++  },
+   {,
+     "EventCode": "0x1C04A",
+     "EventName": "PM_DATA_FROM_RL2L3_SHR",
+@@ -564,11 +609,21 @@
+     "EventName": "PM_L2_LOC_GUESS_WRONG",
+     "BriefDescription": "L2 guess local (LNS) and guess was not correct (ie data not on chip)"
+   },
++  {,
++    "EventCode": "0xC888",
++    "EventName": "PM_LSU_DTLB_MISS_64K",
++    "BriefDescription": "Data TLB Miss page size 64K"
++  },
+   {,
+     "EventCode": "0xE0A4",
+     "EventName": "PM_TMA_REQ_L2",
+     "BriefDescription": "addrs only req to L2 only on the first one,Indication that Load footprint is not expanding"
+   },
++  {,
++    "EventCode": "0xC088",
++    "EventName": "PM_LSU_DTLB_MISS_4K",
++    "BriefDescription": "Data TLB Miss page size 4K"
++  },
+   {,
+     "EventCode": "0x3C042",
+     "EventName": "PM_DATA_FROM_L3_DISP_CONFLICT",
+@@ -602,7 +657,7 @@
+   {,
+     "EventCode": "0x26084",
+     "EventName": "PM_L2_RCLD_DISP_FAIL_OTHER",
+-    "BriefDescription": "All I-or-D side load dispatch attempts for this thread that failed due to reason other than address collision (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All D-side-Ld or I-side-instruction-fetch dispatch attempts for this thread that failed due to reasons other than an address collision conflicts with an L2 machines (e.g. Read-Claim/Snoop machine not available)"
+   },
+   {,
+     "EventCode": "0x101E4",
+@@ -647,12 +702,12 @@
+   {,
+     "EventCode": "0x46080",
+     "EventName": "PM_L2_DISP_ALL_L2MISS",
+-    "BriefDescription": "All successful Ld/St dispatches for this thread that were an L2 miss (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All successful D-side-Ld/St or I-side-instruction-fetch dispatches for this thread that were an L2 miss"
+   },
+   {,
+-    "EventCode": "0x160A0",
+-    "EventName": "PM_L3_PF_MISS_L3",
+-    "BriefDescription": "L3 PF missed in L3"
++    "EventCode": "0xF8B8",
++    "EventName": "PM_LS1_UNALIGNED_ST",
++    "BriefDescription": "Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size.  If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
+   },
+   {,
+     "EventCode": "0x408C",
+@@ -667,7 +722,7 @@
+   {,
+     "EventCode": "0x160B2",
+     "EventName": "PM_L3_LOC_GUESS_CORRECT",
+-    "BriefDescription": "initial scope=node/chip (LNS) and data from local node (local) (pred successful) - always PFs only"
++    "BriefDescription": "Prefetch scope predictor selected LNS and was correct"
+   },
+   {,
+     "EventCode": "0x48B4",
+@@ -767,7 +822,7 @@
+   {,
+     "EventCode": "0x36082",
+     "EventName": "PM_L2_LD_DISP",
+-    "BriefDescription": "All successful I-or-D side load dispatches for this thread (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All successful D-side-Ld or I-side-instruction-fetch dispatches for this thread"
+   },
+   {,
+     "EventCode": "0xF8B0",
+@@ -787,7 +842,7 @@
+   {,
+     "EventCode": "0x16884",
+     "EventName": "PM_L2_RCLD_DISP_FAIL_ADDR",
+-    "BriefDescription": "All I-od-D side load dispatch attempts for this thread that failed due to address collision with RC/CO/SN/SQ machine (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All D-side-Ld or I-side-instruction-fetch dispatch attempts for this thread that failed due to an address collision conflicts with an L2 machines already working on this line (e.g. ld-hit-stq or Read-claim/Castout/Snoop machines)"
+   },
+   {,
+     "EventCode": "0x460A0",
+@@ -829,6 +884,11 @@
+     "EventName": "PM_IC_PREF_REQ",
+     "BriefDescription": "Instruction prefetch requests"
+   },
++  {,
++    "EventCode": "0xC898",
++    "EventName": "PM_LS3_UNALIGNED_LD",
++    "BriefDescription": "Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size.  If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
+   {,
+     "EventCode": "0x488C",
+     "EventName": "PM_IC_PREF_WRITE",
+@@ -837,7 +897,7 @@
+   {,
+     "EventCode": "0xF89C",
+     "EventName": "PM_XLATE_MISS",
+-    "BriefDescription": "The LSU requested a line from L2 for translation.  It may be satisfied from any source beyond L2.  Includes speculative instructions"
++    "BriefDescription": "The LSU requested a line from L2 for translation.  It may be satisfied from any source beyond L2.  Includes speculative instructions. Includes instruction, prefetch and demand"
+   },
+   {,
+     "EventCode": "0x14158",
+@@ -849,10 +909,15 @@
+     "EventName": "PM_MRK_DATA_FROM_L31_SHR_CYC",
+     "BriefDescription": "Duration in cycles to reload with Shared (S) data from another core's L3 on the same chip due to a marked load"
+   },
++  {,
++    "EventCode": "0xC88C",
++    "EventName": "PM_LSU_DTLB_MISS_16G_1G",
++    "BriefDescription": "Data TLB Miss page size 16G (HPT) or 1G (Radix)"
++  },
+   {,
+     "EventCode": "0x268A6",
+     "EventName": "PM_TM_RST_SC",
+-    "BriefDescription": "TM-snp rst RM SC"
++    "BriefDescription": "TM snoop hits line in L3 that is TM_SC state and causes it to be invalidated"
+   },
+   {,
+     "EventCode": "0x468A4",
+@@ -917,7 +982,7 @@
+   {,
+     "EventCode": "0x46086",
+     "EventName": "PM_L2_SN_M_RD_DONE",
+-    "BriefDescription": "SNP dispatched for a read and was M (true M)"
++    "BriefDescription": "Snoop dispatched for a read and was M (true M)"
+   },
+   {,
+     "EventCode": "0x40154",
+@@ -979,15 +1044,10 @@
+     "EventName": "PM_LINK_STACK_CORRECT",
+     "BriefDescription": "Link stack predicts right address"
+   },
+-  {,
+-    "EventCode": "0x4C05A",
+-    "EventName": "PM_DTLB_MISS_1G",
+-    "BriefDescription": "Data TLB reload (after a miss) page size 1G. Implies radix translation was used"
+-  },
+   {,
+     "EventCode": "0x36886",
+     "EventName": "PM_L2_SN_SX_I_DONE",
+-    "BriefDescription": "SNP dispatched and went from Sx to Ix"
++    "BriefDescription": "Snoop dispatched and went from Sx to Ix"
+   },
+   {,
+     "EventCode": "0x4E04A",
+@@ -999,11 +1059,6 @@
+     "EventName": "PM_MRK_DATA_FROM_DL4_CYC",
+     "BriefDescription": "Duration in cycles to reload from another chip's L4 on a different Node or Group (Distant) due to a marked load"
+   },
+-  {,
+-    "EventCode": "0x2608E",
+-    "EventName": "PM_TM_LD_CONF",
+-    "BriefDescription": "TM Load (fav or non-fav) ran into conflict (failed)"
+-  },
+   {,
+     "EventCode": "0x4080",
+     "EventName": "PM_INST_FROM_L1",
+@@ -1037,7 +1092,7 @@
+   {,
+     "EventCode": "0x260A6",
+     "EventName": "PM_NON_TM_RST_SC",
+-    "BriefDescription": "Non-TM snp rst TM SC"
++    "BriefDescription": "Non-TM snoop hits line in L3 that is TM_SC state and causes it to be invalidated"
+   },
+   {,
+     "EventCode": "0x3608A",
+@@ -1064,11 +1119,6 @@
+     "EventName": "PM_FLUSH_MPRED",
+     "BriefDescription": "Branch mispredict flushes.  Includes target and address misprecition"
+   },
+-  {,
+-    "EventCode": "0x508C",
+-    "EventName": "PM_SHL_CREATED",
+-    "BriefDescription": "Store-Hit-Load Table Entry Created"
+-  },
+   {,
+     "EventCode": "0x1504C",
+     "EventName": "PM_IPTEG_FROM_LL4",
+@@ -1107,7 +1157,7 @@
+   {,
+     "EventCode": "0x2608A",
+     "EventName": "PM_ISIDE_DISP_FAIL_ADDR",
+-    "BriefDescription": "All I-side dispatch attempts for this thread that failed due to a addr collision with another machine (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All I-side-instruction-fetch dispatch attempts for this thread that failed due to an address collision conflict with an L2 machine already working on this line (e.g. ld-hit-stq or RC/CO/SN machines)"
+   },
+   {,
+     "EventCode": "0x50B4",
+@@ -1180,9 +1230,9 @@
+     "BriefDescription": "Number of stcx instructions finished. This includes instructions in the speculative path of a branch that may be flushed"
+   },
+   {,
+-    "EventCode": "0xE0B8",
+-    "EventName": "PM_LS2_TM_DISALLOW",
+-    "BriefDescription": "A TM-ineligible instruction tries to execute inside a transaction and the LSU disallows it"
++    "EventCode": "0xD8AC",
++    "EventName": "PM_LWSYNC",
++    "BriefDescription": ""
+   },
+   {,
+     "EventCode": "0x2094",
+@@ -1209,6 +1259,11 @@
+     "EventName": "PM_ICT_NOSLOT_DISP_HELD_HB_FULL",
+     "BriefDescription": "Ict empty for this thread due to dispatch holds because the History Buffer was full. Could be GPR/VSR/VMR/FPR/CR/XVF; CR; XVF (XER/VSCR/FPSCR)"
+   },
++  {,
++    "EventCode": "0xC894",
++    "EventName": "PM_LS1_UNALIGNED_LD",
++    "BriefDescription": "Load instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the load of that size.  If the load wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
+   {,
+     "EventCode": "0x360A2",
+     "EventName": "PM_L3_L2_CO_HIT",
+@@ -1292,7 +1347,7 @@
+   {,
+     "EventCode": "0xC084",
+     "EventName": "PM_LS2_LD_VECTOR_FIN",
+-    "BriefDescription": ""
++    "BriefDescription": "LS2 finished load vector op"
+   },
+   {,
+     "EventCode": "0x1608E",
+@@ -1344,6 +1399,11 @@
+     "EventName": "PM_SN_USAGE",
+     "BriefDescription": "Continuous 16 cycle (2to1) window where this signals rotates thru sampling each SN machine busy. PMU uses this wave to then do 16 cyc count to sample total number of machs running"
+   },
++  {,
++    "EventCode": "0x36084",
++    "EventName": "PM_L2_RCST_DISP",
++    "BriefDescription": "All D-side store dispatch attempts for this thread"
++  },
+   {,
+     "EventCode": "0x46084",
+     "EventName": "PM_L2_RCST_DISP_FAIL_OTHER",
+@@ -1354,11 +1414,6 @@
+     "EventName": "PM_DC_PREF_STRIDED_CONF",
+     "BriefDescription": "A demand load referenced a line in an active strided prefetch stream. The stream could have been allocated through the hardware prefetch mechanism or through software."
+   },
+-  {,
+-    "EventCode": "0x36084",
+-    "EventName": "PM_L2_RCST_DISP",
+-    "BriefDescription": "All D-side store dispatch attempts for this thread"
+-  },
+   {,
+     "EventCode": "0x45054",
+     "EventName": "PM_FMA_CMPL",
+@@ -1372,7 +1427,7 @@
+   {,
+     "EventCode": "0x36080",
+     "EventName": "PM_L2_INST",
+-    "BriefDescription": "All successful I-side dispatches for this thread   (excludes i_l2mru_tch reqs)"
++    "BriefDescription": "All successful I-side-instruction-fetch (e.g. i-demand, i-prefetch) dispatches for this thread"
+   },
+   {,
+     "EventCode": "0x3504C",
+@@ -1387,7 +1442,7 @@
+   {,
+     "EventCode": "0x1688A",
+     "EventName": "PM_ISIDE_DISP",
+-    "BriefDescription": "All I-side dispatch attempts for this thread (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All I-side-instruction-fetch dispatch attempts for this thread"
+   },
+   {,
+     "EventCode": "0x468AA",
+@@ -1419,6 +1474,11 @@
+     "EventName": "PM_LSU2_TM_L1_HIT",
+     "BriefDescription": "Load tm hit in L1"
+   },
++  {,
++    "EventCode": "0xE0B8",
++    "EventName": "PM_LS2_TM_DISALLOW",
++    "BriefDescription": "A TM-ineligible instruction tries to execute inside a transaction and the LSU disallows it"
++  },
+   {,
+     "EventCode": "0x44044",
+     "EventName": "PM_INST_FROM_L31_ECO_MOD",
+@@ -1467,7 +1527,7 @@
+   {,
+     "EventCode": "0x36086",
+     "EventName": "PM_L2_RC_ST_DONE",
+-    "BriefDescription": "RC did store to line that was Tx or Sx"
++    "BriefDescription": "Read-claim machine did store to line that was in Tx or Sx (Tagged or Shared state)"
+   },
+   {,
+     "EventCode": "0xE8AC",
+@@ -1499,6 +1559,11 @@
+     "EventName": "PM_IPTEG_FROM_L2_NO_CONFLICT",
+     "BriefDescription": "A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a instruction side request"
+   },
++  {,
++    "EventCode": "0x460A6",
++    "EventName": "PM_RD_FORMING_SC",
++    "BriefDescription": "Doesn't occur"
++  },
+   {,
+     "EventCode": "0x35042",
+     "EventName": "PM_IPTEG_FROM_L3_DISP_CONFLICT",
+@@ -1527,7 +1592,7 @@
+   {,
+     "EventCode": "0x36882",
+     "EventName": "PM_L2_LD_HIT",
+-    "BriefDescription": "All successful I-or-D side load dispatches for this thread that were L2 hits (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All successful D-side-Ld or I-side-instruction-fetch dispatches for this thread that were L2 hits"
+   },
+   {,
+     "EventCode": "0x168AC",
+@@ -1554,11 +1619,6 @@
+     "EventName": "PM_PROBE_NOP_DISP",
+     "BriefDescription": "ProbeNops dispatched"
+   },
+-  {,
+-    "EventCode": "0x58A8",
+-    "EventName": "PM_DECODE_HOLD_ICT_FULL",
+-    "BriefDescription": "Counts the number of cycles in which the IFU was not able to decode and transmit one or more instructions because all itags were in use.  This means the ICT is full for this thread"
+-  },
+   {,
+     "EventCode": "0x10052",
+     "EventName": "PM_GRP_PUMP_MPRED_RTY",
+@@ -1572,7 +1632,7 @@
+   {,
+     "EventCode": "0x2688A",
+     "EventName": "PM_ISIDE_DISP_FAIL_OTHER",
+-    "BriefDescription": "All I-side dispatch attempts for this thread that failed due to a reason other than addrs collision (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All I-side-instruction-fetch dispatch attempts for this thread that failed due to reasons other than an address collision conflict with an L2 machine (e.g. no available RC/CO machines)"
+   },
+   {,
+     "EventCode": "0x2001A",
+@@ -1652,12 +1712,12 @@
+   {,
+     "EventCode": "0x46880",
+     "EventName": "PM_ISIDE_MRU_TOUCH",
+-    "BriefDescription": "I-side L2 MRU touch sent to L2 for this thread"
++    "BriefDescription": "I-side L2 MRU touch sent to L2 for this thread I-side L2 MRU touch commands sent to the L2 for this thread"
+   },
+   {,
+-    "EventCode": "0x1C05C",
+-    "EventName": "PM_DTLB_MISS_2M",
+-    "BriefDescription": "Data TLB reload (after a miss) page size 2M. Implies radix translation was used"
++    "EventCode": "0x508C",
++    "EventName": "PM_SHL_CREATED",
++    "BriefDescription": "Store-Hit-Load Table Entry Created"
+   },
+   {,
+     "EventCode": "0x50B8",
+@@ -1672,7 +1732,7 @@
+   {,
+     "EventCode": "0x268B2",
+     "EventName": "PM_L3_LOC_GUESS_WRONG",
+-    "BriefDescription": "Initial scope=node (LNS) but data from out side local node (near or far or rem). Prediction too Low"
++    "BriefDescription": "Prefetch scope predictor selected LNS, but was wrong"
+   },
+   {,
+     "EventCode": "0x36088",
+@@ -1684,6 +1744,11 @@
+     "EventName": "PM_L3_P2_PF_RTY",
+     "BriefDescription": "L3 PF received retry port 2, every retry counted"
+   },
++  {,
++    "EventCode": "0xD8B0",
++    "EventName": "PM_PTESYNC",
++    "BriefDescription": ""
++  },
+   {,
+     "EventCode": "0x26086",
+     "EventName": "PM_CO_TM_SC_FOOTPRINT",
+@@ -1739,6 +1804,11 @@
+     "EventName": "PM_L2_ST_MISS",
+     "BriefDescription": "All successful D-Side Store dispatches that were an L2 miss for this thread"
+   },
++  {,
++    "EventCode": "0xF8B4",
++    "EventName": "PM_DC_PREF_XCONS_ALLOC",
++    "BriefDescription": "Prefetch stream allocated in the Ultra conservative phase by either the hardware prefetch mechanism or software prefetch"
++  },
+   {,
+     "EventCode": "0x35048",
+     "EventName": "PM_IPTEG_FROM_DL2L3_SHR",
+@@ -1782,7 +1852,7 @@
+   {,
+     "EventCode": "0x460B2",
+     "EventName": "PM_L3_SYS_GUESS_WRONG",
+-    "BriefDescription": "Initial scope=system (VGS or RNS) but data from local or near. Prediction too high"
++    "BriefDescription": "Prefetch scope predictor selected VGS or RNS, but was wrong"
+   },
+   {,
+     "EventCode": "0x58B8",
+@@ -1799,11 +1869,6 @@
+     "EventName": "PM_TM_TABORT_TRECLAIM",
+     "BriefDescription": "Completion time tabortnoncd, tabortcd, treclaim"
+   },
+-  {,
+-    "EventCode": "0x4C054",
+-    "EventName": "PM_DERAT_MISS_16G",
+-    "BriefDescription": "Data ERAT Miss (Data TLB Access) page size 16G"
+-  },
+   {,
+     "EventCode": "0x268A0",
+     "EventName": "PM_L3_CO_L31",
+@@ -1862,7 +1927,7 @@
+   {,
+     "EventCode": "0x368B2",
+     "EventName": "PM_L3_GRP_GUESS_WRONG_HIGH",
+-    "BriefDescription": "Initial scope=group (GS or NNS) but data from local node. Prediction too high"
++    "BriefDescription": "Prefetch scope predictor selected GS or NNS, but was wrong because scope was VGS or RNS"
+   },
+   {,
+     "EventCode": "0xE8BC",
+@@ -1897,7 +1962,7 @@
+   {,
+     "EventCode": "0x260B2",
+     "EventName": "PM_L3_SYS_GUESS_CORRECT",
+-    "BriefDescription": "Initial scope=system (VGS or RNS) and data from outside group (far or rem)(pred successful)"
++    "BriefDescription": "Prefetch scope predictor selected VGS or RNS and was correct"
+   },
+   {,
+     "EventCode": "0x1D146",
+@@ -1914,6 +1979,11 @@
+     "EventName": "PM_L2_GROUP_PUMP",
+     "BriefDescription": "RC requests that were on group (aka nodel) pump attempts"
+   },
++  {,
++    "EventCode": "0xC08C",
++    "EventName": "PM_LSU_DTLB_MISS_16M_2M",
++    "BriefDescription": "Data TLB Miss page size 16M (HPT) or 2M (Radix)"
++  },
+   {,
+     "EventCode": "0x16080",
+     "EventName": "PM_L2_LD",
+@@ -1927,7 +1997,7 @@
+   {,
+     "EventCode": "0xC080",
+     "EventName": "PM_LS0_LD_VECTOR_FIN",
+-    "BriefDescription": ""
++    "BriefDescription": "LS0 finished load vector op"
+   },
+   {,
+     "EventCode": "0x368B0",
+@@ -1999,6 +2069,11 @@
+     "EventName": "PM_BR_CORECT_PRED_TAKEN_CMPL",
+     "BriefDescription": "Conditional Branch Completed in which the HW correctly predicted the direction as taken.  Counted at completion time"
+   },
++  {,
++    "EventCode": "0xF0B8",
++    "EventName": "PM_LS0_UNALIGNED_ST",
++    "BriefDescription": "Store instructions whose data crosses a double-word boundary, which causes it to require an additional slice than than what normally would be required of the Store of that size.  If the Store wraps from slice 3 to slice 0, thee is an additional 3-cycle penalty"
++  },
+   {,
+     "EventCode": "0x20132",
+     "EventName": "PM_MRK_DFU_FIN",
+@@ -2007,7 +2082,7 @@
+   {,
+     "EventCode": "0x160A6",
+     "EventName": "PM_TM_SC_CO",
+-    "BriefDescription": "L3 castout TM SC line"
++    "BriefDescription": "L3 castout of line that was StoreCopy (original value of speculatively written line) in a Transaction"
+   },
+   {,
+     "EventCode": "0xC8B0",
+@@ -2017,7 +2092,7 @@
+   {,
+     "EventCode": "0x16084",
+     "EventName": "PM_L2_RCLD_DISP",
+-    "BriefDescription": "All I-or-D side load dispatch attempts for this thread (excludes i_l2mru_tch_reqs)"
++    "BriefDescription": "All D-side-Ld or I-side-instruction-fetch dispatch attempts for this thread"
+   },
+   {,
+     "EventCode": "0x3F150",
+@@ -2122,12 +2197,12 @@
+   {,
+     "EventCode": "0x46082",
+     "EventName": "PM_L2_ST_DISP",
+-    "BriefDescription": "All successful D-side store dispatches for this thread (L2 miss + L2 hits)"
++    "BriefDescription": "All successful D-side store dispatches for this thread"
+   },
+   {,
+     "EventCode": "0x36880",
+     "EventName": "PM_L2_INST_MISS",
+-    "BriefDescription": "All successful I-side dispatches that were an L2 miss for this thread (excludes i_l2mru_tch reqs)"
++    "BriefDescription": "All successful I-side-instruction-fetch (e.g. i-demand, i-prefetch) dispatches for this thread that were an L2 miss"
+   },
+   {,
+     "EventCode": "0xE084",
+@@ -2217,7 +2292,7 @@
+   {,
+     "EventCode": "0xC884",
+     "EventName": "PM_LS3_LD_VECTOR_FIN",
+-    "BriefDescription": ""
++    "BriefDescription": "LS3 finished load vector op"
+   },
+   {,
+     "EventCode": "0x360A8",
+@@ -2242,7 +2317,7 @@
+   {,
+     "EventCode": "0x168B2",
+     "EventName": "PM_L3_GRP_GUESS_CORRECT",
+-    "BriefDescription": "Initial scope=group (GS or NNS) and data from same group (near) (pred successful)"
++    "BriefDescription": "Prefetch scope predictor selected GS or NNS and was correct"
+   },
+   {,
+     "EventCode": "0x48A4",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json b/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
+index 5af1abbe82c4..b4772f54a271 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/pipeline.json
+@@ -64,11 +64,6 @@
+     "EventName": "PM_DISP_HELD",
+     "BriefDescription": "Dispatch Held"
+   },
+-  {,
+-    "EventCode": "0x3D154",
+-    "EventName": "PM_MRK_DERAT_MISS_16M",
+-    "BriefDescription": "Marked Data ERAT Miss (Data TLB Access) page size 16M"
+-  },
+   {,
+     "EventCode": "0x200F8",
+     "EventName": "PM_EXT_INT",
+@@ -119,6 +114,11 @@
+     "EventName": "PM_MRK_DPTEG_FROM_L3_MEPF",
+     "BriefDescription": "A Page Table Entry was loaded into the TLB from local core's L3 without dispatch conflicts hit on Mepf state. due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included"
+   },
++  {,
++    "EventCode": "0x4C15C",
++    "EventName": "PM_MRK_DERAT_MISS_16G_1G",
++    "BriefDescription": "Marked Data ERAT Miss (Data TLB Access) page size 16G (hpt mode) and 1G (radix mode)"
++  },
+   {,
+     "EventCode": "0x10024",
+     "EventName": "PM_PMC5_OVERFLOW",
+@@ -154,11 +154,6 @@
+     "EventName": "PM_ICT_NOSLOT_IC_MISS",
+     "BriefDescription": "Ict empty for this thread due to Icache Miss"
+   },
+-  {,
+-    "EventCode": "0x3D152",
+-    "EventName": "PM_MRK_DERAT_MISS_1G",
+-    "BriefDescription": "Marked Data ERAT Miss (Data TLB Access) page size 1G. Implies radix translation"
+-  },
+   {,
+     "EventCode": "0x4F14A",
+     "EventName": "PM_MRK_DPTEG_FROM_OFF_CHIP_CACHE",
+@@ -184,11 +179,6 @@
+     "EventName": "PM_MRK_DPTEG_FROM_L2_NO_CONFLICT",
+     "BriefDescription": "A Page Table Entry was loaded into the TLB from local core's L2 without conflict due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included"
+   },
+-  {,
+-    "EventCode": "0x2C05A",
+-    "EventName": "PM_DERAT_MISS_1G",
+-    "BriefDescription": "Data ERAT Miss (Data TLB Access) page size 1G. Implies radix translation"
+-  },
+   {,
+     "EventCode": "0x1F058",
+     "EventName": "PM_RADIX_PWC_L2_PTE_FROM_L2",
+@@ -239,11 +229,6 @@
+     "EventName": "PM_DTLB_MISS",
+     "BriefDescription": "Data PTEG reload"
+   },
+-  {,
+-    "EventCode": "0x2D152",
+-    "EventName": "PM_MRK_DERAT_MISS_2M",
+-    "BriefDescription": "Marked Data ERAT Miss (Data TLB Access) page size 2M. Implies radix translation"
+-  },
+   {,
+     "EventCode": "0x2C046",
+     "EventName": "PM_DATA_FROM_RL2L3_MOD",
+@@ -289,6 +274,11 @@
+     "EventName": "PM_CMPLU_STALL_DFU",
+     "BriefDescription": "Finish stall because the NTF instruction was issued to the Decimal Floating Point execution pipe and waiting to finish. Includes decimal floating point instructions + 128 bit binary floating point instructions. Not qualified by multicycle"
+   },
++  {,
++    "EventCode": "0x3C054",
++    "EventName": "PM_DERAT_MISS_16M_2M",
++    "BriefDescription": "Data ERAT Miss (Data TLB Access) page size 16M (HPT mode) or 2M (Radix mode)"
++  },
+   {,
+     "EventCode": "0x4C04C",
+     "EventName": "PM_DATA_FROM_DMEM",
+@@ -359,11 +349,6 @@
+     "EventName": "PM_INST_FROM_MEMORY",
+     "BriefDescription": "The processor's Instruction cache was reloaded from a memory location including L4 from local remote or distant due to an instruction fetch (not prefetch)"
+   },
+-  {,
+-    "EventCode": "0x1C05A",
+-    "EventName": "PM_DERAT_MISS_2M",
+-    "BriefDescription": "Data ERAT Miss (Data TLB Access) page size 2M. Implies radix translation"
+-  },
+   {,
+     "EventCode": "0x30024",
+     "EventName": "PM_PMC6_OVERFLOW",
+@@ -374,6 +359,11 @@
+     "EventName": "PM_BRU_FIN",
+     "BriefDescription": "Branch Instruction Finished"
+   },
++  {,
++    "EventCode": "0x3D154",
++    "EventName": "PM_MRK_DERAT_MISS_16M_2M",
++    "BriefDescription": "Marked Data ERAT Miss (Data TLB Access) page size 16M (hpt mode) or 2M (radix mode)"
++  },
+   {,
+     "EventCode": "0x30020",
+     "EventName": "PM_PMC2_REWIND",
+@@ -409,11 +399,6 @@
+     "EventName": "PM_MRK_DPTEG_FROM_L31_MOD",
+     "BriefDescription": "A Page Table Entry was loaded into the TLB with Modified (M) data from another core's L3 on the same chip due to a marked data side request. When using Radix Page Translation, this count excludes PDE reloads. Only PTE reloads are included"
+   },
+-  {,
+-    "EventCode": "0x4C15C",
+-    "EventName": "PM_MRK_DERAT_MISS_16G",
+-    "BriefDescription": "Marked Data ERAT Miss (Data TLB Access) page size 16G"
+-  },
+   {,
+     "EventCode": "0x14052",
+     "EventName": "PM_INST_GRP_PUMP_MPRED_RTY",
+@@ -444,11 +429,6 @@
+     "EventName": "PM_IC_DEMAND_CYC",
+     "BriefDescription": "Icache miss demand cycles"
+   },
+-  {,
+-    "EventCode": "0x3C054",
+-    "EventName": "PM_DERAT_MISS_16M",
+-    "BriefDescription": "Data ERAT Miss (Data TLB Access) page size 16M"
+-  },
+   {,
+     "EventCode": "0x2D14E",
+     "EventName": "PM_MRK_DATA_FROM_L21_SHR",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/pmc.json b/tools/perf/pmu-events/arch/powerpc/power9/pmc.json
+index d0b89f930567..8b3b0f3be664 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/pmc.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/pmc.json
+@@ -9,11 +9,6 @@
+     "EventName": "PM_MEM_LOC_THRESH_LSU_HIGH",
+     "BriefDescription": "Local memory above threshold for LSU medium"
+   },
+-  {,
+-    "EventCode": "0x2C056",
+-    "EventName": "PM_DTLB_MISS_4K",
+-    "BriefDescription": "Data TLB Miss page size 4k"
+-  },
+   {,
+     "EventCode": "0x40118",
+     "EventName": "PM_MRK_DCACHE_RELOAD_INTV",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power9/translation.json b/tools/perf/pmu-events/arch/powerpc/power9/translation.json
+index bc8e03d7a6b0..b27642676244 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/translation.json
++++ b/tools/perf/pmu-events/arch/powerpc/power9/translation.json
+@@ -29,11 +29,6 @@
+     "EventName": "PM_ST_FIN",
+     "BriefDescription": "Store finish count. Includes speculative activity"
+   },
+-  {,
+-    "EventCode": "0x44042",
+-    "EventName": "PM_INST_FROM_L3",
+-    "BriefDescription": "The processor's Instruction cache was reloaded from local core's L3 due to an instruction fetch (not prefetch)"
+-  },
+   {,
+     "EventCode": "0x1504A",
+     "EventName": "PM_IPTEG_FROM_RL2L3_SHR",
+@@ -124,6 +119,11 @@
+     "EventName": "PM_PMC1_SAVED",
+     "BriefDescription": "PMC1 Rewind Value saved"
+   },
++  {,
++    "EventCode": "0x44042",
++    "EventName": "PM_INST_FROM_L3",
++    "BriefDescription": "The processor's Instruction cache was reloaded from local core's L3 due to an instruction fetch (not prefetch)"
++  },
+   {,
+     "EventCode": "0x200FE",
+     "EventName": "PM_DATA_FROM_L2MISS",
+-- 
+2.14.3
