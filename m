@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404rD91XmbzF1W6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:22:49 +1100 (AEDT)
-In-Reply-To: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
-To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404rDB2pFpzF0xN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:22:50 +1100 (AEDT)
+In-Reply-To: <1518232806-17661-1-git-send-email-mhairgrove@nvidia.com>
+To: Mark Hairgrove <mhairgrove@nvidia.com>, <linuxppc-dev@lists.ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: dja@axtens.net
-Subject: Re: [v6,
- 1/2] raid6/altivec: Add vpermxor implementation for raid6 Q syndrome
-Message-Id: <404rD729Rpz9sVr@ozlabs.org>
-Date: Tue, 20 Mar 2018 09:22:46 +1100 (AEDT)
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Mark Hairgrove <mhairgrove@nvidia.com>
+Subject: Re: powerpc/npu-dma.c: Fix crash after __mmu_notifier_register failure
+Message-Id: <404rD852wzz9sVw@ozlabs.org>
+Date: Tue, 20 Mar 2018 09:22:47 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-08-04 at 03:42:32 UTC, Matt Brown wrote:
-> This patch uses the vpermxor instruction to optimise the raid6 Q syndrome.
-> This instruction was made available with POWER8, ISA version 2.07.
-> It allows for both vperm and vxor instructions to be done in a single
-> instruction. This has been tested for correctness on a ppc64le vm with a
-> basic RAID6 setup containing 5 drives.
+On Sat, 2018-02-10 at 03:20:06 UTC, Mark Hairgrove wrote:
+> pnv_npu2_init_context wasn't checking the return code from
+> __mmu_notifier_register. If  __mmu_notifier_register failed, the
+> npu_context was still assigned to the mm and the caller wasn't given any
+> indication that things went wrong. Later on pnv_npu2_destroy_context would
+> be called, which in turn called mmu_notifier_unregister and dropped
+> mm->mm_count without having incremented it in the first place. This led to
+> various forms of corruption like mm use-after-free and mm double-free.
 > 
-> The performance benchmarks are from the raid6test in the /lib/raid6/test
-> directory. These results are from an IBM Firestone machine with ppc64le
-> architecture. The benchmark results show a 35% speed increase over the best
-> existing algorithm for powerpc (altivec). The raid6test has also been run
-> on a big-endian ppc64 vm to ensure it also works for big-endian
-> architectures.
+> __mmu_notifier_register can fail with EINTR if a signal is pending, so
+> this case can be frequent.
 > 
-> Performance benchmarks:
-> 		raid6: altivecx4 gen() 18773 MB/s
-> 		raid6: altivecx8 gen() 19438 MB/s
+> This patch calls opal_npu_destroy_context on the failure paths, and makes
+> sure not to assign mm->context.npu_context until past the failure points.
 > 
-> 		raid6: vpermxor4 gen() 25112 MB/s
-> 		raid6: vpermxor8 gen() 26279 MB/s
-> 
-> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
-> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> Signed-off-by: Mark Hairgrove <mhairgrove@nvidia.com>
+> Acked-By: Alistair Popple <alistair@popple.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2de95953c4e6ad54c9bee5e6a5518d
+https://git.kernel.org/powerpc/c/720c84046c26444fe825f8614ddceb
 
 cheers
