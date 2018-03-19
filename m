@@ -1,24 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
+ [IPv6:2a01:488:42:1000:50ed:84ea::])
+ (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404YVz64jXzF1Vp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 22:19:39 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Jonathan =?utf-8?Q?Neusch=C3=A4fer?=
- <j.neuschaefer@gmx.net>, linux-mm@kvack.org, Paul Mackerras
- <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, Guenter Roeck
- <linux@roeck-us.net>
-Subject: Re: [PATCH 3/5] powerpc/mm/32: Use page_is_ram to check for RAM
-In-Reply-To: <874llcha6p.fsf@concordia.ellerman.id.au>
-References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
- <20180222121516.23415-4-j.neuschaefer@gmx.net>
- <874llcha6p.fsf@concordia.ellerman.id.au>
-Date: Mon, 19 Mar 2018 22:19:32 +1100
-Message-ID: <87y3iofh2z.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404ZNf33jQzF1bT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 22:59:11 +1100 (AEDT)
+Subject: Linux 4.16: Reported regressions as of , 2018-03-19 (Was: Re: Linux
+ 4.16-rc6)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+References: <CA+55aFzV1nffUeriZLksK90noD49T+w+WmgBsYMAO13rTbn3Pg@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Message-ID: <ebb2770b-af24-5df4-6844-9aa7ffcccdb1@leemhuis.info>
+Date: Mon, 19 Mar 2018 12:59:05 +0100
 MIME-Version: 1.0
+In-Reply-To: <CA+55aFzV1nffUeriZLksK90noD49T+w+WmgBsYMAO13rTbn3Pg@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,44 +25,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net> writes:
->
->> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
->> ---
->>  arch/powerpc/mm/pgtable_32.c | 3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
->> index d35d9ad3c1cd..d54e1a9c1c99 100644
->> --- a/arch/powerpc/mm/pgtable_32.c
->> +++ b/arch/powerpc/mm/pgtable_32.c
->> @@ -145,9 +145,8 @@ __ioremap_caller(phys_addr_t addr, unsigned long siz=
-e, unsigned long flags,
->>  #ifndef CONFIG_CRASH_DUMP
->>  	/*
->>  	 * Don't allow anybody to remap normal RAM that we're using.
->> -	 * mem_init() sets high_memory so only do the check after that.
->>  	 */
->> -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
->> +	if (page_is_ram(__phys_to_pfn(p)) &&
->>  	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size)=
-)) {
->>  		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
->>  		       (unsigned long long)p, __builtin_return_address(0));
->
->
-> This is killing my p5020ds (Freescale e5500) unfortunately:
+On 19.03.2018 02:14, Linus Torvalds wrote:
+> This has been a nice quiet week, so rc6 is pretty tiny. Everything
+> looks like we're on a usual schedule - I'll make an rc7, but hopefully
+> that will be it.
 
-Duh, I should actually read the patch :)
+Hi! Find below my fifth regression report for Linux 4.16. It lists 7
+regressions I'm currently aware of. 2 were fixed since last weeks
+report; 1 is new; 2 are going to be removed (see below for details).
 
-This is a 32-bit system with 4G of RAM, so not all of RAM is mapped,
-some of it is highem which is why removing the test against high_memory
-above breaks it.
+Are you aware of any other regressions that got introduced this
+development cycle? Then please let me know by mail (a simple bounce or
+forward to the sender of this email address is enough!). And please tell
+me if there is anything in the report that shouldn't be there.
 
-So I need the high_memory test on this system.
+Ciao, Thorsten
 
-I'm not clear why it was a problem for you on the Wii, do you even build
-the Wii kernel with HIGHMEM enabled?
+== Current regressions ==
 
-cheers
+Dell R640 does not boot due to SCSI/SATA failure
+- Status: WIP; some other changes developed for 4.17 solve this
+regression, but there is a discussion for a proper fix
+- Cause:  https://git.kernel.org/torvalds/c/84676c1f21e8
+- Reported: 2018-02-22
+https://marc.info/?l=linux-kernel&m=151931128006031
+- Last known developer activity: 2018-03-14
+https://marc.info/?l=linux-block&m=152102086831636&w=2
+- Other relevant links:
+https://marc.info/?l=linux-block&m=152051511802229&w=2
+https://marc.info/?l=linux-kernel&m=152026091325037
+
+hci_bcm: Streamline runtime PM code change for 4.16 kernel breaks
+bluetooth on ASUS T100TA
+- Status: Hans is working on it, lot's of activity in bugzilla
+- Cause:  https://git.kernel.org/torvalds/c/43fff7683468
+- Reported: 2018-03-01
+https://bugzilla.kernel.org/show_bug.cgi?id=198953
+
+Error updating SMART data during runtime and could not connect to lv
+["Possible Regression"]
+- Status: Two issues discussed here; not much progress yet on the
+regression (latency issues in the MU03 version of the firmware,
+triggered by polling SMART data, which causes lvmetad to timeout in some
+cases)
+- Reported: 2018-03-11
+https://marc.info/?l=linux-kernel&m=152075643627082
+https://bugzilla.kernel.org/show_bug.cgi?id=199077
+- Last known developer activity: 2018-03-19
+https://marc.info/?l=linux-kernel&m=152145306610330
+- Other relevant links:
+https://www.mail-archive.com/linux-block@vger.kernel.org/msg18338.html
+https://marc.info/?l=linux-scsi&m=152095303312164&w=2
+
+15% longer running times on lvm2 test suite
+- Status: Seems the real problem is in the way the test scripts interact
+with the kernel
+- Cause:  https://git.kernel.org/torvalds/c/44c02a2c3dc5
+- Reported: 2018-03-11
+https://marc.info/?l=linux-kernel&m=152077333230274
+- Last known developer activity: 2018-03-13
+https://marc.info/?l=linux-kernel&m=152097761921525
+
+sdhci-acpi not recognizing eMMC
+- Status: Told reporter to contact developers an ML by mail
+- Cause:  https://git.kernel.org/torvalds/c/1b7ba57ecc86
+- Reported: 2018-03-13
+https://bugzilla.kernel.org/show_bug.cgi?id=199105
+
+
+== Waiting for clarification from reporter ==
+
+Interrupt storm after suspend causes one busy kworker
+- Status: Still waiting for data from reporter
+- Reported: 2018-02-25
+https://bugzilla.kernel.org/show_bug.cgi?id=198929
+
+AMDGPU Fury X random screen flicker on Linux kernel 4.16rc5
+- Status: New, but data missing; unclear if this really is a regression
+in 4.16, but looks a lot like one
+- Reported: 2018-03-13
+https://bugzilla.kernel.org/show_bug.cgi?id=199101
+
+
+== Going to get removed from the report ==
+
+aim7.jobs-per-min -18.0% regression
+- Status: not an issue; looks like something weird happen when compiling
+the kernel which lead to bogus results
+- Cause:  https://git.kernel.org/torvalds/c/c0cef30e4ff0
+- Reported: 2018-02-25
+https://marc.info/?l=linux-kernel&m=151957120702272&w=2
+- Last known developer activity:
+https://marc.info/?l=linux-kernel&m=152113601602820
+
+[mm, mlock, vmscan]  9c4e6b1a70:  stress-ng.hdd.ops_per_sec -7.9% regression
+- Status: looks stalled, seems nobody cares; side note: lkp-robot warned
+about something else triggered by the same commit:
+https://lkml.kernel.org/r/20180302093940.GE25699@yexl-desktop is related
+- Cause:  https://git.kernel.org/torvalds/c/9c4e6b1a7027
+- Reported: 2018-02-25
+https://marc.info/?l=linux-kernel&m=151956997301994
+- Note: performance regression found by lkp-robot
+
+
+== Fixed since last report ==
+
+Regression from efi: call get_event_log before ExitBootServices
+- Status: Fixed by https://git.kernel.org/torvalds/c/79832f0b5f71
+- Cause:  https://git.kernel.org/torvalds/c/33b6d03469b2
+- Reported: 2018-03-06
+https://marc.info/?l=linux-kernel&m=152035206220237&w=2
+
+[amdgpu CARRIZO] disabled backlight after S3 resume
+- Status: Fixed by https://git.kernel.org/torvalds/c/b5e324131697
+- Cause:  https://git.kernel.org/torvalds/c/4ec6ecf48c64
+- Reported: 2018-03-07
+https://bugzilla.kernel.org/show_bug.cgi?id=199047
