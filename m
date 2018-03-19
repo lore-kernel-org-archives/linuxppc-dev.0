@@ -1,20 +1,19 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404qQ54fZ5zF0wJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 08:46:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404qQ64B98zF0wW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 08:46:22 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 404qQ50HQBz9sVl
+ by ozlabs.org (Postfix) with ESMTPSA id 404qQ564Xgz9sVr
  for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2018 08:46:21 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] powerpc: Use feature bit for RTC presence rather than
- timebase presence
-Date: Tue, 20 Mar 2018 08:46:11 +1100
-Message-Id: <1521495973-3237-2-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 3/3] powerpc: Free up CPU feature bits on 64-bit machines
+Date: Tue, 20 Mar 2018 08:46:13 +1100
+Message-Id: <1521495973-3237-4-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1521495973-3237-1-git-send-email-paulus@ozlabs.org>
 References: <1521495973-3237-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,325 +25,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All PowerPC CPUs other than the original PPC601 have a timebase
-register rather than the "real-time clock" (RTC) register that the
-PPC601 (and the original POWER and POWER2 CPUs) had.  Currently
-we have a CPU feature bit to indicate the presence of the timebase,
-but it makes more sense to use a bit to indicate the unusual
-situation rather than the common situation.  This therefore defines
-a CPU_FTR_USE_RTC bit in place of the CPU_FTR_USE_TB bit, and
-arranges for it to be set on PPC601 systems.
+This moves all the CPU feature bits that are only used on 32-bit
+machines to the top 20 bits of the CPU feature word and arranges
+for them to be defined only in 32-bit builds.  The features that
+are common to 32-bit and 64-bit machines are moved to bits 0-11
+of the CPU feature word.  This means that for 64-bit platforms,
+bits 44-63 can now be used for new features that only exist on
+64-bit machines.  (These bit numbers are counting from the right,
+i.e. the LSB is bit 0.)
+
+Because CPU_FTR_L3_DISABLE_NAP moved from the low 16 bits to the high
+16 bits, we have to adjust some assembly code.  Also, CPU_FTR_EMB_HV
+moved from the high 16 bits to the low 16 bits.
+
+Note that CPU_FTR_REAL_LE only applies to 64-bit chips, because only
+64-bit chips (POWER6, 7, 8, 9) have a true little-endian mode that is
+a CPU execution mode as opposed to being a page attribute.
+
+With this we now have 20 free CPU feature bits on 64-bit machines.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/cputable.h | 85 +++++++++++++++++--------------------
- arch/powerpc/include/asm/time.h     |  2 +-
- arch/powerpc/kernel/dt_cpu_ftrs.c   |  3 +-
- arch/powerpc/kernel/vdso.c          | 12 +++---
- 4 files changed, 47 insertions(+), 55 deletions(-)
+ arch/powerpc/include/asm/cputable.h       | 133 ++++++++++++++++--------------
+ arch/powerpc/kernel/cpu_setup_6xx.S       |   2 +-
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S |   2 +-
+ 3 files changed, 73 insertions(+), 64 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index a2c5c95..052db18 100644
+index 761b99c..49fd067 100644
 --- a/arch/powerpc/include/asm/cputable.h
 +++ b/arch/powerpc/include/asm/cputable.h
-@@ -138,7 +138,7 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTR_ALTIVEC			ASM_CONST(0x00000008)
- #define CPU_FTR_TAU			ASM_CONST(0x00000010)
- #define CPU_FTR_CAN_DOZE		ASM_CONST(0x00000020)
--#define CPU_FTR_USE_TB			ASM_CONST(0x00000040)
-+#define CPU_FTR_USE_RTC			ASM_CONST(0x00000040)
- #define CPU_FTR_L2CSR			ASM_CONST(0x00000080)
- #define CPU_FTR_601			ASM_CONST(0x00000100)
- #define CPU_FTR_DBELL			ASM_CONST(0x00000200)
-@@ -285,21 +285,19 @@ static inline void cpu_feature_keys_init(void) { }
- #endif
+@@ -131,40 +131,48 @@ static inline void cpu_feature_keys_init(void) { }
  
- #define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
--	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
--#define CPU_FTRS_603	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
-+	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_USE_RTC)
-+#define CPU_FTRS_603	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
--#define CPU_FTRS_604	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_PPC_LE)
-+#define CPU_FTRS_604	(CPU_FTR_COMMON | CPU_FTR_PPC_LE)
- #define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_740	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
- 	    CPU_FTR_TAU | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_PPC_LE)
- #define CPU_FTRS_750	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
- 	    CPU_FTR_TAU | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_PPC_LE)
- #define CPU_FTRS_750CL	(CPU_FTRS_750)
-@@ -308,103 +306,96 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTRS_750FX	(CPU_FTRS_750 | CPU_FTR_DUAL_PLL_750FX)
- #define CPU_FTRS_750GX	(CPU_FTRS_750FX)
- #define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
- 	    CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7400	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
- 	    CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7450_20	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7450_21	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7450_23	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_NEED_PAIRED_STWCX | \
-+	    CPU_FTR_NEED_PAIRED_STWCX | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7455_1	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_NEED_PAIRED_STWCX | \
-+	    CPU_FTR_NEED_PAIRED_STWCX | \
- 	    CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR | \
- 	    CPU_FTR_SPEC7450 | CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7455_20	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_NEED_PAIRED_STWCX | \
-+	    CPU_FTR_NEED_PAIRED_STWCX | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7455	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7447_10	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC | CPU_FTR_PPC_LE | \
- 	    CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7447	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7447A	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7448	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
--#define CPU_FTRS_82XX	(CPU_FTR_COMMON | \
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
-+#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE)
- #define CPU_FTRS_G2_LE	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP)
-+	    CPU_FTR_MAYBE_CAN_NAP)
- #define CPU_FTRS_E300	(CPU_FTR_MAYBE_CAN_DOZE | \
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_COMMON)
- #define CPU_FTRS_E300C2	(CPU_FTR_MAYBE_CAN_DOZE | \
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
--#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | CPU_FTR_USE_TB)
--#define CPU_FTRS_8XX	(CPU_FTR_USE_TB | CPU_FTR_NOEXECUTE)
--#define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
--#define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
--#define CPU_FTRS_440x6	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE | \
-+#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON)
-+#define CPU_FTRS_8XX	(CPU_FTR_NOEXECUTE)
-+#define CPU_FTRS_40X	(CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
-+#define CPU_FTRS_44X	(CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
-+#define CPU_FTRS_440x6	(CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE | \
- 	    CPU_FTR_INDEXED_DCR)
- #define CPU_FTRS_47X	(CPU_FTRS_440x6)
--#define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
-+#define CPU_FTRS_E200	(CPU_FTR_SPE_COMP | \
- 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
- 	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE | \
- 	    CPU_FTR_DEBUG_LVL_EXC)
--#define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
-+#define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | \
- 	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_NOEXECUTE)
--#define CPU_FTRS_E500_2	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
-+#define CPU_FTRS_E500_2	(CPU_FTR_MAYBE_CAN_DOZE | \
- 	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
--#define CPU_FTRS_E500MC	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
-+#define CPU_FTRS_E500MC	(CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
- 	    CPU_FTR_DBELL | CPU_FTR_DEBUG_LVL_EXC | CPU_FTR_EMB_HV)
- /*
-  * e5500/e6500 erratum A-006958 is a timebase bug that can use the
-  * same workaround as CPU_FTR_CELL_TB_BUG.
-  */
--#define CPU_FTRS_E5500	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
-+#define CPU_FTRS_E5500	(CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
- 	    CPU_FTR_DBELL | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_DEBUG_LVL_EXC | CPU_FTR_EMB_HV | CPU_FTR_CELL_TB_BUG)
--#define CPU_FTRS_E6500	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | \
-+#define CPU_FTRS_E6500	(CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE | \
- 	    CPU_FTR_DBELL | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_DEBUG_LVL_EXC | CPU_FTR_EMB_HV | CPU_FTR_ALTIVEC_COMP | \
-@@ -412,21 +403,21 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+ /* CPU kernel features */
  
- /* 64-bit CPUs */
--#define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER4	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS)
--#define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_PPC970	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_201 | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
- 	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS | \
- 	    CPU_FTR_HVMODE | CPU_FTR_DABRX)
--#define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER5	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_PURR | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_DABRX)
--#define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER6 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | \
-@@ -434,7 +425,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_CFAR | \
- 	    CPU_FTR_DABRX)
--#define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER7 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | \
-@@ -443,7 +434,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | \
- 	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX | CPU_FTR_PKEY)
--#define CPU_FTRS_POWER8 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER8 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | \
-@@ -455,7 +446,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_PKEY)
- #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
- #define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
--#define CPU_FTRS_POWER9 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER9 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | \
-@@ -470,15 +461,15 @@ static inline void cpu_feature_keys_init(void) { }
- 			     (~CPU_FTR_SAO))
- #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
- #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
--#define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_PAUSE_ZERO  | CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ | \
- 	    CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_DABRX)
--#define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_PA6T (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_DABRX)
--#define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
-+#define CPU_FTRS_COMPATIBLE	(CPU_FTR_PPCAS_ARCH_V2)
- 
- #ifdef __powerpc64__
- #ifdef CONFIG_PPC_BOOK3E
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 828ebe7..db546c0 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -47,7 +47,7 @@ struct div_result {
- /* Accessor functions for the timebase (RTC on 601) registers. */
- /* If one day CONFIG_POWER is added just define __USE_RTC as 1 */
- #ifdef CONFIG_6xx
--#define __USE_RTC()	(!cpu_has_feature(CPU_FTR_USE_TB))
-+#define __USE_RTC()	(cpu_has_feature(CPU_FTR_USE_RTC))
- #else
- #define __USE_RTC()	0
- #endif
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 945e2c2..ee562ff 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -54,8 +54,7 @@ struct dt_cpu_feature {
- };
- 
- #define CPU_FTRS_BASE \
--	   (CPU_FTR_USE_TB | \
--	    CPU_FTR_LWSYNC | \
-+	   (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_FPU_UNAVAILABLE |\
- 	    CPU_FTR_NODSISRALIGN |\
- 	    CPU_FTR_NOEXECUTE |\
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 22b01a3..b44ec10 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -99,26 +99,28 @@ static struct vdso_patch_def vdso_patches[] = {
- 		CPU_FTR_COHERENT_ICACHE, CPU_FTR_COHERENT_ICACHE,
- 		"__kernel_sync_dicache", "__kernel_sync_dicache_p5"
- 	},
+-/* Retain the 32b definitions all use bottom half of word */
++/* Definitions for features that we have on both 32-bit and 64-bit chips */
+ #define CPU_FTR_COHERENT_ICACHE		ASM_CONST(0x00000001)
+-#define CPU_FTR_L2CR			ASM_CONST(0x00000002)
+-#define CPU_FTR_SPEC7450		ASM_CONST(0x00000004)
+-#define CPU_FTR_ALTIVEC			ASM_CONST(0x00000008)
+-#define CPU_FTR_TAU			ASM_CONST(0x00000010)
+-#define CPU_FTR_CAN_DOZE		ASM_CONST(0x00000020)
+-#define CPU_FTR_USE_RTC			ASM_CONST(0x00000040)
+-#define CPU_FTR_601			ASM_CONST(0x00000100)
+-#define CPU_FTR_DBELL			ASM_CONST(0x00000200)
+-#define CPU_FTR_CAN_NAP			ASM_CONST(0x00000400)
+-#define CPU_FTR_L3CR			ASM_CONST(0x00000800)
+-#define CPU_FTR_L3_DISABLE_NAP		ASM_CONST(0x00001000)
+-#define CPU_FTR_NAP_DISABLE_L2_PR	ASM_CONST(0x00002000)
+-#define CPU_FTR_DUAL_PLL_750FX		ASM_CONST(0x00004000)
+-#define CPU_FTR_NO_DPM			ASM_CONST(0x00008000)
+-#define CPU_FTR_476_DD2			ASM_CONST(0x00010000)
+-#define CPU_FTR_NEED_COHERENT		ASM_CONST(0x00020000)
+-#define CPU_FTR_NO_BTIC			ASM_CONST(0x00040000)
+-#define CPU_FTR_DEBUG_LVL_EXC		ASM_CONST(0x00080000)
+-#define CPU_FTR_NODSISRALIGN		ASM_CONST(0x00100000)
+-#define CPU_FTR_PPC_LE			ASM_CONST(0x00200000)
+-#define CPU_FTR_REAL_LE			ASM_CONST(0x00400000)
+-#define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x00800000)
+-#define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x01000000)
+-#define CPU_FTR_SPE			ASM_CONST(0x02000000)
+-#define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x04000000)
+-#define CPU_FTR_LWSYNC			ASM_CONST(0x08000000)
+-#define CPU_FTR_NOEXECUTE		ASM_CONST(0x10000000)
+-#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x20000000)
+-#define CPU_FTR_EMB_HV			ASM_CONST(0x40000000)
++#define CPU_FTR_ALTIVEC			ASM_CONST(0x00000002)
++#define CPU_FTR_DBELL			ASM_CONST(0x00000004)
++#define CPU_FTR_CAN_NAP			ASM_CONST(0x00000008)
++#define CPU_FTR_DEBUG_LVL_EXC		ASM_CONST(0x00000010)
++#define CPU_FTR_NODSISRALIGN		ASM_CONST(0x00000020)
++#define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x00000040)
++#define CPU_FTR_LWSYNC			ASM_CONST(0x00000080)
++#define CPU_FTR_NOEXECUTE		ASM_CONST(0x00000100)
++#define CPU_FTR_EMB_HV			ASM_CONST(0x00000200)
++
++/* Definitions for features that only exist on 32-bit chips */
 +#ifdef CONFIG_PPC32
- 	{
--		CPU_FTR_USE_TB, 0,
-+		CPU_FTR_USE_RTC, CPU_FTR_USE_RTC,
- 		"__kernel_gettimeofday", NULL
- 	},
- 	{
--		CPU_FTR_USE_TB, 0,
-+		CPU_FTR_USE_RTC, CPU_FTR_USE_RTC,
- 		"__kernel_clock_gettime", NULL
- 	},
- 	{
--		CPU_FTR_USE_TB, 0,
-+		CPU_FTR_USE_RTC, CPU_FTR_USE_RTC,
- 		"__kernel_clock_getres", NULL
- 	},
- 	{
--		CPU_FTR_USE_TB, 0,
-+		CPU_FTR_USE_RTC, CPU_FTR_USE_RTC,
- 		"__kernel_get_tbfreq", NULL
- 	},
- 	{
--		CPU_FTR_USE_TB, 0,
-+		CPU_FTR_USE_RTC, CPU_FTR_USE_RTC,
- 		"__kernel_time", NULL
- 	},
++#define CPU_FTR_601			ASM_CONST(0x00001000)
++#define CPU_FTR_L2CR			ASM_CONST(0x00002000)
++#define CPU_FTR_SPEC7450		ASM_CONST(0x00004000)
++#define CPU_FTR_TAU			ASM_CONST(0x00008000)
++#define CPU_FTR_CAN_DOZE		ASM_CONST(0x00010000)
++#define CPU_FTR_USE_RTC			ASM_CONST(0x00020000)
++#define CPU_FTR_L3CR			ASM_CONST(0x00040000)
++#define CPU_FTR_L3_DISABLE_NAP		ASM_CONST(0x00080000)
++#define CPU_FTR_NAP_DISABLE_L2_PR	ASM_CONST(0x00100000)
++#define CPU_FTR_DUAL_PLL_750FX		ASM_CONST(0x00200000)
++#define CPU_FTR_NO_DPM			ASM_CONST(0x00400000)
++#define CPU_FTR_476_DD2			ASM_CONST(0x00800000)
++#define CPU_FTR_NEED_COHERENT		ASM_CONST(0x01000000)
++#define CPU_FTR_NO_BTIC			ASM_CONST(0x02000000)
++#define CPU_FTR_PPC_LE			ASM_CONST(0x04000000)
++#define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x08000000)
++#define CPU_FTR_SPE			ASM_CONST(0x10000000)
++#define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x20000000)
++#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x40000000)
++
++#else	/* CONFIG_PPC32 */
++/* Define these to 0 for the sake of tests in common code */
++#define CPU_FTR_601			(0)
++#define CPU_FTR_PPC_LE			(0)
 +#endif
- };
  
  /*
+- * Add the 64-bit processor unique features in the top half of the word;
++ * Definitions for the 64-bit processor unique features;
+  * on 32-bit, make the names available but defined to be 0.
+  */
+ #ifdef __powerpc64__
+@@ -173,37 +181,38 @@ static inline void cpu_feature_keys_init(void) { }
+ #define LONG_ASM_CONST(x)		0
+ #endif
+ 
+-#define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000100000000)
+-#define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
+-#define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
+-#define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
+-#define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000001000000000)
+-#define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000002000000000)
+-#define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000004000000000)
+-#define CPU_FTR_SMT			LONG_ASM_CONST(0x0000008000000000)
+-#define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000010000000000)
+-#define CPU_FTR_PURR			LONG_ASM_CONST(0x0000020000000000)
+-#define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000040000000000)
+-#define CPU_FTR_SPURR			LONG_ASM_CONST(0x0000080000000000)
+-#define CPU_FTR_DSCR			LONG_ASM_CONST(0x0000100000000000)
+-#define CPU_FTR_VSX			LONG_ASM_CONST(0x0000200000000000)
+-#define CPU_FTR_SAO			LONG_ASM_CONST(0x0000400000000000)
+-#define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0000800000000000)
+-#define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0001000000000000)
+-#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0002000000000000)
+-#define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0004000000000000)
+-#define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0008000000000000)
+-#define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0010000000000000)
+-#define CPU_FTR_PKEY			LONG_ASM_CONST(0x0020000000000000)
+-#define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0040000000000000)
+-#define CPU_FTR_TM			LONG_ASM_CONST(0x0080000000000000)
+-#define CPU_FTR_CFAR			LONG_ASM_CONST(0x0100000000000000)
+-#define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
+-#define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
+-#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
+-#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
+-#define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
+-#define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x8000000000000000)
++#define CPU_FTR_REAL_LE			LONG_ASM_CONST(0x0000000000001000)
++#define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000000002000)
++#define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000000004000)
++#define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000000008000)
++#define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000000010000)
++#define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000000000020000)
++#define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000000000040000)
++#define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000000000080000)
++#define CPU_FTR_SMT			LONG_ASM_CONST(0x0000000000100000)
++#define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000000000200000)
++#define CPU_FTR_PURR			LONG_ASM_CONST(0x0000000000400000)
++#define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000000000800000)
++#define CPU_FTR_SPURR			LONG_ASM_CONST(0x0000000001000000)
++#define CPU_FTR_DSCR			LONG_ASM_CONST(0x0000000002000000)
++#define CPU_FTR_VSX			LONG_ASM_CONST(0x0000000004000000)
++#define CPU_FTR_SAO			LONG_ASM_CONST(0x0000000008000000)
++#define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0000000010000000)
++#define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0000000020000000)
++#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0000000040000000)
++#define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0000000080000000)
++#define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0000000100000000)
++#define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0000000200000000)
++#define CPU_FTR_PKEY			LONG_ASM_CONST(0x0000000400000000)
++#define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0000000800000000)
++#define CPU_FTR_TM			LONG_ASM_CONST(0x0000001000000000)
++#define CPU_FTR_CFAR			LONG_ASM_CONST(0x0000002000000000)
++#define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0000004000000000)
++#define CPU_FTR_DAWR			LONG_ASM_CONST(0x0000008000000000)
++#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0000010000000000)
++#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
++#define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
++#define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
+index c5e5a94..a9f3970 100644
+--- a/arch/powerpc/kernel/cpu_setup_6xx.S
++++ b/arch/powerpc/kernel/cpu_setup_6xx.S
+@@ -226,7 +226,7 @@ BEGIN_FTR_SECTION
+ 	beq	1f
+ END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
+ 	lwz	r6,CPU_SPEC_FEATURES(r4)
+-	andi.	r0,r6,CPU_FTR_L3_DISABLE_NAP
++	andis.	r0,r6,CPU_FTR_L3_DISABLE_NAP@h
+ 	beq	1f
+ 	li	r7,CPU_FTR_CAN_NAP
+ 	andc	r6,r6,r7
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index 462aed9..8d142e5 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -162,7 +162,7 @@ _GLOBAL(__setup_cpu_e5500)
+ 	 * the feature on the primary core, avoid doing it on the
+ 	 * secondary core.
+ 	 */
+-	andis.	r6, r3, CPU_FTR_EMB_HV@h
++	andi.	r6, r3, CPU_FTR_EMB_HV
+ 	beq	2f
+ 	rlwinm	r3, r3, 0, ~CPU_FTR_EMB_HV
+ 	stw	r3, CPU_SPEC_FEATURES(r4)
 -- 
 2.7.4
