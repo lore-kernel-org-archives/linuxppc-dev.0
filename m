@@ -1,40 +1,27 @@
-Return-Path: <khalid.aziz@oracle.com>
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
+Return-Path: <Alexander.Levin@microsoft.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0724.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe4a::724])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404frN0fR1zF1jJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 02:20:03 +1100 (AEDT)
-Subject: Re: [PATCH v12 00/11] Application Data Integrity feature introduced
- by SPARC M7
-To: David Miller <davem@davemloft.net>
-Cc: dave.hansen@linux.intel.com, aarcange@redhat.com,
- akpm@linux-foundation.org, allen.pais@oracle.com,
- aneesh.kumar@linux.vnet.ibm.com, anthony.yznaga@oracle.com,
- arnd@arndb.de, benh@kernel.crashing.org, bob.picco@oracle.com,
- bsingharora@gmail.com, corbet@lwn.net, dan.j.williams@intel.com,
- dave.jiang@intel.com, david.j.aldridge@oracle.com, dwindsor@gmail.com,
- ebiederm@xmission.com, elena.reshetova@intel.com,
- gregkh@linuxfoundation.org, hannes@cmpxchg.org,
- henry.willard@oracle.com, hpa@zytor.com, hughd@google.com,
- imbrenda@linux.vnet.ibm.com, jack@suse.cz, jag.raman@oracle.com,
- jane.chu@oracle.com, jglisse@redhat.com, jroedel@suse.de,
- khalid@gonehiking.org, khandual@linux.vnet.ibm.com,
- kirill.shutemov@linux.intel.com, kstewart@linuxfoundation.org,
- ktkhai@virtuozzo.com, liam.merwick@oracle.com,
- linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linuxram@us.ibm.com, linux@roeck-us.net,
- me@tobin.cc, mgorman@suse.de, mgorman@techsingularity.net,
- mhocko@suse.com, mike.kravetz@oracle.com, minchan@kernel.org,
- mingo@kernel.org
-References: <cover.1519227112.git.khalid.aziz@oracle.com>
- <20180318.110857.1660518649370410007.davem@davemloft.net>
-From: Khalid Aziz <khalid.aziz@oracle.com>
-Message-ID: <b9507686-6c3f-7fb1-b305-c1817f86a884@oracle.com>
-Date: Mon, 19 Mar 2018 09:19:21 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404gW84K1jzF1dw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 02:50:12 +1100 (AEDT)
+From: Sasha Levin <Alexander.Levin@microsoft.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Paul Mackerras
+ <paulus@samba.org>, Kumar Gala <kumar.gala@freescale.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Sasha Levin
+ <Alexander.Levin@microsoft.com>
+Subject: [PATCH AUTOSEL for 4.15 120/124] signal/powerpc: Document conflicts
+ with SI_USER and SIGFPE and SIGTRAP
+Date: Mon, 19 Mar 2018 15:49:17 +0000
+Message-ID: <20180319154645.11350-120-alexander.levin@microsoft.com>
+References: <20180319154645.11350-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180319154645.11350-1-alexander.levin@microsoft.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-In-Reply-To: <20180318.110857.1660518649370410007.davem@davemloft.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,22 +31,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/18/2018 09:08 AM, David Miller wrote:
-> In uapi/asm/auxvec.h you conditionalize the ADI aux vectors on
-> CONFIG_SPARC64.
-> 
-> That's not correct, you should never control user facing definitions
-> based upon kernel configuration.
-> 
-> Also, both 32-bit and 64-bit applications running on ADI capable
-> machines want to compile against and use this informaiton.
-> 
-> So please remove these CPP checks.
-> 
+From: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Hi Dave,
+[ Upstream commit cf4674c46c66e45f238f8f7e81af2a444b970c0a ]
 
-That makes sense. I will send a patch to remove these.
+Setting si_code to 0 results in a userspace seeing an si_code of 0.
+This is the same si_code as SI_USER.  Posix and common sense requires
+that SI_USER not be a signal specific si_code.  As such this use of 0
+for the si_code is a pretty horribly broken ABI.
 
-Thanks,
-Khalid
+Further use of si_code =3D=3D 0 guaranteed that copy_siginfo_to_user saw a
+value of __SI_KILL and now sees a value of SIL_KILL with the result
+that uid and pid fields are copied and which might copying the si_addr
+field by accident but certainly not by design.  Making this a very
+flakey implementation.
+
+Utilizing FPE_FIXME and TRAP_FIXME, siginfo_layout() will now return
+SIL_FAULT and the appropriate fields will be reliably copied.
+
+Possible ABI fixes includee:
+- Send the signal without siginfo
+- Don't generate a signal
+- Possibly assign and use an appropriate si_code
+- Don't handle cases which can't happen
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc:  linuxppc-dev@lists.ozlabs.org
+Ref: 9bad068c24d7 ("[PATCH] ppc32: support for e500 and 85xx")
+Ref: 0ed70f6105ef ("PPC32: Provide proper siginfo information on various ex=
+ceptions.")
+History Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.=
+git
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+---
+ arch/powerpc/include/uapi/asm/siginfo.h | 15 +++++++++++++++
+ arch/powerpc/kernel/traps.c             | 10 +++++-----
+ 2 files changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/uapi/asm/siginfo.h b/arch/powerpc/include=
+/uapi/asm/siginfo.h
+index 1a691141e49f..444ca6c9989a 100644
+--- a/arch/powerpc/include/uapi/asm/siginfo.h
++++ b/arch/powerpc/include/uapi/asm/siginfo.h
+@@ -18,4 +18,19 @@
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+=20
++/*
++ * SIGFPE si_codes
++ */
++#ifdef __KERNEL__
++#define FPE_FIXME	0	/* Broken dup of SI_USER */
++#endif /* __KERNEL__ */
++
++/*
++ * SIGTRAP si_codes
++ */
++#ifdef __KERNEL__
++#define TRAP_FIXME	0	/* Broken dup of SI_USER */
++#endif /* __KERNEL__ */
++
++
+ #endif	/* _ASM_POWERPC_SIGINFO_H */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index f3eb61be0d30..f2e6e1838952 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -917,7 +917,7 @@ void unknown_exception(struct pt_regs *regs)
+ 	printk("Bad trap at PC: %lx, SR: %lx, vector=3D%lx\n",
+ 	       regs->nip, regs->msr, regs->trap);
+=20
+-	_exception(SIGTRAP, regs, 0, 0);
++	_exception(SIGTRAP, regs, TRAP_FIXME, 0);
+=20
+ 	exception_exit(prev_state);
+ }
+@@ -939,7 +939,7 @@ void instruction_breakpoint_exception(struct pt_regs *r=
+egs)
+=20
+ void RunModeException(struct pt_regs *regs)
+ {
+-	_exception(SIGTRAP, regs, 0, 0);
++	_exception(SIGTRAP, regs, TRAP_FIXME, 0);
+ }
+=20
+ void single_step_exception(struct pt_regs *regs)
+@@ -978,7 +978,7 @@ static void emulate_single_step(struct pt_regs *regs)
+=20
+ static inline int __parse_fpscr(unsigned long fpscr)
+ {
+-	int ret =3D 0;
++	int ret =3D FPE_FIXME;
+=20
+ 	/* Invalid operation */
+ 	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX))
+@@ -1929,7 +1929,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+ 	extern int do_spe_mathemu(struct pt_regs *regs);
+ 	unsigned long spefscr;
+ 	int fpexc_mode;
+-	int code =3D 0;
++	int code =3D FPE_FIXME;
+ 	int err;
+=20
+ 	flush_spe_to_thread(current);
+@@ -1998,7 +1998,7 @@ void SPEFloatingPointRoundException(struct pt_regs *r=
+egs)
+ 		printk(KERN_ERR "unrecognized spe instruction "
+ 		       "in %s at %lx\n", current->comm, regs->nip);
+ 	} else {
+-		_exception(SIGFPE, regs, 0, regs->nip);
++		_exception(SIGFPE, regs, FPE_FIXME, regs->nip);
+ 		return;
+ 	}
+ }
+--=20
+2.14.1
