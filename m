@@ -1,21 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404qQ64B98zF0wW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 08:46:22 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 404qQ564Xgz9sVr
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2018 08:46:21 +1100 (AEDT)
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc: Free up CPU feature bits on 64-bit machines
-Date: Tue, 20 Mar 2018 08:46:13 +1100
-Message-Id: <1521495973-3237-4-git-send-email-paulus@ozlabs.org>
-In-Reply-To: <1521495973-3237-1-git-send-email-paulus@ozlabs.org>
-References: <1521495973-3237-1-git-send-email-paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404rD91XmbzF1W6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 09:22:49 +1100 (AEDT)
+In-Reply-To: <20170804034233.13628-1-matthew.brown.dev@gmail.com>
+To: Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: dja@axtens.net
+Subject: Re: [v6,
+ 1/2] raid6/altivec: Add vpermxor implementation for raid6 Q syndrome
+Message-Id: <404rD729Rpz9sVr@ozlabs.org>
+Date: Tue, 20 Mar 2018 09:22:46 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,211 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves all the CPU feature bits that are only used on 32-bit
-machines to the top 20 bits of the CPU feature word and arranges
-for them to be defined only in 32-bit builds.  The features that
-are common to 32-bit and 64-bit machines are moved to bits 0-11
-of the CPU feature word.  This means that for 64-bit platforms,
-bits 44-63 can now be used for new features that only exist on
-64-bit machines.  (These bit numbers are counting from the right,
-i.e. the LSB is bit 0.)
+On Fri, 2017-08-04 at 03:42:32 UTC, Matt Brown wrote:
+> This patch uses the vpermxor instruction to optimise the raid6 Q syndrome.
+> This instruction was made available with POWER8, ISA version 2.07.
+> It allows for both vperm and vxor instructions to be done in a single
+> instruction. This has been tested for correctness on a ppc64le vm with a
+> basic RAID6 setup containing 5 drives.
+> 
+> The performance benchmarks are from the raid6test in the /lib/raid6/test
+> directory. These results are from an IBM Firestone machine with ppc64le
+> architecture. The benchmark results show a 35% speed increase over the best
+> existing algorithm for powerpc (altivec). The raid6test has also been run
+> on a big-endian ppc64 vm to ensure it also works for big-endian
+> architectures.
+> 
+> Performance benchmarks:
+> 		raid6: altivecx4 gen() 18773 MB/s
+> 		raid6: altivecx8 gen() 19438 MB/s
+> 
+> 		raid6: vpermxor4 gen() 25112 MB/s
+> 		raid6: vpermxor8 gen() 26279 MB/s
+> 
+> Signed-off-by: Matt Brown <matthew.brown.dev@gmail.com>
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
 
-Because CPU_FTR_L3_DISABLE_NAP moved from the low 16 bits to the high
-16 bits, we have to adjust some assembly code.  Also, CPU_FTR_EMB_HV
-moved from the high 16 bits to the low 16 bits.
+Series applied to powerpc next, thanks.
 
-Note that CPU_FTR_REAL_LE only applies to 64-bit chips, because only
-64-bit chips (POWER6, 7, 8, 9) have a true little-endian mode that is
-a CPU execution mode as opposed to being a page attribute.
+https://git.kernel.org/powerpc/c/2de95953c4e6ad54c9bee5e6a5518d
 
-With this we now have 20 free CPU feature bits on 64-bit machines.
-
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/cputable.h       | 133 ++++++++++++++++--------------
- arch/powerpc/kernel/cpu_setup_6xx.S       |   2 +-
- arch/powerpc/kernel/cpu_setup_fsl_booke.S |   2 +-
- 3 files changed, 73 insertions(+), 64 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 761b99c..49fd067 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -131,40 +131,48 @@ static inline void cpu_feature_keys_init(void) { }
- 
- /* CPU kernel features */
- 
--/* Retain the 32b definitions all use bottom half of word */
-+/* Definitions for features that we have on both 32-bit and 64-bit chips */
- #define CPU_FTR_COHERENT_ICACHE		ASM_CONST(0x00000001)
--#define CPU_FTR_L2CR			ASM_CONST(0x00000002)
--#define CPU_FTR_SPEC7450		ASM_CONST(0x00000004)
--#define CPU_FTR_ALTIVEC			ASM_CONST(0x00000008)
--#define CPU_FTR_TAU			ASM_CONST(0x00000010)
--#define CPU_FTR_CAN_DOZE		ASM_CONST(0x00000020)
--#define CPU_FTR_USE_RTC			ASM_CONST(0x00000040)
--#define CPU_FTR_601			ASM_CONST(0x00000100)
--#define CPU_FTR_DBELL			ASM_CONST(0x00000200)
--#define CPU_FTR_CAN_NAP			ASM_CONST(0x00000400)
--#define CPU_FTR_L3CR			ASM_CONST(0x00000800)
--#define CPU_FTR_L3_DISABLE_NAP		ASM_CONST(0x00001000)
--#define CPU_FTR_NAP_DISABLE_L2_PR	ASM_CONST(0x00002000)
--#define CPU_FTR_DUAL_PLL_750FX		ASM_CONST(0x00004000)
--#define CPU_FTR_NO_DPM			ASM_CONST(0x00008000)
--#define CPU_FTR_476_DD2			ASM_CONST(0x00010000)
--#define CPU_FTR_NEED_COHERENT		ASM_CONST(0x00020000)
--#define CPU_FTR_NO_BTIC			ASM_CONST(0x00040000)
--#define CPU_FTR_DEBUG_LVL_EXC		ASM_CONST(0x00080000)
--#define CPU_FTR_NODSISRALIGN		ASM_CONST(0x00100000)
--#define CPU_FTR_PPC_LE			ASM_CONST(0x00200000)
--#define CPU_FTR_REAL_LE			ASM_CONST(0x00400000)
--#define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x00800000)
--#define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x01000000)
--#define CPU_FTR_SPE			ASM_CONST(0x02000000)
--#define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x04000000)
--#define CPU_FTR_LWSYNC			ASM_CONST(0x08000000)
--#define CPU_FTR_NOEXECUTE		ASM_CONST(0x10000000)
--#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x20000000)
--#define CPU_FTR_EMB_HV			ASM_CONST(0x40000000)
-+#define CPU_FTR_ALTIVEC			ASM_CONST(0x00000002)
-+#define CPU_FTR_DBELL			ASM_CONST(0x00000004)
-+#define CPU_FTR_CAN_NAP			ASM_CONST(0x00000008)
-+#define CPU_FTR_DEBUG_LVL_EXC		ASM_CONST(0x00000010)
-+#define CPU_FTR_NODSISRALIGN		ASM_CONST(0x00000020)
-+#define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x00000040)
-+#define CPU_FTR_LWSYNC			ASM_CONST(0x00000080)
-+#define CPU_FTR_NOEXECUTE		ASM_CONST(0x00000100)
-+#define CPU_FTR_EMB_HV			ASM_CONST(0x00000200)
-+
-+/* Definitions for features that only exist on 32-bit chips */
-+#ifdef CONFIG_PPC32
-+#define CPU_FTR_601			ASM_CONST(0x00001000)
-+#define CPU_FTR_L2CR			ASM_CONST(0x00002000)
-+#define CPU_FTR_SPEC7450		ASM_CONST(0x00004000)
-+#define CPU_FTR_TAU			ASM_CONST(0x00008000)
-+#define CPU_FTR_CAN_DOZE		ASM_CONST(0x00010000)
-+#define CPU_FTR_USE_RTC			ASM_CONST(0x00020000)
-+#define CPU_FTR_L3CR			ASM_CONST(0x00040000)
-+#define CPU_FTR_L3_DISABLE_NAP		ASM_CONST(0x00080000)
-+#define CPU_FTR_NAP_DISABLE_L2_PR	ASM_CONST(0x00100000)
-+#define CPU_FTR_DUAL_PLL_750FX		ASM_CONST(0x00200000)
-+#define CPU_FTR_NO_DPM			ASM_CONST(0x00400000)
-+#define CPU_FTR_476_DD2			ASM_CONST(0x00800000)
-+#define CPU_FTR_NEED_COHERENT		ASM_CONST(0x01000000)
-+#define CPU_FTR_NO_BTIC			ASM_CONST(0x02000000)
-+#define CPU_FTR_PPC_LE			ASM_CONST(0x04000000)
-+#define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x08000000)
-+#define CPU_FTR_SPE			ASM_CONST(0x10000000)
-+#define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x20000000)
-+#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x40000000)
-+
-+#else	/* CONFIG_PPC32 */
-+/* Define these to 0 for the sake of tests in common code */
-+#define CPU_FTR_601			(0)
-+#define CPU_FTR_PPC_LE			(0)
-+#endif
- 
- /*
-- * Add the 64-bit processor unique features in the top half of the word;
-+ * Definitions for the 64-bit processor unique features;
-  * on 32-bit, make the names available but defined to be 0.
-  */
- #ifdef __powerpc64__
-@@ -173,37 +181,38 @@ static inline void cpu_feature_keys_init(void) { }
- #define LONG_ASM_CONST(x)		0
- #endif
- 
--#define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000100000000)
--#define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
--#define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
--#define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
--#define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000001000000000)
--#define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000002000000000)
--#define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000004000000000)
--#define CPU_FTR_SMT			LONG_ASM_CONST(0x0000008000000000)
--#define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000010000000000)
--#define CPU_FTR_PURR			LONG_ASM_CONST(0x0000020000000000)
--#define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000040000000000)
--#define CPU_FTR_SPURR			LONG_ASM_CONST(0x0000080000000000)
--#define CPU_FTR_DSCR			LONG_ASM_CONST(0x0000100000000000)
--#define CPU_FTR_VSX			LONG_ASM_CONST(0x0000200000000000)
--#define CPU_FTR_SAO			LONG_ASM_CONST(0x0000400000000000)
--#define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0000800000000000)
--#define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0001000000000000)
--#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0002000000000000)
--#define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0004000000000000)
--#define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0008000000000000)
--#define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0010000000000000)
--#define CPU_FTR_PKEY			LONG_ASM_CONST(0x0020000000000000)
--#define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0040000000000000)
--#define CPU_FTR_TM			LONG_ASM_CONST(0x0080000000000000)
--#define CPU_FTR_CFAR			LONG_ASM_CONST(0x0100000000000000)
--#define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
--#define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
--#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
--#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
--#define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
--#define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x8000000000000000)
-+#define CPU_FTR_REAL_LE			LONG_ASM_CONST(0x0000000000001000)
-+#define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000000002000)
-+#define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000000004000)
-+#define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000000008000)
-+#define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000000010000)
-+#define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000000000020000)
-+#define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000000000040000)
-+#define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000000000080000)
-+#define CPU_FTR_SMT			LONG_ASM_CONST(0x0000000000100000)
-+#define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000000000200000)
-+#define CPU_FTR_PURR			LONG_ASM_CONST(0x0000000000400000)
-+#define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000000000800000)
-+#define CPU_FTR_SPURR			LONG_ASM_CONST(0x0000000001000000)
-+#define CPU_FTR_DSCR			LONG_ASM_CONST(0x0000000002000000)
-+#define CPU_FTR_VSX			LONG_ASM_CONST(0x0000000004000000)
-+#define CPU_FTR_SAO			LONG_ASM_CONST(0x0000000008000000)
-+#define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0000000010000000)
-+#define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0000000020000000)
-+#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0000000040000000)
-+#define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0000000080000000)
-+#define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0000000100000000)
-+#define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0000000200000000)
-+#define CPU_FTR_PKEY			LONG_ASM_CONST(0x0000000400000000)
-+#define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0000000800000000)
-+#define CPU_FTR_TM			LONG_ASM_CONST(0x0000001000000000)
-+#define CPU_FTR_CFAR			LONG_ASM_CONST(0x0000002000000000)
-+#define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0000004000000000)
-+#define CPU_FTR_DAWR			LONG_ASM_CONST(0x0000008000000000)
-+#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0000010000000000)
-+#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
-+#define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
-+#define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
-index c5e5a94..a9f3970 100644
---- a/arch/powerpc/kernel/cpu_setup_6xx.S
-+++ b/arch/powerpc/kernel/cpu_setup_6xx.S
-@@ -226,7 +226,7 @@ BEGIN_FTR_SECTION
- 	beq	1f
- END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
- 	lwz	r6,CPU_SPEC_FEATURES(r4)
--	andi.	r0,r6,CPU_FTR_L3_DISABLE_NAP
-+	andis.	r0,r6,CPU_FTR_L3_DISABLE_NAP@h
- 	beq	1f
- 	li	r7,CPU_FTR_CAN_NAP
- 	andc	r6,r6,r7
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index 462aed9..8d142e5 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -162,7 +162,7 @@ _GLOBAL(__setup_cpu_e5500)
- 	 * the feature on the primary core, avoid doing it on the
- 	 * secondary core.
- 	 */
--	andis.	r6, r3, CPU_FTR_EMB_HV@h
-+	andi.	r6, r3, CPU_FTR_EMB_HV
- 	beq	2f
- 	rlwinm	r3, r3, 0, ~CPU_FTR_EMB_HV
- 	stw	r3, CPU_SPEC_FEATURES(r4)
--- 
-2.7.4
+cheers
