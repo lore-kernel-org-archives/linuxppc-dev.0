@@ -1,28 +1,30 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-io0-x230.google.com (mail-io0-x230.google.com
- [IPv6:2607:f8b0:4001:c06::230])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 404tGl0FQlzF1b4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 10:55:10 +1100 (AEDT)
-Received: by mail-io0-x230.google.com with SMTP id e79so128736ioi.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 16:55:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 404tX72VHDzDr4t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 11:06:46 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id p9-v6so8747360pls.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Mar 2018 17:06:46 -0700 (PDT)
+Date: Tue, 20 Mar 2018 10:05:59 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Steven Rostedt
+ <rostedt@goodmis.org>, Paul Mackerras <paulus@ozlabs.org>,
+ linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Anton Blanchard <anton@samba.org>,
+ sathnaga@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] powerpc64/ftrace: Add a field in paca to disable
+ ftrace in unsafe code paths
+Message-ID: <20180320100559.6823c276@roar.ozlabs.ibm.com>
+In-Reply-To: <87r2ofg0e4.fsf@concordia.ellerman.id.au>
+References: <cover.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ <cdbe15845a5da965878b6344f69b6ed6dbabb87b.1521449527.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20180319204059.4c3a698e@roar.ozlabs.ibm.com>
+ <87r2ofg0e4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180319160216.GD9670@animalcreek.com>
-References: <20180316215443.2807-1-mgreer@animalcreek.com>
- <e710d9d7-232b-6420-96a7-8167dd91b824@c-s.fr>
- <20180319160216.GD9670@animalcreek.com>
-From: Oliver <oohall@gmail.com>
-Date: Tue, 20 Mar 2018 10:55:07 +1100
-Message-ID: <CAOSf1CFVH+OEkZCN+AYOxb863akkuw44uOENVEi=zf=QVc-UmQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/boot: Remove duplicate typedefs from libfdt_env.h
-To: Mark Greer <mgreer@animalcreek.com>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Gibson <david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,85 +34,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2018 at 3:02 AM, Mark Greer <mgreer@animalcreek.com> wrote:
-> On Mon, Mar 19, 2018 at 09:53:09AM +0100, Christophe LEROY wrote:
->>
->>
->> Le 16/03/2018 =C3=A0 22:54, Mark Greer a =C3=A9crit :
->> >When building a uImage or zImage using ppc6xx_defconfig and some other
->> >defconfigs, the following error occurs:
->> >
->> >   BOOTCC  arch/powerpc/boot/fdt.o
->> >   In file included from arch/powerpc/boot/fdt.c:51:0:
->> >   ../arch/powerpc/boot/libfdt_env.h:10:13: error: redefinition of type=
-def 'uint32_t'
->> >   ../arch/powerpc/boot/types.h:21:13: note: previous declaration of 'u=
-int32_t' was here
->> >   ../arch/powerpc/boot/libfdt_env.h:11:13: error: redefinition of type=
-def 'uint64_t'
->> >   ../arch/powerpc/boot/types.h:22:13: note: previous declaration of 'u=
-int64_t' was here
->> >   ../arch/powerpc/boot/Makefile:210: recipe for target 'arch/powerpc/b=
-oot/fdt.o' failed
->> >   make[2]: *** [arch/powerpc/boot/fdt.o] Error 1
->> >
->> >The problem is that commit 656ad58ef19e (powerpc/boot: Add OPAL console
->> >to epapr wrappers) adds typedefs for uint32_t and uint64_t to type.h bu=
-t
->> >doesn't remove the pre-existing (and now duplicate) typedefs from
->> >libfdt_env.h.  Fix the error by removing the duplicat typedefs from
->> >libfdt_env.h
->> >
->> >CC: David Gibson <david@gibson.dropbear.id.au>
->> >CC: Oliver O'Halloran <oohall@gmail.com>
->> >Signed-off-by: Mark Greer <mgreer@animalcreek.com>
->> >---
->> >Having said all of that, commit 656ad58ef19e (powerpc/boot: Add OPAL
->> >console to epapr wrappers) went into mainline back in 2016 so, AFAICT,
->> >this has been broken since then.  That seems unlikely so I must be
->> >missing something...  Any ideas what that is?
->>
->> I just compiled uImage for ppc6xx_defconfig, and I don't get such error.
->> I looked at what gcc -E outputs, u32 is defined twice but it doesn't see=
-ms
->> to bother GCC.
->>
->> What version of GCC do you use ?
->> I tried with 5.4.0 and 4.6.3, both seems to work.
->>
->> Christophe
->
-> Hi Christophe.
->
-> That's interesting.  I would expect an error regardless of version.
->
-> I used an old 4.5.1 gcc that I had laying around (from denx, iirc).
-> I'll find a newer one and try it.
+On Tue, 20 Mar 2018 09:34:43 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Yeah that's pretty odd. It might be a bug in your specific version of
-GCC since I can't replicate it with this dumb test case:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > On Mon, 19 Mar 2018 14:43:00 +0530
+> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> >  
+> >> We have some C code that we call into from real mode where we cannot
+> >> take any exceptions. Though the C functions themselves are mostly safe,
+> >> if these functions are traced, there is a possibility that we may take
+> >> an exception. For instance, in certain conditions, the ftrace code uses
+> >> WARN(), which uses a 'trap' to do its job.
+> >> 
+> >> For such scenarios, introduce a new field in paca 'ftrace_disabled',
+> >> which is checked on ftrace entry before continuing. This field can then
+> >> be set to a non-zero value to disable/pause ftrace, and reset to zero to
+> >> resume ftrace.
+> >> 
+> >> Since KVM is the only user for this currently, we guard the
+> >> ftrace/mcount checks within CONFIG_KVM. This can later be removed
+> >> if/when there are other users.  
+> >
+> > Why not test HSTATE_IN_GUEST then? Add ftrace_disabled if non-KVM users
+> > come along.  
+> 
+> We want to use it for the kexec down path, we've already had bugs there.
+> 
+> So please keep the separate flag and pull it out of #ifdef KVM.
 
-#include <stdio.h>
-typedef unsigned int            u32;
+Okay that's fine.
 
-typedef u32 uint32_t;
-typedef u32 uint32_t;
+> If we're worried about space usage in the paca we can probably
+> consolidate this and some other things into a flags word.
 
-int main(void) {
-        uint32_t test =3D 0;
-        printf("%u\n", test);
-        return 0;
-}
-
-Does that result in an error?
-
-> Either way, it seems to me that we should remove the duplicate definition=
-s.
-> Do you agree?
-
-It wouldn't hurt to remove those definitions from libfdt_env.h. That
-file includes types.h directly anyway so there's not much point in
-them being there.
+I'm not too concerned about some more u8 flags.
 
 Thanks,
-Oliver
+Nick
