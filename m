@@ -1,20 +1,20 @@
 Return-Path: <fengguang.wu@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40558j6YqVzF1T4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 19:05:40 +1100 (AEDT)
-Date: Tue, 20 Mar 2018 16:04:57 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4055m36ZdlzDqth
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 19:32:48 +1100 (AEDT)
+Date: Tue, 20 Mar 2018 16:31:58 +0800
 From: kbuild test robot <lkp@intel.com>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
- Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [PATCH 4/5] powerpc/zImage: Rework serial driver probing
-Message-ID: <201803201505.0rYDwJrg%fengguang.wu@intel.com>
-References: <20180319051403.23275-4-oohall@gmail.com>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 8/9] powerpc/eeh: Factor out common code
+ eeh_reset_device()
+Message-ID: <201803201641.dYeE7qE9%fengguang.wu@intel.com>
+References: <557d0231968935f1212c7b500f39363a47cb6acc.1521427331.git.sam.bobroff@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="opJtzjQTFsWo+cga"
-In-Reply-To: <20180319051403.23275-4-oohall@gmail.com>
+Content-Type: multipart/mixed; boundary="BXVAT5kNtrzKuDFl"
+In-Reply-To: <557d0231968935f1212c7b500f39363a47cb6acc.1521427331.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,11 +25,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---opJtzjQTFsWo+cga
+--BXVAT5kNtrzKuDFl
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi Oliver,
+Hi Sam,
 
 Thank you for the patch! Yet something to improve:
 
@@ -37,7 +37,7 @@ Thank you for the patch! Yet something to improve:
 [also build test ERROR on next-20180319]
 [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-url:    https://github.com/0day-ci/linux/commits/Oliver-O-Halloran/powerpc-zImage-Remove-ifdef-in-opal-c/20180320-023705
+url:    https://github.com/0day-ci/linux/commits/Sam-Bobroff/EEH-refactoring-1/20180320-024729
 config: powerpc-ppc64_defconfig (attached as .config)
 compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
 reproduce:
@@ -46,21 +46,141 @@ reproduce:
         # save the attached .config to linux build tree
         make.cross ARCH=powerpc 
 
+Note: the linux-review/Sam-Bobroff/EEH-refactoring-1/20180320-024729 HEAD 28e7cc1fa029b84221b827a6ea2908dc33b43d10 builds fine.
+      It only hurts bisectibility.
+
 All errors (new ones prefixed by >>):
 
->> arch/powerpc/boot/wrapper.a(serial.o):(.got2+0x1c): undefined reference to `_serial_drv_start'
->> arch/powerpc/boot/wrapper.a(serial.o):(.got2+0x24): undefined reference to `_serial_drv_end'
+   In file included from include/linux/kernel.h:14:0,
+                    from include/linux/delay.h:22,
+                    from arch/powerpc/kernel/eeh_driver.c:25:
+   arch/powerpc/kernel/eeh_driver.c: In function 'eeh_reset_device':
+>> arch/powerpc/kernel/eeh_driver.c:692:5: error: 'eeh_aware_driver' undeclared (first use in this function); did you mean 'device_driver'?
+       (eeh_aware_driver ? "partial" : "complete"));
+        ^
+   include/linux/printk.h:308:34: note: in definition of macro 'pr_info'
+     printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+                                     ^~~~~~~~~~~
+   arch/powerpc/kernel/eeh_driver.c:692:5: note: each undeclared identifier is reported only once for each function it appears in
+       (eeh_aware_driver ? "partial" : "complete"));
+        ^
+   include/linux/printk.h:308:34: note: in definition of macro 'pr_info'
+     printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+                                     ^~~~~~~~~~~
+
+vim +692 arch/powerpc/kernel/eeh_driver.c
+
+   619	
+   620	/**
+   621	 * eeh_reset_device - Perform actual reset of a pci slot
+   622	 * @driver_eeh_aware: Does the device's driver provide EEH support?
+   623	 * @pe: EEH PE
+   624	 * @bus: PCI bus corresponding to the isolcated slot
+   625	 * @rmv_data: Optional, list to record removed devices
+   626	 *
+   627	 * This routine must be called to do reset on the indicated PE.
+   628	 * During the reset, udev might be invoked because those affected
+   629	 * PCI devices will be removed and then added.
+   630	 */
+   631	static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+   632				    struct eeh_rmv_data *rmv_data,
+   633				    bool driver_eeh_aware)
+   634	{
+   635		time64_t tstamp;
+   636		int cnt, rc;
+   637		struct eeh_dev *edev;
+   638	
+   639		/* pcibios will clear the counter; save the value */
+   640		cnt = pe->freeze_count;
+   641		tstamp = pe->tstamp;
+   642	
+   643		/*
+   644		 * We don't remove the corresponding PE instances because
+   645		 * we need the information afterwords. The attached EEH
+   646		 * devices are expected to be attached soon when calling
+   647		 * into pci_hp_add_devices().
+   648		 */
+   649		eeh_pe_state_mark(pe, EEH_PE_KEEP);
+   650		if (driver_eeh_aware || (pe->type & EEH_PE_VF)) {
+   651			eeh_pe_dev_traverse(pe, eeh_rmv_device, rmv_data);
+   652		} else {
+   653			pci_lock_rescan_remove();
+   654			pci_hp_remove_devices(bus);
+   655			pci_unlock_rescan_remove();
+   656		}
+   657	
+   658		/*
+   659		 * Reset the pci controller. (Asserts RST#; resets config space).
+   660		 * Reconfigure bridges and devices. Don't try to bring the system
+   661		 * up if the reset failed for some reason.
+   662		 *
+   663		 * During the reset, it's very dangerous to have uncontrolled PCI
+   664		 * config accesses. So we prefer to block them. However, controlled
+   665		 * PCI config accesses initiated from EEH itself are allowed.
+   666		 */
+   667		rc = eeh_pe_reset_full(pe);
+   668		if (rc)
+   669			return rc;
+   670	
+   671		pci_lock_rescan_remove();
+   672	
+   673		/* Restore PE */
+   674		eeh_ops->configure_bridge(pe);
+   675		eeh_pe_restore_bars(pe);
+   676	
+   677		/* Clear frozen state */
+   678		rc = eeh_clear_pe_frozen_state(pe, false);
+   679		if (rc) {
+   680			pci_unlock_rescan_remove();
+   681			return rc;
+   682		}
+   683	
+   684		/* Give the system 5 seconds to finish running the user-space
+   685		 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes,
+   686		 * this is a hack, but if we don't do this, and try to bring
+   687		 * the device up before the scripts have taken it down,
+   688		 * potentially weird things happen.
+   689		 */
+   690		if (!driver_eeh_aware || rmv_data->removed) {
+   691			pr_info("EEH: Sleep 5s ahead of %s hotplug\n",
+ > 692				(eeh_aware_driver ? "partial" : "complete"));
+   693			ssleep(5);
+   694	
+   695			/*
+   696			 * The EEH device is still connected with its parent
+   697			 * PE. We should disconnect it so the binding can be
+   698			 * rebuilt when adding PCI devices.
+   699			 */
+   700			edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+   701			eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
+   702			if (pe->type & EEH_PE_VF) {
+   703				eeh_add_virt_device(edev, NULL);
+   704			} else {
+   705				if (!eeh_aware_driver)
+   706					eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+   707				pci_hp_add_devices(bus);
+   708			}
+   709		}
+   710		eeh_pe_state_clear(pe, EEH_PE_KEEP);
+   711	
+   712		pe->tstamp = tstamp;
+   713		pe->freeze_count = cnt;
+   714	
+   715		pci_unlock_rescan_remove();
+   716		return 0;
+   717	}
+   718	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---opJtzjQTFsWo+cga
+--BXVAT5kNtrzKuDFl
 Content-Type: application/gzip
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICIi7sFoAAy5jb25maWcAlDxdc9u2su/9FZrk5d6H9jiO4yRzxw8gCEo4IgkaACXbLxzH
+H4sICDbAsFoAAy5jb25maWcAlDxdc9u2su/9FZrk5d6H9jiO4yRzxw8gCEo4IgkaACXbLxzH
 VlJNbSlHVk6bf393AX4AICi3nWlr7i6+Fov9wkJvf3k7Iz+O++f74/bh/unp5+zbZrc53B83
 j7Ov26fN/81SMSuFnrGU69+AON/ufvz1r+/7PzeH7w+zi9/eXf529uvh4WK23Bx2m6cZ3e++
 br/9gB62+90vb3+hosz4vKkqenlx9fMXgLydVYf9w+blZX+Yvfz4/n1/OHp0TSLE8r1qDP3b
@@ -509,4 +629,4 @@ QeCEInkWo/+UUx9NrYsOkyBaKUUcQdyRKoHKap36IRtNzNw1YkC40tCaGARipF0bMgiuiHK7
 4JRq5QCycQV9pNr1iq2s0eSHnjWk3cqoslu1lWujnetlXmH2X+MsUyArqrCiiUroZC+r1NEi
 zDr/H3DNjx4siQEA
 
---opJtzjQTFsWo+cga--
+--BXVAT5kNtrzKuDFl--
