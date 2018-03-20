@@ -1,18 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4056nd1CgmzDrNC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 20:19:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4056qQ4FZdzF0Vv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 20:20:50 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [PATCH 3/5] powerpc/zImage: Check compatible at driver init
-In-Reply-To: <20180319051403.23275-3-oohall@gmail.com>
+Subject: Re: [PATCH 4/5] powerpc/zImage: Rework serial driver probing
+In-Reply-To: <20180319051403.23275-4-oohall@gmail.com>
 References: <20180319051403.23275-1-oohall@gmail.com>
- <20180319051403.23275-3-oohall@gmail.com>
-Date: Tue, 20 Mar 2018 20:19:13 +1100
-Message-ID: <87o9jjf6jy.fsf@concordia.ellerman.id.au>
+ <20180319051403.23275-4-oohall@gmail.com>
+Date: Tue, 20 Mar 2018 20:20:49 +1100
+Message-ID: <87lgenf6ha.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,21 +25,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Oliver O'Halloran <oohall@gmail.com> writes:
-> diff --git a/arch/powerpc/boot/mpc52xx-psc.c b/arch/powerpc/boot/mpc52xx-psc.c
-> index c2c08633ee35..75470936e661 100644
-> --- a/arch/powerpc/boot/mpc52xx-psc.c
-> +++ b/arch/powerpc/boot/mpc52xx-psc.c
-> @@ -52,6 +52,9 @@ static unsigned char psc_getc(void)
->  
->  int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp)
->  {
-> +	if (!dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
-> +		return 1;
 
-Returning 1 raises the question of whether this is a bool-style function
-that returns 1 on success and 0 on failure - or a UNIX style function
-that returns 0 for sucesss and 1 on failure.
+> Rather than checking the compatible string in serial_driver_init()
+> we call into the driver's init function and wait for a driver to
+> inidicate it bound to the device by returning zero.
+>
+> The pointers to each driver probe functions are stored in the
+> ".serialdrv" section of the zImage, similar to how initcalls and
+> whatnot are handled inside Linux. This structure allows us to
+> conditionally compile specific driver files based on the KConfig
+> settings. This is needed because we don't have access to the
+> KConfig #defines in the zImage source files (it's a giant #include
+> headache) so conditional compilation is the only way to eliminate
+> unnecessary code.
 
-Can we return ENODEV, or just -1 instead to make it clearer?
+Did you actually get the config.h include working? Or was it such a big
+headache that it doesn't even work?
+
+I'm pretty happy with this patch regardless, but it would be simpler and
+less bug prone if the CONFIG_ symbols were usable in the boot code.
 
 cheers
