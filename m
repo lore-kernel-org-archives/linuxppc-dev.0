@@ -1,40 +1,22 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405Rdr6dstzF0tM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 08:58:40 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2KLnFap105123
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 17:58:38 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gu94uubg5-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 17:58:37 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 20 Mar 2018 21:58:36 -0000
-Date: Tue, 20 Mar 2018 14:58:28 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Li Wang <liwang@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jan Stancek <jstancek@redhat.com>,
- ltp@lists.linux.it, linux-mm@kvack.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [bug?] Access was denied by memory protection keys in
- execute-only address
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <CAEemH2f0LDqyR5AmUYv17OuBc5-UycckDPWgk46XU_ghQo4diw@mail.gmail.com>
- <871sguep4v.fsf@concordia.ellerman.id.au>
- <20180308164545.GM1060@ram.oc3035372033.ibm.com>
- <CAEemH2czWDjvJLpL6ynV1+VxCFh_-A-d72tJhA5zwgrAES2nWA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405Tbh07KCzF1XB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 10:26:56 +1100 (AEDT)
+Date: Wed, 21 Mar 2018 10:26:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Arnd
+ Bergmann <arnd@arndb.de>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Matt Brown
+ <matthew.brown.dev@gmail.com>
+Subject: linux-next: manual merge of the powerpc tree with the asm-generic tree
+Message-ID: <20180321102618.4b46f1b4@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAEemH2czWDjvJLpL6ynV1+VxCFh_-A-d72tJhA5zwgrAES2nWA@mail.gmail.com>
-Message-Id: <20180320215828.GA5825@ram.oc3035372033.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/TFT4Q.A+2o0jDHqMgMsW+KA"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,91 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 09, 2018 at 11:43:00AM +0800, Li Wang wrote:
->    On Fri, Mar 9, 2018 at 12:45 AM, Ram Pai <[1]linuxram@us.ibm.com> wrote:
-> 
->      On Thu, Mar 08, 2018 at 11:19:12PM +1100, Michael Ellerman wrote:
->      > Li Wang <[2]liwang@redhat.com> writes:
->      > > Hi,
->      > >
->      > > ltp/mprotect04[1] crashed by SEGV_PKUERR on ppc64(LPAR on P730,
->      Power 8
->      > > 8247-22L) with kernel-v4.16.0-rc4.
->      > >
->      > > 10000000-10020000 r-xp 00000000 fd:00 167223           mprotect04
->      > > 10020000-10030000 r--p 00010000 fd:00 167223           mprotect04
->      > > 10030000-10040000 rw-p 00020000 fd:00 167223           mprotect04
->      > > 1001a380000-1001a3b0000 rw-p 00000000 00:00 0          [heap]
->      > > 7fffa6c60000-7fffa6c80000 --xp 00000000 00:00 0 ​
->      > >
->      > > ​&exec_func = 0x10030170​
->      > >
->      > > ​&func = 0x7fffa6c60170​
->      > >
->      > > ​While perform ​
->      > > "(*func)();" we get the
->      > > ​segmentation fault.
->      > > ​
->      > >
->      > > ​strace log:​
->      > >
->      > > -------------------
->      > > ​mprotect(0x7fffaed00000, 131072, PROT_EXEC) = 0
->      > > rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  = 0
->      > > --- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_PKUERR,
->      si_addr=0x7fffaed00170}
->      > > ---​
->      >
->      > Looks like a bug to me.
->      >
->      > Please Cc linuxppc-dev on powerpc bugs.
->      >
->      > I also can't reproduce this failure on my machine.
->      > Not sure what's going on?
-> 
->      I could reproduce it on a power7 lpar.  But not on a power8 lpar.
-> 
->      The problem seems to be that the cpu generates a key exception if
->      the page with Read/Write-disable-but-execute-enable key is executed
->      on power7. If I enable read on that key, the exception disappears.
-> 
->    After adding read permission on that key, reproducer get PASS on my power8
->    machine too.​
->    ​(​mprotect(..,PROT_READ | PROT_EXEC))​
->     
-> 
->      BTW: the testcase executes
->      ​​mprotect(..,PROT_EXEC).
->      The mprotect(, PROT_EXEC) system call internally generates a
->      execute-only key and associates it with the pages in the address-range. 
-> 
->      Now since Li Wang claims that he can reproduce it on power8 as well, i
->      am wondering if the slightly different cpu behavior is dependent on the
->      version of the firmware/microcode?
-> 
->    ​I also run this reproducer on series ppc kvm machines, but none of them
->    get the FAIL.
->    If you need some more HW info, pls let me know.​
+--Sig_/TFT4Q.A+2o0jDHqMgMsW+KA
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Hi Li,
+Hi all,
 
-   Can you try the following patch and see if it solves your problem.
+Today's linux-next merge of the powerpc tree got a conflict in:
 
+  lib/raid6/test/Makefile
 
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index c269817..184a10a 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -421,7 +421,7 @@ int __arch_override_mprotect_pkey(struct vm_area_struct *vma, int prot,
- 	 * The requested protection is execute-only. Hence let's use an
- 	 * execute-only pkey.
- 	 */
--	if (prot == PROT_EXEC) {
-+	if (prot == PROT_EXEC && pkey_execute_disable_supported) {
- 		pkey = execute_only_pkey(vma->vm_mm);
- 		if (pkey > 0)
- 			return pkey;
+between commit:
 
+  fa523d54a7eb ("raid: remove tile specific raid6 implementation")
 
-Thanks
-RP
+from the asm-generic tree and commit:
+
+  751ba79cc552 ("lib/raid6/altivec: Add vpermxor implementation for raid6 Q=
+ syndrome")
+
+from the powerpc tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+diff --cc lib/raid6/test/Makefile
+index fabc477b1417,5050e270c06b..000000000000
+--- a/lib/raid6/test/Makefile
++++ b/lib/raid6/test/Makefile
+@@@ -45,12 -45,17 +45,14 @@@ else ifeq ($(HAS_NEON),yes
+          CFLAGS +=3D -DCONFIG_KERNEL_MODE_NEON=3D1
+  else
+          HAS_ALTIVEC :=3D $(shell printf '\#include <altivec.h>\nvector in=
+t a;\n' |\
+-                          gcc -c -x c - >&/dev/null && \
+-                          rm ./-.o && echo yes)
++                          gcc -c -x c - >/dev/null && rm ./-.o && echo yes)
+          ifeq ($(HAS_ALTIVEC),yes)
+-                 OBJS +=3D altivec1.o altivec2.o altivec4.o altivec8.o
++                 CFLAGS +=3D -I../../../arch/powerpc/include
++                 CFLAGS +=3D -DCONFIG_ALTIVEC
++                 OBJS +=3D altivec1.o altivec2.o altivec4.o altivec8.o \
++                         vpermxor1.o vpermxor2.o vpermxor4.o vpermxor8.o
+          endif
+  endif
+ -ifeq ($(ARCH),tilegx)
+ -OBJS +=3D tilegx8.o
+ -endif
+ =20
+  .c.o:
+  	$(CC) $(CFLAGS) -c -o $@ $<
+@@@ -117,7 -137,8 +131,7 @@@ tables.c: mktable
+  	./mktables > tables.c
+ =20
+  clean:
+- 	rm -f *.o *.a mktables mktables.c *.uc int*.c altivec*.c neon*.c tables.=
+c raid6test
++ 	rm -f *.o *.a mktables mktables.c *.uc int*.c altivec*.c vpermxor*.c neo=
+n*.c tables.c raid6test
+ -	rm -f tilegx*.c
+ =20
+  spotless: clean
+  	rm -f *~
+
+--Sig_/TFT4Q.A+2o0jDHqMgMsW+KA
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlqxmJoACgkQAVBC80lX
+0GychAf8DhcRUr84maMuU87eiGD0vPno6tdlBjG5Ssr9udvsirhDssuRzktRxRXN
+AFz8v3wQlm8HRVprTHrXNfsxAhApAtN6TejsslV0UeNDtIsG7dFrPX/OGo9UvNh3
+BnIc1s1dYyjh/jJlA+aZC5bCjlk7JVtEIEwqnxYjUBL7dgnraYVMUkKseiD/BmhZ
+N2bSnFSJIb3OJUqqQnC+/QEM0WMb0OWWGmDY23+GF4Y2Psnkz3oLJzmvNJkMQ574
+oAyCc5L7vwGzCMW2hpW0QVZW2IwvDkXri13fu4frVsJPCYRW1jDwdF5Nl3uIQbxY
+2HGBG6pO07KD0LCknZfj7TZGPekhpQ==
+=gxRa
+-----END PGP SIGNATURE-----
+
+--Sig_/TFT4Q.A+2o0jDHqMgMsW+KA--
