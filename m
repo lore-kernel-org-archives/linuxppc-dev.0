@@ -1,45 +1,20 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4056Ly4lSxzF0Vq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 19:59:38 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id f19so1833849wmc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 01:59:38 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 20 Mar 2018 09:59:32 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
- linux-mips <linux-mips@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Jiri Slaby <jslaby@suse.com>, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [RFC PATCH 4/6] mm: provide generic compat_sys_readahead()
- implementation
-Message-ID: <20180320085932.xnwkpiz5gpegnw5d@gmail.com>
-References: <20180318161056.5377-1-linux@dominikbrodowski.net>
- <20180318161056.5377-5-linux@dominikbrodowski.net>
- <20180318174014.GR30522@ZenIV.linux.org.uk>
- <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
- <20180318181848.GU30522@ZenIV.linux.org.uk>
- <20180319042300.GW30522@ZenIV.linux.org.uk>
- <20180319092920.tbh2xwkruegshzqe@gmail.com>
- <20180319232342.GX30522@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4056nd1CgmzDrNC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 20:19:17 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: [PATCH 3/5] powerpc/zImage: Check compatible at driver init
+In-Reply-To: <20180319051403.23275-3-oohall@gmail.com>
+References: <20180319051403.23275-1-oohall@gmail.com>
+ <20180319051403.23275-3-oohall@gmail.com>
+Date: Tue, 20 Mar 2018 20:19:13 +1100
+Message-ID: <87o9jjf6jy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180319232342.GX30522@ZenIV.linux.org.uk>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,54 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Oliver O'Halloran <oohall@gmail.com> writes:
+> diff --git a/arch/powerpc/boot/mpc52xx-psc.c b/arch/powerpc/boot/mpc52xx-psc.c
+> index c2c08633ee35..75470936e661 100644
+> --- a/arch/powerpc/boot/mpc52xx-psc.c
+> +++ b/arch/powerpc/boot/mpc52xx-psc.c
+> @@ -52,6 +52,9 @@ static unsigned char psc_getc(void)
+>  
+>  int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp)
+>  {
+> +	if (!dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
+> +		return 1;
 
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+Returning 1 raises the question of whether this is a bool-style function
+that returns 1 on success and 0 on failure - or a UNIX style function
+that returns 0 for sucesss and 1 on failure.
 
-> > For example this attempt at creating a new system call:
-> > 
-> >   SYSCALL_DEFINE3(moron, int, fd, loff_t, offset, size_t, count)
-> > 
-> > ... would translate into something like:
-> > 
-> > 	.name = "moron", .pattern = "WWW", .type = "int",    .size = 4,
-> > 	.name = NULL,                      .type = "loff_t", .size = 8,
-> > 	.name = NULL,                      .type = "size_t", .size = 4,
-> > 	.name = NULL,                      .type = NULL,     .size = 0,     /* end of parameter list */
-> > 
-> > i.e. "WDW". The build-time constraint checker could then warn about:
-> > 
-> >   # error: System call "moron" uses invalid 'WWW' argument mapping for a 'WDW' sequence
-> >   #        please avoid long-long arguments or use 'SYSCALL_DEFINE3_WDW()' instead
-> 
-> ... if you do 32bit build.
+Can we return ENODEV, or just -1 instead to make it clearer?
 
-Yeah - but the checking tool could do a 32-bit sizing of the types and thus the 
-checks would work on all arches and on all bitness settings.
-
-I don't think doing part of this in CPP is a good idea:
-
- - It won't be able to do the full range of checks
-
- - Wrappers should IMHO be trivial and open coded as much as possible - not hidden
-   inside several layers of macros.
-
- - There should be a penalty for newly introduced, badly designed system call
-   ABIs, while most CPP variants I can think of will just make bad but solvable 
-   decisions palatable, AFAICS.
-
-I.e. I think the way out of this would be two steps:
-
- 1) for new system calls: hard-enforce the highest quality at the development
-    stage and hard-reject crap. No new 6-parameter system calls or badly ordered
-    arguments. The tool would also check new extensions to existing system calls, 
-    i.e. no more "add a crappy 4th argument to an existing system call that works 
-    on x86 but hurts MIPS".
-
- 2) for old legacies: cleanly open code all our existing legacies and weird
-    wrappers. No new muck will be added to it so the line count does not matter.
-
-... is there anything I'm missing?
-
-Thanks,
-
-	Ingo
+cheers
