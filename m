@@ -1,27 +1,27 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405dNJ3zN5zF1h5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:17:36 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id k135-v6so5315894ite.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:17:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405dNh0gT7zF1dj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:17:55 +1100 (AEDT)
+Received: by mail-io0-x241.google.com with SMTP id m83so5117836ioi.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:17:55 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.googlemail.com with ESMTPSA id
- m22-v6sm2048368iti.4.2018.03.20.22.17.32
+ by smtp.googlemail.com with ESMTPSA id w6sm2135874iow.60.2018.03.20.22.17.51
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 20 Mar 2018 22:17:33 -0700 (PDT)
-Subject: Re: [PATCH v2 1/9] powerpc/eeh: Remove eeh_handle_event()
+ Tue, 20 Mar 2018 22:17:52 -0700 (PDT)
+Subject: Re: [PATCH v2 2/9] powerpc/eeh: Manage EEH_PE_RECOVERING inside
+ eeh_handle_normal_event()
 To: linuxppc-dev@lists.ozlabs.org
 References: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
- <d3d01073da02a5eb844cc8998fdac602b8121b62.1521427331.git.sam.bobroff@au1.ibm.com>
+ <163b24ef504d753f4abf1510d9193962bbac32b7.1521427331.git.sam.bobroff@au1.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <52b1f55b-a711-5a46-d044-516a208cef8d@ozlabs.ru>
-Date: Wed, 21 Mar 2018 16:17:29 +1100
+Message-ID: <bbd6fc23-6e9e-b459-4d41-e5dd90e1f4c6@ozlabs.ru>
+Date: Wed, 21 Mar 2018 16:17:49 +1100
 MIME-Version: 1.0
-In-Reply-To: <d3d01073da02a5eb844cc8998fdac602b8121b62.1521427331.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <163b24ef504d753f4abf1510d9193962bbac32b7.1521427331.git.sam.bobroff@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,124 +33,144 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 19/3/18 1:46 pm, Sam Bobroff wrote:
-> The function eeh_handle_event(pe) does nothing other than switching
-> between calling eeh_handle_normal_event(pe) and
-> eeh_handle_special_event(). However it is only called in two places,
-> one where pe can't be NULL and the other where it must be NULL (see
-> eeh_event_handler()) so it does nothing but obscure the flow of
-> control.
+> Currently the EEH_PE_RECOVERING flag for a PE is managed by both the
+> caller and callee of eeh_handle_normal_event() (among other places not
+> considered here). This is complicated by the fact that the PE may
+> or may not have been invalidated by the call.
 > 
-> So, remove it.
+> So move the callee's handling into eeh_handle_normal_event(), which
+> clarifies it and allows the return type to be changed to void (because
+> it no longer needs to indicate at the PE has been invalidated).
+> 
+> This should not change behaviour except in eeh_event_handler() where
+> it was previously possible to cause eeh_pe_state_clear() to be called
+> on an invalid PE, which is now avoided.
 > 
 > Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
-
 
 Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 
 > ---
->  arch/powerpc/include/asm/eeh_event.h |  3 ++-
->  arch/powerpc/kernel/eeh_driver.c     | 42 +++++++++++++-----------------------
->  arch/powerpc/kernel/eeh_event.c      |  4 ++--
->  3 files changed, 19 insertions(+), 30 deletions(-)
+>  arch/powerpc/include/asm/eeh_event.h |  2 +-
+>  arch/powerpc/kernel/eeh_driver.c     | 29 +++++++++++------------------
+>  arch/powerpc/kernel/eeh_event.c      |  2 --
+>  3 files changed, 12 insertions(+), 21 deletions(-)
 > 
 > diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
-> index 1e551a2d6f82..0a168038882d 100644
+> index 0a168038882d..9884e872686f 100644
 > --- a/arch/powerpc/include/asm/eeh_event.h
 > +++ b/arch/powerpc/include/asm/eeh_event.h
-> @@ -34,7 +34,8 @@ struct eeh_event {
+> @@ -34,7 +34,7 @@ struct eeh_event {
 >  int eeh_event_init(void);
 >  int eeh_send_failure_event(struct eeh_pe *pe);
 >  void eeh_remove_event(struct eeh_pe *pe, bool force);
-> -void eeh_handle_event(struct eeh_pe *pe);
-> +bool eeh_handle_normal_event(struct eeh_pe *pe);
-> +void eeh_handle_special_event(void);
+> -bool eeh_handle_normal_event(struct eeh_pe *pe);
+> +void eeh_handle_normal_event(struct eeh_pe *pe);
+>  void eeh_handle_special_event(void);
 >  
 >  #endif /* __KERNEL__ */
->  #endif /* ASM_POWERPC_EEH_EVENT_H */
 > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 0c0b66fc5bfb..51b21c97910f 100644
+> index 51b21c97910f..5b7a5ed4db4d 100644
 > --- a/arch/powerpc/kernel/eeh_driver.c
 > +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -738,9 +738,22 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+> @@ -733,7 +733,8 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>  
+>  /**
+>   * eeh_handle_normal_event - Handle EEH events on a specific PE
+> - * @pe: EEH PE
+> + * @pe: EEH PE - which should not be used after we return, as it may
+> + * have been invalidated.
+>   *
 >   * Attempts to recover the given PE.  If recovery fails or the PE has failed
 >   * too many times, remove the PE.
->   *
-> + * While PHB detects address or data parity errors on particular PCI
-> + * slot, the associated PE will be frozen. Besides, DMA's occurring
-> + * to wild addresses (which usually happen due to bugs in device
-> + * drivers or in PCI adapter firmware) can cause EEH error. #SERR,
-> + * #PERR or other misc PCI-related errors also can trigger EEH errors.
-> + *
-> + * Recovery process consists of unplugging the device driver (which
-> + * generated hotplug events to userspace), then issuing a PCI #RST to
-> + * the device, then reconfiguring the PCI config space for all bridges
-> + * & devices under this slot, and then finally restarting the device
-> + * drivers (which cause a second set of hotplug events to go out to
-> + * userspace).
-> + *
->   * Returns true if @pe should no longer be used, else false.
+> @@ -750,10 +751,8 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>   * & devices under this slot, and then finally restarting the device
+>   * drivers (which cause a second set of hotplug events to go out to
+>   * userspace).
+> - *
+> - * Returns true if @pe should no longer be used, else false.
 >   */
-> -static bool eeh_handle_normal_event(struct eeh_pe *pe)
-> +bool eeh_handle_normal_event(struct eeh_pe *pe)
+> -bool eeh_handle_normal_event(struct eeh_pe *pe)
+> +void eeh_handle_normal_event(struct eeh_pe *pe)
 >  {
 >  	struct pci_bus *frozen_bus;
 >  	struct eeh_dev *edev, *tmp;
-> @@ -942,7 +955,7 @@ static bool eeh_handle_normal_event(struct eeh_pe *pe)
->   * specific PE.  Iterates through possible failures and handles them as
->   * necessary.
->   */
-> -static void eeh_handle_special_event(void)
-> +void eeh_handle_special_event(void)
->  {
->  	struct eeh_pe *pe, *phb_pe;
->  	struct pci_bus *bus;
-> @@ -1049,28 +1062,3 @@ static void eeh_handle_special_event(void)
->  			break;
->  	} while (rc != EEH_NEXT_ERR_NONE);
->  }
+> @@ -765,9 +764,11 @@ bool eeh_handle_normal_event(struct eeh_pe *pe)
+>  	if (!frozen_bus) {
+>  		pr_err("%s: Cannot find PCI bus for PHB#%x-PE#%x\n",
+>  			__func__, pe->phb->global_number, pe->addr);
+> -		return false;
+> +		return;
+>  	}
+>  
+> +	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
+> +
+>  	eeh_pe_update_time_stamp(pe);
+>  	pe->freeze_count++;
+>  	if (pe->freeze_count > eeh_max_freezes) {
+> @@ -904,7 +905,7 @@ bool eeh_handle_normal_event(struct eeh_pe *pe)
+>  	pr_info("EEH: Notify device driver to resume\n");
+>  	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+>  
+> -	return false;
+> +	goto final;
+>  
+>  hard_fail:
+>  	/*
+> @@ -940,12 +941,12 @@ bool eeh_handle_normal_event(struct eeh_pe *pe)
+>  			pci_lock_rescan_remove();
+>  			pci_hp_remove_devices(frozen_bus);
+>  			pci_unlock_rescan_remove();
 > -
-> -/**
-> - * eeh_handle_event - Reset a PCI device after hard lockup.
-> - * @pe: EEH PE
-> - *
-> - * While PHB detects address or data parity errors on particular PCI
-> - * slot, the associated PE will be frozen. Besides, DMA's occurring
-> - * to wild addresses (which usually happen due to bugs in device
-> - * drivers or in PCI adapter firmware) can cause EEH error. #SERR,
-> - * #PERR or other misc PCI-related errors also can trigger EEH errors.
-> - *
-> - * Recovery process consists of unplugging the device driver (which
-> - * generated hotplug events to userspace), then issuing a PCI #RST to
-> - * the device, then reconfiguring the PCI config space for all bridges
-> - * & devices under this slot, and then finally restarting the device
-> - * drivers (which cause a second set of hotplug events to go out to
-> - * userspace).
-> - */
-> -void eeh_handle_event(struct eeh_pe *pe)
-> -{
-> -	if (pe)
-> -		eeh_handle_normal_event(pe);
-> -	else
-> -		eeh_handle_special_event();
-> -}
+>  			/* The passed PE should no longer be used */
+> -			return true;
+> +			return;
+>  		}
+>  	}
+> -	return false;
+> +final:
+> +	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+>  }
+>  
+>  /**
+> @@ -1018,15 +1019,7 @@ void eeh_handle_special_event(void)
+>  		 */
+>  		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
+>  		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+> -			/*
+> -			 * eeh_handle_normal_event() can make the PE stale if it
+> -			 * determines that the PE cannot possibly be recovered.
+> -			 * Don't modify the PE state if that's the case.
+> -			 */
+> -			if (eeh_handle_normal_event(pe))
+> -				continue;
+> -
+> -			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+> +			eeh_handle_normal_event(pe);
+>  		} else {
+>  			pci_lock_rescan_remove();
+>  			list_for_each_entry(hose, &hose_list, list_node) {
 > diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
-> index accbf8b5fd46..872bcfe8f90e 100644
+> index 872bcfe8f90e..61c9356bf9c9 100644
 > --- a/arch/powerpc/kernel/eeh_event.c
 > +++ b/arch/powerpc/kernel/eeh_event.c
-> @@ -81,10 +81,10 @@ static int eeh_event_handler(void * dummy)
->  				pr_info("EEH: Detected PCI bus error on "
+> @@ -73,7 +73,6 @@ static int eeh_event_handler(void * dummy)
+>  		/* We might have event without binding PE */
+>  		pe = event->pe;
+>  		if (pe) {
+> -			eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
+>  			if (pe->type & EEH_PE_PHB)
+>  				pr_info("EEH: Detected error on PHB#%x\n",
+>  					 pe->phb->global_number);
+> @@ -82,7 +81,6 @@ static int eeh_event_handler(void * dummy)
 >  					"PHB#%x-PE#%x\n",
 >  					pe->phb->global_number, pe->addr);
-> -			eeh_handle_event(pe);
-> +			eeh_handle_normal_event(pe);
->  			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+>  			eeh_handle_normal_event(pe);
+> -			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
 >  		} else {
-> -			eeh_handle_event(NULL);
-> +			eeh_handle_special_event();
+>  			eeh_handle_special_event();
 >  		}
->  
->  		kfree(event);
 > 
 
 
