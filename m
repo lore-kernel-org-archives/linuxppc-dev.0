@@ -1,24 +1,25 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+Return-Path: <SRS0=aJRt=GL=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405tPP1HC2zF1qy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 02:04:22 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-To: David Laight <David.Laight@ACULAB.COM>, Oliver <oohall@gmail.com>
-Cc: "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <8a13375fd8e5439890768b7dd8473099@AcuMS.aculab.com>
-From: Sinan Kaya <okaya@codeaurora.org>
-Message-ID: <8993aae1-4004-694d-7898-cff1572f2f5f@codeaurora.org>
-Date: Wed, 21 Mar 2018 10:04:19 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405tp96khTzF1pb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 02:22:25 +1100 (AEDT)
+Date: Wed, 21 Mar 2018 11:22:21 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@ozlabs.org>, sathnaga@linux.vnet.ibm.com
+Subject: Re: [PATCH v2 5/5] powerpc64/ftrace: Implement support for
+ ftrace_regs_caller()
+Message-ID: <20180321112221.16cd9c3c@gandalf.local.home>
+In-Reply-To: <1521642624.97rikdhoqw.naveen@linux.ibm.com>
+References: <cover.1521627906.git.naveen.n.rao@linux.vnet.ibm.com>
+ <764a63e7418b05185434fe660814ce762c93c7d0.1521627906.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20180321095912.212e0b0d@gandalf.local.home>
+ <1521642624.97rikdhoqw.naveen@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <8a13375fd8e5439890768b7dd8473099@AcuMS.aculab.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/21/2018 9:35 AM, David Laight wrote:
->> x86 has compiler barrier inside the relaxed() API so that code does not
->> get reordered. ARM64 architecturally guarantees device writes to be observed
->> in order.
-> 
-> There are places where you don't even need a compile barrier between
-> every write.
-> 
-> I had horrid problems getting some ppc code (for a specific embedded SoC)
-> optimised to have no extra barriers.
-> I ended up just writing through 'pointer to volatile' and adding an
-> explicit 'eieio' between the block of writes and status read.
-> 
-> No less painful was doing a byteswapping write to normal memory.
+On Wed, 21 Mar 2018 20:07:32 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-If the architecture is reordering writes to the peripheral, then removing
-the compiler barrier can break the multi-arch drivers. barriers document
-clearly states that device need to observe writes in order. 
+> I think that will always be set here. ftrace_64_mprofile.S is only built 
+> for -mprofile-kernel and we select HAVE_DYNAMIC_FTRACE_WITH_REGS if 
+> MPROFILE_KERNEL is enabled. It looks like there is no way to unset just 
+> CONFIG_DYNAMIC_FTRACE_WITH_REGS and so, for -mprofile-kernel, we can 
+> assume it is always set?
 
-Though for special cases like you mentioned, you can certainly do this:
+OK, if that's the case, then I'm fine with it.
 
-wmb()
-__raw_write/pointer access
-__raw_write/pointer access
-__raw_write/pointer access
-
-/* flush everything */
-mmiowb()
-__raw_write/pointer access
-
-There would be no ordering guarantee between the wmb() and mmiowb().
-This can only be done for known code and known hardware. I don't believe
-this applies to multi-arch drivers.
-
-
-> 
-> 	David
-> 
-
-
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+-- Steve
