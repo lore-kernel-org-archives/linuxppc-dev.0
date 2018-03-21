@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405mC96vjNzF0xD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 21:25:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405mCB4mK0zF0gF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 21:25:10 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 4/5] KVM: PPC: Book3S HV: Work around XER[SO] bug in fake
- suspend mode
-Date: Wed, 21 Mar 2018 21:25:00 +1100
-Message-Id: <1521627901-13547-5-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 5/5] KVM: PPC: Book3S HV: Work around TEXASR bug in fake
+ suspend state
+Date: Wed, 21 Mar 2018 21:25:01 +1100
+Message-Id: <1521627901-13547-6-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1521627901-13547-1-git-send-email-paulus@ozlabs.org>
 References: <1521627901-13547-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,101 +23,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-
 This works around a hardware bug in "Nimbus" POWER9 DD2.2 processors,
-where a treclaim performed in fake suspend mode can cause subsequent
-reads from the XER register to return inconsistent values for the SO
-(summary overflow) bit.  The inconsistent SO bit state can potentially
-be observed on any thread in the core.  We have to do the treclaim
-because that is the only way to get the thread out of suspend state
-(fake or real) and into non-transactional state.
+where the contents of the TEXASR can get corrupted while a thread is
+in fake suspend state.  The workaround is for the instruction emulation
+code to use the value saved at the most recent guest exit in real
+suspend mode.  We achieve this by simply not saving the TEXASR into
+the vcpu struct on an exit in fake suspend state.  We also have to
+take care to set the orig_texasr field only on guest exit in real
+suspend state.
 
-The workaround for the bug is to force the core into SMT4 mode before
-doing the treclaim.  This patch adds the code to do that, conditional
-on the CPU_FTR_P9_TM_XER_SO_BUG feature bit.
+This also means that on guest entry in fake suspend state, TEXASR
+will be restored to the value it had on the last exit in real suspend
+state, effectively counteracting any hardware-caused corruption.  This
+works because TEXASR may not be written in suspend state.
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+With this, the guest might see the wrong values in TEXASR if it reads
+it while in suspend state, but will see the correct value in
+non-transactional state (e.g. after a treclaim), and treclaim will
+work correctly.
+
+With this workaround, the code will actually run slightly faster, and
+will operate correctly on systems without the TEXASR bug (since TEXASR
+may not be written in suspend state, and is only changed by failure
+recording, which will have already been done before we get into fake
+suspend state).  Therefore these changes are not made subject to a CPU
+feature bit.
+
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/idle_book3s.S       |  4 ++--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 17 ++++++++++-------
+ 2 files changed, 12 insertions(+), 9 deletions(-)
 
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 72b8d19..89157cf 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -430,7 +430,7 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+  * r3 contains desired PSSCR register value.
+  */
+ _GLOBAL(power9_idle_stop)
+-BEGIN_FEATURE_SECTION
++BEGIN_FTR_SECTION
+ 	lwz	r5, PACA_DONT_STOP(r13)
+ 	cmpwi	r5, 0
+ 	bne	1f
+@@ -439,7 +439,7 @@ BEGIN_FEATURE_SECTION
+ 	lwz	r5, PACA_DONT_STOP(r13)
+ 	cmpwi	r5, 0
+ 	bne	1f
+-END_FEATURE_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
++END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	mtspr 	SPRN_PSSCR,r3
+ 	LOAD_REG_ADDR(r4,power_enter_stop)
+ 	b	pnv_powersave_common
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 5af6174..11396c0 100644
+index 11396c0..736809f 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -3101,6 +3101,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- kvmppc_save_tm:
- 	mflr	r0
- 	std	r0, PPC_LR_STKOFF(r1)
-+	stdu	r1, -PPC_MIN_STKFRM(r1)
+@@ -3117,10 +3117,6 @@ kvmppc_save_tm:
+ 	li	r3, TM_CAUSE_KVM_RESCHED
  
- 	/* Turn on TM. */
- 	mfmsr	r8
-@@ -3120,8 +3121,16 @@ BEGIN_FTR_SECTION
- 	mfspr	r6, SPRN_TEXASR
- 	std	r6, VCPU_ORIG_TEXASR(r9)
- 
--	rldicl. r8, r8, 64 - MSR_TS_S_LG, 62
-+	lbz	r0, HSTATE_FAKE_SUSPEND(r13) /* Were we fake suspended? */
-+	cmpwi	r0, 0
+ BEGIN_FTR_SECTION
+-	/* Emulation of the treclaim instruction needs TEXASR before treclaim */
+-	mfspr	r6, SPRN_TEXASR
+-	std	r6, VCPU_ORIG_TEXASR(r9)
+-
+ 	lbz	r0, HSTATE_FAKE_SUSPEND(r13) /* Were we fake suspended? */
+ 	cmpwi	r0, 0
  	beq	3f
-+	rldicl. r8, r8, 64 - MSR_TS_S_LG, 62 /* Did we actually hrfid? */
-+	beq	4f
-+BEGIN_FTR_SECTION_NESTED(96)
-+	bl	pnv_power9_force_smt4_catch
-+END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
-+	nop
-+3:
+@@ -3130,7 +3126,12 @@ BEGIN_FTR_SECTION_NESTED(96)
+ 	bl	pnv_power9_force_smt4_catch
+ END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
+ 	nop
++	b	6f
+ 3:
++	/* Emulation of the treclaim instruction needs TEXASR before treclaim */
++	mfspr	r6, SPRN_TEXASR
++	std	r6, VCPU_ORIG_TEXASR(r9)
++6:
  END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
  
  	/* Clear the MSR RI since r1, r13 are all going to be foobar. */
-@@ -3138,7 +3147,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+@@ -3176,7 +3177,8 @@ END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
+ 	andc	r3, r3, r0
+ 	mtspr	SPRN_PSSCR, r3
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+-	b	1f
++	/* Don't save TEXASR, use value from last exit in real suspend state */
++	b	11f
+ 2:
+ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
  
- 	/* If doing TM emulation on POWER9 DD2.2, check for fake suspend mode */
- BEGIN_FTR_SECTION
--3:
- 	lbz	r9, HSTATE_FAKE_SUSPEND(r13)
- 	cmpwi	r9, 0
- 	beq	2f
-@@ -3150,13 +3158,18 @@ BEGIN_FTR_SECTION
- 	/* Reload stack pointer and TOC. */
- 	ld	r1, HSTATE_HOST_R1(r13)
- 	ld	r2, PACATOC(r13)
-+	/* Set MSR RI now we have r1 and r13 back. */
- 	li	r5, MSR_RI
- 	mtmsrd	r5, 1
- 	HMT_MEDIUM
- 	ld	r6, HSTATE_DSCR(r13)
- 	mtspr	SPRN_DSCR, r6
--	li	r0, 0
--	stb	r0, HSTATE_FAKE_SUSPEND(r13)
-+BEGIN_FTR_SECTION_NESTED(96)
-+	bl	pnv_power9_force_smt4_release
-+END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
-+	nop
-+
-+4:
- 	mfspr	r3, SPRN_PSSCR
- 	/* PSSCR_FAKE_SUSPEND is a write-only bit, but clear it anyway */
- 	li	r0, PSSCR_FAKE_SUSPEND
-@@ -3244,6 +3257,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+@@ -3250,12 +3252,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+ 	 * change these outside of a transaction, so they must always be
+ 	 * context switched.
+ 	 */
++	mfspr	r7, SPRN_TEXASR
++	std	r7, VCPU_TEXASR(r9)
++11:
+ 	mfspr	r5, SPRN_TFHAR
+ 	mfspr	r6, SPRN_TFIAR
+-	mfspr	r7, SPRN_TEXASR
+ 	std	r5, VCPU_TFHAR(r9)
  	std	r6, VCPU_TFIAR(r9)
- 	std	r7, VCPU_TEXASR(r9)
+-	std	r7, VCPU_TEXASR(r9)
  
-+	addi	r1, r1, PPC_MIN_STKFRM
+ 	addi	r1, r1, PPC_MIN_STKFRM
  	ld	r0, PPC_LR_STKOFF(r1)
- 	mtlr	r0
- 	blr
-@@ -3278,6 +3292,8 @@ kvmppc_restore_tm:
- 	mtspr	SPRN_TFIAR, r6
- 	mtspr	SPRN_TEXASR, r7
- 
-+	li	r0, 0
-+	stb	r0, HSTATE_FAKE_SUSPEND(r13)
- 	ld	r5, VCPU_MSR(r4)
- 	rldicl. r5, r5, 64 - MSR_TS_S_LG, 62
- 	beqlr		/* TM not active in guest */
 -- 
 2.7.4
