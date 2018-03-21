@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40609D27MNzF1qv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:24:16 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40609K3qNDzF1rX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:24:21 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LJN0kg118969
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:14 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gut67sdbn-1
+ w2LJJUCk102991
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:19 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2guv66uqp3-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:18 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 19:24:11 -0000
+ Wed, 21 Mar 2018 19:24:15 -0000
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
@@ -32,11 +32,11 @@ Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 15/32] docs/vm: page_frags convert to ReST format
-Date: Wed, 21 Mar 2018 21:22:31 +0200
+Subject: [PATCH 16/32] docs/vm: numa: convert to ReST format
+Date: Wed, 21 Mar 2018 21:22:32 +0200
 In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1521660168-14372-16-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1521660168-14372-17-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,22 +48,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- Documentation/vm/page_frags | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ Documentation/vm/numa | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/vm/page_frags b/Documentation/vm/page_frags
-index a671456..637cc49 100644
---- a/Documentation/vm/page_frags
-+++ b/Documentation/vm/page_frags
-@@ -1,5 +1,8 @@
-+.. _page_frags:
+diff --git a/Documentation/vm/numa b/Documentation/vm/numa
+index a31b85b..c81e7c5 100644
+--- a/Documentation/vm/numa
++++ b/Documentation/vm/numa
+@@ -1,6 +1,10 @@
++.. _numa:
 +
-+==============
- Page fragments
----------------
-+==============
+ Started Nov 1999 by Kanoj Sarcar <kanoj@sgi.com>
  
- A page fragment is an arbitrary-length arbitrary-offset area of memory
- which resides within a 0 or higher order compound page.  Multiple
++=============
+ What is NUMA?
++=============
+ 
+ This question can be answered from a couple of perspectives:  the
+ hardware view and the Linux software view.
 -- 
 2.7.4
