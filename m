@@ -2,15 +2,18 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405mMJ1J3KzF0Xp
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405mMJ6Gl4zF0Xp
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 21:32:12 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 0/5] KVM & powerpc: Work around POWER9 TM hardware bugs
-Date: Wed, 21 Mar 2018 21:31:58 +1100
-Message-Id: <1521628323-14451-1-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v2 1/5] powerpc: Add CPU feature bits for TM bug workarounds
+ on POWER9 v2.2
+Date: Wed, 21 Mar 2018 21:31:59 +1100
+Message-Id: <1521628323-14451-2-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1521628323-14451-1-git-send-email-paulus@ozlabs.org>
+References: <1521628323-14451-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,58 +23,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series applies on top of my patch series "powerpc: Free up
-CPU feature bits".
+This adds a CPU feature bit which is set for POWER9 "Nimbus" DD2.2
+processors which will be used to enable the hypervisor to assist
+hardware with the handling of checkpointed register values while the
+CPU is in suspend state, in order to work around hardware bugs.  The
+hardware assistance for these workarounds introduced a new hardware
+bug relating to the XER[SO] bit.  We add a separate feature bit for
+this bug in case future chips fix it while still requiring the
+hypervisor assistance with suspend state.
 
-POWER9 has some shortcomings in its implementation of transactional
-memory.  Starting with v2.2 of the "Nimbus" chip, some changes have
-been made to the hardware which make it able to generate hypervisor
-interrupts in the situations where hardware needs the hypervisor to
-provide some assistance with the implementation.  Specifically, the
-core does not have enough storage to store a complete checkpoint of
-all the architected state for all 4 threads, and therefore needs to
-be able to offload the checkpointed state of threads which are in
-transactional suspended state (for threads that are in transactional
-state, the hardware can simply abort the transaction).
+When the dt_cpu_ftrs subsystem is in use, the software assistance can
+be enabled using a "tm-suspend-hypervisor-assist" node in the device
+tree, and a "tm-suspend-xer-so-bug" node enables the workarounds for
+the XER[SO] bug.  In the absence of such nodes, a quirk enables both
+for POWER9 "Nimbus" DD2.2 processors.
 
-This series implements the hypervisor assistance for TM for KVM
-guests, thus allowing them to use TM.  This then means that we can
-allow live migration of guests on POWER8 that may be using TM to
-POWER9 hosts.
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/include/asm/cputable.h |  7 ++++++-
+ arch/powerpc/kernel/cputable.c      | 24 ++++++++++++++++++++++--
+ arch/powerpc/kernel/dt_cpu_ftrs.c   |  5 +++++
+ 3 files changed, 33 insertions(+), 3 deletions(-)
 
-This version adds a feature bit for the XER[SO] bug workaround so that
-it can be turned off on future systems which may still require
-hypervisor assistance for TM but have the XER[SO] bug fixed.  It also
-makes the test in the idle code (which includes a sync instruction)
-conditional on the XER[SO] bug feature bit, meaning that the code to
-force SMT4 mode will only work when that feature bit is set.
-
-v2: The end result is the same as v1, but I avoid introducing a
-compile error in the middle of the series.
-
-Paul.
-
- arch/powerpc/include/asm/asm-prototypes.h |   3 +
- arch/powerpc/include/asm/cputable.h       |   7 +-
- arch/powerpc/include/asm/kvm_asm.h        |   2 +
- arch/powerpc/include/asm/kvm_book3s.h     |   4 +
- arch/powerpc/include/asm/kvm_book3s_64.h  |  43 ++++++
- arch/powerpc/include/asm/kvm_book3s_asm.h |   1 +
- arch/powerpc/include/asm/kvm_host.h       |   1 +
- arch/powerpc/include/asm/paca.h           |   3 +
- arch/powerpc/include/asm/powernv.h        |   1 +
- arch/powerpc/include/asm/ppc-opcode.h     |   4 +
- arch/powerpc/include/asm/reg.h            |   7 +
- arch/powerpc/kernel/asm-offsets.c         |   3 +
- arch/powerpc/kernel/cputable.c            |  23 +++-
- arch/powerpc/kernel/dt_cpu_ftrs.c         |   5 +
- arch/powerpc/kernel/exceptions-64s.S      |   4 +-
- arch/powerpc/kernel/idle_book3s.S         |  21 +++
- arch/powerpc/kvm/Makefile                 |   7 +
- arch/powerpc/kvm/book3s_hv.c              |  18 ++-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 166 ++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_tm.c           | 216 ++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_tm_builtin.c   | 109 +++++++++++++++
- arch/powerpc/kvm/powerpc.c                |   5 +-
- arch/powerpc/platforms/powernv/idle.c     |  81 +++++++++++
- 23 files changed, 720 insertions(+), 14 deletions(-)
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 49fd067..ecee84d 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -213,6 +213,8 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
+ #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
+ #define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
++#define CPU_FTR_P9_TM_HV_ASSIST		LONG_ASM_CONST(0x0000100000000000)
++#define CPU_FTR_P9_TM_XER_SO_BUG	LONG_ASM_CONST(0x0000200000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -469,6 +471,8 @@ static inline void cpu_feature_keys_init(void) { }
+ 			     (~CPU_FTR_SAO))
+ #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
+ #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
++#define CPU_FTRS_POWER9_DD2_2 (CPU_FTRS_POWER9 | CPU_FTR_P9_TM_HV_ASSIST | \
++			       CPU_FTR_P9_TM_XER_SO_BUG)
+ #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -488,7 +492,8 @@ static inline void cpu_feature_keys_init(void) { }
+ 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
+ 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
+ 	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9 | \
+-	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1)
++	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
++	     CPU_FTRS_POWER9_DD2_2)
+ #endif
+ #else
+ enum {
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index c40a9fc..68052ea 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -553,11 +553,31 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check_early	= __machine_check_early_realmode_p9,
+ 		.platform		= "power9",
+ 	},
+-	{	/* Power9 DD 2.1 or later (see DD2.0 above) */
++	{	/* Power9 DD 2.1 */
++		.pvr_mask		= 0xffffefff,
++		.pvr_value		= 0x004e0201,
++		.cpu_name		= "POWER9 (raw)",
++		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
++		.cpu_user_features	= COMMON_USER_POWER9,
++		.cpu_user_features2	= COMMON_USER2_POWER9,
++		.mmu_features		= MMU_FTRS_POWER9,
++		.icache_bsize		= 128,
++		.dcache_bsize		= 128,
++		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
++		.oprofile_cpu_type	= "ppc64/power9",
++		.oprofile_type		= PPC_OPROFILE_INVALID,
++		.cpu_setup		= __setup_cpu_power9,
++		.cpu_restore		= __restore_cpu_power9,
++		.flush_tlb		= __flush_tlb_power9,
++		.machine_check_early	= __machine_check_early_realmode_p9,
++		.platform		= "power9",
++	},
++	{	/* Power9 DD2.2 or later */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x004e0000,
+ 		.cpu_name		= "POWER9 (raw)",
+-		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
++		.cpu_features		= CPU_FTRS_POWER9_DD2_2,
+ 		.cpu_user_features	= COMMON_USER_POWER9,
+ 		.cpu_user_features2	= COMMON_USER2_POWER9,
+ 		.mmu_features		= MMU_FTRS_POWER9,
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index ee562ff..0a0c601 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -589,6 +589,8 @@ static struct dt_cpu_feature_match __initdata
+ 	{"virtual-page-class-key-protection", feat_enable, 0},
+ 	{"transactional-memory", feat_enable_tm, CPU_FTR_TM},
+ 	{"transactional-memory-v3", feat_enable_tm, 0},
++	{"tm-suspend-hypervisor-assist", feat_enable, CPU_FTR_P9_TM_HV_ASSIST},
++	{"tm-suspend-xer-so-bug", feat_enable, CPU_FTR_P9_TM_XER_SO_BUG},
+ 	{"idle-nap", feat_enable_idle_nap, 0},
+ 	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
+ 	{"idle-stop", feat_enable_idle_stop, 0},
+@@ -708,6 +710,9 @@ static __init void cpufeatures_cpu_quirks(void)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
+ 	else if ((version & 0xffffefff) == 0x004e0201)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
++	else if ((version & 0xffffefff) == 0x004e0202)
++		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_HV_ASSIST |
++			CPU_FTR_P9_TM_XER_SO_BUG;
+ }
+ 
+ static void __init cpufeatures_setup_finished(void)
+-- 
+2.7.4
