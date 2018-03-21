@@ -1,17 +1,23 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405rpd5QzczF1dJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 00:52:40 +1100 (AEDT)
-Message-Id: <fbbdc0bcff276190ea8619b3070d971f2ca76abd.1521639065.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH  1/2] powerpc/time: inline arch_vtime_task_switch()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 21 Mar 2018 14:52:34 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405rqy3SlqzDqh1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 00:53:49 +1100 (AEDT)
+Subject: Re: RFC on writel and writel_relaxed
+To: Oliver <oohall@gmail.com>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+Date: Wed, 21 Mar 2018 08:53:44 -0500
+MIME-Version: 1.0
+In-Reply-To: <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch_vtime_task_switch() is a small function which is called
-only from vtime_common_task_switch(), so it is worth inlining
+On 3/20/2018 10:40 PM, Oliver wrote:
+>> I see that network drivers are working around the issue by calling
+>> __raw_write() API directly but this also breaks other architectures
+>> like SPARC since the semantics of __raw_writel() seems to be system dependent.
+> Yeah that's pretty gross. Which drivers are doing this?
+> 
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/cputime.h | 15 ++++++++++++++-
- arch/powerpc/kernel/time.c         | 21 ---------------------
- 2 files changed, 14 insertions(+), 22 deletions(-)
+Searching for __raw_writel() and BIG_ENDIAN in drivers/net directory
+should give you the idea.
 
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index 99b541865d8d..36345341dd70 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -47,9 +47,22 @@ static inline unsigned long cputime_to_usecs(const cputime_t ct)
-  * has to be populated in the new task
-  */
- #ifdef CONFIG_PPC64
-+#define get_accounting(tsk)	(&get_paca()->accounting)
- static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
- #else
--void arch_vtime_task_switch(struct task_struct *tsk);
-+#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
-+/*
-+ * Called from the context switch with interrupts disabled, to charge all
-+ * accumulated times to the current process, and to prepare accounting on
-+ * the next process.
-+ */
-+static inline void arch_vtime_task_switch(struct task_struct *prev)
-+{
-+	struct cpu_accounting_data *acct = get_accounting(current);
-+
-+	acct->starttime = get_accounting(prev)->starttime;
-+	acct->startspurr = get_accounting(prev)->startspurr;
-+}
- #endif
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index a32823dcd9a4..aa6aa5d4a60c 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -163,12 +163,6 @@ EXPORT_SYMBOL(__cputime_usec_factor);
- void (*dtl_consumer)(struct dtl_entry *, u64);
- #endif
- 
--#ifdef CONFIG_PPC64
--#define get_accounting(tsk)	(&get_paca()->accounting)
--#else
--#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
--#endif
--
- static void calc_cputime_factors(void)
- {
- 	struct div_result res;
-@@ -418,21 +412,6 @@ void vtime_flush(struct task_struct *tsk)
- 	acct->softirq_time = 0;
- }
- 
--#ifdef CONFIG_PPC32
--/*
-- * Called from the context switch with interrupts disabled, to charge all
-- * accumulated times to the current process, and to prepare accounting on
-- * the next process.
-- */
--void arch_vtime_task_switch(struct task_struct *prev)
--{
--	struct cpu_accounting_data *acct = get_accounting(current);
--
--	acct->starttime = get_accounting(prev)->starttime;
--	acct->startspurr = get_accounting(prev)->startspurr;
--}
--#endif /* CONFIG_PPC32 */
--
- #else /* ! CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
- #define calc_cputime_factors()
- #endif
+In a nutshell, drivers are doing this today.
+
+wmb()
+__raw_writel();
+mmiowb()
+
+I'm in the process of posting patches ([1], [2], [3]) to various subsystems to
+eliminate double barriers by replacing sequences like 
+
+wmb()
+writel()
+mmiowb()
+
+with
+
+wmb()
+writel_relaxed()
+mmiowb()
+
+Reviewers pointed out that writel_relaxed() is not __raw_writel() on PPC
+and cannot take advantage of the optimization. 
+
+Replacing writel_relaxed() with raw_writel() or vice versa is not correct.
+
+writel_relaxed() needs to have ordering guarantees with respect to the order
+device observes writes. 
+
+x86 has compiler barrier inside the relaxed() API so that code does not
+get reordered. ARM64 architecturally guarantees device writes to be observed
+in order.
+
+I was hoping that PPC could follow x86 and inject compiler barrier into the
+relaxed functions. 
+
+BTW, I have no idea what compiler barrier does on PPC and if
+
+wrltel() == compiler barrier() + wrltel_relaxed()
+
+can be said.
+
+Need guidance from the PPC maintainers. 
+
+[1] https://www.spinics.net/lists/netdev/msg490480.html
+[2] https://www.spinics.net/lists/arm-kernel/msg642341.html
+[3] https://www.spinics.net/lists/arm-kernel/msg642336.html
+
 -- 
-2.13.3
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
