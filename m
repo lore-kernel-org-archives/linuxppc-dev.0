@@ -1,28 +1,26 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
+Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
+ [IPv6:2607:f8b0:4001:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405dPb4yFjzDqh0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:18:43 +1100 (AEDT)
-Received: by mail-it0-x244.google.com with SMTP id z143-v6so14973816itc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:18:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405dPr2QpWzF1dw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:18:56 +1100 (AEDT)
+Received: by mail-io0-x244.google.com with SMTP id b20so5137406iof.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:18:56 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.googlemail.com with ESMTPSA id
- 199-v6sm2455276itl.1.2018.03.20.22.18.40
+ by smtp.googlemail.com with ESMTPSA id e193sm2110776ioe.35.2018.03.20.22.18.52
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 20 Mar 2018 22:18:41 -0700 (PDT)
-Subject: Re: [PATCH v2 7/9] powerpc/eeh: Remove always-true tests in
+ Tue, 20 Mar 2018 22:18:53 -0700 (PDT)
+Subject: Re: [PATCH v3 8/9] powerpc/eeh: Factor out common code
  eeh_reset_device()
 To: linuxppc-dev@lists.ozlabs.org
-References: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
- <5a636a21f3352efa7a41bf4032f3a57973c4c18b.1521427331.git.sam.bobroff@au1.ibm.com>
+References: <168a19fad005f7f3dffe700978db75e7e976b946.1521523452.git.sam.bobroff@au1.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <059b19f4-d64e-8ffc-0a26-dc279f90aec7@ozlabs.ru>
-Date: Wed, 21 Mar 2018 16:18:38 +1100
+Message-ID: <a2d18307-15ab-7b08-36ce-d6d52a4f25ea@ozlabs.ru>
+Date: Wed, 21 Mar 2018 16:18:50 +1100
 MIME-Version: 1.0
-In-Reply-To: <5a636a21f3352efa7a41bf4032f3a57973c4c18b.1521427331.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <168a19fad005f7f3dffe700978db75e7e976b946.1521523452.git.sam.bobroff@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,12 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/3/18 1:49 pm, Sam Bobroff wrote:
-> eeh_reset_device() tests the value of 'bus' more than once but the
-> only caller, eeh_handle_normal_device() does this test itself and will
-> never pass NULL.
-> 
-> So, remove the dead tests.
+On 21/3/18 1:06 pm, Sam Bobroff wrote:
+> The caller will always pass NULL for 'rmv_data' when
+> 'eeh_aware_driver' is true, so the first two calls to
+> eeh_pe_dev_traverse() can be combined without changing behaviour as
+> can the two arms of the final 'if' block.
 > 
 > This should not change behaviour.
 > 
@@ -49,30 +46,71 @@ Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 
 > ---
->  arch/powerpc/kernel/eeh_driver.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> ====== v2 -> v3: ======
+> Corrected two missed cases of eeh_aware_driver -> driver_eeh_aware.
+> 
+>  arch/powerpc/kernel/eeh_driver.c | 32 ++++++++++----------------------
+>  1 file changed, 10 insertions(+), 22 deletions(-)
 > 
 > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 07437d765434..93fc22e791fa 100644
+> index 93fc22e791fa..43ceb6263cd8 100644
 > --- a/arch/powerpc/kernel/eeh_driver.c
 > +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -655,7 +655,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->  			pci_hp_remove_devices(bus);
->  			pci_unlock_rescan_remove();
->  		}
-> -	} else if (bus) {
-> +	} else {
+> @@ -647,16 +647,12 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>  	 * into pci_hp_add_devices().
+>  	 */
+>  	eeh_pe_state_mark(pe, EEH_PE_KEEP);
+> -	if (!driver_eeh_aware) {
+> -		if (pe->type & EEH_PE_VF) {
+> -			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
+> -		} else {
+> -			pci_lock_rescan_remove();
+> -			pci_hp_remove_devices(bus);
+> -			pci_unlock_rescan_remove();
+> -		}
+> -	} else {
+> +	if (driver_eeh_aware || (pe->type & EEH_PE_VF)) {
 >  		eeh_pe_dev_traverse(pe, eeh_rmv_device, rmv_data);
+> +	} else {
+> +		pci_lock_rescan_remove();
+> +		pci_hp_remove_devices(bus);
+> +		pci_unlock_rescan_remove();
 >  	}
 >  
-> @@ -708,7 +708,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->  			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+>  	/*
+> @@ -691,8 +687,9 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>  	 * the device up before the scripts have taken it down,
+>  	 * potentially weird things happen.
+>  	 */
+> -	if (!driver_eeh_aware) {
+> -		pr_info("EEH: Sleep 5s ahead of complete hotplug\n");
+> +	if (!driver_eeh_aware || rmv_data->removed) {
+> +		pr_info("EEH: Sleep 5s ahead of %s hotplug\n",
+> +			(driver_eeh_aware ? "partial" : "complete"));
+>  		ssleep(5);
+>  
+>  		/*
+> @@ -705,19 +702,10 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>  		if (pe->type & EEH_PE_VF) {
+>  			eeh_add_virt_device(edev, NULL);
+>  		} else {
+> -			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+> +			if (!driver_eeh_aware)
+> +				eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
 >  			pci_hp_add_devices(bus);
 >  		}
-> -	} else if (bus && rmv_data->removed) {
-> +	} else if (rmv_data->removed) {
->  		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
->  		ssleep(5);
+> -	} else if (rmv_data->removed) {
+> -		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
+> -		ssleep(5);
+> -
+> -		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
+> -		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
+> -		if (pe->type & EEH_PE_VF)
+> -			eeh_add_virt_device(edev, NULL);
+> -		else
+> -			pci_hp_add_devices(bus);
+>  	}
+>  	eeh_pe_state_clear(pe, EEH_PE_KEEP);
 >  
 > 
 
