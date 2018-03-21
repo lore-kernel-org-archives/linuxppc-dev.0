@@ -1,23 +1,23 @@
 Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4060BF3QjxzF1s0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:25:09 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LJIYkv003755
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:25:06 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2guw151fh0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4060BJ5Fl9zF1s0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:25:12 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2LJOlV5067014
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:25:11 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2guw2hsa6p-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:25:06 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:25:10 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 19:25:03 -0000
+ Wed, 21 Mar 2018 19:25:08 -0000
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
@@ -32,11 +32,11 @@ Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 27/32] docs/vm: userfaultfd.txt: convert to ReST format
-Date: Wed, 21 Mar 2018 21:22:43 +0200
+Subject: [PATCH 28/32] docs/vm: z3fold.txt: convert to ReST format
+Date: Wed, 21 Mar 2018 21:22:44 +0200
 In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1521660168-14372-28-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1521660168-14372-29-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,118 +48,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- Documentation/vm/userfaultfd.txt | 66 ++++++++++++++++++++++++----------------
- 1 file changed, 39 insertions(+), 27 deletions(-)
+ Documentation/vm/z3fold.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/vm/userfaultfd.txt b/Documentation/vm/userfaultfd.txt
-index bb2f945..5048cf6 100644
---- a/Documentation/vm/userfaultfd.txt
-+++ b/Documentation/vm/userfaultfd.txt
-@@ -1,6 +1,11 @@
--= Userfaultfd =
-+.. _userfaultfd:
- 
--== Objective ==
-+===========
-+Userfaultfd
-+===========
+diff --git a/Documentation/vm/z3fold.txt b/Documentation/vm/z3fold.txt
+index 38e4dac..224e3c6 100644
+--- a/Documentation/vm/z3fold.txt
++++ b/Documentation/vm/z3fold.txt
+@@ -1,5 +1,8 @@
++.. _z3fold:
 +
-+Objective
-+=========
- 
- Userfaults allow the implementation of on-demand paging from userland
- and more generally they allow userland to take control of various
-@@ -9,7 +14,8 @@ memory page faults, something otherwise only the kernel code could do.
- For example userfaults allows a proper and more optimal implementation
- of the PROT_NONE+SIGSEGV trick.
- 
--== Design ==
-+Design
++======
+ z3fold
+-------
 +======
  
- Userfaults are delivered and resolved through the userfaultfd syscall.
+ z3fold is a special purpose allocator for storing compressed pages.
+ It is designed to store up to three compressed pages per physical page.
+@@ -7,6 +10,7 @@ It is a zbud derivative which allows for higher compression
+ ratio keeping the simplicity and determinism of its predecessor.
  
-@@ -41,7 +47,8 @@ different processes without them being aware about what is going on
- themselves on the same region the manager is already tracking, which
- is a corner case that would currently return -EBUSY).
- 
--== API ==
-+API
-+===
- 
- When first opened the userfaultfd must be enabled invoking the
- UFFDIO_API ioctl specifying a uffdio_api.api value set to UFFD_API (or
-@@ -101,7 +108,8 @@ UFFDIO_COPY. They're atomic as in guaranteeing that nothing can see an
- half copied page since it'll keep userfaulting until the copy has
- finished.
- 
--== QEMU/KVM ==
-+QEMU/KVM
-+========
- 
- QEMU/KVM is using the userfaultfd syscall to implement postcopy live
- migration. Postcopy live migration is one form of memory
-@@ -163,7 +171,8 @@ sending the same page twice (in case the userfault is read by the
- postcopy thread just before UFFDIO_COPY|ZEROPAGE runs in the migration
- thread).
- 
--== Non-cooperative userfaultfd ==
-+Non-cooperative userfaultfd
-+===========================
- 
- When the userfaultfd is monitored by an external manager, the manager
- must be able to track changes in the process virtual memory
-@@ -172,27 +181,30 @@ the same read(2) protocol as for the page fault notifications. The
- manager has to explicitly enable these events by setting appropriate
- bits in uffdio_api.features passed to UFFDIO_API ioctl:
- 
--UFFD_FEATURE_EVENT_FORK - enable userfaultfd hooks for fork(). When
--this feature is enabled, the userfaultfd context of the parent process
--is duplicated into the newly created process. The manager receives
--UFFD_EVENT_FORK with file descriptor of the new userfaultfd context in
--the uffd_msg.fork.
--
--UFFD_FEATURE_EVENT_REMAP - enable notifications about mremap()
--calls. When the non-cooperative process moves a virtual memory area to
--a different location, the manager will receive UFFD_EVENT_REMAP. The
--uffd_msg.remap will contain the old and new addresses of the area and
--its original length.
--
--UFFD_FEATURE_EVENT_REMOVE - enable notifications about
--madvise(MADV_REMOVE) and madvise(MADV_DONTNEED) calls. The event
--UFFD_EVENT_REMOVE will be generated upon these calls to madvise. The
--uffd_msg.remove will contain start and end addresses of the removed
--area.
--
--UFFD_FEATURE_EVENT_UNMAP - enable notifications about memory
--unmapping. The manager will get UFFD_EVENT_UNMAP with uffd_msg.remove
--containing start and end addresses of the unmapped area.
-+UFFD_FEATURE_EVENT_FORK
-+	enable userfaultfd hooks for fork(). When this feature is
-+	enabled, the userfaultfd context of the parent process is
-+	duplicated into the newly created process. The manager
-+	receives UFFD_EVENT_FORK with file descriptor of the new
-+	userfaultfd context in the uffd_msg.fork.
+ The main differences between z3fold and zbud are:
 +
-+UFFD_FEATURE_EVENT_REMAP
-+	enable notifications about mremap() calls. When the
-+	non-cooperative process moves a virtual memory area to a
-+	different location, the manager will receive
-+	UFFD_EVENT_REMAP. The uffd_msg.remap will contain the old and
-+	new addresses of the area and its original length.
-+
-+UFFD_FEATURE_EVENT_REMOVE
-+	enable notifications about madvise(MADV_REMOVE) and
-+	madvise(MADV_DONTNEED) calls. The event UFFD_EVENT_REMOVE will
-+	be generated upon these calls to madvise. The uffd_msg.remove
-+	will contain start and end addresses of the removed area.
-+
-+UFFD_FEATURE_EVENT_UNMAP
-+	enable notifications about memory unmapping. The manager will
-+	get UFFD_EVENT_UNMAP with uffd_msg.remove containing start and
-+	end addresses of the unmapped area.
- 
- Although the UFFD_FEATURE_EVENT_REMOVE and UFFD_FEATURE_EVENT_UNMAP
- are pretty similar, they quite differ in the action expected from the
+ * unlike zbud, z3fold allows for up to PAGE_SIZE allocations
+ * z3fold can hold up to 3 compressed pages in its page
+ * z3fold doesn't export any API itself and is thus intended to be used
 -- 
 2.7.4
