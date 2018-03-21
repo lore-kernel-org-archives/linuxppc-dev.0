@@ -1,29 +1,19 @@
-Return-Path: <liwan@redhat.com>
-Received: from mail-vk0-f46.google.com (mail-vk0-f46.google.com
- [209.85.213.46])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405gVV15zgzF1Tv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 17:53:03 +1100 (AEDT)
-Received: by mail-vk0-f46.google.com with SMTP id f6so2461090vkh.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 23:53:03 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20180320215828.GA5825@ram.oc3035372033.ibm.com>
-References: <CAEemH2f0LDqyR5AmUYv17OuBc5-UycckDPWgk46XU_ghQo4diw@mail.gmail.com>
- <871sguep4v.fsf@concordia.ellerman.id.au>
- <20180308164545.GM1060@ram.oc3035372033.ibm.com>
- <CAEemH2czWDjvJLpL6ynV1+VxCFh_-A-d72tJhA5zwgrAES2nWA@mail.gmail.com>
- <20180320215828.GA5825@ram.oc3035372033.ibm.com>
-From: Li Wang <liwang@redhat.com>
-Date: Wed, 21 Mar 2018 14:53:00 +0800
-Message-ID: <CAEemH2eewab4nsn6daMRAtn9tDrHoZb_PnbH8xA17ypFCTg6iA@mail.gmail.com>
-Subject: Re: [bug?] Access was denied by memory protection keys in
- execute-only address
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jan Stancek <jstancek@redhat.com>,
- ltp@lists.linux.it, linux-mm@kvack.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/alternative; boundary="001a114289f85e0e940567e6a46c"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405mC90m12zF0n6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 21:25:09 +1100 (AEDT)
+From: Paul Mackerras <paulus@ozlabs.org>
+To: kvm@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Cc: kvm-ppc@vger.kernel.org
+Subject: [PATCH 1/5] powerpc: Add CPU feature bits for TM bug workarounds on
+ POWER9 v2.2
+Date: Wed, 21 Mar 2018 21:24:57 +1100
+Message-Id: <1521627901-13547-2-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1521627901-13547-1-git-send-email-paulus@ozlabs.org>
+References: <1521627901-13547-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,341 +23,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a114289f85e0e940567e6a46c
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This adds a CPU feature bit which is set for POWER9 "Nimbus" DD2.2
+processors which will be used to enable the hypervisor to assist
+hardware with the handling of checkpointed register values while the
+CPU is in suspend state, in order to work around hardware bugs.  The
+hardware assistance for these workarounds introduced a new hardware
+bug relating to the XER[SO] bit.  We add a separate feature bit for
+this bug in case future chips fix it while still requiring the
+hypervisor assistance with suspend state.
 
-On Wed, Mar 21, 2018 at 5:58 AM, Ram Pai <linuxram@us.ibm.com> wrote:
+When the dt_cpu_ftrs subsystem is in use, the software assistance can
+be enabled using a "tm-suspend-hypervisor-assist" node in the device
+tree, and a "tm-suspend-xer-so-bug" node enables the workarounds for
+the XER[SO] bug.  In the absence of such nodes, a quirk enables both
+for POWER9 "Nimbus" DD2.2 processors.
 
-> On Fri, Mar 09, 2018 at 11:43:00AM +0800, Li Wang wrote:
-> >    On Fri, Mar 9, 2018 at 12:45 AM, Ram Pai <[1]linuxram@us.ibm.com>
-> wrote:
-> >
-> >      On Thu, Mar 08, 2018 at 11:19:12PM +1100, Michael Ellerman wrote:
-> >      > Li Wang <[2]liwang@redhat.com> writes:
-> >      > > Hi,
-> >      > >
-> >      > > ltp/mprotect04[1] crashed by SEGV_PKUERR on ppc64(LPAR on P730=
-,
-> >      Power 8
-> >      > > 8247-22L) with kernel-v4.16.0-rc4.
-> >      > >
-> >      > > 10000000-10020000 r-xp 00000000 fd:00 167223
->  mprotect04
-> >      > > 10020000-10030000 r--p 00010000 fd:00 167223
->  mprotect04
-> >      > > 10030000-10040000 rw-p 00020000 fd:00 167223
->  mprotect04
-> >      > > 1001a380000-1001a3b0000 rw-p 00000000 00:00 0          [heap]
-> >      > > 7fffa6c60000-7fffa6c80000 --xp 00000000 00:00 0 =E2=80=8B
-> >      > >
-> >      > > =E2=80=8B&exec_func =3D 0x10030170=E2=80=8B
-> >      > >
-> >      > > =E2=80=8B&func =3D 0x7fffa6c60170=E2=80=8B
-> >      > >
-> >      > > =E2=80=8BWhile perform =E2=80=8B
-> >      > > "(*func)();" we get the
-> >      > > =E2=80=8Bsegmentation fault.
-> >      > > =E2=80=8B
-> >      > >
-> >      > > =E2=80=8Bstrace log:=E2=80=8B
-> >      > >
-> >      > > -------------------
-> >      > > =E2=80=8Bmprotect(0x7fffaed00000, 131072, PROT_EXEC) =3D 0
-> >      > > rt_sigprocmask(SIG_BLOCK, NULL, [], 8)  =3D 0
-> >      > > --- SIGSEGV {si_signo=3DSIGSEGV, si_code=3DSEGV_PKUERR,
-> >      si_addr=3D0x7fffaed00170}
-> >      > > ---=E2=80=8B
-> >      >
-> >      > Looks like a bug to me.
-> >      >
-> >      > Please Cc linuxppc-dev on powerpc bugs.
-> >      >
-> >      > I also can't reproduce this failure on my machine.
-> >      > Not sure what's going on?
-> >
-> >      I could reproduce it on a power7 lpar.  But not on a power8 lpar.
-> >
-> >      The problem seems to be that the cpu generates a key exception if
-> >      the page with Read/Write-disable-but-execute-enable key is execute=
-d
-> >      on power7. If I enable read on that key, the exception disappears.
-> >
-> >    After adding read permission on that key, reproducer get PASS on my
-> power8
-> >    machine too.=E2=80=8B
-> >    =E2=80=8B(=E2=80=8Bmprotect(..,PROT_READ | PROT_EXEC))=E2=80=8B
-> >
-> >
-> >      BTW: the testcase executes
-> >      =E2=80=8B=E2=80=8Bmprotect(..,PROT_EXEC).
-> >      The mprotect(, PROT_EXEC) system call internally generates a
-> >      execute-only key and associates it with the pages in the
-> address-range.
-> >
-> >      Now since Li Wang claims that he can reproduce it on power8 as
-> well, i
-> >      am wondering if the slightly different cpu behavior is dependent o=
-n
-> the
-> >      version of the firmware/microcode?
-> >
-> >    =E2=80=8BI also run this reproducer on series ppc kvm machines, but =
-none of
-> them
-> >    get the FAIL.
-> >    If you need some more HW info, pls let me know.=E2=80=8B
->
-> Hi Li,
->
->    Can you try the following patch and see if it solves your problem.
->
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/include/asm/cputable.h |  7 ++++++-
+ arch/powerpc/kernel/cputable.c      | 24 ++++++++++++++++++++++--
+ arch/powerpc/kernel/dt_cpu_ftrs.c   |  5 +++++
+ 3 files changed, 33 insertions(+), 3 deletions(-)
 
-=E2=80=8BIt only works on power7 lpar machine.
-
-But for p8 lpar, it still get failure as that before, the thing I wondered
-is
-that why not disable the pkey_execute_disable_supported on p8 machine?
-
-I tried to modify your patch and get PASS with the mprotect04 test on
-power8 lpar machine.
-
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -105,7 +105,9 @@ int pkey_initialize(void)
-         * The device tree cannot be relied to indicate support for
-         * execute_disable support. Instead we use a PVR check.
-         */
--       if (pvr_version_is(PVR_POWER7) || pvr_version_is(PVR_POWER7p))
-+       if (pvr_version_is(PVR_POWER7) || pvr_version_is(PVR_POWER7p) \
-+               || pvr_version_is(PVR_POWER8E) ||
-pvr_version_is(PVR_POWER8NVL) \
-+               || pvr_version_is(PVR_POWER8))
-                pkey_execute_disable_supported =3D false;
-        else
-                pkey_execute_disable_supported =3D true;
-@@ -395,7 +397,7 @@ int __arch_override_mprotect_pkey(struct vm_area_struct
-*vma, int prot,
-         * The requested protection is execute-only. Hence let's use an
-         * execute-only pkey.
-         */
--       if (prot =3D=3D PROT_EXEC) {
-+       if (prot =3D=3D PROT_EXEC && pkey_execute_disable_supported) {
-                pkey =3D execute_only_pkey(vma->vm_mm);
-                if (pkey > 0)
-                        return pkey;
-
-
-
-
->
->
-> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> index c269817..184a10a 100644
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -421,7 +421,7 @@ int __arch_override_mprotect_pkey(struct
-> vm_area_struct *vma, int prot,
->          * The requested protection is execute-only. Hence let's use an
->          * execute-only pkey.
->          */
-> -       if (prot =3D=3D PROT_EXEC) {
-> =E2=80=8B=E2=80=8B
-> +       if (prot =3D=3D PROT_EXEC && pkey_execute_disable_supported) {
->                 pkey =3D execute_only_pkey(vma->vm_mm);
->                 if (pkey > 0)
->                         return pkey;
->
->
-> Thanks
-> RP
->
->
-
-
---=20
-Li Wang
-liwang@redhat.com
-
---001a114289f85e0e940567e6a46c
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div class=3D"gmail_default" style=3D"font-family:monospac=
-e,monospace"><br></div><div class=3D"gmail_extra"><br><div class=3D"gmail_q=
-uote">On Wed, Mar 21, 2018 at 5:58 AM, Ram Pai <span dir=3D"ltr">&lt;<a hre=
-f=3D"mailto:linuxram@us.ibm.com" target=3D"_blank">linuxram@us.ibm.com</a>&=
-gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0px =
-0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"><spa=
-n class=3D"gmail-">On Fri, Mar 09, 2018 at 11:43:00AM +0800, Li Wang wrote:=
-<br>
-</span><span class=3D"gmail-">&gt;=C2=A0 =C2=A0 On Fri, Mar 9, 2018 at 12:4=
-5 AM, Ram Pai &lt;[1]<a href=3D"mailto:linuxram@us.ibm.com">linuxram@us.ibm=
-.com</a>&gt; wrote:<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 On Thu, Mar 08, 2018 at 11:19:12PM +1100, Michael =
-Ellerman wrote:<br>
-</span><div><div class=3D"gmail-h5">&gt;=C2=A0 =C2=A0 =C2=A0 &gt; Li Wang &=
-lt;[2]<a href=3D"mailto:liwang@redhat.com">liwang@redhat.com</a>&gt; writes=
-:<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; Hi,<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; ltp/mprotect04[1] crashed by SEGV_PKUERR=
- on ppc64(LPAR on P730,<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 Power 8<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; 8247-22L) with kernel-v4.16.0-rc4.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; 10000000-10020000 r-xp 00000000 fd:00 16=
-7223=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0mprotect04<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; 10020000-10030000 r--p 00010000 fd:00 16=
-7223=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0mprotect04<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; 10030000-10040000 rw-p 00020000 fd:00 16=
-7223=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0mprotect04<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; 1001a380000-1001a3b0000 rw-p 00000000 00=
-:00 0=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 [heap]<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; 7fffa6c60000-7fffa6c80000 --xp 00000000 =
-00:00 0 =E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8B&amp;exec_func =3D 0x10030170=
-=E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8B&amp;func =3D 0x7fffa6c60170=E2=
-=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8BWhile perform =E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; &quot;(*func)();&quot; we get the<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8Bsegmentation fault.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8Bstrace log:=E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; -------------------<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; =E2=80=8Bmprotect(0x7fffaed00000, 131072=
-, PROT_EXEC) =3D 0<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; rt_sigprocmask(SIG_BLOCK, NULL, [], 8)=
-=C2=A0 =3D 0<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; --- SIGSEGV {si_signo=3DSIGSEGV, si_code=
-=3DSEGV_PKUERR,<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 si_addr=3D0x7fffaed00170}<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; &gt; ---=E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; Looks like a bug to me.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; Please Cc linuxppc-dev on powerpc bugs.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; I also can&#39;t reproduce this failure on my=
- machine.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 &gt; Not sure what&#39;s going on?<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 I could reproduce it on a power7 lpar.=C2=A0 But n=
-ot on a power8 lpar.<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 The problem seems to be that the cpu generates a k=
-ey exception if<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 the page with Read/Write-disable-but-<wbr>execute-=
-enable key is executed<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 on power7. If I enable read on that key, the excep=
-tion disappears.<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 After adding read permission on that key, reproducer get =
-PASS on my power8<br>
-&gt;=C2=A0 =C2=A0 machine too.=E2=80=8B<br>
-&gt;=C2=A0 =C2=A0 =E2=80=8B(=E2=80=8Bmprotect(..,PROT_READ | PROT_EXEC))=E2=
-=80=8B<br>
-&gt;=C2=A0 =C2=A0 =C2=A0<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 BTW: the testcase executes<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =E2=80=8B=E2=80=8Bmprotect(..,PROT_EXEC).<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 The mprotect(, PROT_EXEC) system call internally g=
-enerates a<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 execute-only key and associates it with the pages =
-in the address-range.=C2=A0<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 Now since Li Wang claims that he can reproduce it =
-on power8 as well, i<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 am wondering if the slightly different cpu behavio=
-r is dependent on the<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 version of the firmware/microcode?<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =E2=80=8BI also run this reproducer on series ppc kvm mac=
-hines, but none of them<br>
-&gt;=C2=A0 =C2=A0 get the FAIL.<br>
-&gt;=C2=A0 =C2=A0 If you need some more HW info, pls let me know.=E2=80=8B<=
-br>
-<br>
-</div></div>Hi Li,<br>
-<br>
-=C2=A0 =C2=A0Can you try the following patch and see if it solves your prob=
-lem.<br></blockquote><div><br><div style=3D"font-family:monospace,monospace=
-" class=3D"gmail_default">=E2=80=8BIt only works on power7 lpar machine.<br=
-><br></div><div style=3D"font-family:monospace,monospace" class=3D"gmail_de=
-fault">But for p8 lpar, it still get failure as that before, the thing I wo=
-ndered is<br></div><div style=3D"font-family:monospace,monospace" class=3D"=
-gmail_default">that why not disable the pkey_execute_disable_supported on p=
-8 machine? <br><br></div><div style=3D"font-family:monospace,monospace" cla=
-ss=3D"gmail_default">I tried to modify your patch and get PASS with the mpr=
-otect04 test on power8 lpar machine.<br><br>--- a/arch/powerpc/mm/pkeys.c<b=
-r>+++ b/arch/powerpc/mm/pkeys.c<br>@@ -105,7 +105,9 @@ int pkey_initialize(=
-void)<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * The device tree=
- cannot be relied to indicate support for<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 * execute_disable support. Instead we use a PVR check.<b=
-r>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 */<br>-=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 if (pvr_version_is(PVR_POWER7) || pvr_version_is(PVR_=
-POWER7p))<br>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (pvr_version_is(PVR_P=
-OWER7) || pvr_version_is(PVR_POWER7p) \<br>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 || pvr_version_is(PV=
-R_POWER8E) || pvr_version_is(PVR_POWER8NVL) \<br>+=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 || pvr_version=
-_is(PVR_POWER8))<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pkey_execute_disable_supported =3D fal=
-se;<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 else<br>=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
- pkey_execute_disable_supported =3D true;<br>@@ -395,7 +397,7 @@ int __arch=
-_override_mprotect_pkey(struct vm_area_struct *vma, int prot,<br>=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * The requested protection is execu=
-te-only. Hence let&#39;s use an<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0 * execute-only pkey.<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0 */<br>-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (prot =3D=3D PROT_=
-EXEC) {<br>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (prot =3D=3D PROT_EXEC =
-&amp;&amp; pkey_execute_disable_supported) {<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pkey =3D ex=
-ecute_only_pkey(vma-&gt;vm_mm);<br>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (pkey &gt; 0)<br>=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return pkey;<b=
-r><br></div><br>=C2=A0</div><blockquote class=3D"gmail_quote" style=3D"marg=
-in:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1e=
-x">
-<br>
-<br>
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c<br>
-index c269817..184a10a 100644<br>
---- a/arch/powerpc/mm/pkeys.c<br>
-+++ b/arch/powerpc/mm/pkeys.c<br>
-@@ -421,7 +421,7 @@ int __arch_override_mprotect_pkey(<wbr>struct vm_area_s=
-truct *vma, int prot,<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0* The requested protection is execute-onl=
-y. Hence let&#39;s use an<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0* execute-only pkey.<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0*/<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0if (prot =3D=3D PROT_EXEC) {<br>
-<div style=3D"font-family:monospace,monospace;display:inline" class=3D"gmai=
-l_default">=E2=80=8B=E2=80=8B</div>+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (prot =3D=
-=3D PROT_EXEC &amp;&amp; pkey_execute_disable_<wbr>supported) {<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 pkey =3D execute_on=
-ly_pkey(vma-&gt;vm_mm);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (pkey &gt; 0)<br=
->
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 return pkey;<br>
-<br>
-<br>
-Thanks<br>
-<span class=3D"gmail-HOEnZb"><font color=3D"#888888">RP<br>
-<br>
-</font></span></blockquote></div><br><br clear=3D"all"><br>-- <br><div clas=
-s=3D"gmail_signature">Li Wang<br><a href=3D"mailto:liwang@redhat.com" targe=
-t=3D"_blank">liwang@redhat.com</a></div>
-</div></div>
-
---001a114289f85e0e940567e6a46c--
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 49fd067..ecee84d 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -213,6 +213,8 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
+ #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
+ #define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
++#define CPU_FTR_P9_TM_HV_ASSIST		LONG_ASM_CONST(0x0000100000000000)
++#define CPU_FTR_P9_TM_XER_SO_BUG	LONG_ASM_CONST(0x0000200000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -469,6 +471,8 @@ static inline void cpu_feature_keys_init(void) { }
+ 			     (~CPU_FTR_SAO))
+ #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
+ #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
++#define CPU_FTRS_POWER9_DD2_2 (CPU_FTRS_POWER9 | CPU_FTR_P9_TM_HV_ASSIST | \
++			       CPU_FTR_P9_TM_XER_SO_BUG)
+ #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -488,7 +492,8 @@ static inline void cpu_feature_keys_init(void) { }
+ 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
+ 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
+ 	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9 | \
+-	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1)
++	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
++	     CPU_FTRS_POWER9_DD2_2)
+ #endif
+ #else
+ enum {
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index c40a9fc..68052ea 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -553,11 +553,31 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check_early	= __machine_check_early_realmode_p9,
+ 		.platform		= "power9",
+ 	},
+-	{	/* Power9 DD 2.1 or later (see DD2.0 above) */
++	{	/* Power9 DD 2.1 */
++		.pvr_mask		= 0xffffefff,
++		.pvr_value		= 0x004e0201,
++		.cpu_name		= "POWER9 (raw)",
++		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
++		.cpu_user_features	= COMMON_USER_POWER9,
++		.cpu_user_features2	= COMMON_USER2_POWER9,
++		.mmu_features		= MMU_FTRS_POWER9,
++		.icache_bsize		= 128,
++		.dcache_bsize		= 128,
++		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
++		.oprofile_cpu_type	= "ppc64/power9",
++		.oprofile_type		= PPC_OPROFILE_INVALID,
++		.cpu_setup		= __setup_cpu_power9,
++		.cpu_restore		= __restore_cpu_power9,
++		.flush_tlb		= __flush_tlb_power9,
++		.machine_check_early	= __machine_check_early_realmode_p9,
++		.platform		= "power9",
++	},
++	{	/* Power9 DD2.2 or later */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x004e0000,
+ 		.cpu_name		= "POWER9 (raw)",
+-		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
++		.cpu_features		= CPU_FTRS_POWER9_DD2_2,
+ 		.cpu_user_features	= COMMON_USER_POWER9,
+ 		.cpu_user_features2	= COMMON_USER2_POWER9,
+ 		.mmu_features		= MMU_FTRS_POWER9,
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index ee562ff..0a0c601 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -589,6 +589,8 @@ static struct dt_cpu_feature_match __initdata
+ 	{"virtual-page-class-key-protection", feat_enable, 0},
+ 	{"transactional-memory", feat_enable_tm, CPU_FTR_TM},
+ 	{"transactional-memory-v3", feat_enable_tm, 0},
++	{"tm-suspend-hypervisor-assist", feat_enable, CPU_FTR_P9_TM_HV_ASSIST},
++	{"tm-suspend-xer-so-bug", feat_enable, CPU_FTR_P9_TM_XER_SO_BUG},
+ 	{"idle-nap", feat_enable_idle_nap, 0},
+ 	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
+ 	{"idle-stop", feat_enable_idle_stop, 0},
+@@ -708,6 +710,9 @@ static __init void cpufeatures_cpu_quirks(void)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
+ 	else if ((version & 0xffffefff) == 0x004e0201)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
++	else if ((version & 0xffffefff) == 0x004e0202)
++		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_HV_ASSIST |
++			CPU_FTR_P9_TM_XER_SO_BUG;
+ }
+ 
+ static void __init cpufeatures_setup_finished(void)
+-- 
+2.7.4
