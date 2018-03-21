@@ -1,19 +1,42 @@
-Return-Path: <jared.bents@rockwellcollins.com>
-Received: from da1vs04.rockwellcollins.com (da1vs04.rockwellcollins.com
- [205.175.227.52])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4062Yk6XVRzF1bN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 08:12:09 +1100 (AEDT)
-Received: by mail-yb0-f197.google.com with SMTP id p77-v6so2629374ybg.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 14:01:00 -0700 (PDT)
-MIME-Version: 1.0
-From: Jared Bents <jared.bents@rockwellcollins.com>
-Date: Wed, 21 Mar 2018 16:00:58 -0500
-Message-ID: <CAM=7fbcynhZ3iPtCGpVCgDmw7OU6SQcucZDm1kUdv=soky9RJQ@mail.gmail.com>
-Subject: DMA Mapping Error in ppc64
-To: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4064gM0fZjzF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 09:47:03 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2LMiSjS138655
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 18:47:00 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gux53n06d-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 18:47:00 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Wed, 21 Mar 2018 22:46:58 -0000
+Subject: Re: [PATCH v6 05/12] integrity: Introduce integrity_keyring_from_id()
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-integrity@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
+ "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
+Date: Wed, 21 Mar 2018 18:46:51 -0400
+In-Reply-To: <20180316203837.10174-6-bauerman@linux.vnet.ibm.com>
+References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
+ <20180316203837.10174-6-bauerman@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1521672411.3848.219.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,68 +46,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
+> IMA will need to obtain the keyring used to verify file signatures so that
+> it can verify the module-style signature appended to files.
+> 
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 
-Apologies for the amount of information but we've been debugging this
-for a while and I wanted to get what we are seeing captured as much as
-possible.  We are a T1042 processor and have a total 8GB DDR and our
-kernel version is fsl-sdk-v2.0-1703 (linux v4.1.35) as that is the
-latest version supplied by NXP.
+Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 
-A while ago we ported from 32 bit to 64 bit.  Everything continued to
-work except the ath10k module we have.  So as a first step, we checked
-to see if an ath9k module also failed to work and it was also no
-longer working.  The ath10k is working fine on a 32 bit system but
-it's not working on 64 bit system as we are getting dma mapping errors
-when trying to initialize the wifi modules.
-
-pci_bus 0002:01: bus scan returning with max=01
-pci_bus 0002:01: busn_res: [bus 01] end is updated to 01
-pci_bus 0002:00: bus scan returning with max=01
-ath10k_pci 0000:01:00.0: unable to get target info from device
-ath10k_pci 0000:01:00.0: could not get target info (-5)
-ath10k_pci 0000:01:00.0: could not probe fw (-5)
-ath10k_pci 0001:01:00.0: Direct firmware load for
-ath10k/cal-pci-0001:01:00.0.bin failed with error -2
-
-
-First, we have tried the mainline kernel (v4.15)  to see if that would
-fix the issue, it did not.  So I made a patch for the ath10k driver to
-restrict to just GFP_DMA areas when allocating memory or creating
-sk_buffs and have attached it.  The ath10k wifi modules now initialize
-correctly but when I try to connect them and send traffic, they get a
-DMA mapping error from the sk_buff that it receives from elsewhere in
-the kernel.  So while the driver appears to be fixable with the patch,
-the modules are still unusable due to data being sent to the driver
-when ath10k_tx is called and it tries to dma map with the provided
-skb.  Also, according to the ath10k mailing list, GFP_DMA is not
-supposed to be used in general.  The error below is the same sort of
-dma mapping error that is seen when initializing the modules without
-the patch to OR with GFP_DMA.
-
-ath10k_pci 0001:01:00.0: failed to transmit packet, dropping: -5
-
-
-We asked on the ath10k mailing list if anyone else is having this
-problem and no one else seems to have the issue but they are using
-different architectures (ARM or X86). As a result, it does not seem to
-be a driver issue to us but something within the PowerPC arch.  So we
-dug a little deeper to try to find what addresses being mapped are
-working and what address being mapped are not working.
-
-We found that when the virtual address of data pointer (a member of
-sk_buff) is above ~3.7 GB RAM address range then return address from
-dma_map_single API is failed to validate in dma_mapping_error
-function.
-
-We also noticed that in a 64bit machine sometimes ping is working and
-because of the virtual address is under ~3.7GAM RAM address range.  So
-if we set mem=2048M in the bootargs, the ath10k module works
-perfectly, however this isn't a real solution since it cuts our
-available RAM from 8GB to 2GB.
-
-Any information that could help us resolve this issue would be greatly
-appreciated.
-
-Thank you,
-Jared
+> ---
+>  security/integrity/digsig.c    | 28 +++++++++++++++++++++-------
+>  security/integrity/integrity.h |  6 ++++++
+>  2 files changed, 27 insertions(+), 7 deletions(-)
+> 
+> diff --git a/security/integrity/digsig.c b/security/integrity/digsig.c
+> index 6f9e4ce568cd..e641a67b9fc7 100644
+> --- a/security/integrity/digsig.c
+> +++ b/security/integrity/digsig.c
+> @@ -48,11 +48,10 @@ static bool init_keyring __initdata;
+>  #define restrict_link_to_ima restrict_link_by_builtin_trusted
+>  #endif
+> 
+> -int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+> -			    const char *digest, int digestlen)
+> +struct key *integrity_keyring_from_id(const unsigned int id)
+>  {
+> -	if (id >= INTEGRITY_KEYRING_MAX || siglen < 2)
+> -		return -EINVAL;
+> +	if (id >= INTEGRITY_KEYRING_MAX)
+> +		return ERR_PTR(-EINVAL);
+> 
+>  	if (!keyring[id]) {
+>  		keyring[id] =
+> @@ -61,17 +60,32 @@ int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+>  			int err = PTR_ERR(keyring[id]);
+>  			pr_err("no %s keyring: %d\n", keyring_name[id], err);
+>  			keyring[id] = NULL;
+> -			return err;
+> +			return ERR_PTR(err);
+>  		}
+>  	}
+> 
+> +	return keyring[id];
+> +}
+> +
+> +int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+> +			    const char *digest, int digestlen)
+> +{
+> +	struct key *keyring;
+> +
+> +	if (siglen < 2)
+> +		return -EINVAL;
+> +
+> +	keyring = integrity_keyring_from_id(id);
+> +	if (IS_ERR(keyring))
+> +		return PTR_ERR(keyring);
+> +
+>  	switch (sig[1]) {
+>  	case 1:
+>  		/* v1 API expect signature without xattr type */
+> -		return digsig_verify(keyring[id], sig + 1, siglen - 1,
+> +		return digsig_verify(keyring, sig + 1, siglen - 1,
+>  				     digest, digestlen);
+>  	case 2:
+> -		return asymmetric_verify(keyring[id], sig, siglen,
+> +		return asymmetric_verify(keyring, sig, siglen,
+>  					 digest, digestlen);
+>  	}
+> 
+> diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
+> index 79799a0d9195..2d245f44ca26 100644
+> --- a/security/integrity/integrity.h
+> +++ b/security/integrity/integrity.h
+> @@ -150,6 +150,7 @@ int integrity_kernel_read(struct file *file, loff_t offset,
+> 
+>  #ifdef CONFIG_INTEGRITY_SIGNATURE
+> 
+> +struct key *integrity_keyring_from_id(const unsigned int id);
+>  int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+>  			    const char *digest, int digestlen);
+> 
+> @@ -157,6 +158,11 @@ int __init integrity_init_keyring(const unsigned int id);
+>  int __init integrity_load_x509(const unsigned int id, const char *path);
+>  #else
+> 
+> +static inline struct key *integrity_keyring_from_id(const unsigned int id)
+> +{
+> +	return ERR_PTR(-EINVAL);
+> +}
+> +
+>  static inline int integrity_digsig_verify(const unsigned int id,
+>  					  const char *sig, int siglen,
+>  					  const char *digest, int digestlen)
+> 
