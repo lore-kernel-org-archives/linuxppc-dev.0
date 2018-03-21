@@ -3,22 +3,23 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4064gM0fZjzF0Vt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 09:47:03 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LMiSjS138655
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 18:47:00 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4065Lv5SfvzF1q4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 10:17:59 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2LNEmxD137717
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 19:17:56 -0400
 Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gux53n06d-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2guvmshue3-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 18:47:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 19:17:56 -0400
 Received: from localhost
  by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 22:46:58 -0000
-Subject: Re: [PATCH v6 05/12] integrity: Introduce integrity_keyring_from_id()
+ Wed, 21 Mar 2018 23:17:53 -0000
+Subject: Re: [PATCH v6 06/12] integrity: Introduce
+ asymmetric_sig_has_known_key()
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
  linux-integrity@vger.kernel.org
@@ -30,13 +31,13 @@ Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
  <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
  <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
  "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
-Date: Wed, 21 Mar 2018 18:46:51 -0400
-In-Reply-To: <20180316203837.10174-6-bauerman@linux.vnet.ibm.com>
+Date: Wed, 21 Mar 2018 19:17:45 -0400
+In-Reply-To: <20180316203837.10174-7-bauerman@linux.vnet.ibm.com>
 References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
- <20180316203837.10174-6-bauerman@linux.vnet.ibm.com>
+ <20180316203837.10174-7-bauerman@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Message-Id: <1521672411.3848.219.camel@linux.vnet.ibm.com>
+Message-Id: <1521674265.3848.220.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,95 +48,117 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
-> IMA will need to obtain the keyring used to verify file signatures so that
-> it can verify the module-style signature appended to files.
+> IMA will only look for a modsig if the xattr sig references a key which is
+> not in the expected kernel keyring. To that end, introduce
+> asymmetric_sig_has_known_key().
+> 
+> The logic of extracting the key used in the xattr sig is factored out from
+> asymmetric_verify() so that it can be used by the new function.
 > 
 > Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 
 Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 
 > ---
->  security/integrity/digsig.c    | 28 +++++++++++++++++++++-------
->  security/integrity/integrity.h |  6 ++++++
->  2 files changed, 27 insertions(+), 7 deletions(-)
+>  security/integrity/digsig_asymmetric.c | 44 +++++++++++++++++++++++++---------
+>  security/integrity/integrity.h         |  8 +++++++
+>  2 files changed, 41 insertions(+), 11 deletions(-)
 > 
-> diff --git a/security/integrity/digsig.c b/security/integrity/digsig.c
-> index 6f9e4ce568cd..e641a67b9fc7 100644
-> --- a/security/integrity/digsig.c
-> +++ b/security/integrity/digsig.c
-> @@ -48,11 +48,10 @@ static bool init_keyring __initdata;
->  #define restrict_link_to_ima restrict_link_by_builtin_trusted
->  #endif
+> diff --git a/security/integrity/digsig_asymmetric.c b/security/integrity/digsig_asymmetric.c
+> index ab6a029062a1..241647970c19 100644
+> --- a/security/integrity/digsig_asymmetric.c
+> +++ b/security/integrity/digsig_asymmetric.c
+> @@ -79,26 +79,48 @@ static struct key *request_asymmetric_key(struct key *keyring, uint32_t keyid)
+>  	return key;
+>  }
 > 
-> -int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
-> -			    const char *digest, int digestlen)
-> +struct key *integrity_keyring_from_id(const unsigned int id)
+> -int asymmetric_verify(struct key *keyring, const char *sig,
+> -		      int siglen, const char *data, int datalen)
+> +static struct key *asymmetric_key_from_sig(struct key *keyring, const char *sig,
+> +					   int siglen)
 >  {
-> -	if (id >= INTEGRITY_KEYRING_MAX || siglen < 2)
-> -		return -EINVAL;
-> +	if (id >= INTEGRITY_KEYRING_MAX)
-> +		return ERR_PTR(-EINVAL);
+> -	struct public_key_signature pks;
+> -	struct signature_v2_hdr *hdr = (struct signature_v2_hdr *)sig;
+> -	struct key *key;
+> -	int ret = -ENOMEM;
+> +	const struct signature_v2_hdr *hdr = (struct signature_v2_hdr *) sig;
 > 
->  	if (!keyring[id]) {
->  		keyring[id] =
-> @@ -61,17 +60,32 @@ int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
->  			int err = PTR_ERR(keyring[id]);
->  			pr_err("no %s keyring: %d\n", keyring_name[id], err);
->  			keyring[id] = NULL;
-> -			return err;
-> +			return ERR_PTR(err);
->  		}
->  	}
+>  	if (siglen <= sizeof(*hdr))
+> -		return -EBADMSG;
+> +		return ERR_PTR(-EBADMSG);
 > 
-> +	return keyring[id];
+>  	siglen -= sizeof(*hdr);
+> 
+>  	if (siglen != be16_to_cpu(hdr->sig_size))
+> -		return -EBADMSG;
+> +		return ERR_PTR(-EBADMSG);
+> 
+>  	if (hdr->hash_algo >= HASH_ALGO__LAST)
+> -		return -ENOPKG;
+> +		return ERR_PTR(-ENOPKG);
+> +
+> +	return request_asymmetric_key(keyring, be32_to_cpu(hdr->keyid));
 > +}
 > +
-> +int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
-> +			    const char *digest, int digestlen)
+> +bool asymmetric_sig_has_known_key(struct key *keyring, const char *sig,
+> +				  int siglen)
 > +{
-> +	struct key *keyring;
+> +	struct key *key;
 > +
-> +	if (siglen < 2)
-> +		return -EINVAL;
+> +	key = asymmetric_key_from_sig(keyring, sig, siglen);
+> +	if (IS_ERR_OR_NULL(key))
+> +		return false;
 > +
-> +	keyring = integrity_keyring_from_id(id);
-> +	if (IS_ERR(keyring))
-> +		return PTR_ERR(keyring);
+> +	key_put(key);
 > +
->  	switch (sig[1]) {
->  	case 1:
->  		/* v1 API expect signature without xattr type */
-> -		return digsig_verify(keyring[id], sig + 1, siglen - 1,
-> +		return digsig_verify(keyring, sig + 1, siglen - 1,
->  				     digest, digestlen);
->  	case 2:
-> -		return asymmetric_verify(keyring[id], sig, siglen,
-> +		return asymmetric_verify(keyring, sig, siglen,
->  					 digest, digestlen);
->  	}
+> +	return true;
+> +}
+> +
+> +int asymmetric_verify(struct key *keyring, const char *sig,
+> +		      int siglen, const char *data, int datalen)
+> +{
+> +	struct public_key_signature pks;
+> +	struct signature_v2_hdr *hdr = (struct signature_v2_hdr *)sig;
+> +	struct key *key;
+> +	int ret = -ENOMEM;
 > 
+> -	key = request_asymmetric_key(keyring, be32_to_cpu(hdr->keyid));
+> +	key = asymmetric_key_from_sig(keyring, sig, siglen);
+>  	if (IS_ERR(key))
+>  		return PTR_ERR(key);
+> 
+> @@ -109,7 +131,7 @@ int asymmetric_verify(struct key *keyring, const char *sig,
+>  	pks.digest = (u8 *)data;
+>  	pks.digest_size = datalen;
+>  	pks.s = hdr->sig;
+> -	pks.s_size = siglen;
+> +	pks.s_size = siglen - sizeof(*hdr);
+>  	ret = verify_signature(key, &pks);
+>  	key_put(key);
+>  	pr_debug("%s() = %d\n", __func__, ret);
 > diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
-> index 79799a0d9195..2d245f44ca26 100644
+> index 2d245f44ca26..4c381b992e11 100644
 > --- a/security/integrity/integrity.h
 > +++ b/security/integrity/integrity.h
-> @@ -150,6 +150,7 @@ int integrity_kernel_read(struct file *file, loff_t offset,
-> 
->  #ifdef CONFIG_INTEGRITY_SIGNATURE
-> 
-> +struct key *integrity_keyring_from_id(const unsigned int id);
->  int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
->  			    const char *digest, int digestlen);
-> 
-> @@ -157,6 +158,11 @@ int __init integrity_init_keyring(const unsigned int id);
->  int __init integrity_load_x509(const unsigned int id, const char *path);
+> @@ -179,12 +179,20 @@ static inline int integrity_init_keyring(const unsigned int id)
+>  #ifdef CONFIG_INTEGRITY_ASYMMETRIC_KEYS
+>  int asymmetric_verify(struct key *keyring, const char *sig,
+>  		      int siglen, const char *data, int datalen);
+> +bool asymmetric_sig_has_known_key(struct key *keyring, const char *sig,
+> +				  int siglen);
 >  #else
-> 
-> +static inline struct key *integrity_keyring_from_id(const unsigned int id)
-> +{
-> +	return ERR_PTR(-EINVAL);
-> +}
+>  static inline int asymmetric_verify(struct key *keyring, const char *sig,
+>  				    int siglen, const char *data, int datalen)
+>  {
+>  	return -EOPNOTSUPP;
+>  }
 > +
->  static inline int integrity_digsig_verify(const unsigned int id,
->  					  const char *sig, int siglen,
->  					  const char *digest, int digestlen)
+> +static inline bool asymmetric_sig_has_known_key(struct key *keyring,
+> +						const char *sig, int siglen)
+> +{
+> +	return false;
+> +}
+>  #endif
+> 
+>  #ifdef CONFIG_IMA_LOAD_X509
 > 
