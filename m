@@ -1,27 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405dS71PBszF1jg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:20:55 +1100 (AEDT)
-Received: by mail-io0-x243.google.com with SMTP id r18so5142593ioa.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:20:54 -0700 (PDT)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.googlemail.com with ESMTPSA id p65sm2121444iop.63.2018.03.20.22.20.51
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 20 Mar 2018 22:20:52 -0700 (PDT)
-Subject: Re: [PATCH v2 9/9] powerpc/eeh: Add eeh_state_active() helper
-To: linuxppc-dev@lists.ozlabs.org
-References: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
- <c7cc2334ac3a7c88cc68b45337de890bcdcc80f7.1521427331.git.sam.bobroff@au1.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <a3f9ccc1-270f-597e-4121-0833ea16b2aa@ozlabs.ru>
-Date: Wed, 21 Mar 2018 16:20:49 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405gJz1QHlzF0wQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 17:44:50 +1100 (AEDT)
+Subject: [PATCH 1/1] PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi boards
+To: Michael Ellerman <mpe@ellerman.id.au>, Bjorn Helgaas
+ <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-pci@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+ <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
+ <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
+ <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
+ <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
+ <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+ <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
+ <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
+ <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
+ <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
+ <20180319191310.GG77194@bhelgaas-glaptop.roam.corp.google.com>
+ <87tvtbg0i9.fsf@concordia.ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <9841e67b-fc61-cfa7-e6ab-cede76665e27@xenosoft.de>
+Date: Wed, 21 Mar 2018 07:44:25 +0100
 MIME-Version: 1.0
-In-Reply-To: <c7cc2334ac3a7c88cc68b45337de890bcdcc80f7.1521427331.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87tvtbg0i9.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,156 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/3/18 1:49 pm, Sam Bobroff wrote:
-> Checking for a "fully active" device state requires testing two flag
-> bits, which is open coded in several places, so add a function to do
-> it.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Michael,
 
+Thanks for the hint because of removing tags and thanks a lot for adding 
+the patch to the official source code. This patch helps us a lot.
 
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Have a nice day!
 
+Christian
 
-> ---
->  arch/powerpc/include/asm/eeh.h               |  6 ++++++
->  arch/powerpc/kernel/eeh.c                    | 19 ++++++-------------
->  arch/powerpc/platforms/powernv/eeh-powernv.c |  9 ++-------
->  3 files changed, 14 insertions(+), 20 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-> index fd37cc101f4f..c2266ca61853 100644
-> --- a/arch/powerpc/include/asm/eeh.h
-> +++ b/arch/powerpc/include/asm/eeh.h
-> @@ -256,6 +256,12 @@ static inline void eeh_serialize_unlock(unsigned long flags)
->  	raw_spin_unlock_irqrestore(&confirm_error_lock, flags);
->  }
->  
-> +static inline bool eeh_state_active(int state)
-> +{
-> +	return (state & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
-> +	== (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
-> +}
-> +
->  typedef void *(*eeh_traverse_func)(void *data, void *flag);
->  void eeh_set_pe_aux_size(int size);
->  int eeh_phb_pe_create(struct pci_controller *phb);
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index 2b9df0040d6b..bc640e4c5ca5 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -394,9 +394,7 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
->  	/* Check PHB state */
->  	ret = eeh_ops->get_state(phb_pe, NULL);
->  	if ((ret < 0) ||
-> -	    (ret == EEH_STATE_NOT_SUPPORT) ||
-> -	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
-> -	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
-> +	    (ret == EEH_STATE_NOT_SUPPORT) || eeh_state_active(ret)) {
->  		ret = 0;
->  		goto out;
->  	}
-> @@ -433,7 +431,6 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
->  int eeh_dev_check_failure(struct eeh_dev *edev)
->  {
->  	int ret;
-> -	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
->  	unsigned long flags;
->  	struct device_node *dn;
->  	struct pci_dev *dev;
-> @@ -525,8 +522,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
->  	 * state, PE is in good state.
->  	 */
->  	if ((ret < 0) ||
-> -	    (ret == EEH_STATE_NOT_SUPPORT) ||
-> -	    ((ret & active_flags) == active_flags)) {
-> +	    (ret == EEH_STATE_NOT_SUPPORT) || eeh_state_active(ret)) {
->  		eeh_stats.false_positives++;
->  		pe->false_positives++;
->  		rc = 0;
-> @@ -546,8 +542,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
->  
->  		/* Frozen parent PE ? */
->  		ret = eeh_ops->get_state(parent_pe, NULL);
-> -		if (ret > 0 &&
-> -		    (ret & active_flags) != active_flags)
-> +		if (ret > 0 && !eeh_state_active(ret))
->  			pe = parent_pe;
->  
->  		/* Next parent level */
-> @@ -888,7 +883,6 @@ static void *eeh_set_dev_freset(void *data, void *flag)
->   */
->  int eeh_pe_reset_full(struct eeh_pe *pe)
->  {
-> -	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
->  	int reset_state = (EEH_PE_RESET | EEH_PE_CFG_BLOCKED);
->  	int type = EEH_RESET_HOT;
->  	unsigned int freset = 0;
-> @@ -919,7 +913,7 @@ int eeh_pe_reset_full(struct eeh_pe *pe)
->  
->  		/* Wait until the PE is in a functioning state */
->  		state = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
-> -		if ((state & active_flags) == active_flags)
-> +		if (eeh_state_active(state))
->  			break;
->  
->  		if (state < 0) {
-> @@ -1352,16 +1346,15 @@ static int eeh_pe_change_owner(struct eeh_pe *pe)
->  	struct eeh_dev *edev, *tmp;
->  	struct pci_dev *pdev;
->  	struct pci_device_id *id;
-> -	int flags, ret;
-> +	int ret;
->  
->  	/* Check PE state */
-> -	flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
->  	ret = eeh_ops->get_state(pe, NULL);
->  	if (ret < 0 || ret == EEH_STATE_NOT_SUPPORT)
->  		return 0;
->  
->  	/* Unfrozen PE, nothing to do */
-> -	if ((ret & flags) == flags)
-> +	if (eeh_state_active(ret))
->  		return 0;
->  
->  	/* Frozen PE, check if it needs PE level reset */
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 33c86c1a1720..ddfc3544d285 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1425,11 +1425,8 @@ static int pnv_eeh_get_pe(struct pci_controller *hose,
->  	dev_pe = dev_pe->parent;
->  	while (dev_pe && !(dev_pe->type & EEH_PE_PHB)) {
->  		int ret;
-> -		int active_flags = (EEH_STATE_MMIO_ACTIVE |
-> -				    EEH_STATE_DMA_ACTIVE);
-> -
->  		ret = eeh_ops->get_state(dev_pe, NULL);
-> -		if (ret <= 0 || (ret & active_flags) == active_flags) {
-> +		if (ret <= 0 || eeh_state_active(ret)) {
->  			dev_pe = dev_pe->parent;
->  			continue;
->  		}
-> @@ -1463,7 +1460,6 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
->  	struct eeh_pe *phb_pe, *parent_pe;
->  	__be64 frozen_pe_no;
->  	__be16 err_type, severity;
-> -	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
->  	long rc;
->  	int state, ret = EEH_NEXT_ERR_NONE;
->  
-> @@ -1626,8 +1622,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
->  
->  				/* Frozen parent PE ? */
->  				state = eeh_ops->get_state(parent_pe, NULL);
-> -				if (state > 0 &&
-> -				    (state & active_flags) != active_flags)
-> +				if (state > 0 && !eeh_state_active(state))
->  					*pe = parent_pe;
->  
->  				/* Next parent level */
-> 
-
-
--- 
-Alexey
+On 19 March 2018 at 11:32PM, Michael Ellerman wrote:
+ >
+ > I'm happy to take it, I've been meaning to check if Olof sent a SOB in
+ > his original mail but haven't got to it.
+ >
+ > ...
+ >
+ > Yes, he did, see below.
+ >
+ > So I'll merge that, I'll add a Tested-by for you Christian.
+ >
+ > Christian please don't remove any of the tags when submitting other
+ > peoples' patches in future.
+ >
+ > cheers
+ >
+ >
+ > >From a3b390277627b0342c8ccfc16e58679e0d8abdde Mon Sep 17 00:00:00 2001
+ > From: Olof Johansson <olof@lixom.net>
+ > Date: Sat, 2 Dec 2017 14:56:36 -0800
+ > Subject: [PATCH] powerpc/pasemi: set PCI_SCAN_ALL_PCI_DEVS
+ >
+ > Needed on Amiga X1000 with SB600.
+ >
+ > Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+ > Cc: Bjorn Helgaas <bhelgaas@google.com>
+ > Signed-off-by: Olof Johansson <olof@lixom.net>
+ > ---
+ >  arch/powerpc/platforms/pasemi/pci.c | 2 ++
+ >  1 file changed, 2 insertions(+)
+ >
+ > diff --git a/arch/powerpc/platforms/pasemi/pci.c 
+b/arch/powerpc/platforms/pasemi/pci.c
+ > index 5ff6108..ea54ed2 100644
+ > --- a/arch/powerpc/platforms/pasemi/pci.c
+ > +++ b/arch/powerpc/platforms/pasemi/pci.c
+ > @@ -224,6 +224,8 @@ void __init pas_pci_init(void)
+ >         return;
+ >     }
+ >
+ > +    pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS):
+ > +
+ >     for (np = NULL; (np = of_get_next_child(root, np)) != NULL;)
+ >         if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
+ >             of_node_get(np);
+ >
