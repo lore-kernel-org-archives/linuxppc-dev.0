@@ -1,23 +1,23 @@
 Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40608h6tySzF1p4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:23:48 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LJJ1nd051429
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:23:46 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2guw2hs8h0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40608n0LQZzF1qv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:23:52 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2LJIZQN003824
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:23:50 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2guw151e1y-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:23:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:23:50 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 19:23:43 -0000
+ Wed, 21 Mar 2018 19:23:48 -0000
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
@@ -32,11 +32,11 @@ Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 09/32] docs/vm: hwpoison.txt: convert to ReST format
-Date: Wed, 21 Mar 2018 21:22:25 +0200
+Subject: [PATCH 10/32] docs/vm: idle_page_tracking.txt: convert to ReST format
+Date: Wed, 21 Mar 2018 21:22:26 +0200
 In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1521660168-14372-10-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1521660168-14372-11-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,215 +48,113 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- Documentation/vm/hwpoison.txt | 141 +++++++++++++++++++++---------------------
- 1 file changed, 70 insertions(+), 71 deletions(-)
+ Documentation/vm/idle_page_tracking.txt | 55 +++++++++++++++++++++------------
+ 1 file changed, 36 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/vm/hwpoison.txt b/Documentation/vm/hwpoison.txt
-index e912d7e..b1a8c24 100644
---- a/Documentation/vm/hwpoison.txt
-+++ b/Documentation/vm/hwpoison.txt
-@@ -1,7 +1,14 @@
-+.. hwpoison:
+diff --git a/Documentation/vm/idle_page_tracking.txt b/Documentation/vm/idle_page_tracking.txt
+index 85dcc3b..9cbe6f8 100644
+--- a/Documentation/vm/idle_page_tracking.txt
++++ b/Documentation/vm/idle_page_tracking.txt
+@@ -1,4 +1,11 @@
+-MOTIVATION
++.. _idle_page_tracking:
 +
-+========
-+hwpoison
-+========
++==================
++Idle Page Tracking
++==================
 +
- What is hwpoison?
-+=================
- 
- Upcoming Intel CPUs have support for recovering from some memory errors
--(``MCA recovery''). This requires the OS to declare a page "poisoned",
-+(``MCA recovery``). This requires the OS to declare a page "poisoned",
- kill the processes associated with it and avoid using it in the future.
- 
- This patchkit implements the necessary infrastructure in the VM.
-@@ -46,9 +53,10 @@ address. This in theory allows other applications to handle
- memory failures too. The expection is that near all applications
- won't do that, but some very specialized ones might.
- 
-----
-+Failure recovery modes
-+======================
- 
--There are two (actually three) modi memory failure recovery can be in:
-+There are two (actually three) modes memory failure recovery can be in:
- 
- vm.memory_failure_recovery sysctl set to zero:
- 	All memory failures cause a panic. Do not attempt recovery.
-@@ -67,9 +75,8 @@ late kill
- 	This is best for memory error unaware applications and default
- 	Note some pages are always handled as late kill.
- 
-----
--
--User control:
-+User control
-+============
- 
- vm.memory_failure_recovery
- 	See sysctl.txt
-@@ -79,11 +86,19 @@ vm.memory_failure_early_kill
- 
- PR_MCE_KILL
- 	Set early/late kill mode/revert to system default
--	arg1: PR_MCE_KILL_CLEAR: Revert to system default
--	arg1: PR_MCE_KILL_SET: arg2 defines thread specific mode
--		PR_MCE_KILL_EARLY: Early kill
--		PR_MCE_KILL_LATE:  Late kill
--		PR_MCE_KILL_DEFAULT: Use system global default
-+
-+	arg1: PR_MCE_KILL_CLEAR:
-+		Revert to system default
-+	arg1: PR_MCE_KILL_SET:
-+		arg2 defines thread specific mode
-+
-+		PR_MCE_KILL_EARLY:
-+			Early kill
-+		PR_MCE_KILL_LATE:
-+			Late kill
-+		PR_MCE_KILL_DEFAULT
-+			Use system global default
-+
- 	Note that if you want to have a dedicated thread which handles
- 	the SIGBUS(BUS_MCEERR_AO) on behalf of the process, you should
- 	call prctl(PR_MCE_KILL_EARLY) on the designated thread. Otherwise,
-@@ -92,77 +107,64 @@ PR_MCE_KILL
- PR_MCE_KILL_GET
- 	return current mode
- 
-+Testing
-+=======
- 
-----
--
--Testing:
--
--madvise(MADV_HWPOISON, ....)
--	(as root)
--	Poison a page in the process for testing
--
-+* madvise(MADV_HWPOISON, ....) (as root) - Poison a page in the
-+  process for testing
- 
--hwpoison-inject module through debugfs
-+* hwpoison-inject module through debugfs ``/sys/kernel/debug/hwpoison/``
- 
--/sys/kernel/debug/hwpoison/
-+  corrupt-pfn
-+	Inject hwpoison fault at PFN echoed into this file. This does
-+	some early filtering to avoid corrupted unintended pages in test suites.
- 
--corrupt-pfn
-+  unpoison-pfn
-+	Software-unpoison page at PFN echoed into this file. This way
-+	a page can be reused again.  This only works for Linux
-+	injected failures, not for real memory failures.
- 
--Inject hwpoison fault at PFN echoed into this file. This does
--some early filtering to avoid corrupted unintended pages in test suites.
-+  Note these injection interfaces are not stable and might change between
-+  kernel versions
- 
--unpoison-pfn
-+  corrupt-filter-dev-major, corrupt-filter-dev-minor
-+	Only handle memory failures to pages associated with the file
-+	system defined by block device major/minor.  -1U is the
-+	wildcard value.  This should be only used for testing with
-+	artificial injection.
- 
--Software-unpoison page at PFN echoed into this file. This
--way a page can be reused again.
--This only works for Linux injected failures, not for real
--memory failures.
-+  corrupt-filter-memcg
-+	Limit injection to pages owned by memgroup. Specified by inode
-+	number of the memcg.
- 
--Note these injection interfaces are not stable and might change between
--kernel versions
-+	Example::
- 
--corrupt-filter-dev-major
--corrupt-filter-dev-minor
-+		mkdir /sys/fs/cgroup/mem/hwpoison
- 
--Only handle memory failures to pages associated with the file system defined
--by block device major/minor.  -1U is the wildcard value.
--This should be only used for testing with artificial injection.
-+	        usemem -m 100 -s 1000 &
-+		echo `jobs -p` > /sys/fs/cgroup/mem/hwpoison/tasks
- 
--corrupt-filter-memcg
-+		memcg_ino=$(ls -id /sys/fs/cgroup/mem/hwpoison | cut -f1 -d' ')
-+		echo $memcg_ino > /debug/hwpoison/corrupt-filter-memcg
- 
--Limit injection to pages owned by memgroup. Specified by inode number
--of the memcg.
-+		page-types -p `pidof init`   --hwpoison  # shall do nothing
-+		page-types -p `pidof usemem` --hwpoison  # poison its pages
- 
--Example:
--        mkdir /sys/fs/cgroup/mem/hwpoison
-+  corrupt-filter-flags-mask, corrupt-filter-flags-value
-+	When specified, only poison pages if ((page_flags & mask) ==
-+	value).  This allows stress testing of many kinds of
-+	pages. The page_flags are the same as in /proc/kpageflags. The
-+	flag bits are defined in include/linux/kernel-page-flags.h and
-+	documented in Documentation/vm/pagemap.txt
- 
--        usemem -m 100 -s 1000 &
--        echo `jobs -p` > /sys/fs/cgroup/mem/hwpoison/tasks
-+* Architecture specific MCE injector
- 
--        memcg_ino=$(ls -id /sys/fs/cgroup/mem/hwpoison | cut -f1 -d' ')
--        echo $memcg_ino > /debug/hwpoison/corrupt-filter-memcg
-+  x86 has mce-inject, mce-test
- 
--        page-types -p `pidof init`   --hwpoison  # shall do nothing
--        page-types -p `pidof usemem` --hwpoison  # poison its pages
-+  Some portable hwpoison test programs in mce-test, see below.
- 
--corrupt-filter-flags-mask
--corrupt-filter-flags-value
--
--When specified, only poison pages if ((page_flags & mask) == value).
--This allows stress testing of many kinds of pages. The page_flags
--are the same as in /proc/kpageflags. The flag bits are defined in
--include/linux/kernel-page-flags.h and documented in
--Documentation/vm/pagemap.txt
--
--Architecture specific MCE injector
--
--x86 has mce-inject, mce-test
--
--Some portable hwpoison test programs in mce-test, see blow.
--
-----
--
--References:
-+References
++Motivation
 +==========
  
- http://halobates.de/mce-lc09-2.pdf
- 	Overview presentation from LinuxCon 09
-@@ -174,14 +176,11 @@ git://git.kernel.org/pub/scm/utils/cpu/mce/mce-inject.git
- 	x86 specific injector
+ The idle page tracking feature allows to track which memory pages are being
+ accessed by a workload and which are idle. This information can be useful for
+@@ -8,10 +15,14 @@ or deciding where to place the workload within a compute cluster.
  
+ It is enabled by CONFIG_IDLE_PAGE_TRACKING=y.
  
-----
--
--Limitations:
--
-+Limitations
-+===========
- - Not all page types are supported and never will. Most kernel internal
--objects cannot be recovered, only LRU pages for now.
-+  objects cannot be recovered, only LRU pages for now.
- - Right now hugepage support is missing.
+-USER API
++.. _user_api:
  
- ---
- Andi Kleen, Oct 2009
--
+-The idle page tracking API is located at /sys/kernel/mm/page_idle. Currently,
+-it consists of the only read-write file, /sys/kernel/mm/page_idle/bitmap.
++User API
++========
++
++The idle page tracking API is located at ``/sys/kernel/mm/page_idle``.
++Currently, it consists of the only read-write file,
++``/sys/kernel/mm/page_idle/bitmap``.
+ 
+ The file implements a bitmap where each bit corresponds to a memory page. The
+ bitmap is represented by an array of 8-byte integers, and the page at PFN #i is
+@@ -19,8 +30,9 @@ mapped to bit #i%64 of array element #i/64, byte order is native. When a bit is
+ set, the corresponding page is idle.
+ 
+ A page is considered idle if it has not been accessed since it was marked idle
+-(for more details on what "accessed" actually means see the IMPLEMENTATION
+-DETAILS section). To mark a page idle one has to set the bit corresponding to
++(for more details on what "accessed" actually means see the :ref:`Implementation
++Details <impl_details>` section).
++To mark a page idle one has to set the bit corresponding to
+ the page by writing to the file. A value written to the file is OR-ed with the
+ current bitmap value.
+ 
+@@ -30,9 +42,9 @@ page types (e.g. SLAB pages) an attempt to mark a page idle is silently ignored,
+ and hence such pages are never reported idle.
+ 
+ For huge pages the idle flag is set only on the head page, so one has to read
+-/proc/kpageflags in order to correctly count idle huge pages.
++``/proc/kpageflags`` in order to correctly count idle huge pages.
+ 
+-Reading from or writing to /sys/kernel/mm/page_idle/bitmap will return
++Reading from or writing to ``/sys/kernel/mm/page_idle/bitmap`` will return
+ -EINVAL if you are not starting the read/write on an 8-byte boundary, or
+ if the size of the read/write is not a multiple of 8 bytes. Writing to
+ this file beyond max PFN will return -ENXIO.
+@@ -41,21 +53,25 @@ That said, in order to estimate the amount of pages that are not used by a
+ workload one should:
+ 
+  1. Mark all the workload's pages as idle by setting corresponding bits in
+-    /sys/kernel/mm/page_idle/bitmap. The pages can be found by reading
+-    /proc/pid/pagemap if the workload is represented by a process, or by
+-    filtering out alien pages using /proc/kpagecgroup in case the workload is
+-    placed in a memory cgroup.
++    ``/sys/kernel/mm/page_idle/bitmap``. The pages can be found by reading
++    ``/proc/pid/pagemap`` if the workload is represented by a process, or by
++    filtering out alien pages using ``/proc/kpagecgroup`` in case the workload
++    is placed in a memory cgroup.
+ 
+  2. Wait until the workload accesses its working set.
+ 
+- 3. Read /sys/kernel/mm/page_idle/bitmap and count the number of bits set. If
+-    one wants to ignore certain types of pages, e.g. mlocked pages since they
+-    are not reclaimable, he or she can filter them out using /proc/kpageflags.
++ 3. Read ``/sys/kernel/mm/page_idle/bitmap`` and count the number of bits set.
++    If one wants to ignore certain types of pages, e.g. mlocked pages since they
++    are not reclaimable, he or she can filter them out using
++    ``/proc/kpageflags``.
++
++See Documentation/vm/pagemap.txt for more information about
++``/proc/pid/pagemap``, ``/proc/kpageflags``, and ``/proc/kpagecgroup``.
+ 
+-See Documentation/vm/pagemap.txt for more information about /proc/pid/pagemap,
+-/proc/kpageflags, and /proc/kpagecgroup.
++.. _impl_details:
+ 
+-IMPLEMENTATION DETAILS
++Implementation Details
++======================
+ 
+ The kernel internally keeps track of accesses to user memory pages in order to
+ reclaim unreferenced pages first on memory shortage conditions. A page is
+@@ -77,7 +93,8 @@ When a dirty page is written to swap or disk as a result of memory reclaim or
+ exceeding the dirty memory limit, it is not marked referenced.
+ 
+ The idle memory tracking feature adds a new page flag, the Idle flag. This flag
+-is set manually, by writing to /sys/kernel/mm/page_idle/bitmap (see the USER API
++is set manually, by writing to ``/sys/kernel/mm/page_idle/bitmap`` (see the
++:ref:`User API <user_api>`
+ section), and cleared automatically whenever a page is referenced as defined
+ above.
+ 
 -- 
 2.7.4
