@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40609774XSzF1qv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:24:11 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40609D27MNzF1qv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:24:16 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LJMxnh061665
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:09 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2guw2hs8yb-1
+ w2LJN0kg118969
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:14 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gut67sdbn-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:13 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 19:24:06 -0000
+ Wed, 21 Mar 2018 19:24:11 -0000
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
@@ -32,11 +32,11 @@ Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 14/32] docs/vm: overcommit-accounting: convert to ReST format
-Date: Wed, 21 Mar 2018 21:22:30 +0200
+Subject: [PATCH 15/32] docs/vm: page_frags convert to ReST format
+Date: Wed, 21 Mar 2018 21:22:31 +0200
 In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1521660168-14372-15-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1521660168-14372-16-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,150 +48,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- Documentation/vm/overcommit-accounting | 107 ++++++++++++++++++---------------
- 1 file changed, 57 insertions(+), 50 deletions(-)
+ Documentation/vm/page_frags | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/vm/overcommit-accounting b/Documentation/vm/overcommit-accounting
-index cbfaaa6..0dd54bb 100644
---- a/Documentation/vm/overcommit-accounting
-+++ b/Documentation/vm/overcommit-accounting
-@@ -1,80 +1,87 @@
-+.. _overcommit_accounting:
+diff --git a/Documentation/vm/page_frags b/Documentation/vm/page_frags
+index a671456..637cc49 100644
+--- a/Documentation/vm/page_frags
++++ b/Documentation/vm/page_frags
+@@ -1,5 +1,8 @@
++.. _page_frags:
 +
-+=====================
-+Overcommit Accounting
-+=====================
-+
- The Linux kernel supports the following overcommit handling modes
++==============
+ Page fragments
+---------------
++==============
  
--0	-	Heuristic overcommit handling. Obvious overcommits of
--		address space are refused. Used for a typical system. It
--		ensures a seriously wild allocation fails while allowing
--		overcommit to reduce swap usage.  root is allowed to 
--		allocate slightly more memory in this mode. This is the 
--		default.
-+0
-+	Heuristic overcommit handling. Obvious overcommits of address
-+	space are refused. Used for a typical system. It ensures a
-+	seriously wild allocation fails while allowing overcommit to
-+	reduce swap usage.  root is allowed to allocate slightly more
-+	memory in this mode. This is the default.
- 
--1	-	Always overcommit. Appropriate for some scientific
--		applications. Classic example is code using sparse arrays
--		and just relying on the virtual memory consisting almost
--		entirely of zero pages.
-+1
-+	Always overcommit. Appropriate for some scientific
-+	applications. Classic example is code using sparse arrays and
-+	just relying on the virtual memory consisting almost entirely
-+	of zero pages.
- 
--2	-	Don't overcommit. The total address space commit
--		for the system is not permitted to exceed swap + a
--		configurable amount (default is 50%) of physical RAM.
--		Depending on the amount you use, in most situations
--		this means a process will not be killed while accessing
--		pages but will receive errors on memory allocation as
--		appropriate.
-+2
-+	Don't overcommit. The total address space commit for the
-+	system is not permitted to exceed swap + a configurable amount
-+	(default is 50%) of physical RAM.  Depending on the amount you
-+	use, in most situations this means a process will not be
-+	killed while accessing pages but will receive errors on memory
-+	allocation as appropriate.
- 
--		Useful for applications that want to guarantee their
--		memory allocations will be available in the future
--		without having to initialize every page.
-+	Useful for applications that want to guarantee their memory
-+	allocations will be available in the future without having to
-+	initialize every page.
- 
--The overcommit policy is set via the sysctl `vm.overcommit_memory'.
-+The overcommit policy is set via the sysctl ``vm.overcommit_memory``.
- 
--The overcommit amount can be set via `vm.overcommit_ratio' (percentage)
--or `vm.overcommit_kbytes' (absolute value).
-+The overcommit amount can be set via ``vm.overcommit_ratio`` (percentage)
-+or ``vm.overcommit_kbytes`` (absolute value).
- 
- The current overcommit limit and amount committed are viewable in
--/proc/meminfo as CommitLimit and Committed_AS respectively.
-+``/proc/meminfo`` as CommitLimit and Committed_AS respectively.
- 
- Gotchas
---------
-+=======
- 
- The C language stack growth does an implicit mremap. If you want absolute
--guarantees and run close to the edge you MUST mmap your stack for the 
-+guarantees and run close to the edge you MUST mmap your stack for the
- largest size you think you will need. For typical stack usage this does
- not matter much but it's a corner case if you really really care
- 
--In mode 2 the MAP_NORESERVE flag is ignored. 
-+In mode 2 the MAP_NORESERVE flag is ignored.
- 
- 
- How It Works
--------------
-+============
- 
- The overcommit is based on the following rules
- 
- For a file backed map
--	SHARED or READ-only	-	0 cost (the file is the map not swap)
--	PRIVATE WRITABLE	-	size of mapping per instance
-+	| SHARED or READ-only	-	0 cost (the file is the map not swap)
-+	| PRIVATE WRITABLE	-	size of mapping per instance
- 
--For an anonymous or /dev/zero map
--	SHARED			-	size of mapping
--	PRIVATE READ-only	-	0 cost (but of little use)
--	PRIVATE WRITABLE	-	size of mapping per instance
-+For an anonymous or ``/dev/zero`` map
-+	| SHARED			-	size of mapping
-+	| PRIVATE READ-only	-	0 cost (but of little use)
-+	| PRIVATE WRITABLE	-	size of mapping per instance
- 
- Additional accounting
--	Pages made writable copies by mmap
--	shmfs memory drawn from the same pool
-+	| Pages made writable copies by mmap
-+	| shmfs memory drawn from the same pool
- 
- Status
--------
--
--o	We account mmap memory mappings
--o	We account mprotect changes in commit
--o	We account mremap changes in size
--o	We account brk
--o	We account munmap
--o	We report the commit status in /proc
--o	Account and check on fork
--o	Review stack handling/building on exec
--o	SHMfs accounting
--o	Implement actual limit enforcement
-+======
-+
-+*	We account mmap memory mappings
-+*	We account mprotect changes in commit
-+*	We account mremap changes in size
-+*	We account brk
-+*	We account munmap
-+*	We report the commit status in /proc
-+*	Account and check on fork
-+*	Review stack handling/building on exec
-+*	SHMfs accounting
-+*	Implement actual limit enforcement
- 
- To Do
-------
--o	Account ptrace pages (this is hard)
-+=====
-+*	Account ptrace pages (this is hard)
+ A page fragment is an arbitrary-length arbitrary-offset area of memory
+ which resides within a 0 or higher order compound page.  Multiple
 -- 
 2.7.4
