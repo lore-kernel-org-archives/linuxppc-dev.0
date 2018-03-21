@@ -1,27 +1,27 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405dNh0gT7zF1dj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:17:55 +1100 (AEDT)
-Received: by mail-io0-x241.google.com with SMTP id m83so5117836ioi.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:17:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405dNp6KWQzF1gt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 16:18:02 +1100 (AEDT)
+Received: by mail-it0-x243.google.com with SMTP id w3-v6so5310456itc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Mar 2018 22:18:02 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.googlemail.com with ESMTPSA id w6sm2135874iow.60.2018.03.20.22.17.51
+ by smtp.googlemail.com with ESMTPSA id i94sm2096433ioo.46.2018.03.20.22.17.59
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 20 Mar 2018 22:17:52 -0700 (PDT)
-Subject: Re: [PATCH v2 2/9] powerpc/eeh: Manage EEH_PE_RECOVERING inside
- eeh_handle_normal_event()
+ Tue, 20 Mar 2018 22:18:00 -0700 (PDT)
+Subject: Re: [PATCH v2 3/9] powerpc/eeh: Fix misleading comment in
+ __eeh_addr_cache_get_device()
 To: linuxppc-dev@lists.ozlabs.org
 References: <cover.1521427331.git.sam.bobroff@au1.ibm.com>
- <163b24ef504d753f4abf1510d9193962bbac32b7.1521427331.git.sam.bobroff@au1.ibm.com>
+ <a08f33ca4af93b1a6ec066b8091953c855d52f45.1521427331.git.sam.bobroff@au1.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <bbd6fc23-6e9e-b459-4d41-e5dd90e1f4c6@ozlabs.ru>
-Date: Wed, 21 Mar 2018 16:17:49 +1100
+Message-ID: <4b09c7c9-7580-9106-b11d-8a1a7c4e1588@ozlabs.ru>
+Date: Wed, 21 Mar 2018 16:17:57 +1100
 MIME-Version: 1.0
-In-Reply-To: <163b24ef504d753f4abf1510d9193962bbac32b7.1521427331.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <a08f33ca4af93b1a6ec066b8091953c855d52f45.1521427331.git.sam.bobroff@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,18 +33,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 19/3/18 1:46 pm, Sam Bobroff wrote:
-> Currently the EEH_PE_RECOVERING flag for a PE is managed by both the
-> caller and callee of eeh_handle_normal_event() (among other places not
-> considered here). This is complicated by the fact that the PE may
-> or may not have been invalidated by the call.
-> 
-> So move the callee's handling into eeh_handle_normal_event(), which
-> clarifies it and allows the return type to be changed to void (because
-> it no longer needs to indicate at the PE has been invalidated).
-> 
-> This should not change behaviour except in eeh_event_handler() where
-> it was previously possible to cause eeh_pe_state_clear() to be called
-> on an invalid PE, which is now avoided.
+> Commit "0ba178888b05 powerpc/eeh: Remove reference to PCI device"
+> removed a call to pci_dev_get() from __eeh_addr_cache_get_device() but
+> did not update the comment to match.
 > 
 > Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
@@ -52,125 +43,23 @@ Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 
 > ---
->  arch/powerpc/include/asm/eeh_event.h |  2 +-
->  arch/powerpc/kernel/eeh_driver.c     | 29 +++++++++++------------------
->  arch/powerpc/kernel/eeh_event.c      |  2 --
->  3 files changed, 12 insertions(+), 21 deletions(-)
+>  arch/powerpc/kernel/eeh_cache.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
-> index 0a168038882d..9884e872686f 100644
-> --- a/arch/powerpc/include/asm/eeh_event.h
-> +++ b/arch/powerpc/include/asm/eeh_event.h
-> @@ -34,7 +34,7 @@ struct eeh_event {
->  int eeh_event_init(void);
->  int eeh_send_failure_event(struct eeh_pe *pe);
->  void eeh_remove_event(struct eeh_pe *pe, bool force);
-> -bool eeh_handle_normal_event(struct eeh_pe *pe);
-> +void eeh_handle_normal_event(struct eeh_pe *pe);
->  void eeh_handle_special_event(void);
->  
->  #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 51b21c97910f..5b7a5ed4db4d 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -733,7 +733,8 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->  
->  /**
->   * eeh_handle_normal_event - Handle EEH events on a specific PE
-> - * @pe: EEH PE
-> + * @pe: EEH PE - which should not be used after we return, as it may
-> + * have been invalidated.
+> diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+> index d4cc26618809..201943d54a6e 100644
+> --- a/arch/powerpc/kernel/eeh_cache.c
+> +++ b/arch/powerpc/kernel/eeh_cache.c
+> @@ -84,8 +84,7 @@ static inline struct eeh_dev *__eeh_addr_cache_get_device(unsigned long addr)
+>   * @addr: mmio (PIO) phys address or i/o port number
 >   *
->   * Attempts to recover the given PE.  If recovery fails or the PE has failed
->   * too many times, remove the PE.
-> @@ -750,10 +751,8 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->   * & devices under this slot, and then finally restarting the device
->   * drivers (which cause a second set of hotplug events to go out to
->   * userspace).
-> - *
-> - * Returns true if @pe should no longer be used, else false.
+>   * Given an mmio phys address, or a port number, find a pci device
+> - * that implements this address.  Be sure to pci_dev_put the device
+> - * when finished.  I/O port numbers are assumed to be offset
+> + * that implements this address.  I/O port numbers are assumed to be offset
+>   * from zero (that is, they do *not* have pci_io_addr added in).
+>   * It is safe to call this function within an interrupt.
 >   */
-> -bool eeh_handle_normal_event(struct eeh_pe *pe)
-> +void eeh_handle_normal_event(struct eeh_pe *pe)
->  {
->  	struct pci_bus *frozen_bus;
->  	struct eeh_dev *edev, *tmp;
-> @@ -765,9 +764,11 @@ bool eeh_handle_normal_event(struct eeh_pe *pe)
->  	if (!frozen_bus) {
->  		pr_err("%s: Cannot find PCI bus for PHB#%x-PE#%x\n",
->  			__func__, pe->phb->global_number, pe->addr);
-> -		return false;
-> +		return;
->  	}
->  
-> +	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
-> +
->  	eeh_pe_update_time_stamp(pe);
->  	pe->freeze_count++;
->  	if (pe->freeze_count > eeh_max_freezes) {
-> @@ -904,7 +905,7 @@ bool eeh_handle_normal_event(struct eeh_pe *pe)
->  	pr_info("EEH: Notify device driver to resume\n");
->  	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
->  
-> -	return false;
-> +	goto final;
->  
->  hard_fail:
->  	/*
-> @@ -940,12 +941,12 @@ bool eeh_handle_normal_event(struct eeh_pe *pe)
->  			pci_lock_rescan_remove();
->  			pci_hp_remove_devices(frozen_bus);
->  			pci_unlock_rescan_remove();
-> -
->  			/* The passed PE should no longer be used */
-> -			return true;
-> +			return;
->  		}
->  	}
-> -	return false;
-> +final:
-> +	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
->  }
->  
->  /**
-> @@ -1018,15 +1019,7 @@ void eeh_handle_special_event(void)
->  		 */
->  		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
->  		    rc == EEH_NEXT_ERR_FENCED_PHB) {
-> -			/*
-> -			 * eeh_handle_normal_event() can make the PE stale if it
-> -			 * determines that the PE cannot possibly be recovered.
-> -			 * Don't modify the PE state if that's the case.
-> -			 */
-> -			if (eeh_handle_normal_event(pe))
-> -				continue;
-> -
-> -			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
-> +			eeh_handle_normal_event(pe);
->  		} else {
->  			pci_lock_rescan_remove();
->  			list_for_each_entry(hose, &hose_list, list_node) {
-> diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
-> index 872bcfe8f90e..61c9356bf9c9 100644
-> --- a/arch/powerpc/kernel/eeh_event.c
-> +++ b/arch/powerpc/kernel/eeh_event.c
-> @@ -73,7 +73,6 @@ static int eeh_event_handler(void * dummy)
->  		/* We might have event without binding PE */
->  		pe = event->pe;
->  		if (pe) {
-> -			eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
->  			if (pe->type & EEH_PE_PHB)
->  				pr_info("EEH: Detected error on PHB#%x\n",
->  					 pe->phb->global_number);
-> @@ -82,7 +81,6 @@ static int eeh_event_handler(void * dummy)
->  					"PHB#%x-PE#%x\n",
->  					pe->phb->global_number, pe->addr);
->  			eeh_handle_normal_event(pe);
-> -			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
->  		} else {
->  			eeh_handle_special_event();
->  		}
 > 
 
 
