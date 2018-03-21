@@ -1,24 +1,17 @@
-Return-Path: <SRS0=aJRt=GL=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405ryD0MTkzF1pv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 00:59:15 +1100 (AEDT)
-Date: Wed, 21 Mar 2018 09:59:11 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras
- <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org, Anton Blanchard
- <anton@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- sathnaga@linux.vnet.ibm.com
-Subject: Re: [PATCH v2 5/5] powerpc64/ftrace: Implement support for
- ftrace_regs_caller()
-Message-ID: <20180321095912.212e0b0d@gandalf.local.home>
-In-Reply-To: <764a63e7418b05185434fe660814ce762c93c7d0.1521627906.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1521627906.git.naveen.n.rao@linux.vnet.ibm.com>
- <764a63e7418b05185434fe660814ce762c93c7d0.1521627906.git.naveen.n.rao@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405s8B2MT3zF0tK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 01:07:53 +1100 (AEDT)
+Message-Id: <03c175e506e88e57f48f01de9120768e1b942c6e.1521641042.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 1/4] powerpc/mm: constify FIRST_CONTEXT in mmu_context_nohash
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 21 Mar 2018 15:07:47 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,150 +21,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 Mar 2018 16:13:22 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+First context is now 1 for all supported platforms, so it
+can be made a constant.
 
->  int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs)
->  {
->  	mod->arch.toc = my_r2(sechdrs, mod);
-> -	mod->arch.tramp = create_ftrace_stub(sechdrs, mod);
-> +	mod->arch.tramp = create_ftrace_stub(sechdrs, mod,
-> +					(unsigned long)ftrace_caller);
-> +#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-> +	mod->arch.tramp_regs = create_ftrace_stub(sechdrs, mod,
-> +					(unsigned long)ftrace_regs_caller);
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/mmu_context_nohash.c | 37 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 19 deletions(-)
 
-So you only reference ftrace_regs_caller if you have
-DYNAMIC_FTRACE_WITH_REGS defined?
-
-> +	if (!mod->arch.tramp_regs)
-> +		return -ENOENT;
-> +#endif
->  
->  	if (!mod->arch.tramp)
->  		return -ENOENT;
-
-
-> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> index 8f2380304ef1..7b81db85f76e 100644
-> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-> @@ -20,8 +20,8 @@
->  #ifdef CONFIG_DYNAMIC_FTRACE
->  /*
->   *
-> - * ftrace_caller() is the function that replaces _mcount() when ftrace is
-> - * active.
-> + * ftrace_caller()/ftrace_regs_caller() is the function that replaces _mcount()
-> + * when ftrace is active.
->   *
->   * We arrive here after a function A calls function B, and we are the trace
->   * function for B. When we enter r1 points to A's stack frame, B has not yet
-> @@ -37,7 +37,7 @@
->   * Our job is to save the register state into a struct pt_regs (on the stack)
->   * and then arrange for the ftrace function to be called.
->   */
-
-Perhaps you want to add:
-
-#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-
-here.
-
-> -_GLOBAL(ftrace_caller)
-> +_GLOBAL(ftrace_regs_caller)
->  	/* Save the original return address in A's stack frame */
->  	std	r0,LRSAVE(r1)
->  
-> @@ -100,8 +100,8 @@ _GLOBAL(ftrace_caller)
->  	addi    r6, r1 ,STACK_FRAME_OVERHEAD
->  
->  	/* ftrace_call(r3, r4, r5, r6) */
-> -.globl ftrace_call
-> -ftrace_call:
-> +.globl ftrace_regs_call
-> +ftrace_regs_call:
->  	bl	ftrace_stub
->  	nop
->  
-> @@ -162,6 +162,7 @@ ftrace_call:
->  	bne-	livepatch_handler
->  #endif
->  
-> +ftrace_caller_common:
->  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->  .globl ftrace_graph_call
->  ftrace_graph_call:
-> @@ -182,6 +183,66 @@ ftrace_no_trace:
->  	mtlr	r0
->  	bctr
->  
-> +_GLOBAL(ftrace_caller)
-> +	/* Save the original return address in A's stack frame */
-> +	std	r0, LRSAVE(r1)
-> +
-> +	/* Create our stack frame + pt_regs */
-> +	stdu	r1, -SWITCH_FRAME_SIZE(r1)
-> +
-> +	/* Save all gprs to pt_regs */
-> +	SAVE_8GPRS(3, r1)
-> +
-> +	lbz	r3, PACA_FTRACE_DISABLED(r13)
-> +	cmpdi	r3, 0
-> +	beq	ftrace_no_trace
-
-Of course you would need to keep the ftrace_no_trace part out of the
-#if block then.
-
--- Steve
-
-> +
-> +	/* Get the _mcount() call site out of LR */
-> +	mflr	r7
-> +	std     r7, _NIP(r1)
-> +
-> +	/* Save callee's TOC in the ABI compliant location */
-> +	std	r2, 24(r1)
-> +	ld	r2, PACATOC(r13)	/* get kernel TOC in r2 */
-> +
-> +	addis	r3, r2, function_trace_op@toc@ha
-> +	addi	r3, r3, function_trace_op@toc@l
-> +	ld	r5, 0(r3)
-> +
-> +	/* Calculate ip from nip-4 into r3 for call below */
-> +	subi    r3, r7, MCOUNT_INSN_SIZE
-> +
-> +	/* Put the original return address in r4 as parent_ip */
-> +	mr	r4, r0
-> +
-> +	/* Set pt_regs to NULL */
-> +	li	r6, 0
-> +
-> +	/* ftrace_call(r3, r4, r5, r6) */
-> +.globl ftrace_call
-> +ftrace_call:
-> +	bl	ftrace_stub
-> +	nop
-> +
-> +	ld	r3, _NIP(r1)
-> +	mtctr	r3
-> +
-> +	/* Restore gprs */
-> +	REST_8GPRS(3,r1)
-> +
-> +	/* Restore callee's TOC */
-> +	ld	r2, 24(r1)
-> +
-> +	/* Pop our stack frame */
-> +	addi	r1, r1, SWITCH_FRAME_SIZE
-> +
-> +	/* Reload original LR */
-> +	ld	r0, LRSAVE(r1)
-> +	mtlr	r0
-> +
-> +	/* Handle function_graph or go back */
-> +	b	ftrace_caller_common
-> +
->  #ifdef CONFIG_LIVEPATCH
->  	/*
->  	 * This function runs in the mcount context, between two functions. As
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index be8f5c9d4d08..5051c9363f8c 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -54,7 +54,9 @@
+ 
+ #include "mmu_decl.h"
+ 
+-static unsigned int first_context, last_context;
++#define FIRST_CONTEXT 1
++
++static unsigned int last_context;
+ static unsigned int next_context, nr_free_contexts;
+ static unsigned long *context_map;
+ static unsigned long *stale_map[NR_CPUS];
+@@ -87,7 +89,7 @@ static unsigned int steal_context_smp(unsigned int id)
+ 	struct mm_struct *mm;
+ 	unsigned int cpu, max, i;
+ 
+-	max = last_context - first_context;
++	max = last_context - FIRST_CONTEXT;
+ 
+ 	/* Attempt to free next_context first and then loop until we manage */
+ 	while (max--) {
+@@ -100,7 +102,7 @@ static unsigned int steal_context_smp(unsigned int id)
+ 		if (mm->context.active) {
+ 			id++;
+ 			if (id > last_context)
+-				id = first_context;
++				id = FIRST_CONTEXT;
+ 			continue;
+ 		}
+ 		pr_hardcont(" | steal %d from 0x%p", id, mm);
+@@ -142,7 +144,7 @@ static unsigned int steal_all_contexts(void)
+ 	int cpu = smp_processor_id();
+ 	unsigned int id;
+ 
+-	for (id = first_context; id <= last_context; id++) {
++	for (id = FIRST_CONTEXT; id <= last_context; id++) {
+ 		/* Pick up the victim mm */
+ 		mm = context_mm[id];
+ 
+@@ -150,7 +152,7 @@ static unsigned int steal_all_contexts(void)
+ 
+ 		/* Mark this mm as having no context anymore */
+ 		mm->context.id = MMU_NO_CONTEXT;
+-		if (id != first_context) {
++		if (id != FIRST_CONTEXT) {
+ 			context_mm[id] = NULL;
+ 			__clear_bit(id, context_map);
+ #ifdef DEBUG_MAP_CONSISTENCY
+@@ -163,9 +165,9 @@ static unsigned int steal_all_contexts(void)
+ 	/* Flush the TLB for all contexts (not to be used on SMP) */
+ 	_tlbil_all();
+ 
+-	nr_free_contexts = last_context - first_context;
++	nr_free_contexts = last_context - FIRST_CONTEXT;
+ 
+-	return first_context;
++	return FIRST_CONTEXT;
+ }
+ 
+ /* Note that this will also be called on SMP if all other CPUs are
+@@ -201,7 +203,7 @@ static void context_check_map(void)
+ 	unsigned int id, nrf, nact;
+ 
+ 	nrf = nact = 0;
+-	for (id = first_context; id <= last_context; id++) {
++	for (id = FIRST_CONTEXT; id <= last_context; id++) {
+ 		int used = test_bit(id, context_map);
+ 		if (!used)
+ 			nrf++;
+@@ -219,7 +221,7 @@ static void context_check_map(void)
+ 	if (nact > num_online_cpus())
+ 		pr_err("MMU: More active contexts than CPUs ! (%d vs %d)\n",
+ 		       nact, num_online_cpus());
+-	if (first_context > 0 && !test_bit(0, context_map))
++	if (FIRST_CONTEXT > 0 && !test_bit(0, context_map))
+ 		pr_err("MMU: Context 0 has been freed !!!\n");
+ }
+ #else
+@@ -264,7 +266,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
+ 	/* We really don't have a context, let's try to acquire one */
+ 	id = next_context;
+ 	if (id > last_context)
+-		id = first_context;
++		id = FIRST_CONTEXT;
+ 	map = context_map;
+ 
+ 	/* No more free contexts, let's try to steal one */
+@@ -289,7 +291,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
+ 	while (__test_and_set_bit(id, map)) {
+ 		id = find_next_zero_bit(map, last_context+1, id);
+ 		if (id > last_context)
+-			id = first_context;
++			id = FIRST_CONTEXT;
+ 	}
+  stolen:
+ 	next_context = id + 1;
+@@ -439,15 +441,12 @@ void __init mmu_context_init(void)
+ 	 *      -- BenH
+ 	 */
+ 	if (mmu_has_feature(MMU_FTR_TYPE_8xx)) {
+-		first_context = 1;
+ 		last_context = 16;
+ 		no_selective_tlbil = true;
+ 	} else if (mmu_has_feature(MMU_FTR_TYPE_47x)) {
+-		first_context = 1;
+ 		last_context = 65535;
+ 		no_selective_tlbil = false;
+ 	} else {
+-		first_context = 1;
+ 		last_context = 255;
+ 		no_selective_tlbil = false;
+ 	}
+@@ -473,16 +472,16 @@ void __init mmu_context_init(void)
+ 	printk(KERN_INFO
+ 	       "MMU: Allocated %zu bytes of context maps for %d contexts\n",
+ 	       2 * CTX_MAP_SIZE + (sizeof(void *) * (last_context + 1)),
+-	       last_context - first_context + 1);
++	       last_context - FIRST_CONTEXT + 1);
+ 
+ 	/*
+ 	 * Some processors have too few contexts to reserve one for
+ 	 * init_mm, and require using context 0 for a normal task.
+ 	 * Other processors reserve the use of context zero for the kernel.
+-	 * This code assumes first_context < 32.
++	 * This code assumes FIRST_CONTEXT < 32.
+ 	 */
+-	context_map[0] = (1 << first_context) - 1;
+-	next_context = first_context;
+-	nr_free_contexts = last_context - first_context + 1;
++	context_map[0] = (1 << FIRST_CONTEXT) - 1;
++	next_context = FIRST_CONTEXT;
++	nr_free_contexts = last_context - FIRST_CONTEXT + 1;
+ }
+ 
+-- 
+2.13.3
