@@ -3,29 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405ntG2jyNzF1dX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 22:40:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LBe9PE051629
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 07:40:34 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gumn4dn78-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405ntN2wHDzF1gm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 22:40:44 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2LBdCvt058652
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 07:40:41 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gup8ms9rh-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 07:40:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 07:40:41 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 11:40:32 -0000
+ Wed, 21 Mar 2018 11:40:35 -0000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v2] powerpc/perf: Fix kernel address leaks via Sampling
- registers
-Date: Wed, 21 Mar 2018 17:10:24 +0530
-Message-Id: <1521632426-30770-1-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc/perf: Fix kernel address leak to userspace via
+ BHRB buffer
+Date: Wed, 21 Mar 2018 17:10:25 +0530
+In-Reply-To: <1521632426-30770-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1521632426-30770-1-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1521632426-30770-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+The current Branch History Rolling Buffer (BHRB) code does
+not check for any privilege levels before updating the data
+from BHRB. This leaks kernel addresses to userspace even when
+profiling only with userspace privileges. Add proper checks
+to prevent it.
 
-Current code in power_pmu_disable() does not clear the sampling
-registers like Sampling Instruction Address Register (SAIR) and
-Sampling Data Address Register (SDAR) after disabling the PMU.
-Since these are userspace readable and could contain kernel
-address, add code to explicitly clear the content of these registers.
-Patch also adds a "context synchronizing instruction" to enforce
-no further updates to these registers as mandated by PowerISA.
-
-"If an mtspr instruction is executed that changes the
-value of a Performance Monitor register other than
-SIAR, SDAR, and SIER, the change is not guaranteed
-to have taken effect until after a subsequent context
-synchronizing instruction has been executed (see
-Chapter 11. "Synchronization Requirements for Con-
-text Alterations" on page 1133)."
-
+Acked-by: Balbir Singh <bsingharora@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
-Changelog v1:
-  - Added config flags to avoid 32bit build breaks.
+Changelog -v1:
+ - Added comment.
 
- arch/powerpc/perf/core-book3s.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/powerpc/perf/core-book3s.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index f89bbd54ecec..39846226c702 100644
+index f89bbd54ecec..37d24c22557d 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -1226,6 +1226,7 @@ static void power_pmu_disable(struct pmu *pmu)
- 		 */
- 		write_mmcr0(cpuhw, val);
- 		mb();
-+		isync();
+@@ -457,6 +457,16 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 				/* invalid entry */
+ 				continue;
  
- 		/*
- 		 * Disable instruction sampling if it was enabled
-@@ -1234,12 +1235,26 @@ static void power_pmu_disable(struct pmu *pmu)
- 			mtspr(SPRN_MMCRA,
- 			      cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
- 			mb();
-+			isync();
- 		}
- 
- 		cpuhw->disabled = 1;
- 		cpuhw->n_added = 0;
- 
- 		ebb_switch_out(mmcr0);
++			/*
++			 * BHRB rolling buffer could very much contain the kernel
++			 * addresses at this point. Check the privileges before
++			 * exporting it to userspace (avoid exposure of regions
++			 * where we could have speculative execution)
++			 */
++			if (perf_paranoid_kernel() && !capable(CAP_SYS_ADMIN) &&
++				is_kernel_addr(addr))
++				continue;
 +
-+#ifdef CONFIG_PPC64
-+		/*
-+		 * These are readable by userspace, may contain kernel
-+		 * addresses and are not switched by context switch, so clear
-+		 * them now to avoid leaking anything to userspace in general
-+		 * including to another process.
-+		 */
-+		if (ppmu->flags & PPMU_ARCH_207S) {
-+			mtspr(SPRN_SDAR, 0);
-+			mtspr(SPRN_SIAR, 0);
-+		}
-+#endif
- 	}
- 
- 	local_irq_restore(flags);
+ 			/* Branches are read most recent first (ie. mfbhrb 0 is
+ 			 * the most recent branch).
+ 			 * There are two types of valid entries:
 -- 
 2.7.4
