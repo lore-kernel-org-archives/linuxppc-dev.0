@@ -1,23 +1,23 @@
 Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40609s6Dp0zF1s0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:24:49 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40609y4sByzF1sP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:24:54 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LJIajq094373
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:47 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2guvmsagvg-1
+ w2LJOhZ0140507
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:53 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2guvm8ahw7-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 15:24:52 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 19:24:44 -0000
+ Wed, 21 Mar 2018 19:24:49 -0000
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
@@ -32,11 +32,11 @@ Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 23/32] docs/vm: split_page_table_lock: convert to ReST format
-Date: Wed, 21 Mar 2018 21:22:39 +0200
+Subject: [PATCH 24/32] docs/vm: swap_numa.txt: convert to ReST format
+Date: Wed, 21 Mar 2018 21:22:40 +0200
 In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1521660168-14372-24-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1521660168-14372-25-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,68 +48,100 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- Documentation/vm/split_page_table_lock | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ Documentation/vm/swap_numa.txt | 55 +++++++++++++++++++++++++-----------------
+ 1 file changed, 33 insertions(+), 22 deletions(-)
 
-diff --git a/Documentation/vm/split_page_table_lock b/Documentation/vm/split_page_table_lock
-index 62842a8..889b00b 100644
---- a/Documentation/vm/split_page_table_lock
-+++ b/Documentation/vm/split_page_table_lock
-@@ -1,3 +1,6 @@
-+.. _split_page_table_lock:
+diff --git a/Documentation/vm/swap_numa.txt b/Documentation/vm/swap_numa.txt
+index d5960c9..e0466f2 100644
+--- a/Documentation/vm/swap_numa.txt
++++ b/Documentation/vm/swap_numa.txt
+@@ -1,5 +1,8 @@
++.. _swap_numa:
 +
-+=====================
- Split page table lock
- =====================
++===========================================
+ Automatically bind swap device to numa node
+--------------------------------------------
++===========================================
  
-@@ -11,6 +14,7 @@ access to the table. At the moment we use split lock for PTE and PMD
- tables. Access to higher level tables protected by mm->page_table_lock.
+ If the system has more than one swap device and swap device has the node
+ information, we can make use of this information to decide which swap
+@@ -7,15 +10,16 @@ device to use in get_swap_pages() to get better performance.
  
- There are helpers to lock/unlock a table and other accessor functions:
+ 
+ How to use this feature
+------------------------
++=======================
+ 
+ Swap device has priority and that decides the order of it to be used. To make
+ use of automatically binding, there is no need to manipulate priority settings
+ for swap devices. e.g. on a 2 node machine, assume 2 swap devices swapA and
+ swapB, with swapA attached to node 0 and swapB attached to node 1, are going
+-to be swapped on. Simply swapping them on by doing:
+-# swapon /dev/swapA
+-# swapon /dev/swapB
++to be swapped on. Simply swapping them on by doing::
 +
-  - pte_offset_map_lock()
- 	maps pte and takes PTE table lock, returns pointer to the taken
- 	lock;
-@@ -34,12 +38,13 @@ Split page table lock for PMD tables is enabled, if it's enabled for PTE
- tables and the architecture supports it (see below).
++	# swapon /dev/swapA
++	# swapon /dev/swapB
  
- Hugetlb and split page table lock
-----------------------------------
-+=================================
- 
- Hugetlb can support several page sizes. We use split lock only for PMD
- level, but not for PUD.
- 
- Hugetlb-specific helpers:
+ Then node 0 will use the two swap devices in the order of swapA then swapB and
+ node 1 will use the two swap devices in the order of swapB then swapA. Note
+@@ -24,32 +28,39 @@ that the order of them being swapped on doesn't matter.
+ A more complex example on a 4 node machine. Assume 6 swap devices are going to
+ be swapped on: swapA and swapB are attached to node 0, swapC is attached to
+ node 1, swapD and swapE are attached to node 2 and swapF is attached to node3.
+-The way to swap them on is the same as above:
+-# swapon /dev/swapA
+-# swapon /dev/swapB
+-# swapon /dev/swapC
+-# swapon /dev/swapD
+-# swapon /dev/swapE
+-# swapon /dev/swapF
+-
+-Then node 0 will use them in the order of:
+-swapA/swapB -> swapC -> swapD -> swapE -> swapF
++The way to swap them on is the same as above::
 +
-  - huge_pte_lock()
- 	takes pmd split lock for PMD_SIZE page, mm->page_table_lock
- 	otherwise;
-@@ -47,7 +52,7 @@ Hugetlb-specific helpers:
- 	returns pointer to table lock;
- 
- Support of split page table lock by an architecture
-----------------------------------------------------
-+===================================================
- 
- There's no need in special enabling of PTE split page table lock:
- everything required is done by pgtable_page_ctor() and pgtable_page_dtor(),
-@@ -73,7 +78,7 @@ NOTE: pgtable_page_ctor() and pgtable_pmd_page_ctor() can fail -- it must
- be handled properly.
- 
- page->ptl
-----------
-+=========
- 
- page->ptl is used to access split page table lock, where 'page' is struct
- page of page containing the table. It shares storage with page->private
-@@ -81,6 +86,7 @@ page of page containing the table. It shares storage with page->private
- 
- To avoid increasing size of struct page and have best performance, we use a
- trick:
++	# swapon /dev/swapA
++	# swapon /dev/swapB
++	# swapon /dev/swapC
++	# swapon /dev/swapD
++	# swapon /dev/swapE
++	# swapon /dev/swapF
 +
-  - if spinlock_t fits into long, we use page->ptr as spinlock, so we
-    can avoid indirect access and save a cache line.
-  - if size of spinlock_t is bigger then size of long, we use page->ptl as
++Then node 0 will use them in the order of::
++
++	swapA/swapB -> swapC -> swapD -> swapE -> swapF
++
+ swapA and swapB will be used in a round robin mode before any other swap device.
+ 
+-node 1 will use them in the order of:
+-swapC -> swapA -> swapB -> swapD -> swapE -> swapF
++node 1 will use them in the order of::
++
++	swapC -> swapA -> swapB -> swapD -> swapE -> swapF
++
++node 2 will use them in the order of::
++
++	swapD/swapE -> swapA -> swapB -> swapC -> swapF
+ 
+-node 2 will use them in the order of:
+-swapD/swapE -> swapA -> swapB -> swapC -> swapF
+ Similaly, swapD and swapE will be used in a round robin mode before any
+ other swap devices.
+ 
+-node 3 will use them in the order of:
+-swapF -> swapA -> swapB -> swapC -> swapD -> swapE
++node 3 will use them in the order of::
++
++	swapF -> swapA -> swapB -> swapC -> swapD -> swapE
+ 
+ 
+ Implementation details
+-----------------------
++======================
+ 
+ The current code uses a priority based list, swap_avail_list, to decide
+ which swap device to use and if multiple swap devices share the same
 -- 
 2.7.4
