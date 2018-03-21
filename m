@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 405mC90m12zF0n6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 405mC93CGQzF0wx
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 21:25:09 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/5] powerpc: Add CPU feature bits for TM bug workarounds on
- POWER9 v2.2
-Date: Wed, 21 Mar 2018 21:24:57 +1100
-Message-Id: <1521627901-13547-2-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 2/5] powerpc/powernv: Provide a way to force a core into SMT4
+ mode
+Date: Wed, 21 Mar 2018 21:24:58 +1100
+Message-Id: <1521627901-13547-3-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1521627901-13547-1-git-send-email-paulus@ozlabs.org>
 References: <1521627901-13547-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,120 +23,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a CPU feature bit which is set for POWER9 "Nimbus" DD2.2
-processors which will be used to enable the hypervisor to assist
-hardware with the handling of checkpointed register values while the
-CPU is in suspend state, in order to work around hardware bugs.  The
-hardware assistance for these workarounds introduced a new hardware
-bug relating to the XER[SO] bit.  We add a separate feature bit for
-this bug in case future chips fix it while still requiring the
-hypervisor assistance with suspend state.
+POWER9 processors up to and including "Nimbus" v2.2 have hardware
+bugs relating to transactional memory and thread reconfiguration.
+One of these bugs has a workaround which is to get the core into
+SMT4 state temporarily.  This workaround is only needed when
+running bare-metal.
 
-When the dt_cpu_ftrs subsystem is in use, the software assistance can
-be enabled using a "tm-suspend-hypervisor-assist" node in the device
-tree, and a "tm-suspend-xer-so-bug" node enables the workarounds for
-the XER[SO] bug.  In the absence of such nodes, a quirk enables both
-for POWER9 "Nimbus" DD2.2 processors.
+This patch provides a function which gets the core into SMT4 mode
+by preventing threads from going to a stop state, and waking up
+those which are already in a stop state.  Once at least 3 threads
+are not in a stop state, the core will be in SMT4 and we can
+continue.
+
+To do this, we add a "dont_stop" flag to the paca to tell the
+thread not to go into a stop state.  If this flag is set,
+power9_idle_stop() just returns immediately with a return value
+of 0.  The pnv_power9_force_smt4_catch() function does the following:
+
+1. Set the dont_stop flag for each thread in the core, except
+   ourselves (in fact we use an atomic_inc() in case more than
+   one thread is calling this function concurrently).
+2. See how many threads are awake, indicated by their
+   requested_psscr field in the paca being 0.  If this is at
+   least 3, skip to step 5.
+3. Send a doorbell interrupt to each thread that was seen as
+   being in a stop state in step 2.
+4. Until at least 3 threads are awake, scan the threads to which
+   we sent a doorbell interrupt and check if they are awake now.
+
+This relies on the following properties:
+
+- Once dont_stop is non-zero, requested_psccr can't go from zero to
+  non-zero, except transiently (and without the thread doing stop).
+- requested_psscr being zero guarantees that the thread isn't in
+  a state-losing stop state where thread reconfiguration could occur.
+- Doing stop with a PSSCR value of 0 won't be a state-losing stop
+  and thus won't allow thread reconfiguration.
+- Once threads_per_core/2 + 1 (i.e. 3) threads are awake, the core
+  must be in SMT4 mode, since SMT modes are powers of 2.
+
+This does add a sync to power9_idle_stop(), which is necessary to
+provide the correct ordering between setting requested_psscr and
+checking dont_stop.  The overhead of the sync should be unnoticeable
+compared to the latency of going into and out of a stop state.
+
+Because some objected to incurring this extra latency on systems where
+the XER[SO] bug is not relevant, I have put the test in
+power9_idle_stop inside a feature section.  This means that
+pnv_power9_force_smt4_catch() WILL NOT WORK correctly on systems
+without the CPU_FTR_P9_TM_XER_SO_BUG feature bit set, and will
+probably hang the system.
+
+In order to cater for uses where the caller has an operation that
+has to be done while the core is in SMT4, the core continues to be
+kept in SMT4 after pnv_power9_force_smt4_catch() function returns,
+until the pnv_power9_force_smt4_release() function is called.
+It undoes the effect of step 1 above and allows the other threads
+to go into a stop state.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/cputable.h |  7 ++++++-
- arch/powerpc/kernel/cputable.c      | 24 ++++++++++++++++++++++--
- arch/powerpc/kernel/dt_cpu_ftrs.c   |  5 +++++
- 3 files changed, 33 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |  3 ++
+ arch/powerpc/include/asm/paca.h           |  3 ++
+ arch/powerpc/include/asm/powernv.h        |  1 +
+ arch/powerpc/kernel/asm-offsets.c         |  1 +
+ arch/powerpc/kernel/idle_book3s.S         | 21 ++++++++
+ arch/powerpc/platforms/powernv/idle.c     | 81 +++++++++++++++++++++++++++++++
+ 6 files changed, 110 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 49fd067..ecee84d 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -213,6 +213,8 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
- #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
- #define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
-+#define CPU_FTR_P9_TM_HV_ASSIST		LONG_ASM_CONST(0x0000100000000000)
-+#define CPU_FTR_P9_TM_XER_SO_BUG	LONG_ASM_CONST(0x0000200000000000)
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 0bdeff4..d9713ad 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -138,4 +138,7 @@ extern int __ucmpdi2(u64, u64);
+ void _mcount(void);
+ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip);
  
- #ifndef __ASSEMBLY__
++void pnv_power9_force_smt4_catch(void);
++void pnv_power9_force_smt4_release(void);
++
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index d2bf71d..c97b411 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -32,6 +32,7 @@
+ #include <asm/accounting.h>
+ #include <asm/hmi.h>
+ #include <asm/cpuidle.h>
++#include <asm/atomic.h>
  
-@@ -469,6 +471,8 @@ static inline void cpu_feature_keys_init(void) { }
- 			     (~CPU_FTR_SAO))
- #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
- #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
-+#define CPU_FTRS_POWER9_DD2_2 (CPU_FTRS_POWER9 | CPU_FTR_P9_TM_HV_ASSIST | \
-+			       CPU_FTR_P9_TM_XER_SO_BUG)
- #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -488,7 +492,8 @@ static inline void cpu_feature_keys_init(void) { }
- 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
- 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
- 	     CPU_FTRS_PA6T | CPU_FTR_VSX | CPU_FTRS_POWER9 | \
--	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1)
-+	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
-+	     CPU_FTRS_POWER9_DD2_2)
- #endif
- #else
- enum {
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index c40a9fc..68052ea 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -553,11 +553,31 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check_early	= __machine_check_early_realmode_p9,
- 		.platform		= "power9",
- 	},
--	{	/* Power9 DD 2.1 or later (see DD2.0 above) */
-+	{	/* Power9 DD 2.1 */
-+		.pvr_mask		= 0xffffefff,
-+		.pvr_value		= 0x004e0201,
-+		.cpu_name		= "POWER9 (raw)",
-+		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
-+		.cpu_user_features	= COMMON_USER_POWER9,
-+		.cpu_user_features2	= COMMON_USER2_POWER9,
-+		.mmu_features		= MMU_FTRS_POWER9,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.num_pmcs		= 6,
-+		.pmc_type		= PPC_PMC_IBM,
-+		.oprofile_cpu_type	= "ppc64/power9",
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
-+		.cpu_setup		= __setup_cpu_power9,
-+		.cpu_restore		= __restore_cpu_power9,
-+		.flush_tlb		= __flush_tlb_power9,
-+		.machine_check_early	= __machine_check_early_realmode_p9,
-+		.platform		= "power9",
-+	},
-+	{	/* Power9 DD2.2 or later */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x004e0000,
- 		.cpu_name		= "POWER9 (raw)",
--		.cpu_features		= CPU_FTRS_POWER9_DD2_1,
-+		.cpu_features		= CPU_FTRS_POWER9_DD2_2,
- 		.cpu_user_features	= COMMON_USER_POWER9,
- 		.cpu_user_features2	= COMMON_USER2_POWER9,
- 		.mmu_features		= MMU_FTRS_POWER9,
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index ee562ff..0a0c601 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -589,6 +589,8 @@ static struct dt_cpu_feature_match __initdata
- 	{"virtual-page-class-key-protection", feat_enable, 0},
- 	{"transactional-memory", feat_enable_tm, CPU_FTR_TM},
- 	{"transactional-memory-v3", feat_enable_tm, 0},
-+	{"tm-suspend-hypervisor-assist", feat_enable, CPU_FTR_P9_TM_HV_ASSIST},
-+	{"tm-suspend-xer-so-bug", feat_enable, CPU_FTR_P9_TM_XER_SO_BUG},
- 	{"idle-nap", feat_enable_idle_nap, 0},
- 	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
- 	{"idle-stop", feat_enable_idle_stop, 0},
-@@ -708,6 +710,9 @@ static __init void cpufeatures_cpu_quirks(void)
- 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
- 	else if ((version & 0xffffefff) == 0x004e0201)
- 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
-+	else if ((version & 0xffffefff) == 0x004e0202)
-+		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_HV_ASSIST |
-+			CPU_FTR_P9_TM_XER_SO_BUG;
+ register struct paca_struct *local_paca asm("r13");
+ 
+@@ -177,6 +178,8 @@ struct paca_struct {
+ 	u8 thread_mask;
+ 	/* Mask to denote subcore sibling threads */
+ 	u8 subcore_sibling_mask;
++	/* Flag to request this thread not to stop */
++	atomic_t dont_stop;
+ 	/*
+ 	 * Pointer to an array which contains pointer
+ 	 * to the sibling threads' paca.
+diff --git a/arch/powerpc/include/asm/powernv.h b/arch/powerpc/include/asm/powernv.h
+index dc5f6a5..d1c2d2e6 100644
+--- a/arch/powerpc/include/asm/powernv.h
++++ b/arch/powerpc/include/asm/powernv.h
+@@ -40,6 +40,7 @@ static inline int pnv_npu2_handle_fault(struct npu_context *context,
  }
  
- static void __init cpufeatures_setup_finished(void)
+ static inline void pnv_tm_init(void) { }
++static inline void pnv_power9_force_smt4(void) { }
+ #endif
+ 
+ #endif /* _ASM_POWERNV_H */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index ea5eb91..dbefe30 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -759,6 +759,7 @@ int main(void)
+ 	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+ 	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+ 	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
++	OFFSET(PACA_DONT_STOP, paca_struct, dont_stop);
+ #define STOP_SPR(x, f)	OFFSET(x, paca_struct, stop_sprs.f)
+ 	STOP_SPR(STOP_PID, pid);
+ 	STOP_SPR(STOP_LDBAR, ldbar);
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 01e1c19..72b8d19 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -339,6 +339,7 @@ power_enter_stop:
+ 	bne	 .Lhandle_esl_ec_set
+ 	PPC_STOP
+ 	li	r3,0  /* Since we didn't lose state, return 0 */
++	std	r3, PACA_REQ_PSSCR(r13)
+ 
+ 	/*
+ 	 * pnv_wakeup_noloss() expects r12 to contain the SRR1 value so
+@@ -429,11 +430,29 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+  * r3 contains desired PSSCR register value.
+  */
+ _GLOBAL(power9_idle_stop)
++BEGIN_FEATURE_SECTION
++	lwz	r5, PACA_DONT_STOP(r13)
++	cmpwi	r5, 0
++	bne	1f
+ 	std	r3, PACA_REQ_PSSCR(r13)
++	sync
++	lwz	r5, PACA_DONT_STOP(r13)
++	cmpwi	r5, 0
++	bne	1f
++END_FEATURE_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	mtspr 	SPRN_PSSCR,r3
+ 	LOAD_REG_ADDR(r4,power_enter_stop)
+ 	b	pnv_powersave_common
+ 	/* No return */
++1:
++	/*
++	 * We get here when TM / thread reconfiguration bug workaround
++	 * code wants to get the CPU into SMT4 mode, and therefore
++	 * we are being asked not to stop.
++	 */
++	li	r3, 0
++	std	r3, PACA_REQ_PSSCR(r13)
++	blr		/* return 0 for wakeup cause / SRR1 value */
+ 
+ /*
+  * On waking up from stop 0,1,2 with ESL=1 on POWER9 DD1,
+@@ -584,6 +603,8 @@ FTR_SECTION_ELSE_NESTED(71)
+ 	mfspr	r5, SPRN_PSSCR
+ 	rldicl  r5,r5,4,60
+ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_POWER9_DD1, 71)
++	li	r0, 0		/* clear requested_psscr to say we're awake */
++	std	r0, PACA_REQ_PSSCR(r13)
+ 	cmpd	cr4,r5,r4
+ 	bge	cr4,pnv_wakeup_tb_loss /* returns to caller */
+ 
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 443d5ca..99a760e 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -24,6 +24,7 @@
+ #include <asm/code-patching.h>
+ #include <asm/smp.h>
+ #include <asm/runlatch.h>
++#include <asm/dbell.h>
+ 
+ #include "powernv.h"
+ #include "subcore.h"
+@@ -387,6 +388,86 @@ void power9_idle(void)
+ 	power9_idle_type(pnv_default_stop_val, pnv_default_stop_mask);
+ }
+ 
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++/*
++ * This is used in working around bugs in thread reconfiguration
++ * on POWER9 (at least up to Nimbus DD2.2) relating to transactional
++ * memory and the way that XER[SO] is checkpointed.
++ * This function forces the core into SMT4 in order by asking
++ * all other threads not to stop, and sending a message to any
++ * that are in a stop state.
++ * Must be called with preemption disabled.
++ *
++ * DO NOT call this unless cpu_has_feature(CPU_FTR_P9_TM_XER_SO_BUG) is
++ * true; otherwise this function will hang the system, due to the
++ * optimization in power9_idle_stop.
++ */
++void pnv_power9_force_smt4_catch(void)
++{
++	int cpu, cpu0, thr;
++	struct paca_struct *tpaca;
++	int awake_threads = 1;		/* this thread is awake */
++	int poke_threads = 0;
++	int need_awake = threads_per_core;
++
++	cpu = smp_processor_id();
++	cpu0 = cpu & ~(threads_per_core - 1);
++	tpaca = &paca[cpu0];
++	for (thr = 0; thr < threads_per_core; ++thr) {
++		if (cpu != cpu0 + thr)
++			atomic_inc(&tpaca[thr].dont_stop);
++	}
++	/* order setting dont_stop vs testing requested_psscr */
++	mb();
++	for (thr = 0; thr < threads_per_core; ++thr) {
++		if (!tpaca[thr].requested_psscr)
++			++awake_threads;
++		else
++			poke_threads |= (1 << thr);
++	}
++
++	/* If at least 3 threads are awake, the core is in SMT4 already */
++	if (awake_threads < need_awake) {
++		/* We have to wake some threads; we'll use msgsnd */
++		for (thr = 0; thr < threads_per_core; ++thr) {
++			if (poke_threads & (1 << thr)) {
++				ppc_msgsnd_sync();
++				ppc_msgsnd(PPC_DBELL_MSGTYPE, 0,
++					   tpaca[thr].hw_cpu_id);
++			}
++		}
++		/* now spin until at least 3 threads are awake */
++		do {
++			for (thr = 0; thr < threads_per_core; ++thr) {
++				if ((poke_threads & (1 << thr)) &&
++				    !tpaca[thr].requested_psscr) {
++					++awake_threads;
++					poke_threads &= ~(1 << thr);
++				}
++			}
++		} while (awake_threads < need_awake);
++	}
++}
++EXPORT_SYMBOL_GPL(pnv_power9_force_smt4_catch);
++
++void pnv_power9_force_smt4_release(void)
++{
++	int cpu, cpu0, thr;
++	struct paca_struct *tpaca;
++
++	cpu = smp_processor_id();
++	cpu0 = cpu & ~(threads_per_core - 1);
++	tpaca = &paca[cpu0];
++
++	/* clear all the dont_stop flags */
++	for (thr = 0; thr < threads_per_core; ++thr) {
++		if (cpu != cpu0 + thr)
++			atomic_dec(&tpaca[thr].dont_stop);
++	}
++}
++EXPORT_SYMBOL_GPL(pnv_power9_force_smt4_release);
++#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
+ {
 -- 
 2.7.4
