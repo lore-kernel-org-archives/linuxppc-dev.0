@@ -1,42 +1,38 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406Hpg1kQ3zF1tY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 18:09:14 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2M751jC085824
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:09:11 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gv7ad1b11-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406JnR2x9QzF1t9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 18:53:15 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2M7oDHR194280
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:53:12 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gv89kgdjq-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:09:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:53:12 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 22 Mar 2018 07:09:08 -0000
-Date: Thu, 22 Mar 2018 00:09:00 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Li Wang <liwang@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jan Stancek <jstancek@redhat.com>,
- ltp@lists.linux.it, linux-mm@kvack.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [bug?] Access was denied by memory protection keys in
- execute-only address
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <CAEemH2f0LDqyR5AmUYv17OuBc5-UycckDPWgk46XU_ghQo4diw@mail.gmail.com>
- <871sguep4v.fsf@concordia.ellerman.id.au>
- <20180308164545.GM1060@ram.oc3035372033.ibm.com>
- <CAEemH2czWDjvJLpL6ynV1+VxCFh_-A-d72tJhA5zwgrAES2nWA@mail.gmail.com>
- <20180320215828.GA5825@ram.oc3035372033.ibm.com>
- <CAEemH2eewab4nsn6daMRAtn9tDrHoZb_PnbH8xA17ypFCTg6iA@mail.gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 22 Mar 2018 07:53:10 -0000
+Date: Thu, 22 Mar 2018 13:23:05 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/5] powerpc64/ftrace: Add a field in paca to disable
+ ftrace in unsafe code paths
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
+ Steven Rostedt <rostedt@goodmis.org>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, sathnaga@linux.vnet.ibm.com
+References: <cover.1521627906.git.naveen.n.rao@linux.vnet.ibm.com>
+ <b6aff6c7194bd7bb97828db63ca0c82ee4598918.1521627906.git.naveen.n.rao__49352.2364100956$1521630977$gmane$org@linux.vnet.ibm.com>
+In-Reply-To: <b6aff6c7194bd7bb97828db63ca0c82ee4598918.1521627906.git.naveen.n.rao__49352.
+ 2364100956$1521630977$gmane$org@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAEemH2eewab4nsn6daMRAtn9tDrHoZb_PnbH8xA17ypFCTg6iA@mail.gmail.com>
-Message-Id: <20180322070900.GA5605@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1521705085.6fya98gc1m.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,104 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 21, 2018 at 02:53:00PM +0800, Li Wang wrote:
->    On Wed, Mar 21, 2018 at 5:58 AM, Ram Pai <[1]linuxram@us.ibm.com> wrote:
-> 
->      On Fri, Mar 09, 2018 at 11:43:00AM +0800, Li Wang wrote:
->      >    On Fri, Mar 9, 2018 at 12:45 AM, Ram Pai
->      <[1][2]linuxram@us.ibm.com> wrote:
->      >
->      >      On Thu, Mar 08, 2018 at 11:19:12PM +1100, Michael Ellerman wrote:
->      >      > Li Wang <[2][3]liwang@redhat.com> writes:
->      >      > > Hi,
->      >      > >
->      >      am wondering if the slightly different cpu behavior is dependent
-..snip..
->      on the
->      >      version of the firmware/microcode?
->      >
->      >    ​I also run this reproducer on series ppc kvm machines, but none of
->      them
->      >    get the FAIL.
->      >    If you need some more HW info, pls let me know.​
-> 
->      Hi Li,
-> 
->         Can you try the following patch and see if it solves your problem.
-> 
->    ​It only works on power7 lpar machine.
-> 
->    But for p8 lpar, it still get failure as that before, the thing I wondered
->    is
->    that why not disable the pkey_execute_disable_supported on p8 machine?
+Naveen N. Rao wrote:
+> We have some C code that we call into from real mode where we cannot
+> take any exceptions. Though the C functions themselves are mostly safe,
+> if these functions are traced, there is a possibility that we may take
+> an exception. For instance, in certain conditions, the ftrace code uses
+> WARN(), which uses a 'trap' to do its job.
+>=20
+> For such scenarios, introduce a new field in paca 'ftrace_disabled',
+> which is checked on ftrace entry before continuing. This field can then
+> be set to a non-zero value to disable/pause ftrace, and reset to zero to
+> resume ftrace.
+>=20
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+> Changes since v1:
+> - Do not guard the paca field check within CONFIG_KVM.
+> - Move the early return code out of the usual path to optimize for=20
+>   better cache performance in the normal case when ftrace is enabled.
+>=20
+>  arch/powerpc/include/asm/paca.h                |  1 +
+>  arch/powerpc/kernel/asm-offsets.c              |  1 +
+>  arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 14 ++++++++++++++
+>  arch/powerpc/kernel/trace/ftrace_64_pg.S       |  4 ++++
+>  4 files changed, 20 insertions(+)
+>=20
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/p=
+aca.h
+> index d2bf71dddbef..4f47adc2a408 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -211,6 +211,7 @@ struct paca_struct {
+>  	u16 in_mce;
+>  	u8 hmi_event_available;		/* HMI event is available */
+>  	u8 hmi_p9_special_emu;		/* HMI P9 special emulation */
+> +	u8 ftrace_disabled;
+>  #endif
+> =20
+>  	/* Stuff for accurate time accounting */
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-=
+offsets.c
+> index ea5eb91b836e..8e4fc96ff6bc 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -240,6 +240,7 @@ int main(void)
+>  	OFFSET(PACA_RFI_FLUSH_FALLBACK_AREA, paca_struct, rfi_flush_fallback_ar=
+ea);
+>  	OFFSET(PACA_EXRFI, paca_struct, exrfi);
+>  	OFFSET(PACA_L1D_FLUSH_SIZE, paca_struct, l1d_flush_size);
+> +	OFFSET(PACA_FTRACE_DISABLED, paca_struct, ftrace_disabled);
+> =20
+>  #endif
+>  	OFFSET(PACAHWCPUID, paca_struct, hw_cpu_id);
+> diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerp=
+c/kernel/trace/ftrace_64_mprofile.S
+> index 3f3e81852422..8f2380304ef1 100644
+> --- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> +++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+> @@ -47,6 +47,12 @@ _GLOBAL(ftrace_caller)
+>  	/* Save all gprs to pt_regs */
+>  	SAVE_GPR(0, r1)
+>  	SAVE_10GPRS(2, r1)
+> +
+> +	/* Ok to continue? */
+> +	lbz	r3, PACA_FTRACE_DISABLED(r13)
+> +	cmpdi	r3, 0
+> +	beq	ftrace_no_trace
+	^^^ bne
 
-It turns out to be a testcase bug.  On Big endian powerpc ABI, function
-ptrs are basically pointers to function descriptors.  The testcase
-copies functions which results in function descriptors getting copied.
-You have to apply the following patch to your test case for it to
-operate as intended.  Thanks to Michael Ellermen for helping me out.
-Otherwise I would be scratching my head for ever.
+:facepalm:
 
+- Naveen
 
-diff --git a/testcases/kernel/syscalls/mprotect/mprotect04.c b/testcases/kernel/syscalls/mprotect/mprotect04.c
-index 1173afd..9fe9001 100644
---- a/testcases/kernel/syscalls/mprotect/mprotect04.c
-+++ b/testcases/kernel/syscalls/mprotect/mprotect04.c
-@@ -189,18 +189,30 @@ static void clear_cache(void *start, int len)
- #endif
- }
- 
-+typedef struct {
-+	uintptr_t entry;
-+	uintptr_t toc;
-+	uintptr_t env;
-+} func_descr_t;
-+
-+typedef void (*func_ptr_t)(void);
-+
- /*
-  * Copy page where &exec_func resides. Also try to copy subsequent page
-  * in case exec_func is close to page boundary.
-  */
--static void *get_func(void *mem)
-+void *get_func(void *mem)
- {
- 	uintptr_t page_sz = getpagesize();
- 	uintptr_t page_mask = ~(page_sz - 1);
--	uintptr_t func_page_offset = (uintptr_t)&exec_func & (page_sz - 1);
--	void *func_copy_start = mem + func_page_offset;
--	void *page_to_copy = (void *)((uintptr_t)&exec_func & page_mask);
-+	uintptr_t func_page_offset;
-+	void *func_copy_start, *page_to_copy;
- 	void *mem_start = mem;
-+	func_descr_t *opd =  (func_descr_t *)&exec_func;
-+
-+	func_page_offset = (uintptr_t)opd->entry & (page_sz - 1);
-+	func_copy_start = mem + func_page_offset;
-+	page_to_copy = (void *)((uintptr_t)opd->entry & page_mask);
- 
- 	/* copy 1st page, if it's not present something is wrong */
- 	if (!page_present(page_to_copy)) {
-@@ -228,15 +240,17 @@ static void *get_func(void *mem)
- 
- static void testfunc_protexec(void)
- {
--	void (*func)(void);
- 	void *p;
-+	func_ptr_t func;
-+	func_descr_t opd;
- 
- 	sig_caught = 0;
- 
- 	p = SAFE_MMAP(cleanup, 0, copy_sz, PROT_READ | PROT_WRITE,
- 		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
- 
--	func = get_func(p);
-+	opd.entry = (uintptr_t)get_func(p);
-+	func = (func_ptr_t)&opd;
- 
- 	/* Change the protection to PROT_EXEC. */
- 	TEST(mprotect(p, copy_sz, PROT_EXEC));
-
-
-RP
+=
