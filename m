@@ -1,30 +1,19 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-io0-x230.google.com (mail-io0-x230.google.com
- [IPv6:2607:f8b0:4001:c06::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406LrC0HmRzF1p4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 20:25:46 +1100 (AEDT)
-Received: by mail-io0-x230.google.com with SMTP id q84so4642967iod.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 02:25:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406MXM3dqSzDrCq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 20:57:06 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] crypto: talitos - fix IPsec cipher in length
 MIME-Version: 1.0
-In-Reply-To: <20180322082041.hvaneyfpzdwelely@lt-gp.iram.es>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <8a13375fd8e5439890768b7dd8473099@AcuMS.aculab.com>
- <CAOSf1CHTouXQ+sPxu7ySCtw--maef+knFC9bCQ7rpuk-hf-puQ@mail.gmail.com>
- <20180322082041.hvaneyfpzdwelely@lt-gp.iram.es>
-From: Oliver <oohall@gmail.com>
-Date: Thu, 22 Mar 2018 20:25:43 +1100
-Message-ID: <CAOSf1CE+gsoZB-YNYdx=oNmrdCje4yxiz76hSb4UQ4F5cL8SqQ@mail.gmail.com>
-Subject: Re: RFC on writel and writel_relaxed
-To: Gabriel Paubert <paubert@iram.es>
-Cc: David Laight <David.Laight@aculab.com>, Sinan Kaya <okaya@codeaurora.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180322095701.4563E6F352@po15720vm.idsi0.si.c-s.fr>
+Date: Thu, 22 Mar 2018 10:57:01 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2018 at 7:20 PM, Gabriel Paubert <paubert@iram.es> wrote:
-> On Thu, Mar 22, 2018 at 04:24:24PM +1100, Oliver wrote:
->> On Thu, Mar 22, 2018 at 1:35 AM, David Laight <David.Laight@aculab.com> wrote:
->> >> x86 has compiler barrier inside the relaxed() API so that code does not
->> >> get reordered. ARM64 architecturally guarantees device writes to be observed
->> >> in order.
->> >
->> > There are places where you don't even need a compile barrier between
->> > every write.
->> >
->> > I had horrid problems getting some ppc code (for a specific embedded SoC)
->> > optimised to have no extra barriers.
->> > I ended up just writing through 'pointer to volatile' and adding an
->> > explicit 'eieio' between the block of writes and status read.
->>
->> This is what you are supposed to do. For accesses to MMIO (cache
->> inhibited + guarded) storage the Power ISA guarantees that load-load
->> and store-store pairs of accesses will always occur in program order,
->> but there's no implicit ordering between load-store or store-load
->
-> And even for load store, eieio is not always necessary, in the important
-> case of reading and writing to the same address, when modifying bits in
-> a control register for example.
->
-> Typically also loads will be moved ahead of stores, but not the other
-> way around, so in practice you won't notice a missed eieio in this case.
-> This does not mean you should not insert it.
+For SEC 2.x+, cipher in length must contain only the ciphertext length.
+In case of using hardware ICV checking, the ICV length is provided via
+the "extent" field of the descriptor pointer.
 
-Yep, but it doesn't really help us here. The generic accessors need to cope
-with the general case.
+Cc: <stable@vger.kernel.org> # 4.8+
+Fixes: 549bd8bc5987 ("crypto: talitos - Implement AEAD for SEC1 using HMAC_SNOOP_NO_AFEU")
+Reported-by: Horia Geantă <horia.geanta@nxp.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 36 ++++++++++++++++++++----------------
+ 1 file changed, 20 insertions(+), 16 deletions(-)
 
->> pairs. In those cases you need an explicit eieio barrier between the
->> two accesses. At the HW level you can think of the CPU as having
->> separate queues for MMIO loads and stores. Accesses will be added to
->> the respective queue in program order, but there's no synchronisation
->> between the two queues. If the CPU is doing write combining it's easy
->> to imagine the whole store queue being emptied in one big gulp before
->> the load queue is even touched.
->
-> Is write combining allowed on guarded storage?
->
-> <Looking at docs>
-> From PowerISA_V3.0.pdf, Book2, section 1.6.2 "Caching inhibited":
->
-> "No combining occurs if the storage is also Guarded"
-
-Yeah it's not allowed. That's what I get for handwaving examples ;)
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 6882fa2f8bad..016ff8c4c305 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -1130,10 +1130,10 @@ static int sg_to_link_tbl_offset(struct scatterlist *sg, int sg_count,
+ 	return count;
+ }
+ 
+-static int talitos_sg_map(struct device *dev, struct scatterlist *src,
+-		   unsigned int len, struct talitos_edesc *edesc,
+-		   struct talitos_ptr *ptr,
+-		   int sg_count, unsigned int offset, int tbl_off)
++static int talitos_sg_map_ext(struct device *dev, struct scatterlist *src,
++			      unsigned int len, struct talitos_edesc *edesc,
++			      struct talitos_ptr *ptr, int sg_count,
++			      unsigned int offset, int tbl_off, int elen)
+ {
+ 	struct talitos_private *priv = dev_get_drvdata(dev);
+ 	bool is_sec1 = has_ftr_sec1(priv);
+@@ -1142,6 +1142,7 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
+ 		to_talitos_ptr(ptr, 0, 0, is_sec1);
+ 		return 1;
+ 	}
++	to_talitos_ptr_ext_set(ptr, elen, is_sec1);
+ 	if (sg_count == 1) {
+ 		to_talitos_ptr(ptr, sg_dma_address(src) + offset, len, is_sec1);
+ 		return sg_count;
+@@ -1150,7 +1151,7 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
+ 		to_talitos_ptr(ptr, edesc->dma_link_tbl + offset, len, is_sec1);
+ 		return sg_count;
+ 	}
+-	sg_count = sg_to_link_tbl_offset(src, sg_count, offset, len,
++	sg_count = sg_to_link_tbl_offset(src, sg_count, offset, len + elen,
+ 					 &edesc->link_tbl[tbl_off]);
+ 	if (sg_count == 1) {
+ 		/* Only one segment now, so no link tbl needed*/
+@@ -1164,6 +1165,15 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
+ 	return sg_count;
+ }
+ 
++static int talitos_sg_map(struct device *dev, struct scatterlist *src,
++			  unsigned int len, struct talitos_edesc *edesc,
++			  struct talitos_ptr *ptr, int sg_count,
++			  unsigned int offset, int tbl_off)
++{
++	return talitos_sg_map_ext(dev, src, len, edesc, ptr, sg_count, offset,
++				  tbl_off, 0);
++}
++
+ /*
+  * fill in and submit ipsec_esp descriptor
+  */
+@@ -1181,7 +1191,7 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
+ 	unsigned int ivsize = crypto_aead_ivsize(aead);
+ 	int tbl_off = 0;
+ 	int sg_count, ret;
+-	int sg_link_tbl_len;
++	int elen = 0;
+ 	bool sync_needed = false;
+ 	struct talitos_private *priv = dev_get_drvdata(dev);
+ 	bool is_sec1 = has_ftr_sec1(priv);
+@@ -1223,17 +1233,11 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
+ 	 * extent is bytes of HMAC postpended to ciphertext,
+ 	 * typically 12 for ipsec
+ 	 */
+-	sg_link_tbl_len = cryptlen;
+-
+-	if (is_ipsec_esp) {
+-		to_talitos_ptr_ext_set(&desc->ptr[4], authsize, is_sec1);
+-
+-		if (desc->hdr & DESC_HDR_MODE1_MDEU_CICV)
+-			sg_link_tbl_len += authsize;
+-	}
++	if (is_ipsec_esp && (desc->hdr & DESC_HDR_MODE1_MDEU_CICV))
++		elen = authsize;
+ 
+-	ret = talitos_sg_map(dev, areq->src, sg_link_tbl_len, edesc,
+-			     &desc->ptr[4], sg_count, areq->assoclen, tbl_off);
++	ret = talitos_sg_map_ext(dev, areq->src, cryptlen, edesc, &desc->ptr[4],
++				 sg_count, areq->assoclen, tbl_off, elen);
+ 
+ 	if (ret > 1) {
+ 		tbl_off += ret;
+-- 
+2.13.3
