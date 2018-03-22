@@ -1,20 +1,31 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406NXH37k0zF1kt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:42:07 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id s13so3090667pgn.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:42:06 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Anton Blanchard <anton@samba.org>
-Subject: [PATCH] powerpc: Fix smp_wmb barrier definition use use lwsync
- consistently
-Date: Thu, 22 Mar 2018 20:41:46 +1000
-Message-Id: <20180322104146.5350-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406Nq50CdPzF1wm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:54:56 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2MAsg9C192770
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:54:53 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gv9bqd1fd-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:54:53 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Thu, 22 Mar 2018 10:54:52 -0000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linux@roeck-us.net
+Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stewart@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] Add support to disable sensor groups in P9
+Date: Thu, 22 Mar 2018 16:24:32 +0530
+Message-Id: <1521716075-807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-asm/barrier.h is not always included after asm/synch.h, which meant
-it was missing __SUBARCH_HAS_LWSYNC, so in some files smp_wmb() would
-be eieio when it should be lwsync. kernel/time/hrtimer.c is one case.
+This patch series adds support to enable/disable OCC based
+inband-sensor groups at runtime. The environmental sensor groups are
+managed in HWMON and the remaining platform specific sensor groups are
+managed in /sys/firmware/opal.
 
-__SUBARCH_HAS_LWSYNC is only used in one place, so just fold it in
-to where it's used. Previously with my small simulator config, 377
-instances of eieio in the tree. After this patch there are 55.
+The firmware changes required for this patch is posted below:
+https://lists.ozlabs.org/pipermail/skiboot/2018-March/010812.html
 
-Cc: Anton Blanchard <anton@samba.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/barrier.h | 3 ++-
- arch/powerpc/include/asm/synch.h   | 4 ----
- 2 files changed, 2 insertions(+), 5 deletions(-)
+Shilpasri G Bhat (3):
+  powernv:opal-sensor-groups: Add support to enable sensor groups
+  hwmon: ibmpowernv: Add attributes to enable/disable sensor groups
+  powernv: opal-sensor-groups: Add attributes to disable/enable sensors
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index 10daa1d56e0a..c7c63959ba91 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -35,7 +35,8 @@
- #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
- #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
- 
--#ifdef __SUBARCH_HAS_LWSYNC
-+/* The sub-arch has lwsync */
-+#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
- #    define SMPWMB      LWSYNC
- #else
- #    define SMPWMB      eieio
-diff --git a/arch/powerpc/include/asm/synch.h b/arch/powerpc/include/asm/synch.h
-index 63e7f5a1f105..6ec546090ba1 100644
---- a/arch/powerpc/include/asm/synch.h
-+++ b/arch/powerpc/include/asm/synch.h
-@@ -6,10 +6,6 @@
- #include <linux/stringify.h>
- #include <asm/feature-fixups.h>
- 
--#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
--#define __SUBARCH_HAS_LWSYNC
--#endif
--
- #ifndef __ASSEMBLY__
- extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
- extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
+ .../ABI/testing/sysfs-firmware-opal-sensor-groups  |  34 ++++++
+ Documentation/hwmon/ibmpowernv                     |  31 ++++-
+ arch/powerpc/include/asm/opal-api.h                |   4 +-
+ arch/powerpc/include/asm/opal.h                    |   2 +
+ .../powerpc/platforms/powernv/opal-sensor-groups.c | 104 ++++++++++++-----
+ arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
+ drivers/hwmon/ibmpowernv.c                         | 127 +++++++++++++++++++--
+ 7 files changed, 265 insertions(+), 38 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
+
 -- 
-2.16.1
+1.8.3.1
