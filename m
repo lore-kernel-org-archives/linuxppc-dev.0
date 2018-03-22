@@ -1,12 +1,12 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406dMx53ckzF209
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:20:45 +1100 (AEDT)
-Received: by mail-wr0-x241.google.com with SMTP id z8so9983233wrh.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 13:20:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406dMz2Xc3zF209
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:20:47 +1100 (AEDT)
+Received: by mail-wr0-x242.google.com with SMTP id p53so2474767wrc.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 13:20:47 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -14,9 +14,9 @@ Cc: Mathieu Malaterre <malat@debian.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 03/19] powerpc: Mark variables as unused
-Date: Thu, 22 Mar 2018 21:19:49 +0100
-Message-Id: <20180322202007.23088-4-malat@debian.org>
+Subject: [PATCH 04/19] powerpc/kvm: Mark variable tmp unused
+Date: Thu, 22 Mar 2018 21:19:50 +0100
+Message-Id: <20180322202007.23088-5-malat@debian.org>
 In-Reply-To: <20180322202007.23088-1-malat@debian.org>
 References: <20180322202007.23088-1-malat@debian.org>
 MIME-Version: 1.0
@@ -30,37 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add gcc attribute unused for two variables. Fix warnings treated as errors
-with W=1:
+Add gcc attribute unused to variable tmp. Fix warning treated as error with
+W=1:
 
-  arch/powerpc/kernel/prom_init.c:1388:8: error: variable ‘path’ set but not used [-Werror=unused-but-set-variable]
+  arch/powerpc/kernel/kvm.c:675:6: error: variable ‘tmp’ set but not used [-Werror=unused-but-set-variable]
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/kernel/prom_init.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/kvm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index acf4b2e0530c..6a3ac4522144 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -603,7 +603,7 @@ static void __init early_cmdline_parse(void)
- 	const char *opt;
- 
- 	char *p;
--	int l = 0;
-+	int l __maybe_unused = 0;
- 
- 	prom_cmd_line[0] = 0;
- 	p = prom_cmd_line;
-@@ -1385,7 +1385,7 @@ static void __init reserve_mem(u64 base, u64 size)
- static void __init prom_init_mem(void)
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 9ad37f827a97..cd3c088283f9 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -672,7 +672,7 @@ static void kvm_use_magic_page(void)
  {
- 	phandle node;
--	char *path, type[64];
-+	char *path __maybe_unused, type[64];
- 	unsigned int plen;
- 	cell_t *p, *endp;
- 	__be32 val;
+ 	u32 *p;
+ 	u32 *start, *end;
+-	u32 tmp;
++	u32 tmp __maybe_unused;
+ 	u32 features;
+ 
+ 	/* Tell the host to map the magic page to -4096 on all CPUs */
 -- 
 2.11.0
