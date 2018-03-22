@@ -1,21 +1,27 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
- [IPv6:2607:f8b0:4001:c06::236])
+Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
+ [IPv6:2607:f8b0:4001:c06::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406Dpz1QD4zF1v8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 15:54:18 +1100 (AEDT)
-Received: by mail-io0-x236.google.com with SMTP id d5so9347569iob.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 21:54:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406FTl2sNlzF1tm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 16:24:27 +1100 (AEDT)
+Received: by mail-io0-x234.google.com with SMTP id e79so9405084ioi.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 22:24:26 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAM=7fbcynhZ3iPtCGpVCgDmw7OU6SQcucZDm1kUdv=soky9RJQ@mail.gmail.com>
-References: <CAM=7fbcynhZ3iPtCGpVCgDmw7OU6SQcucZDm1kUdv=soky9RJQ@mail.gmail.com>
+In-Reply-To: <8a13375fd8e5439890768b7dd8473099@AcuMS.aculab.com>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+ <8a13375fd8e5439890768b7dd8473099@AcuMS.aculab.com>
 From: Oliver <oohall@gmail.com>
-Date: Thu, 22 Mar 2018 15:54:15 +1100
-Message-ID: <CAOSf1CGqc9=QnrChOY_+YL0v8TALQ+pH8u1e26Q--0PS4CGm2g@mail.gmail.com>
-Subject: Re: DMA Mapping Error in ppc64
-To: Jared Bents <jared.bents@rockwellcollins.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 22 Mar 2018 16:24:24 +1100
+Message-ID: <CAOSf1CHTouXQ+sPxu7ySCtw--maef+knFC9bCQ7rpuk-hf-puQ@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: David Laight <David.Laight@aculab.com>
+Cc: Sinan Kaya <okaya@codeaurora.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,74 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2018 at 8:00 AM, Jared Bents
-<jared.bents@rockwellcollins.com> wrote:
-> Hi all,
+On Thu, Mar 22, 2018 at 1:35 AM, David Laight <David.Laight@aculab.com> wrote:
+>> x86 has compiler barrier inside the relaxed() API so that code does not
+>> get reordered. ARM64 architecturally guarantees device writes to be observed
+>> in order.
 >
-> Apologies for the amount of information but we've been debugging this
-> for a while and I wanted to get what we are seeing captured as much as
-> possible.  We are a T1042 processor and have a total 8GB DDR and our
-> kernel version is fsl-sdk-v2.0-1703 (linux v4.1.35) as that is the
-> latest version supplied by NXP.
+> There are places where you don't even need a compile barrier between
+> every write.
 >
-> A while ago we ported from 32 bit to 64 bit.  Everything continued to
-> work except the ath10k module we have.  So as a first step, we checked
-> to see if an ath9k module also failed to work and it was also no
-> longer working.  The ath10k is working fine on a 32 bit system but
-> it's not working on 64 bit system as we are getting dma mapping errors
-> when trying to initialize the wifi modules.
->
-> pci_bus 0002:01: bus scan returning with max=01
-> pci_bus 0002:01: busn_res: [bus 01] end is updated to 01
-> pci_bus 0002:00: bus scan returning with max=01
-> ath10k_pci 0000:01:00.0: unable to get target info from device
-> ath10k_pci 0000:01:00.0: could not get target info (-5)
-> ath10k_pci 0000:01:00.0: could not probe fw (-5)
-> ath10k_pci 0001:01:00.0: Direct firmware load for
-> ath10k/cal-pci-0001:01:00.0.bin failed with error -2
->
->
-> First, we have tried the mainline kernel (v4.15)  to see if that would
-> fix the issue, it did not.  So I made a patch for the ath10k driver to
-> restrict to just GFP_DMA areas when allocating memory or creating
-> sk_buffs and have attached it.  The ath10k wifi modules now initialize
-> correctly but when I try to connect them and send traffic, they get a
-> DMA mapping error from the sk_buff that it receives from elsewhere in
-> the kernel.  So while the driver appears to be fixable with the patch,
-> the modules are still unusable due to data being sent to the driver
-> when ath10k_tx is called and it tries to dma map with the provided
-> skb.  Also, according to the ath10k mailing list, GFP_DMA is not
-> supposed to be used in general.  The error below is the same sort of
-> dma mapping error that is seen when initializing the modules without
-> the patch to OR with GFP_DMA.
->
-> ath10k_pci 0001:01:00.0: failed to transmit packet, dropping: -5
->
->
-> We asked on the ath10k mailing list if anyone else is having this
-> problem and no one else seems to have the issue but they are using
-> different architectures (ARM or X86). As a result, it does not seem to
-> be a driver issue to us but something within the PowerPC arch.  So we
-> dug a little deeper to try to find what addresses being mapped are
-> working and what address being mapped are not working.
->
-> We found that when the virtual address of data pointer (a member of
-> sk_buff) is above ~3.7 GB RAM address range then return address from
-> dma_map_single API is failed to validate in dma_mapping_error
-> function.
->
-> We also noticed that in a 64bit machine sometimes ping is working and
-> because of the virtual address is under ~3.7GAM RAM address range.  So
-> if we set mem=2048M in the bootargs, the ath10k module works
-> perfectly, however this isn't a real solution since it cuts our
-> available RAM from 8GB to 2GB.
+> I had horrid problems getting some ppc code (for a specific embedded SoC)
+> optimised to have no extra barriers.
+> I ended up just writing through 'pointer to volatile' and adding an
+> explicit 'eieio' between the block of writes and status read.
 
-I think there's a known issue with the freescale PCIe root complex
-where it can't DMA beyond the 4GB mark. There's a workaround in
-the form of limit_zone_pfn() which you can use to put the lower 4GB into
-ZONE_DMA32 and allocate from there rather than ZONE_NORMAL.
-For details of how to use it have a look at corenet_gen_setup_arch() in
-arch/powerpc/platforms/85xx/corenet_generic.c
+This is what you are supposed to do. For accesses to MMIO (cache
+inhibited + guarded) storage the Power ISA guarantees that load-load
+and store-store pairs of accesses will always occur in program order,
+but there's no implicit ordering between load-store or store-load
+pairs. In those cases you need an explicit eieio barrier between the
+two accesses. At the HW level you can think of the CPU as having
+separate queues for MMIO loads and stores. Accesses will be added to
+the respective queue in program order, but there's no synchronisation
+between the two queues. If the CPU is doing write combining it's easy
+to imagine the whole store queue being emptied in one big gulp before
+the load queue is even touched.
 
-Hope that helps,
-Oliver
+> No less painful was doing a byteswapping write to normal memory.
+
+What was the problem? The reverse indexed load/store instructions are
+a little awkward to use, but they work...
+
+>
+>         David
+>
