@@ -1,12 +1,12 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
- [IPv6:2a00:1450:400c:c0c::243])
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406dN660whzF20D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:20:54 +1100 (AEDT)
-Received: by mail-wr0-x243.google.com with SMTP id d10so9992776wrf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 13:20:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406dN8538qzF20M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:20:56 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id e194so18201627wmd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 13:20:56 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -14,9 +14,9 @@ Cc: Mathieu Malaterre <malat@debian.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 08/19] powerpc/tau: Make some function static
-Date: Thu, 22 Mar 2018 21:19:54 +0100
-Message-Id: <20180322202007.23088-9-malat@debian.org>
+Subject: [PATCH 09/19] powerpc/chrp/pci: Make some functions static
+Date: Thu, 22 Mar 2018 21:19:55 +0100
+Message-Id: <20180322202007.23088-10-malat@debian.org>
 In-Reply-To: <20180322202007.23088-1-malat@debian.org>
 References: <20180322202007.23088-1-malat@debian.org>
 MIME-Version: 1.0
@@ -33,56 +33,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 These functions can all be static, make it so. Fix warnings treated as
 errors with W=1:
 
-  arch/powerpc/kernel/tau_6xx.c:53:6: error: no previous prototype for ‘set_thresholds’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/tau_6xx.c:73:6: error: no previous prototype for ‘TAUupdate’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/tau_6xx.c:208:13: error: no previous prototype for ‘TAU_init_smp’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/tau_6xx.c:220:12: error: no previous prototype for ‘TAU_init’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/tau_6xx.c:126:6: error: no previous prototype for ‘TAUException’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/pci.c:34:5: error: no previous prototype for ‘gg2_read_config’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/pci.c:61:5: error: no previous prototype for ‘gg2_write_config’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/pci.c:97:5: error: no previous prototype for ‘rtas_read_config’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/pci.c:112:5: error: no previous prototype for ‘rtas_write_config’ [-Werror=missing-prototypes]
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/kernel/tau_6xx.c | 8 ++++----
+ arch/powerpc/platforms/chrp/pci.c | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/tau_6xx.c b/arch/powerpc/kernel/tau_6xx.c
-index 8cdd852aedd1..1fc6a89a978e 100644
---- a/arch/powerpc/kernel/tau_6xx.c
-+++ b/arch/powerpc/kernel/tau_6xx.c
-@@ -50,7 +50,7 @@ struct timer_list tau_timer;
- #define shrink_timer	2*HZ	/* period between shrinking the window */
- #define min_window	2	/* minimum window size, degrees C */
+diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
+index 0f512d35f7c5..84e1fedb3796 100644
+--- a/arch/powerpc/platforms/chrp/pci.c
++++ b/arch/powerpc/platforms/chrp/pci.c
+@@ -31,7 +31,7 @@ void __iomem *gg2_pci_config_base;
+  * limit the bus number to 3 bits
+  */
  
--void set_thresholds(unsigned long cpu)
-+static void set_thresholds(unsigned long cpu)
+-int gg2_read_config(struct pci_bus *bus, unsigned int devfn, int off,
++static int gg2_read_config(struct pci_bus *bus, unsigned int devfn, int off,
+ 			   int len, u32 *val)
  {
- #ifdef CONFIG_TAU_INT
- 	/*
-@@ -70,7 +70,7 @@ void set_thresholds(unsigned long cpu)
- #endif
+ 	volatile void __iomem *cfg_data;
+@@ -58,7 +58,7 @@ int gg2_read_config(struct pci_bus *bus, unsigned int devfn, int off,
+ 	return PCIBIOS_SUCCESSFUL;
  }
  
--void TAUupdate(int cpu)
-+static void TAUupdate(int cpu)
+-int gg2_write_config(struct pci_bus *bus, unsigned int devfn, int off,
++static int gg2_write_config(struct pci_bus *bus, unsigned int devfn, int off,
+ 			    int len, u32 val)
  {
- 	unsigned thrm;
- 
-@@ -205,7 +205,7 @@ static void tau_timeout_smp(struct timer_list *unused)
- 
- int tau_initialized = 0;
- 
--void __init TAU_init_smp(void * info)
-+static void __init TAU_init_smp(void *info)
+ 	volatile void __iomem *cfg_data;
+@@ -94,7 +94,7 @@ static struct pci_ops gg2_pci_ops =
+ /*
+  * Access functions for PCI config space using RTAS calls.
+  */
+-int rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
++static int rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 		     int len, u32 *val)
  {
- 	unsigned long cpu = smp_processor_id();
- 
-@@ -217,7 +217,7 @@ void __init TAU_init_smp(void * info)
- 	set_thresholds(cpu);
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+@@ -109,7 +109,7 @@ int rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	return rval? PCIBIOS_DEVICE_NOT_FOUND: PCIBIOS_SUCCESSFUL;
  }
  
--int __init TAU_init(void)
-+static int __init TAU_init(void)
+-int rtas_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
++static int rtas_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 		      int len, u32 val)
  {
- 	/* We assume in SMP that if one CPU has TAU support, they
- 	 * all have it --BenH
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
 -- 
 2.11.0
