@@ -3,10 +3,10 @@ Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
  [IPv6:2a00:1450:4010:c07::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406XPk234SzF1yv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 03:36:58 +1100 (AEDT)
-Received: by mail-lf0-x244.google.com with SMTP id a22-v6so14106240lfg.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 09:36:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406XPk1YKLzF1yt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 03:36:53 +1100 (AEDT)
+Received: by mail-lf0-x244.google.com with SMTP id m16-v6so10384654lfc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 09:36:53 -0700 (PDT)
 From: Ilya Smith <blackzert@gmail.com>
 To: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
  vgupta@synopsys.com, linux@armlinux.org.uk, tony.luck@intel.com,
@@ -31,12 +31,9 @@ To: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: [RFC PATCH v2 2/2] Architecture defined limit on memory region random
- shift.
-Date: Thu, 22 Mar 2018 19:36:38 +0300
-Message-Id: <1521736598-12812-3-git-send-email-blackzert@gmail.com>
-In-Reply-To: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+Subject: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
+Date: Thu, 22 Mar 2018 19:36:36 +0300
+Message-Id: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,408 +43,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Ilya Smith <blackzert@gmail.com>
----
- arch/alpha/kernel/osf_sys.c         | 1 +
- arch/arc/mm/mmap.c                  | 1 +
- arch/arm/mm/mmap.c                  | 2 ++
- arch/frv/mm/elf-fdpic.c             | 1 +
- arch/ia64/kernel/sys_ia64.c         | 1 +
- arch/ia64/mm/hugetlbpage.c          | 1 +
- arch/metag/mm/hugetlbpage.c         | 1 +
- arch/mips/mm/mmap.c                 | 1 +
- arch/parisc/kernel/sys_parisc.c     | 2 ++
- arch/powerpc/mm/hugetlbpage-radix.c | 1 +
- arch/powerpc/mm/mmap.c              | 2 ++
- arch/powerpc/mm/slice.c             | 2 ++
- arch/s390/mm/mmap.c                 | 2 ++
- arch/sh/mm/mmap.c                   | 2 ++
- arch/sparc/kernel/sys_sparc_32.c    | 1 +
- arch/sparc/kernel/sys_sparc_64.c    | 2 ++
- arch/sparc/mm/hugetlbpage.c         | 2 ++
- arch/tile/mm/hugetlbpage.c          | 2 ++
- arch/x86/kernel/sys_x86_64.c        | 4 ++++
- arch/x86/mm/hugetlbpage.c           | 4 ++++
- fs/hugetlbfs/inode.c                | 1 +
- include/linux/mm.h                  | 1 +
- mm/mmap.c                           | 3 ++-
- 23 files changed, 39 insertions(+), 1 deletion(-)
+Current implementation doesn't randomize address returned by mmap.
+All the entropy ends with choosing mmap_base_addr at the process
+creation. After that mmap build very predictable layout of address
+space. It allows to bypass ASLR in many cases. This patch make
+randomization of address on any mmap call.
 
-diff --git a/arch/alpha/kernel/osf_sys.c b/arch/alpha/kernel/osf_sys.c
-index fa1a392..0ab9f31 100644
---- a/arch/alpha/kernel/osf_sys.c
-+++ b/arch/alpha/kernel/osf_sys.c
-@@ -1301,6 +1301,7 @@ arch_get_unmapped_area_1(unsigned long addr, unsigned long len,
- 	info.high_limit = limit;
- 	info.align_mask = 0;
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-diff --git a/arch/arc/mm/mmap.c b/arch/arc/mm/mmap.c
-index 2e13683..45225fc 100644
---- a/arch/arc/mm/mmap.c
-+++ b/arch/arc/mm/mmap.c
-@@ -75,5 +75,6 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = do_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
-diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
-index eb1de66..1eb660c 100644
---- a/arch/arm/mm/mmap.c
-+++ b/arch/arm/mm/mmap.c
-@@ -101,6 +101,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = do_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-@@ -152,6 +153,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	info.high_limit = mm->mmap_base;
- 	info.align_mask = do_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	/*
-diff --git a/arch/frv/mm/elf-fdpic.c b/arch/frv/mm/elf-fdpic.c
-index 46aa289..a2ce2ce 100644
---- a/arch/frv/mm/elf-fdpic.c
-+++ b/arch/frv/mm/elf-fdpic.c
-@@ -86,6 +86,7 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
- 	info.high_limit = (current->mm->start_stack - 0x00200000);
- 	info.align_mask = 0;
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 	if (!(addr & ~PAGE_MASK))
- 		goto success;
-diff --git a/arch/ia64/kernel/sys_ia64.c b/arch/ia64/kernel/sys_ia64.c
-index 085adfc..15fa4fb 100644
---- a/arch/ia64/kernel/sys_ia64.c
-+++ b/arch/ia64/kernel/sys_ia64.c
-@@ -64,6 +64,7 @@ arch_get_unmapped_area (struct file *filp, unsigned long addr, unsigned long len
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = align_mask;
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-diff --git a/arch/ia64/mm/hugetlbpage.c b/arch/ia64/mm/hugetlbpage.c
-index d16e419..ec7822d 100644
---- a/arch/ia64/mm/hugetlbpage.c
-+++ b/arch/ia64/mm/hugetlbpage.c
-@@ -162,6 +162,7 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr, u
- 	info.high_limit = HPAGE_REGION_BASE + RGN_MAP_LIMIT;
- 	info.align_mask = PAGE_MASK & (HPAGE_SIZE - 1);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-diff --git a/arch/metag/mm/hugetlbpage.c b/arch/metag/mm/hugetlbpage.c
-index 012ee4c..babd325 100644
---- a/arch/metag/mm/hugetlbpage.c
-+++ b/arch/metag/mm/hugetlbpage.c
-@@ -191,6 +191,7 @@ hugetlb_get_unmapped_area_new_pmd(unsigned long len)
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = PAGE_MASK & HUGEPT_MASK;
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-diff --git a/arch/mips/mm/mmap.c b/arch/mips/mm/mmap.c
-index 33d3251..5a3d384 100644
---- a/arch/mips/mm/mmap.c
-+++ b/arch/mips/mm/mmap.c
-@@ -122,6 +122,7 @@ static unsigned long arch_get_unmapped_area_common(struct file *filp,
- 	info.flags = 0;
- 	info.low_limit = mm->mmap_base;
- 	info.high_limit = TASK_SIZE;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
-index 378a754..abf4b05 100644
---- a/arch/parisc/kernel/sys_parisc.c
-+++ b/arch/parisc/kernel/sys_parisc.c
-@@ -130,6 +130,7 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.high_limit = mmap_upper_limit();
- 	info.align_mask = last_mmap ? (PAGE_MASK & (SHM_COLOUR - 1)) : 0;
- 	info.align_offset = shared_align_offset(last_mmap, pgoff);
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- found_addr:
-@@ -192,6 +193,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	info.high_limit = mm->mmap_base;
- 	info.align_mask = last_mmap ? (PAGE_MASK & (SHM_COLOUR - 1)) : 0;
- 	info.align_offset = shared_align_offset(last_mmap, pgoff);
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 	if (!(addr & ~PAGE_MASK))
- 		goto found_addr;
-diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
-index 2486bee..1d61a88 100644
---- a/arch/powerpc/mm/hugetlbpage-radix.c
-+++ b/arch/powerpc/mm/hugetlbpage-radix.c
-@@ -87,6 +87,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 
- 	return vm_unmapped_area(&info);
- }
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-index d503f34..7fe98c7 100644
---- a/arch/powerpc/mm/mmap.c
-+++ b/arch/powerpc/mm/mmap.c
-@@ -136,6 +136,7 @@ radix__arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.low_limit = mm->mmap_base;
- 	info.high_limit = high_limit;
- 	info.align_mask = 0;
-+	info.random_shift = 0;
- 
- 	return vm_unmapped_area(&info);
- }
-@@ -180,6 +181,7 @@ radix__arch_get_unmapped_area_topdown(struct file *filp,
- 	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
- 	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
- 	info.align_mask = 0;
-+	info.random_shift = 0;
- 
- 	addr = vm_unmapped_area(&info);
- 	if (!(addr & ~PAGE_MASK))
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 23ec2c5..2005845 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -284,6 +284,7 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
- 	info.length = len;
- 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 
- 	addr = TASK_UNMAPPED_BASE;
- 	/*
-@@ -330,6 +331,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
- 	info.length = len;
- 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 
- 	addr = mm->mmap_base;
- 	/*
-diff --git a/arch/s390/mm/mmap.c b/arch/s390/mm/mmap.c
-index 831bdcf..141823f 100644
---- a/arch/s390/mm/mmap.c
-+++ b/arch/s390/mm/mmap.c
-@@ -95,6 +95,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.length = len;
- 	info.low_limit = mm->mmap_base;
- 	info.high_limit = TASK_SIZE;
-+	info.random_shift = 0;
- 	if (filp || (flags & MAP_SHARED))
- 		info.align_mask = MMAP_ALIGN_MASK << PAGE_SHIFT;
- 	else
-@@ -146,6 +147,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	info.length = len;
- 	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
- 	info.high_limit = mm->mmap_base;
-+	info.random_shift = 0;
- 	if (filp || (flags & MAP_SHARED))
- 		info.align_mask = MMAP_ALIGN_MASK << PAGE_SHIFT;
- 	else
-diff --git a/arch/sh/mm/mmap.c b/arch/sh/mm/mmap.c
-index 6a1a129..d9206c2 100644
---- a/arch/sh/mm/mmap.c
-+++ b/arch/sh/mm/mmap.c
-@@ -74,6 +74,7 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = do_colour_align ? (PAGE_MASK & shm_align_mask) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-@@ -124,6 +125,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	info.high_limit = mm->mmap_base;
- 	info.align_mask = do_colour_align ? (PAGE_MASK & shm_align_mask) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	/*
-diff --git a/arch/sparc/kernel/sys_sparc_32.c b/arch/sparc/kernel/sys_sparc_32.c
-index 990703b7..af664ba3 100644
---- a/arch/sparc/kernel/sys_sparc_32.c
-+++ b/arch/sparc/kernel/sys_sparc_32.c
-@@ -66,6 +66,7 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
- 	info.align_mask = (flags & MAP_SHARED) ?
- 		(PAGE_MASK & (SHMLBA - 1)) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
-index 55416db..3d12e3d 100644
---- a/arch/sparc/kernel/sys_sparc_64.c
-+++ b/arch/sparc/kernel/sys_sparc_64.c
-@@ -131,6 +131,7 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
- 	info.high_limit = min(task_size, VA_EXCLUDE_START);
- 	info.align_mask = do_color_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	if ((addr & ~PAGE_MASK) && task_size > VA_EXCLUDE_END) {
-@@ -194,6 +195,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	info.high_limit = mm->mmap_base;
- 	info.align_mask = do_color_align ? (PAGE_MASK & (SHMLBA - 1)) : 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	/*
-diff --git a/arch/sparc/mm/hugetlbpage.c b/arch/sparc/mm/hugetlbpage.c
-index 0112d69..6d0c032 100644
---- a/arch/sparc/mm/hugetlbpage.c
-+++ b/arch/sparc/mm/hugetlbpage.c
-@@ -43,6 +43,7 @@ static unsigned long hugetlb_get_unmapped_area_bottomup(struct file *filp,
- 	info.high_limit = min(task_size, VA_EXCLUDE_START);
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	if ((addr & ~PAGE_MASK) && task_size > VA_EXCLUDE_END) {
-@@ -75,6 +76,7 @@ hugetlb_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	info.high_limit = mm->mmap_base;
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	/*
-diff --git a/arch/tile/mm/hugetlbpage.c b/arch/tile/mm/hugetlbpage.c
-index 0986d42..2b3a9b6 100644
---- a/arch/tile/mm/hugetlbpage.c
-+++ b/arch/tile/mm/hugetlbpage.c
-@@ -176,6 +176,7 @@ static unsigned long hugetlb_get_unmapped_area_bottomup(struct file *file,
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- 
-@@ -193,6 +194,7 @@ static unsigned long hugetlb_get_unmapped_area_topdown(struct file *file,
- 	info.high_limit = current->mm->mmap_base;
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	addr = vm_unmapped_area(&info);
- 
- 	/*
-diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
-index 676774b..0eda047 100644
---- a/arch/x86/kernel/sys_x86_64.c
-+++ b/arch/x86/kernel/sys_x86_64.c
-@@ -163,6 +163,8 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.high_limit = end;
- 	info.align_mask = 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = in_compat_syscall() ?
-+		256 : 0x1000000;
- 	if (filp) {
- 		info.align_mask = get_align_mask();
- 		info.align_offset += get_align_bits();
-@@ -224,6 +226,8 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 
- 	info.align_mask = 0;
- 	info.align_offset = pgoff << PAGE_SHIFT;
-+	info.random_shift = in_compat_syscall() ?
-+		256 : 0x1000000;
- 	if (filp) {
- 		info.align_mask = get_align_mask();
- 		info.align_offset += get_align_bits();
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index 00b2966..f4f6436 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -97,6 +97,8 @@ static unsigned long hugetlb_get_unmapped_area_bottomup(struct file *file,
- 
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = in_compat_syscall() ?
-+		256 : 0x1000000;
- 	return vm_unmapped_area(&info);
- }
- 
-@@ -121,6 +123,8 @@ static unsigned long hugetlb_get_unmapped_area_topdown(struct file *file,
- 
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = in_compat_syscall() ?
-+		256 : 0x1000000;
- 	addr = vm_unmapped_area(&info);
- 
- 	/*
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 8fe1b0a..83e962e 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -200,6 +200,7 @@ hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- #endif
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index c716257..f869e6d 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -2252,6 +2252,7 @@ struct vm_unmapped_area_info {
- 	unsigned long high_limit;
- 	unsigned long align_mask;
- 	unsigned long align_offset;
-+	unsigned long random_shift;
- };
- 
- #ifndef CONFIG_MMU
-diff --git a/mm/mmap.c b/mm/mmap.c
-index ba9cebb..425fa09 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1938,7 +1938,7 @@ unsigned long unmapped_area_random(struct vm_unmapped_area_info *info)
- 	if (gap_end ==  gap_start)
- 		return gap_start;
- 	addr = entropy[1] % (min((gap_end - gap_start) >> PAGE_SHIFT,
--							 0x10000UL));
-+							 info->random_shift));
- 	addr = gap_end - (addr << PAGE_SHIFT);
- 	addr += (info->align_offset - addr) & info->align_mask;
- 	return addr;
-@@ -2186,6 +2186,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.low_limit = mm->mmap_base;
- 	info.high_limit = TASK_SIZE;
- 	info.align_mask = 0;
-+	info.random_shift = 0;
- 	return vm_unmapped_area(&info);
- }
- #endif
+---
+v2: Changed the way how gap was chosen. Now we don't get all possible
+gaps. Random address generated and used as a tree walking direction.
+Tree walked with backtracking till suitable gap will be found.
+When the gap was found, address randomly shifted from next vma start.
+
+The vm_unmapped_area_info structure was extended with new field random_shift
+what might be used to set arch-depended limit on shift to next vma start.
+In case of x86-64 architecture this shift is 256 pages for 32 bit applications
+and 0x1000000 pages for 64 bit.
+
+To get the entropy pseudo-random is used. This is because on Intel x86-64
+processors instruction RDRAND works very slow if buffer is consumed -
+after about 10000 iterations.
+
+This feature could be enabled by setting randomize_va_space with 4.
+
+---
+Performance:
+After applying this patch single mmap took about 7% longer according to
+following test:
+
+    before = rdtsc();
+    addr = mmap(0, SIZE, PROT_READ | PROT_WRITE, 
+                 MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    after = rdtsc();
+    diff = after - before;
+    munmap(addr, SIZE)
+    ...
+    unsigned long long total = 0;
+    for(int i = 0; i < count; ++i) {
+        total += one_iteration();
+    }
+    printf("%lld\n", total);
+
+Time is consumed by div instruction in computation of the address.
+
+make kernel:
+echo 2 > /proc/sys/kernel/randomize_va_space 
+make mrproper && make defconfig && time make 
+real    11m9.925s
+user    10m17.829s
+sys 1m4.969s
+
+echo 4 > /proc/sys/kernel/randomize_va_space 
+make mrproper && make defconfig && time make 
+real    11m12.806s
+user    10m18.305s
+sys 1m4.281s
+
+
+Ilya Smith (2):
+  Randomization of address chosen by mmap.
+  Architecture defined limit on memory region random shift.
+
+ arch/alpha/kernel/osf_sys.c         |   1 +
+ arch/arc/mm/mmap.c                  |   1 +
+ arch/arm/mm/mmap.c                  |   2 +
+ arch/frv/mm/elf-fdpic.c             |   1 +
+ arch/ia64/kernel/sys_ia64.c         |   1 +
+ arch/ia64/mm/hugetlbpage.c          |   1 +
+ arch/metag/mm/hugetlbpage.c         |   1 +
+ arch/mips/mm/mmap.c                 |   1 +
+ arch/parisc/kernel/sys_parisc.c     |   2 +
+ arch/powerpc/mm/hugetlbpage-radix.c |   1 +
+ arch/powerpc/mm/mmap.c              |   2 +
+ arch/powerpc/mm/slice.c             |   2 +
+ arch/s390/mm/mmap.c                 |   2 +
+ arch/sh/mm/mmap.c                   |   2 +
+ arch/sparc/kernel/sys_sparc_32.c    |   1 +
+ arch/sparc/kernel/sys_sparc_64.c    |   2 +
+ arch/sparc/mm/hugetlbpage.c         |   2 +
+ arch/tile/mm/hugetlbpage.c          |   2 +
+ arch/x86/kernel/sys_x86_64.c        |   4 +
+ arch/x86/mm/hugetlbpage.c           |   4 +
+ fs/hugetlbfs/inode.c                |   1 +
+ include/linux/mm.h                  |  17 ++--
+ mm/mmap.c                           | 165 ++++++++++++++++++++++++++++++++++++
+ 23 files changed, 213 insertions(+), 5 deletions(-)
+
 -- 
 2.7.4
