@@ -1,43 +1,20 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406gLl6ql7zF1wH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 08:49:51 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2MLn5SW120986
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 17:49:48 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gvks6t33s-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 17:49:48 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 22 Mar 2018 21:49:45 -0000
-Subject: Re: [PATCH v6 02/12] PKCS#7: Introduce pkcs7_get_message_sig() and
- verify_pkcs7_message_sig()
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-integrity@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- David Howells <dhowells@redhat.com>, David Woodhouse
- <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
- <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
- "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
-Date: Thu, 22 Mar 2018 17:49:38 -0400
-In-Reply-To: <20180316203837.10174-3-bauerman@linux.vnet.ibm.com>
-References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
- <20180316203837.10174-3-bauerman@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1521755378.3848.295.camel@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406hDT44MwzF1yd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:29:28 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id f5-v6so6223950plj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 15:29:28 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, npiggin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH 1/2] powerpc/mm: Add tracking of the number of coprocessors
+ using a context
+Date: Fri, 23 Mar 2018 09:29:05 +1100
+Message-Id: <20180322222906.22084-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,193 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Thiago,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
-> IMA will need to know the key that signed a given PKCS#7 message, so add
-> pkcs7_get_message_sig().
-> 
-> It will also need to verify an already parsed PKCS#7 message. For this
-> purpose, add verify_pkcs7_message_sig() which takes a struct pkcs7_message
-> for verification instead of the raw bytes that verify_pkcs7_signature()
-> takes.
+Currently, when using coprocessors (which use the Nest MMU), we
+simply increment the active_cpu count to force all TLB invalidations
+to be come broadcast.
 
-The title "PKCS#7: refactor verify_pkcs7_signature()" might be more
-appropriate.  The patch description would then explain why it needs to
-be refactored.  In this case, verify_pkcs7_signature() verifies the
-signature using keys on the builtin and secondary keyrings.  IMA-
-appraisal needs to verify the signature using keys on its keyring.
+Unfortunately, due to an errata in POWER9, we will need to know
+more specifically that coprocessors are in use.
 
-The patch itself looks good!
+This maintains a separate copros counter in the MMU context for
+that purpose.
 
-Reviewed-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tested-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu.h |  3 +++
+ arch/powerpc/include/asm/mmu_context.h   | 18 +++++++++++++-----
+ arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
+ 3 files changed, 17 insertions(+), 5 deletions(-)
 
-
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Cc: David Howells <dhowells@redhat.com>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> ---
->  certs/system_keyring.c                | 61 ++++++++++++++++++++++++++---------
->  crypto/asymmetric_keys/pkcs7_parser.c | 16 +++++++++
->  include/crypto/pkcs7.h                |  2 ++
->  include/linux/verification.h          | 10 ++++++
->  4 files changed, 73 insertions(+), 16 deletions(-)
-> 
-> diff --git a/certs/system_keyring.c b/certs/system_keyring.c
-> index 6251d1b27f0c..7ddc8b7a3062 100644
-> --- a/certs/system_keyring.c
-> +++ b/certs/system_keyring.c
-> @@ -190,33 +190,27 @@ late_initcall(load_system_certificate_list);
->  #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
-> 
->  /**
-> - * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
-> + * verify_pkcs7_message_sig - Verify a PKCS#7-based signature on system data.
->   * @data: The data to be verified (NULL if expecting internal data).
->   * @len: Size of @data.
-> - * @raw_pkcs7: The PKCS#7 message that is the signature.
-> - * @pkcs7_len: The size of @raw_pkcs7.
-> + * @pkcs7: The PKCS#7 message that is the signature.
->   * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
->   *					(void *)1UL for all trusted keys).
->   * @usage: The use to which the key is being put.
->   * @view_content: Callback to gain access to content.
->   * @ctx: Context for callback.
->   */
-> -int verify_pkcs7_signature(const void *data, size_t len,
-> -			   const void *raw_pkcs7, size_t pkcs7_len,
-> -			   struct key *trusted_keys,
-> -			   enum key_being_used_for usage,
-> -			   int (*view_content)(void *ctx,
-> -					       const void *data, size_t len,
-> -					       size_t asn1hdrlen),
-> -			   void *ctx)
-> +int verify_pkcs7_message_sig(const void *data, size_t len,
-> +			     struct pkcs7_message *pkcs7,
-> +			     struct key *trusted_keys,
-> +			     enum key_being_used_for usage,
-> +			     int (*view_content)(void *ctx,
-> +						 const void *data, size_t len,
-> +						 size_t asn1hdrlen),
-> +			     void *ctx)
->  {
-> -	struct pkcs7_message *pkcs7;
->  	int ret;
-> 
-> -	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
-> -	if (IS_ERR(pkcs7))
-> -		return PTR_ERR(pkcs7);
-> -
->  	/* The data should be detached - so we need to supply it. */
->  	if (data && pkcs7_supply_detached_data(pkcs7, data, len) < 0) {
->  		pr_err("PKCS#7 signature with non-detached data\n");
-> @@ -258,6 +252,41 @@ int verify_pkcs7_signature(const void *data, size_t len,
->  	}
-> 
->  error:
-> +	pr_devel("<==%s() = %d\n", __func__, ret);
-> +	return ret;
-> +}
-> +
-> +/**
-> + * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
-> + * @data: The data to be verified (NULL if expecting internal data).
-> + * @len: Size of @data.
-> + * @raw_pkcs7: The PKCS#7 message that is the signature.
-> + * @pkcs7_len: The size of @raw_pkcs7.
-> + * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
-> + *					(void *)1UL for all trusted keys).
-> + * @usage: The use to which the key is being put.
-> + * @view_content: Callback to gain access to content.
-> + * @ctx: Context for callback.
-> + */
-> +int verify_pkcs7_signature(const void *data, size_t len,
-> +			   const void *raw_pkcs7, size_t pkcs7_len,
-> +			   struct key *trusted_keys,
-> +			   enum key_being_used_for usage,
-> +			   int (*view_content)(void *ctx,
-> +					       const void *data, size_t len,
-> +					       size_t asn1hdrlen),
-> +			   void *ctx)
-> +{
-> +	struct pkcs7_message *pkcs7;
-> +	int ret;
-> +
-> +	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
-> +	if (IS_ERR(pkcs7))
-> +		return PTR_ERR(pkcs7);
-> +
-> +	ret = verify_pkcs7_message_sig(data, len, pkcs7, trusted_keys, usage,
-> +				       view_content, ctx);
-> +
->  	pkcs7_free_message(pkcs7);
->  	pr_devel("<==%s() = %d\n", __func__, ret);
->  	return ret;
-> diff --git a/crypto/asymmetric_keys/pkcs7_parser.c b/crypto/asymmetric_keys/pkcs7_parser.c
-> index a6dcaa659aa8..456b803972b5 100644
-> --- a/crypto/asymmetric_keys/pkcs7_parser.c
-> +++ b/crypto/asymmetric_keys/pkcs7_parser.c
-> @@ -683,3 +683,19 @@ int pkcs7_note_signed_info(void *context, size_t hdrlen,
->  		return -ENOMEM;
->  	return 0;
->  }
-> +
-> +/**
-> + * pkcs7_get_message_sig - get signature in @pkcs7
-> + */
-> +const struct public_key_signature *pkcs7_get_message_sig(
-> +					const struct pkcs7_message *pkcs7)
-> +{
-> +	/*
-> +	 * This function doesn't support messages with more than one signature,
-> +	 * so don't return anything in that case.
-> +	 */
-> +	if (pkcs7->signed_infos == NULL || pkcs7->signed_infos->next != NULL)
-> +		return NULL;
-> +
-> +	return pkcs7->signed_infos->sig;
-> +}
-> diff --git a/include/crypto/pkcs7.h b/include/crypto/pkcs7.h
-> index 583f199400a3..6f51d0cb6d12 100644
-> --- a/include/crypto/pkcs7.h
-> +++ b/include/crypto/pkcs7.h
-> @@ -28,6 +28,8 @@ extern void pkcs7_free_message(struct pkcs7_message *pkcs7);
->  extern int pkcs7_get_content_data(const struct pkcs7_message *pkcs7,
->  				  const void **_data, size_t *_datalen,
->  				  size_t *_headerlen);
-> +extern const struct public_key_signature *pkcs7_get_message_sig(
-> +					const struct pkcs7_message *pkcs7);
-> 
->  /*
->   * pkcs7_trust.c
-> diff --git a/include/linux/verification.h b/include/linux/verification.h
-> index a10549a6c7cd..f04dac2728ec 100644
-> --- a/include/linux/verification.h
-> +++ b/include/linux/verification.h
-> @@ -29,6 +29,7 @@ extern const char *const key_being_used_for[NR__KEY_BEING_USED_FOR];
->  #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
-> 
->  struct key;
-> +struct pkcs7_message;
-> 
->  extern int verify_pkcs7_signature(const void *data, size_t len,
->  				  const void *raw_pkcs7, size_t pkcs7_len,
-> @@ -38,6 +39,15 @@ extern int verify_pkcs7_signature(const void *data, size_t len,
->  						      const void *data, size_t len,
->  						      size_t asn1hdrlen),
->  				  void *ctx);
-> +extern int verify_pkcs7_message_sig(const void *data, size_t len,
-> +				    struct pkcs7_message *pkcs7,
-> +				    struct key *trusted_keys,
-> +				    enum key_being_used_for usage,
-> +				    int (*view_content)(void *ctx,
-> +							const void *data,
-> +							size_t len,
-> +							size_t asn1hdrlen),
-> +				    void *ctx);
-> 
->  #ifdef CONFIG_SIGNED_PE_FILE_VERIFICATION
->  extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
-> 
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index bef6e39ed63a..729902e733cd 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -87,6 +87,9 @@ typedef struct {
+ 	/* Number of bits in the mm_cpumask */
+ 	atomic_t active_cpus;
+ 
++	/* Number of users of the external (Nest) MMU */
++	atomic_t copros;
++
+ 	/* NPU NMMU context */
+ 	struct npu_context *npu_context;
+ 
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 051b3d63afe3..3a15b6db9501 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -92,15 +92,23 @@ static inline void dec_mm_active_cpus(struct mm_struct *mm)
+ static inline void mm_context_add_copro(struct mm_struct *mm)
+ {
+ 	/*
+-	 * On hash, should only be called once over the lifetime of
+-	 * the context, as we can't decrement the active cpus count
+-	 * and flush properly for the time being.
++	 * If any copro is in use, increment the active CPU count
++	 * in order to force TLB invalidations to be global as to
++	 * propagate to the Nest MMU.
+ 	 */
+-	inc_mm_active_cpus(mm);
++	if (atomic_inc_return(&mm->context.copros) == 1)
++		inc_mm_active_cpus(mm);
+ }
+ 
+ static inline void mm_context_remove_copro(struct mm_struct *mm)
+ {
++	int c;
++
++	c = atomic_dec_if_positive(&mm->context.copros);
++
++	/* Detect imbalance between add and remove */
++	WARN_ON(c < 0);
++
+ 	/*
+ 	 * Need to broadcast a global flush of the full mm before
+ 	 * decrementing active_cpus count, as the next TLBI may be
+@@ -111,7 +119,7 @@ static inline void mm_context_remove_copro(struct mm_struct *mm)
+ 	 * for the time being. Invalidations will remain global if
+ 	 * used on hash.
+ 	 */
+-	if (radix_enabled()) {
++	if (c == 0 && radix_enabled()) {
+ 		flush_all_mm(mm);
+ 		dec_mm_active_cpus(mm);
+ 	}
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 929d9ef7083f..3f980baade4c 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -173,6 +173,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ 	mm_iommu_init(mm);
+ #endif
+ 	atomic_set(&mm->context.active_cpus, 0);
++	atomic_set(&mm->context.copros, 0);
+ 
+ 	return 0;
+ }
+-- 
+2.13.6
