@@ -1,43 +1,42 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4065N40yClzF1x1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 10:18:59 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2LNGCN6051372
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 19:18:57 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gux53nq9v-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Mar 2018 19:18:57 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Wed, 21 Mar 2018 23:18:54 -0000
-Subject: Re: [PATCH v6 07/12] integrity: Select CONFIG_KEYS instead of
- depending on it
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-integrity@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- David Howells <dhowells@redhat.com>, David Woodhouse
- <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
- <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
- "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
-Date: Wed, 21 Mar 2018 19:18:47 -0400
-In-Reply-To: <20180316203837.10174-8-bauerman@linux.vnet.ibm.com>
-References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
- <20180316203837.10174-8-bauerman@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1521674327.3848.221.camel@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4066dm4KQ8zF1vf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 11:15:56 +1100 (AEDT)
+Date: Thu, 22 Mar 2018 00:15:32 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips <linux-mips@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Jiri Slaby <jslaby@suse.com>, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [RFC PATCH 4/6] mm: provide generic compat_sys_readahead()
+ implementation
+Message-ID: <20180322001532.GA18399@ZenIV.linux.org.uk>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-5-linux@dominikbrodowski.net>
+ <20180318174014.GR30522@ZenIV.linux.org.uk>
+ <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
+ <20180318181848.GU30522@ZenIV.linux.org.uk>
+ <20180319042300.GW30522@ZenIV.linux.org.uk>
+ <20180319092920.tbh2xwkruegshzqe@gmail.com>
+ <20180319232342.GX30522@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180319232342.GX30522@ZenIV.linux.org.uk>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,32 +46,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
-> This avoids a dependency cycle in CONFIG_IMA_APPRAISE_MODSIG (introduced by
-> a later patch in this series): it will select CONFIG_MODULE_SIG_FORMAT
-> which in turn selects CONFIG_KEYS. Kconfig then complains that
-> CONFIG_INTEGRITY_SIGNATURE depends on CONFIG_KEYS.
+On Mon, Mar 19, 2018 at 11:23:42PM +0000, Al Viro wrote:
+> Benefits:
+> 	* all SyS... wrappers (i.e. the thing that really ought to
+> go into syscall tables) have the same type.
+> 	* we could have SYSCALL_DEFINE produce a trivial compat
+> wrapper, have explicit COMPAT_SYSCALL_DEFINE discard that thing
+> and populate the compat syscall table *entirely* with compat_SyS_...,
+> letting the linker sort it out.  That way we don't need to keep
+> track of what can use native and what needs compat in each compat
+> table on biarch.
+> 	* s390 compat wrappers would disappear with that approach.
+> 	* we could even stop generating sys_... aliases - if
+> syscall table is generated by slapping SyS_... or compat_SyS_...
+> on the name given there, we don't need to _have_ those sys_...
+> things at all.  All SyS_... would have the same type, so the pile
+> in syscalls.h would not be needed - we could generate the externs
+> at the same time we generate the syscall table.
 > 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> And yes, it's a high-squick approach.  I know and I'm not saying
+> it's a good idea.  OTOH, to quote the motto of philosophers and
+> shell game operators, "there's something in it"...
 
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+FWIW, I have something that is almost reasonable on preprocessor side;
+however, that has uncovered the following fun:
+void f(unsigned long long);
+void g(unsigned a, unsigned b)
+{
+        f((((unsigned long long)b)<<32)|a);
+}
 
-> ---
->  security/integrity/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/security/integrity/Kconfig b/security/integrity/Kconfig
-> index da9565891738..0d642e0317c7 100644
-> --- a/security/integrity/Kconfig
-> +++ b/security/integrity/Kconfig
-> @@ -17,8 +17,8 @@ if INTEGRITY
-> 
->  config INTEGRITY_SIGNATURE
->  	bool "Digital signature verification using multiple keyrings"
-> -	depends on KEYS
->  	default n
-> +	select KEYS
->  	select SIGNATURE
->  	help
->  	  This option enables digital signature verification support
-> 
+which does compile to "jump to f" on i386, ends up with the following
+joy on arm:
+        mov     r3, r1
+        mov     r2, #0
+        push    {r4, lr}
+        orr     r2, r2, r0
+        mov     r0, r2
+        mov     r1, r3
+        bl      f
+        pop     {r4, lr}
+        bx      lr
+with gcc6; gcc7 is saner - there we have just
+        mov     r2, #0
+        orr     r0, r2, r0
+        b       f
+
+The former is
+	r3 = r1
+	r2 = 0
+	r2 |= r0
+	r0 = r2
+	r1 = r3
+The latter -
+	r2 = 0
+	r0 |= r2
+which is better, but still bloody odd
+
+And I'm afraid to check what e.g. 4.4 will do with that testcase...
