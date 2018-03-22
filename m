@@ -1,20 +1,21 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406hDT44MwzF1yd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:29:28 +1100 (AEDT)
-Received: by mail-pl0-x243.google.com with SMTP id f5-v6so6223950plj.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 15:29:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406hDW2mjRzF1yT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:29:31 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id n11so3833980pgp.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 15:29:31 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, npiggin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH 1/2] powerpc/mm: Add tracking of the number of coprocessors
- using a context
-Date: Fri, 23 Mar 2018 09:29:05 +1100
-Message-Id: <20180322222906.22084-1-bsingharora@gmail.com>
+ aneesh.kumar@linux.vnet.ibm.com, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH 2/2] powerpc/mm: Workaround Nest MMU bug with TLB invalidations
+Date: Fri, 23 Mar 2018 09:29:06 +1100
+Message-Id: <20180322222906.22084-2-bsingharora@gmail.com>
+In-Reply-To: <20180322222906.22084-1-bsingharora@gmail.com>
+References: <20180322222906.22084-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +27,112 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Currently, when using coprocessors (which use the Nest MMU), we
-simply increment the active_cpu count to force all TLB invalidations
-to be come broadcast.
+On POWER9 the Nest MMU may fail to invalidate some
+translations when doing a tlbie "by PID" or "by LPID"
+that is targeted at the TLB only and not the page walk
+cache.
 
-Unfortunately, due to an errata in POWER9, we will need to know
-more specifically that coprocessors are in use.
-
-This maintains a separate copros counter in the MMU context for
-that purpose.
+This works around it by forcing such invalidations to
+escalate to RIC=2 (full invalidation of TLB *and* PWC)
+when a coprocessor is in use for the context.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+[fixed a spelling and coding style to quiesce checkpatch.pl]
 Tested-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h |  3 +++
- arch/powerpc/include/asm/mmu_context.h   | 18 +++++++++++++-----
- arch/powerpc/mm/mmu_context_book3s64.c   |  1 +
- 3 files changed, 17 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/tlb-radix.c | 50 ++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 43 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index bef6e39ed63a..729902e733cd 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -87,6 +87,9 @@ typedef struct {
- 	/* Number of bits in the mm_cpumask */
- 	atomic_t active_cpus;
- 
-+	/* Number of users of the external (Nest) MMU */
-+	atomic_t copros;
-+
- 	/* NPU NMMU context */
- 	struct npu_context *npu_context;
- 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 051b3d63afe3..3a15b6db9501 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -92,15 +92,23 @@ static inline void dec_mm_active_cpus(struct mm_struct *mm)
- static inline void mm_context_add_copro(struct mm_struct *mm)
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 71d1b19ad1c0..8e4c6cb4a808 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -151,7 +151,23 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
+ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
  {
- 	/*
--	 * On hash, should only be called once over the lifetime of
--	 * the context, as we can't decrement the active cpus count
--	 * and flush properly for the time being.
-+	 * If any copro is in use, increment the active CPU count
-+	 * in order to force TLB invalidations to be global as to
-+	 * propagate to the Nest MMU.
- 	 */
--	inc_mm_active_cpus(mm);
-+	if (atomic_inc_return(&mm->context.copros) == 1)
-+		inc_mm_active_cpus(mm);
+ 	asm volatile("ptesync": : :"memory");
+-	__tlbie_pid(pid, ric);
++
++	/*
++	 * Workaround the fact that the "ric" argument to __tlbie_pid
++	 * must be a compile-time contraint to match the "i" constraint
++	 * in the asm statement.
++	 */
++	switch (ric) {
++	case RIC_FLUSH_TLB:
++		__tlbie_pid(pid, RIC_FLUSH_TLB);
++		break;
++	case RIC_FLUSH_PWC:
++		__tlbie_pid(pid, RIC_FLUSH_PWC);
++		break;
++	case RIC_FLUSH_ALL:
++	default:
++		__tlbie_pid(pid, RIC_FLUSH_ALL);
++	}
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
  }
  
- static inline void mm_context_remove_copro(struct mm_struct *mm)
+@@ -311,6 +327,16 @@ void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
+ }
+ EXPORT_SYMBOL(radix__local_flush_tlb_page);
+ 
++static bool mm_needs_flush_escalation(struct mm_struct *mm)
++{
++	/*
++	 * P9 nest MMU has issues with the page walk cache
++	 * caching PTEs and not flushing them properly when
++	 * RIC = 0 for a PID/LPID invalidate
++	 */
++	return atomic_read(&mm->context.copros) != 0;
++}
++
+ #ifdef CONFIG_SMP
+ void radix__flush_tlb_mm(struct mm_struct *mm)
  {
-+	int c;
-+
-+	c = atomic_dec_if_positive(&mm->context.copros);
-+
-+	/* Detect imbalance between add and remove */
-+	WARN_ON(c < 0);
-+
- 	/*
- 	 * Need to broadcast a global flush of the full mm before
- 	 * decrementing active_cpus count, as the next TLBI may be
-@@ -111,7 +119,7 @@ static inline void mm_context_remove_copro(struct mm_struct *mm)
- 	 * for the time being. Invalidations will remain global if
- 	 * used on hash.
- 	 */
--	if (radix_enabled()) {
-+	if (c == 0 && radix_enabled()) {
- 		flush_all_mm(mm);
- 		dec_mm_active_cpus(mm);
+@@ -321,9 +347,12 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
+ 		return;
+ 
+ 	preempt_disable();
+-	if (!mm_is_thread_local(mm))
+-		_tlbie_pid(pid, RIC_FLUSH_TLB);
+-	else
++	if (!mm_is_thread_local(mm)) {
++		if (mm_needs_flush_escalation(mm))
++			_tlbie_pid(pid, RIC_FLUSH_ALL);
++		else
++			_tlbie_pid(pid, RIC_FLUSH_TLB);
++	} else
+ 		_tlbiel_pid(pid, RIC_FLUSH_TLB);
+ 	preempt_enable();
+ }
+@@ -435,10 +464,14 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
  	}
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 929d9ef7083f..3f980baade4c 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -173,6 +173,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 	mm_iommu_init(mm);
- #endif
- 	atomic_set(&mm->context.active_cpus, 0);
-+	atomic_set(&mm->context.copros, 0);
  
- 	return 0;
- }
+ 	if (full) {
+-		if (local)
++		if (local) {
+ 			_tlbiel_pid(pid, RIC_FLUSH_TLB);
+-		else
+-			_tlbie_pid(pid, RIC_FLUSH_TLB);
++		} else {
++			if (mm_needs_flush_escalation(mm))
++				_tlbie_pid(pid, RIC_FLUSH_ALL);
++			else
++				_tlbie_pid(pid, RIC_FLUSH_TLB);
++		}
+ 	} else {
+ 		bool hflush = false;
+ 		unsigned long hstart, hend;
+@@ -548,6 +581,9 @@ static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
+ 	}
+ 
+ 	if (full) {
++		if (!local && mm_needs_flush_escalation(mm))
++			also_pwc = true;
++
+ 		if (local)
+ 			_tlbiel_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
+ 		else
 -- 
 2.13.6
