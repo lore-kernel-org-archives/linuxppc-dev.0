@@ -3,9 +3,9 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406f7J6jghzF211
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:54:52 +1100 (AEDT)
-Date: Thu, 22 Mar 2018 13:54:48 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406fBQ0BcczF1y6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:57:34 +1100 (AEDT)
+Date: Thu, 22 Mar 2018 13:57:29 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Ilya Smith <blackzert@gmail.com>
 Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
@@ -30,12 +30,10 @@ Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH v2 2/2] Architecture defined limit on memory region
- random shift.
-Message-Id: <20180322135448.046ada120ecd1ab3dd8f94aa@linux-foundation.org>
-In-Reply-To: <1521736598-12812-3-git-send-email-blackzert@gmail.com>
+Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
+Message-Id: <20180322135729.dbfd3575819c92c0f88c5c21@linux-foundation.org>
+In-Reply-To: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
 References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <1521736598-12812-3-git-send-email-blackzert@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,8 +45,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 22 Mar 2018 19:36:36 +0300 Ilya Smith <blackzert@gmail.com> wrote:
 
-Please add changelogs.  An explanation of what a "limit on memory
-region random shift" is would be nice ;) Why does it exist, why are we
-doing this, etc.  Surely there's something to be said - at present this
-is just a lump of random code?
+> Current implementation doesn't randomize address returned by mmap.
+> All the entropy ends with choosing mmap_base_addr at the process
+> creation. After that mmap build very predictable layout of address
+> space. It allows to bypass ASLR in many cases.
+
+Perhaps some more effort on the problem description would help.  *Are*
+people predicting layouts at present?  What problems does this cause? 
+How are they doing this and are there other approaches to solving the
+problem?
+
+Mainly: what value does this patchset have to our users?  This reader
+is unable to determine that from the information which you have
+provided.  Full details, please.
