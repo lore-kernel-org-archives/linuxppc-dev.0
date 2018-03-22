@@ -1,21 +1,41 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406hDW2mjRzF1yT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:29:31 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id n11so3833980pgp.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 15:29:31 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, npiggin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH 2/2] powerpc/mm: Workaround Nest MMU bug with TLB invalidations
-Date: Fri, 23 Mar 2018 09:29:06 +1100
-Message-Id: <20180322222906.22084-2-bsingharora@gmail.com>
-In-Reply-To: <20180322222906.22084-1-bsingharora@gmail.com>
-References: <20180322222906.22084-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406hGW0lmZzF204
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:31:14 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2MMSfqt061492
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 18:31:12 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gvkhjbyjp-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 18:31:11 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Thu, 22 Mar 2018 18:31:10 -0400
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Subject: Re: [PATCH v2 12/38] cxlflash: Use IDR to manage adapter contexts
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+In-Reply-To: <ae514fa6-9c55-5247-2531-579d5ca84079@linux.vnet.ibm.com>
+Date: Thu, 22 Mar 2018 17:26:39 -0500
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1519683712-17186-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <ae514fa6-9c55-5247-2531-579d5ca84079@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-Id: <A27F5BBC-BCA7-491B-8A71-8D47B45663D0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,114 +45,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On POWER9 the Nest MMU may fail to invalidate some
-translations when doing a tlbie "by PID" or "by LPID"
-that is targeted at the TLB only and not the page walk
-cache.
 
-This works around it by forcing such invalidations to
-escalate to RIC=2 (full invalidation of TLB *and* PWC)
-when a coprocessor is in use for the context.
+> On Mar 22, 2018, at 11:40 AM, Frederic Barrat =
+<fbarrat@linux.vnet.ibm.com> wrote:
+>=20
+>=20
+>=20
+> Le 26/02/2018 =C3=A0 23:21, Uma Krishnan a =C3=A9crit :
+>> A range of PASIDs are used as identifiers for the adapter contexts. =
+These
+>> contexts may be destroyed and created randomly. Use an IDR to keep =
+track
+>> of contexts that are in use and assign a unique identifier to new =
+ones.
+>> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+>> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+>> ---
+>>  drivers/scsi/cxlflash/ocxl_hw.c | 20 ++++++++++++++++++--
+>>  drivers/scsi/cxlflash/ocxl_hw.h |  2 ++
+>>  2 files changed, 20 insertions(+), 2 deletions(-)
+>> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c =
+b/drivers/scsi/cxlflash/ocxl_hw.c
+>> index d75b873..6472210 100644
+>> --- a/drivers/scsi/cxlflash/ocxl_hw.c
+>> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
+>> @@ -12,6 +12,8 @@
+>>   * 2 of the License, or (at your option) any later version.
+>>   */
+>> +#include <linux/idr.h>
+>> +
+>>  #include <misc/ocxl.h>
+>>  #include "backend.h"
+>> @@ -60,14 +62,25 @@ static void *ocxlflash_dev_context_init(struct =
+pci_dev *pdev, void *afu_cookie)
+>>  	if (unlikely(!ctx)) {
+>>  		dev_err(dev, "%s: Context allocation failed\n", =
+__func__);
+>>  		rc =3D -ENOMEM;
+>> -		goto err;
+>> +		goto err1;
+>> +	}
+>> +
+>> +	idr_preload(GFP_KERNEL);
+>> +	rc =3D idr_alloc(&afu->idr, ctx, 0, afu->max_pasid, GFP_NOWAIT);
+>> +	idr_preload_end();
+>=20
+>=20
+> I believe we can call idr_alloc(... GFP_KERNEL) directly in that
+> context now.
+>=20
+>=20
+>> +	if (unlikely(rc < 0)) {
+>> +		dev_err(dev, "%s: idr_alloc failed rc=3D%d\n", __func__, =
+rc);
+>> +		goto err2;
+>>  	}
+>> +	ctx->pe =3D rc;
+>>  	ctx->master =3D false;
+>>  	ctx->hw_afu =3D afu;
+>>  out:
+>>  	return ctx;
+>> -err:
+>> +err2:
+>> +	kfree(ctx);
+>> +err1:
+>>  	ctx =3D ERR_PTR(rc);
+>>  	goto out;
+>>  }
+>> @@ -86,6 +99,7 @@ static int ocxlflash_release_context(void =
+*ctx_cookie)
+>>  	if (!ctx)
+>>  		goto out;
+>> +	idr_remove(&ctx->hw_afu->idr, ctx->pe);
+>>  	kfree(ctx);
+>>  out:
+>>  	return rc;
+>> @@ -103,6 +117,7 @@ static void ocxlflash_destroy_afu(void =
+*afu_cookie)
+>>  		return;
+>>  	ocxlflash_release_context(afu->ocxl_ctx);
+>> +	idr_destroy(&afu->idr);
+>>  	kfree(afu);
+>>  }
+>> @@ -237,6 +252,7 @@ static void *ocxlflash_create_afu(struct pci_dev =
+*pdev)
+>>  		goto err1;
+>>  	}
+>> +	idr_init(&afu->idr);
+>=20
+> You initialize the IDR too late. ocxlflash_dev_context_init() was =
+called just above and allocated a PE.
+>=20
+>  Fred
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-[fixed a spelling and coding style to quiesce checkpatch.pl]
-Tested-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/tlb-radix.c | 50 ++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 43 insertions(+), 7 deletions(-)
+Good Catch. I will fix this bug and send out a V3 soon. Thanks for the =
+review !!
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 71d1b19ad1c0..8e4c6cb4a808 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -151,7 +151,23 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- {
- 	asm volatile("ptesync": : :"memory");
--	__tlbie_pid(pid, ric);
-+
-+	/*
-+	 * Workaround the fact that the "ric" argument to __tlbie_pid
-+	 * must be a compile-time contraint to match the "i" constraint
-+	 * in the asm statement.
-+	 */
-+	switch (ric) {
-+	case RIC_FLUSH_TLB:
-+		__tlbie_pid(pid, RIC_FLUSH_TLB);
-+		break;
-+	case RIC_FLUSH_PWC:
-+		__tlbie_pid(pid, RIC_FLUSH_PWC);
-+		break;
-+	case RIC_FLUSH_ALL:
-+	default:
-+		__tlbie_pid(pid, RIC_FLUSH_ALL);
-+	}
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
- 
-@@ -311,6 +327,16 @@ void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
- }
- EXPORT_SYMBOL(radix__local_flush_tlb_page);
- 
-+static bool mm_needs_flush_escalation(struct mm_struct *mm)
-+{
-+	/*
-+	 * P9 nest MMU has issues with the page walk cache
-+	 * caching PTEs and not flushing them properly when
-+	 * RIC = 0 for a PID/LPID invalidate
-+	 */
-+	return atomic_read(&mm->context.copros) != 0;
-+}
-+
- #ifdef CONFIG_SMP
- void radix__flush_tlb_mm(struct mm_struct *mm)
- {
-@@ -321,9 +347,12 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 		return;
- 
- 	preempt_disable();
--	if (!mm_is_thread_local(mm))
--		_tlbie_pid(pid, RIC_FLUSH_TLB);
--	else
-+	if (!mm_is_thread_local(mm)) {
-+		if (mm_needs_flush_escalation(mm))
-+			_tlbie_pid(pid, RIC_FLUSH_ALL);
-+		else
-+			_tlbie_pid(pid, RIC_FLUSH_TLB);
-+	} else
- 		_tlbiel_pid(pid, RIC_FLUSH_TLB);
- 	preempt_enable();
- }
-@@ -435,10 +464,14 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 	}
- 
- 	if (full) {
--		if (local)
-+		if (local) {
- 			_tlbiel_pid(pid, RIC_FLUSH_TLB);
--		else
--			_tlbie_pid(pid, RIC_FLUSH_TLB);
-+		} else {
-+			if (mm_needs_flush_escalation(mm))
-+				_tlbie_pid(pid, RIC_FLUSH_ALL);
-+			else
-+				_tlbie_pid(pid, RIC_FLUSH_TLB);
-+		}
- 	} else {
- 		bool hflush = false;
- 		unsigned long hstart, hend;
-@@ -548,6 +581,9 @@ static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 	}
- 
- 	if (full) {
-+		if (!local && mm_needs_flush_escalation(mm))
-+			also_pwc = true;
-+
- 		if (local)
- 			_tlbiel_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
- 		else
--- 
-2.13.6
+>=20
+>>  	afu->ocxl_ctx =3D ctx;
+>>  out:
+>>  	return afu;
+>> diff --git a/drivers/scsi/cxlflash/ocxl_hw.h =
+b/drivers/scsi/cxlflash/ocxl_hw.h
+>> index de43c04..0381682 100644
+>> --- a/drivers/scsi/cxlflash/ocxl_hw.h
+>> +++ b/drivers/scsi/cxlflash/ocxl_hw.h
+>> @@ -26,10 +26,12 @@ struct ocxl_hw_afu {
+>>  	int afu_actag_base;		/* AFU acTag base */
+>>  	int afu_actag_enabled;		/* AFU acTag number enabled */
+>> +	struct idr idr;			/* IDR to manage contexts */
+>>  	int max_pasid;			/* Maximum number of contexts */
+>>  };
+>>  struct ocxlflash_context {
+>>  	struct ocxl_hw_afu *hw_afu;	/* HW AFU back pointer */
+>>  	bool master;			/* Whether this is a master =
+context */
+>> +	int pe;				/* Process element */
+>>  };
+>=20
