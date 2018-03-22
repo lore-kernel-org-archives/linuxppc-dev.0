@@ -1,24 +1,21 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406dNX1SZHzF20D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:21:16 +1100 (AEDT)
-Received: by mail-wr0-x244.google.com with SMTP id o8so10002083wra.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 13:21:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406dgN1wy7zF1yG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:34:07 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id h76so18387479wme.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 13:34:07 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 19/19] powerpc/tau: Synchronize function prototypes and body
-Date: Thu, 22 Mar 2018 21:20:05 +0100
-Message-Id: <20180322202007.23088-20-malat@debian.org>
-In-Reply-To: <20180322202007.23088-1-malat@debian.org>
-References: <20180322202007.23088-1-malat@debian.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Mathieu Malaterre <malat@debian.org>
+Subject: [PATCH] PCI/IOV: Add missing prototype for powerpc specific
+Date: Thu, 22 Mar 2018 21:33:55 +0100
+Message-Id: <20180322203355.26448-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,99 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some function prototypes and body for Thermal Assist Units were not in
-sync. Update the function definition to match the existing function
-declaration found in `setup-common.c`, changing an `int` return type to a
-`u32` return type. Move the prototypes to a header file. Fix the following
-warnings, treated as error with W=1:
+Some prototypes for weak functions were missing for powerpc specific
+functions. Add the missing prototypes to the CONFIG_PCI_IOV block. This
+fixes the following three warnings treated as error when using W=1:
 
-  arch/powerpc/kernel/tau_6xx.c:257:5: error: no previous prototype for ‘cpu_temp_both’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/tau_6xx.c:262:5: error: no previous prototype for ‘cpu_temp’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/tau_6xx.c:267:5: error: no previous prototype for ‘tau_interrupts’ [-Werror=missing-prototypes]
+  arch/powerpc/kernel/pci-common.c:236:17: error: no previous prototype for ‘pcibios_default_alignment’ [-Werror=missing-prototypes]
+  arch/powerpc/kernel/pci-common.c:253:5: error: no previous prototype for ‘pcibios_sriov_enable’ [-Werror=missing-prototypes]
+  arch/powerpc/kernel/pci-common.c:261:5: error: no previous prototype for ‘pcibios_sriov_disable’ [-Werror=missing-prototypes]
 
-Compile tested with CONFIG_TAU_INT.
+Also in commit 978d2d683123 ("PCI: Add pcibios_iov_resource_alignment()
+interface") a new function was added but the prototype was located in the
+main header instead of the CONFIG_PCI_IOV specific section. Move this
+function next to the newly added ones.
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/kernel/irq.c          | 2 +-
- arch/powerpc/kernel/setup-common.c | 6 ------
- arch/powerpc/kernel/setup.h        | 6 ++++++
- arch/powerpc/kernel/tau_6xx.c      | 7 +++++--
- 4 files changed, 12 insertions(+), 9 deletions(-)
+ include/linux/pci.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index f88038847790..3777b6e09142 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -89,7 +89,7 @@ atomic_t ppc_n_lost_interrupts;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 024a1beda008..f43b43b9b643 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1295,7 +1295,6 @@ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
+ void pci_setup_bridge(struct pci_bus *bus);
+ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+ 					 unsigned long type);
+-resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev, int resno);
  
- #ifdef CONFIG_TAU_INT
- extern int tau_initialized;
--extern int tau_interrupts(int);
-+extern u32 tau_interrupts(unsigned long cpu);
- #endif
- #endif /* CONFIG_PPC32 */
+ #define PCI_VGA_STATE_CHANGE_BRIDGE (1 << 0)
+ #define PCI_VGA_STATE_CHANGE_DECODES (1 << 1)
+@@ -1923,6 +1922,7 @@ void pcibios_release_device(struct pci_dev *dev);
+ void pcibios_penalize_isa_irq(int irq, int active);
+ int pcibios_alloc_irq(struct pci_dev *dev);
+ void pcibios_free_irq(struct pci_dev *dev);
++resource_size_t pcibios_default_alignment(void);
  
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index d73ec518ef80..bd3675c3984b 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -192,12 +192,6 @@ void machine_halt(void)
- 	machine_hang();
- }
- 
--
--#ifdef CONFIG_TAU
--extern u32 cpu_temp(unsigned long cpu);
--extern u32 cpu_temp_both(unsigned long cpu);
--#endif /* CONFIG_TAU */
--
- #ifdef CONFIG_SMP
- DEFINE_PER_CPU(unsigned int, cpu_pvr);
- #endif
-diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
-index d768023a04bd..3c9c19430439 100644
---- a/arch/powerpc/kernel/setup.h
-+++ b/arch/powerpc/kernel/setup.h
-@@ -70,4 +70,10 @@ void kvm_cma_reserve(void);
- static inline void kvm_cma_reserve(void) { };
- #endif
- 
-+#ifdef CONFIG_TAU
-+extern u32 cpu_temp(unsigned long cpu);
-+extern u32 cpu_temp_both(unsigned long cpu);
-+extern u32 tau_interrupts(unsigned long cpu);
-+#endif /* CONFIG_TAU */
+ #ifdef CONFIG_HIBERNATE_CALLBACKS
+ extern struct dev_pm_ops pcibios_pm_ops;
+@@ -1955,6 +1955,11 @@ int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
+ int pci_sriov_get_totalvfs(struct pci_dev *dev);
+ resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno);
+ void pci_vf_drivers_autoprobe(struct pci_dev *dev, bool probe);
 +
- #endif /* __ARCH_POWERPC_KERNEL_SETUP_H */
-diff --git a/arch/powerpc/kernel/tau_6xx.c b/arch/powerpc/kernel/tau_6xx.c
-index 1fc6a89a978e..e2ab8a111b69 100644
---- a/arch/powerpc/kernel/tau_6xx.c
-+++ b/arch/powerpc/kernel/tau_6xx.c
-@@ -27,6 +27,9 @@
- #include <asm/cache.h>
- #include <asm/8xx_immap.h>
- #include <asm/machdep.h>
-+#include <asm/asm-prototypes.h>
-+
-+#include "setup.h"
- 
- static struct tau_temp
++/* Arch may override these (weak) */
++int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs);
++int pcibios_sriov_disable(struct pci_dev *pdev);
++resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev, int resno);
+ #else
+ static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
  {
-@@ -259,12 +262,12 @@ u32 cpu_temp_both(unsigned long cpu)
- 	return ((tau[cpu].high << 16) | tau[cpu].low);
- }
- 
--int cpu_temp(unsigned long cpu)
-+u32 cpu_temp(unsigned long cpu)
- {
- 	return ((tau[cpu].high + tau[cpu].low) / 2);
- }
- 
--int tau_interrupts(unsigned long cpu)
-+u32 tau_interrupts(unsigned long cpu)
- {
- 	return (tau[cpu].interrupts);
- }
 -- 
 2.11.0
