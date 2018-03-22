@@ -1,41 +1,42 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406hGW0lmZzF204
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:31:14 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2MMSfqt061492
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 18:31:12 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gvkhjbyjp-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406j575QCLzF1rZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 10:08:11 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2MN5Tx8011714
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 19:08:09 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gvhp71psp-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 18:31:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 19:08:08 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Thu, 22 Mar 2018 18:31:10 -0400
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
-Subject: Re: [PATCH v2 12/38] cxlflash: Use IDR to manage adapter contexts
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-In-Reply-To: <ae514fa6-9c55-5247-2531-579d5ca84079@linux.vnet.ibm.com>
-Date: Thu, 22 Mar 2018 17:26:39 -0500
-Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1519683712-17186-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <ae514fa6-9c55-5247-2531-579d5ca84079@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-Id: <A27F5BBC-BCA7-491B-8A71-8D47B45663D0@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Thu, 22 Mar 2018 23:08:06 -0000
+Subject: Re: [PATCH v6 03/12] PKCS#7: Introduce pkcs7_get_digest()
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-integrity@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
+ "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
+Date: Thu, 22 Mar 2018 19:07:58 -0400
+In-Reply-To: <20180316203837.10174-4-bauerman@linux.vnet.ibm.com>
+References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
+ <20180316203837.10174-4-bauerman@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1521760078.3848.301.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,122 +46,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
+> IMA will need to access the digest of the PKCS7 message (as calculated by
+> the kernel) before the signature is verified, so introduce
+> pkcs7_get_digest() for that purpose.
+> 
+> Also, modify pkcs7_digest() to detect when the digest was already
+> calculated so that it doesn't have to do redundant work. Verifying that
+> sinfo->sig->digest isn't NULL is sufficient because both places which
+> allocate sinfo->sig (pkcs7_parse_message() and pkcs7_note_signed_info())
+> use kzalloc() so sig->digest is always initialized to zero.
+> 
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Cc: David Howells <dhowells@redhat.com>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: "David S. Miller" <davem@davemloft.net>
 
+Reviewed-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 
-> On Mar 22, 2018, at 11:40 AM, Frederic Barrat =
-<fbarrat@linux.vnet.ibm.com> wrote:
->=20
->=20
->=20
-> Le 26/02/2018 =C3=A0 23:21, Uma Krishnan a =C3=A9crit :
->> A range of PASIDs are used as identifiers for the adapter contexts. =
-These
->> contexts may be destroyed and created randomly. Use an IDR to keep =
-track
->> of contexts that are in use and assign a unique identifier to new =
-ones.
->> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
->> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
->> ---
->>  drivers/scsi/cxlflash/ocxl_hw.c | 20 ++++++++++++++++++--
->>  drivers/scsi/cxlflash/ocxl_hw.h |  2 ++
->>  2 files changed, 20 insertions(+), 2 deletions(-)
->> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c =
-b/drivers/scsi/cxlflash/ocxl_hw.c
->> index d75b873..6472210 100644
->> --- a/drivers/scsi/cxlflash/ocxl_hw.c
->> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
->> @@ -12,6 +12,8 @@
->>   * 2 of the License, or (at your option) any later version.
->>   */
->> +#include <linux/idr.h>
->> +
->>  #include <misc/ocxl.h>
->>  #include "backend.h"
->> @@ -60,14 +62,25 @@ static void *ocxlflash_dev_context_init(struct =
-pci_dev *pdev, void *afu_cookie)
->>  	if (unlikely(!ctx)) {
->>  		dev_err(dev, "%s: Context allocation failed\n", =
-__func__);
->>  		rc =3D -ENOMEM;
->> -		goto err;
->> +		goto err1;
->> +	}
->> +
->> +	idr_preload(GFP_KERNEL);
->> +	rc =3D idr_alloc(&afu->idr, ctx, 0, afu->max_pasid, GFP_NOWAIT);
->> +	idr_preload_end();
->=20
->=20
-> I believe we can call idr_alloc(... GFP_KERNEL) directly in that
-> context now.
->=20
->=20
->> +	if (unlikely(rc < 0)) {
->> +		dev_err(dev, "%s: idr_alloc failed rc=3D%d\n", __func__, =
-rc);
->> +		goto err2;
->>  	}
->> +	ctx->pe =3D rc;
->>  	ctx->master =3D false;
->>  	ctx->hw_afu =3D afu;
->>  out:
->>  	return ctx;
->> -err:
->> +err2:
->> +	kfree(ctx);
->> +err1:
->>  	ctx =3D ERR_PTR(rc);
->>  	goto out;
->>  }
->> @@ -86,6 +99,7 @@ static int ocxlflash_release_context(void =
-*ctx_cookie)
->>  	if (!ctx)
->>  		goto out;
->> +	idr_remove(&ctx->hw_afu->idr, ctx->pe);
->>  	kfree(ctx);
->>  out:
->>  	return rc;
->> @@ -103,6 +117,7 @@ static void ocxlflash_destroy_afu(void =
-*afu_cookie)
->>  		return;
->>  	ocxlflash_release_context(afu->ocxl_ctx);
->> +	idr_destroy(&afu->idr);
->>  	kfree(afu);
->>  }
->> @@ -237,6 +252,7 @@ static void *ocxlflash_create_afu(struct pci_dev =
-*pdev)
->>  		goto err1;
->>  	}
->> +	idr_init(&afu->idr);
->=20
-> You initialize the IDR too late. ocxlflash_dev_context_init() was =
-called just above and allocated a PE.
->=20
->  Fred
-
-Good Catch. I will fix this bug and send out a V3 soon. Thanks for the =
-review !!
-
->=20
->>  	afu->ocxl_ctx =3D ctx;
->>  out:
->>  	return afu;
->> diff --git a/drivers/scsi/cxlflash/ocxl_hw.h =
-b/drivers/scsi/cxlflash/ocxl_hw.h
->> index de43c04..0381682 100644
->> --- a/drivers/scsi/cxlflash/ocxl_hw.h
->> +++ b/drivers/scsi/cxlflash/ocxl_hw.h
->> @@ -26,10 +26,12 @@ struct ocxl_hw_afu {
->>  	int afu_actag_base;		/* AFU acTag base */
->>  	int afu_actag_enabled;		/* AFU acTag number enabled */
->> +	struct idr idr;			/* IDR to manage contexts */
->>  	int max_pasid;			/* Maximum number of contexts */
->>  };
->>  struct ocxlflash_context {
->>  	struct ocxl_hw_afu *hw_afu;	/* HW AFU back pointer */
->>  	bool master;			/* Whether this is a master =
-context */
->> +	int pe;				/* Process element */
->>  };
->=20
+> ---
+>  crypto/asymmetric_keys/pkcs7_verify.c | 25 +++++++++++++++++++++++++
+>  include/crypto/pkcs7.h                |  3 +++
+>  2 files changed, 28 insertions(+)
+> 
+> diff --git a/crypto/asymmetric_keys/pkcs7_verify.c b/crypto/asymmetric_keys/pkcs7_verify.c
+> index 39e6de0c2761..bd02360f8be5 100644
+> --- a/crypto/asymmetric_keys/pkcs7_verify.c
+> +++ b/crypto/asymmetric_keys/pkcs7_verify.c
+> @@ -33,6 +33,10 @@ static int pkcs7_digest(struct pkcs7_message *pkcs7,
+> 
+>  	kenter(",%u,%s", sinfo->index, sinfo->sig->hash_algo);
+> 
+> +	/* The digest was calculated already. */
+> +	if (sig->digest)
+> +		return 0;
+> +
+>  	if (!sinfo->sig->hash_algo)
+>  		return -ENOPKG;
+> 
+> @@ -122,6 +126,27 @@ static int pkcs7_digest(struct pkcs7_message *pkcs7,
+>  	return ret;
+>  }
+> 
+> +int pkcs7_get_digest(struct pkcs7_message *pkcs7, const u8 **buf, u8 *len)
+> +{
+> +	struct pkcs7_signed_info *sinfo = pkcs7->signed_infos;
+> +	int ret;
+> +
+> +	/*
+> +	 * This function doesn't support messages with more than one signature.
+> +	 */
+> +	if (sinfo == NULL || sinfo->next != NULL)
+> +		return -EBADMSG;
+> +
+> +	ret = pkcs7_digest(pkcs7, sinfo);
+> +	if (ret)
+> +		return ret;
+> +
+> +	*buf = sinfo->sig->digest;
+> +	*len = sinfo->sig->digest_size;
+> +
+> +	return 0;
+> +}
+> +
+>  /*
+>   * Find the key (X.509 certificate) to use to verify a PKCS#7 message.  PKCS#7
+>   * uses the issuer's name and the issuing certificate serial number for
+> diff --git a/include/crypto/pkcs7.h b/include/crypto/pkcs7.h
+> index 6f51d0cb6d12..cfaea9c37f4a 100644
+> --- a/include/crypto/pkcs7.h
+> +++ b/include/crypto/pkcs7.h
+> @@ -46,4 +46,7 @@ extern int pkcs7_verify(struct pkcs7_message *pkcs7,
+>  extern int pkcs7_supply_detached_data(struct pkcs7_message *pkcs7,
+>  				      const void *data, size_t datalen);
+> 
+> +extern int pkcs7_get_digest(struct pkcs7_message *pkcs7, const u8 **buf,
+> +			    u8 *len);
+> +
+>  #endif /* _CRYPTO_PKCS7_H */
+> 
