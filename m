@@ -1,36 +1,36 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406N9Y0WCYzF1ql
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:25:52 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2MAOjd9137096
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406N9Y732VzF1tP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:25:53 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2MAOvxj004128
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:25:51 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gv5e04hf0-1
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gv5r34dt9-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:25:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 06:25:51 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 22 Mar 2018 10:25:46 -0000
+ Thu, 22 Mar 2018 10:25:49 -0000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
  Nicholas Piggin <npiggin@gmail.com>, sathnaga@linux.vnet.ibm.com
-Subject: [PATCH v3 2/6] powerpc64/ftrace: Disable ftrace during kvm guest
- entry/exit
-Date: Thu, 22 Mar 2018 15:55:22 +0530
+Subject: [PATCH v3 3/6] powerpc/kexec: Disable ftrace before switching to the
+ new kernel
+Date: Thu, 22 Mar 2018 15:55:23 +0530
 In-Reply-To: <cover.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <4fb9b85ea62b355ef0c4aa2d379884beb3fee0b7.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <5589149f6dd1b627f5eadafa086fb5e716bc0622.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,51 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During guest entry/exit, we switch over to/from the guest MMU context.
-While doing so, we set our state to KVM_GUEST_MODE_HOST_HV to note down
-the fact that we cannot take any exceptions in the hypervisor code.
+If function_graph tracer is enabled during kexec, we see the below
+exception in the simulator:
+	root@(none):/# kexec -e
+	kvm: exiting hardware virtualization
+	kexec_core: Starting new kernel
+	[   19.262020070,5] OPAL: Switch to big-endian OS
+	kexec: Starting switchover sequence.
+	Interrupt to 0xC000000000004380 from 0xC000000000004380
+	** Execution stopped: Continuous Interrupt, Instruction caused exception,  **
 
-Since ftrace may be enabled and since it can result in us taking a trap,
-disable ftrace by setting paca->ftrace_disabled. Once we exit the guest
-and restore host MMU context, we re-enable ftrace.
+Now that we have a more effective way to disable ftrace, let's use that
+before switching to a new kernel during kexec.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/kernel/machine_kexec.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index f31f357b8c5a..9292087adb68 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -600,6 +600,10 @@ kvmppc_hv_entry:
- 	/* Save R1 in the PACA */
- 	std	r1, HSTATE_HOST_R1(r13)
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 2694d078741d..4a1b24a9dd61 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -95,16 +95,14 @@ void arch_crash_save_vmcoreinfo(void)
+  */
+ void machine_kexec(struct kimage *image)
+ {
+-	int save_ftrace_enabled;
+-
+-	save_ftrace_enabled = __ftrace_enabled_save();
++	get_paca()->ftrace_disabled = 1;
  
-+	/* Disable ftrace since we can't take a trap any more */
-+	li	r6, 1
-+	stb	r6, PACA_FTRACE_DISABLED(r13)
-+
- 	li	r6, KVM_GUEST_MODE_HOST_HV
- 	stb	r6, HSTATE_IN_GUEST(r13)
+ 	if (ppc_md.machine_kexec)
+ 		ppc_md.machine_kexec(image);
+ 	else
+ 		default_machine_kexec(image);
  
-@@ -2048,6 +2052,8 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
- 	/* Unset guest mode */
- 	li	r0, KVM_GUEST_MODE_NONE
- 	stb	r0, HSTATE_IN_GUEST(r13)
-+	li	r0, 0
-+	stb	r0, PACA_FTRACE_DISABLED(r13)
+-	__ftrace_enabled_restore(save_ftrace_enabled);
++	get_paca()->ftrace_disabled = 0;
  
- 	ld	r0, SFS+PPC_LR_STKOFF(r1)
- 	addi	r1, r1, SFS
-@@ -3379,6 +3385,8 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
- 	ld	r8, KVM_HOST_LPCR(r10)
- 	mtspr	SPRN_LPCR, r8
- 	isync
-+	li	r0, 0
-+	stb	r0, PACA_FTRACE_DISABLED(r13)
- 	li	r0, KVM_GUEST_MODE_NONE
- 	stb	r0, HSTATE_IN_GUEST(r13)
- 
+ 	/* Fall back to normal restart if we're still alive. */
+ 	machine_restart(NULL);
 -- 
 2.16.2
