@@ -1,27 +1,57 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+Return-Path: <SRS0=hW9q=GM=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406Z3X4RTqzF1yg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 04:51:19 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oliver <oohall@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
-From: Sinan Kaya <okaya@codeaurora.org>
-Message-ID: <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
-Date: Thu, 22 Mar 2018 12:51:15 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406SQm1JMHzF1sl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 00:37:29 +1100 (AEDT)
+Date: Thu, 22 Mar 2018 09:37:20 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Will Deacon
+ <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>, Boqun Feng
+ <boqun.feng@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown
+ <lenb@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Sathya Prakash
+ <sathya.prakash@broadcom.com>, Chaitra P B <chaitra.basappa@broadcom.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>, Manish
+ Chopra <manish.chopra@cavium.com>, Rahul Verma <rahul.verma@cavium.com>,
+ Dept-GELinuxNICDev@cavium.com, QCA ath9k Development
+ <ath9k-devel@qca.qualcomm.com>, Corentin Chary <corentin.chary@gmail.com>,
+ Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>,
+ Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni
+ <alexandre.belloni@bootlin.com>, Adaptec OEM Raid Solutions
+ <aacraid@adaptec.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>, Matthew Wilcox
+ <matthew@wil.cx>, Jeff Layton <jlayton@kernel.org>, "J. Bruce Fields"
+ <bfields@fieldses.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Mark
+ Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>, "Darrick J.
+ Wong" <darrick.wong@oracle.com>, linux-xfs@vger.kernel.org, Paul Moore
+ <paul@paul-moore.com>, Eric Paris <eparis@redhat.com>, Timur Tabi
+ <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li
+ <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Jiri Kosina
+ <trivial@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter
+ Anvin" <hpa@zytor.com>, x86@kernel.org, Alex Deucher
+ <alexander.deucher@amd.com>, Christian =?UTF-8?B?S8O2bmln?=
+ <christian.koenig@amd.com>, "David (ChunMing) Zhou" <David1.Zhou@amd.com>,
+ David Airlie <airlied@linux.ie>, Mauro Carvalho Chehab
+ <mchehab@kernel.org>, Kalle Valo <kvalo@codeaurora.org>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela
+ <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linux-media@vger.kernel.org, MPT-FusionLinux.pdl@broadcom.com,
+ linux-scsi@vger.kernel.org, netdev@vger.kernel.org,
+ linux-wireless@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
+ platform-driver-x86@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+ linux-audit@redhat.com, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [trivial PATCH V2] treewide: Align function definition
+ open/close braces
+Message-ID: <20180322093720.2254cfbb@gandalf.local.home>
+In-Reply-To: <5ccbbf083e26bddfb4ea4f819ed62347ce266f39.1521669820.git.joe@perches.com>
+References: <5ccbbf083e26bddfb4ea4f819ed62347ce266f39.1521669820.git.joe@perches.com>
 MIME-Version: 1.0
-In-Reply-To: <1521726722.16434.312.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +61,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
->>> No, it's not sufficient.
-> Just to clarify ... barrier() is just a compiler barrier, it means the
-> compiler will generate things in the order they are written. This isn't
-> sufficient on archs with an OO memory model, where an actual memory
-> barrier instruction needs to be emited.
+On Wed, 21 Mar 2018 15:09:32 -0700
+Joe Perches <joe@perches.com> wrote:
 
-Surprisingly, ARM64 GCC compiler generates a write barrier as
-opposed to preventing code reordering.
+> diff --git a/kernel/trace/trace_printk.c b/kernel/trace/trace_printk.c
+> index ad1d6164e946..50f44b7b2b32 100644
+> --- a/kernel/trace/trace_printk.c
+> +++ b/kernel/trace/trace_printk.c
+> @@ -196,7 +196,7 @@ struct notifier_block module_trace_bprintk_format_nb = {
+>  };
+>  
+>  int __trace_bprintk(unsigned long ip, const char *fmt, ...)
+> - {
+> +{
+>  	int ret;
+>  	va_list ap;
+>  
+> @@ -214,7 +214,7 @@ int __trace_bprintk(unsigned long ip, const char *fmt, ...)
+>  EXPORT_SYMBOL_GPL(__trace_bprintk);
+>  
+>  int __ftrace_vbprintk(unsigned long ip, const char *fmt, va_list ap)
+> - {
+> +{
+>  	if (unlikely(!fmt))
+>  		return 0;
+>  
 
-I was curious if this is an ARM only thing or not. 
+Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+-- Steve
