@@ -1,19 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-io0-x232.google.com (mail-io0-x232.google.com
+ [IPv6:2607:f8b0:4001:c06::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406MXM3dqSzDrCq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 20:57:06 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] crypto: talitos - fix IPsec cipher in length
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406Mx86hCQzF1tM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:15:07 +1100 (AEDT)
+Received: by mail-io0-x232.google.com with SMTP id y128so10292843iod.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:15:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, horia.geanta@nxp.com
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180322095701.4563E6F352@po15720vm.idsi0.si.c-s.fr>
-Date: Thu, 22 Mar 2018 10:57:01 +0100 (CET)
+In-Reply-To: <1521692689.16434.293.camel@kernel.crashing.org>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+ <1521692689.16434.293.camel@kernel.crashing.org>
+From: Oliver <oohall@gmail.com>
+Date: Thu, 22 Mar 2018 21:15:04 +1100
+Message-ID: <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sinan Kaya <okaya@codeaurora.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,100 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For SEC 2.x+, cipher in length must contain only the ciphertext length.
-In case of using hardware ICV checking, the ICV length is provided via
-the "extent" field of the descriptor pointer.
+On Thu, Mar 22, 2018 at 3:24 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2018-03-21 at 08:53 -0500, Sinan Kaya wrote:
+>> writel_relaxed() needs to have ordering guarantees with respect to the order
+>> device observes writes.
+>
+> Correct.
+>
+>> x86 has compiler barrier inside the relaxed() API so that code does not
+>> get reordered. ARM64 architecturally guarantees device writes to be observed
+>> in order.
+>>
+>> I was hoping that PPC could follow x86 and inject compiler barrier into the
+>> relaxed functions.
+>>
+>> BTW, I have no idea what compiler barrier does on PPC and if
+>>
+>> wrltel() == compiler barrier() + wrltel_relaxed()
+>>
+>> can be said.
+>
+> No, it's not sufficient.
+>
+> Replacing wmb() + writel() with wmb() + writel_relaxed() will work on
+> PPC, it will just not give you a benefit today.
+>
+> The main problem is that the semantics of writel/writel_relaxed (and
+> read versions) aren't very well defined in Linux esp. when it comes
+> to different memory types (NC, WC, ...).
+>
+> I've been wanting to implement the relaxed accessors for a while but
+> was battling with this to try to also better support WC, and due to
+> other commitments, this somewhat fell down the cracks.
+>
+> Two options I can think of:
+>
+>  - Just make the _relaxed variants use an eieio instead of a sync, this
+> will effectively lift the ordering guarantee vs. cachable storage (and
+> thus unlock) and might give a (small) performance improvement.
 
-Cc: <stable@vger.kernel.org> # 4.8+
-Fixes: 549bd8bc5987 ("crypto: talitos - Implement AEAD for SEC1 using HMAC_SNOOP_NO_AFEU")
-Reported-by: Horia Geantă <horia.geanta@nxp.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/crypto/talitos.c | 36 ++++++++++++++++++++----------------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+Wouldn't we still have the unlock ordering due to the io_sync hack or
+are you thinking we should remove that too for the relaxed version?
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 6882fa2f8bad..016ff8c4c305 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -1130,10 +1130,10 @@ static int sg_to_link_tbl_offset(struct scatterlist *sg, int sg_count,
- 	return count;
- }
- 
--static int talitos_sg_map(struct device *dev, struct scatterlist *src,
--		   unsigned int len, struct talitos_edesc *edesc,
--		   struct talitos_ptr *ptr,
--		   int sg_count, unsigned int offset, int tbl_off)
-+static int talitos_sg_map_ext(struct device *dev, struct scatterlist *src,
-+			      unsigned int len, struct talitos_edesc *edesc,
-+			      struct talitos_ptr *ptr, int sg_count,
-+			      unsigned int offset, int tbl_off, int elen)
- {
- 	struct talitos_private *priv = dev_get_drvdata(dev);
- 	bool is_sec1 = has_ftr_sec1(priv);
-@@ -1142,6 +1142,7 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
- 		to_talitos_ptr(ptr, 0, 0, is_sec1);
- 		return 1;
- 	}
-+	to_talitos_ptr_ext_set(ptr, elen, is_sec1);
- 	if (sg_count == 1) {
- 		to_talitos_ptr(ptr, sg_dma_address(src) + offset, len, is_sec1);
- 		return sg_count;
-@@ -1150,7 +1151,7 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
- 		to_talitos_ptr(ptr, edesc->dma_link_tbl + offset, len, is_sec1);
- 		return sg_count;
- 	}
--	sg_count = sg_to_link_tbl_offset(src, sg_count, offset, len,
-+	sg_count = sg_to_link_tbl_offset(src, sg_count, offset, len + elen,
- 					 &edesc->link_tbl[tbl_off]);
- 	if (sg_count == 1) {
- 		/* Only one segment now, so no link tbl needed*/
-@@ -1164,6 +1165,15 @@ static int talitos_sg_map(struct device *dev, struct scatterlist *src,
- 	return sg_count;
- }
- 
-+static int talitos_sg_map(struct device *dev, struct scatterlist *src,
-+			  unsigned int len, struct talitos_edesc *edesc,
-+			  struct talitos_ptr *ptr, int sg_count,
-+			  unsigned int offset, int tbl_off)
-+{
-+	return talitos_sg_map_ext(dev, src, len, edesc, ptr, sg_count, offset,
-+				  tbl_off, 0);
-+}
-+
- /*
-  * fill in and submit ipsec_esp descriptor
-  */
-@@ -1181,7 +1191,7 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 	unsigned int ivsize = crypto_aead_ivsize(aead);
- 	int tbl_off = 0;
- 	int sg_count, ret;
--	int sg_link_tbl_len;
-+	int elen = 0;
- 	bool sync_needed = false;
- 	struct talitos_private *priv = dev_get_drvdata(dev);
- 	bool is_sec1 = has_ftr_sec1(priv);
-@@ -1223,17 +1233,11 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 	 * extent is bytes of HMAC postpended to ciphertext,
- 	 * typically 12 for ipsec
- 	 */
--	sg_link_tbl_len = cryptlen;
--
--	if (is_ipsec_esp) {
--		to_talitos_ptr_ext_set(&desc->ptr[4], authsize, is_sec1);
--
--		if (desc->hdr & DESC_HDR_MODE1_MDEU_CICV)
--			sg_link_tbl_len += authsize;
--	}
-+	if (is_ipsec_esp && (desc->hdr & DESC_HDR_MODE1_MDEU_CICV))
-+		elen = authsize;
- 
--	ret = talitos_sg_map(dev, areq->src, sg_link_tbl_len, edesc,
--			     &desc->ptr[4], sg_count, areq->assoclen, tbl_off);
-+	ret = talitos_sg_map_ext(dev, areq->src, cryptlen, edesc, &desc->ptr[4],
-+				 sg_count, areq->assoclen, tbl_off, elen);
- 
- 	if (ret > 1) {
- 		tbl_off += ret;
--- 
-2.13.3
+> However,
+> we still have the problem that on WC mappings, neither writel nor
+> writel_relaxed will effectively allow combining to happen (only raw
+> accesses will because on powerpc *all* barriers will break combining).
+
+Hmm, eieio is only architected to affect CI+G (and WT) so it shouldn't
+affect combining
+on non-guarded memory. Do most implementations apply it to all CI
+accesses anyway?
+
+>  - Make writel_relaxed() be a simple store without barriers, and
+> readl_relaxed() be "eieio, read, eieio", thus allowing write combining
+> to happen between successive writel_relaxed on WC space (no change on
+> normal NC space) while maintaining the ordering between relaxed reads
+> and writes. The flip side is a (slight) increased overhead of
+> readl_relaxed.
+
+Are there many drivers that actually do writeX() on WC space?
+memory-barriers.txt
+pretty much says that all bets are off and no ordering guarantees can be assumed
+when using readX/writeX on prefetchable IO memory. It seems sketchy enough to
+give me some pause, but maybe it works fine elsewhere.
+
+Oliver
