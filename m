@@ -3,9 +3,9 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406f5X4bMzzF1mm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:53:20 +1100 (AEDT)
-Date: Thu, 22 Mar 2018 13:53:14 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406f7J6jghzF211
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:54:52 +1100 (AEDT)
+Date: Thu, 22 Mar 2018 13:54:48 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Ilya Smith <blackzert@gmail.com>
 Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
@@ -30,11 +30,12 @@ Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH v2 1/2] Randomization of address chosen by mmap.
-Message-Id: <20180322135314.61efce938293e051e118fa46@linux-foundation.org>
-In-Reply-To: <1521736598-12812-2-git-send-email-blackzert@gmail.com>
+Subject: Re: [RFC PATCH v2 2/2] Architecture defined limit on memory region
+ random shift.
+Message-Id: <20180322135448.046ada120ecd1ab3dd8f94aa@linux-foundation.org>
+In-Reply-To: <1521736598-12812-3-git-send-email-blackzert@gmail.com>
 References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <1521736598-12812-2-git-send-email-blackzert@gmail.com>
+ <1521736598-12812-3-git-send-email-blackzert@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,90 +47,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Mar 2018 19:36:37 +0300 Ilya Smith <blackzert@gmail.com> wrote:
 
->  include/linux/mm.h |  16 ++++--
->  mm/mmap.c          | 164 +++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-You'll be wanting to update the documentation. 
-Documentation/sysctl/kernel.txt and
-Documentation/admin-guide/kernel-parameters.txt.
-
-> ...
->
-> @@ -2268,6 +2276,9 @@ extern unsigned long unmapped_area_topdown(struct vm_unmapped_area_info *info);
->  static inline unsigned long
->  vm_unmapped_area(struct vm_unmapped_area_info *info)
->  {
-> +	/* How about 32 bit process?? */
-> +	if ((current->flags & PF_RANDOMIZE) && randomize_va_space > 3)
-> +		return unmapped_area_random(info);
-
-The handling of randomize_va_space is peculiar.  Rather than being a
-bitfield which independently selects different modes, it is treated as
-a scalar: the larger the value, the more stuff we randomize.
-
-I can see the sense in that (and I wonder what randomize_va_space=5
-will do).  But it is...  odd.
-
-Why did you select randomize_va_space=4 for this?  Is there a mode 3
-already and we forgot to document it?  Or did you leave a gap for
-something?  If the former, please feel free to fix the documentation
-(in a separate, preceding patch) while you're in there ;)
-
->  	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN)
->  		return unmapped_area_topdown(info);
->  	else
-> @@ -2529,11 +2540,6 @@ int drop_caches_sysctl_handler(struct ctl_table *, int,
->  void drop_slab(void);
->  void drop_slab_node(int nid);
->  
->
-> ...
->
-> @@ -1780,6 +1781,169 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
->  	return error;
->  }
->  
-> +unsigned long unmapped_area_random(struct vm_unmapped_area_info *info)
-> +{
-
-This function is just dead code if CONFIG_MMU=n, yes?  Let's add the
-ifdefs to make it go away in that case.
-
-> +	struct mm_struct *mm = current->mm;
-> +	struct vm_area_struct *vma = NULL;
-> +	struct vm_area_struct *visited_vma = NULL;
-> +	unsigned long entropy[2];
-> +	unsigned long length, low_limit, high_limit, gap_start, gap_end;
-> +	unsigned long addr = 0;
-> +
-> +	/* get entropy with prng */
-> +	prandom_bytes(&entropy, sizeof(entropy));
-> +	/* small hack to prevent EPERM result */
-> +	info->low_limit = max(info->low_limit, mmap_min_addr);
-> +
->
-> ...
->
-> +found:
-> +	/* We found a suitable gap. Clip it with the original high_limit. */
-> +	if (gap_end > info->high_limit)
-> +		gap_end = info->high_limit;
-> +	gap_end -= info->length;
-> +	gap_end -= (gap_end - info->align_offset) & info->align_mask;
-> +	/* only one suitable page */
-> +	if (gap_end ==  gap_start)
-> +		return gap_start;
-> +	addr = entropy[1] % (min((gap_end - gap_start) >> PAGE_SHIFT,
-> +							 0x10000UL));
-
-What does the magic 10000 mean?  Isn't a comment needed explaining this?
-
-> +	addr = gap_end - (addr << PAGE_SHIFT);
-> +	addr += (info->align_offset - addr) & info->align_mask;
-> +	return addr;
-> +}
->
-> ...
->
+Please add changelogs.  An explanation of what a "limit on memory
+region random shift" is would be nice ;) Why does it exist, why are we
+doing this, etc.  Surely there's something to be said - at present this
+is just a lump of random code?
