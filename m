@@ -1,26 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406NQ02ZcLzF1k4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:36:39 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Oliver' <oohall@gmail.com>
-CC: Sinan Kaya <okaya@codeaurora.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: RFC on writel and writel_relaxed
-Date: Thu, 22 Mar 2018 10:37:32 +0000
-Message-ID: <14afdcf93c5a4c5d924b68d61ccf7eaa@AcuMS.aculab.com>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <8a13375fd8e5439890768b7dd8473099@AcuMS.aculab.com>
- <CAOSf1CHTouXQ+sPxu7ySCtw--maef+knFC9bCQ7rpuk-hf-puQ@mail.gmail.com>
-In-Reply-To: <CAOSf1CHTouXQ+sPxu7ySCtw--maef+knFC9bCQ7rpuk-hf-puQ@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406NXH37k0zF1kt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 21:42:07 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id s13so3090667pgn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 03:42:06 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc: Fix smp_wmb barrier definition use use lwsync
+ consistently
+Date: Thu, 22 Mar 2018 20:41:46 +1000
+Message-Id: <20180322104146.5350-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,10 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogT2xpdmVyDQo+IFNlbnQ6IDIyIE1hcmNoIDIwMTggMDU6MjQNCi4uLg0KPiA+IE5vIGxl
-c3MgcGFpbmZ1bCB3YXMgZG9pbmcgYSBieXRlc3dhcHBpbmcgd3JpdGUgdG8gbm9ybWFsIG1lbW9y
-eS4NCj4gDQo+IFdoYXQgd2FzIHRoZSBwcm9ibGVtPyBUaGUgcmV2ZXJzZSBpbmRleGVkIGxvYWQv
-c3RvcmUgaW5zdHJ1Y3Rpb25zIGFyZQ0KPiBhIGxpdHRsZSBhd2t3YXJkIHRvIHVzZSwgYnV0IHRo
-ZXkgd29yay4uLg0KDQpGaW5kaW5nIHNvbWV0aGluZyB0aGF0IHdvdWxkIGdlbmVyYXRlIHRoZSBy
-aWdodCBpbnN0cnVjdGlvbiB3aXRob3V0IGFueQ0KYmFycmllcnMuDQpJU1RSIHdyaXRpbmcgbXkg
-b3duIGFzbSBwYXR0ZXJuLg0KDQoJRGF2aWQNCg0K
+asm/barrier.h is not always included after asm/synch.h, which meant
+it was missing __SUBARCH_HAS_LWSYNC, so in some files smp_wmb() would
+be eieio when it should be lwsync. kernel/time/hrtimer.c is one case.
+
+__SUBARCH_HAS_LWSYNC is only used in one place, so just fold it in
+to where it's used. Previously with my small simulator config, 377
+instances of eieio in the tree. After this patch there are 55.
+
+Cc: Anton Blanchard <anton@samba.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/barrier.h | 3 ++-
+ arch/powerpc/include/asm/synch.h   | 4 ----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index 10daa1d56e0a..c7c63959ba91 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -35,7 +35,8 @@
+ #define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
+ #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
+ 
+-#ifdef __SUBARCH_HAS_LWSYNC
++/* The sub-arch has lwsync */
++#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
+ #    define SMPWMB      LWSYNC
+ #else
+ #    define SMPWMB      eieio
+diff --git a/arch/powerpc/include/asm/synch.h b/arch/powerpc/include/asm/synch.h
+index 63e7f5a1f105..6ec546090ba1 100644
+--- a/arch/powerpc/include/asm/synch.h
++++ b/arch/powerpc/include/asm/synch.h
+@@ -6,10 +6,6 @@
+ #include <linux/stringify.h>
+ #include <asm/feature-fixups.h>
+ 
+-#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
+-#define __SUBARCH_HAS_LWSYNC
+-#endif
+-
+ #ifndef __ASSEMBLY__
+ extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
+ extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
+-- 
+2.16.1
