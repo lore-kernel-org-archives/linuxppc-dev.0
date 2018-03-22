@@ -1,41 +1,43 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406fBQ0BcczF1y6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 07:57:34 +1100 (AEDT)
-Date: Thu, 22 Mar 2018 13:57:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ilya Smith <blackzert@gmail.com>
-Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
- vgupta@synopsys.com, linux@armlinux.org.uk, tony.luck@intel.com,
- fenghua.yu@intel.com, jhogan@kernel.org, ralf@linux-mips.org,
- jejb@parisc-linux.org, deller@gmx.de, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com,
- heiko.carstens@de.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org,
- davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
- x86@kernel.org, nyc@holomorphy.com, viro@zeniv.linux.org.uk, arnd@arndb.de,
- gregkh@linuxfoundation.org, deepa.kernel@gmail.com, mhocko@suse.com,
- hughd@google.com, kstewart@linuxfoundation.org, pombredanne@nexb.com,
- steve.capper@arm.com, punit.agrawal@arm.com, paul.burton@mips.com,
- aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com, keescook@chromium.org,
- bhsharma@redhat.com, riel@redhat.com, nitin.m.gupta@oracle.com,
- kirill.shutemov@linux.intel.com, dan.j.williams@intel.com, jack@suse.cz,
- ross.zwisler@linux.intel.com, jglisse@redhat.com, willy@infradead.org,
- aarcange@redhat.com, oleg@redhat.com, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
-Message-Id: <20180322135729.dbfd3575819c92c0f88c5c21@linux-foundation.org>
-In-Reply-To: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406gLl6ql7zF1wH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 08:49:51 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2MLn5SW120986
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 17:49:48 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gvks6t33s-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 17:49:48 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Thu, 22 Mar 2018 21:49:45 -0000
+Subject: Re: [PATCH v6 02/12] PKCS#7: Introduce pkcs7_get_message_sig() and
+ verify_pkcs7_message_sig()
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-integrity@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
+ "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
+Date: Thu, 22 Mar 2018 17:49:38 -0400
+In-Reply-To: <20180316203837.10174-3-bauerman@linux.vnet.ibm.com>
+References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
+ <20180316203837.10174-3-bauerman@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <1521755378.3848.295.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,18 +47,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Mar 2018 19:36:36 +0300 Ilya Smith <blackzert@gmail.com> wrote:
+Hi Thiago,
 
-> Current implementation doesn't randomize address returned by mmap.
-> All the entropy ends with choosing mmap_base_addr at the process
-> creation. After that mmap build very predictable layout of address
-> space. It allows to bypass ASLR in many cases.
+On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
+> IMA will need to know the key that signed a given PKCS#7 message, so add
+> pkcs7_get_message_sig().
+> 
+> It will also need to verify an already parsed PKCS#7 message. For this
+> purpose, add verify_pkcs7_message_sig() which takes a struct pkcs7_message
+> for verification instead of the raw bytes that verify_pkcs7_signature()
+> takes.
 
-Perhaps some more effort on the problem description would help.  *Are*
-people predicting layouts at present?  What problems does this cause? 
-How are they doing this and are there other approaches to solving the
-problem?
+The title "PKCS#7: refactor verify_pkcs7_signature()" might be more
+appropriate.  The patch description would then explain why it needs to
+be refactored.  In this case, verify_pkcs7_signature() verifies the
+signature using keys on the builtin and secondary keyrings.  IMA-
+appraisal needs to verify the signature using keys on its keyring.
 
-Mainly: what value does this patchset have to our users?  This reader
-is unable to determine that from the information which you have
-provided.  Full details, please.
+The patch itself looks good!
+
+Reviewed-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+
+
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Cc: David Howells <dhowells@redhat.com>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> ---
+>  certs/system_keyring.c                | 61 ++++++++++++++++++++++++++---------
+>  crypto/asymmetric_keys/pkcs7_parser.c | 16 +++++++++
+>  include/crypto/pkcs7.h                |  2 ++
+>  include/linux/verification.h          | 10 ++++++
+>  4 files changed, 73 insertions(+), 16 deletions(-)
+> 
+> diff --git a/certs/system_keyring.c b/certs/system_keyring.c
+> index 6251d1b27f0c..7ddc8b7a3062 100644
+> --- a/certs/system_keyring.c
+> +++ b/certs/system_keyring.c
+> @@ -190,33 +190,27 @@ late_initcall(load_system_certificate_list);
+>  #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
+> 
+>  /**
+> - * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
+> + * verify_pkcs7_message_sig - Verify a PKCS#7-based signature on system data.
+>   * @data: The data to be verified (NULL if expecting internal data).
+>   * @len: Size of @data.
+> - * @raw_pkcs7: The PKCS#7 message that is the signature.
+> - * @pkcs7_len: The size of @raw_pkcs7.
+> + * @pkcs7: The PKCS#7 message that is the signature.
+>   * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
+>   *					(void *)1UL for all trusted keys).
+>   * @usage: The use to which the key is being put.
+>   * @view_content: Callback to gain access to content.
+>   * @ctx: Context for callback.
+>   */
+> -int verify_pkcs7_signature(const void *data, size_t len,
+> -			   const void *raw_pkcs7, size_t pkcs7_len,
+> -			   struct key *trusted_keys,
+> -			   enum key_being_used_for usage,
+> -			   int (*view_content)(void *ctx,
+> -					       const void *data, size_t len,
+> -					       size_t asn1hdrlen),
+> -			   void *ctx)
+> +int verify_pkcs7_message_sig(const void *data, size_t len,
+> +			     struct pkcs7_message *pkcs7,
+> +			     struct key *trusted_keys,
+> +			     enum key_being_used_for usage,
+> +			     int (*view_content)(void *ctx,
+> +						 const void *data, size_t len,
+> +						 size_t asn1hdrlen),
+> +			     void *ctx)
+>  {
+> -	struct pkcs7_message *pkcs7;
+>  	int ret;
+> 
+> -	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
+> -	if (IS_ERR(pkcs7))
+> -		return PTR_ERR(pkcs7);
+> -
+>  	/* The data should be detached - so we need to supply it. */
+>  	if (data && pkcs7_supply_detached_data(pkcs7, data, len) < 0) {
+>  		pr_err("PKCS#7 signature with non-detached data\n");
+> @@ -258,6 +252,41 @@ int verify_pkcs7_signature(const void *data, size_t len,
+>  	}
+> 
+>  error:
+> +	pr_devel("<==%s() = %d\n", __func__, ret);
+> +	return ret;
+> +}
+> +
+> +/**
+> + * verify_pkcs7_signature - Verify a PKCS#7-based signature on system data.
+> + * @data: The data to be verified (NULL if expecting internal data).
+> + * @len: Size of @data.
+> + * @raw_pkcs7: The PKCS#7 message that is the signature.
+> + * @pkcs7_len: The size of @raw_pkcs7.
+> + * @trusted_keys: Trusted keys to use (NULL for builtin trusted keys only,
+> + *					(void *)1UL for all trusted keys).
+> + * @usage: The use to which the key is being put.
+> + * @view_content: Callback to gain access to content.
+> + * @ctx: Context for callback.
+> + */
+> +int verify_pkcs7_signature(const void *data, size_t len,
+> +			   const void *raw_pkcs7, size_t pkcs7_len,
+> +			   struct key *trusted_keys,
+> +			   enum key_being_used_for usage,
+> +			   int (*view_content)(void *ctx,
+> +					       const void *data, size_t len,
+> +					       size_t asn1hdrlen),
+> +			   void *ctx)
+> +{
+> +	struct pkcs7_message *pkcs7;
+> +	int ret;
+> +
+> +	pkcs7 = pkcs7_parse_message(raw_pkcs7, pkcs7_len);
+> +	if (IS_ERR(pkcs7))
+> +		return PTR_ERR(pkcs7);
+> +
+> +	ret = verify_pkcs7_message_sig(data, len, pkcs7, trusted_keys, usage,
+> +				       view_content, ctx);
+> +
+>  	pkcs7_free_message(pkcs7);
+>  	pr_devel("<==%s() = %d\n", __func__, ret);
+>  	return ret;
+> diff --git a/crypto/asymmetric_keys/pkcs7_parser.c b/crypto/asymmetric_keys/pkcs7_parser.c
+> index a6dcaa659aa8..456b803972b5 100644
+> --- a/crypto/asymmetric_keys/pkcs7_parser.c
+> +++ b/crypto/asymmetric_keys/pkcs7_parser.c
+> @@ -683,3 +683,19 @@ int pkcs7_note_signed_info(void *context, size_t hdrlen,
+>  		return -ENOMEM;
+>  	return 0;
+>  }
+> +
+> +/**
+> + * pkcs7_get_message_sig - get signature in @pkcs7
+> + */
+> +const struct public_key_signature *pkcs7_get_message_sig(
+> +					const struct pkcs7_message *pkcs7)
+> +{
+> +	/*
+> +	 * This function doesn't support messages with more than one signature,
+> +	 * so don't return anything in that case.
+> +	 */
+> +	if (pkcs7->signed_infos == NULL || pkcs7->signed_infos->next != NULL)
+> +		return NULL;
+> +
+> +	return pkcs7->signed_infos->sig;
+> +}
+> diff --git a/include/crypto/pkcs7.h b/include/crypto/pkcs7.h
+> index 583f199400a3..6f51d0cb6d12 100644
+> --- a/include/crypto/pkcs7.h
+> +++ b/include/crypto/pkcs7.h
+> @@ -28,6 +28,8 @@ extern void pkcs7_free_message(struct pkcs7_message *pkcs7);
+>  extern int pkcs7_get_content_data(const struct pkcs7_message *pkcs7,
+>  				  const void **_data, size_t *_datalen,
+>  				  size_t *_headerlen);
+> +extern const struct public_key_signature *pkcs7_get_message_sig(
+> +					const struct pkcs7_message *pkcs7);
+> 
+>  /*
+>   * pkcs7_trust.c
+> diff --git a/include/linux/verification.h b/include/linux/verification.h
+> index a10549a6c7cd..f04dac2728ec 100644
+> --- a/include/linux/verification.h
+> +++ b/include/linux/verification.h
+> @@ -29,6 +29,7 @@ extern const char *const key_being_used_for[NR__KEY_BEING_USED_FOR];
+>  #ifdef CONFIG_SYSTEM_DATA_VERIFICATION
+> 
+>  struct key;
+> +struct pkcs7_message;
+> 
+>  extern int verify_pkcs7_signature(const void *data, size_t len,
+>  				  const void *raw_pkcs7, size_t pkcs7_len,
+> @@ -38,6 +39,15 @@ extern int verify_pkcs7_signature(const void *data, size_t len,
+>  						      const void *data, size_t len,
+>  						      size_t asn1hdrlen),
+>  				  void *ctx);
+> +extern int verify_pkcs7_message_sig(const void *data, size_t len,
+> +				    struct pkcs7_message *pkcs7,
+> +				    struct key *trusted_keys,
+> +				    enum key_being_used_for usage,
+> +				    int (*view_content)(void *ctx,
+> +							const void *data,
+> +							size_t len,
+> +							size_t asn1hdrlen),
+> +				    void *ctx);
+> 
+>  #ifdef CONFIG_SIGNED_PE_FILE_VERIFICATION
+>  extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
+> 
