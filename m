@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406WQp08dlzF0mt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 02:52:49 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406WnP6ch0zF1wh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 03:08:57 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2MFodus057861
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 11:52:47 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gveuhjgne-1
+ w2MG8jXh041441
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 12:08:53 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gve4gwm3v-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 11:52:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 12:08:52 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 22 Mar 2018 15:52:43 -0000
+ Thu, 22 Mar 2018 16:08:41 -0000
 Subject: Re: [PATCH v2 08/38] cxlflash: Read host AFU configuration
 To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  James Bottomley <jejb@linux.vnet.ibm.com>,
@@ -30,11 +30,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
  <1519683660-17039-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Thu, 22 Mar 2018 16:52:39 +0100
+Date: Thu, 22 Mar 2018 17:08:37 +0100
 MIME-Version: 1.0
 In-Reply-To: <1519683660-17039-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <11ba4bac-838a-06b2-0b5d-4da8903c13d1@linux.vnet.ibm.com>
+Message-Id: <3e9e68ae-d1d3-9ba6-75d8-f4d8a3e3c407@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,9 +54,6 @@ Le 26/02/2018 à 23:21, Uma Krishnan a écrit :
 > Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 > Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 > ---
-
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
 >   drivers/scsi/cxlflash/ocxl_hw.c | 34 ++++++++++++++++++++++++++++++++++
 >   drivers/scsi/cxlflash/ocxl_hw.h |  1 +
 >   2 files changed, 35 insertions(+)
@@ -86,6 +83,20 @@ Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 > +
 > +	/* Read AFU config at index 0 */
 > +	rc = ocxl_config_read_afu(pdev, fcfg, acfg, 0);
+
+
+Looking at other patches around this one, there's really the assumption 
+that we have only one AFU (which is fine). So similar to another 
+comment, we could harden that the AFU image really looks like what we 
+expect. Here, we read the config at index 0. Just a suggestion that 
+ocxl_fn_config gives you the maximum index of AFUs for the function
+	ocxl_fn_config->max_afu_index
+
+So it should be 0 for cxlflash.
+
+   Fred
+
+
 > +	if (unlikely(rc)) {
 > +		dev_err(dev, "%s: ocxl_config_read_afu failed rc=%d\n",
 > +			__func__, rc);
