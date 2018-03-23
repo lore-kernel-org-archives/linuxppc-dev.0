@@ -1,31 +1,36 @@
-Return-Path: <maurosr@linux.vnet.ibm.com>
+Return-Path: <benh@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406n8S4dBJzF21k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 13:11:16 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406nDf24GVzF1Wr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 13:14:57 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2N29K4v139752
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 22:11:14 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gvkgh9s44-1
+ w2N2DloY107119
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 22:14:56 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gvja7n55k-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 22:11:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 22:14:55 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maurosr@linux.vnet.ibm.com>;
- Thu, 22 Mar 2018 20:11:13 -0600
-From: "Mauro S. M. Rodrigues" <maurosr@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, ruscur@russell.cc, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: kernel@gpiccoli.net
-Subject: [PATCH] powerpc/eeh: Avoid misleading message "EEH: no capable
- adapters found"
-Date: Thu, 22 Mar 2018 23:10:52 -0300
-Message-Id: <1521771052-5973-1-git-send-email-maurosr@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Fri, 23 Mar 2018 02:14:53 -0000
+Subject: Re: [PATCH] cxl: disable the lazy approach for irqs in POWERVM
+ environment.
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Date: Fri, 23 Mar 2018 13:14:48 +1100
+In-Reply-To: <1521736674-13128-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1521736674-13128-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1521771288.16434.326.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,106 +40,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Due to recent refactoring in EEH in:
-commit b9fde58db7e5 ("powerpc/powernv: Rework EEH initialization on
-powernv")
-a misleading message was seen in the kernel message buffer:
+On Thu, 2018-03-22 at 17:37 +0100, Christophe Lombard wrote:
+> The cxl driver cannot disable the interrupt at the device level and has
+> to use disable_irq[_nosync] instead.
+> To avoid the implementation of the lazy optimisation (the interrupt is
+> marked disabled, but the hardware is left unmasked), we can disable it,
+> for a particular irq line, by calling
+> 'irq_set_status_flags(irq, IRQ_DISABLE_UNLAZY)'.
 
-[    0.108431] EEH: PowerNV platform initialized
-[    0.589979] EEH: No capable adapters found
+Why do you need that ? What's wrong with the lazy approach ? It makes
+disable_irq/enable_irq faster...
 
-This happened due to the removal of the initialization delay for powernv
-platform.
+You shouldn't need that unless your device is generating a *LOT* of
+irqs while disabled.
 
-Even though the EEH infrastructure for the devices is eventually
-initialized and still works just fine the eeh device probe step is
-postponed in order to assure the PEs are created. Later
-pnv_eeh_post_init does the probe devices job but at that point the
-message was already shown right after eeh_init flow.
-
-This patch introduces a new flag EEH_POSTPONED_PROBE to represent that
-temporary state and avoid the message mentioned above and showing the
-follow one instead:
-
-[    0.107724] EEH: PowerNV platform initialized
-[    4.844825] EEH: PCI Enhanced I/O Error Handling Enabled
-
-Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h               | 15 ++++++++-------
- arch/powerpc/kernel/eeh.c                    |  2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 12 +++++++++++-
- 3 files changed, 20 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index fd37cc1..d16c3d6 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -36,13 +36,14 @@
- #ifdef CONFIG_EEH
- 
- /* EEH subsystem flags */
--#define EEH_ENABLED		0x01	/* EEH enabled		*/
--#define EEH_FORCE_DISABLED	0x02	/* EEH disabled		*/
--#define EEH_PROBE_MODE_DEV	0x04	/* From PCI device	*/
--#define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree	*/
--#define EEH_VALID_PE_ZERO	0x10	/* PE#0 is valid	*/
--#define EEH_ENABLE_IO_FOR_LOG	0x20	/* Enable IO for log	*/
--#define EEH_EARLY_DUMP_LOG	0x40	/* Dump log immediately	*/
-+#define EEH_ENABLED		0x01	/* EEH enabled			     */
-+#define EEH_FORCE_DISABLED	0x02	/* EEH disabled			     */
-+#define EEH_PROBE_MODE_DEV	0x04	/* From PCI device		     */
-+#define EEH_PROBE_MODE_DEVTREE	0x08	/* From device tree		     */
-+#define EEH_VALID_PE_ZERO	0x10	/* PE#0 is valid		     */
-+#define EEH_ENABLE_IO_FOR_LOG	0x20	/* Enable IO for log		     */
-+#define EEH_EARLY_DUMP_LOG	0x40	/* Dump log immediately		     */
-+#define EEH_POSTPONED_PROBE	0x80    /* Powernv may postpone device probe */
- 
- /*
-  * Delay for PE reset, all in ms
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 2b9df00..179ca84 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1092,7 +1092,7 @@ static int eeh_init(void)
- 
- 	if (eeh_enabled())
- 		pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
--	else
-+	else if (!eeh_has_flag(EEH_POSTPONED_PROBE))
- 		pr_info("EEH: No capable adapters found\n");
- 
- 	return ret;
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 33c86c1..9845460 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -223,6 +223,14 @@ int pnv_eeh_post_init(void)
- 	eeh_probe_devices();
- 	eeh_addr_cache_build();
- 
-+	if (eeh_has_flag(EEH_POSTPONED_PROBE)) {
-+		eeh_clear_flag(EEH_POSTPONED_PROBE);
-+		if (eeh_enabled())
-+			pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
-+		else
-+			pr_info("EEH: No capable adapters found\n");
-+	}
-+
- 	/* Register OPAL event notifier */
- 	eeh_event_irq = opal_event_request(ilog2(OPAL_EVENT_PCI_ERROR));
- 	if (eeh_event_irq < 0) {
-@@ -384,8 +392,10 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
- 		return NULL;
- 
- 	/* Skip if we haven't probed yet */
--	if (phb->ioda.pe_rmap[config_addr] == IODA_INVALID_PE)
-+	if (phb->ioda.pe_rmap[config_addr] == IODA_INVALID_PE) {
-+		eeh_add_flag(EEH_POSTPONED_PROBE);
- 		return NULL;
-+	}
- 
- 	/* Initialize eeh device */
- 	edev->class_code = pdn->class_code;
--- 
-1.8.3.1
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> ---
+>  drivers/misc/cxl/guest.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index f58b4b6c..dc476e1 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -389,6 +389,7 @@ static void disable_afu_irqs(struct cxl_context *ctx)
+>  		hwirq = ctx->irqs.offset[r];
+>  		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
+>  			virq = irq_find_mapping(NULL, hwirq);
+> +			irq_set_status_flags(virq, IRQ_DISABLE_UNLAZY);
+>  			disable_irq(virq);
+>  		}
+>  	}
