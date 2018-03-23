@@ -1,19 +1,19 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406x964lYHzF20R
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 19:12:26 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id n15-v6so7004382plp.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 01:12:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406x990571zF20R
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 19:12:28 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id u11-v6so7025077plq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 01:12:28 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linux-nvdimm@lists.01.org
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 2/6] libnvdimm: Add nd_region_destroy()
-Date: Fri, 23 Mar 2018 19:12:05 +1100
-Message-Id: <20180323081209.31387-2-oohall@gmail.com>
+Subject: [PATCH 3/6] libnvdimm: Add device-tree based driver
+Date: Fri, 23 Mar 2018 19:12:06 +1100
+Message-Id: <20180323081209.31387-3-oohall@gmail.com>
 In-Reply-To: <20180323081209.31387-1-oohall@gmail.com>
 References: <20180323081209.31387-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,45 +25,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently there's no way to remove a region from and nvdimm_bus without
-tearing down the whole bus. This patch adds an API for removing a single
-region from the bus so that we can implement a sensible unbind operation
-for the of_nd_region platform driver.
+This patch adds peliminary device-tree bindings for the NVDIMM driver.
+Currently this only supports one bus (created at probe time) which all
+regions are added to with individual regions being created by a platform
+device driver.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- drivers/nvdimm/region_devs.c | 6 ++++++
- include/linux/libnvdimm.h    | 1 +
- 2 files changed, 7 insertions(+)
+I suspect the platform driver should be holding a reference to the
+created region. I left that out here since previously Dan has said
+he'd rather keep the struct device internal to libnvdimm and the only
+other way a region device can disappear is when the bus is unregistered.
+---
+ MAINTAINERS                |   8 +++
+ drivers/nvdimm/Kconfig     |  10 ++++
+ drivers/nvdimm/Makefile    |   1 +
+ drivers/nvdimm/of_nvdimm.c | 130 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 149 insertions(+)
+ create mode 100644 drivers/nvdimm/of_nvdimm.c
 
-diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
-index 2f1d5771100e..76f46fd1fae0 100644
---- a/drivers/nvdimm/region_devs.c
-+++ b/drivers/nvdimm/region_devs.c
-@@ -1039,6 +1039,12 @@ struct nd_region *nvdimm_blk_region_create(struct nvdimm_bus *nvdimm_bus,
- }
- EXPORT_SYMBOL_GPL(nvdimm_blk_region_create);
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 4e62756936fa..e3fc47fbfc7a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8035,6 +8035,14 @@ Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
+ S:	Supported
+ F:	drivers/nvdimm/pmem*
  
-+void nd_region_destroy(struct nd_region *region)
-+{
-+	nd_device_unregister(&region->dev, ND_SYNC);
-+}
-+EXPORT_SYMBOL_GPL(nd_region_destroy);
++LIBNVDIMM: DEVICETREE BINDINGS
++M:	Oliver O'Halloran <oohall@gmail.com>
++L:	linux-nvdimm@lists.01.org
++Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
++S:	Supported
++F:	drivers/nvdimm/of_nvdimm.c
++F:	Documentation/devicetree/bindings/nvdimm/nvdimm-bus.txt
 +
- struct nd_region *nvdimm_volatile_region_create(struct nvdimm_bus *nvdimm_bus,
- 		struct nd_region_desc *ndr_desc)
- {
-diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
-index f61cb5050297..df21ca176e98 100644
---- a/include/linux/libnvdimm.h
-+++ b/include/linux/libnvdimm.h
-@@ -192,6 +192,7 @@ struct nd_region *nvdimm_blk_region_create(struct nvdimm_bus *nvdimm_bus,
- 		struct nd_region_desc *ndr_desc);
- struct nd_region *nvdimm_volatile_region_create(struct nvdimm_bus *nvdimm_bus,
- 		struct nd_region_desc *ndr_desc);
-+void nd_region_destroy(struct nd_region *region);
- void *nd_region_provider_data(struct nd_region *nd_region);
- void *nd_blk_region_provider_data(struct nd_blk_region *ndbr);
- void nd_blk_region_set_provider_data(struct nd_blk_region *ndbr, void *data);
+ LIBNVDIMM: NON-VOLATILE MEMORY DEVICE SUBSYSTEM
+ M:	Dan Williams <dan.j.williams@intel.com>
+ L:	linux-nvdimm@lists.01.org
+diff --git a/drivers/nvdimm/Kconfig b/drivers/nvdimm/Kconfig
+index a65f2e1d9f53..505a9bbbe49f 100644
+--- a/drivers/nvdimm/Kconfig
++++ b/drivers/nvdimm/Kconfig
+@@ -102,4 +102,14 @@ config NVDIMM_DAX
+ 
+ 	  Select Y if unsure
+ 
++config OF_NVDIMM
++	tristate "Device-tree support for NVDIMMs"
++	depends on OF
++	default LIBNVDIMM
++	help
++	  Allows byte addressable persistent memory regions to be described in the
++	  device-tree.
++
++	  Select Y if unsure.
++
+ endif
+diff --git a/drivers/nvdimm/Makefile b/drivers/nvdimm/Makefile
+index 70d5f3ad9909..fd6a5838aa25 100644
+--- a/drivers/nvdimm/Makefile
++++ b/drivers/nvdimm/Makefile
+@@ -4,6 +4,7 @@ obj-$(CONFIG_BLK_DEV_PMEM) += nd_pmem.o
+ obj-$(CONFIG_ND_BTT) += nd_btt.o
+ obj-$(CONFIG_ND_BLK) += nd_blk.o
+ obj-$(CONFIG_X86_PMEM_LEGACY) += nd_e820.o
++obj-$(CONFIG_OF_NVDIMM) += of_nvdimm.o
+ 
+ nd_pmem-y := pmem.o
+ 
+diff --git a/drivers/nvdimm/of_nvdimm.c b/drivers/nvdimm/of_nvdimm.c
+new file mode 100644
+index 000000000000..79c28291f420
+--- /dev/null
++++ b/drivers/nvdimm/of_nvdimm.c
+@@ -0,0 +1,130 @@
++// SPDX-License-Identifier: GPL-2.0+
++
++#define pr_fmt(fmt) "of_nvdimm: " fmt
++
++#include <linux/of_platform.h>
++#include <linux/of_address.h>
++#include <linux/libnvdimm.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <linux/slab.h>
++
++/*
++ * Container bus stuff.  For now we just chunk regions into a default
++ * bus with no ndctl support. In the future we'll add some mechanism
++ * for dispatching regions into the correct bus type, but this is useful
++ * for now.
++ */
++struct nvdimm_bus_descriptor bus_desc;
++struct nvdimm_bus *bus;
++
++/* region driver */
++
++static const struct attribute_group *region_attr_groups[] = {
++	&nd_region_attribute_group,
++	&nd_device_attribute_group,
++	NULL,
++};
++
++static const struct attribute_group *bus_attr_groups[] = {
++	&nvdimm_bus_attribute_group,
++	NULL,
++};
++
++static int of_nd_region_probe(struct platform_device *pdev)
++{
++	struct nd_region_desc ndr_desc;
++	struct resource temp_res;
++	struct nd_region *region;
++	struct device_node *np;
++
++	np = dev_of_node(&pdev->dev);
++	if (!np)
++		return -ENXIO;
++
++	pr_err("registering region for %pOF\n", np);
++
++	if (of_address_to_resource(np, 0, &temp_res)) {
++		pr_warn("Unable to parse reg[0] for %pOF\n", np);
++		return -ENXIO;
++	}
++
++	memset(&ndr_desc, 0, sizeof(ndr_desc));
++	ndr_desc.res = &temp_res;
++	ndr_desc.of_node = np;
++	ndr_desc.attr_groups = region_attr_groups;
++	ndr_desc.numa_node = of_node_to_nid(np);
++	set_bit(ND_REGION_PAGEMAP, &ndr_desc.flags);
++
++	/*
++	 * NB: libnvdimm copies the data from ndr_desc into it's own structures
++	 * so passing stack pointers is fine.
++	 */
++	if (of_get_property(np, "volatile", NULL))
++		region = nvdimm_volatile_region_create(bus, &ndr_desc);
++	else
++		region = nvdimm_pmem_region_create(bus, &ndr_desc);
++
++	pr_warn("registered pmem region %px\n", region);
++	if (!region)
++		return -ENXIO;
++
++	platform_set_drvdata(pdev, region);
++
++	return 0;
++}
++
++static int of_nd_region_remove(struct platform_device *pdev)
++{
++	struct nd_region *r = platform_get_drvdata(pdev);
++
++	nd_region_destroy(r);
++
++	return 0;
++}
++
++static const struct of_device_id of_nd_region_match[] = {
++	{ .compatible = "nvdimm-region" },
++	{ },
++};
++
++static struct platform_driver of_nd_region_driver = {
++	.probe = of_nd_region_probe,
++	.remove = of_nd_region_remove,
++	.driver = {
++		.name = "of_nd_region",
++		.owner = THIS_MODULE,
++		.of_match_table = of_nd_region_match,
++	},
++};
++
++/* bus wrangling */
++
++static int __init of_nvdimm_init(void)
++{
++	/* register  */
++	bus_desc.attr_groups = bus_attr_groups;
++	bus_desc.provider_name = "of_nvdimm";
++	bus_desc.module = THIS_MODULE;
++
++	/* does parent == NULL work? */
++	bus = nvdimm_bus_register(NULL, &bus_desc);
++	if (!bus)
++		return -ENODEV;
++
++	platform_driver_register(&of_nd_region_driver);
++
++	return 0;
++}
++module_init(of_nvdimm_init);
++
++static void __init of_nvdimm_exit(void)
++{
++	nvdimm_bus_unregister(bus);
++	platform_driver_unregister(&of_nd_region_driver);
++}
++module_exit(of_nvdimm_exit);
++
++MODULE_DEVICE_TABLE(of, of_nd_region_match);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("IBM Corporation");
 -- 
 2.9.5
