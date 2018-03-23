@@ -1,44 +1,42 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4073jV56yHzDqwZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 00:07:26 +1100 (AEDT)
-Date: Fri, 23 Mar 2018 05:48:06 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Ilya Smith <blackzert@gmail.com>
-Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
- vgupta@synopsys.com, linux@armlinux.org.uk, tony.luck@intel.com,
- fenghua.yu@intel.com, jhogan@kernel.org, ralf@linux-mips.org,
- jejb@parisc-linux.org, deller@gmx.de, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com,
- heiko.carstens@de.ibm.com, ysato@users.sourceforge.jp,
- dalias@libc.org, davem@davemloft.net, tglx@linutronix.de,
- mingo@redhat.com, hpa@zytor.com, x86@kernel.org, nyc@holomorphy.com,
- viro@zeniv.linux.org.uk, arnd@arndb.de, gregkh@linuxfoundation.org,
- deepa.kernel@gmail.com, mhocko@suse.com, hughd@google.com,
- kstewart@linuxfoundation.org, pombredanne@nexb.com,
- akpm@linux-foundation.org, steve.capper@arm.com,
- punit.agrawal@arm.com, paul.burton@mips.com,
- aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com,
- keescook@chromium.org, bhsharma@redhat.com, riel@redhat.com,
- nitin.m.gupta@oracle.com, kirill.shutemov@linux.intel.com,
- dan.j.williams@intel.com, jack@suse.cz,
- ross.zwisler@linux.intel.com, jglisse@redhat.com,
- aarcange@redhat.com, oleg@redhat.com, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
-Message-ID: <20180323124806.GA5624@bombadil.infradead.org>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4079wl29qfzDqph
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 04:47:35 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2NHiLi7041446
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 13:47:32 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gw44mwtfe-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 13:47:31 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Fri, 23 Mar 2018 11:47:31 -0600
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Subject: Re: [PATCH v2 13/38] cxlflash: Support adapter file descriptors for
+ OCXL
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+In-Reply-To: <5c799643-e957-79a4-8364-a444181c6f24@linux.vnet.ibm.com>
+Date: Fri, 23 Mar 2018 12:45:21 -0500
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1519683513-16731-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1519683719-17222-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <5c799643-e957-79a4-8364-a444181c6f24@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-Id: <4D0956EB-D0F2-4140-B60D-C8C9BB4D0D13@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,12 +46,304 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2018 at 07:36:36PM +0300, Ilya Smith wrote:
-> Current implementation doesn't randomize address returned by mmap.
-> All the entropy ends with choosing mmap_base_addr at the process
-> creation. After that mmap build very predictable layout of address
-> space. It allows to bypass ASLR in many cases. This patch make
-> randomization of address on any mmap call.
 
-Why should this be done in the kernel rather than libc?  libc is perfectly
-capable of specifying random numbers in the first argument of mmap.
+
+> On Mar 22, 2018, at 12:12 PM, Frederic Barrat =
+<fbarrat@linux.vnet.ibm.com> wrote:
+>=20
+>=20
+>=20
+> Le 26/02/2018 =C3=A0 23:21, Uma Krishnan a =C3=A9crit :
+>> Allocate a file descriptor for an adapter context when requested. In =
+order
+>> to allocate inodes for the file descriptors, a pseudo filesystem is =
+created
+>> and used.
+>> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+>> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+>> ---
+>=20
+>=20
+> We've touched the subject before, and I don't have a magic solution, =
+but it feels like something could be shared here with cxl, or maybe even =
+other drivers?
+>=20
+Yes, perhaps we could look at refactoring in a future series.
+
+> I only took a quick read of the inode allocator.
+>=20
+>  Fred
+>=20
+>=20
+>=20
+>=20
+>>  drivers/scsi/cxlflash/ocxl_hw.c | 200 =
+++++++++++++++++++++++++++++++++++++++++
+>>  drivers/scsi/cxlflash/ocxl_hw.h |   1 +
+>>  2 files changed, 201 insertions(+)
+>> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c =
+b/drivers/scsi/cxlflash/ocxl_hw.c
+>> index 6472210..59e9003 100644
+>> --- a/drivers/scsi/cxlflash/ocxl_hw.c
+>> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
+>> @@ -12,13 +12,144 @@
+>>   * 2 of the License, or (at your option) any later version.
+>>   */
+>> +#include <linux/file.h>
+>>  #include <linux/idr.h>
+>> +#include <linux/module.h>
+>> +#include <linux/mount.h>
+>>  #include <misc/ocxl.h>
+>>  #include "backend.h"
+>>  #include "ocxl_hw.h"
+>> +/*
+>> + * Pseudo-filesystem to allocate inodes.
+>> + */
+>> +
+>> +#define OCXLFLASH_FS_MAGIC      0x1697698f
+>> +
+>> +static int ocxlflash_fs_cnt;
+>> +static struct vfsmount *ocxlflash_vfs_mount;
+>> +
+>> +static const struct dentry_operations ocxlflash_fs_dops =3D {
+>> +	.d_dname	=3D simple_dname,
+>> +};
+>> +
+>> +/*
+>> + * ocxlflash_fs_mount() - mount the pseudo-filesystem
+>> + * @fs_type:	File system type.
+>> + * @flags:	Flags for the filesystem.
+>> + * @dev_name:	Device name associated with the filesystem.
+>> + * @data:	Data pointer.
+>> + *
+>> + * Return: pointer to the directory entry structure
+>> + */
+>> +static struct dentry *ocxlflash_fs_mount(struct file_system_type =
+*fs_type,
+>> +					 int flags, const char =
+*dev_name,
+>> +					 void *data)
+>> +{
+>> +	return mount_pseudo(fs_type, "ocxlflash:", NULL, =
+&ocxlflash_fs_dops,
+>> +			    OCXLFLASH_FS_MAGIC);
+>> +}
+>> +
+>> +static struct file_system_type ocxlflash_fs_type =3D {
+>> +	.name		=3D "ocxlflash",
+>> +	.owner		=3D THIS_MODULE,
+>> +	.mount		=3D ocxlflash_fs_mount,
+>> +	.kill_sb	=3D kill_anon_super,
+>> +};
+>> +
+>> +/*
+>> + * ocxlflash_release_mapping() - release the memory mapping
+>> + * @ctx:	Context whose mapping is to be released.
+>> + */
+>> +static void ocxlflash_release_mapping(struct ocxlflash_context *ctx)
+>> +{
+>> +	if (ctx->mapping)
+>> +		simple_release_fs(&ocxlflash_vfs_mount, =
+&ocxlflash_fs_cnt);
+>> +	ctx->mapping =3D NULL;
+>> +}
+>> +
+>> +/*
+>> + * ocxlflash_getfile() - allocate pseudo filesystem, inode, and the =
+file
+>> + * @dev:	Generic device of the host.
+>> + * @name:	Name of the pseudo filesystem.
+>> + * @fops:	File operations.
+>> + * @priv:	Private data.
+>> + * @flags:	Flags for the file.
+>> + *
+>> + * Return: pointer to the file on success, ERR_PTR on failure
+>> + */
+>> +static struct file *ocxlflash_getfile(struct device *dev, const char =
+*name,
+>> +				      const struct file_operations =
+*fops,
+>> +				      void *priv, int flags)
+>> +{
+>> +	struct qstr this;
+>> +	struct path path;
+>> +	struct file *file;
+>> +	struct inode *inode =3D NULL;
+>> +	int rc;
+>> +
+>> +	if (fops->owner && !try_module_get(fops->owner)) {
+>> +		dev_err(dev, "%s: Owner does not exist\n", __func__);
+>> +		rc =3D -ENOENT;
+>> +		goto err1;
+>> +	}
+>> +
+>> +	rc =3D simple_pin_fs(&ocxlflash_fs_type, &ocxlflash_vfs_mount,
+>> +			   &ocxlflash_fs_cnt);
+>> +	if (unlikely(rc < 0)) {
+>> +		dev_err(dev, "%s: Cannot mount ocxlflash pseudofs =
+rc=3D%d\n",
+>> +			__func__, rc);
+>> +		goto err2;
+>> +	}
+>> +
+>> +	inode =3D alloc_anon_inode(ocxlflash_vfs_mount->mnt_sb);
+>> +	if (IS_ERR(inode)) {
+>> +		rc =3D PTR_ERR(inode);
+>> +		dev_err(dev, "%s: alloc_anon_inode failed rc=3D%d\n",
+>> +			__func__, rc);
+>> +		goto err3;
+>> +	}
+>> +
+>> +	this.name =3D name;
+>> +	this.len =3D strlen(name);
+>> +	this.hash =3D 0;
+>> +	path.dentry =3D d_alloc_pseudo(ocxlflash_vfs_mount->mnt_sb, =
+&this);
+>> +	if (!path.dentry) {
+>> +		dev_err(dev, "%s: d_alloc_pseudo failed\n", __func__);
+>> +		rc =3D -ENOMEM;
+>> +		goto err4;
+>> +	}
+>> +
+>> +	path.mnt =3D mntget(ocxlflash_vfs_mount);
+>> +	d_instantiate(path.dentry, inode);
+>> +
+>> +	file =3D alloc_file(&path, OPEN_FMODE(flags), fops);
+>> +	if (IS_ERR(file)) {
+>> +		rc =3D PTR_ERR(file);
+>> +		dev_err(dev, "%s: alloc_file failed rc=3D%d\n",
+>> +			__func__, rc);
+>> +		goto err5;
+>> +	}
+>> +
+>> +	file->f_flags =3D flags & (O_ACCMODE | O_NONBLOCK);
+>> +	file->private_data =3D priv;
+>> +out:
+>> +	return file;
+>> +err5:
+>> +	path_put(&path);
+>> +err4:
+>> +	iput(inode);
+>> +err3:
+>> +	simple_release_fs(&ocxlflash_vfs_mount, &ocxlflash_fs_cnt);
+>> +err2:
+>> +	module_put(fops->owner);
+>> +err1:
+>> +	file =3D ERR_PTR(rc);
+>> +	goto out;
+>> +}
+>> +
+>>  /**
+>>   * ocxlflash_set_master() - sets the context as master
+>>   * @ctx_cookie:	Adapter context to set as master.
+>> @@ -75,6 +206,7 @@ static void *ocxlflash_dev_context_init(struct =
+pci_dev *pdev, void *afu_cookie)
+>>  	ctx->pe =3D rc;
+>>  	ctx->master =3D false;
+>> +	ctx->mapping =3D NULL;
+>>  	ctx->hw_afu =3D afu;
+>>  out:
+>>  	return ctx;
+>> @@ -100,6 +232,7 @@ static int ocxlflash_release_context(void =
+*ctx_cookie)
+>>  		goto out;
+>>  	idr_remove(&ctx->hw_afu->idr, ctx->pe);
+>> +	ocxlflash_release_mapping(ctx);
+>>  	kfree(ctx);
+>>  out:
+>>  	return rc;
+>> @@ -262,6 +395,72 @@ static void *ocxlflash_create_afu(struct pci_dev =
+*pdev)
+>>  	goto out;
+>>  }
+>> +static const struct file_operations ocxl_afu_fops =3D {
+>> +	.owner		=3D THIS_MODULE,
+>> +};
+>> +
+>> +/**
+>> + * ocxlflash_get_fd() - get file descriptor for an adapter context
+>> + * @ctx_cookie:	Adapter context.
+>> + * @fops:	File operations to be associated.
+>> + * @fd:		File descriptor to be returned back.
+>> + *
+>> + * Return: pointer to the file on success, ERR_PTR on failure
+>> + */
+>> +static struct file *ocxlflash_get_fd(void *ctx_cookie,
+>> +				     struct file_operations *fops, int =
+*fd)
+>> +{
+>> +	struct ocxlflash_context *ctx =3D ctx_cookie;
+>> +	struct device *dev =3D ctx->hw_afu->dev;
+>> +	struct file *file;
+>> +	int flags, fdtmp;
+>> +	int rc =3D 0;
+>> +	char *name =3D NULL;
+>> +
+>> +	/* Only allow one fd per context */
+>> +	if (ctx->mapping) {
+>> +		dev_err(dev, "%s: Context is already mapped to an fd\n",
+>> +			__func__);
+>> +		rc =3D -EEXIST;
+>> +		goto err1;
+>> +	}
+>> +
+>> +	flags =3D O_RDWR | O_CLOEXEC;
+>> +
+>> +	/* This code is similar to anon_inode_getfd() */
+>> +	rc =3D get_unused_fd_flags(flags);
+>> +	if (unlikely(rc < 0)) {
+>> +		dev_err(dev, "%s: get_unused_fd_flags failed rc=3D%d\n",
+>> +			__func__, rc);
+>> +		goto err1;
+>> +	}
+>> +	fdtmp =3D rc;
+>> +
+>> +	/* Use default ops if there is no fops */
+>> +	if (!fops)
+>> +		fops =3D (struct file_operations *)&ocxl_afu_fops;
+>> +
+>> +	name =3D kasprintf(GFP_KERNEL, "ocxlflash:%d", ctx->pe);
+>> +	file =3D ocxlflash_getfile(dev, name, fops, ctx, flags);
+>> +	kfree(name);
+>> +	if (IS_ERR(file)) {
+>> +		rc =3D PTR_ERR(file);
+>> +		dev_err(dev, "%s: ocxlflash_getfile failed rc=3D%d\n",
+>> +			__func__, rc);
+>> +		goto err2;
+>> +	}
+>> +
+>> +	ctx->mapping =3D file->f_mapping;
+>> +	*fd =3D fdtmp;
+>> +out:
+>> +	return file;
+>> +err2:
+>> +	put_unused_fd(fdtmp);
+>> +err1:
+>> +	file =3D ERR_PTR(rc);
+>> +	goto out;
+>> +}
+>> +
+>>  /* Backend ops to ocxlflash services */
+>>  const struct cxlflash_backend_ops cxlflash_ocxl_ops =3D {
+>>  	.module			=3D THIS_MODULE,
+>> @@ -271,4 +470,5 @@ const struct cxlflash_backend_ops =
+cxlflash_ocxl_ops =3D {
+>>  	.release_context	=3D ocxlflash_release_context,
+>>  	.create_afu		=3D ocxlflash_create_afu,
+>>  	.destroy_afu		=3D ocxlflash_destroy_afu,
+>> +	.get_fd			=3D ocxlflash_get_fd,
+>>  };
+>> diff --git a/drivers/scsi/cxlflash/ocxl_hw.h =
+b/drivers/scsi/cxlflash/ocxl_hw.h
+>> index 0381682..7abc532 100644
+>> --- a/drivers/scsi/cxlflash/ocxl_hw.h
+>> +++ b/drivers/scsi/cxlflash/ocxl_hw.h
+>> @@ -32,6 +32,7 @@ struct ocxl_hw_afu {
+>>  struct ocxlflash_context {
+>>  	struct ocxl_hw_afu *hw_afu;	/* HW AFU back pointer */
+>> +	struct address_space *mapping;	/* Mapping for pseudo filesystem =
+*/
+>>  	bool master;			/* Whether this is a master =
+context */
+>>  	int pe;				/* Process element */
+>>  };
