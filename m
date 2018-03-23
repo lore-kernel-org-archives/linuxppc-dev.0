@@ -1,19 +1,22 @@
 Return-Path: <blackzert@gmail.com>
-Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
- [IPv6:2a00:1450:4010:c07::241])
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4079r412s2zF0Q9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 04:43:31 +1100 (AEDT)
-Received: by mail-lf0-x241.google.com with SMTP id x205-v6so19484861lfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 10:43:31 -0700 (PDT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
-Subject: Re: [RFC PATCH v2 1/2] Randomization of address chosen by mmap.
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4079xM0MxHzF0x9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 04:48:06 +1100 (AEDT)
+Received: by mail-lf0-x243.google.com with SMTP id e5-v6so19507951lfb.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 10:48:06 -0700 (PDT)
 From: Ilya Smith <blackzert@gmail.com>
-In-Reply-To: <20180322135314.61efce938293e051e118fa46@linux-foundation.org>
-Date: Fri, 23 Mar 2018 20:43:25 +0300
+Message-Id: <5D55B1FC-1962-4941-BF56-1F83554FC64C@gmail.com>
+Content-Type: multipart/signed;
+ boundary="Apple-Mail=_B9437F76-CEDD-4524-828D-E63FF8E38C7F";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Subject: Re: [RFC PATCH v2 2/2] Architecture defined limit on memory region
+ random shift.
+Date: Fri, 23 Mar 2018 20:48:00 +0300
+In-Reply-To: <20180322135448.046ada120ecd1ab3dd8f94aa@linux-foundation.org>
 Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
  vgupta@synopsys.com, linux@armlinux.org.uk, tony.luck@intel.com,
  fenghua.yu@intel.com, ralf@linux-mips.org, jejb@parisc-linux.org,
@@ -39,11 +42,10 @@ Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, Linux-MM <linux-mm@kvack.org>
-Message-Id: <547032AD-605D-46AF-9DA6-C2ECA01923E1@gmail.com>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <1521736598-12812-2-git-send-email-blackzert@gmail.com>
- <20180322135314.61efce938293e051e118fa46@linux-foundation.org>
 To: Andrew Morton <akpm@linux-foundation.org>
+References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ <1521736598-12812-3-git-send-email-blackzert@gmail.com>
+ <20180322135448.046ada120ecd1ab3dd8f94aa@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,134 +56,117 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> On 22 Mar 2018, at 23:53, Andrew Morton <akpm@linux-foundation.org> =
+--Apple-Mail=_B9437F76-CEDD-4524-828D-E63FF8E38C7F
+Content-Type: multipart/alternative;
+	boundary="Apple-Mail=_302D41D8-B8D8-4A57-A90C-AE132EC44462"
+
+
+--Apple-Mail=_302D41D8-B8D8-4A57-A90C-AE132EC44462
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
+
+
+> On 22 Mar 2018, at 23:54, Andrew Morton <akpm@linux-foundation.org> =
 wrote:
 >=20
-> On Thu, 22 Mar 2018 19:36:37 +0300 Ilya Smith <blackzert@gmail.com> =
-wrote:
 >=20
->> include/linux/mm.h |  16 ++++--
->> mm/mmap.c          | 164 =
-+++++++++++++++++++++++++++++++++++++++++++++++++++++
+> Please add changelogs.  An explanation of what a "limit on memory
+> region random shift" is would be nice ;) Why does it exist, why are we
+> doing this, etc.  Surely there's something to be said - at present =
+this
+> is just a lump of random code?
 >=20
-> You'll be wanting to update the documentation.=20
-> Documentation/sysctl/kernel.txt and
-> Documentation/admin-guide/kernel-parameters.txt.
->=20
+Sorry, my bad. The main idea of this limit is to decrease possible =
+memory
+fragmentation. This is not so big problem on 64bit process, but really =
+big for
+32 bit processes since may cause failure memory allocation. To control =
+memory
+fragmentation and protect 32 bit systems (or architectures) this limit =
+was
+introduce by this patch. It could be also moved to CONFIG_ as well.
 
-Sure, thanks for pointing there. I will add few lines there after =
-discussion them
-here.
 
->> ...
->>=20
->> @@ -2268,6 +2276,9 @@ extern unsigned long =
-unmapped_area_topdown(struct vm_unmapped_area_info *info);
->> static inline unsigned long
->> vm_unmapped_area(struct vm_unmapped_area_info *info)
->> {
->> +	/* How about 32 bit process?? */
->> +	if ((current->flags & PF_RANDOMIZE) && randomize_va_space > 3)
->> +		return unmapped_area_random(info);
->=20
-> The handling of randomize_va_space is peculiar.  Rather than being a
-> bitfield which independently selects different modes, it is treated as
-> a scalar: the larger the value, the more stuff we randomize.
->=20
-> I can see the sense in that (and I wonder what randomize_va_space=3D5
-> will do).  But it is...  odd.
->=20
-> Why did you select randomize_va_space=3D4 for this?  Is there a mode 3
-> already and we forgot to document it?  Or did you leave a gap for
-> something?  If the former, please feel free to fix the documentation
-> (in a separate, preceding patch) while you're in there ;)
->=20
 
-Yes, I was not sure about correct value so leaved some gap for future. =
-Also
-according to current implementation this value used like a scalar. But =
-I=E2=80=99m
-agree bitfield looks more flexible for the future. I think right now I =
-can leave
-3 as value for my patch and it could be fixed any time in the future. =
-What
-do you think about it?
+--Apple-Mail=_302D41D8-B8D8-4A57-A90C-AE132EC44462
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=us-ascii
 
->> 	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN)
->> 		return unmapped_area_topdown(info);
->> 	else
->> @@ -2529,11 +2540,6 @@ int drop_caches_sysctl_handler(struct =
-ctl_table *, int,
->> void drop_slab(void);
->> void drop_slab_node(int nid);
->>=20
->>=20
->> ...
->>=20
->> @@ -1780,6 +1781,169 @@ unsigned long mmap_region(struct file *file, =
-unsigned long addr,
->> 	return error;
->> }
->>=20
->> +unsigned long unmapped_area_random(struct vm_unmapped_area_info =
-*info)
->> +{
->=20
-> This function is just dead code if CONFIG_MMU=3Dn, yes?  Let's add the
-> ifdefs to make it go away in that case.
->=20
+<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; =
+charset=3Dus-ascii"></head><body style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; line-break: after-white-space;" class=3D""><br =
+class=3D""><div><blockquote type=3D"cite" class=3D""><div class=3D"">On =
+22 Mar 2018, at 23:54, Andrew Morton &lt;<a =
+href=3D"mailto:akpm@linux-foundation.org" =
+class=3D"">akpm@linux-foundation.org</a>&gt; wrote:</div><br =
+class=3D"Apple-interchange-newline"><div class=3D""><div class=3D""><br =
+class=3D"">Please add changelogs. &nbsp;An explanation of what a "limit =
+on memory<br class=3D"">region random shift" is would be nice ;) Why =
+does it exist, why are we<br class=3D"">doing this, etc. &nbsp;Surely =
+there's something to be said - at present this<br class=3D"">is just a =
+lump of random code?<br class=3D""><br =
+class=3D""></div></div></blockquote><div style=3D"margin: 0px; =
+font-stretch: normal; font-size: 11px; line-height: normal; font-family: =
+Menlo; background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" class=3D"">Sorry, =
+my bad. The main idea of this limit is to decrease possible =
+memory&nbsp;</span></div><div style=3D"margin: 0px; font-stretch: =
+normal; font-size: 11px; line-height: normal; font-family: Menlo; =
+background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" =
+class=3D"">fragmentation. This is not so big problem on 64bit process, =
+but really big for&nbsp;</span></div><div style=3D"margin: 0px; =
+font-stretch: normal; font-size: 11px; line-height: normal; font-family: =
+Menlo; background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" class=3D"">32 bit =
+processes since may cause failure memory allocation. To control =
+memory&nbsp;</span></div><div style=3D"margin: 0px; font-stretch: =
+normal; font-size: 11px; line-height: normal; font-family: Menlo; =
+background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" =
+class=3D"">fragmentation and protect 32 bit systems (or architectures) =
+this limit was&nbsp;</span></div><div style=3D"margin: 0px; =
+font-stretch: normal; font-size: 11px; line-height: normal; font-family: =
+Menlo; background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" class=3D"">introduce=
+ by this patch. It could be also moved to CONFIG_ as =
+well.</span></div><div style=3D"margin: 0px; font-stretch: normal; =
+font-size: 11px; line-height: normal; font-family: Menlo; =
+background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" class=3D""><br =
+class=3D""></span></div><div style=3D"margin: 0px; font-stretch: normal; =
+font-size: 11px; line-height: normal; font-family: Menlo; =
+background-color: rgb(255, 255, 255);" class=3D""><span =
+style=3D"font-variant-ligatures: no-common-ligatures" class=3D""><br =
+class=3D""></span></div></div></body></html>=
 
-Thanks, I missed that case. I will fix it.
+--Apple-Mail=_302D41D8-B8D8-4A57-A90C-AE132EC44462--
 
->> +	struct mm_struct *mm =3D current->mm;
->> +	struct vm_area_struct *vma =3D NULL;
->> +	struct vm_area_struct *visited_vma =3D NULL;
->> +	unsigned long entropy[2];
->> +	unsigned long length, low_limit, high_limit, gap_start, gap_end;
->> +	unsigned long addr =3D 0;
->> +
->> +	/* get entropy with prng */
->> +	prandom_bytes(&entropy, sizeof(entropy));
->> +	/* small hack to prevent EPERM result */
->> +	info->low_limit =3D max(info->low_limit, mmap_min_addr);
->> +
->>=20
->> ...
->>=20
->> +found:
->> +	/* We found a suitable gap. Clip it with the original =
-high_limit. */
->> +	if (gap_end > info->high_limit)
->> +		gap_end =3D info->high_limit;
->> +	gap_end -=3D info->length;
->> +	gap_end -=3D (gap_end - info->align_offset) & info->align_mask;
->> +	/* only one suitable page */
->> +	if (gap_end =3D=3D  gap_start)
->> +		return gap_start;
->> +	addr =3D entropy[1] % (min((gap_end - gap_start) >> PAGE_SHIFT,
->> +							 0x10000UL));
->=20
-> What does the magic 10000 mean?  Isn't a comment needed explaining =
-this?
->=20
->> +	addr =3D gap_end - (addr << PAGE_SHIFT);
->> +	addr +=3D (info->align_offset - addr) & info->align_mask;
->> +	return addr;
->> +}
->>=20
->> ...
->>=20
->=20
+--Apple-Mail=_B9437F76-CEDD-4524-828D-E63FF8E38C7F
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename=signature.asc
+Content-Type: application/pgp-signature;
+	name=signature.asc
+Content-Description: Message signed with OpenPGP
 
-This one what I fix by next patch. I was trying to make patches separate =
-to make
-it easier to understand them. This constant came from last version =
-discussion=20
-and honestly doesn=E2=80=99t means much. I replaced it with Architecture =
-depended limit
-that as I plan would be CONFIG value as well.
+-----BEGIN PGP SIGNATURE-----
 
-This value means maximum number of pages we can move away from the next
-vma. The less value means less security but less memory fragmentation. =
-Any way
-on 64bit systems memory fragmentation is not such a big problem.
+iQIzBAEBCAAdFiEEju7OBNw5xIMUzNy9WTzOquRR3DcFAlq1PdAACgkQWTzOquRR
+3Ddp9BAAmPUV7u9gSEqLavwAr5Hu+ZmmSJS7i95PzubMqxmQosuS52Z4/bUbBubG
+rpcg0eym8hpSfWnUs+SyF4od/d1elKMcF0Xy16b48F7xeGARHOBsxp2WXVdLDxVN
+veTQKZ5skp9MHHAPJZbrwJqslKksWdisVWxx14XXWt3o+LqeG5/O7XORxC4zqAEv
+wa4BvuDBg86I6/J+5+8aMVeucisrk/DKxG1sWWXWsRkQYDK8+V1pO0RUuxDSHu9K
+5YDyvXzdcXy1NML+LAmtPO9xDK+6jI0YVFY6Ifp1wbVYI5KwDLWiAchEYPnHTmcI
+719Wfy9aLBVnG8EyOCR1z86LegVJ0AKUidWovh+fhOZ3kO8rbmr9yv7FV0WXzf98
+1HUZBQWwW3UuDOb3t/83TMeNHtq/kb0NXD+bjb4NFJUnYS15lYDe9YPhO5MKCudT
+X0prbA/oipnJQojAzlITFNUt2N7N+53OxDEdXHzrQDuT0g/wdheM5q27VvQ+EdE5
+72YRH72brGkh+b/QhreLK3OjiGa6AWdWpqr+5ERn4TVt1IRBSfRAq5zHAxgDk97S
+81cRvJgLR0n2NEXHNrvyjIZebfLuc5CmPiTs4tLHpDYnrrUZtsuQyXk53hSiUmGs
+KzBn/WKQGxswsjPNqzFNDNIaf67VXSlf4QQmegh2Fl8GGC8v8pg=
+=6qWL
+-----END PGP SIGNATURE-----
+
+--Apple-Mail=_B9437F76-CEDD-4524-828D-E63FF8E38C7F--
