@@ -1,21 +1,22 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0055.outbound.protection.outlook.com [104.47.2.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406x9K6GwSzF21K
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 19:12:37 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id d26so4441335pfn.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 01:12:37 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linux-nvdimm@lists.01.org
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
-Date: Fri, 23 Mar 2018 19:12:09 +1100
-Message-Id: <20180323081209.31387-6-oohall@gmail.com>
-In-Reply-To: <20180323081209.31387-1-oohall@gmail.com>
-References: <20180323081209.31387-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406xH63FH2zF21p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 19:17:36 +1100 (AEDT)
+From: =?iso-8859-2?Q?Horia_Geant=E3?= <horia.geanta@nxp.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
+CC: "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2] crypto: talitos - fix IPsec cipher in length
+Date: Fri, 23 Mar 2018 08:17:30 +0000
+Message-ID: <AM3PR04MB4524FABE12B33113FF4C2D598A80@AM3PR04MB452.eurprd04.prod.outlook.com>
+References: <20180322095701.4563E6F352@po15720vm.idsi0.si.c-s.fr>
+Content-Type: text/plain; charset="iso-8859-2"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,65 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add device-tree binding documentation for the nvdimm region driver.
-
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- .../devicetree/bindings/nvdimm/nvdimm-region.txt   | 45 ++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
-
-diff --git a/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
-new file mode 100644
-index 000000000000..02091117ff16
---- /dev/null
-+++ b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
-@@ -0,0 +1,45 @@
-+Device-tree bindings for NVDIMM memory regions
-+-----------------------------------------------------
-+
-+Non-volatile DIMMs are memory modules used to provide (cacheable) main memory
-+that retains its contents across power cycles. In more practical terms, they
-+are kind of storage device where the contents can be accessed by the CPU
-+directly, rather than indirectly via a storage controller or similar. The an
-+nvdimm-region specifies a physical address range that is hosted on an NVDIMM
-+device.
-+
-+Bindings for the region nodes:
-+-----------------------------
-+
-+Required properties:
-+	- compatible = "nvdimm-region"
-+
-+	- reg = <base, size>;
-+		The system physical address range of this nvdimm region.
-+
-+Optional properties:
-+	- Any relevant NUMA assocativity properties for the target platform.
-+	- A "volatile" property indicating that this region is actually in
-+	  normal DRAM and does not require cache flushes after each write.
-+
-+A complete example:
-+--------------------
-+
-+/ {
-+	#size-cells = <2>;
-+	#address-cells = <2>;
-+
-+	platform {
-+		region@5000 {
-+			compatible = "nvdimm-region;
-+			reg = <0x00000001 0x00000000 0x00000000 0x40000000>
-+
-+		};
-+
-+		region@6000 {
-+			compatible = "nvdimm-region";
-+			reg = <0x00000001 0x00000000 0x00000000 0x40000000>
-+			volatile;
-+		};
-+	};
-+};
--- 
-2.9.5
+On 3/22/2018 11:57 AM, Christophe Leroy wrote:=0A=
+> For SEC 2.x+, cipher in length must contain only the ciphertext length.=
+=0A=
+          ^^^^ turns out this should be 3.x+=0A=
+=0A=
+> In case of using hardware ICV checking, the ICV length is provided via=0A=
+> the "extent" field of the descriptor pointer.=0A=
+> =0A=
+> Cc: <stable@vger.kernel.org> # 4.8+=0A=
+> Fixes: 549bd8bc5987 ("crypto: talitos - Implement AEAD for SEC1 using HMA=
+C_SNOOP_NO_AFEU")=0A=
+> Reported-by: Horia Geant=E3 <horia.geanta@nxp.com>=0A=
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>=0A=
+Tested-by: Horia Geant=E3 <horia.geanta@nxp.com>=0A=
+=0A=
+Thanks,=0A=
+Horia=0A=
+=0A=
