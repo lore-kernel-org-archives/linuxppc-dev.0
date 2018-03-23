@@ -2,20 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4070wd4Q87zF1b9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 22:01:53 +1100 (AEDT)
-Subject: Re: [PATCH 05/19] powerpc/chrp/setup: Add attribute unused and make
- some functions static
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40710k6PwWzF0Q9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 22:05:26 +1100 (AEDT)
+Subject: Re: [PATCH 07/19] powerpc/powermac: Make some functions static
 To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-6-malat@debian.org>
+ <20180322202007.23088-8-malat@debian.org>
 From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <9c166091-970d-7f09-365e-6dceb4742da4@c-s.fr>
-Date: Fri, 23 Mar 2018 12:01:36 +0100
+Message-ID: <b7bd65f6-af40-1f35-a0be-3f9cc810db7f@c-s.fr>
+Date: Fri, 23 Mar 2018 12:05:13 +0100
 MIME-Version: 1.0
-In-Reply-To: <20180322202007.23088-6-malat@debian.org>
+In-Reply-To: <20180322202007.23088-8-malat@debian.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,76 +28,80 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 Le 22/03/2018 à 21:19, Mathieu Malaterre a écrit :
-> Add gcc attribute unused to silence a warning.
-> 
 > These functions can all be static, make it so. Fix warnings treated as
 > errors with W=1:
 > 
->    arch/powerpc/platforms/chrp/setup.c:97:6: error: no previous prototype for ‘chrp_show_cpuinfo’ [-Werror=missing-prototypes]
->    arch/powerpc/platforms/chrp/setup.c:302:13: error: no previous prototype for ‘chrp_setup_arch’ [-Werror=missing-prototypes]
->    arch/powerpc/platforms/chrp/setup.c:385:16: error: variable ‘idu_size’ set but not used [-Werror=unused-but-set-variable]
->    arch/powerpc/platforms/chrp/setup.c:526:13: error: no previous prototype for ‘chrp_init_IRQ’ [-Werror=missing-prototypes]
->    arch/powerpc/platforms/chrp/setup.c:559:1: error: no previous prototype for ‘chrp_init2’ [-Werror=missing-prototypes]
+>    arch/powerpc/platforms/powermac/pci.c:1022:6: error: no previous prototype for ‘pmac_pci_fixup_ohci’ [-Werror=missing-prototypes]
+>    arch/powerpc/platforms/powermac/pci.c:1057:6: error: no previous prototype for ‘pmac_pci_fixup_cardbus’ [-Werror=missing-prototypes]
+>    arch/powerpc/platforms/powermac/pci.c:1094:6: error: no previous prototype for ‘pmac_pci_fixup_pciata’ [-Werror=missing-prototypes]
+> 
+> Also add gcc attribute unused to fix a warning treated as error with W=1:
+> 
+>    arch/powerpc/platforms/powermac/pci.c:784:19: error: variable ‘has_address’ set but not used [-Werror=unused-but-set-variable]
+>    arch/powerpc/platforms/powermac/pci.c:907:22: error: variable ‘ht’ set but not used [-Werror=unused-but-set-variable]
 > 
 > Signed-off-by: Mathieu Malaterre <malat@debian.org>
 > ---
->   arch/powerpc/platforms/chrp/setup.c | 10 +++++-----
+>   arch/powerpc/platforms/powermac/pci.c | 10 +++++-----
 >   1 file changed, 5 insertions(+), 5 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-> index 481ed133e04b..85df479fd631 100644
-> --- a/arch/powerpc/platforms/chrp/setup.c
-> +++ b/arch/powerpc/platforms/chrp/setup.c
-> @@ -94,7 +94,7 @@ static const char *chrp_names[] = {
->   	"Total Impact Briq"
->   };
+> diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+> index 0b8174a79993..d3b9818dd880 100644
+> --- a/arch/powerpc/platforms/powermac/pci.c
+> +++ b/arch/powerpc/platforms/powermac/pci.c
+> @@ -781,7 +781,7 @@ static int __init pmac_add_bridge(struct device_node *dev)
+>   	struct resource rsrc;
+>   	char *disp_name;
+>   	const int *bus_range;
+> -	int primary = 1, has_address = 0;
+> +	int primary = 1, has_address __maybe_unused = 0;
+
+YOu could remove it completely, it is never used
+
 >   
-> -void chrp_show_cpuinfo(struct seq_file *m)
-> +static void chrp_show_cpuinfo(struct seq_file *m)
->   {
->   	int i, sdramen;
->   	unsigned int t;
-> @@ -299,7 +299,7 @@ static __init void chrp_init(void)
->   	of_node_put(node);
->   }
+>   	DBG("Adding PCI host bridge %pOF\n", dev);
 >   
-> -void __init chrp_setup_arch(void)
-> +static void __init chrp_setup_arch(void)
->   {
->   	struct device_node *root = of_find_node_by_path("/");
->   	const char *machine = NULL;
-> @@ -382,7 +382,7 @@ static void __init chrp_find_openpic(void)
+> @@ -904,7 +904,7 @@ static int pmac_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
+>   void __init pmac_pci_init(void)
 >   {
 >   	struct device_node *np, *root;
->   	int len, i, j;
-> -	int isu_size, idu_size;
-> +	int isu_size, idu_size __maybe_unused;
+> -	struct device_node *ht = NULL;
+> +	struct device_node *ht __maybe_unused = NULL;
 
-idu_size is never used, you could remove it completely
+Shouldn't ht be enclosed into #ifdef CONFIG_PPC64 instead ?
 
 Christophe
 
->   	const unsigned int *iranges, *opprop = NULL;
->   	int oplen = 0;
->   	unsigned long opaddr;
-> @@ -523,7 +523,7 @@ static void __init chrp_find_8259(void)
+>   
+>   	pci_set_flags(PCI_CAN_SKIP_ISA_ALIGN);
+>   
+> @@ -1019,7 +1019,7 @@ static bool pmac_pci_enable_device_hook(struct pci_dev *dev)
+>   	return true;
+>   }
+>   
+> -void pmac_pci_fixup_ohci(struct pci_dev *dev)
+> +static void pmac_pci_fixup_ohci(struct pci_dev *dev)
+>   {
+>   	struct device_node *node = pci_device_to_OF_node(dev);
+>   
+> @@ -1054,7 +1054,7 @@ void __init pmac_pcibios_after_init(void)
 >   	}
 >   }
 >   
-> -void __init chrp_init_IRQ(void)
-> +static void __init chrp_init_IRQ(void)
+> -void pmac_pci_fixup_cardbus(struct pci_dev* dev)
+> +static void pmac_pci_fixup_cardbus(struct pci_dev *dev)
 >   {
->   #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(CONFIG_XMON)
->   	struct device_node *kbd;
-> @@ -555,7 +555,7 @@ void __init chrp_init_IRQ(void)
->   #endif
->   }
+>   	if (!machine_is(powermac))
+>   		return;
+> @@ -1091,7 +1091,7 @@ void pmac_pci_fixup_cardbus(struct pci_dev* dev)
 >   
-> -void __init
-> +static void __init
->   chrp_init2(void)
+>   DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_TI, PCI_ANY_ID, pmac_pci_fixup_cardbus);
+>   
+> -void pmac_pci_fixup_pciata(struct pci_dev* dev)
+> +static void pmac_pci_fixup_pciata(struct pci_dev *dev)
 >   {
->   #ifdef CONFIG_NVRAM
+>          u8 progif = 0;
+>   
 > 
 
 ---
