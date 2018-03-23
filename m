@@ -1,20 +1,20 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
+Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
+ [IPv6:2607:f8b0:4003:c0f::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4078sp6gLdzF1bM
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 03:59:48 +1100 (AEDT)
-Received: by mail-oi0-x244.google.com with SMTP id t16-v6so10896223oih.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:59:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40792B4ZHSzF0W1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 04:07:14 +1100 (AEDT)
+Received: by mail-ot0-x244.google.com with SMTP id r30-v6so13990575otr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 10:07:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180323081209.31387-2-oohall@gmail.com>
+In-Reply-To: <20180323081209.31387-3-oohall@gmail.com>
 References: <20180323081209.31387-1-oohall@gmail.com>
- <20180323081209.31387-2-oohall@gmail.com>
+ <20180323081209.31387-3-oohall@gmail.com>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 23 Mar 2018 09:59:45 -0700
-Message-ID: <CAPcyv4iGX+2idBpWAtcruyjyxxN1NkixzKzT1+hbCm718pSb-w@mail.gmail.com>
-Subject: Re: [PATCH 2/6] libnvdimm: Add nd_region_destroy()
+Date: Fri, 23 Mar 2018 10:07:11 -0700
+Message-ID: <CAPcyv4h=b9fCN7mCU8Yge5804oxVfErXRa_3h7QVcKdEhBbVHg@mail.gmail.com>
+Subject: Re: [PATCH 3/6] libnvdimm: Add device-tree based driver
 To: "Oliver O'Halloran" <oohall@gmail.com>
 Cc: linux-nvdimm <linux-nvdimm@lists.01.org>,
  Device Tree <devicetree@vger.kernel.org>,
@@ -30,26 +30,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, Mar 23, 2018 at 1:12 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
-> Currently there's no way to remove a region from and nvdimm_bus without
-> tearing down the whole bus. This patch adds an API for removing a single
-> region from the bus so that we can implement a sensible unbind operation
-> for the of_nd_region platform driver.
+> This patch adds peliminary device-tree bindings for the NVDIMM driver.
+
+*preliminary
+
+> Currently this only supports one bus (created at probe time) which all
+> regions are added to with individual regions being created by a platform
+> device driver.
 >
 > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 > ---
->  drivers/nvdimm/region_devs.c | 6 ++++++
->  include/linux/libnvdimm.h    | 1 +
->  2 files changed, 7 insertions(+)
->
-> diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
-> index 2f1d5771100e..76f46fd1fae0 100644
-> --- a/drivers/nvdimm/region_devs.c
-> +++ b/drivers/nvdimm/region_devs.c
-> @@ -1039,6 +1039,12 @@ struct nd_region *nvdimm_blk_region_create(struct nvdimm_bus *nvdimm_bus,
->  }
->  EXPORT_SYMBOL_GPL(nvdimm_blk_region_create);
->
-> +void nd_region_destroy(struct nd_region *region)
+> I suspect the platform driver should be holding a reference to the
+> created region. I left that out here since previously Dan has said
+> he'd rather keep the struct device internal to libnvdimm and the only
+> other way a region device can disappear is when the bus is unregistered.
 
-Let's put this in the "nvdimm_" namespace so it pairs with the
-nvdimm_*_region_create() apis.
+Hmm, but this still seems broken if bus teardown races region
+teardown. I think the more natural model, given the way libnvdimm is
+structured, to have each of these of_nd_region instances create their
+own nvdimm bus. Thoughts?
