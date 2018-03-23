@@ -1,27 +1,29 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-x232.google.com (mail-ot0-x232.google.com
- [IPv6:2607:f8b0:4003:c0f::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4072mr3qlKzF1kn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 23:25:16 +1100 (AEDT)
-Received: by mail-ot0-x232.google.com with SMTP id r30-v6so13012713otr.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 05:25:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4074Tc620czDqlc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 00:42:11 +1100 (AEDT)
+Subject: Re: RFC on writel and writel_relaxed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Oliver <oohall@gmail.com>
+Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+ <1521692689.16434.293.camel@kernel.crashing.org>
+ <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
+ <1521726722.16434.312.camel@kernel.crashing.org>
+ <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
+ <1521764168.16434.324.camel@kernel.crashing.org>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <9c7d3d35-ddaf-60ee-1430-19b5c3f66813@codeaurora.org>
+Date: Fri, 23 Mar 2018 09:42:04 -0400
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-15-malat@debian.org>
- <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 23 Mar 2018 13:24:53 +0100
-Message-ID: <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
-Subject: Re: [PATCH 14/19] powerpc/altivec: Add missing prototypes for altivec
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, LKML <linux-kernel@vger.kernel.org>,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1521764168.16434.324.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2018 at 1:19 PM, christophe leroy
-<christophe.leroy@c-s.fr> wrote:
->
->
-> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
+On 3/22/2018 8:16 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
+>> On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
+>>>>> No, it's not sufficient.
+>>>
+>>> Just to clarify ... barrier() is just a compiler barrier, it means the
+>>> compiler will generate things in the order they are written. This isn't
+>>> sufficient on archs with an OO memory model, where an actual memory
+>>> barrier instruction needs to be emited.
 >>
->> Some functions prototypes were missing for the non-altivec code. Add the
->> missing prototypes directly in xor_vmx, fix warnings treated as errors
->> with
->> W=3D1:
+>> Surprisingly, ARM64 GCC compiler generates a write barrier as
+>> opposed to preventing code reordering.
 >>
->>    arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototype fo=
-r
->> =E2=80=98xor_altivec_2=E2=80=99 [-Werror=3Dmissing-prototypes]
->>    arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototype fo=
-r
->> =E2=80=98xor_altivec_3=E2=80=99 [-Werror=3Dmissing-prototypes]
->>    arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototype fo=
-r
->> =E2=80=98xor_altivec_4=E2=80=99 [-Werror=3Dmissing-prototypes]
->>    arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototype fo=
-r
->> =E2=80=98xor_altivec_5=E2=80=99 [-Werror=3Dmissing-prototypes]
->>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->> ---
->>   arch/powerpc/lib/xor_vmx.h | 14 ++++++++++++++
->>   1 file changed, 14 insertions(+)
->>
->> diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx.h
->> index 5c2b0839b179..2173e3c84151 100644
->> --- a/arch/powerpc/lib/xor_vmx.h
->> +++ b/arch/powerpc/lib/xor_vmx.h
->> @@ -19,3 +19,17 @@ void __xor_altivec_4(unsigned long bytes, unsigned lo=
-ng
->> *v1_in,
->>   void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>                              unsigned long *v2_in, unsigned long *v3_in,
->>                              unsigned long *v4_in, unsigned long *v5_in)=
-;
->> +
->> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
->> +                            unsigned long *v2_in);
->> +
->
->
-> Only used in one place, should be static instead of adding it in a .h
->
-> Same for the other ones.
+>> I was curious if this is an ARM only thing or not. 
+> 
+> Are you sure of that ? I thought it's the ARM implementation of writel
+> that had an explicit write barrier in it:
 
-$ git grep xor_altivec_2
-[...]
-arch/powerpc/lib/xor_vmx_glue.c:EXPORT_SYMBOL(xor_altivec_2);
+Yes, I'm %100 sure. The answer is both writel() and barrier() generates
+a write barrier instruction. I found this by searching the kernel disassembly
+for back to back "dsb st" instruction.
 
-Are you sure I can change this function to static ?
+> 
+> #define writel(v,c)		({ __iowmb(); writel_relaxed((v),(c)); })
+> 
+> And __iowmb() is 
+> 
+> #define __iowmb()		wmb()
+> 
+> Note, I'm a bit dubious about this in ARM:
+> 
+> #define readl(c)		({ u32 __v = readl_relaxed(c); __iormb(); __v; }
+> 
+> Will, Marc, on powerpc, we put a sync *before* the read in readl etc...
+> 
+> The reasoning was there could be some DMA setup followed by a side
+> effect readl rather than a side effect writel to trigger a DMA. Granted
+> I wouldn't expect modern devices to be that stupid, but I have vague
+> memory of some devices back in the day having that sort of read ops.
+> 
+> In general, I though the model offerred by x86 and thus by Linux
+> readl/writel was full synchronization both before and after the MMIO,
+> vs either other MMIO or all other forms of ops (cachable memory, locks
+> etc...).
+> 
+> Also, can't the above readl_relaxed leak out of a lock ?
 
-> Christophe
->
->
->> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
->> +                            unsigned long *v2_in, unsigned long *v3_in)=
-;
->> +
->> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
->> +                            unsigned long *v2_in, unsigned long *v3_in,
->> +                            unsigned long *v4_in);
->> +
->> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->> +                            unsigned long *v2_in, unsigned long *v3_in,
->> +                            unsigned long *v4_in, unsigned long *v5_in)=
-;
->>
->
-> ---
-> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
-=C3=A9rifi=C3=A9e par le
-> logiciel antivirus Avast.
-> https://www.avast.com/antivirus
->
+I think you are asking about PPC, correct? 
+
+I read somewhere that PPC implementation keeps track of MMIO accesses and
+has an implicit barrier inside the spin_unlock() code for such accesses.
+Isn't this true?
+
+> 
+> Cheers,
+> Ben.
+> 
+> 
+
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
