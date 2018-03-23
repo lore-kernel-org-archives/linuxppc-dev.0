@@ -1,30 +1,25 @@
-Return-Path: <jgg@ziepe.ca>
-Received: from mail-wm0-x236.google.com (mail-wm0-x236.google.com
- [IPv6:2a00:1450:400c:c09::236])
+Return-Path: <dan.j.williams@intel.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4078KM6RJBzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 03:35:19 +1100 (AEDT)
-Received: by mail-wm0-x236.google.com with SMTP id t6so4626895wmt.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:35:19 -0700 (PDT)
-Date: Fri, 23 Mar 2018 10:35:10 -0600
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Oliver <oohall@gmail.com>, Sinan Kaya <okaya@codeaurora.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180323163510.GC13033@ziepe.ca>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4078sp6gLdzF1bM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 03:59:48 +1100 (AEDT)
+Received: by mail-oi0-x244.google.com with SMTP id t16-v6so10896223oih.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 09:59:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1521726722.16434.312.camel@kernel.crashing.org>
+In-Reply-To: <20180323081209.31387-2-oohall@gmail.com>
+References: <20180323081209.31387-1-oohall@gmail.com>
+ <20180323081209.31387-2-oohall@gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Fri, 23 Mar 2018 09:59:45 -0700
+Message-ID: <CAPcyv4iGX+2idBpWAtcruyjyxxN1NkixzKzT1+hbCm718pSb-w@mail.gmail.com>
+Subject: Re: [PATCH 2/6] libnvdimm: Add nd_region_destroy()
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Cc: linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2018 at 12:52:02AM +1100, Benjamin Herrenschmidt wrote:
+On Fri, Mar 23, 2018 at 1:12 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+> Currently there's no way to remove a region from and nvdimm_bus without
+> tearing down the whole bus. This patch adds an API for removing a single
+> region from the bus so that we can implement a sensible unbind operation
+> for the of_nd_region platform driver.
+>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+>  drivers/nvdimm/region_devs.c | 6 ++++++
+>  include/linux/libnvdimm.h    | 1 +
+>  2 files changed, 7 insertions(+)
+>
+> diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
+> index 2f1d5771100e..76f46fd1fae0 100644
+> --- a/drivers/nvdimm/region_devs.c
+> +++ b/drivers/nvdimm/region_devs.c
+> @@ -1039,6 +1039,12 @@ struct nd_region *nvdimm_blk_region_create(struct nvdimm_bus *nvdimm_bus,
+>  }
+>  EXPORT_SYMBOL_GPL(nvdimm_blk_region_create);
+>
+> +void nd_region_destroy(struct nd_region *region)
 
-> > >  - Make writel_relaxed() be a simple store without barriers, and
-> > > readl_relaxed() be "eieio, read, eieio", thus allowing write combining
-> > > to happen between successive writel_relaxed on WC space (no change on
-> > > normal NC space) while maintaining the ordering between relaxed reads
-> > > and writes. The flip side is a (slight) increased overhead of
-> > > readl_relaxed.
-> > 
-> > Are there many drivers that actually do writeX() on WC space?
-> > memory-barriers.txt
-> > pretty much says that all bets are off and no ordering guarantees can be assumed
-> > when using readX/writeX on prefetchable IO memory. It seems sketchy enough to
-> > give me some pause, but maybe it works fine elsewhere.
-> 
-> I don't know whether any does it, but I want to provide a way for a
-> driver to somewhat reliably obtain write combine semantics without
-> having to hand code endian swap and other horrors involved with using
-> __raw_* accessors.
-
-Many of the drivers in drivers/infiniband work with write combining
-memory.
-
-The usual pattern is a desire to push 32 or 64 bytes to the WC BAR as
-efficiently as possible, ideally in a single PCI-E TLP.
-
-A memcpy_to_wc primitive could probably cover these use cases, no need
-to redesign the IO accessors..
-
-The WC memory is never read, so read/write order is not important to
-any infiniband driver.
-
-What is very important is keeping the WC behavior isolated within the
-spinlock. WC to the same addresses cannot be permitted in this pattern:
-
-   writel(addr = 0);
-   mmiowmb();
-   spin_unlock();
-   spin_lock()
-   writel(addr = 0);
-
-The CPU must always generate two PCI-E TLPs to the device.
-
-This is a super performance critical operation for most drivers and
-directly impacts network performance.
-
-Jason
+Let's put this in the "nvdimm_" namespace so it pairs with the
+nvdimm_*_region_create() apis.
