@@ -1,19 +1,21 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406x9426BKzF20R
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 19:12:23 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id y63so1175226pgy.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 01:12:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406x9D3dymzF22F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 19:12:32 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id 123so4445763pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 01:12:32 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linux-nvdimm@lists.01.org
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 1/6] libnvdimm: Add of_node to region and bus descriptors
-Date: Fri, 23 Mar 2018 19:12:04 +1100
-Message-Id: <20180323081209.31387-1-oohall@gmail.com>
+Subject: [PATCH 4/6] libnvdimm/of: Symlink platform and region devices
+Date: Fri, 23 Mar 2018 19:12:07 +1100
+Message-Id: <20180323081209.31387-4-oohall@gmail.com>
+In-Reply-To: <20180323081209.31387-1-oohall@gmail.com>
+References: <20180323081209.31387-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +25,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We want to be able to cross reference the region and bus devices
-with the device tree node that they were spawned from. libNVDIMM
-handles creating the actual devices for these internally, so we
-need to pass in a pointer to the relevant node in the descriptor.
+Add a way direct link between the region and the platform device that
+creates the region.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-Acked-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/nvdimm/bus.c         | 1 +
- drivers/nvdimm/region_devs.c | 1 +
- include/linux/libnvdimm.h    | 3 +++
- 3 files changed, 5 insertions(+)
+ drivers/nvdimm/of_nvdimm.c   | 11 +++++++++++
+ drivers/nvdimm/region_devs.c | 13 +++++++++++++
+ include/linux/libnvdimm.h    |  1 +
+ 3 files changed, 25 insertions(+)
 
-diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
-index 78eabc3a1ab1..c6106914f396 100644
---- a/drivers/nvdimm/bus.c
-+++ b/drivers/nvdimm/bus.c
-@@ -358,6 +358,7 @@ struct nvdimm_bus *nvdimm_bus_register(struct device *parent,
- 	nvdimm_bus->dev.release = nvdimm_bus_release;
- 	nvdimm_bus->dev.groups = nd_desc->attr_groups;
- 	nvdimm_bus->dev.bus = &nvdimm_bus_type;
-+	nvdimm_bus->dev.of_node = nd_desc->of_node;
- 	dev_set_name(&nvdimm_bus->dev, "ndbus%d", nvdimm_bus->id);
- 	rc = device_register(&nvdimm_bus->dev);
- 	if (rc) {
+diff --git a/drivers/nvdimm/of_nvdimm.c b/drivers/nvdimm/of_nvdimm.c
+index 79c28291f420..28f4ca23a690 100644
+--- a/drivers/nvdimm/of_nvdimm.c
++++ b/drivers/nvdimm/of_nvdimm.c
+@@ -37,6 +37,7 @@ static int of_nd_region_probe(struct platform_device *pdev)
+ 	struct resource temp_res;
+ 	struct nd_region *region;
+ 	struct device_node *np;
++	int rc;
+ 
+ 	np = dev_of_node(&pdev->dev);
+ 	if (!np)
+@@ -71,6 +72,15 @@ static int of_nd_region_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, region);
+ 
++	/*
++	 * Add a symlink to the ndbus region object. Without this there's no
++	 * simple way to go from the platform device to the region it spawned.
++	 */
++	rc = sysfs_create_link(&pdev->dev.kobj,
++				nd_region_kobj(region), "region");
++	if (rc)
++		pr_warn("Failed to create symlink to region (rc = %d)!\n", rc);
++
+ 	return 0;
+ }
+ 
+@@ -78,6 +88,7 @@ static int of_nd_region_remove(struct platform_device *pdev)
+ {
+ 	struct nd_region *r = platform_get_drvdata(pdev);
+ 
++	sysfs_delete_link(&pdev->dev.kobj, nd_region_kobj(r), "region");
+ 	nd_region_destroy(r);
+ 
+ 	return 0;
 diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
-index e6d01911e092..2f1d5771100e 100644
+index 76f46fd1fae0..af09acc1d93b 100644
 --- a/drivers/nvdimm/region_devs.c
 +++ b/drivers/nvdimm/region_devs.c
-@@ -1005,6 +1005,7 @@ static struct nd_region *nd_region_create(struct nvdimm_bus *nvdimm_bus,
- 	dev->parent = &nvdimm_bus->dev;
- 	dev->type = dev_type;
- 	dev->groups = ndr_desc->attr_groups;
-+	dev->of_node = ndr_desc->of_node;
- 	nd_region->ndr_size = resource_size(ndr_desc->res);
- 	nd_region->ndr_start = ndr_desc->res->start;
- 	nd_device_register(dev);
+@@ -1054,6 +1054,19 @@ struct nd_region *nvdimm_volatile_region_create(struct nvdimm_bus *nvdimm_bus,
+ }
+ EXPORT_SYMBOL_GPL(nvdimm_volatile_region_create);
+ 
++struct kobject *nd_region_kobj(struct nd_region *region)
++{
++	/*
++	 * region init is async so we need to explicitly synchronise
++	 * to prevent handing out a kobj reference before device_add()
++	 * has been run
++	 */
++	nd_synchronize();
++
++	return &region->dev.kobj;
++}
++EXPORT_SYMBOL_GPL(nd_region_kobj);
++
+ /**
+  * nvdimm_flush - flush any posted write queues between the cpu and pmem media
+  * @nd_region: blk or interleaved pmem region
 diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
-index ff855ed965fb..f61cb5050297 100644
+index df21ca176e98..a4b3663bac38 100644
 --- a/include/linux/libnvdimm.h
 +++ b/include/linux/libnvdimm.h
-@@ -76,12 +76,14 @@ typedef int (*ndctl_fn)(struct nvdimm_bus_descriptor *nd_desc,
- 		struct nvdimm *nvdimm, unsigned int cmd, void *buf,
- 		unsigned int buf_len, int *cmd_rc);
- 
-+struct device_node;
- struct nvdimm_bus_descriptor {
- 	const struct attribute_group **attr_groups;
- 	unsigned long bus_dsm_mask;
- 	unsigned long cmd_mask;
- 	struct module *module;
- 	char *provider_name;
-+	struct device_node *of_node;
- 	ndctl_fn ndctl;
- 	int (*flush_probe)(struct nvdimm_bus_descriptor *nd_desc);
- 	int (*clear_to_send)(struct nvdimm_bus_descriptor *nd_desc,
-@@ -123,6 +125,7 @@ struct nd_region_desc {
- 	int num_lanes;
- 	int numa_node;
- 	unsigned long flags;
-+	struct device_node *of_node;
- };
- 
- struct device;
+@@ -172,6 +172,7 @@ struct nvdimm_bus_descriptor *to_nd_desc(struct nvdimm_bus *nvdimm_bus);
+ struct device *to_nvdimm_bus_dev(struct nvdimm_bus *nvdimm_bus);
+ const char *nvdimm_name(struct nvdimm *nvdimm);
+ struct kobject *nvdimm_kobj(struct nvdimm *nvdimm);
++struct kobject *nd_region_kobj(struct nd_region *region);
+ unsigned long nvdimm_cmd_mask(struct nvdimm *nvdimm);
+ void *nvdimm_provider_data(struct nvdimm *nvdimm);
+ struct nvdimm *nvdimm_create(struct nvdimm_bus *nvdimm_bus, void *provider_data,
 -- 
 2.9.5
