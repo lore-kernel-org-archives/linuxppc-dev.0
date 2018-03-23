@@ -1,20 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406t5F54CNzF21Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 16:53:53 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id 61-v6so6876613plf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Mar 2018 22:53:53 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH] powerpc/64s: Fix i-side SLB miss bad address handler saving
- nonvolatile GPRs
-Date: Fri, 23 Mar 2018 15:53:38 +1000
-Message-Id: <20180323055338.7066-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406t7K06fdzF225
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 16:55:41 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mauricfo@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] powerpc/mm: Fixup tlbie vs store ordering issue on
+ POWER9
+In-Reply-To: <20180323045627.16800-3-aneesh.kumar@linux.vnet.ibm.com>
+References: <20180323045627.16800-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20180323045627.16800-3-aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 23 Mar 2018 16:55:37 +1100
+Message-ID: <874ll7fi92.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SLB bad address handler's trap number fixup does not preserve the
-low bit that indicates nonvolatile GPRs have not been saved. This
-leads save_nvgprs to skip saving them, and subsequent functions and
-return from interrupt will think they are saved.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index a2c5c95882cf..6c151d2e9bd9 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -465,7 +466,7 @@ static inline void cpu_feature_keys_init(void) { }
+>  	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+>  	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+>  	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
+> -	    CPU_FTR_PKEY)
+> +	    CPU_FTR_PKEY | CPU_FTR_TLBIE_BUG)
 
-This causes kernel branch-to-garbage debugging to not have correct
-registers, can also cause userspace to have its registers clobbered
-after a segfault.
+We also need to enable this when we're using DT_CPU_FTRS.
 
-Fixes: f0f558b131 ("powerpc/mm: Preserve CFAR value on SLB miss caused by access to bogus address")
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+We're still working out the best way to handle that sort of thing long
+term, for now I'll just fold in a quirk that turns this feature on for
+all Power9 revisions. We can do a follow-up patch to make that
+conditional later.
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 3ac87e53b3da..1ecfd8ffb098 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -706,7 +706,7 @@ EXC_COMMON_BEGIN(bad_addr_slb)
- 	ld	r3, PACA_EXSLB+EX_DAR(r13)
- 	std	r3, _DAR(r1)
- 	beq	cr6, 2f
--	li	r10, 0x480		/* fix trap number for I-SLB miss */
-+	li	r10, 0x481		/* fix trap number for I-SLB miss */
- 	std	r10, _TRAP(r1)
- 2:	bl	save_nvgprs
- 	addi	r3, r1, STACK_FRAME_OVERHEAD
--- 
-2.16.1
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 0bcfb0f256e1..553514cd6c27 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -709,6 +709,9 @@ static __init void cpufeatures_cpu_quirks(void)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
+ 	else if ((version & 0xffffefff) == 0x004e0201)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
++
++	if ((version & 0xffff0000) == 0x004e0000)
++		cur_cpu_spec->cpu_features |= CPU_FTR_TLBIE_BUG;
+ }
+ 
+
+cheers
