@@ -1,29 +1,37 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4074Tc620czDqlc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 00:42:11 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oliver <oohall@gmail.com>
-Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Marc Zyngier <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
- <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
- <1521764168.16434.324.camel@kernel.crashing.org>
-From: Sinan Kaya <okaya@codeaurora.org>
-Message-ID: <9c7d3d35-ddaf-60ee-1430-19b5c3f66813@codeaurora.org>
-Date: Fri, 23 Mar 2018 09:42:04 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4076M00cDkzF1Zk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 02:06:32 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2NF53Kd065077
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 11:06:30 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gw3jp91sy-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 11:06:29 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Fri, 23 Mar 2018 09:06:29 -0600
+Subject: Re: [PATCH net-next] ibmvnic: Potential NULL dereference in
+ clean_one_tx_pool()
+To: Dan Carpenter <dan.carpenter@oracle.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: John Allen <jallen@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
+References: <20180323113615.GA28518@mwanda>
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Fri, 23 Mar 2018 10:06:22 -0500
 MIME-Version: 1.0
-In-Reply-To: <1521764168.16434.324.camel@kernel.crashing.org>
+In-Reply-To: <20180323113615.GA28518@mwanda>
 Content-Type: text/plain; charset=utf-8
+Message-Id: <5dee3753-8ff3-9e2c-45b5-f5b12db1f722@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,67 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/22/2018 8:16 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
->> On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
->>>>> No, it's not sufficient.
->>>
->>> Just to clarify ... barrier() is just a compiler barrier, it means the
->>> compiler will generate things in the order they are written. This isn't
->>> sufficient on archs with an OO memory model, where an actual memory
->>> barrier instruction needs to be emited.
->>
->> Surprisingly, ARM64 GCC compiler generates a write barrier as
->> opposed to preventing code reordering.
->>
->> I was curious if this is an ARM only thing or not. 
-> 
-> Are you sure of that ? I thought it's the ARM implementation of writel
-> that had an explicit write barrier in it:
+On 03/23/2018 06:36 AM, Dan Carpenter wrote:
+> There is an && vs || typo here, which potentially leads to a NULL
+> dereference.
 
-Yes, I'm %100 sure. The answer is both writel() and barrier() generates
-a write barrier instruction. I found this by searching the kernel disassembly
-for back to back "dsb st" instruction.
+Thanks for catching that!
 
-> 
-> #define writel(v,c)		({ __iowmb(); writel_relaxed((v),(c)); })
-> 
-> And __iowmb() is 
-> 
-> #define __iowmb()		wmb()
-> 
-> Note, I'm a bit dubious about this in ARM:
-> 
-> #define readl(c)		({ u32 __v = readl_relaxed(c); __iormb(); __v; }
-> 
-> Will, Marc, on powerpc, we put a sync *before* the read in readl etc...
-> 
-> The reasoning was there could be some DMA setup followed by a side
-> effect readl rather than a side effect writel to trigger a DMA. Granted
-> I wouldn't expect modern devices to be that stupid, but I have vague
-> memory of some devices back in the day having that sort of read ops.
-> 
-> In general, I though the model offerred by x86 and thus by Linux
-> readl/writel was full synchronization both before and after the MMIO,
-> vs either other MMIO or all other forms of ops (cachable memory, locks
-> etc...).
-> 
-> Also, can't the above readl_relaxed leak out of a lock ?
-
-I think you are asking about PPC, correct? 
-
-I read somewhere that PPC implementation keeps track of MMIO accesses and
-has an implicit barrier inside the spin_unlock() code for such accesses.
-Isn't this true?
-
-> 
-> Cheers,
-> Ben.
-> 
-> 
-
-
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+>
+> Fixes: e9e1e97884b7 ("ibmvnic: Update TX pool cleaning routine")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>
+> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+> index 5632c030811b..0389a7a52152 100644
+> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+> @@ -1135,7 +1135,7 @@ static void clean_one_tx_pool(struct ibmvnic_adapter *adapter,
+>  	u64 tx_entries;
+>  	int i;
+>
+> -	if (!tx_pool && !tx_pool->tx_buff)
+> +	if (!tx_pool || !tx_pool->tx_buff)
+>  		return;
+>
+>  	tx_entries = tx_pool->num_buffers;
+>
