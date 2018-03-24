@@ -1,45 +1,29 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 407MBG5X2WzF1jh
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 11:44:54 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2O0hkM5082106
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 20:44:51 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gw68xc9pw-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Mar 2018 20:44:50 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sat, 24 Mar 2018 00:44:49 -0000
-Date: Fri, 23 Mar 2018 17:44:40 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Li Wang <liwang@redhat.com>
-Cc: Cyril Hrubis <chrubis@suse.cz>, Jan Stancek <jstancek@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, ltp@lists.linux.it,
- linux-mm@kvack.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [bug?] Access was denied by memory protection keys in
- execute-only address
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <CAEemH2f0LDqyR5AmUYv17OuBc5-UycckDPWgk46XU_ghQo4diw@mail.gmail.com>
- <871sguep4v.fsf@concordia.ellerman.id.au>
- <20180308164545.GM1060@ram.oc3035372033.ibm.com>
- <CAEemH2czWDjvJLpL6ynV1+VxCFh_-A-d72tJhA5zwgrAES2nWA@mail.gmail.com>
- <20180320215828.GA5825@ram.oc3035372033.ibm.com>
- <CAEemH2eewab4nsn6daMRAtn9tDrHoZb_PnbH8xA17ypFCTg6iA@mail.gmail.com>
- <20180322070900.GA5605@ram.oc3035372033.ibm.com>
- <CAEemH2c4p7FqYs9L9X0SyjUvg5Z3pfwsokurJmzq+=y1h2OwbA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAEemH2c4p7FqYs9L9X0SyjUvg5Z3pfwsokurJmzq+=y1h2OwbA@mail.gmail.com>
-Message-Id: <20180324004440.GA5887@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 407N2c1TTmzF0kV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 12:23:19 +1100 (AEDT)
+Message-ID: <1521854570.16434.358.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sinan Kaya <okaya@codeaurora.org>, Oliver <oohall@gmail.com>
+Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, Marc Zyngier
+ <marc.zyngier@arm.com>, Will Deacon <will.deacon@arm.com>
+Date: Sat, 24 Mar 2018 12:22:50 +1100
+In-Reply-To: <9c7d3d35-ddaf-60ee-1430-19b5c3f66813@codeaurora.org>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+ <1521692689.16434.293.camel@kernel.crashing.org>
+ <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
+ <1521726722.16434.312.camel@kernel.crashing.org>
+ <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
+ <1521764168.16434.324.camel@kernel.crashing.org>
+ <9c7d3d35-ddaf-60ee-1430-19b5c3f66813@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,33 +33,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2018 at 05:27:06PM +0800, Li Wang wrote:
->    On Thu, Mar 22, 2018 at 3:09 PM, Ram Pai <[1]linuxram@us.ibm.com> wrote:
+On Fri, 2018-03-23 at 09:42 -0400, Sinan Kaya wrote:
+> On 3/22/2018 8:16 PM, Benjamin Herrenschmidt wrote:
+> > On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
+> > > On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
+> > > > > > No, it's not sufficient.
+> > > > 
+> > > > Just to clarify ... barrier() is just a compiler barrier, it means the
+> > > > compiler will generate things in the order they are written. This isn't
+> > > > sufficient on archs with an OO memory model, where an actual memory
+> > > > barrier instruction needs to be emited.
+> > > 
+> > > Surprisingly, ARM64 GCC compiler generates a write barrier as
+> > > opposed to preventing code reordering.
+> > > 
+> > > I was curious if this is an ARM only thing or not. 
+> > 
+> > Are you sure of that ? I thought it's the ARM implementation of writel
+> > that had an explicit write barrier in it:
 > 
->      On Wed, Mar 21, 2018 at 02:53:00PM +0800, Li Wang wrote:
->      >    On Wed, Mar 21, 2018 at 5:58 AM, Ram Pai
->      <[1][2]linuxram@us.ibm.com> wrote:
->      >    that why not disable the pkey_execute_disable_supported on p8
-.snip..
+> Yes, I'm %100 sure. The answer is both writel() and barrier() generates
+> a write barrier instruction. I found this by searching the kernel disassembly
+> for back to back "dsb st" instruction.
 
->      machine?
+I'm not sure you are correct here. As I wrote below, the implementatoin
+of writel() contains an *explicit" memory barrier which is completely
+different to a barrier() instruction:
 > 
->      It turns out to be a testcase bug.  On Big endian powerpc ABI, function
->      ptrs are basically pointers to function descriptors.  The testcase
->      copies functions which results in function descriptors getting copied.
->      You have to apply the following patch to your test case for it to
->      operate as intended.  Thanks to Michael Ellermen for helping me out.
->      Otherwise I would be scratching my head for ever.
+> > #define writel(v,c)		({ __iowmb(); writel_relaxed((v),(c)); })
+> > 
+> > And __iowmb() is 
+> > 
+> > #define __iowmb()		wmb()
+> > 
+> > Note, I'm a bit dubious about this in ARM:
+> > 
+> > #define readl(c)		({ u32 __v = readl_relaxed(c); __iormb(); __v; }
+> > 
+> > Will, Marc, on powerpc, we put a sync *before* the read in readl etc...
+> > 
+> > The reasoning was there could be some DMA setup followed by a side
+> > effect readl rather than a side effect writel to trigger a DMA. Granted
+> > I wouldn't expect modern devices to be that stupid, but I have vague
+> > memory of some devices back in the day having that sort of read ops.
+> > 
+> > In general, I though the model offerred by x86 and thus by Linux
+> > readl/writel was full synchronization both before and after the MMIO,
+> > vs either other MMIO or all other forms of ops (cachable memory, locks
+> > etc...).
+> > 
+> > Also, can't the above readl_relaxed leak out of a lock ?
 > 
->    ​Thanks for the explanation, I learned something new about this. :)
-> 
->    And the worth to say, seems the patch only works on powerpc arch,
->    others(x86_64, etc)
->    that does not works well, so a simple workaround is to isolate the code
->    changes
->    to powerpc system?
+> I think you are asking about PPC, correct? 
 
-yes. this code has to be made applicable to powerpc Big-endian code
-only.  The powerpc little-endian code remains unchanged.
+No, I'm asking about ARM.
 
-RP
+> I read somewhere that PPC implementation keeps track of MMIO accesses and
+> has an implicit barrier inside the spin_unlock() code for such accesses.
+> Isn't this true?
+
+Yes, I wrote that code :-) We keep track of writes and put an implicit
+stronger barrier in unlock on ppc64 because drivers never get mmiowb
+right.
+
+Cheers,
+Ben.
+
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > 
+> 
+> 
