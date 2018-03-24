@@ -1,14 +1,14 @@
 Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0198.hostedemail.com
- [216.40.44.198])
+Received: from smtprelay.hostedemail.com (smtprelay0098.hostedemail.com
+ [216.40.44.98])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 407p3F0yqpzF1j3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 407p3F6hLLzF1j4
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 04:55:21 +1100 (AEDT)
 Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
  [10.5.19.251])
- by smtpgrave06.hostedemail.com (Postfix) with ESMTP id 8AC108007939
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 17:45:55 +0000 (UTC)
+ by smtpgrave06.hostedemail.com (Postfix) with ESMTP id 95E848005A60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 17:45:49 +0000 (UTC)
 From: Shea Levy <shea@shealevy.com>
 To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
@@ -18,9 +18,10 @@ To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net
 Cc: Shea Levy <shea@shealevy.com>
-Subject: [PATCH 05/16] c6x: Use INITRAMFS_GENERIC_UNLOAD
-Date: Sat, 24 Mar 2018 13:44:47 -0400
-Message-Id: <20180324174458.26423-6-shea@shealevy.com>
+Subject: [PATCH 01/16] initrd: Add generic code path for common initrd
+ unloading logic.
+Date: Sat, 24 Mar 2018 13:44:43 -0400
+Message-Id: <20180324174458.26423-2-shea@shealevy.com>
 In-Reply-To: <20180324174458.26423-1-shea@shealevy.com>
 References: <20180324174458.26423-1-shea@shealevy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,39 +35,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Shea Levy <shea@shealevy.com>
 ---
- arch/c6x/Kconfig   | 1 +
- arch/c6x/mm/init.c | 7 -------
- 2 files changed, 1 insertion(+), 7 deletions(-)
+ init/initramfs.c | 7 +++++++
+ usr/Kconfig      | 4 ++++
+ 2 files changed, 11 insertions(+)
 
-diff --git a/arch/c6x/Kconfig b/arch/c6x/Kconfig
-index c6b4dd1418b4..857f95f9a6a4 100644
---- a/arch/c6x/Kconfig
-+++ b/arch/c6x/Kconfig
-@@ -19,6 +19,7 @@ config C6X
- 	select GENERIC_CLOCKEVENTS
- 	select MODULES_USE_ELF_RELA
- 	select ARCH_NO_COHERENT_DMA_MMAP
-+	select INITRAMFS_GENERIC_UNLOAD
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 7e99a0038942..de5ce873eb5a 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -526,6 +526,13 @@ extern unsigned long __initramfs_size;
+ #include <linux/initrd.h>
+ #include <linux/kexec.h>
  
- config MMU
- 	def_bool n
-diff --git a/arch/c6x/mm/init.c b/arch/c6x/mm/init.c
-index 4cc72b0d1c1d..a11cb657182a 100644
---- a/arch/c6x/mm/init.c
-+++ b/arch/c6x/mm/init.c
-@@ -66,13 +66,6 @@ void __init mem_init(void)
- 	mem_init_print_info(NULL);
- }
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--void __init free_initrd_mem(unsigned long start, unsigned long end)
--{
--	free_reserved_area((void *)start, (void *)end, -1, "initrd");
--}
--#endif
--
- void __init free_initmem(void)
++#ifdef CONFIG_INITRAMFS_GENERIC_UNLOAD
++void free_initrd_mem(unsigned long start, unsigned long end)
++{
++       free_reserved_area((void *)start, (void *)end, -1, "initrd");
++}
++#endif
++
+ static void __init free_initrd(void)
  {
- 	free_initmem_default(-1);
+ #ifdef CONFIG_KEXEC_CORE
+diff --git a/usr/Kconfig b/usr/Kconfig
+index 43658b8a975e..fd79d4d6fa26 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -233,3 +233,7 @@ config INITRAMFS_COMPRESSION
+ 	default ".lzma" if RD_LZMA
+ 	default ".bz2"  if RD_BZIP2
+ 	default ""
++
++# Arches can select this for a generic initrd unloading codepath
++config INITRAMFS_GENERIC_UNLOAD
++	bool
 -- 
 2.16.2
