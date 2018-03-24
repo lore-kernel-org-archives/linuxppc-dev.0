@@ -1,14 +1,14 @@
 Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0110.hostedemail.com
- [216.40.44.110])
+Received: from smtprelay.hostedemail.com (smtprelay0054.hostedemail.com
+ [216.40.44.54])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 407p3J0B23zF1j3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 04:55:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 407p3T0BCczF1c1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 04:55:32 +1100 (AEDT)
 Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
  [10.5.19.251])
- by smtpgrave02.hostedemail.com (Postfix) with ESMTP id 914B3180244F2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 17:46:05 +0000 (UTC)
+ by smtpgrave04.hostedemail.com (Postfix) with ESMTP id 26A4B180244E2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 17:45:58 +0000 (UTC)
 From: Shea Levy <shea@shealevy.com>
 To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
@@ -18,9 +18,9 @@ To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net
 Cc: Shea Levy <shea@shealevy.com>
-Subject: [PATCH 10/16] microblaze: Use INITRAMFS_GENERIC_UNLOAD
-Date: Sat, 24 Mar 2018 13:44:52 -0400
-Message-Id: <20180324174458.26423-11-shea@shealevy.com>
+Subject: [PATCH 06/16] frv: Use INITRAMFS_GENERIC_UNLOAD
+Date: Sat, 24 Mar 2018 13:44:48 -0400
+Message-Id: <20180324174458.26423-7-shea@shealevy.com>
 In-Reply-To: <20180324174458.26423-1-shea@shealevy.com>
 References: <20180324174458.26423-1-shea@shealevy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,39 +34,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Shea Levy <shea@shealevy.com>
 ---
- arch/microblaze/Kconfig   | 1 +
- arch/microblaze/mm/init.c | 7 -------
- 2 files changed, 1 insertion(+), 7 deletions(-)
+ arch/frv/Kconfig   |  1 +
+ arch/frv/mm/init.c | 11 -----------
+ 2 files changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index 3817a3e2146c..ef23e8410b4b 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -36,6 +36,7 @@ config MICROBLAZE
- 	select TRACING_SUPPORT
- 	select VIRT_TO_BUS
- 	select CPU_NO_EFFICIENT_FFS
+diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
+index af369b05fed5..5c104b800cb1 100644
+--- a/arch/frv/Kconfig
++++ b/arch/frv/Kconfig
+@@ -17,6 +17,7 @@ config FRV
+ 	select OLD_SIGACTION
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select ARCH_NO_COHERENT_DMA_MMAP
 +	select INITRAMFS_GENERIC_UNLOAD
  
- # Endianness selection
- choice
-diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-index df6de7ccdc2e..ea058dfda222 100644
---- a/arch/microblaze/mm/init.c
-+++ b/arch/microblaze/mm/init.c
-@@ -187,13 +187,6 @@ void __init setup_memory(void)
- 	paging_init();
- }
- 
+ config CPU_BIG_ENDIAN
+ 	def_bool y
+diff --git a/arch/frv/mm/init.c b/arch/frv/mm/init.c
+index cf464100e838..345edc4dc462 100644
+--- a/arch/frv/mm/init.c
++++ b/arch/frv/mm/init.c
+@@ -131,14 +131,3 @@ void free_initmem(void)
+ 	free_initmem_default(-1);
+ #endif
+ } /* end free_initmem() */
+-
+-/*****************************************************************************/
+-/*
+- * free the initial ramdisk memory
+- */
 -#ifdef CONFIG_BLK_DEV_INITRD
--void free_initrd_mem(unsigned long start, unsigned long end)
+-void __init free_initrd_mem(unsigned long start, unsigned long end)
 -{
 -	free_reserved_area((void *)start, (void *)end, -1, "initrd");
--}
+-} /* end free_initrd_mem() */
 -#endif
--
- void free_initmem(void)
- {
- 	free_initmem_default(-1);
 -- 
 2.16.2
