@@ -1,24 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <shea@shealevy.com>
+Received: from smtprelay.hostedemail.com (smtprelay0080.hostedemail.com
+ [216.40.44.80])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 407s3J2tCmzDrCq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 07:10:34 +1100 (AEDT)
-Date: Sat, 24 Mar 2018 21:10:20 +0100
-Message-ID: <20180324211020.Horde.kEO4b3mHPV88FKM0OiRT0Q1@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras
- <paulus@samba.org>, kvm-ppc@vger.kernel.org, LKML
- <linux-kernel@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 14/19] powerpc/altivec: Add missing prototypes for altivec
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-15-malat@debian.org>
- <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
- <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
-In-Reply-To: <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 407p0l5YJhzF1mc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 04:53:10 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave01.hostedemail.com (Postfix) with ESMTP id 2CA951801E366
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Mar 2018 17:46:00 +0000 (UTC)
+From: Shea Levy <shea@shealevy.com>
+To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-m68k@lists.linux-m68k.org,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net
+Cc: Shea Levy <shea@shealevy.com>
+Subject: [PATCH 07/16] h8300: Use INITRAMFS_GENERIC_UNLOAD
+Date: Sat, 24 Mar 2018 13:44:49 -0400
+Message-Id: <20180324174458.26423-8-shea@shealevy.com>
+In-Reply-To: <20180324174458.26423-1-shea@shealevy.com>
+References: <20180324174458.26423-1-shea@shealevy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,96 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mathieu Malaterre <malat@debian.org> a =C3=A9crit=C2=A0:
+Signed-off-by: Shea Levy <shea@shealevy.com>
+---
+ arch/h8300/Kconfig   | 1 +
+ arch/h8300/mm/init.c | 7 -------
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
-> On Fri, Mar 23, 2018 at 1:19 PM, christophe leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->>
->> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
->>>
->>> Some functions prototypes were missing for the non-altivec code. Add th=
-e
->>> missing prototypes directly in xor_vmx, fix warnings treated as errors
->>> with
->>> W=3D1:
->>>
->>>    arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototype f=
-or
->>> =E2=80=98xor_altivec_2=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>    arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototype f=
-or
->>> =E2=80=98xor_altivec_3=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>    arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototype f=
-or
->>> =E2=80=98xor_altivec_4=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>    arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototype f=
-or
->>> =E2=80=98xor_altivec_5=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>
->>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>> ---
->>>   arch/powerpc/lib/xor_vmx.h | 14 ++++++++++++++
->>>   1 file changed, 14 insertions(+)
->>>
->>> diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx.h
->>> index 5c2b0839b179..2173e3c84151 100644
->>> --- a/arch/powerpc/lib/xor_vmx.h
->>> +++ b/arch/powerpc/lib/xor_vmx.h
->>> @@ -19,3 +19,17 @@ void __xor_altivec_4(unsigned long bytes, unsigned l=
-ong
->>> *v1_in,
->>>   void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>>                              unsigned long *v2_in, unsigned long *v3_in=
-,
->>>                              unsigned long *v4_in, unsigned long *v5_in=
-);
->>> +
->>> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
->>> +                            unsigned long *v2_in);
->>> +
->>
->>
->> Only used in one place, should be static instead of adding it in a .h
->>
->> Same for the other ones.
->
-> $ git grep xor_altivec_2
-> [...]
-> arch/powerpc/lib/xor_vmx_glue.c:EXPORT_SYMBOL(xor_altivec_2);
->
-> Are you sure I can change this function to static ?
-
-Yes you are right.  But in fact those fonctions are already defined in=20=
-=20
-asm/xor.=20h
-So you just need to add the missing #include
-
-Christophe
-
->
->> Christophe
->>
->>
->>> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
->>> +                            unsigned long *v2_in, unsigned long *v3_in=
-);
->>> +
->>> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
->>> +                            unsigned long *v2_in, unsigned long *v3_in=
-,
->>> +                            unsigned long *v4_in);
->>> +
->>> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>> +                            unsigned long *v2_in, unsigned long *v3_in=
-,
->>> +                            unsigned long *v4_in, unsigned long *v5_in=
-);
->>>
->>
->> ---
->> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
-=C3=A9rifi=C3=A9e par le
->> logiciel antivirus Avast.
->> https://www.avast.com/antivirus
->>
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 091d6d04b5e5..58c9b6b1df16 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -24,6 +24,7 @@ config H8300
+ 	select HAVE_ARCH_HASH
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select DMA_DIRECT_OPS
++	select INITRAMFS_GENERIC_UNLOAD
+ 
+ config CPU_BIG_ENDIAN
+ 	def_bool y
+diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
+index 015287ac8ce8..37574332b202 100644
+--- a/arch/h8300/mm/init.c
++++ b/arch/h8300/mm/init.c
+@@ -102,13 +102,6 @@ void __init mem_init(void)
+ }
+ 
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-void free_initrd_mem(unsigned long start, unsigned long end)
+-{
+-	free_reserved_area((void *)start, (void *)end, -1, "initrd");
+-}
+-#endif
+-
+ void
+ free_initmem(void)
+ {
+-- 
+2.16.2
