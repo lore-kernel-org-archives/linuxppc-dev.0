@@ -1,10 +1,10 @@
 Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0215.hostedemail.com
- [216.40.44.215])
+Received: from smtprelay.hostedemail.com (smtprelay0023.hostedemail.com
+ [216.40.44.23])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408WsR0nC2zF1sZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408WsW2c3HzF1yF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:27 +1100 (AEDT)
 From: Shea Levy <shea@shealevy.com>
 To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
@@ -14,9 +14,9 @@ To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net
 Cc: Shea Levy <shea@shealevy.com>
-Subject: [PATCH v2 06/16] frv: Use INITRAMFS_GENERIC_UNLOAD
-Date: Sun, 25 Mar 2018 18:18:43 -0400
-Message-Id: <20180325221853.10839-7-shea@shealevy.com>
+Subject: [PATCH v2 07/16] h8300: Use INITRAMFS_GENERIC_UNLOAD
+Date: Sun, 25 Mar 2018 18:18:44 -0400
+Message-Id: <20180325221853.10839-8-shea@shealevy.com>
 In-Reply-To: <20180325221853.10839-1-shea@shealevy.com>
 References: <20180324174458.26423-1-shea@shealevy.com>
  <20180325221853.10839-1-shea@shealevy.com>
@@ -31,40 +31,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Shea Levy <shea@shealevy.com>
 ---
- arch/frv/Kconfig   |  1 +
- arch/frv/mm/init.c | 11 -----------
- 2 files changed, 1 insertion(+), 11 deletions(-)
+ arch/h8300/Kconfig   | 1 +
+ arch/h8300/mm/init.c | 7 -------
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
-index af369b05fed5..5c104b800cb1 100644
---- a/arch/frv/Kconfig
-+++ b/arch/frv/Kconfig
-@@ -17,6 +17,7 @@ config FRV
- 	select OLD_SIGACTION
- 	select HAVE_DEBUG_STACKOVERFLOW
- 	select ARCH_NO_COHERENT_DMA_MMAP
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 091d6d04b5e5..58c9b6b1df16 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -24,6 +24,7 @@ config H8300
+ 	select HAVE_ARCH_HASH
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select DMA_DIRECT_OPS
 +	select INITRAMFS_GENERIC_UNLOAD
  
  config CPU_BIG_ENDIAN
  	def_bool y
-diff --git a/arch/frv/mm/init.c b/arch/frv/mm/init.c
-index cf464100e838..345edc4dc462 100644
---- a/arch/frv/mm/init.c
-+++ b/arch/frv/mm/init.c
-@@ -131,14 +131,3 @@ void free_initmem(void)
- 	free_initmem_default(-1);
- #endif
- } /* end free_initmem() */
--
--/*****************************************************************************/
--/*
-- * free the initial ramdisk memory
-- */
+diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
+index 015287ac8ce8..37574332b202 100644
+--- a/arch/h8300/mm/init.c
++++ b/arch/h8300/mm/init.c
+@@ -102,13 +102,6 @@ void __init mem_init(void)
+ }
+ 
+ 
 -#ifdef CONFIG_BLK_DEV_INITRD
--void __init free_initrd_mem(unsigned long start, unsigned long end)
+-void free_initrd_mem(unsigned long start, unsigned long end)
 -{
 -	free_reserved_area((void *)start, (void *)end, -1, "initrd");
--} /* end free_initrd_mem() */
+-}
 -#endif
+-
+ void
+ free_initmem(void)
+ {
 -- 
 2.16.2
