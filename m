@@ -1,10 +1,10 @@
 Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0237.hostedemail.com
- [216.40.44.237])
+Received: from smtprelay.hostedemail.com (smtprelay0175.hostedemail.com
+ [216.40.44.175])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408Wsp6gYpzF1rk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408Wsr68y1zF1l6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:44 +1100 (AEDT)
 From: Shea Levy <shea@shealevy.com>
 To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
@@ -14,9 +14,9 @@ To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net
 Cc: Shea Levy <shea@shealevy.com>
-Subject: [PATCH v2 14/16] powerpc: Use INITRAMFS_GENERIC_UNLOAD
-Date: Sun, 25 Mar 2018 18:18:51 -0400
-Message-Id: <20180325221853.10839-15-shea@shealevy.com>
+Subject: [PATCH v2 15/16] sh: Use INITRAMFS_GENERIC_UNLOAD
+Date: Sun, 25 Mar 2018 18:18:52 -0400
+Message-Id: <20180325221853.10839-16-shea@shealevy.com>
 In-Reply-To: <20180325221853.10839-1-shea@shealevy.com>
 References: <20180324174458.26423-1-shea@shealevy.com>
  <20180325221853.10839-1-shea@shealevy.com>
@@ -31,39 +31,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Shea Levy <shea@shealevy.com>
 ---
- arch/powerpc/Kconfig  | 1 +
- arch/powerpc/mm/mem.c | 7 -------
+ arch/sh/Kconfig   | 1 +
+ arch/sh/mm/init.c | 7 -------
  2 files changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 73ce5dd07642..8cf384068e79 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -223,6 +223,7 @@ config PPC
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_VIRT_CPU_ACCOUNTING
- 	select HAVE_IRQ_TIME_ACCOUNTING
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 97fe29316476..b6f80dad2152 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -50,6 +50,7 @@ config SUPERH
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_FUTEX_CMPXCHG if FUTEX
+ 	select HAVE_NMI
 +	select INITRAMFS_GENERIC_UNLOAD
- 	select IRQ_DOMAIN
- 	select IRQ_FORCED_THREADING
- 	select MODULES_USE_ELF_RELA
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index fe8c61149fb8..e85b2a3cd264 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -404,13 +404,6 @@ void free_initmem(void)
- 	free_initmem_default(POISON_FREE_INITMEM);
+ 	help
+ 	  The SuperH is a RISC processor targeted for use in embedded systems
+ 	  and consumer electronics; it was also used in the Sega Dreamcast
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index ce0bbaa7e404..7451459d0725 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -477,13 +477,6 @@ void free_initmem(void)
+ 	free_initmem_default(-1);
  }
  
 -#ifdef CONFIG_BLK_DEV_INITRD
--void __init free_initrd_mem(unsigned long start, unsigned long end)
+-void free_initrd_mem(unsigned long start, unsigned long end)
 -{
 -	free_reserved_area((void *)start, (void *)end, -1, "initrd");
 -}
 -#endif
 -
- /*
-  * This is called when a page has been modified by the kernel.
-  * It just marks the page as not i-cache clean.  We do the i-cache
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
+ 		bool want_memblock)
 -- 
 2.16.2
