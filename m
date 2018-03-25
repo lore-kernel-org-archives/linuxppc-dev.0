@@ -1,34 +1,38 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Return-Path: <rientjes@google.com>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408V9D57bKzF1ww
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:02:56 +1100 (AEDT)
-From: Darren Stevens <darren@stevens-zone.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Bjorn Helgaas <helgaas@kernel.org>,
- Christian Zigotzky <chzigotzky@xenosoft.de>,
- Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- Olof Johansson <olof@lixom.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Sun, 25 Mar 2018 21:55:45 +0100 (BST)
-Message-ID: <4babdbb48e2.680f246e@auth.smtp.1and1.co.uk>
-In-Reply-To: <87tvtbg0i9.fsf@concordia.ellerman.id.au>
-References: <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
- <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
- <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
- <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
- <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
- <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
- <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
- <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
- <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
- <20180319191310.GG77194@bhelgaas-glaptop.roam.corp.google.com>
- <87tvtbg0i9.fsf@concordia.ellerman.id.au>
-Subject: Re: PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi boards
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408WCl1dQkzF1rg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:50:06 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id s24-v6so345377plq.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 14:50:06 -0700 (PDT)
+Date: Sun, 25 Mar 2018 14:50:03 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 01/24] mm: Introduce CONFIG_SPECULATIVE_PAGE_FAULT
+In-Reply-To: <1520963994-28477-2-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803251442090.80485@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-2-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,25 +42,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Michael
+On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-On 20/03/2018, Michael Ellerman wrote:
->> The patch looks fine, but I need a signed-off-by line before I can apply
->> it.  See https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst
->
-> I'm happy to take it, I've been meaning to check if Olof sent a SOB in
-> his original mail but haven't got to it.
+> This configuration variable will be used to build the code needed to
+> handle speculative page fault.
+> 
+> By default it is turned off, and activated depending on architecture
+> support.
+> 
+> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> ---
+>  mm/Kconfig | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index abefa573bcd8..07c566c88faf 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -759,3 +759,6 @@ config GUP_BENCHMARK
+>  	  performance of get_user_pages_fast().
+>  
+>  	  See tools/testing/selftests/vm/gup_benchmark.c
+> +
+> +config SPECULATIVE_PAGE_FAULT
+> +       bool
 
-If thats the way you want to go... We still have an out-of-tree patch we need to apply, which I think is the right place for this. In fact I submitted some patches at the end of last year with a cleaned up version (including the above patch). Here are links:
-
-https://patchwork.ozlabs.org/patch/854270/
-https://patchwork.ozlabs.org/patch/854269/
-https://patchwork.ozlabs.org/patch/854271/
-https://patchwork.ozlabs.org/patch/854268/
-
-These seem to have been missed somehow. (I intended them for 4.16)
-
-If these are suitable, the only thing left would be the pasemi i2c bus patch, which keeps getting ignored by the i2c guys.
-
-Regards
-Darren
+Should this be configurable even if the arch supports it?
