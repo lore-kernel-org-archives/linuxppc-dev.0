@@ -1,13 +1,27 @@
-Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0058.outbound.protection.outlook.com [104.47.40.58])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408PxG2cQCzF1wG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 04:52:18 +1100 (AEDT)
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408RjP4zclzF1x9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:12:03 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2PJBASI044164
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 15:12:00 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gx3qd2we8-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 15:12:00 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sun, 25 Mar 2018 15:11:57 -0400
+Date: Sun, 25 Mar 2018 12:12:43 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
  Russell King - ARM Linux <linux@armlinux.org.uk>,
  Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
@@ -16,17 +30,17 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Yury Norov <ynorov@caviumnetworks.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Date: Sun, 25 Mar 2018 20:50:04 +0300
-Message-Id: <20180325175004.28162-3-ynorov@caviumnetworks.com>
-In-Reply-To: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+Subject: Re: [PATCH 1/2] rcu: declare rcu_eqs_special_set() in public header
+Reply-To: paulmck@linux.vnet.ibm.com
 References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-2-ynorov@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180325175004.28162-2-ynorov@caviumnetworks.com>
+Message-Id: <20180325191243.GH3675@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,109 +50,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
-If CPU is in extended quiescent state (idle task or nohz_full userspace), this
-work may be done at the exit of this state. Delaying synchronization helps to
-save power if CPU is in idle state and decrease latency for real-time tasks.
+On Sun, Mar 25, 2018 at 08:50:03PM +0300, Yury Norov wrote:
+> rcu_eqs_special_set() is declared only in internal header
+> kernel/rcu/tree.h and stubbed in include/linux/rcutiny.h.
+> 
+> This patch declares rcu_eqs_special_set() in include/linux/rcutree.h, so
+> it can be used in non-rcu kernel code.
+> 
+> Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+> ---
+>  include/linux/rcutree.h | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+> index fd996cdf1833..448f20f27396 100644
+> --- a/include/linux/rcutree.h
+> +++ b/include/linux/rcutree.h
+> @@ -74,6 +74,7 @@ static inline void synchronize_rcu_bh_expedited(void)
+>  void rcu_barrier(void);
+>  void rcu_barrier_bh(void);
+>  void rcu_barrier_sched(void);
+> +bool rcu_eqs_special_set(int cpu);
+>  unsigned long get_state_synchronize_rcu(void);
+>  void cond_synchronize_rcu(unsigned long oldstate);
+>  unsigned long get_state_synchronize_sched(void);
 
-This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
-code to delay syncronization.
+Good point, a bit hard to use otherwise.  ;-)
 
-For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
-isolated task would be fatal, as it breaks isolation. The approach with delaying
-of synchronization work helps to maintain isolated state.
+I removed the declaration from rcutree.h and updated the commit log as
+follows.  Does it look OK?
 
-I've tested it with test from task isolation series on ThunderX2 for more than
-10 hours (10k giga-ticks) without breaking isolation.
+							Thanx, Paul
 
-Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
----
- arch/arm64/kernel/insn.c |  2 +-
- include/linux/smp.h      |  2 ++
- kernel/smp.c             | 24 ++++++++++++++++++++++++
- mm/slab.c                |  2 +-
- 4 files changed, 28 insertions(+), 2 deletions(-)
+------------------------------------------------------------------------
 
-diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-index 2718a77da165..9d7c492e920e 100644
---- a/arch/arm64/kernel/insn.c
-+++ b/arch/arm64/kernel/insn.c
-@@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
- 			 * synchronization.
- 			 */
- 			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
--			kick_all_cpus_sync();
-+			kick_active_cpus_sync();
- 			return ret;
- 		}
- 	}
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 9fb239e12b82..27215e22240d 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -105,6 +105,7 @@ int smp_call_function_any(const struct cpumask *mask,
- 			  smp_call_func_t func, void *info, int wait);
+commit 4497105b718a819072d48a675916d9d200b5327f
+Author: Yury Norov <ynorov@caviumnetworks.com>
+Date:   Sun Mar 25 20:50:03 2018 +0300
+
+    rcu: Declare rcu_eqs_special_set() in public header
+    
+    Because rcu_eqs_special_set() is declared only in internal header
+    kernel/rcu/tree.h and stubbed in include/linux/rcutiny.h, it is
+    inaccessible outside of the RCU implementation.  This patch therefore
+    moves the  rcu_eqs_special_set() declaration to include/linux/rcutree.h,
+    which allows it to be used in non-rcu kernel code.
+    
+    Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+    Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index fd996cdf1833..448f20f27396 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -74,6 +74,7 @@ static inline void synchronize_rcu_bh_expedited(void)
+ void rcu_barrier(void);
+ void rcu_barrier_bh(void);
+ void rcu_barrier_sched(void);
++bool rcu_eqs_special_set(int cpu);
+ unsigned long get_state_synchronize_rcu(void);
+ void cond_synchronize_rcu(unsigned long oldstate);
+ unsigned long get_state_synchronize_sched(void);
+diff --git a/kernel/rcu/tree.h b/kernel/rcu/tree.h
+index 59ad0e23c722..d5f617aaa744 100644
+--- a/kernel/rcu/tree.h
++++ b/kernel/rcu/tree.h
+@@ -415,7 +415,6 @@ extern struct rcu_state rcu_preempt_state;
+ #endif /* #ifdef CONFIG_PREEMPT_RCU */
  
- void kick_all_cpus_sync(void);
-+void kick_active_cpus_sync(void);
- void wake_up_all_idle_cpus(void);
+ int rcu_dynticks_snap(struct rcu_dynticks *rdtp);
+-bool rcu_eqs_special_set(int cpu);
  
- /*
-@@ -161,6 +162,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
- }
- 
- static inline void kick_all_cpus_sync(void) {  }
-+static inline void kick_active_cpus_sync(void) {  }
- static inline void wake_up_all_idle_cpus(void) {  }
- 
- #ifdef CONFIG_UP_LATE_INIT
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 084c8b3a2681..0358d6673850 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
- }
- EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
- 
-+/**
-+ * kick_active_cpus_sync - Force CPUs that are not in extended
-+ * quiescent state (idle or nohz_full userspace) sync by sending
-+ * IPI. Extended quiescent state CPUs will sync at the exit of
-+ * that state.
-+ */
-+void kick_active_cpus_sync(void)
-+{
-+	int cpu;
-+	struct cpumask kernel_cpus;
-+
-+	smp_mb();
-+
-+	cpumask_clear(&kernel_cpus);
-+	preempt_disable();
-+	for_each_online_cpu(cpu) {
-+		if (!rcu_eqs_special_set(cpu))
-+			cpumask_set_cpu(cpu, &kernel_cpus);
-+	}
-+	smp_call_function_many(&kernel_cpus, do_nothing, NULL, 1);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(kick_active_cpus_sync);
-+
- /**
-  * wake_up_all_idle_cpus - break all cpus out of idle
-  * wake_up_all_idle_cpus try to break all cpus which is in idle state even
-diff --git a/mm/slab.c b/mm/slab.c
-index 324446621b3e..678d5dbd6f46 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3856,7 +3856,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
- 	 * cpus, so skip the IPIs.
- 	 */
- 	if (prev)
--		kick_all_cpus_sync();
-+		kick_active_cpus_sync();
- 
- 	check_irq_on();
- 	cachep->batchcount = batchcount;
--- 
-2.14.1
+ #ifdef CONFIG_RCU_BOOST
+ DECLARE_PER_CPU(unsigned int, rcu_cpu_kthread_status);
