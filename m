@@ -1,30 +1,23 @@
-Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0186.hostedemail.com
- [216.40.44.186])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408WtJ39X4zF1l6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:20:07 +1100 (AEDT)
-From: Shea Levy <shea@shealevy.com>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-parisc@vger.kernel.org, openrisc@lists.librecores.org,
- nios2-dev@lists.rocketboards.org, linux-m68k@lists.linux-m68k.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-c6x-dev@linux-c6x.org,
- linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org
-Subject: Re: [PATCH 01/16] initrd: Add generic code path for common initrd
- unloading logic.
-In-Reply-To: <20180325191740.Horde.Cymi0yr0xcQQV1s42wkNkg2@messagerie.si.c-s.fr>
-References: <20180324174458.26423-1-shea@shealevy.com>
- <20180324174458.26423-2-shea@shealevy.com>
- <20180325191740.Horde.Cymi0yr0xcQQV1s42wkNkg2@messagerie.si.c-s.fr>
-Date: Sun, 25 Mar 2018 18:20:02 -0400
-Message-ID: <87r2o7u7al.fsf@xps13.shealevy.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408Y811D09zF1wh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 10:17:04 +1100 (AEDT)
+Received: by mail-pf0-x22e.google.com with SMTP id u86so1045562pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 16:17:04 -0700 (PDT)
+Date: Mon, 26 Mar 2018 10:16:47 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: linux-nvdimm@lists.01.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/6] libnvdimm: Add of_node to region and bus descriptors
+Message-ID: <20180326101647.07673304@gmail.com>
+In-Reply-To: <20180323081209.31387-1-oohall@gmail.com>
+References: <20180323081209.31387-1-oohall@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,83 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, 23 Mar 2018 19:12:04 +1100
+Oliver O'Halloran <oohall@gmail.com> wrote:
 
-Hi Christophe,
+> We want to be able to cross reference the region and bus devices
+> with the device tree node that they were spawned from. libNVDIMM
+> handles creating the actual devices for these internally, so we
+> need to pass in a pointer to the relevant node in the descriptor.
+> 
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Acked-by: Dan Williams <dan.j.williams@intel.com>
+> ---
 
-LEROY Christophe <christophe.leroy@c-s.fr> writes:
-
-> Shea Levy <shea@shealevy.com> a =C3=A9crit=C2=A0:
->
->> Signed-off-by: Shea Levy <shea@shealevy.com>
->> ---
->>  init/initramfs.c | 7 +++++++
->>  usr/Kconfig      | 4 ++++
->>  2 files changed, 11 insertions(+)
->>
->> diff --git a/init/initramfs.c b/init/initramfs.c
->> index 7e99a0038942..de5ce873eb5a 100644
->> --- a/init/initramfs.c
->> +++ b/init/initramfs.c
->> @@ -526,6 +526,13 @@ extern unsigned long __initramfs_size;
->>  #include <linux/initrd.h>
->>  #include <linux/kexec.h>
->>
->> +#ifdef CONFIG_INITRAMFS_GENERIC_UNLOAD
->> +void free_initrd_mem(unsigned long start, unsigned long end)
->> +{
->> +       free_reserved_area((void *)start, (void *)end, -1, "initrd");
->> +}
->> +#endif
->
-> In powerpc this was an __init function. Why not also put the generic=20=20
-> one in __init section ?
->
-
-v2 series sent, thanks!
-
->
-> Christophe
->
->
->> +
->>  static void __init free_initrd(void)
->>  {
->>  #ifdef CONFIG_KEXEC_CORE
->> diff --git a/usr/Kconfig b/usr/Kconfig
->> index 43658b8a975e..fd79d4d6fa26 100644
->> --- a/usr/Kconfig
->> +++ b/usr/Kconfig
->> @@ -233,3 +233,7 @@ config INITRAMFS_COMPRESSION
->>  	default ".lzma" if RD_LZMA
->>  	default ".bz2"  if RD_BZIP2
->>  	default ""
->> +
->> +# Arches can select this for a generic initrd unloading codepath
->> +config INITRAMFS_GENERIC_UNLOAD
->> +	bool
->> --
->> 2.16.2
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEE6ESKvwKkwnxgMLnaXAvWlX2G/icFAlq4IJIACgkQXAvWlX2G
-/ie5Kg//WRsmE69HlU4LGgsmarn8fdi2QRuZ+l/ywz9000PwGi2Rf2prd6YfK03r
-r/JSOgq3kCyGN2ifjCa++0IAvJT438Yzjxieqi5t28mm58I9VOfaWhGebd9gq4vV
-xaFLnrTlbSYSPMlhm4gbjDv13na+i+qm6Gqje/TF5AILIHTXxfxg//SgKY0vaAPi
-xBZJCaCEZJdO84/mVKeqO/Ape+/ibxtmjDtc/CIxyt8uSPeBqDqkxyQO8/1DFXea
-UhYDdnzRyqzG4JGgC+CvrV6T6b8Z5yKFUx3w0CSfE69ypeYHNnzCRVOsPNGxFGQD
-v1INTKVjedr9J9PvrtZZmRKHgmzwRgVWPp9uiNIcxxJcuywfeoI/sZwYRRfM2wnB
-1pMZsQI1Z4a9GIZ/j9GORajQlKOGp0SDSEDFBLBQ5JS7X4CnFrN/6b/I+AMeBzLa
-rK70FQwikNVuWXpOtRh0BEJClYE6HdjRqrkvnOt181vZOb8GPVabu69a7xI8fGCm
-B7nn+GLpD3SUGNRaUfWk76hrt+Kz2Dlg/5ATDcEHlkw+ZQypwR18Wop2qcuVcpsp
-XjiACAXCDtI5vyud3S0d9ucED0YV90VFdnFfSOs0OXnGPrOfj2Zo6sKPMHxpNzF4
-ni7nW+ciXNm79Ex05TQdxB4Z6hZ5g6/NFkdbGrOEvjUvcFBNnEM=
-=IIzv
------END PGP SIGNATURE-----
---=-=-=--
+Acked-by: Balbir Singh <bsingharora@gmail.com>
