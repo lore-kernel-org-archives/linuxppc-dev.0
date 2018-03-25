@@ -1,10 +1,10 @@
 Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0229.hostedemail.com
- [216.40.44.229])
+Received: from smtprelay.hostedemail.com (smtprelay0208.hostedemail.com
+ [216.40.44.208])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408WsZ5Gc7zF1xs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408Wsd0dy0zF1rk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:33 +1100 (AEDT)
 From: Shea Levy <shea@shealevy.com>
 To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
@@ -14,9 +14,9 @@ To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net
 Cc: Shea Levy <shea@shealevy.com>
-Subject: [PATCH v2 08/16] m32r: Use INITRAMFS_GENERIC_UNLOAD
-Date: Sun, 25 Mar 2018 18:18:45 -0400
-Message-Id: <20180325221853.10839-9-shea@shealevy.com>
+Subject: [PATCH v2 09/16] m68k: Use INITRAMFS_GENERIC_UNLOAD
+Date: Sun, 25 Mar 2018 18:18:46 -0400
+Message-Id: <20180325221853.10839-10-shea@shealevy.com>
 In-Reply-To: <20180325221853.10839-1-shea@shealevy.com>
 References: <20180324174458.26423-1-shea@shealevy.com>
  <20180325221853.10839-1-shea@shealevy.com>
@@ -31,36 +31,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Shea Levy <shea@shealevy.com>
 ---
- arch/m32r/Kconfig   |  1 +
- arch/m32r/mm/init.c | 11 -----------
- 2 files changed, 1 insertion(+), 11 deletions(-)
+ arch/m68k/Kconfig   | 1 +
+ arch/m68k/mm/init.c | 7 -------
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
-index dd84ee194579..010a2b999181 100644
---- a/arch/m32r/Kconfig
-+++ b/arch/m32r/Kconfig
-@@ -21,6 +21,7 @@ config M32R
- 	select CPU_NO_EFFICIENT_FFS
- 	select DMA_DIRECT_OPS
- 	select ARCH_NO_COHERENT_DMA_MMAP if !MMU
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 785612b576f7..47913a68529e 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -24,6 +24,7 @@ config M68K
+ 	select MODULES_USE_ELF_RELA
+ 	select OLD_SIGSUSPEND3
+ 	select OLD_SIGACTION
 +	select INITRAMFS_GENERIC_UNLOAD
  
- config SBUS
- 	bool
-diff --git a/arch/m32r/mm/init.c b/arch/m32r/mm/init.c
-index 93abc8c3a46e..e2b5f09209ee 100644
---- a/arch/m32r/mm/init.c
-+++ b/arch/m32r/mm/init.c
-@@ -139,14 +139,3 @@ void free_initmem(void)
- {
- 	free_initmem_default(-1);
+ config CPU_BIG_ENDIAN
+ 	def_bool y
+diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
+index e85acd131fa8..e20bef09258c 100644
+--- a/arch/m68k/mm/init.c
++++ b/arch/m68k/mm/init.c
+@@ -172,10 +172,3 @@ void __init mem_init(void)
+ 	mem_init_print_info(NULL);
+ 	print_memmap();
  }
 -
 -#ifdef CONFIG_BLK_DEV_INITRD
--/*======================================================================*
-- * free_initrd_mem() :
-- * orig : arch/sh/mm/init.c
-- *======================================================================*/
 -void free_initrd_mem(unsigned long start, unsigned long end)
 -{
 -	free_reserved_area((void *)start, (void *)end, -1, "initrd");
