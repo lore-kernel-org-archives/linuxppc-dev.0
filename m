@@ -1,10 +1,10 @@
 Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0085.outbound.protection.outlook.com [104.47.32.85])
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0046.outbound.protection.outlook.com [104.47.33.46])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408PvJ3mbyzF1tX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 04:50:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408PwZ3VkyzF1wg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 04:51:42 +1100 (AEDT)
 From: Yury Norov <ynorov@caviumnetworks.com>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
@@ -20,9 +20,11 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
 Cc: Yury Norov <ynorov@caviumnetworks.com>,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] smp: don't kick CPUs running idle or nohz_full tasks 
-Date: Sun, 25 Mar 2018 20:50:02 +0300
-Message-Id: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+Subject: [PATCH 1/2] rcu: declare rcu_eqs_special_set() in public header
+Date: Sun, 25 Mar 2018 20:50:03 +0300
+Message-Id: <20180325175004.28162-2-ynorov@caviumnetworks.com>
+In-Reply-To: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,45 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kick_all_cpus_sync() is used to broadcast IPIs to all online CPUs to force
-them sync caches, TLB etc. It is is called only 3 times - from mm/slab,
-arm64 and powerpc code.
+rcu_eqs_special_set() is declared only in internal header
+kernel/rcu/tree.h and stubbed in include/linux/rcutiny.h.
 
-With framework introduced in patch b8c17e6664c46 ("rcu: Maintain special
-bits at bottom of ->dynticks counter") we can delay synchrosization work
-for CPUs in extended quiescent state (idle or nohz_full userspace). 
+This patch declares rcu_eqs_special_set() in include/linux/rcutree.h, so
+it can be used in non-rcu kernel code.
 
-As Paul E. McKenney wrote: 
+Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+---
+ include/linux/rcutree.h | 1 +
+ 1 file changed, 1 insertion(+)
 
---
-
-Currently, IPIs are used to force other CPUs to invalidate their TLBs
-in response to a kernel virtual-memory mapping change.  This works, but 
-degrades both battery lifetime (for idle CPUs) and real-time response
-(for nohz_full CPUs), and in addition results in unnecessary IPIs due to
-the fact that CPUs executing in usermode are unaffected by stale kernel
-mappings.  It would be better to cause a CPU executing in usermode to
-wait until it is entering kernel mode to do the flush, first to avoid
-interrupting usemode tasks and second to handle multiple flush requests
-with a single flush in the case of a long-running user task.
-
---
-
-For mm/slab and arm64 it looks safe to delay synchronization. This is done
-in patch #2 by introducing kick_active_cpus_sync() function. For powerpc -
-I'm not sure, and I'd like to ask powerpc people, is it safe to do same
-also for that code? If so, we can completely drop kick_all_cpus_sync().
-
-Yury Norov (2):
-  rcu: declare rcu_eqs_special_set() in public header
-  smp: introduce kick_active_cpus_sync()
-
- arch/arm64/kernel/insn.c |  2 +-
- include/linux/rcutree.h  |  1 +
- include/linux/smp.h      |  2 ++
- kernel/smp.c             | 24 ++++++++++++++++++++++++
- mm/slab.c                |  2 +-
- 5 files changed, 29 insertions(+), 2 deletions(-)
-
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index fd996cdf1833..448f20f27396 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -74,6 +74,7 @@ static inline void synchronize_rcu_bh_expedited(void)
+ void rcu_barrier(void);
+ void rcu_barrier_bh(void);
+ void rcu_barrier_sched(void);
++bool rcu_eqs_special_set(int cpu);
+ unsigned long get_state_synchronize_rcu(void);
+ void cond_synchronize_rcu(unsigned long oldstate);
+ unsigned long get_state_synchronize_sched(void);
 -- 
 2.14.1
