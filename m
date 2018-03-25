@@ -1,38 +1,23 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shea@shealevy.com>
+Received: from smtprelay.hostedemail.com (smtprelay0170.hostedemail.com
+ [216.40.44.170])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408WgF2PVYzF1nk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:10:32 +1100 (AEDT)
-Received: by mail-pl0-x242.google.com with SMTP id p9-v6so10748886pls.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 15:10:32 -0700 (PDT)
-Date: Sun, 25 Mar 2018 15:10:29 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-cc: kernel test robot <fengguang.wu@intel.com>, paulmck@linux.vnet.ibm.com,
- peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, lkp@01.org
-Subject: Re: [mm] b1f0502d04: INFO:trying_to_register_non-static_key
-In-Reply-To: <792c0f75-7e7f-cd81-44ae-4205f6e4affc@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803251510040.80485@chino.kir.corp.google.com>
-References: <20180317075119.u6yuem2bhxvggbz3@inn>
- <792c0f75-7e7f-cd81-44ae-4205f6e4affc@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408Ws53DpszF0mt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:03 +1100 (AEDT)
+From: Shea Levy <shea@shealevy.com>
+To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-m68k@lists.linux-m68k.org,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net
+Subject: [PATCH v2 00/16] Generic infrastructure for unloading initramfs
+Date: Sun, 25 Mar 2018 18:18:37 -0400
+Message-Id: <20180325221853.10839-1-shea@shealevy.com>
+In-Reply-To: <20180324174458.26423-1-shea@shealevy.com>
+References: <20180324174458.26423-1-shea@shealevy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,15 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 Mar 2018, Laurent Dufour wrote:
+This patch series extracts out code for unloading the initramfs that
+was identical across 14 architectures, and moves those architectures
+to the common code path. Additionally, RISC-V is newly moved to the
+common code path.
 
-> I found the root cause of this lockdep warning.
-> 
-> In mmap_region(), unmap_region() may be called while vma_link() has not been
-> called. This happens during the error path if call_mmap() failed.
-> 
-> The only to fix that particular case is to call
-> seqcount_init(&vma->vm_sequence) when initializing the vma in mmap_region().
-> 
+In addition to reducing duplication, this allows us to bring future
+improvements (such as generalizing existing "keep initrd" command line
+options) to multiple architectures at once.
 
-Ack, although that would require a fixup to dup_mmap() as well.
+v2: Mark generic free_initrd_mem __init.
