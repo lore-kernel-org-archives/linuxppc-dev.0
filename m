@@ -1,10 +1,10 @@
 Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0181.hostedemail.com
- [216.40.44.181])
+Received: from smtprelay.hostedemail.com (smtprelay0154.hostedemail.com
+ [216.40.44.154])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408WsH5c8KzF1mm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408WsK5z8RzF1wK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 09:19:17 +1100 (AEDT)
 From: Shea Levy <shea@shealevy.com>
 To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
@@ -14,9 +14,9 @@ To: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net
 Cc: Shea Levy <shea@shealevy.com>
-Subject: [PATCH v2 03/16] alpha: Use INITRAMFS_GENERIC_UNLOAD
-Date: Sun, 25 Mar 2018 18:18:40 -0400
-Message-Id: <20180325221853.10839-4-shea@shealevy.com>
+Subject: [PATCH v2 04/16] arc: Use INITRAMFS_GENERIC_UNLOAD
+Date: Sun, 25 Mar 2018 18:18:41 -0400
+Message-Id: <20180325221853.10839-5-shea@shealevy.com>
 In-Reply-To: <20180325221853.10839-1-shea@shealevy.com>
 References: <20180324174458.26423-1-shea@shealevy.com>
  <20180325221853.10839-1-shea@shealevy.com>
@@ -31,34 +31,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Shea Levy <shea@shealevy.com>
 ---
- arch/alpha/Kconfig   | 1 +
- arch/alpha/mm/init.c | 8 --------
- 2 files changed, 1 insertion(+), 8 deletions(-)
+ arch/arc/Kconfig   | 1 +
+ arch/arc/mm/init.c | 7 -------
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index e96adcbcab41..238d743ae8f2 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -27,6 +27,7 @@ config ALPHA
- 	select ODD_RT_SIGACTION
- 	select OLD_SIGSUSPEND
- 	select CPU_NO_EFFICIENT_FFS if !ALPHA_EV67
+diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
+index d76bf4a83740..2844ce5b910c 100644
+--- a/arch/arc/Kconfig
++++ b/arch/arc/Kconfig
+@@ -44,6 +44,7 @@ config ARC
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_LZMA
 +	select INITRAMFS_GENERIC_UNLOAD
- 	help
- 	  The Alpha is a 64-bit general-purpose processor designed and
- 	  marketed by the Digital Equipment Corporation of blessed memory,
-diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
-index 9d74520298ab..55f7c8efa962 100644
---- a/arch/alpha/mm/init.c
-+++ b/arch/alpha/mm/init.c
-@@ -291,11 +291,3 @@ free_initmem(void)
+ 
+ config MIGHT_HAVE_PCI
+ 	bool
+diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
+index ba145065c579..7bcf23ab1756 100644
+--- a/arch/arc/mm/init.c
++++ b/arch/arc/mm/init.c
+@@ -229,10 +229,3 @@ void __ref free_initmem(void)
  {
  	free_initmem_default(-1);
  }
 -
 -#ifdef CONFIG_BLK_DEV_INITRD
--void
--free_initrd_mem(unsigned long start, unsigned long end)
+-void __init free_initrd_mem(unsigned long start, unsigned long end)
 -{
 -	free_reserved_area((void *)start, (void *)end, -1, "initrd");
 -}
