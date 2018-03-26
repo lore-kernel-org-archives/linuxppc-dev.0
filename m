@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4090BT4FxszF24C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:35:45 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4090Bc755bzF20n
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:35:52 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QGT3Je064777
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:35:43 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gy1t28g16-1
+ w2QGWnYp023512
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:35:50 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gy4dkg8b9-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:35:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:35:49 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 12:35:41 -0400
+ Mon, 26 Mar 2018 10:35:49 -0600
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,12 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v3 40/41] cxlflash: Remove commmands from pending list on
- timeout
-Date: Mon, 26 Mar 2018 11:35:34 -0500
+Subject: [PATCH v3 41/41] cxlflash: Handle spurious interrupts
+Date: Mon, 26 Mar 2018 11:35:42 -0500
 In-Reply-To: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1522082134-58938-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1522082142-58975-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,88 +41,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following Oops can occur if an internal command sent to the AFU does
-not complete within the timeout:
+The following Oops can occur when there is heavy I/O traffic and the host
+is reset by a tool such as sg_reset.
 
-[c000000ff101b810] c008000016020d94 term_mc+0xfc/0x1b0 [cxlflash]
-[c000000ff101b8a0] c008000016020fb0 term_afu+0x168/0x280 [cxlflash]
-[c000000ff101b930] c0080000160232ec cxlflash_pci_error_detected+0x184/0x230
-                                       [cxlflash]
-[c000000ff101b9e0] c00800000d95d468 cxl_vphb_error_detected+0x90/0x150[cxl]
-[c000000ff101ba20] c00800000d95f27c cxl_pci_error_detected+0xa4/0x240 [cxl]
-[c000000ff101bac0] c00000000003eaf8 eeh_report_error+0xd8/0x1b0
-[c000000ff101bb20] c00000000003d0b8 eeh_pe_dev_traverse+0x98/0x170
-[c000000ff101bbb0] c00000000003f438 eeh_handle_normal_event+0x198/0x580
-[c000000ff101bc60] c00000000003fba4 eeh_handle_event+0x2a4/0x338
-[c000000ff101bd10] c0000000000400b8 eeh_event_handler+0x1f8/0x200
-[c000000ff101bdc0] c00000000013da48 kthread+0x1a8/0x1b0
-[c000000ff101be30] c00000000000b528 ret_from_kernel_thread+0x5c/0xb4
+[c000200fff3fbc90] c00800001690117c process_cmd_doneq+0x104/0x500
+                                       [cxlflash] (unreliable)
+[c000200fff3fbd80] c008000016901648 cxlflash_rrq_irq+0xd0/0x150 [cxlflash]
+[c000200fff3fbde0] c000000000193130 __handle_irq_event_percpu+0xa0/0x310
+[c000200fff3fbea0] c0000000001933d8 handle_irq_event_percpu+0x38/0x90
+[c000200fff3fbee0] c000000000193494 handle_irq_event+0x64/0xb0
+[c000200fff3fbf10] c000000000198ea0 handle_fasteoi_irq+0xc0/0x230
+[c000200fff3fbf40] c00000000019182c generic_handle_irq+0x4c/0x70
+[c000200fff3fbf60] c00000000001794c __do_irq+0x7c/0x1c0
+[c000200fff3fbf90] c00000000002a390 call_do_irq+0x14/0x24
+[c000200e5828fab0] c000000000017b2c do_IRQ+0x9c/0x130
+[c000200e5828fb00] c000000000009b04 h_virt_irq_common+0x114/0x120
 
-When an internal command times out, the command buffer is freed while it
-is still in the pending commands list of the context. This corrupts the
-list and when the context is cleaned up, a crash is encountered.
+When a context is reset, the pending commands are flushed and the AFU
+is notified. Before the AFU handles this request there could be command
+completion interrupts queued to PHB which are yet to be delivered to the
+context. In this scenario, a context could receive an interrupt for a
+command that has been flushed, leading to a possible crash when the memory
+for the flushed command is accessed.
 
-To resolve this issue, when an AFU command or TMF command times out, the
-command should be deleted from the hardware queue pending command list
-before freeing the buffer.
+To resolve this problem, a boolean will indicate if the hardware queue is
+ready to process interrupts or not. This can be evaluated in the interrupt
+handler before proessing an interrupt.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/scsi/cxlflash/common.h |  1 +
+ drivers/scsi/cxlflash/main.c   | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
 
+diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
+index b69fd32..3556b1d 100644
+--- a/drivers/scsi/cxlflash/common.h
++++ b/drivers/scsi/cxlflash/common.h
+@@ -224,6 +224,7 @@ struct hwq {
+ 	u64 *hrrq_end;
+ 	u64 *hrrq_curr;
+ 	bool toggle;
++	bool hrrq_online;
+ 
+ 	s64 room;
+ 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index dfe7648..c920328 100644
+index c920328..a24d7e6 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -473,6 +473,7 @@ static int send_tmf(struct cxlflash_cfg *cfg, struct scsi_device *sdev,
- 	struct afu_cmd *cmd = NULL;
- 	struct device *dev = &cfg->dev->dev;
- 	struct hwq *hwq = get_hwq(afu, PRIMARY_HWQ);
-+	bool needs_deletion = false;
- 	char *buf = NULL;
- 	ulong lock_flags;
- 	int rc = 0;
-@@ -527,6 +528,7 @@ static int send_tmf(struct cxlflash_cfg *cfg, struct scsi_device *sdev,
- 	if (!to) {
- 		dev_err(dev, "%s: TMF timed out\n", __func__);
- 		rc = -ETIMEDOUT;
-+		needs_deletion = true;
- 	} else if (cmd->cmd_aborted) {
- 		dev_err(dev, "%s: TMF aborted\n", __func__);
- 		rc = -EAGAIN;
-@@ -537,6 +539,12 @@ static int send_tmf(struct cxlflash_cfg *cfg, struct scsi_device *sdev,
- 	}
- 	cfg->tmf_active = false;
- 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+@@ -801,6 +801,10 @@ static void term_mc(struct cxlflash_cfg *cfg, u32 index)
+ 		WARN_ON(cfg->ops->release_context(hwq->ctx_cookie));
+ 	hwq->ctx_cookie = NULL;
+ 
++	spin_lock_irqsave(&hwq->hrrq_slock, lock_flags);
++	hwq->hrrq_online = false;
++	spin_unlock_irqrestore(&hwq->hrrq_slock, lock_flags);
 +
-+	if (needs_deletion) {
-+		spin_lock_irqsave(&hwq->hsq_slock, lock_flags);
-+		list_del(&cmd->list);
-+		spin_unlock_irqrestore(&hwq->hsq_slock, lock_flags);
+ 	spin_lock_irqsave(&hwq->hsq_slock, lock_flags);
+ 	flush_pending_cmds(hwq);
+ 	spin_unlock_irqrestore(&hwq->hsq_slock, lock_flags);
+@@ -1475,6 +1479,12 @@ static irqreturn_t cxlflash_rrq_irq(int irq, void *data)
+ 
+ 	spin_lock_irqsave(&hwq->hrrq_slock, hrrq_flags);
+ 
++	/* Silently drop spurious interrupts when queue is not online */
++	if (!hwq->hrrq_online) {
++		spin_unlock_irqrestore(&hwq->hrrq_slock, hrrq_flags);
++		return IRQ_HANDLED;
 +	}
- out:
- 	kfree(buf);
- 	return rc;
-@@ -2284,6 +2292,7 @@ static int send_afu_cmd(struct afu *afu, struct sisl_ioarcb *rcb)
- 	struct device *dev = &cfg->dev->dev;
- 	struct afu_cmd *cmd = NULL;
- 	struct hwq *hwq = get_hwq(afu, PRIMARY_HWQ);
-+	ulong lock_flags;
- 	char *buf = NULL;
- 	int rc = 0;
- 	int nretry = 0;
-@@ -2329,6 +2338,11 @@ static int send_afu_cmd(struct afu *afu, struct sisl_ioarcb *rcb)
- 	case -ETIMEDOUT:
- 		rc = afu->context_reset(hwq);
- 		if (rc) {
-+			/* Delete the command from pending_cmds list */
-+			spin_lock_irqsave(&hwq->hsq_slock, lock_flags);
-+			list_del(&cmd->list);
-+			spin_unlock_irqrestore(&hwq->hsq_slock, lock_flags);
 +
- 			cxlflash_schedule_async_reset(cfg);
- 			break;
- 		}
+ 	if (afu_is_irqpoll_enabled(afu)) {
+ 		irq_poll_sched(&hwq->irqpoll);
+ 		spin_unlock_irqrestore(&hwq->hrrq_slock, hrrq_flags);
+@@ -1781,6 +1791,7 @@ static int init_global(struct cxlflash_cfg *cfg)
+ 
+ 		writeq_be((u64) hwq->hrrq_start, &hmap->rrq_start);
+ 		writeq_be((u64) hwq->hrrq_end, &hmap->rrq_end);
++		hwq->hrrq_online = true;
+ 
+ 		if (afu_is_sq_cmd_mode(afu)) {
+ 			writeq_be((u64)hwq->hsq_start, &hmap->sq_start);
 -- 
 2.1.0
