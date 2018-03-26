@@ -1,13 +1,13 @@
 Return-Path: <rientjes@google.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4096wp1yHczF21s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:39:22 +1100 (AEDT)
-Received: by mail-pl0-x244.google.com with SMTP id c11-v6so12780559plo.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:39:21 -0700 (PDT)
-Date: Mon, 26 Mar 2018 14:39:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4096zC0NmfzF25P
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:41:26 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id g20-v6so1503955plo.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:41:26 -0700 (PDT)
+Date: Mon, 26 Mar 2018 14:41:23 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
@@ -26,11 +26,11 @@ cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: Re: [PATCH v9 24/24] powerpc/mm: Add speculative page fault
-In-Reply-To: <1520963994-28477-25-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803261431330.255554@chino.kir.corp.google.com>
+Subject: Re: [PATCH v9 23/24] x86/mm: Add speculative pagefault handling
+In-Reply-To: <1520963994-28477-24-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803261440130.255554@chino.kir.corp.google.com>
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-25-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-24-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,47 +44,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 866446cf2d9a..104f3cc86b51 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -392,6 +392,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->  			   unsigned long error_code)
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index e6af2b464c3d..a73cf227edd6 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -1239,6 +1239,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>  		unsigned long address)
 >  {
->  	struct vm_area_struct * vma;
+>  	struct vm_area_struct *vma;
 > +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 > +	struct vm_area_struct *spf_vma = NULL;
 > +#endif
->  	struct mm_struct *mm = current->mm;
->  	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
->   	int is_exec = TRAP(regs) == 0x400;
-> @@ -459,6 +462,20 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->  	if (is_exec)
+>  	struct task_struct *tsk;
+>  	struct mm_struct *mm;
+>  	int fault, major = 0;
+> @@ -1332,6 +1335,27 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>  	if (error_code & X86_PF_INSTR)
 >  		flags |= FAULT_FLAG_INSTRUCTION;
 >  
 > +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> +	if (is_user && (atomic_read(&mm->mm_users) > 1)) {
-> +		/* let's try a speculative page fault without grabbing the
-> +		 * mmap_sem.
-> +		 */
-> +		fault = handle_speculative_fault(mm, address, flags, &spf_vma);
+> +	if ((error_code & X86_PF_USER) && (atomic_read(&mm->mm_users) > 1)) {
+> +		fault = handle_speculative_fault(mm, address, flags,
+> +						 &spf_vma);
+> +
 > +		if (!(fault & VM_FAULT_RETRY)) {
-> +			perf_sw_event(PERF_COUNT_SW_SPF, 1,
-> +				      regs, address);
-> +			goto done;
+> +			if (!(fault & VM_FAULT_ERROR)) {
+> +				perf_sw_event(PERF_COUNT_SW_SPF, 1,
+> +					      regs, address);
+> +				goto done;
+> +			}
+> +			/*
+> +			 * In case of error we need the pkey value, but
+> +			 * can't get it from the spf_vma as it is only returned
+> +			 * when VM_FAULT_RETRY is returned. So we have to
+> +			 * retry the page fault with the mmap_sem grabbed.
+> +			 */
 > +		}
 > +	}
 > +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+
+All the comments from the powerpc version will apply here as well, the 
+only interesting point is whether VM_FAULT_FALLBACK can be returned from 
+handle_speculative_fault() to indicate its not possible.
+
 > +
-
-Can't you elimiate all #ifdef's in this patch if 
-handle_speculative_fault() can be passed is_user and return some error 
-code that fallback is needed?  Maybe reuse VM_FAULT_FALLBACK?
-
->  	/* When running in the kernel we expect faults to occur only to
->  	 * addresses in user space.  All other faults represent errors in the
->  	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-> @@ -489,7 +506,16 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	/*
+>  	 * When running in the kernel we expect faults to occur only to
+>  	 * addresses in user space.  All other faults represent errors in
+> @@ -1365,7 +1389,16 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
 >  		might_sleep();
 >  	}
 >  
@@ -94,35 +101,21 @@ code that fallback is needed?  Maybe reuse VM_FAULT_FALLBACK?
 > +		if (can_reuse_spf_vma(spf_vma, address))
 > +			vma = spf_vma;
 > +		else
-> +			vma =  find_vma(mm, address);
+> +			vma = find_vma(mm, address);
 > +		spf_vma = NULL;
 > +	} else
 > +#endif
 > +		vma = find_vma(mm, address);
->  	if (unlikely(!vma))
->  		return bad_area(regs, address);
->  	if (likely(vma->vm_start <= address))
-
-I think the code quality here could be improved such that you can pass mm, 
-&spf_vma, and address and some helper function would return spf_vma if 
-can_reuse_spf_vma() is true (and do *spf_vma to NULL) or otherwise return 
-find_vma(mm, address).
-
-Also, spf_vma is being set to NULL because of VM_FAULT_RETRY, but does it 
-make sense to retry handle_speculative_fault() in this case since we've 
-dropped mm->mmap_sem and there may have been a writer queued behind it?
-
-> @@ -568,6 +594,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->  
->  	up_read(&current->mm->mmap_sem);
+>  	if (unlikely(!vma)) {
+>  		bad_area(regs, error_code, address);
+>  		return;
+> @@ -1451,6 +1484,9 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>  		return;
+>  	}
 >  
 > +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 > +done:
 > +#endif
->  	if (unlikely(fault & VM_FAULT_ERROR))
->  		return mm_fault_error(regs, address, fault);
->  
-
-And things like this are trivially handled by doing
-
-done: __maybe_unused
+>  	/*
+>  	 * Major/minor page fault accounting. If any of the events
+>  	 * returned VM_FAULT_MAJOR, we account it as a major fault.
