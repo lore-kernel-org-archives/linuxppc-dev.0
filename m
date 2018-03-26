@@ -1,17 +1,23 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x22c.google.com (mail-qt0-x22c.google.com
- [IPv6:2607:f8b0:400d:c0d::22c])
+Return-Path: <jgg@ziepe.ca>
+Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
+ [IPv6:2a00:1450:400c:c0c::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4094N3410xzF20c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 06:44:18 +1100 (AEDT)
-Received: by mail-qt0-x22c.google.com with SMTP id f16so8436281qth.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:44:18 -0700 (PDT)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20180326165425.GA15554@ziepe.ca>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4095J307ZlzF24y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 07:25:53 +1100 (AEDT)
+Received: by mail-wr0-x244.google.com with SMTP id f14so20180873wre.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 13:25:53 -0700 (PDT)
+Date: Mon, 26 Mar 2018 14:25:45 -0600
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: David Laight <David.Laight@aculab.com>,
+ Sinan Kaya <okaya@codeaurora.org>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180326202545.GB15554@ziepe.ca>
+References: <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
  <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
  <1521692689.16434.293.camel@kernel.crashing.org>
  <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
@@ -20,17 +26,10 @@ References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
  <1521854626.16434.359.camel@kernel.crashing.org>
  <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
  <20180326165425.GA15554@ziepe.ca>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 26 Mar 2018 21:44:15 +0200
-Message-ID: <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
-Subject: Re: RFC on writel and writel_relaxed
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: David Laight <David.Laight@aculab.com>, Sinan Kaya <okaya@codeaurora.org>,
- Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,28 +39,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 26, 2018 at 6:54 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> On Mon, Mar 26, 2018 at 11:08:45AM +0000, David Laight wrote:
->> > > This is a super performance critical operation for most drivers and
->> > > directly impacts network performance.
->>
->> Perhaps there ought to be writel_nobarrier() (etc) that never contain
->> any barriers at all.
->> This might mean that they are always just the memory operation,
->> but it would make it more obvious what the driver was doing.
->
-> I think that is what writel_relaxed is supposed to be.
->
-> The only restriction it has is that the writes to a single device
-> using UC memory must be kept in program order..
+On Mon, Mar 26, 2018 at 09:44:15PM +0200, Arnd Bergmann wrote:
+> On Mon, Mar 26, 2018 at 6:54 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> > On Mon, Mar 26, 2018 at 11:08:45AM +0000, David Laight wrote:
+> >> > > This is a super performance critical operation for most drivers and
+> >> > > directly impacts network performance.
+> >>
+> >> Perhaps there ought to be writel_nobarrier() (etc) that never contain
+> >> any barriers at all.
+> >> This might mean that they are always just the memory operation,
+> >> but it would make it more obvious what the driver was doing.
+> >
+> > I think that is what writel_relaxed is supposed to be.
+> >
+> > The only restriction it has is that the writes to a single device
+> > using UC memory must be kept in program order..
+> 
+> Not sure about whether we have ever defined what happens to
+> writel_relaxed() on WC memory though: On ARM, we disallow
+> the compiler to combine writes, but the CPU still might.
 
-Not sure about whether we have ever defined what happens to
-writel_relaxed() on WC memory though: On ARM, we disallow
-the compiler to combine writes, but the CPU still might.
+If the driver uses WC memory then I think it should not expect
+anything in terms of how writes map to TLPs other than nothing
+combines across mmiowb() and mmiowb() is fully globally ordered when
+enclosed in a spinlock.
 
-It's also not entirely clear to me what we want writel() inside a
-spinlock to mean: should the spinlock guarantee that two writel()
-calls on different CPUs that are protected by spinlocks are
-serialized by those locks, or not?
+The entire point of using WC memory is usually to get combining :) If
+the driver doesn't want that then it should map UC..
 
-       Arnd
+> It's also not entirely clear to me what we want writel() inside a
+> spinlock to mean: should the spinlock guarantee that two writel()
+> calls on different CPUs that are protected by spinlocks are
+> serialized by those locks, or not?
+
+Yes for writel, I think that is already defined by the barriers
+document
+
+The same document says that _relaxed() does not give that guarentee.
+
+The lwn articule on this went into some depth on the interaction with
+spinlocks.
+
+As far as I can see, containment in a spinlock seems to be the only
+different between writel and writel_relaxed..
+
+Jason
