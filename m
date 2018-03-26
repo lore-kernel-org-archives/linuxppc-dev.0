@@ -1,16 +1,19 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408pM12mvgzF20J
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 20:12:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408pZQ6q9HzF1vZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 20:22:22 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/10] powerpc/64s: Wire up cpu_show_spectre_v2()
-Date: Mon, 26 Mar 2018 20:12:15 +1100
-Message-Id: <20180326091215.7784-10-mpe@ellerman.id.au>
-In-Reply-To: <20180326091215.7784-1-mpe@ellerman.id.au>
-References: <20180326091215.7784-1-mpe@ellerman.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Implement cross-endian emulation of larx and
+ stcx instructions
+In-Reply-To: <20170904053402.GB16532@fergus.ozlabs.ibm.com>
+References: <20170904053402.GB16532@fergus.ozlabs.ibm.com>
+Date: Mon, 26 Mar 2018 20:22:17 +1100
+Message-ID: <87a7uvkx86.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,67 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a definition for cpu_show_spectre_v2() to override the generic
-version. This has several permuations, though in practice some may not
-occur we cater for any combination.
+Paul Mackerras <paulus@ozlabs.org> writes:
+> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+> index fb9f58b..0590417 100644
+> --- a/arch/powerpc/lib/sstep.c
+> +++ b/arch/powerpc/lib/sstep.c
+> @@ -2755,8 +2761,11 @@ int emulate_loadstore(struct pt_regs *regs, struct=
+ instruction_op *op)
+>  			regs->dar =3D ea;
+>  			break;
+>  		}
+> -		if (size < 16)
+> -			regs->gpr[op->reg] =3D val;
+> +		if (size < 16) {
+> +			if (unlikely(cross_endian))
+> +				val =3D byterev_8(val);
 
-The most verbose is:
+This doesn't build on 32-bit (pmac32_defconfig):
 
-  Mitigation: Indirect branch serialisation (kernel only), Indirect
-  branch cache disabled, ori31 speculation barrier enabled
+  arch/powerpc/lib/sstep.c: In function =E2=80=98emulate_loadstore=E2=80=99:
+  arch/powerpc/lib/sstep.c:2789:11: error: implicit declaration of function=
+ =E2=80=98byterev_8=E2=80=99;did you mean =E2=80=98byterev_4=E2=80=99? [-We=
+rror=3Dimplicit-function-declaration]
+       val =3D byterev_8(val);
+             ^~~~~~~~~
+             byterev_4
 
-We don't treat the ori31 speculation barrier as a mitigation on its
-own, because it has to be *used* by code in order to be a mitigation
-and we don't know if userspace is doing that. So if that's all we see
-we say:
-
-  Vulnerable, ori31 speculation barrier enabled
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/security.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
-
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 0eace3cac818..2cee3dcd231b 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -58,3 +58,36 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, c
- 
- 	return sprintf(buf, "Vulnerable\n");
- }
-+
-+ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	bool bcs, ccd, ori;
-+	struct seq_buf s;
-+
-+	seq_buf_init(&s, buf, PAGE_SIZE - 1);
-+
-+	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
-+	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
-+	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
-+
-+	if (bcs || ccd) {
-+		seq_buf_printf(&s, "Mitigation: ");
-+
-+		if (bcs)
-+			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
-+
-+		if (bcs && ccd)
-+			seq_buf_printf(&s, ", ");
-+
-+		if (ccd)
-+			seq_buf_printf(&s, "Indirect branch cache disabled");
-+	} else
-+		seq_buf_printf(&s, "Vulnerable");
-+
-+	if (ori)
-+		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
-+
-+	seq_buf_printf(&s, "\n");
-+
-+	return s.len;
-+}
--- 
-2.14.1
+cheers
