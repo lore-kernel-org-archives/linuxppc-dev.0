@@ -1,30 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40974Y4x0YzF25W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:46:04 +1100 (AEDT)
-Message-ID: <1522099618.7364.0.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4097502tGvzF1s1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:46:27 +1100 (AEDT)
 Subject: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@ACULAB.COM>
-Cc: Sinan Kaya <okaya@codeaurora.org>, "open list:LINUX FOR POWERPC (32-BIT
- AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, Oliver <oohall@gmail.com>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
-Date: Tue, 27 Mar 2018 08:26:58 +1100
-In-Reply-To: <20180326165425.GA15554@ziepe.ca>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <1521692689.16434.293.camel@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>
+Cc: David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+References: <1521692689.16434.293.camel@kernel.crashing.org>
  <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
  <1521726722.16434.312.camel@kernel.crashing.org>
  <20180323163510.GC13033@ziepe.ca>
  <1521854626.16434.359.camel@kernel.crashing.org>
  <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
  <20180326165425.GA15554@ziepe.ca>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+Date: Mon, 26 Mar 2018 17:46:22 -0400
+MIME-Version: 1.0
+In-Reply-To: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,24 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-03-26 at 10:54 -0600, Jason Gunthorpe wrote:
-> On Mon, Mar 26, 2018 at 11:08:45AM +0000, David Laight wrote:
-> > > > This is a super performance critical operation for most drivers and
-> > > > directly impacts network performance.
-> > 
-> > Perhaps there ought to be writel_nobarrier() (etc) that never contain
-> > any barriers at all.
-> > This might mean that they are always just the memory operation,
-> > but it would make it more obvious what the driver was doing.
+On 3/26/2018 5:30 PM, Arnd Bergmann wrote:
+>> But that was never a requirement of writel(),
+>> Documentation/memory-barriers.txt gives an explicit example demanding
+>> the wmb() before writel() for ordering system memory against writel.
+> Indeed, but it's in an example for when to use dma_wmb(), not wmb().
+> Adding Alexander Duyck to Cc, he added that section as part of
+> 1077fa36f23e ("arch: Add lightweight memory barriers dma_rmb() and
+> dma_wmb()"). Also adding the other people that were involved with that.
 > 
-> I think that is what writel_relaxed is supposed to be.
-> 
-> The only restriction it has is that the writes to a single device
-> using UC memory must be kept in program order..
 
-Which requires barriers on some architectures :-)
+ARM developers can get away with not including wmb() in their code and use
+writel() to observe memory writes due to implicit barriers.
 
-Also we don't have a clear definition of what happens on WC memory.
+However, same code will not work on Intel.
 
-Cheers,
-Ben.
+writel() has a compiler barrier in it for x86.
+wmb() has a sync operation in it for x86. 
+
+Unless wmb() is called, PCIe device won't observe memory updates from the CPU.
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
