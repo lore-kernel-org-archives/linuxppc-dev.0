@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408y5T3HJtzF21X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 02:01:16 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id m68so7612606pfm.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:01:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408y5h1SlKzF23C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 02:01:28 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id g8so7368004pgv.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:01:27 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64s: return more carefully from sreset NMI
-Date: Tue, 27 Mar 2018 01:01:03 +1000
-Message-Id: <20180326150103.22941-1-npiggin@gmail.com>
+Subject: [PATCH] powerpc/64s: sreset panic if there is no debugger or crash
+ dump handlers
+Date: Tue, 27 Mar 2018 01:01:16 +1000
+Message-Id: <20180326150116.22990-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,111 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-System Reset, being an NMI, must return more carefully than other
-interrupts. It has traditionally returned via the nromal return
-from exception path, but that has a number of problems.
+system_reset_exception does most of its own crash handling now,
+invoking the debugger or crash dumps if they are registered. If not,
+then it goes through to die() to print stack traces, and then is
+supposed to panic (according to comments).
 
-- r13 does not get restored if returning to kernel. This is for
-  interrupts which may cause a context switch, which sreset will
-  never do. Interrupting OPAL (which uses a different r13) is one
-  place where this causes breakage.
+However after die() prints oopses, it does its own handling which
+doesn't allow system_reset_exception to panic (e.g., it may just
+kill the current process). This patch causes sreset exceptions to
+return from die after it prints messages but before acting.
 
-- It may cause several other problems returning to kernel with
-  preempt or TIF_EMULATE_STACK_STORE if it hits at the wrong time.
-
-It's safer just to have a simple restore and return, like machine
-check which is the other NMI.
+This also stops die from invoking the debugger on 0x100 crashes.
+system_reset_exception similarly calls the debugger. It had been
+thought this was harmless (because if the debugger was disabled,
+neither call would fire, and if it was enabled the first call
+would return). However in some cases like xmon 'X' command, the
+debugger returns 0, which currently causes it to be entered
+again (first in system_reset_exception, then in die), which is
+confusing.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 61 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 58 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/traps.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 3ac87e53b3da..114ff7170562 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -139,6 +139,21 @@ EXC_COMMON_BEGIN(system_reset_idle_common)
- 	b	pnv_powersave_wakeup
- #endif
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1e48d157196a..b0ac57fa5056 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -208,6 +208,12 @@ static void oops_end(unsigned long flags, struct pt_regs *regs,
+ 	}
+ 	raw_local_irq_restore(flags);
  
-+/*
-+ * Set IRQS_ALL_DISABLED unconditionally so arch_irqs_disabled does
-+ * the right thing. We do not want to reconcile because that goes
-+ * through irq tracing which we don't want in NMI.
-+ *
-+ * Save PACAIRQHAPPENED because some code will do a hard disable
-+ * (e.g., xmon). So we want to restore this back to where it was
-+ * when we return. DAR is unused in the stack, so save it there.
-+ */
-+#define ADD_RECONCILE_NMI						\
-+	li	r10,IRQS_ALL_DISABLED;					\
-+	stb	r10,PACAIRQSOFTMASK(r13);				\
-+	lbz	r10,PACAIRQHAPPENED(r13);				\
-+	std	r10,_DAR(r1)
-+
- EXC_COMMON_BEGIN(system_reset_common)
- 	/*
- 	 * Increment paca->in_nmi then enable MSR_RI. SLB or MCE will be able
-@@ -157,16 +172,56 @@ EXC_COMMON_BEGIN(system_reset_common)
- 	subi	r1,r1,INT_FRAME_SIZE
- 	EXCEPTION_COMMON_NORET_STACK(PACA_EXNMI, 0x100,
- 			system_reset, system_reset_exception,
--			ADD_NVGPRS;ADD_RECONCILE)
-+			ADD_NVGPRS;ADD_RECONCILE_NMI)
-+
-+	/* This (and MCE) can be simplified with mtmsrd L=1 */
-+	/* Clear MSR_RI before setting SRR0 and SRR1. */
-+	li	r0,MSR_RI
-+	mfmsr	r9
-+	andc	r9,r9,r0
-+	mtmsrd	r9,1
- 
- 	/*
--	 * The stack is no longer in use, decrement in_nmi.
-+	 * MSR_RI is clear, now we can decrement paca->in_nmi.
- 	 */
- 	lhz	r10,PACA_IN_NMI(r13)
- 	subi	r10,r10,1
- 	sth	r10,PACA_IN_NMI(r13)
- 
--	b	ret_from_except
 +	/*
-+	 * Restore soft mask settings.
++	 * system_reset_excption handles debugger, crash dump, panic, for 0x100
 +	 */
-+	ld	r10,_DAR(r1)
-+	stb	r10,PACAIRQHAPPENED(r13)
-+	ld	r10,SOFTE(r1)
-+	stb	r10,PACAIRQSOFTMASK(r13)
++	if (TRAP(regs) == 0x100)
++		return;
 +
-+	/*
-+	 * Keep below code in synch with MACHINE_CHECK_HANDLER_WINDUP.
-+	 * Should share common bits...
-+	 */
-+
-+	/* Move original SRR0 and SRR1 into the respective regs */
-+	ld	r9,_MSR(r1)
-+	mtspr	SPRN_SRR1,r9
-+	ld	r3,_NIP(r1)
-+	mtspr	SPRN_SRR0,r3
-+	ld	r9,_CTR(r1)
-+	mtctr	r9
-+	ld	r9,_XER(r1)
-+	mtxer	r9
-+	ld	r9,_LINK(r1)
-+	mtlr	r9
-+	REST_GPR(0, r1)
-+	REST_8GPRS(2, r1)
-+	REST_GPR(10, r1)
-+	ld	r11,_CCR(r1)
-+	mtcr	r11
-+	REST_GPR(11, r1)
-+	REST_2GPRS(12, r1)
-+	/* restore original r1. */
-+	ld	r1,GPR1(r1)
-+	RFI_TO_USER_OR_KERNEL
+ 	crash_fadump(regs, "die oops");
  
- #ifdef CONFIG_PPC_PSERIES
- /*
+ 	if (kexec_should_crash(current))
+@@ -272,8 +278,13 @@ void die(const char *str, struct pt_regs *regs, long err)
+ {
+ 	unsigned long flags;
+ 
+-	if (debugger(regs))
+-		return;
++	/*
++	 * system_reset_excption handles debugger, crash dump, panic, for 0x100
++	 */
++	if (TRAP(regs) != 0x100) {
++		if (debugger(regs))
++			return;
++	}
+ 
+ 	flags = oops_begin(regs);
+ 	if (__die(str, regs, err))
 -- 
 2.16.1
