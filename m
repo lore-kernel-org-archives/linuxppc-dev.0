@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40906s29xrzF237
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:32:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4090770mnczF23s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:32:50 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QGOd6H082214
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:32:35 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gy3883naj-1
+ w2QGI4Dh127496
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:32:48 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gy48s8juj-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:32:34 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:32:46 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 12:32:34 -0400
+ Mon, 26 Mar 2018 12:32:45 -0400
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v3 15/41] cxlflash: Support image reload policy modification
-Date: Mon, 26 Mar 2018 11:32:29 -0500
+Subject: [PATCH v3 16/41] cxlflash: MMIO map the AFU
+Date: Mon, 26 Mar 2018 11:32:37 -0500
 In-Reply-To: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1522081949-58006-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1522081957-58043-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,58 +41,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a PERST, the AFU image can be reloaded or left intact. Provide means to
-set this image reload policy.
+When the AFU is configured, the global and per process MMIO regions
+are presented by the configuration space. Save these regions and
+map the global MMIO region that is used to access all of the control
+and provisioning data in the AFU.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/ocxl_hw.c | 13 +++++++++++++
- drivers/scsi/cxlflash/ocxl_hw.h |  1 +
- 2 files changed, 14 insertions(+)
+ drivers/scsi/cxlflash/ocxl_hw.c | 74 ++++++++++++++++++++++++++++++++++++++++-
+ drivers/scsi/cxlflash/ocxl_hw.h |  4 +++
+ 2 files changed, 77 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 21915b7..f26bbb7 100644
+index f26bbb7..2358034 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.c
 +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -252,6 +252,18 @@ static int ocxlflash_release_context(void *ctx_cookie)
+@@ -264,6 +264,18 @@ static void ocxlflash_perst_reloads_same_image(void *afu_cookie, bool image)
  }
  
  /**
-+ * ocxlflash_perst_reloads_same_image() - sets the image reload policy
-+ * @afu_cookie:	Hardware AFU associated with the host.
-+ * @image:	Whether to load the same image on PERST.
++ * ocxlflash_unconfig_afu() - unconfigure the AFU
++ * @afu: AFU associated with the host.
 + */
-+static void ocxlflash_perst_reloads_same_image(void *afu_cookie, bool image)
++static void ocxlflash_unconfig_afu(struct ocxl_hw_afu *afu)
 +{
-+	struct ocxl_hw_afu *afu = afu_cookie;
-+
-+	afu->perst_same_image = image;
++	if (afu->gmmio_virt) {
++		iounmap(afu->gmmio_virt);
++		afu->gmmio_virt = NULL;
++	}
 +}
 +
 +/**
   * ocxlflash_destroy_afu() - destroy the AFU structure
   * @afu_cookie:	AFU to be freed.
   */
-@@ -501,6 +513,7 @@ const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
- 	.get_context		= ocxlflash_get_context,
- 	.dev_context_init	= ocxlflash_dev_context_init,
- 	.release_context	= ocxlflash_release_context,
-+	.perst_reloads_same_image = ocxlflash_perst_reloads_same_image,
- 	.create_afu		= ocxlflash_create_afu,
- 	.destroy_afu		= ocxlflash_destroy_afu,
- 	.get_fd			= ocxlflash_get_fd,
+@@ -276,6 +288,7 @@ static void ocxlflash_destroy_afu(void *afu_cookie)
+ 
+ 	ocxlflash_release_context(afu->ocxl_ctx);
+ 	idr_destroy(&afu->idr);
++	ocxlflash_unconfig_afu(afu);
+ 	kfree(afu);
+ }
+ 
+@@ -327,6 +340,56 @@ static int ocxlflash_config_fn(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
+ }
+ 
+ /**
++ * ocxlflash_map_mmio() - map the AFU MMIO space
++ * @afu: AFU associated with the host.
++ *
++ * Return: 0 on success, -errno on failure
++ */
++static int ocxlflash_map_mmio(struct ocxl_hw_afu *afu)
++{
++	struct ocxl_afu_config *acfg = &afu->acfg;
++	struct pci_dev *pdev = afu->pdev;
++	struct device *dev = afu->dev;
++	phys_addr_t gmmio, ppmmio;
++	int rc = 0;
++
++	rc = pci_request_region(pdev, acfg->global_mmio_bar, "ocxlflash");
++	if (unlikely(rc)) {
++		dev_err(dev, "%s: pci_request_region for global failed rc=%d\n",
++			__func__, rc);
++		goto out;
++	}
++	gmmio = pci_resource_start(pdev, acfg->global_mmio_bar);
++	gmmio += acfg->global_mmio_offset;
++
++	rc = pci_request_region(pdev, acfg->pp_mmio_bar, "ocxlflash");
++	if (unlikely(rc)) {
++		dev_err(dev, "%s: pci_request_region for pp bar failed rc=%d\n",
++			__func__, rc);
++		goto err1;
++	}
++	ppmmio = pci_resource_start(pdev, acfg->pp_mmio_bar);
++	ppmmio += acfg->pp_mmio_offset;
++
++	afu->gmmio_virt = ioremap(gmmio, acfg->global_mmio_size);
++	if (unlikely(!afu->gmmio_virt)) {
++		dev_err(dev, "%s: MMIO mapping failed\n", __func__);
++		rc = -ENOMEM;
++		goto err2;
++	}
++
++	afu->gmmio_phys = gmmio;
++	afu->ppmmio_phys = ppmmio;
++out:
++	return rc;
++err2:
++	pci_release_region(pdev, acfg->pp_mmio_bar);
++err1:
++	pci_release_region(pdev, acfg->global_mmio_bar);
++	goto out;
++}
++
++/**
+  * ocxlflash_config_afu() - configure the host AFU
+  * @pdev:	PCI device associated with the host.
+  * @afu:	AFU associated with the host.
+@@ -369,6 +432,13 @@ static int ocxlflash_config_afu(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
+ 	afu->max_pasid = 1 << acfg->pasid_supported_log;
+ 
+ 	ocxl_config_set_afu_pasid(pdev, pos, 0, acfg->pasid_supported_log);
++
++	rc = ocxlflash_map_mmio(afu);
++	if (unlikely(rc)) {
++		dev_err(dev, "%s: ocxlflash_map_mmio failed rc=%d\n",
++			__func__, rc);
++		goto out;
++	}
+ out:
+ 	return rc;
+ }
+@@ -415,12 +485,14 @@ static void *ocxlflash_create_afu(struct pci_dev *pdev)
+ 		rc = PTR_ERR(ctx);
+ 		dev_err(dev, "%s: ocxlflash_dev_context_init failed rc=%d\n",
+ 			__func__, rc);
+-		goto err1;
++		goto err2;
+ 	}
+ 
+ 	afu->ocxl_ctx = ctx;
+ out:
+ 	return afu;
++err2:
++	ocxlflash_unconfig_afu(afu);
+ err1:
+ 	idr_destroy(&afu->idr);
+ 	kfree(afu);
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
-index 55db005..b963871 100644
+index b963871..18236e6 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.h
 +++ b/drivers/scsi/cxlflash/ocxl_hw.h
-@@ -17,6 +17,7 @@ struct ocxl_hw_afu {
- 	struct ocxlflash_context *ocxl_ctx; /* Host context */
- 	struct pci_dev *pdev;		/* PCI device */
- 	struct device *dev;		/* Generic device */
-+	bool perst_same_image;		/* Same image loaded on perst */
+@@ -27,6 +27,10 @@ struct ocxl_hw_afu {
+ 	int afu_actag_base;		/* AFU acTag base */
+ 	int afu_actag_enabled;		/* AFU acTag number enabled */
  
- 	struct ocxl_fn_config fcfg;	/* DVSEC config of the function */
- 	struct ocxl_afu_config acfg;	/* AFU configuration data */
++	phys_addr_t ppmmio_phys;	/* Per process MMIO space */
++	phys_addr_t gmmio_phys;		/* Global AFU MMIO space */
++	void __iomem *gmmio_virt;	/* Global MMIO map */
++
+ 	struct idr idr;			/* IDR to manage contexts */
+ 	int max_pasid;			/* Maximum number of contexts */
+ 	bool is_present;		/* Function has AFUs defined */
 -- 
 2.1.0
