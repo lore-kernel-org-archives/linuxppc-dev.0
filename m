@@ -1,23 +1,23 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40907D5GY8zF23k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:32:56 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QGSM33009565
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:32:54 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gy4dkg5h5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40907N0zlLzF23q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:33:03 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2QGWJZR055222
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:33:02 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gy3nd2b7a-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:32:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:33:01 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 10:32:53 -0600
+ Mon, 26 Mar 2018 10:33:00 -0600
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v3 17/41] cxlflash: Support starting an adapter context
-Date: Mon, 26 Mar 2018 11:32:48 -0500
+Subject: [PATCH v3 18/41] cxlflash: Support process specific mappings
+Date: Mon, 26 Mar 2018 11:32:56 -0500
 In-Reply-To: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1522081968-58080-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1522081976-58117-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,87 +41,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once the adapter context is created, it needs to be started by assigning
-the MMIO space for the context and by enabling the process element in the
-link. This commit adds the skeleton for starting the context and assigns
-the context specific MMIO space. Master contexts have access to the global
-MMIO space while the rest have access to the context specific space.
+Once the context is started, the assigned MMIO space can be mapped
+and unmapped. Provide means to map and unmap the context MMIO space.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/ocxl_hw.c | 39 +++++++++++++++++++++++++++++++++++++++
- drivers/scsi/cxlflash/ocxl_hw.h |  3 +++
- 2 files changed, 42 insertions(+)
+ drivers/scsi/cxlflash/ocxl_hw.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 2358034..b39a03d 100644
+index b39a03d..73b0b10 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.c
 +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -164,6 +164,44 @@ static int ocxlflash_process_element(void *ctx_cookie)
+@@ -151,6 +151,28 @@ static struct file *ocxlflash_getfile(struct device *dev, const char *name,
  }
  
  /**
-+ * start_context() - local routine to start a context
-+ * @ctx:	Adapter context to be started.
++ * ocxlflash_psa_map() - map the process specific MMIO space
++ * @ctx_cookie:	Adapter context for which the mapping needs to be done.
 + *
-+ * Assign the context specific MMIO space.
-+ *
-+ * Return: 0 on success, -errno on failure
++ * Return: MMIO pointer of the mapped region
 + */
-+static int start_context(struct ocxlflash_context *ctx)
-+{
-+	struct ocxl_hw_afu *afu = ctx->hw_afu;
-+	struct ocxl_afu_config *acfg = &afu->acfg;
-+	bool master = ctx->master;
-+
-+	if (master) {
-+		ctx->psn_size = acfg->global_mmio_size;
-+		ctx->psn_phys = afu->gmmio_phys;
-+	} else {
-+		ctx->psn_size = acfg->pp_mmio_stride;
-+		ctx->psn_phys = afu->ppmmio_phys + (ctx->pe * ctx->psn_size);
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ocxlflash_start_context() - start a kernel context
-+ * @ctx_cookie:	Adapter context to be started.
-+ *
-+ * Return: 0 on success, -errno on failure
-+ */
-+static int ocxlflash_start_context(void *ctx_cookie)
++static void __iomem *ocxlflash_psa_map(void *ctx_cookie)
 +{
 +	struct ocxlflash_context *ctx = ctx_cookie;
 +
-+	return start_context(ctx);
++	return ioremap(ctx->psn_phys, ctx->psn_size);
 +}
 +
 +/**
-  * ocxlflash_set_master() - sets the context as master
-  * @ctx_cookie:	Adapter context to set as master.
-  */
-@@ -581,6 +619,7 @@ static void *ocxlflash_fops_get_context(struct file *file)
++ * ocxlflash_psa_unmap() - unmap the process specific MMIO space
++ * @addr:	MMIO pointer to unmap.
++ */
++static void ocxlflash_psa_unmap(void __iomem *addr)
++{
++	iounmap(addr);
++}
++
++/**
+  * ocxlflash_process_element() - get process element of the adapter context
+  * @ctx_cookie:	Adapter context associated with the process element.
+  *
+@@ -618,6 +640,8 @@ static void *ocxlflash_fops_get_context(struct file *file)
+ /* Backend ops to ocxlflash services */
  const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
  	.module			= THIS_MODULE,
++	.psa_map		= ocxlflash_psa_map,
++	.psa_unmap		= ocxlflash_psa_unmap,
  	.process_element	= ocxlflash_process_element,
-+	.start_context		= ocxlflash_start_context,
+ 	.start_context		= ocxlflash_start_context,
  	.set_master		= ocxlflash_set_master,
- 	.get_context		= ocxlflash_get_context,
- 	.dev_context_init	= ocxlflash_dev_context_init,
-diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
-index 18236e6..ee19717 100644
---- a/drivers/scsi/cxlflash/ocxl_hw.h
-+++ b/drivers/scsi/cxlflash/ocxl_hw.h
-@@ -41,4 +41,7 @@ struct ocxlflash_context {
- 	struct address_space *mapping;	/* Mapping for pseudo filesystem */
- 	bool master;			/* Whether this is a master context */
- 	int pe;				/* Process element */
-+
-+	phys_addr_t psn_phys;		/* Process mapping */
-+	u64 psn_size;			/* Process mapping size */
- };
 -- 
 2.1.0
