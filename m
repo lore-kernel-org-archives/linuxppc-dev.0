@@ -1,33 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408qWm01D8zF1vR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 21:05:07 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408qWs0ZjvzF1vf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 21:05:12 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QA0OVJ082702
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:05:05 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gxwwmjgqc-1
+ w2Q9xWAx103145
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:05:10 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gxvvswkwf-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:05:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:05:10 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 06:05:03 -0400
+ Mon, 26 Mar 2018 06:05:09 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V6 1/4] powerpc/mm/slice: Consolidate return path in
- slice_get_unmapped_area()
-Date: Mon, 26 Mar 2018 15:34:47 +0530
+Subject: [PATCH V6 3/4] powerpc/mm/hash64: Increase the VA range
+Date: Mon, 26 Mar 2018 15:34:49 +0530
 In-Reply-To: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20180326100450.18614-2-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20180326100450.18614-4-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,107 +36,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In a following patch, on finding a free area we will need to do
-allocatinon of extra contexts as needed. Consolidating the return path
-for slice_get_unmapped_area() will make that easier.
-
-Split into a separate patch to make review easy.
+This patch increases the max virtual (effective) address value to 4PB.
+With 4K page size config we continue to limit ourself to 64TB.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+[mpe: Keep the H_PGTABLE_RANGE test, update it to work]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/slice.c | 36 ++++++++++++++++++++----------------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 2 +-
+ arch/powerpc/include/asm/processor.h          | 9 ++++++++-
+ arch/powerpc/mm/init_64.c                     | 6 ------
+ arch/powerpc/mm/pgtable-hash64.c              | 4 ++++
+ arch/powerpc/mm/pgtable_64.c                  | 5 -----
+ 5 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 1297b3ad7dd2..09ac1a709d0c 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -574,7 +574,8 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 		 */
- 		if (slice_check_range_fits(mm, &good_mask, addr, len)) {
- 			slice_dbg(" fits good !\n");
--			return addr;
-+			newaddr = addr;
-+			goto return_addr;
- 		}
- 	} else {
- 		/* Now let's see if we can find something in the existing
-@@ -587,7 +588,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 			 * we thus return directly
- 			 */
- 			slice_dbg(" found area at 0x%lx\n", newaddr);
--			return newaddr;
-+			goto return_addr;
- 		}
- 	}
- 	/*
-@@ -601,6 +602,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	if (addr != 0 || fixed) {
- 		if (slice_check_range_fits(mm, &potential_mask, addr, len)) {
- 			slice_dbg(" fits potential !\n");
-+			newaddr = addr;
- 			goto convert;
- 		}
- 	}
-@@ -615,34 +617,34 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 	 * anywhere in the good area.
- 	 */
- 	if (addr) {
--		addr = slice_find_area(mm, len, &good_mask,
--				       psize, topdown, high_limit);
--		if (addr != -ENOMEM) {
--			slice_dbg(" found area at 0x%lx\n", addr);
--			return addr;
-+		newaddr = slice_find_area(mm, len, &good_mask,
-+					  psize, topdown, high_limit);
-+		if (newaddr != -ENOMEM) {
-+			slice_dbg(" found area at 0x%lx\n", newaddr);
-+			goto return_addr;
- 		}
- 	}
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 8d0cbbb31023..55d5cd64cdb3 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -4,7 +4,7 @@
  
- 	/* Now let's see if we can find something in the existing slices
- 	 * for that size plus free slices
- 	 */
--	addr = slice_find_area(mm, len, &potential_mask,
--			       psize, topdown, high_limit);
-+	newaddr = slice_find_area(mm, len, &potential_mask,
-+				  psize, topdown, high_limit);
+ #define H_PTE_INDEX_SIZE  8
+ #define H_PMD_INDEX_SIZE  10
+-#define H_PUD_INDEX_SIZE  7
++#define H_PUD_INDEX_SIZE  10
+ #define H_PGD_INDEX_SIZE  8
  
- #ifdef CONFIG_PPC_64K_PAGES
--	if (addr == -ENOMEM && psize == MMU_PAGE_64K) {
-+	if (newaddr == -ENOMEM && psize == MMU_PAGE_64K) {
- 		/* retry the search with 4k-page slices included */
- 		slice_or_mask(&potential_mask, &potential_mask, compat_maskp);
--		addr = slice_find_area(mm, len, &potential_mask,
--				       psize, topdown, high_limit);
-+		newaddr = slice_find_area(mm, len, &potential_mask,
-+					  psize, topdown, high_limit);
- 	}
- #endif
+ /*
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 75b084486ce1..bb9cb25ffb20 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -109,6 +109,13 @@ void release_thread(struct task_struct *);
+ #define TASK_SIZE_64TB  (0x0000400000000000UL)
+ #define TASK_SIZE_128TB (0x0000800000000000UL)
+ #define TASK_SIZE_512TB (0x0002000000000000UL)
++#define TASK_SIZE_1PB   (0x0004000000000000UL)
++#define TASK_SIZE_2PB   (0x0008000000000000UL)
++/*
++ * With 52 bits in the address we can support
++ * upto 4PB of range.
++ */
++#define TASK_SIZE_4PB   (0x0010000000000000UL)
  
--	if (addr == -ENOMEM)
-+	if (newaddr == -ENOMEM)
- 		return -ENOMEM;
+ /*
+  * For now 512TB is only supported with book3s and 64K linux page size.
+@@ -117,7 +124,7 @@ void release_thread(struct task_struct *);
+ /*
+  * Max value currently used:
+  */
+-#define TASK_SIZE_USER64		TASK_SIZE_512TB
++#define TASK_SIZE_USER64		TASK_SIZE_4PB
+ #define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
+ #define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
+ #else
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index fdb424a29f03..63470b06c502 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -68,12 +68,6 @@
  
--	slice_range_to_mask(addr, len, &potential_mask);
--	slice_dbg(" found potential area at 0x%lx\n", addr);
-+	slice_range_to_mask(newaddr, len, &potential_mask);
-+	slice_dbg(" found potential area at 0x%lx\n", newaddr);
- 	slice_print_mask(" mask", &potential_mask);
+ #include "mmu_decl.h"
  
-  convert:
-@@ -656,7 +658,9 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 		if (psize > MMU_PAGE_BASE)
- 			on_each_cpu(slice_flush_segments, mm, 1);
- 	}
--	return addr;
+-#ifdef CONFIG_PPC_BOOK3S_64
+-#if H_PGTABLE_RANGE > USER_VSID_RANGE
+-#warning Limited user VSID range means pagetable space is wasted
+-#endif
+-#endif /* CONFIG_PPC_BOOK3S_64 */
+-
+ phys_addr_t memstart_addr = ~0;
+ EXPORT_SYMBOL_GPL(memstart_addr);
+ phys_addr_t kernstart_addr;
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index a87b18cf6749..199bfda5f0d9 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -24,6 +24,10 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/thp.h>
+ 
++#if H_PGTABLE_RANGE > (USER_VSID_RANGE * (TASK_SIZE_USER64 / TASK_CONTEXT_SIZE))
++#warning Limited user VSID range means pagetable space is wasted
++#endif
 +
-+return_addr:
-+	return newaddr;
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ /*
+  * vmemmap is the starting address of the virtual address space where
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index adf469f312f2..9bf659d5078c 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -57,11 +57,6 @@
  
- }
- EXPORT_SYMBOL_GPL(slice_get_unmapped_area);
+ #include "mmu_decl.h"
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-#if TASK_SIZE_USER64 > (1UL << (ESID_BITS + SID_SHIFT))
+-#error TASK_SIZE_USER64 exceeds user VSID range
+-#endif
+-#endif
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ /*
 -- 
 2.14.3
