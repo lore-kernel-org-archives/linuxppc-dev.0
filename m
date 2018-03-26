@@ -1,22 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4099086KnqzF27D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 10:12:24 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 10:11:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
-Subject: linux-next: manual merge of the powerpc tree with the powerpc-fixes
- tree
-Message-ID: <20180327101125.145e4dc5@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/WD67ZlZokXL67XNA7GOI/8M"; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4099Qt0rPTzF21y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 10:32:05 +1100 (AEDT)
+Received: by mail-qt0-x242.google.com with SMTP id l18so5140262qtj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 16:32:05 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au,
+	mingo@redhat.com,
+	akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
+ fweimer@redhat.com, msuchanek@suse.com, tglx@linutronix.de,
+ shuah@kernel.org
+Subject: [PATCH] powerpc, pkey: make protection key 0 less special
+Date: Mon, 26 Mar 2018 16:31:41 -0700
+Message-Id: <1522107101-16083-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,150 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/WD67ZlZokXL67XNA7GOI/8M
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Applications need the ability to associate an address-range with some
+key and latter revert to its initial default key. Pkey-0 comes close to
+providing this function but falls short, because the current
+implementation disallows applications to explicitly associate pkey-0 to
+the address range.
 
-Hi all,
+Lets make pkey-0 less special and treat it almost like any other key.
+Thus it can be explicitly associated with any address range, and can be
+freed. This gives the application more flexibility and power.  The
+ability to free pkey-0 must be used responsibily, since pkey-0 is
+associated with almost all address-range by default.
 
-Today's linux-next merge of the powerpc tree got a conflict in:
+Even with this change pkey-0 continues to be slightly more special
+from the following point of view.
+(a) it is implicitly allocated.
+(b) it is the default key assigned to any address-range.
 
-  arch/powerpc/include/asm/cputable.h
-  arch/powerpc/kernel/dt_cpu_ftrs.c
+Tested on powerpc.
 
-between commit:
+cc: Thomas Gleixner <tglx@linutronix.de>
+cc: Dave Hansen <dave.hansen@intel.com>
+cc: Michael Ellermen <mpe@ellerman.id.au>
+cc: Ingo Molnar <mingo@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+---
+ arch/powerpc/include/asm/pkeys.h | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
-  a5d4b5891c2f ("powerpc/mm: Fixup tlbie vs store ordering issue on POWER9")
-
-from the powerpc-fixes tree and commits:
-
-  9bbf0b576d32 ("powerpc: Free up CPU feature bits on 64-bit machines")
-  b5af4f279323 ("powerpc: Add CPU feature bits for TM bug workarounds on PO=
-WER9 v2.2")
-
-from the powerpc tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
---=20
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/include/asm/cputable.h
-index 2e2bacbdf6ed,ecee84dea7e7..000000000000
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@@ -174,38 -181,40 +181,41 @@@ static inline void cpu_feature_keys_ini
-  #define LONG_ASM_CONST(x)		0
-  #endif
- =20
-- #define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000100000000)
-- #define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000200000000)
-- #define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000400000000)
-- #define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000800000000)
-- #define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000001000000000)
-- #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000002000000000)
-- #define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000004000000000)
-- #define CPU_FTR_SMT			LONG_ASM_CONST(0x0000008000000000)
-- #define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000010000000000)
-- #define CPU_FTR_PURR			LONG_ASM_CONST(0x0000020000000000)
-- #define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000040000000000)
-- #define CPU_FTR_SPURR			LONG_ASM_CONST(0x0000080000000000)
-- #define CPU_FTR_DSCR			LONG_ASM_CONST(0x0000100000000000)
-- #define CPU_FTR_VSX			LONG_ASM_CONST(0x0000200000000000)
-- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0000400000000000)
-- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0000800000000000)
-- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0001000000000000)
-- #define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0002000000000000)
-- #define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0004000000000000)
-- #define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0008000000000000)
-- #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0010000000000000)
-- #define CPU_FTR_PKEY			LONG_ASM_CONST(0x0020000000000000)
-- #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0040000000000000)
-- #define CPU_FTR_TM			LONG_ASM_CONST(0x0080000000000000)
-- #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0100000000000000)
-- #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
-- #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
-- #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
-- #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
-- #define CPU_FTR_P9_TLBIE_BUG		LONG_ASM_CONST(0x2000000000000000)
-- #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
-- #define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x8000000000000000)
-+ #define CPU_FTR_REAL_LE			LONG_ASM_CONST(0x0000000000001000)
-+ #define CPU_FTR_HVMODE			LONG_ASM_CONST(0x0000000000002000)
-+ #define CPU_FTR_ARCH_201		LONG_ASM_CONST(0x0000000000004000)
-+ #define CPU_FTR_ARCH_206		LONG_ASM_CONST(0x0000000000008000)
-+ #define CPU_FTR_ARCH_207S		LONG_ASM_CONST(0x0000000000010000)
-+ #define CPU_FTR_ARCH_300		LONG_ASM_CONST(0x0000000000020000)
-+ #define CPU_FTR_MMCRA			LONG_ASM_CONST(0x0000000000040000)
-+ #define CPU_FTR_CTRL			LONG_ASM_CONST(0x0000000000080000)
-+ #define CPU_FTR_SMT			LONG_ASM_CONST(0x0000000000100000)
-+ #define CPU_FTR_PAUSE_ZERO		LONG_ASM_CONST(0x0000000000200000)
-+ #define CPU_FTR_PURR			LONG_ASM_CONST(0x0000000000400000)
-+ #define CPU_FTR_CELL_TB_BUG		LONG_ASM_CONST(0x0000000000800000)
-+ #define CPU_FTR_SPURR			LONG_ASM_CONST(0x0000000001000000)
-+ #define CPU_FTR_DSCR			LONG_ASM_CONST(0x0000000002000000)
-+ #define CPU_FTR_VSX			LONG_ASM_CONST(0x0000000004000000)
-+ #define CPU_FTR_SAO			LONG_ASM_CONST(0x0000000008000000)
-+ #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0000000010000000)
-+ #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0000000020000000)
-+ #define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0000000040000000)
-+ #define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0000000080000000)
-+ #define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0000000100000000)
-+ #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0000000200000000)
-+ #define CPU_FTR_PKEY			LONG_ASM_CONST(0x0000000400000000)
-+ #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0000000800000000)
-+ #define CPU_FTR_TM			LONG_ASM_CONST(0x0000001000000000)
-+ #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0000002000000000)
-+ #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0000004000000000)
-+ #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0000008000000000)
-+ #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0000010000000000)
-+ #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
-+ #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
-+ #define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
-+ #define CPU_FTR_P9_TM_HV_ASSIST		LONG_ASM_CONST(0x0000100000000000)
-+ #define CPU_FTR_P9_TM_XER_SO_BUG	LONG_ASM_CONST(0x0000200000000000)
-++#define CPU_FTR_P9_TLBIE_BUG		LONG_ASM_CONST(0x0000400000000000)
- =20
-  #ifndef __ASSEMBLY__
- =20
-diff --cc arch/powerpc/kernel/dt_cpu_ftrs.c
-index 8ca5d5b74618,0a0c601c6ade..000000000000
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@@ -709,9 -710,9 +710,12 @@@ static __init void cpufeatures_cpu_quir
-  		cur_cpu_spec->cpu_features |=3D CPU_FTR_POWER9_DD1;
-  	else if ((version & 0xffffefff) =3D=3D 0x004e0201)
-  		cur_cpu_spec->cpu_features |=3D CPU_FTR_POWER9_DD2_1;
-+ 	else if ((version & 0xffffefff) =3D=3D 0x004e0202)
-+ 		cur_cpu_spec->cpu_features |=3D CPU_FTR_P9_TM_HV_ASSIST |
-+ 			CPU_FTR_P9_TM_XER_SO_BUG;
- +
- +	if ((version & 0xffff0000) =3D=3D 0x004e0000)
- +		cur_cpu_spec->cpu_features |=3D CPU_FTR_P9_TLBIE_BUG;
-  }
- =20
-  static void __init cpufeatures_setup_finished(void)
-
---Sig_/WD67ZlZokXL67XNA7GOI/8M
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlq5fh0ACgkQAVBC80lX
-0GxWPggAmZPYs85ShmegxV2eibDw7nAqp0d4Itu1A8+iBeFZwKnVHPXFo7rVQaxD
-SOwQrhaF82LF6GZIdBHeDRJsnurIzTMyWMsaMxQmRFhJwpGDLpA2yeL4uWxiA6FQ
-OoFxFsR162ToLjIsKxDu7meu+I2EJ/OjSHGW+uDv62q3fKizwNdtjGn7weoDZ+Nt
-Aop61npnDca8x3lneyhJ1jKatP5q/tzbIEEwxVfd1nHHMmL4+Wxpp3iKQSzc+Zeo
-R55CgZJ9d1wUOXSP9LZLpsqsrNxH6TGDHHelHCK6PK2MiPKu1EHyBk35RfkKQiA1
-RsYVEL8B4FV0HLqXuJu3GHPYuNShmA==
-=GXzT
------END PGP SIGNATURE-----
-
---Sig_/WD67ZlZokXL67XNA7GOI/8M--
+diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+index 0409c80..9c7d3bd 100644
+--- a/arch/powerpc/include/asm/pkeys.h
++++ b/arch/powerpc/include/asm/pkeys.h
+@@ -101,10 +101,18 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
+ 
+ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+ {
+-	/* A reserved key is never considered as 'explicitly allocated' */
+-	return ((pkey < arch_max_pkey()) &&
+-		!__mm_pkey_is_reserved(pkey) &&
+-		__mm_pkey_is_allocated(mm, pkey));
++	/* pkey 0 is allocated by default. */
++	if (!pkey)
++		return true;
++
++	if (pkey < 0 || pkey >= arch_max_pkey())
++		return false;
++
++	/* Reserved keys are never allocated. */
++	if (__mm_pkey_is_reserved(pkey))
++		return false;
++
++	return __mm_pkey_is_allocated(mm, pkey);
+ }
+ 
+ extern void __arch_activate_pkey(int pkey);
+@@ -200,6 +208,14 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ {
+ 	if (static_branch_likely(&pkey_disabled))
+ 		return -EINVAL;
++
++	/*
++	 * userspace is discouraged from changing permissions of
++	 * pkey-0. powerpc hardware does not support it anyway.
++	 */
++	if (!pkey)
++		return init_val ? -EINVAL : 0;
++
+ 	return __arch_set_user_pkey_access(tsk, pkey, init_val);
+ }
+ 
+-- 
+1.8.3.1
