@@ -1,26 +1,36 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408zQK6q61zF22B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:00:56 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Oliver <oohall@gmail.com>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <2d2a744a-57b2-ca42-db40-4705df0375db@codeaurora.org>
- <CAK8P3a2tumcR7mcE3++cofhF-FHzgZg_1OF+GXCZuwGckMOF1Q@mail.gmail.com>
-From: Sinan Kaya <okaya@codeaurora.org>
-Message-ID: <4b1004a8-2d8b-681f-3050-a1365cfb8321@codeaurora.org>
-Date: Mon, 26 Mar 2018 12:00:52 -0400
-MIME-Version: 1.0
-In-Reply-To: <CAK8P3a2tumcR7mcE3++cofhF-FHzgZg_1OF+GXCZuwGckMOF1Q@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40903H5Z9PzF21Y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:29:31 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2QGLMeT037614
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:29:29 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gy1t2887q-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:29:28 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Mon, 26 Mar 2018 12:29:28 -0400
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH v3 00/41] cxlflash: OCXL transport support and miscellaneous
+ fixes
+Date: Mon, 26 Mar 2018 11:29:19 -0500
+Message-Id: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +40,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/26/2018 9:43 AM, Arnd Bergmann wrote:
-> On Wed, Mar 21, 2018 at 2:58 PM, Sinan Kaya <okaya@codeaurora.org> wrote:
->> On 3/21/2018 8:53 AM, Sinan Kaya wrote:
->>> BTW, I have no idea what compiler barrier does on PPC and if
->>>
->>> wrltel() == compiler barrier() + wrltel_relaxed()
->>>
->>> can be said.
->>
->> this should have been
->>
->> writel_relaxed() == compiler barrier() + __raw_writel()
-> 
-> I don't think anyone clarified this so far, but there are additional differences
-> between the two, writel_relaxed() assumes we are talking to a 32-bit
-> little-endian
-> MMIO register, while __raw_writel() is primarily used for writing into
-> memory-type
-> regions with no particular byte order. This means:
-> 
-> - writel_relaxed() must perform a byte swap when running on big-endian kernels
-> - when used with __packed MMIO pointers, __raw_writel() may turn into a series
->   of byte writes, while writel_relaxed() must result in a single 32-bit access.
-> - A set if consecutive writel_relaxed() on the same device is issued in program
->   order, while __raw_writel() is not ordered. This typically requires
-> only a compiler
->   barrier, but may also need a CPU barrier (in addition to the
-> barriers we use to
->   serialize with spinlocks and DMA in writel() but not writel_relaxed()).
+This patch series adds OCXL support to the cxlflash driver. With this
+support, new devices using the OCXL transport will be supported by the
+cxlflash driver along with the existing CXL devices. An effort is made
+to keep this transport specific function independent of the existing
+core driver that communicates with the AFU.
 
-Thanks for the great summary. I didn't know that __raw_writel() could get converted
-to byte writes.
+The first three patches contain a minor fix and staging improvements.
 
-> 
->         Arnd
-> 
+This series is intended for 4.17 and is bisectable.
 
+v3 Changes:
+- Addressed comments by Frederic Barrat
+- Resolved IDR initialization bug
+- Properly identify functions that do not have an AFU defined
+- Added 3 new patches to the end of the series which resolve corner cases
+
+v2 Changes:
+- Replaced OpenCXL with OCXL in the commit messages and comments
+
+Matthew R. Ochs (1):
+  cxlflash: Avoid clobbering context control register value
+
+Uma Krishnan (40):
+  cxlflash: Preserve number of interrupts for master contexts
+  cxlflash: Add argument identifier names
+  cxlflash: Introduce OCXL backend
+  cxlflash: Hardware AFU for OCXL
+  cxlflash: Read host function configuration
+  cxlflash: Setup function acTag range
+  cxlflash: Read host AFU configuration
+  cxlflash: Setup AFU acTag range
+  cxlflash: Setup AFU PASID
+  cxlflash: Adapter context support for OCXL
+  cxlflash: Use IDR to manage adapter contexts
+  cxlflash: Support adapter file descriptors for OCXL
+  cxlflash: Support adapter context discovery
+  cxlflash: Support image reload policy modification
+  cxlflash: MMIO map the AFU
+  cxlflash: Support starting an adapter context
+  cxlflash: Support process specific mappings
+  cxlflash: Support AFU state toggling
+  cxlflash: Support reading adapter VPD data
+  cxlflash: Setup function OCXL link
+  cxlflash: Setup OCXL transaction layer
+  cxlflash: Support process element lifecycle
+  cxlflash: Support AFU interrupt management
+  cxlflash: Support AFU interrupt mapping and registration
+  cxlflash: Support starting user contexts
+  cxlflash: Support adapter context polling
+  cxlflash: Support adapter context reading
+  cxlflash: Support adapter context mmap and release
+  cxlflash: Support file descriptor mapping
+  cxlflash: Introduce object handle fop
+  cxlflash: Setup LISNs for user contexts
+  cxlflash: Setup LISNs for master contexts
+  cxlflash: Update synchronous interrupt status bits
+  cxlflash: Introduce OCXL context state machine
+  cxlflash: Register for translation errors
+  cxlflash: Support AFU reset
+  cxlflash: Enable OCXL operations
+  cxlflash: Synchronize reset and remove ops
+  cxlflash: Remove commmands from pending list on timeout
+  cxlflash: Handle spurious interrupts
+
+ drivers/scsi/cxlflash/Kconfig     |    2 +-
+ drivers/scsi/cxlflash/Makefile    |    2 +-
+ drivers/scsi/cxlflash/backend.h   |   50 +-
+ drivers/scsi/cxlflash/common.h    |   11 +-
+ drivers/scsi/cxlflash/cxl_hw.c    |   13 +
+ drivers/scsi/cxlflash/main.c      |   86 ++-
+ drivers/scsi/cxlflash/main.h      |    1 +
+ drivers/scsi/cxlflash/ocxl_hw.c   | 1436 +++++++++++++++++++++++++++++++++++++
+ drivers/scsi/cxlflash/ocxl_hw.h   |   77 ++
+ drivers/scsi/cxlflash/sislite.h   |   41 +-
+ drivers/scsi/cxlflash/superpipe.c |   14 +
+ 11 files changed, 1682 insertions(+), 51 deletions(-)
+ create mode 100644 drivers/scsi/cxlflash/ocxl_hw.c
+ create mode 100644 drivers/scsi/cxlflash/ocxl_hw.h
 
 -- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.1.0
