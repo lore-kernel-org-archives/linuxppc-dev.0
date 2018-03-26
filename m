@@ -1,39 +1,30 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4097380Q1MzF24M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:44:51 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id y63so4650496pgy.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:44:51 -0700 (PDT)
-Date: Mon, 26 Mar 2018 14:44:48 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: Re: [PATCH v9 21/24] perf tools: Add support for the SPF perf
- event
-In-Reply-To: <1520963994-28477-22-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803261443560.255554@chino.kir.corp.google.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-22-git-send-email-ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40974Y4x0YzF25W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:46:04 +1100 (AEDT)
+Message-ID: <1522099618.7364.0.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@ACULAB.COM>
+Cc: Sinan Kaya <okaya@codeaurora.org>, "open list:LINUX FOR POWERPC (32-BIT
+ AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, Oliver <oohall@gmail.com>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
+Date: Tue, 27 Mar 2018 08:26:58 +1100
+In-Reply-To: <20180326165425.GA15554@ziepe.ca>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+ <1521692689.16434.293.camel@kernel.crashing.org>
+ <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
+ <1521726722.16434.312.camel@kernel.crashing.org>
+ <20180323163510.GC13033@ziepe.ca>
+ <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,13 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Mar 2018, Laurent Dufour wrote:
-
-> Add support for the new speculative faults event.
+On Mon, 2018-03-26 at 10:54 -0600, Jason Gunthorpe wrote:
+> On Mon, Mar 26, 2018 at 11:08:45AM +0000, David Laight wrote:
+> > > > This is a super performance critical operation for most drivers and
+> > > > directly impacts network performance.
+> > 
+> > Perhaps there ought to be writel_nobarrier() (etc) that never contain
+> > any barriers at all.
+> > This might mean that they are always just the memory operation,
+> > but it would make it more obvious what the driver was doing.
 > 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> I think that is what writel_relaxed is supposed to be.
+> 
+> The only restriction it has is that the writes to a single device
+> using UC memory must be kept in program order..
 
-Acked-by: David Rientjes <rientjes@google.com>
+Which requires barriers on some architectures :-)
 
-Aside: should there be a new spec_flt field for struct task_struct that 
-complements maj_flt and min_flt and be exported through /proc/pid/stat?
+Also we don't have a clear definition of what happens on WC memory.
+
+Cheers,
+Ben.
