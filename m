@@ -2,18 +2,13 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408p190hTCzF1y3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 19:57:01 +1100 (AEDT)
-In-Reply-To: <1521628323-14451-2-git-send-email-paulus@ozlabs.org>
-To: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kvm-ppc@vger.kernel.org
-Subject: Re: [v2,
- 1/5] powerpc: Add CPU feature bits for TM bug workarounds on POWER9
- v2.2
-Message-Id: <408p1869Nqz9s1b@ozlabs.org>
-Date: Mon, 26 Mar 2018 19:57:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408pLs1M1gzF1x9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 20:12:21 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/10] powerpc: Add security feature flags for Spectre/Meltdown
+Date: Mon, 26 Mar 2018 20:12:06 +1100
+Message-Id: <20180326091215.7784-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +18,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-21 at 10:31:59 UTC, Paul Mackerras wrote:
-> This adds a CPU feature bit which is set for POWER9 "Nimbus" DD2.2
-> processors which will be used to enable the hypervisor to assist
-> hardware with the handling of checkpointed register values while the
-> CPU is in suspend state, in order to work around hardware bugs.  The
-> hardware assistance for these workarounds introduced a new hardware
-> bug relating to the XER[SO] bit.  We add a separate feature bit for
-> this bug in case future chips fix it while still requiring the
-> hypervisor assistance with suspend state.
-> 
-> When the dt_cpu_ftrs subsystem is in use, the software assistance can
-> be enabled using a "tm-suspend-hypervisor-assist" node in the device
-> tree, and a "tm-suspend-xer-so-bug" node enables the workarounds for
-> the XER[SO] bug.  In the absence of such nodes, a quirk enables both
-> for POWER9 "Nimbus" DD2.2 processors.
-> 
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+This commit adds security feature flags to reflect the settings we
+receive from firmware regarding Spectre/Meltdown mitigations.
 
-Series applied to powerpc next, thanks.
+The feature names reflect the names we are given by firmware on bare
+metal machines. See the hostboot source for details.
 
-https://git.kernel.org/powerpc/c/b5af4f2793233cf37596e2c1f7b233
+Arguably these could be firmware features, but that then requires them
+to be read early in boot so they're available prior to asm feature
+patching, but we don't actually want to use them for patching. We may
+also want to dynamically update them in future, which would be
+incompatible with the way firmware features work (at the moment at
+least). So for now just make them separate flags.
 
-cheers
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/security_features.h | 65 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/Makefile                 |  2 +-
+ arch/powerpc/kernel/security.c               | 14 ++++++
+ 3 files changed, 80 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/security_features.h
+ create mode 100644 arch/powerpc/kernel/security.c
+
+diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+new file mode 100644
+index 000000000000..db00ad2c72c2
+--- /dev/null
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -0,0 +1,65 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Security related feature bit definitions.
++ *
++ * Copyright 2018, Michael Ellerman, IBM Corporation.
++ */
++
++#ifndef _ASM_POWERPC_SECURITY_FEATURES_H
++#define _ASM_POWERPC_SECURITY_FEATURES_H
++
++
++extern unsigned long powerpc_security_features;
++
++static inline void security_ftr_set(unsigned long feature)
++{
++	powerpc_security_features |= feature;
++}
++
++static inline void security_ftr_clear(unsigned long feature)
++{
++	powerpc_security_features &= ~feature;
++}
++
++static inline bool security_ftr_enabled(unsigned long feature)
++{
++	return !!(powerpc_security_features & feature);
++}
++
++
++// Features indicating support for Spectre/Meltdown mitigations
++
++// The L1-D cache can be flushed with ori r30,r30,0
++#define SEC_FTR_L1D_FLUSH_ORI30		0x0000000000000001ull
++
++// The L1-D cache can be flushed with mtspr 882,r0 (aka SPRN_TRIG2)
++#define SEC_FTR_L1D_FLUSH_TRIG2		0x0000000000000002ull
++
++// ori r31,r31,0 acts as a speculation barrier
++#define SEC_FTR_SPEC_BAR_ORI31		0x0000000000000004ull
++
++// Speculation past bctr is disabled
++#define SEC_FTR_BCCTRL_SERIALISED	0x0000000000000008ull
++
++// Entries in L1-D are private to a SMT thread
++#define SEC_FTR_L1D_THREAD_PRIV		0x0000000000000010ull
++
++// Indirect branch prediction cache disabled
++#define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
++
++
++// Features indicating need for Spectre/Meltdown mitigations
++
++// The L1-D cache should be flushed on MSR[HV] 1->0 transition (hypervisor to guest)
++#define SEC_FTR_L1D_FLUSH_HV		0x0000000000000040ull
++
++// The L1-D cache should be flushed on MSR[PR] 0->1 transition (kernel to userspace)
++#define SEC_FTR_L1D_FLUSH_PR		0x0000000000000080ull
++
++// A speculation barrier should be used for bounds checks (Spectre variant 1)
++#define SEC_FTR_BNDS_CHK_SPEC_BAR	0x0000000000000100ull
++
++// Firmware configuration indicates user favours security over performance
++#define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
++
++#endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 1b6bc7fba996..d458c45e5004 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -42,7 +42,7 @@ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+-obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
++obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+ obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
+ obj-$(CONFIG_PPC64)		+= vdso64/
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+new file mode 100644
+index 000000000000..c62a5d7196e3
+--- /dev/null
++++ b/arch/powerpc/kernel/security.c
+@@ -0,0 +1,14 @@
++// SPDX-License-Identifier: GPL-2.0+
++//
++// Security related flags and so on.
++//
++// Copyright 2018, Michael Ellerman, IBM Corporation.
++
++#include <asm/security_features.h>
++
++
++unsigned long powerpc_security_features __read_mostly = \
++	SEC_FTR_L1D_FLUSH_HV | \
++	SEC_FTR_L1D_FLUSH_PR | \
++	SEC_FTR_BNDS_CHK_SPEC_BAR | \
++	SEC_FTR_FAVOUR_SECURITY;
+-- 
+2.14.1
