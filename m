@@ -1,24 +1,16 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408gXp5bzbzF1rs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:05:30 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id c11-v6so11195234plo.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 21:05:30 -0700 (PDT)
-Date: Mon, 26 Mar 2018 15:05:16 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: linux-nvdimm@lists.01.org, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/6] libnvdimm: Add device-tree based driver
-Message-ID: <20180326150516.619a18cb@gmail.com>
-In-Reply-To: <20180323081209.31387-3-oohall@gmail.com>
-References: <20180323081209.31387-1-oohall@gmail.com>
- <20180323081209.31387-3-oohall@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408gpn6CFhzF1wk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:17:37 +1100 (AEDT)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, ruscur@russell.cc,
+ sam.bobroff@au1.ibm.com
+Subject: [PATCH v2] powerpc/eeh: Fix race with driver un/bind
+Date: Mon, 26 Mar 2018 15:17:07 +1100
+Message-Id: <20180326041707.11246-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,236 +20,257 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 23 Mar 2018 19:12:06 +1100
-Oliver O'Halloran <oohall@gmail.com> wrote:
+The current EEH callbacks can race with a driver unbind. This
+can result in a backtraces like this:
 
-> This patch adds peliminary device-tree bindings for the NVDIMM driver.
-> Currently this only supports one bus (created at probe time) which all
-> regions are added to with individual regions being created by a platform
-> device driver.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
+[    7.573055] EEH: Frozen PHB#0-PE#1fc detected
+[    7.573063] EEH: PE location: S000009, PHB location: N/A
+[    7.573069] CPU: 2 PID: 2312 Comm: kworker/u258:3 Not tainted 4.15.6-openpower1 #2
+[    7.573078] Workqueue: nvme-wq nvme_reset_work [nvme]
+[    7.573080] Call Trace:
+[    7.573088] [c000000ff12a3a30] [c0000000005f5000] dump_stack+0x9c/0xd0
+[    7.573093]  (unreliable)
+[    7.573106] [c000000ff12a3a70] [c00000000002385c] eeh_dev_check_failure+0x420/0x470
+[    7.573111] [c000000ff12a3b10] [c00000000002394c] eeh_check_failure+0xa0/0xa4
+[    7.573115] [c000000ff12a3b50] [c0080000088c2ff0] nvme_reset_work+0x138/0x1414 [nvme]
+[    7.573122] [c000000ff12a3cb0] [c000000000089c78] process_one_work+0x1ec/0x328
+[    7.573132] [c000000ff12a3d40] [c00000000008a3b4] worker_thread+0x2e4/0x3a8
+[    7.573140] [c000000ff12a3dc0] [c00000000008fed0] kthread+0x14c/0x154
+[    7.573150] [c000000ff12a3e30] [c00000000000b594] ret_from_kernel_thread+0x5c/0xc8
+[    7.573183] nvme nvme1: Removing after probe failure status: -19
+<snip>
+cpu 0x23: Vector: 300 (Data Access) at [c000000ff50f3800]
+    pc: c0080000089a0eb0: nvme_error_detected+0x4c/0x90 [nvme]
+    lr: c000000000026564: eeh_report_error+0xe0/0x110
+    sp: c000000ff50f3a80
+   msr: 9000000000009033
+   dar: 400
+ dsisr: 40000000
+  current = 0xc000000ff507c000
+  paca    = 0xc00000000fdc9d80   softe: 0        irq_happened: 0x01
+    pid   = 782, comm = eehd
+Linux version 4.15.6-openpower1 (smc@smc-desktop) (gcc version 6.4.0 (Buildroot 2017.11.2-00008-g4b6188e)) #2 SM                                             P Tue Feb 27 12:33:27 PST 2018
+enter ? for help
+[c000000ff50f3af0] c000000000026564 eeh_report_error+0xe0/0x110
+[c000000ff50f3b30] c000000000025520 eeh_pe_dev_traverse+0xc0/0xdc
+[c000000ff50f3bc0] c000000000026bd0 eeh_handle_normal_event+0x184/0x4c4
+[c000000ff50f3c70] c000000000026ff4 eeh_handle_event+0x30/0x288
+[c000000ff50f3d10] c00000000002758c eeh_event_handler+0x124/0x170
+[c000000ff50f3dc0] c00000000008fed0 kthread+0x14c/0x154
+[c000000ff50f3e30] c00000000000b594 ret_from_kernel_thread+0x5c/0xc8
 
-It's a good idea to keep a changelog from the previous revisions, but I'm
-just nit-picking. The reason I want to bring that up is because this revision
-has different bindings from what was proposed earlier.
+The first part is an EEH (on boot), the second half is the resulting
+crash. nvme probe starts the nvme_reset_work() worker thread. This
+worker thread starts touching the device which see a device error
+(EEH) and hence queues up an event in the powerpc EEH worker
+thread. nvme_reset_work() then continues and runs
+nvme_remove_dead_ctrl_work() which results in unbinding the driver
+from the device and hence releases all resources. At the same time,
+the EEH worker thread starts doing the EEH .error_detected() driver
+callback, which no longer works since the resources have been freed.
 
-> I suspect the platform driver should be holding a reference to the
-> created region. I left that out here since previously Dan has said
-> he'd rather keep the struct device internal to libnvdimm and the only
-> other way a region device can disappear is when the bus is unregistered.
+This fixes the problem in the same way the generic PCIe AER code (in
+drivers/pci/pcie/aer/aerdrv_core.c) does. It makes the EEH code hold
+the device_lock() while performing the driver EEH callbacks and
+associated code. This ensures either the callbacks are no longer
+register, or if they are registered the driver will not be removed
+from underneath us.
 
-I think the previous bindings did not have this issue, but the suggestion
-was to move regions to being platform devices so as to avoid custom
-code for tracking what is populated and what is not.
+This has been broken forever. The EEH call backs were first introduced
+in 2005 (in 77bd7415610) but it's not clear if a lock was needed back
+then.
 
-Personally I liked the previous binding better, but then I am not a device
-tree expert.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: stable@vger.kernel.org
+---
+v2:
+  Updates based on benh's comments:
+  - Change jump labels
+  - Clarify where lock is held in commit message
+---
+ arch/powerpc/kernel/eeh_driver.c | 68 +++++++++++++++++++++++++---------------
+ 1 file changed, 42 insertions(+), 26 deletions(-)
 
-> ---
->  MAINTAINERS                |   8 +++
->  drivers/nvdimm/Kconfig     |  10 ++++
->  drivers/nvdimm/Makefile    |   1 +
->  drivers/nvdimm/of_nvdimm.c | 130 +++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 149 insertions(+)
->  create mode 100644 drivers/nvdimm/of_nvdimm.c
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4e62756936fa..e3fc47fbfc7a 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -8035,6 +8035,14 @@ Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
->  S:	Supported
->  F:	drivers/nvdimm/pmem*
->  
-> +LIBNVDIMM: DEVICETREE BINDINGS
-> +M:	Oliver O'Halloran <oohall@gmail.com>
-> +L:	linux-nvdimm@lists.01.org
-> +Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
-> +S:	Supported
-> +F:	drivers/nvdimm/of_nvdimm.c
-> +F:	Documentation/devicetree/bindings/nvdimm/nvdimm-bus.txt
-> +
->  LIBNVDIMM: NON-VOLATILE MEMORY DEVICE SUBSYSTEM
->  M:	Dan Williams <dan.j.williams@intel.com>
->  L:	linux-nvdimm@lists.01.org
-> diff --git a/drivers/nvdimm/Kconfig b/drivers/nvdimm/Kconfig
-> index a65f2e1d9f53..505a9bbbe49f 100644
-> --- a/drivers/nvdimm/Kconfig
-> +++ b/drivers/nvdimm/Kconfig
-> @@ -102,4 +102,14 @@ config NVDIMM_DAX
->  
->  	  Select Y if unsure
->  
-> +config OF_NVDIMM
-> +	tristate "Device-tree support for NVDIMMs"
-> +	depends on OF
-> +	default LIBNVDIMM
-> +	help
-> +	  Allows byte addressable persistent memory regions to be described in the
-> +	  device-tree.
-
-Again nit-picking, but I thought we supported volatile mappings too.
-
-> +
-> +	  Select Y if unsure.
-> +
->  endif
-> diff --git a/drivers/nvdimm/Makefile b/drivers/nvdimm/Makefile
-> index 70d5f3ad9909..fd6a5838aa25 100644
-> --- a/drivers/nvdimm/Makefile
-> +++ b/drivers/nvdimm/Makefile
-> @@ -4,6 +4,7 @@ obj-$(CONFIG_BLK_DEV_PMEM) += nd_pmem.o
->  obj-$(CONFIG_ND_BTT) += nd_btt.o
->  obj-$(CONFIG_ND_BLK) += nd_blk.o
->  obj-$(CONFIG_X86_PMEM_LEGACY) += nd_e820.o
-> +obj-$(CONFIG_OF_NVDIMM) += of_nvdimm.o
->  
->  nd_pmem-y := pmem.o
->  
-> diff --git a/drivers/nvdimm/of_nvdimm.c b/drivers/nvdimm/of_nvdimm.c
-> new file mode 100644
-> index 000000000000..79c28291f420
-> --- /dev/null
-> +++ b/drivers/nvdimm/of_nvdimm.c
-> @@ -0,0 +1,130 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +
-> +#define pr_fmt(fmt) "of_nvdimm: " fmt
-> +
-> +#include <linux/of_platform.h>
-> +#include <linux/of_address.h>
-> +#include <linux/libnvdimm.h>
-> +#include <linux/module.h>
-> +#include <linux/ioport.h>
-> +#include <linux/slab.h>
-> +
-> +/*
-> + * Container bus stuff.  For now we just chunk regions into a default
-> + * bus with no ndctl support. In the future we'll add some mechanism
-> + * for dispatching regions into the correct bus type, but this is useful
-> + * for now.
-
-I liked that the previous binding handled this better, it looked very
-similar to the e820 binding in terms of simplicity.
-
-> + */
-> +struct nvdimm_bus_descriptor bus_desc;
-> +struct nvdimm_bus *bus;
-> +
-> +/* region driver */
-> +
-> +static const struct attribute_group *region_attr_groups[] = {
-> +	&nd_region_attribute_group,
-> +	&nd_device_attribute_group,
-> +	NULL,
-> +};
-> +
-> +static const struct attribute_group *bus_attr_groups[] = {
-> +	&nvdimm_bus_attribute_group,
-> +	NULL,
-> +};
-> +
-> +static int of_nd_region_probe(struct platform_device *pdev)
-> +{
-> +	struct nd_region_desc ndr_desc;
-> +	struct resource temp_res;
-> +	struct nd_region *region;
-> +	struct device_node *np;
-> +
-> +	np = dev_of_node(&pdev->dev);
-> +	if (!np)
-> +		return -ENXIO;
-> +
-> +	pr_err("registering region for %pOF\n", np);
-> +
-> +	if (of_address_to_resource(np, 0, &temp_res)) {
-> +		pr_warn("Unable to parse reg[0] for %pOF\n", np);
-> +		return -ENXIO;
-> +	}
-> +
-> +	memset(&ndr_desc, 0, sizeof(ndr_desc));
-> +	ndr_desc.res = &temp_res;
-> +	ndr_desc.of_node = np;
-> +	ndr_desc.attr_groups = region_attr_groups;
-> +	ndr_desc.numa_node = of_node_to_nid(np);
-
-We probably need an ndr_desc.provider
-
-> +	set_bit(ND_REGION_PAGEMAP, &ndr_desc.flags);
-> +
-> +	/*
-> +	 * NB: libnvdimm copies the data from ndr_desc into it's own structures
-> +	 * so passing stack pointers is fine.
-> +	 */
-> +	if (of_get_property(np, "volatile", NULL))
-> +		region = nvdimm_volatile_region_create(bus, &ndr_desc);
-> +	else
-> +		region = nvdimm_pmem_region_create(bus, &ndr_desc);
-> +
-> +	pr_warn("registered pmem region %px\n", region);
-> +	if (!region)
-> +		return -ENXIO;
-> +
-> +	platform_set_drvdata(pdev, region);
-> +
-> +	return 0;
-> +}
-> +
-> +static int of_nd_region_remove(struct platform_device *pdev)
-> +{
-> +	struct nd_region *r = platform_get_drvdata(pdev);
-> +
-> +	nd_region_destroy(r);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id of_nd_region_match[] = {
-> +	{ .compatible = "nvdimm-region" },
-> +	{ },
-> +};
-> +
-> +static struct platform_driver of_nd_region_driver = {
-> +	.probe = of_nd_region_probe,
-> +	.remove = of_nd_region_remove,
-> +	.driver = {
-> +		.name = "of_nd_region",
-> +		.owner = THIS_MODULE,
-> +		.of_match_table = of_nd_region_match,
-> +	},
-> +};
-> +
-> +/* bus wrangling */
-> +
-> +static int __init of_nvdimm_init(void)
-> +{
-> +	/* register  */
-> +	bus_desc.attr_groups = bus_attr_groups;
-> +	bus_desc.provider_name = "of_nvdimm";
-> +	bus_desc.module = THIS_MODULE;
-> +
-> +	/* does parent == NULL work? */
-> +	bus = nvdimm_bus_register(NULL, &bus_desc);
-> +	if (!bus)
-> +		return -ENODEV;
-> +
-> +	platform_driver_register(&of_nd_region_driver);
-> +
-> +	return 0;
-> +}
-> +module_init(of_nvdimm_init);
-> +
-> +static void __init of_nvdimm_exit(void)
-> +{
-> +	nvdimm_bus_unregister(bus);
-> +	platform_driver_unregister(&of_nd_region_driver);
-> +}
-> +module_exit(of_nvdimm_exit);
-> +
-> +MODULE_DEVICE_TABLE(of, of_nd_region_match);
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR("IBM Corporation");
-
-Balbir Singh.
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 0c0b66fc5b..295ba83384 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -207,18 +207,18 @@ static void *eeh_report_error(void *data, void *userdata)
+ 
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
++
++	device_lock(&dev->dev);
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+ 	driver = eeh_pcid_get(dev);
+-	if (!driver) return NULL;
++	if (!driver) goto out_no_dev;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+-	    !driver->err_handler->error_detected) {
+-		eeh_pcid_put(dev);
+-		return NULL;
+-	}
++	    !driver->err_handler->error_detected)
++		goto out;
+ 
+ 	rc = driver->err_handler->error_detected(dev, pci_channel_io_frozen);
+ 
+@@ -227,8 +227,12 @@ static void *eeh_report_error(void *data, void *userdata)
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+ 
+ 	edev->in_error = true;
+-	eeh_pcid_put(dev);
+ 	pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
++
++out:
++	eeh_pcid_put(dev);
++out_no_dev:
++	device_unlock(&dev->dev);
+ 	return NULL;
+ }
+ 
+@@ -251,15 +255,14 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
+ 
++	device_lock(&dev->dev);
+ 	driver = eeh_pcid_get(dev);
+-	if (!driver) return NULL;
++	if (!driver) goto out_no_dev;
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->mmio_enabled ||
+-	    (edev->mode & EEH_DEV_NO_HANDLER)) {
+-		eeh_pcid_put(dev);
+-		return NULL;
+-	}
++	    (edev->mode & EEH_DEV_NO_HANDLER))
++		goto out;
+ 
+ 	rc = driver->err_handler->mmio_enabled(dev);
+ 
+@@ -267,7 +270,10 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+ 
++out:
+ 	eeh_pcid_put(dev);
++out_no_dev:
++	device_unlock(&dev->dev);
+ 	return NULL;
+ }
+ 
+@@ -290,20 +296,20 @@ static void *eeh_report_reset(void *data, void *userdata)
+ 
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
++
++	device_lock(&dev->dev);
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	driver = eeh_pcid_get(dev);
+-	if (!driver) return NULL;
++	if (!driver) goto out_no_dev;
+ 
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->slot_reset ||
+ 	    (edev->mode & EEH_DEV_NO_HANDLER) ||
+-	    (!edev->in_error)) {
+-		eeh_pcid_put(dev);
+-		return NULL;
+-	}
++	    (!edev->in_error))
++		goto out;
+ 
+ 	rc = driver->err_handler->slot_reset(dev);
+ 	if ((*res == PCI_ERS_RESULT_NONE) ||
+@@ -311,7 +317,10 @@ static void *eeh_report_reset(void *data, void *userdata)
+ 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+ 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 
++out:
+ 	eeh_pcid_put(dev);
++out_no_dev:
++	device_unlock(&dev->dev);
+ 	return NULL;
+ }
+ 
+@@ -362,10 +371,12 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
++
++	device_lock(&dev->dev);
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	driver = eeh_pcid_get(dev);
+-	if (!driver) return NULL;
++	if (!driver) goto out_no_dev;
+ 
+ 	was_in_error = edev->in_error;
+ 	edev->in_error = false;
+@@ -375,18 +386,20 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 	    !driver->err_handler->resume ||
+ 	    (edev->mode & EEH_DEV_NO_HANDLER) || !was_in_error) {
+ 		edev->mode &= ~EEH_DEV_NO_HANDLER;
+-		eeh_pcid_put(dev);
+-		return NULL;
++		goto out;
+ 	}
+ 
+ 	driver->err_handler->resume(dev);
+ 
+-	eeh_pcid_put(dev);
+ 	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
++out:
++	eeh_pcid_put(dev);
+ #ifdef CONFIG_PCI_IOV
+ 	if (eeh_ops->notify_resume && eeh_dev_to_pdn(edev))
+ 		eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
+ #endif
++out_no_dev:
++	device_unlock(&dev->dev);
+ 	return NULL;
+ }
+ 
+@@ -406,23 +419,26 @@ static void *eeh_report_failure(void *data, void *userdata)
+ 
+ 	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
+ 		return NULL;
++
++	device_lock(&dev->dev);
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+ 	driver = eeh_pcid_get(dev);
+-	if (!driver) return NULL;
++	if (!driver) goto out_no_dev;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+-	    !driver->err_handler->error_detected) {
+-		eeh_pcid_put(dev);
+-		return NULL;
+-	}
++	    !driver->err_handler->error_detected)
++		goto out;
+ 
+ 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
+ 
+-	eeh_pcid_put(dev);
+ 	pci_uevent_ers(dev, PCI_ERS_RESULT_DISCONNECT);
++out:
++	eeh_pcid_put(dev);
++out_no_dev:
++	device_unlock(&dev->dev);
+ 	return NULL;
+ }
+ 
+-- 
+2.14.1
