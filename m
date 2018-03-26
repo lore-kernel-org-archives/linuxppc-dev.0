@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4090616njfzF23C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:31:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4090694vb7zF23N
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:32:01 +1100 (AEDT)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QGLMxe037581
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:31:51 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gy1t28bef-1
+ w2QGLMar037646
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:31:59 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gy1t28bn8-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:31:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:31:58 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 10:31:50 -0600
+ Mon, 26 Mar 2018 12:31:58 -0400
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v3 10/41] cxlflash: Setup AFU PASID
-Date: Mon, 26 Mar 2018 11:31:44 -0500
+Subject: [PATCH v3 11/41] cxlflash: Adapter context support for OCXL
+Date: Mon, 26 Mar 2018 11:31:53 -0500
 In-Reply-To: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1522081904-57820-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1522081913-57858-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,44 +41,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Per the OCXL specification, the maximum PASID supported by the AFU is
-indicated by a field within the configuration space. Similar to acTags,
-implementations can choose to use any sub-range of PASID within their
-assigned range. For cxlflash, the entire range is used.
+Add support to create and release the adapter contexts for OCXL and
+provide means to specify certain contexts as a master.
+
+The existing cxlflash core has a design requirement that each host will
+have a single host context available by default. To satisfy this
+requirement, one host adapter context is created when the hardware AFU is
+initialized. This is returned by the get_context() fop.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/ocxl_hw.c | 3 +++
- drivers/scsi/cxlflash/ocxl_hw.h | 1 +
- 2 files changed, 4 insertions(+)
+ drivers/scsi/cxlflash/ocxl_hw.c | 90 +++++++++++++++++++++++++++++++++++++++++
+ drivers/scsi/cxlflash/ocxl_hw.h |  6 +++
+ 2 files changed, 96 insertions(+)
 
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 105712b..44688af 100644
+index 44688af..cbe4d93 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.c
 +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -118,6 +118,9 @@ static int ocxlflash_config_afu(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
- 	dev_dbg(dev, "%s: acTag base=%d enabled=%d\n", __func__, base, count);
- 	afu->afu_actag_base = base;
- 	afu->afu_actag_enabled = count;
-+	afu->max_pasid = 1 << acfg->pasid_supported_log;
+@@ -18,6 +18,80 @@
+ #include "ocxl_hw.h"
+ 
+ /**
++ * ocxlflash_set_master() - sets the context as master
++ * @ctx_cookie:	Adapter context to set as master.
++ */
++static void ocxlflash_set_master(void *ctx_cookie)
++{
++	struct ocxlflash_context *ctx = ctx_cookie;
 +
-+	ocxl_config_set_afu_pasid(pdev, pos, 0, acfg->pasid_supported_log);
- out:
- 	return rc;
++	ctx->master = true;
++}
++
++/**
++ * ocxlflash_get_context() - obtains the context associated with the host
++ * @pdev:	PCI device associated with the host.
++ * @afu_cookie:	Hardware AFU associated with the host.
++ *
++ * Return: returns the pointer to host adapter context
++ */
++static void *ocxlflash_get_context(struct pci_dev *pdev, void *afu_cookie)
++{
++	struct ocxl_hw_afu *afu = afu_cookie;
++
++	return afu->ocxl_ctx;
++}
++
++/**
++ * ocxlflash_dev_context_init() - allocate and initialize an adapter context
++ * @pdev:	PCI device associated with the host.
++ * @afu_cookie:	Hardware AFU associated with the host.
++ *
++ * Return: returns the adapter context on success, ERR_PTR on failure
++ */
++static void *ocxlflash_dev_context_init(struct pci_dev *pdev, void *afu_cookie)
++{
++	struct ocxl_hw_afu *afu = afu_cookie;
++	struct device *dev = afu->dev;
++	struct ocxlflash_context *ctx;
++	int rc;
++
++	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
++	if (unlikely(!ctx)) {
++		dev_err(dev, "%s: Context allocation failed\n", __func__);
++		rc = -ENOMEM;
++		goto err;
++	}
++
++	ctx->master = false;
++	ctx->hw_afu = afu;
++out:
++	return ctx;
++err:
++	ctx = ERR_PTR(rc);
++	goto out;
++}
++
++/**
++ * ocxlflash_release_context() - releases an adapter context
++ * @ctx_cookie:	Adapter context to be released.
++ *
++ * Return: 0 on success, -errno on failure
++ */
++static int ocxlflash_release_context(void *ctx_cookie)
++{
++	struct ocxlflash_context *ctx = ctx_cookie;
++	int rc = 0;
++
++	if (!ctx)
++		goto out;
++
++	kfree(ctx);
++out:
++	return rc;
++}
++
++/**
+  * ocxlflash_destroy_afu() - destroy the AFU structure
+  * @afu_cookie:	AFU to be freed.
+  */
+@@ -28,6 +102,7 @@ static void ocxlflash_destroy_afu(void *afu_cookie)
+ 	if (!afu)
+ 		return;
+ 
++	ocxlflash_release_context(afu->ocxl_ctx);
+ 	kfree(afu);
  }
+ 
+@@ -134,6 +209,7 @@ static int ocxlflash_config_afu(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
+ static void *ocxlflash_create_afu(struct pci_dev *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
++	struct ocxlflash_context *ctx;
+ 	struct ocxl_hw_afu *afu;
+ 	int rc;
+ 
+@@ -159,6 +235,16 @@ static void *ocxlflash_create_afu(struct pci_dev *pdev)
+ 			__func__, rc);
+ 		goto err1;
+ 	}
++
++	ctx = ocxlflash_dev_context_init(pdev, afu);
++	if (IS_ERR(ctx)) {
++		rc = PTR_ERR(ctx);
++		dev_err(dev, "%s: ocxlflash_dev_context_init failed rc=%d\n",
++			__func__, rc);
++		goto err1;
++	}
++
++	afu->ocxl_ctx = ctx;
+ out:
+ 	return afu;
+ err1:
+@@ -170,6 +256,10 @@ static void *ocxlflash_create_afu(struct pci_dev *pdev)
+ /* Backend ops to ocxlflash services */
+ const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
+ 	.module			= THIS_MODULE,
++	.set_master		= ocxlflash_set_master,
++	.get_context		= ocxlflash_get_context,
++	.dev_context_init	= ocxlflash_dev_context_init,
++	.release_context	= ocxlflash_release_context,
+ 	.create_afu		= ocxlflash_create_afu,
+ 	.destroy_afu		= ocxlflash_destroy_afu,
+ };
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
-index 21803b5..46de75b 100644
+index 46de75b..f41ba0b 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.h
 +++ b/drivers/scsi/cxlflash/ocxl_hw.h
-@@ -25,5 +25,6 @@ struct ocxl_hw_afu {
- 	int afu_actag_base;		/* AFU acTag base */
- 	int afu_actag_enabled;		/* AFU acTag number enabled */
+@@ -14,6 +14,7 @@
  
-+	int max_pasid;			/* Maximum number of contexts */
+ /* OCXL hardware AFU associated with the host */
+ struct ocxl_hw_afu {
++	struct ocxlflash_context *ocxl_ctx; /* Host context */
+ 	struct pci_dev *pdev;		/* PCI device */
+ 	struct device *dev;		/* Generic device */
+ 
+@@ -28,3 +29,8 @@ struct ocxl_hw_afu {
+ 	int max_pasid;			/* Maximum number of contexts */
  	bool is_present;		/* Function has AFUs defined */
  };
++
++struct ocxlflash_context {
++	struct ocxl_hw_afu *hw_afu;	/* HW AFU back pointer */
++	bool master;			/* Whether this is a master context */
++};
 -- 
 2.1.0
