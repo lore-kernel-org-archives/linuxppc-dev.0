@@ -1,20 +1,22 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0121.hostedemail.com
- [216.40.44.121])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <matt@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4095Mj1DnDzF25m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 07:29:03 +1100 (AEDT)
-Message-ID: <1522096136.12357.21.camel@perches.com>
-Subject: [PATCH script] hwmon: Use octal not symbolic permissions
-From: Joe Perches <joe@perches.com>
-To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- patches@opensource.cirrus.com
-Date: Mon, 26 Mar 2018 13:28:56 -0700
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4090dC30qzzDrFR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:55:27 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 4090dB0lq8z9s37
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:55:25 +1100 (AEDT)
+From: Matt Evans <matt@ozlabs.org>
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Subject: [PATCH] powerpc: Clear branch trap (MSR.BE) before delivering SIGTRAP
+Message-Id: <74EBF461-0D94-4C2D-ABA7-0B9BE010F173@ozlabs.org>
+Date: Mon, 26 Mar 2018 17:55:21 +0100
+To: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-drivers/hwmon is the most frequent user of symbolic permissions
-like S_IRUGO in the kernel tree.
+When using SIG_DBG_BRANCH_TRACING, MSR.BE is left enabled in the
+user context when single_step_exception() prepares the SIGTRAP
+delivery.  The resulting branch-trap-within-the-SIGTRAP-handler
+isn't healthy.
 
-$ git grep -w -P "S_[A-Z]{5,5}" | \
-  cut -f1 -d: | cut -f1-2 -d"/" | sed -r 's/[A-Za-z0-9_-]+\.[ch]$//' | \
-  sort | uniq -c | sort -rn | head
-   3862 drivers/hwmon
-    814 drivers/scsi
-    763 drivers/net
-    242 drivers/infiniband
-    184 drivers/staging
-    181 drivers/usb
-    158 fs/proc
-    150 fs/xfs
-    148 fs/
-    142 drivers/misc
+Commit 2538c2d08f46141550a1e68819efa8fe31c6e3dc broke this, by
+replacing an MSR mask operation of ~(MSR_SE | MSR_BE) with a call
+to clear_single_step() which only clears MSR_SE.
 
-But using octal and not symbolic permissions is preferred by many
-as it can be more readable.
+This patch adds a new helper, clear_br_trace(), which clears the
+debug trap before invoking the signal handler.  This helper is a
+NOP for BookE as SIG_DBG_BRANCH_TRACING isn't supported on BookE.
 
-https://lkml.org/lkml/2016/8/2/1945
+Signed-off-by: Matt Evans <matt@ozlabs.org>
+---
+ arch/powerpc/kernel/traps.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Rather than converting these piecemeal, perhaps just do them all
-at once via a trivial script like the below:
-
-$ git grep -w -P --name-only "S_[A-Z]{5,5}" drivers/hwmon | \
-  xargs ./scripts/checkpatch.pl -f --types=symbolic_perms --fix-inplace
-$ git grep -w -P --name-only "S_[A-Z]{5,5}" drivers/hwmon | \
-  xargs ./scripts/checkpatch.pl -f --types=symbolic_perms --fix-inplace
-
-It's run twice because checkpatch only does 1 conversion per line
-and there are some multiple instance lines.
-
-This currently results in a 669 KB patch which is too large
-to post but can be easily generated when appropriate.
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1e48d157196a..5eaab234e747 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -460,7 +460,7 @@ static inline int check_io_access(struct pt_regs *regs)
+ /* single-step stuff */
+ #define single_stepping(regs)	(current->thread.debug.dbcr0 & DBCR0_IC)
+ #define clear_single_step(regs)	(current->thread.debug.dbcr0 &= ~DBCR0_IC)
+-
++#define clear_br_trace(regs)	do {} while(0)
+ #else
+ /* On non-4xx, the reason for the machine check or program
+    exception is in the MSR. */
+@@ -473,6 +473,7 @@ static inline int check_io_access(struct pt_regs *regs)
+ 
+ #define single_stepping(regs)	((regs)->msr & MSR_SE)
+ #define clear_single_step(regs)	((regs)->msr &= ~MSR_SE)
++#define clear_br_trace(regs)	((regs)->msr &= ~MSR_BE)
+ #endif
+ 
+ #if defined(CONFIG_E500)
+@@ -988,6 +989,7 @@ void single_step_exception(struct pt_regs *regs)
+ 	enum ctx_state prev_state = exception_enter();
+ 
+ 	clear_single_step(regs);
++	clear_br_trace(regs);
+ 
+ 	if (kprobe_post_handler(regs))
+ 		return;
+-- 
+2.14.1
