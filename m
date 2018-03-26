@@ -1,41 +1,38 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x231.google.com (mail-qt0-x231.google.com
- [IPv6:2607:f8b0:400d:c0d::231])
+Return-Path: <rientjes@google.com>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4096k36vjwzF24j
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:30:03 +1100 (AEDT)
-Received: by mail-qt0-x231.google.com with SMTP id j3so9701295qtn.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:30:03 -0700 (PDT)
-MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20180326210951.GD15554@ziepe.ca>
-References: <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
- <20180323163510.GC13033@ziepe.ca>
- <1521854626.16434.359.camel@kernel.crashing.org>
- <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
- <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
- <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 26 Mar 2018 23:30:00 +0200
-Message-ID: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
-Subject: Re: RFC on writel and writel_relaxed
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: David Laight <David.Laight@aculab.com>, Sinan Kaya <okaya@codeaurora.org>,
- Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Alexander Duyck <alexander.h.duyck@redhat.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4096wp1yHczF21s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:39:22 +1100 (AEDT)
+Received: by mail-pl0-x244.google.com with SMTP id c11-v6so12780559plo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:39:21 -0700 (PDT)
+Date: Mon, 26 Mar 2018 14:39:18 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
  Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 24/24] powerpc/mm: Add speculative page fault
+In-Reply-To: <1520963994-28477-25-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803261431330.255554@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-25-git-send-email-ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,90 +42,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 26, 2018 at 11:09 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> On Mon, Mar 26, 2018 at 10:43:43PM +0200, Arnd Bergmann wrote:
->> On Mon, Mar 26, 2018 at 10:25 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
->> > On Mon, Mar 26, 2018 at 09:44:15PM +0200, Arnd Bergmann wrote:
->> >> On Mon, Mar 26, 2018 at 6:54 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
->> >> > On Mon, Mar 26, 2018 at 11:08:45AM +0000, David Laight wrote:
->> >> >> > > This is a super performance critical operation for most drivers and
->> >> >> > > directly impacts network performance.
->> >> >>
->> >> >> Perhaps there ought to be writel_nobarrier() (etc) that never contain
->> >> >> any barriers at all.
->> >> >> This might mean that they are always just the memory operation,
->> >> >> but it would make it more obvious what the driver was doing.
->> >> >
->> >> > I think that is what writel_relaxed is supposed to be.
->> >> >
->> >> > The only restriction it has is that the writes to a single device
->> >> > using UC memory must be kept in program order..
->> >>
->> >> Not sure about whether we have ever defined what happens to
->> >> writel_relaxed() on WC memory though: On ARM, we disallow
->> >> the compiler to combine writes, but the CPU still might.
->> >
->> > If the driver uses WC memory then I think it should not expect
->> > anything in terms of how writes map to TLPs other than nothing
->> > combines across mmiowb() and mmiowb() is fully globally ordered when
->> > enclosed in a spinlock.
->> >
->> > The entire point of using WC memory is usually to get combining :) If
->> > the driver doesn't want that then it should map UC..
->>
->> Usually, WC memory is used with memcpy_toio() though, which
->> by definition doesn't have any barriers between accesses, and
->> is required to get the correct byte ordering on writes to memory buffers.
->
-> memcpy_toio is too expensive to actually use for anything performance
-> though. It is too pessimistic. What the drivers usually want is a
-> unwound block of 4 or 8 8-byte copies. No function calls, no
-> branching. Everything is already known to be aligned.
->
-> Most of the drivers have a unwound loop with writeq() or something to
-> do it.
+On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-But isn't the writeq() barrier much more expensive than anything you'd
-do in function calls?
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 866446cf2d9a..104f3cc86b51 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -392,6 +392,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>  			   unsigned long error_code)
+>  {
+>  	struct vm_area_struct * vma;
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	struct vm_area_struct *spf_vma = NULL;
+> +#endif
+>  	struct mm_struct *mm = current->mm;
+>  	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+>   	int is_exec = TRAP(regs) == 0x400;
+> @@ -459,6 +462,20 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	if (is_exec)
+>  		flags |= FAULT_FLAG_INSTRUCTION;
+>  
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	if (is_user && (atomic_read(&mm->mm_users) > 1)) {
+> +		/* let's try a speculative page fault without grabbing the
+> +		 * mmap_sem.
+> +		 */
+> +		fault = handle_speculative_fault(mm, address, flags, &spf_vma);
+> +		if (!(fault & VM_FAULT_RETRY)) {
+> +			perf_sw_event(PERF_COUNT_SW_SPF, 1,
+> +				      regs, address);
+> +			goto done;
+> +		}
+> +	}
+> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+> +
 
->> > The same document says that _relaxed() does not give that guarentee.
->> >
->> > The lwn articule on this went into some depth on the interaction with
->> > spinlocks.
->> >
->> > As far as I can see, containment in a spinlock seems to be the only
->> > different between writel and writel_relaxed..
->>
->> I was always puzzled by this: The intention of _relaxed() on ARM
->> (where it originates) was to skip the barrier that serializes DMA
->> with MMIO, not to skip the serialization between MMIO and locks.
->
-> But that was never a requirement of writel(),
-> Documentation/memory-barriers.txt gives an explicit example demanding
-> the wmb() before writel() for ordering system memory against writel.
+Can't you elimiate all #ifdef's in this patch if 
+handle_speculative_fault() can be passed is_user and return some error 
+code that fallback is needed?  Maybe reuse VM_FAULT_FALLBACK?
 
-Indeed, but it's in an example for when to use dma_wmb(), not wmb().
-Adding Alexander Duyck to Cc, he added that section as part of
-1077fa36f23e ("arch: Add lightweight memory barriers dma_rmb() and
-dma_wmb()"). Also adding the other people that were involved with that.
+>  	/* When running in the kernel we expect faults to occur only to
+>  	 * addresses in user space.  All other faults represent errors in the
+>  	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
+> @@ -489,7 +506,16 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>  		might_sleep();
+>  	}
+>  
+> -	vma = find_vma(mm, address);
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	if (spf_vma) {
+> +		if (can_reuse_spf_vma(spf_vma, address))
+> +			vma = spf_vma;
+> +		else
+> +			vma =  find_vma(mm, address);
+> +		spf_vma = NULL;
+> +	} else
+> +#endif
+> +		vma = find_vma(mm, address);
+>  	if (unlikely(!vma))
+>  		return bad_area(regs, address);
+>  	if (likely(vma->vm_start <= address))
 
-> I actually have no idea why ARM had that barrier, I always assumed it
-> was to give program ordering to the accesses and that _relaxed allowed
-> re-ordering (the usual meaning of relaxed)..
->
-> But the barrier document makes it pretty clear that the only
-> difference between the two is spinlock containment, and WillD wrote
-> this text, so I belive it is accurate for ARM.
->
-> Very confusing.
+I think the code quality here could be improved such that you can pass mm, 
+&spf_vma, and address and some helper function would return spf_vma if 
+can_reuse_spf_vma() is true (and do *spf_vma to NULL) or otherwise return 
+find_vma(mm, address).
 
-It does mention serialization with both DMA and locks in the
-section about  readX_relaxed()/writeX_relaxed(). The part
-about DMA is very clear here, and I must have just forgotten
-the exact semantics with regards to spinlocks. I'm still not
-sure what prevents a writel() from leaking out the end of a
-spinlock section that doesn't happen with writel_relaxed(), since
-the barrier in writel() comes before the access, and the
-spin_unlock() shouldn't affect the external buses.
+Also, spf_vma is being set to NULL because of VM_FAULT_RETRY, but does it 
+make sense to retry handle_speculative_fault() in this case since we've 
+dropped mm->mmap_sem and there may have been a writer queued behind it?
 
-      Arnd
+> @@ -568,6 +594,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>  
+>  	up_read(&current->mm->mmap_sem);
+>  
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +done:
+> +#endif
+>  	if (unlikely(fault & VM_FAULT_ERROR))
+>  		return mm_fault_error(regs, address, fault);
+>  
+
+And things like this are trivially handled by doing
+
+done: __maybe_unused
