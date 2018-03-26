@@ -1,30 +1,27 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.183])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408rwB5ssZzF21b
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 22:07:52 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>, Jason Gunthorpe
- <jgg@ziepe.ca>
-CC: Sinan Kaya <okaya@codeaurora.org>, "open list:LINUX FOR POWERPC (32-BIT
- AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, Oliver <oohall@gmail.com>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
-Subject: RE: RFC on writel and writel_relaxed
-Date: Mon, 26 Mar 2018 11:08:45 +0000
-Message-ID: <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 408sks1wldzF1yX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 22:44:44 +1100 (AEDT)
+Date: Mon, 26 Mar 2018 12:44:49 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sinan Kaya <okaya@codeaurora.org>, Oliver <oohall@gmail.com>,
+ linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180326114449.GC6579@arm.com>
 References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
  <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
  <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
  <1521692689.16434.293.camel@kernel.crashing.org>
  <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
  <1521726722.16434.312.camel@kernel.crashing.org>
- <20180323163510.GC13033@ziepe.ca>
- <1521854626.16434.359.camel@kernel.crashing.org>
-In-Reply-To: <1521854626.16434.359.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="utf-8"
+ <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
+ <1521764168.16434.324.camel@kernel.crashing.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1521764168.16434.324.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,13 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+IFRoaXMgaXMgYSBzdXBlciBwZXJmb3JtYW5jZSBjcml0aWNhbCBvcGVyYXRpb24gZm9yIG1v
-c3QgZHJpdmVycyBhbmQNCj4gPiBkaXJlY3RseSBpbXBhY3RzIG5ldHdvcmsgcGVyZm9ybWFuY2Uu
-DQoNClBlcmhhcHMgdGhlcmUgb3VnaHQgdG8gYmUgd3JpdGVsX25vYmFycmllcigpIChldGMpIHRo
-YXQgbmV2ZXIgY29udGFpbg0KYW55IGJhcnJpZXJzIGF0IGFsbC4NClRoaXMgbWlnaHQgbWVhbiB0
-aGF0IHRoZXkgYXJlIGFsd2F5cyBqdXN0IHRoZSBtZW1vcnkgb3BlcmF0aW9uLA0KYnV0IGl0IHdv
-dWxkIG1ha2UgaXQgbW9yZSBvYnZpb3VzIHdoYXQgdGhlIGRyaXZlciB3YXMgZG9pbmcuDQoNClRo
-ZSBkcml2ZXIgd291bGQgdGhlbiBiZSBleHBsaWNpdGx5IHJlc3BvbnNpYmxlIGZvciBhbGwgdGhl
-IHJtYigpLCB3bWIoKQ0KYW5kIG1taW93YigpIChldGMpLg0KUGVyZm9ybWFuY2UgY3JpdGljYWwg
-cGF0aHMgY291bGQgdGhlbiBhdm9pZCBhbGwgdGhlIGV4dHJhIGJhcnJpZXJzLg0KDQoJRGF2aWQN
-Cg0KDQo=
+Hi Ben,
+
+I don't seem to have the beginning of this thread, so please bounce it over
+if you'd like me to look at it!
+
+On Fri, Mar 23, 2018 at 11:16:08AM +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
+> > On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
+> > > > > No, it's not sufficient.
+> > > 
+> > > Just to clarify ... barrier() is just a compiler barrier, it means the
+> > > compiler will generate things in the order they are written. This isn't
+> > > sufficient on archs with an OO memory model, where an actual memory
+> > > barrier instruction needs to be emited.
+> > 
+> > Surprisingly, ARM64 GCC compiler generates a write barrier as
+> > opposed to preventing code reordering.
+
+In context, this looks like a misunderstanding somewhere. barrier() is a
+compiler barrier for us just like everybody else and we use the generic
+implementation with the empty asm + memory clobber.
+
+> > I was curious if this is an ARM only thing or not. 
+> 
+> Are you sure of that ? I thought it's the ARM implementation of writel
+> that had an explicit write barrier in it:
+> 
+> #define writel(v,c)		({ __iowmb(); writel_relaxed((v),(c)); })
+> 
+> And __iowmb() is 
+> 
+> #define __iowmb()		wmb()
+> 
+> Note, I'm a bit dubious about this in ARM:
+> 
+> #define readl(c)		({ u32 __v = readl_relaxed(c); __iormb(); __v; }
+> 
+> Will, Marc, on powerpc, we put a sync *before* the read in readl etc...
+> 
+> The reasoning was there could be some DMA setup followed by a side
+> effect readl rather than a side effect writel to trigger a DMA. Granted
+> I wouldn't expect modern devices to be that stupid, but I have vague
+> memory of some devices back in the day having that sort of read ops.
+
+The reason we have it afterwards was for something like:
+
+	while (!(readl(&status_register) & DMA_DONE))
+		data = *dma_buffer
+
+to ensure that we don't read stale data from the buffer. You might also
+need this for systems with spurious/early IRQ delivery for DMA completion.
+
+You'd have to throw in an explicit mb() if you wanted to order prior writel
+before the side-effectcs of a a later readl.
+
+> In general, I though the model offerred by x86 and thus by Linux
+> readl/writel was full synchronization both before and after the MMIO,
+> vs either other MMIO or all other forms of ops (cachable memory, locks
+> etc...).
+> 
+> Also, can't the above readl_relaxed leak out of a lock ?
+
+No, it's ordered with respect to the release store to the lockword but
+that doesn't mean that an unlock does anything like ensure that the read
+has been satisifed (in particular, for your scenario above where it has
+side-effects then unlocking the lock doesn't guarantee that they've
+occurred).
+
+Will
