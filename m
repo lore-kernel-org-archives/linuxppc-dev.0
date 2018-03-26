@@ -1,43 +1,36 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qt0-x22c.google.com (mail-qt0-x22c.google.com
+ [IPv6:2607:f8b0:400d:c0d::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4094G604pYzF225
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 06:39:09 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QJZPWZ106753
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:39:06 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gy6e59v91-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:39:06 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 15:39:05 -0400
-References: <1519264541-7621-1-git-send-email-linuxram@us.ibm.com>
- <1519264541-7621-5-git-send-email-linuxram@us.ibm.com>
- <00081300-e891-3381-3acd-e3312e54fb58@intel.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
- linux-kselftest@vger.kernel.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, mingo@redhat.com,
- akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- ebiederm@xmission.com, arnd@arndb.de
-Subject: Re: [PATCH v12 04/22] selftests/vm: typecast the pkey register
-In-reply-to: <00081300-e891-3381-3acd-e3312e54fb58@intel.com>
-Date: Mon, 26 Mar 2018 16:38:51 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4094N3410xzF20c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 06:44:18 +1100 (AEDT)
+Received: by mail-qt0-x22c.google.com with SMTP id f16so8436281qth.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:44:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87h8p239v8.fsf@morokweng.localdomain>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180326165425.GA15554@ziepe.ca>
+References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
+ <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
+ <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
+ <1521692689.16434.293.camel@kernel.crashing.org>
+ <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
+ <1521726722.16434.312.camel@kernel.crashing.org>
+ <20180323163510.GC13033@ziepe.ca>
+ <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 26 Mar 2018 21:44:15 +0200
+Message-ID: <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: David Laight <David.Laight@aculab.com>, Sinan Kaya <okaya@codeaurora.org>,
+ Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,65 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Dave Hansen <dave.hansen@intel.com> writes:
-
-> On 02/21/2018 05:55 PM, Ram Pai wrote:
->> -static inline unsigned int _rdpkey_reg(int line)
->> +static inline pkey_reg_t _rdpkey_reg(int line)
->>  {
->> -	unsigned int pkey_reg = __rdpkey_reg();
->> +	pkey_reg_t pkey_reg = __rdpkey_reg();
+On Mon, Mar 26, 2018 at 6:54 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> On Mon, Mar 26, 2018 at 11:08:45AM +0000, David Laight wrote:
+>> > > This is a super performance critical operation for most drivers and
+>> > > directly impacts network performance.
 >>
->> -	dprintf4("rdpkey_reg(line=%d) pkey_reg: %x shadow: %x\n",
->> +	dprintf4("rdpkey_reg(line=%d) pkey_reg: %016lx shadow: %016lx\n",
->>  			line, pkey_reg, shadow_pkey_reg);
->>  	assert(pkey_reg == shadow_pkey_reg);
+>> Perhaps there ought to be writel_nobarrier() (etc) that never contain
+>> any barriers at all.
+>> This might mean that they are always just the memory operation,
+>> but it would make it more obvious what the driver was doing.
 >
-> Hmm.  So we're using %lx for an int?  Doesn't the compiler complain
-> about this?
+> I think that is what writel_relaxed is supposed to be.
+>
+> The only restriction it has is that the writes to a single device
+> using UC memory must be kept in program order..
 
-It doesn't because dprintf4() doesn't have the annotation that tells the
-compiler that it takes printf-like arguments. Once I add it:
+Not sure about whether we have ever defined what happens to
+writel_relaxed() on WC memory though: On ARM, we disallow
+the compiler to combine writes, but the CPU still might.
 
---- a/tools/testing/selftests/vm/pkey-helpers.h
-+++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -54,6 +54,10 @@
- #define DPRINT_IN_SIGNAL_BUF_SIZE 4096
- extern int dprint_in_signal;
- extern char dprint_in_signal_buffer[DPRINT_IN_SIGNAL_BUF_SIZE];
-+
-+#ifdef __GNUC__
-+__attribute__((format(printf, 1, 2)))
-+#endif
- static inline void sigsafe_printf(const char *format, ...)
- {
- 	va_list ap;
+It's also not entirely clear to me what we want writel() inside a
+spinlock to mean: should the spinlock guarantee that two writel()
+calls on different CPUs that are protected by spinlocks are
+serialized by those locks, or not?
 
-Then it does complain about it. I'm working on a fix where each arch
-will define a format string to use for its pkey_reg_t and use it like
-this:
-
---- a/tools/testing/selftests/vm/pkey-helpers.h
-+++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -19,6 +19,7 @@
- #define u32 uint32_t
- #define u64 uint64_t
- #define pkey_reg_t u32
-+#define PKEY_REG_FMT "%016x"
-
- #ifdef __i386__
- #ifndef SYS_mprotect_key
-@@ -112,7 +113,8 @@ static inline pkey_reg_t _read_pkey_reg(int line)
- {
- 	pkey_reg_t pkey_reg = __read_pkey_reg();
-
--	dprintf4("read_pkey_reg(line=%d) pkey_reg: %016lx shadow: %016lx\n",
-+	dprintf4("read_pkey_reg(line=%d) pkey_reg: "PKEY_REG_FMT
-+			" shadow: "PKEY_REG_FMT"\n",
- 			line, pkey_reg, shadow_pkey_reg);
- 	assert(pkey_reg == shadow_pkey_reg);
-
---
-Thiago Jung Bauermann
-IBM Linux Technology Center
+       Arnd
