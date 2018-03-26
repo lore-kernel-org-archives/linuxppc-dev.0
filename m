@@ -3,11 +3,11 @@ Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
  [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40971d59KwzF25d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:43:33 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id m15so7794178pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:43:33 -0700 (PDT)
-Date: Mon, 26 Mar 2018 14:43:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4097380Q1MzF24M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 08:44:51 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id y63so4650496pgy.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:44:51 -0700 (PDT)
+Date: Mon, 26 Mar 2018 14:44:48 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
@@ -26,11 +26,12 @@ cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: Re: [PATCH v9 20/24] perf: Add a speculative page fault sw event
-In-Reply-To: <1520963994-28477-21-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803261443200.255554@chino.kir.corp.google.com>
+Subject: Re: [PATCH v9 21/24] perf tools: Add support for the SPF perf
+ event
+In-Reply-To: <1520963994-28477-22-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803261443560.255554@chino.kir.corp.google.com>
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-21-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-22-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,8 +45,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-> Add a new software event to count succeeded speculative page faults.
+> Add support for the new speculative faults event.
 > 
 > Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 
 Acked-by: David Rientjes <rientjes@google.com>
+
+Aside: should there be a new spec_flt field for struct task_struct that 
+complements maj_flt and min_flt and be exported through /proc/pid/stat?
