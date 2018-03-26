@@ -1,16 +1,20 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 408sks1wldzF1yX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 22:44:44 +1100 (AEDT)
-Date: Mon, 26 Mar 2018 12:44:49 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sinan Kaya <okaya@codeaurora.org>, Oliver <oohall@gmail.com>,
- linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Marc Zyngier <marc.zyngier@arm.com>
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408tKy2VXBzF21D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 23:11:49 +1100 (AEDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Mon, 26 Mar 2018 08:11:47 -0400
+From: okaya@codeaurora.org
+To: Will Deacon <will.deacon@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oliver
+ <oohall@gmail.com>, linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ linux-rdma@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>
 Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180326114449.GC6579@arm.com>
+In-Reply-To: <20180326114449.GC6579@arm.com>
 References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
  <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
  <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
@@ -19,9 +23,8 @@ References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
  <1521726722.16434.312.camel@kernel.crashing.org>
  <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
  <1521764168.16434.324.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1521764168.16434.324.camel@kernel.crashing.org>
+ <20180326114449.GC6579@arm.com>
+Message-ID: <495123579cbc031ca7f1a6b0b305db18@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-I don't seem to have the beginning of this thread, so please bounce it over
-if you'd like me to look at it!
-
-On Fri, Mar 23, 2018 at 11:16:08AM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
-> > On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
-> > > > > No, it's not sufficient.
-> > > 
-> > > Just to clarify ... barrier() is just a compiler barrier, it means the
-> > > compiler will generate things in the order they are written. This isn't
-> > > sufficient on archs with an OO memory model, where an actual memory
-> > > barrier instruction needs to be emited.
-> > 
-> > Surprisingly, ARM64 GCC compiler generates a write barrier as
-> > opposed to preventing code reordering.
-
-In context, this looks like a misunderstanding somewhere. barrier() is a
-compiler barrier for us just like everybody else and we use the generic
-implementation with the empty asm + memory clobber.
-
-> > I was curious if this is an ARM only thing or not. 
+On 2018-03-26 07:44, Will Deacon wrote:
+> Hi Ben,
 > 
-> Are you sure of that ? I thought it's the ARM implementation of writel
-> that had an explicit write barrier in it:
+> I don't seem to have the beginning of this thread, so please bounce it 
+> over
+> if you'd like me to look at it!
 > 
-> #define writel(v,c)		({ __iowmb(); writel_relaxed((v),(c)); })
-> 
-> And __iowmb() is 
-> 
-> #define __iowmb()		wmb()
-> 
-> Note, I'm a bit dubious about this in ARM:
-> 
-> #define readl(c)		({ u32 __v = readl_relaxed(c); __iormb(); __v; }
-> 
-> Will, Marc, on powerpc, we put a sync *before* the read in readl etc...
-> 
-> The reasoning was there could be some DMA setup followed by a side
-> effect readl rather than a side effect writel to trigger a DMA. Granted
-> I wouldn't expect modern devices to be that stupid, but I have vague
-> memory of some devices back in the day having that sort of read ops.
 
-The reason we have it afterwards was for something like:
+https://www.spinics.net/lists/linux-rdma/msg62570.html
 
-	while (!(readl(&status_register) & DMA_DONE))
-		data = *dma_buffer
+https://www.spinics.net/lists/linux-rdma/index.html#62666
 
-to ensure that we don't read stale data from the buffer. You might also
-need this for systems with spurious/early IRQ delivery for DMA completion.
 
-You'd have to throw in an explicit mb() if you wanted to order prior writel
-before the side-effectcs of a a later readl.
-
-> In general, I though the model offerred by x86 and thus by Linux
-> readl/writel was full synchronization both before and after the MMIO,
-> vs either other MMIO or all other forms of ops (cachable memory, locks
-> etc...).
+> On Fri, Mar 23, 2018 at 11:16:08AM +1100, Benjamin Herrenschmidt wrote:
+>> On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
+>> > On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
+>> > > > > No, it's not sufficient.
+>> > >
+>> > > Just to clarify ... barrier() is just a compiler barrier, it means the
+>> > > compiler will generate things in the order they are written. This isn't
+>> > > sufficient on archs with an OO memory model, where an actual memory
+>> > > barrier instruction needs to be emited.
+>> >
+>> > Surprisingly, ARM64 GCC compiler generates a write barrier as
+>> > opposed to preventing code reordering.
 > 
-> Also, can't the above readl_relaxed leak out of a lock ?
+> In context, this looks like a misunderstanding somewhere. barrier() is 
+> a
+> compiler barrier for us just like everybody else and we use the generic
+> implementation with the empty asm + memory clobber.
+> 
 
-No, it's ordered with respect to the release store to the lockword but
-that doesn't mean that an unlock does anything like ensure that the read
-has been satisifed (in particular, for your scenario above where it has
-side-effects then unlocking the lock doesn't guarantee that they've
-occurred).
+True, I clarified it this weekend
 
-Will
+https://www.spinics.net/lists/linux-rdma/msg62788.html
