@@ -2,14 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408pLx2Ld2zF1xf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 20:12:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408pLy0RT0zF1yX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 20:12:26 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/10] powerpc/64s: Enhance the information in
- cpu_show_meltdown()
-Date: Mon, 26 Mar 2018 20:12:11 +1100
-Message-Id: <20180326091215.7784-6-mpe@ellerman.id.au>
+Subject: [PATCH 07/10] powerpc/powernv: Use the security flags in
+ pnv_setup_rfi_flush()
+Date: Mon, 26 Mar 2018 20:12:12 +1100
+Message-Id: <20180326091215.7784-7-mpe@ellerman.id.au>
 In-Reply-To: <20180326091215.7784-1-mpe@ellerman.id.au>
 References: <20180326091215.7784-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,74 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have the security feature flags we can make the
-information displayed in the "meltdown" file more informative.
+Now that we have the security flags we can significantly simplify the
+code in pnv_setup_rfi_flush(), because we can use the flags instead of
+checking device tree properties and because the security flags have
+pessimistic defaults.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/security_features.h |  1 +
- arch/powerpc/kernel/security.c               | 30 ++++++++++++++++++++++++++--
- 2 files changed, 29 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c | 39 ++++++++--------------------------
+ 1 file changed, 9 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
-index db00ad2c72c2..400a9050e035 100644
---- a/arch/powerpc/include/asm/security_features.h
-+++ b/arch/powerpc/include/asm/security_features.h
-@@ -10,6 +10,7 @@
- 
- 
- extern unsigned long powerpc_security_features;
-+extern bool rfi_flush;
- 
- static inline void security_ftr_set(unsigned long feature)
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 5f242b1bab01..8f3e7a84bbf5 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -99,11 +99,10 @@ static void pnv_setup_rfi_flush(void)
  {
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 564e7f182a16..865db6f8bcca 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -6,6 +6,7 @@
+ 	struct device_node *np, *fw_features;
+ 	enum l1d_flush_type type;
+-	int enable;
++	bool enable;
  
- #include <linux/kernel.h>
- #include <linux/device.h>
-+#include <linux/seq_buf.h>
+ 	/* Default to fallback in case fw-features are not available */
+ 	type = L1D_FLUSH_FALLBACK;
+-	enable = 1;
  
- #include <asm/security_features.h>
+ 	np = of_find_node_by_name(NULL, "ibm,opal");
+ 	fw_features = of_get_child_by_name(np, "fw-features");
+@@ -111,40 +110,20 @@ static void pnv_setup_rfi_flush(void)
  
-@@ -19,8 +20,33 @@ unsigned long powerpc_security_features __read_mostly = \
+ 	if (fw_features) {
+ 		init_fw_feat_flags(fw_features);
++		of_node_put(fw_features);
  
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	if (rfi_flush)
--		return sprintf(buf, "Mitigation: RFI Flush\n");
-+	bool thread_priv;
-+
-+	thread_priv = security_ftr_enabled(SEC_FTR_L1D_THREAD_PRIV);
-+
-+	if (rfi_flush || thread_priv) {
-+		struct seq_buf s;
-+		seq_buf_init(&s, buf, PAGE_SIZE - 1);
-+
-+		seq_buf_printf(&s, "Mitigation: ");
-+
-+		if (rfi_flush)
-+			seq_buf_printf(&s, "RFI Flush");
-+
-+		if (rfi_flush && thread_priv)
-+			seq_buf_printf(&s, ", ");
-+
-+		if (thread_priv)
-+			seq_buf_printf(&s, "L1D private per thread");
-+
-+		seq_buf_printf(&s, "\n");
-+
-+		return s.len;
-+	}
-+
-+	if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
-+	    !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR))
-+		return sprintf(buf, "Not affected\n");
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
+ 			type = L1D_FLUSH_MTTRIG;
  
- 	return sprintf(buf, "Vulnerable\n");
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
+ 			type = L1D_FLUSH_ORI;
+-
+-		of_node_put(np);
+-
+-		/* Enable unless firmware says NOT to */
+-		enable = 2;
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable = 0;
+-
+-		of_node_put(np);
+-		of_node_put(fw_features);
+ 	}
+ 
+-	setup_rfi_flush(type, enable > 0);
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
++		 (security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR)   || \
++		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
++
++	setup_rfi_flush(type, enable);
  }
+ 
+ static void __init pnv_setup_arch(void)
 -- 
 2.14.1
