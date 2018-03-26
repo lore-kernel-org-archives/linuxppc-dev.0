@@ -1,20 +1,43 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408dpM3503zF1xj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 13:47:07 +1100 (AEDT)
-Message-ID: <1522032426.19684.64.camel@neuling.org>
-Subject: Re: [PATCH] powerpc/eeh: Fix race with driver un/bind
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, ruscur@russell.cc, sam.bobroff@au1.ibm.com
-Date: Mon, 26 Mar 2018 13:47:06 +1100
-In-Reply-To: <1521786791.16434.339.camel@kernel.crashing.org>
-References: <20180323054417.3268-1-mikey@neuling.org>
- <1521786791.16434.339.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408g8m6DN3zF1xB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 14:48:08 +1100 (AEDT)
+Date: Mon, 26 Mar 2018 04:47:50 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips <linux-mips@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Jiri Slaby <jslaby@suse.com>, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [RFC] new SYSCALL_DEFINE/COMPAT_SYSCALL_DEFINE wrappers
+Message-ID: <20180326034750.GN30522@ZenIV.linux.org.uk>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-5-linux@dominikbrodowski.net>
+ <20180318174014.GR30522@ZenIV.linux.org.uk>
+ <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
+ <20180318181848.GU30522@ZenIV.linux.org.uk>
+ <20180319042300.GW30522@ZenIV.linux.org.uk>
+ <20180319092920.tbh2xwkruegshzqe@gmail.com>
+ <20180319232342.GX30522@ZenIV.linux.org.uk>
+ <20180322001532.GA18399@ZenIV.linux.org.uk>
+ <20180326004017.GA2211@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180326004017.GA2211@ZenIV.linux.org.uk>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,83 +47,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-03-23 at 17:33 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2018-03-23 at 16:44 +1100, Michael Neuling wrote:
->=20
->  .../...
->=20
-> > This fixes the problem in the same way the generic PCIe AER code (in
-> > drivers/pci/pcie/aer/aerdrv_core.c) does. It makes the EEH code hold
-> > the device_lock() before performing the driver EEH callbacks. This
-> > ensures either the callbacks are no longer register, or if they are
-> > registered the driver will not be removed from underneath us.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
->=20
-> Generally ok, minor nits though and do we want a CC stable ?
+On Mon, Mar 26, 2018 at 01:40:17AM +0100, Al Viro wrote:
 
-ok, I'll cc stable.
+> Kinda-sorta part:
+> 	* asmlinkage_protect is taken out for now, so m68k has problems.
+> 	* syscalls that run out of 6 slots barf violently.  For mips it's
+> wrong (there we have 8 slots); for stuff like arm and ppc it's right, but
+> it means that things like e.g. compat sync_file_range() should not even
+> be compiled on those.  __ARCH_WANT_SYS_SYNC_FILE_RANGE, presumably...
+> In any case, we *can't* do pt_regs-based wrappers for those syscalls on
+> such architectures, so ifdefs around those puppies are probably the right
+> thing to do.
+> 	* s390 macrology in compat_wrapper.c not even touched; it needs
+> a trivial update to keep working (__MAP callbacks take an extra argument,
+> unused for those users).
+> 	* sys_... and compat_sys_... aliases are unchanged; if we kill
+> direct callers, we can trivially rename SyS##name and compat_SyS##name
+> to sys##name and compat_sys##name and get rid of aliases.
 
->=20
-> > ---
-> >  arch/powerpc/kernel/eeh_driver.c | 67 ++++++++++++++++++++++++--------=
------
-> > ---
-> >  1 file changed, 41 insertions(+), 26 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/kernel/eeh_driver.c
-> > b/arch/powerpc/kernel/eeh_driver.c
-> > index 0c0b66fc5b..7cf946ae9a 100644
-> > --- a/arch/powerpc/kernel/eeh_driver.c
-> > +++ b/arch/powerpc/kernel/eeh_driver.c
-> > @@ -207,18 +207,18 @@ static void *eeh_report_error(void *data, void
-> > *userdata)
-> > =20
-> >  	if (!dev || eeh_dev_removed(edev) || eeh_pe_passed(edev->pe))
-> >  		return NULL;
-> > +
-> > +	device_lock(&dev->dev);
-> >  	dev->error_state =3D pci_channel_io_frozen;
-> > =20
-> >  	driver =3D eeh_pcid_get(dev);
-> > -	if (!driver) return NULL;
-> > +	if (!driver) goto out2;
->=20
-> I don't like out1/out2, why not call them out_nodev and out_no_handler
-> ? (same comment for the other ones).
+	* mips n32 and x86 x32 can become an extra source of headache.
+That actually applies to any plans of passing struct pt_regs *.  As it
+is, e.g. syscall 515 on amd64 is compat_sys_readv().  Dispatched via
+this:
+        /*
+         * NB: Native and x32 syscalls are dispatched from the same
+         * table.  The only functional difference is the x32 bit in
+         * regs->orig_ax, which changes the behavior of some syscalls.
+         */
+        if (likely((nr & __SYSCALL_MASK) < NR_syscalls)) {
+                nr = array_index_nospec(nr & __SYSCALL_MASK, NR_syscalls);
+                regs->ax = sys_call_table[nr](
+                        regs->di, regs->si, regs->dx,
+                        regs->r10, regs->r8, regs->r9);
+        }
+Now, syscall 145 via 32bit call is *also* compat_sys_readv(), dispatched
+via
+                nr = array_index_nospec(nr, IA32_NR_syscalls);
+                /*
+                 * It's possible that a 32-bit syscall implementation
+                 * takes a 64-bit parameter but nonetheless assumes that
+                 * the high bits are zero.  Make sure we zero-extend all
+                 * of the args.
+                 */
+                regs->ax = ia32_sys_call_table[nr](
+                        (unsigned int)regs->bx, (unsigned int)regs->cx,
+                        (unsigned int)regs->dx, (unsigned int)regs->si,
+                        (unsigned int)regs->di, (unsigned int)regs->bp);
+Right now it works - we call the same function, passing it arguments picked
+from different set of registers (di/si/dx in x32 case, bx/cx/dx in i386 one).
+But if we switch to passing struct pt_regs * and have the wrapper fetch
+regs->{bx,cx,dx}, we have a problem.  It won't work for both entry points.
 
-OK, will change.
+IMO it's a good reason to have dispatcher(s) handle extraction from pt_regs
+and let the wrapper deal with the resulting 6 u64 or 6 u32, normalizing
+them and arranging them into arguments expected by syscall body.
 
-> > =20
-> >  	eeh_disable_irq(dev);
-> > =20
-> >  	if (!driver->err_handler ||
-> > -	    !driver->err_handler->error_detected) {
-> > -		eeh_pcid_put(dev);
-> > -		return NULL;
-> > -	}
-> > +	    !driver->err_handler->error_detected)
-> > +		goto out1;
-> > =20
-> >  	rc =3D driver->err_handler->error_detected(dev,
-> > pci_channel_io_frozen);
-> > =20
-> > @@ -227,8 +227,11 @@ static void *eeh_report_error(void *data, void
-> > *userdata)
-> >  	if (*res =3D=3D PCI_ERS_RESULT_NONE) *res =3D rc;
-> > =20
-> >  	edev->in_error =3D true;
-> > -	eeh_pcid_put(dev);
-> >  	pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
-> > +out1:
-> > +	eeh_pcid_put(dev);
-> > +out2:
->=20
-> This also changes doing the uevent while holding a reference and the
-> the device lock, is that ok ? (I guess a reference is a good thing, the
-> device lock, not sure... I hope so but you should at least document it
-> as a chance in the cset comment).
-
-The AER code does this, so it should be ok. See report_error_detected().
-
-Mikey
+Linus, Dominik - how do you plan dealing with that fun?  Regardless of the
+way we generate the glue, the issue remains.  We can't get the same
+struct pt_regs *-taking function for both; we either need to produce
+a separate chunk of glue for each compat_sys_... involved (either making
+COMPAT_SYSCALL_DEFINE generate both, or having duplicate X32_SYSCALL_DEFINE
+for each of those COMPAT_SYSCALL_DEFINE - with identical body, at that)
+or we need to have the registers-to-slots mapping done in dispatcher...
