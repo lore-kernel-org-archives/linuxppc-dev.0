@@ -1,27 +1,26 @@
-Return-Path: <shea@shealevy.com>
-Received: from smtprelay.hostedemail.com (smtprelay0092.hostedemail.com
- [216.40.44.92])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408bL50RC0zF1xw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 11:55:55 +1100 (AEDT)
-From: Shea Levy <shea@shealevy.com>
-To: Palmer Dabbelt <palmer@sifive.com>
-Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-m68k@lists.linux-m68k.org,
- nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH v2 02/16] riscv: Use INITRAMFS_GENERIC_UNLOAD.
-In-Reply-To: <mhng-5691a509-dedf-4092-bd6d-020a81512c15@palmer-si-x1c4>
-References: <mhng-5691a509-dedf-4092-bd6d-020a81512c15@palmer-si-x1c4>
-Date: Sun, 25 Mar 2018 20:55:48 -0400
-Message-ID: <87o9jbu02z.fsf@xps13.shealevy.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408bbS4HM1zF1wq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:07:32 +1100 (AEDT)
+Received: by mail-it0-x244.google.com with SMTP id k135-v6so8622240ite.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Mar 2018 18:07:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+In-Reply-To: <CAPcyv4h=b9fCN7mCU8Yge5804oxVfErXRa_3h7QVcKdEhBbVHg@mail.gmail.com>
+References: <20180323081209.31387-1-oohall@gmail.com>
+ <20180323081209.31387-3-oohall@gmail.com>
+ <CAPcyv4h=b9fCN7mCU8Yge5804oxVfErXRa_3h7QVcKdEhBbVHg@mail.gmail.com>
+From: Oliver <oohall@gmail.com>
+Date: Mon, 26 Mar 2018 12:07:29 +1100
+Message-ID: <CAOSf1CFbdRhEbnCdrg5fGMLhMVz8Jpf=POs-opd6LqPe3nOEjQ@mail.gmail.com>
+Subject: Re: [PATCH 3/6] libnvdimm: Add device-tree based driver
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,80 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi Palmer,
-
-Palmer Dabbelt <palmer@sifive.com> writes:
-
-> On Sun, 25 Mar 2018 15:18:39 PDT (-0700), shea@shealevy.com wrote:
->> Signed-off-by: Shea Levy <shea@shealevy.com>
+On Sat, Mar 24, 2018 at 4:07 AM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Fri, Mar 23, 2018 at 1:12 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+>> This patch adds peliminary device-tree bindings for the NVDIMM driver.
+>
+> *preliminary
+>
+>> Currently this only supports one bus (created at probe time) which all
+>> regions are added to with individual regions being created by a platform
+>> device driver.
+>>
+>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 >> ---
->>  arch/riscv/Kconfig   | 1 +
->>  arch/riscv/mm/init.c | 6 ------
->>  2 files changed, 1 insertion(+), 6 deletions(-)
->>
->> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
->> index c22ebe08e902..ab1b4cee84fc 100644
->> --- a/arch/riscv/Kconfig
->> +++ b/arch/riscv/Kconfig
->> @@ -37,6 +37,7 @@ config RISCV
->>  	select THREAD_INFO_IN_TASK
->>  	select RISCV_TIMER
->>  	select GENERIC_IRQ_MULTI_HANDLER
->> +	select INITRAMFS_GENERIC_UNLOAD
->>
->>  config MMU
->>  	def_bool y
->> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
->> index c77df8142be2..36f83fe8a726 100644
->> --- a/arch/riscv/mm/init.c
->> +++ b/arch/riscv/mm/init.c
->> @@ -62,9 +62,3 @@ void free_initmem(void)
->>  {
->>  	free_initmem_default(0);
->>  }
->> -
->> -#ifdef CONFIG_BLK_DEV_INITRD
->> -void free_initrd_mem(unsigned long start, unsigned long end)
->> -{
->> -}
->> -#endif /* CONFIG_BLK_DEV_INITRD */
->
-> I haven't looked through the rest of the patch set, but this is a pretty=
-=20
-> trivial change so feel free to add a=20
->
-> Reviewed-By: Palmer Dabbelt <palmer@sifive.com>
->
-> if you'd like.  If you'd like it merged through my tree then just say=20
-> something!
+>> I suspect the platform driver should be holding a reference to the
+>> created region. I left that out here since previously Dan has said
+>> he'd rather keep the struct device internal to libnvdimm and the only
+>> other way a region device can disappear is when the bus is unregistered.
 
-I'm not sure how these cross-cutting changes go, if you can take the
-series through your tree that'd be great!
+> Hmm, but this still seems broken if bus teardown races region
+> teardown.
 
-Thanks,
-Shea
+Yeah looks like it.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+>I think the more natural model, given the way libnvdimm is
+> structured, to have each of these of_nd_region instances create their
+> own nvdimm bus. Thoughts?
 
------BEGIN PGP SIGNATURE-----
+I'd prefer this too tbh. The main reason I'm looking at this approach
+is that we plan on doing all interleave set configuration, etc from
+Linux. So we'd like to have "similar" region/dimm devices end up in
+the same bus to simplify validating managment ops, etc. That said, the
+real enablement work for that is blocked on teams so I'm ok with
+ignoring all of that for now.
 
-iQIzBAEBCAAdFiEE6ESKvwKkwnxgMLnaXAvWlX2G/icFAlq4RRQACgkQXAvWlX2G
-/idVvw//eVifwGjCVA7W+miXNnrCgZRDqcXBSsy5+RJM0TcRiPp6DHk/yebLED8j
-i3/bd9OxMb6FyO2no4XZMZcsCrBPyeXZkwlbU0qhhc4DI/cNicmOUZro8Aj22Zmh
-MFmOPbShBJG95BW7OfbCbVwAMxJXzGqzVoIHFE6xN4ZkOYvFytX9R/rruZJORHgO
-3+sZBR2g2QG6y7KdXz3yoaRg00neNL8u6kOnDifPDBLBKo/8GI4J1nuycLGt4U3x
-/adDOQx6/jTpC22B8AnC1cLS1O9ws/k3aDLgtpaLyPoFvyMp6WbAoSJYZZlVKXE6
-/iqreLOaLVy67NPtldqJbcIgOCCZcOKuEhwlMtXNFQXBcC5FOmtI+Ske9MBKJsxJ
-dzbS8JTliRn858IJR52cTSo+jaeM7dTqwjYw2lpl8CZsdVOxwyh6ytIAP3h8LYBJ
-IyJrSbeDLkfWnQRcyTQBfR2ZHeTb2CDw40+VPMYm8EpRyQoI1oUkwKuPhaiUpcRz
-OSJpw7bHo3Nnj+V7PR4+7avRIpZSMoPtPHUcWxKkQURS/3HyMsE49Vzz6Ozz91jK
-GVb3D2dM/QDTDA5qY3r9bzJcgbmnKKdaqT9ybKyhjhs3AZJ1HjFhPhBqFgjcOSL/
-VXjOvwvokD+HXOJOHW/CAOnF85kFwysKxYUBoj38xxrx4rjT1W8=
-=L1b7
------END PGP SIGNATURE-----
---=-=-=--
+Oliver
