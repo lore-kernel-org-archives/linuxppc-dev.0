@@ -1,23 +1,23 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40907z3mmfzF242
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:33:35 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QGSLd6009548
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:33:33 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2gy4dkg64h-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4090895BR9zF23F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:33:45 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2QGSvcW011485
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:33:43 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gy326m9j8-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:33:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 12:33:43 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 10:33:32 -0600
+ Mon, 26 Mar 2018 12:33:38 -0400
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v3 22/41] cxlflash: Setup OCXL transaction layer
-Date: Mon, 26 Mar 2018 11:33:28 -0500
+Subject: [PATCH v3 23/41] cxlflash: Support process element lifecycle
+Date: Mon, 26 Mar 2018 11:33:35 -0500
 In-Reply-To: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1522082008-58266-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1522082015-58303-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +41,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The first function of the link needs to configure the transaction layer
-between the host and device. This is accomplished by a call to the OCXL
-provider services.
+As part of the context lifecycle, the associated process element within
+the Shared Process Area (SPA) of the link must be updated. Each process
+is defined by various parameters (pid, tid, PASID mm) that are stored in
+the SPA upon starting a context and invalidated when a context is stopped.
+
+Use the OCXL provider services to configure the SPA with the appropriate
+data that is unique to the process when starting a context. Initially only
+kernel contexts are supported and therefore these process values are not
+applicable. Note that the OCXL service used has an optional callback for
+translation fault error notification. While not used here, it will be
+expanded in a future commit.
+
+Also add a service to stop a context by terminating the corresponding
+PASID and remove the process element from the SPA.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/ocxl_hw.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/scsi/cxlflash/ocxl_hw.c | 52 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 50 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 67517f8..db612bd 100644
+index db612bd..8d21f94 100644
 --- a/drivers/scsi/cxlflash/ocxl_hw.c
 +++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -422,8 +422,18 @@ static int ocxlflash_config_fn(struct pci_dev *pdev, struct ocxl_hw_afu *afu)
- 			__func__, rc);
- 		goto out;
+@@ -189,7 +189,7 @@ static int ocxlflash_process_element(void *ctx_cookie)
+  * start_context() - local routine to start a context
+  * @ctx:	Adapter context to be started.
+  *
+- * Assign the context specific MMIO space.
++ * Assign the context specific MMIO space, add and enable the PE.
+  *
+  * Return: 0 on success, -errno on failure
+  */
+@@ -197,7 +197,10 @@ static int start_context(struct ocxlflash_context *ctx)
+ {
+ 	struct ocxl_hw_afu *afu = ctx->hw_afu;
+ 	struct ocxl_afu_config *acfg = &afu->acfg;
++	void *link_token = afu->link_token;
++	struct device *dev = afu->dev;
+ 	bool master = ctx->master;
++	int rc = 0;
+ 
+ 	if (master) {
+ 		ctx->psn_size = acfg->global_mmio_size;
+@@ -207,7 +210,16 @@ static int start_context(struct ocxlflash_context *ctx)
+ 		ctx->psn_phys = afu->ppmmio_phys + (ctx->pe * ctx->psn_size);
  	}
+ 
+-	return 0;
 +
-+	rc = ocxl_config_set_TL(pdev, fcfg->dvsec_tl_pos);
++	/* pid, tid, amr and mm are zeroes/NULL for a kernel context */
++	rc = ocxl_link_add_pe(link_token, ctx->pe, 0, 0, 0, NULL, NULL, NULL);
 +	if (unlikely(rc)) {
-+		dev_err(dev, "%s: ocxl_config_set_TL failed rc=%d\n",
++		dev_err(dev, "%s: ocxl_link_add_pe failed rc=%d\n",
 +			__func__, rc);
-+		goto err;
++		goto out;
 +	}
- out:
- 	return rc;
-+err:
-+	ocxl_link_release(pdev, afu->link_token);
-+	goto out;
++out:
++	return rc;
  }
  
  /**
+@@ -224,6 +236,41 @@ static int ocxlflash_start_context(void *ctx_cookie)
+ }
+ 
+ /**
++ * ocxlflash_stop_context() - stop a context
++ * @ctx_cookie:	Adapter context to be stopped.
++ *
++ * Return: 0 on success, -errno on failure
++ */
++static int ocxlflash_stop_context(void *ctx_cookie)
++{
++	struct ocxlflash_context *ctx = ctx_cookie;
++	struct ocxl_hw_afu *afu = ctx->hw_afu;
++	struct ocxl_afu_config *acfg = &afu->acfg;
++	struct pci_dev *pdev = afu->pdev;
++	struct device *dev = afu->dev;
++	int rc;
++
++	rc = ocxl_config_terminate_pasid(pdev, acfg->dvsec_afu_control_pos,
++					 ctx->pe);
++	if (unlikely(rc)) {
++		dev_err(dev, "%s: ocxl_config_terminate_pasid failed rc=%d\n",
++			__func__, rc);
++		/* If EBUSY, PE could be referenced in future by the AFU */
++		if (rc == -EBUSY)
++			goto out;
++	}
++
++	rc = ocxl_link_remove_pe(afu->link_token, ctx->pe);
++	if (unlikely(rc)) {
++		dev_err(dev, "%s: ocxl_link_remove_pe failed rc=%d\n",
++			__func__, rc);
++		goto out;
++	}
++out:
++	return rc;
++}
++
++/**
+  * ocxlflash_set_master() - sets the context as master
+  * @ctx_cookie:	Adapter context to set as master.
+  */
+@@ -696,6 +743,7 @@ const struct cxlflash_backend_ops cxlflash_ocxl_ops = {
+ 	.psa_unmap		= ocxlflash_psa_unmap,
+ 	.process_element	= ocxlflash_process_element,
+ 	.start_context		= ocxlflash_start_context,
++	.stop_context		= ocxlflash_stop_context,
+ 	.set_master		= ocxlflash_set_master,
+ 	.get_context		= ocxlflash_get_context,
+ 	.dev_context_init	= ocxlflash_dev_context_init,
 -- 
 2.1.0
