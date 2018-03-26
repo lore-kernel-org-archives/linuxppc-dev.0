@@ -1,32 +1,43 @@
-Return-Path: <SRS0=s/i+=GQ=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4093LJ3chGzF26W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 05:57:41 +1100 (AEDT)
-Date: Mon, 26 Mar 2018 14:57:35 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andrea Parri <andrea.parri@amarulasolutions.com>
-Cc: Yury Norov <ynorov@caviumnetworks.com>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Chris Metcalf <cmetcalf@mellanox.com>,
- Christopher Lameter <cl@linux.com>, Russell King - ARM Linux
- <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, Mathieu
- Desnoyers <mathieu.desnoyers@efficios.com>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Pekka Enberg
- <penberg@kernel.org>, David Rientjes <rientjes@google.com>, Joonsoo Kim
- <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180326145735.57ba306b@gandalf.local.home>
-In-Reply-To: <20180326085313.GA4016@andrea>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180326085313.GA4016@andrea>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4094G604pYzF225
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 06:39:09 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2QJZPWZ106753
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:39:06 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gy6e59v91-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:39:06 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Mon, 26 Mar 2018 15:39:05 -0400
+References: <1519264541-7621-1-git-send-email-linuxram@us.ibm.com>
+ <1519264541-7621-5-git-send-email-linuxram@us.ibm.com>
+ <00081300-e891-3381-3acd-e3312e54fb58@intel.com>
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
+ linux-kselftest@vger.kernel.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, mingo@redhat.com,
+ akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ ebiederm@xmission.com, arnd@arndb.de
+Subject: Re: [PATCH v12 04/22] selftests/vm: typecast the pkey register
+In-reply-to: <00081300-e891-3381-3acd-e3312e54fb58@intel.com>
+Date: Mon, 26 Mar 2018 16:38:51 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
+Message-Id: <87h8p239v8.fsf@morokweng.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,89 +47,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 26 Mar 2018 10:53:13 +0200
-Andrea Parri <andrea.parri@amarulasolutions.com> wrote:
 
-> > --- a/kernel/smp.c
-> > +++ b/kernel/smp.c
-> > @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
-> >  }
-> >  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
-> >  
-> > +/**
-> > + * kick_active_cpus_sync - Force CPUs that are not in extended
-> > + * quiescent state (idle or nohz_full userspace) sync by sending
-> > + * IPI. Extended quiescent state CPUs will sync at the exit of
-> > + * that state.
-> > + */
-> > +void kick_active_cpus_sync(void)
-> > +{
-> > +	int cpu;
-> > +	struct cpumask kernel_cpus;
-> > +
-> > +	smp_mb();  
-> 
-> (A general remark only:)
-> 
-> checkpatch.pl should have warned about the fact that this barrier is
-> missing an accompanying comment (which accesses are being "ordered",
-> what is the pairing barrier, etc.).
+Dave Hansen <dave.hansen@intel.com> writes:
 
-He could have simply copied the comment above the smp_mb() for
-kick_all_cpus_sync():
+> On 02/21/2018 05:55 PM, Ram Pai wrote:
+>> -static inline unsigned int _rdpkey_reg(int line)
+>> +static inline pkey_reg_t _rdpkey_reg(int line)
+>>  {
+>> -	unsigned int pkey_reg = __rdpkey_reg();
+>> +	pkey_reg_t pkey_reg = __rdpkey_reg();
+>>
+>> -	dprintf4("rdpkey_reg(line=%d) pkey_reg: %x shadow: %x\n",
+>> +	dprintf4("rdpkey_reg(line=%d) pkey_reg: %016lx shadow: %016lx\n",
+>>  			line, pkey_reg, shadow_pkey_reg);
+>>  	assert(pkey_reg == shadow_pkey_reg);
+>
+> Hmm.  So we're using %lx for an int?  Doesn't the compiler complain
+> about this?
 
-	/* Make sure the change is visible before we kick the cpus */
+It doesn't because dprintf4() doesn't have the annotation that tells the
+compiler that it takes printf-like arguments. Once I add it:
 
-The kick itself is pretty much a synchronization primitive.
+--- a/tools/testing/selftests/vm/pkey-helpers.h
++++ b/tools/testing/selftests/vm/pkey-helpers.h
+@@ -54,6 +54,10 @@
+ #define DPRINT_IN_SIGNAL_BUF_SIZE 4096
+ extern int dprint_in_signal;
+ extern char dprint_in_signal_buffer[DPRINT_IN_SIGNAL_BUF_SIZE];
++
++#ifdef __GNUC__
++__attribute__((format(printf, 1, 2)))
++#endif
+ static inline void sigsafe_printf(const char *format, ...)
+ {
+ 	va_list ap;
 
-That is, you make some changes and then you need all CPUs to see it,
-and you call: kick_active_cpus_synch(), which is the barrier to make
-sure you previous changes are seen on all CPUS before you proceed
-further. Note, the matching barrier is implicit in the IPI itself.
+Then it does complain about it. I'm working on a fix where each arch
+will define a format string to use for its pkey_reg_t and use it like
+this:
 
--- Steve
+--- a/tools/testing/selftests/vm/pkey-helpers.h
++++ b/tools/testing/selftests/vm/pkey-helpers.h
+@@ -19,6 +19,7 @@
+ #define u32 uint32_t
+ #define u64 uint64_t
+ #define pkey_reg_t u32
++#define PKEY_REG_FMT "%016x"
 
+ #ifdef __i386__
+ #ifndef SYS_mprotect_key
+@@ -112,7 +113,8 @@ static inline pkey_reg_t _read_pkey_reg(int line)
+ {
+ 	pkey_reg_t pkey_reg = __read_pkey_reg();
 
-> 
-> Moreover if, as your reply above suggested, your patch is relying on
-> "implicit barriers" (something I would not recommend) then even more
-> so you should comment on these requirements.
-> 
-> This could: (a) force you to reason about the memory ordering stuff,
-> (b) easy the task of reviewing and adopting your patch, (c) easy the
-> task of preserving those requirements (as implementations changes).
-> 
->   Andrea
-> 
-> 
-> > +
-> > +	cpumask_clear(&kernel_cpus);
-> > +	preempt_disable();
-> > +	for_each_online_cpu(cpu) {
-> > +		if (!rcu_eqs_special_set(cpu))
-> > +			cpumask_set_cpu(cpu, &kernel_cpus);
-> > +	}
-> > +	smp_call_function_many(&kernel_cpus, do_nothing, NULL, 1);
-> > +	preempt_enable();
-> > +}
-> > +EXPORT_SYMBOL_GPL(kick_active_cpus_sync);
-> > +
-> >  /**
-> >   * wake_up_all_idle_cpus - break all cpus out of idle
-> >   * wake_up_all_idle_cpus try to break all cpus which is in idle state even
-> > diff --git a/mm/slab.c b/mm/slab.c
-> > index 324446621b3e..678d5dbd6f46 100644
-> > --- a/mm/slab.c
-> > +++ b/mm/slab.c
-> > @@ -3856,7 +3856,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
-> >  	 * cpus, so skip the IPIs.
-> >  	 */
-> >  	if (prev)
-> > -		kick_all_cpus_sync();
-> > +		kick_active_cpus_sync();
-> >  
-> >  	check_irq_on();
-> >  	cachep->batchcount = batchcount;
-> > -- 
-> > 2.14.1
-> >   
+-	dprintf4("read_pkey_reg(line=%d) pkey_reg: %016lx shadow: %016lx\n",
++	dprintf4("read_pkey_reg(line=%d) pkey_reg: "PKEY_REG_FMT
++			" shadow: "PKEY_REG_FMT"\n",
+ 			line, pkey_reg, shadow_pkey_reg);
+ 	assert(pkey_reg == shadow_pkey_reg);
+
+--
+Thiago Jung Bauermann
+IBM Linux Technology Center
