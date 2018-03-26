@@ -1,39 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40981l4rL8zF273
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 09:28:43 +1100 (AEDT)
-Message-ID: <1522103281.7364.17.camel@kernel.crashing.org>
-Subject: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>, Jason
- Gunthorpe <jgg@ziepe.ca>
-Cc: David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
- list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, Alexander Duyck <alexander.duyck@gmail.com>,
- Will Deacon <will.deacon@arm.com>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>
-Date: Tue, 27 Mar 2018 09:28:01 +1100
-In-Reply-To: <4d85c5e9-a16a-0761-4700-169d1c061812@codeaurora.org>
-References: <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
- <20180323163510.GC13033@ziepe.ca>
- <1521854626.16434.359.camel@kernel.crashing.org>
- <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
- <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
- <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
- <1522101717.7364.14.camel@kernel.crashing.org>
- <4d85c5e9-a16a-0761-4700-169d1c061812@codeaurora.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40984P1GGXzF26H
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 09:31:01 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ Nicholas Piggin <npiggin@gmail.com>, sathnaga@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 3/6] powerpc/kexec: Disable ftrace before switching to
+ the new kernel
+In-Reply-To: <5589149f6dd1b627f5eadafa086fb5e716bc0622.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5589149f6dd1b627f5eadafa086fb5e716bc0622.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Tue, 27 Mar 2018 09:30:56 +1100
+Message-ID: <877epylba7.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,65 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-03-26 at 18:08 -0400, Sinan Kaya wrote:
-> On 3/26/2018 6:01 PM, Benjamin Herrenschmidt wrote:
-> > On Mon, 2018-03-26 at 17:46 -0400, Sinan Kaya wrote:
-> > > On 3/26/2018 5:30 PM, Arnd Bergmann wrote:
-> > > > > But that was never a requirement of writel(),
-> > > > > Documentation/memory-barriers.txt gives an explicit example demanding
-> > > > > the wmb() before writel() for ordering system memory against writel.
-> > > > 
-> > > > Indeed, but it's in an example for when to use dma_wmb(), not wmb().
-> > > > Adding Alexander Duyck to Cc, he added that section as part of
-> > > > 1077fa36f23e ("arch: Add lightweight memory barriers dma_rmb() and
-> > > > dma_wmb()"). Also adding the other people that were involved with that.
-> > > > 
-> > > 
-> > > ARM developers can get away with not including wmb() in their code and use
-> > > writel() to observe memory writes due to implicit barriers.
-> > > 
-> > > However, same code will not work on Intel.
-> > 
-> > Wrong. It will.
-> > 
-> > You do NOT need wmb between writes to memory and writel.
-> 
-> If writel() provides such a guarantee, why do I see code sequences like
-> 
-> wmb()
-> writel() 
-> 
-> all over the place.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> If function_graph tracer is enabled during kexec, we see the below
+> exception in the simulator:
+> 	root@(none):/# kexec -e
+> 	kvm: exiting hardware virtualization
+> 	kexec_core: Starting new kernel
+> 	[   19.262020070,5] OPAL: Switch to big-endian OS
+> 	kexec: Starting switchover sequence.
+> 	Interrupt to 0xC000000000004380 from 0xC000000000004380
+> 	** Execution stopped: Continuous Interrupt, Instruction caused exception,  **
+>
+> Now that we have a more effective way to disable ftrace, let's use that
+> before switching to a new kernel during kexec.
+>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/machine_kexec.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> index 2694d078741d..4a1b24a9dd61 100644
+> --- a/arch/powerpc/kernel/machine_kexec.c
+> +++ b/arch/powerpc/kernel/machine_kexec.c
+> @@ -95,16 +95,14 @@ void arch_crash_save_vmcoreinfo(void)
+>   */
+>  void machine_kexec(struct kimage *image)
+>  {
+> -	int save_ftrace_enabled;
+> -
+> -	save_ftrace_enabled = __ftrace_enabled_save();
+> +	get_paca()->ftrace_disabled = 1;
 
-Because it was badly documented and people didn't know what to do, or
-maybe the underlying mapping is WC ?
+This doesn't compile on 32-bit:
 
-I don't know for sure but I can tell you Linus opinion on the matter
-back in the days was very clear and that's why we implemented writel
-the way we did on powerpc.
+  Failed: powerpc-next/corenet32_smp_defconfig/powerpc-5.3		(http://kisskb.ozlabs.ibm.com/kisskb/buildresult/13314085/log/)
+    /kisskb/src/arch/powerpc/kernel/machine_kexec.c:105:12: error: invalid type argument of '->' (have 'int')
+    /kisskb/src/arch/powerpc/kernel/machine_kexec.c:98:12: error: invalid type argument of '->' (have 'int')
+    /kisskb/src/arch/powerpc/kernel/machine_kexec.c:98:2: error: implicit declaration of function 'get_paca' [-Werror=implicit-function-declaration]
 
-> > 
-> > > writel() has a compiler barrier in it for x86.
-> > > wmb() has a sync operation in it for x86. 
-> > > 
-> > > Unless wmb() is called, PCIe device won't observe memory updates from the CPU.
-> > 
-> > This is completely wrong. They will. Intel provides the necessary
-> > ordering guarantees without an explicit wmb.
-> > 
-> 
-> I'm still reserving my doubts here. I was told about an explicit
-> wmb() requirement last week.
 
-By whome ?
+A wrapper is probably best that does nothing on 32-bit.
 
-> > Otherwise almost all drivers out there are broken which I very much
-> > doubt :-)
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > 
-> > 
-> 
-> 
+cheers
