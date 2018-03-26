@@ -1,24 +1,38 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
- [209.85.218.68])
+Return-Path: <jgg@ziepe.ca>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4097xK0gpzzF25M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 09:24:52 +1100 (AEDT)
-Received: by mail-oi0-f68.google.com with SMTP id u141-v6so17525738oif.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:24:52 -0700 (PDT)
-Date: Mon, 26 Mar 2018 17:24:48 -0500
-From: Rob Herring <robh@kernel.org>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: linux-nvdimm@lists.01.org, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
-Message-ID: <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
-References: <20180323081209.31387-1-oohall@gmail.com>
- <20180323081209.31387-6-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40981102KWzF26K
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 09:28:03 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id p9so5708983wmc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 15:28:03 -0700 (PDT)
+Date: Mon, 26 Mar 2018 16:27:56 -0600
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180326222756.GJ15554@ziepe.ca>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180323081209.31387-6-oohall@gmail.com>
+In-Reply-To: <1522101717.7364.14.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,85 +42,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2018 at 07:12:09PM +1100, Oliver O'Halloran wrote:
-> Add device-tree binding documentation for the nvdimm region driver.
+On Tue, Mar 27, 2018 at 09:01:57AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2018-03-26 at 17:46 -0400, Sinan Kaya wrote:
+> > On 3/26/2018 5:30 PM, Arnd Bergmann wrote:
+> > > > But that was never a requirement of writel(),
+> > > > Documentation/memory-barriers.txt gives an explicit example demanding
+> > > > the wmb() before writel() for ordering system memory against writel.
+> > > 
+> > > Indeed, but it's in an example for when to use dma_wmb(), not wmb().
+> > > Adding Alexander Duyck to Cc, he added that section as part of
+> > > 1077fa36f23e ("arch: Add lightweight memory barriers dma_rmb() and
+> > > dma_wmb()"). Also adding the other people that were involved with that.
+> > > 
+> > 
+> > ARM developers can get away with not including wmb() in their code and use
+> > writel() to observe memory writes due to implicit barriers.
+> > 
+> > However, same code will not work on Intel.
 > 
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
->  .../devicetree/bindings/nvdimm/nvdimm-region.txt   | 45 ++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
+> Wrong. It will.
 > 
-> diff --git a/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
-> new file mode 100644
-> index 000000000000..02091117ff16
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
-> @@ -0,0 +1,45 @@
-> +Device-tree bindings for NVDIMM memory regions
-> +-----------------------------------------------------
-> +
-> +Non-volatile DIMMs are memory modules used to provide (cacheable) main memory
-
-Are DIMMs always going to be the only form factor for NV memory?
-
-And if you have multiple DIMMs, does each DT node correspond to a DIMM? 
-If not, then what if we want/need to provide power control to a DIMM?
-
-> +that retains its contents across power cycles. In more practical terms, they
-> +are kind of storage device where the contents can be accessed by the CPU
-> +directly, rather than indirectly via a storage controller or similar. The an
-> +nvdimm-region specifies a physical address range that is hosted on an NVDIMM
-> +device.
-> +
-> +Bindings for the region nodes:
-> +-----------------------------
-> +
-> +Required properties:
-> +	- compatible = "nvdimm-region"
-> +
-> +	- reg = <base, size>;
-> +		The system physical address range of this nvdimm region.
-> +
-> +Optional properties:
-> +	- Any relevant NUMA assocativity properties for the target platform.
-> +	- A "volatile" property indicating that this region is actually in
-> +	  normal DRAM and does not require cache flushes after each write.
-> +
-> +A complete example:
-> +--------------------
-> +
-> +/ {
-> +	#size-cells = <2>;
-> +	#address-cells = <2>;
-> +
-> +	platform {
-
-Perhaps we need a more well defined node here. Like we have 'memory' for 
-memory nodes.
-
-> +		region@5000 {
-> +			compatible = "nvdimm-region;
-> +			reg = <0x00000001 0x00000000 0x00000000 0x40000000>
-> +
-> +		};
-> +
-> +		region@6000 {
-> +			compatible = "nvdimm-region";
-> +			reg = <0x00000001 0x00000000 0x00000000 0x40000000>
-
-Your reg property and unit-address don't match and you have overlapping 
-regions.
-
-> +			volatile;
-> +		};
-> +	};
-> +};
-> -- 
-> 2.9.5
+> You do NOT need wmb between writes to memory and writel.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > writel() has a compiler barrier in it for x86.
+> > wmb() has a sync operation in it for x86. 
+> > 
+> > Unless wmb() is called, PCIe device won't observe memory updates from the CPU.
+> 
+> This is completely wrong. They will. Intel provides the necessary
+> ordering guarantees without an explicit wmb.
+> 
+> Otherwise almost all drivers out there are broken which I very much
+> doubt :-)
+
+But.. Sinan is right, you look anywhere in the driver tree and you
+find stuff like this:
+
+drivers/net/ethernet/intel/i40e/i40e_txrx.c
+
+        /* Force memory writes to complete before letting h/w
+         * know there are new descriptors to fetch.
+         */
+        wmb();
+
+
+It is *systemic*
+
+I even see patches adding wmb() based on actual observed memory
+corruption during testing on Intel:
+
+https://patchwork.kernel.org/patch/10177207/
+
+So you think all of this is unnecessary and writel is totally strongly
+ordered, even on multi-socket Intel?
+
+Jason
