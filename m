@@ -1,35 +1,30 @@
-Return-Path: <andrea.parri@amarulasolutions.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408nx95cMyzF1yc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 19:53:24 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id x4so1558319wmh.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 01:53:24 -0700 (PDT)
-Date: Mon, 26 Mar 2018 10:53:13 +0200
-From: Andrea Parri <andrea.parri@amarulasolutions.com>
-To: Yury Norov <ynorov@caviumnetworks.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180326085313.GA4016@andrea>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408qWl6CntzF1vP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 21:05:06 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2Q9xasN052153
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:05:04 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gxttatr43-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 06:05:04 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 26 Mar 2018 06:05:02 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V6 0/4] Add support for 4PB virtual address space on hash
+Date: Mon, 26 Mar 2018 15:34:46 +0530
+Message-Id: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,131 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Yury,
+This patch series extended the max virtual address space value from 512TB
+to 4PB with 64K page size. We do that by allocating one vsid context for
+each 512TB range. More details of that is explained in patch 3.
 
-On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
-> kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
-> If CPU is in extended quiescent state (idle task or nohz_full userspace), this
-> work may be done at the exit of this state. Delaying synchronization helps to
-> save power if CPU is in idle state and decrease latency for real-time tasks.
-> 
-> This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
-> code to delay syncronization.
-> 
-> For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
-> isolated task would be fatal, as it breaks isolation. The approach with delaying
-> of synchronization work helps to maintain isolated state.
-> 
-> I've tested it with test from task isolation series on ThunderX2 for more than
-> 10 hours (10k giga-ticks) without breaking isolation.
-> 
-> Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
-> ---
->  arch/arm64/kernel/insn.c |  2 +-
->  include/linux/smp.h      |  2 ++
->  kernel/smp.c             | 24 ++++++++++++++++++++++++
->  mm/slab.c                |  2 +-
->  4 files changed, 28 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-> index 2718a77da165..9d7c492e920e 100644
-> --- a/arch/arm64/kernel/insn.c
-> +++ b/arch/arm64/kernel/insn.c
-> @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
->  			 * synchronization.
->  			 */
->  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
-> -			kick_all_cpus_sync();
-> +			kick_active_cpus_sync();
->  			return ret;
->  		}
->  	}
-> diff --git a/include/linux/smp.h b/include/linux/smp.h
-> index 9fb239e12b82..27215e22240d 100644
-> --- a/include/linux/smp.h
-> +++ b/include/linux/smp.h
-> @@ -105,6 +105,7 @@ int smp_call_function_any(const struct cpumask *mask,
->  			  smp_call_func_t func, void *info, int wait);
->  
->  void kick_all_cpus_sync(void);
-> +void kick_active_cpus_sync(void);
->  void wake_up_all_idle_cpus(void);
->  
->  /*
-> @@ -161,6 +162,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
->  }
->  
->  static inline void kick_all_cpus_sync(void) {  }
-> +static inline void kick_active_cpus_sync(void) {  }
->  static inline void wake_up_all_idle_cpus(void) {  }
->  
->  #ifdef CONFIG_UP_LATE_INIT
-> diff --git a/kernel/smp.c b/kernel/smp.c
-> index 084c8b3a2681..0358d6673850 100644
-> --- a/kernel/smp.c
-> +++ b/kernel/smp.c
-> @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
->  }
->  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
->  
-> +/**
-> + * kick_active_cpus_sync - Force CPUs that are not in extended
-> + * quiescent state (idle or nohz_full userspace) sync by sending
-> + * IPI. Extended quiescent state CPUs will sync at the exit of
-> + * that state.
-> + */
-> +void kick_active_cpus_sync(void)
-> +{
-> +	int cpu;
-> +	struct cpumask kernel_cpus;
-> +
-> +	smp_mb();
+Changes from V5:
+* Fix for loop segmentation fault.
+* updates from Michael
 
-(A general remark only:)
+Changes from V4:
+* Move context allocation to mmap time instead of SLB miss time
+* Address review comments 
 
-checkpatch.pl should have warned about the fact that this barrier is
-missing an accompanying comment (which accesses are being "ordered",
-what is the pairing barrier, etc.).
+Changes from V3:
+* move extended_id to be a union with mm_context_t id. This reduce some
+ array index complexity.
+* Add addr_limit check when handling slb miss for extended context
 
-Moreover if, as your reply above suggested, your patch is relying on
-"implicit barriers" (something I would not recommend) then even more
-so you should comment on these requirements.
-
-This could: (a) force you to reason about the memory ordering stuff,
-(b) easy the task of reviewing and adopting your patch, (c) easy the
-task of preserving those requirements (as implementations changes).
-
-  Andrea
+Changes from V2:
+* Rebased on top of slice_mask series from Nick Piggin
+* Fixed segfault when mmap with 512TB hint address
 
 
-> +
-> +	cpumask_clear(&kernel_cpus);
-> +	preempt_disable();
-> +	for_each_online_cpu(cpu) {
-> +		if (!rcu_eqs_special_set(cpu))
-> +			cpumask_set_cpu(cpu, &kernel_cpus);
-> +	}
-> +	smp_call_function_many(&kernel_cpus, do_nothing, NULL, 1);
-> +	preempt_enable();
-> +}
-> +EXPORT_SYMBOL_GPL(kick_active_cpus_sync);
-> +
->  /**
->   * wake_up_all_idle_cpus - break all cpus out of idle
->   * wake_up_all_idle_cpus try to break all cpus which is in idle state even
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 324446621b3e..678d5dbd6f46 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -3856,7 +3856,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
->  	 * cpus, so skip the IPIs.
->  	 */
->  	if (prev)
-> -		kick_all_cpus_sync();
-> +		kick_active_cpus_sync();
->  
->  	check_irq_on();
->  	cachep->batchcount = batchcount;
-> -- 
-> 2.14.1
-> 
+Aneesh Kumar K.V (4):
+  powerpc/mm/slice: Consolidate return path in slice_get_unmapped_area()
+  powerpc/mm: Add support for handling > 512TB address in SLB miss
+  powerpc/mm/hash64: Increase the VA range
+  powerpc/mm/hash: Don't memset pgd table if not needed
+
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |   6 ++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |   8 +-
+ arch/powerpc/include/asm/book3s/64/mmu.h      |  33 +++++++-
+ arch/powerpc/include/asm/book3s/64/pgalloc.h  |  12 ++-
+ arch/powerpc/include/asm/mmu_context.h        |  39 ++++++++++
+ arch/powerpc/include/asm/processor.h          |  15 +++-
+ arch/powerpc/kernel/exceptions-64s.S          |  11 ++-
+ arch/powerpc/kernel/traps.c                   |  12 ---
+ arch/powerpc/mm/copro_fault.c                 |   2 +-
+ arch/powerpc/mm/hash_utils_64.c               |   4 +-
+ arch/powerpc/mm/init_64.c                     |   6 --
+ arch/powerpc/mm/mmu_context_book3s64.c        |  15 +++-
+ arch/powerpc/mm/pgtable-hash64.c              |   6 +-
+ arch/powerpc/mm/pgtable_64.c                  |   5 --
+ arch/powerpc/mm/slb.c                         | 108 ++++++++++++++++++++++++++
+ arch/powerpc/mm/slb_low.S                     |  11 ++-
+ arch/powerpc/mm/slice.c                       |  49 ++++++++----
+ arch/powerpc/mm/tlb_hash64.c                  |   2 +-
+ 18 files changed, 288 insertions(+), 56 deletions(-)
+
+-- 
+2.14.3
