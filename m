@@ -1,31 +1,49 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408v1Q2CdBzF1wc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 23:42:33 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-From: Sinan Kaya <okaya@codeaurora.org>
-To: Will Deacon <will.deacon@arm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oliver <oohall@gmail.com>, linuxppc dev list
- <linuxppc-dev@lists.ozlabs.org>, linux-rdma@vger.kernel.org,
- Marc Zyngier <marc.zyngier@arm.com>
-References: <3611eabe-2999-1482-b2b4-6d216bbe4762@codeaurora.org>
- <CAOSf1CFmoK2XSn0=qAtiVEO9t4i-DHGgfieiedDfuO6E3tpkQw@mail.gmail.com>
- <4e5c745a-8b9b-959e-8893-d99cd6032484@codeaurora.org>
- <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
- <5ccdb208-4664-0a7f-df5d-2e12cbe4c239@codeaurora.org>
- <1521764168.16434.324.camel@kernel.crashing.org>
- <20180326114449.GC6579@arm.com>
- <495123579cbc031ca7f1a6b0b305db18@codeaurora.org>
-Message-ID: <49283e2d-7ca8-a020-5fc6-5f5d5d0ef4e5@codeaurora.org>
-Date: Mon, 26 Mar 2018 08:42:28 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408v4W3mXtzF200
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 23:45:14 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2QCdOl7070466
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:45:12 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gxweuss3d-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:45:12 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 26 Mar 2018 08:45:09 -0400
+Date: Mon, 26 Mar 2018 05:45:55 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, luto@kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ <20180325192328.GI3675@linux.vnet.ibm.com>
+ <20180325201154.icdcyl4nw2jootqq@yury-thinkpad>
 MIME-Version: 1.0
-In-Reply-To: <495123579cbc031ca7f1a6b0b305db18@codeaurora.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180325201154.icdcyl4nw2jootqq@yury-thinkpad>
+Message-Id: <20180326124555.GJ3675@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,69 +53,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/26/2018 8:11 AM, okaya@codeaurora.org wrote:
-> On 2018-03-26 07:44, Will Deacon wrote:
->> Hi Ben,
->>
->> I don't seem to have the beginning of this thread, so please bounce it over
->> if you'd like me to look at it!
->>
+On Sun, Mar 25, 2018 at 11:11:54PM +0300, Yury Norov wrote:
+> On Sun, Mar 25, 2018 at 12:23:28PM -0700, Paul E. McKenney wrote:
+> > On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
+> > > kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
+> > > If CPU is in extended quiescent state (idle task or nohz_full userspace), this
+> > > work may be done at the exit of this state. Delaying synchronization helps to
+> > > save power if CPU is in idle state and decrease latency for real-time tasks.
+> > > 
+> > > This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
+> > > code to delay syncronization.
+> > > 
+> > > For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
+> > > isolated task would be fatal, as it breaks isolation. The approach with delaying
+> > > of synchronization work helps to maintain isolated state.
+> > > 
+> > > I've tested it with test from task isolation series on ThunderX2 for more than
+> > > 10 hours (10k giga-ticks) without breaking isolation.
+> > > 
+> > > Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+> > > ---
+> > >  arch/arm64/kernel/insn.c |  2 +-
+> > >  include/linux/smp.h      |  2 ++
+> > >  kernel/smp.c             | 24 ++++++++++++++++++++++++
+> > >  mm/slab.c                |  2 +-
+> > >  4 files changed, 28 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
+> > > index 2718a77da165..9d7c492e920e 100644
+> > > --- a/arch/arm64/kernel/insn.c
+> > > +++ b/arch/arm64/kernel/insn.c
+> > > @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
+> > >  			 * synchronization.
+> > >  			 */
+> > >  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
+> > > -			kick_all_cpus_sync();
+> > > +			kick_active_cpus_sync();
+> > >  			return ret;
+> > >  		}
+> > >  	}
+> > > diff --git a/include/linux/smp.h b/include/linux/smp.h
+> > > index 9fb239e12b82..27215e22240d 100644
+> > > --- a/include/linux/smp.h
+> > > +++ b/include/linux/smp.h
+> > > @@ -105,6 +105,7 @@ int smp_call_function_any(const struct cpumask *mask,
+> > >  			  smp_call_func_t func, void *info, int wait);
+> > > 
+> > >  void kick_all_cpus_sync(void);
+> > > +void kick_active_cpus_sync(void);
+> > >  void wake_up_all_idle_cpus(void);
+> > > 
+> > >  /*
+> > > @@ -161,6 +162,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
+> > >  }
+> > > 
+> > >  static inline void kick_all_cpus_sync(void) {  }
+> > > +static inline void kick_active_cpus_sync(void) {  }
+> > >  static inline void wake_up_all_idle_cpus(void) {  }
+> > > 
+> > >  #ifdef CONFIG_UP_LATE_INIT
+> > > diff --git a/kernel/smp.c b/kernel/smp.c
+> > > index 084c8b3a2681..0358d6673850 100644
+> > > --- a/kernel/smp.c
+> > > +++ b/kernel/smp.c
+> > > @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
+> > > 
+> > > +/**
+> > > + * kick_active_cpus_sync - Force CPUs that are not in extended
+> > > + * quiescent state (idle or nohz_full userspace) sync by sending
+> > > + * IPI. Extended quiescent state CPUs will sync at the exit of
+> > > + * that state.
+> > > + */
+> > > +void kick_active_cpus_sync(void)
+> > > +{
+> > > +	int cpu;
+> > > +	struct cpumask kernel_cpus;
+> > > +
+> > > +	smp_mb();
+> > > +
+> > > +	cpumask_clear(&kernel_cpus);
+> > > +	preempt_disable();
+> > > +	for_each_online_cpu(cpu) {
+> > > +		if (!rcu_eqs_special_set(cpu))
+> > 
+> > If we get here, the CPU is not in a quiescent state, so we therefore
+> > must IPI it, correct?
+> > 
+> > But don't you also need to define rcu_eqs_special_exit() so that RCU
+> > can invoke it when it next leaves its quiescent state?  Or are you able
+> > to ignore the CPU in that case?  (If you are able to ignore the CPU in
+> > that case, I could give you a lower-cost function to get your job done.)
+> > 
+> > 							Thanx, Paul
 > 
-> https://www.spinics.net/lists/linux-rdma/msg62570.html
+> What's actually needed for synchronization is issuing memory barrier on target
+> CPUs before we start executing kernel code.
 > 
-> https://www.spinics.net/lists/linux-rdma/index.html#62666
+> smp_mb() is implicitly called in smp_call_function*() path for it. In
+> rcu_eqs_special_set() -> rcu_dynticks_eqs_exit() path, smp_mb__after_atomic()
+> is called just before rcu_eqs_special_exit().
 > 
-
-To add some more details on why we are looking at this now:
-
-I posted several patches last week to remove duplicate barriers on ARM while
-trying to make the code friendly with other architectures.
-
-https://www.spinics.net/lists/netdev/msg491842.html
-https://www.spinics.net/lists/linux-rdma/msg62434.html
-https://www.spinics.net/lists/arm-kernel/msg642336.html
-
-The conversation on this thread is interesting.
-
-https://patchwork.kernel.org/patch/10288987/
-
-1. I tried to replace wmb()+writel() with wmb()+writel_relaxed().
-2. writel_relaxed() is equal to writel() at this moment for PPC.
-3. Chelsio developers wanted to pull it into wmb()+__raw_writel() direction
-to take advantage of the same optimization for PPC.
-4. Dave informed us that behavior of __raw_write() is not identical on all
-architectures.
-5. We decided to go back to PPC and ask to implement writel_relaxed()
-instead of coming up with writel_realy_relaxed() API.
-
+> So I think, rcu_eqs_special_exit() may be left untouched. Empty
+> rcu_eqs_special_exit() in new RCU path corresponds empty do_nothing() in old
+> IPI path.
 > 
->> On Fri, Mar 23, 2018 at 11:16:08AM +1100, Benjamin Herrenschmidt wrote:
->>> On Thu, 2018-03-22 at 12:51 -0500, Sinan Kaya wrote:
->>> > On 3/22/2018 8:52 AM, Benjamin Herrenschmidt wrote:
->>> > > > > No, it's not sufficient.
->>> > >
->>> > > Just to clarify ... barrier() is just a compiler barrier, it means the
->>> > > compiler will generate things in the order they are written. This isn't
->>> > > sufficient on archs with an OO memory model, where an actual memory
->>> > > barrier instruction needs to be emited.
->>> >
->>> > Surprisingly, ARM64 GCC compiler generates a write barrier as
->>> > opposed to preventing code reordering.
->>
->> In context, this looks like a misunderstanding somewhere. barrier() is a
->> compiler barrier for us just like everybody else and we use the generic
->> implementation with the empty asm + memory clobber.
->>
+> Or my understanding of smp_mb__after_atomic() is wrong? By default, 
+> smp_mb__after_atomic() is just alias to smp_mb(). But some
+> architectures define it differently. x86, for example, aliases it to
+> just barrier() with a comment: "Atomic operations are already
+> serializing on x86".
 > 
-> True, I clarified it this weekend
+> I was initially thinking that it's also fine to leave
+> rcu_eqs_special_exit() empty in this case, but now I'm not sure...
 > 
-> https://www.spinics.net/lists/linux-rdma/msg62788.html
-> 
-> 
-> 
+> Anyway, answering to your question, we shouldn't ignore quiescent
+> CPUs, and rcu_eqs_special_set() path is really needed as it issues
+> memory barrier on them.
 
+An alternative approach would be for me to make something like this
+and export it:
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+	bool rcu_cpu_in_eqs(int cpu)
+	{
+		struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
+		int snap;
+
+		smp_mb(); /* Obtain consistent snapshot, pairs with update. */
+		snap = READ_ONCE(&rdtp->dynticks);
+		smp_mb(); /* See above. */
+		return !(snap & RCU_DYNTICK_CTRL_CTR);
+	}
+
+Then you could replace your use of rcu_cpu_in_eqs() above with
+the new rcu_cpu_in_eqs().  This would avoid the RMW atomic, and, more
+important, the unnecessary write to ->dynticks.
+
+Or am I missing something?
+
+							Thanx, Paul
+
+> Yury
+> 
+> > > +			cpumask_set_cpu(cpu, &kernel_cpus);
+> > > +	}
+> > > +	smp_call_function_many(&kernel_cpus, do_nothing, NULL, 1);
+> > > +	preempt_enable();
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(kick_active_cpus_sync);
+> > > +
+> > >  /**
+> > >   * wake_up_all_idle_cpus - break all cpus out of idle
+> > >   * wake_up_all_idle_cpus try to break all cpus which is in idle state even
+> > > diff --git a/mm/slab.c b/mm/slab.c
+> > > index 324446621b3e..678d5dbd6f46 100644
+> > > --- a/mm/slab.c
+> > > +++ b/mm/slab.c
+> > > @@ -3856,7 +3856,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
+> > >  	 * cpus, so skip the IPIs.
+> > >  	 */
+> > >  	if (prev)
+> > > -		kick_all_cpus_sync();
+> > > +		kick_active_cpus_sync();
+> > > 
+> > >  	check_irq_on();
+> > >  	cachep->batchcount = batchcount;
+> > > -- 
+> > > 2.14.1
+> > > 
+> 
