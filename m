@@ -1,47 +1,35 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <andrea.parri@amarulasolutions.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408nnj0SMvzF1yX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 19:47:03 +1100 (AEDT)
-Date: Mon, 26 Mar 2018 10:46:50 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Ilya Smith <blackzert@gmail.com>
-Cc: Matthew Wilcox <willy@infradead.org>, rth@twiddle.net,
- ink@jurassic.park.msu.ru, mattst88@gmail.com, vgupta@synopsys.com,
- linux@armlinux.org.uk, tony.luck@intel.com, fenghua.yu@intel.com,
- ralf@linux-mips.org, jejb@parisc-linux.org,
- Helge Deller <deller@gmx.de>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com,
- heiko.carstens@de.ibm.com, ysato@users.sourceforge.jp,
- dalias@libc.org, davem@davemloft.net, tglx@linutronix.de,
- mingo@redhat.com, hpa@zytor.com, x86@kernel.org, nyc@holomorphy.com,
- viro@zeniv.linux.org.uk, arnd@arndb.de, gregkh@linuxfoundation.org,
- deepa.kernel@gmail.com, Hugh Dickins <hughd@google.com>,
- kstewart@linuxfoundation.org, pombredanne@nexb.com,
- Andrew Morton <akpm@linux-foundation.org>, steve.capper@arm.com,
- punit.agrawal@arm.com, aneesh.kumar@linux.vnet.ibm.com,
- npiggin@gmail.com, Kees Cook <keescook@chromium.org>,
- bhsharma@redhat.com, riel@redhat.com, nitin.m.gupta@oracle.com,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>, Jan Kara <jack@suse.cz>,
- ross.zwisler@linux.intel.com, Jerome Glisse <jglisse@redhat.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>,
- linux-snps-arc@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, Linux-MM <linux-mm@kvack.org>
-Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
-Message-ID: <20180326084650.GC5652@dhcp22.suse.cz>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <20180323124806.GA5624@bombadil.infradead.org>
- <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408nx95cMyzF1yc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 19:53:24 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id x4so1558319wmh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 01:53:24 -0700 (PDT)
+Date: Mon, 26 Mar 2018 10:53:13 +0200
+From: Andrea Parri <andrea.parri@amarulasolutions.com>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180326085313.GA4016@andrea>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180325175004.28162-3-ynorov@caviumnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,39 +39,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 23-03-18 20:55:49, Ilya Smith wrote:
+Hi Yury,
+
+On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
+> kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
+> If CPU is in extended quiescent state (idle task or nohz_full userspace), this
+> work may be done at the exit of this state. Delaying synchronization helps to
+> save power if CPU is in idle state and decrease latency for real-time tasks.
 > 
-> > On 23 Mar 2018, at 15:48, Matthew Wilcox <willy@infradead.org> wrote:
-> > 
-> > On Thu, Mar 22, 2018 at 07:36:36PM +0300, Ilya Smith wrote:
-> >> Current implementation doesn't randomize address returned by mmap.
-> >> All the entropy ends with choosing mmap_base_addr at the process
-> >> creation. After that mmap build very predictable layout of address
-> >> space. It allows to bypass ASLR in many cases. This patch make
-> >> randomization of address on any mmap call.
-> > 
-> > Why should this be done in the kernel rather than libc?  libc is perfectly
-> > capable of specifying random numbers in the first argument of mmap.
-> Well, there is following reasons:
-> 1. It should be done in any libc implementation, what is not possible IMO;
-
-Is this really so helpful?
-
-> 2. User mode is not that layer which should be responsible for choosing
-> random address or handling entropy;
-
-Why?
-
-> 3. Memory fragmentation is unpredictable in this case
+> This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
+> code to delay syncronization.
 > 
-> Off course user mode could use random ‘hint’ address, but kernel may
-> discard this address if it is occupied for example and allocate just before
-> closest vma. So this solution doesn’t give that much security like 
-> randomization address inside kernel.
+> For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
+> isolated task would be fatal, as it breaks isolation. The approach with delaying
+> of synchronization work helps to maintain isolated state.
+> 
+> I've tested it with test from task isolation series on ThunderX2 for more than
+> 10 hours (10k giga-ticks) without breaking isolation.
+> 
+> Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+> ---
+>  arch/arm64/kernel/insn.c |  2 +-
+>  include/linux/smp.h      |  2 ++
+>  kernel/smp.c             | 24 ++++++++++++++++++++++++
+>  mm/slab.c                |  2 +-
+>  4 files changed, 28 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
+> index 2718a77da165..9d7c492e920e 100644
+> --- a/arch/arm64/kernel/insn.c
+> +++ b/arch/arm64/kernel/insn.c
+> @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
+>  			 * synchronization.
+>  			 */
+>  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
+> -			kick_all_cpus_sync();
+> +			kick_active_cpus_sync();
+>  			return ret;
+>  		}
+>  	}
+> diff --git a/include/linux/smp.h b/include/linux/smp.h
+> index 9fb239e12b82..27215e22240d 100644
+> --- a/include/linux/smp.h
+> +++ b/include/linux/smp.h
+> @@ -105,6 +105,7 @@ int smp_call_function_any(const struct cpumask *mask,
+>  			  smp_call_func_t func, void *info, int wait);
+>  
+>  void kick_all_cpus_sync(void);
+> +void kick_active_cpus_sync(void);
+>  void wake_up_all_idle_cpus(void);
+>  
+>  /*
+> @@ -161,6 +162,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
+>  }
+>  
+>  static inline void kick_all_cpus_sync(void) {  }
+> +static inline void kick_active_cpus_sync(void) {  }
+>  static inline void wake_up_all_idle_cpus(void) {  }
+>  
+>  #ifdef CONFIG_UP_LATE_INIT
+> diff --git a/kernel/smp.c b/kernel/smp.c
+> index 084c8b3a2681..0358d6673850 100644
+> --- a/kernel/smp.c
+> +++ b/kernel/smp.c
+> @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
+>  }
+>  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
+>  
+> +/**
+> + * kick_active_cpus_sync - Force CPUs that are not in extended
+> + * quiescent state (idle or nohz_full userspace) sync by sending
+> + * IPI. Extended quiescent state CPUs will sync at the exit of
+> + * that state.
+> + */
+> +void kick_active_cpus_sync(void)
+> +{
+> +	int cpu;
+> +	struct cpumask kernel_cpus;
+> +
+> +	smp_mb();
 
-The userspace can use the new MAP_FIXED_NOREPLACE to probe for the
-address range atomically and chose a different range on failure.
+(A general remark only:)
 
--- 
-Michal Hocko
-SUSE Labs
+checkpatch.pl should have warned about the fact that this barrier is
+missing an accompanying comment (which accesses are being "ordered",
+what is the pairing barrier, etc.).
+
+Moreover if, as your reply above suggested, your patch is relying on
+"implicit barriers" (something I would not recommend) then even more
+so you should comment on these requirements.
+
+This could: (a) force you to reason about the memory ordering stuff,
+(b) easy the task of reviewing and adopting your patch, (c) easy the
+task of preserving those requirements (as implementations changes).
+
+  Andrea
+
+
+> +
+> +	cpumask_clear(&kernel_cpus);
+> +	preempt_disable();
+> +	for_each_online_cpu(cpu) {
+> +		if (!rcu_eqs_special_set(cpu))
+> +			cpumask_set_cpu(cpu, &kernel_cpus);
+> +	}
+> +	smp_call_function_many(&kernel_cpus, do_nothing, NULL, 1);
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL_GPL(kick_active_cpus_sync);
+> +
+>  /**
+>   * wake_up_all_idle_cpus - break all cpus out of idle
+>   * wake_up_all_idle_cpus try to break all cpus which is in idle state even
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 324446621b3e..678d5dbd6f46 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -3856,7 +3856,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
+>  	 * cpus, so skip the IPIs.
+>  	 */
+>  	if (prev)
+> -		kick_all_cpus_sync();
+> +		kick_active_cpus_sync();
+>  
+>  	check_irq_on();
+>  	cachep->batchcount = batchcount;
+> -- 
+> 2.14.1
+> 
