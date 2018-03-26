@@ -1,49 +1,43 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 408v4W3mXtzF200
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 23:45:14 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2QCdOl7070466
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:45:12 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gxweuss3d-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 408vL23yNJzF20c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 23:56:57 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2QCsmaQ139492
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:56:55 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gy07yb43n-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:45:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 08:56:54 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 26 Mar 2018 08:45:09 -0400
-Date: Mon, 26 Mar 2018 05:45:55 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, luto@kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180325192328.GI3675@linux.vnet.ibm.com>
- <20180325201154.icdcyl4nw2jootqq@yury-thinkpad>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180325201154.icdcyl4nw2jootqq@yury-thinkpad>
-Message-Id: <20180326124555.GJ3675@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Mon, 26 Mar 2018 13:56:51 +0100
+Subject: Re: [PATCH v6 11/12] ima: Implement support for module-style
+ appended signatures
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-integrity@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ David Howells <dhowells@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Jessica Yu <jeyu@kernel.org>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
+ "AKASHI, Takahiro" <takahiro.akashi@linaro.org>
+Date: Mon, 26 Mar 2018 08:56:43 -0400
+In-Reply-To: <20180316203837.10174-12-bauerman@linux.vnet.ibm.com>
+References: <20180316203837.10174-1-bauerman@linux.vnet.ibm.com>
+ <20180316203837.10174-12-bauerman@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1522069003.3541.64.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,173 +47,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 25, 2018 at 11:11:54PM +0300, Yury Norov wrote:
-> On Sun, Mar 25, 2018 at 12:23:28PM -0700, Paul E. McKenney wrote:
-> > On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
-> > > kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
-> > > If CPU is in extended quiescent state (idle task or nohz_full userspace), this
-> > > work may be done at the exit of this state. Delaying synchronization helps to
-> > > save power if CPU is in idle state and decrease latency for real-time tasks.
-> > > 
-> > > This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
-> > > code to delay syncronization.
-> > > 
-> > > For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
-> > > isolated task would be fatal, as it breaks isolation. The approach with delaying
-> > > of synchronization work helps to maintain isolated state.
-> > > 
-> > > I've tested it with test from task isolation series on ThunderX2 for more than
-> > > 10 hours (10k giga-ticks) without breaking isolation.
-> > > 
-> > > Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
-> > > ---
-> > >  arch/arm64/kernel/insn.c |  2 +-
-> > >  include/linux/smp.h      |  2 ++
-> > >  kernel/smp.c             | 24 ++++++++++++++++++++++++
-> > >  mm/slab.c                |  2 +-
-> > >  4 files changed, 28 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-> > > index 2718a77da165..9d7c492e920e 100644
-> > > --- a/arch/arm64/kernel/insn.c
-> > > +++ b/arch/arm64/kernel/insn.c
-> > > @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
-> > >  			 * synchronization.
-> > >  			 */
-> > >  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
-> > > -			kick_all_cpus_sync();
-> > > +			kick_active_cpus_sync();
-> > >  			return ret;
-> > >  		}
-> > >  	}
-> > > diff --git a/include/linux/smp.h b/include/linux/smp.h
-> > > index 9fb239e12b82..27215e22240d 100644
-> > > --- a/include/linux/smp.h
-> > > +++ b/include/linux/smp.h
-> > > @@ -105,6 +105,7 @@ int smp_call_function_any(const struct cpumask *mask,
-> > >  			  smp_call_func_t func, void *info, int wait);
-> > > 
-> > >  void kick_all_cpus_sync(void);
-> > > +void kick_active_cpus_sync(void);
-> > >  void wake_up_all_idle_cpus(void);
-> > > 
-> > >  /*
-> > > @@ -161,6 +162,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
-> > >  }
-> > > 
-> > >  static inline void kick_all_cpus_sync(void) {  }
-> > > +static inline void kick_active_cpus_sync(void) {  }
-> > >  static inline void wake_up_all_idle_cpus(void) {  }
-> > > 
-> > >  #ifdef CONFIG_UP_LATE_INIT
-> > > diff --git a/kernel/smp.c b/kernel/smp.c
-> > > index 084c8b3a2681..0358d6673850 100644
-> > > --- a/kernel/smp.c
-> > > +++ b/kernel/smp.c
-> > > @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
-> > > 
-> > > +/**
-> > > + * kick_active_cpus_sync - Force CPUs that are not in extended
-> > > + * quiescent state (idle or nohz_full userspace) sync by sending
-> > > + * IPI. Extended quiescent state CPUs will sync at the exit of
-> > > + * that state.
-> > > + */
-> > > +void kick_active_cpus_sync(void)
-> > > +{
-> > > +	int cpu;
-> > > +	struct cpumask kernel_cpus;
-> > > +
-> > > +	smp_mb();
-> > > +
-> > > +	cpumask_clear(&kernel_cpus);
-> > > +	preempt_disable();
-> > > +	for_each_online_cpu(cpu) {
-> > > +		if (!rcu_eqs_special_set(cpu))
-> > 
-> > If we get here, the CPU is not in a quiescent state, so we therefore
-> > must IPI it, correct?
-> > 
-> > But don't you also need to define rcu_eqs_special_exit() so that RCU
-> > can invoke it when it next leaves its quiescent state?  Or are you able
-> > to ignore the CPU in that case?  (If you are able to ignore the CPU in
-> > that case, I could give you a lower-cost function to get your job done.)
-> > 
-> > 							Thanx, Paul
+On Fri, 2018-03-16 at 17:38 -0300, Thiago Jung Bauermann wrote:
+> This patch actually implements the appraise_type=imasig|modsig option,
+> allowing IMA to read and verify modsig signatures.
 > 
-> What's actually needed for synchronization is issuing memory barrier on target
-> CPUs before we start executing kernel code.
+> In case both are present in the same file, IMA will first check whether the
+> key used by the xattr signature is present in the kernel keyring. If not,
+> it will try the appended signature.
+
+Yes, this sounds right.
+
 > 
-> smp_mb() is implicitly called in smp_call_function*() path for it. In
-> rcu_eqs_special_set() -> rcu_dynticks_eqs_exit() path, smp_mb__after_atomic()
-> is called just before rcu_eqs_special_exit().
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> ---
+>  security/integrity/ima/ima.h          | 11 +++++++-
+>  security/integrity/ima/ima_appraise.c | 53 +++++++++++++++++++++++++++++++----
+>  security/integrity/ima/ima_main.c     | 21 +++++++++++---
+>  3 files changed, 74 insertions(+), 11 deletions(-)
 > 
-> So I think, rcu_eqs_special_exit() may be left untouched. Empty
-> rcu_eqs_special_exit() in new RCU path corresponds empty do_nothing() in old
-> IPI path.
+> diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+> index 49aef56dc96d..c11ccb7c5bfb 100644
+> --- a/security/integrity/ima/ima.h
+> +++ b/security/integrity/ima/ima.h
+> @@ -157,7 +157,8 @@ void ima_init_template_list(void);
 > 
-> Or my understanding of smp_mb__after_atomic() is wrong? By default, 
-> smp_mb__after_atomic() is just alias to smp_mb(). But some
-> architectures define it differently. x86, for example, aliases it to
-> just barrier() with a comment: "Atomic operations are already
-> serializing on x86".
+>  static inline bool is_ima_sig(const struct evm_ima_xattr_data *xattr_value)
+>  {
+> -	return xattr_value && xattr_value->type == EVM_IMA_XATTR_DIGSIG;
+> +	return xattr_value && (xattr_value->type == EVM_IMA_XATTR_DIGSIG ||
+> +			       xattr_value->type == IMA_MODSIG);
+>  }
 > 
-> I was initially thinking that it's also fine to leave
-> rcu_eqs_special_exit() empty in this case, but now I'm not sure...
+>  /*
+> @@ -253,6 +254,8 @@ enum integrity_status ima_get_cache_status(struct integrity_iint_cache *iint,
+>  					   enum ima_hooks func);
+>  enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+>  				 int xattr_len);
+> +bool ima_xattr_sig_known_key(const struct evm_ima_xattr_data *xattr_value,
+> +			     int xattr_len);
+>  int ima_read_xattr(struct dentry *dentry,
+>  		   struct evm_ima_xattr_data **xattr_value);
 > 
-> Anyway, answering to your question, we shouldn't ignore quiescent
-> CPUs, and rcu_eqs_special_set() path is really needed as it issues
-> memory barrier on them.
-
-An alternative approach would be for me to make something like this
-and export it:
-
-	bool rcu_cpu_in_eqs(int cpu)
-	{
-		struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
-		int snap;
-
-		smp_mb(); /* Obtain consistent snapshot, pairs with update. */
-		snap = READ_ONCE(&rdtp->dynticks);
-		smp_mb(); /* See above. */
-		return !(snap & RCU_DYNTICK_CTRL_CTR);
-	}
-
-Then you could replace your use of rcu_cpu_in_eqs() above with
-the new rcu_cpu_in_eqs().  This would avoid the RMW atomic, and, more
-important, the unnecessary write to ->dynticks.
-
-Or am I missing something?
-
-							Thanx, Paul
-
-> Yury
+> @@ -291,6 +294,12 @@ ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value, int xattr_len)
+>  	return ima_hash_algo;
+>  }
 > 
-> > > +			cpumask_set_cpu(cpu, &kernel_cpus);
-> > > +	}
-> > > +	smp_call_function_many(&kernel_cpus, do_nothing, NULL, 1);
-> > > +	preempt_enable();
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(kick_active_cpus_sync);
-> > > +
-> > >  /**
-> > >   * wake_up_all_idle_cpus - break all cpus out of idle
-> > >   * wake_up_all_idle_cpus try to break all cpus which is in idle state even
-> > > diff --git a/mm/slab.c b/mm/slab.c
-> > > index 324446621b3e..678d5dbd6f46 100644
-> > > --- a/mm/slab.c
-> > > +++ b/mm/slab.c
-> > > @@ -3856,7 +3856,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
-> > >  	 * cpus, so skip the IPIs.
-> > >  	 */
-> > >  	if (prev)
-> > > -		kick_all_cpus_sync();
-> > > +		kick_active_cpus_sync();
-> > > 
-> > >  	check_irq_on();
-> > >  	cachep->batchcount = batchcount;
-> > > -- 
-> > > 2.14.1
-> > > 
+> +static inline bool ima_xattr_sig_known_key(const struct evm_ima_xattr_data
+> +					   *xattr_value, int xattr_len)
+> +{
+> +	return false;
+> +}
+> +
+>  static inline int ima_read_xattr(struct dentry *dentry,
+>  				 struct evm_ima_xattr_data **xattr_value)
+>  {
+> diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
+> index 01172eab297b..84e0fd5a19c8 100644
+> --- a/security/integrity/ima/ima_appraise.c
+> +++ b/security/integrity/ima/ima_appraise.c
+> @@ -189,6 +189,22 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
+>  	return ima_hash_algo;
+>  }
+> 
+> +bool ima_xattr_sig_known_key(const struct evm_ima_xattr_data *xattr_value,
+> +			     int xattr_len)
+> +{
+> +	struct key *keyring;
+> +
+> +	if (xattr_value->type != EVM_IMA_XATTR_DIGSIG)
+> +		return false;
+> +
+> +	keyring = integrity_keyring_from_id(INTEGRITY_KEYRING_IMA);
+> +	if (IS_ERR(keyring))
+> +		return false;
+> +
+> +	return asymmetric_sig_has_known_key(keyring, (const char *) xattr_value,
+> +					    xattr_len);
+> +}
+> +
+>  int ima_read_xattr(struct dentry *dentry,
+>  		   struct evm_ima_xattr_data **xattr_value)
+>  {
+> @@ -221,8 +237,12 @@ int ima_appraise_measurement(enum ima_hooks func,
+>  	struct inode *inode = d_backing_inode(dentry);
+>  	enum integrity_status status = INTEGRITY_UNKNOWN;
+>  	int rc = xattr_len, hash_start = 0;
+> +	size_t xattr_contents_len;
+> +	void *xattr_contents;
+> 
+> -	if (!(inode->i_opflags & IOP_XATTR))
+> +	/* If not appraising a modsig, we need an xattr. */
+> +	if ((xattr_value == NULL || xattr_value->type != IMA_MODSIG) &&
+> +	    !(inode->i_opflags & IOP_XATTR))
+>  		return INTEGRITY_UNKNOWN;
+> 
+>  	if (rc <= 0) {
+> @@ -241,13 +261,29 @@ int ima_appraise_measurement(enum ima_hooks func,
+>  		goto out;
+>  	}
+> 
+> -	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_value, rc, iint);
+> +	/*
+> +	 * If it's a modsig, we don't have the xattr contents to pass to
+> +	 * evm_verifyxattr().
+> +	 */
+> +	if (xattr_value->type == IMA_MODSIG) {
+> +		xattr_contents = NULL;
+> +		xattr_contents_len = 0;
+> +	} else {
+> +		xattr_contents = xattr_value;
+> +		xattr_contents_len = xattr_len;
+> +	}
+> +
+> +	status = evm_verifyxattr(dentry, XATTR_NAME_IMA, xattr_contents,
+> +				 xattr_contents_len, iint);
+>  	switch (status) {
+>  	case INTEGRITY_PASS:
+>  	case INTEGRITY_PASS_IMMUTABLE:
+>  	case INTEGRITY_UNKNOWN:
+>  		break;
+>  	case INTEGRITY_NOXATTRS:	/* No EVM protected xattrs. */
+> +		/* It's fine not to have xattrs when using a modsig. */
+> +		if (xattr_value->type == IMA_MODSIG)
+> +			break;
+>  	case INTEGRITY_NOLABEL:		/* No security.evm xattr. */
+>  		cause = "missing-HMAC";
+>  		goto out;
+> @@ -288,11 +324,16 @@ int ima_appraise_measurement(enum ima_hooks func,
+>  		status = INTEGRITY_PASS;
+>  		break;
+>  	case EVM_IMA_XATTR_DIGSIG:
+> +	case IMA_MODSIG:
+>  		set_bit(IMA_DIGSIG, &iint->atomic_flags);
+> -		rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+> -					     (const char *)xattr_value, rc,
+> -					     iint->ima_hash->digest,
+> -					     iint->ima_hash->length);
+> +		if (xattr_value->type == EVM_IMA_XATTR_DIGSIG)
+> +			rc = integrity_digsig_verify(INTEGRITY_KEYRING_IMA,
+> +						     (const char *)xattr_value,
+> +						     rc, iint->ima_hash->digest,
+> +						     iint->ima_hash->length);
+> +		else
+> +			rc = ima_modsig_verify(INTEGRITY_KEYRING_IMA,
+> +					       xattr_value);
+>  		if (rc == -EOPNOTSUPP) {
+>  			status = INTEGRITY_UNKNOWN;
+>  		} else if (rc) {
+> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+> index 5d122daf5c8a..1b11c10f09df 100644
+> --- a/security/integrity/ima/ima_main.c
+> +++ b/security/integrity/ima/ima_main.c
+> @@ -183,7 +183,7 @@ static int process_measurement(struct file *file, const struct cred *cred,
+>  	struct evm_ima_xattr_data *xattr_value = NULL;
+>  	int xattr_len = 0;
+>  	bool violation_check;
+> -	enum hash_algo hash_algo;
+> +	enum hash_algo hash_algo = HASH_ALGO__LAST;
+> 
+>  	if (!ima_policy_flag || !S_ISREG(inode->i_mode))
+>  		return 0;
+> @@ -277,11 +277,24 @@ static int process_measurement(struct file *file, const struct cred *cred,
+> 
+>  	template_desc = ima_template_desc_current();
+>  	if ((action & IMA_APPRAISE_SUBMASK) ||
+> -		    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0)
+> +	    strcmp(template_desc->name, IMA_TEMPLATE_IMA_NAME) != 0) {
+>  		/* read 'security.ima' */
+>  		xattr_len = ima_read_xattr(file_dentry(file), &xattr_value);
+> +		if (iint->flags & IMA_MODSIG_ALLOWED &&
+> +		    (xattr_len <= 0 || !ima_xattr_sig_known_key(xattr_value,
+> +								xattr_len))) {
+> +			/*
+> +			 * Even if we end up using a modsig, hash_algo should
+> +			 * come from the xattr (or even the default hash algo).
+> +			 */
+> +			hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
+> +			ima_read_modsig(func, buf, size, &xattr_value,
+> +					&xattr_len);
+> +		}
+> +	}
+> 
+> -	hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
+> +	if (hash_algo == HASH_ALGO__LAST)
+> +		hash_algo = ima_get_hash_algo(xattr_value, xattr_len);
+
+Previous versions needed to calculate the file hash based on the
+modsig hash algorithm.  With the introduction of the digest signature
+template field ('d-sig'), the file digest field ('d-ng') is always
+calculated based on either the xattr hash algorithm, if one exists, or
+the IMA default hash algorithm.
+
+Mimi
+
+> 
+>  	rc = ima_collect_measurement(iint, file, buf, size, hash_algo);
+>  	if (rc != 0 && rc != -EBADF && rc != -EINVAL)
+> @@ -309,7 +322,7 @@ static int process_measurement(struct file *file, const struct cred *cred,
+>  	     !(iint->flags & IMA_NEW_FILE))
+>  		rc = -EACCES;
+>  	mutex_unlock(&iint->mutex);
+> -	kfree(xattr_value);
+> +	ima_free_xattr_data(xattr_value);
+>  out:
+>  	if (pathbuf)
+>  		__putname(pathbuf);
 > 
