@@ -1,17 +1,67 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409tCW4hn0zF2D1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 14:09:43 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id t16so454527pfh.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 20:09:43 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mm: Fix printing of process table address
-Date: Wed, 28 Mar 2018 14:09:32 +1100
-Message-Id: <20180328030932.32169-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409nqn4gd7zF2Gl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:52:21 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 16:49:04 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: Ilya Smith <blackzert@gmail.com>, Michal Hocko <mhocko@kernel.org>,
+ Richard Henderson <rth@twiddle.net>, ink@jurassic.park.msu.ru,
+ mattst88@gmail.com, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ X86 ML <x86@kernel.org>, nyc@holomorphy.com,
+ Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>, Hugh Dickins <hughd@google.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Steve Capper <steve.capper@arm.com>, Punit Agrawal <punit.agrawal@arm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nick Piggin <npiggin@gmail.com>, Bhupesh Sharma <bhsharma@redhat.com>,
+ Rik van Riel <riel@redhat.com>, nitin.m.gupta@oracle.com,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, Jan Kara <jack@suse.cz>,
+ Ross Zwisler <ross.zwisler@linux.intel.com>,
+ Jerome Glisse <jglisse@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ linux-snps-arc@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-metag@vger.kernel.org,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linux-parisc <linux-parisc@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ linux-sh <linux-sh@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
+Message-ID: <20180327234904.GA27734@bombadil.infradead.org>
+References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ <20180323124806.GA5624@bombadil.infradead.org>
+ <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
+ <20180326084650.GC5652@dhcp22.suse.cz>
+ <01A133F4-27DF-4AE2-80D6-B0368BF758CD@gmail.com>
+ <20180327072432.GY5652@dhcp22.suse.cz>
+ <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
+ <CAGXu5j+XXufprMaJ9GbHxD3mZ7iqUuu60-tTMC6wo2x1puYzMQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAGXu5j+XXufprMaJ9GbHxD3mZ7iqUuu60-tTMC6wo2x1puYzMQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +71,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-New changes to %p cause the information printed at boot
-about radix-mmu partition and process table opaque, if
-we really want to protect those values, we should make
-dmesg more secure using CONFIG_SECURITY_DMESG_RESTRICT
+On Tue, Mar 27, 2018 at 03:53:53PM -0700, Kees Cook wrote:
+> I agree: pushing this off to libc leaves a lot of things unprotected.
+> I think this should live in the kernel. The question I have is about
+> making it maintainable/readable/etc.
+> 
+> The state-of-the-art for ASLR is moving to finer granularity (over
+> just base-address offset), so I'd really like to see this supported in
+> the kernel. We'll be getting there for other things in the future, and
+> I'd like to have a working production example for researchers to
+> study, etc.
 
-Before the patches:
-
-radix-mmu: Partition table         (ptrval)
-radix-mmu: Process table         (ptrval) and radix root for kernel:         (ptrval)
-
-After the patches
-
-radix-mmu: Partition table c0000000ffff0000
-radix-mmu: Process table c0000000fe000000 and radix root for kernel: c0000000015a0000
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/pgtable-radix.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 2e10a964e290..3f676e89c3a6 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -329,7 +329,8 @@ static void __init radix_init_pgtable(void)
- 	 * physical address here.
- 	 */
- 	register_process_table(__pa(process_tb), 0, PRTB_SIZE_SHIFT - 12);
--	pr_info("Process table %p and radix root for kernel: %p\n", process_tb, init_mm.pgd);
-+	pr_info("Process table %px and radix root for kernel: %px\n",
-+			process_tb, init_mm.pgd);
- 	asm volatile("ptesync" : : : "memory");
- 	asm volatile(PPC_TLBIE_5(%0,%1,2,1,1) : :
- 		     "r" (TLBIEL_INVAL_SET_LPID), "r" (0));
-@@ -363,7 +364,7 @@ static void __init radix_init_partition_table(void)
- 	mmu_partition_table_set_entry(0, dw0, 0);
- 
- 	pr_info("Initializing Radix MMU\n");
--	pr_info("Partition table %p\n", partition_tb);
-+	pr_info("Partition table %px\n", partition_tb);
- }
- 
- void __init radix_init_native(void)
--- 
-2.13.6
+One thing we need is to limit the fragmentation of this approach.
+Even on 64-bit systems, we can easily get into a situation where there isn't
+space to map a contiguous terabyte.
