@@ -1,24 +1,36 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
- [IPv6:2607:f8b0:400e:c00::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409VfP3vxKzF221
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:28:13 +1100 (AEDT)
-Received: by mail-pf0-x22b.google.com with SMTP id l27so8775641pfk.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 05:28:13 -0700 (PDT)
-Date: Tue, 27 Mar 2018 22:27:56 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
- OPAL errors
-Message-ID: <20180327222756.5bb5b44e@roar.ozlabs.ibm.com>
-In-Reply-To: <877epxk983.fsf@concordia.ellerman.id.au>
-References: <20180326150233.23089-1-npiggin@gmail.com>
- <877epxk983.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409Wp51sYRzF2Ch
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 00:19:55 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Will Deacon' <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jason Gunthorpe
+ <jgg@ziepe.ca>, Sinan Kaya <okaya@codeaurora.org>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, "Ingo
+ Molnar" <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
+Subject: RE: RFC on writel and writel_relaxed
+Date: Tue, 27 Mar 2018 13:20:44 +0000
+Message-ID: <6179a46115f54162b350fa54505b033d@AcuMS.aculab.com>
+References: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+ <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <20180327095745.GB29373@arm.com>
+ <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
+ <20180327100944.GD29373@arm.com>
+ <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
+ <20180327110258.GF2464@arm.com>
+In-Reply-To: <20180327110258.GF2464@arm.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +40,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Mar 2018 23:13:00 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Fair enough. I'd rather people used _relaxed by default, but I have to ad=
+mit
+> that it will probably just result in them getting things wrong...
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > opal_nvram_write currently just assumes success if it encounters an
-> > error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
-> > on other errors instead.  
-> 
-> Does that ever happen with current skiboot?
+Certainly requiring the driver writes use explicit barriers should make
+them understand when and why they are needed - and then put in the correct =
+ones.
 
-I can now even using the mambo fake flash driver that never returns
-failure, because skiboot will return OPAL_INTERNAL_ERROR if we try
-to re-enter it. So I hit it when testing sreset-in-opal cases (the
-crash path wants to write something to nvram).
+The problem I've had is that I have a good idea which barriers are needed
+but find that readl/writel seem to contain a lot of extra ones.
+Maybe the are required in some places, but the extra synchronising
+instructions could easily have measureable performance effects on
+hot paths.
 
-Not sure about the skiboot flash layer. Aside from programming
-errors, it looks like perhaps ECC and BMC failure or unresponsive
-could cause errors to come back here.
+Drivers are likely to contain sequences like:
+	read_io
+	if (...) return
+	write_mem
+	...
+	write_mem
+	barrier
+	write_mem
+	barrier
+	write_io
+for things like ring updates.
+Where the 'mem' might actually be in io space.
+In such sequences not all the synchronising instructions are needed.
+I'm not at all sure it is easy to get the right set.
 
-> Even if it doesn't I think I'm inclined to tag this for stable.
-
-It's turning some relatively minor types of errors into a system
-hang, so it seems like it could go in stable. I've hit the -EIO case
-in these basic tests and it hasn't had obvious bugs.
-
-Thanks,
-Nick
+	David
