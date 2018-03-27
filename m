@@ -1,17 +1,30 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409PXj0nmnzF28Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 19:37:56 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 11:37:42 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: rsarmah@amcc.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] powerpc/4xx: Adding PCIe MSI support
-Message-ID: <20180327083742.GA22208@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409PbM6jBKzF28g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 19:40:15 +1100 (AEDT)
+Received: by mail-oi0-x244.google.com with SMTP id j143-v6so9562924oih.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 01:40:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <20180324211020.Horde.kEO4b3mHPV88FKM0OiRT0Q1@messagerie.si.c-s.fr>
+References: <20180322202007.23088-1-malat@debian.org>
+ <20180322202007.23088-15-malat@debian.org>
+ <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
+ <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
+ <20180324211020.Horde.kEO4b3mHPV88FKM0OiRT0Q1@messagerie.si.c-s.fr>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Tue, 27 Mar 2018 10:39:52 +0200
+Message-ID: <CA+7wUszsJUJJeb+xhzjGr8YxDt-BYruBwda7Dq-nFfyt0sU0ew@mail.gmail.com>
+Subject: Re: [PATCH 14/19] powerpc/altivec: Add missing prototypes for altivec
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>,
+ kvm-ppc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,70 +34,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ This is really really ancient code.  - dan ]
+Christophe,
 
-Hello Rupjyoti Sarmah,
+On Sat, Mar 24, 2018 at 9:10 PM, LEROY Christophe
+<christophe.leroy@c-s.fr> wrote:
+> Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
+>
+>
+>> On Fri, Mar 23, 2018 at 1:19 PM, christophe leroy
+>> <christophe.leroy@c-s.fr> wrote:
+>>>
+>>>
+>>>
+>>> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
+>>>>
+>>>>
+>>>> Some functions prototypes were missing for the non-altivec code. Add t=
+he
+>>>> missing prototypes directly in xor_vmx, fix warnings treated as errors
+>>>> with
+>>>> W=3D1:
+>>>>
+>>>>    arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototype
+>>>> for
+>>>> =E2=80=98xor_altivec_2=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>    arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototype
+>>>> for
+>>>> =E2=80=98xor_altivec_3=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>    arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototype
+>>>> for
+>>>> =E2=80=98xor_altivec_4=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>    arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototype
+>>>> for
+>>>> =E2=80=98xor_altivec_5=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>
+>>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>>>> ---
+>>>>   arch/powerpc/lib/xor_vmx.h | 14 ++++++++++++++
+>>>>   1 file changed, 14 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx.h
+>>>> index 5c2b0839b179..2173e3c84151 100644
+>>>> --- a/arch/powerpc/lib/xor_vmx.h
+>>>> +++ b/arch/powerpc/lib/xor_vmx.h
+>>>> @@ -19,3 +19,17 @@ void __xor_altivec_4(unsigned long bytes, unsigned
+>>>> long
+>>>> *v1_in,
+>>>>   void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+>>>>                              unsigned long *v2_in, unsigned long *v3_i=
+n,
+>>>>                              unsigned long *v4_in, unsigned long
+>>>> *v5_in);
+>>>> +
+>>>> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
+>>>> +                            unsigned long *v2_in);
+>>>> +
+>>>
+>>>
+>>>
+>>> Only used in one place, should be static instead of adding it in a .h
+>>>
+>>> Same for the other ones.
+>>
+>>
+>> $ git grep xor_altivec_2
+>> [...]
+>> arch/powerpc/lib/xor_vmx_glue.c:EXPORT_SYMBOL(xor_altivec_2);
+>>
+>> Are you sure I can change this function to static ?
+>
+>
+> Yes you are right.  But in fact those fonctions are already defined in
+> asm/xor. h
+> So you just need to add the missing #include
 
-The patch 3fb7933850fa: "powerpc/4xx: Adding PCIe MSI support" from
-Mar 29, 2011, leads to the following static checker warning:
+I originally tried it, but this leads to:
 
-	arch/powerpc/platforms/4xx/msi.c:100 ppc4xx_setup_msi_irqs()
-	warn: 'int_no >= 0' 'false' implies 'int_no < 0' is 'true'
+  CC      arch/powerpc/lib/xor_vmx_glue.o
+In file included from arch/powerpc/lib/xor_vmx_glue.c:16:0:
+./arch/powerpc/include/asm/xor.h:39:15: error: variable
+=E2=80=98xor_block_altivec=E2=80=99 has initializer but incomplete type
+ static struct xor_block_template xor_block_altivec =3D {
+               ^~~~~~~~~~~~~~~~~~
+./arch/powerpc/include/asm/xor.h:40:2: error: unknown field =E2=80=98name=
+=E2=80=99
+specified in initializer
+  .name =3D "altivec",
+  ^
+[...]
 
-arch/powerpc/platforms/4xx/msi.c
-    79  static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-    80  {
-    81          int int_no = -ENOMEM;
-    82          unsigned int virq;
-    83          struct msi_msg msg;
-    84          struct msi_desc *entry;
-    85          struct ppc4xx_msi *msi_data = &ppc4xx_msi;
-    86  
-    87          dev_dbg(&dev->dev, "PCIE-MSI:%s called. vec %x type %d\n",
-    88                  __func__, nvec, type);
-    89          if (type == PCI_CAP_ID_MSIX)
-    90                  pr_debug("ppc4xx msi: MSI-X untested, trying anyway.\n");
-    91  
-    92          msi_data->msi_virqs = kmalloc((msi_irqs) * sizeof(int), GFP_KERNEL);
-    93          if (!msi_data->msi_virqs)
-    94                  return -ENOMEM;
-    95  
-    96          for_each_pci_msi_entry(entry, dev) {
-    97                  int_no = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
-    98                  if (int_no >= 0)
-                            ^^^^^^^^^^^
-    99                          break;
-   100                  if (int_no < 0) {
-                            ^^^^^^^^^^
-Smatch is saying that this check could be removed, which is true.
+The file <asm/xor.h> (powerpc) is pretty much expected to be included
+after <include/linux/raid/xor.h>.
 
-   101                          pr_debug("%s: fail allocating msi interrupt\n",
-   102                                          __func__);
-   103                  }
-   104                  virq = irq_of_parse_and_map(msi_data->msi_dev, int_no);
-                                                                       ^^^^^^
+I did not want to tweak <asm/xor.h> to test for #ifdef _XOR_H just before
 
-It doesn't seem right to pass negative indexes to irq_of_parse_and_map().
-It could result in a read before the start of the array in
-of_irq_parse_oldworld(), I think.
+#ifdef _XOR_H
+static struct xor_block_template xor_block_altivec =3D {
+[...]
 
-   105                  if (!virq) {
-   106                          dev_err(&dev->dev, "%s: fail mapping irq\n", __func__);
-   107                          msi_bitmap_free_hwirqs(&msi_data->bitmap, int_no, 1);
-   108                          return -ENOSPC;
-   109                  }
-   110                  dev_dbg(&dev->dev, "%s: virq = %d\n", __func__, virq);
-   111  
-   112                  /* Setup msi address space */
-   113                  msg.address_hi = msi_data->msi_addr_hi;
-   114                  msg.address_lo = msi_data->msi_addr_lo;
-   115  
-   116                  irq_set_msi_desc(virq, entry);
-   117                  msg.data = int_no;
-   118                  pci_write_msi_msg(virq, &msg);
-   119          }
-   120          return 0;
-   121  }
+since this seems like a hack to me.
 
-regards,
-dan carpenter
+Is this ok to test for #ifdef _XOR_H in <arch/powerpc/include/asm/xor.h> ?
+
+> Christophe
+>
+>
+>>
+>>> Christophe
+>>>
+>>>
+>>>> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
+>>>> +                            unsigned long *v2_in, unsigned long
+>>>> *v3_in);
+>>>> +
+>>>> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+>>>> +                            unsigned long *v2_in, unsigned long *v3_i=
+n,
+>>>> +                            unsigned long *v4_in);
+>>>> +
+>>>> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+>>>> +                            unsigned long *v2_in, unsigned long *v3_i=
+n,
+>>>> +                            unsigned long *v4_in, unsigned long
+>>>> *v5_in);
+>>>>
+>>>
+>>> ---
+>>> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
+=C3=A9rifi=C3=A9e par le
+>>> logiciel antivirus Avast.
+>>> https://www.avast.com/antivirus
+>>>
+>
+>
