@@ -1,27 +1,35 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0231.hostedemail.com
- [216.40.44.231])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409cWw4fFfzF2D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:52:59 +1100 (AEDT)
-Message-ID: <1522169571.12357.81.camel@perches.com>
-Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
-From: Joe Perches <joe@perches.com>
-To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- patches@opensource.cirrus.com
-Date: Tue, 27 Mar 2018 09:52:51 -0700
-In-Reply-To: <9e908abe-2dc8-dbba-97f9-d9614fa4b199@roeck-us.net>
-References: <1522096136.12357.21.camel@perches.com>
- <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
- <1522136107.12357.58.camel@perches.com>
- <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
- <1522151285.12357.78.camel@perches.com>
- <9e908abe-2dc8-dbba-97f9-d9614fa4b199@roeck-us.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409cY11jb0zF2DL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:53:56 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2RGpM9u119981
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 12:53:54 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2gys1rtbme-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 12:53:53 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 27 Mar 2018 17:53:52 +0100
+Subject: Re: [PATCH] cxl: remove a dead branch
+To: Mathieu Malaterre <malat@debian.org>
+Cc: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+References: <20180322210528.22017-1-malat@debian.org>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Tue, 27 Mar 2018 18:53:48 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180322210528.22017-1-malat@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <e41ef8c7-2813-17ed-fce7-06d53fd4157a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-03-27 at 08:44 -0700, Guenter Roeck wrote:
-> On 03/27/2018 04:48 AM, Joe Perches wrote:
-> > On Tue, 2018-03-27 at 03:28 -0700, Guenter Roeck wrote:
-> > > On 03/27/2018 12:35 AM, Joe Perches wrote:
-> > > > On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
-> > > > > Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
-[]
-> > In what sense do you mean hwmon is obsolete?
-[]
-> _I_ did not say it was obsolete. It was described as obsolete by a maintainer
-> of a different subsystem at a conference a couple of years ago. If I wasn't too
-> lazy, I could try to find the presentation, but I don't see the point.
 
-Then it seems you were just being obscure on purpose.
-You wrote obsolete without context.
 
-cheers, Joe
+Le 22/03/2018 à 22:05, Mathieu Malaterre a écrit :
+> In commit 14baf4d9c739 ("cxl: Add guest-specific code") the following code
+> was added:
+> 
+> 	if (afu->crs_len < 0) {
+> 		dev_err(&afu->dev, "Unexpected configuration record size value\n");
+> 		return -EINVAL;
+> 	}
+> 
+> However the variable `crs_len` is of type u64 and cannot be compared < 0.
+> Remove the dead code section. Fix the following warning treated as error
+> with W=1:
+
+
+Thanks for reporting it. The test, as is, is indeed useless.
+However, instead of just dropping it, we are discussing on improving it.
+
+   Fred
+
+
+
+> ../drivers/misc/cxl/guest.c:919:19: error: comparison of unsigned expression < 0 is always false [-Werror=type-limits]
+> 
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> ---
+>   drivers/misc/cxl/guest.c | 5 -----
+>   1 file changed, 5 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index f58b4b6c79f2..48103fcff0b5 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -916,11 +916,6 @@ static int afu_properties_look_ok(struct cxl_afu *afu)
+>   		return -EINVAL;
+>   	}
+> 
+> -	if (afu->crs_len < 0) {
+> -		dev_err(&afu->dev, "Unexpected configuration record size value\n");
+> -		return -EINVAL;
+> -	}
+> -
+>   	return 0;
+>   }
+> 
