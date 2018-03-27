@@ -1,66 +1,25 @@
-Return-Path: <keescook@google.com>
-Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
- [IPv6:2607:f8b0:400c:c08::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409mXP5tzLzF21N
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 09:53:57 +1100 (AEDT)
-Received: by mail-ua0-x243.google.com with SMTP id f6so367778ual.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 15:53:57 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <20180323124806.GA5624@bombadil.infradead.org>
- <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
- <20180326084650.GC5652@dhcp22.suse.cz>
- <01A133F4-27DF-4AE2-80D6-B0368BF758CD@gmail.com>
- <20180327072432.GY5652@dhcp22.suse.cz>
- <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 27 Mar 2018 15:53:53 -0700
-Message-ID: <CAGXu5j+XXufprMaJ9GbHxD3mZ7iqUuu60-tTMC6wo2x1puYzMQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
-To: Ilya Smith <blackzert@gmail.com>
-Cc: Michal Hocko <mhocko@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- Richard Henderson <rth@twiddle.net>, ink@jurassic.park.msu.ru,
- mattst88@gmail.com,
- Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, X86 ML <x86@kernel.org>, nyc@holomorphy.com,
- Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
- Greg KH <gregkh@linuxfoundation.org>, Deepa Dinamani <deepa.kernel@gmail.com>,
- Hugh Dickins <hughd@google.com>, Kate Stewart <kstewart@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Steve Capper <steve.capper@arm.com>, Punit Agrawal <punit.agrawal@arm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nick Piggin <npiggin@gmail.com>,
- Bhupesh Sharma <bhsharma@redhat.com>, Rik van Riel <riel@redhat.com>,
- nitin.m.gupta@oracle.com,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Jan Kara <jack@suse.cz>, Ross Zwisler <ross.zwisler@linux.intel.com>,
- Jerome Glisse <jglisse@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>, linux-snps-arc@lists.infradead.org,
- linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-parisc <linux-parisc@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-sh <linux-sh@vger.kernel.org>, sparclinux <sparclinux@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409ng91C3hzF2G5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:44:52 +1100 (AEDT)
+Message-ID: <1522194229.7364.73.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Duyck <alexander.duyck@gmail.com>
+Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>, Jason
+ Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>, Oliver
+ <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+Date: Wed, 28 Mar 2018 10:43:49 +1100
+In-Reply-To: <CAKgT0UfZKBTYPCqWtBF=N5TPFrbsv0ZU+2GHMqF3J4BM9Hw4yw@mail.gmail.com>
+References: <CAKgT0UfZKBTYPCqWtBF=N5TPFrbsv0ZU+2GHMqF3J4BM9Hw4yw@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -70,72 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 6:51 AM, Ilya Smith <blackzert@gmail.com> wrote:
->
->> On 27 Mar 2018, at 10:24, Michal Hocko <mhocko@kernel.org> wrote:
->>
->> On Mon 26-03-18 22:45:31, Ilya Smith wrote:
->>>
->>>> On 26 Mar 2018, at 11:46, Michal Hocko <mhocko@kernel.org> wrote:
->>>>
->>>> On Fri 23-03-18 20:55:49, Ilya Smith wrote:
->>>>>
->>>>>> On 23 Mar 2018, at 15:48, Matthew Wilcox <willy@infradead.org> wrote=
-:
->>>>>>
->>>>>> On Thu, Mar 22, 2018 at 07:36:36PM +0300, Ilya Smith wrote:
->>>>>>> Current implementation doesn't randomize address returned by mmap.
->>>>>>> All the entropy ends with choosing mmap_base_addr at the process
->>>>>>> creation. After that mmap build very predictable layout of address
->>>>>>> space. It allows to bypass ASLR in many cases. This patch make
->>>>>>> randomization of address on any mmap call.
->>>>>>
->>>>>> Why should this be done in the kernel rather than libc?  libc is per=
-fectly
->>>>>> capable of specifying random numbers in the first argument of mmap.
->>>>> Well, there is following reasons:
->>>>> 1. It should be done in any libc implementation, what is not possible=
- IMO;
->>>>
->>>> Is this really so helpful?
->>>
->>> Yes, ASLR is one of very important mitigation techniques which are real=
-ly used
->>> to protect applications. If there is no ASLR, it is very easy to exploi=
-t
->>> vulnerable application and compromise the system. We can=E2=80=99t just=
- fix all the
->>> vulnerabilities right now, thats why we have mitigations - techniques w=
-hich are
->>> makes exploitation more hard or impossible in some cases.
->>>
->>> Thats why it is helpful.
->>
->> I am not questioning ASLR in general. I am asking whether we really need
->> per mmap ASLR in general. I can imagine that some environments want to
->> pay the additional price and other side effects, but considering this
->> can be achieved by libc, why to add more code to the kernel?
->
-> I believe this is the only one right place for it. Adding these 200+ line=
-s of
-> code we give this feature for any user - on desktop, on server, on IoT de=
-vice,
-> on SCADA, etc. But if only glibc will implement =E2=80=98user-mode-aslr=
-=E2=80=99 IoT and SCADA
-> devices will never get it.
+On Tue, 2018-03-27 at 14:54 -0700, Alexander Duyck wrote:
+> On Tue, Mar 27, 2018 at 2:35 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Tue, 2018-03-27 at 10:46 -0400, Sinan Kaya wrote:
+> > >  combined buffers.
+> > > 
+> > > Alex:
+> > > "Don't bother. I can tell you right now that for x86 you have to have a
+> > > wmb() before the writel().
+> > 
+> > No, this isn't the semantics of writel. You shouldn't need it unless
+> > something changed and we need to revisit our complete understanding of
+> > *all* MMIO accessor semantics.
+> 
+> The issue seems to be that there have been two different ways of
+> dealing with this. There has historically been a number of different
+> drivers that have been carrying this wmb() workaround since something
+> like 2002. I get that the semantics for writel might have changed
+> since then, but those of us who already have the wmb() in our drivers
+> will be very wary of anyone wanting to go through and remove them
+> since writel is supposed to be "good enough". I would much rather err
+> on the side of caution here.
+> 
+> I view the wmb() + writel_relaxed() as more of a driver owning and
+> handling this itself. Besides in the Intel Ethernet driver case it is
+> better performance as our wmb() placement for us also provides a
+> secondary barrier so we don't need to add a separate smp_wmb() to deal
+> with a potential race we have with the Tx cleanup.
+> 
+> > At least for UC space, it has always been accepted (and enforced) that
+> > writel would not require any other barrier to order vs. previous stores
+> > to memory.
+> 
+> So the one thing I would question here is if this is UC vs UC or if
+> this extends to other types as well? So for x86 we could find
+> references to Write Combining being flushed by a write to UC memory,
+> however I have yet to find a clear explanation of what a write to UC
+> does to WB. 
 
-I agree: pushing this off to libc leaves a lot of things unprotected.
-I think this should live in the kernel. The question I have is about
-making it maintainable/readable/etc.
+Well, this is the standard write memory + trigger DMA case, the one
+specific case for which Linus was adamant we don't need another barrier
+ back then ...
 
-The state-of-the-art for ASLR is moving to finer granularity (over
-just base-address offset), so I'd really like to see this supported in
-the kernel. We'll be getting there for other things in the future, and
-I'd like to have a working production example for researchers to
-study, etc.
+> My personal inclination would be to err on the side of
+> caution.
 
--Kees
+Which means writel_relaxed is now pointless ?
 
---=20
-Kees Cook
-Pixel Security
+We need clear semantics here. In this case the "side of caution" means
+we are randomly doing things not understanding what really happens and
+that makes me *more* nervous.
+
+>  I just don't want us going through and removing the wmb()
+> calls because it "should" work. I would want to know for certain it
+> will work.
+
+We need to know for certain anyway. Otherwise, all the drivers that do
+not have wmb's are potentially broken.
+
+So I dont agree with the status quo.
+
+We need to establish precisely what x86 does, decide what we want the
+semantic of writel to be, and implement things accordingly.
+
+Ben.
