@@ -1,34 +1,30 @@
 Return-Path: <will.deacon@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 409RZR6Bt5zF2B8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 21:09:35 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 11:09:44 +0100
+ by lists.ozlabs.org (Postfix) with ESMTP id 409Rqn4819zF2B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 21:21:09 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 11:21:17 +0100
 From: Will Deacon <will.deacon@arm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Sinan Kaya <okaya@codeaurora.org>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180327100944.GD29373@arm.com>
-References: <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
- <1522101717.7364.14.camel@kernel.crashing.org>
- <20180326222756.GJ15554@ziepe.ca>
- <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
- <1522141019.7364.43.camel@kernel.crashing.org>
- <20180327095745.GB29373@arm.com>
- <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180327102116.GA2464@arm.com>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
+In-Reply-To: <20180325175004.28162-3-ynorov@caviumnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,87 +34,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 12:05:06PM +0200, Arnd Bergmann wrote:
-> On Tue, Mar 27, 2018 at 11:57 AM, Will Deacon <will.deacon@arm.com> wrote:
+On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
+> kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
+> If CPU is in extended quiescent state (idle task or nohz_full userspace), this
+> work may be done at the exit of this state. Delaying synchronization helps to
+> save power if CPU is in idle state and decrease latency for real-time tasks.
 > 
-> >
-> > From db0daeaf94f0f6232f8206fc07a74211324b11d9 Mon Sep 17 00:00:00 2001
-> > From: Will Deacon <will.deacon@arm.com>
-> > Date: Tue, 27 Mar 2018 10:49:58 +0100
-> > Subject: [PATCH] docs/memory-barriers.txt: Fix broken DMA vs MMIO ordering
-> >  example
-> >
-> > The section of memory-barriers.txt that describes the dma_Xmb() barriers
-> > has an incorrect example claiming that a wmb() is required after writing
-> > to coherent memory in order for those writes to be visible to a device
-> > before a subsequent MMIO access using writel() can reach the device.
-> >
-> > In fact, this ordering guarantee is provided (at significant cost on some
-> > architectures such as arm and power) by writel, so the wmb() is not
-> > necessary. writel_relaxed exists for cases where this ordering is not
-> > required.
-> >
-> > Fix the example and update the text to make this clearer.
-> >
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Arnd Bergmann <arnd@arndb.de>
-> > Cc: Jason Gunthorpe <jgg@ziepe.ca>
-> > Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Jonathan Corbet <corbet@lwn.net>
-> > Reported-by: Sinan Kaya <okaya@codeaurora.org>
-> > Signed-off-by: Will Deacon <will.deacon@arm.com>
-> > ---
-> >  Documentation/memory-barriers.txt | 18 ++++++++++--------
-> >  1 file changed, 10 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-> > index a863009849a3..2556b4b0e6f9 100644
-> > --- a/Documentation/memory-barriers.txt
-> > +++ b/Documentation/memory-barriers.txt
-> > @@ -1909,9 +1909,6 @@ There are some more advanced barrier functions:
-> >                 /* assign ownership */
-> >                 desc->status = DEVICE_OWN;
-> >
-> > -               /* force memory to sync before notifying device via MMIO */
-> > -               wmb();
-> > -
-> >                 /* notify device of new descriptors */
-> >                 writel(DESC_NOTIFY, doorbell);
-> >         }
-> > @@ -1919,11 +1916,16 @@ There are some more advanced barrier functions:
-> >       The dma_rmb() allows us guarantee the device has released ownership
-> >       before we read the data from the descriptor, and the dma_wmb() allows
-> >       us to guarantee the data is written to the descriptor before the device
-> > -     can see it now has ownership.  The wmb() is needed to guarantee that the
-> > -     cache coherent memory writes have completed before attempting a write to
-> > -     the cache incoherent MMIO region.
-> > -
-> > -     See Documentation/DMA-API.txt for more information on consistent memory.
-> > +     can see it now has ownership.  Note that, when using writel(), a prior
-> > +     wmb() is not needed to guarantee that the cache coherent memory writes
-> > +     have completed before writing to the cache incoherent MMIO region.
-> > +     If this ordering between incoherent MMIO and coherent memory regions
-> > +     is not required, writel_relaxed() can be used instead and is significantly
-> > +     cheaper on some weakly-ordered architectures.
+> This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
+> code to delay syncronization.
 > 
-> I think that's a great improvement, but I'm a bit worried about recommending
-> writel_relaxed() too much: I've seen a lot of drivers that just always use
-> writel_relaxed() over write(), and some of them get that wrong when they
-> don't understand the difference but end up using DMA without explicit
-> barriers anyway.
+> For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
+> isolated task would be fatal, as it breaks isolation. The approach with delaying
+> of synchronization work helps to maintain isolated state.
 > 
-> Also, having an architecture-independent driver use wmb()+writel_relaxed()
-> ends up being more expensive than just using write(). Not sure how to
-> best phrase it though.
+> I've tested it with test from task isolation series on ThunderX2 for more than
+> 10 hours (10k giga-ticks) without breaking isolation.
+> 
+> Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+> ---
+>  arch/arm64/kernel/insn.c |  2 +-
+>  include/linux/smp.h      |  2 ++
+>  kernel/smp.c             | 24 ++++++++++++++++++++++++
+>  mm/slab.c                |  2 +-
+>  4 files changed, 28 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
+> index 2718a77da165..9d7c492e920e 100644
+> --- a/arch/arm64/kernel/insn.c
+> +++ b/arch/arm64/kernel/insn.c
+> @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
+>  			 * synchronization.
+>  			 */
+>  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
+> -			kick_all_cpus_sync();
+> +			kick_active_cpus_sync();
+>  			return ret;
+>  		}
+>  	}
 
-Perhaps I add reword that with a simple example to say:
-
-  If this ordering between incoherent MMIO and coherent memory regions
-  is not required (e.g. in a sequence of accesses all to the MMIO region)
-  [...]
-
-since that seems to be the usual case where the _relaxed accessors help.
+I think this means that runtime modifications to the kernel text might not
+be picked up by CPUs coming out of idle. Shouldn't we add an ISB on that
+path to avoid executing stale instructions?
 
 Will
