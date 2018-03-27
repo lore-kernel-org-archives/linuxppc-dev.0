@@ -1,28 +1,27 @@
 Return-Path: <jgg@ziepe.ca>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409Y3R17L5zF22b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 01:16:35 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id j2so8892920pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 07:16:34 -0700 (PDT)
-Date: Tue, 27 Mar 2018 08:16:31 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409YD63w3CzF28X
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 01:24:05 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id f5-v6so14160776plj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 07:24:05 -0700 (PDT)
+Date: Tue, 27 Mar 2018 08:24:01 -0600
 From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Will Deacon <will.deacon@arm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Sinan Kaya <okaya@codeaurora.org>,
  David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
  "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
  <linuxppc-dev@lists.ozlabs.org>,
  "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
  Alexander Duyck <alexander.h.duyck@redhat.com>,
- Will Deacon <will.deacon@arm.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180327141631.GB12318@ziepe.ca>
-References: <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+Message-ID: <20180327142401.GC12318@ziepe.ca>
+References: <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
  <20180326202545.GB15554@ziepe.ca>
  <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
  <20180326210951.GD15554@ziepe.ca>
@@ -31,9 +30,10 @@ References: <20180326165425.GA15554@ziepe.ca>
  <1522101717.7364.14.camel@kernel.crashing.org>
  <20180326222756.GJ15554@ziepe.ca>
  <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <20180327094159.GA29373@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+In-Reply-To: <20180327094159.GA29373@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,23 +43,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 09:56:47AM +0200, Arnd Bergmann wrote:
-> On Tue, Mar 27, 2018 at 12:27 AM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> > On Tue, Mar 27, 2018 at 09:01:57AM +1100, Benjamin Herrenschmidt wrote:
-> >> On Mon, 2018-03-26 at 17:46 -0400, Sinan Kaya wrote:
-> >
-> > I even see patches adding wmb() based on actual observed memory
-> > corruption during testing on Intel:
-> >
-> > https://patchwork.kernel.org/patch/10177207/
-> >
-> > So you think all of this is unnecessary and writel is totally strongly
-> > ordered, even on multi-socket Intel?
+On Tue, Mar 27, 2018 at 10:42:00AM +0100, Will Deacon wrote:
+> On Tue, Mar 27, 2018 at 09:56:47AM +0200, Arnd Bergmann wrote:
+> > On Tue, Mar 27, 2018 at 12:27 AM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> > > On Tue, Mar 27, 2018 at 09:01:57AM +1100, Benjamin Herrenschmidt wrote:
+> > >> On Mon, 2018-03-26 at 17:46 -0400, Sinan Kaya wrote:
+> > >
+> > > I even see patches adding wmb() based on actual observed memory
+> > > corruption during testing on Intel:
+> > >
+> > > https://patchwork.kernel.org/patch/10177207/
+> > >
+> > > So you think all of this is unnecessary and writel is totally strongly
+> > > ordered, even on multi-socket Intel?
+> > 
+> > This example adds a wmb() between two writes to a coherent DMA
+> > area, it is definitely required there. I'm pretty sure I've never seen
+> > any bug reports pointing to a missing wmb() between memory
+> > and MMIO write accesses, but if you remember seeing them in the
+> > list, maybe you can look again for some evidence of something going
+> > wrong on x86 without it?
 > 
-> This example adds a wmb() between two writes to a coherent DMA
-> area, it is definitely required there.
+> If this is just about ordering accesses to coherent DMA, then using
+> dma_wmb() instead will be much better performance on arm/arm64.
 
-Ah! So it is, too many things called 'db' in that driver.. One of the
-'db' is also WC BAR memory..
+dma_wmb() is a NOP on x86, it was tested anyhow and didn't help
+this case.. Confusing, but probably not relevant to this discussion.
 
 Jason
