@@ -1,22 +1,38 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Return-Path: <jgg@ziepe.ca>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409Cld3F8kzF27X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 12:16:44 +1100 (AEDT)
-Received: by mail-qt0-x243.google.com with SMTP id w12so14050848qti.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 18:16:44 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
- fweimer@redhat.com, msuchanek@suse.com
-Subject: [PATCH] powerpc: do not allow userspace to modify execute-only pkey
-Date: Mon, 26 Mar 2018 18:16:30 -0700
-Message-Id: <1522113390-29240-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409DFn0vSQzF24G
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 12:39:23 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id a15so7986003pgn.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 18:39:23 -0700 (PDT)
+Date: Mon, 26 Mar 2018 19:39:18 -0600
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180327013918.GN15554@ziepe.ca>
+References: <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+ <1522103771.7364.20.camel@kernel.crashing.org>
+ <20180326225046.GL15554@ziepe.ca>
+ <1522108780.7364.24.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1522108780.7364.24.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,133 +42,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When mprotect(....,PROT_EXEC) is called, the kernel allocates a
-execute-only pkey and associates the pkey with the given address space.
-The permission of this key should not be modifiable from userspace.
-However a bug in the current implementation lets the permissions on the
-key modifiable from userspace.
+On Tue, Mar 27, 2018 at 10:59:40AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2018-03-26 at 16:50 -0600, Jason Gunthorpe wrote:
+> > On Tue, Mar 27, 2018 at 09:36:11AM +1100, Benjamin Herrenschmidt wrote:
+> > > On Mon, 2018-03-26 at 16:27 -0600, Jason Gunthorpe wrote:
+> > > > > Otherwise almost all drivers out there are broken which I very much
+> > > > > doubt :-)
+> > > > 
+> > > > But.. Sinan is right, you look anywhere in the driver tree and you
+> > > > find stuff like this:
+> > > > 
+> > > > drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> > > > 
+> > > >         /* Force memory writes to complete before letting h/w
+> > > >          * know there are new descriptors to fetch.
+> > > >          */
+> > > >         wmb();
+> > > > 
+> > > > 
+> > > > It is *systemic*
+> > > 
+> > > Yes, because they all copied e1000e :-) If you look at the comment in
+> > > there, it does say it's only for weakly ordered archs such as ia64, and
+> > > even then, probably predates Linus strong statement on the matter.
+> > 
+> > Hahah, sure I'll buy that..
+> > 
+> > But still, if this really is the case, a *strong* statement in
+> > barriers.txt to that effect (and not an example demanding the wmb()!)
+> > would be very helpful for those of us that have to review driver code!
+> 
+> I agree, and that Mellanox bug you pointed me to seems to indicate that
+> this may not even be true on x86 anymore ...
 
-Whenever a key is allocated through mm_pkey_alloc(), the kernel programs
-the UAMOR register to allow userspace to change permissions on the key.
-This is fine for the keys explicitly allocated through the
-sys_pkey_alloc(). But for execute-only pkey, this should not be allowed.
-Restructured the code to fix the bug.
+However, with bugs like that it is hard to know what is going on.. It
+could be a CPU bug instead.
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- arch/powerpc/include/asm/pkeys.h | 24 ++++++------------------
- arch/powerpc/mm/pkeys.c          | 30 ++++++++++++++++++++++++++++--
- 2 files changed, 34 insertions(+), 20 deletions(-)
+> I think we might need to revisit this properly...
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index b598fa9..0d3c630 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -113,6 +113,8 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- 
- extern void __arch_activate_pkey(int pkey);
- extern void __arch_deactivate_pkey(int pkey);
-+extern int __mm_pkey_alloc(struct mm_struct *mm);
-+
- /*
-  * Returns a positive, 5-bit key on success, or -1 on failure.
-  * Relies on the mmap_sem to protect against concurrency in mm_pkey_alloc() and
-@@ -120,29 +122,14 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
-  */
- static inline int mm_pkey_alloc(struct mm_struct *mm)
- {
--	/*
--	 * Note: this is the one and only place we make sure that the pkey is
--	 * valid as far as the hardware is concerned. The rest of the kernel
--	 * trusts that only good, valid pkeys come out of here.
--	 */
--	u32 all_pkeys_mask = (u32)(~(0x0));
- 	int ret;
- 
- 	if (static_branch_likely(&pkey_disabled))
- 		return -1;
- 
-+	ret = __mm_pkey_alloc(mm);
- 	/*
--	 * Are we out of pkeys? We must handle this specially because ffz()
--	 * behavior is undefined if there are no zeros.
--	 */
--	if (mm_pkey_allocation_map(mm) == all_pkeys_mask)
--		return -1;
--
--	ret = ffz((u32)mm_pkey_allocation_map(mm));
--	__mm_pkey_allocated(mm, ret);
--
--	/*
--	 * Enable the key in the hardware
-+	 * Enable userspace to modify the key permissions.
- 	 */
- 	if (ret > 0)
- 		__arch_activate_pkey(ret);
-@@ -158,7 +145,8 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
- 		return -EINVAL;
- 
- 	/*
--	 * Disable the key in the hardware
-+	 * Reset the key and disable userspace
-+	 * from modifying the key permissions.
- 	 */
- 	__arch_deactivate_pkey(pkey);
- 	__mm_pkey_free(mm, pkey);
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index e7a9e34..58bbb55 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -228,7 +228,10 @@ static void pkey_status_change(int pkey, bool enable)
- 	init_amr(pkey, 0x0);
- 	init_iamr(pkey, 0x0);
- 
--	/* Enable/disable key */
-+	/*
-+	 * Enable/disable userspace to/from modifying the permissions
-+	 * on the key
-+	 */
- 	old_uamor = read_uamor();
- 	if (enable)
- 		old_uamor |= (0x3ul << pkeyshift(pkey));
-@@ -247,6 +250,29 @@ void __arch_deactivate_pkey(int pkey)
- 	pkey_status_change(pkey, false);
- }
- 
-+int __mm_pkey_alloc(struct mm_struct *mm)
-+{
-+	/*
-+	 * Note: this is the one and only place we make sure that the pkey is
-+	 * valid as far as the hardware is concerned. The rest of the kernel
-+	 * trusts that only good, valid pkeys come out of here.
-+	 */
-+	u32 all_pkeys_mask = (u32)(~(0x0));
-+	int ret;
-+
-+	/*
-+	 * Are we out of pkeys? We must handle this specially because ffz()
-+	 * behavior is undefined if there are no zeros.
-+	 */
-+	if (mm_pkey_allocation_map(mm) == all_pkeys_mask)
-+		return -1;
-+
-+	ret = ffz((u32)mm_pkey_allocation_map(mm));
-+	__mm_pkey_allocated(mm, ret);
-+
-+	return ret;
-+}
-+
- /*
-  * Set the access rights in AMR IAMR and UAMOR registers for @pkey to that
-  * specified in @init_val.
-@@ -336,7 +362,7 @@ int __execute_only_pkey(struct mm_struct *mm)
- 	/* Do we need to assign a pkey for mm's execute-only maps? */
- 	if (execute_only_pkey == -1) {
- 		/* Go allocate one to use, which might fail */
--		execute_only_pkey = mm_pkey_alloc(mm);
-+		execute_only_pkey = __mm_pkey_alloc(mm);
- 		if (execute_only_pkey < 0)
- 			return -1;
- 		need_to_set_mm_pkey = true;
--- 
-1.8.3.1
+I would love to hear a definitive statement from Intel on what wmb();
+writel(); does on x86..
+
+Sinan's patches are backwards if writel is ordered, instead of
+using writel_relaxed, they should be eliminating the wmb().
+
+But there is no way patches like that could go ahead until
+barriers.txt is updated..
+
+Jason
