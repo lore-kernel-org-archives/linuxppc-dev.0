@@ -1,41 +1,17 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dan.carpenter@oracle.com>
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409NdG23kfzF1xj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 18:56:49 +1100 (AEDT)
-Received: by mail-qt0-x241.google.com with SMTP id f16so10244189qth.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 00:56:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409PXj0nmnzF28Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 19:37:56 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 11:37:42 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: rsarmah@amcc.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] powerpc/4xx: Adding PCIe MSI support
+Message-ID: <20180327083742.GA22208@mwanda>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <20180326222756.GJ15554@ziepe.ca>
-References: <1521854626.16434.359.camel@kernel.crashing.org>
- <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
- <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
- <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
- <1522101717.7364.14.camel@kernel.crashing.org>
- <20180326222756.GJ15554@ziepe.ca>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 27 Mar 2018 09:56:47 +0200
-Message-ID: <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
-Subject: Re: RFC on writel and writel_relaxed
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Sinan Kaya <okaya@codeaurora.org>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Alexander Duyck <alexander.h.duyck@redhat.com>,
- Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,23 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 12:27 AM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> On Tue, Mar 27, 2018 at 09:01:57AM +1100, Benjamin Herrenschmidt wrote:
->> On Mon, 2018-03-26 at 17:46 -0400, Sinan Kaya wrote:
->
-> I even see patches adding wmb() based on actual observed memory
-> corruption during testing on Intel:
->
-> https://patchwork.kernel.org/patch/10177207/
->
-> So you think all of this is unnecessary and writel is totally strongly
-> ordered, even on multi-socket Intel?
+[ This is really really ancient code.  - dan ]
 
-This example adds a wmb() between two writes to a coherent DMA
-area, it is definitely required there. I'm pretty sure I've never seen
-any bug reports pointing to a missing wmb() between memory
-and MMIO write accesses, but if you remember seeing them in the
-list, maybe you can look again for some evidence of something going
-wrong on x86 without it?
+Hello Rupjyoti Sarmah,
 
-       Arnd
+The patch 3fb7933850fa: "powerpc/4xx: Adding PCIe MSI support" from
+Mar 29, 2011, leads to the following static checker warning:
+
+	arch/powerpc/platforms/4xx/msi.c:100 ppc4xx_setup_msi_irqs()
+	warn: 'int_no >= 0' 'false' implies 'int_no < 0' is 'true'
+
+arch/powerpc/platforms/4xx/msi.c
+    79  static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+    80  {
+    81          int int_no = -ENOMEM;
+    82          unsigned int virq;
+    83          struct msi_msg msg;
+    84          struct msi_desc *entry;
+    85          struct ppc4xx_msi *msi_data = &ppc4xx_msi;
+    86  
+    87          dev_dbg(&dev->dev, "PCIE-MSI:%s called. vec %x type %d\n",
+    88                  __func__, nvec, type);
+    89          if (type == PCI_CAP_ID_MSIX)
+    90                  pr_debug("ppc4xx msi: MSI-X untested, trying anyway.\n");
+    91  
+    92          msi_data->msi_virqs = kmalloc((msi_irqs) * sizeof(int), GFP_KERNEL);
+    93          if (!msi_data->msi_virqs)
+    94                  return -ENOMEM;
+    95  
+    96          for_each_pci_msi_entry(entry, dev) {
+    97                  int_no = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
+    98                  if (int_no >= 0)
+                            ^^^^^^^^^^^
+    99                          break;
+   100                  if (int_no < 0) {
+                            ^^^^^^^^^^
+Smatch is saying that this check could be removed, which is true.
+
+   101                          pr_debug("%s: fail allocating msi interrupt\n",
+   102                                          __func__);
+   103                  }
+   104                  virq = irq_of_parse_and_map(msi_data->msi_dev, int_no);
+                                                                       ^^^^^^
+
+It doesn't seem right to pass negative indexes to irq_of_parse_and_map().
+It could result in a read before the start of the array in
+of_irq_parse_oldworld(), I think.
+
+   105                  if (!virq) {
+   106                          dev_err(&dev->dev, "%s: fail mapping irq\n", __func__);
+   107                          msi_bitmap_free_hwirqs(&msi_data->bitmap, int_no, 1);
+   108                          return -ENOSPC;
+   109                  }
+   110                  dev_dbg(&dev->dev, "%s: virq = %d\n", __func__, virq);
+   111  
+   112                  /* Setup msi address space */
+   113                  msg.address_hi = msi_data->msi_addr_hi;
+   114                  msg.address_lo = msi_data->msi_addr_lo;
+   115  
+   116                  irq_set_msi_desc(virq, entry);
+   117                  msg.data = int_no;
+   118                  pci_write_msi_msg(virq, &msg);
+   119          }
+   120          return 0;
+   121  }
+
+regards,
+dan carpenter
