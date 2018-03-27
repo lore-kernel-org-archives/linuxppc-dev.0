@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409V4R05rFzF2Bt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:02:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409V4S25jTzF2CQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:02:16 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: mauricfo@linux.vnet.ibm.com
-Subject: [PATCH v2 04/10] powerpc/powernv: Set or clear security feature flags
-Date: Tue, 27 Mar 2018 23:01:47 +1100
-Message-Id: <20180327120153.31612-4-mpe@ellerman.id.au>
+Subject: [PATCH v2 06/10] powerpc/64s: Enhance the information in
+ cpu_show_meltdown()
+Date: Tue, 27 Mar 2018 23:01:49 +1100
+Message-Id: <20180327120153.31612-6-mpe@ellerman.id.au>
 In-Reply-To: <20180327120153.31612-1-mpe@ellerman.id.au>
 References: <20180327120153.31612-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,91 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have feature flags for security related things, set or
-clear them based on what we see in the device tree provided by
-firmware.
+Now that we have the security feature flags we can make the
+information displayed in the "meltdown" file more informative.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/powernv/setup.c | 56 ++++++++++++++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ arch/powerpc/include/asm/security_features.h |  1 +
+ arch/powerpc/kernel/security.c               | 30 ++++++++++++++++++++++++++--
+ 2 files changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 092715b9674b..5f242b1bab01 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -38,9 +38,63 @@
- #include <asm/smp.h>
- #include <asm/tm.h>
- #include <asm/setup.h>
-+#include <asm/security_features.h>
+diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+index db00ad2c72c2..400a9050e035 100644
+--- a/arch/powerpc/include/asm/security_features.h
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -10,6 +10,7 @@
  
- #include "powernv.h"
  
-+
-+static bool fw_feature_is(const char *state, const char *name,
-+			  struct device_node *fw_features)
-+{
-+       struct device_node *np;
-+       bool rc = false;
-+
-+       np = of_get_child_by_name(fw_features, name);
-+       if (np) {
-+               rc = of_property_read_bool(np, state);
-+               of_node_put(np);
-+       }
-+
-+       return rc;
-+}
-+
-+static void init_fw_feat_flags(struct device_node *np)
-+{
-+	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
-+		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
-+
-+	if (fw_feature_is("enabled", "fw-bcctrl-serialized", np))
-+		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
-+
-+	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
-+		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
-+
-+	if (fw_feature_is("enabled", "inst-l1d-flush-trig2", np))
-+		security_ftr_set(SEC_FTR_L1D_FLUSH_TRIG2);
-+
-+	if (fw_feature_is("enabled", "fw-l1d-thread-split", np))
-+		security_ftr_set(SEC_FTR_L1D_THREAD_PRIV);
-+
-+	if (fw_feature_is("enabled", "fw-count-cache-disabled", np))
-+		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
-+
-+	/*
-+	 * The features below are enabled by default, so we instead look to see
-+	 * if firmware has *disabled* them, and clear them if so.
-+	 */
-+	if (fw_feature_is("disabled", "speculation-policy-favor-security", np))
-+		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
-+
-+	if (fw_feature_is("disabled", "needs-l1d-flush-msr-pr-0-to-1", np))
-+		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
-+
-+	if (fw_feature_is("disabled", "needs-l1d-flush-msr-hv-1-to-0", np))
-+		security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
-+
-+	if (fw_feature_is("disabled", "needs-spec-barrier-for-bound-checks", np))
-+		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
-+}
-+
- static void pnv_setup_rfi_flush(void)
+ extern unsigned long powerpc_security_features;
++extern bool rfi_flush;
+ 
+ static inline void security_ftr_set(unsigned long feature)
  {
- 	struct device_node *np, *fw_features;
-@@ -56,6 +110,8 @@ static void pnv_setup_rfi_flush(void)
- 	of_node_put(np);
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index 564e7f182a16..865db6f8bcca 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -6,6 +6,7 @@
  
- 	if (fw_features) {
-+		init_fw_feat_flags(fw_features);
+ #include <linux/kernel.h>
+ #include <linux/device.h>
++#include <linux/seq_buf.h>
+ 
+ #include <asm/security_features.h>
+ 
+@@ -19,8 +20,33 @@ unsigned long powerpc_security_features __read_mostly = \
+ 
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	if (rfi_flush)
+-		return sprintf(buf, "Mitigation: RFI Flush\n");
++	bool thread_priv;
 +
- 		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
- 		if (np && of_property_read_bool(np, "enabled"))
- 			type = L1D_FLUSH_MTTRIG;
++	thread_priv = security_ftr_enabled(SEC_FTR_L1D_THREAD_PRIV);
++
++	if (rfi_flush || thread_priv) {
++		struct seq_buf s;
++		seq_buf_init(&s, buf, PAGE_SIZE - 1);
++
++		seq_buf_printf(&s, "Mitigation: ");
++
++		if (rfi_flush)
++			seq_buf_printf(&s, "RFI Flush");
++
++		if (rfi_flush && thread_priv)
++			seq_buf_printf(&s, ", ");
++
++		if (thread_priv)
++			seq_buf_printf(&s, "L1D private per thread");
++
++		seq_buf_printf(&s, "\n");
++
++		return s.len;
++	}
++
++	if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
++	    !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR))
++		return sprintf(buf, "Not affected\n");
+ 
+ 	return sprintf(buf, "Vulnerable\n");
+ }
 -- 
 2.14.1
