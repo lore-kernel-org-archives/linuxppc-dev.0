@@ -1,23 +1,16 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0160.hostedemail.com
- [216.40.44.160])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409N8N16gBzF24t
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 18:35:14 +1100 (AEDT)
-Message-ID: <1522136107.12357.58.camel@perches.com>
-Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
-From: Joe Perches <joe@perches.com>
-To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- patches@opensource.cirrus.com
-Date: Tue, 27 Mar 2018 00:35:07 -0700
-In-Reply-To: <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
-References: <1522096136.12357.21.camel@perches.com>
- <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+Return-Path: <npiggin@gmail.com>
+Date: Tue, 27 Mar 2018 17:38:57 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
+ OPAL errors
+Message-ID: <20180327173857.0d195b66@roar.ozlabs.ibm.com>
+In-Reply-To: <ad352964-1b12-8556-a876-a10e84336a5e@linux.vnet.ibm.com>
+References: <20180326150233.23089-1-npiggin@gmail.com>
+ <ad352964-1b12-8556-a876-a10e84336a5e@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
-> Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
+On Tue, 27 Mar 2018 12:47:31 +0530
+Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
 
-fyi: It's marked Maintained in MAINTAINERS
+> On 03/26/2018 08:32 PM, Nicholas Piggin wrote:
+> > opal_nvram_write currently just assumes success if it encounters an
+> > error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
+> > on other errors instead.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >   arch/powerpc/platforms/powernv/opal-nvram.c | 2 ++
+> >   1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
+> > index 9db4398ded5d..13bf625dc3e8 100644
+> > --- a/arch/powerpc/platforms/powernv/opal-nvram.c
+> > +++ b/arch/powerpc/platforms/powernv/opal-nvram.c
+> > @@ -59,6 +59,8 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
+> >   		if (rc == OPAL_BUSY_EVENT)
+> >   			opal_poll_events(NULL);  
+> 
+> Current code does continuous poller here. May be we have small breathing time 
+> here. What you say?
 
-HARDWARE MONITORING
-M:	Jean Delvare <jdelvare@suse.com>
-M:	Guenter Roeck <linux@roeck-us.net>
-L:	linux-hwmon@vger.kernel.org
-W:	http://hwmon.wiki.kernel.org/
-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git
-S:	Maintained
-F:	Documentation/hwmon/
-F:	drivers/hwmon/
-F:	include/linux/hwmon*.h
+Yeah that's probably not a bad idea. I cc'ed skiboot list -- what's a
+reasonable delay between retries? Linux has a bunch of similar kind of
+loops if you grep for opal_poll_events and OPAL_BUSY. It would be good
+to convert them all to a standard form with a standard delay as
+recommended by OPAL, and where specific calls have different delay
+for a good reason, that would be documented in the OPAL API docs.
+
+Thanks,
+Nick
