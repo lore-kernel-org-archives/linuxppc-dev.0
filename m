@@ -2,33 +2,30 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409kb10yh1zF2Ct
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:26:04 +1100 (AEDT)
-Message-ID: <1522185881.7364.55.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409kcz27CnzF2D9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:27:47 +1100 (AEDT)
+Message-ID: <1522186032.7364.57.camel@kernel.crashing.org>
 Subject: Re: RFC on writel and writel_relaxed
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sinan Kaya <okaya@codeaurora.org>, Will Deacon <will.deacon@arm.com>,
- Arnd Bergmann <arnd@arndb.de>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>,
+To: Jason Gunthorpe <jgg@ziepe.ca>, okaya@codeaurora.org
+Cc: Arnd Bergmann <arnd@arndb.de>, David Laight <David.Laight@aculab.com>,
  Oliver <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
- Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Mar 2018 08:24:41 +1100
-In-Reply-To: <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
-References: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, linux-rdma@vger.kernel.org,
+ Alexander Duyck <alexander.h.duyck@redhat.com>, Will Deacon
+ <will.deacon@arm.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 08:27:12 +1100
+In-Reply-To: <20180327141215.GA12318@ziepe.ca>
+References: <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
  <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
  <1522101717.7364.14.camel@kernel.crashing.org>
  <20180326222756.GJ15554@ziepe.ca>
  <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
  <1522141019.7364.43.camel@kernel.crashing.org>
- <20180327095745.GB29373@arm.com>
- <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
- <20180327100944.GD29373@arm.com>
- <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
- <20180327110258.GF2464@arm.com>
- <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
+ <CAK8P3a0gCYjw78snni_1Jkk5uA5a-j0x-XZDrN=RaZfXctOSoA@mail.gmail.com>
+ <1522149801.7364.49.camel@kernel.crashing.org>
+ <4f27ac42a6953589157f4d7f18051366@codeaurora.org>
+ <20180327141215.GA12318@ziepe.ca>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,19 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-03-27 at 09:46 -0400, Sinan Kaya wrote:
-> On 3/27/2018 7:02 AM, Will Deacon wrote:
-> > -     See Documentation/DMA-API.txt for more information on consistent memory.
-> > +     can see it now has ownership.  Note that, when using writel(), a prior
-> > +     wmb() is not needed to guarantee that the cache coherent memory writes
-> > +     have completed before writing to the MMIO region.  The cheaper
-> > +     writel_relaxed() does not provide this guarantee and must not be used
-> > +     here.
+On Tue, 2018-03-27 at 08:12 -0600, Jason Gunthorpe wrote:
+> > I have been converting wmb+writel to wmb+writel_relaxed. (About 30 patches)
+> > 
+> > I will have to just remove the wmb and keep writel, then repost.
 > 
-> Can we say the same thing for iowrite32() and iowrite32be(). I also see wmb()
-> in front of these.
+> Okay, but before you do that, can we get a statement how this works
+> for WC?
+> 
+> Some of these writels are to WC memory, do they need the wmb()?!?
 
-Yes, they should have the same semantics as writel
+This is an issue as we don't have well defined semantics for WC.
+
+At this point, I would suggest staying away from that (ie, not changing
+them). We need to look into it.
+
+I know for example that on powerpc I cannot give you any weaker
+semantic on WC for writel (I have to put a full sync in there), but I
+am trying to see if I can make writel_relaxed both work with the
+existing semantics and provide combining. But it's not yet a given (our
+weaker IO barrier, eieio, isn't architecturally defined to do anything
+on G=0 space, looking with the HW guys at what the HW actually does).
 
 Cheers,
 Ben.
