@@ -1,20 +1,39 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409VJt4Pb9zF24J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:13:02 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
- OPAL errors
-In-Reply-To: <20180326150233.23089-1-npiggin@gmail.com>
-References: <20180326150233.23089-1-npiggin@gmail.com>
-Date: Tue, 27 Mar 2018 23:13:00 +1100
-Message-ID: <877epxk983.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409VXM5DqWzF23g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:22:58 +1100 (AEDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Tue, 27 Mar 2018 08:22:55 -0400
+From: okaya@codeaurora.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, David
+ Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
+ list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
+ linux-rdma@vger.kernel.org, Alexander Duyck <alexander.h.duyck@redhat.com>,
+ Will Deacon <will.deacon@arm.com>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>
+Subject: Re: RFC on writel and writel_relaxed
+In-Reply-To: <1522149801.7364.49.camel@kernel.crashing.org>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+ <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <CAK8P3a0gCYjw78snni_1Jkk5uA5a-j0x-XZDrN=RaZfXctOSoA@mail.gmail.com>
+ <1522149801.7364.49.camel@kernel.crashing.org>
+Message-ID: <4f27ac42a6953589157f4d7f18051366@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +43,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On 2018-03-27 07:23, Benjamin Herrenschmidt wrote:
+> On Tue, 2018-03-27 at 11:44 +0200, Arnd Bergmann wrote:
+>> > The interesting thing is that we do seem to have a whole LOT of these
+>> > spurrious wmb before writel all over the tree, I suspect because of
+>> > that incorrect recommendation in memory-barriers.txt.
+>> >
+>> > We should fix that.
+>> 
+>> Maybe the problem is just that it's so counter-intuitive that we don't
+>> need that barrier in Linux, when the hardware does need one on some
+>> architectures.
+>> 
+>> How about we define a barrier type instruction specifically for this
+>> purpose, something like wmb_before_mmio() and have all architectures
+>> define that to an empty macro?
+> 
+> This is exactly what wmb() is about and exactly what Linux rejected
+> back in the day (and in hindsight I agree with him).
+> 
+>> That way, having correct code using wmb_before_mmio() will not
+>> trigger an incorrect review comment that leads to extra wmb(). ;-)
+> 
+> Ah, you mean have an empty macro that will always be empty on all
+> architectures just to fool people ? :-)
+> 
+> Not sure that will fly ... I think we just need to be documenting that
+> stuff better and not have incorrect examples. Also a sweep to remove
+> some useless ones like the one in e1000e would help.
 
-> opal_nvram_write currently just assumes success if it encounters an
-> error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
-> on other errors instead.
+I have been converting wmb+writel to wmb+writel_relaxed. (About 30 
+patches)
 
-Does that ever happen with current skiboot?
+I will have to just remove the wmb and keep writel, then repost.
 
-Even if it doesn't I think I'm inclined to tag this for stable.
+Some of these got applied. It will cause some churn for the maintainers.
 
-cheers
-
-> diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
-> index 9db4398ded5d..13bf625dc3e8 100644
-> --- a/arch/powerpc/platforms/powernv/opal-nvram.c
-> +++ b/arch/powerpc/platforms/powernv/opal-nvram.c
-> @@ -59,6 +59,8 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
->  		if (rc == OPAL_BUSY_EVENT)
->  			opal_poll_events(NULL);
->  	}
-> +	if (rc)
-> +		return -EIO;
->  	*index += count;
->  	return count;
->  }
-> -- 
-> 2.16.1
+> 
+> Cheers,
+> Ben.
