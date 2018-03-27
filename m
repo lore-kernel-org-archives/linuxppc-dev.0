@@ -1,17 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409V4Y6mwMzF2CM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:02:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409VJt4Pb9zF24J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:13:02 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: mauricfo@linux.vnet.ibm.com
-Subject: [PATCH v2 10/10] powerpc/64s: Wire up cpu_show_spectre_v2()
-Date: Tue, 27 Mar 2018 23:01:53 +1100
-Message-Id: <20180327120153.31612-10-mpe@ellerman.id.au>
-In-Reply-To: <20180327120153.31612-1-mpe@ellerman.id.au>
-References: <20180327120153.31612-1-mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
+ OPAL errors
+In-Reply-To: <20180326150233.23089-1-npiggin@gmail.com>
+References: <20180326150233.23089-1-npiggin@gmail.com>
+Date: Tue, 27 Mar 2018 23:13:00 +1100
+Message-ID: <877epxk983.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a definition for cpu_show_spectre_v2() to override the generic
-version. This has several permuations, though in practice some may not
-occur we cater for any combination.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-The most verbose is:
+> opal_nvram_write currently just assumes success if it encounters an
+> error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
+> on other errors instead.
 
-  Mitigation: Indirect branch serialisation (kernel only), Indirect
-  branch cache disabled, ori31 speculation barrier enabled
+Does that ever happen with current skiboot?
 
-We don't treat the ori31 speculation barrier as a mitigation on its
-own, because it has to be *used* by code in order to be a mitigation
-and we don't know if userspace is doing that. So if that's all we see
-we say:
+Even if it doesn't I think I'm inclined to tag this for stable.
 
-  Vulnerable, ori31 speculation barrier enabled
+cheers
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/security.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
-
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 0eace3cac818..2cee3dcd231b 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -58,3 +58,36 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, c
- 
- 	return sprintf(buf, "Vulnerable\n");
- }
-+
-+ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	bool bcs, ccd, ori;
-+	struct seq_buf s;
-+
-+	seq_buf_init(&s, buf, PAGE_SIZE - 1);
-+
-+	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
-+	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
-+	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
-+
-+	if (bcs || ccd) {
-+		seq_buf_printf(&s, "Mitigation: ");
-+
-+		if (bcs)
-+			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
-+
-+		if (bcs && ccd)
-+			seq_buf_printf(&s, ", ");
-+
-+		if (ccd)
-+			seq_buf_printf(&s, "Indirect branch cache disabled");
-+	} else
-+		seq_buf_printf(&s, "Vulnerable");
-+
-+	if (ori)
-+		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
-+
-+	seq_buf_printf(&s, "\n");
-+
-+	return s.len;
-+}
--- 
-2.14.1
+> diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
+> index 9db4398ded5d..13bf625dc3e8 100644
+> --- a/arch/powerpc/platforms/powernv/opal-nvram.c
+> +++ b/arch/powerpc/platforms/powernv/opal-nvram.c
+> @@ -59,6 +59,8 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
+>  		if (rc == OPAL_BUSY_EVENT)
+>  			opal_poll_events(NULL);
+>  	}
+> +	if (rc)
+> +		return -EIO;
+>  	*index += count;
+>  	return count;
+>  }
+> -- 
+> 2.16.1
