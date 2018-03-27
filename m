@@ -1,49 +1,39 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409CSt0r67zF1Tg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 12:03:57 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id v194-v6so13103857itb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 18:03:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409CT9370dzF26b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 12:04:13 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2R142Pa106305
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 21:04:10 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gy868fara-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 21:04:10 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 27 Mar 2018 02:04:05 +0100
+Date: Mon, 26 Mar 2018 18:03:53 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ fweimer@redhat.com, msuchanek@suse.com, tglx@linutronix.de,
+ shuah@kernel.org
+Subject: Re: [PATCH] powerpc, pkey: make protection key 0 less special
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1522107101-16083-1-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <428751c8-6920-096b-8694-a3f1b8990bdf@physik.fu-berlin.de>
-References: <20180318161056.5377-1-linux@dominikbrodowski.net>
- <20180318161056.5377-5-linux@dominikbrodowski.net>
- <20180318174014.GR30522@ZenIV.linux.org.uk>
- <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
- <20180318181848.GU30522@ZenIV.linux.org.uk>
- <20180319042300.GW30522@ZenIV.linux.org.uk>
- <20180319092920.tbh2xwkruegshzqe@gmail.com>
- <20180319232342.GX30522@ZenIV.linux.org.uk>
- <20180322001532.GA18399@ZenIV.linux.org.uk>
- <20180326004017.GA2211@ZenIV.linux.org.uk>
- <20180326034750.GN30522@ZenIV.linux.org.uk>
- <CA+55aFw8VGnVgaWHVFP-LChMNaoANOwT18jJEWzSCRLFeRGcmA@mail.gmail.com>
- <428751c8-6920-096b-8694-a3f1b8990bdf@physik.fu-berlin.de>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 26 Mar 2018 15:03:54 -1000
-Message-ID: <CA+55aFwp-T-WFN95j7u5nn2BExxviJCx1-RgD3Mnu1AN_GYD3w@mail.gmail.com>
-Subject: Re: [RFC] new SYSCALL_DEFINE/COMPAT_SYSCALL_DEFINE wrappers
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- linux-arch <linux-arch@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>, linux-mips <linux-mips@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Jiri Slaby <jslaby@suse.com>, "the arch/x86 maintainers" <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1522107101-16083-1-git-send-email-linuxram@us.ibm.com>
+Message-Id: <20180327010353.GC5743@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,22 +43,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 25, 2018 at 8:44 PM, John Paul Adrian Glaubitz
-<glaubitz@physik.fu-berlin.de> wrote:
-<
-> FWIW, we are maintaining an x32 port in Debian and there are some people
-> actually using it [1]. There is one build instance running on VMWare that
-> I am hosting [2] and around 10800 out of 12900 source packages build fine
-> on x32 (12900 being the number for x86_64).
+On Mon, Mar 26, 2018 at 04:31:41PM -0700, Ram Pai wrote:
+> Applications need the ability to associate an address-range with some
+> key and latter revert to its initial default key. Pkey-0 comes close to
+> providing this function but falls short, because the current
+> implementation disallows applications to explicitly associate pkey-0 to
+> the address range.
+> 
+> Lets make pkey-0 less special and treat it almost like any other key.
+> Thus it can be explicitly associated with any address range, and can be
+> freed. This gives the application more flexibility and power.  The
+> ability to free pkey-0 must be used responsibily, since pkey-0 is
+> associated with almost all address-range by default.
+> 
+> Even with this change pkey-0 continues to be slightly more special
+> from the following point of view.
+> (a) it is implicitly allocated.
+> (b) it is the default key assigned to any address-range.
+> 
+> Tested on powerpc.
 
-Hmm. Do you have a few statically built binaries that could be tested
-without installing a whole distribution? Something real and meaningful
-enough that it actually exercised a few real system calls, but not
-something that needs to bring in 50 different shared libraries?
+This patch is not entirely correct.
+> 
+> cc: Thomas Gleixner <tglx@linutronix.de>
+> cc: Dave Hansen <dave.hansen@intel.com>
+> cc: Michael Ellermen <mpe@ellerman.id.au>
+> cc: Ingo Molnar <mingo@kernel.org>
+> cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/include/asm/pkeys.h | 24 ++++++++++++++++++++----
+>  1 file changed, 20 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> index 0409c80..9c7d3bd 100644
+> --- a/arch/powerpc/include/asm/pkeys.h
+> +++ b/arch/powerpc/include/asm/pkeys.h
+> @@ -101,10 +101,18 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
+> 
+>  static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+>  {
+> -	/* A reserved key is never considered as 'explicitly allocated' */
+> -	return ((pkey < arch_max_pkey()) &&
+> -		!__mm_pkey_is_reserved(pkey) &&
+> -		__mm_pkey_is_allocated(mm, pkey));
+> +	/* pkey 0 is allocated by default. */
+> +	if (!pkey)
+> +		return true;
 
-Something in /sbin, perhaps, that is still runnable by a regular user
-and doesn't require some distro-specific /etc layout etc, so that it
-would work even if you don't run Debian at all? Maybe some shell
-binary or something?
+This is wrong. pkey-0 should not be treated any special here. Will fix
+this and send a new patch. Sorry for the noise.
 
-      Linus
+RP
