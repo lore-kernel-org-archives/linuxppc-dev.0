@@ -1,24 +1,35 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0126.hostedemail.com
- [216.40.44.126])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409TmG15WmzF2CQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 22:48:12 +1100 (AEDT)
-Message-ID: <1522151285.12357.78.camel@perches.com>
-Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
-From: Joe Perches <joe@perches.com>
-To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- patches@opensource.cirrus.com
-Date: Tue, 27 Mar 2018 04:48:05 -0700
-In-Reply-To: <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
-References: <1522096136.12357.21.camel@perches.com>
- <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
- <1522136107.12357.58.camel@perches.com>
- <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
-Content-Type: text/plain; charset="ISO-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409V3h65PxzF2Bb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:01:36 +1100 (AEDT)
+Message-ID: <1522149687.7364.46.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, Sinan
+ Kaya <okaya@codeaurora.org>, David Laight <David.Laight@aculab.com>, Oliver
+ <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, Alexander Duyck
+ <alexander.h.duyck@redhat.com>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, peterz@infradead.org,
+ mingo@redhat.com, corbet@lwn.net
+Date: Tue, 27 Mar 2018 22:21:27 +1100
+In-Reply-To: <20180327095745.GB29373@arm.com>
+References: <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+ <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <20180327095745.GB29373@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,38 +40,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-03-27 at 03:28 -0700, Guenter Roeck wrote:
-> On 03/27/2018 12:35 AM, Joe Perches wrote:
-> > On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
-> > > Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
+On Tue, 2018-03-27 at 10:57 +0100, Will Deacon wrote:
 > > 
-> > fyi: It's marked Maintained in MAINTAINERS
+> > The interesting thing is that we do seem to have a whole LOT of these
+> > spurrious wmb before writel all over the tree, I suspect because of
+> > that incorrect recommendation in memory-barriers.txt.
 > > 
+> > We should fix that.
 > 
-> I did not say that it was not maintained, and I am aware of the information
-> in the MAINTAINERS file, thanks.
+> Patch below. Thoughts?
 
-As am I.
+Looks good, we should probably also have a clearer (explicit)
+definition of that ordering in the driver-api doco.
 
-I do agree that hwmon is obscure.  Almost everything about
-anything is obscure to those that don't fully understand it.
+Now, to remove all those useless wmb's and find what other bugs they
+were papering over ... ;-)
 
-I am unaware though of any use of "obsolete" in drivers/hwmon/
-or in Documentation/ about hwmon or the wiki/
-
-In what sense do you mean hwmon is obsolete?
-
-And the cocci script?
-
-Anything later than:
-https://systeme.lip6.fr/pipermail/cocci/2016-December/003887.html
-https://github.com/groeck/coccinelle-patches/tree/master/hwmon
-?
-
-btw: I think the perl scripts I posted for DEV_ATTR_<RW|RO|WO>
-transforms are simpler and less prone to tool versioning
-issues.
-
-https://lkml.org/lkml/2017/12/22/844
-
-It'd be fairly simple to add SENSOR_ support.
+Cheers,
+Ben.
