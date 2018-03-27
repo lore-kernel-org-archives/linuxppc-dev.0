@@ -1,29 +1,38 @@
-Return-Path: <srs0=qi7r=gr=iram.es=paubert@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jgg@ziepe.ca>
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409Xcr4Q43zF2DW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 00:57:00 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 409Xcq70JQz8wMr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 00:56:59 +1100 (AEDT)
-Received: from telmad-lavadora-l1mail2.puc.rediris.es
- (te-l1mail2-out01a.puc.rediris.es [IPv6:2001:720:418:ca03::83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 409Xcp0zsBz9ry1
- for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2018 00:56:57 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 15:42:37 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, mauricfo@linux.vnet.ibm.com
-Subject: Re: [PATCH v2 01/10] powerpc: Add security feature flags for
- Spectre/Meltdown
-Message-ID: <20180327134237.zv6plsmygcqv6kqb@lt-gp.iram.es>
-References: <20180327120153.31612-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409XyY3xb2zF2DR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 01:12:19 +1100 (AEDT)
+Received: by mail-it0-x241.google.com with SMTP id m134-v6so10652170itb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 07:12:19 -0700 (PDT)
+Date: Tue, 27 Mar 2018 08:12:15 -0600
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: okaya@codeaurora.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, linux-rdma@vger.kernel.org,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180327141215.GA12318@ziepe.ca>
+References: <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+ <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <CAK8P3a0gCYjw78snni_1Jkk5uA5a-j0x-XZDrN=RaZfXctOSoA@mail.gmail.com>
+ <1522149801.7364.49.camel@kernel.crashing.org>
+ <4f27ac42a6953589157f4d7f18051366@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180327120153.31612-1-mpe@ellerman.id.au>
+In-Reply-To: <4f27ac42a6953589157f4d7f18051366@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,148 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 11:01:44PM +1100, Michael Ellerman wrote:
-> This commit adds security feature flags to reflect the settings we
-> receive from firmware regarding Spectre/Meltdown mitigations.
+On Tue, Mar 27, 2018 at 08:22:55AM -0400, okaya@codeaurora.org wrote:
+> On 2018-03-27 07:23, Benjamin Herrenschmidt wrote:
+> >On Tue, 2018-03-27 at 11:44 +0200, Arnd Bergmann wrote:
+> >>> The interesting thing is that we do seem to have a whole LOT of these
+> >>> spurrious wmb before writel all over the tree, I suspect because of
+> >>> that incorrect recommendation in memory-barriers.txt.
+> >>>
+> >>> We should fix that.
+> >>
+> >>Maybe the problem is just that it's so counter-intuitive that we don't
+> >>need that barrier in Linux, when the hardware does need one on some
+> >>architectures.
+> >>
+> >>How about we define a barrier type instruction specifically for this
+> >>purpose, something like wmb_before_mmio() and have all architectures
+> >>define that to an empty macro?
+> >
+> >This is exactly what wmb() is about and exactly what Linux rejected
+> >back in the day (and in hindsight I agree with him).
+> >
+> >>That way, having correct code using wmb_before_mmio() will not
+> >>trigger an incorrect review comment that leads to extra wmb(). ;-)
+> >
+> >Ah, you mean have an empty macro that will always be empty on all
+> >architectures just to fool people ? :-)
+> >
+> >Not sure that will fly ... I think we just need to be documenting that
+> >stuff better and not have incorrect examples. Also a sweep to remove
+> >some useless ones like the one in e1000e would help.
 > 
-> The feature names reflect the names we are given by firmware on bare
-> metal machines. See the hostboot source for details.
-> 
-> Arguably these could be firmware features, but that then requires them
-> to be read early in boot so they're available prior to asm feature
-> patching, but we don't actually want to use them for patching. We may
-> also want to dynamically update them in future, which would be
-> incompatible with the way firmware features work (at the moment at
-> least). So for now just make them separate flags.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/security_features.h | 65 ++++++++++++++++++++++++++++
->  arch/powerpc/kernel/Makefile                 |  2 +-
->  arch/powerpc/kernel/security.c               | 15 +++++++
->  3 files changed, 81 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/include/asm/security_features.h
->  create mode 100644 arch/powerpc/kernel/security.c
-> 
-> 
-> v2: Rebased on top of LPM changes.
-> 
-> diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
-> new file mode 100644
-> index 000000000000..db00ad2c72c2
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/security_features.h
-> @@ -0,0 +1,65 @@
-> +/* SPDX-License-Identifier: GPL-2.0+ */
-> +/*
-> + * Security related feature bit definitions.
-> + *
-> + * Copyright 2018, Michael Ellerman, IBM Corporation.
-> + */
-> +
-> +#ifndef _ASM_POWERPC_SECURITY_FEATURES_H
-> +#define _ASM_POWERPC_SECURITY_FEATURES_H
-> +
-> +
-> +extern unsigned long powerpc_security_features;
-> +
-> +static inline void security_ftr_set(unsigned long feature)
-> +{
-> +	powerpc_security_features |= feature;
-> +}
-> +
-> +static inline void security_ftr_clear(unsigned long feature)
-> +{
-> +	powerpc_security_features &= ~feature;
-> +}
-> +
-> +static inline bool security_ftr_enabled(unsigned long feature)
-> +{
-> +	return !!(powerpc_security_features & feature);
-> +}
-> +
-> +
-> +// Features indicating support for Spectre/Meltdown mitigations
-> +
-> +// The L1-D cache can be flushed with ori r30,r30,0
-> +#define SEC_FTR_L1D_FLUSH_ORI30		0x0000000000000001ull
-> +
-> +// The L1-D cache can be flushed with mtspr 882,r0 (aka SPRN_TRIG2)
-> +#define SEC_FTR_L1D_FLUSH_TRIG2		0x0000000000000002ull
-> +
-> +// ori r31,r31,0 acts as a speculation barrier
-> +#define SEC_FTR_SPEC_BAR_ORI31		0x0000000000000004ull
-> +
-> +// Speculation past bctr is disabled
-> +#define SEC_FTR_BCCTRL_SERIALISED	0x0000000000000008ull
+> I have been converting wmb+writel to wmb+writel_relaxed. (About 30 patches)
+>
+> I will have to just remove the wmb and keep writel, then repost.
 
-Nitpicks: 
+Okay, but before you do that, can we get a statement how this works
+for WC?
 
-1) bcctr or bcctrL ?
+Some of these writels are to WC memory, do they need the wmb()?!?
 
-2) seraliaZe seems to be more popular than serialiSe in the kernel
-   (1769 hits from "grep -ir serializ", 264 with the "s")
-   Still needs to grep for both in any case, bummer!
-
-
-	Gabriel
-> +
-> +// Entries in L1-D are private to a SMT thread
-> +#define SEC_FTR_L1D_THREAD_PRIV		0x0000000000000010ull
-> +
-> +// Indirect branch prediction cache disabled
-> +#define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
-> +
-> +
-> +// Features indicating need for Spectre/Meltdown mitigations
-> +
-> +// The L1-D cache should be flushed on MSR[HV] 1->0 transition (hypervisor to guest)
-> +#define SEC_FTR_L1D_FLUSH_HV		0x0000000000000040ull
-> +
-> +// The L1-D cache should be flushed on MSR[PR] 0->1 transition (kernel to userspace)
-> +#define SEC_FTR_L1D_FLUSH_PR		0x0000000000000080ull
-> +
-> +// A speculation barrier should be used for bounds checks (Spectre variant 1)
-> +#define SEC_FTR_BNDS_CHK_SPEC_BAR	0x0000000000000100ull
-> +
-> +// Firmware configuration indicates user favours security over performance
-> +#define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
-> +
-> +#endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 1b6bc7fba996..d458c45e5004 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -42,7 +42,7 @@ obj-$(CONFIG_VDSO32)		+= vdso32/
->  obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
->  obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
->  obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
-> -obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-> +obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
->  obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
->  obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
->  obj-$(CONFIG_PPC64)		+= vdso64/
-> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-> new file mode 100644
-> index 000000000000..4ccba00d224c
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/security.c
-> @@ -0,0 +1,15 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +//
-> +// Security related flags and so on.
-> +//
-> +// Copyright 2018, Michael Ellerman, IBM Corporation.
-> +
-> +#include <linux/kernel.h>
-> +#include <asm/security_features.h>
-> +
-> +
-> +unsigned long powerpc_security_features __read_mostly = \
-> +	SEC_FTR_L1D_FLUSH_HV | \
-> +	SEC_FTR_L1D_FLUSH_PR | \
-> +	SEC_FTR_BNDS_CHK_SPEC_BAR | \
-> +	SEC_FTR_FAVOUR_SECURITY;
-> -- 
-> 2.14.1
-> 
+Jason
