@@ -1,22 +1,26 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:84ea::])
- (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <j.neuschaefer@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409gfF3cgFzF2GB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:13:38 +1100 (AEDT)
-Subject: Linux 4.16: Reported regressions as of Tuesday, 2018-03-27 (Was:
- Linux 4.16-rc7)
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-References: <CA+55aFxpxHnWBeTXN+DKqwCMW_=T2cR8UxSBVk_6c8LL7Et5JQ@mail.gmail.com>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Message-ID: <d1f5b976-f293-5767-9faf-c4f569f8ba55@leemhuis.info>
-Date: Tue, 27 Mar 2018 21:13:32 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409gvj3CYyzF2Bl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:25:18 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 21:24:10 +0200
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Joel Stanley <joel@jms.id.au>, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 3/5] powerpc/mm/32: Use page_is_ram to check for RAM
+Message-ID: <20180327192410.nvu6s4ekctuuybnn@latitude>
+References: <20180222121516.23415-1-j.neuschaefer@gmx.net>
+ <20180222121516.23415-4-j.neuschaefer@gmx.net>
+ <874llcha6p.fsf@concordia.ellerman.id.au>
+ <87y3iofh2z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFxpxHnWBeTXN+DKqwCMW_=T2cR8UxSBVk_6c8LL7Et5JQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="odiormwvl2eyppks"
+In-Reply-To: <87y3iofh2z.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,102 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26.03.2018 01:37, Linus Torvalds wrote:
-> […] Anyway. Go out and test. And let's hope next week is nice and calm and
-> I can release the final 4.16 next Sunday without any extra  rc's.
-> 
->                Linus
 
-Hi! Find below my sixth regression report for Linux 4.16. It lists 7
-regressions I'm currently aware of. 2 were fixed since last weeks
-report; 2 are new.
+--odiormwvl2eyppks
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Are you aware of any other regressions that got introduced this
-development cycle? Then please let me know by mail (a simple bounce or
-forward to the sender of this email address is enough!). And please tell
-me if there is anything in the report that shouldn't be there.
+Hi,
 
-Ciao, Thorsten
+On Mon, Mar 19, 2018 at 10:19:32PM +1100, Michael Ellerman wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> > Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net> writes:
+[...]
+> >> -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
+> >> +	if (page_is_ram(__phys_to_pfn(p)) &&
+> >>  	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, siz=
+e))) {
+> >>  		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
+> >>  		       (unsigned long long)p, __builtin_return_address(0));
+> >
+> >
+> > This is killing my p5020ds (Freescale e5500) unfortunately:
+>=20
+> Duh, I should actually read the patch :)
+>=20
+> This is a 32-bit system with 4G of RAM, so not all of RAM is mapped,
+> some of it is highem which is why removing the test against high_memory
+> above breaks it.
+>=20
+> So I need the high_memory test on this system.
 
-== Current regressions ==
+This is an oversight on my part. I thought I wouldn't need this test
+because the memblock-based test is more accurate, but I didn't think
+through how high memory actually works.
 
-Dell R640 does not boot due to SCSI/SATA failure
-- Status: Afaics still unfixed; lost track, ask reporter for an update
-on Monday morning, no reply yet
-- Cause:  https://git.kernel.org/torvalds/c/84676c1f21e8
-- Reported: 2018-02-22
-https://marc.info/?l=linux-kernel&m=151931128006031
-- Note: Issue understood and even (kind of accidentally) fixed by a
-patch series that was proposed for 4.17 (see links)
-- Last known developer activity: 2018-03-14
-https://marc.info/?l=linux-block&m=152102086831636&w=2
-- Other relevant links:
-https://marc.info/?l=linux-block&m=152051511802229&w=2
-https://marc.info/?l=linux-kernel&m=152026091325037
+> I'm not clear why it was a problem for you on the Wii, do you even build
+> the Wii kernel with HIGHMEM enabled?
 
-Error updating SMART data during runtime and could not connect to lv
-- Status: Stalled afaics
-- Reported: 2018-03-11
-https://marc.info/?l=linux-kernel&m=152075643627082
-https://bugzilla.kernel.org/show_bug.cgi?id=199077
-- Note: Two issues discussed in that thread; only one is a regression
-(latency issues in the MU03 version of the firmware, triggered by
-polling SMART data, which causes lvmetad to timeout in some cases)
-- Last known developer activity: 2018-03-19
-https://marc.info/?l=linux-kernel&m=152145306610330
-- Other relevant links:
-https://marc.info/?l=linux-kernel&m=152146297613525
-https://marc.info/?l=linux-scsi&m=152095303312164&w=2
-
-15% longer running times on lvm2 test suite
-- Status: Stalled afaics
-- Cause:  https://git.kernel.org/torvalds/c/44c02a2c3dc5
-- Reported: 2018-03-11
-https://marc.info/?l=linux-kernel&m=152077333230274
-- Note: Seems the real problem is in the way the test scripts interact
-with the kernel
-- Last known developer activity: 2018-03-13
-https://marc.info/?l=linux-kernel&m=152097761921525
-
-AMDGPU Fury X random screen flicker on Linux kernel 4.16rc5
-- Status: might be stalled
-- Reported: 2018-03-13
-https://bugzilla.kernel.org/show_bug.cgi?id=199101
-
-ASUS XG-C100C 10G Network Adapter no longer working
-- Status: told reporter to bring it to netdev; looks like he needs help
-debugging
-- Reported: 2018-03-22
-https://bugzilla.kernel.org/show_bug.cgi?id=199177
-
-multi_v7_defconfig fails to boot on many OMAP systems
-- Status: quite new, but patch is being prepared
-- Cause:  https://git.kernel.org/torvalds/c/c083dc5f3738
-- Reported: 2018-03-23
-https://marc.info/?l=linux-clk&m=152198452423677&w=2
-- Last known developer activity: 2018-03-27
-https://marc.info/?l=linux-clk&m=152199237525182&w=2
+No. The Wii works fine with the p < virt_to_phys(high_memory) test, and
+doesn't use CONFIG_HIGHMEM.  I'll send a version two of this patchset.
 
 
-== Waiting for clarification from reporter ==
+Thanks for testing,
+Jonathan Neusch=C3=A4fer
 
-Interrupt storm after suspend causes one busy kworker
-- Status: Still waiting for data from reporter
-- Reported: 2018-02-25
-https://bugzilla.kernel.org/show_bug.cgi?id=198929
+--odiormwvl2eyppks
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-== Fixed since last report ==
+iQIcBAABAgAGBQJauppRAAoJEAgwRJqO81/b5NYP/jkaQNZCNCajFmaHnqWkrQvb
+AxOfaAW6X8ovEeTBfDzuw95k9IggHnK8I5q0+BBiAaW+Sr3DSfvVAU7s7yskIyw9
++VoblsmJblgCRbE7O5Z+gn7eDJwEtZsssBbq1jo2SVfoo+h/mKyt+sHfdNFGHf80
+nZy4O66uL43VHqc7F5ZLXfPe2hhjepnfCMu3vZhaIM7jeAKxL1yUyvD8j/iKVFm7
+7MnyksFbUemVpM+R/Vs52Cn8Pg1bipNX2cqqc7ewEdl0cELz+TU+k66Rd7JXVTCt
+9o9xTSIC67BSks6JvwTuHX3Z76cWFY85vKZ7WKlt+Z1idIdZZH2kVEZ+C0efegit
+DXX0hcxWJKx2XUp4O0NeFk9IDF6bJ0LwQ7J7waf1TGeASFobgABx+hUK7mvtfifg
+OmrN2/59KVswGWxA7vkIx/HK8aWlA2YPposb99LIlHS7N4aQjCTHaSm9nyO+vQvN
+ROJQ3vthGSWeE+v83CXgtLLpu5sLN10IZNCavlVLNhiMRg4GkkfsMu34J7l+bEn3
+dvYAuY9fppNe7B/+0zNeaoZpJAko3zly851wqHx//l+glUbBOPTyCOJmc3LC9Git
+INjN1o0BHOK9AB717V/bP+5R9la7AaYxM012vs9VfB+Aa2UUsgyHweHb/4TDK0c2
+ewozCrRV9FEJ4WXWzIcB
+=e+pw
+-----END PGP SIGNATURE-----
 
-hci_bcm: Streamline runtime PM code change for 4.16 kernel breaks
-bluetooth on ASUS T100TA
-- Status: Fixed by https://git.kernel.org/torvalds/c/b09c61522c81
-- Cause:  https://git.kernel.org/torvalds/c/43fff7683468
-- Reported: 2018-03-01
-https://bugzilla.kernel.org/show_bug.cgi?id=198953
-
-sdhci-acpi not recognizing eMMC
-- Status: Fixed by https://git.kernel.org/torvalds/c/d58ac803cfbb
-- Cause:  https://git.kernel.org/torvalds/c/1b7ba57ecc86
-- Reported: 2018-03-13
-https://bugzilla.kernel.org/show_bug.cgi?id=199105
+--odiormwvl2eyppks--
