@@ -1,34 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0126.hostedemail.com
+ [216.40.44.126])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409THN31vQzF2CK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 22:26:39 +1100 (AEDT)
-Message-ID: <1522149944.7364.50.camel@kernel.crashing.org>
-Subject: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, Sinan Kaya <okaya@codeaurora.org>, David
- Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
- list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
- Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Date: Tue, 27 Mar 2018 22:25:44 +1100
-In-Reply-To: <20180327110258.GF2464@arm.com>
-References: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
- <1522101717.7364.14.camel@kernel.crashing.org>
- <20180326222756.GJ15554@ziepe.ca>
- <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
- <1522141019.7364.43.camel@kernel.crashing.org>
- <20180327095745.GB29373@arm.com>
- <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
- <20180327100944.GD29373@arm.com>
- <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
- <20180327110258.GF2464@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409TmG15WmzF2CQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 22:48:12 +1100 (AEDT)
+Message-ID: <1522151285.12357.78.camel@perches.com>
+Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
+From: Joe Perches <joe@perches.com>
+To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>
+Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ patches@opensource.cirrus.com
+Date: Tue, 27 Mar 2018 04:48:05 -0700
+In-Reply-To: <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
+References: <1522096136.12357.21.camel@perches.com>
+ <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
+ <1522136107.12357.58.camel@perches.com>
+ <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
+Content-Type: text/plain; charset="ISO-8859-1"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,63 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-03-27 at 12:02 +0100, Will Deacon wrote:
->       can see it now has ownership.  Note that, when using writel(), a prior
-> >       wmb() is not needed to guarantee that the cache coherent memory writes
-> >       have completed before writing to the cache incoherent MMIO region.
-> >       The cheaper writel_relaxed() does not guarantee the DMA to be visible
-> >       to the device and must not be used here.
+On Tue, 2018-03-27 at 03:28 -0700, Guenter Roeck wrote:
+> On 03/27/2018 12:35 AM, Joe Perches wrote:
+> > On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
+> > > Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
+> > 
+> > fyi: It's marked Maintained in MAINTAINERS
+> > 
 > 
-> Fair enough. I'd rather people used _relaxed by default, but I have to admit
-> that it will probably just result in them getting things wrong. Just a tiny
-> bit of wordsmithing brings this to:
+> I did not say that it was not maintained, and I am aware of the information
+> in the MAINTAINERS file, thanks.
 
-I prefer people using writel() by default for the simple reason that
-99% of writels out there are configuration stuff for which the
-performance difference doesn't matter, and people will just get it
-wrong.
+As am I.
 
-Let's focus on the rare fast path for optimisation.
-> 
-> diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-> index a863009849a3..3247547d1c36 100644
-> --- a/Documentation/memory-barriers.txt
-> +++ b/Documentation/memory-barriers.txt
-> @@ -1909,9 +1909,6 @@ There are some more advanced barrier functions:
->                 /* assign ownership */
->                 desc->status = DEVICE_OWN;
->  
-> -               /* force memory to sync before notifying device via MMIO */
-> -               wmb();
-> -
->                 /* notify device of new descriptors */
->                 writel(DESC_NOTIFY, doorbell);
->         }
-> @@ -1919,11 +1916,15 @@ There are some more advanced barrier functions:
->       The dma_rmb() allows us guarantee the device has released ownership
->       before we read the data from the descriptor, and the dma_wmb() allows
->       us to guarantee the data is written to the descriptor before the device
-> -     can see it now has ownership.  The wmb() is needed to guarantee that the
-> -     cache coherent memory writes have completed before attempting a write to
-> -     the cache incoherent MMIO region.
-> -
-> -     See Documentation/DMA-API.txt for more information on consistent memory.
-> +     can see it now has ownership.  Note that, when using writel(), a prior
-> +     wmb() is not needed to guarantee that the cache coherent memory writes
-> +     have completed before writing to the MMIO region.  The cheaper
-> +     writel_relaxed() does not provide this guarantee and must not be used
-> +     here.
-> +
-> +     See the subsection "Kernel I/O barrier effects" for more information on
-> +     relaxed I/O accessors and the Documentation/DMA-API.txt file for more
-> +     information on consistent memory.
->  
->  
->  MMIO WRITE BARRIER
-> 
-> 
-> If you're happy with that, I'll send it as a proper patch.
-> 
-> Cheers,
-> 
-> Will
+I do agree that hwmon is obscure.  Almost everything about
+anything is obscure to those that don't fully understand it.
+
+I am unaware though of any use of "obsolete" in drivers/hwmon/
+or in Documentation/ about hwmon or the wiki/
+
+In what sense do you mean hwmon is obsolete?
+
+And the cocci script?
+
+Anything later than:
+https://systeme.lip6.fr/pipermail/cocci/2016-December/003887.html
+https://github.com/groeck/coccinelle-patches/tree/master/hwmon
+?
+
+btw: I think the perl scripts I posted for DEV_ATTR_<RW|RO|WO>
+transforms are simpler and less prone to tool versioning
+issues.
+
+https://lkml.org/lkml/2017/12/22/844
+
+It'd be fairly simple to add SENSOR_ support.
