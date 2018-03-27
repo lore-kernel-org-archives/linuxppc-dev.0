@@ -1,35 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409khW6zxhzF285
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:30:51 +1100 (AEDT)
-Message-ID: <1522186185.7364.59.camel@kernel.crashing.org>
-Subject: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Will Deacon <will.deacon@arm.com>, Sinan Kaya <okaya@codeaurora.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, David
- Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
- list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
- Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Mar 2018 08:29:45 +1100
-In-Reply-To: <20180327143628.GA10642@arm.com>
-References: <1522101717.7364.14.camel@kernel.crashing.org>
- <20180326222756.GJ15554@ziepe.ca>
- <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
- <1522141019.7364.43.camel@kernel.crashing.org>
- <20180327095745.GB29373@arm.com>
- <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
- <20180327100944.GD29373@arm.com>
- <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
- <20180327110258.GF2464@arm.com>
- <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
- <20180327143628.GA10642@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409khj1STPzF25T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:31:00 +1100 (AEDT)
+Received: by mail-pl0-x241.google.com with SMTP id f5-v6so216475plj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:31:00 -0700 (PDT)
+Date: Tue, 27 Mar 2018 14:30:57 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 07/24] mm: VMA sequence count
+In-Reply-To: <1520963994-28477-8-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803271429230.36401@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-8-git-send-email-ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-03-27 at 15:36 +0100, Will Deacon wrote:
-> > Can we say the same thing for iowrite32() and iowrite32be(). I also see wmb()
-> > in front of these.
-> 
-> I don't think so. My reading of memory-barriers.txt says that writeX might
-> expand to outX, and outX is not ordered with respect to other types of
-> memory.
+On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-Ugh ?
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index faf85699f1a1..5898255d0aeb 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -558,6 +558,10 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
+>  	else
+>  		mm->highest_vm_end = vm_end_gap(vma);
+>  
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	seqcount_init(&vma->vm_sequence);
+> +#endif
+> +
+>  	/*
+>  	 * vma->vm_prev wasn't known when we followed the rbtree to find the
+>  	 * correct insertion point for that vma. As a result, we could not
+> @@ -692,6 +696,30 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+>  	long adjust_next = 0;
+>  	int remove_next = 0;
+>  
+> +	/*
+> +	 * Why using vm_raw_write*() functions here to avoid lockdep's warning ?
+> +	 *
+> +	 * Locked is complaining about a theoretical lock dependency, involving
+> +	 * 3 locks:
+> +	 *   mapping->i_mmap_rwsem --> vma->vm_sequence --> fs_reclaim
+> +	 *
+> +	 * Here are the major path leading to this dependency :
+> +	 *  1. __vma_adjust() mmap_sem  -> vm_sequence -> i_mmap_rwsem
+> +	 *  2. move_vmap() mmap_sem -> vm_sequence -> fs_reclaim
+> +	 *  3. __alloc_pages_nodemask() fs_reclaim -> i_mmap_rwsem
+> +	 *  4. unmap_mapping_range() i_mmap_rwsem -> vm_sequence
+> +	 *
+> +	 * So there is no way to solve this easily, especially because in
+> +	 * unmap_mapping_range() the i_mmap_rwsem is grab while the impacted
+> +	 * VMAs are not yet known.
+> +	 * However, the way the vm_seq is used is guarantying that we will
+> +	 * never block on it since we just check for its value and never wait
+> +	 * for it to move, see vma_has_changed() and handle_speculative_fault().
+> +	 */
+> +	vm_raw_write_begin(vma);
+> +	if (next)
+> +		vm_raw_write_begin(next);
+> +
+>  	if (next && !insert) {
+>  		struct vm_area_struct *exporter = NULL, *importer = NULL;
+>  
 
-My understanding of HW at least is the exact opposite. outX is *more*
-ordered if anything, than any other accessors. IO space is completely
-synchronous, non posted and ordered afaik.
+Eek, what about later on:
 
-Cheers,
-Ben.
+		/*
+		 * Easily overlooked: when mprotect shifts the boundary,
+		 * make sure the expanding vma has anon_vma set if the
+		 * shrinking vma had, to cover any anon pages imported.
+		 */
+		if (exporter && exporter->anon_vma && !importer->anon_vma) {
+			int error;
+
+			importer->anon_vma = exporter->anon_vma;
+			error = anon_vma_clone(importer, exporter);
+			if (error)
+				return error;
+		}
+
+This needs
+
+if (error) {
+	if (next && next != vma)
+		vm_raw_write_end(next);
+	vm_raw_write_end(vma);
+	return error;
+}
