@@ -1,40 +1,26 @@
-Return-Path: <Jose.Abreu@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay2.synopsys.com
- [198.182.60.111])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409ZFT25YjzF2DB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 02:10:18 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-To: Sinan Kaya <okaya@codeaurora.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe
- <jgg@ziepe.ca>
-References: <1521692689.16434.293.camel@kernel.crashing.org>
- <CAOSf1CFv1HHCL3YOVhRn2U=grdNjaQ=A4m3xwxN2Rek1-_TySg@mail.gmail.com>
- <1521726722.16434.312.camel@kernel.crashing.org>
- <20180323163510.GC13033@ziepe.ca>
- <1521854626.16434.359.camel@kernel.crashing.org>
- <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
- <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
- <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <1522101616.7364.13.camel@kernel.crashing.org>
- <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
-CC: David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
- list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, Alexander Duyck
- <alexander.h.duyck@redhat.com>, Will Deacon <will.deacon@arm.com>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Alexander Duyck <alexander.duyck@gmail.com>
-From: Jose Abreu <Jose.Abreu@synopsys.com>
-Message-ID: <922aa06f-8aff-ccdd-fab2-63a30a883d23@synopsys.com>
-Date: Tue, 27 Mar 2018 16:01:08 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409dQs6k87zF28F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:33:41 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 19:33:23 +0200
+Message-ID: <20180327193323.Horde.S-Hqc40p7JjEsZPPEa3YNg1@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: kvm-ppc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Paul
+ Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 14/19] powerpc/altivec: Add missing prototypes for altivec
+References: <20180322202007.23088-1-malat@debian.org>
+ <20180322202007.23088-15-malat@debian.org>
+ <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
+ <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
+ <20180324211020.Horde.kEO4b3mHPV88FKM0OiRT0Q1@messagerie.si.c-s.fr>
+ <CA+7wUszsJUJJeb+xhzjGr8YxDt-BYruBwda7Dq-nFfyt0sU0ew@mail.gmail.com>
+ <20180327175806.Horde.f26UMak3wqEtNtiMmJy51w2@messagerie.si.c-s.fr>
+In-Reply-To: <20180327175806.Horde.f26UMak3wqEtNtiMmJy51w2@messagerie.si.c-s.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-In-Reply-To: <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
-Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,30 +30,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+LEROY Christophe <christophe.leroy@c-s.fr> a =C3=A9crit=C2=A0:
 
-On 27-03-2018 15:46, Sinan Kaya wrote:
+> Mathieu Malaterre <malat@debian.org> a =C3=A9crit=C2=A0:
 >
-> Sinan
-> "We are being told that if you use writel(), then you don't need a wmb() on
-> all architectures."
+>> Christophe,
+>>
+>> On Sat, Mar 24, 2018 at 9:10 PM, LEROY Christophe
+>> <christophe.leroy@c-s.fr> wrote:
+>>> Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
+>>>
+>>>
+>>>> On Fri, Mar 23, 2018 at 1:19 PM, christophe leroy
+>>>> <christophe.leroy@c-s.fr> wrote:
+>>>>>
+>>>>>
+>>>>>
+>>>>> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
+>>>>>>
+>>>>>>
+>>>>>> Some functions prototypes were missing for the non-altivec code. Add=
+ the
+>>>>>> missing prototypes directly in xor_vmx, fix warnings treated as erro=
+rs
+>>>>>> with
+>>>>>> W=3D1:
+>>>>>>
+>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototype
+>>>>>> for
+>>>>>> =E2=80=98xor_altivec_2=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototype
+>>>>>> for
+>>>>>> =E2=80=98xor_altivec_3=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototype
+>>>>>> for
+>>>>>> =E2=80=98xor_altivec_4=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototype
+>>>>>> for
+>>>>>> =E2=80=98xor_altivec_5=E2=80=99 [-Werror=3Dmissing-prototypes]
+>>>>>>
+>>>>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>>>>>> ---
+>>>>>>  arch/powerpc/lib/xor_vmx.h | 14 ++++++++++++++
+>>>>>>  1 file changed, 14 insertions(+)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx.h
+>>>>>> index 5c2b0839b179..2173e3c84151 100644
+>>>>>> --- a/arch/powerpc/lib/xor_vmx.h
+>>>>>> +++ b/arch/powerpc/lib/xor_vmx.h
+>>>>>> @@ -19,3 +19,17 @@ void __xor_altivec_4(unsigned long bytes, unsigne=
+d
+>>>>>> long
+>>>>>> *v1_in,
+>>>>>>  void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+>>>>>>                             unsigned long *v2_in, unsigned long *v3_=
+in,
+>>>>>>                             unsigned long *v4_in, unsigned long
+>>>>>> *v5_in);
+>>>>>> +
+>>>>>> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
+>>>>>> +                            unsigned long *v2_in);
+>>>>>> +
+>>>>>
+>>>>>
+>>>>>
+>>>>> Only used in one place, should be static instead of adding it in a .h
+>>>>>
+>>>>> Same for the other ones.
+>>>>
+>>>>
+>>>> $ git grep xor_altivec_2
+>>>> [...]
+>>>> arch/powerpc/lib/xor_vmx_glue.c:EXPORT_SYMBOL(xor_altivec_2);
+>>>>
+>>>> Are you sure I can change this function to static ?
+>>>
+>>>
+>>> Yes you are right.  But in fact those fonctions are already defined in
+>>> asm/xor. h
+>>> So you just need to add the missing #include
+>>
+>> I originally tried it, but this leads to:
+>>
+>>  CC      arch/powerpc/lib/xor_vmx_glue.o
+>> In file included from arch/powerpc/lib/xor_vmx_glue.c:16:0:
+>> ./arch/powerpc/include/asm/xor.h:39:15: error: variable
+>> =E2=80=98xor_block_altivec=E2=80=99 has initializer but incomplete type
+>> static struct xor_block_template xor_block_altivec =3D {
+>>               ^~~~~~~~~~~~~~~~~~
+>> ./arch/powerpc/include/asm/xor.h:40:2: error: unknown field =E2=80=98nam=
+e=E2=80=99
+>> specified in initializer
+>>  .name =3D "altivec",
+>>  ^
+>> [...]
+>>
+>> The file <asm/xor.h> (powerpc) is pretty much expected to be included
+>> after <include/linux/raid/xor.h>.
+>>
+>> I did not want to tweak <asm/xor.h> to test for #ifdef _XOR_H just befor=
+e
+>>
+>> #ifdef _XOR_H
+>> static struct xor_block_template xor_block_altivec =3D {
+>> [...]
+>>
+>> since this seems like a hack to me.
+>>
+>> Is this ok to test for #ifdef _XOR_H in <arch/powerpc/include/asm/xor.h>=
+ ?
 >
-> Alex:
-> "I'm not sure who told you that but that is incorrect, at least for
-> x86. If you attempt to use writel() without the wmb() we will have to
-> NAK the patches. We will accept the wmb() with writel_releaxed() since
-> that solves things for ARM."
+> What about including linux/raid/xor.h in asm/xor.h ?
+
+Or better: including linux/raid/xor.h then asm/xor.h in xor_vmx_glue.c ?
+
+Christophe
 >
-
-So this means we should always use writel() + wmb() in *all*
-accesses? I don't know about x86 but arc architecture doesn't
-have a wmb() in the writel() function (in some configs).
-
-I see the point in net drivers while you have dma + io accesses
-but for most drivers this shouldn't be needed, right?
-
-What about ordering of writes? Is it guaranteed that one write
-will happen before the next one ?
-
-Best Regards,
-Jose Miguel Abreu
+> Christophe
+>>
+>>> Christophe
+>>>
+>>>
+>>>>
+>>>>> Christophe
+>>>>>
+>>>>>
+>>>>>> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
+>>>>>> +                            unsigned long *v2_in, unsigned long
+>>>>>> *v3_in);
+>>>>>> +
+>>>>>> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
+>>>>>> +                            unsigned long *v2_in, unsigned long *v3=
+_in,
+>>>>>> +                            unsigned long *v4_in);
+>>>>>> +
+>>>>>> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
+>>>>>> +                            unsigned long *v2_in, unsigned long *v3=
+_in,
+>>>>>> +                            unsigned long *v4_in, unsigned long
+>>>>>> *v5_in);
+>>>>>>
+>>>>>
+>>>>> ---
+>>>>> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9=
+ v=C3=A9rifi=C3=A9e par le
+>>>>> logiciel antivirus Avast.
+>>>>> https://www.avast.com/antivirus
+>>>>>
+>>>
+>>>
