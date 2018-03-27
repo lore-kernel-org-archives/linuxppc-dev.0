@@ -2,18 +2,17 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409JCK34S4zF27r
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 15:37:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409JCJ6LW2zF27b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 15:37:32 +1100 (AEDT)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
  david@gibson.dropbear.id.au, npiggin@gmail.com,
  pedromfc@linux.vnet.ibm.com, kvm-ppc@vger.kernel.org,
  Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
-Subject: [PATCH v3 5/8] KVM: PPC: Book3S HV: Return error from h_set_dabr() on
- POWER9
-Date: Tue, 27 Mar 2018 15:37:21 +1100
-Message-Id: <20180327043724.13862-6-mikey@neuling.org>
+Subject: [PATCH v3 1/8] powerpc: Add ppc_breakpoint_available()
+Date: Tue, 27 Mar 2018 15:37:17 +1100
+Message-Id: <20180327043724.13862-2-mikey@neuling.org>
 In-Reply-To: <20180327043724.13862-1-mikey@neuling.org>
 References: <20180327043724.13862-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,53 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER7 compat mode guests can use h_set_dabr on POWER9. POWER9 should
-use the DAWR but since it's disabled there we can't.
-
-This returns H_UNSUPPORTED on a h_set_dabr() on POWER9 where the DAWR
-is disabled.
-
-Current Linux guests ignore this error, so they will silently not get
-the DAWR (sigh). The same error code is being used by POWERVM in this
-case.
+Add ppc_breakpoint_available() to determine if a breakpoint is
+available currently via the DAWR or DABR.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/hvcall.h       | 1 +
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 8 +++++++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/debug.h |  1 +
+ arch/powerpc/kernel/process.c    | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index eca3f9c689..e87d465af4 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -88,6 +88,7 @@
- #define H_P8		-61
- #define H_P9		-62
- #define H_TOO_BIG	-64
-+#define H_UNSUPPORTED	-67
- #define H_OVERLAP	-68
- #define H_INTERRUPT	-69
- #define H_BAD_DATA	-70
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index f31f357b8c..13e23a5275 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2506,8 +2506,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	li	r3,0
- 	blr
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
+index fc97404de0..ce5da214ff 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -47,6 +47,7 @@ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
  
-+2:
-+BEGIN_FTR_SECTION
-+	/* POWER9 with disabled DAWR */
-+	li	r3, H_UNSUPPORTED
-+	blr
-+END_FTR_SECTION_IFCLR(CPU_FTR_DAWR)
- 	/* Emulate H_SET_DABR/X on P8 for the sake of compat mode guests */
--2:	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
-+	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
- 	rlwimi	r5, r4, 2, DAWRX_WT
- 	clrrdi	r4, r4, 3
- 	std	r4, VCPU_DAWR(r3)
+ void set_breakpoint(struct arch_hw_breakpoint *brk);
+ void __set_breakpoint(struct arch_hw_breakpoint *brk);
++bool ppc_breakpoint_available(void);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ extern void do_send_trap(struct pt_regs *regs, unsigned long address,
+ 			 unsigned long error_code, int brkpt);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index ec4f363ebb..24a591b4db 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -827,6 +827,18 @@ void set_breakpoint(struct arch_hw_breakpoint *brk)
+ 	preempt_enable();
+ }
+ 
++/* Check if we have DAWR or DABR hardware */
++bool ppc_breakpoint_available(void)
++{
++	if (cpu_has_feature(CPU_FTR_DAWR))
++		return true; /* POWER8 DAWR */
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		return false; /* POWER9 with DAWR disabled */
++	/* DABR: Everything but POWER8 and POWER9 */
++	return true;
++}
++EXPORT_SYMBOL_GPL(ppc_breakpoint_available);
++
+ #ifdef CONFIG_PPC64
+ DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
+ #endif
 -- 
 2.14.1
