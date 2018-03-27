@@ -1,39 +1,28 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Return-Path: <alexander.duyck@gmail.com>
+Received: from mail-wm0-x232.google.com (mail-wm0-x232.google.com
+ [IPv6:2a00:1450:400c:c09::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409l1Z0lMgzF2D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:45:37 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id q6so153612pgr.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:45:37 -0700 (PDT)
-Date: Tue, 27 Mar 2018 14:45:33 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: Re: [PATCH v9 08/24] mm: Protect VMA modifications using VMA sequence
- count
-In-Reply-To: <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803271441290.38095@chino.kir.corp.google.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409lCV1NKSzF28W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:54:13 +1100 (AEDT)
+Received: by mail-wm0-x232.google.com with SMTP id b127so518984wmf.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:54:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 27 Mar 2018 14:54:09 -0700
+Message-ID: <CAKgT0UfZKBTYPCqWtBF=N5TPFrbsv0ZU+2GHMqF3J4BM9Hw4yw@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
+ Jason Gunthorpe <jgg@ziepe.ca>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,215 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Mar 2018, Laurent Dufour wrote:
+On Tue, Mar 27, 2018 at 2:35 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2018-03-27 at 10:46 -0400, Sinan Kaya wrote:
+>>  combined buffers.
+>>
+>> Alex:
+>> "Don't bother. I can tell you right now that for x86 you have to have a
+>> wmb() before the writel().
+>
+> No, this isn't the semantics of writel. You shouldn't need it unless
+> something changed and we need to revisit our complete understanding of
+> *all* MMIO accessor semantics.
 
-> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-> index 65ae54659833..a2d9c87b7b0b 100644
-> --- a/fs/proc/task_mmu.c
-> +++ b/fs/proc/task_mmu.c
-> @@ -1136,8 +1136,11 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
->  					goto out_mm;
->  				}
->  				for (vma = mm->mmap; vma; vma = vma->vm_next) {
-> -					vma->vm_flags &= ~VM_SOFTDIRTY;
-> +					vm_write_begin(vma);
-> +					WRITE_ONCE(vma->vm_flags,
-> +						   vma->vm_flags & ~VM_SOFTDIRTY);
->  					vma_set_page_prot(vma);
-> +					vm_write_end(vma);
->  				}
->  				downgrade_write(&mm->mmap_sem);
->  				break;
-> diff --git a/fs/userfaultfd.c b/fs/userfaultfd.c
-> index cec550c8468f..b8212ba17695 100644
-> --- a/fs/userfaultfd.c
-> +++ b/fs/userfaultfd.c
-> @@ -659,8 +659,11 @@ int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
->  
->  	octx = vma->vm_userfaultfd_ctx.ctx;
->  	if (!octx || !(octx->features & UFFD_FEATURE_EVENT_FORK)) {
-> +		vm_write_begin(vma);
->  		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
-> -		vma->vm_flags &= ~(VM_UFFD_WP | VM_UFFD_MISSING);
-> +		WRITE_ONCE(vma->vm_flags,
-> +			   vma->vm_flags & ~(VM_UFFD_WP | VM_UFFD_MISSING));
-> +		vm_write_end(vma);
->  		return 0;
->  	}
->  
+The issue seems to be that there have been two different ways of
+dealing with this. There has historically been a number of different
+drivers that have been carrying this wmb() workaround since something
+like 2002. I get that the semantics for writel might have changed
+since then, but those of us who already have the wmb() in our drivers
+will be very wary of anyone wanting to go through and remove them
+since writel is supposed to be "good enough". I would much rather err
+on the side of caution here.
 
-In several locations in this patch vm_write_begin(vma) -> 
-vm_write_end(vma) is nesting things other than vma->vm_flags, 
-vma->vm_policy, etc.  I think it's better to do vm_write_end(vma) as soon 
-as the members that the seqcount protects are modified.  In other words, 
-this isn't offering protection for vma->vm_userfaultfd_ctx.  There are 
-several examples of this in the patch.
+I view the wmb() + writel_relaxed() as more of a driver owning and
+handling this itself. Besides in the Intel Ethernet driver case it is
+better performance as our wmb() placement for us also provides a
+secondary barrier so we don't need to add a separate smp_wmb() to deal
+with a potential race we have with the Tx cleanup.
 
-> @@ -885,8 +888,10 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
->  			vma = prev;
->  		else
->  			prev = vma;
-> -		vma->vm_flags = new_flags;
-> +		vm_write_begin(vma);
-> +		WRITE_ONCE(vma->vm_flags, new_flags);
->  		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
-> +		vm_write_end(vma);
->  	}
->  	up_write(&mm->mmap_sem);
->  	mmput(mm);
-> @@ -1434,8 +1439,10 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
->  		 * the next vma was merged into the current one and
->  		 * the current one has not been updated yet.
->  		 */
-> -		vma->vm_flags = new_flags;
-> +		vm_write_begin(vma);
-> +		WRITE_ONCE(vma->vm_flags, new_flags);
->  		vma->vm_userfaultfd_ctx.ctx = ctx;
-> +		vm_write_end(vma);
->  
->  	skip:
->  		prev = vma;
-> @@ -1592,8 +1599,10 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
->  		 * the next vma was merged into the current one and
->  		 * the current one has not been updated yet.
->  		 */
-> -		vma->vm_flags = new_flags;
-> +		vm_write_begin(vma);
-> +		WRITE_ONCE(vma->vm_flags, new_flags);
->  		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
-> +		vm_write_end(vma);
->  
->  	skip:
->  		prev = vma;
-> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-> index b7e2268dfc9a..32314e9e48dd 100644
-> --- a/mm/khugepaged.c
-> +++ b/mm/khugepaged.c
-> @@ -1006,6 +1006,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->  	if (mm_find_pmd(mm, address) != pmd)
->  		goto out;
->  
-> +	vm_write_begin(vma);
->  	anon_vma_lock_write(vma->anon_vma);
->  
->  	pte = pte_offset_map(pmd, address);
-> @@ -1041,6 +1042,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->  		pmd_populate(mm, pmd, pmd_pgtable(_pmd));
->  		spin_unlock(pmd_ptl);
->  		anon_vma_unlock_write(vma->anon_vma);
-> +		vm_write_end(vma);
->  		result = SCAN_FAIL;
->  		goto out;
->  	}
-> @@ -1075,6 +1077,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->  	set_pmd_at(mm, address, pmd, _pmd);
->  	update_mmu_cache_pmd(vma, address, pmd);
->  	spin_unlock(pmd_ptl);
-> +	vm_write_end(vma);
->  
->  	*hpage = NULL;
->  
-> diff --git a/mm/madvise.c b/mm/madvise.c
-> index 4d3c922ea1a1..e328f7ab5942 100644
-> --- a/mm/madvise.c
-> +++ b/mm/madvise.c
-> @@ -184,7 +184,9 @@ static long madvise_behavior(struct vm_area_struct *vma,
->  	/*
->  	 * vm_flags is protected by the mmap_sem held in write mode.
->  	 */
-> -	vma->vm_flags = new_flags;
-> +	vm_write_begin(vma);
-> +	WRITE_ONCE(vma->vm_flags, new_flags);
-> +	vm_write_end(vma);
->  out:
->  	return error;
->  }
-> @@ -450,9 +452,11 @@ static void madvise_free_page_range(struct mmu_gather *tlb,
->  		.private = tlb,
->  	};
->  
-> +	vm_write_begin(vma);
->  	tlb_start_vma(tlb, vma);
->  	walk_page_range(addr, end, &free_walk);
->  	tlb_end_vma(tlb, vma);
-> +	vm_write_end(vma);
->  }
->  
->  static int madvise_free_single_vma(struct vm_area_struct *vma,
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> index e0e706f0b34e..2632c6f93b63 100644
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -380,8 +380,11 @@ void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new)
->  	struct vm_area_struct *vma;
->  
->  	down_write(&mm->mmap_sem);
-> -	for (vma = mm->mmap; vma; vma = vma->vm_next)
-> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-> +		vm_write_begin(vma);
->  		mpol_rebind_policy(vma->vm_policy, new);
-> +		vm_write_end(vma);
-> +	}
->  	up_write(&mm->mmap_sem);
->  }
->  
-> @@ -554,9 +557,11 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
->  {
->  	int nr_updated;
->  
-> +	vm_write_begin(vma);
->  	nr_updated = change_protection(vma, addr, end, PAGE_NONE, 0, 1);
->  	if (nr_updated)
->  		count_vm_numa_events(NUMA_PTE_UPDATES, nr_updated);
-> +	vm_write_end(vma);
->  
->  	return nr_updated;
->  }
-> @@ -657,6 +662,7 @@ static int vma_replace_policy(struct vm_area_struct *vma,
->  	if (IS_ERR(new))
->  		return PTR_ERR(new);
->  
-> +	vm_write_begin(vma);
->  	if (vma->vm_ops && vma->vm_ops->set_policy) {
->  		err = vma->vm_ops->set_policy(vma, new);
->  		if (err)
-> @@ -664,11 +670,17 @@ static int vma_replace_policy(struct vm_area_struct *vma,
->  	}
->  
->  	old = vma->vm_policy;
-> -	vma->vm_policy = new; /* protected by mmap_sem */
-> +	/*
-> +	 * The speculative page fault handler access this field without
-> +	 * hodling the mmap_sem.
-> +	 */
+> At least for UC space, it has always been accepted (and enforced) that
+> writel would not require any other barrier to order vs. previous stores
+> to memory.
 
-"The speculative page fault handler accesses this field without holding 
-vma->vm_mm->mmap_sem"
+So the one thing I would question here is if this is UC vs UC or if
+this extends to other types as well? So for x86 we could find
+references to Write Combining being flushed by a write to UC memory,
+however I have yet to find a clear explanation of what a write to UC
+does to WB. My personal inclination would be to err on the side of
+caution. I just don't want us going through and removing the wmb()
+calls because it "should" work. I would want to know for certain it
+will work.
 
-> +	WRITE_ONCE(vma->vm_policy,  new);
-> +	vm_write_end(vma);
->  	mpol_put(old);
->  
->  	return 0;
->   err_out:
-> +	vm_write_end(vma);
->  	mpol_put(new);
->  	return err;
->  }
-
-Wait, doesn't vma_dup_policy() also need to protect dst->vm_policy?
-
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -2121,7 +2121,9 @@ int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)
- 
- 	if (IS_ERR(pol))
- 		return PTR_ERR(pol);
--	dst->vm_policy = pol;
-+	vm_write_begin(dst);
-+	WRITE_ONCE(dst->vm_policy, pol);
-+	vm_write_end(dst);
- 	return 0;
- }
- 
+- Alex
