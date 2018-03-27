@@ -1,27 +1,35 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409Yt73KHszF2D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 01:53:32 +1100 (AEDT)
-Received: by mail-it0-x244.google.com with SMTP id z7-v6so16260285iti.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 07:53:32 -0700 (PDT)
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 409ZFW4VG7zF2CJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 02:10:22 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 16:10:30 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Sinan Kaya <okaya@codeaurora.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Alexander Duyck <alexander.duyck@gmail.com>, torvalds@linux-foundation.org
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180327151029.GB17494@arm.com>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
 MIME-Version: 1.0
-In-Reply-To: <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
-References: <20180323081209.31387-1-oohall@gmail.com>
- <20180323081209.31387-6-oohall@gmail.com>
- <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
-From: Oliver <oohall@gmail.com>
-Date: Wed, 28 Mar 2018 01:53:30 +1100
-Message-ID: <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
-Subject: Re: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
-To: Rob Herring <robh@kernel.org>
-Cc: "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Device Tree <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Dan Williams <dan.j.williams@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,114 +39,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 9:24 AM, Rob Herring <robh@kernel.org> wrote:
-> On Fri, Mar 23, 2018 at 07:12:09PM +1100, Oliver O'Halloran wrote:
->> Add device-tree binding documentation for the nvdimm region driver.
->>
->> Cc: devicetree@vger.kernel.org
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->> ---
->>  .../devicetree/bindings/nvdimm/nvdimm-region.txt   | 45 ++++++++++++++++++++++
->>  1 file changed, 45 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
->>
->> diff --git a/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
->> new file mode 100644
->> index 000000000000..02091117ff16
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
->> @@ -0,0 +1,45 @@
->> +Device-tree bindings for NVDIMM memory regions
->> +-----------------------------------------------------
->> +
->> +Non-volatile DIMMs are memory modules used to provide (cacheable) main memory
->
-> Are DIMMs always going to be the only form factor for NV memory?
->
-> And if you have multiple DIMMs, does each DT node correspond to a DIMM?
+Hi Alex,
 
-A nvdimm-region might correspond to a single NVDIMM, a set of
-interleaved NVDIMMs, or it might just be a chunk of normal memory that
-you want treated as a NVDIMM for some reason. The last case is useful
-for provisioning install media on servers since it allows you do
-download a DVD image, turn it into an nvdimm-region, and kexec into
-the installer which can use it as a root disk. That may seem a little
-esoteric, but it's handy and we're using a full linux environment for
-our boot loader so it's easy to make use of.
+On Tue, Mar 27, 2018 at 10:46:58AM -0400, Sinan Kaya wrote:
+> +netdev, +Alex
+> 
+> On 3/26/2018 6:00 PM, Benjamin Herrenschmidt wrote:
+> > On Mon, 2018-03-26 at 23:30 +0200, Arnd Bergmann wrote:
+> >>  Most of the drivers have a unwound loop with writeq() or something to
+> >>> do it.
+> >>
+> >> But isn't the writeq() barrier much more expensive than anything you'd
+> >> do in function calls?
+> > 
+> > It is for us, and will break any write combining.
+> > 
+> >>>>> The same document says that _relaxed() does not give that guarentee.
+> >>>>>
+> >>>>> The lwn articule on this went into some depth on the interaction with
+> >>>>> spinlocks.
+> >>>>>
+> >>>>> As far as I can see, containment in a spinlock seems to be the only
+> >>>>> different between writel and writel_relaxed..
+> >>>>
+> >>>> I was always puzzled by this: The intention of _relaxed() on ARM
+> >>>> (where it originates) was to skip the barrier that serializes DMA
+> >>>> with MMIO, not to skip the serialization between MMIO and locks.
+> >>>
+> >>> But that was never a requirement of writel(),
+> >>> Documentation/memory-barriers.txt gives an explicit example demanding
+> >>> the wmb() before writel() for ordering system memory against writel.
+> > 
+> > This is a bug in the documentation.
+> > 
+> >> Indeed, but it's in an example for when to use dma_wmb(), not wmb().
+> >> Adding Alexander Duyck to Cc, he added that section as part of
+> >> 1077fa36f23e ("arch: Add lightweight memory barriers dma_rmb() and
+> >> dma_wmb()"). Also adding the other people that were involved with that.
+> > 
+> > Linus himself made it very clear years ago. readl and writel have to
+> > order vs memory accesses.
+> > 
+> >>> I actually have no idea why ARM had that barrier, I always assumed it
+> >>> was to give program ordering to the accesses and that _relaxed allowed
+> >>> re-ordering (the usual meaning of relaxed)..
+> >>>
+> >>> But the barrier document makes it pretty clear that the only
+> >>> difference between the two is spinlock containment, and WillD wrote
+> >>> this text, so I belive it is accurate for ARM.
+> >>>
+> >>> Very confusing.
+> >>
+> >> It does mention serialization with both DMA and locks in the
+> >> section about  readX_relaxed()/writeX_relaxed(). The part
+> >> about DMA is very clear here, and I must have just forgotten
+> >> the exact semantics with regards to spinlocks. I'm still not
+> >> sure what prevents a writel() from leaking out the end of a
+> >> spinlock section that doesn't happen with writel_relaxed(), since
+> >> the barrier in writel() comes before the access, and the
+> >> spin_unlock() shouldn't affect the external buses.
+> > 
+> > So...
+> > 
+> > Historically, what happened is that we (we means whoever participated
+> > in the discussion on the list with Linus calling the shots really)
+> > decided that there was no sane way for drivers to understand a world
+> > where readl/writel didn't fully order things vs. memory accesses (ie,
+> > DMA).
+> > 
+> > So it should always be correct to do:
+> > 
+> > 	- Write to some in-memory buffer
+> > 	- writel() to kick the DMA read of that buffer
+> > 
+> > without any extra barrier.
+> > 
+> > The spinlock situation however got murky. Mostly that came up because
+> > on architecture (I forgot who, might have been ia64) has a hard time
+> > providing that consistency without making writel insanely expensive.
+> > 
+> > Thus they created mmiowb whose main purpose was precisely to order
+> > writel with a following spin_unlock.
+> > 
+> > I decided not to go down that path on power because getting all drivers
+> > "fixed" to do the right thing was going to be a losing battle, and
+> > instead added per-cpu tracking of writel in order to "escalate" to a
+> > heavier barrier in spin_unlock itself when necessary.
+> > 
+> > Now, all this happened more than a decade ago and it's possible that
+> > the understanding or expectations "shifted" over time...
+> 
+> Alex is raising concerns on the netdev list.
+> 
+> Sinan
+> "We are being told that if you use writel(), then you don't need a wmb() on
+> all architectures."
+> 
+> Alex:
+> "I'm not sure who told you that but that is incorrect, at least for
+> x86. If you attempt to use writel() without the wmb() we will have to
+> NAK the patches. We will accept the wmb() with writel_releaxed() since
+> that solves things for ARM."
+> 
+> > Jason is seeking behavior clarification for write combined buffers.
+> 
+> Alex:
+> "Don't bother. I can tell you right now that for x86 you have to have a
+> wmb() before the writel().
 
-> If not, then what if we want/need to provide power control to a DIMM?
+To clarify: are you saying that on x86 you need a wmb() prior to a writel
+if you want that writel to be ordered after prior writes to memory? Is this
+specific to WC memory or some other non-standard attribute?
 
-That would require a DIMM (and probably memory controller) specific
-driver. I've deliberately left out how regions are mapped back to
-DIMMs from the binding since it's not really clear to me how that
-should work. A phandle array pointing to each DIMM device (which could
-be anything) would do the trick, but I've found that a bit awkward to
-plumb into the model that libnvdimm expects.
+The only reason we have wmb() inside writel() on arm, arm64 and power is for
+parity with x86 because Linus (CC'd) wanted architectures to order I/O vs
+memory by default so that it was easier to write portable drivers. The
+performance impact of that implicit barrier is non-trivial, but we want the
+driver portability and I went as far as adding generic _relaxed versions for
+the cases where ordering isn't required. You seem to be suggesting that none
+of this is necessary and drivers would already run into problems on x86 if
+they didn't use wmb() explicitly in conjunction with writel, which I find
+hard to believe and is in direct contradiction with the current Linux I/O
+memory model (modulo the broken example in the dma_*mb section of
+memory-barriers.txt).
 
->> +that retains its contents across power cycles. In more practical terms, they
->> +are kind of storage device where the contents can be accessed by the CPU
->> +directly, rather than indirectly via a storage controller or similar. The an
->> +nvdimm-region specifies a physical address range that is hosted on an NVDIMM
->> +device.
->> +
->> +Bindings for the region nodes:
->> +-----------------------------
->> +
->> +Required properties:
->> +     - compatible = "nvdimm-region"
->> +
->> +     - reg = <base, size>;
->> +             The system physical address range of this nvdimm region.
->> +
->> +Optional properties:
->> +     - Any relevant NUMA assocativity properties for the target platform.
->> +     - A "volatile" property indicating that this region is actually in
->> +       normal DRAM and does not require cache flushes after each write.
->> +
->> +A complete example:
->> +--------------------
->> +
->> +/ {
->> +     #size-cells = <2>;
->> +     #address-cells = <2>;
->> +
->> +     platform {
->
-> Perhaps we need a more well defined node here. Like we have 'memory' for
-> memory nodes.
+Has something changed?
 
-I think treating it as a platform device is fine. Memory nodes are
-special since the OS needs to know where it can allocate early in boot
-and I don't see non-volatile memory as being similarly significant.
-Fundamentally an NVDIMM is just a memory mapped storage device so we
-should be able to defer looking at them until later in boot.
-
-That said you might have problems with XIP kernels and what not. I
-think that problem is better solved through other means though.
-
->> +             region@5000 {
->> +                     compatible = "nvdimm-region;
->> +                     reg = <0x00000001 0x00000000 0x00000000 0x40000000>
->> +
->> +             };
->> +
->> +             region@6000 {
->> +                     compatible = "nvdimm-region";
->> +                     reg = <0x00000001 0x00000000 0x00000000 0x40000000>
->
-> Your reg property and unit-address don't match and you have overlapping
-> regions.
-
-Yep, those are completely screwed up.
-
->> +                     volatile;
->> +             };
->> +     };
->> +};
->> --
->> 2.9.5
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Will
