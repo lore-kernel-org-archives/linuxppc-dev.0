@@ -1,27 +1,52 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tytso@thunk.org>
+Received: from imap.thunk.org (imap.thunk.org
+ [IPv6:2600:3c02::f03c:91ff:fe96:be03])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409m7K0BcTzF2F6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 09:35:40 +1100 (AEDT)
-Subject: Re: RFC on writel and writel_relaxed
-To: Alexander Duyck <alexander.duyck@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <CAKgT0UfZKBTYPCqWtBF=N5TPFrbsv0ZU+2GHMqF3J4BM9Hw4yw@mail.gmail.com>
-From: Sinan Kaya <okaya@codeaurora.org>
-Message-ID: <afcdcbdb-5caa-6ea3-d3ed-d26237f0968f@codeaurora.org>
-Date: Tue, 27 Mar 2018 18:35:34 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409mhV6VMfzF2FV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:00:58 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 18:16:35 -0400
+From: "Theodore Y. Ts'o" <tytso@mit.edu>
+To: Ilya Smith <blackzert@gmail.com>
+Cc: Michal Hocko <mhocko@kernel.org>, Matthew Wilcox <willy@infradead.org>,
+ rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
+ vgupta@synopsys.com, linux@armlinux.org.uk, tony.luck@intel.com,
+ fenghua.yu@intel.com, ralf@linux-mips.org, jejb@parisc-linux.org,
+ Helge Deller <deller@gmx.de>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com,
+ heiko.carstens@de.ibm.com, ysato@users.sourceforge.jp,
+ dalias@libc.org, davem@davemloft.net, tglx@linutronix.de,
+ mingo@redhat.com, hpa@zytor.com, x86@kernel.org, nyc@holomorphy.com,
+ viro@zeniv.linux.org.uk, arnd@arndb.de, gregkh@linuxfoundation.org,
+ deepa.kernel@gmail.com, Hugh Dickins <hughd@google.com>,
+ kstewart@linuxfoundation.org, pombredanne@nexb.com,
+ Andrew Morton <akpm@linux-foundation.org>, steve.capper@arm.com,
+ punit.agrawal@arm.com, aneesh.kumar@linux.vnet.ibm.com,
+ npiggin@gmail.com, Kees Cook <keescook@chromium.org>,
+ bhsharma@redhat.com, riel@redhat.com, nitin.m.gupta@oracle.com,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, Jan Kara <jack@suse.cz>,
+ ross.zwisler@linux.intel.com, Jerome Glisse <jglisse@redhat.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ linux-snps-arc@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Linux-MM <linux-mm@kvack.org>
+Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
+Message-ID: <20180327221635.GA3790@thunk.org>
+References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ <20180323124806.GA5624@bombadil.infradead.org>
+ <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
+ <20180326084650.GC5652@dhcp22.suse.cz>
+ <01A133F4-27DF-4AE2-80D6-B0368BF758CD@gmail.com>
+ <20180327072432.GY5652@dhcp22.suse.cz>
+ <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CAKgT0UfZKBTYPCqWtBF=N5TPFrbsv0ZU+2GHMqF3J4BM9Hw4yw@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +56,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/27/2018 5:54 PM, Alexander Duyck wrote:
-> I view the wmb() + writel_relaxed() as more of a driver owning and
-> handling this itself. Besides in the Intel Ethernet driver case it is
-> better performance as our wmb() placement for us also provides a
-> secondary barrier so we don't need to add a separate smp_wmb() to deal
-> with a potential race we have with the Tx cleanup.
+On Tue, Mar 27, 2018 at 04:51:08PM +0300, Ilya Smith wrote:
+> > /dev/[u]random is not sufficient?
+> 
+> Using /dev/[u]random makes 3 syscalls - open, read, close. This is a performance
+> issue.
 
-Thanks for the reminder. 
+You may want to take a look at the getrandom(2) system call, which is
+the recommended way getting secure random numbers from the kernel.
 
-I forgot about the double barrier optimization. wmb() + writel_relaxed()
-seems to be the best option for Intel network drivers at this moment. 
-Otherwise, we'll have to remove wmb() and throw in smp barriers there
-like you mentioned.
+> > Well, I am pretty sure userspace can implement proper free ranges
+> > tracking…
+> 
+> I think we need to know what libc developers will say on implementing ASLR in 
+> user-mode. I am pretty sure they will say ‘nether’ or ‘some-day’. And problem 
+> of ASLR will stay forever.
 
-I'll leave the changes in the Intel drivers alone.
+Why can't you send patches to the libc developers?
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+Regards,
+
+						- Ted
