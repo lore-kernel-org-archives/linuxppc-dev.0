@@ -1,49 +1,25 @@
-Return-Path: <glaubitz@physik.fu-berlin.de>
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
- [130.133.4.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409Jgl1CB2zF27x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 15:58:42 +1100 (AEDT)
-Subject: Re: [RFC] new SYSCALL_DEFINE/COMPAT_SYSCALL_DEFINE wrappers
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
- linux-mips <linux-mips@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Jiri Slaby <jslaby@suse.com>,
- the arch/x86 maintainers <x86@kernel.org>
-References: <20180318161056.5377-1-linux@dominikbrodowski.net>
- <20180318161056.5377-5-linux@dominikbrodowski.net>
- <20180318174014.GR30522@ZenIV.linux.org.uk>
- <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
- <20180318181848.GU30522@ZenIV.linux.org.uk>
- <20180319042300.GW30522@ZenIV.linux.org.uk>
- <20180319092920.tbh2xwkruegshzqe@gmail.com>
- <20180319232342.GX30522@ZenIV.linux.org.uk>
- <20180322001532.GA18399@ZenIV.linux.org.uk>
- <20180326004017.GA2211@ZenIV.linux.org.uk>
- <20180326034750.GN30522@ZenIV.linux.org.uk>
- <CA+55aFw8VGnVgaWHVFP-LChMNaoANOwT18jJEWzSCRLFeRGcmA@mail.gmail.com>
- <428751c8-6920-096b-8694-a3f1b8990bdf@physik.fu-berlin.de>
- <CA+55aFwp-T-WFN95j7u5nn2BExxviJCx1-RgD3Mnu1AN_GYD3w@mail.gmail.com>
- <8a8ee344-fb19-3ed9-f7dc-db63f703e6d3@physik.fu-berlin.de>
- <CA+55aFzHL1L_SEt_xqmJBfRRngTm4qbQGwxFvqSXw-MD2BiAOQ@mail.gmail.com>
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Message-ID: <7753539f-c72d-9e5a-eb2d-939e5514404b@physik.fu-berlin.de>
-Date: Tue, 27 Mar 2018 13:58:18 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409LnC6XpVzF25t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 17:33:35 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id x4-v6so13521434pln.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Mar 2018 23:33:34 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
+To: Joe Perches <joe@perches.com>, Jean Delvare <jdelvare@suse.com>
+Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ patches@opensource.cirrus.com
+References: <1522096136.12357.21.camel@perches.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
+Date: Mon, 26 Mar 2018 23:33:30 -0700
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFzHL1L_SEt_xqmJBfRRngTm4qbQGwxFvqSXw-MD2BiAOQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1522096136.12357.21.camel@perches.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,30 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/27/2018 12:40 PM, Linus Torvalds wrote:
-> On Mon, Mar 26, 2018 at 4:37 PM, John Paul Adrian Glaubitz
-> <glaubitz@physik.fu-berlin.de> wrote:
->>
->> What about a tarball with a minimal Debian x32 chroot? Then you can
->> install interesting packages you would like to test yourself.
+On 03/26/2018 01:28 PM, Joe Perches wrote:
+> drivers/hwmon is the most frequent user of symbolic permissions
+> like S_IRUGO in the kernel tree.
 > 
-> That probably works fine.
+> $ git grep -w -P "S_[A-Z]{5,5}" | \
+>    cut -f1 -d: | cut -f1-2 -d"/" | sed -r 's/[A-Za-z0-9_-]+\.[ch]$//' | \
+>    sort | uniq -c | sort -rn | head
+>     3862 drivers/hwmon
+>      814 drivers/scsi
+>      763 drivers/net
+>      242 drivers/infiniband
+>      184 drivers/staging
+>      181 drivers/usb
+>      158 fs/proc
+>      150 fs/xfs
+>      148 fs/
+>      142 drivers/misc
+> 
+> But using octal and not symbolic permissions is preferred by many
+> as it can be more readable.
+> 
+> https://lkml.org/lkml/2016/8/2/1945
+> 
+> Rather than converting these piecemeal, perhaps just do them all
+> at once via a trivial script like the below:
+> 
+> $ git grep -w -P --name-only "S_[A-Z]{5,5}" drivers/hwmon | \
+>    xargs ./scripts/checkpatch.pl -f --types=symbolic_perms --fix-inplace
+> $ git grep -w -P --name-only "S_[A-Z]{5,5}" drivers/hwmon | \
+>    xargs ./scripts/checkpatch.pl -f --types=symbolic_perms --fix-inplace
+> 
+> It's run twice because checkpatch only does 1 conversion per line
+> and there are some multiple instance lines.
+> 
+> This currently results in a 669 KB patch which is too large
+> to post but can be easily generated when appropriate.
 
-I just created a fresh Debian x32 unstable chroot using this command:
+I have something similar using coccinelle, which has the added benefit
+of also adjusting multi-line alignments. But then I am hesitant to pull
+it in because I don't really see the point. A more intelligent approach
+would be to convert hwmon drivers to the latest API, and/or to introduce
+more intelligent macros such as SENSOR_DEVICE_ATTR_{RO,RW,WO}. But that
+would require active work as well as reviewers, and especially the latter
+is extremely difficult if not impossible to find for the hwmon subsystem.
 
-$ debootstrap --no-check-gpg --variant=minbase --arch=x32 unstable debian-x32-unstable http://ftp.ports.debian.org/debian-ports
+Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
+that is maybe not entirely surprising, and I think we are good as we are.
+I am happy to accept patches updating permissions as other changes are made
+to a file, but I don't see a pressing need to change all files just to make
+statistics happy (and backports more difficult).
 
-It can be downloaded from my Debian webspace along checksum files for
-verification:
-
-> https://people.debian.org/~glaubitz/chroots/
-
-Let me know if you run into any issues.
-
-Adrian
-
--- 
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer - glaubitz@debian.org
-`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+Guenter
