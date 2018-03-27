@@ -1,38 +1,38 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409khj1STPzF25T
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:31:00 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id f5-v6so216475plj.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:31:00 -0700 (PDT)
-Date: Tue, 27 Mar 2018 14:30:57 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: Re: [PATCH v9 07/24] mm: VMA sequence count
-In-Reply-To: <1520963994-28477-8-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803271429230.36401@chino.kir.corp.google.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-8-git-send-email-ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409kmB3mZDzF22N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:34:02 +1100 (AEDT)
+Message-ID: <1522186396.7364.61.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Duyck <alexander.duyck@gmail.com>, Will Deacon
+ <will.deacon@arm.com>
+Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>, Jason
+ Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>, Oliver
+ <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, Alexander Duyck
+ <alexander.h.duyck@redhat.com>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 28 Mar 2018 08:33:16 +1100
+In-Reply-To: <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,76 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Mar 2018, Laurent Dufour wrote:
+On Tue, 2018-03-27 at 11:54 -0700, Alexander Duyck wrote:
+> As far as I know the code has been this way for a while, something
+> like 2002, when the barrier was already present in e1000. However
+> there it was calling out weakly ordered models "such as IA-64". Since
+> then pretty much all the hardware based network drivers at this point
+> have similar code floating around with wmb() in place to prevent
+> issues on weak ordered memory systems.
+> 
+> So in any case we still need to be careful as there are architectures
+> that are depending on this even if they might not be x86. :-/
 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index faf85699f1a1..5898255d0aeb 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -558,6 +558,10 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
->  	else
->  		mm->highest_vm_end = vm_end_gap(vma);
->  
-> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> +	seqcount_init(&vma->vm_sequence);
-> +#endif
-> +
->  	/*
->  	 * vma->vm_prev wasn't known when we followed the rbtree to find the
->  	 * correct insertion point for that vma. As a result, we could not
-> @@ -692,6 +696,30 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->  	long adjust_next = 0;
->  	int remove_next = 0;
->  
-> +	/*
-> +	 * Why using vm_raw_write*() functions here to avoid lockdep's warning ?
-> +	 *
-> +	 * Locked is complaining about a theoretical lock dependency, involving
-> +	 * 3 locks:
-> +	 *   mapping->i_mmap_rwsem --> vma->vm_sequence --> fs_reclaim
-> +	 *
-> +	 * Here are the major path leading to this dependency :
-> +	 *  1. __vma_adjust() mmap_sem  -> vm_sequence -> i_mmap_rwsem
-> +	 *  2. move_vmap() mmap_sem -> vm_sequence -> fs_reclaim
-> +	 *  3. __alloc_pages_nodemask() fs_reclaim -> i_mmap_rwsem
-> +	 *  4. unmap_mapping_range() i_mmap_rwsem -> vm_sequence
-> +	 *
-> +	 * So there is no way to solve this easily, especially because in
-> +	 * unmap_mapping_range() the i_mmap_rwsem is grab while the impacted
-> +	 * VMAs are not yet known.
-> +	 * However, the way the vm_seq is used is guarantying that we will
-> +	 * never block on it since we just check for its value and never wait
-> +	 * for it to move, see vma_has_changed() and handle_speculative_fault().
-> +	 */
-> +	vm_raw_write_begin(vma);
-> +	if (next)
-> +		vm_raw_write_begin(next);
-> +
->  	if (next && !insert) {
->  		struct vm_area_struct *exporter = NULL, *importer = NULL;
->  
+Well, we need to clarify that once and for all, because as I wrote
+earlier, it was decreed by Linus more than a decade ago that writel
+would be fully ordered by itself vs. previous memory stores (at least
+on UC memory).
 
-Eek, what about later on:
+This is why we added sync's to writel on powerpc and later ARM added
+similar barriers to theirs.
 
-		/*
-		 * Easily overlooked: when mprotect shifts the boundary,
-		 * make sure the expanding vma has anon_vma set if the
-		 * shrinking vma had, to cover any anon pages imported.
-		 */
-		if (exporter && exporter->anon_vma && !importer->anon_vma) {
-			int error;
+This is also why writel_relaxed was added (though much later), since
+what writel_relaxed does is to life that specific requirement.
 
-			importer->anon_vma = exporter->anon_vma;
-			error = anon_vma_clone(importer, exporter);
-			if (error)
-				return error;
-		}
+IE. If what you say is true and wmb() is needed on x86, then
+writel_relaxed is now completely useless...
 
-This needs
-
-if (error) {
-	if (next && next != vma)
-		vm_raw_write_end(next);
-	vm_raw_write_end(vma);
-	return error;
-}
+Ben.
