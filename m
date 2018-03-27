@@ -1,30 +1,27 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 409Rqn4819zF2B2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 21:21:09 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 11:21:17 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Yury Norov <ynorov@caviumnetworks.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180327102116.GA2464@arm.com>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409Rzy1gy9zF2BL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 21:28:13 +1100 (AEDT)
+Received: by mail-pl0-x243.google.com with SMTP id b7-v6so13820894plr.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 03:28:13 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
+To: Joe Perches <joe@perches.com>, Jean Delvare <jdelvare@suse.com>
+Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ patches@opensource.cirrus.com
+References: <1522096136.12357.21.camel@perches.com>
+ <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
+ <1522136107.12357.58.camel@perches.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
+Date: Tue, 27 Mar 2018 03:28:10 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180325175004.28162-3-ynorov@caviumnetworks.com>
+In-Reply-To: <1522136107.12357.58.camel@perches.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,46 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
-> kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
-> If CPU is in extended quiescent state (idle task or nohz_full userspace), this
-> work may be done at the exit of this state. Delaying synchronization helps to
-> save power if CPU is in idle state and decrease latency for real-time tasks.
+On 03/27/2018 12:35 AM, Joe Perches wrote:
+> On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
+>> Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
 > 
-> This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
-> code to delay syncronization.
+> fyi: It's marked Maintained in MAINTAINERS
 > 
-> For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
-> isolated task would be fatal, as it breaks isolation. The approach with delaying
-> of synchronization work helps to maintain isolated state.
-> 
-> I've tested it with test from task isolation series on ThunderX2 for more than
-> 10 hours (10k giga-ticks) without breaking isolation.
-> 
-> Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
-> ---
->  arch/arm64/kernel/insn.c |  2 +-
->  include/linux/smp.h      |  2 ++
->  kernel/smp.c             | 24 ++++++++++++++++++++++++
->  mm/slab.c                |  2 +-
->  4 files changed, 28 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-> index 2718a77da165..9d7c492e920e 100644
-> --- a/arch/arm64/kernel/insn.c
-> +++ b/arch/arm64/kernel/insn.c
-> @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
->  			 * synchronization.
->  			 */
->  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
-> -			kick_all_cpus_sync();
-> +			kick_active_cpus_sync();
->  			return ret;
->  		}
->  	}
 
-I think this means that runtime modifications to the kernel text might not
-be picked up by CPUs coming out of idle. Shouldn't we add an ISB on that
-path to avoid executing stale instructions?
+I did not say that it was not maintained, and I am aware of the information
+in the MAINTAINERS file, thanks.
 
-Will
+Guenter
