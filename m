@@ -1,35 +1,27 @@
-Return-Path: <mathieu.desnoyers@efficios.com>
-Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0231.hostedemail.com
+ [216.40.44.231])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409bq21gZ1zF28F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:21:01 +1100 (AEDT)
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Peter Zijlstra <peterz@infradead.org>,
- "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
- Boqun Feng <boqun.feng@gmail.com>, Andy Lutomirski <luto@amacapital.net>,
- Dave Watson <davejwatson@fb.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
- Paul Turner <pjt@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@arm.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, Andrew Hunter <ahh@google.com>,
- Andi Kleen <andi@firstfloor.org>, Chris Lameter <cl@linux.com>,
- Ben Maurer <bmaurer@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
- Josh Triplett <josh@joshtriplett.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH for 4.17 12/21] powerpc: Wire up cpu_opv system call
-Date: Tue, 27 Mar 2018 12:05:33 -0400
-Message-Id: <20180327160542.28457-13-mathieu.desnoyers@efficios.com>
-In-Reply-To: <20180327160542.28457-1-mathieu.desnoyers@efficios.com>
-References: <20180327160542.28457-1-mathieu.desnoyers@efficios.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409cWw4fFfzF2D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:52:59 +1100 (AEDT)
+Message-ID: <1522169571.12357.81.camel@perches.com>
+Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
+From: Joe Perches <joe@perches.com>
+To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>
+Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ patches@opensource.cirrus.com
+Date: Tue, 27 Mar 2018 09:52:51 -0700
+In-Reply-To: <9e908abe-2dc8-dbba-97f9-d9614fa4b199@roeck-us.net>
+References: <1522096136.12357.21.camel@perches.com>
+ <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
+ <1522136107.12357.58.camel@perches.com>
+ <5ec8703b-2979-7a1d-fbc3-bd528d7a5e29@roeck-us.net>
+ <1522151285.12357.78.camel@perches.com>
+ <9e908abe-2dc8-dbba-97f9-d9614fa4b199@roeck-us.net>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,52 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Boqun Feng <boqun.feng@gmail.com>
-CC: Peter Zijlstra <peterz@infradead.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+On Tue, 2018-03-27 at 08:44 -0700, Guenter Roeck wrote:
+> On 03/27/2018 04:48 AM, Joe Perches wrote:
+> > On Tue, 2018-03-27 at 03:28 -0700, Guenter Roeck wrote:
+> > > On 03/27/2018 12:35 AM, Joe Perches wrote:
+> > > > On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
+> > > > > Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
+[]
+> > In what sense do you mean hwmon is obsolete?
+[]
+> _I_ did not say it was obsolete. It was described as obsolete by a maintainer
+> of a different subsystem at a conference a couple of years ago. If I wasn't too
+> lazy, I could try to find the presentation, but I don't see the point.
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 45d4d37495fd..4131825b5a05 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -393,3 +393,4 @@ SYSCALL(pkey_alloc)
- SYSCALL(pkey_free)
- SYSCALL(pkey_mprotect)
- SYSCALL(rseq)
-+SYSCALL(cpu_opv)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 1e9708632dce..c19379f0a32e 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define NR_syscalls		388
-+#define NR_syscalls		389
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index ac5ba55066dd..f7a221bdb5df 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -399,5 +399,6 @@
- #define __NR_pkey_free		385
- #define __NR_pkey_mprotect	386
- #define __NR_rseq		387
-+#define __NR_cpu_opv		388
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.11.0
+Then it seems you were just being obscure on purpose.
+You wrote obsolete without context.
+
+cheers, Joe
