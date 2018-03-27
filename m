@@ -1,28 +1,39 @@
-Return-Path: <alexander.duyck@gmail.com>
-Received: from mail-wm0-x232.google.com (mail-wm0-x232.google.com
- [IPv6:2a00:1450:400c:c09::232])
+Return-Path: <rientjes@google.com>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409lCV1NKSzF28W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:54:13 +1100 (AEDT)
-Received: by mail-wm0-x232.google.com with SMTP id b127so518984wmf.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:54:13 -0700 (PDT)
-MIME-Version: 1.0
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 27 Mar 2018 14:54:09 -0700
-Message-ID: <CAKgT0UfZKBTYPCqWtBF=N5TPFrbsv0ZU+2GHMqF3J4BM9Hw4yw@mail.gmail.com>
-Subject: Re: RFC on writel and writel_relaxed
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
- Jason Gunthorpe <jgg@ziepe.ca>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409lHL3FXjzF29F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:57:34 +1100 (AEDT)
+Received: by mail-pl0-x242.google.com with SMTP id u11-v6so277151plq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:57:34 -0700 (PDT)
+Date: Tue, 27 Mar 2018 14:57:31 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ Andrew Morton <akpm@linux-foundation.org>, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
  Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 08/24] mm: Protect VMA modifications using VMA sequence
+ count
+In-Reply-To: <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803271454390.41987@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +43,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 2:35 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2018-03-27 at 10:46 -0400, Sinan Kaya wrote:
->>  combined buffers.
->>
->> Alex:
->> "Don't bother. I can tell you right now that for x86 you have to have a
->> wmb() before the writel().
->
-> No, this isn't the semantics of writel. You shouldn't need it unless
-> something changed and we need to revisit our complete understanding of
-> *all* MMIO accessor semantics.
+On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-The issue seems to be that there have been two different ways of
-dealing with this. There has historically been a number of different
-drivers that have been carrying this wmb() workaround since something
-like 2002. I get that the semantics for writel might have changed
-since then, but those of us who already have the wmb() in our drivers
-will be very wary of anyone wanting to go through and remove them
-since writel is supposed to be "good enough". I would much rather err
-on the side of caution here.
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 5898255d0aeb..d6533cb85213 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -847,17 +847,18 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+>  	}
+>  
+>  	if (start != vma->vm_start) {
+> -		vma->vm_start = start;
+> +		WRITE_ONCE(vma->vm_start, start);
+>  		start_changed = true;
+>  	}
+>  	if (end != vma->vm_end) {
+> -		vma->vm_end = end;
+> +		WRITE_ONCE(vma->vm_end, end);
+>  		end_changed = true;
+>  	}
+> -	vma->vm_pgoff = pgoff;
+> +	WRITE_ONCE(vma->vm_pgoff, pgoff);
+>  	if (adjust_next) {
+> -		next->vm_start += adjust_next << PAGE_SHIFT;
+> -		next->vm_pgoff += adjust_next;
+> +		WRITE_ONCE(next->vm_start,
+> +			   next->vm_start + (adjust_next << PAGE_SHIFT));
+> +		WRITE_ONCE(next->vm_pgoff, next->vm_pgoff + adjust_next);
+>  	}
+>  
+>  	if (root) {
+> @@ -1781,6 +1782,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+>  out:
+>  	perf_event_mmap(vma);
+>  
+> +	vm_write_begin(vma);
+>  	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
+>  	if (vm_flags & VM_LOCKED) {
+>  		if (!((vm_flags & VM_SPECIAL) || is_vm_hugetlb_page(vma) ||
+> @@ -1803,6 +1805,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+>  	vma->vm_flags |= VM_SOFTDIRTY;
+>  
+>  	vma_set_page_prot(vma);
+> +	vm_write_end(vma);
+>  
+>  	return addr;
+>  
 
-I view the wmb() + writel_relaxed() as more of a driver owning and
-handling this itself. Besides in the Intel Ethernet driver case it is
-better performance as our wmb() placement for us also provides a
-secondary barrier so we don't need to add a separate smp_wmb() to deal
-with a potential race we have with the Tx cleanup.
+Shouldn't this also protect vma->vm_flags?
 
-> At least for UC space, it has always been accepted (and enforced) that
-> writel would not require any other barrier to order vs. previous stores
-> to memory.
-
-So the one thing I would question here is if this is UC vs UC or if
-this extends to other types as well? So for x86 we could find
-references to Write Combining being flushed by a write to UC memory,
-however I have yet to find a clear explanation of what a write to UC
-does to WB. My personal inclination would be to err on the side of
-caution. I just don't want us going through and removing the wmb()
-calls because it "should" work. I would want to know for certain it
-will work.
-
-- Alex
+diff --git a/mm/mmap.c b/mm/mmap.c
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1796,7 +1796,8 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+ 					vma == get_gate_vma(current->mm)))
+ 			mm->locked_vm += (len >> PAGE_SHIFT);
+ 		else
+-			vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
++			WRITE_ONCE(vma->vm_flags,
++				   vma->vm_flags & VM_LOCKED_CLEAR_MASK);
+ 	}
+ 
+ 	if (file)
+@@ -1809,7 +1810,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
+ 	 * then new mapped in-place (which must be aimed as
+ 	 * a completely new data area).
+ 	 */
+-	vma->vm_flags |= VM_SOFTDIRTY;
++	WRITE_ONCE(vma->vm_flags, vma->vm_flags | VM_SOFTDIRTY);
+ 
+ 	vma_set_page_prot(vma);
+ 	vm_write_end(vma);
