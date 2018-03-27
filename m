@@ -1,16 +1,41 @@
-Return-Path: <npiggin@gmail.com>
-Date: Tue, 27 Mar 2018 17:38:57 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
- OPAL errors
-Message-ID: <20180327173857.0d195b66@roar.ozlabs.ibm.com>
-In-Reply-To: <ad352964-1b12-8556-a876-a10e84336a5e@linux.vnet.ibm.com>
-References: <20180326150233.23089-1-npiggin@gmail.com>
- <ad352964-1b12-8556-a876-a10e84336a5e@linux.vnet.ibm.com>
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409NdG23kfzF1xj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 18:56:49 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id f16so10244189qth.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 00:56:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180326222756.GJ15554@ziepe.ca>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 27 Mar 2018 09:56:47 +0200
+Message-ID: <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Sinan Kaya <okaya@codeaurora.org>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,36 +45,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Mar 2018 12:47:31 +0530
-Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
+On Tue, Mar 27, 2018 at 12:27 AM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> On Tue, Mar 27, 2018 at 09:01:57AM +1100, Benjamin Herrenschmidt wrote:
+>> On Mon, 2018-03-26 at 17:46 -0400, Sinan Kaya wrote:
+>
+> I even see patches adding wmb() based on actual observed memory
+> corruption during testing on Intel:
+>
+> https://patchwork.kernel.org/patch/10177207/
+>
+> So you think all of this is unnecessary and writel is totally strongly
+> ordered, even on multi-socket Intel?
 
-> On 03/26/2018 08:32 PM, Nicholas Piggin wrote:
-> > opal_nvram_write currently just assumes success if it encounters an
-> > error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
-> > on other errors instead.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >   arch/powerpc/platforms/powernv/opal-nvram.c | 2 ++
-> >   1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
-> > index 9db4398ded5d..13bf625dc3e8 100644
-> > --- a/arch/powerpc/platforms/powernv/opal-nvram.c
-> > +++ b/arch/powerpc/platforms/powernv/opal-nvram.c
-> > @@ -59,6 +59,8 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
-> >   		if (rc == OPAL_BUSY_EVENT)
-> >   			opal_poll_events(NULL);  
-> 
-> Current code does continuous poller here. May be we have small breathing time 
-> here. What you say?
+This example adds a wmb() between two writes to a coherent DMA
+area, it is definitely required there. I'm pretty sure I've never seen
+any bug reports pointing to a missing wmb() between memory
+and MMIO write accesses, but if you remember seeing them in the
+list, maybe you can look again for some evidence of something going
+wrong on x86 without it?
 
-Yeah that's probably not a bad idea. I cc'ed skiboot list -- what's a
-reasonable delay between retries? Linux has a bunch of similar kind of
-loops if you grep for opal_poll_events and OPAL_BUSY. It would be good
-to convert them all to a standard form with a standard delay as
-recommended by OPAL, and where specific calls have different delay
-for a good reason, that would be documented in the OPAL API docs.
-
-Thanks,
-Nick
+       Arnd
