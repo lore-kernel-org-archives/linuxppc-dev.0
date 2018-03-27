@@ -1,33 +1,35 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 409TFG3N5yzF2C4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 22:24:49 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 12:24:57 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>,
- Sinan Kaya <okaya@codeaurora.org>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Alexander Duyck <alexander.h.duyck@redhat.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409THN31vQzF2CK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 22:26:39 +1100 (AEDT)
+Message-ID: <1522149944.7364.50.camel@kernel.crashing.org>
 Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180327112456.GA15531@arm.com>
-References: <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>, Sinan Kaya <okaya@codeaurora.org>, David
+ Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
+ list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
+ Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
+Date: Tue, 27 Mar 2018 22:25:44 +1100
+In-Reply-To: <20180327110258.GF2464@arm.com>
+References: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
  <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
  <1522101717.7364.14.camel@kernel.crashing.org>
  <20180326222756.GJ15554@ziepe.ca>
  <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
- <20180327094159.GA29373@arm.com>
- <1522149602.7364.44.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1522149602.7364.44.camel@kernel.crashing.org>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <20180327095745.GB29373@arm.com>
+ <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
+ <20180327100944.GD29373@arm.com>
+ <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
+ <20180327110258.GF2464@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,28 +39,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 10:20:02PM +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2018-03-27 at 10:42 +0100, Will Deacon wrote:
-> > > 
-> > > This example adds a wmb() between two writes to a coherent DMA
-> > > area, it is definitely required there. I'm pretty sure I've never seen
-> > > any bug reports pointing to a missing wmb() between memory
-> > > and MMIO write accesses, but if you remember seeing them in the
-> > > list, maybe you can look again for some evidence of something going
-> > > wrong on x86 without it?
-> > 
-> > If this is just about ordering accesses to coherent DMA, then using
-> > dma_wmb() instead will be much better performance on arm/arm64.
+On Tue, 2018-03-27 at 12:02 +0100, Will Deacon wrote:
+>       can see it now has ownership.  Note that, when using writel(), a prior
+> >       wmb() is not needed to guarantee that the cache coherent memory writes
+> >       have completed before writing to the cache incoherent MMIO region.
+> >       The cheaper writel_relaxed() does not guarantee the DMA to be visible
+> >       to the device and must not be used here.
 > 
-> Ah, something we should look into for powerpc as well, as we could use
-> an lwsync for that which is also cheaper than a full sync wmb does.
+> Fair enough. I'd rather people used _relaxed by default, but I have to admit
+> that it will probably just result in them getting things wrong. Just a tiny
+> bit of wordsmithing brings this to:
+
+I prefer people using writel() by default for the simple reason that
+99% of writels out there are configuration stuff for which the
+performance difference doesn't matter, and people will just get it
+wrong.
+
+Let's focus on the rare fast path for optimisation.
 > 
-> dma_wmb() is basically the same as smp_wmb() without the CONFIG_SMP
-> conditional right ?
-
-Almost -- the slight change we have on arm64 is to say that it's
-"outer-shareable", which means it also orders non-cacheable accesses
-in the case that dma_alloc_coherent is used to allocate a consistent
-buffer for a non-coherent device.
-
-Will
+> diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
+> index a863009849a3..3247547d1c36 100644
+> --- a/Documentation/memory-barriers.txt
+> +++ b/Documentation/memory-barriers.txt
+> @@ -1909,9 +1909,6 @@ There are some more advanced barrier functions:
+>                 /* assign ownership */
+>                 desc->status = DEVICE_OWN;
+>  
+> -               /* force memory to sync before notifying device via MMIO */
+> -               wmb();
+> -
+>                 /* notify device of new descriptors */
+>                 writel(DESC_NOTIFY, doorbell);
+>         }
+> @@ -1919,11 +1916,15 @@ There are some more advanced barrier functions:
+>       The dma_rmb() allows us guarantee the device has released ownership
+>       before we read the data from the descriptor, and the dma_wmb() allows
+>       us to guarantee the data is written to the descriptor before the device
+> -     can see it now has ownership.  The wmb() is needed to guarantee that the
+> -     cache coherent memory writes have completed before attempting a write to
+> -     the cache incoherent MMIO region.
+> -
+> -     See Documentation/DMA-API.txt for more information on consistent memory.
+> +     can see it now has ownership.  Note that, when using writel(), a prior
+> +     wmb() is not needed to guarantee that the cache coherent memory writes
+> +     have completed before writing to the MMIO region.  The cheaper
+> +     writel_relaxed() does not provide this guarantee and must not be used
+> +     here.
+> +
+> +     See the subsection "Kernel I/O barrier effects" for more information on
+> +     relaxed I/O accessors and the Documentation/DMA-API.txt file for more
+> +     information on consistent memory.
+>  
+>  
+>  MMIO WRITE BARRIER
+> 
+> 
+> If you're happy with that, I'll send it as a proper patch.
+> 
+> Cheers,
+> 
+> Will
