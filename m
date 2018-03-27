@@ -1,23 +1,39 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0224.hostedemail.com
- [216.40.44.224])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409MBl1jWmzF24x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 17:52:13 +1100 (AEDT)
-Message-ID: <1522133524.12357.56.camel@perches.com>
-Subject: Re: [PATCH script] hwmon: Use octal not symbolic permissions
-From: Joe Perches <joe@perches.com>
-To: Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>
-Cc: linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- patches@opensource.cirrus.com
-Date: Mon, 26 Mar 2018 23:52:04 -0700
-In-Reply-To: <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
-References: <1522096136.12357.21.camel@perches.com>
- <9b112651-d0cf-5f3b-b643-3328028a95cd@roeck-us.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409MDD41D4zF27p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 17:53:32 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2R6q1qT011463
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 02:53:29 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2gyfrutt9g-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 02:53:29 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 27 Mar 2018 07:53:27 +0100
+Date: Tue, 27 Mar 2018 12:23:23 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 3/6] powerpc/kexec: Disable ftrace before switching to
+ the new kernel
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
+ Steven Rostedt <rostedt@goodmis.org>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, sathnaga@linux.vnet.ibm.com
+References: <cover.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5589149f6dd1b627f5eadafa086fb5e716bc0622.1521713762.git.naveen.n.rao@linux.vnet.ibm.com>
+ <877epylba7.fsf@concordia.ellerman.id.au>
+ <874ll2lb7i.fsf@concordia.ellerman.id.au>
+In-Reply-To: <874ll2lb7i.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1522133470.66h1c66sqp.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +43,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-03-26 at 23:33 -0700, Guenter Roeck wrote:
-> On 03/26/2018 01:28 PM, Joe Perches wrote:
-> > drivers/hwmon is the most frequent user of symbolic permissions
-> > like S_IRUGO in the kernel tree.
-[]
-> I have something similar using coccinelle,
+Michael Ellerman wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>=20
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>>> If function_graph tracer is enabled during kexec, we see the below
+>>> exception in the simulator:
+>>> 	root@(none):/# kexec -e
+>>> 	kvm: exiting hardware virtualization
+>>> 	kexec_core: Starting new kernel
+>>> 	[   19.262020070,5] OPAL: Switch to big-endian OS
+>>> 	kexec: Starting switchover sequence.
+>>> 	Interrupt to 0xC000000000004380 from 0xC000000000004380
+>>> 	** Execution stopped: Continuous Interrupt, Instruction caused excepti=
+on,  **
+>>>
+>>> Now that we have a more effective way to disable ftrace, let's use that
+>>> before switching to a new kernel during kexec.
+>>>
+>>> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>>> ---
+>>>  arch/powerpc/kernel/machine_kexec.c | 6 ++----
+>>>  1 file changed, 2 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/=
+machine_kexec.c
+>>> index 2694d078741d..4a1b24a9dd61 100644
+>>> --- a/arch/powerpc/kernel/machine_kexec.c
+>>> +++ b/arch/powerpc/kernel/machine_kexec.c
+>>> @@ -95,16 +95,14 @@ void arch_crash_save_vmcoreinfo(void)
+>>>   */
+>>>  void machine_kexec(struct kimage *image)
+>>>  {
+>>> -	int save_ftrace_enabled;
+>>> -
+>>> -	save_ftrace_enabled =3D __ftrace_enabled_save();
+>>> +	get_paca()->ftrace_disabled =3D 1;
+>>
+>> This doesn't compile on 32-bit:
+>>
+>>   Failed: powerpc-next/corenet32_smp_defconfig/powerpc-5.3		(http://kiss=
+kb.ozlabs.ibm.com/kisskb/buildresult/13314085/log/)
+>>     /kisskb/src/arch/powerpc/kernel/machine_kexec.c:105:12: error: inval=
+id type argument of '->' (have 'int')
+>>     /kisskb/src/arch/powerpc/kernel/machine_kexec.c:98:12: error: invali=
+d type argument of '->' (have 'int')
+>>     /kisskb/src/arch/powerpc/kernel/machine_kexec.c:98:2: error: implici=
+t declaration of function 'get_paca' [-Werror=3Dimplicit-function-declarati=
+on]
 
-Please post the script.
-I expect it doesn't work quite the same as checkpatch.
+Hmm... pmac32_defconfig built fine for me, so I thought we are ok there.
 
-> which has the added benefit
-> of also adjusting multi-line alignments.
+>>
+>>
+>> A wrapper is probably best that does nothing on 32-bit.
+>=20
+> Actually it should probably do __ftrace_enabled_save() etc. on 32-bit,
+> like the existing code does.
 
-That's a benefit, but it's makes it difficult to review.
-I also have the same patch rewrap alignment post this
-automated patch, done with emacs formatting.
+Agree. In hindsight, I'm not updating ftrace_32.S, so I think I will=20
+gate this with CONFIG_PPC64.
 
-This patch is somewhat simpler to review which is why
-it's not sent along with this script.
+Thanks,
+Naveen
 
-> But then I am hesitant to pull
-> it in because I don't really see the point. A more intelligent approach
-> would be to convert hwmon drivers to the latest API, and/or to introduce
-> more intelligent macros such as SENSOR_DEVICE_ATTR_{RO,RW,WO}.
-
-Another approach would be to separate the const bits
-from the non-const bits to reduce data.
-
-> But that
-> would require active work as well as reviewers, and especially the latter
-> is extremely difficult if not impossible to find for the hwmon subsystem.
-
-[]
-
-> Since the hwmon subsystem has been labeled as both "obsolete" and "obscure",
-> that is maybe not entirely surprising, and I think we are good as we are.
-
-Maybe true.
-
-> I am happy to accept patches updating permissions as other changes are made
-> to a file, but I don't see a pressing need to change all files just to make
-> statistics happy (and backports more difficult).
-
-Not sure backports are a real issue.
-
-If it were a real issue, the updated permissions are noise
-and shouldn't be accepted for the other changes.
+=
