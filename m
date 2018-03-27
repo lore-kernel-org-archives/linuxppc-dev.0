@@ -1,36 +1,42 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexander.duyck@gmail.com>
+Received: from mail-wr0-x22c.google.com (mail-wr0-x22c.google.com
+ [IPv6:2a00:1450:400c:c0c::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409dTj2lSmzF24J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:36:08 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2RHZcZ6129222
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 13:36:05 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2gyt4y9etu-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 13:36:05 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 27 Mar 2018 11:36:04 -0600
-References: <20180223183344.21038-1-bauerman@linux.vnet.ibm.com>
- <20180223185020.GI5559@ram.oc3035372033.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH 1/2] selftests/powerpc: Add ptrace tests for Protection
- Key registers
-In-reply-to: <20180223185020.GI5559@ram.oc3035372033.ibm.com>
-Date: Tue, 27 Mar 2018 14:35:55 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409gD365DGzF2Fc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 05:54:24 +1100 (AEDT)
+Received: by mail-wr0-x22c.google.com with SMTP id o8so23427714wra.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 11:54:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87sh8ll8uc.fsf@morokweng.localdomain>
+In-Reply-To: <20180327151029.GB17494@arm.com>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 27 Mar 2018 11:54:19 -0700
+Message-ID: <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Will Deacon <will.deacon@arm.com>
+Cc: Sinan Kaya <okaya@codeaurora.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,582 +46,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Ram Pai <linuxram@us.ibm.com> writes:
-
-> On Fri, Feb 23, 2018 at 03:33:43PM -0300, Thiago Jung Bauermann wrote:
->> This test exercises read and write access to the AMR, IAMR and UAMOR.
->> 
+On Tue, Mar 27, 2018 at 8:10 AM, Will Deacon <will.deacon@arm.com> wrote:
+> Hi Alex,
 >
-> Tested-by: Ram Pai <linuxram@us.ibm.com>
-> Acked-by: Ram Pai <linuxram@us.ibm.com>
+> On Tue, Mar 27, 2018 at 10:46:58AM -0400, Sinan Kaya wrote:
+>> +netdev, +Alex
+>>
+>> On 3/26/2018 6:00 PM, Benjamin Herrenschmidt wrote:
+>> > On Mon, 2018-03-26 at 23:30 +0200, Arnd Bergmann wrote:
+>> >>  Most of the drivers have a unwound loop with writeq() or something to
+>> >>> do it.
+>> >>
+>> >> But isn't the writeq() barrier much more expensive than anything you'd
+>> >> do in function calls?
+>> >
+>> > It is for us, and will break any write combining.
+>> >
+>> >>>>> The same document says that _relaxed() does not give that guarentee.
+>> >>>>>
+>> >>>>> The lwn articule on this went into some depth on the interaction with
+>> >>>>> spinlocks.
+>> >>>>>
+>> >>>>> As far as I can see, containment in a spinlock seems to be the only
+>> >>>>> different between writel and writel_relaxed..
+>> >>>>
+>> >>>> I was always puzzled by this: The intention of _relaxed() on ARM
+>> >>>> (where it originates) was to skip the barrier that serializes DMA
+>> >>>> with MMIO, not to skip the serialization between MMIO and locks.
+>> >>>
+>> >>> But that was never a requirement of writel(),
+>> >>> Documentation/memory-barriers.txt gives an explicit example demanding
+>> >>> the wmb() before writel() for ordering system memory against writel.
+>> >
+>> > This is a bug in the documentation.
+>> >
+>> >> Indeed, but it's in an example for when to use dma_wmb(), not wmb().
+>> >> Adding Alexander Duyck to Cc, he added that section as part of
+>> >> 1077fa36f23e ("arch: Add lightweight memory barriers dma_rmb() and
+>> >> dma_wmb()"). Also adding the other people that were involved with that.
+>> >
+>> > Linus himself made it very clear years ago. readl and writel have to
+>> > order vs memory accesses.
+>> >
+>> >>> I actually have no idea why ARM had that barrier, I always assumed it
+>> >>> was to give program ordering to the accesses and that _relaxed allowed
+>> >>> re-ordering (the usual meaning of relaxed)..
+>> >>>
+>> >>> But the barrier document makes it pretty clear that the only
+>> >>> difference between the two is spinlock containment, and WillD wrote
+>> >>> this text, so I belive it is accurate for ARM.
+>> >>>
+>> >>> Very confusing.
+>> >>
+>> >> It does mention serialization with both DMA and locks in the
+>> >> section about  readX_relaxed()/writeX_relaxed(). The part
+>> >> about DMA is very clear here, and I must have just forgotten
+>> >> the exact semantics with regards to spinlocks. I'm still not
+>> >> sure what prevents a writel() from leaking out the end of a
+>> >> spinlock section that doesn't happen with writel_relaxed(), since
+>> >> the barrier in writel() comes before the access, and the
+>> >> spin_unlock() shouldn't affect the external buses.
+>> >
+>> > So...
+>> >
+>> > Historically, what happened is that we (we means whoever participated
+>> > in the discussion on the list with Linus calling the shots really)
+>> > decided that there was no sane way for drivers to understand a world
+>> > where readl/writel didn't fully order things vs. memory accesses (ie,
+>> > DMA).
+>> >
+>> > So it should always be correct to do:
+>> >
+>> >     - Write to some in-memory buffer
+>> >     - writel() to kick the DMA read of that buffer
+>> >
+>> > without any extra barrier.
+>> >
+>> > The spinlock situation however got murky. Mostly that came up because
+>> > on architecture (I forgot who, might have been ia64) has a hard time
+>> > providing that consistency without making writel insanely expensive.
+>> >
+>> > Thus they created mmiowb whose main purpose was precisely to order
+>> > writel with a following spin_unlock.
+>> >
+>> > I decided not to go down that path on power because getting all drivers
+>> > "fixed" to do the right thing was going to be a losing battle, and
+>> > instead added per-cpu tracking of writel in order to "escalate" to a
+>> > heavier barrier in spin_unlock itself when necessary.
+>> >
+>> > Now, all this happened more than a decade ago and it's possible that
+>> > the understanding or expectations "shifted" over time...
+>>
+>> Alex is raising concerns on the netdev list.
+>>
+>> Sinan
+>> "We are being told that if you use writel(), then you don't need a wmb() on
+>> all architectures."
+>>
+>> Alex:
+>> "I'm not sure who told you that but that is incorrect, at least for
+>> x86. If you attempt to use writel() without the wmb() we will have to
+>> NAK the patches. We will accept the wmb() with writel_releaxed() since
+>> that solves things for ARM."
+>>
+>> > Jason is seeking behavior clarification for write combined buffers.
+>>
+>> Alex:
+>> "Don't bother. I can tell you right now that for x86 you have to have a
+>> wmb() before the writel().
+>
+> To clarify: are you saying that on x86 you need a wmb() prior to a writel
+> if you want that writel to be ordered after prior writes to memory? Is this
+> specific to WC memory or some other non-standard attribute?
 
-Ping? Can this and patch 2/2 go in v4.17?
+Note, I am not a CPU guy so this is just my interpretation. It is my
+understanding that the wmb(), aka sfence, is needed on x86 to sort out
+writes between Write-back(WB) system memory and Strong Uncacheable
+(UC) MMIO accesses.
 
->> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
->> ---
->>  tools/testing/selftests/powerpc/include/reg.h      |   1 +
->>  tools/testing/selftests/powerpc/ptrace/Makefile    |   5 +-
->>  tools/testing/selftests/powerpc/ptrace/child.h     | 130 ++++++++
->>  .../testing/selftests/powerpc/ptrace/ptrace-pkey.c | 326 +++++++++++++++++++++
->>  tools/testing/selftests/powerpc/ptrace/ptrace.h    |  37 +++
->>  5 files changed, 498 insertions(+), 1 deletion(-)
->>  create mode 100644 tools/testing/selftests/powerpc/ptrace/child.h
->>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
->> 
->> diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
->> index 4afdebcce4cd..7f348c059bc2 100644
->> --- a/tools/testing/selftests/powerpc/include/reg.h
->> +++ b/tools/testing/selftests/powerpc/include/reg.h
->> @@ -54,6 +54,7 @@
->>  #define SPRN_DSCR_PRIV 0x11	/* Privilege State DSCR */
->>  #define SPRN_DSCR      0x03	/* Data Stream Control Register */
->>  #define SPRN_PPR       896	/* Program Priority Register */
->> +#define SPRN_AMR       13	/* Authority Mask Register - problem state */
->> 
->>  /* TEXASR register bits */
->>  #define TEXASR_FC	0xFE00000000000000
->> diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
->> index 480305266504..707ba734faf2 100644
->> --- a/tools/testing/selftests/powerpc/ptrace/Makefile
->> +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
->> @@ -1,7 +1,7 @@
->>  # SPDX-License-Identifier: GPL-2.0
->>  TEST_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
->>                ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
->> -              ptrace-tm-spd-vsx ptrace-tm-spr
->> +              ptrace-tm-spd-vsx ptrace-tm-spr ptrace-pkey
->> 
->>  include ../../lib.mk
->> 
->> @@ -9,6 +9,9 @@ all: $(TEST_PROGS)
->> 
->>  CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm -fno-pie
->> 
->> +ptrace-pkey: ../harness.c ../utils.c ../lib/reg.S ptrace.h child.h ptrace-pkey.c
->> +	$(LINK.c) $^ $(LDLIBS) -pthread -o $@
->> +
->>  $(TEST_PROGS): ../harness.c ../utils.c ../lib/reg.S ptrace.h
->> 
->>  clean:
->> diff --git a/tools/testing/selftests/powerpc/ptrace/child.h b/tools/testing/selftests/powerpc/ptrace/child.h
->> new file mode 100644
->> index 000000000000..40c1a6d92111
->> --- /dev/null
->> +++ b/tools/testing/selftests/powerpc/ptrace/child.h
->> @@ -0,0 +1,130 @@
->> +// SPDX-License-Identifier: GPL-2.0+
->> +/*
->> + * Helper functions to sync execution between parent and child processes.
->> + *
->> + * Copyright 2018, Thiago Jung Bauermann, IBM Corporation.
->> + */
->> +#include <stdio.h>
->> +#include <stdbool.h>
->> +#include <semaphore.h>
->> +
->> +/*
->> + * Information in a shared memory location for synchronization between child and
->> + * parent.
->> + */
->> +struct child_sync {
->> +	/* The parent waits on this semaphore. */
->> +	sem_t sem_parent;
->> +
->> +	/* If true, the child should give up as well. */
->> +	bool parent_gave_up;
->> +
->> +	/* The child waits on this semaphore. */
->> +	sem_t sem_child;
->> +
->> +	/* If true, the parent should give up as well. */
->> +	bool child_gave_up;
->> +};
->> +
->> +#define CHILD_FAIL_IF(x, sync)						\
->> +	do {								\
->> +		if (x) {						\
->> +			fprintf(stderr,					\
->> +				"[FAIL] Test FAILED on line %d\n", __LINE__); \
->> +			(sync)->child_gave_up = true;			\
->> +			prod_parent(sync);				\
->> +			return 1;					\
->> +		}							\
->> +	} while (0)
->> +
->> +#define PARENT_FAIL_IF(x, sync)						\
->> +	do {								\
->> +		if (x) {						\
->> +			fprintf(stderr,					\
->> +				"[FAIL] Test FAILED on line %d\n", __LINE__); \
->> +			(sync)->parent_gave_up = true;			\
->> +			prod_child(sync);				\
->> +			return 1;					\
->> +		}							\
->> +	} while (0)
->> +
->> +int init_child_sync(struct child_sync *sync)
->> +{
->> +	int ret;
->> +
->> +	ret = sem_init(&sync->sem_parent, 1, 0);
->> +	if (ret) {
->> +		perror("Semaphore initialization failed");
->> +		return 1;
->> +	}
->> +
->> +	ret = sem_init(&sync->sem_child, 1, 0);
->> +	if (ret) {
->> +		perror("Semaphore initialization failed");
->> +		return 1;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +void destroy_child_sync(struct child_sync *sync)
->> +{
->> +	sem_destroy(&sync->sem_parent);
->> +	sem_destroy(&sync->sem_child);
->> +}
->> +
->> +int wait_child(struct child_sync *sync)
->> +{
->> +	int ret;
->> +
->> +	/* Wait until the child prods us. */
->> +	ret = sem_wait(&sync->sem_parent);
->> +	if (ret) {
->> +		perror("Error waiting for child");
->> +		return 1;
->> +	}
->> +
->> +	return sync->child_gave_up;
->> +}
->> +
->> +int prod_child(struct child_sync *sync)
->> +{
->> +	int ret;
->> +
->> +	/* Unblock the child now. */
->> +	ret = sem_post(&sync->sem_child);
->> +	if (ret) {
->> +		perror("Error prodding child");
->> +		return 1;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +int wait_parent(struct child_sync *sync)
->> +{
->> +	int ret;
->> +
->> +	/* Wait until the parent prods us. */
->> +	ret = sem_wait(&sync->sem_child);
->> +	if (ret) {
->> +		perror("Error waiting for parent");
->> +		return 1;
->> +	}
->> +
->> +	return sync->parent_gave_up;
->> +}
->> +
->> +int prod_parent(struct child_sync *sync)
->> +{
->> +	int ret;
->> +
->> +	/* Unblock the parent now. */
->> +	ret = sem_post(&sync->sem_parent);
->> +	if (ret) {
->> +		perror("Error prodding parent");
->> +		return 1;
->> +	}
->> +
->> +	return 0;
->> +}
->> diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
->> new file mode 100644
->> index 000000000000..8332b9338d39
->> --- /dev/null
->> +++ b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
->> @@ -0,0 +1,326 @@
->> +// SPDX-License-Identifier: GPL-2.0+
->> +/*
->> + * Ptrace test for Memory Protection Key registers
->> + *
->> + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
->> + * Copyright (C) 2018 IBM Corporation.
->> + */
->> +#include "ptrace.h"
->> +#include "child.h"
->> +
->> +#ifndef __NR_pkey_alloc
->> +#define __NR_pkey_alloc		384
->> +#endif
->> +
->> +#ifndef __NR_pkey_free
->> +#define __NR_pkey_free		385
->> +#endif
->> +
->> +#ifndef NT_PPC_PKEY
->> +#define NT_PPC_PKEY		0x110
->> +#endif
->> +
->> +#ifndef PKEY_DISABLE_EXECUTE
->> +#define PKEY_DISABLE_EXECUTE	0x4
->> +#endif
->> +
->> +#define AMR_BITS_PER_PKEY 2
->> +#define PKEY_REG_BITS (sizeof(u64) * 8)
->> +#define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey + 1) * AMR_BITS_PER_PKEY))
->> +
->> +static const char user_read[] = "[User Read (Running)]";
->> +static const char user_write[] = "[User Write (Running)]";
->> +static const char ptrace_read_running[] = "[Ptrace Read (Running)]";
->> +static const char ptrace_write_running[] = "[Ptrace Write (Running)]";
->> +
->> +/* Information shared between the parent and the child. */
->> +struct shared_info {
->> +	struct child_sync child_sync;
->> +
->> +	/* AMR value the parent expects to read from the child. */
->> +	unsigned long amr1;
->> +
->> +	/* AMR value the parent is expected to write to the child. */
->> +	unsigned long amr2;
->> +
->> +	/* AMR value that ptrace should refuse to write to the child. */
->> +	unsigned long amr3;
->> +
->> +	/* IAMR value the parent expects to read from the child. */
->> +	unsigned long expected_iamr;
->> +
->> +	/* UAMOR value the parent expects to read from the child. */
->> +	unsigned long expected_uamor;
->> +
->> +	/*
->> +	 * IAMR and UAMOR values that ptrace should refuse to write to the child
->> +	 * (even though they're valid ones) because userspace doesn't have
->> +	 * access to those registers.
->> +	 */
->> +	unsigned long new_iamr;
->> +	unsigned long new_uamor;
->> +};
->> +
->> +static int sys_pkey_alloc(unsigned long flags, unsigned long init_access_rights)
->> +{
->> +	return syscall(__NR_pkey_alloc, flags, init_access_rights);
->> +}
->> +
->> +static int sys_pkey_free(int pkey)
->> +{
->> +	return syscall(__NR_pkey_free, pkey);
->> +}
->> +
->> +static int child(struct shared_info *info)
->> +{
->> +	unsigned long reg;
->> +	bool disable_execute = true;
->> +	int pkey1, pkey2, pkey3;
->> +	int ret;
->> +
->> +	/* Wait until parent fills out the initial register values. */
->> +	ret = wait_parent(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	/* Get some pkeys so that we can change their bits in the AMR. */
->> +	pkey1 = sys_pkey_alloc(0, PKEY_DISABLE_EXECUTE);
->> +	if (pkey1 < 0) {
->> +		pkey1 = sys_pkey_alloc(0, 0);
->> +		CHILD_FAIL_IF(pkey1 < 0, &info->child_sync);
->> +
->> +		disable_execute = false;
->> +	}
->> +
->> +	pkey2 = sys_pkey_alloc(0, 0);
->> +	CHILD_FAIL_IF(pkey2 < 0, &info->child_sync);
->> +
->> +	pkey3 = sys_pkey_alloc(0, 0);
->> +	CHILD_FAIL_IF(pkey3 < 0, &info->child_sync);
->> +
->> +	info->amr1 |= 3ul << pkeyshift(pkey1);
->> +	info->amr2 |= 3ul << pkeyshift(pkey2);
->> +	info->amr3 |= info->amr2 | 3ul << pkeyshift(pkey3);
->> +
->> +	if (disable_execute)
->> +		info->expected_iamr |= 1ul << pkeyshift(pkey1);
->> +
->> +	info->expected_uamor |= 3ul << pkeyshift(pkey1) |
->> +				3ul << pkeyshift(pkey2);
->> +	info->new_iamr |= 1ul << pkeyshift(pkey1) | 1ul << pkeyshift(pkey2);
->> +	info->new_uamor |= 3ul << pkeyshift(pkey1);
->> +
->> +	/*
->> +	 * We won't use pkey3. We just want a plausible but invalid key to test
->> +	 * whether ptrace will let us write to AMR bits we are not supposed to.
->> +	 *
->> +	 * This also tests whether the kernel restores the UAMOR permissions
->> +	 * after a key is freed.
->> +	 */
->> +	sys_pkey_free(pkey3);
->> +
->> +	printf("%-30s AMR: %016lx pkey1: %d pkey2: %d pkey3: %d\n",
->> +	       user_write, info->amr1, pkey1, pkey2, pkey3);
->> +
->> +	mtspr(SPRN_AMR, info->amr1);
->> +
->> +	/* Wait for parent to read our AMR value and write a new one. */
->> +	ret = prod_parent(&info->child_sync);
->> +	CHILD_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait_parent(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	reg = mfspr(SPRN_AMR);
->> +
->> +	printf("%-30s AMR: %016lx\n", user_read, reg);
->> +
->> +	CHILD_FAIL_IF(reg != info->amr2, &info->child_sync);
->> +
->> +	/*
->> +	 * Wait for parent to try to write an invalid AMR value.
->> +	 */
->> +	ret = prod_parent(&info->child_sync);
->> +	CHILD_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait_parent(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	reg = mfspr(SPRN_AMR);
->> +
->> +	printf("%-30s AMR: %016lx\n", user_read, reg);
->> +
->> +	CHILD_FAIL_IF(reg != info->amr2, &info->child_sync);
->> +
->> +	/*
->> +	 * Wait for parent to try to write an IAMR and a UAMOR value. We can't
->> +	 * verify them, but we can verify that the AMR didn't change.
->> +	 */
->> +	ret = prod_parent(&info->child_sync);
->> +	CHILD_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait_parent(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	reg = mfspr(SPRN_AMR);
->> +
->> +	printf("%-30s AMR: %016lx\n", user_read, reg);
->> +
->> +	CHILD_FAIL_IF(reg != info->amr2, &info->child_sync);
->> +
->> +	/* Now let parent now that we are finished. */
->> +
->> +	ret = prod_parent(&info->child_sync);
->> +	CHILD_FAIL_IF(ret, &info->child_sync);
->> +
->> +	return TEST_PASS;
->> +}
->> +
->> +static int parent(struct shared_info *info, pid_t pid)
->> +{
->> +	unsigned long regs[3];
->> +	int ret, status;
->> +
->> +	/*
->> +	 * Get the initial values for AMR, IAMR and UAMOR and communicate them
->> +	 * to the child.
->> +	 */
->> +	ret = ptrace_read_regs(pid, NT_PPC_PKEY, regs, 3);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	info->amr1 = info->amr2 = info->amr3 = regs[0];
->> +	info->expected_iamr = info->new_iamr = regs[1];
->> +	info->expected_uamor = info->new_uamor = regs[2];
->> +
->> +	/* Wake up child so that it can set itself up. */
->> +	ret = prod_child(&info->child_sync);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait_child(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	/* Verify that we can read the pkey registers from the child. */
->> +	ret = ptrace_read_regs(pid, NT_PPC_PKEY, regs, 3);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	printf("%-30s AMR: %016lx IAMR: %016lx UAMOR: %016lx\n",
->> +	       ptrace_read_running, regs[0], regs[1], regs[2]);
->> +
->> +	PARENT_FAIL_IF(regs[0] != info->amr1, &info->child_sync);
->> +	PARENT_FAIL_IF(regs[1] != info->expected_iamr, &info->child_sync);
->> +	PARENT_FAIL_IF(regs[2] != info->expected_uamor, &info->child_sync);
->> +
->> +	/* Write valid AMR value in child. */
->> +	ret = ptrace_write_regs(pid, NT_PPC_PKEY, &info->amr2, 1);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	printf("%-30s AMR: %016lx\n", ptrace_write_running, info->amr2);
->> +
->> +	/* Wake up child so that it can verify it changed. */
->> +	ret = prod_child(&info->child_sync);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait_child(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	/* Write invalid AMR value in child. */
->> +	ret = ptrace_write_regs(pid, NT_PPC_PKEY, &info->amr3, 1);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	printf("%-30s AMR: %016lx\n", ptrace_write_running, info->amr3);
->> +
->> +	/* Wake up child so that it can verify it didn't change. */
->> +	ret = prod_child(&info->child_sync);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait_child(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	/* Try to write to IAMR. */
->> +	regs[0] = info->amr1;
->> +	regs[1] = info->new_iamr;
->> +	ret = ptrace_write_regs(pid, NT_PPC_PKEY, regs, 2);
->> +	PARENT_FAIL_IF(!ret, &info->child_sync);
->> +
->> +	printf("%-30s AMR: %016lx IAMR: %016lx\n",
->> +	       ptrace_write_running, regs[0], regs[1]);
->> +
->> +	/* Try to write to IAMR and UAMOR. */
->> +	regs[2] = info->new_uamor;
->> +	ret = ptrace_write_regs(pid, NT_PPC_PKEY, regs, 3);
->> +	PARENT_FAIL_IF(!ret, &info->child_sync);
->> +
->> +	printf("%-30s AMR: %016lx IAMR: %016lx UAMOR: %016lx\n",
->> +	       ptrace_write_running, regs[0], regs[1], regs[2]);
->> +
->> +	/* Verify that all registers still have their expected values. */
->> +	ret = ptrace_read_regs(pid, NT_PPC_PKEY, regs, 3);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	printf("%-30s AMR: %016lx IAMR: %016lx UAMOR: %016lx\n",
->> +	       ptrace_read_running, regs[0], regs[1], regs[2]);
->> +
->> +	PARENT_FAIL_IF(regs[0] != info->amr2, &info->child_sync);
->> +	PARENT_FAIL_IF(regs[1] != info->expected_iamr, &info->child_sync);
->> +	PARENT_FAIL_IF(regs[2] != info->expected_uamor, &info->child_sync);
->> +
->> +	/* Wake up child so that it can verify AMR didn't change and wrap up. */
->> +	ret = prod_child(&info->child_sync);
->> +	PARENT_FAIL_IF(ret, &info->child_sync);
->> +
->> +	ret = wait(&status);
->> +	if (ret != pid) {
->> +		printf("Child's exit status not captured\n");
->> +		ret = TEST_PASS;
->> +	} else if (!WIFEXITED(status)) {
->> +		printf("Child exited abnormally\n");
->> +		ret = TEST_FAIL;
->> +	} else
->> +		ret = WEXITSTATUS(status) ? TEST_FAIL : TEST_PASS;
->> +
->> +	return ret;
->> +}
->> +
->> +static int ptrace_pkey(void)
->> +{
->> +	struct shared_info *info;
->> +	int shm_id;
->> +	int ret;
->> +	pid_t pid;
->> +
->> +	shm_id = shmget(IPC_PRIVATE, sizeof(*info), 0777 | IPC_CREAT);
->> +	info = shmat(shm_id, NULL, 0);
->> +
->> +	ret = init_child_sync(&info->child_sync);
->> +	if (ret)
->> +		return ret;
->> +
->> +	pid = fork();
->> +	if (pid < 0) {
->> +		perror("fork() failed");
->> +		ret = TEST_FAIL;
->> +	} else if (pid == 0)
->> +		ret = child(info);
->> +	else
->> +		ret = parent(info, pid);
->> +
->> +	shmdt(info);
->> +
->> +	if (pid) {
->> +		destroy_child_sync(&info->child_sync);
->> +		shmctl(shm_id, IPC_RMID, NULL);
->> +	}
->> +
->> +	return ret;
->> +}
->> +
->> +int main(int argc, char *argv[])
->> +{
->> +	return test_harness(ptrace_pkey, "ptrace_pkey");
->> +}
->> diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
->> index 19fb825270a1..d2c9c4c2b5ee 100644
->> --- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
->> +++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
->> @@ -102,6 +102,43 @@ int cont_trace(pid_t child)
->>  	return TEST_PASS;
->>  }
->> 
->> +int ptrace_read_regs(pid_t child, unsigned long type, unsigned long regs[],
->> +		     int n)
->> +{
->> +	struct iovec iov;
->> +	long ret;
->> +
->> +	FAIL_IF(start_trace(child));
->> +
->> +	iov.iov_base = regs;
->> +	iov.iov_len = n * sizeof(unsigned long);
->> +
->> +	ret = ptrace(PTRACE_GETREGSET, child, type, &iov);
->> +	FAIL_IF(ret != 0);
->> +
->> +	FAIL_IF(stop_trace(child));
->> +
->> +	return TEST_PASS;
->> +}
->> +
->> +long ptrace_write_regs(pid_t child, unsigned long type, unsigned long regs[],
->> +		       int n)
->> +{
->> +	struct iovec iov;
->> +	long ret;
->> +
->> +	FAIL_IF(start_trace(child));
->> +
->> +	iov.iov_base = regs;
->> +	iov.iov_len = n * sizeof(unsigned long);
->> +
->> +	ret = ptrace(PTRACE_SETREGSET, child, type, &iov);
->> +
->> +	FAIL_IF(stop_trace(child));
->> +
->> +	return ret;
->> +}
->> +
->>  /* TAR, PPR, DSCR */
->>  int show_tar_registers(pid_t child, unsigned long *out)
->>  {
+I was hoping to be able to cite something in the software developers
+manual (https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf),
+but that tends to be pretty vague. I have re-read section 22.34
+(volume 3B) several times and I am still not clear on if it says we
+need the sfence or not. It is a matter of figuring out what the impact
+of store buffers and caching are for WB versus UC memory.
 
+> The only reason we have wmb() inside writel() on arm, arm64 and power is for
+> parity with x86 because Linus (CC'd) wanted architectures to order I/O vs
+> memory by default so that it was easier to write portable drivers. The
+> performance impact of that implicit barrier is non-trivial, but we want the
+> driver portability and I went as far as adding generic _relaxed versions for
+> the cases where ordering isn't required. You seem to be suggesting that none
+> of this is necessary and drivers would already run into problems on x86 if
+> they didn't use wmb() explicitly in conjunction with writel, which I find
+> hard to believe and is in direct contradiction with the current Linux I/O
+> memory model (modulo the broken example in the dma_*mb section of
+> memory-barriers.txt).
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Is the issue specifically related to memory versus I/O or are there
+potential ordering issues for MMIO versus MMIO? I recall when working
+on the dma_*mb section that the ARM barriers were much more complex
+versus some of the other architectures. One big difference that I can
+see for the x86 versus what you define for the "_relaxed" version of
+things is the ordering of MMIO operations with respect to locked
+transactions. I know x86 forces all MMIO operations to be completed
+before you can process any locked operation.
+
+> Has something changed?
+>
+> Will
+
+As far as I know the code has been this way for a while, something
+like 2002, when the barrier was already present in e1000. However
+there it was calling out weakly ordered models "such as IA-64". Since
+then pretty much all the hardware based network drivers at this point
+have similar code floating around with wmb() in place to prevent
+issues on weak ordered memory systems.
+
+So in any case we still need to be careful as there are architectures
+that are depending on this even if they might not be x86. :-/
+
+- Alex
