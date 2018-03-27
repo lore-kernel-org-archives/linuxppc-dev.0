@@ -1,38 +1,36 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409kQ64hFfzF2D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:18:21 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id n11so122929pgp.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 14:18:21 -0700 (PDT)
-Date: Tue, 27 Mar 2018 14:18:17 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: Re: [PATCH v9 06/24] mm: make pte_unmap_same compatible with SPF
-In-Reply-To: <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803271417510.31115@chino.kir.corp.google.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409kb10yh1zF2Ct
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 08:26:04 +1100 (AEDT)
+Message-ID: <1522185881.7364.55.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sinan Kaya <okaya@codeaurora.org>, Will Deacon <will.deacon@arm.com>,
+ Arnd Bergmann <arnd@arndb.de>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>,
+ Oliver <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
+ Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Mar 2018 08:24:41 +1100
+In-Reply-To: <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
+References: <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <ebb36fd4-62e2-394a-219f-686c45a6dc75@codeaurora.org>
+ <1522101717.7364.14.camel@kernel.crashing.org>
+ <20180326222756.GJ15554@ziepe.ca>
+ <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <20180327095745.GB29373@arm.com>
+ <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
+ <20180327100944.GD29373@arm.com>
+ <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
+ <20180327110258.GF2464@arm.com>
+ <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,69 +40,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Mar 2018, Laurent Dufour wrote:
+On Tue, 2018-03-27 at 09:46 -0400, Sinan Kaya wrote:
+> On 3/27/2018 7:02 AM, Will Deacon wrote:
+> > -     See Documentation/DMA-API.txt for more information on consistent memory.
+> > +     can see it now has ownership.  Note that, when using writel(), a prior
+> > +     wmb() is not needed to guarantee that the cache coherent memory writes
+> > +     have completed before writing to the MMIO region.  The cheaper
+> > +     writel_relaxed() does not provide this guarantee and must not be used
+> > +     here.
+> 
+> Can we say the same thing for iowrite32() and iowrite32be(). I also see wmb()
+> in front of these.
 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 2f3e98edc94a..b6432a261e63 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1199,6 +1199,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
->  #define VM_FAULT_NEEDDSYNC  0x2000	/* ->fault did not modify page tables
->  					 * and needs fsync() to complete (for
->  					 * synchronous page faults in DAX) */
-> +#define VM_FAULT_PTNOTSAME 0x4000	/* Page table entries have changed */
->  
->  #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
->  			 VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 21b1212a0892..4bc7b0bdcb40 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2309,21 +2309,29 @@ static bool pte_map_lock(struct vm_fault *vmf)
->   * parts, do_swap_page must check under lock before unmapping the pte and
->   * proceeding (but do_wp_page is only called after already making such a check;
->   * and do_anonymous_page can safely check later on).
-> + *
-> + * pte_unmap_same() returns:
-> + *	0			if the PTE are the same
-> + *	VM_FAULT_PTNOTSAME	if the PTE are different
-> + *	VM_FAULT_RETRY		if the VMA has changed in our back during
-> + *				a speculative page fault handling.
->   */
-> -static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
-> -				pte_t *page_table, pte_t orig_pte)
-> +static inline int pte_unmap_same(struct vm_fault *vmf)
->  {
-> -	int same = 1;
-> +	int ret = 0;
-> +
->  #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
->  	if (sizeof(pte_t) > sizeof(unsigned long)) {
-> -		spinlock_t *ptl = pte_lockptr(mm, pmd);
-> -		spin_lock(ptl);
-> -		same = pte_same(*page_table, orig_pte);
-> -		spin_unlock(ptl);
-> +		if (pte_spinlock(vmf)) {
-> +			if (!pte_same(*vmf->pte, vmf->orig_pte))
-> +				ret = VM_FAULT_PTNOTSAME;
-> +			spin_unlock(vmf->ptl);
-> +		} else
-> +			ret = VM_FAULT_RETRY;
->  	}
->  #endif
-> -	pte_unmap(page_table);
-> -	return same;
-> +	pte_unmap(vmf->pte);
-> +	return ret;
->  }
->  
->  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
-> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
->  	int exclusive = 0;
->  	int ret = 0;
+Yes, they should have the same semantics as writel
 
-Initialization is now unneeded.
-
-Otherwise:
-
-Acked-by: David Rientjes <rientjes@google.com>
+Cheers,
+Ben.
