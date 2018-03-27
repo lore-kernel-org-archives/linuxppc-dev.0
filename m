@@ -1,25 +1,49 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <glaubitz@physik.fu-berlin.de>
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
+ [130.133.4.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409JXp2pPPzF27V
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 15:52:42 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409Jgl1CB2zF27x
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 15:58:42 +1100 (AEDT)
+Subject: Re: [RFC] new SYSCALL_DEFINE/COMPAT_SYSCALL_DEFINE wrappers
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@kernel.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips <linux-mips@linux-mips.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, "Linux Kernel
- Mailing List" <linux-kernel@vger.kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: linux-next: manual merge of the powerpc tree with the
- powerpc-fixes tree
-In-Reply-To: <20180327101125.145e4dc5@canb.auug.org.au>
-References: <20180327101125.145e4dc5@canb.auug.org.au>
-Date: Tue, 27 Mar 2018 15:52:41 +1100
-Message-ID: <87lgeejf1i.fsf@concordia.ellerman.id.au>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Jiri Slaby <jslaby@suse.com>,
+ the arch/x86 maintainers <x86@kernel.org>
+References: <20180318161056.5377-1-linux@dominikbrodowski.net>
+ <20180318161056.5377-5-linux@dominikbrodowski.net>
+ <20180318174014.GR30522@ZenIV.linux.org.uk>
+ <CA+55aFwuZCpAZRpsTGiUmG065ZHHpj+03_NeWiy-OGkMGw7e3g@mail.gmail.com>
+ <20180318181848.GU30522@ZenIV.linux.org.uk>
+ <20180319042300.GW30522@ZenIV.linux.org.uk>
+ <20180319092920.tbh2xwkruegshzqe@gmail.com>
+ <20180319232342.GX30522@ZenIV.linux.org.uk>
+ <20180322001532.GA18399@ZenIV.linux.org.uk>
+ <20180326004017.GA2211@ZenIV.linux.org.uk>
+ <20180326034750.GN30522@ZenIV.linux.org.uk>
+ <CA+55aFw8VGnVgaWHVFP-LChMNaoANOwT18jJEWzSCRLFeRGcmA@mail.gmail.com>
+ <428751c8-6920-096b-8694-a3f1b8990bdf@physik.fu-berlin.de>
+ <CA+55aFwp-T-WFN95j7u5nn2BExxviJCx1-RgD3Mnu1AN_GYD3w@mail.gmail.com>
+ <8a8ee344-fb19-3ed9-f7dc-db63f703e6d3@physik.fu-berlin.de>
+ <CA+55aFzHL1L_SEt_xqmJBfRRngTm4qbQGwxFvqSXw-MD2BiAOQ@mail.gmail.com>
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Message-ID: <7753539f-c72d-9e5a-eb2d-939e5514404b@physik.fu-berlin.de>
+Date: Tue, 27 Mar 2018 13:58:18 +0900
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <CA+55aFzHL1L_SEt_xqmJBfRRngTm4qbQGwxFvqSXw-MD2BiAOQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +53,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+On 03/27/2018 12:40 PM, Linus Torvalds wrote:
+> On Mon, Mar 26, 2018 at 4:37 PM, John Paul Adrian Glaubitz
+> <glaubitz@physik.fu-berlin.de> wrote:
+>>
+>> What about a tarball with a minimal Debian x32 chroot? Then you can
+>> install interesting packages you would like to test yourself.
+> 
+> That probably works fine.
 
-> Hi all,
->
-> Today's linux-next merge of the powerpc tree got a conflict in:
->
->   arch/powerpc/include/asm/cputable.h
->   arch/powerpc/kernel/dt_cpu_ftrs.c
->
-> between commit:
->
->   a5d4b5891c2f ("powerpc/mm: Fixup tlbie vs store ordering issue on POWER9")
->
-> from the powerpc-fixes tree and commits:
->
->   9bbf0b576d32 ("powerpc: Free up CPU feature bits on 64-bit machines")
->   b5af4f279323 ("powerpc: Add CPU feature bits for TM bug workarounds on POWER9 v2.2")
->
-> from the powerpc tree.
+I just created a fresh Debian x32 unstable chroot using this command:
 
-Thanks, yeah that was a bit of disaster.
+$ debootstrap --no-check-gpg --variant=minbase --arch=x32 unstable debian-x32-unstable http://ftp.ports.debian.org/debian-ports
 
-I'll merge fixes into next before sending to Linus.
+It can be downloaded from my Debian webspace along checksum files for
+verification:
 
-cheers
+> https://people.debian.org/~glaubitz/chroots/
+
+Let me know if you run into any issues.
+
+Adrian
+
+-- 
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer - glaubitz@debian.org
+`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
