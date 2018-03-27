@@ -1,30 +1,51 @@
-Return-Path: <srs0=upsz=gr=yahoo.com=tath76@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409Vr52c4vzDqqH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:36:37 +1100 (AEDT)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 409Vr42CFPz8vnZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:36:36 +1100 (AEDT)
-Received: from sonic306-2.consmr.mail.bf2.yahoo.com
- (sonic306-2.consmr.mail.bf2.yahoo.com [74.6.132.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 409Vr26pKgz9s1R
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2018 23:36:34 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 12:36:28 +0000 (UTC)
-From: T T <tath76@yahoo.com>
-To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: mauricfo@linux.vnet.ibm.com
-Message-ID: <1464025410.301444.1522154188153@mail.yahoo.com>
-In-Reply-To: <20180327120153.31612-10-mpe@ellerman.id.au>
-References: <20180327120153.31612-1-mpe@ellerman.id.au>
- <20180327120153.31612-10-mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 10/10] powerpc/64s: Wire up cpu_show_spectre_v2()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409YXp4QMSzF2Cy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 01:38:34 +1100 (AEDT)
+Date: Tue, 27 Mar 2018 16:38:20 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Ilya Smith <blackzert@gmail.com>
+Cc: Matthew Wilcox <willy@infradead.org>, rth@twiddle.net,
+ ink@jurassic.park.msu.ru, mattst88@gmail.com, vgupta@synopsys.com,
+ linux@armlinux.org.uk, tony.luck@intel.com, fenghua.yu@intel.com,
+ ralf@linux-mips.org, jejb@parisc-linux.org,
+ Helge Deller <deller@gmx.de>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com,
+ heiko.carstens@de.ibm.com, ysato@users.sourceforge.jp,
+ dalias@libc.org, davem@davemloft.net, tglx@linutronix.de,
+ mingo@redhat.com, hpa@zytor.com, x86@kernel.org, nyc@holomorphy.com,
+ viro@zeniv.linux.org.uk, arnd@arndb.de, gregkh@linuxfoundation.org,
+ deepa.kernel@gmail.com, Hugh Dickins <hughd@google.com>,
+ kstewart@linuxfoundation.org, pombredanne@nexb.com,
+ Andrew Morton <akpm@linux-foundation.org>, steve.capper@arm.com,
+ punit.agrawal@arm.com, aneesh.kumar@linux.vnet.ibm.com,
+ npiggin@gmail.com, Kees Cook <keescook@chromium.org>,
+ bhsharma@redhat.com, riel@redhat.com, nitin.m.gupta@oracle.com,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, Jan Kara <jack@suse.cz>,
+ ross.zwisler@linux.intel.com, Jerome Glisse <jglisse@redhat.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>,
+ linux-snps-arc@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Linux-MM <linux-mm@kvack.org>
+Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
+Message-ID: <20180327143820.GH5652@dhcp22.suse.cz>
+References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ <20180323124806.GA5624@bombadil.infradead.org>
+ <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
+ <20180326084650.GC5652@dhcp22.suse.cz>
+ <01A133F4-27DF-4AE2-80D6-B0368BF758CD@gmail.com>
+ <20180327072432.GY5652@dhcp22.suse.cz>
+ <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----=_Part_301443_784540807.1522154188151"
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,165 +55,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------=_Part_301443_784540807.1522154188151
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue 27-03-18 16:51:08, Ilya Smith wrote:
+> 
+> > On 27 Mar 2018, at 10:24, Michal Hocko <mhocko@kernel.org> wrote:
+> > 
+> > On Mon 26-03-18 22:45:31, Ilya Smith wrote:
+> >> 
+> >>> On 26 Mar 2018, at 11:46, Michal Hocko <mhocko@kernel.org> wrote:
+> >>> 
+> >>> On Fri 23-03-18 20:55:49, Ilya Smith wrote:
+> >>>> 
+> >>>>> On 23 Mar 2018, at 15:48, Matthew Wilcox <willy@infradead.org> wrote:
+> >>>>> 
+> >>>>> On Thu, Mar 22, 2018 at 07:36:36PM +0300, Ilya Smith wrote:
+> >>>>>> Current implementation doesn't randomize address returned by mmap.
+> >>>>>> All the entropy ends with choosing mmap_base_addr at the process
+> >>>>>> creation. After that mmap build very predictable layout of address
+> >>>>>> space. It allows to bypass ASLR in many cases. This patch make
+> >>>>>> randomization of address on any mmap call.
+> >>>>> 
+> >>>>> Why should this be done in the kernel rather than libc?  libc is perfectly
+> >>>>> capable of specifying random numbers in the first argument of mmap.
+> >>>> Well, there is following reasons:
+> >>>> 1. It should be done in any libc implementation, what is not possible IMO;
+> >>> 
+> >>> Is this really so helpful?
+> >> 
+> >> Yes, ASLR is one of very important mitigation techniques which are really used 
+> >> to protect applications. If there is no ASLR, it is very easy to exploit 
+> >> vulnerable application and compromise the system. We can’t just fix all the 
+> >> vulnerabilities right now, thats why we have mitigations - techniques which are 
+> >> makes exploitation more hard or impossible in some cases.
+> >> 
+> >> Thats why it is helpful.
+> > 
+> > I am not questioning ASLR in general. I am asking whether we really need
+> > per mmap ASLR in general. I can imagine that some environments want to
+> > pay the additional price and other side effects, but considering this
+> > can be achieved by libc, why to add more code to the kernel?
+> 
+> I believe this is the only one right place for it. Adding these 200+ lines of 
+> code we give this feature for any user - on desktop, on server, on IoT device, 
+> on SCADA, etc. But if only glibc will implement ‘user-mode-aslr’ IoT and SCADA 
+> devices will never get it.
 
- unscribed me=C2=A0
+I guess it would really help if you could be more specific about the
+class of security issues this would help to mitigate. My first
+understanding was that we we need some randomization between program
+executable segments to reduce the attack space when a single address
+leaks and you know the segments layout (ordering). But why do we need
+_all_ mmaps to be randomized. Because that complicates the
+implementation consirably for different reasons you have mentioned
+earlier.
 
-    On =E2=80=8ETuesday=E2=80=8E, =E2=80=8EMarch=E2=80=8E =E2=80=8E27=E2=80=
-=8E, =E2=80=8E2018=E2=80=8E =E2=80=8E05=E2=80=8E:=E2=80=8E31=E2=80=8E:=E2=
-=80=8E31=E2=80=8E =E2=80=8EAM=E2=80=8E =E2=80=8EPDT, Michael Ellerman <mpe@=
-ellerman.id.au> wrote: =20
-=20
- Add a definition for cpu_show_spectre_v2() to override the generic
-version. This has several permuations, though in practice some may not
-occur we cater for any combination.
+Do you have any specific CVE that would be mitigated by this
+randomization approach?
 
-The most verbose is:
-
-=C2=A0 Mitigation: Indirect branch serialisation (kernel only), Indirect
-=C2=A0 branch cache disabled, ori31 speculation barrier enabled
-
-We don't treat the ori31 speculation barrier as a mitigation on its
-own, because it has to be *used* by code in order to be a mitigation
-and we don't know if userspace is doing that. So if that's all we see
-we say:
-
-=C2=A0 Vulnerable, ori31 speculation barrier enabled
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/security.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
-
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.=
-c
-index 0eace3cac818..2cee3dcd231b 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -58,3 +58,36 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct d=
-evice_attribute *attr, c
-=20
- =C2=A0=C2=A0=C2=A0 return sprintf(buf, "Vulnerable\n");
- }
-+
-+ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *a=
-ttr, char *buf)
-+{
-+=C2=A0=C2=A0=C2=A0 bool bcs, ccd, ori;
-+=C2=A0=C2=A0=C2=A0 struct seq_buf s;
-+
-+=C2=A0=C2=A0=C2=A0 seq_buf_init(&s, buf, PAGE_SIZE - 1);
-+
-+=C2=A0=C2=A0=C2=A0 bcs =3D security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED)=
-;
-+=C2=A0=C2=A0=C2=A0 ccd =3D security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABL=
-ED);
-+=C2=A0=C2=A0=C2=A0 ori =3D security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
-+
-+=C2=A0=C2=A0=C2=A0 if (bcs || ccd) {
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 seq_buf_printf(&s, "Mitigation: ");
-+
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 if (bcs)
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 seq_buf_printf(&s=
-, "Indirect branch serialisation (kernel only)");
-+
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 if (bcs && ccd)
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 seq_buf_printf(&s=
-, ", ");
-+
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 if (ccd)
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 seq_buf_printf(&s=
-, "Indirect branch cache disabled");
-+=C2=A0=C2=A0=C2=A0 } else
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 seq_buf_printf(&s, "Vulnerable");
-+
-+=C2=A0=C2=A0=C2=A0 if (ori)
-+=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 seq_buf_printf(&s, ", ori31 speculat=
-ion barrier enabled");
-+
-+=C2=A0=C2=A0=C2=A0 seq_buf_printf(&s, "\n");
-+
-+=C2=A0=C2=A0=C2=A0 return s.len;
-+}
---=20
-2.14.1
-
- =20
-------=_Part_301443_784540807.1522154188151
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<html><head></head><body><div style=3D"font-family:Helvetica Neue, Helvetic=
-a, Arial, sans-serif;font-size:13px;"><div></div>
-            <div>unscribed me&nbsp;<br></div><div><br></div>
-           =20
-            <div class=3D"yahoo_quoted" id=3D"yahoo_quoted_2185832396">
-                <div style=3D"font-family:'Helvetica Neue', Helvetica, Aria=
-l, sans-serif;font-size:13px;color:#26282a;">
-                   =20
-                    <div>
-                        On =E2=80=8ETuesday=E2=80=8E, =E2=80=8EMarch=E2=80=
-=8E =E2=80=8E27=E2=80=8E, =E2=80=8E2018=E2=80=8E =E2=80=8E05=E2=80=8E:=E2=
-=80=8E31=E2=80=8E:=E2=80=8E31=E2=80=8E =E2=80=8EAM=E2=80=8E =E2=80=8EPDT, M=
-ichael Ellerman &lt;mpe@ellerman.id.au&gt; wrote:
-                    </div>
-                    <div><br></div>
-                    <div><br></div>
-                    <div><div dir=3D"ltr">Add a definition for cpu_show_spe=
-ctre_v2() to override the generic<br clear=3D"none">version. This has sever=
-al permuations, though in practice some may not<br clear=3D"none">occur we =
-cater for any combination.<br clear=3D"none"><br clear=3D"none">The most ve=
-rbose is:<br clear=3D"none"><br clear=3D"none">&nbsp; Mitigation: Indirect =
-branch serialisation (kernel only), Indirect<br clear=3D"none">&nbsp; branc=
-h cache disabled, ori31 speculation barrier enabled<br clear=3D"none"><br c=
-lear=3D"none">We don't treat the ori31 speculation barrier as a mitigation =
-on its<br clear=3D"none">own, because it has to be *used* by code in order =
-to be a mitigation<br clear=3D"none">and we don't know if userspace is doin=
-g that. So if that's all we see<br clear=3D"none">we say:<br clear=3D"none"=
-><br clear=3D"none">&nbsp; Vulnerable, ori31 speculation barrier enabled<br=
- clear=3D"none"><br clear=3D"none">Signed-off-by: Michael Ellerman &lt;<a h=
-ref=3D"mailto:mpe@ellerman.id.au" shape=3D"rect" ymailto=3D"mailto:mpe@elle=
-rman.id.au">mpe@ellerman.id.au</a>&gt;<br clear=3D"none">---<br clear=3D"no=
-ne"> arch/powerpc/kernel/security.c | 33 +++++++++++++++++++++++++++++++++<=
-br clear=3D"none"> 1 file changed, 33 insertions(+)<br clear=3D"none"><br c=
-lear=3D"none">diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/ke=
-rnel/security.c<br clear=3D"none">index 0eace3cac818..2cee3dcd231b 100644<b=
-r clear=3D"none">--- a/arch/powerpc/kernel/security.c<br clear=3D"none">+++=
- b/arch/powerpc/kernel/security.c<br clear=3D"none">@@ -58,3 +58,36 @@ ssiz=
-e_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, =
-c<br clear=3D"none"> <br clear=3D"none"> &nbsp;&nbsp;&nbsp; return sprintf(=
-buf, "Vulnerable\n");<br clear=3D"none"> }<br clear=3D"none">+<br clear=3D"=
-none">+ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attrib=
-ute *attr, char *buf)<br clear=3D"none">+{<br clear=3D"none">+&nbsp;&nbsp;&=
-nbsp; bool bcs, ccd, ori;<br clear=3D"none">+&nbsp;&nbsp;&nbsp; struct seq_=
-buf s;<br clear=3D"none">+<br clear=3D"none">+&nbsp;&nbsp;&nbsp; seq_buf_in=
-it(&amp;s, buf, PAGE_SIZE - 1);<br clear=3D"none">+<br clear=3D"none">+&nbs=
-p;&nbsp;&nbsp; bcs =3D security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);<br =
-clear=3D"none">+&nbsp;&nbsp;&nbsp; ccd =3D security_ftr_enabled(SEC_FTR_COU=
-NT_CACHE_DISABLED);<br clear=3D"none">+&nbsp;&nbsp;&nbsp; ori =3D security_=
-ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);<br clear=3D"none">+<br clear=3D"none">=
-+&nbsp;&nbsp;&nbsp; if (bcs || ccd) {<br clear=3D"none">+&nbsp;&nbsp;&nbsp;=
- &nbsp;&nbsp;&nbsp; seq_buf_printf(&amp;s, "Mitigation: ");<br clear=3D"non=
-e">+<br clear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; if (bcs)<br c=
-lear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; seq=
-_buf_printf(&amp;s, "Indirect branch serialisation (kernel only)");<br clea=
-r=3D"none">+<br clear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; if (b=
-cs &amp;&amp; ccd)<br clear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;=
- &nbsp;&nbsp;&nbsp; seq_buf_printf(&amp;s, ", ");<br clear=3D"none">+<br cl=
-ear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; if (ccd)<br clear=3D"no=
-ne">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; seq_buf_print=
-f(&amp;s, "Indirect branch cache disabled");<br clear=3D"none">+&nbsp;&nbsp=
-;&nbsp; } else<br clear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; seq=
-_buf_printf(&amp;s, "Vulnerable");<br clear=3D"none">+<br clear=3D"none">+&=
-nbsp;&nbsp;&nbsp; if (ori)<br clear=3D"none">+&nbsp;&nbsp;&nbsp; &nbsp;&nbs=
-p;&nbsp; seq_buf_printf(&amp;s, ", ori31 speculation barrier enabled");<br =
-clear=3D"none">+<br clear=3D"none">+&nbsp;&nbsp;&nbsp; seq_buf_printf(&amp;=
-s, "\n");<br clear=3D"none">+<br clear=3D"none">+&nbsp;&nbsp;&nbsp; return =
-s.len;<div class=3D"yqt8803334646" id=3D"yqtfd04053"><br clear=3D"none">+}<=
-br clear=3D"none">-- <br clear=3D"none">2.14.1<br clear=3D"none"><br clear=
-=3D"none"></div></div></div>
-                </div>
-            </div></div></body></html>
-------=_Part_301443_784540807.1522154188151--
+I am sorry, I am not a security expert to see all the cosequences but a
+vague - the more randomization the better - sounds rather weak to me.
+-- 
+Michal Hocko
+SUSE Labs
