@@ -1,29 +1,51 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x229.google.com (mail-oi0-x229.google.com
- [IPv6:2607:f8b0:4003:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <prvs=0625baffd6=ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BFC23zCrzF2G9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:25:31 +1100 (AEDT)
-Received: by mail-oi0-x229.google.com with SMTP id j143-v6so2798171oih.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:25:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BFxw2F6WzF2KG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:59:15 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2SHx4d6039677
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:59:13 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h0exw26j4-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:59:13 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 18:59:10 +0100
+Subject: Re: [PATCH v9 07/24] mm: VMA sequence count
+To: David Rientjes <rientjes@google.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-8-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803271429230.36401@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 19:58:59 +0200
 MIME-Version: 1.0
-In-Reply-To: <CAL_Jsq+jC2mAXbKh9c8dbLXZmWbD-sFemrk+8p-oGMkXqSMfnQ@mail.gmail.com>
-References: <20180323081209.31387-1-oohall@gmail.com>
- <20180323081209.31387-6-oohall@gmail.com>
- <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
- <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
- <CAL_Jsq+jC2mAXbKh9c8dbLXZmWbD-sFemrk+8p-oGMkXqSMfnQ@mail.gmail.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Wed, 28 Mar 2018 10:25:28 -0700
-Message-ID: <CAPcyv4htpLN16d8JW+_pSy-ORwkQdVnv3guOS0FVmyy+ajvP=Q@mail.gmail.com>
-Subject: Re: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
-To: Rob Herring <robh@kernel.org>
-Cc: Oliver <oohall@gmail.com>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Device Tree <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <alpine.DEB.2.20.1803271429230.36401@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <d8d65544-1844-b4c3-f246-27572ab6dee2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +55,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2018 at 10:06 AM, Rob Herring <robh@kernel.org> wrote:
-[..]
-> >> Are DIMMs always going to be the only form factor for NV memory?
-> >>
-> >> And if you have multiple DIMMs, does each DT node correspond to a DIMM?
-> >
-> > A nvdimm-region might correspond to a single NVDIMM, a set of
-> > interleaved NVDIMMs, or it might just be a chunk of normal memory that
-> > you want treated as a NVDIMM for some reason. The last case is useful
-> > for provisioning install media on servers since it allows you do
-> > download a DVD image, turn it into an nvdimm-region, and kexec into
-> > the installer which can use it as a root disk. That may seem a little
-> > esoteric, but it's handy and we're using a full linux environment for
-> > our boot loader so it's easy to make use of.
->
-> I'm really just asking if we should drop the "dimm" name because it is
-> not always a DIMM. Maybe pmem instead? I don't know, naming is
-> hard(TM).
 
-The Linux enabling uses the term "memory device". The Linux device
-object name for memory devices is "nmem".
 
-[..]
-> > special since the OS needs to know where it can allocate early in boot
-> > and I don't see non-volatile memory as being similarly significant.
-> > Fundamentally an NVDIMM is just a memory mapped storage device so we
-> > should be able to defer looking at them until later in boot.
->
-> It's not clear if 'platform' is just an example or random name or what
-> the node is required to be called. In the latter case, we should be
-> much more specific because 'platform' could be anything. In the former
-> case, then we have no way to find or validate the node because the
-> name could be anything and there's no compatible property either.
->
-> "region" is pretty generic too.
->
+On 27/03/2018 23:30, David Rientjes wrote:
+> On Tue, 13 Mar 2018, Laurent Dufour wrote:
+> 
+>> diff --git a/mm/mmap.c b/mm/mmap.c
+>> index faf85699f1a1..5898255d0aeb 100644
+>> --- a/mm/mmap.c
+>> +++ b/mm/mmap.c
+>> @@ -558,6 +558,10 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
+>>  	else
+>>  		mm->highest_vm_end = vm_end_gap(vma);
+>>  
+>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>> +	seqcount_init(&vma->vm_sequence);
+>> +#endif
+>> +
+>>  	/*
+>>  	 * vma->vm_prev wasn't known when we followed the rbtree to find the
+>>  	 * correct insertion point for that vma. As a result, we could not
+>> @@ -692,6 +696,30 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+>>  	long adjust_next = 0;
+>>  	int remove_next = 0;
+>>  
+>> +	/*
+>> +	 * Why using vm_raw_write*() functions here to avoid lockdep's warning ?
+>> +	 *
+>> +	 * Locked is complaining about a theoretical lock dependency, involving
+>> +	 * 3 locks:
+>> +	 *   mapping->i_mmap_rwsem --> vma->vm_sequence --> fs_reclaim
+>> +	 *
+>> +	 * Here are the major path leading to this dependency :
+>> +	 *  1. __vma_adjust() mmap_sem  -> vm_sequence -> i_mmap_rwsem
+>> +	 *  2. move_vmap() mmap_sem -> vm_sequence -> fs_reclaim
+>> +	 *  3. __alloc_pages_nodemask() fs_reclaim -> i_mmap_rwsem
+>> +	 *  4. unmap_mapping_range() i_mmap_rwsem -> vm_sequence
+>> +	 *
+>> +	 * So there is no way to solve this easily, especially because in
+>> +	 * unmap_mapping_range() the i_mmap_rwsem is grab while the impacted
+>> +	 * VMAs are not yet known.
+>> +	 * However, the way the vm_seq is used is guarantying that we will
+>> +	 * never block on it since we just check for its value and never wait
+>> +	 * for it to move, see vma_has_changed() and handle_speculative_fault().
+>> +	 */
+>> +	vm_raw_write_begin(vma);
+>> +	if (next)
+>> +		vm_raw_write_begin(next);
+>> +
+>>  	if (next && !insert) {
+>>  		struct vm_area_struct *exporter = NULL, *importer = NULL;
+>>  
+> 
+> Eek, what about later on:
+> 
+> 		/*
+> 		 * Easily overlooked: when mprotect shifts the boundary,
+> 		 * make sure the expanding vma has anon_vma set if the
+> 		 * shrinking vma had, to cover any anon pages imported.
+> 		 */
+> 		if (exporter && exporter->anon_vma && !importer->anon_vma) {
+> 			int error;
+> 
+> 			importer->anon_vma = exporter->anon_vma;
+> 			error = anon_vma_clone(importer, exporter);
+> 			if (error)
+> 				return error;
+> 		}
+> 
+> This needs
+> 
+> if (error) {
+> 	if (next && next != vma)
+> 		vm_raw_write_end(next);
+> 	vm_raw_write_end(vma);
+> 	return error;
+> }
 
-The term "nvdimm-region" has specific meaning to the libnvdimm
-sub-system. It is a contiguous physical address range backed by one or
-more memory devices, DIMMs, in an interleaved configuration
-(interleave set).
+Nice catch !
 
-One feature that is currently missing from libnvdimm is a management
-interface to change an interleave configuration. To date, Linux only
-reads a static region configuration published by platform firmware.
-Linux can provide dynamic provisioning of namespaces out of those
-regions, but interleave configuration has been left to vendor specific
-tooling to date. It would be great to start incorporating generic
-Linux support for that capability across platform firmware
-implementations.
+Thanks,
+Laurent.
