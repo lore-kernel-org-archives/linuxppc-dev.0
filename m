@@ -1,51 +1,49 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-io0-x233.google.com (mail-io0-x233.google.com
+ [IPv6:2607:f8b0:4001:c06::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B1Gt3gcrzF2MZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 19:28:06 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2S8Rp49002018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:28:03 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h05fme6wt-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:28:02 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 09:27:56 +0100
-Subject: Re: [PATCH v9 06/24] mm: make pte_unmap_same compatible with SPF
-To: David Rientjes <rientjes@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803271417510.31115@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 28 Mar 2018 10:27:45 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409zB52QJgzF2Bk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 17:53:48 +1100 (AEDT)
+Received: by mail-io0-x233.google.com with SMTP id q80so2199080ioi.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:53:48 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803271417510.31115@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <fd9eedf4-b885-d8f5-2daa-4cc450e72427@linux.vnet.ibm.com>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+ <1522186396.7364.61.camel@kernel.crashing.org>
+ <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
+ <1522198981.7364.81.camel@kernel.crashing.org>
+ <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
+ <1522211620.7364.94.camel@kernel.crashing.org>
+ <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
+ <1522219376.7364.109.camel@kernel.crashing.org>
+In-Reply-To: <1522219376.7364.109.camel@kernel.crashing.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 28 Mar 2018 06:53:36 +0000
+Message-ID: <CA+55aFyaZ=WEXFg4KZ0yCWaR=8Dm_FPK-xcA0EYi3fEzm+KZkA@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexander Duyck <alexander.duyck@gmail.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
+ Jason Gunthorpe <jgg@ziepe.ca>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Content-Type: multipart/alternative; boundary="001a113f7b6ef26d3905687377f1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,78 +53,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--001a113f7b6ef26d3905687377f1
+Content-Type: text/plain; charset="UTF-8"
 
+On Tue, Mar 27, 2018, 20:43 Benjamin Herrenschmidt <benh@kernel.crashing.org>
+wrote:
 
-On 27/03/2018 23:18, David Rientjes wrote:
-> On Tue, 13 Mar 2018, Laurent Dufour wrote:
-> 
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index 2f3e98edc94a..b6432a261e63 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -1199,6 +1199,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
->>  #define VM_FAULT_NEEDDSYNC  0x2000	/* ->fault did not modify page tables
->>  					 * and needs fsync() to complete (for
->>  					 * synchronous page faults in DAX) */
->> +#define VM_FAULT_PTNOTSAME 0x4000	/* Page table entries have changed */
->>  
->>  #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
->>  			 VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
->> diff --git a/mm/memory.c b/mm/memory.c
->> index 21b1212a0892..4bc7b0bdcb40 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -2309,21 +2309,29 @@ static bool pte_map_lock(struct vm_fault *vmf)
->>   * parts, do_swap_page must check under lock before unmapping the pte and
->>   * proceeding (but do_wp_page is only called after already making such a check;
->>   * and do_anonymous_page can safely check later on).
->> + *
->> + * pte_unmap_same() returns:
->> + *	0			if the PTE are the same
->> + *	VM_FAULT_PTNOTSAME	if the PTE are different
->> + *	VM_FAULT_RETRY		if the VMA has changed in our back during
->> + *				a speculative page fault handling.
->>   */
->> -static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
->> -				pte_t *page_table, pte_t orig_pte)
->> +static inline int pte_unmap_same(struct vm_fault *vmf)
->>  {
->> -	int same = 1;
->> +	int ret = 0;
->> +
->>  #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
->>  	if (sizeof(pte_t) > sizeof(unsigned long)) {
->> -		spinlock_t *ptl = pte_lockptr(mm, pmd);
->> -		spin_lock(ptl);
->> -		same = pte_same(*page_table, orig_pte);
->> -		spin_unlock(ptl);
->> +		if (pte_spinlock(vmf)) {
->> +			if (!pte_same(*vmf->pte, vmf->orig_pte))
->> +				ret = VM_FAULT_PTNOTSAME;
->> +			spin_unlock(vmf->ptl);
->> +		} else
->> +			ret = VM_FAULT_RETRY;
->>  	}
->>  #endif
->> -	pte_unmap(page_table);
->> -	return same;
->> +	pte_unmap(vmf->pte);
->> +	return ret;
->>  }
->>  
->>  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
->> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
->>  	int exclusive = 0;
->>  	int ret = 0;
-> 
-> Initialization is now unneeded.
+> >
+> > Of course, you'd have to be pretty odd to want to start a DMA with a
+> > read anyway - partly exactly because it's bad for performance since
+> > reads will be synchronous and not buffered like a write).
+>
+> I have bad memories of old adaptec controllers ...
+>
 
-I'm sorry, what "initialization" are you talking about here ?
+*Old* adaptec controllers were likely to use the in/out instructions for
+status and command data.
 
-> 
-> Otherwise:
-> 
-> Acked-by: David Rientjes <rientjes@google.com>
+Those are actually even more ordered than UC reads and writes: the in/out
+instructions are not just fully ordered, but are fully *synchronous* on
+x86.
 
-Thanks,
-Laurent.
+So not just doing accesses in order, but actually waiting for everything to
+drain before they start executing, but they also wait for the operation
+itself to complete (ie "out" will not just queue the write, it will then
+wait for the queue to empty and the write data to hit the line).
+
+That's why in/out were *so* slow, and why nobody uses them any more (well,
+the address size limitations and the lack of any remapping of the address
+obviously also are a reason).
+
+    Linus
+
+>
+
+--001a113f7b6ef26d3905687377f1
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto"><div><br><br><div class=3D"gmail_quote"><div dir=3D"ltr">=
+On Tue, Mar 27, 2018, 20:43 Benjamin Herrenschmidt &lt;<a href=3D"mailto:be=
+nh@kernel.crashing.org">benh@kernel.crashing.org</a>&gt; wrote:</div><block=
+quote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc=
+ solid;padding-left:1ex">
+&gt;<br>
+&gt; Of course, you&#39;d have to be pretty odd to want to start a DMA with=
+ a<br>
+&gt; read anyway - partly exactly because it&#39;s bad for performance sinc=
+e<br>
+&gt; reads will be synchronous and not buffered like a write).<br>
+<br>
+I have bad memories of old adaptec controllers ...<br></blockquote></div></=
+div><div dir=3D"auto"><br></div><div dir=3D"auto">*Old* adaptec controllers=
+ were likely to use the in/out instructions for status and command data.</d=
+iv><div dir=3D"auto"><br></div><div dir=3D"auto">Those are actually even mo=
+re ordered than UC reads and writes: the in/out instructions are not just f=
+ully ordered, but are fully *synchronous* on x86.=C2=A0</div><div dir=3D"au=
+to"><br></div><div dir=3D"auto">So not just doing accesses in order, but ac=
+tually waiting for everything to drain before they start executing, but the=
+y also wait for the operation itself to complete (ie &quot;out&quot; will n=
+ot just queue the write, it will then wait for the queue to empty and the w=
+rite data to hit the line).</div><div dir=3D"auto"><br></div><div dir=3D"au=
+to">That&#39;s why in/out were *so* slow, and why nobody uses them any more=
+ (well, the address size limitations and the lack of any remapping of the a=
+ddress obviously also are a reason).</div><div dir=3D"auto"><br></div><div =
+dir=3D"auto">=C2=A0 =C2=A0 Linus</div><div dir=3D"auto"><div class=3D"gmail=
+_quote"><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border=
+-left:1px #ccc solid;padding-left:1ex">
+</blockquote></div></div></div>
+
+--001a113f7b6ef26d3905687377f1--
