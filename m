@@ -1,37 +1,24 @@
-Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0619.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe46::619])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B86h0xW6zF2L3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 00:36:27 +1100 (AEDT)
-Date: Wed, 28 Mar 2018 16:36:05 +0300
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, luto@kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180328133605.u7pftfxpn3jbqire@yury-thinkpad>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180325192328.GI3675@linux.vnet.ibm.com>
- <20180325201154.icdcyl4nw2jootqq@yury-thinkpad>
- <20180326124555.GJ3675@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B8Gk3n5yzF2Jv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 00:43:26 +1100 (AEDT)
+Received: by mail-pf0-x22c.google.com with SMTP id l27so972607pfk.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:43:26 -0700 (PDT)
+Date: Wed, 28 Mar 2018 23:43:10 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Fix smp_wmb barrier definition use use lwsync
+ consistently
+Message-ID: <20180328234119.313ef0dc@roar.ozlabs.ibm.com>
+In-Reply-To: <874ll02x22.fsf@concordia.ellerman.id.au>
+References: <20180322104146.5350-1-npiggin@gmail.com>
+ <874ll02x22.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180326124555.GJ3675@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,187 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 26, 2018 at 05:45:55AM -0700, Paul E. McKenney wrote:
-> On Sun, Mar 25, 2018 at 11:11:54PM +0300, Yury Norov wrote:
-> > On Sun, Mar 25, 2018 at 12:23:28PM -0700, Paul E. McKenney wrote:
-> > > On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
-> > > > kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
-> > > > If CPU is in extended quiescent state (idle task or nohz_full userspace), this
-> > > > work may be done at the exit of this state. Delaying synchronization helps to
-> > > > save power if CPU is in idle state and decrease latency for real-time tasks.
-> > > > 
-> > > > This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
-> > > > code to delay syncronization.
-> > > > 
-> > > > For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
-> > > > isolated task would be fatal, as it breaks isolation. The approach with delaying
-> > > > of synchronization work helps to maintain isolated state.
-> > > > 
-> > > > I've tested it with test from task isolation series on ThunderX2 for more than
-> > > > 10 hours (10k giga-ticks) without breaking isolation.
-> > > > 
-> > > > Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
-> > > > ---
-> > > >  arch/arm64/kernel/insn.c |  2 +-
-> > > >  include/linux/smp.h      |  2 ++
-> > > >  kernel/smp.c             | 24 ++++++++++++++++++++++++
-> > > >  mm/slab.c                |  2 +-
-> > > >  4 files changed, 28 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-> > > > index 2718a77da165..9d7c492e920e 100644
-> > > > --- a/arch/arm64/kernel/insn.c
-> > > > +++ b/arch/arm64/kernel/insn.c
-> > > > @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
-> > > >  			 * synchronization.
-> > > >  			 */
-> > > >  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
-> > > > -			kick_all_cpus_sync();
-> > > > +			kick_active_cpus_sync();
-> > > >  			return ret;
-> > > >  		}
-> > > >  	}
-> > > > diff --git a/include/linux/smp.h b/include/linux/smp.h
-> > > > index 9fb239e12b82..27215e22240d 100644
-> > > > --- a/include/linux/smp.h
-> > > > +++ b/include/linux/smp.h
-> > > > @@ -105,6 +105,7 @@ int smp_call_function_any(const struct cpumask *mask,
-> > > >  			  smp_call_func_t func, void *info, int wait);
-> > > > 
-> > > >  void kick_all_cpus_sync(void);
-> > > > +void kick_active_cpus_sync(void);
-> > > >  void wake_up_all_idle_cpus(void);
-> > > > 
-> > > >  /*
-> > > > @@ -161,6 +162,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
-> > > >  }
-> > > > 
-> > > >  static inline void kick_all_cpus_sync(void) {  }
-> > > > +static inline void kick_active_cpus_sync(void) {  }
-> > > >  static inline void wake_up_all_idle_cpus(void) {  }
-> > > > 
-> > > >  #ifdef CONFIG_UP_LATE_INIT
-> > > > diff --git a/kernel/smp.c b/kernel/smp.c
-> > > > index 084c8b3a2681..0358d6673850 100644
-> > > > --- a/kernel/smp.c
-> > > > +++ b/kernel/smp.c
-> > > > @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
-> > > >  }
-> > > >  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
-> > > > 
-> > > > +/**
-> > > > + * kick_active_cpus_sync - Force CPUs that are not in extended
-> > > > + * quiescent state (idle or nohz_full userspace) sync by sending
-> > > > + * IPI. Extended quiescent state CPUs will sync at the exit of
-> > > > + * that state.
-> > > > + */
-> > > > +void kick_active_cpus_sync(void)
-> > > > +{
-> > > > +	int cpu;
-> > > > +	struct cpumask kernel_cpus;
-> > > > +
-> > > > +	smp_mb();
-> > > > +
-> > > > +	cpumask_clear(&kernel_cpus);
-> > > > +	preempt_disable();
-> > > > +	for_each_online_cpu(cpu) {
-> > > > +		if (!rcu_eqs_special_set(cpu))
-> > > 
-> > > If we get here, the CPU is not in a quiescent state, so we therefore
-> > > must IPI it, correct?
-> > > 
-> > > But don't you also need to define rcu_eqs_special_exit() so that RCU
-> > > can invoke it when it next leaves its quiescent state?  Or are you able
-> > > to ignore the CPU in that case?  (If you are able to ignore the CPU in
-> > > that case, I could give you a lower-cost function to get your job done.)
-> > > 
-> > > 							Thanx, Paul
-> > 
-> > What's actually needed for synchronization is issuing memory barrier on target
-> > CPUs before we start executing kernel code.
-> > 
-> > smp_mb() is implicitly called in smp_call_function*() path for it. In
-> > rcu_eqs_special_set() -> rcu_dynticks_eqs_exit() path, smp_mb__after_atomic()
-> > is called just before rcu_eqs_special_exit().
-> > 
-> > So I think, rcu_eqs_special_exit() may be left untouched. Empty
-> > rcu_eqs_special_exit() in new RCU path corresponds empty do_nothing() in old
-> > IPI path.
-> > 
-> > Or my understanding of smp_mb__after_atomic() is wrong? By default, 
-> > smp_mb__after_atomic() is just alias to smp_mb(). But some
-> > architectures define it differently. x86, for example, aliases it to
-> > just barrier() with a comment: "Atomic operations are already
-> > serializing on x86".
-> > 
-> > I was initially thinking that it's also fine to leave
-> > rcu_eqs_special_exit() empty in this case, but now I'm not sure...
-> > 
-> > Anyway, answering to your question, we shouldn't ignore quiescent
-> > CPUs, and rcu_eqs_special_set() path is really needed as it issues
-> > memory barrier on them.
+On Wed, 28 Mar 2018 23:40:05 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> An alternative approach would be for me to make something like this
-> and export it:
+> > asm/barrier.h is not always included after asm/synch.h, which meant
+> > it was missing __SUBARCH_HAS_LWSYNC, so in some files smp_wmb() would
+> > be eieio when it should be lwsync. kernel/time/hrtimer.c is one case.  
 > 
-> 	bool rcu_cpu_in_eqs(int cpu)
-> 	{
-> 		struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
-> 		int snap;
+> Wow nice catch. Only broken since 2008 presumably.
 > 
-> 		smp_mb(); /* Obtain consistent snapshot, pairs with update. */
-> 		snap = READ_ONCE(&rdtp->dynticks);
-> 		smp_mb(); /* See above. */
-> 		return !(snap & RCU_DYNTICK_CTRL_CTR);
-> 	}
+> Some days I think maybe we aren't very good at this writing software
+> thing, good to have some certainty :)
+
+Yeah, I only caught it by luck when looking through instruction traces.
+The pipeline model just happens to make eieio look different to most
+other instructions (which is likely a bug in the model) which made me
+look closer at it. Could have been with us for another 10 years.
+
+> > __SUBARCH_HAS_LWSYNC is only used in one place, so just fold it in
+> > to where it's used. Previously with my small simulator config, 377
+> > instances of eieio in the tree. After this patch there are 55.  
 > 
-> Then you could replace your use of rcu_cpu_in_eqs() above with
-
-Did you mean replace rcu_eqs_special_set()?
-
-> the new rcu_cpu_in_eqs().  This would avoid the RMW atomic, and, more
-> important, the unnecessary write to ->dynticks.
+> At least for Book3S this isn't actually a terrible bug AFAICS:
 > 
-> Or am I missing something?
+>  - smp_wmb() is only defined to order accesses to cacheable memory.
+>  - smp_wmb() only orders prior stores vs later stores.
+>  - eieio orders all prior stores vs all later stores for cacheable
+>    memory.
+>  - lwsync orders everything except prior stores vs later loads for
+>    cacheable memory.
 > 
-> 							Thanx, Paul
+> So eieio and lwsync are both valid to use as smp_wmb(), but it's still
+> terrible fishy that we were using both in different places depending on
+> include ordering.
 
-This will not work because EQS CPUs will not be charged to call
-smp_mb() on exit of EQS. 
+Oh yeah it's not a bug in that it would cause violation of memory
+ordering, only performance (and expectations when debugging and
+observing things I guess). eieio works fine for smp_wmb().
 
-Lets sync our understanding of IPI and RCU mechanisms.
+> I'm inclined to tag this for stable unless anyone can think of a reason
+> not to?
 
-Traditional IPI scheme looks like this:
+I think that would be good.
 
-CPU1:                                    CPU2:
-touch shared resource();                 /* running any code */
-smp_mb();
-smp_call_function();          --->       handle_IPI()
-                                         {
-                                                 /* Make resource visible */
-                                                 smp_mb();
-                                                 do_nothing();
-                                         }
-
-And new RCU scheme for eqs CPUs looks like this:
-
-CPU1:                                    CPU2:
-touch shared resource();                /* Running EQS */
-smp_mb();
-
-if (RCU_DYNTICK_CTRL_CTR)
-        set(RCU_DYNTICK_CTRL_MASK);     /* Still in EQS */
-                                       
-                                        /* And later */
-                                        rcu_dynticks_eqs_exit()
-                                        {
-                                                if (RCU_DYNTICK_CTRL_MASK) {
-                                                        /* Make resource visible */
-                                                        smp_mb(); 
-                                                        rcu_eqs_special_exit();
-                                                }
-                                        }
-
-Is it correct?
-
-Yury
+Thanks,
+Nick
