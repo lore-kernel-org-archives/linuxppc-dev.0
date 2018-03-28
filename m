@@ -1,68 +1,44 @@
-Return-Path: <dalias@aerifal.cx>
-Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
- [216.12.86.13])
- by lists.ozlabs.org (Postfix) with ESMTP id 409p5q6TDlzF2C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:04:31 +1100 (AEDT)
-Date: Tue, 27 Mar 2018 20:00:25 -0400
-From: Rich Felker <dalias@libc.org>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Kees Cook <keescook@chromium.org>, Ilya Smith <blackzert@gmail.com>,
- Michal Hocko <mhocko@kernel.org>,
- Richard Henderson <rth@twiddle.net>, ink@jurassic.park.msu.ru,
- mattst88@gmail.com, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- "David S. Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- X86 ML <x86@kernel.org>, nyc@holomorphy.com,
- Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
- Greg KH <gregkh@linuxfoundation.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>, Hugh Dickins <hughd@google.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Steve Capper <steve.capper@arm.com>, Punit Agrawal <punit.agrawal@arm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nick Piggin <npiggin@gmail.com>, Bhupesh Sharma <bhsharma@redhat.com>,
- Rik van Riel <riel@redhat.com>, nitin.m.gupta@oracle.com,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>, Jan Kara <jack@suse.cz>,
- Ross Zwisler <ross.zwisler@linux.intel.com>,
- Jerome Glisse <jglisse@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Oleg Nesterov <oleg@redhat.com>, linux-alpha@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>,
- linux-snps-arc@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-parisc <linux-parisc@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-sh <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
-Message-ID: <20180328000025.GM1436@brightrain.aerifal.cx>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <20180323124806.GA5624@bombadil.infradead.org>
- <651E0DB6-4507-4DA1-AD46-9C26ED9792A8@gmail.com>
- <20180326084650.GC5652@dhcp22.suse.cz>
- <01A133F4-27DF-4AE2-80D6-B0368BF758CD@gmail.com>
- <20180327072432.GY5652@dhcp22.suse.cz>
- <0549F29C-12FC-4401-9E85-A430BC11DA78@gmail.com>
- <CAGXu5j+XXufprMaJ9GbHxD3mZ7iqUuu60-tTMC6wo2x1puYzMQ@mail.gmail.com>
- <20180327234904.GA27734@bombadil.infradead.org>
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409tY43lc5zF2G4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 14:24:55 +1100 (AEDT)
+Subject: Re: RFC on writel and writel_relaxed
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexander Duyck <alexander.duyck@gmail.com>,
+ Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>,
+ Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+ <1522186396.7364.61.camel@kernel.crashing.org>
+ <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
+ <1522198981.7364.81.camel@kernel.crashing.org>
+ <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <bf77be28-051d-79c8-9b65-948c8a254d6d@codeaurora.org>
+Date: Tue, 27 Mar 2018 23:24:50 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180327234904.GA27734@bombadil.infradead.org>
-Sender: Rich Felker <dalias@aerifal.cx>
+In-Reply-To: <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -72,24 +48,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 04:49:04PM -0700, Matthew Wilcox wrote:
-> On Tue, Mar 27, 2018 at 03:53:53PM -0700, Kees Cook wrote:
-> > I agree: pushing this off to libc leaves a lot of things unprotected.
-> > I think this should live in the kernel. The question I have is about
-> > making it maintainable/readable/etc.
-> > 
-> > The state-of-the-art for ASLR is moving to finer granularity (over
-> > just base-address offset), so I'd really like to see this supported in
-> > the kernel. We'll be getting there for other things in the future, and
-> > I'd like to have a working production example for researchers to
-> > study, etc.
-> 
-> One thing we need is to limit the fragmentation of this approach.
-> Even on 64-bit systems, we can easily get into a situation where there isn't
-> space to map a contiguous terabyte.
+On 3/27/2018 10:51 PM, Linus Torvalds wrote:
+>> The discussion at hand is about
+>>
+>>         dma_buffer->foo = 1;                    /* WB */
+>>         writel(KICK, DMA_KICK_REGISTER);        /* UC */
+> Yes. That certainly is ordered on x86. In fact, afaik it's ordered
+> even if that writel() might be of type WC, because that only delays
+> writes, it doesn't move them earlier.
 
-The default limit of only 65536 VMAs will also quickly come into play
-if consecutive anon mmaps don't get merged. Of course this can be
-raised, but it has significant resource and performance (fork) costs.
+Now that we clarified x86 myth, Is this guaranteed on all architectures?
+We keep getting IA64 exception example. Maybe, this is also corrected since
+then.
 
-Rich
+Jose Abreu says "I don't know about x86 but arc architecture doesn't
+have a wmb() in the writel() function (in some configs)".
+
+As long as we have these exceptions, these wmb() in common drivers is not
+going anywhere and relaxed-arches will continue paying performance penalty.
+
+I see 15% performance loss on ARM64 servers using Intel i40e network
+drivers and an XL710 adapter due to CPU keeping itself busy doing barriers
+most of the time rather than real work because of sequences like this all over
+the place.
+
+         dma_buffer->foo = 1;                    /* WB */
+	 wmb()
+         writel(KICK, DMA_KICK_REGISTER);        /* UC */
+
+I posted several patches last week to remove duplicate barriers on ARM while
+trying to make the code friendly with other architectures.
+
+Basically changing it to
+
+dma_buffer->foo = 1;                    /* WB */
+wmb()
+writel_relaxed(KICK, DMA_KICK_REGISTER);        /* UC */
+mmiowb()
+
+This is a small step in the performance direction until we remove all exceptions.
+
+https://www.spinics.net/lists/netdev/msg491842.html
+https://www.spinics.net/lists/linux-rdma/msg62434.html
+https://www.spinics.net/lists/arm-kernel/msg642336.html
+
+Discussion started to move around the need for relaxed API on PPC and then
+why wmb() question came up.
+
+Sinan
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
