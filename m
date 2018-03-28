@@ -1,36 +1,29 @@
-Return-Path: <prvs=06254833f8=hegdevasant@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dan.j.williams@intel.com>
+Received: from mail-oi0-x229.google.com (mail-oi0-x229.google.com
+ [IPv6:2607:f8b0:4003:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BF1d5VgzzF21H
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:17:25 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2SHGP3v112429
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:17:23 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h0eefj9kb-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:17:22 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 18:17:20 +0100
-Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
- OPAL errors
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
-References: <20180326150233.23089-1-npiggin@gmail.com>
- <ad352964-1b12-8556-a876-a10e84336a5e@linux.vnet.ibm.com>
- <20180327173857.0d195b66@roar.ozlabs.ibm.com>
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Date: Wed, 28 Mar 2018 22:47:15 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BFC23zCrzF2G9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:25:31 +1100 (AEDT)
+Received: by mail-oi0-x229.google.com with SMTP id j143-v6so2798171oih.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:25:30 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180327173857.0d195b66@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <aacd893e-d6be-a92d-bd15-04ecf026d2e8@linux.vnet.ibm.com>
+In-Reply-To: <CAL_Jsq+jC2mAXbKh9c8dbLXZmWbD-sFemrk+8p-oGMkXqSMfnQ@mail.gmail.com>
+References: <20180323081209.31387-1-oohall@gmail.com>
+ <20180323081209.31387-6-oohall@gmail.com>
+ <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
+ <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
+ <CAL_Jsq+jC2mAXbKh9c8dbLXZmWbD-sFemrk+8p-oGMkXqSMfnQ@mail.gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Wed, 28 Mar 2018 10:25:28 -0700
+Message-ID: <CAPcyv4htpLN16d8JW+_pSy-ORwkQdVnv3guOS0FVmyy+ajvP=Q@mail.gmail.com>
+Subject: Re: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
+To: Rob Herring <robh@kernel.org>
+Cc: Oliver <oohall@gmail.com>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,44 +33,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/27/2018 01:08 PM, Nicholas Piggin wrote:
-> On Tue, 27 Mar 2018 12:47:31 +0530
-> Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
-> 
->> On 03/26/2018 08:32 PM, Nicholas Piggin wrote:
->>> opal_nvram_write currently just assumes success if it encounters an
->>> error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
->>> on other errors instead.
->>>
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>> ---
->>>    arch/powerpc/platforms/powernv/opal-nvram.c | 2 ++
->>>    1 file changed, 2 insertions(+)
->>>
->>> diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
->>> index 9db4398ded5d..13bf625dc3e8 100644
->>> --- a/arch/powerpc/platforms/powernv/opal-nvram.c
->>> +++ b/arch/powerpc/platforms/powernv/opal-nvram.c
->>> @@ -59,6 +59,8 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
->>>    		if (rc == OPAL_BUSY_EVENT)
->>>    			opal_poll_events(NULL);
->>
->> Current code does continuous poller here. May be we have small breathing time
->> here. What you say?
-> 
-> Yeah that's probably not a bad idea. I cc'ed skiboot list -- what's a
-> reasonable delay between retries?
+On Wed, Mar 28, 2018 at 10:06 AM, Rob Herring <robh@kernel.org> wrote:
+[..]
+> >> Are DIMMs always going to be the only form factor for NV memory?
+> >>
+> >> And if you have multiple DIMMs, does each DT node correspond to a DIMM?
+> >
+> > A nvdimm-region might correspond to a single NVDIMM, a set of
+> > interleaved NVDIMMs, or it might just be a chunk of normal memory that
+> > you want treated as a NVDIMM for some reason. The last case is useful
+> > for provisioning install media on servers since it allows you do
+> > download a DVD image, turn it into an nvdimm-region, and kexec into
+> > the installer which can use it as a root disk. That may seem a little
+> > esoteric, but it's handy and we're using a full linux environment for
+> > our boot loader so it's easy to make use of.
+>
+> I'm really just asking if we should drop the "dimm" name because it is
+> not always a DIMM. Maybe pmem instead? I don't know, naming is
+> hard(TM).
 
-I think it depends on individual API. Like in case of dump retrival I've 20ms 
-delay... as FSP takes time to copy data to host memory. But may be here we can 
-have smaller delay.
+The Linux enabling uses the term "memory device". The Linux device
+object name for memory devices is "nmem".
 
-> Linux has a bunch of similar kind of
-> loops if you grep for opal_poll_events and OPAL_BUSY. It would be good
-> to convert them all to a standard form with a standard delay as
-> recommended by OPAL, and where specific calls have different delay
-> for a good reason, that would be documented in the OPAL API docs.
+[..]
+> > special since the OS needs to know where it can allocate early in boot
+> > and I don't see non-volatile memory as being similarly significant.
+> > Fundamentally an NVDIMM is just a memory mapped storage device so we
+> > should be able to defer looking at them until later in boot.
+>
+> It's not clear if 'platform' is just an example or random name or what
+> the node is required to be called. In the latter case, we should be
+> much more specific because 'platform' could be anything. In the former
+> case, then we have no way to find or validate the node because the
+> name could be anything and there's no compatible property either.
+>
+> "region" is pretty generic too.
+>
 
-Yes. We should update API documentation.
+The term "nvdimm-region" has specific meaning to the libnvdimm
+sub-system. It is a contiguous physical address range backed by one or
+more memory devices, DIMMs, in an interleaved configuration
+(interleave set).
 
--Vasant
+One feature that is currently missing from libnvdimm is a management
+interface to change an interleave configuration. To date, Linux only
+reads a static region configuration published by platform firmware.
+Linux can provide dynamic provisioning of namespaces out of those
+regions, but interleave configuration has been left to vendor specific
+tooling to date. It would be great to start incorporating generic
+Linux support for that capability across platform firmware
+implementations.
