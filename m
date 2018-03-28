@@ -1,34 +1,39 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40B3cg0wdyzF2KH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:13:38 +1100 (AEDT)
-Date: Wed, 28 Mar 2018 11:13:45 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Sinan Kaya <okaya@codeaurora.org>,
- Jason Gunthorpe <jgg@ziepe.ca>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180328101345.GA30850@arm.com>
-References: <20180327100944.GD29373@arm.com>
- <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
- <20180327110258.GF2464@arm.com>
- <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
- <20180327143628.GA10642@arm.com>
- <1522186185.7364.59.camel@kernel.crashing.org>
- <20180328085338.GA28871@arm.com>
- <1522230616.21446.1.camel@kernel.crashing.org>
- <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
- <1522231287.21446.9.camel@kernel.crashing.org>
+Return-Path: <rientjes@google.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B3hY13rqzF292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:17:01 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id c1-v6so2974623itj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:17:00 -0700 (PDT)
+Date: Wed, 28 Mar 2018 03:16:55 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 01/24] mm: Introduce CONFIG_SPECULATIVE_PAGE_FAULT
+In-Reply-To: <32c80b6a-28c6-bf63-ed7b-6a042ae18e8f@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1803280310380.68839@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-2-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803251442090.80485@chino.kir.corp.google.com>
+ <32c80b6a-28c6-bf63-ed7b-6a042ae18e8f@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1522231287.21446.9.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +43,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2018 at 09:01:27PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
-> > > powerpc and ARM can't quite make them synchronous I think, but at least
-> > > they should have the same semantics as writel.
+On Wed, 28 Mar 2018, Laurent Dufour wrote:
+
+> >> This configuration variable will be used to build the code needed to
+> >> handle speculative page fault.
+> >>
+> >> By default it is turned off, and activated depending on architecture
+> >> support.
+> >>
+> >> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+> >> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> >> ---
+> >>  mm/Kconfig | 3 +++
+> >>  1 file changed, 3 insertions(+)
+> >>
+> >> diff --git a/mm/Kconfig b/mm/Kconfig
+> >> index abefa573bcd8..07c566c88faf 100644
+> >> --- a/mm/Kconfig
+> >> +++ b/mm/Kconfig
+> >> @@ -759,3 +759,6 @@ config GUP_BENCHMARK
+> >>  	  performance of get_user_pages_fast().
+> >>  
+> >>  	  See tools/testing/selftests/vm/gup_benchmark.c
+> >> +
+> >> +config SPECULATIVE_PAGE_FAULT
+> >> +       bool
 > > 
-> > One thing that ARM does IIRC is that it only guarantees to order writel() within
-> > one device, and the memory mapped PCI I/O space window almost certainly
-> > counts as a separate device to the CPU.
+> > Should this be configurable even if the arch supports it?
 > 
-> That sounds bogus.
+> Actually, this is not configurable unless by manually editing the .config file.
+> 
+> I made it this way on the Thomas's request :
+> https://lkml.org/lkml/2018/1/15/969
+> 
+> That sounds to be the smarter way to achieve that, isn't it ?
+> 
 
-To elaborate, if you do the following on arm:
+Putting this in mm/Kconfig is definitely the right way to go about it 
+instead of any generic option in arch/*.
 
-	writel(DEVICE_FOO);
-	writel(DEVICE_BAR);
+My question, though, was making this configurable by the user:
 
-we generally cannot guarantee in which order those accesses will hit the
-devices even if we add every barrier under the sun. You'd need something
-in between, specific to DEVICE_FOO (probably a read-back) to really push
-the first write out. This doesn't sound like it would be that uncommon to
-me.
+config SPECULATIVE_PAGE_FAULT
+	bool "Speculative page faults"
+	depends on X86_64 || PPC
+	default y
+	help
+	  ..
 
-On the other hand:
-
-	writel(DEVICE_FOO);
-	writel(DEVICE_FOO);
-
-is obviously ordered and also things like:
-
-	writel(DEVICE_FOO_IN_PCI_MEM_SPACE);
-	writel(DEVICE_BAR_IN_SAME_PCI_MEM_SPACE);
-
-are ordered up to the PCI host bridge, because that's really the "device"
-here.
-
-Will
+It's a question about whether we want this always enabled on x86_64 and 
+power or whether the user should be able to disable it (right now they 
+can't).  With a large feature like this, you may want to offer something 
+simple (disable CONFIG_SPECULATIVE_PAGE_FAULT) if someone runs into 
+regressions.
