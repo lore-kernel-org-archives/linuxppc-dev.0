@@ -2,21 +2,19 @@ Return-Path: <j.neuschaefer@gmx.net>
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409pcH5w53zF2H7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:27:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409pjm3pKvzF2G2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:32:12 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  Christophe Leroy <christophe.leroy@c-s.fr>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Mathieu Malaterre <malat@debian.org>, Balbir Singh <bsingharora@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
  Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 5/5] powerpc/mm/32: Remove the reserved memory hack
-Date: Wed, 28 Mar 2018 02:25:44 +0200
-Message-Id: <20180328002544.18526-6-j.neuschaefer@gmx.net>
+Subject: [PATCH v2 3/5] powerpc/mm/32: Use page_is_ram to check for RAM
+Date: Wed, 28 Mar 2018 02:25:42 +0200
+Message-Id: <20180328002544.18526-4-j.neuschaefer@gmx.net>
 In-Reply-To: <20180328002544.18526-1-j.neuschaefer@gmx.net>
 References: <20180328002544.18526-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -30,60 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This hack, introduced in commit c5df7f775148 ("powerpc: allow ioremap
-within reserved memory regions") is now unnecessary.
+On systems where there is MMIO space between different blocks of RAM in
+the physical address space, __ioremap_caller did not allow mapping these
+MMIO areas, because they were below the end RAM and thus considered RAM
+as well.  Use the memblock-based page_is_ram function, which returns
+false for such MMIO holes.
+
+v2:
+  Keep the check for p < virt_to_phys(high_memory). On 32-bit systems
+  with high memory (memory above physical address 4GiB), the high memory
+  is expected to be available though ioremap. The high_memory variable
+  marks the end of low memory; comparing against it means that only
+  ioremap requests for low RAM will be denied.
+  Reported by Michael Ellerman.
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
+ arch/powerpc/mm/pgtable_32.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-v2: no changes
----
- arch/powerpc/mm/init_32.c    | 5 -----
- arch/powerpc/mm/mmu_decl.h   | 1 -
- arch/powerpc/mm/pgtable_32.c | 3 +--
- 3 files changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index a2bf6965d04f..3e59e5d64b01 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -88,11 +88,6 @@ void MMU_init(void);
- int __map_without_bats;
- int __map_without_ltlbs;
- 
--/*
-- * This tells the system to allow ioremapping memory marked as reserved.
-- */
--int __allow_ioremap_reserved;
--
- /* max amount of low RAM to map in */
- unsigned long __max_low_memory = MAX_LOW_MEM;
- 
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 57fbc554c785..c4c0a09a7775 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -98,7 +98,6 @@ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot);
- 
- extern int __map_without_bats;
--extern int __allow_ioremap_reserved;
- extern unsigned int rtas_data, rtas_size;
- 
- struct hash_pte;
 diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 6668ecc041ad..120a49bfb9c6 100644
+index d35d9ad3c1cd..6668ecc041ad 100644
 --- a/arch/powerpc/mm/pgtable_32.c
 +++ b/arch/powerpc/mm/pgtable_32.c
-@@ -148,8 +148,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+@@ -148,6 +148,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
  	 * mem_init() sets high_memory so only do the check after that.
  	 */
  	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
--	    page_is_ram(__phys_to_pfn(p)) &&
--	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
-+	    page_is_ram(__phys_to_pfn(p))) {
++	    page_is_ram(__phys_to_pfn(p)) &&
+ 	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
  		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
  		       (unsigned long long)p, __builtin_return_address(0));
- 		return NULL;
 -- 
 2.16.2
