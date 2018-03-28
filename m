@@ -1,52 +1,39 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.181])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B5125J0LzF2Cn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 22:16:22 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2SBG8bR030950
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 07:16:20 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h06q5syk5-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 07:16:18 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 12:15:37 +0100
-Subject: Re: [PATCH v9 01/24] mm: Introduce CONFIG_SPECULATIVE_PAGE_FAULT
-To: David Rientjes <rientjes@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
- peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-2-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803251442090.80485@chino.kir.corp.google.com>
- <32c80b6a-28c6-bf63-ed7b-6a042ae18e8f@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803280310380.68839@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 28 Mar 2018 13:15:25 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B5Qg5vcPzF2Hs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 22:35:06 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>, Will Deacon
+ <will.deacon@arm.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Alexander Duyck
+ <alexander.duyck@gmail.com>, Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann
+ <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+Subject: RE: RFC on writel and writel_relaxed
+Date: Wed, 28 Mar 2018 11:30:54 +0000
+Message-ID: <a642dc060b484d98bc728eb1f4b5c600@AcuMS.aculab.com>
+References: <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+ <1522186396.7364.61.camel@kernel.crashing.org>
+ <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
+ <1522198981.7364.81.camel@kernel.crashing.org>
+ <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
+ <1522211620.7364.94.camel@kernel.crashing.org>
+ <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
+ <1522219376.7364.109.camel@kernel.crashing.org>
+ <20180328090710.GB28871@arm.com>
+ <1522230988.21446.7.camel@kernel.crashing.org>
+In-Reply-To: <1522230988.21446.7.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803280310380.68839@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <aa678038-9c5c-a8cb-0aed-ef19bde5d623@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,85 +43,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 28/03/2018 12:16, David Rientjes wrote:
-> On Wed, 28 Mar 2018, Laurent Dufour wrote:
-> 
->>>> This configuration variable will be used to build the code needed to
->>>> handle speculative page fault.
->>>>
->>>> By default it is turned off, and activated depending on architecture
->>>> support.
->>>>
->>>> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
->>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->>>> ---
->>>>  mm/Kconfig | 3 +++
->>>>  1 file changed, 3 insertions(+)
->>>>
->>>> diff --git a/mm/Kconfig b/mm/Kconfig
->>>> index abefa573bcd8..07c566c88faf 100644
->>>> --- a/mm/Kconfig
->>>> +++ b/mm/Kconfig
->>>> @@ -759,3 +759,6 @@ config GUP_BENCHMARK
->>>>  	  performance of get_user_pages_fast().
->>>>  
->>>>  	  See tools/testing/selftests/vm/gup_benchmark.c
->>>> +
->>>> +config SPECULATIVE_PAGE_FAULT
->>>> +       bool
->>>
->>> Should this be configurable even if the arch supports it?
->>
->> Actually, this is not configurable unless by manually editing the .config file.
->>
->> I made it this way on the Thomas's request :
->> https://lkml.org/lkml/2018/1/15/969
->>
->> That sounds to be the smarter way to achieve that, isn't it ?
->>
-> 
-> Putting this in mm/Kconfig is definitely the right way to go about it 
-> instead of any generic option in arch/*.
-> 
-> My question, though, was making this configurable by the user:
-> 
-> config SPECULATIVE_PAGE_FAULT
-> 	bool "Speculative page faults"
-> 	depends on X86_64 || PPC
-> 	default y
-> 	help
-> 	  ..
-> 
-> It's a question about whether we want this always enabled on x86_64 and 
-> power or whether the user should be able to disable it (right now they 
-> can't).  With a large feature like this, you may want to offer something 
-> simple (disable CONFIG_SPECULATIVE_PAGE_FAULT) if someone runs into 
-> regressions.
-
-I agree, but I think it would be important to get the per architecture
-enablement to avoid complex check here. For instance in the case of powerPC
-this is only supported for PPC_BOOK3S_64.
-
-To avoid exposing such per architecture define here, what do you think about
-having supporting architectures setting ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-and the SPECULATIVE_PAGE_FAULT depends on this, like this:
-
-In mm/Kconfig:
-config SPECULATIVE_PAGE_FAULT
- 	bool "Speculative page faults"
- 	depends on ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT && SMP
- 	default y
- 	help
-		...
-
-In arch/powerpc/Kconfig:
-config PPC
-	...
-	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT	if PPC_BOOK3S_64
-
-In arch/x86/Kconfig:
-config X86_64
-	...
-	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+RnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdA0KPiBTZW50OiAyOCBNYXJjaCAyMDE4IDEwOjU2
+DQouLi4NCj4gRm9yIGV4YW1wbGUsIGxldCdzIHNheSBJIGhhdmUgYSBkZXZpY2Ugd2l0aCBhIHJl
+c2V0IGJpdCBhbmQgdGhlIHNwZWMNCj4gc2F5cyB0aGUgcmVzZXQgYml0IG5lZWRzIHRvIGJlIHNl
+dCBmb3IgYXQgbGVhc3QgMTB1cy4NCj4gDQo+IFRoaXMgaXMgd3Jvbmc6DQo+IA0KPiAJd3JpdGVs
+KDEsIFJFU0VUX1JFRyk7DQo+IAl1c2xlZXAoMTApOw0KPiAJd3JpdGVsKDAsIFJFU0VUX1JFRyk7
+DQo+IA0KPiBCZWNhdXNlIG9mIHdyaXRlIHBvc3RpbmcsIHRoZSBmaXJzdCB3cml0ZSBtaWdodCBh
+cnJpdmUgdG8gdGhlIGRldmljZQ0KPiByaWdodCBiZWZvcmUgdGhlIHNlY29uZCBvbmUuDQo+IA0K
+PiBUaGUgdHlwaWNhbCAiZml4IiBpcyB0byB0dXJuIHRoYXQgaW50bzoNCj4gDQo+IAl3cml0ZWwo
+MSwgUkVTRVRfUkVHKTsNCj4gCXJlYWRsKFJFU0VUX1JFRyk7IC8qIEZsdXNoIHBvc3RlZCB3cml0
+ZXMgKi8NCg0KV291bGQgYSB3cml0ZWwoMSwgUkVTRVRfUkVHKSBoZXJlIHByb3ZpZGUgZW5vdWdo
+IHN5bmNocm9uc2lhdGlvbj8NCg0KPiAJdXNsZWVwKDEwKTsNCj4gCXdyaXRlbCgwLCBSRVNFVF9S
+RUcpOw0KPiANCj4gKkhvd2V2ZXIqIHRoZSBpc3N1ZSBoZXJlLCBhdCBsZWFzdCBvbiBwb3dlciwg
+aXMgdGhhdCB0aGUgQ1BVIGNhbiBpc3N1ZQ0KPiB0aGF0IHJlYWRsIGJ1dCBkb2Vzbid0IG5lY2Vz
+c2FyaWx5IHdhaXQgZm9yIGl0IHRvIGNvbXBsZXRlIChpZSwgdGhlDQo+IGRhdGEgdG8gcmV0dXJu
+KSwgYmVmb3JlIHByb2NlZWRpbmcgdG8gdGhlIHVzbGVlcC4gTm93IGEgdXNsZWVwIGNvbnRhaW5z
+DQo+IGEgYnVuY2ggb2YgbG9hZHMgYW5kIHN0b3JlcyBhbmQgaXMgcHJvYmFibHkgZmluZSwgYnV0
+IGEgdWRlbGF5IHdoaWNoDQo+IGp1c3QgbG9vcHMgb24gdGhlIHRpbWViYXNlIG1heSBub3QgYmUu
+DQo+IA0KPiBUaHVzIHdlIG1heSBzdGlsbCB2aW9sYXRlIHRoZSB0aW1pbmcgcmVxdWlyZW1lbnQu
+DQoNCkkndmUgc2VlbSB0aGF0IHNvcnQgb2YgY29kZSAod2l0aCB1ZGVsYXkoKSBhbmQgbm8gcmVh
+ZCBiYWNrKSBxdWl0ZSBvZnRlbi4NCkhvdyBtYW55IHdlcmUgaW4gbGludXggSSBkb24ndCBrbm93
+Lg0KDQpGb3Igc21hbGwgZGVsYXlzIEkgdXN1YWxseSBmaXggaXQgYnkgcmVwZWF0ZWQgd3JpdGVz
+IChvZiB0aGUgc2FtZSB2YWx1ZSkNCnRvIHRoZSBkZXZpY2UgcmVnaXN0ZXIuIFRoYXQgY2FuIGd1
+YXJhbnRlZSB2ZXJ5IHNob3J0IGludGVydmFscy4NCg0KVGhlIG9ubHkgdGltZSBJJ3ZlIGFjdHVh
+bGx5IHNlZW4gYnVmZmVyZWQgd3JpdGVzIGJyZWFrIHRpbWluZyB3YXMNCmJldHdlZW4gYSAyODYg
+YW5kIGFuIDg4NTkgaW50ZXJydXB0IGNvbnRyb2xsZXIuDQpJZiB5b3Ugd3JvdGUgdG8gdGhlIG1h
+c2sgdGhlbiBlbmFibGVkIGludGVycnVwdHMgdGhlIGZpcnN0IElBQ0sgY3ljbGUNCmNvdWxkIGJl
+IHRvbyBjbG9zZSB0byB3cml0ZSBhbmQgYnJlYWsgdGhlIGN5Y2xlIHJlY292ZXJ5IHRpbWUuDQpU
+aGF0IGNsb2JiZXJlZCBtb3N0IG9mIHRoZSBpbnRlcnJ1cHQgY29udHJvbGxlciByZWdpc3RlcnMu
+DQpUaGF0IHByb2JhYmx5IGFmZmVjdGVkIGV2ZXJ5IDI4NiBib2FyZCBldmVyIGJ1aWx0IQ0KTm90
+IHN1cmUgaG93IG11Y2ggc29mdHdhcmUgYWRkZWQgdGhlIHJlcXVpcmVkIGV4dHJhIGJ1cyBjeWNs
+ZS4NCg0KPiBXaGF0IHdlIGRpZCBpbnNpZGUgcmVhZGwsIHdpdGggdGhlIHR3aTtpc3luYyBzZXF1
+ZW5jZSAod2hpY2ggYmFzaWNhbGx5DQo+IG1lYW5zLCB0cmFwIG9uIHJldHVybiB2YWx1ZSB3aXRo
+ICJ0cmFwIG5ldmVyIiBhcyBhIGNvbmRpdGlvbiwgZm9sbG93ZWQNCj4gYnkgaXN5bmMgdGhhdCBl
+bnN1cmVzIGFsbCBleGNwZXRpb24gY29uZGl0aW9ucyBhcmUgcmVzb2x2ZWQpLCBpcyBmb3JjZQ0K
+PiB0aGUgQ1BVIHRvICJjb25zdW1lIiB0aGUgZGF0YSBmcm9tIHRoZSByZWFkIGJlZm9yZSBtb3Zp
+bmcgb24uDQo+IA0KPiBUaGlzIGVmZmVjdGl2ZWx5IG1ha2VzIHJlYWRsIGZ1bGx5IHN5bmNocm9u
+b3VzICh3ZSB3b3VsZCBwcm9iYWJseSBhdm9pZA0KPiB0aGF0IGlmIHdlIHdlcmUgdG8gaW1wbGVt
+ZW50IGEgcmVhZGxfcmVsYXhlZCkuDQoNCkkndmUgYWx3YXlzIHdvbmRlcmVkIGV4YWN0bHkgd2hh
+dCB0aGUgdHdpO2lzeW5jIHdlcmUgZm9yIC0gYWx3YXlzIHNlZW1lZA0KdmVyeSBoZWF2eSBoYW5k
+ZWQgZm9yIG1vc3QgbW1pbyByZWFkcy4NClBhcnRpY3VsYXJseSBpZiB5b3UgYXJlIGRvaW5nIG1t
+aW8gcmVhZHMgZnJvbSBhIGRhdGEgZmlmby4NCg0KUGVyaGFwcyB0aGVyZSBzaG91bGQgYmUgYSB3
+cml0ZWxfd2FpdCgpIHRoYXQgaXMgYWxsb3dlZCB0byBkbyBhIHJlYWQgYmFjaw0KZm9yIHN1Y2gg
+Y29kZSBwYXRocz8NCg0KCURhdmlkDQoNCg==
