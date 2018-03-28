@@ -1,34 +1,52 @@
-Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0089.outbound.protection.outlook.com [104.47.42.89])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B4cV0H3bzF2LB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:58:32 +1100 (AEDT)
-Date: Wed, 28 Mar 2018 13:58:13 +0300
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: Will Deacon <will.deacon@arm.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180328105813.arilhcxi6hawd34n@yury-thinkpad>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180327102116.GA2464@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B5125J0LzF2Cn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 22:16:22 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2SBG8bR030950
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 07:16:20 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h06q5syk5-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 07:16:18 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 12:15:37 +0100
+Subject: Re: [PATCH v9 01/24] mm: Introduce CONFIG_SPECULATIVE_PAGE_FAULT
+To: David Rientjes <rientjes@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-2-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803251442090.80485@chino.kir.corp.google.com>
+ <32c80b6a-28c6-bf63-ed7b-6a042ae18e8f@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803280310380.68839@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 13:15:25 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180327102116.GA2464@arm.com>
+In-Reply-To: <alpine.DEB.2.20.1803280310380.68839@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <aa678038-9c5c-a8cb-0aed-ef19bde5d623@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,49 +56,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 11:21:17AM +0100, Will Deacon wrote:
-> On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
-> > kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
-> > If CPU is in extended quiescent state (idle task or nohz_full userspace), this
-> > work may be done at the exit of this state. Delaying synchronization helps to
-> > save power if CPU is in idle state and decrease latency for real-time tasks.
-> > 
-> > This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
-> > code to delay syncronization.
-> > 
-> > For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
-> > isolated task would be fatal, as it breaks isolation. The approach with delaying
-> > of synchronization work helps to maintain isolated state.
-> > 
-> > I've tested it with test from task isolation series on ThunderX2 for more than
-> > 10 hours (10k giga-ticks) without breaking isolation.
-> > 
-> > Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
-> > ---
-> >  arch/arm64/kernel/insn.c |  2 +-
-> >  include/linux/smp.h      |  2 ++
-> >  kernel/smp.c             | 24 ++++++++++++++++++++++++
-> >  mm/slab.c                |  2 +-
-> >  4 files changed, 28 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-> > index 2718a77da165..9d7c492e920e 100644
-> > --- a/arch/arm64/kernel/insn.c
-> > +++ b/arch/arm64/kernel/insn.c
-> > @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
-> >  			 * synchronization.
-> >  			 */
-> >  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
-> > -			kick_all_cpus_sync();
-> > +			kick_active_cpus_sync();
-> >  			return ret;
-> >  		}
-> >  	}
+
+
+On 28/03/2018 12:16, David Rientjes wrote:
+> On Wed, 28 Mar 2018, Laurent Dufour wrote:
 > 
-> I think this means that runtime modifications to the kernel text might not
-> be picked up by CPUs coming out of idle. Shouldn't we add an ISB on that
-> path to avoid executing stale instructions?
+>>>> This configuration variable will be used to build the code needed to
+>>>> handle speculative page fault.
+>>>>
+>>>> By default it is turned off, and activated depending on architecture
+>>>> support.
+>>>>
+>>>> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+>>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>>>> ---
+>>>>  mm/Kconfig | 3 +++
+>>>>  1 file changed, 3 insertions(+)
+>>>>
+>>>> diff --git a/mm/Kconfig b/mm/Kconfig
+>>>> index abefa573bcd8..07c566c88faf 100644
+>>>> --- a/mm/Kconfig
+>>>> +++ b/mm/Kconfig
+>>>> @@ -759,3 +759,6 @@ config GUP_BENCHMARK
+>>>>  	  performance of get_user_pages_fast().
+>>>>  
+>>>>  	  See tools/testing/selftests/vm/gup_benchmark.c
+>>>> +
+>>>> +config SPECULATIVE_PAGE_FAULT
+>>>> +       bool
+>>>
+>>> Should this be configurable even if the arch supports it?
+>>
+>> Actually, this is not configurable unless by manually editing the .config file.
+>>
+>> I made it this way on the Thomas's request :
+>> https://lkml.org/lkml/2018/1/15/969
+>>
+>> That sounds to be the smarter way to achieve that, isn't it ?
+>>
+> 
+> Putting this in mm/Kconfig is definitely the right way to go about it 
+> instead of any generic option in arch/*.
+> 
+> My question, though, was making this configurable by the user:
+> 
+> config SPECULATIVE_PAGE_FAULT
+> 	bool "Speculative page faults"
+> 	depends on X86_64 || PPC
+> 	default y
+> 	help
+> 	  ..
+> 
+> It's a question about whether we want this always enabled on x86_64 and 
+> power or whether the user should be able to disable it (right now they 
+> can't).  With a large feature like this, you may want to offer something 
+> simple (disable CONFIG_SPECULATIVE_PAGE_FAULT) if someone runs into 
+> regressions.
 
-Thanks, Will, for the hint. I'll do that.
+I agree, but I think it would be important to get the per architecture
+enablement to avoid complex check here. For instance in the case of powerPC
+this is only supported for PPC_BOOK3S_64.
 
-Yury
+To avoid exposing such per architecture define here, what do you think about
+having supporting architectures setting ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+and the SPECULATIVE_PAGE_FAULT depends on this, like this:
+
+In mm/Kconfig:
+config SPECULATIVE_PAGE_FAULT
+ 	bool "Speculative page faults"
+ 	depends on ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT && SMP
+ 	default y
+ 	help
+		...
+
+In arch/powerpc/Kconfig:
+config PPC
+	...
+	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT	if PPC_BOOK3S_64
+
+In arch/x86/Kconfig:
+config X86_64
+	...
+	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
