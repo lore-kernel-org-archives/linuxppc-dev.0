@@ -1,45 +1,17 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x22a.google.com (mail-io0-x22a.google.com
- [IPv6:2607:f8b0:4001:c06::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409psw5GtRzF2H2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:39:16 +1100 (AEDT)
-Received: by mail-io0-x22a.google.com with SMTP id o4so1437095iod.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 17:39:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409q1P2YWNzF24n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:45:45 +1100 (AEDT)
+Date: Wed, 28 Mar 2018 11:44:42 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: [PATCH] powerpc/powernv: Fix sparse data type warnings in pci-ioda.c
+Message-ID: <20180328004442.GA29865@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <1522186396.7364.61.camel@kernel.crashing.org>
-References: <1521854626.16434.359.camel@kernel.crashing.org>
- <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
- <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
- <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <1522101616.7364.13.camel@kernel.crashing.org>
- <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
- <20180327151029.GB17494@arm.com>
- <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
- <1522186396.7364.61.camel@kernel.crashing.org>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 27 Mar 2018 14:39:13 -1000
-Message-ID: <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
-Subject: Re: RFC on writel and writel_relaxed
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Alexander Duyck <alexander.duyck@gmail.com>,
- Will Deacon <will.deacon@arm.com>,
- Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
- Jason Gunthorpe <jgg@ziepe.ca>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Alexander Duyck <alexander.h.duyck@redhat.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,40 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 11:33 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
-> Well, we need to clarify that once and for all, because as I wrote
-> earlier, it was decreed by Linus more than a decade ago that writel
-> would be fully ordered by itself vs. previous memory stores (at least
-> on UC memory).
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Yes.
+The value passed to __raw_rm_writeq() and __raw_writeq() should be "u64"
+and "unsigned long". This fixes warning reported by sparse:
 
-So "writel()" needs to be ordered with respect to other writel() uses
-on the same thread. Anything else *will* break drivers. Obviously, the
-drivers may then do magic to say "do write combining etc", but that
-magic will be architecture-specific.
+  gwshan@gwshan:~/sandbox/l$ make C=2 CF=-D__CHECK_ENDIAN__ \
+                             arch/powerpc/platforms/powernv/pci-ioda.o
+  arch/powerpc/platforms/powernv/pci-ioda.c:1794:41: \
+  warning: incorrect type in argument 1 (different base types)
+  arch/powerpc/platforms/powernv/pci-ioda.c:1794:41: \
+  expected unsigned long long [unsigned] [usertype] val
+  arch/powerpc/platforms/powernv/pci-ioda.c:1794:41: \
+  got restricted __be64 [usertype] <noident>
+  arch/powerpc/platforms/powernv/pci-ioda.c:1796:38: \
+  warning: incorrect type in argument 1 (different base types)
+  arch/powerpc/platforms/powernv/pci-ioda.c:1796:38: \
+  expected unsigned long [unsigned] v
+  arch/powerpc/platforms/powernv/pci-ioda.c:1796:38: \
+  got restricted __be64 [usertype] <noident>
 
-The other issue is that "writel()" needs to be ordered wrt other CPU's
-doing "writel()" if those writel's are in a spinlocked region.
+This also fixes another warning reported by sparse:
 
-So it's not  that "writel()" needs to be ordered wrt the spinlock
-itself, but you *do* need to honor ordering if you have something like
-this:
+  gwshan@gwshan:~/sandbox/l$ make C=2 CF=-D__CHECK_ENDIAN__ \
+                             arch/powerpc/platforms/powernv/pci-ioda.o
+        :
+  arch/powerpc/platforms/powernv/pci-ioda.c:2647:45: \
+  warning: cast to restricted __be64
 
-   spin_lock(&somelock);
-   writel(a);
-   writel(b);
-   spin_unlock(&somelock);
-
-and if two CPU's run the above code "at the same time", then the
-*ONLY* acceptable sequence is abab.
-
-You cannot, and must not, ever see "aabb" at the device, for example,
-because of how the writel would basically leak out of the spinlock.
-
-That sounds "obvious", but dammit, a lot of architectures got that
-wrong, afaik.
-
-                Linus
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index a6c92c7..71de087 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1976,9 +1976,11 @@ static void pnv_pci_p7ioc_tce_invalidate(struct iommu_table *tbl,
+         mb(); /* Ensure above stores are visible */
+         while (start <= end) {
+ 		if (rm)
+-			__raw_rm_writeq(cpu_to_be64(start), invalidate);
++			__raw_rm_writeq((__force u64)cpu_to_be64(start),
++					invalidate);
+ 		else
+-			__raw_writeq(cpu_to_be64(start), invalidate);
++			__raw_writeq((__force unsigned long)cpu_to_be64(start),
++				     invalidate);
+                 start += inc;
+         }
+ 
+@@ -2055,9 +2057,10 @@ static void pnv_pci_phb3_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
+ 
+ 	mb(); /* Ensure previous TCE table stores are visible */
+ 	if (rm)
+-		__raw_rm_writeq(cpu_to_be64(val), invalidate);
++		__raw_rm_writeq((__force u64)cpu_to_be64(val), invalidate);
+ 	else
+-		__raw_writeq(cpu_to_be64(val), invalidate);
++		__raw_writeq((__force unsigned long)cpu_to_be64(val),
++			     invalidate);
+ }
+ 
+ static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+@@ -2067,7 +2070,7 @@ static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+ 	unsigned long val = PHB3_TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
+ 
+ 	mb(); /* Ensure above stores are visible */
+-	__raw_writeq(cpu_to_be64(val), invalidate);
++	__raw_writeq((__force unsigned long)cpu_to_be64(val), invalidate);
+ }
+ 
+ static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+@@ -2090,9 +2093,11 @@ static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+ 
+ 	while (start <= end) {
+ 		if (rm)
+-			__raw_rm_writeq(cpu_to_be64(start), invalidate);
++			__raw_rm_writeq((__force u64)cpu_to_be64(start),
++					invalidate);
+ 		else
+-			__raw_writeq(cpu_to_be64(start), invalidate);
++			__raw_writeq((__force unsigned long)cpu_to_be64(start),
++				     invalidate);
+ 		start += inc;
+ 	}
+ }
+@@ -2864,7 +2869,8 @@ static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
+ 		u64 *tmp = (u64 *) addr_ul;
+ 
+ 		for (i = 0; i < size; ++i) {
+-			unsigned long hpa = be64_to_cpu(tmp[i]);
++			unsigned long hpa =
++				be64_to_cpu((__force __be64)(tmp[i]));
+ 
+ 			if (!(hpa & (TCE_PCI_READ | TCE_PCI_WRITE)))
+ 				continue;
