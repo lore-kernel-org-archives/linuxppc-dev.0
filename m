@@ -1,22 +1,39 @@
-Return-Path: <matt@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B46f2kVJzF2Fb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:36:10 +1100 (AEDT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
-Subject: Re: [PATCH] powerpc: Clear branch trap (MSR.BE) before delivering
- SIGTRAP
-From: Matt Evans <matt@ozlabs.org>
-In-Reply-To: <877epw3fu2.fsf@concordia.ellerman.id.au>
-Date: Wed, 28 Mar 2018 11:36:03 +0100
-Cc: linuxppc-dev@lists.ozlabs.org
-Message-Id: <C8B54188-179A-475D-B06A-A25426EF6932@ozlabs.org>
-References: <74EBF461-0D94-4C2D-ABA7-0B9BE010F173@ozlabs.org>
- <877epw3fu2.fsf@concordia.ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B4983DbfzF2KY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:38:20 +1100 (AEDT)
+Message-ID: <1522232416.21446.10.camel@kernel.crashing.org>
+Subject: Re: Aw: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Cc: Will Deacon <will.deacon@arm.com>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Alexander Duyck
+ <alexander.duyck@gmail.com>, Sinan Kaya <okaya@codeaurora.org>, Arnd
+ Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, David Laight
+ <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open list:LINUX FOR
+ POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+Date: Wed, 28 Mar 2018 21:20:16 +1100
+In-Reply-To: <trinity-2ee224b5-cbac-415e-9f8c-305e802b5369-1522232002354@3c-app-gmx-bs61>
+References: <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+ <1522186396.7364.61.camel@kernel.crashing.org>
+ <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
+ <1522198981.7364.81.camel@kernel.crashing.org>
+ <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
+ <1522211620.7364.94.camel@kernel.crashing.org>
+ <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
+ <1522219376.7364.109.camel@kernel.crashing.org>
+ <20180328090710.GB28871@arm.com>
+ <1522230988.21446.7.camel@kernel.crashing.org>
+ <trinity-2ee224b5-cbac-415e-9f8c-305e802b5369-1522232002354@3c-app-gmx-bs61>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +43,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Howdy Michael,
+On Wed, 2018-03-28 at 12:13 +0200, Lino Sanfilippo wrote:
+> Hi,
+> 
+> 
+> > 
+> > Yeah so that other trick I'm talking about is also used for timing
+> > accuracy.
+> > 
+> > For example, let's say I have a device with a reset bit and the spec
+> > says the reset bit needs to be set for at least 10us.
+> > 
+> > This is wrong:
+> > 
+> > 	writel(1, RESET_REG);
+> > 	usleep(10);
+> > 	writel(0, RESET_REG);
+> > 
+> > Because of write posting, the first write might arrive to the device
+> > right before the second one.
+> > 
+> 
+> Does not write posting only concern PCI? This seems to be a different topic. Furthermore
+> write posting should not include write reordering...
 
-> On 28 Mar 2018, at 06:54, Michael Ellerman <mpe@ellerman.id.au> wrote:
->=20
-> Matt Evans <matt@ozlabs.org> writes:
->=20
->> When using SIG_DBG_BRANCH_TRACING, MSR.BE is left enabled in the
->> user context when single_step_exception() prepares the SIGTRAP
->> delivery.  The resulting branch-trap-within-the-SIGTRAP-handler
->> isn't healthy.
->>=20
->> Commit 2538c2d08f46141550a1e68819efa8fe31c6e3dc broke this, by
->> replacing an MSR mask operation of ~(MSR_SE | MSR_BE) with a call
->> to clear_single_step() which only clears MSR_SE.
->>=20
->> This patch adds a new helper, clear_br_trace(), which clears the
->> debug trap before invoking the signal handler.  This helper is a
->> NOP for BookE as SIG_DBG_BRANCH_TRACING isn't supported on BookE.
->>=20
->> Signed-off-by: Matt Evans <matt@ozlabs.org>
->=20
-> Hi Matt!
->=20
-> It seems we might not be regularly testing this code :}
-
-I know, rite? ;-)
-
-> How did you hit/find the bug? And do you have a test case by any =
-chance?
->=20
-> I found the test code at the bottom of:
->  https://lwn.net/Articles/114587/
->=20
-> But it didn't immediately work.
-
-I'm using this feature as part of a debug harness I wrote to log a =
-program=E2=80=99s control flow (to create a =E2=80=9Cknown good=E2=80=9D =
-pattern to compare a PPC interpreter against).  So at least the feature =
-has /one/ user.  ;-)
-
-The symptoms of the bug are that if you use single-stepping you get a =
-sequence of SIGTRAPs representing each instruction completion (good), =
-but if you use branch tracing the process just dies with SIGTRAP (looks =
-like it=E2=80=99s never caught by the signal handler).  What=E2=80=99s =
-really happening is that there /is/ a signal delivered to the handler, =
-but (because branch tracing is left on) that then causes a second debug =
-exception from the handler itself, i.e. whilst SIGTRAP=E2=80=99s masked.
-
-OK, let me have a dig to reduce my program to something very basic and =
-I=E2=80=99ll post something =E2=80=94 sorry, I should=E2=80=99ve got a =
-PoC ready before.  (I did start out inspired by that post you linked to, =
-but IIRC I don=E2=80=99t think it worked out of the box for me either.)
-
+Nobody's talking about re-ordering and no, write posting is rather
+common practice on a whole lot of different busses, not just PCI(e).
 
 Cheers,
-
-
-Matt
+Ben.
