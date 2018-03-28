@@ -1,17 +1,25 @@
 Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409pZj0345zF2F7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:26:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409pb53DkJzF2FX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:26:25 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  Christophe Leroy <christophe.leroy@c-s.fr>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Subject: [PATCH v2 0/5] PPC32/ioremap: Use memblock API to check for RAM
-Date: Wed, 28 Mar 2018 02:25:39 +0200
-Message-Id: <20180328002544.18526-1-j.neuschaefer@gmx.net>
+ =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michal Hocko <mhocko@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Vlastimil Babka <vbabka@suse.cz>, Joe Perches <joe@perches.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>
+Subject: [PATCH v2 1/5] powerpc: mm: Simplify page_is_ram by using
+ memblock_is_memory
+Date: Wed, 28 Mar 2018 02:25:40 +0200
+Message-Id: <20180328002544.18526-2-j.neuschaefer@gmx.net>
+In-Reply-To: <20180328002544.18526-1-j.neuschaefer@gmx.net>
+References: <20180328002544.18526-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,31 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v1: https://www.spinics.net/lists/linux-mm/msg145939.html
+Instead of open-coding the search in page_is_ram, call memblock_is_memory.
 
-This patchset makes it possible to allocate MMIO ranges that are between
-the two RAM chunks on the Wii, MEM1 and MEM2, not only with ioremap
-(which previously worked through a hack) but also with kernel/resource.c.
+Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+---
 
-Changes in v2:
-- I added back the p < virt_to_phys(high_memory) check in
-  __ioremap_caller because high memory should be allocatable through
-  ioremap
-- I expanded the commit messages a bit
+v2: no changes
+---
+ arch/powerpc/mm/mem.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-Jonathan Neuschäfer (5):
-  powerpc: mm: Simplify page_is_ram by using memblock_is_memory
-  powerpc: mm: Use memblock API for PPC32 page_is_ram
-  powerpc/mm/32: Use page_is_ram to check for RAM
-  powerpc: wii: Don't rely on the reserved memory hack
-  powerpc/mm/32: Remove the reserved memory hack
-
- arch/powerpc/mm/init_32.c                |  5 -----
- arch/powerpc/mm/mem.c                    | 12 +-----------
- arch/powerpc/mm/mmu_decl.h               |  1 -
- arch/powerpc/mm/pgtable_32.c             |  2 +-
- arch/powerpc/platforms/embedded6xx/wii.c | 14 +-------------
- 5 files changed, 3 insertions(+), 31 deletions(-)
-
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index fe8c61149fb8..da4e1555d61d 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -85,13 +85,7 @@ int page_is_ram(unsigned long pfn)
+ #ifndef CONFIG_PPC64	/* XXX for now */
+ 	return pfn < max_pfn;
+ #else
+-	unsigned long paddr = (pfn << PAGE_SHIFT);
+-	struct memblock_region *reg;
+-
+-	for_each_memblock(memory, reg)
+-		if (paddr >= reg->base && paddr < (reg->base + reg->size))
+-			return 1;
+-	return 0;
++	return memblock_is_memory(__pfn_to_phys(pfn));
+ #endif
+ }
+ 
 -- 
 2.16.2
