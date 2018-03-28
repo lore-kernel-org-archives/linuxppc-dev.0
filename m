@@ -1,52 +1,47 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B11d3XpNzF2Gn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 19:16:35 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2S8EdZr100804
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:16:33 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h03xr0n6a-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:16:32 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 09:15:57 +0100
-Subject: Re: [PATCH v9 05/24] mm: Introduce pte_spinlock for
- FAULT_FLAG_SPECULATIVE
-To: David Rientjes <rientjes@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-6-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803251446180.80485@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 28 Mar 2018 10:15:47 +0200
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803251446180.80485@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <56b596fe-f235-7033-348b-b0d6c9481f2c@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B19k5k1TzF2Cp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 19:23:36 +1100 (AEDT)
+Message-ID: <1522222979.7364.118.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Alexander Duyck
+ <alexander.duyck@gmail.com>, Will Deacon <will.deacon@arm.com>, Sinan Kaya
+ <okaya@codeaurora.org>, Jason Gunthorpe <jgg@ziepe.ca>, David Laight
+ <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open list:LINUX FOR
+ POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+Date: Wed, 28 Mar 2018 18:42:59 +1100
+In-Reply-To: <CAK8P3a1QTjCtJMAv1RSN5ReiOShZ_ygkCXY484OJUvn6r+1mbg@mail.gmail.com>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+ <1522186396.7364.61.camel@kernel.crashing.org>
+ <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
+ <1522198981.7364.81.camel@kernel.crashing.org>
+ <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
+ <1522211620.7364.94.camel@kernel.crashing.org>
+ <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
+ <1522219376.7364.109.camel@kernel.crashing.org>
+ <CA+55aFyaZ=WEXFg4KZ0yCWaR=8Dm_FPK-xcA0EYi3fEzm+KZkA@mail.gmail.com>
+ <1522220165.7364.110.camel@kernel.crashing.org>
+ <CAK8P3a1QTjCtJMAv1RSN5ReiOShZ_ygkCXY484OJUvn6r+1mbg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,48 +51,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25/03/2018 23:50, David Rientjes wrote:
-> On Tue, 13 Mar 2018, Laurent Dufour wrote:
+On Wed, 2018-03-28 at 09:11 +0200, Arnd Bergmann wrote:
+> On Wed, Mar 28, 2018 at 8:56 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Wed, 2018-03-28 at 06:53 +0000, Linus Torvalds wrote:
+> > > On Tue, Mar 27, 2018, 20:43 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > That's why in/out were *so* slow, and why nobody uses them any more
+> > > (well, the address size limitations and the lack of any remapping of
+> > > the address obviously also are a reason).
+> > 
+> > All true indeed, though a lot of other archs never quite made them
+> > fully synchronous, which was another can of worms ... oh well.
 > 
->> When handling page fault without holding the mmap_sem the fetch of the
->> pte lock pointer and the locking will have to be done while ensuring
->> that the VMA is not touched in our back.
->>
->> So move the fetch and locking operations in a dedicated function.
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  mm/memory.c | 15 +++++++++++----
->>  1 file changed, 11 insertions(+), 4 deletions(-)
->>
->> diff --git a/mm/memory.c b/mm/memory.c
->> index 8ac241b9f370..21b1212a0892 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -2288,6 +2288,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
->>  }
->>  EXPORT_SYMBOL_GPL(apply_to_page_range);
->>  
->> +static bool pte_spinlock(struct vm_fault *vmf)
-> 
-> inline?
+> Many architectures have no way of providing PCI compliant semantics
+> for outb, as their instruction set and/or bus interconnect lacks a
+> method of waiting for completion of an outb.
 
-You're right.
-Indeed this was done in the patch 18 : "mm: Provide speculative fault
-infrastructure", but this has to be done there too, I'll fix that.
+Yup, that includes powerpc. Note that since POWER8 we don't even
+genetate IO space anymore :-)
 
-> 
->> +{
->> +	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
->> +	spin_lock(vmf->ptl);
->> +	return true;
->> +}
->> +
->>  static bool pte_map_lock(struct vm_fault *vmf)
->>  {
->>  	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
-> 
-> Shouldn't pte_unmap_same() take struct vm_fault * and use the new 
-> pte_spinlock()?
+> In practice, it doesn't seem to matter for any of the devices one would
+> encounter these days: very few use I/O space, and those that do don't
+> actually rely on the strict ordering. Some architectures (in particular
+> s390, but I remember seeing the same thing elsewhere) explicitly
+> disallow I/O space access on PCI because of this. On ARM, the typical
+> PCI implementations have other problems that are worse than this
+> one, so most drivers are fine with the almost-working semantics.
 
-done in the next patch, but you already acked it..
+/me cries...
+
+Ben.
