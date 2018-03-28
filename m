@@ -1,31 +1,50 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409zwn1kxHzF2JG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 18:27:19 +1100 (AEDT)
-Received: by mail-oi0-x243.google.com with SMTP id x9-v6so1298787oig.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 00:27:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B0Qh4tyVzF2HN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 18:49:46 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2S7YLf3018698
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:49:44 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h06e29w9h-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 03:49:42 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 08:49:40 +0100
+Subject: Re: [PATCH v9 01/24] mm: Introduce CONFIG_SPECULATIVE_PAGE_FAULT
+To: David Rientjes <rientjes@google.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-2-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803251442090.80485@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 09:49:29 +0200
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <20180327193323.Horde.S-Hqc40p7JjEsZPPEa3YNg1@messagerie.si.c-s.fr>
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-15-malat@debian.org>
- <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
- <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
- <20180324211020.Horde.kEO4b3mHPV88FKM0OiRT0Q1@messagerie.si.c-s.fr>
- <CA+7wUszsJUJJeb+xhzjGr8YxDt-BYruBwda7Dq-nFfyt0sU0ew@mail.gmail.com>
- <20180327175806.Horde.f26UMak3wqEtNtiMmJy51w2@messagerie.si.c-s.fr>
- <20180327193323.Horde.S-Hqc40p7JjEsZPPEa3YNg1@messagerie.si.c-s.fr>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 28 Mar 2018 09:26:56 +0200
-Message-ID: <CA+7wUsz-ihu7aoE4UfVhojDjH0pcR8QbVGLCzMyA3RocLJz5-A@mail.gmail.com>
-Subject: Re: [PATCH 14/19] powerpc/altivec: Add missing prototypes for altivec
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: kvm-ppc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <alpine.DEB.2.20.1803251442090.80485@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <32c80b6a-28c6-bf63-ed7b-6a042ae18e8f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,200 +54,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 7:33 PM, LEROY Christophe
-<christophe.leroy@c-s.fr> wrote:
-> LEROY Christophe <christophe.leroy@c-s.fr> a =C3=A9crit :
->
->
->> Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
->>
->>> Christophe,
->>>
->>> On Sat, Mar 24, 2018 at 9:10 PM, LEROY Christophe
->>> <christophe.leroy@c-s.fr> wrote:
->>>>
->>>> Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
->>>>
->>>>
->>>>> On Fri, Mar 23, 2018 at 1:19 PM, christophe leroy
->>>>> <christophe.leroy@c-s.fr> wrote:
->>>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> Some functions prototypes were missing for the non-altivec code. Ad=
-d
->>>>>>> the
->>>>>>> missing prototypes directly in xor_vmx, fix warnings treated as
->>>>>>> errors
->>>>>>> with
->>>>>>> W=3D1:
->>>>>>>
->>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototyp=
-e
->>>>>>> for
->>>>>>> =E2=80=98xor_altivec_2=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototyp=
-e
->>>>>>> for
->>>>>>> =E2=80=98xor_altivec_3=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototyp=
-e
->>>>>>> for
->>>>>>> =E2=80=98xor_altivec_4=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototyp=
-e
->>>>>>> for
->>>>>>> =E2=80=98xor_altivec_5=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>
->>>>>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>>>>>> ---
->>>>>>>  arch/powerpc/lib/xor_vmx.h | 14 ++++++++++++++
->>>>>>>  1 file changed, 14 insertions(+)
->>>>>>>
->>>>>>> diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx.=
-h
->>>>>>> index 5c2b0839b179..2173e3c84151 100644
->>>>>>> --- a/arch/powerpc/lib/xor_vmx.h
->>>>>>> +++ b/arch/powerpc/lib/xor_vmx.h
->>>>>>> @@ -19,3 +19,17 @@ void __xor_altivec_4(unsigned long bytes, unsign=
-ed
->>>>>>> long
->>>>>>> *v1_in,
->>>>>>>  void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>>>>>>                             unsigned long *v2_in, unsigned long
->>>>>>> *v3_in,
->>>>>>>                             unsigned long *v4_in, unsigned long
->>>>>>> *v5_in);
->>>>>>> +
->>>>>>> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
->>>>>>> +                            unsigned long *v2_in);
->>>>>>> +
->>>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>> Only used in one place, should be static instead of adding it in a .=
-h
->>>>>>
->>>>>> Same for the other ones.
->>>>>
->>>>>
->>>>>
->>>>> $ git grep xor_altivec_2
->>>>> [...]
->>>>> arch/powerpc/lib/xor_vmx_glue.c:EXPORT_SYMBOL(xor_altivec_2);
->>>>>
->>>>> Are you sure I can change this function to static ?
->>>>
->>>>
->>>>
->>>> Yes you are right.  But in fact those fonctions are already defined in
->>>> asm/xor. h
->>>> So you just need to add the missing #include
->>>
->>>
->>> I originally tried it, but this leads to:
->>>
->>>  CC      arch/powerpc/lib/xor_vmx_glue.o
->>> In file included from arch/powerpc/lib/xor_vmx_glue.c:16:0:
->>> ./arch/powerpc/include/asm/xor.h:39:15: error: variable
->>> =E2=80=98xor_block_altivec=E2=80=99 has initializer but incomplete type
->>> static struct xor_block_template xor_block_altivec =3D {
->>>               ^~~~~~~~~~~~~~~~~~
->>> ./arch/powerpc/include/asm/xor.h:40:2: error: unknown field =E2=80=98na=
-me=E2=80=99
->>> specified in initializer
->>>  .name =3D "altivec",
->>>  ^
->>> [...]
->>>
->>> The file <asm/xor.h> (powerpc) is pretty much expected to be included
->>> after <include/linux/raid/xor.h>.
->>>
->>> I did not want to tweak <asm/xor.h> to test for #ifdef _XOR_H just befo=
-re
->>>
->>> #ifdef _XOR_H
->>> static struct xor_block_template xor_block_altivec =3D {
->>> [...]
->>>
->>> since this seems like a hack to me.
->>>
->>> Is this ok to test for #ifdef _XOR_H in <arch/powerpc/include/asm/xor.h=
->
->>> ?
->>
->>
->> What about including linux/raid/xor.h in asm/xor.h ?
+Hi David,
 
-This leads to:
+Thanks a lot for your deep review on this series.
 
-  CALL    ../arch/powerpc/kernel/systbl_chk.sh
-In file included from ../arch/powerpc/include/asm/xor.h:57:0,
-                 from ../arch/powerpc/lib/xor_vmx_glue.c:17:
-../include/asm-generic/xor.h:688:34: error: =E2=80=98xor_block_32regs=E2=80=
-=99 defined
-but not used [-Werror=3Dunused-variable]
- static struct xor_block_template xor_block_32regs =3D {
-                                  ^~~~~~~~~~~~~~~~
-../include/asm-generic/xor.h:680:34: error: =E2=80=98xor_block_8regs=E2=80=
-=99 defined
-but not used [-Werror=3Dunused-variable]
- static struct xor_block_template xor_block_8regs =3D {
-                                  ^~~~~~~~~~~~~~~
-In file included from ../arch/powerpc/lib/xor_vmx_glue.c:17:0:
-../arch/powerpc/include/asm/xor.h:39:34: error: =E2=80=98xor_block_altivec=
-=E2=80=99
-defined but not used [-Werror=3Dunused-variable]
- static struct xor_block_template xor_block_altivec =3D {
-                                  ^~~~~~~~~~~~~~~~~
-  CALL    ../arch/powerpc/kernel/prom_init_check.sh
-
-
->
-> Or better: including linux/raid/xor.h then asm/xor.h in xor_vmx_glue.c ?
->
-> Christophe
->
+On 25/03/2018 23:50, David Rientjes wrote:
+> On Tue, 13 Mar 2018, Laurent Dufour wrote:
+> 
+>> This configuration variable will be used to build the code needed to
+>> handle speculative page fault.
 >>
->> Christophe
->>>
->>>
->>>> Christophe
->>>>
->>>>
->>>>>
->>>>>> Christophe
->>>>>>
->>>>>>
->>>>>>> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
->>>>>>> +                            unsigned long *v2_in, unsigned long
->>>>>>> *v3_in);
->>>>>>> +
->>>>>>> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
->>>>>>> +                            unsigned long *v2_in, unsigned long
->>>>>>> *v3_in,
->>>>>>> +                            unsigned long *v4_in);
->>>>>>> +
->>>>>>> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>>>>>> +                            unsigned long *v2_in, unsigned long
->>>>>>> *v3_in,
->>>>>>> +                            unsigned long *v4_in, unsigned long
->>>>>>> *v5_in);
->>>>>>>
->>>>>>
->>>>>> ---
->>>>>> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=
-=A9 v=C3=A9rifi=C3=A9e par le
->>>>>> logiciel antivirus Avast.
->>>>>> https://www.avast.com/antivirus
->>>>>>
->>>>
->>>>
->
->
+>> By default it is turned off, and activated depending on architecture
+>> support.
+>>
+>> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  mm/Kconfig | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/mm/Kconfig b/mm/Kconfig
+>> index abefa573bcd8..07c566c88faf 100644
+>> --- a/mm/Kconfig
+>> +++ b/mm/Kconfig
+>> @@ -759,3 +759,6 @@ config GUP_BENCHMARK
+>>  	  performance of get_user_pages_fast().
+>>  
+>>  	  See tools/testing/selftests/vm/gup_benchmark.c
+>> +
+>> +config SPECULATIVE_PAGE_FAULT
+>> +       bool
+> 
+> Should this be configurable even if the arch supports it?
+
+Actually, this is not configurable unless by manually editing the .config file.
+
+I made it this way on the Thomas's request :
+https://lkml.org/lkml/2018/1/15/969
+
+That sounds to be the smarter way to achieve that, isn't it ?
+
+Laurent.
