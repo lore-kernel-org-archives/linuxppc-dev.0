@@ -1,30 +1,37 @@
-Return-Path: <srs0=kr7c=gs=ozlabs.ru=aik@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409qpc2rYXzF2D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 12:21:28 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 409qpc0vySz8syw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 12:21:28 +1100 (AEDT)
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 409qpb2rBkz9ryk
- for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2018 12:21:26 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id u86so349480pfd.2
- for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2018 18:21:26 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/powernv: Fix sparse data type warnings in
- pci-ioda.c
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
-References: <20180328004442.GA29865@fergus.ozlabs.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <b39932f7-1486-7106-6920-8795ae694c7d@ozlabs.ru>
-Date: Wed, 28 Mar 2018 12:21:19 +1100
-MIME-Version: 1.0
-In-Reply-To: <20180328004442.GA29865@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409qqr5vxpzF2GH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 12:22:32 +1100 (AEDT)
+Message-ID: <1522200077.7364.85.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Will Deacon <will.deacon@arm.com>, Sinan Kaya <okaya@codeaurora.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, David
+ Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open
+ list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, Alexander Duyck
+ <alexander.h.duyck@redhat.com>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Alexander Duyck <alexander.duyck@gmail.com>,
+ torvalds@linux-foundation.org
+Date: Wed, 28 Mar 2018 12:21:17 +1100
+In-Reply-To: <20180327151029.GB17494@arm.com>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,110 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28/3/18 11:44 am, Paul Mackerras wrote:
-> From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On Tue, 2018-03-27 at 16:10 +0100, Will Deacon wrote:
+> To clarify: are you saying that on x86 you need a wmb() prior to a writel
+> if you want that writel to be ordered after prior writes to memory? Is this
+> specific to WC memory or some other non-standard attribute?
 > 
-> The value passed to __raw_rm_writeq() and __raw_writeq() should be "u64"
-> and "unsigned long". This fixes warning reported by sparse:
-> 
->   gwshan@gwshan:~/sandbox/l$ make C=2 CF=-D__CHECK_ENDIAN__ \
->                              arch/powerpc/platforms/powernv/pci-ioda.o
->   arch/powerpc/platforms/powernv/pci-ioda.c:1794:41: \
->   warning: incorrect type in argument 1 (different base types)
->   arch/powerpc/platforms/powernv/pci-ioda.c:1794:41: \
->   expected unsigned long long [unsigned] [usertype] val
->   arch/powerpc/platforms/powernv/pci-ioda.c:1794:41: \
->   got restricted __be64 [usertype] <noident>
->   arch/powerpc/platforms/powernv/pci-ioda.c:1796:38: \
->   warning: incorrect type in argument 1 (different base types)
->   arch/powerpc/platforms/powernv/pci-ioda.c:1796:38: \
->   expected unsigned long [unsigned] v
->   arch/powerpc/platforms/powernv/pci-ioda.c:1796:38: \
->   got restricted __be64 [usertype] <noident>
-> 
-> This also fixes another warning reported by sparse:
-> 
->   gwshan@gwshan:~/sandbox/l$ make C=2 CF=-D__CHECK_ENDIAN__ \
->                              arch/powerpc/platforms/powernv/pci-ioda.o
->         :
->   arch/powerpc/platforms/powernv/pci-ioda.c:2647:45: \
->   warning: cast to restricted __be64
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> The only reason we have wmb() inside writel() on arm, arm64 and power is for
+> parity with x86 because Linus (CC'd) wanted architectures to order I/O vs
+> memory by default so that it was easier to write portable drivers. The
+> performance impact of that implicit barrier is non-trivial, but we want the
+> driver portability and I went as far as adding generic _relaxed versions for
+> the cases where ordering isn't required. You seem to be suggesting that none
+> of this is necessary and drivers would already run into problems on x86 if
+> they didn't use wmb() explicitly in conjunction with writel, which I find
+> hard to believe and is in direct contradiction with the current Linux I/O
+> memory model (modulo the broken example in the dma_*mb section of
+> memory-barriers.txt).
 
+Another clarification while we are at it ....
 
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+All of this only applies to concurrent access by the CPU and the device
+to memory allocate with dma_alloc_coherent().
 
+For memory "mapped" into the DMA domain via dma_map_* then an extra
+dma_sync_for_* is needed.
 
+In most useful server cases etc... these latter are NOPs, but
+architecture without full DMA cache coherency or using swiotlb,
+dma_map_* might maintain bounce buffers or play additional cache
+flushing tricks.
 
-> ---
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index a6c92c7..71de087 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1976,9 +1976,11 @@ static void pnv_pci_p7ioc_tce_invalidate(struct iommu_table *tbl,
->          mb(); /* Ensure above stores are visible */
->          while (start <= end) {
->  		if (rm)
-> -			__raw_rm_writeq(cpu_to_be64(start), invalidate);
-> +			__raw_rm_writeq((__force u64)cpu_to_be64(start),
-> +					invalidate);
->  		else
-> -			__raw_writeq(cpu_to_be64(start), invalidate);
-> +			__raw_writeq((__force unsigned long)cpu_to_be64(start),
-> +				     invalidate);
->                  start += inc;
->          }
->  
-> @@ -2055,9 +2057,10 @@ static void pnv_pci_phb3_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
->  
->  	mb(); /* Ensure previous TCE table stores are visible */
->  	if (rm)
-> -		__raw_rm_writeq(cpu_to_be64(val), invalidate);
-> +		__raw_rm_writeq((__force u64)cpu_to_be64(val), invalidate);
->  	else
-> -		__raw_writeq(cpu_to_be64(val), invalidate);
-> +		__raw_writeq((__force unsigned long)cpu_to_be64(val),
-> +			     invalidate);
->  }
->  
->  static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
-> @@ -2067,7 +2070,7 @@ static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
->  	unsigned long val = PHB3_TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
->  
->  	mb(); /* Ensure above stores are visible */
-> -	__raw_writeq(cpu_to_be64(val), invalidate);
-> +	__raw_writeq((__force unsigned long)cpu_to_be64(val), invalidate);
->  }
->  
->  static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
-> @@ -2090,9 +2093,11 @@ static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
->  
->  	while (start <= end) {
->  		if (rm)
-> -			__raw_rm_writeq(cpu_to_be64(start), invalidate);
-> +			__raw_rm_writeq((__force u64)cpu_to_be64(start),
-> +					invalidate);
->  		else
-> -			__raw_writeq(cpu_to_be64(start), invalidate);
-> +			__raw_writeq((__force unsigned long)cpu_to_be64(start),
-> +				     invalidate);
->  		start += inc;
->  	}
->  }
-> @@ -2864,7 +2869,8 @@ static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
->  		u64 *tmp = (u64 *) addr_ul;
->  
->  		for (i = 0; i < size; ++i) {
-> -			unsigned long hpa = be64_to_cpu(tmp[i]);
-> +			unsigned long hpa =
-> +				be64_to_cpu((__force __be64)(tmp[i]));
->  
->  			if (!(hpa & (TCE_PCI_READ | TCE_PCI_WRITE)))
->  				continue;
-> 
-
-
--- 
-Alexey
+Cheers,
+Ben.
