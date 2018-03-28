@@ -1,18 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Yuri.Norov@cavium.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0046.outbound.protection.outlook.com [104.47.36.46])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B73p1LsDzF28g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 23:48:54 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com, benh@kernel.crashing.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.16-6 tag
-Date: Wed, 28 Mar 2018 23:48:52 +1100
-Message-ID: <871sg42wnf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B7JP65gczF2Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 23:59:49 +1100 (AEDT)
+Date: Wed, 28 Mar 2018 15:59:32 +0300
+From: Yury Norov <ynorov@caviumnetworks.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrea Parri <andrea.parri@amarulasolutions.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180328125932.dhzwoxhext4h7hgh@yury-thinkpad>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ <20180326085313.GA4016@andrea>
+ <20180326145735.57ba306b@gandalf.local.home>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180326145735.57ba306b@gandalf.local.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,95 +40,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Mon, Mar 26, 2018 at 02:57:35PM -0400, Steven Rostedt wrote:
+> On Mon, 26 Mar 2018 10:53:13 +0200
+> Andrea Parri <andrea.parri@amarulasolutions.com> wrote:
+> 
+> > > --- a/kernel/smp.c
+> > > +++ b/kernel/smp.c
+> > > @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
+> > >  
+> > > +/**
+> > > + * kick_active_cpus_sync - Force CPUs that are not in extended
+> > > + * quiescent state (idle or nohz_full userspace) sync by sending
+> > > + * IPI. Extended quiescent state CPUs will sync at the exit of
+> > > + * that state.
+> > > + */
+> > > +void kick_active_cpus_sync(void)
+> > > +{
+> > > +	int cpu;
+> > > +	struct cpumask kernel_cpus;
+> > > +
+> > > +	smp_mb();  
+> > 
+> > (A general remark only:)
+> > 
+> > checkpatch.pl should have warned about the fact that this barrier is
+> > missing an accompanying comment (which accesses are being "ordered",
+> > what is the pairing barrier, etc.).
+> 
+> He could have simply copied the comment above the smp_mb() for
+> kick_all_cpus_sync():
+> 
+> 	/* Make sure the change is visible before we kick the cpus */
+> 
+> The kick itself is pretty much a synchronization primitive.
+> 
+> That is, you make some changes and then you need all CPUs to see it,
+> and you call: kick_active_cpus_synch(), which is the barrier to make
+> sure you previous changes are seen on all CPUS before you proceed
+> further. Note, the matching barrier is implicit in the IPI itself.
+>
+>  -- Steve
 
-Hi Linus,
+I know that I had to copy the comment from kick_all_cpus_sync(), but I
+don't like copy-pasting in general, and as Steven told, this smp_mb() is
+already inside synchronization routine, so we may hope that users of
+kick_*_cpus_sync() will explain better what for they need it...
+ 
+> 
+> > 
+> > Moreover if, as your reply above suggested, your patch is relying on
+> > "implicit barriers" (something I would not recommend) then even more
+> > so you should comment on these requirements.
+> > 
+> > This could: (a) force you to reason about the memory ordering stuff,
+> > (b) easy the task of reviewing and adopting your patch, (c) easy the
+> > task of preserving those requirements (as implementations changes).
+> > 
+> >   Andrea
 
-Please pull some more powerpc fixes for 4.16. Apologies if this is a bit
-big at rc7, but they're all reasonably important fixes. None are
-actually for new code, so they aren't indicative of 4.16 being in bad
-shape from our point of view.
+I need v2 anyway, and I will add comments to address all questions in this
+thread.
 
-cheers
+I also hope that we'll agree that for powerpc it's also safe to delay
+synchronization, and if so, we will have no users of kick_all_cpus_sync(),
+and can drop it.
 
+(It looks like this, because nohz_full userspace CPU cannot have pending
+IPIs, but I'd like to get confirmation from powerpc people.)
 
-The following changes since commit b0c41b8b6e43120d7c35e4709508a3d90a09646e:
+Would it make sense to rename kick_all_cpus_sync() to smp_mb_sync(), which
+would stand for 'synchronous memory barrier on all online CPUs'?
 
-  powerpc/pseries: Fix vector5 in ibm architecture vector table (2018-03-06 23:05:38 +1100)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.16-6
-
-for you to fetch changes up to 52396500f97c53860164debc7d4f759077853423:
-
-  powerpc/64s: Fix i-side SLB miss bad address handler saving nonvolatile GPRs (2018-03-26 07:40:17 +1100)
-
-- ----------------------------------------------------------------
-powerpc fixes for 4.16 #6
-
-These are actually all fixes for pre-4.16 code, or new hardware workarounds.
-
-Fix missing AT_BASE_PLATFORM (in auxv) when we're using a new firmware interface
-for describing CPU features.
-
-Fix lost pending interrupts due to a race in our interrupt soft-masking code.
-
-A workaround for a nest MMU bug with TLB invalidations on Power9.
-
-A workaround for broadcast TLB invalidations on Power9.
-
-Fix a bug in our instruction SLB miss handler, when handling bad addresses
-(eg. >= TASK_SIZE), which could corrupt non-volatile user GPRs.
-
-Thanks to:
-  Aneesh Kumar K.V, Balbir Singh, Benjamin Herrenschmidt, Nicholas Piggin.
-
-- ----------------------------------------------------------------
-Aneesh Kumar K.V (3):
-      powerpc/mm/radix: Remove unused code
-      powerpc/mm/radix: Move the functions that does the actual tlbie closer
-      powerpc/mm: Fixup tlbie vs store ordering issue on POWER9
-
-Benjamin Herrenschmidt (2):
-      powerpc/mm: Add tracking of the number of coprocessors using a context
-      powerpc/mm: Workaround Nest MMU bug with TLB invalidations
-
-Michael Ellerman (1):
-      powerpc/64s: Fix NULL AT_BASE_PLATFORM when using DT CPU features
-
-Nicholas Piggin (2):
-      powerpc/64s: Fix lost pending interrupt due to race causing lost update to irq_happened
-      powerpc/64s: Fix i-side SLB miss bad address handler saving nonvolatile GPRs
-
- arch/powerpc/include/asm/book3s/64/mmu.h           |   3 +
- .../powerpc/include/asm/book3s/64/tlbflush-radix.h |   3 -
- arch/powerpc/include/asm/cputable.h                |   3 +-
- arch/powerpc/include/asm/mmu_context.h             |  18 ++-
- arch/powerpc/kernel/dt_cpu_ftrs.c                  |   6 +
- arch/powerpc/kernel/exceptions-64s.S               |   2 +-
- arch/powerpc/kernel/irq.c                          |   8 +
- arch/powerpc/kvm/book3s_64_mmu_radix.c             |   3 +
- arch/powerpc/kvm/book3s_hv_rm_mmu.c                |  11 ++
- arch/powerpc/mm/hash_native_64.c                   |  16 +-
- arch/powerpc/mm/mmu_context_book3s64.c             |   1 +
- arch/powerpc/mm/pgtable_64.c                       |   1 +
- arch/powerpc/mm/tlb-radix.c                        | 169 +++++++++++----------
- 13 files changed, 154 insertions(+), 90 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJau480AAoJEFHr6jzI4aWAYwIP/RBX30EIQegM7GUwEYulVVhG
-E16yFb+QLvUrh3YXU9Oqyb0tj1y/gLJcPojin28TWBpt+wGejriCoSIOPjoI915E
-W8jnnxrR8u/nZfzARNh+zsR6+qbNVz3MyVSAsn9BrS2jjWqiekXuvF7WLr34M22N
-6xiu2BJ7B4cjvNJa2AFj1GYLCFeed4BDhERn/bNaK3jhdp3hYpnpaxG6y+od5M2J
-GdQRO+GhCfBzho/ypLAX62klnprAVYCh+qnDKOOHGpE0qz0WOTHnZ3d5VVJO4sAe
-zCdadR66h6YvukrGvTLmJfz1ykZv1vbrr+WbgN0kt+8EsYAqRtO1OB1wm0hjbQYK
-e5hA+PccnVkxqjv0b/dg81OS/3PCA7/4xNtBRFxc4YNO3JGebU87gMYepaJAIt0A
-zCySqOYOIZMznfuk9310XYY7Z+LnpnRxRLTNZFq5tvaI/O9I/5P3a5f1IUwvkJk3
-PCY/EyzLuyIac8FFcMQh5UIJLqebAVVAnNC75YTZG576gf0NmJYO/jwxPz5Yep48
-oO1er783SX4vojcYfEVyp+mA4KGbVKel615L1pvgX4CH9tXM4PhX5y/ODZjjP9ua
-XksvQdaUlakHIBJwNboFS70gaBHoivN1OFEUINf3XtOhwZRTo51ufilONM8XZhoX
-r8o+pDgD/5QCyJqMhlcr
-=VKmI
------END PGP SIGNATURE-----
+Yury
