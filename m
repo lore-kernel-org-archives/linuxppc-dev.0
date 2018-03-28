@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B8xP57hvzF2MM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 01:13:29 +1100 (AEDT)
-In-Reply-To: <1521632426-30770-3-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B8xQ6sS7zF2ML
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 01:13:30 +1100 (AEDT)
+In-Reply-To: <20180327043724.13862-2-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2] powerpc/perf: Fix the kernel address leak to userspace via
- SDAR
-Message-Id: <40B8xP0mqpz9s0b@ozlabs.org>
-Date: Thu, 29 Mar 2018 01:13:28 +1100 (AEDT)
+Cc: kvm-ppc@vger.kernel.org, npiggin@gmail.com, david@gibson.dropbear.id.au,
+ linuxppc-dev@lists.ozlabs.org, pedromfc@linux.vnet.ibm.com
+Subject: Re: [v3,1/8] powerpc: Add ppc_breakpoint_available()
+Message-Id: <40B8xQ0fd0z9s1P@ozlabs.org>
+Date: Thu, 29 Mar 2018 01:13:29 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-21 at 11:40:26 UTC, Madhavan Srinivasan wrote:
-> Sampled Data Address Register (SDAR) is a 64-bit
-> register that contains the effective address of
-> the storage operand of an instruction that was
-> being executed, possibly out-of-order, at or around
-> the time that the Performance Monitor alert occurred.
+On Tue, 2018-03-27 at 04:37:17 UTC, Michael Neuling wrote:
+> Add ppc_breakpoint_available() to determine if a breakpoint is
+> available currently via the DAWR or DABR.
 > 
-> In certain scenario SDAR happen to contain the kernel
-> address even for userspace only sampling. Add checks
-> to prevent it.
-> 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/cd1231d7035fea894118d5155ff984
+https://git.kernel.org/powerpc/c/404b27d66ed657ebccb08a9c8f8f65
 
 cheers
