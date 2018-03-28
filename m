@@ -1,51 +1,22 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matt@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B3x12SF7zF24S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:27:48 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2SAQrot020941
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:27:46 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h06q5r68b-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:27:45 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 11:27:40 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v9 04/24] mm: Prepare for FAULT_FLAG_SPECULATIVE
-To: David Rientjes <rientjes@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803251426120.80485@chino.kir.corp.google.com>
-Date: Wed, 28 Mar 2018 12:27:29 +0200
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803251426120.80485@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <361fa6e7-3c17-e1b8-8046-af72c4459613@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B46f2kVJzF2Fb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:36:10 +1100 (AEDT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Subject: Re: [PATCH] powerpc: Clear branch trap (MSR.BE) before delivering
+ SIGTRAP
+From: Matt Evans <matt@ozlabs.org>
+In-Reply-To: <877epw3fu2.fsf@concordia.ellerman.id.au>
+Date: Wed, 28 Mar 2018 11:36:03 +0100
+Cc: linuxppc-dev@lists.ozlabs.org
+Message-Id: <C8B54188-179A-475D-B06A-A25426EF6932@ozlabs.org>
+References: <74EBF461-0D94-4C2D-ABA7-0B9BE010F173@ozlabs.org>
+ <877epw3fu2.fsf@concordia.ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,315 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25/03/2018 23:50, David Rientjes wrote:
-> On Tue, 13 Mar 2018, Laurent Dufour wrote:
-> 
->> From: Peter Zijlstra <peterz@infradead.org>
->>
->> When speculating faults (without holding mmap_sem) we need to validate
->> that the vma against which we loaded pages is still valid when we're
->> ready to install the new PTE.
->>
->> Therefore, replace the pte_offset_map_lock() calls that (re)take the
->> PTL with pte_map_lock() which can fail in case we find the VMA changed
->> since we started the fault.
->>
-> 
-> Based on how its used, I would have suspected this to be named 
-> pte_map_trylock().
-> 
->> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->>
->> [Port to 4.12 kernel]
->> [Remove the comment about the fault_env structure which has been
->>  implemented as the vm_fault structure in the kernel]
->> [move pte_map_lock()'s definition upper in the file]
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  include/linux/mm.h |  1 +
->>  mm/memory.c        | 56 ++++++++++++++++++++++++++++++++++++++----------------
->>  2 files changed, 41 insertions(+), 16 deletions(-)
->>
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index 4d02524a7998..2f3e98edc94a 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -300,6 +300,7 @@ extern pgprot_t protection_map[16];
->>  #define FAULT_FLAG_USER		0x40	/* The fault originated in userspace */
->>  #define FAULT_FLAG_REMOTE	0x80	/* faulting for non current tsk/mm */
->>  #define FAULT_FLAG_INSTRUCTION  0x100	/* The fault was during an instruction fetch */
->> +#define FAULT_FLAG_SPECULATIVE	0x200	/* Speculative fault, not holding mmap_sem */
->>  
->>  #define FAULT_FLAG_TRACE \
->>  	{ FAULT_FLAG_WRITE,		"WRITE" }, \
-> 
-> I think FAULT_FLAG_SPECULATIVE should be introduced in the patch that 
-> actually uses it.
+Howdy Michael,
 
-I think you're right, I'll move down this define in the series.
+> On 28 Mar 2018, at 06:54, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>=20
+> Matt Evans <matt@ozlabs.org> writes:
+>=20
+>> When using SIG_DBG_BRANCH_TRACING, MSR.BE is left enabled in the
+>> user context when single_step_exception() prepares the SIGTRAP
+>> delivery.  The resulting branch-trap-within-the-SIGTRAP-handler
+>> isn't healthy.
+>>=20
+>> Commit 2538c2d08f46141550a1e68819efa8fe31c6e3dc broke this, by
+>> replacing an MSR mask operation of ~(MSR_SE | MSR_BE) with a call
+>> to clear_single_step() which only clears MSR_SE.
+>>=20
+>> This patch adds a new helper, clear_br_trace(), which clears the
+>> debug trap before invoking the signal handler.  This helper is a
+>> NOP for BookE as SIG_DBG_BRANCH_TRACING isn't supported on BookE.
+>>=20
+>> Signed-off-by: Matt Evans <matt@ozlabs.org>
+>=20
+> Hi Matt!
+>=20
+> It seems we might not be regularly testing this code :}
 
->> diff --git a/mm/memory.c b/mm/memory.c
->> index e0ae4999c824..8ac241b9f370 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -2288,6 +2288,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
->>  }
->>  EXPORT_SYMBOL_GPL(apply_to_page_range);
->>  
->> +static bool pte_map_lock(struct vm_fault *vmf)
-> 
-> inline?
+I know, rite? ;-)
 
-Agreed.
+> How did you hit/find the bug? And do you have a test case by any =
+chance?
+>=20
+> I found the test code at the bottom of:
+>  https://lwn.net/Articles/114587/
+>=20
+> But it didn't immediately work.
 
->> +{
->> +	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
->> +				       vmf->address, &vmf->ptl);
->> +	return true;
->> +}
->> +
->>  /*
->>   * handle_pte_fault chooses page fault handler according to an entry which was
->>   * read non-atomically.  Before making any commitment, on those architectures
->> @@ -2477,6 +2484,7 @@ static int wp_page_copy(struct vm_fault *vmf)
->>  	const unsigned long mmun_start = vmf->address & PAGE_MASK;
->>  	const unsigned long mmun_end = mmun_start + PAGE_SIZE;
->>  	struct mem_cgroup *memcg;
->> +	int ret = VM_FAULT_OOM;
->>  
->>  	if (unlikely(anon_vma_prepare(vma)))
->>  		goto oom;
->> @@ -2504,7 +2512,11 @@ static int wp_page_copy(struct vm_fault *vmf)
->>  	/*
->>  	 * Re-check the pte - we dropped the lock
->>  	 */
->> -	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
->> +	if (!pte_map_lock(vmf)) {
->> +		mem_cgroup_cancel_charge(new_page, memcg, false);
->> +		ret = VM_FAULT_RETRY;
->> +		goto oom_free_new;
->> +	}
-> 
-> Ugh, but we aren't oom here, so maybe rename oom_free_new so that it makes 
-> sense for return values other than VM_FAULT_OOM?
+I'm using this feature as part of a debug harness I wrote to log a =
+program=E2=80=99s control flow (to create a =E2=80=9Cknown good=E2=80=9D =
+pattern to compare a PPC interpreter against).  So at least the feature =
+has /one/ user.  ;-)
 
-You're right, now this label name is not correct, I'll rename it to
-"out_free_new" and rename also the label "oom" to "out" since it is generic too
-now.
+The symptoms of the bug are that if you use single-stepping you get a =
+sequence of SIGTRAPs representing each instruction completion (good), =
+but if you use branch tracing the process just dies with SIGTRAP (looks =
+like it=E2=80=99s never caught by the signal handler).  What=E2=80=99s =
+really happening is that there /is/ a signal delivered to the handler, =
+but (because branch tracing is left on) that then causes a second debug =
+exception from the handler itself, i.e. whilst SIGTRAP=E2=80=99s masked.
 
->>  	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
->>  		if (old_page) {
->>  			if (!PageAnon(old_page)) {
->> @@ -2596,7 +2608,7 @@ static int wp_page_copy(struct vm_fault *vmf)
->>  oom:
->>  	if (old_page)
->>  		put_page(old_page);
->> -	return VM_FAULT_OOM;
->> +	return ret;
->>  }
->>  
->>  /**
->> @@ -2617,8 +2629,8 @@ static int wp_page_copy(struct vm_fault *vmf)
->>  int finish_mkwrite_fault(struct vm_fault *vmf)
->>  {
->>  	WARN_ON_ONCE(!(vmf->vma->vm_flags & VM_SHARED));
->> -	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd, vmf->address,
->> -				       &vmf->ptl);
->> +	if (!pte_map_lock(vmf))
->> +		return VM_FAULT_RETRY;
->>  	/*
->>  	 * We might have raced with another page fault while we released the
->>  	 * pte_offset_map_lock.
->> @@ -2736,8 +2748,11 @@ static int do_wp_page(struct vm_fault *vmf)
->>  			get_page(vmf->page);
->>  			pte_unmap_unlock(vmf->pte, vmf->ptl);
->>  			lock_page(vmf->page);
->> -			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
->> -					vmf->address, &vmf->ptl);
->> +			if (!pte_map_lock(vmf)) {
->> +				unlock_page(vmf->page);
->> +				put_page(vmf->page);
->> +				return VM_FAULT_RETRY;
->> +			}
->>  			if (!pte_same(*vmf->pte, vmf->orig_pte)) {
->>  				unlock_page(vmf->page);
->>  				pte_unmap_unlock(vmf->pte, vmf->ptl);
->> @@ -2947,8 +2962,10 @@ int do_swap_page(struct vm_fault *vmf)
->>  			 * Back out if somebody else faulted in this pte
->>  			 * while we released the pte lock.
->>  			 */
-> 
-> Comment needs updating, pte_same() isn't the only reason to bail out here.
-
-I'll update it to :
-			/*
-			 * Back out if the VMA has changed in our back during
-			 * a speculative page fault or if somebody else
-			 * faulted in this pte while we released the pte lock.
-			 */
-
-> 
->> -			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
->> -					vmf->address, &vmf->ptl);
->> +			if (!pte_map_lock(vmf)) {
->> +				delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
->> +				return VM_FAULT_RETRY;
->> +			}
->>  			if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
->>  				ret = VM_FAULT_OOM;
->>  			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> 
-> Not crucial, but it would be nice if this could do goto out instead, 
-> otherwise this is the first mid function return.
-
-ok will do.
-
-> 
->> @@ -3003,8 +3020,11 @@ int do_swap_page(struct vm_fault *vmf)
->>  	/*
->>  	 * Back out if somebody else already faulted in this pte.
->>  	 */
-> 
-> Same as above.
-
-Ok changing as above.
-
-> 
->> -	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
->> -			&vmf->ptl);
->> +	if (!pte_map_lock(vmf)) {
->> +		ret = VM_FAULT_RETRY;
->> +		mem_cgroup_cancel_charge(page, memcg, false);
->> +		goto out_page;
->> +	}
->>  	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte)))
->>  		goto out_nomap;
->>  
-> 
-> mem_cgroup_try_charge() is done before grabbing pte_offset_map_lock(), why 
-> does the out_nomap exit path do mem_cgroup_cancel_charge(); 
-> pte_unmap_unlock()?  If the pte lock can be droppde first, there's no need 
-> to embed the mem_cgroup_cancel_charge() here.
-
-I think we can safely invert the call to mem_cgroup_cancel_charge() and to
-pte_unmap_unlock(), and then introduce a new label and jump in if
-pte_map_lock() failed.
-Something like this:
-
-@@ -3001,10 +3020,13 @@ int do_swap_page(struct vm_fault *vmf)
-        }
-
-        /*
--        * Back out if somebody else already faulted in this pte.
-+        * Back out if the VMA has changed in our back during a speculative
-+        * page fault or if somebody else already faulted in this pte.
-         */
--       vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
--                       &vmf->ptl);
-+       if (!pte_map_lock(vmf)) {
-+               ret = VM_FAULT_RETRY;
-+               goto out_cancel_cgroup;
-+       }
-        if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte)))
-                goto out_nomap;
-
-@@ -3082,8 +3104,9 @@ int do_swap_page(struct vm_fault *vmf)
- out:
-        return ret;
- out_nomap:
--       mem_cgroup_cancel_charge(page, memcg, false);
-        pte_unmap_unlock(vmf->pte, vmf->ptl);
-+out_cancel_cgroup:
-+       mem_cgroup_cancel_charge(page, memcg, false);
- out_page:
-        unlock_page(page);
- out_release:
+OK, let me have a dig to reduce my program to something very basic and =
+I=E2=80=99ll post something =E2=80=94 sorry, I should=E2=80=99ve got a =
+PoC ready before.  (I did start out inspired by that post you linked to, =
+but IIRC I don=E2=80=99t think it worked out of the box for me either.)
 
 
+Cheers,
 
->> @@ -3133,8 +3153,8 @@ static int do_anonymous_page(struct vm_fault *vmf)
->>  			!mm_forbids_zeropage(vma->vm_mm)) {
->>  		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address),
->>  						vma->vm_page_prot));
->> -		vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
->> -				vmf->address, &vmf->ptl);
->> +		if (!pte_map_lock(vmf))
->> +			return VM_FAULT_RETRY;
->>  		if (!pte_none(*vmf->pte))
->>  			goto unlock;
->>  		ret = check_stable_address_space(vma->vm_mm);
->> @@ -3169,8 +3189,11 @@ static int do_anonymous_page(struct vm_fault *vmf)
->>  	if (vma->vm_flags & VM_WRITE)
->>  		entry = pte_mkwrite(pte_mkdirty(entry));
->>  
->> -	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
->> -			&vmf->ptl);
->> +	if (!pte_map_lock(vmf)) {
->> +		mem_cgroup_cancel_charge(page, memcg, false);
->> +		put_page(page);
->> +		return VM_FAULT_RETRY;
->> +	}
->>  	if (!pte_none(*vmf->pte))
->>  		goto release;
->>  
-> 
-> This is more spaghetti, can the exit path be fixed up so we order things 
-> consistently for all gotos?
 
-I do agree, this was due to inverted calls to mem_cgroup_cancel_charge() and
-pte_unmap_unlock().
-
-This will become:
-@@ -3170,14 +3193,16 @@ static int do_anonymous_page(struct vm_fault *vmf)
-        if (vma->vm_flags & VM_WRITE)
-                entry = pte_mkwrite(pte_mkdirty(entry));
-
--       vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
--                       &vmf->ptl);
--       if (!pte_none(*vmf->pte))
-+       if (!pte_map_lock(vmf)) {
-+               ret = VM_FAULT_RETRY;
-                goto release;
-+       }
-+       if (!pte_none(*vmf->pte))
-+               goto unlock_and_release;
-
-        ret = check_stable_address_space(vma->vm_mm);
-        if (ret)
--               goto release;
-+               goto unlock_and_release;
-
-        /* Deliver the page fault to userland, check inside PT lock */
-        if (userfaultfd_missing(vma)) {
-@@ -3199,10 +3224,12 @@ static int do_anonymous_page(struct vm_fault *vmf)
- unlock:
-        pte_unmap_unlock(vmf->pte, vmf->ptl);
-        return ret;
-+unlock_and_release:
-+       pte_unmap_unlock(vmf->pte, vmf->ptl);
- release:
-        mem_cgroup_cancel_charge(page, memcg, false);
-        put_page(page);
--       goto unlock;
-+       return ret;
- oom_free_page:
-        put_page(page);
- oom:
-
-Thanks,
-Laurent.
-
-> 
->> @@ -3294,8 +3317,9 @@ static int pte_alloc_one_map(struct vm_fault *vmf)
->>  	 * pte_none() under vmf->ptl protection when we return to
->>  	 * alloc_set_pte().
->>  	 */
->> -	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
->> -			&vmf->ptl);
->> +	if (!pte_map_lock(vmf))
->> +		return VM_FAULT_RETRY;
->> +
->>  	return 0;
->>  }
->>  
-> 
+Matt
