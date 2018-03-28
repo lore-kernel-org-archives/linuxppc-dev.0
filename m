@@ -1,40 +1,27 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BLRK4bBCzF1r1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 08:21:33 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id y16so1082661pgv.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 14:21:33 -0700 (PDT)
-Date: Wed, 28 Mar 2018 14:21:29 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: Re: [PATCH v9 09/24] mm: protect mremap() against SPF hanlder
-In-Reply-To: <1fe7529a-947c-fdb2-12d2-b38bdd41bb04@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1803281419460.167685@chino.kir.corp.google.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-10-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803271500540.43106@chino.kir.corp.google.com>
- <1fe7529a-947c-fdb2-12d2-b38bdd41bb04@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BLgm6fhczF2QQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 08:32:20 +1100 (AEDT)
+Message-ID: <1522272692.21446.42.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, David Miller <davem@davemloft.net>
+Cc: paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-rdma@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linus971@gmail.com, will.deacon@arm.com,
+ alexander.duyck@gmail.com, okaya@codeaurora.org, jgg@ziepe.ca,
+ David.Laight@aculab.com, oohall@gmail.com, netdev@vger.kernel.org,
+ alexander.h.duyck@redhat.com, torvalds@linux-foundation.org
+Date: Thu, 29 Mar 2018 08:31:32 +1100
+In-Reply-To: <20180329022324.037c3f39@roar.ozlabs.ibm.com>
+References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
+ <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
+ <1522249996.21446.25.camel@kernel.crashing.org>
+ <20180328.115509.481837809903086401.davem@davemloft.net>
+ <20180329022324.037c3f39@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,33 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Mar 2018, Laurent Dufour wrote:
-
-> >> @@ -326,7 +336,10 @@ static unsigned long move_vma(struct vm_area_struct *vma,
-> >>  		mremap_userfaultfd_prep(new_vma, uf);
-> >>  		arch_remap(mm, old_addr, old_addr + old_len,
-> >>  			   new_addr, new_addr + new_len);
-> >> +		if (vma != new_vma)
-> >> +			vm_raw_write_end(vma);
-> >>  	}
-> >> +	vm_raw_write_end(new_vma);
-> > 
-> > Just do
-> > 
-> > vm_raw_write_end(vma);
-> > vm_raw_write_end(new_vma);
-> > 
-> > here.
+On Thu, 2018-03-29 at 02:23 +1000, Nicholas Piggin wrote:
+> On Wed, 28 Mar 2018 11:55:09 -0400 (EDT)
+> David Miller <davem@davemloft.net> wrote:
 > 
-> Are you sure ? we can have vma = new_vma done if (unlikely(err))
+> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Date: Thu, 29 Mar 2018 02:13:16 +1100
+> > 
+> > > Let's fix all archs, it's way easier than fixing all drivers. Half of
+> > > the archs are unused or dead anyway.  
+> > 
+> > Agreed.
 > 
+> While we're making decrees here, can we do something about mmiowb?
+> The semantics are basically indecipherable.
 
-Sorry, what I meant was do
+I was going to tackle that next :-)
 
-if (vma != new_vma)
-	vm_raw_write_end(vma);
-vm_raw_write_end(new_vma);
+>   This is a variation on the mandatory write barrier that causes writes to weakly
+>   ordered I/O regions to be partially ordered.  Its effects may go beyond the
+>   CPU->Hardware interface and actually affect the hardware at some level.
+> 
+> How can a driver writer possibly get that right?
+> 
+> IIRC it was added for some big ia64 system that was really expensive
+> to implement the proper wmb() semantics on. So wmb() semantics were
+> quietly downgraded, then the subsequently broken drivers they cared
+> about were fixed by adding the stronger mmiowb().
+> 
+> What should have happened was wmb and writel remained correct, sane, and
+> expensive, and they add an mmio_wmb() to order MMIO stores made by the
+> writel_relaxed accessors, then use that to speed up the few drivers they
+> care about.
+> 
+> Now that ia64 doesn't matter too much, can we deprecate mmiowb and just
+> make wmb ordering talk about stores to the device, not to some
+> intermediate stage of the interconnect where it can be subsequently
+> reordered wrt the device? Drivers can be converted back to using wmb
+> or writel gradually.
 
-after the conditional.  Having the locking unnecessarily embedded in the 
-conditional has been an issue in the past with other areas of core code, 
-unless you have a strong reason for it.
+I was under the impression that mmiowb was specifically about ordering
+writel's with a subsequent spin_unlock, without it, MMIOs from
+different CPUs (within the same lock) would still arrive OO.
+
+If that's indeed the case, I would suggest ia64 switches to a similar
+per-cpu flag trick powerpc uses.
+
+Cheers,
+Ben.
+
+> Thanks,
+> Nick
