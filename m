@@ -1,32 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x22a.google.com (mail-pg0-x22a.google.com
- [IPv6:2607:f8b0:400e:c05::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dsterba@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BMVz1NN3zF2Pv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 09:09:46 +1100 (AEDT)
-Received: by mail-pg0-x22a.google.com with SMTP id g8so1702380pgv.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 15:09:46 -0700 (PDT)
-Date: Thu, 29 Mar 2018 08:09:29 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Miller <davem@davemloft.net>, paulmck@linux.vnet.ibm.com,
- arnd@arndb.de, linux-rdma@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linus971@gmail.com, will.deacon@arm.com, alexander.duyck@gmail.com,
- okaya@codeaurora.org, jgg@ziepe.ca, David.Laight@aculab.com,
- oohall@gmail.com, netdev@vger.kernel.org, alexander.h.duyck@redhat.com,
- torvalds@linux-foundation.org
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180329080929.6b56e8be@roar.ozlabs.ibm.com>
-In-Reply-To: <1522272692.21446.42.camel@kernel.crashing.org>
-References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
- <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
- <1522249996.21446.25.camel@kernel.crashing.org>
- <20180328.115509.481837809903086401.davem@davemloft.net>
- <20180329022324.037c3f39@roar.ozlabs.ibm.com>
- <1522272692.21446.42.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B6lY20qpzF2BN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 23:34:39 +1100 (AEDT)
+Date: Wed, 28 Mar 2018 14:32:06 +0200
+From: David Sterba <dsterba@suse.cz>
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Linux 4.16: Reported regressions as of Tuesday, 2018-03-27 (Was:
+ Linux 4.16-rc7)
+Message-ID: <20180328123205.GF30422@twin.jikos.cz>
+Reply-To: dsterba@suse.cz
+References: <CA+55aFxpxHnWBeTXN+DKqwCMW_=T2cR8UxSBVk_6c8LL7Et5JQ@mail.gmail.com>
+ <d1f5b976-f293-5767-9faf-c4f569f8ba55@leemhuis.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <d1f5b976-f293-5767-9faf-c4f569f8ba55@leemhuis.info>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,54 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Mar 2018 08:31:32 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Thu, 2018-03-29 at 02:23 +1000, Nicholas Piggin wrote:
-> > On Wed, 28 Mar 2018 11:55:09 -0400 (EDT)
-> > David Miller <davem@davemloft.net> wrote:
-> >   
-> > > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Date: Thu, 29 Mar 2018 02:13:16 +1100
-> > >   
-> > > > Let's fix all archs, it's way easier than fixing all drivers. Half of
-> > > > the archs are unused or dead anyway.    
-> > > 
-> > > Agreed.  
+On Tue, Mar 27, 2018 at 09:13:32PM +0200, Thorsten Leemhuis wrote:
+> On 26.03.2018 01:37, Linus Torvalds wrote:
+> > […] Anyway. Go out and test. And let's hope next week is nice and calm and
+> > I can release the final 4.16 next Sunday without any extra  rc's.
 > > 
-> > While we're making decrees here, can we do something about mmiowb?
-> > The semantics are basically indecipherable.  
+> >                Linus
 > 
-> I was going to tackle that next :-)
+> Hi! Find below my sixth regression report for Linux 4.16. It lists 7
+> regressions I'm currently aware of. 2 were fixed since last weeks
+> report; 2 are new.
 > 
-> >   This is a variation on the mandatory write barrier that causes writes to weakly
-> >   ordered I/O regions to be partially ordered.  Its effects may go beyond the
-> >   CPU->Hardware interface and actually affect the hardware at some level.
-> > 
-> > How can a driver writer possibly get that right?
-> > 
-> > IIRC it was added for some big ia64 system that was really expensive
-> > to implement the proper wmb() semantics on. So wmb() semantics were
-> > quietly downgraded, then the subsequently broken drivers they cared
-> > about were fixed by adding the stronger mmiowb().
-> > 
-> > What should have happened was wmb and writel remained correct, sane, and
-> > expensive, and they add an mmio_wmb() to order MMIO stores made by the
-> > writel_relaxed accessors, then use that to speed up the few drivers they
-> > care about.
-> > 
-> > Now that ia64 doesn't matter too much, can we deprecate mmiowb and just
-> > make wmb ordering talk about stores to the device, not to some
-> > intermediate stage of the interconnect where it can be subsequently
-> > reordered wrt the device? Drivers can be converted back to using wmb
-> > or writel gradually.  
+> Are you aware of any other regressions that got introduced this
+> development cycle? Then please let me know by mail (a simple bounce or
+> forward to the sender of this email address is enough!). And please tell
+> me if there is anything in the report that shouldn't be there.
 > 
-> I was under the impression that mmiowb was specifically about ordering
-> writel's with a subsequent spin_unlock, without it, MMIOs from
-> different CPUs (within the same lock) would still arrive OO.
+> Ciao, Thorsten
+> 
+> == Current regressions ==
+> 
+> Dell R640 does not boot due to SCSI/SATA failure
+> - Status: Afaics still unfixed; lost track, ask reporter for an update
+> on Monday morning, no reply yet
+> - Cause:  https://git.kernel.org/torvalds/c/84676c1f21e8
+> - Reported: 2018-02-22
+> https://marc.info/?l=linux-kernel&m=151931128006031
+> - Note: Issue understood and even (kind of accidentally) fixed by a
+> patch series that was proposed for 4.17 (see links)
+> - Last known developer activity: 2018-03-14
+> https://marc.info/?l=linux-block&m=152102086831636&w=2
+> - Other relevant links:
+> https://marc.info/?l=linux-block&m=152051511802229&w=2
+> https://marc.info/?l=linux-kernel&m=152026091325037
 
-Yes more or less, and I think that until mmiowb was introduced, wmb
-or writel was sufficient for this.
+I'm not the original reporter but I can confirm this regression has been
+fixed by git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git
+scsi-fixes (tag 0c30612d535460af7fe16e7e6ed8b97defe4adbe)
 
-Thanks,
-Nick
+The machine has a HP array and stopped booting some time around rc1. I
+tried to bisect it and in the end it was the commit 84676c1f21e8 that I
+reverted for testing builds, so I'm sure it's the same issue as you've
+been tracking.
