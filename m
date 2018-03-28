@@ -1,27 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B3Mg1N3lzF2Kd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:02:22 +1100 (AEDT)
-Message-ID: <1522231287.21446.9.camel@kernel.crashing.org>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40B3cg0wdyzF2KH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:13:38 +1100 (AEDT)
+Date: Wed, 28 Mar 2018 11:13:45 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Sinan Kaya <okaya@codeaurora.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
 Subject: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Will Deacon <will.deacon@arm.com>, Sinan Kaya <okaya@codeaurora.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>,
- Oliver <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
- Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Mar 2018 21:01:27 +1100
-In-Reply-To: <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
-References: <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
- <1522141019.7364.43.camel@kernel.crashing.org>
- <20180327095745.GB29373@arm.com>
- <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
- <20180327100944.GD29373@arm.com>
+Message-ID: <20180328101345.GA30850@arm.com>
+References: <20180327100944.GD29373@arm.com>
  <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
  <20180327110258.GF2464@arm.com>
  <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
@@ -30,8 +25,10 @@ References: <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
  <20180328085338.GA28871@arm.com>
  <1522230616.21446.1.camel@kernel.crashing.org>
  <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1522231287.21446.9.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1522231287.21446.9.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,24 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
-> > powerpc and ARM can't quite make them synchronous I think, but at least
-> > they should have the same semantics as writel.
+On Wed, Mar 28, 2018 at 09:01:27PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
+> > > powerpc and ARM can't quite make them synchronous I think, but at least
+> > > they should have the same semantics as writel.
+> > 
+> > One thing that ARM does IIRC is that it only guarantees to order writel() within
+> > one device, and the memory mapped PCI I/O space window almost certainly
+> > counts as a separate device to the CPU.
 > 
-> One thing that ARM does IIRC is that it only guarantees to order writel() within
-> one device, and the memory mapped PCI I/O space window almost certainly
-> counts as a separate device to the CPU.
+> That sounds bogus.
 
-That sounds bogus.
+To elaborate, if you do the following on arm:
 
-> In the absence of an enforced global synchronization during an I/O port
-> access, that means writel() and outb() can be reordered before they arrive
-> at a device in theory. Again, this rarely matters in practice, but I think it
-> makes sense to document the less strict behavior here, given that we have
-> common hardware that can't provide x86 compatible semantics.
+	writel(DEVICE_FOO);
+	writel(DEVICE_BAR);
 
-Can't you put some kind of super heavy handed barrier in inX/outX ?
-These things are never going to be performance sensitive anyway...
+we generally cannot guarantee in which order those accesses will hit the
+devices even if we add every barrier under the sun. You'd need something
+in between, specific to DEVICE_FOO (probably a read-back) to really push
+the first write out. This doesn't sound like it would be that uncommon to
+me.
 
-Cheers,
-Ben.
+On the other hand:
+
+	writel(DEVICE_FOO);
+	writel(DEVICE_FOO);
+
+is obviously ordered and also things like:
+
+	writel(DEVICE_FOO_IN_PCI_MEM_SPACE);
+	writel(DEVICE_BAR_IN_SAME_PCI_MEM_SPACE);
+
+are ordered up to the PCI host bridge, because that's really the "device"
+here.
+
+Will
