@@ -1,39 +1,33 @@
-Return-Path: <jgg@ziepe.ca>
-Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
- [IPv6:2a00:1450:400c:c09::234])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BDp04hSTzF2Jv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:07:20 +1100 (AEDT)
+Received: from mail-qt0-f179.google.com (mail-qt0-f179.google.com
+ [209.85.216.179])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BDZt6s5hzF2LS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 03:57:41 +1100 (AEDT)
-Received: by mail-wm0-x234.google.com with SMTP id x4so6583033wmh.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 09:57:41 -0700 (PDT)
-Date: Wed, 28 Mar 2018 10:57:32 -0600
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Will Deacon <will.deacon@arm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Arnd Bergmann <arnd@arndb.de>, Sinan Kaya <okaya@codeaurora.org>,
- David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180328165732.GA4546@ziepe.ca>
-References: <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
- <20180327110258.GF2464@arm.com>
- <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
- <20180327143628.GA10642@arm.com>
- <1522186185.7364.59.camel@kernel.crashing.org>
- <20180328085338.GA28871@arm.com>
- <1522230616.21446.1.camel@kernel.crashing.org>
- <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
- <1522231287.21446.9.camel@kernel.crashing.org>
- <20180328101345.GA30850@arm.com>
+ by mail.kernel.org (Postfix) with ESMTPSA id 720DE217D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 17:07:17 +0000 (UTC)
+Received: by mail-qt0-f179.google.com with SMTP id s48so3293544qtb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:07:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180328101345.GA30850@arm.com>
+In-Reply-To: <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
+References: <20180323081209.31387-1-oohall@gmail.com>
+ <20180323081209.31387-6-oohall@gmail.com>
+ <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
+ <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 28 Mar 2018 12:06:56 -0500
+Message-ID: <CAL_Jsq+jC2mAXbKh9c8dbLXZmWbD-sFemrk+8p-oGMkXqSMfnQ@mail.gmail.com>
+Subject: Re: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
+To: Oliver <oohall@gmail.com>
+Cc: "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Dan Williams <dan.j.williams@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,41 +37,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2018 at 11:13:45AM +0100, Will Deacon wrote:
-> On Wed, Mar 28, 2018 at 09:01:27PM +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
-> > > > powerpc and ARM can't quite make them synchronous I think, but at least
-> > > > they should have the same semantics as writel.
-> > > 
-> > > One thing that ARM does IIRC is that it only guarantees to order writel() within
-> > > one device, and the memory mapped PCI I/O space window almost certainly
-> > > counts as a separate device to the CPU.
-> > 
-> > That sounds bogus.
-> 
-> To elaborate, if you do the following on arm:
-> 
-> 	writel(DEVICE_FOO);
-> 	writel(DEVICE_BAR);
-> 
-> we generally cannot guarantee in which order those accesses will hit the
-> devices even if we add every barrier under the sun. You'd need something
-> in between, specific to DEVICE_FOO (probably a read-back) to really push
-> the first write out. This doesn't sound like it would be that uncommon to
-> me.
+On Tue, Mar 27, 2018 at 9:53 AM, Oliver <oohall@gmail.com> wrote:
+> On Tue, Mar 27, 2018 at 9:24 AM, Rob Herring <robh@kernel.org> wrote:
+>> On Fri, Mar 23, 2018 at 07:12:09PM +1100, Oliver O'Halloran wrote:
+>>> Add device-tree binding documentation for the nvdimm region driver.
+>>>
+>>> Cc: devicetree@vger.kernel.org
+>>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>>> ---
+>>>  .../devicetree/bindings/nvdimm/nvdimm-region.txt   | 45 ++++++++++++++++++++++
+>>>  1 file changed, 45 insertions(+)
+>>>  create mode 100644 Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
+>>> new file mode 100644
+>>> index 000000000000..02091117ff16
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
+>>> @@ -0,0 +1,45 @@
+>>> +Device-tree bindings for NVDIMM memory regions
+>>> +-----------------------------------------------------
+>>> +
+>>> +Non-volatile DIMMs are memory modules used to provide (cacheable) main memory
+>>
+>> Are DIMMs always going to be the only form factor for NV memory?
+>>
+>> And if you have multiple DIMMs, does each DT node correspond to a DIMM?
+>
+> A nvdimm-region might correspond to a single NVDIMM, a set of
+> interleaved NVDIMMs, or it might just be a chunk of normal memory that
+> you want treated as a NVDIMM for some reason. The last case is useful
+> for provisioning install media on servers since it allows you do
+> download a DVD image, turn it into an nvdimm-region, and kexec into
+> the installer which can use it as a root disk. That may seem a little
+> esoteric, but it's handy and we're using a full linux environment for
+> our boot loader so it's easy to make use of.
 
-The PCI posted write does not require the above to execute 'in order'
-only that any bus segment shared by the two devices have the writes
-issued in CPU order. ie at a shared PCI root port for instance.
+I'm really just asking if we should drop the "dimm" name because it is
+not always a DIMM. Maybe pmem instead? I don't know, naming is
+hard(TM).
 
-If I recall this is very similar to the ordering that ARM's on-chip
-AXI interconnect is supposed to provide.. So I'd be very surprised if
-a modern ARM64 has an meaningful difference from x86 here.
+>> If not, then what if we want/need to provide power control to a DIMM?
+>
+> That would require a DIMM (and probably memory controller) specific
+> driver. I've deliberately left out how regions are mapped back to
+> DIMMs from the binding since it's not really clear to me how that
+> should work. A phandle array pointing to each DIMM device (which could
+> be anything) would do the trick, but I've found that a bit awkward to
+> plumb into the model that libnvdimm expects.
+>
+>>> +that retains its contents across power cycles. In more practical terms, they
+>>> +are kind of storage device where the contents can be accessed by the CPU
+>>> +directly, rather than indirectly via a storage controller or similar. The an
+>>> +nvdimm-region specifies a physical address range that is hosted on an NVDIMM
+>>> +device.
+>>> +
+>>> +Bindings for the region nodes:
+>>> +-----------------------------
+>>> +
+>>> +Required properties:
+>>> +     - compatible = "nvdimm-region"
+>>> +
+>>> +     - reg = <base, size>;
+>>> +             The system physical address range of this nvdimm region.
+>>> +
+>>> +Optional properties:
+>>> +     - Any relevant NUMA assocativity properties for the target platform.
+>>> +     - A "volatile" property indicating that this region is actually in
+>>> +       normal DRAM and does not require cache flushes after each write.
+>>> +
+>>> +A complete example:
+>>> +--------------------
+>>> +
+>>> +/ {
+>>> +     #size-cells = <2>;
+>>> +     #address-cells = <2>;
+>>> +
+>>> +     platform {
+>>
+>> Perhaps we need a more well defined node here. Like we have 'memory' for
+>> memory nodes.
+>
+> I think treating it as a platform device is fine. Memory nodes are
 
-When talking about ordering between the devices, the relevant question
-is what happens if the writel(DEVICE_BAR) triggers DEVICE_BAR to DMA
-from the DEVICE_FOO. 'ordered' means that in this case
-writel(DEVICE_FOO) must be presented to FOO before anything generated
-by BAR.
+Platform device is a Linux term...
 
-Jason
+> special since the OS needs to know where it can allocate early in boot
+> and I don't see non-volatile memory as being similarly significant.
+> Fundamentally an NVDIMM is just a memory mapped storage device so we
+> should be able to defer looking at them until later in boot.
+
+It's not clear if 'platform' is just an example or random name or what
+the node is required to be called. In the latter case, we should be
+much more specific because 'platform' could be anything. In the former
+case, then we have no way to find or validate the node because the
+name could be anything and there's no compatible property either.
+
+"region" is pretty generic too.
+
+>
+> That said you might have problems with XIP kernels and what not. I
+> think that problem is better solved through other means though.
+>
+>>> +             region@5000 {
+>>> +                     compatible = "nvdimm-region;
+>>> +                     reg = <0x00000001 0x00000000 0x00000000 0x40000000>
+>>> +
+>>> +             };
+>>> +
+>>> +             region@6000 {
+>>> +                     compatible = "nvdimm-region";
+>>> +                     reg = <0x00000001 0x00000000 0x00000000 0x40000000>
+
+Thinking about this some more, the 2 levels of nodes is pointless.
+Just follow memory nodes structure.
+
+nv-memory@100000000 {
+  compatible = "nvdimm-region";
+  reg = <0x00000001 0x00000000 0x00000000 0x40000000>;
+};
+
+nv-memory@200000000 {
+  compatible = "nvdimm-region";
+  reg = <0x00000002 0x00000000 0x00000000 0x40000000>;
+};
+
+or:
+
+nv-memory@100000000 {
+  compatible = "nvdimm-region";
+  reg = <0x00000001 0x00000000 0x00000000 0x40000000>
+    <0x00000002 0x00000000 0x00000000 0x40000000>;
+};
+
+Both forms should be allowed.
+
+Rob
