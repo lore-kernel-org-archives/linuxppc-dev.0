@@ -1,32 +1,28 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <BATV+21eba84c15e1805462fd+5330+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B5qm5lkxzF2Kj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 22:53:24 +1100 (AEDT)
-Received: by mail-oi0-x242.google.com with SMTP id t16-v6so1868990oih.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:53:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B6Qc0sn7zF2Fp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 23:20:07 +1100 (AEDT)
+Date: Wed, 28 Mar 2018 05:04:40 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Shea Levy <shea@shealevy.com>
+Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ uclinux-h8-devel@lists.sourceforge.jp,
+ linux-m68k@lists.linux-m68k.org, nios2-dev@lists.rocketboards.org,
+ openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-sh@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 01/16] initrd: Add generic code path for common initrd
+ unloading logic.
+Message-ID: <20180328120440.GB1838@infradead.org>
+References: <20180324174458.26423-1-shea@shealevy.com>
+ <20180324174458.26423-2-shea@shealevy.com>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <CA+7wUsz-ihu7aoE4UfVhojDjH0pcR8QbVGLCzMyA3RocLJz5-A@mail.gmail.com>
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-15-malat@debian.org>
- <97df68d1-d4fe-bf8e-7852-9b418eec042f@c-s.fr>
- <CA+7wUsxVW1a2yvyhYv=YFNV1VEQCcro5JDN1RewghVaHDq5znw@mail.gmail.com>
- <20180324211020.Horde.kEO4b3mHPV88FKM0OiRT0Q1@messagerie.si.c-s.fr>
- <CA+7wUszsJUJJeb+xhzjGr8YxDt-BYruBwda7Dq-nFfyt0sU0ew@mail.gmail.com>
- <20180327175806.Horde.f26UMak3wqEtNtiMmJy51w2@messagerie.si.c-s.fr>
- <20180327193323.Horde.S-Hqc40p7JjEsZPPEa3YNg1@messagerie.si.c-s.fr>
- <CA+7wUsz-ihu7aoE4UfVhojDjH0pcR8QbVGLCzMyA3RocLJz5-A@mail.gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 28 Mar 2018 13:53:01 +0200
-Message-ID: <CA+7wUsxjkceXWosOaGwd4Rw7NkPiRoCd9BeMm9QfmOJ3v4nD5Q@mail.gmail.com>
-Subject: Re: [PATCH 14/19] powerpc/altivec: Add missing prototypes for altivec
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180324174458.26423-2-shea@shealevy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,209 +32,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2018 at 9:26 AM, Mathieu Malaterre <malat@debian.org> wrote=
-:
-> On Tue, Mar 27, 2018 at 7:33 PM, LEROY Christophe
-> <christophe.leroy@c-s.fr> wrote:
->> LEROY Christophe <christophe.leroy@c-s.fr> a =C3=A9crit :
->>
->>
->>> Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
->>>
->>>> Christophe,
->>>>
->>>> On Sat, Mar 24, 2018 at 9:10 PM, LEROY Christophe
->>>> <christophe.leroy@c-s.fr> wrote:
->>>>>
->>>>> Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
->>>>>
->>>>>
->>>>>> On Fri, Mar 23, 2018 at 1:19 PM, christophe leroy
->>>>>> <christophe.leroy@c-s.fr> wrote:
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>> Some functions prototypes were missing for the non-altivec code. A=
-dd
->>>>>>>> the
->>>>>>>> missing prototypes directly in xor_vmx, fix warnings treated as
->>>>>>>> errors
->>>>>>>> with
->>>>>>>> W=3D1:
->>>>>>>>
->>>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototy=
-pe
->>>>>>>> for
->>>>>>>> =E2=80=98xor_altivec_2=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototy=
-pe
->>>>>>>> for
->>>>>>>> =E2=80=98xor_altivec_3=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototy=
-pe
->>>>>>>> for
->>>>>>>> =E2=80=98xor_altivec_4=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>>   arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototy=
-pe
->>>>>>>> for
->>>>>>>> =E2=80=98xor_altivec_5=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>>>>>
->>>>>>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>>>>>>> ---
->>>>>>>>  arch/powerpc/lib/xor_vmx.h | 14 ++++++++++++++
->>>>>>>>  1 file changed, 14 insertions(+)
->>>>>>>>
->>>>>>>> diff --git a/arch/powerpc/lib/xor_vmx.h b/arch/powerpc/lib/xor_vmx=
-.h
->>>>>>>> index 5c2b0839b179..2173e3c84151 100644
->>>>>>>> --- a/arch/powerpc/lib/xor_vmx.h
->>>>>>>> +++ b/arch/powerpc/lib/xor_vmx.h
->>>>>>>> @@ -19,3 +19,17 @@ void __xor_altivec_4(unsigned long bytes, unsig=
-ned
->>>>>>>> long
->>>>>>>> *v1_in,
->>>>>>>>  void __xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>>>>>>>                             unsigned long *v2_in, unsigned long
->>>>>>>> *v3_in,
->>>>>>>>                             unsigned long *v4_in, unsigned long
->>>>>>>> *v5_in);
->>>>>>>> +
->>>>>>>> +void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
->>>>>>>> +                            unsigned long *v2_in);
->>>>>>>> +
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> Only used in one place, should be static instead of adding it in a =
-.h
->>>>>>>
->>>>>>> Same for the other ones.
->>>>>>
->>>>>>
->>>>>>
->>>>>> $ git grep xor_altivec_2
->>>>>> [...]
->>>>>> arch/powerpc/lib/xor_vmx_glue.c:EXPORT_SYMBOL(xor_altivec_2);
->>>>>>
->>>>>> Are you sure I can change this function to static ?
->>>>>
->>>>>
->>>>>
->>>>> Yes you are right.  But in fact those fonctions are already defined i=
-n
->>>>> asm/xor. h
->>>>> So you just need to add the missing #include
->>>>
->>>>
->>>> I originally tried it, but this leads to:
->>>>
->>>>  CC      arch/powerpc/lib/xor_vmx_glue.o
->>>> In file included from arch/powerpc/lib/xor_vmx_glue.c:16:0:
->>>> ./arch/powerpc/include/asm/xor.h:39:15: error: variable
->>>> =E2=80=98xor_block_altivec=E2=80=99 has initializer but incomplete typ=
-e
->>>> static struct xor_block_template xor_block_altivec =3D {
->>>>               ^~~~~~~~~~~~~~~~~~
->>>> ./arch/powerpc/include/asm/xor.h:40:2: error: unknown field =E2=80=98n=
-ame=E2=80=99
->>>> specified in initializer
->>>>  .name =3D "altivec",
->>>>  ^
->>>> [...]
->>>>
->>>> The file <asm/xor.h> (powerpc) is pretty much expected to be included
->>>> after <include/linux/raid/xor.h>.
->>>>
->>>> I did not want to tweak <asm/xor.h> to test for #ifdef _XOR_H just bef=
-ore
->>>>
->>>> #ifdef _XOR_H
->>>> static struct xor_block_template xor_block_altivec =3D {
->>>> [...]
->>>>
->>>> since this seems like a hack to me.
->>>>
->>>> Is this ok to test for #ifdef _XOR_H in <arch/powerpc/include/asm/xor.=
-h>
->>>> ?
->>>
->>>
->>> What about including linux/raid/xor.h in asm/xor.h ?
->
-> This leads to:
->
->   CALL    ../arch/powerpc/kernel/systbl_chk.sh
-> In file included from ../arch/powerpc/include/asm/xor.h:57:0,
->                  from ../arch/powerpc/lib/xor_vmx_glue.c:17:
-> ../include/asm-generic/xor.h:688:34: error: =E2=80=98xor_block_32regs=E2=
-=80=99 defined
-> but not used [-Werror=3Dunused-variable]
->  static struct xor_block_template xor_block_32regs =3D {
->                                   ^~~~~~~~~~~~~~~~
-> ../include/asm-generic/xor.h:680:34: error: =E2=80=98xor_block_8regs=E2=
-=80=99 defined
-> but not used [-Werror=3Dunused-variable]
->  static struct xor_block_template xor_block_8regs =3D {
->                                   ^~~~~~~~~~~~~~~
-> In file included from ../arch/powerpc/lib/xor_vmx_glue.c:17:0:
-> ../arch/powerpc/include/asm/xor.h:39:34: error: =E2=80=98xor_block_altive=
-c=E2=80=99
-> defined but not used [-Werror=3Dunused-variable]
->  static struct xor_block_template xor_block_altivec =3D {
->                                   ^~~~~~~~~~~~~~~~~
->   CALL    ../arch/powerpc/kernel/prom_init_check.sh
->
+> +#ifdef CONFIG_INITRAMFS_GENERIC_UNLOAD
+> +void free_initrd_mem(unsigned long start, unsigned long end)
+> +{
+> +       free_reserved_area((void *)start, (void *)end, -1, "initrd");
+> +}
+> +#endif
 
-I'll prepare a patch which moves the prototypes from
-arch/powerpc/include/asm/xor.h to
-arch/powerpc/include/asm/xor_altivec.h (new file). I believe this
-should be the simplest path.
-
->>
->> Or better: including linux/raid/xor.h then asm/xor.h in xor_vmx_glue.c ?
->>
->> Christophe
->>
->>>
->>> Christophe
->>>>
->>>>
->>>>> Christophe
->>>>>
->>>>>
->>>>>>
->>>>>>> Christophe
->>>>>>>
->>>>>>>
->>>>>>>> +void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
->>>>>>>> +                            unsigned long *v2_in, unsigned long
->>>>>>>> *v3_in);
->>>>>>>> +
->>>>>>>> +void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
->>>>>>>> +                            unsigned long *v2_in, unsigned long
->>>>>>>> *v3_in,
->>>>>>>> +                            unsigned long *v4_in);
->>>>>>>> +
->>>>>>>> +void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
->>>>>>>> +                            unsigned long *v2_in, unsigned long
->>>>>>>> *v3_in,
->>>>>>>> +                            unsigned long *v4_in, unsigned long
->>>>>>>> *v5_in);
->>>>>>>>
->>>>>>>
->>>>>>> ---
->>>>>>> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=
-=A9 v=C3=A9rifi=C3=A9e par le
->>>>>>> logiciel antivirus Avast.
->>>>>>> https://www.avast.com/antivirus
->>>>>>>
->>>>>
->>>>>
->>
->>
+Given how trivial this is and how many architectures can use it I'd
+reverse the polarity and add a CONFIG_HAVE_ARCH_FREE_INITRD_MEM
+instead.
