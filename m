@@ -1,24 +1,17 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B8Gk3n5yzF2Jv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 00:43:26 +1100 (AEDT)
-Received: by mail-pf0-x22c.google.com with SMTP id l27so972607pfk.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:43:26 -0700 (PDT)
-Date: Wed, 28 Mar 2018 23:43:10 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Fix smp_wmb barrier definition use use lwsync
- consistently
-Message-ID: <20180328234119.313ef0dc@roar.ozlabs.ibm.com>
-In-Reply-To: <874ll02x22.fsf@concordia.ellerman.id.au>
-References: <20180322104146.5350-1-npiggin@gmail.com>
- <874ll02x22.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B8xC690GzF2M7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 01:13:19 +1100 (AEDT)
+In-Reply-To: <20180109055214.32199-1-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [kernel] powerpc/lpar/debug: Initialize flags before printing
+ debug message
+Message-Id: <40B8xC2bcZz9s0m@ozlabs.org>
+Date: Thu, 29 Mar 2018 01:13:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Mar 2018 23:40:05 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
+On Tue, 2018-01-09 at 05:52:14 UTC, Alexey Kardashevskiy wrote:
+> With enabled DEBUG, there is a compile error:
+> "error: ‘flags’ is used uninitialized in this function".
 > 
-> > asm/barrier.h is not always included after asm/synch.h, which meant
-> > it was missing __SUBARCH_HAS_LWSYNC, so in some files smp_wmb() would
-> > be eieio when it should be lwsync. kernel/time/hrtimer.c is one case.  
+> This moves pr_devel() little further where @flags are initialized.
 > 
-> Wow nice catch. Only broken since 2008 presumably.
-> 
-> Some days I think maybe we aren't very good at this writing software
-> thing, good to have some certainty :)
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Yeah, I only caught it by luck when looking through instruction traces.
-The pipeline model just happens to make eieio look different to most
-other instructions (which is likely a bug in the model) which made me
-look closer at it. Could have been with us for another 10 years.
+Applied to powerpc next, thanks.
 
-> > __SUBARCH_HAS_LWSYNC is only used in one place, so just fold it in
-> > to where it's used. Previously with my small simulator config, 377
-> > instances of eieio in the tree. After this patch there are 55.  
-> 
-> At least for Book3S this isn't actually a terrible bug AFAICS:
-> 
->  - smp_wmb() is only defined to order accesses to cacheable memory.
->  - smp_wmb() only orders prior stores vs later stores.
->  - eieio orders all prior stores vs all later stores for cacheable
->    memory.
->  - lwsync orders everything except prior stores vs later loads for
->    cacheable memory.
-> 
-> So eieio and lwsync are both valid to use as smp_wmb(), but it's still
-> terrible fishy that we were using both in different places depending on
-> include ordering.
+https://git.kernel.org/powerpc/c/a8c0bf3c621e0acc01451e27fe47c4
 
-Oh yeah it's not a bug in that it would cause violation of memory
-ordering, only performance (and expectations when debugging and
-observing things I guess). eieio works fine for smp_wmb().
-
-> I'm inclined to tag this for stable unless anyone can think of a reason
-> not to?
-
-I think that would be good.
-
-Thanks,
-Nick
+cheers
