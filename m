@@ -1,19 +1,22 @@
 Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409pbB6bzLzF2F9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:26:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409pbP5rrXzF2Gb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:26:41 +1100 (AEDT)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  Christophe Leroy <christophe.leroy@c-s.fr>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2 4/5] powerpc: wii: Don't rely on the reserved memory hack
-Date: Wed, 28 Mar 2018 02:25:43 +0200
-Message-Id: <20180328002544.18526-5-j.neuschaefer@gmx.net>
+ Paul Mackerras <paulus@samba.org>, Michal Hocko <mhocko@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Vlastimil Babka <vbabka@suse.cz>, Dan Williams <dan.j.williams@intel.com>,
+ Joe Perches <joe@perches.com>, "Oliver O'Halloran" <oohall@gmail.com>
+Subject: [PATCH v2 2/5] powerpc: mm: Use memblock API for PPC32 page_is_ram
+Date: Wed, 28 Mar 2018 02:25:41 +0200
+Message-Id: <20180328002544.18526-3-j.neuschaefer@gmx.net>
 In-Reply-To: <20180328002544.18526-1-j.neuschaefer@gmx.net>
 References: <20180328002544.18526-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -27,50 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because the two memory blocks (usually called MEM1 and MEM2) are not
-merged anymore, __request_region in kernel/resource.c will correctly
-allow reserving regions in the physical address space between MEM1 and
-MEM2, where many important peripherals are (GPIO, MMC, USB, ...).
-
-A previous change to __ioremap_caller in arch/powerpc/mm/pgtable_32.c
-ensures that multiple memblocks are properly considered in ioremap; this
-makes it unnecessary to set __allow_ioremap_reserved.
+To support accurate checking for different blocks of memory on PPC32,
+use the same memblock-based approach that's already used on PPC64 also
+on PPC32.
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
 
-v2:
-Add some text to the commit message.
+v2: no changes
 ---
- arch/powerpc/platforms/embedded6xx/wii.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ arch/powerpc/mm/mem.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-index 4682327f76a9..fc00d82691e1 100644
---- a/arch/powerpc/platforms/embedded6xx/wii.c
-+++ b/arch/powerpc/platforms/embedded6xx/wii.c
-@@ -81,21 +81,9 @@ void __init wii_memory_fixups(void)
- 	BUG_ON(memblock.memory.cnt != 2);
- 	BUG_ON(!page_aligned(p[0].base) || !page_aligned(p[1].base));
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index da4e1555d61d..a42b86e2a34c 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -82,11 +82,7 @@ static inline pte_t *virt_to_kpte(unsigned long vaddr)
  
--	/* trim unaligned tail */
--	memblock_remove(ALIGN(p[1].base + p[1].size, PAGE_SIZE),
--			(phys_addr_t)ULLONG_MAX);
--
--	/* determine hole, add & reserve them */
-+	/* determine hole */
- 	wii_hole_start = ALIGN(p[0].base + p[0].size, PAGE_SIZE);
- 	wii_hole_size = p[1].base - wii_hole_start;
--	memblock_add(wii_hole_start, wii_hole_size);
--	memblock_reserve(wii_hole_start, wii_hole_size);
--
--	BUG_ON(memblock.memory.cnt != 1);
--	__memblock_dump_all();
--
--	/* allow ioremapping the address space in the hole */
--	__allow_ioremap_reserved = 1;
+ int page_is_ram(unsigned long pfn)
+ {
+-#ifndef CONFIG_PPC64	/* XXX for now */
+-	return pfn < max_pfn;
+-#else
+ 	return memblock_is_memory(__pfn_to_phys(pfn));
+-#endif
  }
  
- unsigned long __init wii_mmu_mapin_mem2(unsigned long top)
+ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 -- 
 2.16.2
