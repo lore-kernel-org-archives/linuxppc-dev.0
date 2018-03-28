@@ -1,39 +1,53 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B4983DbfzF2KY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:38:20 +1100 (AEDT)
-Message-ID: <1522232416.21446.10.camel@kernel.crashing.org>
-Subject: Re: Aw: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Lino Sanfilippo <LinoSanfilippo@gmx.de>
-Cc: Will Deacon <will.deacon@arm.com>, Linus Torvalds
- <torvalds@linux-foundation.org>, Alexander Duyck
- <alexander.duyck@gmail.com>, Sinan Kaya <okaya@codeaurora.org>, Arnd
- Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, David Laight
- <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open list:LINUX FOR
- POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-Date: Wed, 28 Mar 2018 21:20:16 +1100
-In-Reply-To: <trinity-2ee224b5-cbac-415e-9f8c-305e802b5369-1522232002354@3c-app-gmx-bs61>
-References: <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
- <20180327151029.GB17494@arm.com>
- <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
- <1522186396.7364.61.camel@kernel.crashing.org>
- <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
- <1522198981.7364.81.camel@kernel.crashing.org>
- <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
- <1522211620.7364.94.camel@kernel.crashing.org>
- <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
- <1522219376.7364.109.camel@kernel.crashing.org>
- <20180328090710.GB28871@arm.com>
- <1522230988.21446.7.camel@kernel.crashing.org>
- <trinity-2ee224b5-cbac-415e-9f8c-305e802b5369-1522232002354@3c-app-gmx-bs61>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B4H96Fq0zF2FJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:43:33 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2SAfoJe064863
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:43:30 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h07cfn8a4-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 06:43:30 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 11:43:27 +0100
+Subject: Re: [PATCH v9 06/24] mm: make pte_unmap_same compatible with SPF
+To: David Rientjes <rientjes@google.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ Andrew Morton <akpm@linux-foundation.org>, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803271417510.31115@chino.kir.corp.google.com>
+ <fd9eedf4-b885-d8f5-2daa-4cc450e72427@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803280318440.69353@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 12:43:15 +0200
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.20.1803280318440.69353@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c144821a-6a78-f395-4480-ea929c7f08f6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,32 +57,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-28 at 12:13 +0200, Lino Sanfilippo wrote:
-> Hi,
-> 
-> 
-> > 
-> > Yeah so that other trick I'm talking about is also used for timing
-> > accuracy.
-> > 
-> > For example, let's say I have a device with a reset bit and the spec
-> > says the reset bit needs to be set for at least 10us.
-> > 
-> > This is wrong:
-> > 
-> > 	writel(1, RESET_REG);
-> > 	usleep(10);
-> > 	writel(0, RESET_REG);
-> > 
-> > Because of write posting, the first write might arrive to the device
-> > right before the second one.
-> > 
-> 
-> Does not write posting only concern PCI? This seems to be a different topic. Furthermore
-> write posting should not include write reordering...
 
-Nobody's talking about re-ordering and no, write posting is rather
-common practice on a whole lot of different busses, not just PCI(e).
 
-Cheers,
-Ben.
+On 28/03/2018 12:20, David Rientjes wrote:
+> On Wed, 28 Mar 2018, Laurent Dufour wrote:
+> 
+>>>> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
+>>>>  	int exclusive = 0;
+>>>>  	int ret = 0;
+>>>
+>>> Initialization is now unneeded.
+>>
+>> I'm sorry, what "initialization" are you talking about here ?
+>>
+> 
+> The initialization of the ret variable.
+> 
+> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
+>  	int exclusive = 0;
+>  	int ret = 0;
+> 
+> -	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte))
+> +	ret = pte_unmap_same(vmf);
+> +	if (ret)
+>  		goto out;
+> 
+>  	entry = pte_to_swp_entry(vmf->orig_pte);
+> 
+> "ret" is immediately set to the return value of pte_unmap_same(), so there 
+> is no need to initialize it to 0.
+
+Sorry, I missed that. I'll remove this initialization.
+
+Thanks,
+Laurent.
