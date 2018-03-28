@@ -1,28 +1,27 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
- [IPv6:2a00:1450:400c:c0c::243])
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BHBx4h7pzF2JP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 05:55:37 +1100 (AEDT)
-Received: by mail-wr0-x243.google.com with SMTP id f14so3188732wre.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:55:37 -0700 (PDT)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: LEROY Christophe <christophe.leroy@c-s.fr>,
- Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v3] powerpc/altivec: Add missing prototypes for altivec
-Date: Wed, 28 Mar 2018 20:55:25 +0200
-Message-Id: <20180328185531.10945-1-malat@debian.org>
-In-Reply-To: <20180322202007.23088-15-malat@debian.org>
-References: <20180322202007.23088-15-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BHZ33HYhzF2K6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 06:12:11 +1100 (AEDT)
+Received: by mail-oi0-x241.google.com with SMTP id q71-v6so3091833oic.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 12:12:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <fd5993b4-0b0a-3c65-65a8-b26445d0d440@c-s.fr>
+References: <20180322202007.23088-1-malat@debian.org>
+ <20180322202007.23088-12-malat@debian.org>
+ <fd5993b4-0b0a-3c65-65a8-b26445d0d440@c-s.fr>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 28 Mar 2018 21:11:48 +0200
+Message-ID: <CA+7wUsxtWCoE1rxP6e57MEfB_zjLUzTa36CD=TyZS4_DkrQ81Q@mail.gmail.com>
+Subject: Re: [PATCH 11/19] powerpc/powermac: Move pmac_pfunc_base_install
+ prototype to header file
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, LKML <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,96 +31,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some functions prototypes were missing for the non-altivec code. Add the
-missing prototypes in a new header file, fix warnings treated as errors
-with W=1:
+On Fri, Mar 23, 2018 at 1:13 PM, christophe leroy
+<christophe.leroy@c-s.fr> wrote:
+>
+>
+> Le 22/03/2018 =C3=A0 21:19, Mathieu Malaterre a =C3=A9crit :
+>>
+>> The pmac_pfunc_base_install prototype was declared in powermac/smp.c sin=
+ce
+>> function was used there, move it to pmac_pfunc.h header to be visible in
+>> pfunc_base.c. Fix a warning treated as error with W=3D1:
+>>
+>>    arch/powerpc/platforms/powermac/pfunc_base.c:330:12: error: no previo=
+us
+>> prototype for =E2=80=98pmac_pfunc_base_install=E2=80=99 [-Werror=3Dmissi=
+ng-prototypes]
+>>
+>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>> ---
+>>   arch/powerpc/include/asm/pmac_pfunc.h | 1 +
+>>   arch/powerpc/platforms/powermac/smp.c | 1 -
+>>   2 files changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/pmac_pfunc.h
+>> b/arch/powerpc/include/asm/pmac_pfunc.h
+>> index 73bd8f28f2a8..99f7a288789a 100644
+>> --- a/arch/powerpc/include/asm/pmac_pfunc.h
+>> +++ b/arch/powerpc/include/asm/pmac_pfunc.h
+>> @@ -245,6 +245,7 @@ extern void pmf_put_function(struct pmf_function
+>> *func);
+>>     extern int pmf_call_one(struct pmf_function *func, struct pmf_args
+>> *args);
+>>   +extern int pmac_pfunc_base_install(void);
+>
+>
+>
+> extern keyword is not needed
 
-  arch/powerpc/lib/xor_vmx_glue.c:18:6: error: no previous prototype for ‘xor_altivec_2’ [-Werror=missing-prototypes]
-  arch/powerpc/lib/xor_vmx_glue.c:29:6: error: no previous prototype for ‘xor_altivec_3’ [-Werror=missing-prototypes]
-  arch/powerpc/lib/xor_vmx_glue.c:40:6: error: no previous prototype for ‘xor_altivec_4’ [-Werror=missing-prototypes]
-  arch/powerpc/lib/xor_vmx_glue.c:52:6: error: no previous prototype for ‘xor_altivec_5’ [-Werror=missing-prototypes]
+I understand; but for consistency every single protoypes in this
+header file actually use the extern keyword. Is there a guide/best
+practice to refer to in this case ?
 
-The prototypes were already present in <asm/xor.h> but this header file is
-meant to be included after <include/linux/raid/xor.h>. Trying to re-use
-<asm/xor.h> directly would lead to warnings such as:
-
-  arch/powerpc/include/asm/xor.h:39:15: error: variable ‘xor_block_altivec’ has initializer but incomplete type
-
-Trying to re-use <asm/xor.h> after <include/linux/raid/xor.h> in
-xor_vmx_glue.c would in turn trigger the following warnings:
-
-  include/asm-generic/xor.h:688:34: error: ‘xor_block_32regs’ defined but not used [-Werror=unused-variable]
-
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
-v3: missing changelog, no other change
-v2: new version where a separate header was introduced. Also update commit message explaining history.
-
- arch/powerpc/include/asm/xor.h         | 12 +-----------
- arch/powerpc/include/asm/xor_altivec.h | 19 +++++++++++++++++++
- arch/powerpc/lib/xor_vmx_glue.c        |  1 +
- 3 files changed, 21 insertions(+), 11 deletions(-)
- create mode 100644 arch/powerpc/include/asm/xor_altivec.h
-
-diff --git a/arch/powerpc/include/asm/xor.h b/arch/powerpc/include/asm/xor.h
-index a36c2069d8ed..7d6dc503349d 100644
---- a/arch/powerpc/include/asm/xor.h
-+++ b/arch/powerpc/include/asm/xor.h
-@@ -24,17 +24,7 @@
- 
- #include <asm/cputable.h>
- #include <asm/cpu_has_feature.h>
--
--void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
--		   unsigned long *v2_in);
--void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
--		   unsigned long *v2_in, unsigned long *v3_in);
--void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
--		   unsigned long *v2_in, unsigned long *v3_in,
--		   unsigned long *v4_in);
--void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
--		   unsigned long *v2_in, unsigned long *v3_in,
--		   unsigned long *v4_in, unsigned long *v5_in);
-+#include <asm/xor_altivec.h>
- 
- static struct xor_block_template xor_block_altivec = {
- 	.name = "altivec",
-diff --git a/arch/powerpc/include/asm/xor_altivec.h b/arch/powerpc/include/asm/xor_altivec.h
-new file mode 100644
-index 000000000000..6ca923510b59
---- /dev/null
-+++ b/arch/powerpc/include/asm/xor_altivec.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_XOR_ALTIVEC_H
-+#define _ASM_POWERPC_XOR_ALTIVEC_H
-+
-+#ifdef CONFIG_ALTIVEC
-+
-+void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
-+		   unsigned long *v2_in);
-+void xor_altivec_3(unsigned long bytes, unsigned long *v1_in,
-+		   unsigned long *v2_in, unsigned long *v3_in);
-+void xor_altivec_4(unsigned long bytes, unsigned long *v1_in,
-+		   unsigned long *v2_in, unsigned long *v3_in,
-+		   unsigned long *v4_in);
-+void xor_altivec_5(unsigned long bytes, unsigned long *v1_in,
-+		   unsigned long *v2_in, unsigned long *v3_in,
-+		   unsigned long *v4_in, unsigned long *v5_in);
-+
-+#endif
-+#endif /* _ASM_POWERPC_XOR_ALTIVEC_H */
-diff --git a/arch/powerpc/lib/xor_vmx_glue.c b/arch/powerpc/lib/xor_vmx_glue.c
-index 6521fe5e8cef..dab2b6bfcf36 100644
---- a/arch/powerpc/lib/xor_vmx_glue.c
-+++ b/arch/powerpc/lib/xor_vmx_glue.c
-@@ -13,6 +13,7 @@
- #include <linux/export.h>
- #include <linux/sched.h>
- #include <asm/switch_to.h>
-+#include <asm/xor_altivec.h>
- #include "xor_vmx.h"
- 
- void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
--- 
-2.11.0
+> Christophe
+>
+>>     /* Suspend/resume code called by via-pmu directly for now */
+>>   extern void pmac_pfunc_base_suspend(void);
+>> diff --git a/arch/powerpc/platforms/powermac/smp.c
+>> b/arch/powerpc/platforms/powermac/smp.c
+>> index 95275e0e2efa..447da6db450a 100644
+>> --- a/arch/powerpc/platforms/powermac/smp.c
+>> +++ b/arch/powerpc/platforms/powermac/smp.c
+>> @@ -65,7 +65,6 @@
+>>   #endif
+>>     extern void __secondary_start_pmac_0(void);
+>> -extern int pmac_pfunc_base_install(void);
+>>     static void (*pmac_tb_freeze)(int freeze);
+>>   static u64 timebase;
+>>
+>
+> ---
+> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
+=C3=A9rifi=C3=A9e par le
+> logiciel antivirus Avast.
+> https://www.avast.com/antivirus
+>
