@@ -1,19 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B2cc40YRzF2KC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 20:28:32 +1100 (AEDT)
-Received: by mail-pl0-x241.google.com with SMTP id g20-v6so1219154plo.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 02:28:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B2cg4CzHzF2KV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 20:28:35 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id g14so756931pfh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 02:28:35 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 1/5] powerpc/64: remove start_tb and accum_tb from
- thread_struct
-Date: Wed, 28 Mar 2018 19:28:15 +1000
-Message-Id: <20180328092819.27015-2-npiggin@gmail.com>
+Subject: [PATCH 2/5] powerpc/pseries: lparcfg calculate PURR on demand
+Date: Wed, 28 Mar 2018 19:28:16 +1000
+Message-Id: <20180328092819.27015-3-npiggin@gmail.com>
 In-Reply-To: <20180328092819.27015-1-npiggin@gmail.com>
 References: <20180328092819.27015-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,45 +24,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These fields are only written to.
+For SPLPAR, lparcfg provides a sum of PURR registers for all CPUs.
+Currently this is done by reading PURR in context switch and timer
+interrupt, and storing that into a per-CPU variable. These are
+summed to provide the value.
+
+This does not work with all timer schemes (e.g., NO_HZ_FULL), and it
+is sub-optimal for performance because it reads the PURR register
+on every context switch, although that's been difficult to distinguish
+from noise in the contxt_switch microbenchmark.
+
+This patch implements the sum by calling a function on each CPU, to
+read and add PURR values of each CPU.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/processor.h | 4 ----
- arch/powerpc/kernel/process.c        | 6 +-----
- 2 files changed, 1 insertion(+), 9 deletions(-)
+ arch/powerpc/include/asm/time.h          |  8 --------
+ arch/powerpc/kernel/process.c            | 14 --------------
+ arch/powerpc/kernel/time.c               |  8 --------
+ arch/powerpc/platforms/pseries/lparcfg.c | 18 ++++++++++--------
+ 4 files changed, 10 insertions(+), 38 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 01299cdc9806..67eedcc6d803 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -251,10 +251,6 @@ struct thread_struct {
- 	struct thread_fp_state	*fp_save_area;
- 	int		fpexc_mode;	/* floating-point exception mode */
- 	unsigned int	align_ctl;	/* alignment handling control */
--#ifdef CONFIG_PPC64
--	unsigned long	start_tb;	/* Start purr when proc switched in */
--	unsigned long	accum_tb;	/* Total accumulated purr for process */
--#endif
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
- 	struct perf_event *ptrace_bps[HBP_NUM];
- 	/*
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index db546c034905..c965c79765c4 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -196,14 +196,6 @@ extern u64 mulhdu(u64, u64);
+ extern void div128_by_32(u64 dividend_high, u64 dividend_low,
+ 			 unsigned divisor, struct div_result *dr);
+ 
+-/* Used to store Processor Utilization register (purr) values */
+-
+-struct cpu_usage {
+-        u64 current_tb;  /* Holds the current purr register values */
+-};
+-
+-DECLARE_PER_CPU(struct cpu_usage, cpu_usage_array);
+-
+ extern void secondary_cpu_time_init(void);
+ extern void __init time_init(void);
+ 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ec4f363ebb89..9626b991da52 100644
+index 9626b991da52..48cb033ecd33 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -1169,11 +1169,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	 */
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
- 		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
--		long unsigned start_tb, current_tb;
--		start_tb = old_thread->start_tb;
--		cu->current_tb = current_tb = mfspr(SPRN_PURR);
--		old_thread->accum_tb += (current_tb - start_tb);
--		new_thread->start_tb = current_tb;
-+		cu->current_tb = mfspr(SPRN_PURR);
- 	}
- #endif /* CONFIG_PPC64 */
+@@ -827,10 +827,6 @@ void set_breakpoint(struct arch_hw_breakpoint *brk)
+ 	preempt_enable();
+ }
  
+-#ifdef CONFIG_PPC64
+-DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
+-#endif
+-
+ static inline bool hw_brk_match(struct arch_hw_breakpoint *a,
+ 			      struct arch_hw_breakpoint *b)
+ {
+@@ -1163,16 +1159,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 
+ 	WARN_ON(!irqs_disabled());
+ 
+-#ifdef CONFIG_PPC64
+-	/*
+-	 * Collect processor utilization data per process
+-	 */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
+-		cu->current_tb = mfspr(SPRN_PURR);
+-	}
+-#endif /* CONFIG_PPC64 */
+-
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	batch = this_cpu_ptr(&ppc64_tlb_batch);
+ 	if (batch->active) {
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index f7d96a68ecaa..3e531ab4e836 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -565,14 +565,6 @@ static void __timer_interrupt(void)
+ 		__this_cpu_inc(irq_stat.timer_irqs_others);
+ 	}
+ 
+-#ifdef CONFIG_PPC64
+-	/* collect purr register values often, for accurate calculations */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
+-		cu->current_tb = mfspr(SPRN_PURR);
+-	}
+-#endif
+-
+ 	trace_timer_interrupt_exit(regs);
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index c508c938dc71..7c872dc01bdb 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -52,18 +52,20 @@
+  * Track sum of all purrs across all processors. This is used to further
+  * calculate usage values by different applications
+  */
++static void cpu_get_purr(void *arg)
++{
++	atomic64_t *sum = arg;
++
++	atomic64_add(mfspr(SPRN_PURR), sum);
++}
++
+ static unsigned long get_purr(void)
+ {
+-	unsigned long sum_purr = 0;
+-	int cpu;
++	atomic64_t purr = ATOMIC64_INIT(0);
+ 
+-	for_each_possible_cpu(cpu) {
+-		struct cpu_usage *cu;
++	on_each_cpu(cpu_get_purr, &purr, 1);
+ 
+-		cu = &per_cpu(cpu_usage_array, cpu);
+-		sum_purr += cu->current_tb;
+-	}
+-	return sum_purr;
++	return atomic64_read(&purr);
+ }
+ 
+ /*
 -- 
 2.16.1
