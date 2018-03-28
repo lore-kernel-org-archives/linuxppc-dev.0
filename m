@@ -1,47 +1,51 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B19k5k1TzF2Cp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 19:23:36 +1100 (AEDT)
-Message-ID: <1522222979.7364.118.camel@kernel.crashing.org>
-Subject: Re: RFC on writel and writel_relaxed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Alexander Duyck
- <alexander.duyck@gmail.com>, Will Deacon <will.deacon@arm.com>, Sinan Kaya
- <okaya@codeaurora.org>, Jason Gunthorpe <jgg@ziepe.ca>, David Laight
- <David.Laight@aculab.com>, Oliver <oohall@gmail.com>, "open list:LINUX FOR
- POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-Date: Wed, 28 Mar 2018 18:42:59 +1100
-In-Reply-To: <CAK8P3a1QTjCtJMAv1RSN5ReiOShZ_ygkCXY484OJUvn6r+1mbg@mail.gmail.com>
-References: <1521854626.16434.359.camel@kernel.crashing.org>
- <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
- <20180326165425.GA15554@ziepe.ca>
- <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
- <20180326202545.GB15554@ziepe.ca>
- <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
- <20180326210951.GD15554@ziepe.ca>
- <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
- <1522101616.7364.13.camel@kernel.crashing.org>
- <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
- <20180327151029.GB17494@arm.com>
- <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
- <1522186396.7364.61.camel@kernel.crashing.org>
- <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
- <1522198981.7364.81.camel@kernel.crashing.org>
- <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
- <1522211620.7364.94.camel@kernel.crashing.org>
- <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
- <1522219376.7364.109.camel@kernel.crashing.org>
- <CA+55aFyaZ=WEXFg4KZ0yCWaR=8Dm_FPK-xcA0EYi3fEzm+KZkA@mail.gmail.com>
- <1522220165.7364.110.camel@kernel.crashing.org>
- <CAK8P3a1QTjCtJMAv1RSN5ReiOShZ_ygkCXY484OJUvn6r+1mbg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B1Gt3gcrzF2MZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 19:28:06 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2S8Rp49002018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:28:03 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h05fme6wt-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 04:28:02 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 09:27:56 +0100
+Subject: Re: [PATCH v9 06/24] mm: make pte_unmap_same compatible with SPF
+To: David Rientjes <rientjes@google.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803271417510.31115@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 10:27:45 +0200
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.20.1803271417510.31115@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <fd9eedf4-b885-d8f5-2daa-4cc450e72427@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,33 +55,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-28 at 09:11 +0200, Arnd Bergmann wrote:
-> On Wed, Mar 28, 2018 at 8:56 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Wed, 2018-03-28 at 06:53 +0000, Linus Torvalds wrote:
-> > > On Tue, Mar 27, 2018, 20:43 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > > That's why in/out were *so* slow, and why nobody uses them any more
-> > > (well, the address size limitations and the lack of any remapping of
-> > > the address obviously also are a reason).
-> > 
-> > All true indeed, though a lot of other archs never quite made them
-> > fully synchronous, which was another can of worms ... oh well.
+
+
+On 27/03/2018 23:18, David Rientjes wrote:
+> On Tue, 13 Mar 2018, Laurent Dufour wrote:
 > 
-> Many architectures have no way of providing PCI compliant semantics
-> for outb, as their instruction set and/or bus interconnect lacks a
-> method of waiting for completion of an outb.
+>> diff --git a/include/linux/mm.h b/include/linux/mm.h
+>> index 2f3e98edc94a..b6432a261e63 100644
+>> --- a/include/linux/mm.h
+>> +++ b/include/linux/mm.h
+>> @@ -1199,6 +1199,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
+>>  #define VM_FAULT_NEEDDSYNC  0x2000	/* ->fault did not modify page tables
+>>  					 * and needs fsync() to complete (for
+>>  					 * synchronous page faults in DAX) */
+>> +#define VM_FAULT_PTNOTSAME 0x4000	/* Page table entries have changed */
+>>  
+>>  #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
+>>  			 VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
+>> diff --git a/mm/memory.c b/mm/memory.c
+>> index 21b1212a0892..4bc7b0bdcb40 100644
+>> --- a/mm/memory.c
+>> +++ b/mm/memory.c
+>> @@ -2309,21 +2309,29 @@ static bool pte_map_lock(struct vm_fault *vmf)
+>>   * parts, do_swap_page must check under lock before unmapping the pte and
+>>   * proceeding (but do_wp_page is only called after already making such a check;
+>>   * and do_anonymous_page can safely check later on).
+>> + *
+>> + * pte_unmap_same() returns:
+>> + *	0			if the PTE are the same
+>> + *	VM_FAULT_PTNOTSAME	if the PTE are different
+>> + *	VM_FAULT_RETRY		if the VMA has changed in our back during
+>> + *				a speculative page fault handling.
+>>   */
+>> -static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
+>> -				pte_t *page_table, pte_t orig_pte)
+>> +static inline int pte_unmap_same(struct vm_fault *vmf)
+>>  {
+>> -	int same = 1;
+>> +	int ret = 0;
+>> +
+>>  #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+>>  	if (sizeof(pte_t) > sizeof(unsigned long)) {
+>> -		spinlock_t *ptl = pte_lockptr(mm, pmd);
+>> -		spin_lock(ptl);
+>> -		same = pte_same(*page_table, orig_pte);
+>> -		spin_unlock(ptl);
+>> +		if (pte_spinlock(vmf)) {
+>> +			if (!pte_same(*vmf->pte, vmf->orig_pte))
+>> +				ret = VM_FAULT_PTNOTSAME;
+>> +			spin_unlock(vmf->ptl);
+>> +		} else
+>> +			ret = VM_FAULT_RETRY;
+>>  	}
+>>  #endif
+>> -	pte_unmap(page_table);
+>> -	return same;
+>> +	pte_unmap(vmf->pte);
+>> +	return ret;
+>>  }
+>>  
+>>  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
+>> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
+>>  	int exclusive = 0;
+>>  	int ret = 0;
+> 
+> Initialization is now unneeded.
 
-Yup, that includes powerpc. Note that since POWER8 we don't even
-genetate IO space anymore :-)
+I'm sorry, what "initialization" are you talking about here ?
 
-> In practice, it doesn't seem to matter for any of the devices one would
-> encounter these days: very few use I/O space, and those that do don't
-> actually rely on the strict ordering. Some architectures (in particular
-> s390, but I remember seeing the same thing elsewhere) explicitly
-> disallow I/O space access on PCI because of this. On ARM, the typical
-> PCI implementations have other problems that are worse than this
-> one, so most drivers are fine with the almost-working semantics.
+> 
+> Otherwise:
+> 
+> Acked-by: David Rientjes <rientjes@google.com>
 
-/me cries...
-
-Ben.
+Thanks,
+Laurent.
