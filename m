@@ -1,24 +1,45 @@
-Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Return-Path: <linus971@gmail.com>
+Received: from mail-io0-x22a.google.com (mail-io0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c06::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409pjm3pKvzF2G2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:32:12 +1100 (AEDT)
-From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
- Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 3/5] powerpc/mm/32: Use page_is_ram to check for RAM
-Date: Wed, 28 Mar 2018 02:25:42 +0200
-Message-Id: <20180328002544.18526-4-j.neuschaefer@gmx.net>
-In-Reply-To: <20180328002544.18526-1-j.neuschaefer@gmx.net>
-References: <20180328002544.18526-1-j.neuschaefer@gmx.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409psw5GtRzF2H2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:39:16 +1100 (AEDT)
+Received: by mail-io0-x22a.google.com with SMTP id o4so1437095iod.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 17:39:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Sender: linus971@gmail.com
+In-Reply-To: <1522186396.7364.61.camel@kernel.crashing.org>
+References: <1521854626.16434.359.camel@kernel.crashing.org>
+ <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
+ <20180326165425.GA15554@ziepe.ca>
+ <CAK8P3a1zeMyj+Z-y4ER4moY6Zip9EWNOinf+VnboGOrgiwbBZA@mail.gmail.com>
+ <20180326202545.GB15554@ziepe.ca>
+ <CAK8P3a3fc43ZcW626hmsd3DVcLw7hGkdUMxp7s4Rn3mdkziwMQ@mail.gmail.com>
+ <20180326210951.GD15554@ziepe.ca>
+ <CAK8P3a2UU1xAM0NLo7Q4-Xgo1SzY3De1uqpFudr+2ZW7nHEPmA@mail.gmail.com>
+ <1522101616.7364.13.camel@kernel.crashing.org>
+ <1e077f6a-90b6-cce9-6f0f-a8c003fec850@codeaurora.org>
+ <20180327151029.GB17494@arm.com>
+ <CAKgT0Uem6HT-Z=HBnSVcC4rnDL0yFyXEbr+FN3YYkJ=ExZpUPQ@mail.gmail.com>
+ <1522186396.7364.61.camel@kernel.crashing.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 27 Mar 2018 14:39:13 -1000
+Message-ID: <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
+Subject: Re: RFC on writel and writel_relaxed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexander Duyck <alexander.duyck@gmail.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
+ Jason Gunthorpe <jgg@ziepe.ca>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ Alexander Duyck <alexander.h.duyck@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +49,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On systems where there is MMIO space between different blocks of RAM in
-the physical address space, __ioremap_caller did not allow mapping these
-MMIO areas, because they were below the end RAM and thus considered RAM
-as well.  Use the memblock-based page_is_ram function, which returns
-false for such MMIO holes.
+On Tue, Mar 27, 2018 at 11:33 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> Well, we need to clarify that once and for all, because as I wrote
+> earlier, it was decreed by Linus more than a decade ago that writel
+> would be fully ordered by itself vs. previous memory stores (at least
+> on UC memory).
 
-v2:
-  Keep the check for p < virt_to_phys(high_memory). On 32-bit systems
-  with high memory (memory above physical address 4GiB), the high memory
-  is expected to be available though ioremap. The high_memory variable
-  marks the end of low memory; comparing against it means that only
-  ioremap requests for low RAM will be denied.
-  Reported by Michael Ellerman.
+Yes.
 
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
- arch/powerpc/mm/pgtable_32.c | 1 +
- 1 file changed, 1 insertion(+)
+So "writel()" needs to be ordered with respect to other writel() uses
+on the same thread. Anything else *will* break drivers. Obviously, the
+drivers may then do magic to say "do write combining etc", but that
+magic will be architecture-specific.
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index d35d9ad3c1cd..6668ecc041ad 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -148,6 +148,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 	 * mem_init() sets high_memory so only do the check after that.
- 	 */
- 	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
-+	    page_is_ram(__phys_to_pfn(p)) &&
- 	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
- 		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
- 		       (unsigned long long)p, __builtin_return_address(0));
--- 
-2.16.2
+The other issue is that "writel()" needs to be ordered wrt other CPU's
+doing "writel()" if those writel's are in a spinlocked region.
+
+So it's not  that "writel()" needs to be ordered wrt the spinlock
+itself, but you *do* need to honor ordering if you have something like
+this:
+
+   spin_lock(&somelock);
+   writel(a);
+   writel(b);
+   spin_unlock(&somelock);
+
+and if two CPU's run the above code "at the same time", then the
+*ONLY* acceptable sequence is abab.
+
+You cannot, and must not, ever see "aabb" at the device, for example,
+because of how the writel would basically leak out of the spinlock.
+
+That sounds "obvious", but dammit, a lot of architectures got that
+wrong, afaik.
+
+                Linus
