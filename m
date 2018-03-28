@@ -1,15 +1,15 @@
 Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x22b.google.com (mail-it0-x22b.google.com
- [IPv6:2607:f8b0:4001:c0b::22b])
+Received: from mail-it0-x22d.google.com (mail-it0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c0b::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 409yJN2K3VzF28X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 17:14:11 +1100 (AEDT)
-Received: by mail-it0-x22b.google.com with SMTP id r19-v6so2274152itc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:14:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 409yZ80B0XzF2Gp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 17:26:07 +1100 (AEDT)
+Received: by mail-it0-x22d.google.com with SMTP id c1-v6so2208958itj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Mar 2018 23:26:07 -0700 (PDT)
 MIME-Version: 1.0
 Sender: linus971@gmail.com
-In-Reply-To: <bf77be28-051d-79c8-9b65-948c8a254d6d@codeaurora.org>
+In-Reply-To: <1522211620.7364.94.camel@kernel.crashing.org>
 References: <1521854626.16434.359.camel@kernel.crashing.org>
  <58ce5b83f40f4775bec1be8db66adb0d@AcuMS.aculab.com>
  <20180326165425.GA15554@ziepe.ca>
@@ -26,21 +26,20 @@ References: <1521854626.16434.359.camel@kernel.crashing.org>
  <CA+55aFw2R4pirO0m+jtj4F8AF2-tVi3guEaWOA-EBqNyFmh29w@mail.gmail.com>
  <1522198981.7364.81.camel@kernel.crashing.org>
  <CA+55aFyTeuXPmC5-1JGh2ow-rf5wMA6Vcv0aeS_q0_EnptSK9Q@mail.gmail.com>
- <bf77be28-051d-79c8-9b65-948c8a254d6d@codeaurora.org>
+ <1522211620.7364.94.camel@kernel.crashing.org>
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 27 Mar 2018 20:14:07 -1000
-Message-ID: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
+Date: Tue, 27 Mar 2018 20:26:04 -1000
+Message-ID: <CA+55aFw24R3YAujir59GdG+sBBQOA9WyXySEN3AcEYK99ZHuwQ@mail.gmail.com>
 Subject: Re: RFC on writel and writel_relaxed
-To: Sinan Kaya <okaya@codeaurora.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alexander Duyck <alexander.duyck@gmail.com>,
- Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexander Duyck <alexander.duyck@gmail.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
  Jason Gunthorpe <jgg@ziepe.ca>,
  David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
  "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
  <linuxppc-dev@lists.ozlabs.org>,
  "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- Alexander Duyck <alexander.h.duyck@redhat.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
@@ -53,20 +52,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 5:24 PM, Sinan Kaya <okaya@codeaurora.org> wrote:
+On Tue, Mar 27, 2018 at 6:33 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
 >
-> Basically changing it to
+> This is why, I want (with your agreement) to define clearly and once
+> and for all, that the Linux semantics of writel are that it is ordered
+> with previous writes to coherent memory (*)
+
+Honestly, I think those are the sane semantics. In fact, make it
+"ordered with previous writes" full stop, since it's not only ordered
+wrt previous writes to memory, but also previous writel's.
+
+> Also, can I assume the above ordering with writel() equally applies to
+> readl() or not ?
 >
-> dma_buffer->foo = 1;                    /* WB */
-> wmb()
-> writel_relaxed(KICK, DMA_KICK_REGISTER);        /* UC */
-> mmiowb()
+> IE:
+>         dma_buf->foo = 1;
+>         readl(STUPID_DEVICE_DMA_KICK_ON_READ);
 
-Why?
+If that KICK_ON_READ is UC, then that's definitely the case. And
+honestly, status registers like that really should always be UC.
 
-Why not  just remove the wmb(), and keep the barrier in the writel()?
+But if somebody sets the area WC (which is crazy), then I think it
+might be at least debatable. x86 semantics does allow reads to be done
+before previous writes (or, put another way, writes to be buffered -
+the buffers are ordered so writes don't get re-ordered, but reads can
+happen during the buffering).
 
-The above code makes no sense, and just looks stupid to me. It also
-generates pointlessly bad code on x86, so it's bad there too.
+But UC accesses are always  done entirely ordered, and honestly, any
+status register that starts a DMA would not make sense any other way.
 
-               Linus
+Of course, you'd have to be pretty odd to want to start a DMA with a
+read anyway - partly exactly because it's bad for performance since
+reads will be synchronous and not buffered like a write).
+
+                   Linus
