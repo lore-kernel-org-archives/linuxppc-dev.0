@@ -1,34 +1,29 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40B2B3331wzF2Jw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 20:08:58 +1100 (AEDT)
-Date: Wed, 28 Mar 2018 10:09:07 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>,
- Jason Gunthorpe <jgg@ziepe.ca>, Oliver <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180328090907.GC28871@arm.com>
-References: <20180327095745.GB29373@arm.com>
- <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
- <20180327100944.GD29373@arm.com>
- <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
- <20180327110258.GF2464@arm.com>
- <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
- <20180327143628.GA10642@arm.com>
- <1522186185.7364.59.camel@kernel.crashing.org>
- <20180328085338.GA28871@arm.com>
- <5d3973edea93473197505f2e42cd3107@AcuMS.aculab.com>
+Return-Path: <srs0=q3o0=gs=nxp.com=diana.craciun@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B2KN1b0JzF2J7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 20:15:20 +1100 (AEDT)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40B2KM2qXDz8wMB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 20:15:19 +1100 (AEDT)
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30058.outbound.protection.outlook.com [40.107.3.58])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40B2KK1rMmz9s08
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2018 20:15:15 +1100 (AEDT)
+From: Diana Madalina Craciun <diana.craciun@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "linuxppc-dev@ozlabs.org"
+ <linuxppc-dev@ozlabs.org>
+CC: "mauricfo@linux.vnet.ibm.com" <mauricfo@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 10/10] powerpc/64s: Wire up cpu_show_spectre_v2()
+Date: Wed, 28 Mar 2018 09:15:10 +0000
+Message-ID: <HE1PR0401MB263432C57661741B3C4DE153FFA30@HE1PR0401MB2634.eurprd04.prod.outlook.com>
+References: <20180327120153.31612-1-mpe@ellerman.id.au>
+ <20180327120153.31612-10-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5d3973edea93473197505f2e42cd3107@AcuMS.aculab.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +33,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2018 at 09:00:01AM +0000, David Laight wrote:
-> From: Will Deacon
-> > Sent: 28 March 2018 09:54
-> ...
-> > > > I don't think so. My reading of memory-barriers.txt says that writeX might
-> > > > expand to outX, and outX is not ordered with respect to other types of
-> > > > memory.
-> > >
-> > > Ugh ?
-> > >
-> > > My understanding of HW at least is the exact opposite. outX is *more*
-> > > ordered if anything, than any other accessors. IO space is completely
-> > > synchronous, non posted and ordered afaik.
-> > 
-> > I'm just going by memory-barriers.txt:
-> > 
-> > 
-> >  (*) inX(), outX():
-> > 
-> >      [...]
-> > 
-> >      They are guaranteed to be fully ordered with respect to each other.
-> > 
-> >      They are not guaranteed to be fully ordered with respect to other types of
-> >      memory and I/O operation.
-> 
-> A long time ago there was a document from Intel that said that inb/outb weren't
-> necessarily synchronised wrt memory accesses.
-> (Might be P-pro era).
-> However no processors actually behaved that way and more recent docs
-> say that inb/outb are fully ordered.
-
-Thank you, David! I'll write another patch fixing this up and hopefully
-we'll soon have one making writeX/readX much clearer.
-
-Will
+Why is the speculation barrier specific to Spectre v2? Can't the barrier=0A=
+be used as a mitigation for Spectre v1 as well?=0A=
+=0A=
+Regards,=0A=
+Diana=0A=
+=0A=
+On 3/27/2018 3:32 PM, Michael Ellerman wrote:=0A=
+> Add a definition for cpu_show_spectre_v2() to override the generic=0A=
+> version. This has several permuations, though in practice some may not=0A=
+> occur we cater for any combination.=0A=
+>=0A=
+> The most verbose is:=0A=
+>=0A=
+>   Mitigation: Indirect branch serialisation (kernel only), Indirect=0A=
+>   branch cache disabled, ori31 speculation barrier enabled=0A=
+>=0A=
+> We don't treat the ori31 speculation barrier as a mitigation on its=0A=
+> own, because it has to be *used* by code in order to be a mitigation=0A=
+> and we don't know if userspace is doing that. So if that's all we see=0A=
+> we say:=0A=
+>=0A=
+>   Vulnerable, ori31 speculation barrier enabled=0A=
+>=0A=
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>=0A=
+> ---=0A=
+>  arch/powerpc/kernel/security.c | 33 +++++++++++++++++++++++++++++++++=0A=
+>  1 file changed, 33 insertions(+)=0A=
+>=0A=
+> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/securit=
+y.c=0A=
+> index 0eace3cac818..2cee3dcd231b 100644=0A=
+> --- a/arch/powerpc/kernel/security.c=0A=
+> +++ b/arch/powerpc/kernel/security.c=0A=
+> @@ -58,3 +58,36 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct=
+ device_attribute *attr, c=0A=
+>  =0A=
+>  	return sprintf(buf, "Vulnerable\n");=0A=
+>  }=0A=
+> +=0A=
+> +ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute =
+*attr, char *buf)=0A=
+> +{=0A=
+> +	bool bcs, ccd, ori;=0A=
+> +	struct seq_buf s;=0A=
+> +=0A=
+> +	seq_buf_init(&s, buf, PAGE_SIZE - 1);=0A=
+> +=0A=
+> +	bcs =3D security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);=0A=
+> +	ccd =3D security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);=0A=
+> +	ori =3D security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);=0A=
+> +=0A=
+> +	if (bcs || ccd) {=0A=
+> +		seq_buf_printf(&s, "Mitigation: ");=0A=
+> +=0A=
+> +		if (bcs)=0A=
+> +			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");=0A=
+> +=0A=
+> +		if (bcs && ccd)=0A=
+> +			seq_buf_printf(&s, ", ");=0A=
+> +=0A=
+> +		if (ccd)=0A=
+> +			seq_buf_printf(&s, "Indirect branch cache disabled");=0A=
+> +	} else=0A=
+> +		seq_buf_printf(&s, "Vulnerable");=0A=
+> +=0A=
+> +	if (ori)=0A=
+> +		seq_buf_printf(&s, ", ori31 speculation barrier enabled");=0A=
+> +=0A=
+> +	seq_buf_printf(&s, "\n");=0A=
+> +=0A=
+> +	return s.len;=0A=
+> +}=0A=
+=0A=
+=0A=
