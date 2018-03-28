@@ -1,36 +1,51 @@
-Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0046.outbound.protection.outlook.com [104.47.36.46])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <prvs=0625baffd6=ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B7JP65gczF2Ld
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 23:59:49 +1100 (AEDT)
-Date: Wed, 28 Mar 2018 15:59:32 +0300
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrea Parri <andrea.parri@amarulasolutions.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180328125932.dhzwoxhext4h7hgh@yury-thinkpad>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180326085313.GA4016@andrea>
- <20180326145735.57ba306b@gandalf.local.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B7zr08CYzF2Jy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 00:30:24 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2SDT9VJ044434
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 09:30:22 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h0bpnh2he-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 09:30:22 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 14:30:19 +0100
+Subject: Re: [mm] b1f0502d04: INFO:trying_to_register_non-static_key
+To: David Rientjes <rientjes@google.com>
+Cc: kernel test robot <fengguang.wu@intel.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, lkp@01.org
+References: <20180317075119.u6yuem2bhxvggbz3@inn>
+ <792c0f75-7e7f-cd81-44ae-4205f6e4affc@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803251510040.80485@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 15:30:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180326145735.57ba306b@gandalf.local.home>
+In-Reply-To: <alpine.DEB.2.20.1803251510040.80485@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <aa6f2ff1-ff67-106a-e0e4-522ac82a7bf0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,77 +55,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 26, 2018 at 02:57:35PM -0400, Steven Rostedt wrote:
-> On Mon, 26 Mar 2018 10:53:13 +0200
-> Andrea Parri <andrea.parri@amarulasolutions.com> wrote:
+On 26/03/2018 00:10, David Rientjes wrote:
+> On Wed, 21 Mar 2018, Laurent Dufour wrote:
 > 
-> > > --- a/kernel/smp.c
-> > > +++ b/kernel/smp.c
-> > > @@ -724,6 +724,30 @@ void kick_all_cpus_sync(void)
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
-> > >  
-> > > +/**
-> > > + * kick_active_cpus_sync - Force CPUs that are not in extended
-> > > + * quiescent state (idle or nohz_full userspace) sync by sending
-> > > + * IPI. Extended quiescent state CPUs will sync at the exit of
-> > > + * that state.
-> > > + */
-> > > +void kick_active_cpus_sync(void)
-> > > +{
-> > > +	int cpu;
-> > > +	struct cpumask kernel_cpus;
-> > > +
-> > > +	smp_mb();  
-> > 
-> > (A general remark only:)
-> > 
-> > checkpatch.pl should have warned about the fact that this barrier is
-> > missing an accompanying comment (which accesses are being "ordered",
-> > what is the pairing barrier, etc.).
+>> I found the root cause of this lockdep warning.
+>>
+>> In mmap_region(), unmap_region() may be called while vma_link() has not been
+>> called. This happens during the error path if call_mmap() failed.
+>>
+>> The only to fix that particular case is to call
+>> seqcount_init(&vma->vm_sequence) when initializing the vma in mmap_region().
+>>
 > 
-> He could have simply copied the comment above the smp_mb() for
-> kick_all_cpus_sync():
-> 
-> 	/* Make sure the change is visible before we kick the cpus */
-> 
-> The kick itself is pretty much a synchronization primitive.
-> 
-> That is, you make some changes and then you need all CPUs to see it,
-> and you call: kick_active_cpus_synch(), which is the barrier to make
-> sure you previous changes are seen on all CPUS before you proceed
-> further. Note, the matching barrier is implicit in the IPI itself.
->
->  -- Steve
+> Ack, although that would require a fixup to dup_mmap() as well.
 
-I know that I had to copy the comment from kick_all_cpus_sync(), but I
-don't like copy-pasting in general, and as Steven told, this smp_mb() is
-already inside synchronization routine, so we may hope that users of
-kick_*_cpus_sync() will explain better what for they need it...
- 
-> 
-> > 
-> > Moreover if, as your reply above suggested, your patch is relying on
-> > "implicit barriers" (something I would not recommend) then even more
-> > so you should comment on these requirements.
-> > 
-> > This could: (a) force you to reason about the memory ordering stuff,
-> > (b) easy the task of reviewing and adopting your patch, (c) easy the
-> > task of preserving those requirements (as implementations changes).
-> > 
-> >   Andrea
+You're right, I'll fix that too.
 
-I need v2 anyway, and I will add comments to address all questions in this
-thread.
-
-I also hope that we'll agree that for powerpc it's also safe to delay
-synchronization, and if so, we will have no users of kick_all_cpus_sync(),
-and can drop it.
-
-(It looks like this, because nohz_full userspace CPU cannot have pending
-IPIs, but I'd like to get confirmation from powerpc people.)
-
-Would it make sense to rename kick_all_cpus_sync() to smp_mb_sync(), which
-would stand for 'synchronous memory barrier on all online CPUs'?
-
-Yury
+Thanks a lot.
+Laurent.
