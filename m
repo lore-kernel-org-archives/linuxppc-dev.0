@@ -1,52 +1,36 @@
-Return-Path: <prvs=0625baffd6=ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <prvs=06254833f8=hegdevasant@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BDtP0TryzF2MJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:11:08 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2SH4mQ5040219
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:11:06 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BF1d5VgzzF21H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:17:25 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2SHGP3v112429
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:17:23 -0400
 Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h0exw0tcu-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h0eefj9kb-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:11:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:17:22 -0400
 Received: from localhost
  by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 18:11:03 +0100
-Subject: Re: [PATCH v9 08/24] mm: Protect VMA modifications using VMA sequence
- count
-To: David Rientjes <rientjes@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- Andrew Morton <akpm@linux-foundation.org>, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803271454390.41987@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 28 Mar 2018 19:10:53 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 18:17:20 +0100
+Subject: Re: [PATCH] powerpc/powernv/nvram: opal_nvram_write handle unknown
+ OPAL errors
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
+References: <20180326150233.23089-1-npiggin@gmail.com>
+ <ad352964-1b12-8556-a876-a10e84336a5e@linux.vnet.ibm.com>
+ <20180327173857.0d195b66@roar.ozlabs.ibm.com>
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 22:47:15 +0530
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803271454390.41987@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <f42499e6-746d-e9d0-2e71-6ee1003c8228@linux.vnet.ibm.com>
+In-Reply-To: <20180327173857.0d195b66@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <aacd893e-d6be-a92d-bd15-04ecf026d2e8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,83 +40,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 03/27/2018 01:08 PM, Nicholas Piggin wrote:
+> On Tue, 27 Mar 2018 12:47:31 +0530
+> Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
+> 
+>> On 03/26/2018 08:32 PM, Nicholas Piggin wrote:
+>>> opal_nvram_write currently just assumes success if it encounters an
+>>> error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
+>>> on other errors instead.
+>>>
+>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>> ---
+>>>    arch/powerpc/platforms/powernv/opal-nvram.c | 2 ++
+>>>    1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
+>>> index 9db4398ded5d..13bf625dc3e8 100644
+>>> --- a/arch/powerpc/platforms/powernv/opal-nvram.c
+>>> +++ b/arch/powerpc/platforms/powernv/opal-nvram.c
+>>> @@ -59,6 +59,8 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
+>>>    		if (rc == OPAL_BUSY_EVENT)
+>>>    			opal_poll_events(NULL);
+>>
+>> Current code does continuous poller here. May be we have small breathing time
+>> here. What you say?
+> 
+> Yeah that's probably not a bad idea. I cc'ed skiboot list -- what's a
+> reasonable delay between retries?
 
+I think it depends on individual API. Like in case of dump retrival I've 20ms 
+delay... as FSP takes time to copy data to host memory. But may be here we can 
+have smaller delay.
 
-On 27/03/2018 23:57, David Rientjes wrote:
-> On Tue, 13 Mar 2018, Laurent Dufour wrote:
-> 
->> diff --git a/mm/mmap.c b/mm/mmap.c
->> index 5898255d0aeb..d6533cb85213 100644
->> --- a/mm/mmap.c
->> +++ b/mm/mmap.c
->> @@ -847,17 +847,18 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
->>  	}
->>  
->>  	if (start != vma->vm_start) {
->> -		vma->vm_start = start;
->> +		WRITE_ONCE(vma->vm_start, start);
->>  		start_changed = true;
->>  	}
->>  	if (end != vma->vm_end) {
->> -		vma->vm_end = end;
->> +		WRITE_ONCE(vma->vm_end, end);
->>  		end_changed = true;
->>  	}
->> -	vma->vm_pgoff = pgoff;
->> +	WRITE_ONCE(vma->vm_pgoff, pgoff);
->>  	if (adjust_next) {
->> -		next->vm_start += adjust_next << PAGE_SHIFT;
->> -		next->vm_pgoff += adjust_next;
->> +		WRITE_ONCE(next->vm_start,
->> +			   next->vm_start + (adjust_next << PAGE_SHIFT));
->> +		WRITE_ONCE(next->vm_pgoff, next->vm_pgoff + adjust_next);
->>  	}
->>  
->>  	if (root) {
->> @@ -1781,6 +1782,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
->>  out:
->>  	perf_event_mmap(vma);
->>  
->> +	vm_write_begin(vma);
->>  	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
->>  	if (vm_flags & VM_LOCKED) {
->>  		if (!((vm_flags & VM_SPECIAL) || is_vm_hugetlb_page(vma) ||
->> @@ -1803,6 +1805,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
->>  	vma->vm_flags |= VM_SOFTDIRTY;
->>  
->>  	vma_set_page_prot(vma);
->> +	vm_write_end(vma);
->>  
->>  	return addr;
->>  
-> 
-> Shouldn't this also protect vma->vm_flags?
+> Linux has a bunch of similar kind of
+> loops if you grep for opal_poll_events and OPAL_BUSY. It would be good
+> to convert them all to a standard form with a standard delay as
+> recommended by OPAL, and where specific calls have different delay
+> for a good reason, that would be documented in the OPAL API docs.
 
-Nice catch !
-I just found that too while reviewing the entire patch to answer your previous
-email.
+Yes. We should update API documentation.
 
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1796,7 +1796,8 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
->  					vma == get_gate_vma(current->mm)))
->  			mm->locked_vm += (len >> PAGE_SHIFT);
->  		else
-> -			vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
-> +			WRITE_ONCE(vma->vm_flags,
-> +				   vma->vm_flags & VM_LOCKED_CLEAR_MASK);
->  	}
-> 
->  	if (file)
-> @@ -1809,7 +1810,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
->  	 * then new mapped in-place (which must be aimed as
->  	 * a completely new data area).
->  	 */
-> -	vma->vm_flags |= VM_SOFTDIRTY;
-> +	WRITE_ONCE(vma->vm_flags, vma->vm_flags | VM_SOFTDIRTY);
-> 
->  	vma_set_page_prot(vma);
->  	vm_write_end(vma);
-> 
+-Vasant
