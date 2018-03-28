@@ -1,52 +1,39 @@
-Return-Path: <prvs=0625baffd6=ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jgg@ziepe.ca>
+Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
+ [IPv6:2a00:1450:400c:c09::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BDZp1vhDzF2LS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 03:57:37 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2SGuLd6141655
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 12:57:34 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h0ees1bfm-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 12:57:34 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 28 Mar 2018 17:57:31 +0100
-Subject: Re: [PATCH v9 08/24] mm: Protect VMA modifications using VMA sequence
- count
-To: David Rientjes <rientjes@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-9-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803271441290.38095@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 28 Mar 2018 18:57:21 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BDZt6s5hzF2LS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 03:57:41 +1100 (AEDT)
+Received: by mail-wm0-x234.google.com with SMTP id x4so6583033wmh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 09:57:41 -0700 (PDT)
+Date: Wed, 28 Mar 2018 10:57:32 -0600
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Arnd Bergmann <arnd@arndb.de>, Sinan Kaya <okaya@codeaurora.org>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180328165732.GA4546@ziepe.ca>
+References: <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
+ <20180327110258.GF2464@arm.com>
+ <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
+ <20180327143628.GA10642@arm.com>
+ <1522186185.7364.59.camel@kernel.crashing.org>
+ <20180328085338.GA28871@arm.com>
+ <1522230616.21446.1.camel@kernel.crashing.org>
+ <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
+ <1522231287.21446.9.camel@kernel.crashing.org>
+ <20180328101345.GA30850@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803271441290.38095@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <8bb04603-f55e-3c46-8f29-a183ba6ef47b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180328101345.GA30850@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,229 +43,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/03/2018 23:45, David Rientjes wrote:
-> On Tue, 13 Mar 2018, Laurent Dufour wrote:
+On Wed, Mar 28, 2018 at 11:13:45AM +0100, Will Deacon wrote:
+> On Wed, Mar 28, 2018 at 09:01:27PM +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
+> > > > powerpc and ARM can't quite make them synchronous I think, but at least
+> > > > they should have the same semantics as writel.
+> > > 
+> > > One thing that ARM does IIRC is that it only guarantees to order writel() within
+> > > one device, and the memory mapped PCI I/O space window almost certainly
+> > > counts as a separate device to the CPU.
+> > 
+> > That sounds bogus.
 > 
->> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
->> index 65ae54659833..a2d9c87b7b0b 100644
->> --- a/fs/proc/task_mmu.c
->> +++ b/fs/proc/task_mmu.c
->> @@ -1136,8 +1136,11 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
->>  					goto out_mm;
->>  				}
->>  				for (vma = mm->mmap; vma; vma = vma->vm_next) {
->> -					vma->vm_flags &= ~VM_SOFTDIRTY;
->> +					vm_write_begin(vma);
->> +					WRITE_ONCE(vma->vm_flags,
->> +						   vma->vm_flags & ~VM_SOFTDIRTY);
->>  					vma_set_page_prot(vma);
->> +					vm_write_end(vma);
->>  				}
->>  				downgrade_write(&mm->mmap_sem);
->>  				break;
->> diff --git a/fs/userfaultfd.c b/fs/userfaultfd.c
->> index cec550c8468f..b8212ba17695 100644
->> --- a/fs/userfaultfd.c
->> +++ b/fs/userfaultfd.c
->> @@ -659,8 +659,11 @@ int dup_userfaultfd(struct vm_area_struct *vma, struct list_head *fcs)
->>  
->>  	octx = vma->vm_userfaultfd_ctx.ctx;
->>  	if (!octx || !(octx->features & UFFD_FEATURE_EVENT_FORK)) {
->> +		vm_write_begin(vma);
->>  		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
->> -		vma->vm_flags &= ~(VM_UFFD_WP | VM_UFFD_MISSING);
->> +		WRITE_ONCE(vma->vm_flags,
->> +			   vma->vm_flags & ~(VM_UFFD_WP | VM_UFFD_MISSING));
->> +		vm_write_end(vma);
->>  		return 0;
->>  	}
->>  
+> To elaborate, if you do the following on arm:
 > 
-> In several locations in this patch vm_write_begin(vma) -> 
-> vm_write_end(vma) is nesting things other than vma->vm_flags, 
-> vma->vm_policy, etc.  I think it's better to do vm_write_end(vma) as soon 
-> as the members that the seqcount protects are modified.  In other words, 
-> this isn't offering protection for vma->vm_userfaultfd_ctx.  There are 
-> several examples of this in the patch.
+> 	writel(DEVICE_FOO);
+> 	writel(DEVICE_BAR);
+> 
+> we generally cannot guarantee in which order those accesses will hit the
+> devices even if we add every barrier under the sun. You'd need something
+> in between, specific to DEVICE_FOO (probably a read-back) to really push
+> the first write out. This doesn't sound like it would be that uncommon to
+> me.
 
-That's true in this particular case, and I could change that to not include the
-change to vm_userfaultfd_ctx.
-This being said, I don't think this will have a major impact, but I'll make a
-close review on this patch to be sure there is too large protected part of code.
+The PCI posted write does not require the above to execute 'in order'
+only that any bus segment shared by the two devices have the writes
+issued in CPU order. ie at a shared PCI root port for instance.
 
->> @@ -885,8 +888,10 @@ static int userfaultfd_release(struct inode *inode, struct file *file)
->>  			vma = prev;
->>  		else
->>  			prev = vma;
->> -		vma->vm_flags = new_flags;
->> +		vm_write_begin(vma);
->> +		WRITE_ONCE(vma->vm_flags, new_flags);
->>  		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
->> +		vm_write_end(vma);
->>  	}
->>  	up_write(&mm->mmap_sem);
->>  	mmput(mm);
->> @@ -1434,8 +1439,10 @@ static int userfaultfd_register(struct userfaultfd_ctx *ctx,
->>  		 * the next vma was merged into the current one and
->>  		 * the current one has not been updated yet.
->>  		 */
->> -		vma->vm_flags = new_flags;
->> +		vm_write_begin(vma);
->> +		WRITE_ONCE(vma->vm_flags, new_flags);
->>  		vma->vm_userfaultfd_ctx.ctx = ctx;
->> +		vm_write_end(vma);
->>  
->>  	skip:
->>  		prev = vma;
->> @@ -1592,8 +1599,10 @@ static int userfaultfd_unregister(struct userfaultfd_ctx *ctx,
->>  		 * the next vma was merged into the current one and
->>  		 * the current one has not been updated yet.
->>  		 */
->> -		vma->vm_flags = new_flags;
->> +		vm_write_begin(vma);
->> +		WRITE_ONCE(vma->vm_flags, new_flags);
->>  		vma->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
->> +		vm_write_end(vma);
->>  
->>  	skip:
->>  		prev = vma;
->> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
->> index b7e2268dfc9a..32314e9e48dd 100644
->> --- a/mm/khugepaged.c
->> +++ b/mm/khugepaged.c
->> @@ -1006,6 +1006,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->>  	if (mm_find_pmd(mm, address) != pmd)
->>  		goto out;
->>  
->> +	vm_write_begin(vma);
->>  	anon_vma_lock_write(vma->anon_vma);
->>  
->>  	pte = pte_offset_map(pmd, address);
->> @@ -1041,6 +1042,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->>  		pmd_populate(mm, pmd, pmd_pgtable(_pmd));
->>  		spin_unlock(pmd_ptl);
->>  		anon_vma_unlock_write(vma->anon_vma);
->> +		vm_write_end(vma);
->>  		result = SCAN_FAIL;
->>  		goto out;
->>  	}
->> @@ -1075,6 +1077,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->>  	set_pmd_at(mm, address, pmd, _pmd);
->>  	update_mmu_cache_pmd(vma, address, pmd);
->>  	spin_unlock(pmd_ptl);
->> +	vm_write_end(vma);
->>  
->>  	*hpage = NULL;
->>  
->> diff --git a/mm/madvise.c b/mm/madvise.c
->> index 4d3c922ea1a1..e328f7ab5942 100644
->> --- a/mm/madvise.c
->> +++ b/mm/madvise.c
->> @@ -184,7 +184,9 @@ static long madvise_behavior(struct vm_area_struct *vma,
->>  	/*
->>  	 * vm_flags is protected by the mmap_sem held in write mode.
->>  	 */
->> -	vma->vm_flags = new_flags;
->> +	vm_write_begin(vma);
->> +	WRITE_ONCE(vma->vm_flags, new_flags);
->> +	vm_write_end(vma);
->>  out:
->>  	return error;
->>  }
->> @@ -450,9 +452,11 @@ static void madvise_free_page_range(struct mmu_gather *tlb,
->>  		.private = tlb,
->>  	};
->>  
->> +	vm_write_begin(vma);
->>  	tlb_start_vma(tlb, vma);
->>  	walk_page_range(addr, end, &free_walk);
->>  	tlb_end_vma(tlb, vma);
->> +	vm_write_end(vma);
->>  }
->>  
->>  static int madvise_free_single_vma(struct vm_area_struct *vma,
->> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
->> index e0e706f0b34e..2632c6f93b63 100644
->> --- a/mm/mempolicy.c
->> +++ b/mm/mempolicy.c
->> @@ -380,8 +380,11 @@ void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new)
->>  	struct vm_area_struct *vma;
->>  
->>  	down_write(&mm->mmap_sem);
->> -	for (vma = mm->mmap; vma; vma = vma->vm_next)
->> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
->> +		vm_write_begin(vma);
->>  		mpol_rebind_policy(vma->vm_policy, new);
->> +		vm_write_end(vma);
->> +	}
->>  	up_write(&mm->mmap_sem);
->>  }
->>  
->> @@ -554,9 +557,11 @@ unsigned long change_prot_numa(struct vm_area_struct *vma,
->>  {
->>  	int nr_updated;
->>  
->> +	vm_write_begin(vma);
->>  	nr_updated = change_protection(vma, addr, end, PAGE_NONE, 0, 1);
->>  	if (nr_updated)
->>  		count_vm_numa_events(NUMA_PTE_UPDATES, nr_updated);
->> +	vm_write_end(vma);
->>  
->>  	return nr_updated;
->>  }
->> @@ -657,6 +662,7 @@ static int vma_replace_policy(struct vm_area_struct *vma,
->>  	if (IS_ERR(new))
->>  		return PTR_ERR(new);
->>  
->> +	vm_write_begin(vma);
->>  	if (vma->vm_ops && vma->vm_ops->set_policy) {
->>  		err = vma->vm_ops->set_policy(vma, new);
->>  		if (err)
->> @@ -664,11 +670,17 @@ static int vma_replace_policy(struct vm_area_struct *vma,
->>  	}
->>  
->>  	old = vma->vm_policy;
->> -	vma->vm_policy = new; /* protected by mmap_sem */
->> +	/*
->> +	 * The speculative page fault handler access this field without
->> +	 * hodling the mmap_sem.
->> +	 */
-> 
-> "The speculative page fault handler accesses this field without holding 
-> vma->vm_mm->mmap_sem"
+If I recall this is very similar to the ordering that ARM's on-chip
+AXI interconnect is supposed to provide.. So I'd be very surprised if
+a modern ARM64 has an meaningful difference from x86 here.
 
-Oops :/
+When talking about ordering between the devices, the relevant question
+is what happens if the writel(DEVICE_BAR) triggers DEVICE_BAR to DMA
+from the DEVICE_FOO. 'ordered' means that in this case
+writel(DEVICE_FOO) must be presented to FOO before anything generated
+by BAR.
 
-> 
->> +	WRITE_ONCE(vma->vm_policy,  new);
->> +	vm_write_end(vma);
->>  	mpol_put(old);
->>  
->>  	return 0;
->>   err_out:
->> +	vm_write_end(vma);
->>  	mpol_put(new);
->>  	return err;
->>  }
-> 
-> Wait, doesn't vma_dup_policy() also need to protect dst->vm_policy?
-
-Indeed this is not necessary because vma_dup_policy() is called when dst is not
-yet linked in the RB tree, so it can't be found by the speculative page fault
-handler. This is not the case of vma_replace_policy, and this is why the
-protection are needed here.
-
-> 
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -2121,7 +2121,9 @@ int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)
-> 
->  	if (IS_ERR(pol))
->  		return PTR_ERR(pol);
-> -	dst->vm_policy = pol;
-> +	vm_write_begin(dst);
-> +	WRITE_ONCE(dst->vm_policy, pol);
-> +	vm_write_end(dst);
->  	return 0;
->  }
+Jason
