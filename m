@@ -1,33 +1,37 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=06254833f8=hegdevasant@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BDp04hSTzF2Jv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:07:20 +1100 (AEDT)
-Received: from mail-qt0-f179.google.com (mail-qt0-f179.google.com
- [209.85.216.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 720DE217D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 17:07:17 +0000 (UTC)
-Received: by mail-qt0-f179.google.com with SMTP id s48so3293544qtb.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 10:07:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BDsK6wT8zF1k0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 04:10:10 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2SH6xNx080342
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:10:08 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h0eefj0v4-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 13:10:07 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 28 Mar 2018 18:10:02 +0100
+Subject: Re: [RFC PATCH] powerpc/xmon: Use OPAL_DEBUG to debug srest in OPAL
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+References: <20180326150946.23555-1-npiggin@gmail.com>
+ <25588979-81cd-2a63-59f8-728686855117@linux.vnet.ibm.com>
+ <20180327172856.252ec56b@roar.ozlabs.ibm.com>
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Wed, 28 Mar 2018 22:39:58 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
-References: <20180323081209.31387-1-oohall@gmail.com>
- <20180323081209.31387-6-oohall@gmail.com>
- <20180326222448.l7ukrslvccvrjnjf@rob-hp-laptop>
- <CAOSf1CFpFwzLMx0xmM+JmbQCiOA=QU_S5g0uf-qx181vJ_Xc1w@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 28 Mar 2018 12:06:56 -0500
-Message-ID: <CAL_Jsq+jC2mAXbKh9c8dbLXZmWbD-sFemrk+8p-oGMkXqSMfnQ@mail.gmail.com>
-Subject: Re: [PATCH 6/6] doc/devicetree: NVDIMM region documentation
-To: Oliver <oohall@gmail.com>
-Cc: "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Device Tree <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Dan Williams <dan.j.williams@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180327172856.252ec56b@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ddc6bb66-9a9c-0ce8-2f49-669c5f124cf1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,139 +41,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2018 at 9:53 AM, Oliver <oohall@gmail.com> wrote:
-> On Tue, Mar 27, 2018 at 9:24 AM, Rob Herring <robh@kernel.org> wrote:
->> On Fri, Mar 23, 2018 at 07:12:09PM +1100, Oliver O'Halloran wrote:
->>> Add device-tree binding documentation for the nvdimm region driver.
->>>
->>> Cc: devicetree@vger.kernel.org
->>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->>> ---
->>>  .../devicetree/bindings/nvdimm/nvdimm-region.txt   | 45 ++++++++++++++++++++++
->>>  1 file changed, 45 insertions(+)
->>>  create mode 100644 Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
->>>
->>> diff --git a/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
->>> new file mode 100644
->>> index 000000000000..02091117ff16
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/nvdimm/nvdimm-region.txt
->>> @@ -0,0 +1,45 @@
->>> +Device-tree bindings for NVDIMM memory regions
->>> +-----------------------------------------------------
->>> +
->>> +Non-volatile DIMMs are memory modules used to provide (cacheable) main memory
+On 03/27/2018 12:58 PM, Nicholas Piggin wrote:
+> On Tue, 27 Mar 2018 12:42:32 +0530
+> Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
+> 
+>> On 03/26/2018 08:39 PM, Nicholas Piggin wrote:
+>>> xmon can be entered via sreset NMI (from a management sreset, or an
+>>> NMI IPI), which can interrupt OPAL. Add checks to xmon to see if pc
+>>> or sp are within OPAL memory, and if so, then use OPAL_DEBUG to
+>>> print the opal stack and return the Linux stack, which can then be
+>>> dumped by xmon
 >>
->> Are DIMMs always going to be the only form factor for NV memory?
+>> Nick,
 >>
->> And if you have multiple DIMMs, does each DT node correspond to a DIMM?
->
-> A nvdimm-region might correspond to a single NVDIMM, a set of
-> interleaved NVDIMMs, or it might just be a chunk of normal memory that
-> you want treated as a NVDIMM for some reason. The last case is useful
-> for provisioning install media on servers since it allows you do
-> download a DVD image, turn it into an nvdimm-region, and kexec into
-> the installer which can use it as a root disk. That may seem a little
-> esoteric, but it's handy and we're using a full linux environment for
-> our boot loader so it's easy to make use of.
-
-I'm really just asking if we should drop the "dimm" name because it is
-not always a DIMM. Maybe pmem instead? I don't know, naming is
-hard(TM).
-
->> If not, then what if we want/need to provide power control to a DIMM?
->
-> That would require a DIMM (and probably memory controller) specific
-> driver. I've deliberately left out how regions are mapped back to
-> DIMMs from the binding since it's not really clear to me how that
-> should work. A phandle array pointing to each DIMM device (which could
-> be anything) would do the trick, but I've found that a bit awkward to
-> plumb into the model that libnvdimm expects.
->
->>> +that retains its contents across power cycles. In more practical terms, they
->>> +are kind of storage device where the contents can be accessed by the CPU
->>> +directly, rather than indirectly via a storage controller or similar. The an
->>> +nvdimm-region specifies a physical address range that is hosted on an NVDIMM
->>> +device.
->>> +
->>> +Bindings for the region nodes:
->>> +-----------------------------
->>> +
->>> +Required properties:
->>> +     - compatible = "nvdimm-region"
->>> +
->>> +     - reg = <base, size>;
->>> +             The system physical address range of this nvdimm region.
->>> +
->>> +Optional properties:
->>> +     - Any relevant NUMA assocativity properties for the target platform.
->>> +     - A "volatile" property indicating that this region is actually in
->>> +       normal DRAM and does not require cache flushes after each write.
->>> +
->>> +A complete example:
->>> +--------------------
->>> +
->>> +/ {
->>> +     #size-cells = <2>;
->>> +     #address-cells = <2>;
->>> +
->>> +     platform {
 >>
->> Perhaps we need a more well defined node here. Like we have 'memory' for
->> memory nodes.
->
-> I think treating it as a platform device is fine. Memory nodes are
+>> OPAL uses FSP/cronus interface for many of debug interface (like OPAL assert,
+>> getting opal console, triggering FSP R/R etc). May be in future we may add new
+>> debug capability.
+> 
+> It would be good to ensure an API could accommodate them, or at least
+> not get in the way.
 
-Platform device is a Linux term...
+Agree.
 
-> special since the OS needs to know where it can allocate early in boot
-> and I don't see non-volatile memory as being similarly significant.
-> Fundamentally an NVDIMM is just a memory mapped storage device so we
-> should be able to defer looking at them until later in boot.
+> 
+>> Once secureboot is enabled none of these interface work and we have limited debug
+>> capability.
+>>
+>> Here you are using very generic API name (OPAL_DEBUG). May be we should have generic
+>> interface (exported via debugfs?) here rather than SRESET specific one.
+> 
+> OPAL_DEBUG here actually uses the sub-function OPAL_DEBUG_DUMP_STACK (1),
+> but I didn't bring that constant across from skiboot which I should have.
 
-It's not clear if 'platform' is just an example or random name or what
-the node is required to be called. In the latter case, we should be
-much more specific because 'platform' could be anything. In the former
-case, then we have no way to find or validate the node because the
-name could be anything and there's no compatible property either.
+Nick,
 
-"region" is pretty generic too.
+May be we should define sub-function usage.  Also current API limits number of 
+arguments
+and its type. may be we should have argument 2 as "void *" ?
+something like :
+   s64 opal_debug(u32 debug_type, void *data, u64 dsize);
 
->
-> That said you might have problems with XIP kernels and what not. I
-> think that problem is better solved through other means though.
->
->>> +             region@5000 {
->>> +                     compatible = "nvdimm-region;
->>> +                     reg = <0x00000001 0x00000000 0x00000000 0x40000000>
->>> +
->>> +             };
->>> +
->>> +             region@6000 {
->>> +                     compatible = "nvdimm-region";
->>> +                     reg = <0x00000001 0x00000000 0x00000000 0x40000000>
+That way individual sub-function can parse/use based on its need.
 
-Thinking about this some more, the 2 levels of nodes is pointless.
-Just follow memory nodes structure.
+> 
+> But I don't think this is SRESET specific. If Linux has any way to get
+> an r1 for a CPU in OPAL, then it can use this function. If it does not,
+> then it simply can't use it.
+> 
+> I haven't really followed what's happening with secure boot, but presumably
+> we can still get NMIs (at least machine check, even if all system reset
+> sources are suppressed).
 
-nv-memory@100000000 {
-  compatible = "nvdimm-region";
-  reg = <0x00000001 0x00000000 0x00000000 0x40000000>;
-};
+AFAIK secureboot won't block us here. It mostly blocks external entity (like 
+FSP/cronus) from
+accessing host memory. (like they can't directly read, write to host memory, 
+SCOM operations
+are restricted etc).
 
-nv-memory@200000000 {
-  compatible = "nvdimm-region";
-  reg = <0x00000002 0x00000000 0x00000000 0x40000000>;
-};
-
-or:
-
-nv-memory@100000000 {
-  compatible = "nvdimm-region";
-  reg = <0x00000001 0x00000000 0x00000000 0x40000000>
-    <0x00000002 0x00000000 0x00000000 0x40000000>;
-};
-
-Both forms should be allowed.
-
-Rob
+-Vasant
