@@ -1,12 +1,12 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Received: from mail-wr0-x243.google.com (mail-wr0-x243.google.com
+ [IPv6:2a00:1450:400c:c0c::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BH2K54FvzF2MB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 05:48:09 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id r82so7245638wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:48:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BHBx4h7pzF2JP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 05:55:37 +1100 (AEDT)
+Received: by mail-wr0-x243.google.com with SMTP id f14so3188732wre.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 11:55:37 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -16,9 +16,9 @@ Cc: LEROY Christophe <christophe.leroy@c-s.fr>,
  Paul Mackerras <paulus@samba.org>,
  Matt Brown <matthew.brown.dev@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v2] powerpc/altivec: Add missing prototypes for altivec
-Date: Wed, 28 Mar 2018 20:47:33 +0200
-Message-Id: <20180328184744.10650-1-malat@debian.org>
+Subject: [PATCH v3] powerpc/altivec: Add missing prototypes for altivec
+Date: Wed, 28 Mar 2018 20:55:25 +0200
+Message-Id: <20180328185531.10945-1-malat@debian.org>
 In-Reply-To: <20180322202007.23088-15-malat@debian.org>
 References: <20180322202007.23088-15-malat@debian.org>
 MIME-Version: 1.0
@@ -54,6 +54,9 @@ xor_vmx_glue.c would in turn trigger the following warnings:
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
+v3: missing changelog, no other change
+v2: new version where a separate header was introduced. Also update commit message explaining history.
+
  arch/powerpc/include/asm/xor.h         | 12 +-----------
  arch/powerpc/include/asm/xor_altivec.h | 19 +++++++++++++++++++
  arch/powerpc/lib/xor_vmx_glue.c        |  1 +
