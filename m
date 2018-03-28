@@ -2,22 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40B3G73nCGzF2L0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 20:57:35 +1100 (AEDT)
-Message-ID: <1522231010.21446.8.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40B3Mg1N3lzF2Kd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Mar 2018 21:02:22 +1100 (AEDT)
+Message-ID: <1522231287.21446.9.camel@kernel.crashing.org>
 Subject: Re: RFC on writel and writel_relaxed
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Will Deacon <will.deacon@arm.com>, David Laight <David.Laight@ACULAB.COM>
-Cc: Sinan Kaya <okaya@codeaurora.org>, Arnd Bergmann <arnd@arndb.de>, Jason
- Gunthorpe <jgg@ziepe.ca>, Oliver <oohall@gmail.com>, "open list:LINUX FOR
- POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra
- <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet
- <corbet@lwn.net>
-Date: Wed, 28 Mar 2018 20:56:50 +1100
-In-Reply-To: <20180328090907.GC28871@arm.com>
-References: <20180327095745.GB29373@arm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Will Deacon <will.deacon@arm.com>, Sinan Kaya <okaya@codeaurora.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, David Laight <David.Laight@aculab.com>,
+ Oliver <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
+ <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
+ <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo
+ Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Mar 2018 21:01:27 +1100
+In-Reply-To: <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
+References: <CAK8P3a3a+zUNLjqw9CL5rYkXhJ-GMVTVnBU2XUu2f3njZfrqKw@mail.gmail.com>
+ <1522141019.7364.43.camel@kernel.crashing.org>
+ <20180327095745.GB29373@arm.com>
  <CAK8P3a0s+kP5=qEqTqAHGwB7j9ydaXD+oQJdLrFz=8swuWaDBg@mail.gmail.com>
  <20180327100944.GD29373@arm.com>
  <CAK8P3a0Xep0-EpGS9jnjUf1iJhRxH1WRztGQrvkdrLVaxBPT1w@mail.gmail.com>
@@ -26,8 +28,8 @@ References: <20180327095745.GB29373@arm.com>
  <20180327143628.GA10642@arm.com>
  <1522186185.7364.59.camel@kernel.crashing.org>
  <20180328085338.GA28871@arm.com>
- <5d3973edea93473197505f2e42cd3107@AcuMS.aculab.com>
- <20180328090907.GC28871@arm.com>
+ <1522230616.21446.1.camel@kernel.crashing.org>
+ <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,44 +41,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-28 at 10:09 +0100, Will Deacon wrote:
-> On Wed, Mar 28, 2018 at 09:00:01AM +0000, David Laight wrote:
-> > From: Will Deacon
-> > > Sent: 28 March 2018 09:54
-> > 
-> > ...
-> > > > > I don't think so. My reading of memory-barriers.txt says that writeX might
-> > > > > expand to outX, and outX is not ordered with respect to other types of
-> > > > > memory.
-> > > > 
-> > > > Ugh ?
-> > > > 
-> > > > My understanding of HW at least is the exact opposite. outX is *more*
-> > > > ordered if anything, than any other accessors. IO space is completely
-> > > > synchronous, non posted and ordered afaik.
-> > > 
-> > > I'm just going by memory-barriers.txt:
-> > > 
-> > > 
-> > >  (*) inX(), outX():
-> > > 
-> > >      [...]
-> > > 
-> > >      They are guaranteed to be fully ordered with respect to each other.
-> > > 
-> > >      They are not guaranteed to be fully ordered with respect to other types of
-> > >      memory and I/O operation.
-> > 
-> > A long time ago there was a document from Intel that said that inb/outb weren't
-> > necessarily synchronised wrt memory accesses.
-> > (Might be P-pro era).
-> > However no processors actually behaved that way and more recent docs
-> > say that inb/outb are fully ordered.
+On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
+> > powerpc and ARM can't quite make them synchronous I think, but at least
+> > they should have the same semantics as writel.
 > 
-> Thank you, David! I'll write another patch fixing this up and hopefully
-> we'll soon have one making writeX/readX much clearer.
+> One thing that ARM does IIRC is that it only guarantees to order writel() within
+> one device, and the memory mapped PCI I/O space window almost certainly
+> counts as a separate device to the CPU.
 
-Thanks for doing the grunt work Will ! :-)
+That sounds bogus.
+
+> In the absence of an enforced global synchronization during an I/O port
+> access, that means writel() and outb() can be reordered before they arrive
+> at a device in theory. Again, this rarely matters in practice, but I think it
+> makes sense to document the less strict behavior here, given that we have
+> common hardware that can't provide x86 compatible semantics.
+
+Can't you put some kind of super heavy handed barrier in inX/outX ?
+These things are never going to be performance sensitive anyway...
 
 Cheers,
 Ben.
