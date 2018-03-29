@@ -1,22 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jgg@ziepe.ca>
+Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
+ [IPv6:2a00:1450:400c:c09::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Bn6h2FcqzDr4t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 01:23:40 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] powerpc/mm/hugetlb: initialize the pagetable cache
- correctly for hugetlb
-In-Reply-To: <20180307140925.5755-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20180307140925.5755-1-aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 30 Mar 2018 01:23:36 +1100
-Message-ID: <87k1tvyn87.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Bnbr5kT9zDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 01:45:25 +1100 (AEDT)
+Received: by mail-wm0-x22b.google.com with SMTP id l16so12150945wmh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 07:45:25 -0700 (PDT)
+Date: Thu, 29 Mar 2018 08:45:15 -0600
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Arnd Bergmann <arnd@arndb.de>, Sinan Kaya <okaya@codeaurora.org>,
+ David Laight <David.Laight@aculab.com>, Oliver <oohall@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: RFC on writel and writel_relaxed
+Message-ID: <20180329144515.GA13656@ziepe.ca>
+References: <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
+ <20180327143628.GA10642@arm.com>
+ <1522186185.7364.59.camel@kernel.crashing.org>
+ <20180328085338.GA28871@arm.com>
+ <1522230616.21446.1.camel@kernel.crashing.org>
+ <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
+ <1522231287.21446.9.camel@kernel.crashing.org>
+ <20180328101345.GA30850@arm.com> <20180328165732.GA4546@ziepe.ca>
+ <20180329091941.GA22926@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180329091941.GA22926@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +42,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> With 64k page size, we have hugetlb pte entries at the pmd and pud level for
-> book3s64. We don't need to create a separate page table cache for that. With 4k
-> we need to make sure hugepd page table cache for 16M is placed at PUD level
-> and 16G at the PGD level.
->
-> Simplify all these by not using HUGEPD_PD_SHIFT which is confusing for book3s64.
->
-> Without this patch, with 64k page size we create pagetable caches with shift
-> value 10 and 7 which are not used at all.
->
-> Fixes:419df06eea5bfa81("powerpc: Reduce the PTE_INDEX_SIZE")
+On Thu, Mar 29, 2018 at 10:19:41AM +0100, Will Deacon wrote:
+> On Wed, Mar 28, 2018 at 10:57:32AM -0600, Jason Gunthorpe wrote:
+> > On Wed, Mar 28, 2018 at 11:13:45AM +0100, Will Deacon wrote:
+> > > On Wed, Mar 28, 2018 at 09:01:27PM +1100, Benjamin Herrenschmidt wrote:
+> > > > On Wed, 2018-03-28 at 11:55 +0200, Arnd Bergmann wrote:
+> > > > > > powerpc and ARM can't quite make them synchronous I think, but at least
+> > > > > > they should have the same semantics as writel.
+> > > > > 
+> > > > > One thing that ARM does IIRC is that it only guarantees to order writel() within
+> > > > > one device, and the memory mapped PCI I/O space window almost certainly
+> > > > > counts as a separate device to the CPU.
+> > > > 
+> > > > That sounds bogus.
+> > > 
+> > > To elaborate, if you do the following on arm:
+> > > 
+> > > 	writel(DEVICE_FOO);
+> > > 	writel(DEVICE_BAR);
+> > > 
+> > > we generally cannot guarantee in which order those accesses will hit the
+> > > devices even if we add every barrier under the sun. You'd need something
+> > > in between, specific to DEVICE_FOO (probably a read-back) to really push
+> > > the first write out. This doesn't sound like it would be that uncommon to
+> > > me.
+> > 
+> > The PCI posted write does not require the above to execute 'in order'
+> > only that any bus segment shared by the two devices have the writes
+> > issued in CPU order. ie at a shared PCI root port for instance.
+> > 
+> > If I recall this is very similar to the ordering that ARM's on-chip
+> > AXI interconnect is supposed to provide.. So I'd be very surprised if
+> > a modern ARM64 has an meaningful difference from x86 here.
+> 
+> From the architectural perspective, writes to different "peripherals" are
+> not ordered with respect to each other. The first writel will complete once
+> it gets its write acknowledgement, but this may not necessarily come from
+> the endpoint -- it could come from an intermediate buffer past the point of
+> serialisation (i.e. the write will then be ordered with respect to other
+> accesses to that same endpoint). The PCI root port would look like one
+> peripheral here.
 
-That's:
+That is basically the same as PCI - PCI has no write ACK, so all
+writes are buffered by the PCI interconnect and complete in some
+undefined temporal order when multiple end points are involved.
 
-  Fixes: 419df06eea5b ("powerpc: Reduce the PTE_INDEX_SIZE")
+This does not seem very different from what happens in x86..
 
-In ~/.gitconfig:
+> > When talking about ordering between the devices, the relevant question
+> > is what happens if the writel(DEVICE_BAR) triggers DEVICE_BAR to DMA
+> > from the DEVICE_FOO. 'ordered' means that in this case
+> > writel(DEVICE_FOO) must be presented to FOO before anything generated
+> > by BAR.
+> 
+> Yes, and that isn't the case for arm because the writes can still be
+> buffered.
 
-[pretty]
-	fixes = Fixes: %h (\"%s\")
+The statement is not about buffering, or temporal completion order, or
+the order of acks returning to the CPU. It is about pure transaction
+ordering inside the interconnect.
 
+Can write BAR -> FOO pass write CPU -> FOO?
 
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 876da2bc1796..3b509b268030 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -669,12 +666,24 @@ static int __init hugetlbpage_init(void)
->  		if (add_huge_page_size(1ULL << shift) < 0)
->  			continue;
->  
-> +
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +		if (shift > PGDIR_SHIFT)
-> +			BUG();
-
-Can we not add BUG()s for things that aren't utterly fatal.
-
-In this case I think we could move this whole block above
-add_huge_page_size() above, and then instead of BUG() we could just
-WARN() and continue?
-
-> +		else if (shift > PUD_SHIFT)
-> +			pdshift = PGDIR_SHIFT;
-> +		else if (shift > PMD_SHIFT)
-> +			pdshift = PUD_SHIFT;
-> +		else
-> +			pdshift = PMD_SHIFT;
-> +#else
->  		if (shift < HUGEPD_PUD_SHIFT)
->  			pdshift = PMD_SHIFT;
->  		else if (shift < HUGEPD_PGD_SHIFT)
->  			pdshift = PUD_SHIFT;
->  		else
->  			pdshift = PGDIR_SHIFT;
-> +#endif
->  		/*
->  		 * if we have pdshift and shift value same, we don't
->  		 * use pgt cache for hugepd.
-
-cheers
+Jason
