@@ -2,21 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BqKS3g9ZzDrcX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 03:03:08 +1100 (AEDT)
-Date: Thu, 29 Mar 2018 18:02:46 +0200
-Message-ID: <20180329180246.Horde.AZE7BIRE2MuhcbAJb5Gg0A3@messagerie.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BqRB0mtqzF0wQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 03:08:06 +1100 (AEDT)
+Date: Thu, 29 Mar 2018 18:07:43 +0200
+Message-ID: <20180329180743.Horde.0e_zt3S4Pqcv7Z0dJwOgOg9@messagerie.si.c-s.fr>
 From: LEROY Christophe <christophe.leroy@c-s.fr>
 To: Mathieu Malaterre <malat@debian.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras
- <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: Re: [PATCH 15/19] powerpc: Add missing prototype
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-16-malat@debian.org>
- <bd4be06c-b5f5-2516-1c1d-d2b6d7861090@c-s.fr>
- <CA+7wUsyRSSkwgpBodKkPjhUxiHy-t1q2Q7nsorfRoL=wfxgyFQ@mail.gmail.com>
-In-Reply-To: <CA+7wUsyRSSkwgpBodKkPjhUxiHy-t1q2Q7nsorfRoL=wfxgyFQ@mail.gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Paul
+ Mackerras <paulus@samba.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 01/19] powerpc/powermac: Mark variable x as unused
+References: <20180322202007.23088-2-malat@debian.org>
+ <20180328192717.656-1-malat@debian.org>
+In-Reply-To: <20180328192717.656-1-malat@debian.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,67 +28,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Mathieu Malaterre <malat@debian.org> a =C3=A9crit=C2=A0:
 
-> On Fri, Mar 23, 2018 at 1:20 PM, christophe leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->>
->> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
->>>
->>> Add one missing prototype for function rh_dump_blk. Fix warning treated=
- as
->>> error in W=3D1:
->>>
->>>    arch/powerpc/lib/rheap.c:740:6: error: no previous prototype for
->>> =E2=80=98rh_dump_blk=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>
->>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>> ---
->>>   arch/powerpc/include/asm/rheap.h | 3 +++
->>>   1 file changed, 3 insertions(+)
->>>
->>> diff --git a/arch/powerpc/include/asm/rheap.h
->>> b/arch/powerpc/include/asm/rheap.h
->>> index 172381769cfc..e75d96de19a0 100644
->>> --- a/arch/powerpc/include/asm/rheap.h
->>> +++ b/arch/powerpc/include/asm/rheap.h
->>> @@ -83,6 +83,9 @@ extern int rh_get_stats(rh_info_t * info, int what, i=
-nt
->>> max_stats,
->>>   /* Simple dump of remote heap info */
->>>   extern void rh_dump(rh_info_t * info);
->>>   +/* Simple dump of remote info block */
->>> +extern void rh_dump_blk(rh_info_t *info, rh_block_t *blk);
->>> +
->>
->>
->> Only used in one place, should be static
+> Since the value of x is never intended to be read, declare it with gcc
+> attribute as unused. Fix warning treated as error with W=3D1:
 >
-> Well here is what I see over here:
+>   arch/powerpc/platforms/powermac/bootx_init.c:471:21: error:=20=20
+>=20variable =E2=80=98x=E2=80=99 set but not used [-Werror=3Dunused-but-set=
+-variable]
 >
-> $ git grep rh_dump_blk
-> ...
-> arch/powerpc/lib/rheap.c:EXPORT_SYMBOL_GPL(rh_dump_blk);
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> ---
+> v2: move x variable within its local scope
+>
+>  arch/powerpc/platforms/powermac/bootx_init.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/powermac/bootx_init.c=20=20
+>=20b/arch/powerpc/platforms/powermac/bootx_init.c
+> index c3c9bbb3573a..d44e8571c1ec 100644
+> --- a/arch/powerpc/platforms/powermac/bootx_init.c
+> +++ b/arch/powerpc/platforms/powermac/bootx_init.c
+> @@ -468,7 +468,7 @@ void __init bootx_init(unsigned long r3,=20=20
+>=20unsigned long r4)
+>  	boot_infos_t *bi =3D (boot_infos_t *) r4;
+>  	unsigned long hdr;
+>  	unsigned long space;
+> -	unsigned long ptr, x;
+> +	unsigned long ptr;
+>  	char *model;
+>  	unsigned long offset =3D reloc_offset();
+>
+> @@ -562,6 +562,7 @@ void __init bootx_init(unsigned long r3,=20=20
+>=20unsigned long r4)
+>  	 * MMU switched OFF, so this should not be useful anymore.
+>  	 */
+>  	if (bi->version < 4) {
+> +		unsigned long x __maybe_unused;
+>  		bootx_printf("Touching pages...\n");
 
-If it was really used by anybody in a module, it would already be in a=20=
-=20
-.h=20so I think we should simply delete the function
+Stylewise, there should be an empty line after your declaration.
+
+But I believe you should remove that ugly loop and replace it by a=20=20
+call=20to fault_in_pages_readable()
 
 Christophe
-
 >
->
->
->> Christophe
->>
->>>   /* Set owner of taken block */
->>>   extern int rh_set_owner(rh_info_t * info, unsigned long start, const
->>> char *owner);
->>>
->>
->>
->> ---
->> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
-=C3=A9rifi=C3=A9e par le
->> logiciel antivirus Avast.
->> https://www.avast.com/antivirus
->>
+>  		/*
+> --
+> 2.11.0
