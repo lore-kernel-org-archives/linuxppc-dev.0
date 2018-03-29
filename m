@@ -2,20 +2,22 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Bpl354nhzDqlc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 02:36:47 +1100 (AEDT)
-Date: Thu, 29 Mar 2018 17:36:25 +0200
-Message-ID: <20180329173625.Horde.Tekalg3E6TrriSAxxSaajA1@messagerie.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Bq4C1b3pzF0QC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 02:51:39 +1100 (AEDT)
+Date: Thu, 29 Mar 2018 17:51:16 +0200
+Message-ID: <20180329175116.Horde.jk-Ax19FyXhtLB_VgKxDAg9@messagerie.si.c-s.fr>
 From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Shile Zhang
- <shile.zhang@nokia.com>
-Subject: Re: [PATCH] powerpc/64: Fix checksum folding in csum_add
-References: <1486199020-59977-1-git-send-email-shile.zhang@nokia.com>
- <20180327172232.Horde.q3HjdRzVlIYmg2LP87jw8A1@messagerie.si.c-s.fr>
- <20180328204027.GA2069@fergus.ozlabs.ibm.com>
-In-Reply-To: <20180328204027.GA2069@fergus.ozlabs.ibm.com>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras
+ <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: Re: [PATCH 11/19] powerpc/powermac: Move pmac_pfunc_base_install
+ prototype to header file
+References: <20180322202007.23088-1-malat@debian.org>
+ <20180322202007.23088-12-malat@debian.org>
+ <fd5993b4-0b0a-3c65-65a8-b26445d0d440@c-s.fr>
+ <CA+7wUsxtWCoE1rxP6e57MEfB_zjLUzTa36CD=TyZS4_DkrQ81Q@mail.gmail.com>
+In-Reply-To: <CA+7wUsxtWCoE1rxP6e57MEfB_zjLUzTa36CD=TyZS4_DkrQ81Q@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,60 +29,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> a =C3=A9crit=C2=A0:
+Mathieu Malaterre <malat@debian.org> a =C3=A9crit=C2=A0:
 
-> On Tue, Mar 27, 2018 at 05:22:32PM +0200, LEROY Christophe wrote:
->> Shile Zhang <shile.zhang@nokia.com> a =C3=A9crit=C2=A0:
+> On Fri, Mar 23, 2018 at 1:13 PM, christophe leroy
+> <christophe.leroy@c-s.fr> wrote:
 >>
->> >fix the missed point in Paul's patch:
->> >"powerpc/64: Fix checksum folding in csum_tcpudp_nofold and
->> >ip_fast_csum_nofold"
->> >
->> >Signed-off-by: Shile Zhang <shile.zhang@nokia.com>
->> >---
->> > arch/powerpc/include/asm/checksum.h | 2 +-
->> > 1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> >diff --git a/arch/powerpc/include/asm/checksum.h
->> >b/arch/powerpc/include/asm/checksum.h
->> >index 5b1a6e3..430d038 100644
->> >--- a/arch/powerpc/include/asm/checksum.h
->> >+++ b/arch/powerpc/include/asm/checksum.h
->> >@@ -108,7 +108,7 @@ static inline __wsum csum_add(__wsum csum,=20=20
->>=20__wsum addend)
->> >
->> > #ifdef __powerpc64__
->> > 	res +=3D (__force u64)addend;
->> >-	return (__force __wsum)((u32)res + (res >> 32));
->> >+	return (__force __wsum) from64to32(res);
 >>
->> Did you encounter a bug due to that ?
->> As far as i understand, csum and addend are 32 bits so can't exceed=20=
-=20
->>=200xffffffff
->> Then their sum won't exceed 0x1fffffffe. So the sum of upper and lower p=
-art
->> won't carry
+>> Le 22/03/2018 =C3=A0 21:19, Mathieu Malaterre a =C3=A9crit :
+>>>
+>>> The pmac_pfunc_base_install prototype was declared in powermac/smp.c si=
+nce
+>>> function was used there, move it to pmac_pfunc.h header to be visible i=
+n
+>>> pfunc_base.c. Fix a warning treated as error with W=3D1:
+>>>
+>>>    arch/powerpc/platforms/powermac/pfunc_base.c:330:12: error: no previ=
+ous
+>>> prototype for =E2=80=98pmac_pfunc_base_install=E2=80=99 [-Werror=3Dmiss=
+ing-prototypes]
+>>>
+>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>>> ---
+>>>   arch/powerpc/include/asm/pmac_pfunc.h | 1 +
+>>>   arch/powerpc/platforms/powermac/smp.c | 1 -
+>>>   2 files changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/pmac_pfunc.h
+>>> b/arch/powerpc/include/asm/pmac_pfunc.h
+>>> index 73bd8f28f2a8..99f7a288789a 100644
+>>> --- a/arch/powerpc/include/asm/pmac_pfunc.h
+>>> +++ b/arch/powerpc/include/asm/pmac_pfunc.h
+>>> @@ -245,6 +245,7 @@ extern void pmf_put_function(struct pmf_function
+>>> *func);
+>>>     extern int pmf_call_one(struct pmf_function *func, struct pmf_args
+>>> *args);
+>>>   +extern int pmac_pfunc_base_install(void);
+>>
+>>
+>>
+>> extern keyword is not needed
 >
-> If the sum of the two halves was 0x1fffffffe, then that previously got
-> truncated to 32 bits and returned as 0xfffffffe, which is wrong - the
-> result should be 0xffffffff.
->
+> I understand; but for consistency every single protoypes in this
+> header file actually use the extern keyword. Is there a guide/best
+> practice to refer to in this case ?
 
-It is the sum of the two arguments of csum_add() which can't exceed=20=20
-0x1fffffffe
-So=20the sum of the two halves will be 0xffffffff which is the expected res=
-ult.
+Consistancy is not a valid reason to continue bad practice. Every=20=20
+single=20modufication is an opportunity to clean things up
 
-The issue would start with res =3D 0x1ffffffff, in that case the sum of=20=
-=20
-the=20two halves would be 0x100000000 which would have been truncated to=20=
-=20
-0=20whereas we expect the result to be 1 in that case.
-But in order to obtain res =3D 0x1ffffffff or higher, you have to sum at=20=
-=20
-least=20three 32 bits numbers. You can't obtain such a value with a sum=20=
-=20
-of=20two 32 bits numbers.
+You should run script/checkpatch.pl --strict on all your patches=20=20
+before=20submitting.
+And follow as much as possible the linux codying style
 
 Christophe
+
+>
+>> Christophe
+>>
+>>>     /* Suspend/resume code called by via-pmu directly for now */
+>>>   extern void pmac_pfunc_base_suspend(void);
+>>> diff --git a/arch/powerpc/platforms/powermac/smp.c
+>>> b/arch/powerpc/platforms/powermac/smp.c
+>>> index 95275e0e2efa..447da6db450a 100644
+>>> --- a/arch/powerpc/platforms/powermac/smp.c
+>>> +++ b/arch/powerpc/platforms/powermac/smp.c
+>>> @@ -65,7 +65,6 @@
+>>>   #endif
+>>>     extern void __secondary_start_pmac_0(void);
+>>> -extern int pmac_pfunc_base_install(void);
+>>>     static void (*pmac_tb_freeze)(int freeze);
+>>>   static u64 timebase;
+>>>
+>>
+>> ---
+>> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
+=C3=A9rifi=C3=A9e par le
+>> logiciel antivirus Avast.
+>> https://www.avast.com/antivirus
+>>
