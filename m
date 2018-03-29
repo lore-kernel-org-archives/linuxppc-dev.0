@@ -1,28 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BljB2jpJzDqph
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 00:19:58 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shea Levy <shea@shealevy.com>, Joe Perches <joe@perches.com>,
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michal Hocko <mhocko@suse.com>,
- Vlastimil Babka <vbabka@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
- Dan Williams <dan.j.williams@intel.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 14/16] powerpc: Use generic free_initrd_mem.
-In-Reply-To: <874lkzudkc.fsf@xps13.shealevy.com>
-References: <20180328152714.6103-1-shea@shealevy.com>
- <20180328203659.18692-1-shea@shealevy.com>
- <20180328203659.18692-15-shea@shealevy.com>
- <1522269853.12357.135.camel@perches.com> <874lkzudkc.fsf@xps13.shealevy.com>
-Date: Fri, 30 Mar 2018 00:19:40 +1100
-Message-ID: <87a7ur10k3.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BmVy0GPfzDqmx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 00:56:07 +1100 (AEDT)
+Subject: Re: RFC on writel and writel_relaxed
+To: David Miller <davem@davemloft.net>, benh@kernel.crashing.org
+Cc: torvalds@linux-foundation.org, alexander.duyck@gmail.com,
+ will.deacon@arm.com, arnd@arndb.de, jgg@ziepe.ca, David.Laight@aculab.com,
+ oohall@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-rdma@vger.kernel.org,
+ alexander.h.duyck@redhat.com, paulmck@linux.vnet.ibm.com,
+ netdev@vger.kernel.org, linus971@gmail.com
+References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
+ <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
+ <1522249996.21446.25.camel@kernel.crashing.org>
+ <20180328.115509.481837809903086401.davem@davemloft.net>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <29fe17e0-9978-dc43-d02c-de8fabdc66c2@codeaurora.org>
+Date: Thu, 29 Mar 2018 09:56:01 -0400
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180328.115509.481837809903086401.davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shea Levy <shea@shealevy.com> writes:
+On 3/28/2018 11:55 AM, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Thu, 29 Mar 2018 02:13:16 +1100
+> 
+>> Let's fix all archs, it's way easier than fixing all drivers. Half of
+>> the archs are unused or dead anyway.
+> 
+> Agreed.
+> 
 
-> Joe Perches <joe@perches.com> writes:
->
->> On Wed, 2018-03-28 at 16:36 -0400, Shea Levy wrote:
->>> Signed-off-by: Shea Levy <shea@shealevy.com>
->>
->> Most people seem to want some form of commit message
->> and not just your sign-off.
->>
->
-> Ah, if the subject is insufficient I can add some more detail.
+I pinged most of the maintainers yesterday.
+Which arches do we care about these days?
+I have not been paying attention any other architecture besides arm64.
 
-Yeah please do.
+arch		status			detail
+------		-------------		------------------------------------
+alpha		question sent
+arc		question sent		ysato@users.sourceforge.jp will fix it.
+arm		no issues
+arm64		no issues
+blackfin	question sent		about to be removed
+c6x		question sent
+cris		question sent
+frv
+h8300		question sent
+hexagon		question sent
+ia64		no issues		confirmed by Tony Luck
+m32r
+m68k		question sent
+metag
+microblaze	question sent
+mips		question sent
+mn10300		question sent
+nios2		question sent
+openrisc	no issues		shorne@gmail.com says should no issues
+parisc		no issues		grantgrundler@gmail.com says most probably no problem but still looking
+powerpc		no issues
+riscv		question sent
+s390		question sent
+score		question sent
+sh		question sent
+sparc		question sent
+tile		question sent
+unicore32	question sent
+x86		no issues
+xtensa		question sent
 
-Seeing this patch in isolation, with no change log, I might think it's
-safe for me to just apply it.
 
-But that would break the build because I don't have patch 1.
-
-So for starters you need to explain that part, eg something like:
-
-  A previous patch in the series added a weak definition of
-  free_initrd_mem() in init/initramfs.c.
-
-  The powerpc implementation is identical, so it can be removed allowing
-  the generic version to be used.
-
-
-Then you could also tell me if you did/didn't build/boot test it.
-
-cheers
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
