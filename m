@@ -1,34 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x22e.google.com (mail-pg0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c05::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Bnt03cpSzDqph
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 01:57:43 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Jason Gunthorpe' <jgg@ziepe.ca>, Will Deacon <will.deacon@arm.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Arnd Bergmann
- <arnd@arndb.de>, Sinan Kaya <okaya@codeaurora.org>, Oliver
- <oohall@gmail.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "Paul E. McKenney"
- <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, "Ingo
- Molnar" <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>
-Subject: RE: RFC on writel and writel_relaxed
-Date: Thu, 29 Mar 2018 14:58:34 +0000
-Message-ID: <4ce6f0338fe04574bd3c0633c522a1c7@AcuMS.aculab.com>
-References: <bba5ebd8-0643-6f09-9367-419b49e53535@codeaurora.org>
- <20180327143628.GA10642@arm.com>
- <1522186185.7364.59.camel@kernel.crashing.org>
- <20180328085338.GA28871@arm.com>
- <1522230616.21446.1.camel@kernel.crashing.org>
- <CAK8P3a1E54K2pxw-9J5NazF2xNFNvOY1JsGr5C727zAxaz0K5g@mail.gmail.com>
- <1522231287.21446.9.camel@kernel.crashing.org>
- <20180328101345.GA30850@arm.com> <20180328165732.GA4546@ziepe.ca>
- <20180329091941.GA22926@arm.com> <20180329144515.GA13656@ziepe.ca>
-In-Reply-To: <20180329144515.GA13656@ziepe.ca>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BpH05pdvzF0W1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 02:15:55 +1100 (AEDT)
+Received: by mail-pg0-x22e.google.com with SMTP id g8so3253358pgv.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 08:15:55 -0700 (PDT)
+Date: Fri, 30 Mar 2018 01:15:39 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 12/14] powerpc: pass node id into create_section_mapping
+Message-ID: <20180330011539.730a0ac1@roar.ozlabs.ibm.com>
+In-Reply-To: <87o9j71lbf.fsf@concordia.ellerman.id.au>
+References: <20180213150824.27689-1-npiggin@gmail.com>
+ <20180213150824.27689-13-npiggin@gmail.com>
+ <87o9j71lbf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jason Gunthorpe
-> Sent: 29 March 2018 15:45
-...
-> > > When talking about ordering between the devices, the relevant questio=
-n
-> > > is what happens if the writel(DEVICE_BAR) triggers DEVICE_BAR to DMA
-> > > from the DEVICE_FOO. 'ordered' means that in this case
-> > > writel(DEVICE_FOO) must be presented to FOO before anything generated
-> > > by BAR.
-> >
-> > Yes, and that isn't the case for arm because the writes can still be
-> > buffered.
->=20
-> The statement is not about buffering, or temporal completion order, or
-> the order of acks returning to the CPU. It is about pure transaction
-> ordering inside the interconnect.
->=20
-> Can write BAR -> FOO pass write CPU -> FOO?
+On Thu, 29 Mar 2018 16:51:16 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Almost certainly.
-The first cpu write can almost certainly be 'stalled' at the shared PCIe br=
-idge.
-The second cpu write then completes (to a different target).
-That target then issues a peer to peer transfer that reaches the shared bri=
-dge.
-I doubt the order of the transactions is guaranteed when it becomes 'un-sta=
-lled'.
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> > index 328ff9abc333..435b19e74508 100644
+> > --- a/arch/powerpc/mm/pgtable-radix.c
+> > +++ b/arch/powerpc/mm/pgtable-radix.c
+> > @@ -862,9 +862,9 @@ static void remove_pagetable(unsigned long start, unsigned long end)
+> >  	radix__flush_tlb_kernel_range(start, end);
+> >  }
+> >  
+> > -int __ref radix__create_section_mapping(unsigned long start, unsigned long end)
+> > +int __ref radix__create_section_mapping(unsigned long start, unsigned long end, int nid)
+> >  {
+> > -	return create_physical_mapping(start, end);
+> > +	return create_physical_mapping(start, end, nid);
+> >  }  
+> 
+> This got a little muddled. We add the nid argument here, but
+> create_physical_mapping() doesn't take it until patch 14.
+> 
+> I managed to fix it by rearranging the last three patches and fiddling
+> things a bit. If you can check the result once I push that would be good.
 
-Of course, these are peer to peer transfers, and strange ones at that.
-Normally you'd not be doing peer to peer transfers that access 'memory'
-the cpu has just written to.
+I think it looks okay how you've got it.
 
-Requiring extra barriers in this case, or different functions for WC access=
-es
-shouldn't really be an issue.
-
-Even requiring a barrier between a write to dma coherent memory and a write
-that starts dma isn't really onerous.
-Even if it is a nop on all current architectures it is a good comment in th=
-e code.
-It could even have a 'dev' argument.
-
-	David
+Thanks,
+Nick
