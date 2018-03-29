@@ -1,9 +1,9 @@
 Return-Path: <ran.wang_1@nxp.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0085.outbound.protection.outlook.com [104.47.40.85])
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0048.outbound.protection.outlook.com [104.47.42.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BYrp04G8zF0xW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BYrp02jHzDqZG
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 16:55:49 +1100 (AEDT)
 From: Ran Wang <ran.wang_1@nxp.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
@@ -15,11 +15,10 @@ CC: Zhao Chenhui <chenhui.zhao@freescale.com>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>, Ran
  Wang <ran.wang_1@nxp.com>
-Subject: [PATCH 2/5] drivers/soc/fsl: add EPU FSM configuration for deep sleep
-Date: Thu, 29 Mar 2018 09:31:40 +0800
-Message-ID: <20180329013143.22527-2-ran.wang_1@nxp.com>
-In-Reply-To: <20180329013143.22527-1-ran.wang_1@nxp.com>
-References: <20180329013143.22527-1-ran.wang_1@nxp.com>
+Subject: [PATCH 1/5] powerpc/pm: Fix suspend=n in menuconfig for e500mc
+ platforms.
+Date: Thu, 29 Mar 2018 09:31:39 +0800
+Message-ID: <20180329013143.22527-1-ran.wang_1@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,471 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the last stage of deep sleep, software will trigger a Finite
-State Machine (FSM) to control the hardware procedure, such a
-board isolation, killing PLLs, removing power, and so on.
+Also, unselect FSL_PMC which is for older platfroms instead.
 
-When the system is waked up by an interrupt, the FSM controls
-the hardware to complete the early resume procedure.
-
-This patch configure the EPU FSM preparing for deep sleep.
-
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
 Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
- drivers/soc/fsl/Kconfig     |    7 +
- drivers/soc/fsl/Makefile    |    1 +
- drivers/soc/fsl/sleep_fsm.c |  279 +++++++++++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/sleep_fsm.h |  130 ++++++++++++++++++++
- 4 files changed, 417 insertions(+), 0 deletions(-)
- create mode 100644 drivers/soc/fsl/sleep_fsm.c
- create mode 100644 drivers/soc/fsl/sleep_fsm.h
+ arch/powerpc/Kconfig |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
-index 7a9fb9b..4222bd5 100644
---- a/drivers/soc/fsl/Kconfig
-+++ b/drivers/soc/fsl/Kconfig
-@@ -16,3 +16,10 @@ config FSL_GUTS
- 	  Initially only reading SVR and registering soc device are supported.
- 	  Other guts accesses, such as reading RCW, should eventually be moved
- 	  into this driver as well.
-+
-+config FSL_SLEEP_FSM
-+	bool
-+	help
-+	  This driver configures a hardware FSM (Finite State Machine) for deep sleep.
-+	  The FSM is used to finish clean-ups at the last stage of system entering deep
-+	  sleep, and also wakes up system when a wake up event happens.
-diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-index 44b3beb..28c38c3 100644
---- a/drivers/soc/fsl/Makefile
-+++ b/drivers/soc/fsl/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_FSL_DPAA)                 += qbman/
- obj-$(CONFIG_QUICC_ENGINE)		+= qe/
- obj-$(CONFIG_CPM)			+= qe/
- obj-$(CONFIG_FSL_GUTS)			+= guts.o
-+obj-$(CONFIG_FSL_SLEEP_FSM)	+= sleep_fsm.o
-diff --git a/drivers/soc/fsl/sleep_fsm.c b/drivers/soc/fsl/sleep_fsm.c
-new file mode 100644
-index 0000000..378857f
---- /dev/null
-+++ b/drivers/soc/fsl/sleep_fsm.c
-@@ -0,0 +1,279 @@
-+/*
-+ * deep sleep FSM (finite-state machine) configuration
-+ *
-+ * Copyright 2018 NXP
-+ *
-+ * Author: Hongbo Zhang <hongbo.zhang@freescale.com>
-+ *         Chenhui Zhao <chenhui.zhao@freescale.com>
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of the above-listed copyright holders nor the
-+ *	 names of any contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/types.h>
-+
-+#include "sleep_fsm.h"
-+/*
-+ * These values are from chip's reference manual. For example,
-+ * the values for T1040 can be found in "8.4.3.8 Programming
-+ * supporting deep sleep mode" of Chapter 8 "Run Control and
-+ * Power Management (RCPM)".
-+ * The default value can be applied to T104x, LS1021.
-+ */
-+struct fsm_reg_vals epu_default_val[] = {
-+	/* EPGCR (Event Processor Global Control Register) */
-+	{EPGCR, 0},
-+	/* EPECR (Event Processor Event Control Registers) */
-+	{EPECR0 + EPECR_STRIDE * 0, 0},
-+	{EPECR0 + EPECR_STRIDE * 1, 0},
-+	{EPECR0 + EPECR_STRIDE * 2, 0xF0004004},
-+	{EPECR0 + EPECR_STRIDE * 3, 0x80000084},
-+	{EPECR0 + EPECR_STRIDE * 4, 0x20000084},
-+	{EPECR0 + EPECR_STRIDE * 5, 0x08000004},
-+	{EPECR0 + EPECR_STRIDE * 6, 0x80000084},
-+	{EPECR0 + EPECR_STRIDE * 7, 0x80000084},
-+	{EPECR0 + EPECR_STRIDE * 8, 0x60000084},
-+	{EPECR0 + EPECR_STRIDE * 9, 0x08000084},
-+	{EPECR0 + EPECR_STRIDE * 10, 0x42000084},
-+	{EPECR0 + EPECR_STRIDE * 11, 0x90000084},
-+	{EPECR0 + EPECR_STRIDE * 12, 0x80000084},
-+	{EPECR0 + EPECR_STRIDE * 13, 0x08000084},
-+	{EPECR0 + EPECR_STRIDE * 14, 0x02000084},
-+	{EPECR0 + EPECR_STRIDE * 15, 0x00000004},
-+	/*
-+	 * EPEVTCR (Event Processor EVT Pin Control Registers)
-+	 * SCU8 triger EVT2, and SCU11 triger EVT9
-+	 */
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 0, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 1, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 2, 0x80000001},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 3, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 4, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 5, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 6, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 7, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 8, 0},
-+	{EPEVTCR0 + EPEVTCR_STRIDE * 9, 0xB0000001},
-+	/* EPCMPR (Event Processor Counter Compare Registers) */
-+	{EPCMPR0 + EPCMPR_STRIDE * 0, 0},
-+	{EPCMPR0 + EPCMPR_STRIDE * 1, 0},
-+	{EPCMPR0 + EPCMPR_STRIDE * 2, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 3, 0},
-+	{EPCMPR0 + EPCMPR_STRIDE * 4, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 5, 0x00000020},
-+	{EPCMPR0 + EPCMPR_STRIDE * 6, 0},
-+	{EPCMPR0 + EPCMPR_STRIDE * 7, 0},
-+	{EPCMPR0 + EPCMPR_STRIDE * 8, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 9, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 10, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 11, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 12, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 13, 0},
-+	{EPCMPR0 + EPCMPR_STRIDE * 14, 0x000000FF},
-+	{EPCMPR0 + EPCMPR_STRIDE * 15, 0x000000FF},
-+	/* EPCCR (Event Processor Counter Control Registers) */
-+	{EPCCR0 + EPCCR_STRIDE * 0, 0},
-+	{EPCCR0 + EPCCR_STRIDE * 1, 0},
-+	{EPCCR0 + EPCCR_STRIDE * 2, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 3, 0},
-+	{EPCCR0 + EPCCR_STRIDE * 4, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 5, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 6, 0},
-+	{EPCCR0 + EPCCR_STRIDE * 7, 0},
-+	{EPCCR0 + EPCCR_STRIDE * 8, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 9, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 10, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 11, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 12, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 13, 0},
-+	{EPCCR0 + EPCCR_STRIDE * 14, 0x92840000},
-+	{EPCCR0 + EPCCR_STRIDE * 15, 0x92840000},
-+	/* EPSMCR (Event Processor SCU Mux Control Registers) */
-+	{EPSMCR0 + EPSMCR_STRIDE * 0, 0},
-+	{EPSMCR0 + EPSMCR_STRIDE * 1, 0},
-+	{EPSMCR0 + EPSMCR_STRIDE * 2, 0x6C700000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 3, 0x2F000000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 4, 0x002F0000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 5, 0x00002E00},
-+	{EPSMCR0 + EPSMCR_STRIDE * 6, 0x7C000000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 7, 0x30000000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 8, 0x64300000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 9, 0x00003000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 10, 0x65000030},
-+	{EPSMCR0 + EPSMCR_STRIDE * 11, 0x31740000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 12, 0x7F000000},
-+	{EPSMCR0 + EPSMCR_STRIDE * 13, 0x00003100},
-+	{EPSMCR0 + EPSMCR_STRIDE * 14, 0x00000031},
-+	{EPSMCR0 + EPSMCR_STRIDE * 15, 0x76000000},
-+	/* EPACR (Event Processor Action Control Registers) */
-+	{EPACR0 + EPACR_STRIDE * 0, 0},
-+	{EPACR0 + EPACR_STRIDE * 1, 0},
-+	{EPACR0 + EPACR_STRIDE * 2, 0},
-+	{EPACR0 + EPACR_STRIDE * 3, 0x00000080},
-+	{EPACR0 + EPACR_STRIDE * 4, 0},
-+	{EPACR0 + EPACR_STRIDE * 5, 0x00000040},
-+	{EPACR0 + EPACR_STRIDE * 6, 0},
-+	{EPACR0 + EPACR_STRIDE * 7, 0},
-+	{EPACR0 + EPACR_STRIDE * 8, 0},
-+	{EPACR0 + EPACR_STRIDE * 9, 0x0000001C},
-+	{EPACR0 + EPACR_STRIDE * 10, 0x00000020},
-+	{EPACR0 + EPACR_STRIDE * 11, 0},
-+	{EPACR0 + EPACR_STRIDE * 12, 0x00000003},
-+	{EPACR0 + EPACR_STRIDE * 13, 0x06000000},
-+	{EPACR0 + EPACR_STRIDE * 14, 0x04000000},
-+	{EPACR0 + EPACR_STRIDE * 15, 0x02000000},
-+	/* EPIMCR (Event Processor Input Mux Control Registers) */
-+	{EPIMCR0 + EPIMCR_STRIDE * 0, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 1, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 2, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 3, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 4, 0x44000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 5, 0x40000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 6, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 7, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 8, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 9, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 10, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 11, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 12, 0x44000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 13, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 14, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 15, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 16, 0x6A000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 17, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 18, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 19, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 20, 0x48000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 21, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 22, 0x6C000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 23, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 24, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 25, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 26, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 27, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 28, 0x76000000},
-+	{EPIMCR0 + EPIMCR_STRIDE * 29, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 30, 0},
-+	{EPIMCR0 + EPIMCR_STRIDE * 31, 0x76000000},
-+	/* EPXTRIGCR (Event Processor Crosstrigger Control Register) */
-+	{EPXTRIGCR, 0x0000FFDF},
-+	/* end */
-+	{FSM_END_FLAG, 0},
-+};
-+
-+struct fsm_reg_vals npc_default_val[] = {
-+	/* NPC triggered Memory-Mapped Access Registers */
-+	{NCR, 0x80000000},
-+	{MCCR1, 0},
-+	{MCSR1, 0},
-+	{MMAR1LO, 0},
-+	{MMAR1HI, 0},
-+	{MMDR1, 0},
-+	{MCSR2, 0},
-+	{MMAR2LO, 0},
-+	{MMAR2HI, 0},
-+	{MMDR2, 0},
-+	{MCSR3, 0x80000000},
-+	{MMAR3LO, 0x000E2130},
-+	{MMAR3HI, 0x00030000},
-+	{MMDR3, 0x00020000},
-+	/* end */
-+	{FSM_END_FLAG, 0},
-+};
-+
-+/**
-+ * fsl_fsm_setup - Configure EPU's FSM registers
-+ * @base: the base address of registers
-+ * @val: Pointer to address-value pairs for FSM registers
-+ */
-+void fsl_fsm_setup(void __iomem *base, struct fsm_reg_vals *val)
-+{
-+	struct fsm_reg_vals *data = val;
-+
-+	BUG_ON(!base || !data);
-+	while (data->offset != FSM_END_FLAG) {
-+		iowrite32be(data->value, base + data->offset);
-+		data++;
-+	}
-+}
-+
-+void fsl_epu_setup_default(void __iomem *epu_base)
-+{
-+	fsl_fsm_setup(epu_base, epu_default_val);
-+}
-+
-+void fsl_npc_setup_default(void __iomem *npc_base)
-+{
-+	fsl_fsm_setup(npc_base, npc_default_val);
-+}
-+
-+void fsl_epu_clean_default(void __iomem *epu_base)
-+{
-+	u32 offset;
-+
-+	/* follow the exact sequence to clear the registers */
-+	/* Clear EPACRn */
-+	for (offset = EPACR0; offset <= EPACR15; offset += EPACR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPEVTCRn */
-+	for (offset = EPEVTCR0; offset <= EPEVTCR9; offset += EPEVTCR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPGCR */
-+	iowrite32be(0, epu_base + EPGCR);
-+
-+	/* Clear EPSMCRn */
-+	for (offset = EPSMCR0; offset <= EPSMCR15; offset += EPSMCR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPCCRn */
-+	for (offset = EPCCR0; offset <= EPCCR31; offset += EPCCR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPCMPRn */
-+	for (offset = EPCMPR0; offset <= EPCMPR31; offset += EPCMPR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPCTRn */
-+	for (offset = EPCTR0; offset <= EPCTR31; offset += EPCTR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPIMCRn */
-+	for (offset = EPIMCR0; offset <= EPIMCR31; offset += EPIMCR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+
-+	/* Clear EPXTRIGCRn */
-+	iowrite32be(0, epu_base + EPXTRIGCR);
-+
-+	/* Clear EPECRn */
-+	for (offset = EPECR0; offset <= EPECR15; offset += EPECR_STRIDE)
-+		iowrite32be(0, epu_base + offset);
-+}
-diff --git a/drivers/soc/fsl/sleep_fsm.h b/drivers/soc/fsl/sleep_fsm.h
-new file mode 100644
-index 0000000..e0013c0
---- /dev/null
-+++ b/drivers/soc/fsl/sleep_fsm.h
-@@ -0,0 +1,130 @@
-+/*
-+ * deep sleep FSM (finite-state machine) configuration
-+ *
-+ * Copyright 2018 NXP
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of the above-listed copyright holders nor the
-+ *	 names of any contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef _FSL_SLEEP_FSM_H
-+#define _FSL_SLEEP_FSM_H
-+
-+#define FSL_STRIDE_4B	4
-+#define FSL_STRIDE_8B	8
-+
-+/* End flag */
-+#define FSM_END_FLAG		0xFFFFFFFFUL
-+
-+/* Block offsets */
-+#define RCPM_BLOCK_OFFSET	0x00022000
-+#define EPU_BLOCK_OFFSET	0x00000000
-+#define NPC_BLOCK_OFFSET	0x00001000
-+
-+/* EPGCR (Event Processor Global Control Register) */
-+#define EPGCR		0x000
-+
-+/* EPEVTCR0-9 (Event Processor EVT Pin Control Registers) */
-+#define EPEVTCR0	0x050
-+#define EPEVTCR9	0x074
-+#define EPEVTCR_STRIDE	FSL_STRIDE_4B
-+
-+/* EPXTRIGCR (Event Processor Crosstrigger Control Register) */
-+#define EPXTRIGCR	0x090
-+
-+/* EPIMCR0-31 (Event Processor Input Mux Control Registers) */
-+#define EPIMCR0		0x100
-+#define EPIMCR31	0x17C
-+#define EPIMCR_STRIDE	FSL_STRIDE_4B
-+
-+/* EPSMCR0-15 (Event Processor SCU Mux Control Registers) */
-+#define EPSMCR0		0x200
-+#define EPSMCR15	0x278
-+#define EPSMCR_STRIDE	FSL_STRIDE_8B
-+
-+/* EPECR0-15 (Event Processor Event Control Registers) */
-+#define EPECR0		0x300
-+#define EPECR15		0x33C
-+#define EPECR_STRIDE	FSL_STRIDE_4B
-+
-+/* EPACR0-15 (Event Processor Action Control Registers) */
-+#define EPACR0		0x400
-+#define EPACR15		0x43C
-+#define EPACR_STRIDE	FSL_STRIDE_4B
-+
-+/* EPCCRi0-15 (Event Processor Counter Control Registers) */
-+#define EPCCR0		0x800
-+#define EPCCR15		0x83C
-+#define EPCCR31		0x87C
-+#define EPCCR_STRIDE	FSL_STRIDE_4B
-+
-+/* EPCMPR0-15 (Event Processor Counter Compare Registers) */
-+#define EPCMPR0		0x900
-+#define EPCMPR15	0x93C
-+#define EPCMPR31	0x97C
-+#define EPCMPR_STRIDE	FSL_STRIDE_4B
-+
-+/* EPCTR0-31 (Event Processor Counter Register) */
-+#define EPCTR0		0xA00
-+#define EPCTR31		0xA7C
-+#define EPCTR_STRIDE	FSL_STRIDE_4B
-+
-+/* NPC triggered Memory-Mapped Access Registers */
-+#define NCR		0x000
-+#define MCCR1		0x0CC
-+#define MCSR1		0x0D0
-+#define MMAR1LO		0x0D4
-+#define MMAR1HI		0x0D8
-+#define MMDR1		0x0DC
-+#define MCSR2		0x0E0
-+#define MMAR2LO		0x0E4
-+#define MMAR2HI		0x0E8
-+#define MMDR2		0x0EC
-+#define MCSR3		0x0F0
-+#define MMAR3LO		0x0F4
-+#define MMAR3HI		0x0F8
-+#define MMDR3		0x0FC
-+
-+/* RCPM Core State Action Control Register 0 */
-+#define CSTTACR0	0xB00
-+
-+/* RCPM Core Group 1 Configuration Register 0 */
-+#define CG1CR0		0x31C
-+
-+struct fsm_reg_vals {
-+	u32 offset;
-+	u32 value;
-+};
-+
-+void fsl_fsm_setup(void __iomem *base, struct fsm_reg_vals *val);
-+void fsl_epu_setup_default(void __iomem *epu_base);
-+void fsl_npc_setup_default(void __iomem *npc_base);
-+void fsl_epu_clean_default(void __iomem *epu_base);
-+
-+#endif /* _FSL_SLEEP_FSM_H */
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 73ce5dd..ed60c83 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -316,7 +316,7 @@ config ARCH_HIBERNATION_POSSIBLE
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+-		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
++		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
+ 		   || 44x || 40x
+ 
+ config PPC_DCR_NATIVE
+@@ -940,8 +940,6 @@ config FSL_PCI
+ 
+ config FSL_PMC
+ 	bool
+-	default y
+-	depends on SUSPEND && (PPC_85xx || PPC_86xx)
+ 	help
+ 	  Freescale MPC85xx/MPC86xx power management controller support
+ 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
 -- 
 1.7.1
