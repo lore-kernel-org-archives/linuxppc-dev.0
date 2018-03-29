@@ -1,33 +1,28 @@
-Return-Path: <prvs=06262a8b8d=bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <corbet@lwn.net>
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BvPK5gDMzF1YV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 06:06:42 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2TJ15pF074695
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 15:06:39 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h15tnggtq-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 15:06:39 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 29 Mar 2018 13:06:38 -0600
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Dave Young <dyoung@redhat.com>,
- =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: kexec_file: Fix error code when trying to load kdump
- kernel
-Date: Thu, 29 Mar 2018 16:05:43 -0300
-Message-Id: <20180329190543.25118-1-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Bz4T5jBPzF1c1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 08:52:25 +1100 (AEDT)
+Date: Thu, 29 Mar 2018 15:46:07 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, Richard Henderson
+ <rth@twiddle.net>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
+ <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
+ <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>, James Hogan
+ <jhogan@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Alexander Viro
+ <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, kasan-dev@googlegroups.com,
+ linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
+Message-ID: <20180329154607.3d8bda75@lwn.net>
+In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
+References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,55 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec_file_load() on powerpc doesn't support kdump kernels yet, so it
-returns -ENOTSUPP in that case.
+On Wed, 21 Mar 2018 21:22:16 +0200
+Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
 
-I've recently learned that this errno is internal to the kernel and isn't
-supposed to be exposed to userspace. Therefore, change to -EOPNOTSUPP which
-is defined in an uapi header.
+> These patches convert files in Documentation/vm to ReST format, add an
+> initial index and link it to the top level documentation.
+> 
+> There are no contents changes in the documentation, except few spelling
+> fixes. The relatively large diffstat stems from the indentation and
+> paragraph wrapping changes.
+> 
+> I've tried to keep the formatting as consistent as possible, but I could
+> miss some places that needed markup and add some markup where it was not
+> necessary.
 
-This does indeed make kexec-tools happier. Before the patch, on ppc64le:
+So I've been pondering on these for a bit.  It looks like a reasonable and
+straightforward RST conversion, no real complaints there.  But I do have a
+couple of concerns...
 
-  # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
-  kexec_file_load failed: Unknown error 524
+One is that, as we move documentation into RST, I'm really trying to
+organize it a bit so that it is better tuned to the various audiences we
+have.  For example, ksm.txt is going to be of interest to sysadmin types,
+who might want to tune it.  mmu_notifier.txt is of interest to ...
+somebody, but probably nobody who is thinking in user space.  And so on.
 
-After the patch:
+So I would really like to see this material split up and put into the
+appropriate places in the RST hierarchy - admin-guide for administrative
+stuff, core-api for kernel development topics, etc.  That, of course,
+could be done separately from the RST conversion, but I suspect I know
+what will (or will not) happen if we agree to defer that for now :)
 
-  # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
-  kexec_file_load failed: Operation not supported
+The other is the inevitable merge conflicts that changing that many doc
+files will create.  Sending the patches through Andrew could minimize
+that, I guess, or at least make it his problem.  Alternatively, we could
+try to do it as an end-of-merge-window sort of thing.  I can try to manage
+that, but an ack or two from the mm crowd would be nice to have.
 
-Fixes: a0458284f062 ("powerpc: Add support code for kexec_file_load()")
-Reported-by: Dave Young <dyoung@redhat.com>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/machine_kexec_file_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
 
-This is a minor issue, but since it's a simple patch it might be worth
-applying it to stable branches.
-
-This is the kexec-tools thread where this problem was brought up:
-
-https://lists.infradead.org/pipermail/kexec/2018-March/020346.html
-
-And this is an instance of a similar fix being applied elsewhere in the
-kernel, for the same reasons:
-
-https://patchwork.kernel.org/patch/8490791/
-
-The test shown in the commit log was made using Hari Bathini's patch
-adding kexec_file_load() support to kexec-tools in ppc64.
-
-diff --git a/arch/powerpc/kernel/machine_kexec_file_64.c b/arch/powerpc/kernel/machine_kexec_file_64.c
-index e4395f937d63..45e0b7d5f200 100644
---- a/arch/powerpc/kernel/machine_kexec_file_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_file_64.c
-@@ -43,7 +43,7 @@ int arch_kexec_kernel_image_probe(struct kimage *image, void *buf,
- 
- 	/* We don't support crash kernels yet. */
- 	if (image->type == KEXEC_TYPE_CRASH)
--		return -ENOTSUPP;
-+		return -EOPNOTSUPP;
- 
- 	for (i = 0; i < ARRAY_SIZE(kexec_file_loaders); i++) {
- 		fops = kexec_file_loaders[i];
+jon
