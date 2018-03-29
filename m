@@ -1,42 +1,33 @@
-Return-Path: <prvs=06264cd0af=ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <prvs=06262a8b8d=bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40BtjV6h6kzF1k3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 05:35:39 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2TIZFpN024528
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 14:35:37 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h11634a3n-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BvPK5gDMzF1YV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 06:06:42 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2TJ15pF074695
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 15:06:39 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h15tnggtq-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 14:35:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 15:06:39 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Thu, 29 Mar 2018 14:35:35 -0400
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
-Subject: Re: [PATCH v3 00/41] cxlflash: OCXL transport support and
- miscellaneous fixes
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-In-Reply-To: <yq1o9j7j34o.fsf@oracle.com>
-Date: Thu, 29 Mar 2018 13:35:30 -0500
-Cc: James Bottomley <jejb@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-References: <1522081759-57431-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <yq1o9j7j34o.fsf@oracle.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Message-Id: <CDF15A59-080C-4904-8F28-F79AFD32AF0C@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 29 Mar 2018 13:06:38 -0600
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Dave Young <dyoung@redhat.com>,
+ =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: kexec_file: Fix error code when trying to load kdump
+ kernel
+Date: Thu, 29 Mar 2018 16:05:43 -0300
+Message-Id: <20180329190543.25118-1-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,39 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+kexec_file_load() on powerpc doesn't support kdump kernels yet, so it
+returns -ENOTSUPP in that case.
 
+I've recently learned that this errno is internal to the kernel and isn't
+supposed to be exposed to userspace. Therefore, change to -EOPNOTSUPP which
+is defined in an uapi header.
 
-> On Mar 28, 2018, at 4:34 PM, Martin K. Petersen =
-<martin.petersen@oracle.com> wrote:
->=20
->=20
-> Uma,
->=20
->> This patch series adds OCXL support to the cxlflash driver. With this
->> support, new devices using the OCXL transport will be supported by =
-the
->> cxlflash driver along with the existing CXL devices. An effort is =
-made
->> to keep this transport specific function independent of the existing
->> core driver that communicates with the AFU.
->>=20
->> The first three patches contain a minor fix and staging improvements.
->>=20
->> This series is intended for 4.17 and is bisectable.
->=20
-> Something this big really needs to be submitted around rc2/rc3. It's =
-way
-> too late in the cycle to ensure proper zeroday coverage for all these
-> commits.
->=20
-> I have started a 4.18/scsi-queue branch to hold this series for now.
-> The 4.18 branch will be rebased once 4.17rc1 is out in a few weeks. =
-Your
-> changes won't show up in for-next until then either.
+This does indeed make kexec-tools happier. Before the patch, on ppc64le:
 
-I did send the first version of this series just after 4.16rc2 but the =
-reviews took a while and the V3 is cutting close unless we do have an =
-rc8 for 4.16 :)
+  # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
+  kexec_file_load failed: Unknown error 524
 
-I understand what you are saying and agree with you. Thanks for keeping =
-me posted.=
+After the patch:
+
+  # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
+  kexec_file_load failed: Operation not supported
+
+Fixes: a0458284f062 ("powerpc: Add support code for kexec_file_load()")
+Reported-by: Dave Young <dyoung@redhat.com>
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/machine_kexec_file_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+This is a minor issue, but since it's a simple patch it might be worth
+applying it to stable branches.
+
+This is the kexec-tools thread where this problem was brought up:
+
+https://lists.infradead.org/pipermail/kexec/2018-March/020346.html
+
+And this is an instance of a similar fix being applied elsewhere in the
+kernel, for the same reasons:
+
+https://patchwork.kernel.org/patch/8490791/
+
+The test shown in the commit log was made using Hari Bathini's patch
+adding kexec_file_load() support to kexec-tools in ppc64.
+
+diff --git a/arch/powerpc/kernel/machine_kexec_file_64.c b/arch/powerpc/kernel/machine_kexec_file_64.c
+index e4395f937d63..45e0b7d5f200 100644
+--- a/arch/powerpc/kernel/machine_kexec_file_64.c
++++ b/arch/powerpc/kernel/machine_kexec_file_64.c
+@@ -43,7 +43,7 @@ int arch_kexec_kernel_image_probe(struct kimage *image, void *buf,
+ 
+ 	/* We don't support crash kernels yet. */
+ 	if (image->type == KEXEC_TYPE_CRASH)
+-		return -ENOTSUPP;
++		return -EOPNOTSUPP;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(kexec_file_loaders); i++) {
+ 		fops = kexec_file_loaders[i];
