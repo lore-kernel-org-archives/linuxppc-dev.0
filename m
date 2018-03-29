@@ -1,28 +1,23 @@
-Return-Path: <corbet@lwn.net>
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 18.mo4.mail-out.ovh.net (18.mo4.mail-out.ovh.net
+ [188.165.54.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Bz4T5jBPzF1c1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 08:52:25 +1100 (AEDT)
-Date: Thu, 29 Mar 2018 15:46:07 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, Richard Henderson
- <rth@twiddle.net>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
- <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
- <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>, James Hogan
- <jhogan@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Alexander Viro
- <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, kasan-dev@googlegroups.com,
- linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
-Message-ID: <20180329154607.3d8bda75@lwn.net>
-In-Reply-To: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
-References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Bz822BvdzF1V0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 08:55:28 +1100 (AEDT)
+Received: from player760.ha.ovh.net (unknown [10.109.120.90])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 11F5615CC28
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 16:49:20 +0200 (CEST)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Subject: [RFC PATCH] powerpc/64/kexec: fix race in kexec when XIVE is shutdown
+Date: Thu, 29 Mar 2018 16:49:11 +0200
+Message-Id: <20180329144911.18829-1-clg@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 Mar 2018 21:22:16 +0200
-Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+The kexec_state KEXEC_STATE_IRQS_OFF barrier is reached by all
+secondary CPUs before the kexec_cpu_down() operation is called on
+secondaries. This can raise conflicts and provoque errors in the XIVE
+hcalls when XIVE is shutdowned with H_INT_RESET on the primary CPU.
 
-> These patches convert files in Documentation/vm to ReST format, add an
-> initial index and link it to the top level documentation.
-> 
-> There are no contents changes in the documentation, except few spelling
-> fixes. The relatively large diffstat stems from the indentation and
-> paragraph wrapping changes.
-> 
-> I've tried to keep the formatting as consistent as possible, but I could
-> miss some places that needed markup and add some markup where it was not
-> necessary.
+To synchronize the kexec_cpu_down() operations and make sure the
+secondaries have completed their task before the primary starts doing
+the same, let's move the primary kexec_cpu_down() after the
+KEXEC_STATE_REAL_MODE barrier.
 
-So I've been pondering on these for a bit.  It looks like a reasonable and
-straightforward RST conversion, no real complaints there.  But I do have a
-couple of concerns...
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
 
-One is that, as we move documentation into RST, I'm really trying to
-organize it a bit so that it is better tuned to the various audiences we
-have.  For example, ksm.txt is going to be of interest to sysadmin types,
-who might want to tune it.  mmu_notifier.txt is of interest to ...
-somebody, but probably nobody who is thinking in user space.  And so on.
+ If this is a bad idea, there are alternate solutions :
 
-So I would really like to see this material split up and put into the
-appropriate places in the RST hierarchy - admin-guide for administrative
-stuff, core-api for kernel development topics, etc.  That, of course,
-could be done separately from the RST conversion, but I suspect I know
-what will (or will not) happen if we agree to defer that for now :)
+ - introduce a new kexec_state and barrier
+ - test for such error in all possible XIVE hcalls.
 
-The other is the inevitable merge conflicts that changing that many doc
-files will create.  Sending the patches through Andrew could minimize
-that, I guess, or at least make it his problem.  Alternatively, we could
-try to do it as an end-of-merge-window sort of thing.  I can try to manage
-that, but an ack or two from the mm crowd would be nice to have.
+ But I tend to prefer the proposed one.
 
-Thanks,
+ Thanks,
 
-jon
+ C.
+
+ arch/powerpc/kernel/machine_kexec_64.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 49d34d7271e7..212ecb8e829c 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -230,16 +230,16 @@ static void kexec_prepare_cpus(void)
+ 	/* we are sure every CPU has IRQs off at this point */
+ 	kexec_all_irq_disabled = 1;
+ 
+-	/* after we tell the others to go down */
+-	if (ppc_md.kexec_cpu_down)
+-		ppc_md.kexec_cpu_down(0, 0);
+-
+ 	/*
+ 	 * Before removing MMU mappings make sure all CPUs have entered real
+ 	 * mode:
+ 	 */
+ 	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE);
+ 
++	/* after we tell the others to go down */
++	if (ppc_md.kexec_cpu_down)
++		ppc_md.kexec_cpu_down(0, 0);
++
+ 	put_cpu();
+ }
+ 
+-- 
+2.13.6
