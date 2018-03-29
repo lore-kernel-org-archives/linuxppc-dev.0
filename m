@@ -1,23 +1,25 @@
-Return-Path: <matt@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Bjpl6byczDr4t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 22:54:39 +1100 (AEDT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
-Subject: Re: [PATCH] powerpc: Clear branch trap (MSR.BE) before delivering
- SIGTRAP
-From: Matt Evans <matt@ozlabs.org>
-In-Reply-To: <C8B54188-179A-475D-B06A-A25426EF6932@ozlabs.org>
-Date: Thu, 29 Mar 2018 12:54:34 +0100
-Cc: linuxppc-dev@lists.ozlabs.org
-Message-Id: <71F58B2E-149D-41E4-A5BF-5A26E3491EA7@ozlabs.org>
-References: <74EBF461-0D94-4C2D-ABA7-0B9BE010F173@ozlabs.org>
- <877epw3fu2.fsf@concordia.ellerman.id.au>
- <C8B54188-179A-475D-B06A-A25426EF6932@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Bk3G2t1CzDrNC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 23:05:29 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id l27so3063319pfk.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 05:05:29 -0700 (PDT)
+Date: Thu, 29 Mar 2018 22:04:56 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 00/14] numa aware allocation for pacas, stacks, pagetables
+Message-ID: <20180329220456.026147ff@roar.ozlabs.ibm.com>
+In-Reply-To: <87in9f1k2j.fsf@concordia.ellerman.id.au>
+References: <20180213150824.27689-1-npiggin@gmail.com>
+ <87muzkdusj.fsf@concordia.ellerman.id.au>
+ <20180308120412.1cbe9ace@roar.ozlabs.ibm.com>
+ <87in9f1k2j.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,76 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Thu, 29 Mar 2018 17:18:12 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> On 28 Mar 2018, at 11:36, Matt Evans <matt@ozlabs.org> wrote:
->=20
-> Howdy Michael,
->=20
->> On 28 Mar 2018, at 06:54, Michael Ellerman <mpe@ellerman.id.au> =
-wrote:
->>=20
->> Matt Evans <matt@ozlabs.org> writes:
->>=20
->>> When using SIG_DBG_BRANCH_TRACING, MSR.BE is left enabled in the
->>> user context when single_step_exception() prepares the SIGTRAP
->>> delivery.  The resulting branch-trap-within-the-SIGTRAP-handler
->>> isn't healthy.
->>>=20
->>> Commit 2538c2d08f46141550a1e68819efa8fe31c6e3dc broke this, by
->>> replacing an MSR mask operation of ~(MSR_SE | MSR_BE) with a call
->>> to clear_single_step() which only clears MSR_SE.
->>>=20
->>> This patch adds a new helper, clear_br_trace(), which clears the
->>> debug trap before invoking the signal handler.  This helper is a
->>> NOP for BookE as SIG_DBG_BRANCH_TRACING isn't supported on BookE.
->>>=20
->>> Signed-off-by: Matt Evans <matt@ozlabs.org>
->>=20
->> Hi Matt!
->>=20
->> It seems we might not be regularly testing this code :}
->=20
-> I know, rite? ;-)
->=20
->> How did you hit/find the bug? And do you have a test case by any =
-chance?
->>=20
->> I found the test code at the bottom of:
->> https://lwn.net/Articles/114587/
->>=20
->> But it didn't immediately work.
->=20
-> I'm using this feature as part of a debug harness I wrote to log a =
-program=E2=80=99s control flow (to create a =E2=80=9Cknown good=E2=80=9D =
-pattern to compare a PPC interpreter against).  So at least the feature =
-has /one/ user.  ;-)
->=20
-> The symptoms of the bug are that if you use single-stepping you get a =
-sequence of SIGTRAPs representing each instruction completion (good), =
-but if you use branch tracing the process just dies with SIGTRAP (looks =
-like it=E2=80=99s never caught by the signal handler).  What=E2=80=99s =
-really happening is that there /is/ a signal delivered to the handler, =
-but (because branch tracing is left on) that then causes a second debug =
-exception from the handler itself, i.e. whilst SIGTRAP=E2=80=99s masked.
->=20
-> OK, let me have a dig to reduce my program to something very basic and =
-I=E2=80=99ll post something =E2=80=94 sorry, I should=E2=80=99ve got a =
-PoC ready before.  (I did start out inspired by that post you linked to, =
-but IIRC I don=E2=80=99t think it worked out of the box for me either.)
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> > On Wed, 07 Mar 2018 21:50:04 +1100
+> > Michael Ellerman <mpe@ellerman.id.au> wrote:  
+> >> Nicholas Piggin <npiggin@gmail.com> writes:  
+> >> > This series allows numa aware allocations for various early data
+> >> > structures for radix. Hash still has a bolted SLB limitation that
+> >> > prevents at least pacas and stacks from node-affine allocations.
+> >> >
+> >> > Fixed up a number of bugs, got pSeries working, added a couple more
+> >> > cases where page tables can be allocated node-local.    
+> >> 
+> >> Few problems in here:
+> >> 
+> >> FAILURE kernel-build-linux » powerpc,gcc_ubuntu_be,pmac32
+> >>   arch/powerpc/kernel/prom.c:748:2: error: implicit declaration of function 'allocate_paca_ptrs' [-Werror=implicit-function-declaration]
+> >> 
+> >> FAILURE kernel-build-linux » powerpc,gcc_ubuntu_le,powernv
+> >>   arch/powerpc/include/asm/paca.h:49:33: error: 'struct paca_struct' has no member named 'lppaca_ptr'
+> >>   arch/powerpc/include/asm/paca.h:49:33: error: 'struct paca_struct' has no member named 'lppaca_ptr'
+> >> 
+> >> Did I miss a follow-up or something?  
+> >
+> > Here's a patch that applies to "powerpc/64: defer paca allocation
+> > until memory topology is discovered". The first hunk fixes the ppc32
+> > issue, and the second hunk avoids freeing the cpu_to_phys_id array
+> > if the platform didn't allocate it. But I've just realized that
+> > should go into the previous patch (which is missing the
+> > memblock_free).
+> > --  
+> ...
+> > diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> > index 56f7a2b793e0..2ba05acc2973 100644
+> > --- a/arch/powerpc/kernel/setup-common.c
+> > +++ b/arch/powerpc/kernel/setup-common.c
+> > @@ -854,8 +854,10 @@ static void smp_setup_pacas(void)
+> >  		set_hard_smp_processor_id(cpu, cpu_to_phys_id[cpu]);
+> >  	}
+> >  
+> > -	memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
+> > -	cpu_to_phys_id = NULL;
+> > +	if (cpu_to_phys_id) {
+> > +		memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
+> > +		cpu_to_phys_id = NULL;
+> > +	}
+> >  }
+> >  #endif  
+>  
+> Where did you want that?
 
+Patch 8 should have
 
-I=E2=80=99ve put a simple SIG_DBG_BRANCH_TRACING test program here:
+	if (cpu_to_phys_id) {
+		memblock_free(__pa(cpu_to_phys_id), nr_cpu_ids * sizeof(u32));
+		cpu_to_phys_id = NULL;
+	}
 
-	http://ozlabs.org/~matt/files/sig_dbg_brtrace_test.c
+Right after its ight after the set_hard_smp_processor_id() loop. Patch 9
+moves it all to smp_setup_pacas plus the allocate_paca() call in the loop.
 
-It=E2=80=99s commented regarding expected output.  I=E2=80=99ve only =
-tested this on a G4 =E2=80=94 it should work on PPC64 too but the ISA =
-says support for branch tracing is optional for an implementation.  =
-I=E2=80=99d be interested in what POWERx does.  :)
+I think that makes sense.
 
-
-Cheers,
-
-
-Matt
+Thanks for fixing it all up, had a few rough edges.
