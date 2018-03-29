@@ -2,22 +2,21 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Bq4C1b3pzF0QC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 02:51:39 +1100 (AEDT)
-Date: Thu, 29 Mar 2018 17:51:16 +0200
-Message-ID: <20180329175116.Horde.jk-Ax19FyXhtLB_VgKxDAg9@messagerie.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BqKS3g9ZzDrcX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 03:03:08 +1100 (AEDT)
+Date: Thu, 29 Mar 2018 18:02:46 +0200
+Message-ID: <20180329180246.Horde.AZE7BIRE2MuhcbAJb5Gg0A3@messagerie.si.c-s.fr>
 From: LEROY Christophe <christophe.leroy@c-s.fr>
 To: Mathieu Malaterre <malat@debian.org>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras
  <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>, Michael Ellerman
  <mpe@ellerman.id.au>
-Subject: Re: [PATCH 11/19] powerpc/powermac: Move pmac_pfunc_base_install
- prototype to header file
+Subject: Re: [PATCH 15/19] powerpc: Add missing prototype
 References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-12-malat@debian.org>
- <fd5993b4-0b0a-3c65-65a8-b26445d0d440@c-s.fr>
- <CA+7wUsxtWCoE1rxP6e57MEfB_zjLUzTa36CD=TyZS4_DkrQ81Q@mail.gmail.com>
-In-Reply-To: <CA+7wUsxtWCoE1rxP6e57MEfB_zjLUzTa36CD=TyZS4_DkrQ81Q@mail.gmail.com>
+ <20180322202007.23088-16-malat@debian.org>
+ <bd4be06c-b5f5-2516-1c1d-d2b6d7861090@c-s.fr>
+ <CA+7wUsyRSSkwgpBodKkPjhUxiHy-t1q2Q7nsorfRoL=wfxgyFQ@mail.gmail.com>
+In-Reply-To: <CA+7wUsyRSSkwgpBodKkPjhUxiHy-t1q2Q7nsorfRoL=wfxgyFQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,74 +30,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Mathieu Malaterre <malat@debian.org> a =C3=A9crit=C2=A0:
 
-> On Fri, Mar 23, 2018 at 1:13 PM, christophe leroy
+> On Fri, Mar 23, 2018 at 1:20 PM, christophe leroy
 > <christophe.leroy@c-s.fr> wrote:
 >>
 >>
->> Le 22/03/2018 =C3=A0 21:19, Mathieu Malaterre a =C3=A9crit :
+>> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
 >>>
->>> The pmac_pfunc_base_install prototype was declared in powermac/smp.c si=
-nce
->>> function was used there, move it to pmac_pfunc.h header to be visible i=
-n
->>> pfunc_base.c. Fix a warning treated as error with W=3D1:
+>>> Add one missing prototype for function rh_dump_blk. Fix warning treated=
+ as
+>>> error in W=3D1:
 >>>
->>>    arch/powerpc/platforms/powermac/pfunc_base.c:330:12: error: no previ=
-ous
->>> prototype for =E2=80=98pmac_pfunc_base_install=E2=80=99 [-Werror=3Dmiss=
-ing-prototypes]
+>>>    arch/powerpc/lib/rheap.c:740:6: error: no previous prototype for
+>>> =E2=80=98rh_dump_blk=E2=80=99 [-Werror=3Dmissing-prototypes]
 >>>
 >>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
 >>> ---
->>>   arch/powerpc/include/asm/pmac_pfunc.h | 1 +
->>>   arch/powerpc/platforms/powermac/smp.c | 1 -
->>>   2 files changed, 1 insertion(+), 1 deletion(-)
+>>>   arch/powerpc/include/asm/rheap.h | 3 +++
+>>>   1 file changed, 3 insertions(+)
 >>>
->>> diff --git a/arch/powerpc/include/asm/pmac_pfunc.h
->>> b/arch/powerpc/include/asm/pmac_pfunc.h
->>> index 73bd8f28f2a8..99f7a288789a 100644
->>> --- a/arch/powerpc/include/asm/pmac_pfunc.h
->>> +++ b/arch/powerpc/include/asm/pmac_pfunc.h
->>> @@ -245,6 +245,7 @@ extern void pmf_put_function(struct pmf_function
->>> *func);
->>>     extern int pmf_call_one(struct pmf_function *func, struct pmf_args
->>> *args);
->>>   +extern int pmac_pfunc_base_install(void);
+>>> diff --git a/arch/powerpc/include/asm/rheap.h
+>>> b/arch/powerpc/include/asm/rheap.h
+>>> index 172381769cfc..e75d96de19a0 100644
+>>> --- a/arch/powerpc/include/asm/rheap.h
+>>> +++ b/arch/powerpc/include/asm/rheap.h
+>>> @@ -83,6 +83,9 @@ extern int rh_get_stats(rh_info_t * info, int what, i=
+nt
+>>> max_stats,
+>>>   /* Simple dump of remote heap info */
+>>>   extern void rh_dump(rh_info_t * info);
+>>>   +/* Simple dump of remote info block */
+>>> +extern void rh_dump_blk(rh_info_t *info, rh_block_t *blk);
+>>> +
 >>
 >>
->>
->> extern keyword is not needed
+>> Only used in one place, should be static
 >
-> I understand; but for consistency every single protoypes in this
-> header file actually use the extern keyword. Is there a guide/best
-> practice to refer to in this case ?
+> Well here is what I see over here:
+>
+> $ git grep rh_dump_blk
+> ...
+> arch/powerpc/lib/rheap.c:EXPORT_SYMBOL_GPL(rh_dump_blk);
 
-Consistancy is not a valid reason to continue bad practice. Every=20=20
-single=20modufication is an opportunity to clean things up
-
-You should run script/checkpatch.pl --strict on all your patches=20=20
-before=20submitting.
-And follow as much as possible the linux codying style
+If it was really used by anybody in a module, it would already be in a=20=
+=20
+.h=20so I think we should simply delete the function
 
 Christophe
 
 >
+>
+>
 >> Christophe
 >>
->>>     /* Suspend/resume code called by via-pmu directly for now */
->>>   extern void pmac_pfunc_base_suspend(void);
->>> diff --git a/arch/powerpc/platforms/powermac/smp.c
->>> b/arch/powerpc/platforms/powermac/smp.c
->>> index 95275e0e2efa..447da6db450a 100644
->>> --- a/arch/powerpc/platforms/powermac/smp.c
->>> +++ b/arch/powerpc/platforms/powermac/smp.c
->>> @@ -65,7 +65,6 @@
->>>   #endif
->>>     extern void __secondary_start_pmac_0(void);
->>> -extern int pmac_pfunc_base_install(void);
->>>     static void (*pmac_tb_freeze)(int freeze);
->>>   static u64 timebase;
+>>>   /* Set owner of taken block */
+>>>   extern int rh_set_owner(rh_info_t * info, unsigned long start, const
+>>> char *owner);
 >>>
+>>
 >>
 >> ---
 >> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
