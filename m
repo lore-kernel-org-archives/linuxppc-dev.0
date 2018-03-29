@@ -1,28 +1,23 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40BfP123XDzDrFR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 20:20:36 +1100 (AEDT)
-Date: Thu, 29 Mar 2018 10:20:47 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, David Miller <davem@davemloft.net>,
- paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-rdma@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linus971@gmail.com, alexander.duyck@gmail.com, okaya@codeaurora.org,
- jgg@ziepe.ca, David.Laight@aculab.com, oohall@gmail.com,
- netdev@vger.kernel.org, alexander.h.duyck@redhat.com,
- torvalds@linux-foundation.org
-Subject: Re: RFC on writel and writel_relaxed
-Message-ID: <20180329092046.GB22926@arm.com>
-References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
- <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
- <1522249996.21446.25.camel@kernel.crashing.org>
- <20180328.115509.481837809903086401.davem@davemloft.net>
- <20180329022324.037c3f39@roar.ozlabs.ibm.com>
- <1522272692.21446.42.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1522272692.21446.42.camel@kernel.crashing.org>
+Return-Path: <shea@shealevy.com>
+Received: from smtprelay.hostedemail.com (smtprelay0022.hostedemail.com
+ [216.40.44.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40BjL56GmXzDr4t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 22:33:16 +1100 (AEDT)
+From: Shea Levy <shea@shealevy.com>
+To: linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Cc: Shea Levy <shea@shealevy.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 14/16] powerpc: Switch to generic free_initrd_mem.
+Date: Thu, 29 Mar 2018 07:32:05 -0400
+Message-Id: <20180329113207.30674-14-shea@shealevy.com>
+In-Reply-To: <20180329113207.30674-1-shea@shealevy.com>
+References: <20180328203659.18692-1-shea@shealevy.com>
+ <20180329113207.30674-1-shea@shealevy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 29, 2018 at 08:31:32AM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-03-29 at 02:23 +1000, Nicholas Piggin wrote:
-> >   This is a variation on the mandatory write barrier that causes writes to weakly
-> >   ordered I/O regions to be partially ordered.  Its effects may go beyond the
-> >   CPU->Hardware interface and actually affect the hardware at some level.
-> > 
-> > How can a driver writer possibly get that right?
-> > 
-> > IIRC it was added for some big ia64 system that was really expensive
-> > to implement the proper wmb() semantics on. So wmb() semantics were
-> > quietly downgraded, then the subsequently broken drivers they cared
-> > about were fixed by adding the stronger mmiowb().
-> > 
-> > What should have happened was wmb and writel remained correct, sane, and
-> > expensive, and they add an mmio_wmb() to order MMIO stores made by the
-> > writel_relaxed accessors, then use that to speed up the few drivers they
-> > care about.
-> > 
-> > Now that ia64 doesn't matter too much, can we deprecate mmiowb and just
-> > make wmb ordering talk about stores to the device, not to some
-> > intermediate stage of the interconnect where it can be subsequently
-> > reordered wrt the device? Drivers can be converted back to using wmb
-> > or writel gradually.
-> 
-> I was under the impression that mmiowb was specifically about ordering
-> writel's with a subsequent spin_unlock, without it, MMIOs from
-> different CPUs (within the same lock) would still arrive OO.
-> 
-> If that's indeed the case, I would suggest ia64 switches to a similar
-> per-cpu flag trick powerpc uses.
+The generic implementation is functionally identical.
 
-... or we could remove ia64.
+Signed-off-by: Shea Levy <shea@shealevy.com>
+---
+ arch/powerpc/mm/mem.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-/me runs for cover
-
-Will
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index fe8c61149fb8..e85b2a3cd264 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -404,13 +404,6 @@ void free_initmem(void)
+ 	free_initmem_default(POISON_FREE_INITMEM);
+ }
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-void __init free_initrd_mem(unsigned long start, unsigned long end)
+-{
+-	free_reserved_area((void *)start, (void *)end, -1, "initrd");
+-}
+-#endif
+-
+ /*
+  * This is called when a page has been modified by the kernel.
+  * It just marks the page as not i-cache clean.  We do the i-cache
+-- 
+2.16.2
