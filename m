@@ -1,21 +1,45 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from wp227.webpack.hosteurope.de (wp227.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:84ea::])
- (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <kilobyte@angband.pl>
+Received: from tartarus.angband.pl (unknown [IPv6:2a03:9300:10::8])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CRCw6gkrzF1wf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 03:00:27 +1100 (AEDT)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.16: Reported regressions as of Friday, 2018-03-30
-To: Linus Torvalds <torvalds@linux-foundation.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CS4d1wPQzF1vc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 03:39:12 +1100 (AEDT)
+Date: Fri, 30 Mar 2018 17:54:51 +0200
+From: Adam Borowski <kilobyte@angband.pl>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-References: <CA+55aFxpxHnWBeTXN+DKqwCMW_=T2cR8UxSBVk_6c8LL7Et5JQ@mail.gmail.com>
-Message-ID: <e9425d62-0ca9-0de3-157f-9fd5310f5371@leemhuis.info>
-Date: Fri, 30 Mar 2018 18:00:20 +0200
+ Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
+ linux-mips <linux-mips@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Jiri Slaby <jslaby@suse.com>, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [RFC] new SYSCALL_DEFINE/COMPAT_SYSCALL_DEFINE wrappers
+Message-ID: <20180330155451.4rppf7iy2e3wzimh@angband.pl>
+References: <20180322001532.GA18399@ZenIV.linux.org.uk>
+ <20180326004017.GA2211@ZenIV.linux.org.uk>
+ <20180326034750.GN30522@ZenIV.linux.org.uk>
+ <CA+55aFw8VGnVgaWHVFP-LChMNaoANOwT18jJEWzSCRLFeRGcmA@mail.gmail.com>
+ <428751c8-6920-096b-8694-a3f1b8990bdf@physik.fu-berlin.de>
+ <CA+55aFwp-T-WFN95j7u5nn2BExxviJCx1-RgD3Mnu1AN_GYD3w@mail.gmail.com>
+ <8a8ee344-fb19-3ed9-f7dc-db63f703e6d3@physik.fu-berlin.de>
+ <CA+55aFzHL1L_SEt_xqmJBfRRngTm4qbQGwxFvqSXw-MD2BiAOQ@mail.gmail.com>
+ <7753539f-c72d-9e5a-eb2d-939e5514404b@physik.fu-berlin.de>
+ <20180330105802.7df5pacjfqsqwa6l@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFxpxHnWBeTXN+DKqwCMW_=T2cR8UxSBVk_6c8LL7Et5JQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="rubjl4urpbxgxvwa"
+In-Reply-To: <20180330105802.7df5pacjfqsqwa6l@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,95 +49,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26.03.2018 01:37, Linus Torvalds wrote:
-> […] Anyway. Go out and test. And let's hope next week is nice and calm and
-> I can release the final 4.16 next Sunday without any extra  rc's.
-> 
->                Linus
 
-Hi! Find below my seventh regression report for Linux 4.16; it's a "the
-final release is getting closer" special release. It lists 7 regressions
-I'm currently aware of. 1 was fixed since the report I sent on Tuesday;
-1 is new.
+--rubjl4urpbxgxvwa
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Are you aware of any other regressions that got introduced this
-development cycle? Then please let me know by mail (a simple bounce or
-forward to the sender of this email address is enough!). And please tell
-me if there is anything in the report that shouldn't be there.
+On Fri, Mar 30, 2018 at 12:58:02PM +0200, Ingo Molnar wrote:
+> * John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> wrote:
+>=20
+> > On 03/27/2018 12:40 PM, Linus Torvalds wrote:
+> > > On Mon, Mar 26, 2018 at 4:37 PM, John Paul Adrian Glaubitz
+> > > <glaubitz@physik.fu-berlin.de> wrote:
+> > >>
+> > >> What about a tarball with a minimal Debian x32 chroot? Then you can
+> > >> install interesting packages you would like to test yourself.
 
-Ciao, Thorsten
+> Here's the direct download link:
+>   $ wget https://people.debian.org/~glaubitz/chroots/debian-x32-unstable.=
+tar.gz
 
-== Current regressions ==
+> Seems to work fine here (on a distro kernel) even if I extract all the fi=
+les as a=20
+> non-root user and do:
+>=20
+>   ~/s/debian-x32-unstable> fakechroot /usr/sbin/chroot . /usr/bin/dpkg -l=
+  | tail -2
+>=20
+>   ERROR: ld.so: object 'libfakechroot.so' from LD_PRELOAD cannot be prelo=
+aded (cannot open shared object file): ignored.
+>   ii  util-linux:x32         2.31.1-0.5           x32          miscellane=
+ous system utilities
+>   ii  zlib1g:x32             1:1.2.8.dfsg-5       x32          compressio=
+n library - runtime
 
-Error updating SMART data during runtime and could not connect to lv
-["Possible Regression"]
-- Status: Stalled afaics
-- Reported: 2018-03-11
-https://marc.info/?l=linux-kernel&m=152075643627082
-https://bugzilla.kernel.org/show_bug.cgi?id=199077
-- Note: Two issues discussed in that thread; only one is a regression
-(latency issues in the MU03 version of the firmware, triggered by
-polling SMART data, which causes lvmetad to timeout in some cases)
-- Last known developer activity: 2018-03-19
-https://marc.info/?l=linux-kernel&m=152145306610330
-- Other relevant links:
-https://marc.info/?l=linux-kernel&m=152146297613525
-https://marc.info/?l=linux-scsi&m=152095303312164&w=2
+> So that 'dpkg' instance appears to be running inside the chroot environme=
+nt and is=20
+> listing x32 installed packages.
 
-15% longer running times on lvm2 test suite
-- Status: Stalled afaics
-- Cause:  https://git.kernel.org/torvalds/c/44c02a2c3dc5
-- Reported: 2018-03-11
-https://marc.info/?l=linux-kernel&m=152077333230274
-- Note: Seems the real problem is in the way the test scripts interact
-with the kernel
-- Last known developer activity: 2018-03-13
-https://marc.info/?l=linux-kernel&m=152097761921525
+> Although I did get this warning:
+>   ERROR: ld.so: object 'libfakechroot.so' from LD_PRELOAD cannot be prelo=
+aded (cannot open shared object file): ignored.
+> Even with that warning, is still still a sufficiently complex test of x32=
+ syscall=20
+> code paths?
 
-AMDGPU Fury X random screen flicker on Linux kernel 4.16rc5
-- Status: waiting for bisect
-- Reported: 2018-03-13
-https://bugzilla.kernel.org/show_bug.cgi?id=199101
+Instead of mucking with fakechroot which would require installing its :x32
+part inside the guest, or running the test as root, what about using any
+random static binary?  For example, a shell like sash or bash-static would
+have a decentish syscall coverage even by itself.
 
-ASUS XG-C100C 10G Network Adapter no longer working
-- Status: got driver maintainer involved who asked reporter for more details
-- Reported: 2018-03-22
-https://bugzilla.kernel.org/show_bug.cgi?id=199177
+I've extracted sash from
+http://ftp.ports.debian.org/debian-ports//pool-x32/main/s/sash/sash_3.8-4_x=
+32.deb
+and placed at https://angband.pl/tmp/sash.x32
 
-multi_v7_defconfig fails to boot on many OMAP systems
-- Status: patch available: "clk: ti: fix flag space conflict with
-clkctrl clocks" https://marc.info/?l=linux-arm-kernel&m=152217288709609&w=2
-- Cause:  https://git.kernel.org/torvalds/c/49159a9dc3da
-- Reported: 2018-03-23
-https://marc.info/?l=linux-clk&m=152198452423677&w=2
-- Last known developer activity: 2018-03-27
-https://marc.info/?l=linux-clk&m=152199237525182&w=2
+$ sha256sum sash.x32=20
+de24097c859b313fa422af742b648c9d731de6b33b98cb995658d1da16398456  sash.x32
 
-hugetlbfs overflow checking regression on 32bit
-- Status: patch was proposed, but has issues, too
-- Cause:  https://git.kernel.org/torvalds/c/63489f8e8211
-- Reported: 2018-03-29
-https://marc.info/?l=linux-kernel&m=152229704211382&w=2
-- Last known developer activity: 2018-03-29
-https://marc.info/?l=linux-mm&m=152235614429445&w=2
-- Other relevant links:
-https://marc.info/?l=linux-kernel&m=152229710411390&w=2
+Obviously, you can compile a static binary that uses whatever syscalls you
+want.  Without a native chroot, you can "gcc -mx32" although you'd need some
+kind of libc unless your program is stand-alone.
 
 
-== Waiting for clarification from reporter ==
+It might be worth mentioning my "arch-test:
+https://github.com/kilobyte/arch-test
+Because of many toolchain pieces it needs, you want a prebuilt copy:
+https://github.com/kilobyte/arch-test/releases/download/v0.10/arch-test_pre=
+built_0.10.tar.xz
+https://github.com/kilobyte/arch-test/releases/download/v0.10/arch-test_pre=
+built_0.10.tar.xz.asc
+-- while it has _extremely_ small coverage of syscalls (just write() and
+_exit(), enough to check endianness and pointer width), concentrating on
+instruction set inadequacies (broken SWP on arm, POWER7 vs POWER8, powerpc
+vs powerpcspe, etc), it provides minimal test binaries for a wide range of
+architectures.
 
-Interrupt storm after suspend causes one busy kworker
-- Status: Still waiting for data from reporter
-- Reported: 2018-02-25
-https://bugzilla.kernel.org/show_bug.cgi?id=198929
 
+Meow!
+--=20
+=E2=A2=80=E2=A3=B4=E2=A0=BE=E2=A0=BB=E2=A2=B6=E2=A3=A6=E2=A0=80
+=E2=A3=BE=E2=A0=81=E2=A2=B0=E2=A0=92=E2=A0=80=E2=A3=BF=E2=A1=81 I was born =
+a dumb, ugly and work-loving kid, then I got swapped on
+=E2=A2=BF=E2=A1=84=E2=A0=98=E2=A0=B7=E2=A0=9A=E2=A0=8B=E2=A0=80 the materni=
+ty ward.
+=E2=A0=88=E2=A0=B3=E2=A3=84=E2=A0=80=E2=A0=80=E2=A0=80=E2=A0=80
 
-== Fixed since last report ==
+--rubjl4urpbxgxvwa
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Dell R640 does not boot due to SCSI/SATA failure
-- Status: Fixed by 2f31115e940c 8b834bff1b73 adbe552349f2 c3506df85091
-b5b6e8c8d3b4
-- Cause:  https://git.kernel.org/torvalds/c/84676c1f21e8
-- Reported: 2018-02-22
-https://marc.info/?l=linux-kernel&m=151931128006031
-- Note: Thx Artem and Dsterba for pointers
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1EvJgtm22kuq1XITcZ3MgL7QB/kFAlq+XcsACgkQcZ3MgL7Q
+B/mYBRAAi4LT3AZExNjOZ6td+RWmTVjWPKGJeWViLzuBcVteXwZQnkidx395scxR
+jv8kVqCqAxmEMyTdUwBxPQYb1i9e0A9+oPLQCG/U18HN9/4Z5pfAWnv5qgI5xhpM
+wLebeo75Irgpg9V40C+7pJ3e6zYit22ehx8YCDqFbj0JXy1aGgcd5URJYFBmGC7S
+O2Cvjaehfg/V6gTJ+U/7mbtlxeWVxW94dXHVnV+K1Q9Wh+vQcfHVrp7XmQZPZTSh
+H5UqErkBPSX5K8zTYRyfQry87dZblsk4OXdcX8Jld7UBceymu6Cbt7I9CGMRUART
+030Y5YUPVKWHaoXkR9GqQOjzp7nauiUcPsekkh+Sym62BIUiXoY6dqKqJpgOuvCe
+vhOgTyaspRaT1HRQUQTRLEOGEjK/x9ULY9RaHAwBZunzkz5CS41jq9SHJCza8JL6
+ATx6BYhAo0Ulw0YHFxaKugEsiyo6HdEoqsH3IwwGMqvinYguQ76Q19zggjxRei3Z
+aa9bS6/6hGJhXiLHi9C35syrsddB/RcijZ6W8jVzrO8zTHUQPcrGAsB0yl+Jfn5s
+QD5zvQg1uO7756S6vfYapD6LWZ8pEczStkc1WmJN0cd6BJsgyd5sD5nELGqSCEW5
+DYSEmMre+Esljha61BC9FrWAjSxfbUYXa9IipzgB0L3N26s+Qbw=
+=nksn
+-----END PGP SIGNATURE-----
+
+--rubjl4urpbxgxvwa--
