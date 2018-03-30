@@ -1,19 +1,19 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CNRl2YmgzF1wq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 00:55:31 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id y63so5094257pgy.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 06:55:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CNRp36mYzF1xf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 00:55:34 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id y63so5094324pgy.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 06:55:34 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: npiggin@gmail.com, mpe@ellerman.id.au, mahesh@linux.vnet.ibm.com,
  oohall@gmail.com, Balbir Singh <bsingharora@gmail.com>
-Subject: [RFC 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
-Date: Sat, 31 Mar 2018 00:55:11 +1100
-Message-Id: <20180330135512.23760-3-bsingharora@gmail.com>
+Subject: [RFC 3/3] powerpc/mce: Handle memcpy_mcsafe
+Date: Sat, 31 Mar 2018 00:55:12 +1100
+Message-Id: <20180330135512.23760-4-bsingharora@gmail.com>
 In-Reply-To: <20180330135512.23760-1-bsingharora@gmail.com>
 References: <20180330135512.23760-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,268 +25,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pmem infrastructure uses memcpy_mcsafe in the pmem
-layer so as to convert machine check excpetions into
-a return value on failure in case a machine check
-exception is encoutered during the memcpy.
+Add a blocking notifier callback to be called in real-mode
+on machine check exceptions for UE (ld/st) errors only.
+The patch registers a callback on boot to be notified
+of machine check exceptions and returns a NOTIFY_STOP when
+a page of interest is seen as the source of the machine
+check exception. This page of interest is a ZONE_DEVICE
+page and hence for now, for memcpy_mcsafe to work, the page
+needs to belong to ZONE_DEVICE and memcpy_mcsafe should be
+used to access the memory.
 
-This patch largely borrows from the copyuser_power7
-logic and does not add the VMX optimizations, largely
-to keep the patch simple. If needed those optimizations
-can be folded in.
+The patch also modifies the NIP of the exception context
+to go back to the fixup handler (in memcpy_mcsafe) and does
+not print any error message as the error is treated as
+returned via a return value and handled.
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/include/asm/string.h   |   2 +
- arch/powerpc/lib/Makefile           |   2 +-
- arch/powerpc/lib/memcpy_mcsafe_64.S | 212 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 215 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/lib/memcpy_mcsafe_64.S
+ arch/powerpc/include/asm/mce.h |  3 +-
+ arch/powerpc/kernel/mce.c      | 77 ++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 77 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index 9b8cedf618f4..b7e872a64726 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -30,7 +30,9 @@ extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
- #ifdef CONFIG_PPC64
- #define __HAVE_ARCH_MEMSET32
- #define __HAVE_ARCH_MEMSET64
-+#define __HAVE_ARCH_MEMCPY_MCSAFE
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index 3a1226e9b465..a76638e3e47e 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -125,7 +125,8 @@ struct machine_check_event {
+ 			enum MCE_UeErrorType ue_error_type:8;
+ 			uint8_t		effective_address_provided;
+ 			uint8_t		physical_address_provided;
+-			uint8_t		reserved_1[5];
++			uint8_t		error_return;
++			uint8_t		reserved_1[4];
+ 			uint64_t	effective_address;
+ 			uint64_t	physical_address;
+ 			uint8_t		reserved_2[8];
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index efdd16a79075..b9e4881fa8c5 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -28,7 +28,9 @@
+ #include <linux/percpu.h>
+ #include <linux/export.h>
+ #include <linux/irq_work.h>
++#include <linux/extable.h>
  
-+extern int memcpy_mcsafe(void *dst, const void *src, __kernel_size_t sz);
- extern void *__memset16(uint16_t *, uint16_t v, __kernel_size_t);
- extern void *__memset32(uint32_t *, uint32_t v, __kernel_size_t);
- extern void *__memset64(uint64_t *, uint64_t v, __kernel_size_t);
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 3c29c9009bbf..048afee9f518 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -24,7 +24,7 @@ endif
++#include <asm/extable.h>
+ #include <asm/machdep.h>
+ #include <asm/mce.h>
  
- obj64-y	+= copypage_64.o copyuser_64.o mem_64.o hweight_64.o \
- 	   copyuser_power7.o string_64.o copypage_power7.o memcpy_power7.o \
--	   memcpy_64.o memcmp_64.o pmem.o
-+	   memcpy_64.o memcmp_64.o pmem.o memcpy_mcsafe_64.o
+@@ -54,6 +56,52 @@ static struct irq_work mce_event_process_work = {
  
- obj64-$(CONFIG_SMP)	+= locks.o
- obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
-diff --git a/arch/powerpc/lib/memcpy_mcsafe_64.S b/arch/powerpc/lib/memcpy_mcsafe_64.S
-new file mode 100644
-index 000000000000..e7eaa9b6cded
---- /dev/null
-+++ b/arch/powerpc/lib/memcpy_mcsafe_64.S
-@@ -0,0 +1,212 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) IBM Corporation, 2011
-+ * Derived from copyuser_power7.s by Anton Blanchard <anton@au.ibm.com>
-+ * Author - Balbir Singh <bsingharora@gmail.com>
-+ */
-+#include <asm/ppc_asm.h>
-+#include <asm/errno.h>
+ DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
+ 
++static BLOCKING_NOTIFIER_HEAD(mce_notifier_list);
 +
-+	.macro err1
-+100:
-+	EX_TABLE(100b,.Ldo_err1)
-+	.endm
++int register_mce_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&mce_notifier_list, nb);
++}
++EXPORT_SYMBOL_GPL(register_mce_notifier);
 +
-+	.macro err2
-+200:
-+	EX_TABLE(200b,.Ldo_err2)
-+	.endm
-+
-+.Ldo_err2:
-+	ld	r22,STK_REG(R22)(r1)
-+	ld	r21,STK_REG(R21)(r1)
-+	ld	r20,STK_REG(R20)(r1)
-+	ld	r19,STK_REG(R19)(r1)
-+	ld	r18,STK_REG(R18)(r1)
-+	ld	r17,STK_REG(R17)(r1)
-+	ld	r16,STK_REG(R16)(r1)
-+	ld	r15,STK_REG(R15)(r1)
-+	ld	r14,STK_REG(R14)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+.Ldo_err1:
-+	li	r3,-EFAULT
-+	blr
++int unregister_mce_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&mce_notifier_list, nb);
++}
++EXPORT_SYMBOL_GPL(unregister_mce_notifier);
 +
 +
-+_GLOBAL(memcpy_mcsafe)
-+	cmpldi	r5,16
-+	blt	.Lshort_copy
++static int check_memcpy_mcsafe(struct notifier_block *nb,
++			unsigned long val, void *data)
++{
++	/*
++	 * val contains the physical_address of the bad address
++	 */
++	unsigned long pfn = val >> PAGE_SHIFT;
++	struct page *page = realmode_pfn_to_page(pfn);
++	int rc = NOTIFY_DONE;
 +
-+.Lcopy:
-+	/* Get the source 8B aligned */
-+	neg	r6,r4
-+	mtocrf	0x01,r6
-+	clrldi	r6,r6,(64-3)
++	if (!page)
++		goto out;
 +
-+	bf	cr7*4+3,1f
-+err1;	lbz	r0,0(r4)
-+	addi	r4,r4,1
-+err1;	stb	r0,0(r3)
-+	addi	r3,r3,1
++	if (is_zone_device_page(page))	/* for HMM and PMEM */
++		rc = NOTIFY_STOP;
++out:
++	return rc;
++}
 +
-+1:	bf	cr7*4+2,2f
-+err1;	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+err1;	sth	r0,0(r3)
-+	addi	r3,r3,2
++struct notifier_block memcpy_mcsafe_nb = {
++	.priority = 0,
++	.notifier_call = check_memcpy_mcsafe,
++};
 +
-+2:	bf	cr7*4+1,3f
-+err1;	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+err1;	stw	r0,0(r3)
-+	addi	r3,r3,4
++int  mce_mcsafe_register(void)
++{
++	register_mce_notifier(&memcpy_mcsafe_nb);
++	return 0;
++}
++arch_initcall(mce_mcsafe_register);
 +
-+3:	sub	r5,r5,r6
-+	cmpldi	r5,128
-+	blt	5f
+ static void mce_set_error_info(struct machine_check_event *mce,
+ 			       struct mce_error_info *mce_err)
+ {
+@@ -151,9 +199,31 @@ void save_mce_event(struct pt_regs *regs, long handled,
+ 		mce->u.ue_error.effective_address_provided = true;
+ 		mce->u.ue_error.effective_address = addr;
+ 		if (phys_addr != ULONG_MAX) {
++			int rc;
++			const struct exception_table_entry *entry;
 +
-+	mflr	r0
-+	stdu	r1,-STACKFRAMESIZE(r1)
-+	std	r14,STK_REG(R14)(r1)
-+	std	r15,STK_REG(R15)(r1)
-+	std	r16,STK_REG(R16)(r1)
-+	std	r17,STK_REG(R17)(r1)
-+	std	r18,STK_REG(R18)(r1)
-+	std	r19,STK_REG(R19)(r1)
-+	std	r20,STK_REG(R20)(r1)
-+	std	r21,STK_REG(R21)(r1)
-+	std	r22,STK_REG(R22)(r1)
-+	std	r0,STACKFRAMESIZE+16(r1)
++			/*
++			 * Once we have the physical address, we check to
++			 * see if the current nip has a fixup entry.
++			 * Having a fixup entry plus the notifier stating
++			 * that it can handle the exception is an indication
++			 * that we should return to the fixup entry and
++			 * return an error from there
++			 */
+ 			mce->u.ue_error.physical_address_provided = true;
+ 			mce->u.ue_error.physical_address = phys_addr;
+-			machine_check_ue_event(mce);
 +
-+	srdi	r6,r5,7
-+	mtctr	r6
++			rc = blocking_notifier_call_chain(&mce_notifier_list,
++							phys_addr, NULL);
++			if (rc & NOTIFY_STOP_MASK) {
++				entry = search_exception_tables(regs->nip);
++				if (entry != NULL) {
++					mce->u.ue_error.error_return = 1;
++					regs->nip = extable_fixup(entry);
++				} else
++					machine_check_ue_event(mce);
++			} else
++				machine_check_ue_event(mce);
+ 		}
+ 	}
+ 	return;
+@@ -208,7 +278,6 @@ void release_mce_event(void)
+ 	get_mce_event(NULL, true);
+ }
+ 
+-
+ /*
+  * Queue up the MCE event which then can be handled later.
+  */
+@@ -239,6 +308,10 @@ void machine_check_queue_event(void)
+ 	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
+ 		return;
+ 
++	if (evt.error_type == MCE_ERROR_TYPE_UE &&
++			evt.u.ue_error.error_return == 1)
++		return;
 +
-+	/* Now do cacheline (128B) sized loads and stores. */
-+	.align	5
-+4:
-+err2;	ld	r0,0(r4)
-+err2;	ld	r6,8(r4)
-+err2;	ld	r7,16(r4)
-+err2;	ld	r8,24(r4)
-+err2;	ld	r9,32(r4)
-+err2;	ld	r10,40(r4)
-+err2;	ld	r11,48(r4)
-+err2;	ld	r12,56(r4)
-+err2;	ld	r14,64(r4)
-+err2;	ld	r15,72(r4)
-+err2;	ld	r16,80(r4)
-+err2;	ld	r17,88(r4)
-+err2;	ld	r18,96(r4)
-+err2;	ld	r19,104(r4)
-+err2;	ld	r20,112(r4)
-+err2;	ld	r21,120(r4)
-+	addi	r4,r4,128
-+err2;	std	r0,0(r3)
-+err2;	std	r6,8(r3)
-+err2;	std	r7,16(r3)
-+err2;	std	r8,24(r3)
-+err2;	std	r9,32(r3)
-+err2;	std	r10,40(r3)
-+err2;	std	r11,48(r3)
-+err2;	std	r12,56(r3)
-+err2;	std	r14,64(r3)
-+err2;	std	r15,72(r3)
-+err2;	std	r16,80(r3)
-+err2;	std	r17,88(r3)
-+err2;	std	r18,96(r3)
-+err2;	std	r19,104(r3)
-+err2;	std	r20,112(r3)
-+err2;	std	r21,120(r3)
-+	addi	r3,r3,128
-+	bdnz	4b
-+
-+	clrldi	r5,r5,(64-7)
-+
-+	ld	r14,STK_REG(R14)(r1)
-+	ld	r15,STK_REG(R15)(r1)
-+	ld	r16,STK_REG(R16)(r1)
-+	ld	r17,STK_REG(R17)(r1)
-+	ld	r18,STK_REG(R18)(r1)
-+	ld	r19,STK_REG(R19)(r1)
-+	ld	r20,STK_REG(R20)(r1)
-+	ld	r21,STK_REG(R21)(r1)
-+	ld	r22,STK_REG(R22)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+
-+	/* Up to 127B to go */
-+5:	srdi	r6,r5,4
-+	mtocrf	0x01,r6
-+
-+6:	bf	cr7*4+1,7f
-+err1;	ld	r0,0(r4)
-+err1;	ld	r6,8(r4)
-+err1;	ld	r7,16(r4)
-+err1;	ld	r8,24(r4)
-+err1;	ld	r9,32(r4)
-+err1;	ld	r10,40(r4)
-+err1;	ld	r11,48(r4)
-+err1;	ld	r12,56(r4)
-+	addi	r4,r4,64
-+err1;	std	r0,0(r3)
-+err1;	std	r6,8(r3)
-+err1;	std	r7,16(r3)
-+err1;	std	r8,24(r3)
-+err1;	std	r9,32(r3)
-+err1;	std	r10,40(r3)
-+err1;	std	r11,48(r3)
-+err1;	std	r12,56(r3)
-+	addi	r3,r3,64
-+
-+	/* Up to 63B to go */
-+7:	bf	cr7*4+2,8f
-+err1;	ld	r0,0(r4)
-+err1;	ld	r6,8(r4)
-+err1;	ld	r7,16(r4)
-+err1;	ld	r8,24(r4)
-+	addi	r4,r4,32
-+err1;	std	r0,0(r3)
-+err1;	std	r6,8(r3)
-+err1;	std	r7,16(r3)
-+err1;	std	r8,24(r3)
-+	addi	r3,r3,32
-+
-+	/* Up to 31B to go */
-+8:	bf	cr7*4+3,9f
-+err1;	ld	r0,0(r4)
-+err1;	ld	r6,8(r4)
-+	addi	r4,r4,16
-+err1;	std	r0,0(r3)
-+err1;	std	r6,8(r3)
-+	addi	r3,r3,16
-+
-+9:	clrldi	r5,r5,(64-4)
-+
-+	/* Up to 15B to go */
-+.Lshort_copy:
-+	mtocrf	0x01,r5
-+	bf	cr7*4+0,12f
-+err1;	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+err1;	lwz	r6,4(r4)
-+	addi	r4,r4,8
-+err1;	stw	r0,0(r3)
-+err1;	stw	r6,4(r3)
-+	addi	r3,r3,8
-+
-+12:	bf	cr7*4+1,13f
-+err1;	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+err1;	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+13:	bf	cr7*4+2,14f
-+err1;	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+err1;	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+14:	bf	cr7*4+3,15f
-+err1;	lbz	r0,0(r4)
-+err1;	stb	r0,0(r3)
-+
-+15:	li	r3,0
-+	blr
+ 	index = __this_cpu_inc_return(mce_queue_count) - 1;
+ 	/* If queue is full, just return for now. */
+ 	if (index >= MAX_MC_EVT) {
 -- 
 2.13.6
