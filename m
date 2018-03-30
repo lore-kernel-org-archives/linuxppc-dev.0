@@ -3,29 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CKqs3ZqNzF1rw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 22:57:38 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CKzR5vQ6zF1sc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 23:04:19 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2UBs1W5128762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 07:57:36 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h1jx749e7-1
+ w2UC39Xp125237
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 08:04:17 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h1hrvqd84-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 07:57:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 08:04:17 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 30 Mar 2018 05:57:35 -0600
+ Fri, 30 Mar 2018 08:04:16 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH] powerpc/kvm: Fix guest boot issue DAWR cpu feature
-Date: Fri, 30 Mar 2018 17:27:24 +0530
-Message-Id: <20180330115724.23826-1-aneesh.kumar@linux.ibm.com>
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V3] powerpc/mm/hugetlb: initialize the pagetable cache
+ correctly for hugetlb
+Date: Fri, 30 Mar 2018 17:34:08 +0530
+Message-Id: <20180330120408.25036-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SLOF check the 'sc 1' support by issuing a hcall with H_SET_DABR. With
-recent patch to make the hcall return H_UNSUPPORTED, we get guest boot
-failures. SLOF can work with the hcall failure H_HARDWARE for the above
-hcall. Switch the return value to H_HARDWARE instead of H_UNSUPPORTED so that
-we don't break the guest boot.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Fixes: e8ebedbf ("KVM: PPC: Book3S HV: Return error from h_set_dabr() on POWER9")
+With 64k page size, we have hugetlb pte entries at the pmd and pud level for
+book3s64. We don't need to create a separate page table cache for that. With 4k
+we need to make sure hugepd page table cache for 16M is placed at PUD level
+and 16G at the PGD level.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Simplify all these by not using HUGEPD_PD_SHIFT which is confusing for book3s64.
+
+Without this patch, with 64k page size we create pagetable caches with shift
+value 10 and 7 which are not used at all.
+
+Fixes: 419df06eea5b ("powerpc: Reduce the PTE_INDEX_SIZE")
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/hugetlbpage.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index c4c1b169826a..fdd7350d6c87 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2576,7 +2576,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 2:
- BEGIN_FTR_SECTION
- 	/* POWER9 with disabled DAWR */
--	li	r3, H_UNSUPPORTED
-+	li	r3, H_HARDWARE
- 	blr
- END_FTR_SECTION_IFCLR(CPU_FTR_DAWR)
- 	/* Emulate H_SET_DABR/X on P8 for the sake of compat mode guests */
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index f4153f21d214..99cf86096970 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -122,9 +122,6 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
+ #define HUGEPD_PGD_SHIFT PGDIR_SHIFT
+ #define HUGEPD_PUD_SHIFT PUD_SHIFT
+-#else
+-#define HUGEPD_PGD_SHIFT PUD_SHIFT
+-#define HUGEPD_PUD_SHIFT PMD_SHIFT
+ #endif
+ 
+ /*
+@@ -670,15 +667,26 @@ static int __init hugetlbpage_init(void)
+ 
+ 		shift = mmu_psize_to_shift(psize);
+ 
+-		if (add_huge_page_size(1ULL << shift) < 0)
++#ifdef CONFIG_PPC_BOOK3S_64
++		if (shift > PGDIR_SHIFT)
+ 			continue;
+-
++		else if (shift > PUD_SHIFT)
++			pdshift = PGDIR_SHIFT;
++		else if (shift > PMD_SHIFT)
++			pdshift = PUD_SHIFT;
++		else
++			pdshift = PMD_SHIFT;
++#else
+ 		if (shift < HUGEPD_PUD_SHIFT)
+ 			pdshift = PMD_SHIFT;
+ 		else if (shift < HUGEPD_PGD_SHIFT)
+ 			pdshift = PUD_SHIFT;
+ 		else
+ 			pdshift = PGDIR_SHIFT;
++#endif
++
++		if (add_huge_page_size(1ULL << shift) < 0)
++			continue;
+ 		/*
+ 		 * if we have pdshift and shift value same, we don't
+ 		 * use pgt cache for hugepd.
 -- 
 2.14.3
