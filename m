@@ -1,22 +1,28 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40C3dX4FZRzF1Yx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 12:17:52 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id t16so4435576pfh.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Mar 2018 18:17:52 -0700 (PDT)
-From: Pingfan Liu <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: paulus@ozlabs.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
- hbathini@linux.vnet.ibm.com
-Subject: [PATCH 2/2] powerpc/cpuidle: dynamically register/unregister
- cpuidle_device during hotplug
-Date: Fri, 30 Mar 2018 09:17:37 +0800
-Message-Id: <1522372657-27490-2-git-send-email-kernelfans@gmail.com>
-In-Reply-To: <1522372657-27490-1-git-send-email-kernelfans@gmail.com>
-References: <1522372657-27490-1-git-send-email-kernelfans@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40C48Q0q7wzF1c3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 12:41:09 +1100 (AEDT)
+Message-ID: <1522374027.21446.64.camel@kernel.crashing.org>
+Subject: Re: RFC on writel and writel_relaxed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sinan Kaya <okaya@codeaurora.org>, David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, alexander.duyck@gmail.com,
+ will.deacon@arm.com, arnd@arndb.de, jgg@ziepe.ca,
+ David.Laight@aculab.com, oohall@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-rdma@vger.kernel.org,
+ alexander.h.duyck@redhat.com, paulmck@linux.vnet.ibm.com,
+ netdev@vger.kernel.org, linus971@gmail.com
+Date: Fri, 30 Mar 2018 12:40:27 +1100
+In-Reply-To: <29fe17e0-9978-dc43-d02c-de8fabdc66c2@codeaurora.org>
+References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
+ <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
+ <1522249996.21446.25.camel@kernel.crashing.org>
+ <20180328.115509.481837809903086401.davem@davemloft.net>
+ <29fe17e0-9978-dc43-d02c-de8fabdc66c2@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now for pseries, ../cpu/cpuX is created and deleted dynamically.
-Hence cpuX/cpuidle should be created and deleted dynamically.
-For powernv, it is harmless to use the same method.
+On Thu, 2018-03-29 at 09:56 -0400, Sinan Kaya wrote:
+> On 3/28/2018 11:55 AM, David Miller wrote:
+> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Date: Thu, 29 Mar 2018 02:13:16 +1100
+> > 
+> > > Let's fix all archs, it's way easier than fixing all drivers. Half of
+> > > the archs are unused or dead anyway.
+> > 
+> > Agreed.
+> > 
+> 
+> I pinged most of the maintainers yesterday.
+> Which arches do we care about these days?
+> I have not been paying attention any other architecture besides arm64.
 
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 2 ++
- drivers/cpuidle/cpuidle-pseries.c | 2 ++
- 2 files changed, 4 insertions(+)
+Thanks for going through that exercise !
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 1a8234e..962c944 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -144,6 +144,7 @@ static int powernv_cpuidle_cpu_online(unsigned int cpu)
- 	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
+Once sparc, s390, microblaze and mips reply, I think we'll have a good
+coverage, maybe riscv is to put in that lot too.
  
- 	if (dev && cpuidle_get_driver()) {
-+		cpuidle_register_device(dev);
- 		cpuidle_pause_and_lock();
- 		cpuidle_enable_device(dev);
- 		cpuidle_resume_and_unlock();
-@@ -159,6 +160,7 @@ static int powernv_cpuidle_cpu_dead(unsigned int cpu)
- 		cpuidle_pause_and_lock();
- 		cpuidle_disable_device(dev);
- 		cpuidle_resume_and_unlock();
-+		cpuidle_unregister_device(dev);
- 	}
- 	return 0;
- }
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 9e56bc4..a53be8a 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -193,6 +193,7 @@ static int pseries_cpuidle_cpu_online(unsigned int cpu)
- 	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
- 
- 	if (dev && cpuidle_get_driver()) {
-+		cpuidle_register_device(dev);
- 		cpuidle_pause_and_lock();
- 		cpuidle_enable_device(dev);
- 		cpuidle_resume_and_unlock();
-@@ -208,6 +209,7 @@ static int pseries_cpuidle_cpu_dead(unsigned int cpu)
- 		cpuidle_pause_and_lock();
- 		cpuidle_disable_device(dev);
- 		cpuidle_resume_and_unlock();
-+		cpuidle_unregister_device(dev);
- 	}
- 	return 0;
- }
--- 
-2.7.4
+Cheers,
+Ben.
+
+> 
+> arch		status			detail
+> ------		-------------		------------------------------------
+> alpha		question sent
+> arc		question sent		ysato@users.sourceforge.jp will fix it.
+> arm		no issues
+> arm64		no issues
+> blackfin	question sent		about to be removed
+> c6x		question sent
+> cris		question sent
+> frv
+> h8300		question sent
+> hexagon		question sent
+> ia64		no issues		confirmed by Tony Luck
+> m32r
+> m68k		question sent
+> metag
+> microblaze	question sent
+> mips		question sent
+> mn10300		question sent
+> nios2		question sent
+> openrisc	no issues		shorne@gmail.com says should no issues
+> parisc		no issues		grantgrundler@gmail.com says most probably no problem but still looking
+> powerpc		no issues
+> riscv		question sent
+> s390		question sent
+> score		question sent
+> sh		question sent
+> sparc		question sent
+> tile		question sent
+> unicore32	question sent
+> x86		no issues
+> xtensa		question sent
+> 
+> 
