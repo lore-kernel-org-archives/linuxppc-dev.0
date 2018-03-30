@@ -1,23 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <colin.king@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CQ3d0ZXvzF1t3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 02:08:12 +1100 (AEDT)
-Date: Fri, 30 Mar 2018 17:07:46 +0200
-Message-ID: <20180330170746.Horde.NVPhcnYSIfUXJm-KY0wMEw5@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- benh@kernel.crashing.org, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/mm/hash: Move the slb_addr_limit check within
- PPC_MM_SLICES
-References: <20180307121539.20745-1-aneesh.kumar@linux.vnet.ibm.com>
- <87a7upzqpo.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87a7upzqpo.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CR6x2gdSzDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 02:56:06 +1100 (AEDT)
+From: Colin King <colin.king@canonical.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: fix spelling mistake: "Usupported" -> "Unsupported"
+Date: Fri, 30 Mar 2018 16:55:53 +0100
+Message-Id: <20180330155553.7170-1-colin.king@canonical.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
+From: Colin Ian King <colin.king@canonical.com>
 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->
->> Should not have any impact, because we always select PP_MM_SLICES=20=20
->>=20these days.
->> Nevertheless it is good to indicate that slb_addr_limit is available onl=
-y
->> with slice code.
->
-> That file can only be built if PPC_MM_SLICES=3Dy.
->
-> So let's just remove the ifdef entirely.
->
-> These days PPC_MM_SLICES =3D=3D PPC_BOOK3S_64, so we should remove
-> PPC_MM_SLICES #defines wherever possible and replace them with
-> PPC_BOOK3S_64 otherwise IMO.
+Trivial fix to spelling mistake in bootx_printf message text
 
-PPC8xx also selects PPC_MM_SLICES when hugepages is selected.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ arch/powerpc/platforms/powermac/bootx_init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Christophe
-
->
-> cheers
->
->> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
->> index c66cb06e73a1..337ef162851d 100644
->> --- a/arch/powerpc/mm/slb_low.S
->> +++ b/arch/powerpc/mm/slb_low.S
->> @@ -166,6 +166,8 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->>  	 */
->>  	cmpdi	r9, 0
->>  	bne-	8f
->> +
->> +#ifdef CONFIG_PPC_MM_SLICES
->>          /*
->>           * user space make sure we are within the allowed limit
->>  	 */
->> @@ -183,7 +185,6 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->>  	 * really do dynamic patching unfortunately as processes might flip
->>  	 * between 4k and 64k standard page size
->>  	 */
->> -#ifdef CONFIG_PPC_MM_SLICES
->>  	/* r10 have esid */
->>  	cmpldi	r10,16
->>  	/* below SLICE_LOW_TOP */
->> --
->> 2.14.3
+diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
+index c3c9bbb3573a..ca60f3ef7ef6 100644
+--- a/arch/powerpc/platforms/powermac/bootx_init.c
++++ b/arch/powerpc/platforms/powermac/bootx_init.c
+@@ -519,7 +519,7 @@ void __init bootx_init(unsigned long r3, unsigned long r4)
+ 			;
+ 	}
+ 	if (bi->architecture != BOOT_ARCH_PCI) {
+-		bootx_printf(" !!! WARNING - Usupported machine"
++		bootx_printf(" !!! WARNING - Unsupported machine"
+ 			     " architecture !\n");
+ 		for (;;)
+ 			;
+-- 
+2.15.1
