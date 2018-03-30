@@ -1,21 +1,47 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by lists.ozlabs.org (Postfix) with ESMTP id 40CJwQ4NV1zF1pS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 22:16:37 +1100 (AEDT)
-Date: Fri, 30 Mar 2018 08:27:52 +0200
-From: Simon Horman <horms@verge.net.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
- Dave Young <dyoung@redhat.com>
-Subject: Re: [PATCH] powerpc: kexec_file: Fix error code when trying to load
- kdump kernel
-Message-ID: <20180330062751.q6p5ofb5ia3auj7e@verge.net.au>
-References: <20180329190543.25118-1-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180329190543.25118-1-bauerman@linux.vnet.ibm.com>
+Return-Path: <blackzert@gmail.com>
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CG4516rnzF1qK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 20:08:04 +1100 (AEDT)
+Received: by mail-lf0-x243.google.com with SMTP id v207-v6so11786104lfa.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 02:08:04 -0700 (PDT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 11.2 \(3445.5.20\))
+Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
+From: Ilya Smith <blackzert@gmail.com>
+In-Reply-To: <20180330075508.GA21798@amd>
+Date: Fri, 30 Mar 2018 12:07:58 +0300
+Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
+ vgupta@synopsys.com, linux@armlinux.org.uk, tony.luck@intel.com,
+ fenghua.yu@intel.com, jhogan@kernel.org, ralf@linux-mips.org,
+ jejb@parisc-linux.org, Helge Deller <deller@gmx.de>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ nyc@holomorphy.com, viro@zeniv.linux.org.uk, arnd@arndb.de,
+ gregkh@linuxfoundation.org, deepa.kernel@gmail.com,
+ Michal Hocko <mhocko@suse.com>, hughd@google.com,
+ kstewart@linuxfoundation.org, pombredanne@nexb.com,
+ akpm@linux-foundation.org, steve.capper@arm.com, punit.agrawal@arm.com,
+ paul.burton@mips.com, aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com,
+ keescook@chromium.org, bhsharma@redhat.com, riel@redhat.com,
+ nitin.m.gupta@oracle.com, kirill.shutemov@linux.intel.com,
+ dan.j.williams@intel.com, jack@suse.cz, ross.zwisler@linux.intel.com,
+ jglisse@redhat.com, willy@infradead.org, aarcange@redhat.com,
+ oleg@redhat.com, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+Message-Id: <95EECC28-7349-4FB4-88BF-26E4CF087A0B@gmail.com>
+References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
+ <20180330075508.GA21798@amd>
+To: Pavel Machek <pavel@ucw.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +51,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 29, 2018 at 04:05:43PM -0300, Thiago Jung Bauermann wrote:
-> kexec_file_load() on powerpc doesn't support kdump kernels yet, so it
-> returns -ENOTSUPP in that case.
-> 
-> I've recently learned that this errno is internal to the kernel and isn't
-> supposed to be exposed to userspace. Therefore, change to -EOPNOTSUPP which
-> is defined in an uapi header.
-> 
-> This does indeed make kexec-tools happier. Before the patch, on ppc64le:
-> 
->   # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
->   kexec_file_load failed: Unknown error 524
-> 
-> After the patch:
-> 
->   # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
->   kexec_file_load failed: Operation not supported
-> 
-> Fixes: a0458284f062 ("powerpc: Add support code for kexec_file_load()")
-> Reported-by: Dave Young <dyoung@redhat.com>
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Hi
 
-Reviewed-by: Simon Horman <horms@verge.net.au>
+> On 30 Mar 2018, at 10:55, Pavel Machek <pavel@ucw.cz> wrote:
+>=20
+> Hi!
+>=20
+>> Current implementation doesn't randomize address returned by mmap.
+>> All the entropy ends with choosing mmap_base_addr at the process
+>> creation. After that mmap build very predictable layout of address
+>> space. It allows to bypass ASLR in many cases. This patch make
+>> randomization of address on any mmap call.
+>=20
+> How will this interact with people debugging their application, and
+> getting different behaviours based on memory layout?
+>=20
+> strace, strace again, get different results?
+>=20
+
+Honestly I=E2=80=99m confused about your question. If the only one way =
+for debugging=20
+application is to use predictable mmap behaviour, then something went =
+wrong in=20
+this live and we should stop using computers at all.
+
+Thanks,
+Ilya
