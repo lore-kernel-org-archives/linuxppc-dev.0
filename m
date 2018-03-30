@@ -1,28 +1,31 @@
 Return-Path: <prvs=0627bbde4d=mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CT9g31mWzF1w0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 04:28:35 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w2UHPD1r052602
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 13:28:33 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h1s32h912-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CT9j3QSJzF1y0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 04:28:38 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w2UHQNCk134921
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 13:28:35 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h1qurcfgr-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 13:28:32 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 13:28:35 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Fri, 30 Mar 2018 13:28:32 -0400
+ Fri, 30 Mar 2018 13:28:34 -0400
 From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc: Move default security feature flags
-Date: Fri, 30 Mar 2018 14:28:24 -0300
-Message-Id: <1522430905-32131-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/pseries: Restore default security feature flags
+ on setup
+Date: Fri, 30 Mar 2018 14:28:25 -0300
+In-Reply-To: <1522430905-32131-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+References: <1522430905-32131-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+Message-Id: <1522430905-32131-2-git-send-email-mauricfo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,51 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the definition of the default security feature flags
-(i.e., enabled by default) closer to the security feature flags.
+After migration the security feature flags might have changed (e.g.,
+destination system with unpatched firmware), but some flags are not
+set/clear again in init_cpu_char_feature_flags() because it assumes
+the security flags to be the defaults.
 
-This can be used to restore current flags to the default flags.
+Additionally, if the H_GET_CPU_CHARACTERISTICS hypercall fails then
+init_cpu_char_feature_flags() does not run again, which potentially
+might leave the system in an insecure or sub-optimal configuration.
 
+So, just restore the security feature flags to the defaults assumed
+by init_cpu_char_feature_flags() so it can set/clear them correctly,
+and to ensure safe settings are in place in case the hypercall fail.
+
+Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/security_features.h | 8 ++++++++
- arch/powerpc/kernel/security.c               | 7 +------
- 2 files changed, 9 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
-index 400a905..fa4d2e1 100644
---- a/arch/powerpc/include/asm/security_features.h
-+++ b/arch/powerpc/include/asm/security_features.h
-@@ -63,4 +63,12 @@ static inline bool security_ftr_enabled(unsigned long feature)
- // Firmware configuration indicates user favours security over performance
- #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index b11564f..2581fc8 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -462,6 +462,10 @@ static void __init find_and_init_phbs(void)
  
-+
-+// Features enabled by default
-+#define SEC_FTR_DEFAULT \
-+	(SEC_FTR_L1D_FLUSH_HV | \
-+	 SEC_FTR_L1D_FLUSH_PR | \
-+	 SEC_FTR_BNDS_CHK_SPEC_BAR | \
-+	 SEC_FTR_FAVOUR_SECURITY)
-+
- #endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 2cee3dc..bab5a27 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -11,12 +11,7 @@
- #include <asm/security_features.h>
- 
- 
--unsigned long powerpc_security_features __read_mostly = \
--	SEC_FTR_L1D_FLUSH_HV | \
--	SEC_FTR_L1D_FLUSH_PR | \
--	SEC_FTR_BNDS_CHK_SPEC_BAR | \
--	SEC_FTR_FAVOUR_SECURITY;
--
-+unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
- 
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
  {
++	/*
++	 * The features below are disabled by default, so we instead look to see
++	 * if firmware has *enabled* them, and set them if so.
++	 */
+ 	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
+ 		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
+ 
+@@ -501,6 +505,13 @@ void pseries_setup_rfi_flush(void)
+ 	bool enable;
+ 	long rc;
+ 
++	/*
++	 * Set features to the defaults assumed by init_cpu_char_feature_flags()
++	 * so it can set/clear again any features that might have changed after
++	 * migration, and in case the hypercall fails and it is not even called.
++	 */
++	powerpc_security_features = SEC_FTR_DEFAULT;
++
+ 	rc = plpar_get_cpu_characteristics(&result);
+ 	if (rc == H_SUCCESS)
+ 		init_cpu_char_feature_flags(&result);
 -- 
 1.8.3.1
