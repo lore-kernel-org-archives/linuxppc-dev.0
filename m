@@ -1,21 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CNRp36mYzF1xf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 00:55:34 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id y63so5094324pgy.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Mar 2018 06:55:34 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, mpe@ellerman.id.au, mahesh@linux.vnet.ibm.com,
- oohall@gmail.com, Balbir Singh <bsingharora@gmail.com>
-Subject: [RFC 3/3] powerpc/mce: Handle memcpy_mcsafe
-Date: Sat, 31 Mar 2018 00:55:12 +1100
-Message-Id: <20180330135512.23760-4-bsingharora@gmail.com>
-In-Reply-To: <20180330135512.23760-1-bsingharora@gmail.com>
-References: <20180330135512.23760-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CQ3d0ZXvzF1t3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 02:08:12 +1100 (AEDT)
+Date: Fri, 30 Mar 2018 17:07:46 +0200
+Message-ID: <20180330170746.Horde.NVPhcnYSIfUXJm-KY0wMEw5@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ benh@kernel.crashing.org, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mm/hash: Move the slb_addr_limit check within
+ PPC_MM_SLICES
+References: <20180307121539.20745-1-aneesh.kumar@linux.vnet.ibm.com>
+ <87a7upzqpo.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87a7upzqpo.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,159 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a blocking notifier callback to be called in real-mode
-on machine check exceptions for UE (ld/st) errors only.
-The patch registers a callback on boot to be notified
-of machine check exceptions and returns a NOTIFY_STOP when
-a page of interest is seen as the source of the machine
-check exception. This page of interest is a ZONE_DEVICE
-page and hence for now, for memcpy_mcsafe to work, the page
-needs to belong to ZONE_DEVICE and memcpy_mcsafe should be
-used to access the memory.
+Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
 
-The patch also modifies the NIP of the exception context
-to go back to the fixup handler (in memcpy_mcsafe) and does
-not print any error message as the error is treated as
-returned via a return value and handled.
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+>
+>> Should not have any impact, because we always select PP_MM_SLICES=20=20
+>>=20these days.
+>> Nevertheless it is good to indicate that slb_addr_limit is available onl=
+y
+>> with slice code.
+>
+> That file can only be built if PPC_MM_SLICES=3Dy.
+>
+> So let's just remove the ifdef entirely.
+>
+> These days PPC_MM_SLICES =3D=3D PPC_BOOK3S_64, so we should remove
+> PPC_MM_SLICES #defines wherever possible and replace them with
+> PPC_BOOK3S_64 otherwise IMO.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/include/asm/mce.h |  3 +-
- arch/powerpc/kernel/mce.c      | 77 ++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 77 insertions(+), 3 deletions(-)
+PPC8xx also selects PPC_MM_SLICES when hugepages is selected.
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 3a1226e9b465..a76638e3e47e 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -125,7 +125,8 @@ struct machine_check_event {
- 			enum MCE_UeErrorType ue_error_type:8;
- 			uint8_t		effective_address_provided;
- 			uint8_t		physical_address_provided;
--			uint8_t		reserved_1[5];
-+			uint8_t		error_return;
-+			uint8_t		reserved_1[4];
- 			uint64_t	effective_address;
- 			uint64_t	physical_address;
- 			uint8_t		reserved_2[8];
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index efdd16a79075..b9e4881fa8c5 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -28,7 +28,9 @@
- #include <linux/percpu.h>
- #include <linux/export.h>
- #include <linux/irq_work.h>
-+#include <linux/extable.h>
- 
-+#include <asm/extable.h>
- #include <asm/machdep.h>
- #include <asm/mce.h>
- 
-@@ -54,6 +56,52 @@ static struct irq_work mce_event_process_work = {
- 
- DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
- 
-+static BLOCKING_NOTIFIER_HEAD(mce_notifier_list);
-+
-+int register_mce_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&mce_notifier_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(register_mce_notifier);
-+
-+int unregister_mce_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_unregister(&mce_notifier_list, nb);
-+}
-+EXPORT_SYMBOL_GPL(unregister_mce_notifier);
-+
-+
-+static int check_memcpy_mcsafe(struct notifier_block *nb,
-+			unsigned long val, void *data)
-+{
-+	/*
-+	 * val contains the physical_address of the bad address
-+	 */
-+	unsigned long pfn = val >> PAGE_SHIFT;
-+	struct page *page = realmode_pfn_to_page(pfn);
-+	int rc = NOTIFY_DONE;
-+
-+	if (!page)
-+		goto out;
-+
-+	if (is_zone_device_page(page))	/* for HMM and PMEM */
-+		rc = NOTIFY_STOP;
-+out:
-+	return rc;
-+}
-+
-+struct notifier_block memcpy_mcsafe_nb = {
-+	.priority = 0,
-+	.notifier_call = check_memcpy_mcsafe,
-+};
-+
-+int  mce_mcsafe_register(void)
-+{
-+	register_mce_notifier(&memcpy_mcsafe_nb);
-+	return 0;
-+}
-+arch_initcall(mce_mcsafe_register);
-+
- static void mce_set_error_info(struct machine_check_event *mce,
- 			       struct mce_error_info *mce_err)
- {
-@@ -151,9 +199,31 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 		mce->u.ue_error.effective_address_provided = true;
- 		mce->u.ue_error.effective_address = addr;
- 		if (phys_addr != ULONG_MAX) {
-+			int rc;
-+			const struct exception_table_entry *entry;
-+
-+			/*
-+			 * Once we have the physical address, we check to
-+			 * see if the current nip has a fixup entry.
-+			 * Having a fixup entry plus the notifier stating
-+			 * that it can handle the exception is an indication
-+			 * that we should return to the fixup entry and
-+			 * return an error from there
-+			 */
- 			mce->u.ue_error.physical_address_provided = true;
- 			mce->u.ue_error.physical_address = phys_addr;
--			machine_check_ue_event(mce);
-+
-+			rc = blocking_notifier_call_chain(&mce_notifier_list,
-+							phys_addr, NULL);
-+			if (rc & NOTIFY_STOP_MASK) {
-+				entry = search_exception_tables(regs->nip);
-+				if (entry != NULL) {
-+					mce->u.ue_error.error_return = 1;
-+					regs->nip = extable_fixup(entry);
-+				} else
-+					machine_check_ue_event(mce);
-+			} else
-+				machine_check_ue_event(mce);
- 		}
- 	}
- 	return;
-@@ -208,7 +278,6 @@ void release_mce_event(void)
- 	get_mce_event(NULL, true);
- }
- 
--
- /*
-  * Queue up the MCE event which then can be handled later.
-  */
-@@ -239,6 +308,10 @@ void machine_check_queue_event(void)
- 	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
- 		return;
- 
-+	if (evt.error_type == MCE_ERROR_TYPE_UE &&
-+			evt.u.ue_error.error_return == 1)
-+		return;
-+
- 	index = __this_cpu_inc_return(mce_queue_count) - 1;
- 	/* If queue is full, just return for now. */
- 	if (index >= MAX_MC_EVT) {
--- 
-2.13.6
+Christophe
+
+>
+> cheers
+>
+>> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+>> index c66cb06e73a1..337ef162851d 100644
+>> --- a/arch/powerpc/mm/slb_low.S
+>> +++ b/arch/powerpc/mm/slb_low.S
+>> @@ -166,6 +166,8 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+>>  	 */
+>>  	cmpdi	r9, 0
+>>  	bne-	8f
+>> +
+>> +#ifdef CONFIG_PPC_MM_SLICES
+>>          /*
+>>           * user space make sure we are within the allowed limit
+>>  	 */
+>> @@ -183,7 +185,6 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+>>  	 * really do dynamic patching unfortunately as processes might flip
+>>  	 * between 4k and 64k standard page size
+>>  	 */
+>> -#ifdef CONFIG_PPC_MM_SLICES
+>>  	/* r10 have esid */
+>>  	cmpldi	r10,16
+>>  	/* below SLICE_LOW_TOP */
+>> --
+>> 2.14.3
