@@ -1,21 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40D0bN2C98zF1rw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40D0bN5Vs9zF1x0
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:04:16 +1100 (AEDT)
-In-Reply-To: <20180329190543.25118-1-bauerman@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20180330115724.23826-1-aneesh.kumar@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- =?utf-8?q?Michal_Such=C3=A1n?= =?utf-8?q?ek?= <msuchanek@suse.de>,
- Dave Young <dyoung@redhat.com>
-Subject: Re: powerpc: kexec_file: Fix error code when trying to load kdump
- kernel
-Message-Id: <40D0bL6Ncvz9s3v@ozlabs.org>
-Date: Sun,  1 Apr 2018 01:04:14 +1100 (AEDT)
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/kvm: Fix guest boot issue DAWR cpu feature
+Message-Id: <40D0bN1Wyyz9s3G@ozlabs.org>
+Date: Sun,  1 Apr 2018 01:04:15 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-03-29 at 19:05:43 UTC, Thiago Jung Bauermann wrote:
-> kexec_file_load() on powerpc doesn't support kdump kernels yet, so it
-> returns -ENOTSUPP in that case.
+On Fri, 2018-03-30 at 11:57:24 UTC, "Aneesh Kumar K.V" wrote:
+> SLOF check the 'sc 1' support by issuing a hcall with H_SET_DABR. With
+> recent patch to make the hcall return H_UNSUPPORTED, we get guest boot
+> failures. SLOF can work with the hcall failure H_HARDWARE for the above
+> hcall. Switch the return value to H_HARDWARE instead of H_UNSUPPORTED so that
+> we don't break the guest boot.
 > 
-> I've recently learned that this errno is internal to the kernel and isn't
-> supposed to be exposed to userspace. Therefore, change to -EOPNOTSUPP which
-> is defined in an uapi header.
+> Fixes: e8ebedbf ("KVM: PPC: Book3S HV: Return error from h_set_dabr() on POWER9")
 > 
-> This does indeed make kexec-tools happier. Before the patch, on ppc64le:
-> 
->   # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
->   kexec_file_load failed: Unknown error 524
-> 
-> After the patch:
-> 
->   # ~bauermann/src/kexec-tools/build/sbin/kexec -s -p /boot/vmlinuz
->   kexec_file_load failed: Operation not supported
-> 
-> Fixes: a0458284f062 ("powerpc: Add support code for kexec_file_load()")
-> Reported-by: Dave Young <dyoung@redhat.com>
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Reviewed-by: Simon Horman <horms@verge.net.au>
-> Reviewed-by: Dave Young <dyoung@redhat.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bf8a1abc3ddbd6e9a8312ea7d96e5d
+https://git.kernel.org/powerpc/c/ca9a16c3bc1582da62ef9c47fc2200
 
 cheers
