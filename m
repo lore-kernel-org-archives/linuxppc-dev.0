@@ -1,21 +1,30 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <mgreer@animalcreek.com>
+Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
+ [66.111.4.29])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Cc7x15KvzF1ts
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 09:42:34 +1100 (AEDT)
-Date: Fri, 30 Mar 2018 17:42:29 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] PCI/IOV: Add missing prototype for powerpc specific
-Message-ID: <20180330224229.GF9322@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180322203355.26448-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CjSt1Y5FzF1lS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 13:42:37 +1100 (AEDT)
+Date: Fri, 30 Mar 2018 19:42:29 -0700
+From: Mark Greer <mgreer@animalcreek.com>
+To: Oliver <oohall@gmail.com>
+Cc: Mark Greer <mgreer@animalcreek.com>,
+ Christophe LEROY <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] powerpc/boot: Remove duplicate typedefs from libfdt_env.h
+Message-ID: <20180331024229.GA18304@animalcreek.com>
+References: <20180316215443.2807-1-mgreer@animalcreek.com>
+ <e710d9d7-232b-6420-96a7-8167dd91b824@c-s.fr>
+ <20180319160216.GD9670@animalcreek.com>
+ <CAOSf1CFVH+OEkZCN+AYOxb863akkuw44uOENVEi=zf=QVc-UmQ@mail.gmail.com>
+ <20180330022250.GA20304@animalcreek.com>
+ <20180330022652.GB20304@animalcreek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20180322203355.26448-1-malat@debian.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180330022652.GB20304@animalcreek.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,60 +34,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2018 at 09:33:55PM +0100, Mathieu Malaterre wrote:
-> Some prototypes for weak functions were missing for powerpc specific
-> functions. Add the missing prototypes to the CONFIG_PCI_IOV block. This
-> fixes the following three warnings treated as error when using W=1:
+On Thu, Mar 29, 2018 at 07:26:52PM -0700, Mark Greer wrote:
+> On Thu, Mar 29, 2018 at 07:22:50PM -0700, Mark Greer wrote:
+> > On Tue, Mar 20, 2018 at 10:55:07AM +1100, Oliver wrote:
 > 
->   arch/powerpc/kernel/pci-common.c:236:17: error: no previous prototype for ‘pcibios_default_alignment’ [-Werror=missing-prototypes]
->   arch/powerpc/kernel/pci-common.c:253:5: error: no previous prototype for ‘pcibios_sriov_enable’ [-Werror=missing-prototypes]
->   arch/powerpc/kernel/pci-common.c:261:5: error: no previous prototype for ‘pcibios_sriov_disable’ [-Werror=missing-prototypes]
+> > > Yeah that's pretty odd. It might be a bug in your specific version of
+> > > GCC since I can't replicate it with this dumb test case:
+> > > 
+> > > #include <stdio.h>
+> > > typedef unsigned int            u32;
+> > > 
+> > > typedef u32 uint32_t;
+> > > typedef u32 uint32_t;
+> > > 
+> > > int main(void) {
+> > >         uint32_t test = 0;
+> > >         printf("%u\n", test);
+> > >         return 0;
+> > > }
+> > > 
+> > > Does that result in an error?
+> > 
+> > Hi Oliver.  I'm very sorry for the long delay in responding.
+> > 
+> > This fail to compile too:
+> > 
+> > $ cat test.c
+> > #include <stdio.h>
+> > typedef unsigned int u32;
+> > 
+> > typedef u32 uint32_t;
+> > typedef u32 uint32_t;
+> > 
+> > int main(void) {
+> > 	uint32_t test = 0;
+> > 	printf("%u\n", test);
+> > 	return 0;
+> > }
+> > $
+> > $ powerpc-linux-gnu-gcc -o test test.c
+> > test.c:5:13: error: redefinition of typedef 'uint32_t'
+> > test.c:4:13: note: previous declaration of 'uint32_t' was here
 > 
-> Also in commit 978d2d683123 ("PCI: Add pcibios_iov_resource_alignment()
-> interface") a new function was added but the prototype was located in the
-> main header instead of the CONFIG_PCI_IOV specific section. Move this
-> function next to the newly added ones.
+> And I meant to add:
 > 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> $ powerpc-linux-gnu-gcc --version
+> powerpc-linux-gnu-gcc (Sourcery G++ Lite 2010.09-55) 4.5.1
+> Copyright (C) 2010 Free Software Foundation, Inc.
+> This is free software; see the source for copying conditions.  There is NO
+> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> 
+> So, yeah, its really old.
+> 
+> I'll get a newer one and test it.
 
-Applied to pci/virtualization for v4.17, thanks!
+I downloaded this version from denx.de (thank you, Wolfgang):
 
-> ---
->  include/linux/pci.h | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 024a1beda008..f43b43b9b643 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1295,7 +1295,6 @@ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
->  void pci_setup_bridge(struct pci_bus *bus);
->  resource_size_t pcibios_window_alignment(struct pci_bus *bus,
->  					 unsigned long type);
-> -resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev, int resno);
->  
->  #define PCI_VGA_STATE_CHANGE_BRIDGE (1 << 0)
->  #define PCI_VGA_STATE_CHANGE_DECODES (1 << 1)
-> @@ -1923,6 +1922,7 @@ void pcibios_release_device(struct pci_dev *dev);
->  void pcibios_penalize_isa_irq(int irq, int active);
->  int pcibios_alloc_irq(struct pci_dev *dev);
->  void pcibios_free_irq(struct pci_dev *dev);
-> +resource_size_t pcibios_default_alignment(void);
->  
->  #ifdef CONFIG_HIBERNATE_CALLBACKS
->  extern struct dev_pm_ops pcibios_pm_ops;
-> @@ -1955,6 +1955,11 @@ int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
->  int pci_sriov_get_totalvfs(struct pci_dev *dev);
->  resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno);
->  void pci_vf_drivers_autoprobe(struct pci_dev *dev, bool probe);
-> +
-> +/* Arch may override these (weak) */
-> +int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs);
-> +int pcibios_sriov_disable(struct pci_dev *pdev);
-> +resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev, int resno);
->  #else
->  static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
->  {
-> -- 
-> 2.11.0
-> 
+$ powerpc-linux-gcc --version
+powerpc-linux-gcc (GCC) 4.8.2
+Copyright (C) 2013 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Its still dated but its the best prebuilt version that I could find easily
+available.  With this version, the kernel (ppc6xx_defconfig) built without
+issue.
+
+Thanks to all who helped me through this.
+
+To Ben or whoever, I think the original patch is still worth applying even
+if it isn't critical.
+
+Thanks,
+
+Mark
+--
