@@ -1,18 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40D0Zw4wQNzF1w1
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:03:52 +1100 (AEDT)
-In-Reply-To: <20180307133645.29290-1-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, linuxram@us.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40D0Zy4bNbzF1wB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:03:54 +1100 (AEDT)
+In-Reply-To: <20180314170114.27044-1-fbarrat@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [1/2] powerpc/mm/keys: Move pte bits to correct headers
-Message-Id: <40D0Zw24GMz9s1r@ozlabs.org>
-Date: Sun,  1 Apr 2018 01:03:49 +1100 (AEDT)
+Subject: Re: powerpc/xive: Fix wrong xmon output caused by typo
+Message-Id: <40D0Zy1M6Tz9s3B@ozlabs.org>
+Date: Sun,  1 Apr 2018 01:03:52 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,14 +19,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-03-07 at 13:36:44 UTC, "Aneesh Kumar K.V" wrote:
-> Memory keys are supported only with hash translation mode. Instead of #ifdef in
-> generic code move the key related pte bits to respective headers
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Wed, 2018-03-14 at 17:01:14 UTC, Frederic Barrat wrote:
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1a2f778970c81273c121be160fb661
+https://git.kernel.org/powerpc/c/16b19f1a03f6a49618611b76818f04
 
 cheers
