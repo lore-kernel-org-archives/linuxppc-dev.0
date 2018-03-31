@@ -1,46 +1,22 @@
-Return-Path: <dalias@aerifal.cx>
-Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
- [216.12.86.13])
- by lists.ozlabs.org (Postfix) with ESMTP id 40CN2x5MjKzF1pK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 00:37:28 +1100 (AEDT)
-Date: Fri, 30 Mar 2018 09:33:48 -0400
-From: Rich Felker <dalias@libc.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ilya Smith <blackzert@gmail.com>, rth@twiddle.net,
- ink@jurassic.park.msu.ru, mattst88@gmail.com, vgupta@synopsys.com,
- linux@armlinux.org.uk, tony.luck@intel.com, fenghua.yu@intel.com,
- jhogan@kernel.org, ralf@linux-mips.org, jejb@parisc-linux.org,
- deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, schwidefsky@de.ibm.com,
- heiko.carstens@de.ibm.com, ysato@users.sourceforge.jp,
- davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, nyc@holomorphy.com,
- viro@zeniv.linux.org.uk, arnd@arndb.de, gregkh@linuxfoundation.org,
- deepa.kernel@gmail.com, mhocko@suse.com, hughd@google.com,
- kstewart@linuxfoundation.org, pombredanne@nexb.com,
- akpm@linux-foundation.org, steve.capper@arm.com,
- punit.agrawal@arm.com, paul.burton@mips.com,
- aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com,
- keescook@chromium.org, bhsharma@redhat.com, riel@redhat.com,
- nitin.m.gupta@oracle.com, kirill.shutemov@linux.intel.com,
- dan.j.williams@intel.com, jack@suse.cz,
- ross.zwisler@linux.intel.com, jglisse@redhat.com,
- willy@infradead.org, aarcange@redhat.com, oleg@redhat.com,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH v2 0/2] Randomization of address chosen by mmap.
-Message-ID: <20180330133348.GR1436@brightrain.aerifal.cx>
-References: <1521736598-12812-1-git-send-email-blackzert@gmail.com>
- <20180330075508.GA21798@amd>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CxXl70JFzF1sd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 22:46:47 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
+ save/restore overhead
+In-Reply-To: <20171117140807.22105-4-npiggin@gmail.com>
+References: <20171117140807.22105-1-npiggin@gmail.com>
+ <20171117140807.22105-4-npiggin@gmail.com>
+Date: Sat, 31 Mar 2018 22:46:44 +1100
+Message-ID: <87r2o05uxn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180330075508.GA21798@amd>
-Sender: Rich Felker <dalias@aerifal.cx>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,22 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 30, 2018 at 09:55:08AM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > Current implementation doesn't randomize address returned by mmap.
-> > All the entropy ends with choosing mmap_base_addr at the process
-> > creation. After that mmap build very predictable layout of address
-> > space. It allows to bypass ASLR in many cases. This patch make
-> > randomization of address on any mmap call.
-> 
-> How will this interact with people debugging their application, and
-> getting different behaviours based on memory layout?
-> 
-> strace, strace again, get different results?
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Normally gdb disables ASLR for the process when invoking a program to
-debug. I don't see why that would be terribly useful with strace but
-you can do the same if you want.
+> When stop is executed with EC=ESL=0, it appears to execute like a
+> normal instruction (resuming from NIP when woken by interrupt). So all
+> the save/restore handling can be avoided completely. In particular NV
+> GPRs do not have to be saved, and MSR does not have to be switched
+> back to kernel MSR.
+>
+> So move the test for EC=ESL=0 sleep states out to power9_idle_stop,
+> and return directly to the caller after stop in that case. The mtspr
+> to PSSCR is moved to the top of power9_offline_stop just so it matches
+> power9_idle_stop.
+>
+> This improves performance for ping-pong benchmark with the stop0_lite
+> idle state by 2.54% for 2 threads in the same core, and 2.57% for
+> different cores.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kernel/idle_book3s.S     | 43 +++++++++++------------------------
+>  arch/powerpc/platforms/powernv/idle.c |  7 +++++-
+>  2 files changed, 19 insertions(+), 31 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 07a306173c5a..6243da99b26c 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -324,31 +324,8 @@ enter_winkle:
+>  /*
+>   * r3 - PSSCR value corresponding to the requested stop state.
+>   */
+> -power_enter_stop:
+> -/*
+> - * Check if we are executing the lite variant with ESL=EC=0
+> - */
+> -	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
+> +power_enter_stop_esl:
+>  	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
+> -	bne	 .Lhandle_esl_ec_set
+> -	PPC_STOP
+> -	li	r3,0  /* Since we didn't lose state, return 0 */
 
-Rich
+Sorry this clashed with Paul's force-SMT4 patches which I needed to
+merge to enable TM workarounds.
+
+Can you rebase?
+
+cheers
