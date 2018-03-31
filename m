@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CxfT0k32zF1pv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 22:51:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40D0Vz2jLXzF1pP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:00:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/64e: Fix oops due to deferral of paca allocation
-Date: Sat, 31 Mar 2018 22:51:38 +1100
-Message-Id: <20180331115138.5731-1-mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/mpic: Check if cpu_possible() in mpic_physmask()
+Date: Sun,  1 Apr 2018 01:00:24 +1100
+Message-Id: <20180331140024.1610-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,59 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 64-bit Book3E systems, in setup_tlb_core_data() we reference other
-CPUs pacas. But in commit 59f577743d71 ("powerpc/64: Defer paca
-allocation until memory topology is discovered") the allocation of
-non-boot-CPU pacas was deferred until later in boot.
+In mpic_physmask() we loop over all CPUs up to 32, then get the hard
+SMP processor id of that CPU.
 
-This leads to an oops:
+Currently that's possibly walking off the end of the paca array, but
+in a future patch we will change the paca array to be an array of
+pointers, and in that case we will get a NULL for missing CPUs and
+oops. eg:
 
-  CPU maps initialized for 1 thread per core
-  Unable to handle kernel paging request for data at address 0x8888888888888918
-  Faulting instruction address: 0xc000000000e2f0d0
+  Unable to handle kernel paging request for data at address 0x88888888888888b8
+  Faulting instruction address: 0xc00000000004e380
   Oops: Kernel access of bad area, sig: 11 [#1]
-  NIP .setup_tlb_core_data+0xdc/0x160
-  Call Trace:
-    .setup_tlb_core_data+0x5c/0x160 (unreliable)
-    .setup_arch+0x80/0x348
-    .start_kernel+0x7c/0x598
-    start_here_common+0x1c/0x40
+  ...
+  NIP .mpic_set_affinity+0x60/0x1a0
+  LR  .irq_do_set_affinity+0x48/0x100
 
-Luckily setup_tlb_core_data() is called immediately prior to
-smp_setup_pacas(). So simply switching their order is sufficient to
-fix the oops and seems unlikely to have any other unwanted side
-effects.
+Fix it by checking the CPU is possible, this also fixes the code if
+there are gaps in the CPU numbering which probably never happens on
+mpic systems but who knows.
 
-Fixes: 59f577743d71 ("powerpc/64: Defer paca allocation until memory topology is discovered")
+Debugged-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup-common.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/mpic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 56f7a2b793e0..0af5c11b9e78 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -915,9 +915,6 @@ void __init setup_arch(char **cmdline_p)
- 	/* Parse memory topology */
- 	mem_topology_setup();
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 73067805300a..1d4e0ef658d3 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -626,7 +626,7 @@ static inline u32 mpic_physmask(u32 cpumask)
+ 	int i;
+ 	u32 mask = 0;
  
--	/* On BookE, setup per-core TLB data structures. */
--	setup_tlb_core_data();
--
- 	/*
- 	 * Release secondary cpus out of their spinloops at 0x60 now that
- 	 * we can map physical -> logical CPU ids.
-@@ -927,6 +924,10 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- #ifdef CONFIG_SMP
- 	smp_setup_pacas();
-+
-+	/* On BookE, setup per-core TLB data structures. */
-+	setup_tlb_core_data();
-+
- 	smp_release_cpus();
- #endif
- 
+-	for (i = 0; i < min(32, NR_CPUS); ++i, cpumask >>= 1)
++	for (i = 0; i < min(32, NR_CPUS) && cpu_possible(i); ++i, cpumask >>= 1)
+ 		mask |= (cpumask & 1) << get_hard_smp_processor_id(i);
+ 	return mask;
+ }
 -- 
 2.14.1
