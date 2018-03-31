@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40D0Zw2skczF1sR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40D0Zw4wQNzF1w1
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:03:52 +1100 (AEDT)
-In-Reply-To: <20180213150824.27689-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20180307133645.29290-1-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, linuxram@us.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [01/14] powerpc/64s: do not allocate lppaca if we are not
- virtualized
-Message-Id: <40D0Zt3Kdcz9s1S@ozlabs.org>
-Date: Sun,  1 Apr 2018 01:03:48 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [1/2] powerpc/mm/keys: Move pte bits to correct headers
+Message-Id: <40D0Zw24GMz9s1r@ozlabs.org>
+Date: Sun,  1 Apr 2018 01:03:49 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,17 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-02-13 at 15:08:11 UTC, Nicholas Piggin wrote:
-> The "lppaca" is a structure registered with the hypervisor. This
-> is unnecessary when running on non-virtualised platforms. One field
-> from the lppaca (pmcregs_in_use) is also used by the host, so move
-> the host part out into the paca (lppaca field is still updated in
-> guest mode).
+On Wed, 2018-03-07 at 13:36:44 UTC, "Aneesh Kumar K.V" wrote:
+> Memory keys are supported only with hash translation mode. Instead of #ifdef in
+> generic code move the key related pte bits to respective headers
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8e0b634b132752ec3eba50afb95250
+https://git.kernel.org/powerpc/c/1a2f778970c81273c121be160fb661
 
 cheers
