@@ -1,22 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40CxXl70JFzF1sd
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 22:46:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40CxfT0k32zF1pv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Mar 2018 22:51:45 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/3] powerpc/64s/idle: POWER9 ESL=0 stop avoid
- save/restore overhead
-In-Reply-To: <20171117140807.22105-4-npiggin@gmail.com>
-References: <20171117140807.22105-1-npiggin@gmail.com>
- <20171117140807.22105-4-npiggin@gmail.com>
-Date: Sat, 31 Mar 2018 22:46:44 +1100
-Message-ID: <87r2o05uxn.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/64e: Fix oops due to deferral of paca allocation
+Date: Sat, 31 Mar 2018 22:51:38 +1100
+Message-Id: <20180331115138.5731-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On 64-bit Book3E systems, in setup_tlb_core_data() we reference other
+CPUs pacas. But in commit 59f577743d71 ("powerpc/64: Defer paca
+allocation until memory topology is discovered") the allocation of
+non-boot-CPU pacas was deferred until later in boot.
 
-> When stop is executed with EC=ESL=0, it appears to execute like a
-> normal instruction (resuming from NIP when woken by interrupt). So all
-> the save/restore handling can be avoided completely. In particular NV
-> GPRs do not have to be saved, and MSR does not have to be switched
-> back to kernel MSR.
->
-> So move the test for EC=ESL=0 sleep states out to power9_idle_stop,
-> and return directly to the caller after stop in that case. The mtspr
-> to PSSCR is moved to the top of power9_offline_stop just so it matches
-> power9_idle_stop.
->
-> This improves performance for ping-pong benchmark with the stop0_lite
-> idle state by 2.54% for 2 threads in the same core, and 2.57% for
-> different cores.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/idle_book3s.S     | 43 +++++++++++------------------------
->  arch/powerpc/platforms/powernv/idle.c |  7 +++++-
->  2 files changed, 19 insertions(+), 31 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> index 07a306173c5a..6243da99b26c 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -324,31 +324,8 @@ enter_winkle:
->  /*
->   * r3 - PSSCR value corresponding to the requested stop state.
->   */
-> -power_enter_stop:
-> -/*
-> - * Check if we are executing the lite variant with ESL=EC=0
-> - */
-> -	andis.   r4,r3,PSSCR_EC_ESL_MASK_SHIFTED
-> +power_enter_stop_esl:
->  	clrldi   r3,r3,60 /* r3 = Bits[60:63] = Requested Level (RL) */
-> -	bne	 .Lhandle_esl_ec_set
-> -	PPC_STOP
-> -	li	r3,0  /* Since we didn't lose state, return 0 */
+This leads to an oops:
 
-Sorry this clashed with Paul's force-SMT4 patches which I needed to
-merge to enable TM workarounds.
+  CPU maps initialized for 1 thread per core
+  Unable to handle kernel paging request for data at address 0x8888888888888918
+  Faulting instruction address: 0xc000000000e2f0d0
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  NIP .setup_tlb_core_data+0xdc/0x160
+  Call Trace:
+    .setup_tlb_core_data+0x5c/0x160 (unreliable)
+    .setup_arch+0x80/0x348
+    .start_kernel+0x7c/0x598
+    start_here_common+0x1c/0x40
 
-Can you rebase?
+Luckily setup_tlb_core_data() is called immediately prior to
+smp_setup_pacas(). So simply switching their order is sufficient to
+fix the oops and seems unlikely to have any other unwanted side
+effects.
 
-cheers
+Fixes: 59f577743d71 ("powerpc/64: Defer paca allocation until memory topology is discovered")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup-common.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 56f7a2b793e0..0af5c11b9e78 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -915,9 +915,6 @@ void __init setup_arch(char **cmdline_p)
+ 	/* Parse memory topology */
+ 	mem_topology_setup();
+ 
+-	/* On BookE, setup per-core TLB data structures. */
+-	setup_tlb_core_data();
+-
+ 	/*
+ 	 * Release secondary cpus out of their spinloops at 0x60 now that
+ 	 * we can map physical -> logical CPU ids.
+@@ -927,6 +924,10 @@ void __init setup_arch(char **cmdline_p)
+ 	 */
+ #ifdef CONFIG_SMP
+ 	smp_setup_pacas();
++
++	/* On BookE, setup per-core TLB data structures. */
++	setup_tlb_core_data();
++
+ 	smp_release_cpus();
+ #endif
+ 
+-- 
+2.14.1
