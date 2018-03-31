@@ -1,16 +1,22 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40D0bG2hKLzF1pr
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:04:10 +1100 (AEDT)
-In-Reply-To: <20180326150233.23089-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40D0bJ4QVVzF1rw
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 01:04:12 +1100 (AEDT)
+In-Reply-To: <20180328002544.18526-2-j.neuschaefer@gmx.net>
+To: =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/powernv/nvram: opal_nvram_write handle unknown OPAL errors
-Message-Id: <40D0bF6VVsz9s3v@ozlabs.org>
-Date: Sun,  1 Apr 2018 01:04:09 +1100 (AEDT)
+Cc: Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org,
+ =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Paul Mackerras <paulus@samba.org>, Joe Perches <joe@perches.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>
+Subject: Re: [v2,
+ 1/5] powerpc: mm: Simplify page_is_ram by using memblock_is_memory
+Message-Id: <40D0bH5b9gz9s1S@ozlabs.org>
+Date: Sun,  1 Apr 2018 01:04:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,17 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-03-26 at 15:02:33 UTC, Nicholas Piggin wrote:
-> opal_nvram_write currently just assumes success if it encounters an
-> error other than OPAL_BUSY or OPAL_BUSY_EVENT. Have it return -EIO
-> on other errors instead.
+On Wed, 2018-03-28 at 00:25:40 UTC, =?utf-8?q?Jonathan_Neusch=C3=A4fer?= wrote:
+> Instead of open-coding the search in page_is_ram, call memblock_is_memory.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-> Acked-by: Stewart Smith <stewart@linux.ibm.com>
+> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/741de617661794246f84a21a02fc5e
+https://git.kernel.org/powerpc/c/2615c93e5f52db62586112793d889f
 
 cheers
