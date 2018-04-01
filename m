@@ -1,23 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40DS2G2s0jzF21P
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 17:40:38 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id a2so5184674pff.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 00:40:38 -0700 (PDT)
-Date: Sun, 1 Apr 2018 17:40:19 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40DWxB2RsLzF20w
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 20:36:29 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id 60-v6so559938plc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 03:36:29 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 2/2] powerpc: Fix DABR write in the case of DAWR disabled
-Message-ID: <20180401174019.7c038f0d@roar.ozlabs.ibm.com>
-In-Reply-To: <20180401055036.18078-3-npiggin@gmail.com>
-References: <20180401055036.18078-1-npiggin@gmail.com>
- <20180401055036.18078-3-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] stop secondaries for reboot/shutdown
+Date: Sun,  1 Apr 2018 20:36:12 +1000
+Message-Id: <20180401103615.15454-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun,  1 Apr 2018 15:50:36 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+I'm rebasing and resending this series because the hard
+lockup messages are being seen in the field.
 
-> flush_thread will call set_breakpoint via set_debug_reg_defaults,
-> and cause POWER8 and above CPUs without the DAWR feature to try
-> to write to DAWR.
-              ^^^^
-              DABR
+Since last time, one of the patches was merged, and patches
+were split and reordered a bit. No major changes.
 
-> 
-> Cc: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/process.c | 13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 24a591b4dbe9..bfcf5437083c 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -718,7 +718,8 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
->  {
->  	thread->hw_brk.address = 0;
->  	thread->hw_brk.type = 0;
-> -	set_breakpoint(&thread->hw_brk);
-> +	if (ppc_breakpoint_available())
-> +		set_breakpoint(&thread->hw_brk);
->  }
->  #endif /* !CONFIG_HAVE_HW_BREAKPOINT */
->  #endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
-> @@ -814,10 +815,14 @@ void __set_breakpoint(struct arch_hw_breakpoint *brk)
->  {
->  	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
->  
-> -	if (cpu_has_feature(CPU_FTR_DAWR))
-> -		set_dawr(brk);
-> -	else
-> +	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-> +		if (cpu_has_feature(CPU_FTR_DAWR))
-> +			set_dawr(brk);
-> +		else
-> +			WARN_ON_ONCE(1);
-> +	} else {
->  		set_dabr(brk);
-> +	}
->  }
->  
->  void set_breakpoint(struct arch_hw_breakpoint *brk)
+This still hasn't been tested with the FSP firmware update.
+
+Thanks,
+Nick
+
+Nicholas Piggin (3):
+  powerpc: use NMI IPI for smp_send_stop
+  powerpc: hard disable irqs in smp_send_stop loop
+  powerpc/powernv: Always stop secondaries before reboot/shutdown
+
+ arch/powerpc/include/asm/opal.h             |  2 +-
+ arch/powerpc/kernel/smp.c                   | 13 +++++++++++--
+ arch/powerpc/platforms/powernv/opal-flash.c | 28 +---------------------------
+ arch/powerpc/platforms/powernv/setup.c      | 15 +++++----------
+ 4 files changed, 18 insertions(+), 40 deletions(-)
+
+-- 
+2.16.3
