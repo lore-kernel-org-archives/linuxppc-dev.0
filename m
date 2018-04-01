@@ -3,17 +3,17 @@ Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
  [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40DWxF2C48zF20w
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 20:36:33 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id 61-v6so559430plb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 03:36:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40DWxJ2zW3zF21n
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 20:36:36 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id m22-v6so2540609pls.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 03:36:36 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: [PATCH v2 1/3] powerpc: use NMI IPI for smp_send_stop
-Date: Sun,  1 Apr 2018 20:36:13 +1000
-Message-Id: <20180401103615.15454-2-npiggin@gmail.com>
+Subject: [PATCH v2 2/3] powerpc: hard disable irqs in smp_send_stop loop
+Date: Sun,  1 Apr 2018 20:36:14 +1000
+Message-Id: <20180401103615.15454-3-npiggin@gmail.com>
 In-Reply-To: <20180401103615.15454-1-npiggin@gmail.com>
 References: <20180401103615.15454-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,49 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the NMI IPI rather than smp_call_function for smp_send_stop.
-Have stopped CPUs hard disable interrupts rather than just soft
-disable.
-
-This function is used in crash/panic/shutdown paths to bring other
-CPUs down as quickly and reliably as possible, and minimizing their
-potential to cause trouble.
-
-Avoiding the Linux smp_call_function infrastructure and (if supported)
-using true NMI IPIs makes this more robust.
+The hard lockup watchdog can fire under local_irq_disable
+on platforms with irq soft masking.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/smp.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/kernel/smp.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index cfc08b099c49..db88660bf6bd 100644
+index db88660bf6bd..e16ec7b3b427 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -565,7 +565,11 @@ void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
- }
- #endif
- 
-+#ifdef CONFIG_NMI_IPI
-+static void stop_this_cpu(struct pt_regs *regs)
-+#else
- static void stop_this_cpu(void *dummy)
-+#endif
- {
+@@ -574,9 +574,10 @@ static void stop_this_cpu(void *dummy)
  	/* Remove this CPU */
  	set_cpu_online(smp_processor_id(), false);
-@@ -577,7 +581,11 @@ static void stop_this_cpu(void *dummy)
  
- void smp_send_stop(void)
- {
-+#ifdef CONFIG_NMI_IPI
-+	smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, stop_this_cpu, 1000000);
-+#else
- 	smp_call_function(stop_this_cpu, NULL, 0);
-+#endif
+-	local_irq_disable();
++	hard_irq_disable();
++	spin_begin();
+ 	while (1)
+-		;
++		spin_cpu_relax();
  }
  
- struct thread_info *current_set[NR_CPUS];
+ void smp_send_stop(void)
 -- 
 2.16.3
