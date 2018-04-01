@@ -1,44 +1,23 @@
-Return-Path: <prvs=06293cf383=rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40DQgV0TM6zF21s
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 16:39:14 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w316XR6v001472
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Apr 2018 02:39:12 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h2qfp4mb9-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 02:39:11 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Sun, 1 Apr 2018 07:39:08 +0100
-Date: Sun, 1 Apr 2018 09:38:58 +0300
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-To: Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, kasan-dev@googlegroups.com,
- linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
-References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
- <20180329154607.3d8bda75@lwn.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40DS2G2s0jzF21P
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 17:40:38 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id a2so5184674pff.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 00:40:38 -0700 (PDT)
+Date: Sun, 1 Apr 2018 17:40:19 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 2/2] powerpc: Fix DABR write in the case of DAWR disabled
+Message-ID: <20180401174019.7c038f0d@roar.ozlabs.ibm.com>
+In-Reply-To: <20180401055036.18078-3-npiggin@gmail.com>
+References: <20180401055036.18078-1-npiggin@gmail.com>
+ <20180401055036.18078-3-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180329154607.3d8bda75@lwn.net>
-Message-Id: <20180401063857.GA3357@rapoport-lnx>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,96 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(added akpm)
+On Sun,  1 Apr 2018 15:50:36 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-On Thu, Mar 29, 2018 at 03:46:07PM -0600, Jonathan Corbet wrote:
-> On Wed, 21 Mar 2018 21:22:16 +0200
-> Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+> flush_thread will call set_breakpoint via set_debug_reg_defaults,
+> and cause POWER8 and above CPUs without the DAWR feature to try
+> to write to DAWR.
+              ^^^^
+              DABR
+
 > 
-> > These patches convert files in Documentation/vm to ReST format, add an
-> > initial index and link it to the top level documentation.
-> > 
-> > There are no contents changes in the documentation, except few spelling
-> > fixes. The relatively large diffstat stems from the indentation and
-> > paragraph wrapping changes.
-> > 
-> > I've tried to keep the formatting as consistent as possible, but I could
-> > miss some places that needed markup and add some markup where it was not
-> > necessary.
+> Cc: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kernel/process.c | 13 +++++++++----
+>  1 file changed, 9 insertions(+), 4 deletions(-)
 > 
-> So I've been pondering on these for a bit.  It looks like a reasonable and
-> straightforward RST conversion, no real complaints there.  But I do have a
-> couple of concerns...
-> 
-> One is that, as we move documentation into RST, I'm really trying to
-> organize it a bit so that it is better tuned to the various audiences we
-> have.  For example, ksm.txt is going to be of interest to sysadmin types,
-> who might want to tune it.  mmu_notifier.txt is of interest to ...
-> somebody, but probably nobody who is thinking in user space.  And so on.
-> 
-> So I would really like to see this material split up and put into the
-> appropriate places in the RST hierarchy - admin-guide for administrative
-> stuff, core-api for kernel development topics, etc.  That, of course,
-> could be done separately from the RST conversion, but I suspect I know
-> what will (or will not) happen if we agree to defer that for now :)
-
-Well, I was actually planning on doing that ;-)
-
-My thinking was to start with mechanical RST conversion and then to start
-working on the contents and ordering of the documentation. Some of the
-existing files, e.g. ksm.txt, can be moved as is into the appropriate
-places, others, like transhuge.txt should be at least split into admin/user
-and developer guides.
-
-Another problem with many of the existing mm docs is that they are rather
-developer notes and it wouldn't be really straight forward to assign them
-to a particular topic.
-
-I believe that keeping the mm docs together will give better visibility of
-what (little) mm documentation we have and will make the updates easier.
-The documents that fit well into a certain topic could be linked there. For
-instance:
-
--------------------------
-diff --git a/Documentation/admin-guide/index.rst b/Documentation/admin-guide/index.rst
-index 5bb9161..8f6c6e6 100644
---- a/Documentation/admin-guide/index.rst
-+++ b/Documentation/admin-guide/index.rst
-@@ -63,6 +63,7 @@ configure specific aspects of kernel behavior to your liking.
-    pm/index
-    thunderbolt
-    LSM/index
-+   vm/index
- 
- .. only::  subproject and html
- 
-diff --git a/Documentation/admin-guide/vm/index.rst b/Documentation/admin-guide/vm/index.rst
-new file mode 100644
-index 0000000..d86f1c8
---- /dev/null
-+++ b/Documentation/admin-guide/vm/index.rst
-@@ -0,0 +1,5 @@
-+==============================================
-+Knobs and Buttons for Memory Management Tuning
-+==============================================
-+
-+* :ref:`ksm <ksm>`
--------------------------
-
-> The other is the inevitable merge conflicts that changing that many doc
-> files will create.  Sending the patches through Andrew could minimize
-> that, I guess, or at least make it his problem.  Alternatively, we could
-> try to do it as an end-of-merge-window sort of thing.  I can try to manage
-> that, but an ack or two from the mm crowd would be nice to have.
-
-I can rebase on top of Andrew's tree if that would help to minimize the
-merge conflicts.
- 
-> Thanks,
-> 
-> jon
-> 
-
--- 
-Sincerely yours,
-Mike.
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 24a591b4dbe9..bfcf5437083c 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -718,7 +718,8 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
+>  {
+>  	thread->hw_brk.address = 0;
+>  	thread->hw_brk.type = 0;
+> -	set_breakpoint(&thread->hw_brk);
+> +	if (ppc_breakpoint_available())
+> +		set_breakpoint(&thread->hw_brk);
+>  }
+>  #endif /* !CONFIG_HAVE_HW_BREAKPOINT */
+>  #endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
+> @@ -814,10 +815,14 @@ void __set_breakpoint(struct arch_hw_breakpoint *brk)
+>  {
+>  	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
+>  
+> -	if (cpu_has_feature(CPU_FTR_DAWR))
+> -		set_dawr(brk);
+> -	else
+> +	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
+> +		if (cpu_has_feature(CPU_FTR_DAWR))
+> +			set_dawr(brk);
+> +		else
+> +			WARN_ON_ONCE(1);
+> +	} else {
+>  		set_dabr(brk);
+> +	}
+>  }
+>  
+>  void set_breakpoint(struct arch_hw_breakpoint *brk)
