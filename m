@@ -1,22 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Yuri.Norov@cavium.com>
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0069.outbound.protection.outlook.com [104.47.34.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40DWxN3CtdzF22N
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 20:36:40 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id v5-v6so561390plo.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Apr 2018 03:36:40 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: [PATCH v2 3/3] powerpc/powernv: Always stop secondaries before
- reboot/shutdown
-Date: Sun,  1 Apr 2018 20:36:15 +1000
-Message-Id: <20180401103615.15454-4-npiggin@gmail.com>
-In-Reply-To: <20180401103615.15454-1-npiggin@gmail.com>
-References: <20180401103615.15454-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40DXjc3CHrzF21B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Apr 2018 21:11:30 +1000 (AEST)
+Date: Sun, 1 Apr 2018 14:11:08 +0300
+From: Yury Norov <ynorov@caviumnetworks.com>
+To: Will Deacon <will.deacon@arm.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ <20180327102116.GA2464@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180327102116.GA2464@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,130 +38,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently powernv reboot and shutdown requests just leave secondaries
-to do their own things. This is undesirable because they can trigger
-any number of watchdogs while waiting for reboot, but also we don't
-know what else they might be doing -- they might be causing trouble,
-trampling memory, etc.
+On Tue, Mar 27, 2018 at 11:21:17AM +0100, Will Deacon wrote:
+> On Sun, Mar 25, 2018 at 08:50:04PM +0300, Yury Norov wrote:
+> > kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast IPI.
+> > If CPU is in extended quiescent state (idle task or nohz_full userspace), this
+> > work may be done at the exit of this state. Delaying synchronization helps to
+> > save power if CPU is in idle state and decrease latency for real-time tasks.
+> > 
+> > This patch introduces kick_active_cpus_sync() and uses it in mm/slab and arm64
+> > code to delay syncronization.
+> > 
+> > For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU running
+> > isolated task would be fatal, as it breaks isolation. The approach with delaying
+> > of synchronization work helps to maintain isolated state.
+> > 
+> > I've tested it with test from task isolation series on ThunderX2 for more than
+> > 10 hours (10k giga-ticks) without breaking isolation.
+> > 
+> > Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
+> > ---
+> >  arch/arm64/kernel/insn.c |  2 +-
+> >  include/linux/smp.h      |  2 ++
+> >  kernel/smp.c             | 24 ++++++++++++++++++++++++
+> >  mm/slab.c                |  2 +-
+> >  4 files changed, 28 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
+> > index 2718a77da165..9d7c492e920e 100644
+> > --- a/arch/arm64/kernel/insn.c
+> > +++ b/arch/arm64/kernel/insn.c
+> > @@ -291,7 +291,7 @@ int __kprobes aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt)
+> >  			 * synchronization.
+> >  			 */
+> >  			ret = aarch64_insn_patch_text_nosync(addrs[0], insns[0]);
+> > -			kick_all_cpus_sync();
+> > +			kick_active_cpus_sync();
+> >  			return ret;
+> >  		}
+> >  	}
+> 
+> I think this means that runtime modifications to the kernel text might not
+> be picked up by CPUs coming out of idle. Shouldn't we add an ISB on that
+> path to avoid executing stale instructions?
+> 
+> Will
 
-The opal scheduled flash update code already ran into watchdog problems
-due to flashing taking a long time, and it was fixed with 2196c6f1ed
-("powerpc/powernv: Return secondary CPUs to firmware before FW update"),
-which returns secondaries to opal. It's been found that regular reboots
-can take over 10 seconds, which can result in the hard lockup watchdog
-firing,
+commit 153ae9d5667e7baab4d48c48e8ec30fbcbd86f1e
+Author: Yury Norov <ynorov@caviumnetworks.com>
+Date:   Sat Mar 31 15:05:23 2018 +0300
 
-  reboot: Restarting system
-  [  360.038896709,5] OPAL: Reboot request...
-  Watchdog CPU:0 Hard LOCKUP
-  Watchdog CPU:44 detected Hard LOCKUP other CPUS:16
-  Watchdog CPU:16 Hard LOCKUP
-  watchdog: BUG: soft lockup - CPU#16 stuck for 3s! [swapper/16:0]
+Hi Will, Paul,
 
-This patch removes the special case for flash update, and calls
-smp_send_stop in all cases before calling reboot/shutdown.
+On my system there are 3 paths that go thru rcu_dynticks_eqs_exit(),
+and so require isb().
 
-smp_send_stop could return CPUs to OPAL, the main reason not to is
-that the request could come from a NMI that interrupts OPAL code,
-so re-entry to OPAL can cause a number of problems. Putting
-secondaries into simple spin loops improves the chances of a
-successful reboot.
+First path starts at gic_handle_irq() on secondary_start_kernel stack.
+gic_handle_irq() already issues isb(), and so we can do nothing.
 
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/opal.h             |  2 +-
- arch/powerpc/platforms/powernv/opal-flash.c | 28 +---------------------------
- arch/powerpc/platforms/powernv/setup.c      | 15 +++++----------
- 3 files changed, 7 insertions(+), 38 deletions(-)
+Second path starts at el0_svc entry; and third path is the exit from
+do_idle() on secondary_start_kernel stack.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index dde60089d0d4..7159e1a6a61a 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -325,7 +325,7 @@ struct rtc_time;
- extern unsigned long opal_get_boot_time(void);
- extern void opal_nvram_init(void);
- extern void opal_flash_update_init(void);
--extern void opal_flash_term_callback(void);
-+extern void opal_flash_update_print_message(void);
- extern int opal_elog_init(void);
- extern void opal_platform_dump_init(void);
- extern void opal_sys_param_init(void);
-diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
-index 1cb0b895a236..b37015101bf6 100644
---- a/arch/powerpc/platforms/powernv/opal-flash.c
-+++ b/arch/powerpc/platforms/powernv/opal-flash.c
-@@ -303,26 +303,9 @@ static int opal_flash_update(int op)
- 	return rc;
- }
- 
--/* Return CPUs to OPAL before starting FW update */
--static void flash_return_cpu(void *info)
--{
--	int cpu = smp_processor_id();
--
--	if (!cpu_online(cpu))
--		return;
--
--	/* Disable IRQ */
--	hard_irq_disable();
--
--	/* Return the CPU to OPAL */
--	opal_return_cpu();
--}
--
- /* This gets called just before system reboots */
--void opal_flash_term_callback(void)
-+void opal_flash_update_print_message(void)
- {
--	struct cpumask mask;
--
- 	if (update_flash_data.status != FLASH_IMG_READY)
- 		return;
- 
-@@ -333,15 +316,6 @@ void opal_flash_term_callback(void)
- 
- 	/* Small delay to help getting the above message out */
- 	msleep(500);
--
--	/* Return secondary CPUs to firmware */
--	cpumask_copy(&mask, cpu_online_mask);
--	cpumask_clear_cpu(smp_processor_id(), &mask);
--	if (!cpumask_empty(&mask))
--		smp_call_function_many(&mask,
--				       flash_return_cpu, NULL, false);
--	/* Hard disable interrupts */
--	hard_irq_disable();
- }
+For do_idle() path there is arch_cpu_idle_exit() hook that is not used by
+arm64 at now, so I picked it. And for el0_svc, I've introduced isb_if_eqs
+macro and call it at the beginning of el0_svc_naked.
+
+I've tested it on ThunderX2 machine, and it works for me.
+
+Below is my call traces and patch for them. If you OK with it, I think I'm
+ready to submit v2 (but maybe split this patch for better readability).
+
+Yury
+
+[  585.412095] Call trace:
+[  585.412097] [<fffffc00080878d8>] dump_backtrace+0x0/0x380
+[  585.412099] [<fffffc0008087c6c>] show_stack+0x14/0x20
+[  585.412101] [<fffffc0008a091ec>] dump_stack+0x98/0xbc
+[  585.412104] [<fffffc0008122080>] rcu_dynticks_eqs_exit+0x68/0x70
+[  585.412105] [<fffffc00081260f0>] rcu_irq_enter+0x48/0x50
+[  585.412106] [<fffffc00080c92c4>] irq_enter+0xc/0x70
+[  585.412108] [<fffffc0008113a64>] __handle_domain_irq+0x3c/0x120
+[  585.412109] [<fffffc00080816c4>] gic_handle_irq+0xc4/0x180
+[  585.412110] Exception stack(0xfffffc001130fe20 to 0xfffffc001130ff60)
+[  585.412112] fe20: 00000000000000a0 0000000000000000 0000000000000001 0000000000000000
+[  585.412113] fe40: 0000028f6f0b0000 0000000000000020 0013cd6f53963b31 0000000000000000
+[  585.412144] fe60: 0000000000000002 fffffc001130fed0 0000000000000b80 0000000000003400
+[  585.412146] fe80: 0000000000000000 0000000000000001 0000000000000000 00000000000001db
+[  585.412147] fea0: fffffc0008247a78 000003ff86dc61f8 0000000000000014 fffffc0008fc0000
+[  585.412149] fec0: fffffc00090143e8 fffffc0009014000 fffffc0008fc94a0 0000000000000000
+[  585.412150] fee0: 0000000000000000 fffffe8f46bb1700 0000000000000000 0000000000000000
+[  585.412152] ff00: 0000000000000000 fffffc001130ff60 fffffc0008085034 fffffc001130ff60
+[  585.412153] ff20: fffffc0008085038 0000000000400149 fffffc0009014000 fffffc0008fc94a0
+[  585.412155] ff40: ffffffffffffffff 0000000000000000 fffffc001130ff60 fffffc0008085038
+[  585.412156] [<fffffc0008082fb0>] el1_irq+0xb0/0x124
+[  585.412158] [<fffffc0008085038>] arch_cpu_idle+0x10/0x18
+[  585.412159] [<fffffc00080ff38c>] do_idle+0x10c/0x1d8
+[  585.412160] [<fffffc00080ff5ec>] cpu_startup_entry+0x24/0x28
+[  585.412162] [<fffffc000808db04>] secondary_start_kernel+0x15c/0x1a0
+[  585.412164] CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.14.0-isolation-160735-g59b71c1-dirty #18
+
+[  585.412058] Call trace:
+[  585.412060] [<fffffc00080878d8>] dump_backtrace+0x0/0x380
+[  585.412062] [<fffffc0008087c6c>] show_stack+0x14/0x20
+[  585.412064] [<fffffc0008a091ec>] dump_stack+0x98/0xbc
+[  585.412066] [<fffffc0008122080>] rcu_dynticks_eqs_exit+0x68/0x70
+[  585.412068] [<fffffc00081232bc>] rcu_eqs_exit.isra.23+0x64/0x80
+[  585.412069] [<fffffc000812609c>] rcu_user_exit+0xc/0x18
+[  585.412071] [<fffffc000817c34c>] __context_tracking_exit.part.2+0x74/0x98
+[  585.412072] [<fffffc000817c3e0>] context_tracking_exit.part.3+0x40/0x50
+[  585.412074] [<fffffc000817c4e0>] context_tracking_user_exit+0x30/0x38
+[  585.412075] Exception stack(0xfffffc00385afec0 to 0xfffffc00385b0000)
+[  585.412076] fec0: 00000000000000b1 000002aacd702420 0000000000000200 00000000000001f4
+[  585.412078] fee0: 0000000000000000 0000000000000008 000002aabec9af17 ffffffffffffffff
+[  585.412079] ff00: 0000000000000016 ffffffffffffffff 000003ffe7619470 0000000000000057
+[  585.412081] ff20: a3d70a3d70a3d70b 000000000000016d 2ce33e6c02ce33e7 00000000000001db
+[  585.412082] ff40: 000002aabec7d260 000003ff86dc61f8 0000000000000014 00000000000001f4
+[  585.412083] ff60: 0000000000000000 000002aabecab000 000002aacd6e2830 0000000000000001
+[  585.412085] ff80: 000002aacd6e2830 000002aabec58380 0000000000000054 000002aabebccf50
+[  585.412086] ffa0: 0000000000000054 000003ffe7619540 000002aabebcf538 000003ffe7619540
+[  585.412088] ffc0: 000003ff86dc6410 0000000060000000 00000000000000b1 0000000000000016
+[  585.412089] ffe0: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+[  585.412091] [<fffffc0008083498>] el0_svc_naked+0xc/0x3c
+[  585.446067] CPU: 68 PID: 0 Comm: swapper/68 Not tainted 4.14.0-isolation-160735-g59b71c1-dirty #18
+
+[  585.412038] Call trace:
+[  585.412041] [<fffffc00080878d8>] dump_backtrace+0x0/0x380
+[  585.412042] [<fffffc0008087c6c>] show_stack+0x14/0x20
+[  585.412045] [<fffffc0008a091ec>] dump_stack+0x98/0xbc
+[  585.412047] [<fffffc0008122080>] rcu_dynticks_eqs_exit+0x68/0x70
+[  585.412049] [<fffffc00081232bc>] rcu_eqs_exit.isra.23+0x64/0x80
+[  585.412050] [<fffffc0008126080>] rcu_idle_exit+0x18/0x28
+[  585.412052] [<fffffc00080ff398>] do_idle+0x118/0x1d8
+[  585.412053] [<fffffc00080ff5ec>] cpu_startup_entry+0x24/0x28
+[  585.412055] [<fffffc000808db04>] secondary_start_kernel+0x15c/0x1a0
+[  585.412057] CPU: 22 PID: 4315 Comm: nginx Not tainted 4.14.0-isolation-160735-g59b71c1-dirty #18
+    
+diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
+index e1c59d4008a8..efa5060a2f1c 100644
+--- a/arch/arm64/kernel/entry.S
++++ b/arch/arm64/kernel/entry.S
+@@ -35,22 +35,29 @@
+ #include <asm/unistd.h>
  
  /*
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 5f963286232f..ef8c9ce53a61 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -201,17 +201,12 @@ static void pnv_prepare_going_down(void)
- 	 */
- 	opal_event_shutdown();
- 
--	/* Soft disable interrupts */
--	local_irq_disable();
-+	/* Print flash update message if one is scheduled. */
-+	opal_flash_update_print_message();
- 
+- * Context tracking subsystem.  Used to instrument transitions
+- * between user and kernel mode.
++ * Save/restore needed during syscalls.  Restore syscall arguments from
++ * the values already saved on stack during kernel_entry.
+  */
+-	.macro ct_user_exit, syscall = 0
+-#ifdef CONFIG_CONTEXT_TRACKING
+-	bl	context_tracking_user_exit
+-	.if \syscall == 1
 -	/*
--	 * Return secondary CPUs to firwmare if a flash update
--	 * is pending otherwise we will get all sort of error
--	 * messages about CPU being stuck etc.. This will also
--	 * have the side effect of hard disabling interrupts so
--	 * past this point, the kernel is effectively dead.
+-	 * Save/restore needed during syscalls.  Restore syscall arguments from
+-	 * the values already saved on stack during kernel_entry.
 -	 */
--	opal_flash_term_callback();
-+	smp_send_stop();
++	.macro __restore_syscall_args
+ 	ldp	x0, x1, [sp]
+ 	ldp	x2, x3, [sp, #S_X2]
+ 	ldp	x4, x5, [sp, #S_X4]
+ 	ldp	x6, x7, [sp, #S_X6]
+-	.endif
++	.endm
 +
-+	hard_irq_disable();
++	.macro el0_svc_restore_syscall_args
++#if !defined(CONFIG_TINY_RCU) || defined(CONFIG_CONTEXT_TRACKING)
++	__restore_syscall_args
++#endif
++	.endm
++
++/*
++ * Context tracking subsystem.  Used to instrument transitions
++ * between user and kernel mode.
++ */
++	.macro ct_user_exit
++#ifdef CONFIG_CONTEXT_TRACKING
++	bl	context_tracking_user_exit
+ #endif
+ 	.endm
+ 
+@@ -433,6 +440,20 @@ __bad_stack:
+ 	ASM_BUG()
+ 	.endm
+ 
++/*
++ * Flush I-cache if CPU is in extended quiescent state
++ */
++	.macro	isb_if_eqs
++#ifndef CONFIG_TINY_RCU
++	bl	rcu_is_watching
++	tst	w0, #0xff
++	b.ne	1f
++	/* Pairs with aarch64_insn_patch_text for EQS CPUs. */
++	isb
++1:
++#endif
++	.endm
++
+ el0_sync_invalid:
+ 	inv_entry 0, BAD_SYNC
+ ENDPROC(el0_sync_invalid)
+@@ -840,8 +861,10 @@ el0_svc:
+ 	mov	wsc_nr, #__NR_syscalls
+ el0_svc_naked:					// compat entry point
+ 	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
++	isb_if_eqs
+ 	enable_dbg_and_irq
+-	ct_user_exit 1
++	ct_user_exit
++	el0_svc_restore_syscall_args
+ 
+ 	ldr	x16, [tsk, #TSK_TI_FLAGS]	// check for syscall hooks
+ 	tst	x16, #_TIF_SYSCALL_WORK
+@@ -874,10 +897,7 @@ __sys_trace:
+ 	mov	x1, sp				// pointer to regs
+ 	cmp	wscno, wsc_nr			// check upper syscall limit
+ 	b.hs	__ni_sys_trace
+-	ldp	x0, x1, [sp]			// restore the syscall args
+-	ldp	x2, x3, [sp, #S_X2]
+-	ldp	x4, x5, [sp, #S_X4]
+-	ldp	x6, x7, [sp, #S_X6]
++	__restore_syscall_args
+ 	ldr	x16, [stbl, xscno, lsl #3]	// address in the syscall table
+ 	blr	x16				// call sys_* routine
+ 
+diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+index 2dc0f8482210..f11afd2aa33a 100644
+--- a/arch/arm64/kernel/process.c
++++ b/arch/arm64/kernel/process.c
+@@ -88,6 +88,12 @@ void arch_cpu_idle(void)
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
  }
  
- static void  __noreturn pnv_restart(char *cmd)
--- 
-2.16.3
++void arch_cpu_idle_exit(void)
++{
++	if (!rcu_is_watching())
++		isb();
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ void arch_cpu_idle_dead(void)
+ {
