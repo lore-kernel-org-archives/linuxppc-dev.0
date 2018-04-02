@@ -1,32 +1,32 @@
 Return-Path: <prvs=0630bfdc66=aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40F3my1j67zF24G
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2018 17:31:07 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w327TOVQ118434
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Apr 2018 03:31:03 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h3ehrucma-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40F3rq6wfqzF23f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2018 17:34:35 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w327YVTu055670
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Apr 2018 03:34:33 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h3eujtwkr-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2018 03:31:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2018 03:34:32 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 2 Apr 2018 03:31:03 -0400
+ Mon, 2 Apr 2018 01:33:46 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  npiggin@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH] powerpc: Fix oops due to deferral of lpacca on non
+Subject: [PATCH V2] powerpc: Fix oops due to wrong access of lppaca on non
  virtualized platform
-Date: Mon,  2 Apr 2018 13:00:44 +0530
-Message-Id: <20180402073044.12561-1-aneesh.kumar@linux.ibm.com>
+Date: Mon,  2 Apr 2018 13:03:37 +0530
+Message-Id: <20180402073337.22568-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,6 +47,9 @@ Fixes: 8e0b634b1327 ("powerpc/64s: Do not allocate lppaca if we are not virtuali
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
+Changes from V1:
+* update commit summary
+
  arch/powerpc/include/asm/lppaca.h   | 3 +++
  arch/powerpc/include/asm/spinlock.h | 2 ++
  arch/powerpc/kernel/time.c          | 3 +++
