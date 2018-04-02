@@ -1,24 +1,29 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <okaya@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40F40h1PsbzF24Y
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2018 17:41:23 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id o16so3617294pfk.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2018 00:41:23 -0700 (PDT)
-Date: Mon, 2 Apr 2018 17:41:03 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2] powerpc: Fix oops due to wrong access of lppaca on
- non virtualized platform
-Message-ID: <20180402174103.4d122fb3@roar.ozlabs.ibm.com>
-In-Reply-To: <20180402073337.22568-1-aneesh.kumar@linux.ibm.com>
-References: <20180402073337.22568-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FC6J6l4ZzF24N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2018 23:01:44 +1000 (AEST)
+Subject: Re: RFC on writel and writel_relaxed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, alexander.duyck@gmail.com,
+ will.deacon@arm.com, arnd@arndb.de, jgg@ziepe.ca, David.Laight@aculab.com,
+ oohall@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-rdma@vger.kernel.org,
+ alexander.h.duyck@redhat.com, paulmck@linux.vnet.ibm.com,
+ netdev@vger.kernel.org, linus971@gmail.com
+References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
+ <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
+ <1522249996.21446.25.camel@kernel.crashing.org>
+ <20180328.115509.481837809903086401.davem@davemloft.net>
+ <29fe17e0-9978-dc43-d02c-de8fabdc66c2@codeaurora.org>
+ <1522374027.21446.64.camel@kernel.crashing.org>
+From: Sinan Kaya <okaya@codeaurora.org>
+Message-ID: <43a8a11b-50fd-1382-30e3-e9c0a20087b6@codeaurora.org>
+Date: Mon, 2 Apr 2018 09:01:37 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1522374027.21446.64.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon,  2 Apr 2018 13:03:37 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
-
-> Commit 8e0b634b1327 ("powerpc/64s: Do not allocate lppaca if we are not
-> virtualized") removed allocation of lppaca on non virtualized platform. But with
-> CONFIG_PPC_SPLPAR enabled, we do access lppaca non-virtualized platform in some
-> code paths.
+On 3/29/2018 9:40 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2018-03-29 at 09:56 -0400, Sinan Kaya wrote:
+>> On 3/28/2018 11:55 AM, David Miller wrote:
+>>> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Date: Thu, 29 Mar 2018 02:13:16 +1100
+>>>
+>>>> Let's fix all archs, it's way easier than fixing all drivers. Half of
+>>>> the archs are unused or dead anyway.
+>>>
+>>> Agreed.
+>>>
+>>
+>> I pinged most of the maintainers yesterday.
+>> Which arches do we care about these days?
+>> I have not been paying attention any other architecture besides arm64.
 > 
-> Fix this but adding runtime check for virtualized platform.
+> Thanks for going through that exercise !
 > 
-> Fixes: 8e0b634b1327 ("powerpc/64s: Do not allocate lppaca if we are not virtualized")
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Once sparc, s390, microblaze and mips reply, I think we'll have a good
+> coverage, maybe riscv is to put in that lot too.
 
-Thanks, this looks good to me...
 
-> ---
-> Changes from V1:
-> * update commit summary
-> 
->  arch/powerpc/include/asm/lppaca.h   | 3 +++
->  arch/powerpc/include/asm/spinlock.h | 2 ++
->  arch/powerpc/kernel/time.c          | 3 +++
->  3 files changed, 8 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-> index 65d589689f01..7c23ce8a5a4c 100644
-> --- a/arch/powerpc/include/asm/lppaca.h
-> +++ b/arch/powerpc/include/asm/lppaca.h
-> @@ -34,6 +34,7 @@
->  #include <linux/threads.h>
->  #include <asm/types.h>
->  #include <asm/mmu.h>
-> +#include <asm/firmware.h>
->  
->  /*
->   * The lppaca is the "virtual processor area" registered with the hypervisor,
-> @@ -114,6 +115,8 @@ struct lppaca {
->  
->  static inline bool lppaca_shared_proc(struct lppaca *l)
->  {
-> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-> +		return false;
->  	return !!(l->__old_status & LPPACA_OLD_SHARED_PROC);
->  }
->  
+I posted the following two patches for supporting microblaze and unicore32. 
 
-We should eventually clean this up. There's no need to pass in an lppaca
-here AFAIKS. Is it even per-CPU, does it change dynamically? We could set
-it up in a FW_FEATURE parameter at boot, which would could make some of
-these tests cheaper.
+[PATCH v2 1/2] io: prevent compiler reordering on the default writeX() implementation
+[PATCH v2 2/2] io: prevent compiler reordering on the default readX() implementation
 
-> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-> index b9ebc3085fb7..72dc4ddc2972 100644
-> --- a/arch/powerpc/include/asm/spinlock.h
-> +++ b/arch/powerpc/include/asm/spinlock.h
-> @@ -56,6 +56,8 @@
->  #define vcpu_is_preempted vcpu_is_preempted
->  static inline bool vcpu_is_preempted(int cpu)
->  {
-> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-> +		return false;
->  	return !!(be32_to_cpu(lppaca_of(cpu).yield_count) & 1);
->  }
->  #endif
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index f7d96a68ecaa..360e71d455cc 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -266,6 +266,9 @@ void accumulate_stolen_time(void)
->  
->  static inline u64 calculate_stolen_time(u64 stop_tb)
->  {
-> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-> +		return 0;
-> +
->  	if (get_paca()->dtl_ridx != be64_to_cpu(get_lppaca()->dtl_idx))
->  		return scan_dispatch_log(stop_tb);
->  
+The rest of the arches except mips and alpha seem OK.
+I sent a question email on Friday to mips and alpha mailing lists. I'll follow up with
+an actual patch today.
+
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
