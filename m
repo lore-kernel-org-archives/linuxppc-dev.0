@@ -1,13 +1,13 @@
 Return-Path: <rientjes@google.com>
-Received: from mail-pl0-x22f.google.com (mail-pl0-x22f.google.com
- [IPv6:2607:f8b0:400e:c01::22f])
+Received: from mail-pl0-x230.google.com (mail-pl0-x230.google.com
+ [IPv6:2607:f8b0:400e:c01::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FSP02n0jzF21g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 09:00:19 +1000 (AEST)
-Received: by mail-pl0-x22f.google.com with SMTP id b6-v6so4177887pla.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2018 16:00:19 -0700 (PDT)
-Date: Mon, 2 Apr 2018 16:00:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FSfR6S3SzF1ys
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 09:11:59 +1000 (AEST)
+Received: by mail-pl0-x230.google.com with SMTP id u11-v6so6209097plq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2018 16:11:59 -0700 (PDT)
+Date: Mon, 2 Apr 2018 16:11:55 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
@@ -26,12 +26,12 @@ cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  npiggin@gmail.com, bsingharora@gmail.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: Re: [PATCH v9 12/24] mm/migrate: Pass vm_fault pointer to
- migrate_misplaced_page()
-In-Reply-To: <1520963994-28477-13-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1804021559560.94516@chino.kir.corp.google.com>
+Subject: Re: [PATCH v9 13/24] mm: Introduce
+ __lru_cache_add_active_or_unevictable
+In-Reply-To: <1520963994-28477-14-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1804021611430.102694@chino.kir.corp.google.com>
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-13-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-14-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,11 +45,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Tue, 13 Mar 2018, Laurent Dufour wrote:
 
-> migrate_misplaced_page() is only called during the page fault handling so
-> it's better to pass the pointer to the struct vm_fault instead of the vma.
-> 
-> This way during the speculative page fault path the saved vma->vm_flags
-> could be used.
+> The speculative page fault handler which is run without holding the
+> mmap_sem is calling lru_cache_add_active_or_unevictable() but the vm_flags
+> is not guaranteed to remain constant.
+> Introducing __lru_cache_add_active_or_unevictable() which has the vma flags
+> value parameter instead of the vma pointer.
 > 
 > Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 
