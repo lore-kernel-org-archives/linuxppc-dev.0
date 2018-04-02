@@ -1,29 +1,36 @@
-Return-Path: <okaya@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=0630b54844=ppaidipe@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FC6J6l4ZzF24N
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Apr 2018 23:01:44 +1000 (AEST)
-Subject: Re: RFC on writel and writel_relaxed
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, alexander.duyck@gmail.com,
- will.deacon@arm.com, arnd@arndb.de, jgg@ziepe.ca, David.Laight@aculab.com,
- oohall@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-rdma@vger.kernel.org,
- alexander.h.duyck@redhat.com, paulmck@linux.vnet.ibm.com,
- netdev@vger.kernel.org, linus971@gmail.com
-References: <CA+55aFxULkhZGhg-tTBBxBBvXbL7QV7f6zvwW7U2wHFijqGEqw@mail.gmail.com>
- <b02cc752d90c5e5ae2cc8cc4f67429a7@codeaurora.org>
- <1522249996.21446.25.camel@kernel.crashing.org>
- <20180328.115509.481837809903086401.davem@davemloft.net>
- <29fe17e0-9978-dc43-d02c-de8fabdc66c2@codeaurora.org>
- <1522374027.21446.64.camel@kernel.crashing.org>
-From: Sinan Kaya <okaya@codeaurora.org>
-Message-ID: <43a8a11b-50fd-1382-30e3-e9c0a20087b6@codeaurora.org>
-Date: Mon, 2 Apr 2018 09:01:37 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FFY06W5DzF259
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 00:51:24 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w32EoT3B060368
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Apr 2018 10:51:21 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h3ne9khp2-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Apr 2018 10:51:21 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ppaidipe@linux.vnet.ibm.com>;
+ Mon, 2 Apr 2018 10:51:20 -0400
 MIME-Version: 1.0
-In-Reply-To: <1522374027.21446.64.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Mon, 02 Apr 2018 20:22:45 +0530
+From: ppaidipe <ppaidipe@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Vasant Hegde
+ <hegdevasant@linux.vnet.ibm.com>, Linuxppc-dev
+ <linuxppc-dev-bounces+ppaidipe=linux.vnet.ibm.com@lists.ozlabs.org>
+Subject: Re: [PATCH 0/3] stop secondaries for reboot/shutdown
+In-Reply-To: <20180401103615.15454-1-npiggin@gmail.com>
+References: <20180401103615.15454-1-npiggin@gmail.com>
+Message-Id: <4c58f75d7ddfd61b171400a73721aa9d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/29/2018 9:40 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-03-29 at 09:56 -0400, Sinan Kaya wrote:
->> On 3/28/2018 11:55 AM, David Miller wrote:
->>> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Date: Thu, 29 Mar 2018 02:13:16 +1100
->>>
->>>> Let's fix all archs, it's way easier than fixing all drivers. Half of
->>>> the archs are unused or dead anyway.
->>>
->>> Agreed.
->>>
->>
->> I pinged most of the maintainers yesterday.
->> Which arches do we care about these days?
->> I have not been paying attention any other architecture besides arm64.
+On 2018-04-01 16:06, Nicholas Piggin wrote:
+> I'm rebasing and resending this series because the hard
+> lockup messages are being seen in the field.
 > 
-> Thanks for going through that exercise !
+> Since last time, one of the patches was merged, and patches
+> were split and reordered a bit. No major changes.
 > 
-> Once sparc, s390, microblaze and mips reply, I think we'll have a good
-> coverage, maybe riscv is to put in that lot too.
+> This still hasn't been tested with the FSP firmware update.
+> 
 
+I have tested this series on a FSP platform with firmware update
+and multiple reboot/shutdown tests. Not seen any issues.
 
-I posted the following two patches for supporting microblaze and unicore32. 
+Tested-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
 
-[PATCH v2 1/2] io: prevent compiler reordering on the default writeX() implementation
-[PATCH v2 2/2] io: prevent compiler reordering on the default readX() implementation
+Thanks
+Pridhiviraj
 
-The rest of the arches except mips and alpha seem OK.
-I sent a question email on Friday to mips and alpha mailing lists. I'll follow up with
-an actual patch today.
-
-
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+> Thanks,
+> Nick
+> 
+> Nicholas Piggin (3):
+>   powerpc: use NMI IPI for smp_send_stop
+>   powerpc: hard disable irqs in smp_send_stop loop
+>   powerpc/powernv: Always stop secondaries before reboot/shutdown
+> 
+>  arch/powerpc/include/asm/opal.h             |  2 +-
+>  arch/powerpc/kernel/smp.c                   | 13 +++++++++++--
+>  arch/powerpc/platforms/powernv/opal-flash.c | 28 
+> +---------------------------
+>  arch/powerpc/platforms/powernv/setup.c      | 15 +++++----------
+>  4 files changed, 18 insertions(+), 40 deletions(-)
