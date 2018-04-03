@@ -1,36 +1,33 @@
-Return-Path: <prvs=06317446eb=vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FnKq3XRvzF26f
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:43:43 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w33BhbSG024684
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 07:43:37 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h45bek5gf-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:43:37 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 3 Apr 2018 12:43:34 +0100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-Subject: Re: [PATCH] cxl: Fix possible deadlock when processing page faults
- from cxllib
-In-Reply-To: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
-References: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
-Date: Tue, 03 Apr 2018 17:13:27 +0530
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40Fr6B5VVszF277
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 23:48:41 +1000 (AEST)
+Date: Tue, 3 Apr 2018 14:48:32 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ <20180327102116.GA2464@arm.com>
+ <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <876058o6qo.fsf@vajain21.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,25 +37,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+Hi Yury,
 
-> cxllib_handle_fault() is called by an external driver when it needs to
-> have the host process page faults for a buffer which may cover several
-> pages. Currently the function holds the mm->mmap_sem semaphore with
-> read access while iterating over the buffer, since it could spawn
-> several VMAs. When calling a lower-level function to handle the page
-> fault for a single page, the semaphore is accessed again in read
-> mode. That is wrong and can lead to deadlocks if a writer tries to
-> sneak in while a buffer of several pages is being processed.
->
-> The fix is to release the semaphore once cxllib_handle_fault() got the
-> information it needs from the current vma. The address space/VMAs
-> could evolve while we iterate over the full buffer, but in the
-> unlikely case where we miss a page, the driver will raise a new page
-> fault when retrying.
->
-> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
-> Cc: stable@vger.kernel.org # 4.13+
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+On Sun, Apr 01, 2018 at 02:11:08PM +0300, Yury Norov wrote:
+> +/*
+> + * Flush I-cache if CPU is in extended quiescent state
+> + */
 
-Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+This comment is misleading. An ISB doesn't touch the I-cache; it forces
+a context synchronization event.
+
+> +	.macro	isb_if_eqs
+> +#ifndef CONFIG_TINY_RCU
+> +	bl	rcu_is_watching
+> +	tst	w0, #0xff
+> +	b.ne	1f
+
+The TST+B.NE can be a CBNZ:
+
+	bl	rcu_is_watching
+	cbnz	x0, 1f
+	isb
+1:
+
+> +	/* Pairs with aarch64_insn_patch_text for EQS CPUs. */
+> +	isb
+> +1:
+> +#endif
+> +	.endm
+> +
+>  el0_sync_invalid:
+>  	inv_entry 0, BAD_SYNC
+>  ENDPROC(el0_sync_invalid)
+> @@ -840,8 +861,10 @@ el0_svc:
+>  	mov	wsc_nr, #__NR_syscalls
+>  el0_svc_naked:					// compat entry point
+>  	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
+> +	isb_if_eqs
+>  	enable_dbg_and_irq
+> -	ct_user_exit 1
+> +	ct_user_exit
+
+I don't think this is safe. here we issue the ISB *before* exiting a
+quiesecent state, so I think we can race with another CPU that calls
+kick_all_active_cpus_sync, e.g.
+
+	CPU0				CPU1
+
+	ISB
+					patch_some_text()
+					kick_all_active_cpus_sync()
+	ct_user_exit
+
+	// not synchronized!
+	use_of_patched_text()
+
+... and therefore the ISB has no effect, which could be disasterous.
+
+I believe we need the ISB *after* we transition into a non-quiescent
+state, so that we can't possibly miss a context synchronization event.
+
+Thanks,
+Mark.
