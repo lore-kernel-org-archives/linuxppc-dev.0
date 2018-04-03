@@ -2,14 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Ftsv6RvSzF24G
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 01:53:23 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] selftests/powerpc: Fix copyloops build since Power4 assembler
- change
-Date: Wed,  4 Apr 2018 01:53:18 +1000
-Message-Id: <20180403155318.18266-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Fv5g1Pq7zF28m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 02:03:35 +1000 (AEST)
+In-Reply-To: <20171117140807.22105-3-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [2/3] powerpc/64s/idle: avoid sync for KVM state when waking from
+ idle
+Message-Id: <40Fv5f4Pfpz9s1r@ozlabs.org>
+Date: Wed,  4 Apr 2018 02:03:32 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,37 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent commit 15a3204d24a3 ("powerpc/64s: Set assembler machine
-type to POWER4") set the machine type in our ASFLAGS when building the
-kernel, and removed some ".machine power4" directives from various asm
-files.
+On Fri, 2017-11-17 at 14:08:06 UTC, Nicholas Piggin wrote:
+> When waking from a CPU idle instruction (e.g., nap or stop), the sync
+> for ordering the KVM secondary thread state can be avoided if there
+> wakeup is coming from a kernel context rather than KVM context.
+> 
+> This improves performance for ping-pong benchmark with the stop0 idle
+> state by 0.46% for 2 threads in the same core, and 1.02% for different
+> cores.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-This broke the selftests build on old toolchains (that don't assume
-Power4), because we build the kernel source files into the selftests
-using different ASFLAGS.
+Applied to powerpc next, thanks.
 
-The fix is simply to add -mpower4 to the selftest ASFLAGS as well.
+https://git.kernel.org/powerpc/c/8c1c7fb0b5ec95c392e9b585a6cf8c
 
-Fixes: 15a3204d24a3 ("powerpc/64s: Set assembler machine type to POWER4")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- tools/testing/selftests/powerpc/copyloops/Makefile | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
-index ac4a52e19e59..eedce3366f64 100644
---- a/tools/testing/selftests/powerpc/copyloops/Makefile
-+++ b/tools/testing/selftests/powerpc/copyloops/Makefile
-@@ -5,8 +5,8 @@ CFLAGS += -I$(CURDIR)
- CFLAGS += -D SELFTEST
- CFLAGS += -maltivec
- 
--# Use our CFLAGS for the implicit .S rule
--ASFLAGS = $(CFLAGS)
-+# Use our CFLAGS for the implicit .S rule & set the asm machine type
-+ASFLAGS = $(CFLAGS) -Wa,-mpower4
- 
- TEST_GEN_PROGS := copyuser_64 copyuser_power7 memcpy_64 memcpy_power7
- EXTRA_SOURCES := validate.c ../harness.c
--- 
-2.14.1
+cheers
