@@ -1,19 +1,19 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Frq91S8qzF27f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:20:52 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id s24-v6so8998506plq.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:20:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FrqD5FKnzF27f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:20:56 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id x4-v6so8990219pln.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:20:56 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: 000linux-nvdimm@lists.01.org,
 	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 2/4] libnvdimm: Add device-tree based driver
-Date: Wed,  4 Apr 2018 00:20:29 +1000
-Message-Id: <20180403142031.28629-2-oohall@gmail.com>
+Subject: [PATCH 4/4] powerpc/powernv: Create platform devs for nvdimm buses
+Date: Wed,  4 Apr 2018 00:20:31 +1000
+Message-Id: <20180403142031.28629-4-oohall@gmail.com>
 In-Reply-To: <20180403142031.28629-1-oohall@gmail.com>
 References: <20180403142031.28629-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,197 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds peliminary device-tree bindings for persistent memory
-regions. The driver registers a libnvdimm bus for each pmem-region
-node and each address range under the node is converted to a region
-within that bus.
+Scan the devicetree for an nvdimm-bus compatible and create
+a platform device for them.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-v2: Made each bus have a separate node rather having a shared bus.
-    Renamed to of_pmem rather than of_nvdimm.
-    Changed log level of happy-path messages to debug.
----
- MAINTAINERS              |   7 +++
- drivers/nvdimm/Kconfig   |  10 ++++
- drivers/nvdimm/Makefile  |   1 +
- drivers/nvdimm/of_pmem.c | 119 +++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 137 insertions(+)
- create mode 100644 drivers/nvdimm/of_pmem.c
+ arch/powerpc/platforms/powernv/opal.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4e62756936fa..6ef38be700e8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8035,6 +8035,13 @@ Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
- S:	Supported
- F:	drivers/nvdimm/pmem*
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index c15182765ff5..c37485a3c5c9 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -821,6 +821,9 @@ static int __init opal_init(void)
+ 	/* Create i2c platform devices */
+ 	opal_pdev_init("ibm,opal-i2c");
  
-+LIBNVDIMM: DEVICETREE BINDINGS
-+M:	Oliver O'Halloran <oohall@gmail.com>
-+L:	linux-nvdimm@lists.01.org
-+Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
-+S:	Supported
-+F:	drivers/nvdimm/of_pmem.c
++	/* Handle non-volatile memory devices */
++	opal_pdev_init("pmem-region");
 +
- LIBNVDIMM: NON-VOLATILE MEMORY DEVICE SUBSYSTEM
- M:	Dan Williams <dan.j.williams@intel.com>
- L:	linux-nvdimm@lists.01.org
-diff --git a/drivers/nvdimm/Kconfig b/drivers/nvdimm/Kconfig
-index a65f2e1d9f53..2d6862bf7436 100644
---- a/drivers/nvdimm/Kconfig
-+++ b/drivers/nvdimm/Kconfig
-@@ -102,4 +102,14 @@ config NVDIMM_DAX
+ 	/* Setup a heatbeat thread if requested by OPAL */
+ 	opal_init_heartbeat();
  
- 	  Select Y if unsure
- 
-+config OF_PMEM
-+	tristate "Device-tree support for persistent memory regions"
-+	depends on OF
-+	default LIBNVDIMM
-+	help
-+	  Allows regions of persistent memory to be described in the
-+	  device-tree.
-+
-+	  Select Y if unsure.
-+
- endif
-diff --git a/drivers/nvdimm/Makefile b/drivers/nvdimm/Makefile
-index 70d5f3ad9909..e8847045dac0 100644
---- a/drivers/nvdimm/Makefile
-+++ b/drivers/nvdimm/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_BLK_DEV_PMEM) += nd_pmem.o
- obj-$(CONFIG_ND_BTT) += nd_btt.o
- obj-$(CONFIG_ND_BLK) += nd_blk.o
- obj-$(CONFIG_X86_PMEM_LEGACY) += nd_e820.o
-+obj-$(CONFIG_OF_PMEM) += of_pmem.o
- 
- nd_pmem-y := pmem.o
- 
-diff --git a/drivers/nvdimm/of_pmem.c b/drivers/nvdimm/of_pmem.c
-new file mode 100644
-index 000000000000..374c796ea1de
---- /dev/null
-+++ b/drivers/nvdimm/of_pmem.c
-@@ -0,0 +1,119 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+
-+#define pr_fmt(fmt) "of_pmem: " fmt
-+
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/libnvdimm.h>
-+#include <linux/module.h>
-+#include <linux/ioport.h>
-+#include <linux/slab.h>
-+
-+static const struct attribute_group *region_attr_groups[] = {
-+	&nd_region_attribute_group,
-+	&nd_device_attribute_group,
-+	NULL,
-+};
-+
-+static const struct attribute_group *bus_attr_groups[] = {
-+	&nvdimm_bus_attribute_group,
-+	NULL,
-+};
-+
-+struct of_nd_private {
-+	struct nvdimm_bus_descriptor bus_desc;
-+	struct nvdimm_bus *bus;
-+};
-+
-+static int of_nd_region_probe(struct platform_device *pdev)
-+{
-+	struct of_nd_private *priv;
-+	struct device_node *np;
-+	struct nvdimm_bus *bus;
-+	bool is_volatile;
-+	int i;
-+
-+	np = dev_of_node(&pdev->dev);
-+	if (!np)
-+		return -ENXIO;
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->bus_desc.attr_groups = bus_attr_groups;
-+	priv->bus_desc.provider_name = "of_pmem";
-+	priv->bus_desc.module = THIS_MODULE;
-+	priv->bus_desc.of_node = np;
-+
-+	priv->bus = bus = nvdimm_bus_register(&pdev->dev, &priv->bus_desc);
-+	if (!bus) {
-+		kfree(priv);
-+		return -ENODEV;
-+	}
-+	platform_set_drvdata(pdev, priv);
-+
-+	is_volatile = !!of_find_property(np, "volatile", NULL);
-+	dev_dbg(&pdev->dev, "Registering %s regions from %pOF\n",
-+			is_volatile ? "volatile" : "non-volatile",  np);
-+
-+	for (i = 0; i < pdev->num_resources; i++) {
-+		struct nd_region_desc ndr_desc;
-+		struct nd_region *region;
-+
-+		/*
-+		 * NB: libnvdimm copies the data from ndr_desc into it's own
-+		 * structures so passing a stack pointer is fine.
-+		 */
-+		memset(&ndr_desc, 0, sizeof(ndr_desc));
-+		ndr_desc.attr_groups = region_attr_groups;
-+		ndr_desc.numa_node = of_node_to_nid(np);
-+		ndr_desc.res = &pdev->resource[i];
-+		ndr_desc.of_node = np;
-+		set_bit(ND_REGION_PAGEMAP, &ndr_desc.flags);
-+
-+		if (is_volatile)
-+			region = nvdimm_volatile_region_create(bus, &ndr_desc);
-+		else
-+			region = nvdimm_pmem_region_create(bus, &ndr_desc);
-+
-+		if (!region)
-+			dev_warn(&pdev->dev, "Unable to register region %pR from %pOF\n",
-+					ndr_desc.res, np);
-+		else
-+			dev_dbg(&pdev->dev, "Registered region %pR from %pOF\n",
-+					ndr_desc.res, np);
-+	}
-+
-+	return 0;
-+}
-+
-+static int of_nd_region_remove(struct platform_device *pdev)
-+{
-+	struct of_nd_private *priv = platform_get_drvdata(pdev);
-+
-+	nvdimm_bus_unregister(priv->bus);
-+	kfree(priv);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id of_nd_region_match[] = {
-+	{ .compatible = "pmem-region" },
-+	{ },
-+};
-+
-+static struct platform_driver of_nd_region_driver = {
-+	.probe = of_nd_region_probe,
-+	.remove = of_nd_region_remove,
-+	.driver = {
-+		.name = "of_pmem",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_nd_region_match,
-+	},
-+};
-+
-+module_platform_driver(of_nd_region_driver);
-+MODULE_DEVICE_TABLE(of, of_nd_region_match);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("IBM Corporation");
 -- 
 2.9.5
