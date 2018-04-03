@@ -1,36 +1,35 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jglisse@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40G0dt4Qr1zF29G
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 06:13:22 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w33KAecS131639
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 16:13:20 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h4fun9tku-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 16:13:19 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 3 Apr 2018 21:13:17 +0100
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>,
- sathnaga@linux.vnet.ibm.com
-Subject: [PATCH v4 10/10] powerpc64/ftrace: Implement support for
- ftrace_regs_caller()
-Date: Wed,  4 Apr 2018 01:42:25 +0530
-In-Reply-To: <cover.1522784883.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1522784883.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1522784883.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1522784883.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <c3fa46ea1ec0bfc6148ef3be9b8a224aa0b4bf82.1522784883.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40G19f4Yq0zF29y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 06:37:25 +1000 (AEST)
+Date: Tue, 3 Apr 2018 16:37:18 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v9 00/24] Speculative page faults
+Message-ID: <20180403203718.GE5935@redhat.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,465 +39,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With -mprofile-kernel, we always save the full register state in
-ftrace_caller(). While this works, this is inefficient if we're not
-interested in the register state, such as when we're using the function
-tracer.
+On Tue, Mar 13, 2018 at 06:59:30PM +0100, Laurent Dufour wrote:
+> This is a port on kernel 4.16 of the work done by Peter Zijlstra to
+> handle page fault without holding the mm semaphore [1].
+> 
+> The idea is to try to handle user space page faults without holding the
+> mmap_sem. This should allow better concurrency for massively threaded
+> process since the page fault handler will not wait for other threads memory
+> layout change to be done, assuming that this change is done in another part
+> of the process's memory space. This type page fault is named speculative
+> page fault. If the speculative page fault fails because of a concurrency is
+> detected or because underlying PMD or PTE tables are not yet allocating, it
+> is failing its processing and a classic page fault is then tried.
+> 
+> The speculative page fault (SPF) has to look for the VMA matching the fault
+> address without holding the mmap_sem, this is done by introducing a rwlock
+> which protects the access to the mm_rb tree. Previously this was done using
+> SRCU but it was introducing a lot of scheduling to process the VMA's
+> freeing
+> operation which was hitting the performance by 20% as reported by Kemi Wang
+> [2].Using a rwlock to protect access to the mm_rb tree is limiting the
+> locking contention to these operations which are expected to be in a O(log
+> n)
+> order. In addition to ensure that the VMA is not freed in our back a
+> reference count is added and 2 services (get_vma() and put_vma()) are
+> introduced to handle the reference count. When a VMA is fetch from the RB
+> tree using get_vma() is must be later freeed using put_vma(). Furthermore,
+> to allow the VMA to be used again by the classic page fault handler a
+> service is introduced can_reuse_spf_vma(). This service is expected to be
+> called with the mmap_sem hold. It checked that the VMA is still matching
+> the specified address and is releasing its reference count as the mmap_sem
+> is hold it is ensure that it will not be freed in our back. In general, the
+> VMA's reference count could be decremented when holding the mmap_sem but it
+> should not be increased as holding the mmap_sem is ensuring that the VMA is
+> stable. I can't see anymore the overhead I got while will-it-scale
+> benchmark anymore.
+> 
+> The VMA's attributes checked during the speculative page fault processing
+> have to be protected against parallel changes. This is done by using a per
+> VMA sequence lock. This sequence lock allows the speculative page fault
+> handler to fast check for parallel changes in progress and to abort the
+> speculative page fault in that case.
+> 
+> Once the VMA is found, the speculative page fault handler would check for
+> the VMA's attributes to verify that the page fault has to be handled
+> correctly or not. Thus the VMA is protected through a sequence lock which
+> allows fast detection of concurrent VMA changes. If such a change is
+> detected, the speculative page fault is aborted and a *classic* page fault
+> is tried.  VMA sequence lockings are added when VMA attributes which are
+> checked during the page fault are modified.
+> 
+> When the PTE is fetched, the VMA is checked to see if it has been changed,
+> so once the page table is locked, the VMA is valid, so any other changes
+> leading to touching this PTE will need to lock the page table, so no
+> parallel change is possible at this time.
 
-Rename the existing ftrace_caller() as ftrace_regs_caller() and provide
-a simpler implementation for ftrace_caller() that is used when registers
-are not required to be saved.
+What would have been nice is some pseudo highlevel code before all the
+above detailed description. Something like:
+  speculative_fault(addr) {
+    mm_lock_for_vma_snapshot()
+    vma_snapshot = snapshot_vma_infos(addr)
+    mm_unlock_for_vma_snapshot()
+    ...
+    if (!vma_can_speculatively_fault(vma_snapshot, addr))
+        return;
+    ...
+    /* Do fault ie alloc memory, read from file ... */
+    page = ...;
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/ftrace.h              |   2 -
- arch/powerpc/include/asm/module.h              |   3 +
- arch/powerpc/kernel/module_64.c                |  28 +++-
- arch/powerpc/kernel/trace/ftrace.c             | 184 +++++++++++++++++++++++--
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  71 +++++++++-
- 5 files changed, 262 insertions(+), 26 deletions(-)
+    preempt_disable();
+    if (vma_snapshot_still_valid(vma_snapshot, addr) &&
+        vma_pte_map_lock(vma_snapshot, addr)) {
+        if (pte_same(ptep, orig_pte)) {
+            /* Setup new pte */
+            page = NULL;
+        }
+    }
+    preempt_enable();
+    if (page)
+        put(page)
+  }
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 3b5e85a72e10..f0806a2fd451 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -49,8 +49,6 @@
- extern void _mcount(void);
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
--# define FTRACE_ADDR ((unsigned long)ftrace_caller)
--# define FTRACE_REGS_ADDR FTRACE_ADDR
- static inline unsigned long ftrace_call_adjust(unsigned long addr)
- {
-        /* reloction of mcount call site is the same as the address */
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 7e28442827f1..2d16b6d9147d 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -43,6 +43,9 @@ struct mod_arch_specific {
- #ifdef CONFIG_DYNAMIC_FTRACE
- 	unsigned long toc;
- 	unsigned long tramp;
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	unsigned long tramp_regs;
-+#endif
- #endif
- 
- 	/* For module function descriptor dereference */
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 8413be31d6a4..f7667e2ebfcb 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -280,6 +280,10 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- #ifdef CONFIG_DYNAMIC_FTRACE
- 	/* make the trampoline to the ftrace_caller */
- 	relocs++;
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	/* an additional one for ftrace_regs_caller */
-+	relocs++;
-+#endif
- #endif
- 
- 	pr_debug("Looks like a total of %lu stubs, max\n", relocs);
-@@ -765,7 +769,8 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
-  * via the paca (in r13). The target (ftrace_caller()) is responsible for
-  * saving and restoring the toc before returning.
-  */
--static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
-+static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs,
-+				struct module *me, unsigned long addr)
- {
- 	struct ppc64_stub_entry *entry;
- 	unsigned int i, num_stubs;
-@@ -792,9 +797,10 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module
- 	memcpy(entry->jump, stub_insns, sizeof(stub_insns));
- 
- 	/* Stub uses address relative to kernel toc (from the paca) */
--	reladdr = (unsigned long)ftrace_caller - kernel_toc_addr();
-+	reladdr = addr - kernel_toc_addr();
- 	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
--		pr_err("%s: Address of ftrace_caller out of range of kernel_toc.\n", me->name);
-+		pr_err("%s: Address of %ps out of range of kernel_toc.\n",
-+							me->name, (void *)addr);
- 		return 0;
- 	}
- 
-@@ -802,22 +808,30 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module
- 	entry->jump[2] |= PPC_LO(reladdr);
- 
- 	/* Eventhough we don't use funcdata in the stub, it's needed elsewhere. */
--	entry->funcdata = func_desc((unsigned long)ftrace_caller);
-+	entry->funcdata = func_desc(addr);
- 	entry->magic = STUB_MAGIC;
- 
- 	return (unsigned long)entry;
- }
- #else
--static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
-+static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs,
-+				struct module *me, unsigned long addr)
- {
--	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me);
-+	return stub_for_addr(sechdrs, addr, me);
- }
- #endif
- 
- int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs)
- {
- 	mod->arch.toc = my_r2(sechdrs, mod);
--	mod->arch.tramp = create_ftrace_stub(sechdrs, mod);
-+	mod->arch.tramp = create_ftrace_stub(sechdrs, mod,
-+					(unsigned long)ftrace_caller);
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	mod->arch.tramp_regs = create_ftrace_stub(sechdrs, mod,
-+					(unsigned long)ftrace_regs_caller);
-+	if (!mod->arch.tramp_regs)
-+		return -ENOENT;
-+#endif
- 
- 	if (!mod->arch.tramp)
- 		return -ENOENT;
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 80667128db3d..79d2924e75d5 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -357,6 +357,8 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
- 	unsigned int op[2];
- 	void *ip = (void *)rec->ip;
-+	unsigned long entry, ptr, tramp;
-+	struct module *mod = rec->arch.mod;
- 
- 	/* read where this goes */
- 	if (probe_kernel_read(op, ip, sizeof(op)))
-@@ -368,19 +370,44 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 		return -EINVAL;
- 	}
- 
--	/* If we never set up a trampoline to ftrace_caller, then bail */
--	if (!rec->arch.mod->arch.tramp) {
-+	/* If we never set up ftrace trampoline(s), then bail */
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	if (!mod->arch.tramp || !mod->arch.tramp_regs) {
-+#else
-+	if (!mod->arch.tramp) {
-+#endif
- 		pr_err("No ftrace trampoline\n");
- 		return -EINVAL;
- 	}
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	if (rec->flags & FTRACE_FL_REGS)
-+		tramp = mod->arch.tramp_regs;
-+	else
-+#endif
-+		tramp = mod->arch.tramp;
-+
-+	if (module_trampoline_target(mod, tramp, &ptr)) {
-+		pr_err("Failed to get trampoline target\n");
-+		return -EFAULT;
-+	}
-+
-+	pr_devel("trampoline target %lx", ptr);
-+
-+	entry = ppc_global_function_entry((void *)addr);
-+	/* This should match what was called */
-+	if (ptr != entry) {
-+		pr_err("addr %lx does not match expected %lx\n", ptr, entry);
-+		return -EINVAL;
-+	}
-+
- 	/* Ensure branch is within 24 bits */
--	if (!create_branch(ip, rec->arch.mod->arch.tramp, BRANCH_SET_LINK)) {
-+	if (!create_branch(ip, tramp, BRANCH_SET_LINK)) {
- 		pr_err("Branch out of range\n");
- 		return -EINVAL;
- 	}
- 
--	if (patch_branch(ip, rec->arch.mod->arch.tramp, BRANCH_SET_LINK)) {
-+	if (patch_branch(ip, tramp, BRANCH_SET_LINK)) {
- 		pr_err("REL24 out of range!\n");
- 		return -EINVAL;
- 	}
-@@ -388,14 +415,6 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	return 0;
- }
- 
--#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
--int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
--			unsigned long addr)
--{
--	return ftrace_make_call(rec, addr);
--}
--#endif
--
- #else  /* !CONFIG_PPC64: */
- static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-@@ -472,6 +491,137 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- #endif /* CONFIG_MODULES */
- }
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+#ifdef CONFIG_MODULES
-+static int
-+__ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
-+					unsigned long addr)
-+{
-+	unsigned int op;
-+	unsigned long ip = rec->ip;
-+	unsigned long entry, ptr, tramp;
-+	struct module *mod = rec->arch.mod;
-+
-+	/* If we never set up ftrace trampolines, then bail */
-+	if (!mod->arch.tramp || !mod->arch.tramp_regs) {
-+		pr_err("No ftrace trampoline\n");
-+		return -EINVAL;
-+	}
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(&op, (void *)ip, sizeof(int))) {
-+		pr_err("Fetching opcode failed.\n");
-+		return -EFAULT;
-+	}
-+
-+	/* Make sure that that this is still a 24bit jump */
-+	if (!is_bl_op(op)) {
-+		pr_err("Not expected bl: opcode is %x\n", op);
-+		return -EINVAL;
-+	}
-+
-+	/* lets find where the pointer goes */
-+	tramp = find_bl_target(ip, op);
-+	entry = ppc_global_function_entry((void *)old_addr);
-+
-+	pr_devel("ip:%lx jumps to %lx", ip, tramp);
-+
-+	if (tramp != entry) {
-+		/* old_addr is not within range, so we must have used a trampoline */
-+		if (module_trampoline_target(mod, tramp, &ptr)) {
-+			pr_err("Failed to get trampoline target\n");
-+			return -EFAULT;
-+		}
-+
-+		pr_devel("trampoline target %lx", ptr);
-+
-+		/* This should match what was called */
-+		if (ptr != entry) {
-+			pr_err("addr %lx does not match expected %lx\n", ptr, entry);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	/* The new target may be within range */
-+	if (test_24bit_addr(ip, addr)) {
-+		/* within range */
-+		if (patch_branch((unsigned int *)ip, addr, BRANCH_SET_LINK)) {
-+			pr_err("REL24 out of range!\n");
-+			return -EINVAL;
-+		}
-+
-+		return 0;
-+	}
-+
-+	if (rec->flags & FTRACE_FL_REGS)
-+		tramp = mod->arch.tramp_regs;
-+	else
-+		tramp = mod->arch.tramp;
-+
-+	if (module_trampoline_target(mod, tramp, &ptr)) {
-+		pr_err("Failed to get trampoline target\n");
-+		return -EFAULT;
-+	}
-+
-+	pr_devel("trampoline target %lx", ptr);
-+
-+	entry = ppc_global_function_entry((void *)addr);
-+	/* This should match what was called */
-+	if (ptr != entry) {
-+		pr_err("addr %lx does not match expected %lx\n", ptr, entry);
-+		return -EINVAL;
-+	}
-+
-+	/* Ensure branch is within 24 bits */
-+	if (!create_branch((unsigned int *)ip, tramp, BRANCH_SET_LINK)) {
-+		pr_err("Branch out of range\n");
-+		return -EINVAL;
-+	}
-+
-+	if (patch_branch((unsigned int *)ip, tramp, BRANCH_SET_LINK)) {
-+		pr_err("REL24 out of range!\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
-+			unsigned long addr)
-+{
-+	unsigned long ip = rec->ip;
-+	unsigned int old, new;
-+
-+	/*
-+	 * If the calling address is more that 24 bits away,
-+	 * then we had to use a trampoline to make the call.
-+	 * Otherwise just update the call site.
-+	 */
-+	if (test_24bit_addr(ip, addr) && test_24bit_addr(ip, old_addr)) {
-+		/* within range */
-+		old = ftrace_call_replace(ip, old_addr, 1);
-+		new = ftrace_call_replace(ip, addr, 1);
-+		return ftrace_modify_code(ip, old, new);
-+	}
-+
-+#ifdef CONFIG_MODULES
-+	/*
-+	 * Out of range jumps are called from modules.
-+	 */
-+	if (!rec->arch.mod) {
-+		pr_err("No module loaded\n");
-+		return -EINVAL;
-+	}
-+
-+	return __ftrace_modify_call(rec, old_addr, addr);
-+#else
-+	/* We should not get here without modules */
-+	return -EINVAL;
-+#endif /* CONFIG_MODULES */
-+}
-+#endif
-+
- int ftrace_update_ftrace_func(ftrace_func_t func)
- {
- 	unsigned long ip = (unsigned long)(&ftrace_call);
-@@ -482,6 +632,16 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
- 	new = ftrace_call_replace(ip, (unsigned long)func, 1);
- 	ret = ftrace_modify_code(ip, old, new);
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	/* Also update the regs callback function */
-+	if (!ret) {
-+		ip = (unsigned long)(&ftrace_regs_call);
-+		old = *(unsigned int *)&ftrace_regs_call;
-+		new = ftrace_call_replace(ip, (unsigned long)func, 1);
-+		ret = ftrace_modify_code(ip, old, new);
-+	}
-+#endif
-+
- 	return ret;
- }
- 
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index ae1cbe783ab6..ed9d7a46c3af 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -20,8 +20,8 @@
- #ifdef CONFIG_DYNAMIC_FTRACE
- /*
-  *
-- * ftrace_caller() is the function that replaces _mcount() when ftrace is
-- * active.
-+ * ftrace_caller()/ftrace_regs_caller() is the function that replaces _mcount()
-+ * when ftrace is active.
-  *
-  * We arrive here after a function A calls function B, and we are the trace
-  * function for B. When we enter r1 points to A's stack frame, B has not yet
-@@ -37,7 +37,7 @@
-  * Our job is to save the register state into a struct pt_regs (on the stack)
-  * and then arrange for the ftrace function to be called.
-  */
--_GLOBAL(ftrace_caller)
-+_GLOBAL(ftrace_regs_caller)
- 	/* Save the original return address in A's stack frame */
- 	std	r0,LRSAVE(r1)
- 
-@@ -100,8 +100,8 @@ _GLOBAL(ftrace_caller)
- 	addi    r6, r1 ,STACK_FRAME_OVERHEAD
- 
- 	/* ftrace_call(r3, r4, r5, r6) */
--.globl ftrace_call
--ftrace_call:
-+.globl ftrace_regs_call
-+ftrace_regs_call:
- 	bl	ftrace_stub
- 	nop
- 
-@@ -162,6 +162,7 @@ ftrace_call:
- 	bne-	livepatch_handler
- #endif
- 
-+ftrace_caller_common:
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- .globl ftrace_graph_call
- ftrace_graph_call:
-@@ -182,6 +183,66 @@ ftrace_no_trace:
- 	mtlr	r0
- 	bctr
- 
-+_GLOBAL(ftrace_caller)
-+	/* Save the original return address in A's stack frame */
-+	std	r0, LRSAVE(r1)
-+
-+	/* Create our stack frame + pt_regs */
-+	stdu	r1, -SWITCH_FRAME_SIZE(r1)
-+
-+	/* Save all gprs to pt_regs */
-+	SAVE_8GPRS(3, r1)
-+
-+	lbz	r3, PACA_FTRACE_ENABLED(r13)
-+	cmpdi	r3, 0
-+	beq	ftrace_no_trace
-+
-+	/* Get the _mcount() call site out of LR */
-+	mflr	r7
-+	std     r7, _NIP(r1)
-+
-+	/* Save callee's TOC in the ABI compliant location */
-+	std	r2, 24(r1)
-+	ld	r2, PACATOC(r13)	/* get kernel TOC in r2 */
-+
-+	addis	r3, r2, function_trace_op@toc@ha
-+	addi	r3, r3, function_trace_op@toc@l
-+	ld	r5, 0(r3)
-+
-+	/* Calculate ip from nip-4 into r3 for call below */
-+	subi    r3, r7, MCOUNT_INSN_SIZE
-+
-+	/* Put the original return address in r4 as parent_ip */
-+	mr	r4, r0
-+
-+	/* Set pt_regs to NULL */
-+	li	r6, 0
-+
-+	/* ftrace_call(r3, r4, r5, r6) */
-+.globl ftrace_call
-+ftrace_call:
-+	bl	ftrace_stub
-+	nop
-+
-+	ld	r3, _NIP(r1)
-+	mtctr	r3
-+
-+	/* Restore gprs */
-+	REST_8GPRS(3,r1)
-+
-+	/* Restore callee's TOC */
-+	ld	r2, 24(r1)
-+
-+	/* Pop our stack frame */
-+	addi	r1, r1, SWITCH_FRAME_SIZE
-+
-+	/* Reload original LR */
-+	ld	r0, LRSAVE(r1)
-+	mtlr	r0
-+
-+	/* Handle function_graph or go back */
-+	b	ftrace_caller_common
-+
- #ifdef CONFIG_LIVEPATCH
- 	/*
- 	 * This function runs in the mcount context, between two functions. As
--- 
-2.16.2
+I just find pseudo code easier for grasping the highlevel view of the
+expected code flow.
+
+
+> 
+> The locking of the PTE is done with interrupts disabled, this allows to
+> check for the PMD to ensure that there is not an ongoing collapsing
+> operation. Since khugepaged is firstly set the PMD to pmd_none and then is
+> waiting for the other CPU to have catch the IPI interrupt, if the pmd is
+> valid at the time the PTE is locked, we have the guarantee that the
+> collapsing opertion will have to wait on the PTE lock to move foward. This
+> allows the SPF handler to map the PTE safely. If the PMD value is different
+> than the one recorded at the beginning of the SPF operation, the classic
+> page fault handler will be called to handle the operation while holding the
+> mmap_sem. As the PTE lock is done with the interrupts disabled, the lock is
+> done using spin_trylock() to avoid dead lock when handling a page fault
+> while a TLB invalidate is requested by an other CPU holding the PTE.
+> 
+> Support for THP is not done because when checking for the PMD, we can be
+> confused by an in progress collapsing operation done by khugepaged. The
+> issue is that pmd_none() could be true either if the PMD is not already
+> populated or if the underlying PTE are in the way to be collapsed. So we
+> cannot safely allocate a PMD if pmd_none() is true.
+
+Might be a good topic fo LSF/MM, should we set the pmd to something
+else then 0 when collapsing pmd (apply to pud too) ? This would allow
+support THP.
+
+[...]
+
+> 
+> Ebizzy:
+> -------
+> The test is counting the number of records per second it can manage, the
+> higher is the best. I run it like this 'ebizzy -mTRp'. To get consistent
+> result I repeated the test 100 times and measure the average result. The
+> number is the record processes per second, the higher is the best.
+> 
+>   		BASE		SPF		delta	
+> 16 CPUs x86 VM	14902.6		95905.16	543.55%
+> 80 CPUs P8 node	37240.24	78185.67	109.95%
+
+I find those results interesting as it seems that SPF do not scale well
+on big configuration. Note that it still have a sizeable improvement so
+it is still a very interesting feature i believe.
+
+Still understanding what is happening here might a good idea. From the
+numbers below it seems there is 2 causes to the scaling issue. First
+pte lock contention (kind of expected i guess). Second changes to vma
+while faulting.
+
+Have you thought about this ? Do i read those numbers in the wrong way ?
+
+> 
+> Here are the performance counter read during a run on a 16 CPUs x86 VM:
+>  Performance counter stats for './ebizzy -mRTp':
+>             888157      faults
+>             884773      spf
+>                 92      pagefault:spf_pte_lock
+>               2379      pagefault:spf_vma_changed
+>                  0      pagefault:spf_vma_noanon
+>                 80      pagefault:spf_vma_notsup
+>                  0      pagefault:spf_vma_access
+>                  0      pagefault:spf_pmd_changed
+> 
+> And the ones captured during a run on a 80 CPUs Power node:
+>  Performance counter stats for './ebizzy -mRTp':
+>             762134      faults
+>             728663      spf
+>              19101      pagefault:spf_pte_lock
+>              13969      pagefault:spf_vma_changed
+>                  0      pagefault:spf_vma_noanon
+>                272      pagefault:spf_vma_notsup
+>                  0      pagefault:spf_vma_access
+>                  0      pagefault:spf_pmd_changed
+
+
+There is one aspect that i would like to see cover. Maybe i am not
+understanding something fundamental, but it seems to me that SPF can
+trigger OOM or at very least over stress page allocation.
+
+Assume you have a lot of concurrent SPF to anonymous vma and they all
+allocate new pages, then you might overallocate for a single address
+by a factor correlated with the number of CPUs in your system. Now,
+multiply this for several distinc address and you might be allocating
+a lot of memory transiently ie just for a short period time. While
+the fact that you quickly free when you fail should prevent the OOM
+reaper. But still this might severly stress the memory allocation
+path.
+
+Am i missing something in how this all work ? Or is the above some-
+thing that might be of concern ? Should there be some boundary on the
+maximum number of concurrent SPF (and thus boundary on maximum page
+temporary page allocation) ?
+
+Cheers,
+Jérôme
