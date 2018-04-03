@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Fv5l6BG3zF28r
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 02:03:39 +1000 (AEST)
-In-Reply-To: <20180322210318.21349-1-malat@debian.org>
-To: Mathieu Malaterre <malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Fv5n0nDxzF28m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 02:03:41 +1000 (AEST)
+In-Reply-To: <20180326150103.22941-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm/radix: Fix always false comparison against
- MMU_NO_CONTEXT
-Message-Id: <40Fv5l3r5rz9s0b@ozlabs.org>
-Date: Wed,  4 Apr 2018 02:03:38 +1000 (AEST)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64s: return more carefully from sreset NMI
+Message-Id: <40Fv5m40Rxz9s3c@ozlabs.org>
+Date: Wed,  4 Apr 2018 02:03:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,19 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-03-22 at 21:03:18 UTC, Mathieu Malaterre wrote:
-> In commit 9690c1574268 ("powerpc/mm/radix: Fix always false comparison
-> against MMU_NO_CONTEXT") an issue was discovered where `mm->context.id` was
-> being truncated to an `unsigned int`, while the PID is actually an
-> `unsigned long`. Update the earlier patch by fixing one remaining
-> occurrence. Discovered during a compilation with W=1:
+On Mon, 2018-03-26 at 15:01:03 UTC, Nicholas Piggin wrote:
+> System Reset, being an NMI, must return more carefully than other
+> interrupts. It has traditionally returned via the nromal return
+> from exception path, but that has a number of problems.
 > 
->   arch/powerpc/mm/tlb-radix.c:702:19: error: comparison is always false due to limited range of data type [-Werror=type-limits]
+> - r13 does not get restored if returning to kernel. This is for
+>   interrupts which may cause a context switch, which sreset will
+>   never do. Interrupting OPAL (which uses a different r13) is one
+>   place where this causes breakage.
 > 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> - It may cause several other problems returning to kernel with
+>   preempt or TIF_EMULATE_STACK_STORE if it hits at the wrong time.
+> 
+> It's safer just to have a simple restore and return, like machine
+> check which is the other NMI.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/19e68b2aec3c0a2bd770d3c358a296
+https://git.kernel.org/powerpc/c/15b4dd7981496f51c5f9262a5e0761
 
 cheers
