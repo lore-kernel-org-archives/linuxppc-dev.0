@@ -1,38 +1,40 @@
-Return-Path: <prvs=0631f3177a=fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FvwB0ZKVzF1xq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 02:40:25 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w33GaVGY066750
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 12:40:22 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4ajm1std-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 12:40:22 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Tue, 3 Apr 2018 17:40:19 +0100
-Subject: Re: [PATCH] cxl: Fix possible deadlock when processing page faults
- from cxllib
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
-References: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
- <606e7509-5c37-b38e-9b6c-a60a5694c652@linux.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Tue, 3 Apr 2018 18:40:15 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40G2xx05yBzF28G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 07:57:24 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id 59-v6so8257273plc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 14:57:24 -0700 (PDT)
+Date: Tue, 3 Apr 2018 14:57:20 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 04/24] mm: Prepare for FAULT_FLAG_SPECULATIVE
+In-Reply-To: <361fa6e7-3c17-e1b8-8046-af72c4459613@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.20.1804031449130.153232@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-5-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803251426120.80485@chino.kir.corp.google.com>
+ <361fa6e7-3c17-e1b8-8046-af72c4459613@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <606e7509-5c37-b38e-9b6c-a60a5694c652@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <4893c7a6-b8d8-14e9-21e9-e9a059477613@linux.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,164 +44,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 28 Mar 2018, Laurent Dufour wrote:
 
-
-Le 03/04/2018 à 16:40, Aneesh Kumar K.V a écrit :
-> On 04/03/2018 03:13 PM, Frederic Barrat wrote:
->> cxllib_handle_fault() is called by an external driver when it needs to
->> have the host process page faults for a buffer which may cover several
->> pages. Currently the function holds the mm->mmap_sem semaphore with
->> read access while iterating over the buffer, since it could spawn
->> several VMAs. When calling a lower-level function to handle the page
->> fault for a single page, the semaphore is accessed again in read
->> mode. That is wrong and can lead to deadlocks if a writer tries to
->> sneak in while a buffer of several pages is being processed.
->>
->> The fix is to release the semaphore once cxllib_handle_fault() got the
->> information it needs from the current vma. The address space/VMAs
->> could evolve while we iterate over the full buffer, but in the
->> unlikely case where we miss a page, the driver will raise a new page
->> fault when retrying.
->>
->> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
->> Cc: stable@vger.kernel.org # 4.13+
->> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->> ---
->>   drivers/misc/cxl/cxllib.c | 85 
->> ++++++++++++++++++++++++++++++-----------------
->>   1 file changed, 55 insertions(+), 30 deletions(-)
->>
->> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
->> index 30ccba436b3b..55cd35d1a9cc 100644
->> --- a/drivers/misc/cxl/cxllib.c
->> +++ b/drivers/misc/cxl/cxllib.c
->> @@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct 
->> *task,
->>   }
->>   EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
->> -int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 
->> flags)
->> +static int get_vma_info(struct mm_struct *mm, u64 addr,
->> +            u64 *vma_start, u64 *vma_end,
->> +            unsigned long *page_size)
->>   {
->> -    int rc;
->> -    u64 dar;
->>       struct vm_area_struct *vma = NULL;
->> -    unsigned long page_size;
->> -
->> -    if (mm == NULL)
->> -        return -EFAULT;
->> +    int rc = 0;
->>       down_read(&mm->mmap_sem);
->>       vma = find_vma(mm, addr);
->>       if (!vma) {
->> -        pr_err("Can't find vma for addr %016llx\n", addr);
->>           rc = -EFAULT;
->>           goto out;
->>       }
->> -    /* get the size of the pages allocated */
->> -    page_size = vma_kernel_pagesize(vma);
->> -
->> -    for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += 
->> page_size) {
->> -        if (dar < vma->vm_start || dar >= vma->vm_end) {
->> -            vma = find_vma(mm, addr);
->> -            if (!vma) {
->> -                pr_err("Can't find vma for addr %016llx\n", addr);
->> -                rc = -EFAULT;
->> -                goto out;
->> -            }
->> -            /* get the size of the pages allocated */
->> -            page_size = vma_kernel_pagesize(vma);
->> +    *page_size = vma_kernel_pagesize(vma);
->> +    *vma_start = vma->vm_start;
->> +    *vma_end = vma->vm_end;
->> +out:
->> +    up_read(&mm->mmap_sem);
->> +    return rc;
->> +}
->> +
->> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 
->> flags)
->> +{
->> +    int rc;
->> +    u64 dar, vma_start, vma_end;
->> +    unsigned long page_size;
->> +
->> +    if (mm == NULL)
->> +        return -EFAULT;
->> +
->> +    /*
->> +     * The buffer we have to process can extend over several pages
->> +     * and may also cover several VMAs.
->> +     * We iterate over all the pages. The page size could vary
->> +     * between VMAs.
->> +     */
->> +    rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
->> +    if (rc)
->> +        return rc;
->> +
->> +    for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
->> +         dar += page_size) {
->> +        if (dar < vma_start || dar >= vma_end) {
+> >> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> >> index 4d02524a7998..2f3e98edc94a 100644
+> >> --- a/include/linux/mm.h
+> >> +++ b/include/linux/mm.h
+> >> @@ -300,6 +300,7 @@ extern pgprot_t protection_map[16];
+> >>  #define FAULT_FLAG_USER		0x40	/* The fault originated in userspace */
+> >>  #define FAULT_FLAG_REMOTE	0x80	/* faulting for non current tsk/mm */
+> >>  #define FAULT_FLAG_INSTRUCTION  0x100	/* The fault was during an instruction fetch */
+> >> +#define FAULT_FLAG_SPECULATIVE	0x200	/* Speculative fault, not holding mmap_sem */
+> >>  
+> >>  #define FAULT_FLAG_TRACE \
+> >>  	{ FAULT_FLAG_WRITE,		"WRITE" }, \
+> > 
+> > I think FAULT_FLAG_SPECULATIVE should be introduced in the patch that 
+> > actually uses it.
 > 
+> I think you're right, I'll move down this define in the series.
 > 
-> IIUC, we are fetching the vma to get just the page_size with which it is 
-> mapped? Can't we iterate with PAGE_SIZE? Considering hugetlb page size 
-> will be larger than PAGE_SIZE, we might call into cxl_handle_mm_fault 
-> multiple times for a hugetlb page. Does that cause any issue? Also can 
-> cxl be used with hugetlb mappings?
-
-I discussed it with Aneesh, but for the record:
-- huge pages could be used, cxl has no control over it.
-- incrementing the loop with PAGE_SIZE if it's a huge page would be a 
-waste, as only the first call to cxl_handle_mm_fault() would be useful.
-- having to account for several VMAs and potentially page sizes make it 
-more complicated. An idea is to check with Mellanox if we can reduce the 
-scope, in case the caller can rule out some cases. It's too late for 
-coral, but something we can look into for the future/upstream.
-
-   Fred
-
-
-
->> +            /*
->> +             * We don't hold the mm->mmap_sem semaphore
->> +             * while iterating, since the semaphore is
->> +             * required by one of the lower-level page
->> +             * fault processing functions and it could
->> +             * create a deadlock.
->> +             *
->> +             * It means the VMAs can be altered between 2
->> +             * loop iterations and we could theoretically
->> +             * miss a page (however unlikely). But that's
->> +             * not really a problem, as the driver will
->> +             * retry access, get another page fault on the
->> +             * missing page and call us again.
->> +             */
->> +            rc = get_vma_info(mm, dar, &vma_start, &vma_end,
->> +                    &page_size);
->> +            if (rc)
->> +                return rc;
->>           }
->>           rc = cxl_handle_mm_fault(mm, flags, dar);
->> -        if (rc) {
->> -            pr_err("cxl_handle_mm_fault failed %d", rc);
->> -            rc = -EFAULT;
->> -            goto out;
->> -        }
->> +        if (rc)
->> +            return -EFAULT;
->>       }
->> -    rc = 0;
->> -out:
->> -    up_read(&mm->mmap_sem);
->> -    return rc;
->> +    return 0;
->>   }
->>   EXPORT_SYMBOL_GPL(cxllib_handle_fault);
->>
+> >> diff --git a/mm/memory.c b/mm/memory.c
+> >> index e0ae4999c824..8ac241b9f370 100644
+> >> --- a/mm/memory.c
+> >> +++ b/mm/memory.c
+> >> @@ -2288,6 +2288,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(apply_to_page_range);
+> >>  
+> >> +static bool pte_map_lock(struct vm_fault *vmf)
+> > 
+> > inline?
 > 
-> -aneesh
+> Agreed.
 > 
+
+Ignore this, the final form of the function after the full patchset 
+shouldn't be inline.
+
+> >> +{
+> >> +	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
+> >> +				       vmf->address, &vmf->ptl);
+> >> +	return true;
+> >> +}
+> >> +
+> >>  /*
+> >>   * handle_pte_fault chooses page fault handler according to an entry which was
+> >>   * read non-atomically.  Before making any commitment, on those architectures
+> >> @@ -2477,6 +2484,7 @@ static int wp_page_copy(struct vm_fault *vmf)
+> >>  	const unsigned long mmun_start = vmf->address & PAGE_MASK;
+> >>  	const unsigned long mmun_end = mmun_start + PAGE_SIZE;
+> >>  	struct mem_cgroup *memcg;
+> >> +	int ret = VM_FAULT_OOM;
+> >>  
+> >>  	if (unlikely(anon_vma_prepare(vma)))
+> >>  		goto oom;
+> >> @@ -2504,7 +2512,11 @@ static int wp_page_copy(struct vm_fault *vmf)
+> >>  	/*
+> >>  	 * Re-check the pte - we dropped the lock
+> >>  	 */
+> >> -	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
+> >> +	if (!pte_map_lock(vmf)) {
+> >> +		mem_cgroup_cancel_charge(new_page, memcg, false);
+> >> +		ret = VM_FAULT_RETRY;
+> >> +		goto oom_free_new;
+> >> +	}
+> > 
+> > Ugh, but we aren't oom here, so maybe rename oom_free_new so that it makes 
+> > sense for return values other than VM_FAULT_OOM?
+> 
+> You're right, now this label name is not correct, I'll rename it to
+> "out_free_new" and rename also the label "oom" to "out" since it is generic too
+> now.
+> 
+
+I think it would just be better to introduce a out_uncharge that handles 
+the mem_cgroup_cancel_charge() in the exit path.
+
+diff --git a/mm/memory.c b/mm/memory.c
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2645,9 +2645,8 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 	 * Re-check the pte - we dropped the lock
+ 	 */
+ 	if (!pte_map_lock(vmf)) {
+-		mem_cgroup_cancel_charge(new_page, memcg, false);
+ 		ret = VM_FAULT_RETRY;
+-		goto oom_free_new;
++		goto out_uncharge;
+ 	}
+ 	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
+ 		if (old_page) {
+@@ -2735,6 +2734,8 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 		put_page(old_page);
+ 	}
+ 	return page_copied ? VM_FAULT_WRITE : 0;
++out_uncharge:
++	mem_cgroup_cancel_charge(new_page, memcg, false);
+ oom_free_new:
+ 	put_page(new_page);
+ oom:
