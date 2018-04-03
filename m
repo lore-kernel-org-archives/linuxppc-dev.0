@@ -1,31 +1,48 @@
-Return-Path: <prvs=063115b705=fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <srs0=bdvh=gy=linux.vnet.ibm.com=prvs=0631ac1793=hbathini@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Fkrz2qDVzF24B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 19:52:03 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40Fkrz1XTtz8tSn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 19:52:03 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Fkg07445zF26N
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 19:43:18 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 40Fkry4B2Qz9s1p
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2018 19:52:02 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w339Z0RZ105244
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 05:43:16 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h440ygxpu-1
+ w339nUxS101033
+ for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2018 05:52:00 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h45mcn9k7-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 05:43:15 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 03 Apr 2018 05:51:59 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 3 Apr 2018 10:43:14 +0100
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
-Subject: [PATCH] cxl: Fix possible deadlock when processing page faults from
- cxllib
-Date: Tue,  3 Apr 2018 11:43:11 +0200
-Message-Id: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Tue, 3 Apr 2018 10:51:57 +0100
+Subject: Re: [PATCH v3 4/7] powerpc/fadump: exclude memory holes while
+ reserving memory in second kernel.
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, kernelfans@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ananth Narayan <ananth@in.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+References: <152265046485.23251.1392824827444770657.stgit@jupiter.in.ibm.com>
+ <152265062142.23251.2863873644423472277.stgit@jupiter.in.ibm.com>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Tue, 3 Apr 2018 15:21:52 +0530
+MIME-Version: 1.0
+In-Reply-To: <152265062142.23251.2863873644423472277.stgit@jupiter.in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <04e18a87-2882-b656-8fed-800c6d0bc835@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,136 +52,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cxllib_handle_fault() is called by an external driver when it needs to
-have the host process page faults for a buffer which may cover several
-pages. Currently the function holds the mm->mmap_sem semaphore with
-read access while iterating over the buffer, since it could spawn
-several VMAs. When calling a lower-level function to handle the page
-fault for a single page, the semaphore is accessed again in read
-mode. That is wrong and can lead to deadlocks if a writer tries to
-sneak in while a buffer of several pages is being processed.
 
-The fix is to release the semaphore once cxllib_handle_fault() got the
-information it needs from the current vma. The address space/VMAs
-could evolve while we iterate over the full buffer, but in the
-unlikely case where we miss a page, the driver will raise a new page
-fault when retrying.
 
-Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
-Cc: stable@vger.kernel.org # 4.13+
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
----
- drivers/misc/cxl/cxllib.c | 85 ++++++++++++++++++++++++++++++-----------------
- 1 file changed, 55 insertions(+), 30 deletions(-)
+On Monday 02 April 2018 12:00 PM, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>
+> The second kernel, during early boot after the crash, reserves rest of
+> the memory above boot memory size to make sure it does not touch any of the
+> dump memory area. It uses memblock_reserve() that reserves the specified
+> memory region irrespective of memory holes present within that region.
+> There are chances where previous kernel would have hot removed some of
+> its memory leaving memory holes behind. In such cases fadump kernel reports
+> incorrect number of reserved pages through arch_reserved_kernel_pages()
+> hook causing kernel to hang or panic.
+>
+> Fix this by excluding memory holes while reserving rest of the memory
+> above boot memory size during second kernel boot after crash.
+>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/kernel/fadump.c |   17 ++++++++++++++++-
+>   1 file changed, 16 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 011f1aa7abab..a497e9fb93fe 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -433,6 +433,21 @@ static inline unsigned long get_fadump_metadata_base(
+>   	return be64_to_cpu(fdm->metadata_region.source_address);
+>   }
+>
+> +static void fadump_memblock_reserve(unsigned long base, unsigned long size)
+> +{
+> +	struct memblock_region *reg;
+> +	unsigned long start, end;
+> +
+> +	for_each_memblock(memory, reg) {
+> +		start = max(base, (unsigned long)reg->base);
+> +		end = reg->base + reg->size;
+> +		end = min(base + size, end);
+> +
+> +		if (start < end)
+> +			memblock_reserve(start, end - start);
+> +	}
+> +}
+> +
+>   int __init fadump_reserve_mem(void)
+>   {
+>   	unsigned long base, size, memory_boundary;
+> @@ -487,7 +502,7 @@ int __init fadump_reserve_mem(void)
+>   		 */
+>   		base = fw_dump.boot_memory_size;
+>   		size = memory_boundary - base;
+> -		memblock_reserve(base, size);
+> +		fadump_memblock_reserve(base, size);
+>   		printk(KERN_INFO "Reserved %ldMB of memory at %ldMB "
 
-diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-index 30ccba436b3b..55cd35d1a9cc 100644
---- a/drivers/misc/cxl/cxllib.c
-+++ b/drivers/misc/cxl/cxllib.c
-@@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct *task,
- }
- EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
- 
--int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-+static int get_vma_info(struct mm_struct *mm, u64 addr,
-+			u64 *vma_start, u64 *vma_end,
-+			unsigned long *page_size)
- {
--	int rc;
--	u64 dar;
- 	struct vm_area_struct *vma = NULL;
--	unsigned long page_size;
--
--	if (mm == NULL)
--		return -EFAULT;
-+	int rc = 0;
- 
- 	down_read(&mm->mmap_sem);
- 
- 	vma = find_vma(mm, addr);
- 	if (!vma) {
--		pr_err("Can't find vma for addr %016llx\n", addr);
- 		rc = -EFAULT;
- 		goto out;
- 	}
--	/* get the size of the pages allocated */
--	page_size = vma_kernel_pagesize(vma);
--
--	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
--		if (dar < vma->vm_start || dar >= vma->vm_end) {
--			vma = find_vma(mm, addr);
--			if (!vma) {
--				pr_err("Can't find vma for addr %016llx\n", addr);
--				rc = -EFAULT;
--				goto out;
--			}
--			/* get the size of the pages allocated */
--			page_size = vma_kernel_pagesize(vma);
-+	*page_size = vma_kernel_pagesize(vma);
-+	*vma_start = vma->vm_start;
-+	*vma_end = vma->vm_end;
-+out:
-+	up_read(&mm->mmap_sem);
-+	return rc;
-+}
-+
-+int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-+{
-+	int rc;
-+	u64 dar, vma_start, vma_end;
-+	unsigned long page_size;
-+
-+	if (mm == NULL)
-+		return -EFAULT;
-+
-+	/*
-+	 * The buffer we have to process can extend over several pages
-+	 * and may also cover several VMAs.
-+	 * We iterate over all the pages. The page size could vary
-+	 * between VMAs.
-+	 */
-+	rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
-+	if (rc)
-+		return rc;
-+
-+	for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
-+	     dar += page_size) {
-+		if (dar < vma_start || dar >= vma_end) {
-+			/*
-+			 * We don't hold the mm->mmap_sem semaphore
-+			 * while iterating, since the semaphore is
-+			 * required by one of the lower-level page
-+			 * fault processing functions and it could
-+			 * create a deadlock.
-+			 *
-+			 * It means the VMAs can be altered between 2
-+			 * loop iterations and we could theoretically
-+			 * miss a page (however unlikely). But that's
-+			 * not really a problem, as the driver will
-+			 * retry access, get another page fault on the
-+			 * missing page and call us again.
-+			 */
-+			rc = get_vma_info(mm, dar, &vma_start, &vma_end,
-+					&page_size);
-+			if (rc)
-+				return rc;
- 		}
- 
- 		rc = cxl_handle_mm_fault(mm, flags, dar);
--		if (rc) {
--			pr_err("cxl_handle_mm_fault failed %d", rc);
--			rc = -EFAULT;
--			goto out;
--		}
-+		if (rc)
-+			return -EFAULT;
- 	}
--	rc = 0;
--out:
--	up_read(&mm->mmap_sem);
--	return rc;
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(cxllib_handle_fault);
--- 
-2.14.1
+Mahesh, you may want to change this print as well as it would be 
+misleading in case of
+holes in the memory.
+
+Thanks
+Hari
+
+>   				"for saving crash dump\n",
+>   				(unsigned long)(size >> 20),
+>
