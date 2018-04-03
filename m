@@ -1,36 +1,48 @@
-Return-Path: <jglisse@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=bdvh=gy=linux.vnet.ibm.com=prvs=0631ac1793=hbathini@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [103.22.144.68])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FzF9185YzF29r
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 05:10:16 +1000 (AEST)
-Date: Tue, 3 Apr 2018 15:10:05 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v9 06/24] mm: make pte_unmap_same compatible with SPF
-Message-ID: <20180403191005.GC5935@redhat.com>
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Fzc75YKQzF2BS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 05:26:47 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40Fzc72RQjz8svD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 05:26:47 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40Fzc66CW6z9s0n
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2018 05:26:45 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w33JPHuS095673
+ for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2018 15:26:43 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h4fjg0kcj-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 03 Apr 2018 15:26:43 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Tue, 3 Apr 2018 20:26:40 +0100
+Subject: Re: [PATCH v3 1/7] powerpc/fadump: Move the metadata region to start
+ of the reserved area.
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Ananth Narayan <ananth@in.ibm.com>, kernelfans@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <152265046485.23251.1392824827444770657.stgit@jupiter.in.ibm.com>
+ <152265058069.23251.1496677151481459154.stgit@jupiter.in.ibm.com>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Wed, 4 Apr 2018 00:56:33 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
+In-Reply-To: <152265058069.23251.1496677151481459154.stgit@jupiter.in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <f5a8a0f8-0b97-ac3e-dd4b-4796d6976725@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,115 +52,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2018 at 06:59:36PM +0100, Laurent Dufour wrote:
-> pte_unmap_same() is making the assumption that the page table are still
-> around because the mmap_sem is held.
-> This is no more the case when running a speculative page fault and
-> additional check must be made to ensure that the final page table are still
-> there.
-> 
-> This is now done by calling pte_spinlock() to check for the VMA's
-> consistency while locking for the page tables.
-> 
-> This is requiring passing a vm_fault structure to pte_unmap_same() which is
-> containing all the needed parameters.
-> 
-> As pte_spinlock() may fail in the case of a speculative page fault, if the
-> VMA has been touched in our back, pte_unmap_same() should now return 3
-> cases :
-> 	1. pte are the same (0)
-> 	2. pte are different (VM_FAULT_PTNOTSAME)
-> 	3. a VMA's changes has been detected (VM_FAULT_RETRY)
-> 
-> The case 2 is handled by the introduction of a new VM_FAULT flag named
-> VM_FAULT_PTNOTSAME which is then trapped in cow_user_page().
-> If VM_FAULT_RETRY is returned, it is passed up to the callers to retry the
-> page fault while holding the mmap_sem.
-> 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Mahesh, I think we should explicitly document that production and 
+capture kernel
+versions should be same. For changes like below, older/newer production 
+kernel vs
+capture kernel is bound to fail. Of course, production and capture 
+kernel versions
+would be the same case usually but for the uninitiated, mentioning that 
+explicitly
+in documentation would help..?
+
+Thanks
+Hari
+
+
+On Monday 02 April 2018 11:59 AM, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>
+> Currently the metadata region that holds crash info structure and ELF core
+> header is placed towards the end of reserved memory area. This patch places
+> it at the beginning of the reserved memory area.
+>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > ---
->  include/linux/mm.h |  1 +
->  mm/memory.c        | 29 +++++++++++++++++++----------
->  2 files changed, 20 insertions(+), 10 deletions(-)
-> 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 2f3e98edc94a..b6432a261e63 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1199,6 +1199,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
->  #define VM_FAULT_NEEDDSYNC  0x2000	/* ->fault did not modify page tables
->  					 * and needs fsync() to complete (for
->  					 * synchronous page faults in DAX) */
-> +#define VM_FAULT_PTNOTSAME 0x4000	/* Page table entries have changed */
->  
->  #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
->  			 VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 21b1212a0892..4bc7b0bdcb40 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2309,21 +2309,29 @@ static bool pte_map_lock(struct vm_fault *vmf)
->   * parts, do_swap_page must check under lock before unmapping the pte and
->   * proceeding (but do_wp_page is only called after already making such a check;
->   * and do_anonymous_page can safely check later on).
-> + *
-> + * pte_unmap_same() returns:
-> + *	0			if the PTE are the same
-> + *	VM_FAULT_PTNOTSAME	if the PTE are different
-> + *	VM_FAULT_RETRY		if the VMA has changed in our back during
-> + *				a speculative page fault handling.
->   */
-> -static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
-> -				pte_t *page_table, pte_t orig_pte)
-> +static inline int pte_unmap_same(struct vm_fault *vmf)
->  {
-> -	int same = 1;
-> +	int ret = 0;
+>   arch/powerpc/include/asm/fadump.h |    4 ++
+>   arch/powerpc/kernel/fadump.c      |   92 ++++++++++++++++++++++++++++++++-----
+>   2 files changed, 83 insertions(+), 13 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+> index 5a23010af600..44b6ebfe9be6 100644
+> --- a/arch/powerpc/include/asm/fadump.h
+> +++ b/arch/powerpc/include/asm/fadump.h
+> @@ -61,6 +61,9 @@
+>   #define FADUMP_UNREGISTER	2
+>   #define FADUMP_INVALIDATE	3
+>
+> +/* Number of dump sections requested by kernel */
+> +#define FADUMP_NUM_SECTIONS	4
 > +
->  #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
->  	if (sizeof(pte_t) > sizeof(unsigned long)) {
-> -		spinlock_t *ptl = pte_lockptr(mm, pmd);
-> -		spin_lock(ptl);
-> -		same = pte_same(*page_table, orig_pte);
-> -		spin_unlock(ptl);
-> +		if (pte_spinlock(vmf)) {
-> +			if (!pte_same(*vmf->pte, vmf->orig_pte))
-> +				ret = VM_FAULT_PTNOTSAME;
-> +			spin_unlock(vmf->ptl);
-> +		} else
-> +			ret = VM_FAULT_RETRY;
->  	}
->  #endif
-> -	pte_unmap(page_table);
-> -	return same;
-> +	pte_unmap(vmf->pte);
-> +	return ret;
->  }
->  
->  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
-> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
->  	int exclusive = 0;
->  	int ret = 0;
->  
-> -	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte))
-> +	ret = pte_unmap_same(vmf);
-> +	if (ret)
->  		goto out;
->  
-
-This change what do_swap_page() returns ie before it was returning 0
-when locked pte lookup was different from orig_pte. After this patch
-it returns VM_FAULT_PTNOTSAME but this is a new return value for
-handle_mm_fault() (the do_swap_page() return value is what ultimately
-get return by handle_mm_fault())
-
-Do we really want that ? This might confuse some existing user of
-handle_mm_fault() and i am not sure of the value of that information
-to caller.
-
-Note i do understand that you want to return retry if anything did
-change from underneath and thus need to differentiate from when the
-pte value are not the same.
-
-Cheers,
-Jérôme
+>   /* Dump status flag */
+>   #define FADUMP_ERROR_FLAG	0x2000
+>
+> @@ -119,6 +122,7 @@ struct fadump_mem_struct {
+>   	struct fadump_section		cpu_state_data;
+>   	struct fadump_section		hpte_region;
+>   	struct fadump_section		rmr_region;
+> +	struct fadump_section		metadata_region;
+>   };
+>
+>   /* Firmware-assisted dump configuration details. */
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 3c2c2688918f..80552fd7d5f8 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -188,17 +188,48 @@ static void fadump_show_config(void)
+>   	pr_debug("Boot memory size  : %lx\n", fw_dump.boot_memory_size);
+>   }
+>
+> +static unsigned long get_fadump_metadata_size(void)
+> +{
+> +	unsigned long size = 0;
+> +
+> +	/*
+> +	 * If fadump is active then look into fdm_active to get metadata
+> +	 * size set by previous kernel.
+> +	 */
+> +	if (fw_dump.dump_active) {
+> +		size = fdm_active->cpu_state_data.destination_address -
+> +				fdm_active->metadata_region.source_address;
+> +		goto out;
+> +	}
+> +	size += sizeof(struct fadump_crash_info_header);
+> +	size += sizeof(struct elfhdr); /* ELF core header.*/
+> +	size += sizeof(struct elf_phdr); /* place holder for cpu notes */
+> +	/* Program headers for crash memory regions. */
+> +	size += sizeof(struct elf_phdr) * (memblock_num_regions(memory) + 2);
+> +
+> +	size = PAGE_ALIGN(size);
+> +out:
+> +	pr_debug("fadump Metadata size is %ld\n", size);
+> +	return size;
+> +}
+> +
+>   static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+>   				unsigned long addr)
+>   {
+> +	uint16_t num_sections = 0;
+> +	unsigned long metadata_base = 0;
+> +
+>   	if (!fdm)
+>   		return 0;
+>
+> +	/* Skip the fadump metadata area. */
+> +	metadata_base = addr;
+> +	addr += get_fadump_metadata_size();
+> +
+>   	memset(fdm, 0, sizeof(struct fadump_mem_struct));
+>   	addr = addr & PAGE_MASK;
+>
+>   	fdm->header.dump_format_version = cpu_to_be32(0x00000001);
+> -	fdm->header.dump_num_sections = cpu_to_be16(3);
+>   	fdm->header.dump_status_flag = 0;
+>   	fdm->header.offset_first_dump_section =
+>   		cpu_to_be32((u32)offsetof(struct fadump_mem_struct, cpu_state_data));
+> @@ -222,6 +253,7 @@ static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+>   	fdm->cpu_state_data.source_address = 0;
+>   	fdm->cpu_state_data.source_len = cpu_to_be64(fw_dump.cpu_state_data_size);
+>   	fdm->cpu_state_data.destination_address = cpu_to_be64(addr);
+> +	num_sections++;
+>   	addr += fw_dump.cpu_state_data_size;
+>
+>   	/* hpte region section */
+> @@ -230,6 +262,7 @@ static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+>   	fdm->hpte_region.source_address = 0;
+>   	fdm->hpte_region.source_len = cpu_to_be64(fw_dump.hpte_region_size);
+>   	fdm->hpte_region.destination_address = cpu_to_be64(addr);
+> +	num_sections++;
+>   	addr += fw_dump.hpte_region_size;
+>
+>   	/* RMA region section */
+> @@ -238,8 +271,25 @@ static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+>   	fdm->rmr_region.source_address = cpu_to_be64(RMA_START);
+>   	fdm->rmr_region.source_len = cpu_to_be64(fw_dump.boot_memory_size);
+>   	fdm->rmr_region.destination_address = cpu_to_be64(addr);
+> +	num_sections++;
+>   	addr += fw_dump.boot_memory_size;
+>
+> +	/*
+> +	 * fadump metadata section.
+> +	 * Add an entry with source len a zero. We are only intereseted in
+> +	 * source address which will help us to detect the location of
+> +	 * metadata area where faump header and elf core header is placed.
+> +	 */
+> +	fdm->metadata_region.request_flag = cpu_to_be32(FADUMP_REQUEST_FLAG);
+> +	fdm->metadata_region.source_data_type =
+> +					cpu_to_be16(FADUMP_REAL_MODE_REGION);
+> +	fdm->metadata_region.source_address = cpu_to_be64(metadata_base);
+> +	fdm->metadata_region.source_len = 0;
+> +	fdm->metadata_region.destination_address = cpu_to_be64(addr);
+> +	num_sections++;
+> +
+> +	fdm->header.dump_num_sections = cpu_to_be16(num_sections);
+> +	BUILD_BUG_ON(num_sections != FADUMP_NUM_SECTIONS);
+>   	return addr;
+>   }
+>
+> @@ -325,16 +375,17 @@ static unsigned long get_fadump_area_size(void)
+>   	size += fw_dump.cpu_state_data_size;
+>   	size += fw_dump.hpte_region_size;
+>   	size += fw_dump.boot_memory_size;
+> -	size += sizeof(struct fadump_crash_info_header);
+> -	size += sizeof(struct elfhdr); /* ELF core header.*/
+> -	size += sizeof(struct elf_phdr); /* place holder for cpu notes */
+> -	/* Program headers for crash memory regions. */
+> -	size += sizeof(struct elf_phdr) * (memblock_num_regions(memory) + 2);
+> -
+> +	size += get_fadump_metadata_size();
+>   	size = PAGE_ALIGN(size);
+>   	return size;
+>   }
+>
+> +static inline unsigned long get_fadump_metadata_base(
+> +			const struct fadump_mem_struct *fdm)
+> +{
+> +	return be64_to_cpu(fdm->metadata_region.source_address);
+> +}
+> +
+>   int __init fadump_reserve_mem(void)
+>   {
+>   	unsigned long base, size, memory_boundary;
+> @@ -395,9 +446,9 @@ int __init fadump_reserve_mem(void)
+>   				(unsigned long)(size >> 20),
+>   				(unsigned long)(base >> 20));
+>
+> -		fw_dump.fadumphdr_addr =
+> -				be64_to_cpu(fdm_active->rmr_region.destination_address) +
+> -				be64_to_cpu(fdm_active->rmr_region.source_len);
+> +		pr_info("Number of kernel Dump sections: %d\n",
+> +			be16_to_cpu(fdm_active->header.dump_num_sections));
+> +		fw_dump.fadumphdr_addr = get_fadump_metadata_base(fdm_active);
+>   		pr_debug("fadumphdr_addr = %p\n",
+>   				(void *) fw_dump.fadumphdr_addr);
+>   	} else {
+> @@ -803,14 +854,24 @@ static int __init fadump_build_cpu_notes(const struct fadump_mem_struct *fdm)
+>   static int __init process_fadump(const struct fadump_mem_struct *fdm_active)
+>   {
+>   	struct fadump_crash_info_header *fdh;
+> +	uint16_t num_sections = 0;
+>   	int rc = 0;
+>
+>   	if (!fdm_active || !fw_dump.fadumphdr_addr)
+>   		return -EINVAL;
+>
+> +	/* Check if platform has honored all 4 dump sections requested. */
+> +	num_sections = be16_to_cpu(fdm_active->header.dump_num_sections);
+> +	if (num_sections < FADUMP_NUM_SECTIONS) {
+> +		printk(KERN_ERR "Dump taken by platform does not "
+> +				"contain all requested sections\n");
+> +		return -EINVAL;
+> +	}
+> +
+>   	/* Check if the dump data is valid. */
+>   	if ((be16_to_cpu(fdm_active->header.dump_status_flag) == FADUMP_ERROR_FLAG) ||
+>   			(fdm_active->cpu_state_data.error_flags != 0) ||
+> +			(fdm_active->metadata_region.error_flags != 0) ||
+>   			(fdm_active->rmr_region.error_flags != 0)) {
+>   		printk(KERN_ERR "Dump taken by platform is not valid\n");
+>   		return -EINVAL;
+> @@ -821,6 +882,11 @@ static int __init process_fadump(const struct fadump_mem_struct *fdm_active)
+>   		printk(KERN_ERR "Dump taken by platform is incomplete\n");
+>   		return -EINVAL;
+>   	}
+> +	if ((fdm_active->metadata_region.bytes_dumped !=
+> +			fdm_active->metadata_region.source_len)) {
+> +		printk(KERN_ERR "Dump taken by platform is incomplete\n");
+> +		return -EINVAL;
+> +	}
+>
+>   	/* Validate the fadump crash info header */
+>   	fdh = __va(fw_dump.fadumphdr_addr);
+> @@ -1082,7 +1148,7 @@ static int register_fadump(void)
+>
+>   	fadump_setup_crash_memory_ranges();
+>
+> -	addr = be64_to_cpu(fdm.rmr_region.destination_address) + be64_to_cpu(fdm.rmr_region.source_len);
+> +	addr = get_fadump_metadata_base(&fdm);
+>   	/* Initialize fadump crash info header. */
+>   	addr = init_fadump_header(addr);
+>   	vaddr = __va(addr);
+> @@ -1153,7 +1219,7 @@ void fadump_cleanup(void)
+>   	/* Invalidate the registration only if dump is active. */
+>   	if (fw_dump.dump_active) {
+>   		init_fadump_mem_struct(&fdm,
+> -			be64_to_cpu(fdm_active->cpu_state_data.destination_address));
+> +				get_fadump_metadata_base(fdm_active));
+>   		fadump_invalidate_dump(&fdm);
+>   	}
+>   }
+> @@ -1236,7 +1302,7 @@ static void fadump_invalidate_release_mem(void)
+>   		return;
+>   	}
+>
+> -	destination_address = be64_to_cpu(fdm_active->cpu_state_data.destination_address);
+> +	destination_address = get_fadump_metadata_base(fdm_active);
+>   	fadump_cleanup();
+>   	mutex_unlock(&fadump_mutex);
+>
+>
