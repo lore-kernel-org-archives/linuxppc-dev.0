@@ -1,19 +1,19 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FrwF6MxCzF21j
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:25:17 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id x4-v6so9008741pln.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:25:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FrwK10vTzF21j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:25:21 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id g20-v6so9001735plo.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:25:20 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-nvdimm@lists.01.org,
-	Oliver O'Halloran <oohall@gmail.com>
-Subject: [RESEND v2 2/4] libnvdimm: Add device-tree based driver
-Date: Wed,  4 Apr 2018 00:24:13 +1000
-Message-Id: <20180403142415.30083-2-oohall@gmail.com>
+Cc: linux-nvdimm@lists.01.org, Oliver O'Halloran <oohall@gmail.com>,
+ devicetree@vger.kernel.org
+Subject: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
+Date: Wed,  4 Apr 2018 00:24:14 +1000
+Message-Id: <20180403142415.30083-3-oohall@gmail.com>
 In-Reply-To: <20180403142415.30083-1-oohall@gmail.com>
 References: <20180403142415.30083-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,197 +25,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds peliminary device-tree bindings for persistent memory
-regions. The driver registers a libnvdimm bus for each pmem-region
-node and each address range under the node is converted to a region
-within that bus.
+Add device-tree binding documentation for the nvdimm region driver.
 
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-v2: Made each bus have a separate node rather having a shared bus.
-    Renamed to of_pmem rather than of_nvdimm.
-    Changed log level of happy-path messages to debug.
+v2: Changed name from nvdimm-region to pmem-region.
+    Cleaned up the example binding and fixed the overlapping regions.
+    Added support for multiple regions in a single reg.
 ---
- MAINTAINERS              |   7 +++
- drivers/nvdimm/Kconfig   |  10 ++++
- drivers/nvdimm/Makefile  |   1 +
- drivers/nvdimm/of_pmem.c | 119 +++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 137 insertions(+)
- create mode 100644 drivers/nvdimm/of_pmem.c
+ .../devicetree/bindings/pmem/pmem-region.txt       | 80 ++++++++++++++++++++++
+ MAINTAINERS                                        |  1 +
+ 2 files changed, 81 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/pmem/pmem-region.txt
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4e62756936fa..6ef38be700e8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8035,6 +8035,13 @@ Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
- S:	Supported
- F:	drivers/nvdimm/pmem*
- 
-+LIBNVDIMM: DEVICETREE BINDINGS
-+M:	Oliver O'Halloran <oohall@gmail.com>
-+L:	linux-nvdimm@lists.01.org
-+Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
-+S:	Supported
-+F:	drivers/nvdimm/of_pmem.c
-+
- LIBNVDIMM: NON-VOLATILE MEMORY DEVICE SUBSYSTEM
- M:	Dan Williams <dan.j.williams@intel.com>
- L:	linux-nvdimm@lists.01.org
-diff --git a/drivers/nvdimm/Kconfig b/drivers/nvdimm/Kconfig
-index a65f2e1d9f53..2d6862bf7436 100644
---- a/drivers/nvdimm/Kconfig
-+++ b/drivers/nvdimm/Kconfig
-@@ -102,4 +102,14 @@ config NVDIMM_DAX
- 
- 	  Select Y if unsure
- 
-+config OF_PMEM
-+	tristate "Device-tree support for persistent memory regions"
-+	depends on OF
-+	default LIBNVDIMM
-+	help
-+	  Allows regions of persistent memory to be described in the
-+	  device-tree.
-+
-+	  Select Y if unsure.
-+
- endif
-diff --git a/drivers/nvdimm/Makefile b/drivers/nvdimm/Makefile
-index 70d5f3ad9909..e8847045dac0 100644
---- a/drivers/nvdimm/Makefile
-+++ b/drivers/nvdimm/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_BLK_DEV_PMEM) += nd_pmem.o
- obj-$(CONFIG_ND_BTT) += nd_btt.o
- obj-$(CONFIG_ND_BLK) += nd_blk.o
- obj-$(CONFIG_X86_PMEM_LEGACY) += nd_e820.o
-+obj-$(CONFIG_OF_PMEM) += of_pmem.o
- 
- nd_pmem-y := pmem.o
- 
-diff --git a/drivers/nvdimm/of_pmem.c b/drivers/nvdimm/of_pmem.c
+diff --git a/Documentation/devicetree/bindings/pmem/pmem-region.txt b/Documentation/devicetree/bindings/pmem/pmem-region.txt
 new file mode 100644
-index 000000000000..374c796ea1de
+index 000000000000..de48dc8cd562
 --- /dev/null
-+++ b/drivers/nvdimm/of_pmem.c
-@@ -0,0 +1,119 @@
-+// SPDX-License-Identifier: GPL-2.0+
++++ b/Documentation/devicetree/bindings/pmem/pmem-region.txt
+@@ -0,0 +1,80 @@
++Device-tree bindings for persistent memory regions
++-----------------------------------------------------
 +
-+#define pr_fmt(fmt) "of_pmem: " fmt
++Persistent memory refers to a class of memory devices that are:
 +
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/libnvdimm.h>
-+#include <linux/module.h>
-+#include <linux/ioport.h>
-+#include <linux/slab.h>
++	a) Usable as main system memory (i.e. cacheable), and
++	b) Retain their contents across power failure.
 +
-+static const struct attribute_group *region_attr_groups[] = {
-+	&nd_region_attribute_group,
-+	&nd_device_attribute_group,
-+	NULL,
-+};
++Given b) it is best to think of persistent memory as a kind of memory mapped
++storage device. To ensure data integrity the operating system needs to manage
++persistent regions separately to the normal memory pool. To aid with that this
++binding provides a standardised interface for discovering where persistent
++memory regions exist inside the physical address space.
 +
-+static const struct attribute_group *bus_attr_groups[] = {
-+	&nvdimm_bus_attribute_group,
-+	NULL,
-+};
++Bindings for the region nodes:
++-----------------------------
 +
-+struct of_nd_private {
-+	struct nvdimm_bus_descriptor bus_desc;
-+	struct nvdimm_bus *bus;
-+};
++Required properties:
++	- compatible = "pmem-region"
 +
-+static int of_nd_region_probe(struct platform_device *pdev)
-+{
-+	struct of_nd_private *priv;
-+	struct device_node *np;
-+	struct nvdimm_bus *bus;
-+	bool is_volatile;
-+	int i;
++	- reg = <base, size>;
++		The system physical address range of this nvdimm region.
 +
-+	np = dev_of_node(&pdev->dev);
-+	if (!np)
-+		return -ENXIO;
++		If the reg property contains multiple address ranges
++		each address range will be treated as though it was specified
++		in a separate device node. Having multiple address ranges in a
++		node implies no special relationship between the two ranges.
 +
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
++Optional properties:
++	- Any relevant NUMA assocativity properties for the target platform.
 +
-+	priv->bus_desc.attr_groups = bus_attr_groups;
-+	priv->bus_desc.provider_name = "of_pmem";
-+	priv->bus_desc.module = THIS_MODULE;
-+	priv->bus_desc.of_node = np;
++	- A "volatile" property indicating that this region is actually in
++	  normal DRAM and does not require cache flushes after each write.
 +
-+	priv->bus = bus = nvdimm_bus_register(&pdev->dev, &priv->bus_desc);
-+	if (!bus) {
-+		kfree(priv);
-+		return -ENODEV;
-+	}
-+	platform_set_drvdata(pdev, priv);
++	  If this property is absent then the OS must assume that the region
++	  is backed by non-volatile memory.
 +
-+	is_volatile = !!of_find_property(np, "volatile", NULL);
-+	dev_dbg(&pdev->dev, "Registering %s regions from %pOF\n",
-+			is_volatile ? "volatile" : "non-volatile",  np);
++A complete example:
++--------------------
 +
-+	for (i = 0; i < pdev->num_resources; i++) {
-+		struct nd_region_desc ndr_desc;
-+		struct nd_region *region;
++Here we define three 4KB regions:
++
++	a) A volatile region at 0x5000 on numa node 0,
++	b) A non-volatile region at 0x6000, and
++	c) A non-volatile region at 0x8000.
++
++/dts-v1/;
++
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	platform {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
 +
 +		/*
-+		 * NB: libnvdimm copies the data from ndr_desc into it's own
-+		 * structures so passing a stack pointer is fine.
++		 * This node specifies one non-volatile region spanning from
++		 * 0x5000 to 0x5fff.
 +		 */
-+		memset(&ndr_desc, 0, sizeof(ndr_desc));
-+		ndr_desc.attr_groups = region_attr_groups;
-+		ndr_desc.numa_node = of_node_to_nid(np);
-+		ndr_desc.res = &pdev->resource[i];
-+		ndr_desc.of_node = np;
-+		set_bit(ND_REGION_PAGEMAP, &ndr_desc.flags);
++		pmem@5000 {
++			compatible = "pmem-region";
++			reg = <0x00005000 0x00001000>;
++			numa-node-id = <0>;
++			volatile;
++		};
 +
-+		if (is_volatile)
-+			region = nvdimm_volatile_region_create(bus, &ndr_desc);
-+		else
-+			region = nvdimm_pmem_region_create(bus, &ndr_desc);
-+
-+		if (!region)
-+			dev_warn(&pdev->dev, "Unable to register region %pR from %pOF\n",
-+					ndr_desc.res, np);
-+		else
-+			dev_dbg(&pdev->dev, "Registered region %pR from %pOF\n",
-+					ndr_desc.res, np);
-+	}
-+
-+	return 0;
-+}
-+
-+static int of_nd_region_remove(struct platform_device *pdev)
-+{
-+	struct of_nd_private *priv = platform_get_drvdata(pdev);
-+
-+	nvdimm_bus_unregister(priv->bus);
-+	kfree(priv);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id of_nd_region_match[] = {
-+	{ .compatible = "pmem-region" },
-+	{ },
++		/*
++		 * This node specifies two 4KB regions that are backed by
++		 * volatile (normal) memory.
++		 */
++		pmem@6000 {
++			compatible = "pmem-region";
++			reg = <0x00006000 0x00001000 0x00008000 0x00001000>;
++		};
++	};
 +};
 +
-+static struct platform_driver of_nd_region_driver = {
-+	.probe = of_nd_region_probe,
-+	.remove = of_nd_region_remove,
-+	.driver = {
-+		.name = "of_pmem",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_nd_region_match,
-+	},
-+};
-+
-+module_platform_driver(of_nd_region_driver);
-+MODULE_DEVICE_TABLE(of, of_nd_region_match);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("IBM Corporation");
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6ef38be700e8..fa3c9211d6ff 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8041,6 +8041,7 @@ L:	linux-nvdimm@lists.01.org
+ Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
+ S:	Supported
+ F:	drivers/nvdimm/of_pmem.c
++F:	Documentation/devicetree/bindings/pmem/pmem-region.txt
+ 
+ LIBNVDIMM: NON-VOLATILE MEMORY DEVICE SUBSYSTEM
+ M:	Dan Williams <dan.j.williams@intel.com>
 -- 
 2.9.5
