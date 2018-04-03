@@ -1,33 +1,31 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40Fr6B5VVszF277
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 23:48:41 +1000 (AEST)
-Date: Tue, 3 Apr 2018 14:48:32 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180327102116.GA2464@arm.com>
- <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
+Return-Path: <prvs=063115b705=fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FrDp4mJ4zF1xB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 23:54:29 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w33Ds05X054472
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 09:54:10 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h476wmgtq-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 09:54:09 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 3 Apr 2018 14:54:05 +0100
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
+Subject: [PATCH v2] cxl: Fix possible deadlock when processing page faults
+ from cxllib
+Date: Tue,  3 Apr 2018 15:54:02 +0200
+Message-Id: <20180403135402.30374-1-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,65 +35,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Yury,
+cxllib_handle_fault() is called by an external driver when it needs to
+have the host resolve page faults for a buffer. The buffer can cover
+several pages and VMAs. The function iterates over all the pages used
+by the buffer, based on the page size of the VMA.
 
-On Sun, Apr 01, 2018 at 02:11:08PM +0300, Yury Norov wrote:
-> +/*
-> + * Flush I-cache if CPU is in extended quiescent state
-> + */
+To ensure some stability while processing the faults, the thread T1
+grabs the mm->mmap_sem semaphore with read access (R1). However, when
+processing a page fault for a single page, one of the underlying
+functions, copro_handle_mm_fault(), also grabs the same semaphore with
+read access (R2). So the thread T1 takes the semaphore twice.
 
-This comment is misleading. An ISB doesn't touch the I-cache; it forces
-a context synchronization event.
+If another thread T2 tries to access the semaphore in write mode W1
+(say, because it wants to allocate memory and calls 'brk'), then that
+thread T2 will have to wait because there's a reader (R1). If the
+thread T1 is processing a new page at that time, it won't get an
+automatic grant at R2, because there's now a writer thread
+waiting (T2). And we have a deadlock.
 
-> +	.macro	isb_if_eqs
-> +#ifndef CONFIG_TINY_RCU
-> +	bl	rcu_is_watching
-> +	tst	w0, #0xff
-> +	b.ne	1f
+The timeline is:
+1. thread T1 owns the semaphore with read access R1
+2. thread T2 requests write access W1 and waits
+3. thread T1 requests read access R2 and waits
 
-The TST+B.NE can be a CBNZ:
+The fix is for the thread T1 to release the semaphore R1 once it got
+the information it needs from the current VMA. The address space/VMAs
+could evolve while T1 iterates over the full buffer, but in the
+unlikely case where T1 misses a page, the external driver will raise a
+new page fault when retrying the memory access.
 
-	bl	rcu_is_watching
-	cbnz	x0, 1f
-	isb
-1:
+Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
+Cc: stable@vger.kernel.org # 4.13+
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/cxllib.c | 85 ++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 55 insertions(+), 30 deletions(-)
 
-> +	/* Pairs with aarch64_insn_patch_text for EQS CPUs. */
-> +	isb
-> +1:
-> +#endif
-> +	.endm
-> +
->  el0_sync_invalid:
->  	inv_entry 0, BAD_SYNC
->  ENDPROC(el0_sync_invalid)
-> @@ -840,8 +861,10 @@ el0_svc:
->  	mov	wsc_nr, #__NR_syscalls
->  el0_svc_naked:					// compat entry point
->  	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
-> +	isb_if_eqs
->  	enable_dbg_and_irq
-> -	ct_user_exit 1
-> +	ct_user_exit
-
-I don't think this is safe. here we issue the ISB *before* exiting a
-quiesecent state, so I think we can race with another CPU that calls
-kick_all_active_cpus_sync, e.g.
-
-	CPU0				CPU1
-
-	ISB
-					patch_some_text()
-					kick_all_active_cpus_sync()
-	ct_user_exit
-
-	// not synchronized!
-	use_of_patched_text()
-
-... and therefore the ISB has no effect, which could be disasterous.
-
-I believe we need the ISB *after* we transition into a non-quiescent
-state, so that we can't possibly miss a context synchronization event.
-
-Thanks,
-Mark.
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index 30ccba436b3b..55cd35d1a9cc 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct *task,
+ }
+ EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
+ 
+-int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
++static int get_vma_info(struct mm_struct *mm, u64 addr,
++			u64 *vma_start, u64 *vma_end,
++			unsigned long *page_size)
+ {
+-	int rc;
+-	u64 dar;
+ 	struct vm_area_struct *vma = NULL;
+-	unsigned long page_size;
+-
+-	if (mm == NULL)
+-		return -EFAULT;
++	int rc = 0;
+ 
+ 	down_read(&mm->mmap_sem);
+ 
+ 	vma = find_vma(mm, addr);
+ 	if (!vma) {
+-		pr_err("Can't find vma for addr %016llx\n", addr);
+ 		rc = -EFAULT;
+ 		goto out;
+ 	}
+-	/* get the size of the pages allocated */
+-	page_size = vma_kernel_pagesize(vma);
+-
+-	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
+-		if (dar < vma->vm_start || dar >= vma->vm_end) {
+-			vma = find_vma(mm, addr);
+-			if (!vma) {
+-				pr_err("Can't find vma for addr %016llx\n", addr);
+-				rc = -EFAULT;
+-				goto out;
+-			}
+-			/* get the size of the pages allocated */
+-			page_size = vma_kernel_pagesize(vma);
++	*page_size = vma_kernel_pagesize(vma);
++	*vma_start = vma->vm_start;
++	*vma_end = vma->vm_end;
++out:
++	up_read(&mm->mmap_sem);
++	return rc;
++}
++
++int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
++{
++	int rc;
++	u64 dar, vma_start, vma_end;
++	unsigned long page_size;
++
++	if (mm == NULL)
++		return -EFAULT;
++
++	/*
++	 * The buffer we have to process can extend over several pages
++	 * and may also cover several VMAs.
++	 * We iterate over all the pages. The page size could vary
++	 * between VMAs.
++	 */
++	rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
++	if (rc)
++		return rc;
++
++	for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
++	     dar += page_size) {
++		if (dar < vma_start || dar >= vma_end) {
++			/*
++			 * We don't hold the mm->mmap_sem semaphore
++			 * while iterating, since the semaphore is
++			 * required by one of the lower-level page
++			 * fault processing functions and it could
++			 * create a deadlock.
++			 *
++			 * It means the VMAs can be altered between 2
++			 * loop iterations and we could theoretically
++			 * miss a page (however unlikely). But that's
++			 * not really a problem, as the driver will
++			 * retry access, get another page fault on the
++			 * missing page and call us again.
++			 */
++			rc = get_vma_info(mm, dar, &vma_start, &vma_end,
++					&page_size);
++			if (rc)
++				return rc;
+ 		}
+ 
+ 		rc = cxl_handle_mm_fault(mm, flags, dar);
+-		if (rc) {
+-			pr_err("cxl_handle_mm_fault failed %d", rc);
+-			rc = -EFAULT;
+-			goto out;
+-		}
++		if (rc)
++			return -EFAULT;
+ 	}
+-	rc = 0;
+-out:
+-	up_read(&mm->mmap_sem);
+-	return rc;
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(cxllib_handle_fault);
+-- 
+2.14.1
