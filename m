@@ -1,25 +1,31 @@
-Return-Path: <clg@kaod.org>
-Received: from 6.mo4.mail-out.ovh.net (6.mo4.mail-out.ovh.net [188.165.36.253])
+Return-Path: <prvs=063115b705=fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Fj7q37jqzF265
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 18:34:47 +1000 (AEST)
-Received: from player716.ha.ovh.net (unknown [10.109.122.15])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 2E76B159805
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 09:16:01 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH 1/4] powerpc/64/kexec: fix race in kexec when XIVE is
- shutdowned
-Date: Tue,  3 Apr 2018 09:15:45 +0200
-Message-Id: <20180403071548.19829-2-clg@kaod.org>
-In-Reply-To: <20180403071548.19829-1-clg@kaod.org>
-References: <20180403071548.19829-1-clg@kaod.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Fkg07445zF26N
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 19:43:18 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w339Z0RZ105244
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 05:43:16 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h440ygxpu-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 05:43:15 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Tue, 3 Apr 2018 10:43:14 +0100
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
+Subject: [PATCH] cxl: Fix possible deadlock when processing page faults from
+ cxllib
+Date: Tue,  3 Apr 2018 11:43:11 +0200
+Message-Id: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +35,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kexec_state KEXEC_STATE_IRQS_OFF barrier is reached by all
-secondary CPUs before the kexec_cpu_down() operation is called on
-secondaries. This can raise conflicts and provoque errors in the XIVE
-hcalls when XIVE is shutdowned with H_INT_RESET on the primary CPU.
+cxllib_handle_fault() is called by an external driver when it needs to
+have the host process page faults for a buffer which may cover several
+pages. Currently the function holds the mm->mmap_sem semaphore with
+read access while iterating over the buffer, since it could spawn
+several VMAs. When calling a lower-level function to handle the page
+fault for a single page, the semaphore is accessed again in read
+mode. That is wrong and can lead to deadlocks if a writer tries to
+sneak in while a buffer of several pages is being processed.
 
-To synchronize the kexec_cpu_down() operations and make sure the
-secondaries have completed their task before the primary starts doing
-the same, let's move the primary kexec_cpu_down() after the
-KEXEC_STATE_REAL_MODE barrier.
+The fix is to release the semaphore once cxllib_handle_fault() got the
+information it needs from the current vma. The address space/VMAs
+could evolve while we iterate over the full buffer, but in the
+unlikely case where we miss a page, the driver will raise a new page
+fault when retrying.
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
+Cc: stable@vger.kernel.org # 4.13+
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/machine_kexec_64.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/misc/cxl/cxllib.c | 85 ++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 55 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 49d34d7271e7..212ecb8e829c 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -230,16 +230,16 @@ static void kexec_prepare_cpus(void)
- 	/* we are sure every CPU has IRQs off at this point */
- 	kexec_all_irq_disabled = 1;
- 
--	/* after we tell the others to go down */
--	if (ppc_md.kexec_cpu_down)
--		ppc_md.kexec_cpu_down(0, 0);
--
- 	/*
- 	 * Before removing MMU mappings make sure all CPUs have entered real
- 	 * mode:
- 	 */
- 	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE);
- 
-+	/* after we tell the others to go down */
-+	if (ppc_md.kexec_cpu_down)
-+		ppc_md.kexec_cpu_down(0, 0);
-+
- 	put_cpu();
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index 30ccba436b3b..55cd35d1a9cc 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct *task,
  }
+ EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
  
+-int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
++static int get_vma_info(struct mm_struct *mm, u64 addr,
++			u64 *vma_start, u64 *vma_end,
++			unsigned long *page_size)
+ {
+-	int rc;
+-	u64 dar;
+ 	struct vm_area_struct *vma = NULL;
+-	unsigned long page_size;
+-
+-	if (mm == NULL)
+-		return -EFAULT;
++	int rc = 0;
+ 
+ 	down_read(&mm->mmap_sem);
+ 
+ 	vma = find_vma(mm, addr);
+ 	if (!vma) {
+-		pr_err("Can't find vma for addr %016llx\n", addr);
+ 		rc = -EFAULT;
+ 		goto out;
+ 	}
+-	/* get the size of the pages allocated */
+-	page_size = vma_kernel_pagesize(vma);
+-
+-	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
+-		if (dar < vma->vm_start || dar >= vma->vm_end) {
+-			vma = find_vma(mm, addr);
+-			if (!vma) {
+-				pr_err("Can't find vma for addr %016llx\n", addr);
+-				rc = -EFAULT;
+-				goto out;
+-			}
+-			/* get the size of the pages allocated */
+-			page_size = vma_kernel_pagesize(vma);
++	*page_size = vma_kernel_pagesize(vma);
++	*vma_start = vma->vm_start;
++	*vma_end = vma->vm_end;
++out:
++	up_read(&mm->mmap_sem);
++	return rc;
++}
++
++int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
++{
++	int rc;
++	u64 dar, vma_start, vma_end;
++	unsigned long page_size;
++
++	if (mm == NULL)
++		return -EFAULT;
++
++	/*
++	 * The buffer we have to process can extend over several pages
++	 * and may also cover several VMAs.
++	 * We iterate over all the pages. The page size could vary
++	 * between VMAs.
++	 */
++	rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
++	if (rc)
++		return rc;
++
++	for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
++	     dar += page_size) {
++		if (dar < vma_start || dar >= vma_end) {
++			/*
++			 * We don't hold the mm->mmap_sem semaphore
++			 * while iterating, since the semaphore is
++			 * required by one of the lower-level page
++			 * fault processing functions and it could
++			 * create a deadlock.
++			 *
++			 * It means the VMAs can be altered between 2
++			 * loop iterations and we could theoretically
++			 * miss a page (however unlikely). But that's
++			 * not really a problem, as the driver will
++			 * retry access, get another page fault on the
++			 * missing page and call us again.
++			 */
++			rc = get_vma_info(mm, dar, &vma_start, &vma_end,
++					&page_size);
++			if (rc)
++				return rc;
+ 		}
+ 
+ 		rc = cxl_handle_mm_fault(mm, flags, dar);
+-		if (rc) {
+-			pr_err("cxl_handle_mm_fault failed %d", rc);
+-			rc = -EFAULT;
+-			goto out;
+-		}
++		if (rc)
++			return -EFAULT;
+ 	}
+-	rc = 0;
+-out:
+-	up_read(&mm->mmap_sem);
+-	return rc;
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(cxllib_handle_fault);
 -- 
-2.13.6
+2.14.1
