@@ -1,37 +1,15 @@
-Return-Path: <prvs=0631788ce2=aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FtPR4sFQzF21F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 01:31:57 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w33FTFoZ005293
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 11:31:54 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4ahnxxwj-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 11:31:54 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 3 Apr 2018 11:31:52 -0400
-Subject: Re: [PATCH] cxl: Fix possible deadlock when processing page faults
- from cxllib
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
-References: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
- <606e7509-5c37-b38e-9b6c-a60a5694c652@linux.ibm.com>
-Date: Tue, 3 Apr 2018 21:01:46 +0530
-MIME-Version: 1.0
-In-Reply-To: <606e7509-5c37-b38e-9b6c-a60a5694c652@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <8e099a01-ba11-d26f-07ab-bf0fa6e387c1@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Ftsv6RvSzF24G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 01:53:23 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] selftests/powerpc: Fix copyloops build since Power4 assembler
+ change
+Date: Wed,  4 Apr 2018 01:53:18 +1000
+Message-Id: <20180403155318.18266-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,133 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/03/2018 08:10 PM, Aneesh Kumar K.V wrote:
-> On 04/03/2018 03:13 PM, Frederic Barrat wrote:
->> cxllib_handle_fault() is called by an external driver when it needs to
->> have the host process page faults for a buffer which may cover several
->> pages. Currently the function holds the mm->mmap_sem semaphore with
->> read access while iterating over the buffer, since it could spawn
->> several VMAs. When calling a lower-level function to handle the page
->> fault for a single page, the semaphore is accessed again in read
->> mode. That is wrong and can lead to deadlocks if a writer tries to
->> sneak in while a buffer of several pages is being processed.
->>
->> The fix is to release the semaphore once cxllib_handle_fault() got the
->> information it needs from the current vma. The address space/VMAs
->> could evolve while we iterate over the full buffer, but in the
->> unlikely case where we miss a page, the driver will raise a new page
->> fault when retrying.
->>
->> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
->> Cc: stable@vger.kernel.org # 4.13+
->> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->> ---
->>   drivers/misc/cxl/cxllib.c | 85 
->> ++++++++++++++++++++++++++++++-----------------
->>   1 file changed, 55 insertions(+), 30 deletions(-)
->>
->> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
->> index 30ccba436b3b..55cd35d1a9cc 100644
->> --- a/drivers/misc/cxl/cxllib.c
->> +++ b/drivers/misc/cxl/cxllib.c
->> @@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct 
->> *task,
->>   }
->>   EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
->> -int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 
->> flags)
->> +static int get_vma_info(struct mm_struct *mm, u64 addr,
->> +            u64 *vma_start, u64 *vma_end,
->> +            unsigned long *page_size)
->>   {
->> -    int rc;
->> -    u64 dar;
->>       struct vm_area_struct *vma = NULL;
->> -    unsigned long page_size;
->> -
->> -    if (mm == NULL)
->> -        return -EFAULT;
->> +    int rc = 0;
->>       down_read(&mm->mmap_sem);
->>       vma = find_vma(mm, addr);
->>       if (!vma) {
->> -        pr_err("Can't find vma for addr %016llx\n", addr);
->>           rc = -EFAULT;
->>           goto out;
->>       }
->> -    /* get the size of the pages allocated */
->> -    page_size = vma_kernel_pagesize(vma);
->> -
->> -    for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += 
->> page_size) {
->> -        if (dar < vma->vm_start || dar >= vma->vm_end) {
->> -            vma = find_vma(mm, addr);
->> -            if (!vma) {
->> -                pr_err("Can't find vma for addr %016llx\n", addr);
->> -                rc = -EFAULT;
->> -                goto out;
->> -            }
->> -            /* get the size of the pages allocated */
->> -            page_size = vma_kernel_pagesize(vma);
->> +    *page_size = vma_kernel_pagesize(vma);
->> +    *vma_start = vma->vm_start;
->> +    *vma_end = vma->vm_end;
->> +out:
->> +    up_read(&mm->mmap_sem);
->> +    return rc;
->> +}
->> +
->> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 
->> flags)
->> +{
->> +    int rc;
->> +    u64 dar, vma_start, vma_end;
->> +    unsigned long page_size;
->> +
->> +    if (mm == NULL)
->> +        return -EFAULT;
->> +
->> +    /*
->> +     * The buffer we have to process can extend over several pages
->> +     * and may also cover several VMAs.
->> +     * We iterate over all the pages. The page size could vary
->> +     * between VMAs.
->> +     */
->> +    rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
->> +    if (rc)
->> +        return rc;
->> +
->> +    for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
->> +         dar += page_size) {
->> +        if (dar < vma_start || dar >= vma_end) {
-> 
-> 
-> IIUC, we are fetching the vma to get just the page_size with which it is 
-> mapped? Can't we iterate with PAGE_SIZE? Considering hugetlb page size 
-> will be larger than PAGE_SIZE, we might call into cxl_handle_mm_fault 
-> multiple times for a hugetlb page. Does that cause any issue? Also can 
-> cxl be used with hugetlb mappings?
-> 
-Can you also try to use a helper like below. That will clarify the need 
-of find_vma there.
+The recent commit 15a3204d24a3 ("powerpc/64s: Set assembler machine
+type to POWER4") set the machine type in our ASFLAGS when building the
+kernel, and removed some ".machine power4" directives from various asm
+files.
 
-static int __cxllib_handle_fault(struct mm_struct *mm, unsigned long 
-start, unsigned long end,
-				 unsigned long mapping_psize, u64 flags)
-{
-	int rc;
-	unsigned long dar;
+This broke the selftests build on old toolchains (that don't assume
+Power4), because we build the kernel source files into the selftests
+using different ASFLAGS.
 
-	for (dar = start; dar < end; dar += mapping_psize) {
-		rc = cxl_handle_mm_fault(mm, flags, dar);
-		if (rc) {
-			rc = -EFAULT;
-			goto out;
-		}
-	}
-	rc = 0;
-out:
-	return rc;
-}
+The fix is simply to add -mpower4 to the selftest ASFLAGS as well.
 
--aneesh
+Fixes: 15a3204d24a3 ("powerpc/64s: Set assembler machine type to POWER4")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/copyloops/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
+index ac4a52e19e59..eedce3366f64 100644
+--- a/tools/testing/selftests/powerpc/copyloops/Makefile
++++ b/tools/testing/selftests/powerpc/copyloops/Makefile
+@@ -5,8 +5,8 @@ CFLAGS += -I$(CURDIR)
+ CFLAGS += -D SELFTEST
+ CFLAGS += -maltivec
+ 
+-# Use our CFLAGS for the implicit .S rule
+-ASFLAGS = $(CFLAGS)
++# Use our CFLAGS for the implicit .S rule & set the asm machine type
++ASFLAGS = $(CFLAGS) -Wa,-mpower4
+ 
+ TEST_GEN_PROGS := copyuser_64 copyuser_power7 memcpy_64 memcpy_power7
+ EXTRA_SOURCES := validate.c ../harness.c
+-- 
+2.14.1
