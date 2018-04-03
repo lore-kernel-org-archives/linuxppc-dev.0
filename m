@@ -2,49 +2,48 @@ Return-Path: <srs0=7hay=gy=linux.vnet.ibm.com=prvs=06312cd2c6=mahesh@ozlabs.org>
 Received: from ozlabs.org (lists.ozlabs.org [103.22.144.68])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FnCR4hrzzF26Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:38:11 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40FnCR3q6sz8tJy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:38:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FnFf5jfnzF29M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:40:06 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40FnFf50Fyz8vj0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:40:06 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40FnCQ6fCRz9s1w
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2018 21:38:10 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w33BYUWL062468
- for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2018 07:38:06 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h4675qs4j-1
+ by ozlabs.org (Postfix) with ESMTPS id 40FnFf1Nspz9s21
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2018 21:40:05 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w33BdGDo130052
+ for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2018 07:40:03 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h470ww5m1-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 03 Apr 2018 07:38:05 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 03 Apr 2018 07:40:02 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 3 Apr 2018 12:38:04 +0100
-Subject: Re: [PATCH v3 6/7] powerpc/fadump: Do not allow hot-remove memory
- from fadump reserved area.
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Tue, 3 Apr 2018 12:40:01 +0100
+Subject: Re: [PATCH v3 4/7] powerpc/fadump: exclude memory holes while
+ reserving memory in second kernel.
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, kernelfans@gmail.com,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Ananth Narayan <ananth@in.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
 References: <152265046485.23251.1392824827444770657.stgit@jupiter.in.ibm.com>
- <152265064158.23251.10213309407765206304.stgit@jupiter.in.ibm.com>
- <CAFgQCTu0qLrHuuiaCpPPEoFesz+19V+0CCQY-rjPz2chcNL1gw@mail.gmail.com>
+ <152265062142.23251.2863873644423472277.stgit@jupiter.in.ibm.com>
+ <04e18a87-2882-b656-8fed-800c6d0bc835@linux.vnet.ibm.com>
 From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Tue, 3 Apr 2018 17:07:59 +0530
+Date: Tue, 3 Apr 2018 17:09:54 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAFgQCTu0qLrHuuiaCpPPEoFesz+19V+0CCQY-rjPz2chcNL1gw@mail.gmail.com>
+In-Reply-To: <04e18a87-2882-b656-8fed-800c6d0bc835@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <1177bec0-d2aa-edef-695f-f3e4d4f2f8d3@linux.vnet.ibm.com>
+Message-Id: <ef184979-b14d-28a8-5fc0-febeb4d72ac4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,101 +53,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/03/2018 08:48 AM, Pingfan Liu wrote:
-> I think CMA has protected us from hot-remove, so this patch is not necessary.
+On 04/03/2018 03:21 PM, Hari Bathini wrote:
+> 
+> 
+> On Monday 02 April 2018 12:00 PM, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> The second kernel, during early boot after the crash, reserves rest of
+>> the memory above boot memory size to make sure it does not touch any
+>> of the
+>> dump memory area. It uses memblock_reserve() that reserves the specified
+>> memory region irrespective of memory holes present within that region.
+>> There are chances where previous kernel would have hot removed some of
+>> its memory leaving memory holes behind. In such cases fadump kernel
+>> reports
+>> incorrect number of reserved pages through arch_reserved_kernel_pages()
+>> hook causing kernel to hang or panic.
+>>
+>> Fix this by excluding memory holes while reserving rest of the memory
+>> above boot memory size during second kernel boot after crash.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/kernel/fadump.c |   17 ++++++++++++++++-
+>>   1 file changed, 16 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+>> index 011f1aa7abab..a497e9fb93fe 100644
+>> --- a/arch/powerpc/kernel/fadump.c
+>> +++ b/arch/powerpc/kernel/fadump.c
+>> @@ -433,6 +433,21 @@ static inline unsigned long
+>> get_fadump_metadata_base(
+>>       return be64_to_cpu(fdm->metadata_region.source_address);
+>>   }
+>>
+>> +static void fadump_memblock_reserve(unsigned long base, unsigned long
+>> size)
+>> +{
+>> +    struct memblock_region *reg;
+>> +    unsigned long start, end;
+>> +
+>> +    for_each_memblock(memory, reg) {
+>> +        start = max(base, (unsigned long)reg->base);
+>> +        end = reg->base + reg->size;
+>> +        end = min(base + size, end);
+>> +
+>> +        if (start < end)
+>> +            memblock_reserve(start, end - start);
+>> +    }
+>> +}
+>> +
+>>   int __init fadump_reserve_mem(void)
+>>   {
+>>       unsigned long base, size, memory_boundary;
+>> @@ -487,7 +502,7 @@ int __init fadump_reserve_mem(void)
+>>            */
+>>           base = fw_dump.boot_memory_size;
+>>           size = memory_boundary - base;
+>> -        memblock_reserve(base, size);
+>> +        fadump_memblock_reserve(base, size);
+>>           printk(KERN_INFO "Reserved %ldMB of memory at %ldMB "
+> 
+> Mahesh, you may want to change this print as well as it would be
+> misleading in case of
+> holes in the memory.
 
-Yes, but only if the memory from declared CMA region is allocated using
-cma_alloc(). The rest of the memory inside CMA region which hasn't been
-cma_allocat-ed can still be hot-removed. Hence this patch is necessary.
-
-fadump allocates only 1 page from fadump CMA region for metadata region.
-Rest all memory is free to use by applications and vulnerable to hot-remove.
+Yeah, may be we can just move that printk also inside
+fadump_memblock_reserve().
 
 Thanks,
 -Mahesh.
 
 > 
-> Regards,
-> Pingfan
+> Thanks
+> Hari
 > 
-> On Mon, Apr 2, 2018 at 2:30 PM, Mahesh J Salgaonkar
-> <mahesh@linux.vnet.ibm.com> wrote:
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> For fadump to work successfully there should not be any holes in reserved
->> memory ranges where kernel has asked firmware to move the content of old
->> kernel memory in event of crash. But this memory area is currently not
->> protected from hot-remove operations. Hence, fadump service can fail to
->> re-register after the hot-remove operation, if hot-removed memory belongs
->> to fadump reserved region. To avoid this make sure that memory from fadump
->> reserved area is not hot-removable if fadump is registered.
->>
->> However, if user still wants to remove that memory, he can do so by
->> manually stopping fadump service before hot-remove operation.
->>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/fadump.h               |    2 +-
->>  arch/powerpc/kernel/fadump.c                    |   10 ++++++++--
->>  arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++--
->>  3 files changed, 14 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
->> index 44b6ebfe9be6..d16dc77107a8 100644
->> --- a/arch/powerpc/include/asm/fadump.h
->> +++ b/arch/powerpc/include/asm/fadump.h
->> @@ -207,7 +207,7 @@ struct fad_crash_memory_ranges {
->>         unsigned long long      size;
->>  };
->>
->> -extern int is_fadump_boot_memory_area(u64 addr, ulong size);
->> +extern int is_fadump_memory_area(u64 addr, ulong size);
->>  extern int early_init_dt_scan_fw_dump(unsigned long node,
->>                 const char *uname, int depth, void *data);
->>  extern int fadump_reserve_mem(void);
->> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
->> index 59aaf0357a52..2c3c7e655eec 100644
->> --- a/arch/powerpc/kernel/fadump.c
->> +++ b/arch/powerpc/kernel/fadump.c
->> @@ -162,13 +162,19 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
->>
->>  /*
->>   * If fadump is registered, check if the memory provided
->> - * falls within boot memory area.
->> + * falls within boot memory area and reserved memory area.
->>   */
->> -int is_fadump_boot_memory_area(u64 addr, ulong size)
->> +int is_fadump_memory_area(u64 addr, ulong size)
->>  {
->> +       u64 d_start = fw_dump.reserve_dump_area_start;
->> +       u64 d_end = d_start + fw_dump.reserve_dump_area_size;
->> +
->>         if (!fw_dump.dump_registered)
->>                 return 0;
->>
->> +       if (((addr + size) > d_start) && (addr <= d_end))
->> +               return 1;
->> +
->>         return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
->>  }
->>
->> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
->> index c1578f54c626..e4c658cda3a7 100644
->> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
->> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
->> @@ -389,8 +389,11 @@ static bool lmb_is_removable(struct drmem_lmb *lmb)
->>         phys_addr = lmb->base_addr;
->>
->>  #ifdef CONFIG_FA_DUMP
->> -       /* Don't hot-remove memory that falls in fadump boot memory area */
->> -       if (is_fadump_boot_memory_area(phys_addr, block_sz))
->> +       /*
->> +        * Don't hot-remove memory that falls in fadump boot memory area
->> +        * and memory that is reserved for capturing old kernel memory.
->> +        */
->> +       if (is_fadump_memory_area(phys_addr, block_sz))
->>                 return false;
->>  #endif
->>
+>>                   "for saving crash dump\n",
+>>                   (unsigned long)(size >> 20),
 >>
 > 
