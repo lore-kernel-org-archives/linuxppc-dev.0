@@ -1,36 +1,19 @@
-Return-Path: <prvs=06313af5ed=ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FrVs03SjzF27s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:06:44 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w33E1WGl100947
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 10:06:42 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h47eyvdk5-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 10:06:37 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 3 Apr 2018 15:06:28 +0100
-Subject: Re: [PATCH v2] cxl: Fix possible deadlock when processing page faults
- from cxllib
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: clombard@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com,
- vaibhav@linux.vnet.ibm.com
-References: <20180403135402.30374-1-fbarrat@linux.vnet.ibm.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Tue, 3 Apr 2018 16:06:25 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180403135402.30374-1-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <904fbfd8-5224-78b5-ca74-4c4dec1125e7@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Frq54JjlzF27f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:20:49 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id 91-v6so8999128pld.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:20:49 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: 000linux-nvdimm@lists.01.org,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH 1/4] libnvdimm: Add of_node to region and bus descriptors
+Date: Wed,  4 Apr 2018 00:20:28 +1000
+Message-Id: <20180403142031.28629-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,153 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2018 15:54, Frederic Barrat wrote:
-> cxllib_handle_fault() is called by an external driver when it needs to
-> have the host resolve page faults for a buffer. The buffer can cover
-> several pages and VMAs. The function iterates over all the pages used
-> by the buffer, based on the page size of the VMA.
-> 
-> To ensure some stability while processing the faults, the thread T1
-> grabs the mm->mmap_sem semaphore with read access (R1). However, when
-> processing a page fault for a single page, one of the underlying
-> functions, copro_handle_mm_fault(), also grabs the same semaphore with
-> read access (R2). So the thread T1 takes the semaphore twice.
-> 
-> If another thread T2 tries to access the semaphore in write mode W1
-> (say, because it wants to allocate memory and calls 'brk'), then that
-> thread T2 will have to wait because there's a reader (R1). If the
-> thread T1 is processing a new page at that time, it won't get an
-> automatic grant at R2, because there's now a writer thread
-> waiting (T2). And we have a deadlock.
-> 
-> The timeline is:
-> 1. thread T1 owns the semaphore with read access R1
-> 2. thread T2 requests write access W1 and waits
-> 3. thread T1 requests read access R2 and waits
-> 
-> The fix is for the thread T1 to release the semaphore R1 once it got
-> the information it needs from the current VMA. The address space/VMAs
-> could evolve while T1 iterates over the full buffer, but in the
-> unlikely case where T1 misses a page, the external driver will raise a
-> new page fault when retrying the memory access.
-> 
-> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
-> Cc: stable@vger.kernel.org # 4.13+
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+We want to be able to cross reference the region and bus devices
+with the device tree node that they were spawned from. libNVDIMM
+handles creating the actual devices for these internally, so we
+need to pass in a pointer to the relevant node in the descriptor.
 
-What are the changes introduced in this v2 ?
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/nvdimm/bus.c         | 1 +
+ drivers/nvdimm/region_devs.c | 1 +
+ include/linux/libnvdimm.h    | 3 +++
+ 3 files changed, 5 insertions(+)
 
-> ---
->  drivers/misc/cxl/cxllib.c | 85 ++++++++++++++++++++++++++++++-----------------
->  1 file changed, 55 insertions(+), 30 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-> index 30ccba436b3b..55cd35d1a9cc 100644
-> --- a/drivers/misc/cxl/cxllib.c
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct *task,
->  }
->  EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
-> 
-> -int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-> +static int get_vma_info(struct mm_struct *mm, u64 addr,
-> +			u64 *vma_start, u64 *vma_end,
-> +			unsigned long *page_size)
->  {
-> -	int rc;
-> -	u64 dar;
->  	struct vm_area_struct *vma = NULL;
-> -	unsigned long page_size;
-> -
-> -	if (mm == NULL)
-> -		return -EFAULT;
-> +	int rc = 0;
-> 
->  	down_read(&mm->mmap_sem);
-> 
->  	vma = find_vma(mm, addr);
->  	if (!vma) {
-> -		pr_err("Can't find vma for addr %016llx\n", addr);
->  		rc = -EFAULT;
->  		goto out;
->  	}
-> -	/* get the size of the pages allocated */
-> -	page_size = vma_kernel_pagesize(vma);
-> -
-> -	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
-> -		if (dar < vma->vm_start || dar >= vma->vm_end) {
-> -			vma = find_vma(mm, addr);
-> -			if (!vma) {
-> -				pr_err("Can't find vma for addr %016llx\n", addr);
-> -				rc = -EFAULT;
-> -				goto out;
-> -			}
-> -			/* get the size of the pages allocated */
-> -			page_size = vma_kernel_pagesize(vma);
-> +	*page_size = vma_kernel_pagesize(vma);
-> +	*vma_start = vma->vm_start;
-> +	*vma_end = vma->vm_end;
-> +out:
-> +	up_read(&mm->mmap_sem);
-> +	return rc;
-> +}
-> +
-> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-> +{
-> +	int rc;
-> +	u64 dar, vma_start, vma_end;
-> +	unsigned long page_size;
-> +
-> +	if (mm == NULL)
-> +		return -EFAULT;
-> +
-> +	/*
-> +	 * The buffer we have to process can extend over several pages
-> +	 * and may also cover several VMAs.
-> +	 * We iterate over all the pages. The page size could vary
-> +	 * between VMAs.
-> +	 */
-> +	rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
-> +	if (rc)
-> +		return rc;
-> +
-> +	for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
-> +	     dar += page_size) {
-> +		if (dar < vma_start || dar >= vma_end) {
-> +			/*
-> +			 * We don't hold the mm->mmap_sem semaphore
-> +			 * while iterating, since the semaphore is
-> +			 * required by one of the lower-level page
-> +			 * fault processing functions and it could
-> +			 * create a deadlock.
-> +			 *
-> +			 * It means the VMAs can be altered between 2
-> +			 * loop iterations and we could theoretically
-> +			 * miss a page (however unlikely). But that's
-> +			 * not really a problem, as the driver will
-> +			 * retry access, get another page fault on the
-> +			 * missing page and call us again.
-> +			 */
-> +			rc = get_vma_info(mm, dar, &vma_start, &vma_end,
-> +					&page_size);
-> +			if (rc)
-> +				return rc;
->  		}
-> 
->  		rc = cxl_handle_mm_fault(mm, flags, dar);
-> -		if (rc) {
-> -			pr_err("cxl_handle_mm_fault failed %d", rc);
-> -			rc = -EFAULT;
-> -			goto out;
-> -		}
-> +		if (rc)
-> +			return -EFAULT;
->  	}
-> -	rc = 0;
-> -out:
-> -	up_read(&mm->mmap_sem);
-> -	return rc;
-> +	return 0;
->  }
->  EXPORT_SYMBOL_GPL(cxllib_handle_fault);
-> 
+diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
+index 78eabc3a1ab1..c6106914f396 100644
+--- a/drivers/nvdimm/bus.c
++++ b/drivers/nvdimm/bus.c
+@@ -358,6 +358,7 @@ struct nvdimm_bus *nvdimm_bus_register(struct device *parent,
+ 	nvdimm_bus->dev.release = nvdimm_bus_release;
+ 	nvdimm_bus->dev.groups = nd_desc->attr_groups;
+ 	nvdimm_bus->dev.bus = &nvdimm_bus_type;
++	nvdimm_bus->dev.of_node = nd_desc->of_node;
+ 	dev_set_name(&nvdimm_bus->dev, "ndbus%d", nvdimm_bus->id);
+ 	rc = device_register(&nvdimm_bus->dev);
+ 	if (rc) {
+diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
+index e6d01911e092..2f1d5771100e 100644
+--- a/drivers/nvdimm/region_devs.c
++++ b/drivers/nvdimm/region_devs.c
+@@ -1005,6 +1005,7 @@ static struct nd_region *nd_region_create(struct nvdimm_bus *nvdimm_bus,
+ 	dev->parent = &nvdimm_bus->dev;
+ 	dev->type = dev_type;
+ 	dev->groups = ndr_desc->attr_groups;
++	dev->of_node = ndr_desc->of_node;
+ 	nd_region->ndr_size = resource_size(ndr_desc->res);
+ 	nd_region->ndr_start = ndr_desc->res->start;
+ 	nd_device_register(dev);
+diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
+index ff855ed965fb..f61cb5050297 100644
+--- a/include/linux/libnvdimm.h
++++ b/include/linux/libnvdimm.h
+@@ -76,12 +76,14 @@ typedef int (*ndctl_fn)(struct nvdimm_bus_descriptor *nd_desc,
+ 		struct nvdimm *nvdimm, unsigned int cmd, void *buf,
+ 		unsigned int buf_len, int *cmd_rc);
+ 
++struct device_node;
+ struct nvdimm_bus_descriptor {
+ 	const struct attribute_group **attr_groups;
+ 	unsigned long bus_dsm_mask;
+ 	unsigned long cmd_mask;
+ 	struct module *module;
+ 	char *provider_name;
++	struct device_node *of_node;
+ 	ndctl_fn ndctl;
+ 	int (*flush_probe)(struct nvdimm_bus_descriptor *nd_desc);
+ 	int (*clear_to_send)(struct nvdimm_bus_descriptor *nd_desc,
+@@ -123,6 +125,7 @@ struct nd_region_desc {
+ 	int num_lanes;
+ 	int numa_node;
+ 	unsigned long flags;
++	struct device_node *of_node;
+ };
+ 
+ struct device;
+-- 
+2.9.5
