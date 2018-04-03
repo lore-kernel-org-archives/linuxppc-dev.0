@@ -1,21 +1,19 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FrqD5FKnzF27f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:20:56 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id x4-v6so8990219pln.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:20:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Frw05ZRTzF1pZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:25:04 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id s10-v6so7034194plp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:25:04 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: 000linux-nvdimm@lists.01.org,
+Cc: linux-nvdimm@lists.01.org,
 	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 4/4] powerpc/powernv: Create platform devs for nvdimm buses
-Date: Wed,  4 Apr 2018 00:20:31 +1000
-Message-Id: <20180403142031.28629-4-oohall@gmail.com>
-In-Reply-To: <20180403142031.28629-1-oohall@gmail.com>
-References: <20180403142031.28629-1-oohall@gmail.com>
+Subject: [RESEND v2 1/4] libnvdimm: Add of_node to region and bus descriptors
+Date: Wed,  4 Apr 2018 00:24:12 +1000
+Message-Id: <20180403142415.30083-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scan the devicetree for an nvdimm-bus compatible and create
-a platform device for them.
+We want to be able to cross reference the region and bus devices
+with the device tree node that they were spawned from. libNVDIMM
+handles creating the actual devices for these internally, so we
+need to pass in a pointer to the relevant node in the descriptor.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
 ---
- arch/powerpc/platforms/powernv/opal.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/nvdimm/bus.c         | 1 +
+ drivers/nvdimm/region_devs.c | 1 +
+ include/linux/libnvdimm.h    | 3 +++
+ 3 files changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index c15182765ff5..c37485a3c5c9 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -821,6 +821,9 @@ static int __init opal_init(void)
- 	/* Create i2c platform devices */
- 	opal_pdev_init("ibm,opal-i2c");
+diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
+index 78eabc3a1ab1..c6106914f396 100644
+--- a/drivers/nvdimm/bus.c
++++ b/drivers/nvdimm/bus.c
+@@ -358,6 +358,7 @@ struct nvdimm_bus *nvdimm_bus_register(struct device *parent,
+ 	nvdimm_bus->dev.release = nvdimm_bus_release;
+ 	nvdimm_bus->dev.groups = nd_desc->attr_groups;
+ 	nvdimm_bus->dev.bus = &nvdimm_bus_type;
++	nvdimm_bus->dev.of_node = nd_desc->of_node;
+ 	dev_set_name(&nvdimm_bus->dev, "ndbus%d", nvdimm_bus->id);
+ 	rc = device_register(&nvdimm_bus->dev);
+ 	if (rc) {
+diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
+index e6d01911e092..2f1d5771100e 100644
+--- a/drivers/nvdimm/region_devs.c
++++ b/drivers/nvdimm/region_devs.c
+@@ -1005,6 +1005,7 @@ static struct nd_region *nd_region_create(struct nvdimm_bus *nvdimm_bus,
+ 	dev->parent = &nvdimm_bus->dev;
+ 	dev->type = dev_type;
+ 	dev->groups = ndr_desc->attr_groups;
++	dev->of_node = ndr_desc->of_node;
+ 	nd_region->ndr_size = resource_size(ndr_desc->res);
+ 	nd_region->ndr_start = ndr_desc->res->start;
+ 	nd_device_register(dev);
+diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
+index ff855ed965fb..f61cb5050297 100644
+--- a/include/linux/libnvdimm.h
++++ b/include/linux/libnvdimm.h
+@@ -76,12 +76,14 @@ typedef int (*ndctl_fn)(struct nvdimm_bus_descriptor *nd_desc,
+ 		struct nvdimm *nvdimm, unsigned int cmd, void *buf,
+ 		unsigned int buf_len, int *cmd_rc);
  
-+	/* Handle non-volatile memory devices */
-+	opal_pdev_init("pmem-region");
-+
- 	/* Setup a heatbeat thread if requested by OPAL */
- 	opal_init_heartbeat();
++struct device_node;
+ struct nvdimm_bus_descriptor {
+ 	const struct attribute_group **attr_groups;
+ 	unsigned long bus_dsm_mask;
+ 	unsigned long cmd_mask;
+ 	struct module *module;
+ 	char *provider_name;
++	struct device_node *of_node;
+ 	ndctl_fn ndctl;
+ 	int (*flush_probe)(struct nvdimm_bus_descriptor *nd_desc);
+ 	int (*clear_to_send)(struct nvdimm_bus_descriptor *nd_desc,
+@@ -123,6 +125,7 @@ struct nd_region_desc {
+ 	int num_lanes;
+ 	int numa_node;
+ 	unsigned long flags;
++	struct device_node *of_node;
+ };
  
+ struct device;
 -- 
 2.9.5
