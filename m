@@ -1,36 +1,50 @@
-Return-Path: <prvs=06313af5ed=ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <srs0=7hay=gy=linux.vnet.ibm.com=prvs=06312cd2c6=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [103.22.144.68])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FnCR4hrzzF26Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:38:11 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40FnCR3q6sz8tJy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 21:38:11 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FkyR35JzzF28s
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Apr 2018 19:56:43 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w339tcOM111461
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 05:56:40 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h44yp7wsp-1
+ by ozlabs.org (Postfix) with ESMTPS id 40FnCQ6fCRz9s1w
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2018 21:38:10 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w33BYUWL062468
+ for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2018 07:38:06 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h4675qs4j-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 05:56:40 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 03 Apr 2018 07:38:05 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 3 Apr 2018 10:56:36 +0100
-Subject: Re: [PATCH] cxl: Fix possible deadlock when processing page faults
- from cxllib
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: clombard@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com,
- vaibhav@linux.vnet.ibm.com
-References: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Tue, 3 Apr 2018 11:56:33 +0200
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 3 Apr 2018 12:38:04 +0100
+Subject: Re: [PATCH v3 6/7] powerpc/fadump: Do not allow hot-remove memory
+ from fadump reserved area.
+To: Pingfan Liu <kernelfans@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ananth Narayan <ananth@in.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+References: <152265046485.23251.1392824827444770657.stgit@jupiter.in.ibm.com>
+ <152265064158.23251.10213309407765206304.stgit@jupiter.in.ibm.com>
+ <CAFgQCTu0qLrHuuiaCpPPEoFesz+19V+0CCQY-rjPz2chcNL1gw@mail.gmail.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Tue, 3 Apr 2018 17:07:59 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <CAFgQCTu0qLrHuuiaCpPPEoFesz+19V+0CCQY-rjPz2chcNL1gw@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <8dba07b6-e06b-0c34-7244-a7469376e18d@linux.vnet.ibm.com>
+Message-Id: <1177bec0-d2aa-edef-695f-f3e4d4f2f8d3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,142 +54,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/03/2018 08:48 AM, Pingfan Liu wrote:
+> I think CMA has protected us from hot-remove, so this patch is not necessary.
 
+Yes, but only if the memory from declared CMA region is allocated using
+cma_alloc(). The rest of the memory inside CMA region which hasn't been
+cma_allocat-ed can still be hot-removed. Hence this patch is necessary.
 
-On 03/04/2018 11:43, Frederic Barrat wrote:
-> cxllib_handle_fault() is called by an external driver when it needs to
-> have the host process page faults for a buffer which may cover several
-> pages. Currently the function holds the mm->mmap_sem semaphore with
-> read access while iterating over the buffer, since it could spawn
-> several VMAs. When calling a lower-level function to handle the page
-> fault for a single page, the semaphore is accessed again in read
-> mode. That is wrong and can lead to deadlocks if a writer tries to
-> sneak in while a buffer of several pages is being processed.
-> 
-> The fix is to release the semaphore once cxllib_handle_fault() got the
-> information it needs from the current vma. The address space/VMAs
-> could evolve while we iterate over the full buffer, but in the
-> unlikely case where we miss a page, the driver will raise a new page
-> fault when retrying.
-> 
-> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
-> Cc: stable@vger.kernel.org # 4.13+
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+fadump allocates only 1 page from fadump CMA region for metadata region.
+Rest all memory is free to use by applications and vulnerable to hot-remove.
 
-FWIW,
-Reviewed-by : Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Thanks,
+-Mahesh.
 
-> ---
->  drivers/misc/cxl/cxllib.c | 85 ++++++++++++++++++++++++++++++-----------------
->  1 file changed, 55 insertions(+), 30 deletions(-)
 > 
-> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
-> index 30ccba436b3b..55cd35d1a9cc 100644
-> --- a/drivers/misc/cxl/cxllib.c
-> +++ b/drivers/misc/cxl/cxllib.c
-> @@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct *task,
->  }
->  EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
+> Regards,
+> Pingfan
 > 
-> -int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-> +static int get_vma_info(struct mm_struct *mm, u64 addr,
-> +			u64 *vma_start, u64 *vma_end,
-> +			unsigned long *page_size)
->  {
-> -	int rc;
-> -	u64 dar;
->  	struct vm_area_struct *vma = NULL;
-> -	unsigned long page_size;
-> -
-> -	if (mm == NULL)
-> -		return -EFAULT;
-> +	int rc = 0;
-> 
->  	down_read(&mm->mmap_sem);
-> 
->  	vma = find_vma(mm, addr);
->  	if (!vma) {
-> -		pr_err("Can't find vma for addr %016llx\n", addr);
->  		rc = -EFAULT;
->  		goto out;
->  	}
-> -	/* get the size of the pages allocated */
-> -	page_size = vma_kernel_pagesize(vma);
-> -
-> -	for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar += page_size) {
-> -		if (dar < vma->vm_start || dar >= vma->vm_end) {
-> -			vma = find_vma(mm, addr);
-> -			if (!vma) {
-> -				pr_err("Can't find vma for addr %016llx\n", addr);
-> -				rc = -EFAULT;
-> -				goto out;
-> -			}
-> -			/* get the size of the pages allocated */
-> -			page_size = vma_kernel_pagesize(vma);
-> +	*page_size = vma_kernel_pagesize(vma);
-> +	*vma_start = vma->vm_start;
-> +	*vma_end = vma->vm_end;
-> +out:
-> +	up_read(&mm->mmap_sem);
-> +	return rc;
-> +}
-> +
-> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, u64 flags)
-> +{
-> +	int rc;
-> +	u64 dar, vma_start, vma_end;
-> +	unsigned long page_size;
-> +
-> +	if (mm == NULL)
-> +		return -EFAULT;
-> +
-> +	/*
-> +	 * The buffer we have to process can extend over several pages
-> +	 * and may also cover several VMAs.
-> +	 * We iterate over all the pages. The page size could vary
-> +	 * between VMAs.
-> +	 */
-> +	rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
-> +	if (rc)
-> +		return rc;
-> +
-> +	for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
-> +	     dar += page_size) {
-> +		if (dar < vma_start || dar >= vma_end) {
-> +			/*
-> +			 * We don't hold the mm->mmap_sem semaphore
-> +			 * while iterating, since the semaphore is
-> +			 * required by one of the lower-level page
-> +			 * fault processing functions and it could
-> +			 * create a deadlock.
-> +			 *
-> +			 * It means the VMAs can be altered between 2
-> +			 * loop iterations and we could theoretically
-> +			 * miss a page (however unlikely). But that's
-> +			 * not really a problem, as the driver will
-> +			 * retry access, get another page fault on the
-> +			 * missing page and call us again.
-> +			 */
-> +			rc = get_vma_info(mm, dar, &vma_start, &vma_end,
-> +					&page_size);
-> +			if (rc)
-> +				return rc;
->  		}
-> 
->  		rc = cxl_handle_mm_fault(mm, flags, dar);
-> -		if (rc) {
-> -			pr_err("cxl_handle_mm_fault failed %d", rc);
-> -			rc = -EFAULT;
-> -			goto out;
-> -		}
-> +		if (rc)
-> +			return -EFAULT;
->  	}
-> -	rc = 0;
-> -out:
-> -	up_read(&mm->mmap_sem);
-> -	return rc;
-> +	return 0;
->  }
->  EXPORT_SYMBOL_GPL(cxllib_handle_fault);
+> On Mon, Apr 2, 2018 at 2:30 PM, Mahesh J Salgaonkar
+> <mahesh@linux.vnet.ibm.com> wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> For fadump to work successfully there should not be any holes in reserved
+>> memory ranges where kernel has asked firmware to move the content of old
+>> kernel memory in event of crash. But this memory area is currently not
+>> protected from hot-remove operations. Hence, fadump service can fail to
+>> re-register after the hot-remove operation, if hot-removed memory belongs
+>> to fadump reserved region. To avoid this make sure that memory from fadump
+>> reserved area is not hot-removable if fadump is registered.
+>>
+>> However, if user still wants to remove that memory, he can do so by
+>> manually stopping fadump service before hot-remove operation.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/fadump.h               |    2 +-
+>>  arch/powerpc/kernel/fadump.c                    |   10 ++++++++--
+>>  arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++--
+>>  3 files changed, 14 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+>> index 44b6ebfe9be6..d16dc77107a8 100644
+>> --- a/arch/powerpc/include/asm/fadump.h
+>> +++ b/arch/powerpc/include/asm/fadump.h
+>> @@ -207,7 +207,7 @@ struct fad_crash_memory_ranges {
+>>         unsigned long long      size;
+>>  };
+>>
+>> -extern int is_fadump_boot_memory_area(u64 addr, ulong size);
+>> +extern int is_fadump_memory_area(u64 addr, ulong size);
+>>  extern int early_init_dt_scan_fw_dump(unsigned long node,
+>>                 const char *uname, int depth, void *data);
+>>  extern int fadump_reserve_mem(void);
+>> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+>> index 59aaf0357a52..2c3c7e655eec 100644
+>> --- a/arch/powerpc/kernel/fadump.c
+>> +++ b/arch/powerpc/kernel/fadump.c
+>> @@ -162,13 +162,19 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
+>>
+>>  /*
+>>   * If fadump is registered, check if the memory provided
+>> - * falls within boot memory area.
+>> + * falls within boot memory area and reserved memory area.
+>>   */
+>> -int is_fadump_boot_memory_area(u64 addr, ulong size)
+>> +int is_fadump_memory_area(u64 addr, ulong size)
+>>  {
+>> +       u64 d_start = fw_dump.reserve_dump_area_start;
+>> +       u64 d_end = d_start + fw_dump.reserve_dump_area_size;
+>> +
+>>         if (!fw_dump.dump_registered)
+>>                 return 0;
+>>
+>> +       if (((addr + size) > d_start) && (addr <= d_end))
+>> +               return 1;
+>> +
+>>         return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
+>>  }
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> index c1578f54c626..e4c658cda3a7 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> @@ -389,8 +389,11 @@ static bool lmb_is_removable(struct drmem_lmb *lmb)
+>>         phys_addr = lmb->base_addr;
+>>
+>>  #ifdef CONFIG_FA_DUMP
+>> -       /* Don't hot-remove memory that falls in fadump boot memory area */
+>> -       if (is_fadump_boot_memory_area(phys_addr, block_sz))
+>> +       /*
+>> +        * Don't hot-remove memory that falls in fadump boot memory area
+>> +        * and memory that is reserved for capturing old kernel memory.
+>> +        */
+>> +       if (is_fadump_memory_area(phys_addr, block_sz))
+>>                 return false;
+>>  #endif
+>>
+>>
 > 
