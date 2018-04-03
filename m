@@ -3,17 +3,17 @@ Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
  [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40FrwK10vTzF21j
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:25:21 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id g20-v6so9001735plo.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:25:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40FrwM5TqMzF27s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 00:25:23 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id g20-v6so9001938plo.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 07:25:23 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-nvdimm@lists.01.org, Oliver O'Halloran <oohall@gmail.com>,
- devicetree@vger.kernel.org
-Subject: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
-Date: Wed,  4 Apr 2018 00:24:14 +1000
-Message-Id: <20180403142415.30083-3-oohall@gmail.com>
+Cc: linux-nvdimm@lists.01.org,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [RESEND v2 4/4] powerpc/powernv: Create platform devs for nvdimm buses
+Date: Wed,  4 Apr 2018 00:24:15 +1000
+Message-Id: <20180403142415.30083-4-oohall@gmail.com>
 In-Reply-To: <20180403142415.30083-1-oohall@gmail.com>
 References: <20180403142415.30083-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,117 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add device-tree binding documentation for the nvdimm region driver.
+Scan the devicetree for an nvdimm-bus compatible and create
+a platform device for them.
 
-Cc: devicetree@vger.kernel.org
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-v2: Changed name from nvdimm-region to pmem-region.
-    Cleaned up the example binding and fixed the overlapping regions.
-    Added support for multiple regions in a single reg.
----
- .../devicetree/bindings/pmem/pmem-region.txt       | 80 ++++++++++++++++++++++
- MAINTAINERS                                        |  1 +
- 2 files changed, 81 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/pmem/pmem-region.txt
+ arch/powerpc/platforms/powernv/opal.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/pmem/pmem-region.txt b/Documentation/devicetree/bindings/pmem/pmem-region.txt
-new file mode 100644
-index 000000000000..de48dc8cd562
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pmem/pmem-region.txt
-@@ -0,0 +1,80 @@
-+Device-tree bindings for persistent memory regions
-+-----------------------------------------------------
-+
-+Persistent memory refers to a class of memory devices that are:
-+
-+	a) Usable as main system memory (i.e. cacheable), and
-+	b) Retain their contents across power failure.
-+
-+Given b) it is best to think of persistent memory as a kind of memory mapped
-+storage device. To ensure data integrity the operating system needs to manage
-+persistent regions separately to the normal memory pool. To aid with that this
-+binding provides a standardised interface for discovering where persistent
-+memory regions exist inside the physical address space.
-+
-+Bindings for the region nodes:
-+-----------------------------
-+
-+Required properties:
-+	- compatible = "pmem-region"
-+
-+	- reg = <base, size>;
-+		The system physical address range of this nvdimm region.
-+
-+		If the reg property contains multiple address ranges
-+		each address range will be treated as though it was specified
-+		in a separate device node. Having multiple address ranges in a
-+		node implies no special relationship between the two ranges.
-+
-+Optional properties:
-+	- Any relevant NUMA assocativity properties for the target platform.
-+
-+	- A "volatile" property indicating that this region is actually in
-+	  normal DRAM and does not require cache flushes after each write.
-+
-+	  If this property is absent then the OS must assume that the region
-+	  is backed by non-volatile memory.
-+
-+A complete example:
-+--------------------
-+
-+Here we define three 4KB regions:
-+
-+	a) A volatile region at 0x5000 on numa node 0,
-+	b) A non-volatile region at 0x6000, and
-+	c) A non-volatile region at 0x8000.
-+
-+/dts-v1/;
-+
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	platform {
-+		compatible = "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		/*
-+		 * This node specifies one non-volatile region spanning from
-+		 * 0x5000 to 0x5fff.
-+		 */
-+		pmem@5000 {
-+			compatible = "pmem-region";
-+			reg = <0x00005000 0x00001000>;
-+			numa-node-id = <0>;
-+			volatile;
-+		};
-+
-+		/*
-+		 * This node specifies two 4KB regions that are backed by
-+		 * volatile (normal) memory.
-+		 */
-+		pmem@6000 {
-+			compatible = "pmem-region";
-+			reg = <0x00006000 0x00001000 0x00008000 0x00001000>;
-+		};
-+	};
-+};
-+
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6ef38be700e8..fa3c9211d6ff 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8041,6 +8041,7 @@ L:	linux-nvdimm@lists.01.org
- Q:	https://patchwork.kernel.org/project/linux-nvdimm/list/
- S:	Supported
- F:	drivers/nvdimm/of_pmem.c
-+F:	Documentation/devicetree/bindings/pmem/pmem-region.txt
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index c15182765ff5..c37485a3c5c9 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -821,6 +821,9 @@ static int __init opal_init(void)
+ 	/* Create i2c platform devices */
+ 	opal_pdev_init("ibm,opal-i2c");
  
- LIBNVDIMM: NON-VOLATILE MEMORY DEVICE SUBSYSTEM
- M:	Dan Williams <dan.j.williams@intel.com>
++	/* Handle non-volatile memory devices */
++	opal_pdev_init("pmem-region");
++
+ 	/* Setup a heatbeat thread if requested by OPAL */
+ 	opal_init_heartbeat();
+ 
 -- 
 2.9.5
