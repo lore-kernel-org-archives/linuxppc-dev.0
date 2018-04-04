@@ -1,37 +1,23 @@
-Return-Path: <Yuri.Norov@cavium.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0046.outbound.protection.outlook.com [104.47.37.46])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GBTY2WrYzF1kQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 13:36:47 +1000 (AEST)
-Date: Wed, 4 Apr 2018 06:36:25 +0300
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
-Message-ID: <20180404033625.gkn4q7kb2xf6d6mo@yury-thinkpad>
-References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
- <20180325175004.28162-3-ynorov@caviumnetworks.com>
- <20180327102116.GA2464@arm.com>
- <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
- <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GFwD39W2zF1qF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 16:11:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Matt Evans <matt@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Clear branch trap (MSR.BE) before delivering
+ SIGTRAP
+In-Reply-To: <71F58B2E-149D-41E4-A5BF-5A26E3491EA7@ozlabs.org>
+References: <74EBF461-0D94-4C2D-ABA7-0B9BE010F173@ozlabs.org>
+ <877epw3fu2.fsf@concordia.ellerman.id.au>
+ <C8B54188-179A-475D-B06A-A25426EF6932@ozlabs.org>
+ <71F58B2E-149D-41E4-A5BF-5A26E3491EA7@ozlabs.org>
+Date: Wed, 04 Apr 2018 16:11:37 +1000
+Message-ID: <87d0zfo606.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,74 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mark,
+Matt Evans <matt@ozlabs.org> writes:
+>> On 28 Mar 2018, at 11:36, Matt Evans <matt@ozlabs.org> wrote:
+>>> On 28 Mar 2018, at 06:54, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>> Matt Evans <matt@ozlabs.org> writes:
+>>>> When using SIG_DBG_BRANCH_TRACING, MSR.BE is left enabled in the
+>>>> user context when single_step_exception() prepares the SIGTRAP
+>>>> delivery.  The resulting branch-trap-within-the-SIGTRAP-handler
+>>>> isn't healthy.
+>>>>=20
+>>>> Commit 2538c2d08f46141550a1e68819efa8fe31c6e3dc broke this, by
+>>>> replacing an MSR mask operation of ~(MSR_SE | MSR_BE) with a call
+>>>> to clear_single_step() which only clears MSR_SE.
+>>>>=20
+>>>> This patch adds a new helper, clear_br_trace(), which clears the
+>>>> debug trap before invoking the signal handler.  This helper is a
+>>>> NOP for BookE as SIG_DBG_BRANCH_TRACING isn't supported on BookE.
+>>>>=20
+>>>> Signed-off-by: Matt Evans <matt@ozlabs.org>
+>>>=20
+>>> Hi Matt!
+>>>=20
+>>> It seems we might not be regularly testing this code :}
+>>=20
+>> I know, rite? ;-)
+>>=20
+>>> How did you hit/find the bug? And do you have a test case by any chance?
+>>>=20
+>>> I found the test code at the bottom of:
+>>> https://lwn.net/Articles/114587/
+>>>=20
+>>> But it didn't immediately work.
+>>=20
+>> I'm using this feature as part of a debug harness I wrote to log a
+>> program=E2=80=99s control flow (to create a =E2=80=9Cknown good=E2=80=9D=
+ pattern to compare a
+>> PPC interpreter against). So at least the feature has /one/ user. ;-)
 
-Thank you for review.
+One is enough for us :)
+=20
+>> The symptoms of the bug are that if you use single-stepping you get a
+>> sequence of SIGTRAPs representing each instruction completion (good),
+>> but if you use branch tracing the process just dies with SIGTRAP
+>> (looks like it=E2=80=99s never caught by the signal handler). What=E2=80=
+=99s really
+>> happening is that there /is/ a signal delivered to the handler, but
+>> (because branch tracing is left on) that then causes a second debug
+>> exception from the handler itself, i.e. whilst SIGTRAP=E2=80=99s masked.
+>>=20
+>> OK, let me have a dig to reduce my program to something very basic
+>> and I=E2=80=99ll post something =E2=80=94 sorry, I should=E2=80=99ve got=
+ a PoC ready before.
+>> (I did start out inspired by that post you linked to, but IIRC I
+>> don=E2=80=99t think it worked out of the box for me either.)
+>
+> I=E2=80=99ve put a simple SIG_DBG_BRANCH_TRACING test program here:
+>
+> 	http://ozlabs.org/~matt/files/sig_dbg_brtrace_test.c
 
-On Tue, Apr 03, 2018 at 02:48:32PM +0100, Mark Rutland wrote:
-> Hi Yury,
-> 
-> On Sun, Apr 01, 2018 at 02:11:08PM +0300, Yury Norov wrote:
-> > +/*
-> > + * Flush I-cache if CPU is in extended quiescent state
-> > + */
-> 
-> This comment is misleading. An ISB doesn't touch the I-cache; it forces
-> a context synchronization event.
-> 
-> > +	.macro	isb_if_eqs
-> > +#ifndef CONFIG_TINY_RCU
-> > +	bl	rcu_is_watching
-> > +	tst	w0, #0xff
-> > +	b.ne	1f
-> 
-> The TST+B.NE can be a CBNZ:
-> 
-> 	bl	rcu_is_watching
-> 	cbnz	x0, 1f
-> 	isb
-> 1:
-> 
-> > +	/* Pairs with aarch64_insn_patch_text for EQS CPUs. */
-> > +	isb
-> > +1:
-> > +#endif
-> > +	.endm
-> > +
-> >  el0_sync_invalid:
-> >  	inv_entry 0, BAD_SYNC
-> >  ENDPROC(el0_sync_invalid)
-> > @@ -840,8 +861,10 @@ el0_svc:
-> >  	mov	wsc_nr, #__NR_syscalls
-> >  el0_svc_naked:					// compat entry point
-> >  	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
-> > +	isb_if_eqs
-> >  	enable_dbg_and_irq
-> > -	ct_user_exit 1
-> > +	ct_user_exit
-> 
-> I don't think this is safe. here we issue the ISB *before* exiting a
-> quiesecent state, so I think we can race with another CPU that calls
-> kick_all_active_cpus_sync, e.g.
-> 
-> 	CPU0				CPU1
-> 
-> 	ISB
-> 					patch_some_text()
-> 					kick_all_active_cpus_sync()
-> 	ct_user_exit
-> 
-> 	// not synchronized!
-> 	use_of_patched_text()
-> 
-> ... and therefore the ISB has no effect, which could be disasterous.
-> 
-> I believe we need the ISB *after* we transition into a non-quiescent
-> state, so that we can't possibly miss a context synchronization event.
- 
-I decided to put isb() in entry because there's a chance that there will
-be patched code prior to exiting a quiescent state. But after some
-headscratching, I think it's safe. I'll do like you suggested here.
+Thanks.
 
-Thanks,
-Yury
+> It=E2=80=99s commented regarding expected output. I=E2=80=99ve only teste=
+d this on a
+> G4 =E2=80=94 it should work on PPC64 too but the ISA says support for bra=
+nch
+> tracing is optional for an implementation. I=E2=80=99d be interested in w=
+hat
+> POWERx does. :)
+
+I get no traps on any 64-bit machine I tried, including 970FX, Power6,
+Power7, Power8, Power9.
+
+So I guess it's never been implemented on "server" CPUs.
+
+I'd be happy to turn your test program into a selftest, though it won't
+actually catch bugs unless someone runs it on actual 32-bit systems :)
+
+cheers
