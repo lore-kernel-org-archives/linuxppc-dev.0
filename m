@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GTBb4mp4zDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 00:39:51 +1000 (AEST)
-In-Reply-To: <20180330120902.28798-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GTBc37B6zF1TR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 00:39:52 +1000 (AEST)
+In-Reply-To: <20180401053813.17405-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [1/2] powerpc/mm/radix: Parse disable_radix commandline correctly.
-Message-Id: <40GTBb2rWCz9s29@ozlabs.org>
-Date: Thu,  5 Apr 2018 00:39:51 +1000 (AEST)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/powernv: Fix SMT4 forcing idle code
+Message-Id: <40GTBc23sJz9s32@ozlabs.org>
+Date: Thu,  5 Apr 2018 00:39:52 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,19 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-03-30 at 12:09:01 UTC, "Aneesh Kumar K.V" wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Sun, 2018-04-01 at 05:38:13 UTC, Nicholas Piggin wrote:
+> PSSCR value is not stored to PACA_REQ_PSSCR in case the CPU does
+> not have the XER[SO] bug.
 > 
-> kernel parameter disable_radix takes different options
-> disable_radix=yes|no|1|0  or just disable_radix. When using the later format
-> we get below error.
+> Fix this by storing up-front, outside the workaround code. The
+> initial test is not required because it is a slow path.
 > 
->  `Malformed early option 'disable_radix'`
+> The workaround is made to depend on CONFIG_KVM_BOOK3S_HV_POSSIBLE, to
+> match pnv_power9_force_smt4_catch() where it is used.
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Fixes: 7672691a08 ("powerpc/powernv: Provide a way to force a core into SMT4 mode")
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/cec4e9b28ffbcb9ce04b9e33946c50
+https://git.kernel.org/powerpc/c/a2b5e056b75ee6ef0777817644a456
 
 cheers
