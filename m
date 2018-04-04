@@ -1,13 +1,13 @@
 Return-Path: <rientjes@google.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40G6lW1K01zF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 10:48:38 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id 59-v6so8861777plc.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 17:48:38 -0700 (PDT)
-Date: Tue, 3 Apr 2018 17:48:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40G74b21fJzF1pP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 11:03:25 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id 59-v6so8911751plc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 18:03:25 -0700 (PDT)
+Date: Tue, 3 Apr 2018 18:03:22 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 cc: kernel test robot <fengguang.wu@intel.com>, paulmck@linux.vnet.ibm.com,
@@ -27,12 +27,13 @@ cc: kernel test robot <fengguang.wu@intel.com>, paulmck@linux.vnet.ibm.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org, lkp@01.org
 Subject: Re: [mm] b1f0502d04: INFO:trying_to_register_non-static_key
-In-Reply-To: <aa6f2ff1-ff67-106a-e0e4-522ac82a7bf0@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.20.1804031748120.27686@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.20.1804031748120.27686@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.20.1804031802110.50064@chino.kir.corp.google.com>
 References: <20180317075119.u6yuem2bhxvggbz3@inn>
  <792c0f75-7e7f-cd81-44ae-4205f6e4affc@linux.vnet.ibm.com>
  <alpine.DEB.2.20.1803251510040.80485@chino.kir.corp.google.com>
  <aa6f2ff1-ff67-106a-e0e4-522ac82a7bf0@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1804031748120.27686@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,38 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Mar 2018, Laurent Dufour wrote:
+On Tue, 3 Apr 2018, David Rientjes wrote:
 
-> On 26/03/2018 00:10, David Rientjes wrote:
-> > On Wed, 21 Mar 2018, Laurent Dufour wrote:
+> > >> I found the root cause of this lockdep warning.
+> > >>
+> > >> In mmap_region(), unmap_region() may be called while vma_link() has not been
+> > >> called. This happens during the error path if call_mmap() failed.
+> > >>
+> > >> The only to fix that particular case is to call
+> > >> seqcount_init(&vma->vm_sequence) when initializing the vma in mmap_region().
+> > >>
+> > > 
+> > > Ack, although that would require a fixup to dup_mmap() as well.
 > > 
-> >> I found the root cause of this lockdep warning.
-> >>
-> >> In mmap_region(), unmap_region() may be called while vma_link() has not been
-> >> called. This happens during the error path if call_mmap() failed.
-> >>
-> >> The only to fix that particular case is to call
-> >> seqcount_init(&vma->vm_sequence) when initializing the vma in mmap_region().
-> >>
+> > You're right, I'll fix that too.
 > > 
-> > Ack, although that would require a fixup to dup_mmap() as well.
 > 
-> You're right, I'll fix that too.
+> I also think the following is needed:
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -312,6 +312,10 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
+>  	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
+>  	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	seqcount_init(&vma->vm_sequence);
+> +	atomic_set(&vma->vm_ref_count, 0);
+> +#endif
+>  
+>  	err = insert_vm_struct(mm, vma);
+>  	if (err)
 > 
 
-I also think the following is needed:
-
-diff --git a/fs/exec.c b/fs/exec.c
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -312,6 +312,10 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
- 	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
- 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
- 	INIT_LIST_HEAD(&vma->anon_vma_chain);
-+#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-+	seqcount_init(&vma->vm_sequence);
-+	atomic_set(&vma->vm_ref_count, 0);
-+#endif
- 
- 	err = insert_vm_struct(mm, vma);
- 	if (err)
+Ugh, I think there are a number of other places where this is needed as 
+well in mm/mmap.c.  I think it would be better to just create a new 
+alloc_vma(unsigned long flags) that all vma allocators can use and for 
+CONFIG_SPECULATIVE_PAGE_FAULT will initialize the seqcount_t and atomic_t.
