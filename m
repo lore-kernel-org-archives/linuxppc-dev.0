@@ -3,23 +3,23 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GL9P5vspzDqwb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 19:23:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GLrG2r01zDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 19:53:34 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w349LKAh046570
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 05:23:19 -0400
+ w349nVKm135409
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 05:53:32 -0400
 Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4uw1rc8p-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h4uw1shv5-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 05:23:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 05:53:31 -0400
 Received: from localhost
  by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 10:23:16 +0100
-Subject: Re: [PATCH v9 04/24] mm: Prepare for FAULT_FLAG_SPECULATIVE
-To: David Rientjes <rientjes@google.com>
+ Wed, 4 Apr 2018 10:53:28 +0100
+Subject: Re: [PATCH v9 06/24] mm: make pte_unmap_same compatible with SPF
+To: Jerome Glisse <jglisse@redhat.com>
 Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
  mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
@@ -38,16 +38,14 @@ Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-5-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803251426120.80485@chino.kir.corp.google.com>
- <361fa6e7-3c17-e1b8-8046-af72c4459613@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1804031449130.153232@chino.kir.corp.google.com>
+ <1520963994-28477-7-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180403191005.GC5935@redhat.com>
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 4 Apr 2018 11:23:05 +0200
+Date: Wed, 4 Apr 2018 11:53:18 +0200
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1804031449130.153232@chino.kir.corp.google.com>
+In-Reply-To: <20180403191005.GC5935@redhat.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <bbc24965-2e78-c4c7-dd53-ebc24f73a9df@linux.vnet.ibm.com>
+Message-Id: <04b7be03-b90b-c890-d1bb-6981412a6b10@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,112 +57,140 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 03/04/2018 23:57, David Rientjes wrote:
-> On Wed, 28 Mar 2018, Laurent Dufour wrote:
+On 03/04/2018 21:10, Jerome Glisse wrote:
+> On Tue, Mar 13, 2018 at 06:59:36PM +0100, Laurent Dufour wrote:
+>> pte_unmap_same() is making the assumption that the page table are still
+>> around because the mmap_sem is held.
+>> This is no more the case when running a speculative page fault and
+>> additional check must be made to ensure that the final page table are still
+>> there.
+>>
+>> This is now done by calling pte_spinlock() to check for the VMA's
+>> consistency while locking for the page tables.
+>>
+>> This is requiring passing a vm_fault structure to pte_unmap_same() which is
+>> containing all the needed parameters.
+>>
+>> As pte_spinlock() may fail in the case of a speculative page fault, if the
+>> VMA has been touched in our back, pte_unmap_same() should now return 3
+>> cases :
+>> 	1. pte are the same (0)
+>> 	2. pte are different (VM_FAULT_PTNOTSAME)
+>> 	3. a VMA's changes has been detected (VM_FAULT_RETRY)
+>>
+>> The case 2 is handled by the introduction of a new VM_FAULT flag named
+>> VM_FAULT_PTNOTSAME which is then trapped in cow_user_page().
+>> If VM_FAULT_RETRY is returned, it is passed up to the callers to retry the
+>> page fault while holding the mmap_sem.
+>>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  include/linux/mm.h |  1 +
+>>  mm/memory.c        | 29 +++++++++++++++++++----------
+>>  2 files changed, 20 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/include/linux/mm.h b/include/linux/mm.h
+>> index 2f3e98edc94a..b6432a261e63 100644
+>> --- a/include/linux/mm.h
+>> +++ b/include/linux/mm.h
+>> @@ -1199,6 +1199,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
+>>  #define VM_FAULT_NEEDDSYNC  0x2000	/* ->fault did not modify page tables
+>>  					 * and needs fsync() to complete (for
+>>  					 * synchronous page faults in DAX) */
+>> +#define VM_FAULT_PTNOTSAME 0x4000	/* Page table entries have changed */
+>>  
+>>  #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | \
+>>  			 VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE | \
+>> diff --git a/mm/memory.c b/mm/memory.c
+>> index 21b1212a0892..4bc7b0bdcb40 100644
+>> --- a/mm/memory.c
+>> +++ b/mm/memory.c
+>> @@ -2309,21 +2309,29 @@ static bool pte_map_lock(struct vm_fault *vmf)
+>>   * parts, do_swap_page must check under lock before unmapping the pte and
+>>   * proceeding (but do_wp_page is only called after already making such a check;
+>>   * and do_anonymous_page can safely check later on).
+>> + *
+>> + * pte_unmap_same() returns:
+>> + *	0			if the PTE are the same
+>> + *	VM_FAULT_PTNOTSAME	if the PTE are different
+>> + *	VM_FAULT_RETRY		if the VMA has changed in our back during
+>> + *				a speculative page fault handling.
+>>   */
+>> -static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
+>> -				pte_t *page_table, pte_t orig_pte)
+>> +static inline int pte_unmap_same(struct vm_fault *vmf)
+>>  {
+>> -	int same = 1;
+>> +	int ret = 0;
+>> +
+>>  #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+>>  	if (sizeof(pte_t) > sizeof(unsigned long)) {
+>> -		spinlock_t *ptl = pte_lockptr(mm, pmd);
+>> -		spin_lock(ptl);
+>> -		same = pte_same(*page_table, orig_pte);
+>> -		spin_unlock(ptl);
+>> +		if (pte_spinlock(vmf)) {
+>> +			if (!pte_same(*vmf->pte, vmf->orig_pte))
+>> +				ret = VM_FAULT_PTNOTSAME;
+>> +			spin_unlock(vmf->ptl);
+>> +		} else
+>> +			ret = VM_FAULT_RETRY;
+>>  	}
+>>  #endif
+>> -	pte_unmap(page_table);
+>> -	return same;
+>> +	pte_unmap(vmf->pte);
+>> +	return ret;
+>>  }
+>>  
+>>  static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
+>> @@ -2913,7 +2921,8 @@ int do_swap_page(struct vm_fault *vmf)
+>>  	int exclusive = 0;
+>>  	int ret = 0;
+>>  
+>> -	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte))
+>> +	ret = pte_unmap_same(vmf);
+>> +	if (ret)
+>>  		goto out;
+>>  
 > 
->>>> diff --git a/include/linux/mm.h b/include/linux/mm.h
->>>> index 4d02524a7998..2f3e98edc94a 100644
->>>> --- a/include/linux/mm.h
->>>> +++ b/include/linux/mm.h
->>>> @@ -300,6 +300,7 @@ extern pgprot_t protection_map[16];
->>>>  #define FAULT_FLAG_USER		0x40	/* The fault originated in userspace */
->>>>  #define FAULT_FLAG_REMOTE	0x80	/* faulting for non current tsk/mm */
->>>>  #define FAULT_FLAG_INSTRUCTION  0x100	/* The fault was during an instruction fetch */
->>>> +#define FAULT_FLAG_SPECULATIVE	0x200	/* Speculative fault, not holding mmap_sem */
->>>>  
->>>>  #define FAULT_FLAG_TRACE \
->>>>  	{ FAULT_FLAG_WRITE,		"WRITE" }, \
->>>
->>> I think FAULT_FLAG_SPECULATIVE should be introduced in the patch that 
->>> actually uses it.
->>
->> I think you're right, I'll move down this define in the series.
->>
->>>> diff --git a/mm/memory.c b/mm/memory.c
->>>> index e0ae4999c824..8ac241b9f370 100644
->>>> --- a/mm/memory.c
->>>> +++ b/mm/memory.c
->>>> @@ -2288,6 +2288,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
->>>>  }
->>>>  EXPORT_SYMBOL_GPL(apply_to_page_range);
->>>>  
->>>> +static bool pte_map_lock(struct vm_fault *vmf)
->>>
->>> inline?
->>
->> Agreed.
->>
+> This change what do_swap_page() returns ie before it was returning 0
+> when locked pte lookup was different from orig_pte. After this patch
+> it returns VM_FAULT_PTNOTSAME but this is a new return value for
+> handle_mm_fault() (the do_swap_page() return value is what ultimately
+> get return by handle_mm_fault())
 > 
-> Ignore this, the final form of the function after the full patchset 
-> shouldn't be inline.
+> Do we really want that ? This might confuse some existing user of
+> handle_mm_fault() and i am not sure of the value of that information
+> to caller.
+> 
+> Note i do understand that you want to return retry if anything did
+> change from underneath and thus need to differentiate from when the
+> pte value are not the same.
 
-Indeed, I only kept as inlined the small pte_map_lock() and later
-pte_spinlock() defined when CONFIG_SPECULATIVE_PAGE_FAULT is not set.
+You're right, do_swap_page() should still return 0 in the case the lookup pte
+is different from orig_pte, assuming that the swap operation has been handled
+in our back by another concurrent thread.
 
->>>> +{
->>>> +	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
->>>> +				       vmf->address, &vmf->ptl);
->>>> +	return true;
->>>> +}
->>>> +
->>>>  /*
->>>>   * handle_pte_fault chooses page fault handler according to an entry which was
->>>>   * read non-atomically.  Before making any commitment, on those architectures
->>>> @@ -2477,6 +2484,7 @@ static int wp_page_copy(struct vm_fault *vmf)
->>>>  	const unsigned long mmun_start = vmf->address & PAGE_MASK;
->>>>  	const unsigned long mmun_end = mmun_start + PAGE_SIZE;
->>>>  	struct mem_cgroup *memcg;
->>>> +	int ret = VM_FAULT_OOM;
->>>>  
->>>>  	if (unlikely(anon_vma_prepare(vma)))
->>>>  		goto oom;
->>>> @@ -2504,7 +2512,11 @@ static int wp_page_copy(struct vm_fault *vmf)
->>>>  	/*
->>>>  	 * Re-check the pte - we dropped the lock
->>>>  	 */
->>>> -	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
->>>> +	if (!pte_map_lock(vmf)) {
->>>> +		mem_cgroup_cancel_charge(new_page, memcg, false);
->>>> +		ret = VM_FAULT_RETRY;
->>>> +		goto oom_free_new;
->>>> +	}
->>>
->>> Ugh, but we aren't oom here, so maybe rename oom_free_new so that it makes 
->>> sense for return values other than VM_FAULT_OOM?
->>
->> You're right, now this label name is not correct, I'll rename it to
->> "out_free_new" and rename also the label "oom" to "out" since it is generic too
->> now.
->>
-> 
-> I think it would just be better to introduce a out_uncharge that handles 
-> the mem_cgroup_cancel_charge() in the exit path.
+So in do_swap_page(), VM_FAULT_PTNOTSAME should be translated in ret = 0.
 
-Yes adding an out_uncharge label sounds good too. I'll add it and also rename
-oom_* ones to out_*.
+	ret = pte_unmap_same(vmf);
+	if (ret) {
+		/*
+		 * If pte != orig_pte, this means another thread did the
+		 * swap operation in our back.
+		 * So nothing else to do.
+		 */
+		if (ret == VM_FAULT_PTNOTSAME)
+			ret = 0;
+		goto out;
+	}
 
-> 
-> diff --git a/mm/memory.c b/mm/memory.c
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2645,9 +2645,8 @@ static int wp_page_copy(struct vm_fault *vmf)
->  	 * Re-check the pte - we dropped the lock
->  	 */
->  	if (!pte_map_lock(vmf)) {
-> -		mem_cgroup_cancel_charge(new_page, memcg, false);
->  		ret = VM_FAULT_RETRY;
-> -		goto oom_free_new;
-> +		goto out_uncharge;
->  	}
->  	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
->  		if (old_page) {
-> @@ -2735,6 +2734,8 @@ static int wp_page_copy(struct vm_fault *vmf)
->  		put_page(old_page);
->  	}
->  	return page_copied ? VM_FAULT_WRITE : 0;
-> +out_uncharge:
-> +	mem_cgroup_cancel_charge(new_page, memcg, false);
->  oom_free_new:
->  	put_page(new_page);
->  oom:
-> 
+This means that VM_FAULT_PTNOTSAME will never been reported up and limited to
+do_swap_page().
+
+Doing this will make easier to understand why when pte_unmap_same() is
+returning 0, do_swap_page() is done.
+
+Cheers,
+Laurent.
