@@ -1,12 +1,12 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x244.google.com (mail-wr0-x244.google.com
- [IPv6:2a00:1450:400c:c0c::244])
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GcV45zHLzF1qc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 06:08:44 +1000 (AEST)
-Received: by mail-wr0-x244.google.com with SMTP id l49so24706475wrl.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 13:08:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GcVl0QwTzF1pH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 06:09:18 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id r131so435657wmb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 13:09:18 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -15,11 +15,12 @@ Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v3 03/19] powerpc: Move `path` variable inside DEBUG_PROM
-Date: Wed,  4 Apr 2018 22:08:35 +0200
-Message-Id: <20180404200836.27446-1-malat@debian.org>
-In-Reply-To: <20180328193307.978-1-malat@debian.org>
-References: <20180328193307.978-1-malat@debian.org>
+Subject: [PATCH v3 05/19] powerpc/chrp/setup: Remove idu_size variable and
+ make some functions static
+Date: Wed,  4 Apr 2018 22:09:11 +0200
+Message-Id: <20180404200911.27506-1-malat@debian.org>
+In-Reply-To: <20180328193553.1122-1-malat@debian.org>
+References: <20180328193553.1122-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,54 +32,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add gcc attribute unused for two variables. Fix warnings treated as errors
-with W=1:
+Remove variable declaration idu_size and associated code since not used.
 
-  arch/powerpc/kernel/prom_init.c:1388:8: error: variable ‘path’ set but not used [-Werror=unused-but-set-variable]
+These functions can all be static, make it so. Fix warnings treated as
+errors with W=1:
+
+  arch/powerpc/platforms/chrp/setup.c:97:6: error: no previous prototype for ‘chrp_show_cpuinfo’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/setup.c:302:13: error: no previous prototype for ‘chrp_setup_arch’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/setup.c:385:16: error: variable ‘idu_size’ set but not used [-Werror=unused-but-set-variable]
+  arch/powerpc/platforms/chrp/setup.c:526:13: error: no previous prototype for ‘chrp_init_IRQ’ [-Werror=missing-prototypes]
+  arch/powerpc/platforms/chrp/setup.c:559:1: error: no previous prototype for ‘chrp_init2’ [-Werror=missing-prototypes]
 
 Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
-v3: really move path within ifdef DEBUG_PROM
-v2: move path within ifdef DEBUG_PROM
+v3: update subject line after v2 change
+v2: Remove totally variable idu_size
+ arch/powerpc/platforms/chrp/setup.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
- arch/powerpc/kernel/prom_init.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index acf4b2e0530c..223b35acbbdd 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -603,7 +603,7 @@ static void __init early_cmdline_parse(void)
- 	const char *opt;
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index 481ed133e04b..d6d8ffc0271e 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -94,7 +94,7 @@ static const char *chrp_names[] = {
+ 	"Total Impact Briq"
+ };
  
- 	char *p;
--	int l = 0;
-+	int l __maybe_unused = 0;
- 
- 	prom_cmd_line[0] = 0;
- 	p = prom_cmd_line;
-@@ -1385,7 +1385,10 @@ static void __init reserve_mem(u64 base, u64 size)
- static void __init prom_init_mem(void)
+-void chrp_show_cpuinfo(struct seq_file *m)
++static void chrp_show_cpuinfo(struct seq_file *m)
  {
- 	phandle node;
--	char *path, type[64];
-+#ifdef DEBUG_PROM
-+	char *path;
-+#endif
-+	char type[64];
- 	unsigned int plen;
- 	cell_t *p, *endp;
- 	__be32 val;
-@@ -1406,7 +1409,9 @@ static void __init prom_init_mem(void)
- 	prom_debug("root_size_cells: %x\n", rsc);
+ 	int i, sdramen;
+ 	unsigned int t;
+@@ -299,7 +299,7 @@ static __init void chrp_init(void)
+ 	of_node_put(node);
+ }
  
- 	prom_debug("scanning memory:\n");
-+#ifdef DEBUG_PROM
- 	path = prom_scratch;
-+#endif
+-void __init chrp_setup_arch(void)
++static void __init chrp_setup_arch(void)
+ {
+ 	struct device_node *root = of_find_node_by_path("/");
+ 	const char *machine = NULL;
+@@ -382,7 +382,7 @@ static void __init chrp_find_openpic(void)
+ {
+ 	struct device_node *np, *root;
+ 	int len, i, j;
+-	int isu_size, idu_size;
++	int isu_size;
+ 	const unsigned int *iranges, *opprop = NULL;
+ 	int oplen = 0;
+ 	unsigned long opaddr;
+@@ -427,11 +427,9 @@ static void __init chrp_find_openpic(void)
+ 	}
  
- 	for (node = 0; prom_next_node(&node); ) {
- 		type[0] = 0;
+ 	isu_size = 0;
+-	idu_size = 0;
+ 	if (len > 0 && iranges[1] != 0) {
+ 		printk(KERN_INFO "OpenPIC irqs %d..%d in IDU\n",
+ 		       iranges[0], iranges[0] + iranges[1] - 1);
+-		idu_size = iranges[1];
+ 	}
+ 	if (len > 1)
+ 		isu_size = iranges[3];
+@@ -523,7 +521,7 @@ static void __init chrp_find_8259(void)
+ 	}
+ }
+ 
+-void __init chrp_init_IRQ(void)
++static void __init chrp_init_IRQ(void)
+ {
+ #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(CONFIG_XMON)
+ 	struct device_node *kbd;
+@@ -555,7 +553,7 @@ void __init chrp_init_IRQ(void)
+ #endif
+ }
+ 
+-void __init
++static void __init
+ chrp_init2(void)
+ {
+ #ifdef CONFIG_NVRAM
 -- 
 2.11.0
