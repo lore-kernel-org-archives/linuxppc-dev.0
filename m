@@ -1,53 +1,35 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GJw14VFWzDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 18:26:41 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w348QN13030407
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 04:26:39 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h4tv4rvny-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 04:26:27 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 09:25:06 +0100
-Subject: Re: [PATCH v9 09/24] mm: protect mremap() against SPF hanlder
-To: David Rientjes <rientjes@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-10-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803271500540.43106@chino.kir.corp.google.com>
- <1fe7529a-947c-fdb2-12d2-b38bdd41bb04@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803281419460.167685@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 4 Apr 2018 10:24:55 +0200
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40GKrV5qJNzDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 19:08:41 +1000 (AEST)
+Date: Wed, 4 Apr 2018 10:08:32 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180404090831.62dtaqo4ojrmozj7@lakrids.cambridge.arm.com>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ <20180327102116.GA2464@arm.com>
+ <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
+ <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
+ <20180404033625.gkn4q7kb2xf6d6mo@yury-thinkpad>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1803281419460.167685@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <e9602fb6-7f74-58e0-2567-9c84b63e3383@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180404033625.gkn4q7kb2xf6d6mo@yury-thinkpad>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,62 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Apr 04, 2018 at 06:36:25AM +0300, Yury Norov wrote:
+> On Tue, Apr 03, 2018 at 02:48:32PM +0100, Mark Rutland wrote:
+> > On Sun, Apr 01, 2018 at 02:11:08PM +0300, Yury Norov wrote:
+> > > @@ -840,8 +861,10 @@ el0_svc:
+> > >  	mov	wsc_nr, #__NR_syscalls
+> > >  el0_svc_naked:					// compat entry point
+> > >  	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
+> > > +	isb_if_eqs
+> > >  	enable_dbg_and_irq
+> > > -	ct_user_exit 1
+> > > +	ct_user_exit
+> > 
+> > I don't think this is safe. here we issue the ISB *before* exiting a
+> > quiesecent state, so I think we can race with another CPU that calls
+> > kick_all_active_cpus_sync, e.g.
+> > 
+> > 	CPU0				CPU1
+> > 
+> > 	ISB
+> > 					patch_some_text()
+> > 					kick_all_active_cpus_sync()
+> > 	ct_user_exit
+> > 
+> > 	// not synchronized!
+> > 	use_of_patched_text()
+> > 
+> > ... and therefore the ISB has no effect, which could be disasterous.
+> > 
+> > I believe we need the ISB *after* we transition into a non-quiescent
+> > state, so that we can't possibly miss a context synchronization event.
+>  
+> I decided to put isb() in entry because there's a chance that there will
+> be patched code prior to exiting a quiescent state.
 
+If we do patch entry text, then I think we have no option but to use
+kick_all_active_cpus_sync(), or we risk races similar to the above.
 
-On 28/03/2018 23:21, David Rientjes wrote:
-> On Wed, 28 Mar 2018, Laurent Dufour wrote:
-> 
->>>> @@ -326,7 +336,10 @@ static unsigned long move_vma(struct vm_area_struct *vma,
->>>>  		mremap_userfaultfd_prep(new_vma, uf);
->>>>  		arch_remap(mm, old_addr, old_addr + old_len,
->>>>  			   new_addr, new_addr + new_len);
->>>> +		if (vma != new_vma)
->>>> +			vm_raw_write_end(vma);
->>>>  	}
->>>> +	vm_raw_write_end(new_vma);
->>>
->>> Just do
->>>
->>> vm_raw_write_end(vma);
->>> vm_raw_write_end(new_vma);
->>>
->>> here.
->>
->> Are you sure ? we can have vma = new_vma done if (unlikely(err))
->>
-> 
-> Sorry, what I meant was do
-> 
-> if (vma != new_vma)
-> 	vm_raw_write_end(vma);
-> vm_raw_write_end(new_vma);
-> 
-> after the conditional.  Having the locking unnecessarily embedded in the 
-> conditional has been an issue in the past with other areas of core code, 
-> unless you have a strong reason for it.
+> But after some headscratching, I think it's safe. I'll do like you
+> suggested here.
 
-Unfortunately, I can't see how doing this in another way since vma = new_vma is
-done in the error branch.
-So releasing the VMAs outside of the conditional may lead to miss 'vma' if the
-error branch is taken.
+Sounds good.
 
-Here is the code snippet as a reminder:
-
-	new_vma = copy_vma(&vma, new_addr, new_len, new_pgoff,
-			   &need_rmap_locks);
-	[...]
-	if (vma != new_vma)
-		vm_raw_write_begin(vma);
-	[...]
-	if (unlikely(err)) {
-		[...]
-		if (vma != new_vma)
-			vm_raw_write_end(vma);
-		vma = new_vma; <<<< here we lost reference to vma
-		[...]
-	} else {
-		[...]
-		if (vma != new_vma)
-			vm_raw_write_end(vma);
-	}
-	vm_raw_write_end(new_vma);
+Thanks,
+Mark.
