@@ -3,23 +3,23 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GW4J1P8XzDqZH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 02:04:31 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GWZC6Q6gzF1bH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 02:26:59 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w34Fu23A030474
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 12:04:29 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h4xmsaex1-1
+ w34GPv3Q098900
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 12:26:57 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h508xpbkq-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 12:04:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 12:26:56 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 17:04:26 +0100
+ Wed, 4 Apr 2018 17:26:54 +0100
 Subject: Re: [PATCH v9 15/24] mm: Introduce __vm_normal_page()
-To: David Rientjes <rientjes@google.com>
+To: Jerome Glisse <jglisse@redhat.com>
 Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
  mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
@@ -39,13 +39,13 @@ Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
  x86@kernel.org
 References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
  <1520963994-28477-16-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1804021616370.104195@chino.kir.corp.google.com>
+ <20180403193927.GD5935@redhat.com>
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 4 Apr 2018 18:04:15 +0200
+Date: Wed, 4 Apr 2018 18:26:44 +0200
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1804021616370.104195@chino.kir.corp.google.com>
+In-Reply-To: <20180403193927.GD5935@redhat.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <c3103568-41b8-ee54-8f4f-16d3e8c1984f@linux.vnet.ibm.com>
+Message-Id: <a3446d86-8a29-a9f2-a1fe-b8cc1b748132@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,52 +55,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2018 01:18, David Rientjes wrote:
-> On Tue, 13 Mar 2018, Laurent Dufour wrote:
-> 
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index a84ddc218bbd..73b8b99f482b 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -1263,8 +1263,11 @@ struct zap_details {
->>  	pgoff_t last_index;			/* Highest page->index to unmap */
->>  };
->>  
->> -struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
->> -			     pte_t pte, bool with_public_device);
->> +struct page *__vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
->> +			      pte_t pte, bool with_public_device,
->> +			      unsigned long vma_flags);
->> +#define _vm_normal_page(vma, addr, pte, with_public_device) \
->> +	__vm_normal_page(vma, addr, pte, with_public_device, (vma)->vm_flags)
->>  #define vm_normal_page(vma, addr, pte) _vm_normal_page(vma, addr, pte, false)
->>  
->>  struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
-> 
-> If _vm_normal_page() is a static inline function does it break somehow?  
-> It's nice to avoid the #define's.
 
-No problem, I'll create it as a static inline function.
 
+On 03/04/2018 21:39, Jerome Glisse wrote:
+> On Tue, Mar 13, 2018 at 06:59:45PM +0100, Laurent Dufour wrote:
+>> When dealing with the speculative fault path we should use the VMA's field
+>> cached value stored in the vm_fault structure.
+>>
+>> Currently vm_normal_page() is using the pointer to the VMA to fetch the
+>> vm_flags value. This patch provides a new __vm_normal_page() which is
+>> receiving the vm_flags flags value as parameter.
+>>
+>> Note: The speculative path is turned on for architecture providing support
+>> for special PTE flag. So only the first block of vm_normal_page is used
+>> during the speculative path.
 > 
->> diff --git a/mm/memory.c b/mm/memory.c
->> index af0338fbc34d..184a0d663a76 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -826,8 +826,9 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
->>  #else
->>  # define HAVE_PTE_SPECIAL 0
->>  #endif
->> -struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
->> -			     pte_t pte, bool with_public_device)
->> +struct page *__vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
->> +			      pte_t pte, bool with_public_device,
->> +			      unsigned long vma_flags)
->>  {
->>  	unsigned long pfn = pte_pfn(pte);
->>  
-> 
-> Would it be possible to update the comment since the function itself is no 
-> longer named vm_normal_page?
+> Might be a good idea to explicitly have SPECULATIVE Kconfig option depends
+> on ARCH_PTE_SPECIAL and a comment for !HAVE_PTE_SPECIAL in the function
+> explaining that speculative page fault should never reach that point.
 
-Sure.
+Unfortunately there is no ARCH_PTE_SPECIAL in the config file, it is defined in
+the per architecture header files.
+So I can't do anything in the Kconfig file
+
+However, I can check that at build time, and doing such a check in
+__vm_normal_page sounds to be a good place, like that:
+
+@@ -869,6 +870,14 @@ struct page *__vm_normal_page(struct vm_area_struct *vma,
+unsigned long addr,
+
+        /* !HAVE_PTE_SPECIAL case follows: */
+
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++       /* This part should never get called when the speculative page fault
++        * handler is turned on. This is mainly because we can't rely on
++        * vm_start.
++        */
++#error CONFIG_SPECULATIVE_PAGE_FAULT requires HAVE_PTE_SPECIAL
++#endif
++
+        if (unlikely(vma_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
+                if (vma_flags & VM_MIXEDMAP) {
+                        if (!pfn_valid(pfn))
+
+Thanks,
+Laurent.
