@@ -1,28 +1,27 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Gcjx3JQ9zF1qT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 06:19:01 +1000 (AEST)
-Received: by mail-oi0-x242.google.com with SMTP id q71-v6so20456078oic.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 13:19:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Gcmf51vvzF1qT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 06:21:22 +1000 (AEST)
+Received: by mail-ot0-x241.google.com with SMTP id m7-v6so24824181otd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 13:21:22 -0700 (PDT)
 MIME-Version: 1.0
 Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <20180329180246.Horde.AZE7BIRE2MuhcbAJb5Gg0A3@messagerie.si.c-s.fr>
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-16-malat@debian.org>
- <bd4be06c-b5f5-2516-1c1d-d2b6d7861090@c-s.fr>
- <CA+7wUsyRSSkwgpBodKkPjhUxiHy-t1q2Q7nsorfRoL=wfxgyFQ@mail.gmail.com>
- <20180329180246.Horde.AZE7BIRE2MuhcbAJb5Gg0A3@messagerie.si.c-s.fr>
+In-Reply-To: <20180329180743.Horde.0e_zt3S4Pqcv7Z0dJwOgOg9@messagerie.si.c-s.fr>
+References: <20180322202007.23088-2-malat@debian.org>
+ <20180328192717.656-1-malat@debian.org>
+ <20180329180743.Horde.0e_zt3S4Pqcv7Z0dJwOgOg9@messagerie.si.c-s.fr>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 4 Apr 2018 22:18:38 +0200
-Message-ID: <CA+7wUsz6KU3bk6hkKzEhn0HqxYQ3M5OEjcfZj2kKPXhSY=PDOg@mail.gmail.com>
-Subject: Re: [PATCH 15/19] powerpc: Add missing prototype
+Date: Wed, 4 Apr 2018 22:21:00 +0200
+Message-ID: <CA+7wUszBw9Jw8z7x6h-OO=-LfxSWYS08DTTBozkPg08KbAzBNA@mail.gmail.com>
+Subject: Re: [PATCH v2 01/19] powerpc/powermac: Mark variable x as unused
 To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,86 +32,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 29, 2018 at 6:02 PM, LEROY Christophe
+On Thu, Mar 29, 2018 at 6:07 PM, LEROY Christophe
 <christophe.leroy@c-s.fr> wrote:
 > Mathieu Malaterre <malat@debian.org> a =C3=A9crit :
 >
 >
->> On Fri, Mar 23, 2018 at 1:20 PM, christophe leroy
->> <christophe.leroy@c-s.fr> wrote:
->>>
->>>
->>>
->>> Le 22/03/2018 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
->>>>
->>>>
->>>> Add one missing prototype for function rh_dump_blk. Fix warning treate=
-d
->>>> as
->>>> error in W=3D1:
->>>>
->>>>    arch/powerpc/lib/rheap.c:740:6: error: no previous prototype for
->>>> =E2=80=98rh_dump_blk=E2=80=99 [-Werror=3Dmissing-prototypes]
->>>>
->>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>>> ---
->>>>   arch/powerpc/include/asm/rheap.h | 3 +++
->>>>   1 file changed, 3 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/rheap.h
->>>> b/arch/powerpc/include/asm/rheap.h
->>>> index 172381769cfc..e75d96de19a0 100644
->>>> --- a/arch/powerpc/include/asm/rheap.h
->>>> +++ b/arch/powerpc/include/asm/rheap.h
->>>> @@ -83,6 +83,9 @@ extern int rh_get_stats(rh_info_t * info, int what,
->>>> int
->>>> max_stats,
->>>>   /* Simple dump of remote heap info */
->>>>   extern void rh_dump(rh_info_t * info);
->>>>   +/* Simple dump of remote info block */
->>>> +extern void rh_dump_blk(rh_info_t *info, rh_block_t *blk);
->>>> +
->>>
->>>
->>>
->>> Only used in one place, should be static
+>> Since the value of x is never intended to be read, declare it with gcc
+>> attribute as unused. Fix warning treated as error with W=3D1:
 >>
+>>   arch/powerpc/platforms/powermac/bootx_init.c:471:21: error: variable =
+=E2=80=98x=E2=80=99
+>> set but not used [-Werror=3Dunused-but-set-variable]
 >>
->> Well here is what I see over here:
+>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>> ---
+>> v2: move x variable within its local scope
 >>
->> $ git grep rh_dump_blk
->> ...
->> arch/powerpc/lib/rheap.c:EXPORT_SYMBOL_GPL(rh_dump_blk);
+>>  arch/powerpc/platforms/powermac/bootx_init.c | 3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powermac/bootx_init.c
+>> b/arch/powerpc/platforms/powermac/bootx_init.c
+>> index c3c9bbb3573a..d44e8571c1ec 100644
+>> --- a/arch/powerpc/platforms/powermac/bootx_init.c
+>> +++ b/arch/powerpc/platforms/powermac/bootx_init.c
+>> @@ -468,7 +468,7 @@ void __init bootx_init(unsigned long r3, unsigned lo=
+ng
+>> r4)
+>>         boot_infos_t *bi =3D (boot_infos_t *) r4;
+>>         unsigned long hdr;
+>>         unsigned long space;
+>> -       unsigned long ptr, x;
+>> +       unsigned long ptr;
+>>         char *model;
+>>         unsigned long offset =3D reloc_offset();
+>>
+>> @@ -562,6 +562,7 @@ void __init bootx_init(unsigned long r3, unsigned lo=
+ng
+>> r4)
+>>          * MMU switched OFF, so this should not be useful anymore.
+>>          */
+>>         if (bi->version < 4) {
+>> +               unsigned long x __maybe_unused;
+>>                 bootx_printf("Touching pages...\n");
 >
 >
-> If it was really used by anybody in a module, it would already be in a .h=
- so
-> I think we should simply delete the function
->
+> Stylewise, there should be an empty line after your declaration.
 
-Sent a v3 without the extern keyword. I did not feel bold enough to
-remove completely a function. Could one of the maintainers confirm
-removal of the function ?
+See v3
+
+> But I believe you should remove that ugly loop and replace it by a call t=
+o
+> fault_in_pages_readable()
+
+I have no idea on how to test the the new code, and it did not look
+straightforward.
 
 > Christophe
+>>
+>>
+>>                 /*
+>> --
+>> 2.11.0
 >
->
->>
->>
->>
->>> Christophe
->>>
->>>>   /* Set owner of taken block */
->>>>   extern int rh_set_owner(rh_info_t * info, unsigned long start, const
->>>> char *owner);
->>>>
->>>
->>>
->>> ---
->>> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
-=C3=A9rifi=C3=A9e par le
->>> logiciel antivirus Avast.
->>> https://www.avast.com/antivirus
->>>
 >
 >
