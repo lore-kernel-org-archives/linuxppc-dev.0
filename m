@@ -1,39 +1,28 @@
-Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GSGG5ssFzF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 23:57:58 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w34AsgXr075864
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 06:59:06 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4uw1vfr3-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 06:59:06 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 4 Apr 2018 11:59:03 +0100
-Subject: Re: [PATCH] cxl: Fix possible deadlock when processing page faults
- from cxllib
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
-References: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
- <606e7509-5c37-b38e-9b6c-a60a5694c652@linux.ibm.com>
- <8e099a01-ba11-d26f-07ab-bf0fa6e387c1@linux.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Wed, 4 Apr 2018 12:58:59 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GSPK424bzF1b9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 00:04:04 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id v194-v6so27714411itb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 07:04:04 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <8e099a01-ba11-d26f-07ab-bf0fa6e387c1@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <c0b7931a-4bae-f8d0-0da5-04cf2a18f8c5@linux.ibm.com>
+In-Reply-To: <20180404220750.0436bbe1@gmail.com>
+References: <20180403142415.30083-1-oohall@gmail.com>
+ <20180403142415.30083-3-oohall@gmail.com>
+ <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
+ <20180404220750.0436bbe1@gmail.com>
+From: Oliver <oohall@gmail.com>
+Date: Thu, 5 Apr 2018 00:04:01 +1000
+Message-ID: <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
+Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,147 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 03/04/2018 à 17:31, Aneesh Kumar K.V a écrit :
-> On 04/03/2018 08:10 PM, Aneesh Kumar K.V wrote:
->> On 04/03/2018 03:13 PM, Frederic Barrat wrote:
->>> cxllib_handle_fault() is called by an external driver when it needs to
->>> have the host process page faults for a buffer which may cover several
->>> pages. Currently the function holds the mm->mmap_sem semaphore with
->>> read access while iterating over the buffer, since it could spawn
->>> several VMAs. When calling a lower-level function to handle the page
->>> fault for a single page, the semaphore is accessed again in read
->>> mode. That is wrong and can lead to deadlocks if a writer tries to
->>> sneak in while a buffer of several pages is being processed.
->>>
->>> The fix is to release the semaphore once cxllib_handle_fault() got the
->>> information it needs from the current vma. The address space/VMAs
->>> could evolve while we iterate over the full buffer, but in the
->>> unlikely case where we miss a page, the driver will raise a new page
->>> fault when retrying.
->>>
->>> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
->>> Cc: stable@vger.kernel.org # 4.13+
->>> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->>> ---
->>>   drivers/misc/cxl/cxllib.c | 85 
->>> ++++++++++++++++++++++++++++++-----------------
->>>   1 file changed, 55 insertions(+), 30 deletions(-)
->>>
->>> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
->>> index 30ccba436b3b..55cd35d1a9cc 100644
->>> --- a/drivers/misc/cxl/cxllib.c
->>> +++ b/drivers/misc/cxl/cxllib.c
->>> @@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct 
->>> *task,
->>>   }
->>>   EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
->>> -int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, 
->>> u64 flags)
->>> +static int get_vma_info(struct mm_struct *mm, u64 addr,
->>> +            u64 *vma_start, u64 *vma_end,
->>> +            unsigned long *page_size)
->>>   {
->>> -    int rc;
->>> -    u64 dar;
->>>       struct vm_area_struct *vma = NULL;
->>> -    unsigned long page_size;
->>> -
->>> -    if (mm == NULL)
->>> -        return -EFAULT;
->>> +    int rc = 0;
->>>       down_read(&mm->mmap_sem);
->>>       vma = find_vma(mm, addr);
->>>       if (!vma) {
->>> -        pr_err("Can't find vma for addr %016llx\n", addr);
->>>           rc = -EFAULT;
->>>           goto out;
->>>       }
->>> -    /* get the size of the pages allocated */
->>> -    page_size = vma_kernel_pagesize(vma);
->>> -
->>> -    for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar 
->>> += page_size) {
->>> -        if (dar < vma->vm_start || dar >= vma->vm_end) {
->>> -            vma = find_vma(mm, addr);
->>> -            if (!vma) {
->>> -                pr_err("Can't find vma for addr %016llx\n", addr);
->>> -                rc = -EFAULT;
->>> -                goto out;
->>> -            }
->>> -            /* get the size of the pages allocated */
->>> -            page_size = vma_kernel_pagesize(vma);
->>> +    *page_size = vma_kernel_pagesize(vma);
->>> +    *vma_start = vma->vm_start;
->>> +    *vma_end = vma->vm_end;
->>> +out:
->>> +    up_read(&mm->mmap_sem);
->>> +    return rc;
->>> +}
->>> +
->>> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, 
->>> u64 flags)
->>> +{
->>> +    int rc;
->>> +    u64 dar, vma_start, vma_end;
->>> +    unsigned long page_size;
->>> +
->>> +    if (mm == NULL)
->>> +        return -EFAULT;
->>> +
->>> +    /*
->>> +     * The buffer we have to process can extend over several pages
->>> +     * and may also cover several VMAs.
->>> +     * We iterate over all the pages. The page size could vary
->>> +     * between VMAs.
->>> +     */
->>> +    rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
->>> +    if (rc)
->>> +        return rc;
->>> +
->>> +    for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
->>> +         dar += page_size) {
->>> +        if (dar < vma_start || dar >= vma_end) {
+On Wed, Apr 4, 2018 at 10:07 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+> On Tue, 3 Apr 2018 10:37:51 -0700
+> Dan Williams <dan.j.williams@intel.com> wrote:
+>
+>> On Tue, Apr 3, 2018 at 7:24 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+>> > Add device-tree binding documentation for the nvdimm region driver.
+>> >
+>> > Cc: devicetree@vger.kernel.org
+>> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>> > ---
+>> > v2: Changed name from nvdimm-region to pmem-region.
+>> >     Cleaned up the example binding and fixed the overlapping regions.
+>> >     Added support for multiple regions in a single reg.
+>> > ---
+>> >  .../devicetree/bindings/pmem/pmem-region.txt       | 80 ++++++++++++++++++++++
+>> >  MAINTAINERS                                        |  1 +
+>> >  2 files changed, 81 insertions(+)
+>> >  create mode 100644 Documentation/devicetree/bindings/pmem/pmem-region.txt
 >>
+>> Device-tree folks, does this look, ok?
 >>
->> IIUC, we are fetching the vma to get just the page_size with which it 
->> is mapped? Can't we iterate with PAGE_SIZE? Considering hugetlb page 
->> size will be larger than PAGE_SIZE, we might call into 
->> cxl_handle_mm_fault multiple times for a hugetlb page. Does that cause 
->> any issue? Also can cxl be used with hugetlb mappings?
->>
-> Can you also try to use a helper like below. That will clarify the need 
-> of find_vma there.
-> 
-> static int __cxllib_handle_fault(struct mm_struct *mm, unsigned long 
-> start, unsigned long end,
->                   unsigned long mapping_psize, u64 flags)
-> {
->      int rc;
->      unsigned long dar;
-> 
->      for (dar = start; dar < end; dar += mapping_psize) {
->          rc = cxl_handle_mm_fault(mm, flags, dar);
->          if (rc) {
->              rc = -EFAULT;
->              goto out;
->          }
->      }
->      rc = 0;
-> out:
->      return rc;
-> }
+>> Oliver, is there any concept of a management interface to the
+>> device(s) backing these regions? libnvdimm calls these "nmem" devices
+>> and support operations like health status and namespace label
+>> management.
 
+It's something I'm planning on implementing as soon as someone gives
+me some hardware that isn't hacked up lab crap. I'm posting this
+version with just regions since people have been asking for something
+in upstream even if it's not fully featured.
 
-I'm struggling to make good use of it. I see your point, it makes 
-touching all the pages for a given VMA easy (same page size).
-But I'm given a buffer, which can span several VMAs, and we can have a 
-varying page size. So I now need an outside loop iterating over all the 
-VMAs and call the helper for a subset of the VMA. IMHO, it's not making 
-the code any easier, i.e what I gain in the helper is lost in the 
-outside VMA loop.
-The current code, with a single loop and a varying increment based on 
-the page size, doesn't look that bad to me.
+Grumbling aside, the plan is to have separate drivers for the DIMM
+type. Discovering DIMM devices happens via the normal discovery
+mechanisms (e.g. an NVDIMM supporting the JEDEC interface is an I2C
+device) and when binding to a specific DIMM device it registers a DIMM
+descriptor structure and a ndctl implementation for that DIMM type
+with of_pmem. When of_pmem binds to a region it can plug everything
+into the region specific bus. There's a few details to work out, but I
+think it's a reasonable approach.
 
-   Fred
+> We would need a way to have nmem and pmem-regions find each other. Since we
+> don't have the ACPI abstractions, the nmem region would need to add the
+> ability for a driver to have a phandle to the interleaving and nmem properties.
+>
+> I guess that would be a separate driver, that would manage the nmem devices
+> and there would be a way to relate the pmem and nmems. Oliver?
+
+Yes, that's the plan.
