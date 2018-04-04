@@ -1,51 +1,43 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
+Return-Path: <srs0=3oul=gz=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GXcN61G0zF1pS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 03:13:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40GXcN5QSqz8tCp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 03:13:56 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GWZC6Q6gzF1bH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 02:26:59 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w34GPv3Q098900
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 12:26:57 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h508xpbkq-1
+ by ozlabs.org (Postfix) with ESMTPS id 40GXcN18XKz9rxs
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2018 03:13:55 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w34HDQiZ022232
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2018 13:13:53 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h523527rx-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 12:26:56 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 04 Apr 2018 13:13:52 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 17:26:54 +0100
-Subject: Re: [PATCH v9 15/24] mm: Introduce __vm_normal_page()
-To: Jerome Glisse <jglisse@redhat.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-16-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180403193927.GD5935@redhat.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 4 Apr 2018 18:26:44 +0200
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Wed, 4 Apr 2018 18:13:51 +0100
+Subject: [PATCH 1/2] powerpc/fadump: exclude memory holes while reserving
+ memory in second kernel
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 04 Apr 2018 22:43:45 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180403193927.GD5935@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a3446d86-8a29-a9f2-a1fe-b8cc1b748132@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <152286202560.2738.7385812464895685351.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,48 +47,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
+The second kernel, during early boot after the crash, reserves rest of
+the memory above boot memory size to make sure it does not touch any of the
+dump memory area. It uses memblock_reserve() that reserves the specified
+memory region irrespective of memory holes present within that region.
+There are chances where previous kernel would have hot removed some of
+its memory leaving memory holes behind. In such cases fadump kernel reports
+incorrect number of reserved pages through arch_reserved_kernel_pages()
+hook causing kernel to hang or panic.
 
-On 03/04/2018 21:39, Jerome Glisse wrote:
-> On Tue, Mar 13, 2018 at 06:59:45PM +0100, Laurent Dufour wrote:
->> When dealing with the speculative fault path we should use the VMA's field
->> cached value stored in the vm_fault structure.
->>
->> Currently vm_normal_page() is using the pointer to the VMA to fetch the
->> vm_flags value. This patch provides a new __vm_normal_page() which is
->> receiving the vm_flags flags value as parameter.
->>
->> Note: The speculative path is turned on for architecture providing support
->> for special PTE flag. So only the first block of vm_normal_page is used
->> during the speculative path.
-> 
-> Might be a good idea to explicitly have SPECULATIVE Kconfig option depends
-> on ARCH_PTE_SPECIAL and a comment for !HAVE_PTE_SPECIAL in the function
-> explaining that speculative page fault should never reach that point.
+Fix this by excluding memory holes while reserving rest of the memory
+above boot memory size during second kernel boot after crash.
 
-Unfortunately there is no ARCH_PTE_SPECIAL in the config file, it is defined in
-the per architecture header files.
-So I can't do anything in the Kconfig file
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/fadump.c |   23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
-However, I can check that at build time, and doing such a check in
-__vm_normal_page sounds to be a good place, like that:
-
-@@ -869,6 +870,14 @@ struct page *__vm_normal_page(struct vm_area_struct *vma,
-unsigned long addr,
-
-        /* !HAVE_PTE_SPECIAL case follows: */
-
-+#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-+       /* This part should never get called when the speculative page fault
-+        * handler is turned on. This is mainly because we can't rely on
-+        * vm_start.
-+        */
-+#error CONFIG_SPECULATIVE_PAGE_FAULT requires HAVE_PTE_SPECIAL
-+#endif
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 3c2c268..b5218aa 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -380,7 +380,11 @@ int __init fadump_reserve_mem(void)
+ 		memory_boundary = memblock_end_of_DRAM();
+ 
+ 	if (fw_dump.dump_active) {
+-		printk(KERN_INFO "Firmware-assisted dump is active.\n");
++		struct memblock_region *reg;
++		unsigned long mstart, mend, msize;
 +
-        if (unlikely(vma_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
-                if (vma_flags & VM_MIXEDMAP) {
-                        if (!pfn_valid(pfn))
-
-Thanks,
-Laurent.
++		pr_info("Firmware-assisted dump is active.\n");
++
+ 		/*
+ 		 * If last boot has crashed then reserve all the memory
+ 		 * above boot_memory_size so that we don't touch it until
+@@ -389,11 +393,18 @@ int __init fadump_reserve_mem(void)
+ 		 */
+ 		base = fw_dump.boot_memory_size;
+ 		size = memory_boundary - base;
+-		memblock_reserve(base, size);
+-		printk(KERN_INFO "Reserved %ldMB of memory at %ldMB "
+-				"for saving crash dump\n",
+-				(unsigned long)(size >> 20),
+-				(unsigned long)(base >> 20));
++		for_each_memblock(memory, reg) {
++			mstart = max_t(unsigned long, base, reg->base);
++			mend = reg->base + reg->size;
++			mend = min(base + size, mend);
++
++			if (mstart < mend) {
++				msize = mend - mstart;
++				memblock_reserve(mstart, msize);
++				pr_info("Reserved %ldMB of memory at %#016lx for saving crash dump\n",
++					(msize >> 20), mstart);
++			}
++		}
+ 
+ 		fw_dump.fadumphdr_addr =
+ 				be64_to_cpu(fdm_active->rmr_region.destination_address) +
