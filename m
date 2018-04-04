@@ -1,32 +1,39 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
+Return-Path: <fbarrat@linux.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GRkj1mCTzF1lS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 23:34:01 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GSGG5ssFzF1pY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 23:57:58 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w34DXwMp120610
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 09:33:58 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4x3rn8mb-1
+ w34AsgXr075864
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 06:59:06 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h4uw1vfr3-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 09:33:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 06:59:06 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 14:33:55 +0100
-Subject: Re: [PATCH 1/2] powerpc/cpu: raise DEVICE_ADD/REMOVE msg to usrspace
-To: Pingfan Liu <kernelfans@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <1522372657-27490-1-git-send-email-kernelfans@gmail.com>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Wed, 4 Apr 2018 19:03:51 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Wed, 4 Apr 2018 11:59:03 +0100
+Subject: Re: [PATCH] cxl: Fix possible deadlock when processing page faults
+ from cxllib
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: ldufour@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com, vaibhav@linux.vnet.ibm.com
+References: <20180403094311.331-1-fbarrat@linux.vnet.ibm.com>
+ <606e7509-5c37-b38e-9b6c-a60a5694c652@linux.ibm.com>
+ <8e099a01-ba11-d26f-07ab-bf0fa6e387c1@linux.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Wed, 4 Apr 2018 12:58:59 +0200
 MIME-Version: 1.0
-In-Reply-To: <1522372657-27490-1-git-send-email-kernelfans@gmail.com>
+In-Reply-To: <8e099a01-ba11-d26f-07ab-bf0fa6e387c1@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <ec3a9f6c-0226-5f7f-ef48-b40f1b8f258e@linux.vnet.ibm.com>
+Message-Id: <c0b7931a-4bae-f8d0-0da5-04cf2a18f8c5@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,139 +45,145 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Friday 30 March 2018 06:47 AM, Pingfan Liu wrote:
-> Some user space tools such as kexec-tools resort to the event
-> add/remove to decide whether rebuilding dtb or not.
-> So if a new core added and a crash happens on one of its thread,
-> then kexec fails to bring up the 2nd kernel since lacking the info
-> of boot-cpu-hwid in dtb. This patch uses the interface
-> register_/unregister_cpu to fix the problem
->
-> Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> Reported-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Le 03/04/2018 à 17:31, Aneesh Kumar K.V a écrit :
+> On 04/03/2018 08:10 PM, Aneesh Kumar K.V wrote:
+>> On 04/03/2018 03:13 PM, Frederic Barrat wrote:
+>>> cxllib_handle_fault() is called by an external driver when it needs to
+>>> have the host process page faults for a buffer which may cover several
+>>> pages. Currently the function holds the mm->mmap_sem semaphore with
+>>> read access while iterating over the buffer, since it could spawn
+>>> several VMAs. When calling a lower-level function to handle the page
+>>> fault for a single page, the semaphore is accessed again in read
+>>> mode. That is wrong and can lead to deadlocks if a writer tries to
+>>> sneak in while a buffer of several pages is being processed.
+>>>
+>>> The fix is to release the semaphore once cxllib_handle_fault() got the
+>>> information it needs from the current vma. The address space/VMAs
+>>> could evolve while we iterate over the full buffer, but in the
+>>> unlikely case where we miss a page, the driver will raise a new page
+>>> fault when retrying.
+>>>
+>>> Fixes: 3ced8d730063 ("cxl: Export library to support IBM XSL")
+>>> Cc: stable@vger.kernel.org # 4.13+
+>>> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>>> ---
+>>>   drivers/misc/cxl/cxllib.c | 85 
+>>> ++++++++++++++++++++++++++++++-----------------
+>>>   1 file changed, 55 insertions(+), 30 deletions(-)
+>>>
+>>> diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+>>> index 30ccba436b3b..55cd35d1a9cc 100644
+>>> --- a/drivers/misc/cxl/cxllib.c
+>>> +++ b/drivers/misc/cxl/cxllib.c
+>>> @@ -208,49 +208,74 @@ int cxllib_get_PE_attributes(struct task_struct 
+>>> *task,
+>>>   }
+>>>   EXPORT_SYMBOL_GPL(cxllib_get_PE_attributes);
+>>> -int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, 
+>>> u64 flags)
+>>> +static int get_vma_info(struct mm_struct *mm, u64 addr,
+>>> +            u64 *vma_start, u64 *vma_end,
+>>> +            unsigned long *page_size)
+>>>   {
+>>> -    int rc;
+>>> -    u64 dar;
+>>>       struct vm_area_struct *vma = NULL;
+>>> -    unsigned long page_size;
+>>> -
+>>> -    if (mm == NULL)
+>>> -        return -EFAULT;
+>>> +    int rc = 0;
+>>>       down_read(&mm->mmap_sem);
+>>>       vma = find_vma(mm, addr);
+>>>       if (!vma) {
+>>> -        pr_err("Can't find vma for addr %016llx\n", addr);
+>>>           rc = -EFAULT;
+>>>           goto out;
+>>>       }
+>>> -    /* get the size of the pages allocated */
+>>> -    page_size = vma_kernel_pagesize(vma);
+>>> -
+>>> -    for (dar = (addr & ~(page_size - 1)); dar < (addr + size); dar 
+>>> += page_size) {
+>>> -        if (dar < vma->vm_start || dar >= vma->vm_end) {
+>>> -            vma = find_vma(mm, addr);
+>>> -            if (!vma) {
+>>> -                pr_err("Can't find vma for addr %016llx\n", addr);
+>>> -                rc = -EFAULT;
+>>> -                goto out;
+>>> -            }
+>>> -            /* get the size of the pages allocated */
+>>> -            page_size = vma_kernel_pagesize(vma);
+>>> +    *page_size = vma_kernel_pagesize(vma);
+>>> +    *vma_start = vma->vm_start;
+>>> +    *vma_end = vma->vm_end;
+>>> +out:
+>>> +    up_read(&mm->mmap_sem);
+>>> +    return rc;
+>>> +}
+>>> +
+>>> +int cxllib_handle_fault(struct mm_struct *mm, u64 addr, u64 size, 
+>>> u64 flags)
+>>> +{
+>>> +    int rc;
+>>> +    u64 dar, vma_start, vma_end;
+>>> +    unsigned long page_size;
+>>> +
+>>> +    if (mm == NULL)
+>>> +        return -EFAULT;
+>>> +
+>>> +    /*
+>>> +     * The buffer we have to process can extend over several pages
+>>> +     * and may also cover several VMAs.
+>>> +     * We iterate over all the pages. The page size could vary
+>>> +     * between VMAs.
+>>> +     */
+>>> +    rc = get_vma_info(mm, addr, &vma_start, &vma_end, &page_size);
+>>> +    if (rc)
+>>> +        return rc;
+>>> +
+>>> +    for (dar = (addr & ~(page_size - 1)); dar < (addr + size);
+>>> +         dar += page_size) {
+>>> +        if (dar < vma_start || dar >= vma_end) {
+>>
+>>
+>> IIUC, we are fetching the vma to get just the page_size with which it 
+>> is mapped? Can't we iterate with PAGE_SIZE? Considering hugetlb page 
+>> size will be larger than PAGE_SIZE, we might call into 
+>> cxl_handle_mm_fault multiple times for a hugetlb page. Does that cause 
+>> any issue? Also can cxl be used with hugetlb mappings?
+>>
+> Can you also try to use a helper like below. That will clarify the need 
+> of find_vma there.
+> 
+> static int __cxllib_handle_fault(struct mm_struct *mm, unsigned long 
+> start, unsigned long end,
+>                   unsigned long mapping_psize, u64 flags)
+> {
+>      int rc;
+>      unsigned long dar;
+> 
+>      for (dar = start; dar < end; dar += mapping_psize) {
+>          rc = cxl_handle_mm_fault(mm, flags, dar);
+>          if (rc) {
+>              rc = -EFAULT;
+>              goto out;
+>          }
+>      }
+>      rc = 0;
+> out:
+>      return rc;
+> }
 
-Thanks for fixing this, Pingfan.
-Looks good to me. I now see add/remove uevents for CPUs.
-For the series...
 
-Reviewed-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+I'm struggling to make good use of it. I see your point, it makes 
+touching all the pages for a given VMA easy (same page size).
+But I'm given a buffer, which can span several VMAs, and we can have a 
+varying page size. So I now need an outside loop iterating over all the 
+VMAs and call the helper for a subset of the VMA. IMHO, it's not making 
+the code any easier, i.e what I gain in the helper is lost in the 
+outside VMA loop.
+The current code, with a single loop and a varying increment based on 
+the page size, doesn't look that bad to me.
 
-
-> ---
->   arch/powerpc/include/asm/smp.h               |  1 +
->   arch/powerpc/kernel/sysfs.c                  | 26 ++++++++++++++------------
->   arch/powerpc/platforms/pseries/hotplug-cpu.c |  3 ++-
->   3 files changed, 17 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-> index fac963e..3ef730d 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -35,6 +35,7 @@ extern int spinning_secondaries;
->   extern void cpu_die(void);
->   extern int cpu_to_chip_id(int cpu);
->
-> +DECLARE_PER_CPU(struct cpu, cpu_devices);
->   #ifdef CONFIG_SMP
->
->   struct smp_ops_t {
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index 04d0bbd..dbbcc96 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -26,7 +26,7 @@
->   #include <asm/lppaca.h>
->   #endif
->
-> -static DEFINE_PER_CPU(struct cpu, cpu_devices);
-> +DEFINE_PER_CPU(struct cpu, cpu_devices);
->
->   /*
->    * SMT snooze delay stuff, 64-bit only for now
-> @@ -716,6 +716,16 @@ static struct device_attribute pa6t_attrs[] = {
->   #endif /* HAS_PPC_PMC_PA6T */
->   #endif /* HAS_PPC_PMC_CLASSIC */
->
-> +/* Only valid if CPU is present. */
-> +static ssize_t show_physical_id(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct cpu *cpu = container_of(dev, struct cpu, dev);
-> +
-> +	return sprintf(buf, "%d\n", get_hard_smp_processor_id(cpu->dev.id));
-> +}
-> +static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
-> +
->   static int register_cpu_online(unsigned int cpu)
->   {
->   	struct cpu *c = &per_cpu(cpu_devices, cpu);
-> @@ -723,6 +733,8 @@ static int register_cpu_online(unsigned int cpu)
->   	struct device_attribute *attrs, *pmc_attrs;
->   	int i, nattrs;
->
-> +	device_create_file(&c->dev, &dev_attr_physical_id);
-> +
->   	/* For cpus present at boot a reference was already grabbed in register_cpu() */
->   	if (!s->of_node)
->   		s->of_node = of_get_cpu_node(cpu, NULL);
-> @@ -816,6 +828,7 @@ static int unregister_cpu_online(unsigned int cpu)
->
->   	BUG_ON(!c->hotpluggable);
->
-> +	device_remove_file(s, &dev_attr_physical_id);
->   #ifdef CONFIG_PPC64
->   	if (cpu_has_feature(CPU_FTR_SMT))
->   		device_remove_file(s, &dev_attr_smt_snooze_delay);
-> @@ -1017,16 +1030,6 @@ static void register_nodes(void)
->
->   #endif
->
-> -/* Only valid if CPU is present. */
-> -static ssize_t show_physical_id(struct device *dev,
-> -				struct device_attribute *attr, char *buf)
-> -{
-> -	struct cpu *cpu = container_of(dev, struct cpu, dev);
-> -
-> -	return sprintf(buf, "%d\n", get_hard_smp_processor_id(cpu->dev.id));
-> -}
-> -static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
-> -
->   static int __init topology_init(void)
->   {
->   	int cpu, r;
-> @@ -1049,7 +1052,6 @@ static int __init topology_init(void)
->   		if (cpu_online(cpu) || c->hotpluggable) {
->   			register_cpu(c, cpu);
->
-> -			device_create_file(&c->dev, &dev_attr_physical_id);
->   		}
->   	}
->   	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/topology:online",
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 652d3e96..697dfb7 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -367,6 +367,7 @@ static int dlpar_online_cpu(struct device_node *dn)
->   			cpu_maps_update_done();
->   			timed_topology_update(1);
->   			find_and_online_cpu_nid(cpu);
-> +			register_cpu(&per_cpu(cpu_devices, cpu), cpu);
->   			rc = device_online(get_cpu_device(cpu));
->   			if (rc)
->   				goto out;
-> @@ -541,6 +542,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
->   				rc = device_offline(get_cpu_device(cpu));
->   				if (rc)
->   					goto out;
-> +				unregister_cpu(container_of(get_cpu_device(cpu), struct cpu, dev));
->   				cpu_maps_update_begin();
->   				break;
->
-> @@ -599,7 +601,6 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->
->   		return saved_rc;
->   	}
-> -
->   	pr_debug("Successfully removed CPU, drc index: %x\n", drc_index);
->   	return 0;
->   }
+   Fred
