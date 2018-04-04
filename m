@@ -1,18 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GQk82pMYzF1pj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 22:48:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GQpr0C0nzDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 22:52:36 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 1/2] powerpc/swiotlb: Dont free up allocated SWIOTLB slab on
- POWER
-In-Reply-To: <20180404030301.25019-1-khandual@linux.vnet.ibm.com>
-References: <20180404030301.25019-1-khandual@linux.vnet.ibm.com>
-Date: Wed, 04 Apr 2018 22:48:31 +1000
-Message-ID: <87fu4bcf34.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [1/3] powerpc/64s/idle: POWER9 implement a separate idle stop
+ function for hotplug
+In-Reply-To: <20180404031352.2281c7a1@roar.ozlabs.ibm.com>
+References: <20171117140807.22105-2-npiggin@gmail.com>
+ <40Fv5c0X41z9s4b@ozlabs.org> <20180404031352.2281c7a1@roar.ozlabs.ibm.com>
+Date: Wed, 04 Apr 2018 22:52:35 +1000
+Message-ID: <87d0zfcewc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,47 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
-> Even though SWIOTLB slab gets allocated and initialized on powerpc with
-> swiotlb_init() called during mem_init(), it gets released away again on
-> POWER platform because 'ppc_swiotlb_enable' never gets set. The function
-> swiotlb_detect_4g() checks for 4GB memory and then sets the variable
-> 'ppc_swiotlb_enable' which prevents freeing up the SWIOTLB slab. Lets
-> make POWER platform call swiotlb_detect_4g() during setup_arch() which
-> will keep the SWIOTLB slab through out the runtime.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Wed,  4 Apr 2018 02:03:18 +1000 (AEST)
+> Michael Ellerman <patch-notifications@ellerman.id.au> wrote:
+>> On Fri, 2017-11-17 at 14:08:05 UTC, Nicholas Piggin wrote:
+>> > Implement a new function to invoke stop, power9_offline_stop, which is
+>> > like power9_idle_stop but used by the cpu hotplug code.
+>> > 
+>> > Move KVM secondary state manipulation code to the offline case.
+>> > 
+>> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> > Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>  
+>> 
+>> Applied to powerpc next, thanks.
+>> 
+>> https://git.kernel.org/powerpc/c/3d4fbffdd703d2b968db443911f214
 >
-> A previous commit cf5621032f ("powerpc/64: Limit ZONE_DMA32 to 4GiB in
-> swiotlb_detect_4g()") enforced 4GB limit on ZONE_DMA32 which is is not
-> applicable on POWER (CONFIG_PPC_BOOK3S_64) platform. Lets remove this
-> unnecessary restriction.
+> I sent out a new series for this which is rebased and a bit cleaner.
+> I probably wasn't clear enough about the change, sorry.
 
-You're using "POWER" to mean Book3S 64-bit, but "POWER" is something
-else (the ISA for POWER1/POWER2).
+No that's OK, I just already had the previous series applied (partially)
+in my testing tree and didn't see the new series in time to back it out.
 
-So please just say "Book3S 64-bit" or talk about a specific CPU, eg.
-Power9.
-
-> After the patch, SWIOTLB slab does not get released.
+> This patch will need to be adjusted for the force SMT4 change. The
+> end result should look like this,
 >
-> [0.410992] software IO TLB [mem 0xfbff0000-0xffff0000] (64MB) mapped
-> at [00000000767f6cb3-000000004a10114f]
+> https://patchwork.ozlabs.org/patch/893948/
 
-But we don't want SWIOTLB on any existing Book3S 64-bit platforms, so
-leaving it enabled is just wasting memory.
-
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index d73ec518ef80..c4db844e0b0d 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -944,6 +944,7 @@ void __init setup_arch(char **cmdline_p)
->  	/* Initialize the MMU context management stuff. */
->  	mmu_context_init();
->  
-> +	swiotlb_detect_4g();
-
-You shouldn't be calling this, your use case has nothing to do with 4GB.
-
-Instead when you detect that you're running under the ultravisor then
-you should set ppc_swiotlb_enable = 1.
+Thanks. I did a patch to get everything in sync, and confirmed the
+result is the same as applying your new series.
 
 cheers
