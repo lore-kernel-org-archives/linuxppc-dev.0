@@ -1,30 +1,37 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Yuri.Norov@cavium.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0046.outbound.protection.outlook.com [104.47.37.46])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40G9kq4TZRzF1pZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 13:03:12 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w342xnx7131590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Apr 2018 23:03:10 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4furpwyf-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Apr 2018 23:03:09 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 04:03:08 +0100
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC 2/2] powerpc/swiotlb: Make swiotlb_dma_ops available on POWER
-Date: Wed,  4 Apr 2018 08:33:01 +0530
-In-Reply-To: <20180404030301.25019-1-khandual@linux.vnet.ibm.com>
-References: <20180404030301.25019-1-khandual@linux.vnet.ibm.com>
-Message-Id: <20180404030301.25019-2-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GBTY2WrYzF1kQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 13:36:47 +1000 (AEST)
+Date: Wed, 4 Apr 2018 06:36:25 +0300
+From: Yury Norov <ynorov@caviumnetworks.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>, Christopher Lameter <cl@linux.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] smp: introduce kick_active_cpus_sync()
+Message-ID: <20180404033625.gkn4q7kb2xf6d6mo@yury-thinkpad>
+References: <20180325175004.28162-1-ynorov@caviumnetworks.com>
+ <20180325175004.28162-3-ynorov@caviumnetworks.com>
+ <20180327102116.GA2464@arm.com>
+ <20180401111108.mudkiewzn33sifvk@yury-thinkpad>
+ <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180403134832.2cdae64uwuot6ryz@lakrids.cambridge.arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,25 +41,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Generic swiotlb_dma_ops structure is available under CONFIG_DMA_DIRECT_OPS
-configuration. Hence select it on POWER platform.
+Hi Mark,
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Thank you for review.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 73ce5dd07642..61a55f9928d9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -235,6 +235,7 @@ config PPC
- 	select SPARSE_IRQ
- 	select SYSCTL_EXCEPTION_TRACE
- 	select VIRT_TO_BUS			if !PPC64
-+	select DMA_DIRECT_OPS			if PPC_BOOK3S_64
- 	#
- 	# Please keep this list sorted alphabetically.
- 	#
--- 
-2.14.1
+On Tue, Apr 03, 2018 at 02:48:32PM +0100, Mark Rutland wrote:
+> Hi Yury,
+> 
+> On Sun, Apr 01, 2018 at 02:11:08PM +0300, Yury Norov wrote:
+> > +/*
+> > + * Flush I-cache if CPU is in extended quiescent state
+> > + */
+> 
+> This comment is misleading. An ISB doesn't touch the I-cache; it forces
+> a context synchronization event.
+> 
+> > +	.macro	isb_if_eqs
+> > +#ifndef CONFIG_TINY_RCU
+> > +	bl	rcu_is_watching
+> > +	tst	w0, #0xff
+> > +	b.ne	1f
+> 
+> The TST+B.NE can be a CBNZ:
+> 
+> 	bl	rcu_is_watching
+> 	cbnz	x0, 1f
+> 	isb
+> 1:
+> 
+> > +	/* Pairs with aarch64_insn_patch_text for EQS CPUs. */
+> > +	isb
+> > +1:
+> > +#endif
+> > +	.endm
+> > +
+> >  el0_sync_invalid:
+> >  	inv_entry 0, BAD_SYNC
+> >  ENDPROC(el0_sync_invalid)
+> > @@ -840,8 +861,10 @@ el0_svc:
+> >  	mov	wsc_nr, #__NR_syscalls
+> >  el0_svc_naked:					// compat entry point
+> >  	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
+> > +	isb_if_eqs
+> >  	enable_dbg_and_irq
+> > -	ct_user_exit 1
+> > +	ct_user_exit
+> 
+> I don't think this is safe. here we issue the ISB *before* exiting a
+> quiesecent state, so I think we can race with another CPU that calls
+> kick_all_active_cpus_sync, e.g.
+> 
+> 	CPU0				CPU1
+> 
+> 	ISB
+> 					patch_some_text()
+> 					kick_all_active_cpus_sync()
+> 	ct_user_exit
+> 
+> 	// not synchronized!
+> 	use_of_patched_text()
+> 
+> ... and therefore the ISB has no effect, which could be disasterous.
+> 
+> I believe we need the ISB *after* we transition into a non-quiescent
+> state, so that we can't possibly miss a context synchronization event.
+ 
+I decided to put isb() in entry because there's a chance that there will
+be patched code prior to exiting a quiescent state. But after some
+headscratching, I think it's safe. I'll do like you suggested here.
+
+Thanks,
+Yury
