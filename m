@@ -1,54 +1,30 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GMdB2zlKzF1l6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 20:29:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GMvZ6N9HzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Apr 2018 20:41:30 +1000 (AEST)
 Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w34AQNR5084081
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 06:29:00 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h4vs6gn8c-1
+ w34AdobN127431
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Apr 2018 06:41:28 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h4vs6h5y8-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 06:28:59 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 06:41:28 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 4 Apr 2018 11:28:56 +0100
-Subject: Re: [mm] b1f0502d04: INFO:trying_to_register_non-static_key
-To: David Rientjes <rientjes@google.com>
-Cc: kernel test robot <fengguang.wu@intel.com>, paulmck@linux.vnet.ibm.com,
- peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
- ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, lkp@01.org
-References: <20180317075119.u6yuem2bhxvggbz3@inn>
- <792c0f75-7e7f-cd81-44ae-4205f6e4affc@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803251510040.80485@chino.kir.corp.google.com>
- <aa6f2ff1-ff67-106a-e0e4-522ac82a7bf0@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1804031748120.27686@chino.kir.corp.google.com>
- <alpine.DEB.2.20.1804031802110.50064@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 4 Apr 2018 12:28:44 +0200
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1804031802110.50064@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <964ecdb1-3a2a-96b5-5a9c-5c12f874ea84@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 4 Apr 2018 11:41:25 +0100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/hw_breakpoint: Only disable hw breakpoint if cpu
+ supports it
+Date: Wed,  4 Apr 2018 16:11:16 +0530
+Message-Id: <20180404104116.27819-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,51 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We get the below warning if we try to use kexec on P9:
+    kexec_core: Starting new kernel
+    WARNING: CPU: 0 PID: 1223 at arch/powerpc/kernel/process.c:826 __set_breakpoint+0xb4/0x140
+    [snip]
+    NIP [c00000000001bf44] __set_breakpoint+0xb4/0x140
+    LR [c000000000061268] kexec_prepare_cpus_wait+0x58/0x150
+    Call Trace:
+    [c0000000ee70fad0] [c0000000ee70fb20] 0xc0000000ee70fb20 (unreliable)
+    [c0000000ee70faf0] [c0000000ee70fb20] 0xc0000000ee70fb20
+    [c0000000ee70fbb0] [c000000000061884] default_machine_kexec+0x234/0x2c0
+    [c0000000ee70fc40] [c0000000000605c4] machine_kexec+0x84/0x90
+    [c0000000ee70fc70] [c000000000206548] kernel_kexec+0xd8/0xe0
+    [c0000000ee70fce0] [c000000000169e74] SyS_reboot+0x214/0x2c0
+    [c0000000ee70fe30] [c00000000000bd60] system_call+0x58/0x6c
 
+This happens since we are trying to clear hw breakpoint on POWER9, though
+we don't have CPU_FTR_DAWR enabled. Guard __set_breakpoint() within
+hw_breakpoint_disable() with ppc_breakpoint_available() to address this.
 
-On 04/04/2018 03:03, David Rientjes wrote:
-> On Tue, 3 Apr 2018, David Rientjes wrote:
-> 
->>>>> I found the root cause of this lockdep warning.
->>>>>
->>>>> In mmap_region(), unmap_region() may be called while vma_link() has not been
->>>>> called. This happens during the error path if call_mmap() failed.
->>>>>
->>>>> The only to fix that particular case is to call
->>>>> seqcount_init(&vma->vm_sequence) when initializing the vma in mmap_region().
->>>>>
->>>>
->>>> Ack, although that would require a fixup to dup_mmap() as well.
->>>
->>> You're right, I'll fix that too.
->>>
->>
->> I also think the following is needed:
->>
->> diff --git a/fs/exec.c b/fs/exec.c
->> --- a/fs/exec.c
->> +++ b/fs/exec.c
->> @@ -312,6 +312,10 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
->>  	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
->>  	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
->>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
->> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
->> +	seqcount_init(&vma->vm_sequence);
->> +	atomic_set(&vma->vm_ref_count, 0);
->> +#endif
->>  
->>  	err = insert_vm_struct(mm, vma);
->>  	if (err)
->>
-> 
-> Ugh, I think there are a number of other places where this is needed as 
-> well in mm/mmap.c.  I think it would be better to just create a new 
-> alloc_vma(unsigned long flags) that all vma allocators can use and for 
-> CONFIG_SPECULATIVE_PAGE_FAULT will initialize the seqcount_t and atomic_t.
-> 
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/hw_breakpoint.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I don't think this is really needed, most of the time the vma structure is
-allocated cleared and is then link to rb tree via vma_link.
-
-The only case generating a locked warning is when the vma is referenced in the
-error path before being linked in the mm tree and that is not usual.
+diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+index 90c708e5e7c4..8e7b09703ca4 100644
+--- a/arch/powerpc/include/asm/hw_breakpoint.h
++++ b/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -80,7 +80,8 @@ static inline void hw_breakpoint_disable(void)
+ 	brk.address = 0;
+ 	brk.type = 0;
+ 	brk.len = 0;
+-	__set_breakpoint(&brk);
++	if (ppc_breakpoint_available())
++		__set_breakpoint(&brk);
+ }
+ extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
+ int hw_breakpoint_handler(struct die_args *args);
+-- 
+2.16.2
