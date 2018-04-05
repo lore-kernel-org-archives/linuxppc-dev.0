@@ -1,53 +1,19 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H2nZ1rN8zF1qc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:53:37 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w35CoPVj055678
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 08:53:35 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h5khr9wsp-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 08:53:35 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 5 Apr 2018 13:53:30 +0100
-Subject: Re: [PATCH v9 15/24] mm: Introduce __vm_normal_page()
-To: Jerome Glisse <jglisse@redhat.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
- mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-16-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180403193927.GD5935@redhat.com>
- <a3446d86-8a29-a9f2-a1fe-b8cc1b748132@linux.vnet.ibm.com>
- <20180404215916.GC3331@redhat.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 5 Apr 2018 14:53:19 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180404215916.GC3331@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <6ebb4602-9455-65f3-ea60-bfaaee23a859@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H4z70NF9zF1lS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 00:32:02 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id b6-v6so17382256pla.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 07:32:02 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/64: irq_work avoid immediate interrupt when raised
+ with hard irqs enabled
+Date: Fri,  6 Apr 2018 00:31:46 +1000
+Message-Id: <20180405143146.4285-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,63 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/04/2018 23:59, Jerome Glisse wrote:
-> On Wed, Apr 04, 2018 at 06:26:44PM +0200, Laurent Dufour wrote:
->>
->>
->> On 03/04/2018 21:39, Jerome Glisse wrote:
->>> On Tue, Mar 13, 2018 at 06:59:45PM +0100, Laurent Dufour wrote:
->>>> When dealing with the speculative fault path we should use the VMA's field
->>>> cached value stored in the vm_fault structure.
->>>>
->>>> Currently vm_normal_page() is using the pointer to the VMA to fetch the
->>>> vm_flags value. This patch provides a new __vm_normal_page() which is
->>>> receiving the vm_flags flags value as parameter.
->>>>
->>>> Note: The speculative path is turned on for architecture providing support
->>>> for special PTE flag. So only the first block of vm_normal_page is used
->>>> during the speculative path.
->>>
->>> Might be a good idea to explicitly have SPECULATIVE Kconfig option depends
->>> on ARCH_PTE_SPECIAL and a comment for !HAVE_PTE_SPECIAL in the function
->>> explaining that speculative page fault should never reach that point.
->>
->> Unfortunately there is no ARCH_PTE_SPECIAL in the config file, it is defined in
->> the per architecture header files.
->> So I can't do anything in the Kconfig file
-> 
-> Maybe adding a new Kconfig symbol for ARCH_PTE_SPECIAL very much like
-> others ARCH_HAS_
-> 
->>
->> However, I can check that at build time, and doing such a check in
->> __vm_normal_page sounds to be a good place, like that:
->>
->> @@ -869,6 +870,14 @@ struct page *__vm_normal_page(struct vm_area_struct *vma,
->> unsigned long addr,
->>
->>         /* !HAVE_PTE_SPECIAL case follows: */
->>
->> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
->> +       /* This part should never get called when the speculative page fault
->> +        * handler is turned on. This is mainly because we can't rely on
->> +        * vm_start.
->> +        */
->> +#error CONFIG_SPECULATIVE_PAGE_FAULT requires HAVE_PTE_SPECIAL
->> +#endif
->> +
->>         if (unlikely(vma_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
->>                 if (vma_flags & VM_MIXEDMAP) {
->>                         if (!pfn_valid(pfn))
->>
-> 
-> I am not a fan of #if/#else/#endif in code. But that's a taste thing.
-> I honnestly think that adding a Kconfig for special pte is the cleanest
-> solution.
+irq_work_raise should not schedule the hardware decrementer interrupt
+unless it is called from NMI context. Doing so often just results in an
+immediate masked decrementer interrupt:
 
-I do agree, but this should be done in a separate series.
+   <...>-550    90d...    4us : update_curr_rt <-dequeue_task_rt
+   <...>-550    90d...    5us : dbs_update_util_handler <-update_curr_rt
+   <...>-550    90d...    6us : arch_irq_work_raise <-irq_work_queue
+   <...>-550    90d...    7us : soft_nmi_interrupt <-soft_nmi_common
+   <...>-550    90d...    7us : printk_nmi_enter <-soft_nmi_interrupt
+   <...>-550    90d.Z.    8us : rcu_nmi_enter <-soft_nmi_interrupt
+   <...>-550    90d.Z.    9us : rcu_nmi_exit <-soft_nmi_interrupt
+   <...>-550    90d...    9us : printk_nmi_exit <-soft_nmi_interrupt
+   <...>-550    90d...   10us : cpuacct_charge <-update_curr_rt
 
-I'll see how this could be done but there are some arch (like powerpc) where
-this is a bit obfuscated for unknown reason.
+Set the decrementer pending in the irq_happened mask directly, rather
+than having the masked decrementer handler do it.
 
-For the time being, I'll remove the check and just let the comment in place.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/time.c | 35 +++++++++++++++++++++++++++++++++--
+ 1 file changed, 33 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index a32823dcd9a4..9d1cc183c974 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -510,6 +510,35 @@ static inline void clear_irq_work_pending(void)
+ 		"i" (offsetof(struct paca_struct, irq_work_pending)));
+ }
+ 
++void arch_irq_work_raise(void)
++{
++	WARN_ON(!irqs_disabled());
++
++	preempt_disable();
++	set_irq_work_pending_flag();
++	/*
++	 * Regular iterrupts will check pending irq_happened as they return,
++	 * or process context when it next enables interrupts, so the
++	 * decrementer can be scheduled there.
++	 *
++	 * NMI interrupts do not, so setting the decrementer hardware
++	 * interrupt to fire ensures the work runs upon RI (if it's to a
++	 * MSR[EE]=1 context). We do not want to do this in other contexts
++	 * because if interrupts are hard enabled, the decrementer will
++	 * fire immediately here and just go to the masked handler to be
++	 * recorded in irq_happened.
++	 *
++	 * BookE does not support this yet, it must audit all NMI
++	 * interrupt handlers call nmi_enter().
++	 */
++	if (IS_ENABLED(CONFIG_BOOKE) || in_nmi()) {
++		set_dec(1);
++	} else {
++		local_paca->irq_happened |= PACA_IRQ_DEC;
++	}
++	preempt_enable();
++}
++
+ #else /* 32-bit */
+ 
+ DEFINE_PER_CPU(u8, irq_work_pending);
+@@ -518,16 +547,18 @@ DEFINE_PER_CPU(u8, irq_work_pending);
+ #define test_irq_work_pending()		__this_cpu_read(irq_work_pending)
+ #define clear_irq_work_pending()	__this_cpu_write(irq_work_pending, 0)
+ 
+-#endif /* 32 vs 64 bit */
+-
+ void arch_irq_work_raise(void)
+ {
++	WARN_ON(!irqs_disabled());
++
+ 	preempt_disable();
+ 	set_irq_work_pending_flag();
+ 	set_dec(1);
+ 	preempt_enable();
+ }
+ 
++#endif /* 32 vs 64 bit */
++
+ #else  /* CONFIG_IRQ_WORK */
+ 
+ #define test_irq_work_pending()	0
+-- 
+2.16.3
