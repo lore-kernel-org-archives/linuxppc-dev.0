@@ -1,40 +1,30 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H0vZ6yGYzF1pr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 21:28:42 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w35BQEbI113977
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 07:28:38 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h5jx103xf-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 07:28:38 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 5 Apr 2018 12:28:36 +0100
-Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
-To: Balbir Singh <bsingharora@gmail.com>
-References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
- <CAKTCnz=3b56bGKrqCcZOwBsu0yngS_Rw-9TieNLyHgix4eZrAQ@mail.gmail.com>
-Cc: robh@kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- virtualization@lists.linux-foundation.org, Joe Perches <joe@perches.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- Markus Elfring <elfring@users.sourceforge.net>,
- David Gibson <david@gibson.dropbear.id.au>
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Thu, 5 Apr 2018 16:58:29 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H11y4bQLzF1qT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 21:34:14 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id m134-v6so2423887itb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 04:34:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnz=3b56bGKrqCcZOwBsu0yngS_Rw-9TieNLyHgix4eZrAQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <cd5a975b-87a9-6c2b-3c65-a1c4f54311ef@linux.vnet.ibm.com>
+In-Reply-To: <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
+References: <20180403142415.30083-1-oohall@gmail.com>
+ <20180403142415.30083-3-oohall@gmail.com>
+ <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
+ <20180404220750.0436bbe1@gmail.com>
+ <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
+ <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
+From: Oliver <oohall@gmail.com>
+Date: Thu, 5 Apr 2018 21:34:12 +1000
+Message-ID: <CAOSf1CHu4R-t8q-8fL6Dyk7myFR0gTfd6-0cxqtBVGZgYZWGAw@mail.gmail.com>
+Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,76 +34,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/05/2018 04:44 PM, Balbir Singh wrote:
-> On Thu, Apr 5, 2018 at 8:56 PM, Anshuman Khandual
-> <khandual@linux.vnet.ibm.com> wrote:
->> There are certian platforms which would like to use SWIOTLB based DMA API
->> for bouncing purpose without actually requiring an IOMMU back end. But the
->> virtio core does not allow such mechanism. Right now DMA MAP API is only
->> selected for devices which have an IOMMU and then the QEMU/host back end
->> will process all incoming SG buffer addresses as IOVA instead of simple
->> GPA which is the case for simple bounce buffers after being processed with
->> SWIOTLB API. To enable this usage, it introduces an architecture specific
->> function which will just make virtio core front end select DMA operations
->> structure.
+On Thu, Apr 5, 2018 at 12:21 AM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Wed, Apr 4, 2018 at 7:04 AM, Oliver <oohall@gmail.com> wrote:
+>> On Wed, Apr 4, 2018 at 10:07 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+>>> On Tue, 3 Apr 2018 10:37:51 -0700
+>>> Dan Williams <dan.j.williams@intel.com> wrote:
+>>>
+>>>> On Tue, Apr 3, 2018 at 7:24 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+>>>> > Add device-tree binding documentation for the nvdimm region driver.
+>>>> >
+>>>> > Cc: devicetree@vger.kernel.org
+>>>> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>>>> > ---
+>>>> > v2: Changed name from nvdimm-region to pmem-region.
+>>>> >     Cleaned up the example binding and fixed the overlapping regions.
+>>>> >     Added support for multiple regions in a single reg.
+>>>> > ---
+>>>> >  .../devicetree/bindings/pmem/pmem-region.txt       | 80 ++++++++++++++++++++++
+>>>> >  MAINTAINERS                                        |  1 +
+>>>> >  2 files changed, 81 insertions(+)
+>>>> >  create mode 100644 Documentation/devicetree/bindings/pmem/pmem-region.txt
+>>>>
+>>>> Device-tree folks, does this look, ok?
+>>>>
+>>>> Oliver, is there any concept of a management interface to the
+>>>> device(s) backing these regions? libnvdimm calls these "nmem" devices
+>>>> and support operations like health status and namespace label
+>>>> management.
 >>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->> This RFC is just to get some feedback. Please ignore the function call
->> back into the architecture. It can be worked out properly later on. But
->> the question is can we have virtio devices in the guest which would like
->> to use SWIOTLB based (or any custom DMA API based) bounce buffering with
->> out actually being an IOMMU devices emulated by QEMU/host as been with
->> the current VIRTIO_F_IOMMU_PLATFORM virtio flag ?
+>> It's something I'm planning on implementing as soon as someone gives
+>> me some hardware that isn't hacked up lab crap. I'm posting this
+>> version with just regions since people have been asking for something
+>> in upstream even if it's not fully featured.
 >>
->>  arch/powerpc/platforms/pseries/iommu.c | 6 ++++++
->>  drivers/virtio/virtio_ring.c           | 4 ++++
->>  include/linux/virtio.h                 | 2 ++
->>  3 files changed, 12 insertions(+)
+>> Grumbling aside, the plan is to have separate drivers for the DIMM
+>> type. Discovering DIMM devices happens via the normal discovery
+>> mechanisms (e.g. an NVDIMM supporting the JEDEC interface is an I2C
+>> device) and when binding to a specific DIMM device it registers a DIMM
+>> descriptor structure and a ndctl implementation for that DIMM type
+>> with of_pmem. When of_pmem binds to a region it can plug everything
+>> into the region specific bus. There's a few details to work out, but I
+>> think it's a reasonable approach.
+>
+> Yeah, that sounds reasonable. It would mean that your management
+> interface would need to understand that nmems on different buses could
+> potentially move to another bus after a reconfiguration, but that's
+> not too much different than the ACPI case where nmems can join and
+> leave regions after a reset / reconfig.
+>
+>>> We would need a way to have nmem and pmem-regions find each other. Since we
+>>> don't have the ACPI abstractions, the nmem region would need to add the
+>>> ability for a driver to have a phandle to the interleaving and nmem properties.
+>>>
+>>> I guess that would be a separate driver, that would manage the nmem devices
+>>> and there would be a way to relate the pmem and nmems. Oliver?
 >>
->> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
->> index 06f02960b439..dd15fbddbe89 100644
->> --- a/arch/powerpc/platforms/pseries/iommu.c
->> +++ b/arch/powerpc/platforms/pseries/iommu.c
->> @@ -1396,3 +1396,9 @@ static int __init disable_multitce(char *str)
->>  __setup("multitce=", disable_multitce);
->>
->>  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
->> +
->> +bool is_virtio_dma_platform(void)
->> +{
->> +       return true;
->> +}
->> +EXPORT_SYMBOL(is_virtio_dma_platform);
->> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
->> index 71458f493cf8..9f205a79d378 100644
->> --- a/drivers/virtio/virtio_ring.c
->> +++ b/drivers/virtio/virtio_ring.c
->> @@ -144,6 +144,10 @@ struct vring_virtqueue {
->>
->>  static bool vring_use_dma_api(struct virtio_device *vdev)
->>  {
->> +       /* Use DMA API even for virtio devices without an IOMMU */
->> +       if (is_virtio_dma_platform())
->> +               return true;
->> +
->>         if (!virtio_has_iommu_quirk(vdev))
->>                 return true;
->>
->> diff --git a/include/linux/virtio.h b/include/linux/virtio.h
->> index 988c7355bc22..d8bb83d753ea 100644
->> --- a/include/linux/virtio.h
->> +++ b/include/linux/virtio.h
->> @@ -200,6 +200,8 @@ static inline struct virtio_driver *drv_to_virtio(struct device_driver *drv)
->>  int register_virtio_driver(struct virtio_driver *drv);
->>  void unregister_virtio_driver(struct virtio_driver *drv);
->>
->> +extern bool is_virtio_dma_platform(void);
->> +
-> 
-> Where is the default implementation for non-pseries platforms? Will they compile
-> after these changes?
+>> Yes, that's the plan.
+>
+> So Balbir, is that enough for an Acked-by for this device-tree proposal?
 
-No they wont. This is just a RFC asking for suggestion/feedback on a
-particular direction, will clean up the code later on once we agree
-on this.
+For context Balbir is working with me on some of the pmem stuff. You
+probably want an Ack from Rob rather than one of us.
