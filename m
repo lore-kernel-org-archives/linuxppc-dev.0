@@ -1,30 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Gtcj5CHRzF1lS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 16:45:25 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id b6-v6so15850517pla.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 23:45:25 -0700 (PDT)
-Date: Thu, 5 Apr 2018 16:45:08 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Dan Williams <dan.j.williams@intel.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>, Christoph Hellwig <hch@lst.de>,
- Matthew Wilcox <mawilcox@microsoft.com>, "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [RESEND 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
-Message-ID: <20180405164508.7a15a770@roar.ozlabs.ibm.com>
-In-Reply-To: <20180405155307.49f748f3@gmail.com>
-References: <20180404231943.29581-1-bsingharora@gmail.com>
- <20180404231943.29581-3-bsingharora@gmail.com>
- <20180405095755.58b3891f@roar.ozlabs.ibm.com>
- <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
- <20180405150405.5b902b41@roar.ozlabs.ibm.com>
- <20180405155307.49f748f3@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Gtzn1BT0zF1bH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 17:01:57 +1000 (AEST)
+Date: Thu, 05 Apr 2018 09:01:44 +0200
+Message-ID: <20180405090144.Horde.MbhP02FnROsZKa5LclAqgA6@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Mathieu Malaterre <malat@debian.org>
+Subject: Re: [PATCH v2 03/19] powerpc: Mark variables as unused
+References: <20180322202007.23088-4-malat@debian.org>
+ <20180328193307.978-1-malat@debian.org>
+ <20180329181422.Horde.4gvIQbpSZkuyC4Yzg06PKw2@messagerie.si.c-s.fr>
+ <87fu4atct4.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87fu4atct4.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 5 Apr 2018 15:53:07 +1000
-Balbir Singh <bsingharora@gmail.com> wrote:
+Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
 
-> On Thu, 5 Apr 2018 15:04:05 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
-> 
-> > On Wed, 4 Apr 2018 20:00:52 -0700
-> > Dan Williams <dan.j.williams@intel.com> wrote:
-> >   
-> > > [ adding Matthew, Christoph, and Tony  ]
-> > > 
-> > > On Wed, Apr 4, 2018 at 4:57 PM, Nicholas Piggin <npiggin@gmail.com> wrote:    
-> > > > On Thu,  5 Apr 2018 09:19:42 +1000
-> > > > Balbir Singh <bsingharora@gmail.com> wrote:
-> > > >      
-> > > >> The pmem infrastructure uses memcpy_mcsafe in the pmem
-> > > >> layer so as to convert machine check excpetions into
-> > > >> a return value on failure in case a machine check
-> > > >> exception is encoutered during the memcpy.
-> > > >>
-> > > >> This patch largely borrows from the copyuser_power7
-> > > >> logic and does not add the VMX optimizations, largely
-> > > >> to keep the patch simple. If needed those optimizations
-> > > >> can be folded in.      
-> > > >
-> > > > So memcpy_mcsafe doesn't return number of bytes copied?
-> > > > Huh, well that makes it simple.      
-> > > 
-> > > Well, not in current kernels, but we need to add that support or
-> > > remove the direct call to copy_to_iter() in fs/dax.c. I'm looking
-> > > right now to add "bytes remaining" support to the x86 memcpy_mcsafe(),
-> > > but for copy_to_user we also need to handle bytes remaining for write
-> > > faults. That fix is hopefully something that can land in an early
-> > > 4.17-rc, but it won't be ready for -rc1.    
-> > 
-> > I wonder if the powerpc implementation should just go straight to
-> > counting bytes. Backporting to this interface would be trivial, but
-> > it would just mean there's only one variant of the code to support.
-> > That's up to Balbir though.
-> >   
-> 
-> I'm thinking about it, I wonder what "bytes remaining" mean in pmem context
-> in the context of a machine check exception. Also, do we want to be byte
-> accurate or cache-line accurate for the bytes remaining? The former is much
-> easier than the latter :)
+> LEROY Christophe <christophe.leroy@c-s.fr> writes:
+>
+>> Mathieu Malaterre <malat@debian.org> a =C3=A9crit=C2=A0:
+>>
+>>> Add gcc attribute unused for two variables. Fix warnings treated as err=
+ors
+>>> with W=3D1:
+>>>
+>>>   arch/powerpc/kernel/prom_init.c:1388:8: error: variable =E2=80=98path=
+=E2=80=99 set
+>>> but not used [-Werror=3Dunused-but-set-variable]
+>>>
+>>> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>>> ---
+>>> v2: move path within ifdef DEBUG_PROM
+>>>
+>>>  arch/powerpc/kernel/prom_init.c | 6 +++---
+>>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/prom_init.c
+>>> b/arch/powerpc/kernel/prom_init.c
+>>> index acf4b2e0530c..4163b11abb6c 100644
+>>> --- a/arch/powerpc/kernel/prom_init.c
+>>> +++ b/arch/powerpc/kernel/prom_init.c
+>>> @@ -603,7 +603,7 @@ static void __init early_cmdline_parse(void)
+>>>  	const char *opt;
+>>>
+>>>  	char *p;
+>>> -	int l =3D 0;
+>>> +	int l __maybe_unused =3D 0;
+>>>
+>>>  	prom_cmd_line[0] =3D 0;
+>>>  	p =3D prom_cmd_line;
+>>> @@ -1385,7 +1385,7 @@ static void __init reserve_mem(u64 base, u64 size=
+)
+>>>  static void __init prom_init_mem(void)
+>>>  {
+>>>  	phandle node;
+>>> -	char *path, type[64];
+>>> +	char *path __maybe_unused, type[64];
+>>
+>> You should enclose that in an ifdef DEBUG_PROM instead of hiding the war=
+ning
+>
+> I disagree, the result is horrible:
+>
+>  static void __init prom_init_mem(void)
+>  {
+> 	phandle node;
+> -	char *path, type[64];
+> +#ifdef DEBUG_PROM
+> +	char *path;
+> +#endif
+> +	char type[64];
+> 	unsigned int plen;
+> 	cell_t *p, *endp;
+> 	__be32 val;
+>
+>
+> The right fix is to move the debug logic into a helper, and put the path
+> in there, eg. something like (not tested):
+>
+> diff --git a/arch/powerpc/kernel/prom_init.c=20=20
+>=20b/arch/powerpc/kernel/prom_init.c
+> index f9d6befb55a6..b02fa2ccc70b 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -1389,6 +1389,18 @@ static void __init reserve_mem(u64 base, u64 size)
+>  	mem_reserve_cnt =3D cnt + 1;
+>  }
+>
+> +#ifdef DEBUG_PROM
+> +static void prom_debug_path(phandle node)
+> +{
+> +	char *path;
+> +	path =3D prom_scratch;
+> +	memset(path, 0, PROM_SCRATCH_SIZE);
+> +	call_prom("package-to-path", 3, 1, node, path, PROM_SCRATCH_SIZE-1);
+> +	prom_debug("  node %s :\n", path);
+> +}
+> +#else
+> +static void prom_debug_path(phandle node) { }
 
-The ideal would be a linear measure of how much of your copy reached
-(or can reach) non-volatile storage with nothing further copied. You
-may have to allow for some relaxing of the semantics depending on
-what the architecture can support.
+Or put the ifdef inside the function to avoid double definition ?
 
-What's the problem with just counting bytes copied like usercopy --
-why is that harder than cacheline accuracy?
+> +#endif /* DEBUG_PROM */
+>  /*
+>   * Initialize memory allocation mechanism, parse "memory" nodes and
+>   * obtain that way the top of memory and RMO to setup out local allocato=
+r
+> @@ -1441,11 +1453,7 @@ static void __init prom_init_mem(void)
+>  		p =3D regbuf;
+>  		endp =3D p + (plen / sizeof(cell_t));
+>
+> -#ifdef DEBUG_PROM
+> -		memset(path, 0, PROM_SCRATCH_SIZE);
+> -		call_prom("package-to-path", 3, 1, node, path, PROM_SCRATCH_SIZE-1);
+> -		prom_debug("  node %s :\n", path);
+> -#endif /* DEBUG_PROM */
+> +		prom_debug_path(node);
+>
+>  		while ((endp - p) >=3D (rac + rsc)) {
+>  			unsigned long base, size;
+>
+>
+> Although that also begs the question of why the hell do we need path at
+> all, and not just use prom_scratch directly?
 
-> I'd rather implement the existing interface and port/support the new interface
-> as it becomes available
+Wondering the same, why not use prom_scratch directly
 
-Fair enough.
+Christophe
 
-Thanks,
-Nick
+>
+> cheers
