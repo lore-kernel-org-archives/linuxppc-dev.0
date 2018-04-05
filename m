@@ -1,19 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H4z70NF9zF1lS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 00:32:02 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id b6-v6so17382256pla.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 07:32:02 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64: irq_work avoid immediate interrupt when raised
- with hard irqs enabled
-Date: Fri,  6 Apr 2018 00:31:46 +1000
-Message-Id: <20180405143146.4285-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H58J03g2zF1pr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 00:39:59 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w35Eatev001243
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 10:39:57 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h5njdrmna-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 10:39:56 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 5 Apr 2018 15:39:53 +0100
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+To: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+Cc: robh@kernel.org, aik@ozlabs.ru, jasowang@redhat.com, joe@perches.com,
+ linuxppc-dev@lists.ozlabs.org, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au, "Michael S. Tsirkin" <mst@redhat.com>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Thu, 5 Apr 2018 20:09:30 +0530
+MIME-Version: 1.0
+In-Reply-To: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,88 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-irq_work_raise should not schedule the hardware decrementer interrupt
-unless it is called from NMI context. Doing so often just results in an
-immediate masked decrementer interrupt:
+On 04/05/2018 04:26 PM, Anshuman Khandual wrote:
+> There are certian platforms which would like to use SWIOTLB based DMA API
+> for bouncing purpose without actually requiring an IOMMU back end. But the
+> virtio core does not allow such mechanism. Right now DMA MAP API is only
+> selected for devices which have an IOMMU and then the QEMU/host back end
+> will process all incoming SG buffer addresses as IOVA instead of simple
+> GPA which is the case for simple bounce buffers after being processed with
+> SWIOTLB API. To enable this usage, it introduces an architecture specific
+> function which will just make virtio core front end select DMA operations
+> structure.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-   <...>-550    90d...    4us : update_curr_rt <-dequeue_task_rt
-   <...>-550    90d...    5us : dbs_update_util_handler <-update_curr_rt
-   <...>-550    90d...    6us : arch_irq_work_raise <-irq_work_queue
-   <...>-550    90d...    7us : soft_nmi_interrupt <-soft_nmi_common
-   <...>-550    90d...    7us : printk_nmi_enter <-soft_nmi_interrupt
-   <...>-550    90d.Z.    8us : rcu_nmi_enter <-soft_nmi_interrupt
-   <...>-550    90d.Z.    9us : rcu_nmi_exit <-soft_nmi_interrupt
-   <...>-550    90d...    9us : printk_nmi_exit <-soft_nmi_interrupt
-   <...>-550    90d...   10us : cpuacct_charge <-update_curr_rt
-
-Set the decrementer pending in the irq_happened mask directly, rather
-than having the masked decrementer handler do it.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/time.c | 35 +++++++++++++++++++++++++++++++++--
- 1 file changed, 33 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index a32823dcd9a4..9d1cc183c974 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -510,6 +510,35 @@ static inline void clear_irq_work_pending(void)
- 		"i" (offsetof(struct paca_struct, irq_work_pending)));
- }
- 
-+void arch_irq_work_raise(void)
-+{
-+	WARN_ON(!irqs_disabled());
-+
-+	preempt_disable();
-+	set_irq_work_pending_flag();
-+	/*
-+	 * Regular iterrupts will check pending irq_happened as they return,
-+	 * or process context when it next enables interrupts, so the
-+	 * decrementer can be scheduled there.
-+	 *
-+	 * NMI interrupts do not, so setting the decrementer hardware
-+	 * interrupt to fire ensures the work runs upon RI (if it's to a
-+	 * MSR[EE]=1 context). We do not want to do this in other contexts
-+	 * because if interrupts are hard enabled, the decrementer will
-+	 * fire immediately here and just go to the masked handler to be
-+	 * recorded in irq_happened.
-+	 *
-+	 * BookE does not support this yet, it must audit all NMI
-+	 * interrupt handlers call nmi_enter().
-+	 */
-+	if (IS_ENABLED(CONFIG_BOOKE) || in_nmi()) {
-+		set_dec(1);
-+	} else {
-+		local_paca->irq_happened |= PACA_IRQ_DEC;
-+	}
-+	preempt_enable();
-+}
-+
- #else /* 32-bit */
- 
- DEFINE_PER_CPU(u8, irq_work_pending);
-@@ -518,16 +547,18 @@ DEFINE_PER_CPU(u8, irq_work_pending);
- #define test_irq_work_pending()		__this_cpu_read(irq_work_pending)
- #define clear_irq_work_pending()	__this_cpu_write(irq_work_pending, 0)
- 
--#endif /* 32 vs 64 bit */
--
- void arch_irq_work_raise(void)
- {
-+	WARN_ON(!irqs_disabled());
-+
- 	preempt_disable();
- 	set_irq_work_pending_flag();
- 	set_dec(1);
- 	preempt_enable();
- }
- 
-+#endif /* 32 vs 64 bit */
-+
- #else  /* CONFIG_IRQ_WORK */
- 
- #define test_irq_work_pending()	0
--- 
-2.16.3
++ "Michael S. Tsirkin" <mst@redhat.com>
