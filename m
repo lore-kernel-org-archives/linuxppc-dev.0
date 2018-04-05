@@ -3,26 +3,18 @@ Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
  [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GrN42DpczF1qH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 15:04:20 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id v5-v6so15583937plo.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 22:04:19 -0700 (PDT)
-Date: Thu, 5 Apr 2018 15:04:05 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GsQL0c99zF1bP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 15:51:21 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id 61-v6so15711619plb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 22:51:21 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>, Christoph Hellwig <hch@lst.de>,
- Matthew Wilcox <mawilcox@microsoft.com>, "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [RESEND 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
-Message-ID: <20180405150405.5b902b41@roar.ozlabs.ibm.com>
-In-Reply-To: <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
-References: <20180404231943.29581-1-bsingharora@gmail.com>
- <20180404231943.29581-3-bsingharora@gmail.com>
- <20180405095755.58b3891f@roar.ozlabs.ibm.com>
- <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] powerpc/64s: Fix dt_cpu_ftrs to have restore_cpu clear
+ unwanted LPCR bits
+Date: Thu,  5 Apr 2018 15:50:49 +1000
+Message-Id: <20180405055049.21883-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 4 Apr 2018 20:00:52 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
+Presently the dt_cpu_ftrs restore_cpu will only add bits to the LPCR
+for secondaries, but some bits must be removed (e.g., UPRT for HPT).
+Not clearing these bits on secondaries causes checkstops when booting
+with disable_radix.
 
-> [ adding Matthew, Christoph, and Tony  ]
-> 
-> On Wed, Apr 4, 2018 at 4:57 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > On Thu,  5 Apr 2018 09:19:42 +1000
-> > Balbir Singh <bsingharora@gmail.com> wrote:
-> >  
-> >> The pmem infrastructure uses memcpy_mcsafe in the pmem
-> >> layer so as to convert machine check excpetions into
-> >> a return value on failure in case a machine check
-> >> exception is encoutered during the memcpy.
-> >>
-> >> This patch largely borrows from the copyuser_power7
-> >> logic and does not add the VMX optimizations, largely
-> >> to keep the patch simple. If needed those optimizations
-> >> can be folded in.  
-> >
-> > So memcpy_mcsafe doesn't return number of bytes copied?
-> > Huh, well that makes it simple.  
-> 
-> Well, not in current kernels, but we need to add that support or
-> remove the direct call to copy_to_iter() in fs/dax.c. I'm looking
-> right now to add "bytes remaining" support to the x86 memcpy_mcsafe(),
-> but for copy_to_user we also need to handle bytes remaining for write
-> faults. That fix is hopefully something that can land in an early
-> 4.17-rc, but it won't be ready for -rc1.
+restore_cpu can not just set LPCR, because it is also called by the
+idle wakeup code which relies on opal_slw_set_reg to restore the value
+of LPCR, at least on P8 which does not save LPCR to stack in the idle
+code.
 
-I wonder if the powerpc implementation should just go straight to
-counting bytes. Backporting to this interface would be trivial, but
-it would just mean there's only one variant of the code to support.
-That's up to Balbir though.
+Fix this by including a mask of bits to clear from LPCR as well, which
+is used by restore_cpu.
 
-Thanks,
-Nick
+This is a little messy now, but it's a minimal fix that can be
+backported.  Longer term, the idle SPR save/restore code can be
+reworked to completely avoid calls to restore_cpu, then restore_cpu
+would be able to unconditionally set LPCR to match boot processor
+environment.
+
+Fixes: 5a61ef74f269f ("powerpc/64s: Support new device tree binding for discovering CPU features")
+Cc: stable@vger.kernel.org # v4.12+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+
+I tested this fix and it boots a POWER9 with disable_radix, where
+previously it checkstopped. Deeper idle states seem to work too,
+after they're enabled with a firmware override.
+
+
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 11a3a4fed3fb..ed7605d8fd2d 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -83,6 +83,7 @@ static int hv_mode;
+ 
+ static struct {
+ 	u64	lpcr;
++	u64	lpcr_clear;
+ 	u64	hfscr;
+ 	u64	fscr;
+ } system_registers;
+@@ -91,6 +92,8 @@ static void (*init_pmu_registers)(void);
+ 
+ static void __restore_cpu_cpufeatures(void)
+ {
++	u64 lpcr;
++
+ 	/*
+ 	 * LPCR is restored by the power on engine already. It can be changed
+ 	 * after early init e.g., by radix enable, and we have no unified API
+@@ -103,8 +106,10 @@ static void __restore_cpu_cpufeatures(void)
+ 	 * The best we can do to accommodate secondary boot and idle restore
+ 	 * for now is "or" LPCR with existing.
+ 	 */
+-
+-	mtspr(SPRN_LPCR, system_registers.lpcr | mfspr(SPRN_LPCR));
++	lpcr = mfspr(SPRN_LPCR);
++	lpcr |= system_registers.lpcr;
++	lpcr &= ~system_registers.lpcr_clear;
++	mtspr(SPRN_LPCR, lpcr);
+ 	if (hv_mode) {
+ 		mtspr(SPRN_LPID, 0);
+ 		mtspr(SPRN_HFSCR, system_registers.hfscr);
+@@ -324,8 +329,9 @@ static int __init feat_enable_mmu_hash_v3(struct dt_cpu_feature *f)
+ {
+ 	u64 lpcr;
+ 
++	system_registers.lpcr_clear |= (LPCR_ISL | LPCR_UPRT | LPCR_HR);
+ 	lpcr = mfspr(SPRN_LPCR);
+-	lpcr &= ~LPCR_ISL;
++	lpcr &= ~(LPCR_ISL | LPCR_UPRT | LPCR_HR);
+ 	mtspr(SPRN_LPCR, lpcr);
+ 
+ 	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
+-- 
+2.16.3
