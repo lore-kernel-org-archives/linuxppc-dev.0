@@ -1,37 +1,55 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <ldufour@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H7mf2CTszF1XC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 02:38:09 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H8996ZMTzF1XC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 02:55:57 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w35Gc5Ud039877
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 12:38:07 -0400
+ w35GtpAf110217
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 12:55:55 -0400
 Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h5nuud505-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h5qqxr1sv-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 12:38:06 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 12:55:54 -0400
 Received: from localhost
  by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 5 Apr 2018 17:37:53 +0100
-Date: Thu, 5 Apr 2018 09:37:46 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 1/2] powerpc/swiotlb: Dont free up allocated SWIOTLB slab
- on POWER
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180404030301.25019-1-khandual@linux.vnet.ibm.com>
- <87fu4bcf34.fsf@concordia.ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 5 Apr 2018 17:55:45 +0100
+Subject: Re: [mm] b1f0502d04: INFO:trying_to_register_non-static_key
+To: David Rientjes <rientjes@google.com>
+Cc: kernel test robot <fengguang.wu@intel.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ ak@linux.intel.com, mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, lkp@01.org
+References: <20180317075119.u6yuem2bhxvggbz3@inn>
+ <792c0f75-7e7f-cd81-44ae-4205f6e4affc@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803251510040.80485@chino.kir.corp.google.com>
+ <aa6f2ff1-ff67-106a-e0e4-522ac82a7bf0@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1804031748120.27686@chino.kir.corp.google.com>
+ <147e8be3-2c33-2111-aacc-dc2bb932fa8c@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1804041451220.152749@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Thu, 5 Apr 2018 18:55:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87fu4bcf34.fsf@concordia.ellerman.id.au>
-Message-Id: <20180405163746.GA5775@ram.oc3035372033.ibm.com>
+In-Reply-To: <alpine.DEB.2.20.1804041451220.152749@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <d16459e8-de93-7261-d7e0-fe62160c04e0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,56 +59,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2018 at 10:48:31PM +1000, Michael Ellerman wrote:
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
-> > Even though SWIOTLB slab gets allocated and initialized on powerpc with
-> > swiotlb_init() called during mem_init(), it gets released away again on
-> > POWER platform because 'ppc_swiotlb_enable' never gets set. The function
-> > swiotlb_detect_4g() checks for 4GB memory and then sets the variable
-> > 'ppc_swiotlb_enable' which prevents freeing up the SWIOTLB slab. Lets
-> > make POWER platform call swiotlb_detect_4g() during setup_arch() which
-> > will keep the SWIOTLB slab through out the runtime.
-> >
-> > A previous commit cf5621032f ("powerpc/64: Limit ZONE_DMA32 to 4GiB in
-> > swiotlb_detect_4g()") enforced 4GB limit on ZONE_DMA32 which is is not
-> > applicable on POWER (CONFIG_PPC_BOOK3S_64) platform. Lets remove this
-> > unnecessary restriction.
+On 04/04/2018 23:53, David Rientjes wrote:
+> On Wed, 4 Apr 2018, Laurent Dufour wrote:
 > 
-> You're using "POWER" to mean Book3S 64-bit, but "POWER" is something
-> else (the ISA for POWER1/POWER2).
+>>> I also think the following is needed:
+>>>
+>>> diff --git a/fs/exec.c b/fs/exec.c
+>>> --- a/fs/exec.c
+>>> +++ b/fs/exec.c
+>>> @@ -312,6 +312,10 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
+>>>  	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
+>>>  	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+>>>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
+>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>>> +	seqcount_init(&vma->vm_sequence);
+>>> +	atomic_set(&vma->vm_ref_count, 0);
+>>> +#endif
+>>>
+>>>  	err = insert_vm_struct(mm, vma);
+>>>  	if (err)
+>>
+>> No, this not needed because the vma is allocated with kmem_cache_zalloc() so
+>> vm_ref_count is 0, and insert_vm_struc() will later call
+>> __vma_link_rb() which will call seqcount_init().
+>>
+>> Furhtermore, in case of error, the vma structure is freed without calling
+>> get_vma() so there is risk of lockdep warning.
+>>
 > 
-> So please just say "Book3S 64-bit" or talk about a specific CPU, eg.
-> Power9.
+> Perhaps you're working from a different tree than I am, or you fixed the 
+> lockdep warning differently when adding to dup_mmap() and mmap_region().
 > 
-> > After the patch, SWIOTLB slab does not get released.
-> >
-> > [0.410992] software IO TLB [mem 0xfbff0000-0xffff0000] (64MB) mapped
-> > at [00000000767f6cb3-000000004a10114f]
+> I got the following two lockdep errors.
 > 
-> But we don't want SWIOTLB on any existing Book3S 64-bit platforms, so
-> leaving it enabled is just wasting memory.
-> 
-> > diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> > index d73ec518ef80..c4db844e0b0d 100644
-> > --- a/arch/powerpc/kernel/setup-common.c
-> > +++ b/arch/powerpc/kernel/setup-common.c
-> > @@ -944,6 +944,7 @@ void __init setup_arch(char **cmdline_p)
-> >  	/* Initialize the MMU context management stuff. */
-> >  	mmu_context_init();
-> >  
-> > +	swiotlb_detect_4g();
-> 
-> You shouldn't be calling this, your use case has nothing to do with 4GB.
-> 
-> Instead when you detect that you're running under the ultravisor then
-> you should set ppc_swiotlb_enable = 1.
+> I fixed it locally by doing the seqcount_init() and atomic_set() 
+> everywhere a vma could be initialized.
 
-Please assume that you will have a interface to detect if you are
-running in a protected-environment(AKA secure-environment).
+That's weird, I don't get that on my side with lockdep activated.
 
-So maybe you can rename swiotlb_detect_4g() to swiotlb_detect() 
-and modify that function to enable or disable ppc_swiotlb_enable
-depending on the availability of 4g or availability of 
-protected-environment?
+There is a call to seqcount_init() in dup_mmap(), in mmap_region() and
+__vma_link_rb() and that's enough to cover all the case.
 
-RP
+That's being said, it'll be better call seqcount_init each time as soon as a
+vma structure is allocated. For the vm_ref_count value, as most of the time the
+vma is zero allocated, I don't think this is needed.
+I just have to check when new_vma = *old_vma is done, but this often just
+follow a vma allocation.
+> 
+> INFO: trying to register non-static key.
+> the code is fine but needs lockdep annotation.
+> turning off the locking correctness validator.
+> CPU: 12 PID: 1 Comm: init Not tainted
+> Call Trace:
+>  [<ffffffff8b12026f>] dump_stack+0x67/0x98
+>  [<ffffffff8a92b616>] register_lock_class+0x1e6/0x4e0
+>  [<ffffffff8a92cfe9>] __lock_acquire+0xb9/0x1710
+>  [<ffffffff8a92ef3a>] lock_acquire+0xba/0x200
+>  [<ffffffff8aa827df>] mprotect_fixup+0x10f/0x310
+>  [<ffffffff8aade3fd>] setup_arg_pages+0x12d/0x230
+>  [<ffffffff8ab4564a>] load_elf_binary+0x44a/0x1740
+>  [<ffffffff8aadde9b>] search_binary_handler+0x9b/0x1e0
+>  [<ffffffff8ab44e96>] load_script+0x206/0x270
+>  [<ffffffff8aadde9b>] search_binary_handler+0x9b/0x1e0
+>  [<ffffffff8aae0355>] do_execveat_common.isra.32+0x6b5/0x9d0
+>  [<ffffffff8aae069c>] do_execve+0x2c/0x30
+>  [<ffffffff8a80047b>] run_init_process+0x2b/0x30
+>  [<ffffffff8b1358d4>] kernel_init+0x54/0x110
+>  [<ffffffff8b2001ca>] ret_from_fork+0x3a/0x50
+> 
+> and
+> 
+> INFO: trying to register non-static key.
+> the code is fine but needs lockdep annotation.
+> turning off the locking correctness validator.
+> CPU: 21 PID: 1926 Comm: mkdir Not tainted
+> Call Trace:
+>  [<ffffffff985202af>] dump_stack+0x67/0x98
+>  [<ffffffff97d2b616>] register_lock_class+0x1e6/0x4e0
+>  [<ffffffff97d2cfe9>] __lock_acquire+0xb9/0x1710
+>  [<ffffffff97d2ef3a>] lock_acquire+0xba/0x200
+>  [<ffffffff97e73c09>] unmap_page_range+0x89/0xaa0
+>  [<ffffffff97e746af>] unmap_single_vma+0x8f/0x100
+>  [<ffffffff97e74a1b>] unmap_vmas+0x4b/0x90
+>  [<ffffffff97e7f833>] exit_mmap+0xa3/0x1c0
+>  [<ffffffff97cc1b23>] mmput+0x73/0x120
+>  [<ffffffff97ccbacd>] do_exit+0x2bd/0xd60
+>  [<ffffffff97ccc5b7>] SyS_exit+0x17/0x20
+>  [<ffffffff97c01f1d>] do_syscall_64+0x6d/0x1a0
+>  [<ffffffff9860005a>] entry_SYSCALL_64_after_hwframe+0x26/0x9b
+> 
+> I think it would just be better to generalize vma allocation to initialize 
+> certain fields and init both spf fields properly for 
+> CONFIG_SPECULATIVE_PAGE_FAULT.  It's obviously too delicate as is.
+> 
